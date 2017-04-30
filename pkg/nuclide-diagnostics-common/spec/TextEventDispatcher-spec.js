@@ -6,12 +6,17 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Disposable} from 'atom';
 import {sleep} from '../../commons-node/promise';
 
-import {TextEventDispatcher, observeTextEditorEvents, __TEST__} from '../lib/TextEventDispatcher';
+import {
+  TextEventDispatcher,
+  observeTextEditorEvents,
+  __TEST__,
+} from '../lib/TextEventDispatcher';
 
 const grammar = 'testgrammar';
 
@@ -53,10 +58,14 @@ describe('TextCallbackContainer', () => {
 
   it('should properly remove a callback', () => {
     textCallbackContainer.addCallback([grammar], ['did-change'], callback);
-    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(new Set([callback]));
+    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(
+      new Set([callback]),
+    );
     checkInvariant();
     textCallbackContainer.removeCallback([grammar], ['did-change'], callback);
-    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(new Set());
+    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(
+      new Set(),
+    );
   });
 });
 
@@ -74,7 +83,6 @@ describe('TextEventDispatcher', () => {
     callback(fakeTextEditor2);
     return new Disposable(() => {});
   }
-
 
   function makeFakeEditor(path?: string = '') {
     // Register a callback for this fake editor.
@@ -126,8 +134,13 @@ describe('TextEventDispatcher', () => {
     activeEditor = fakeTextEditor;
     spyOn(atom.workspace, 'isTextEditor').andReturn(true);
     spyOn(atom.workspace, 'observeTextEditors').andCallFake(fakeObserveEditors);
-    spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(() => activeEditor);
-    spyOn(atom.workspace, 'getTextEditors').andReturn([fakeTextEditor, fakeTextEditor2]);
+    spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(
+      () => activeEditor,
+    );
+    spyOn(atom.workspace, 'getTextEditors').andReturn([
+      fakeTextEditor,
+      fakeTextEditor2,
+    ]);
     spyOn(atom.workspace, 'onDidChangeActivePaneItem').andCallFake(callback => {
       paneSwitchCallbacks.add(callback);
       return new Disposable(() => {});
@@ -151,8 +164,9 @@ describe('TextEventDispatcher', () => {
 
   it('should work with observeTextEditorEvents', () => {
     const spy = jasmine.createSpy();
-    observeTextEditorEvents([grammar], 'changes')
-      .subscribe(editor => spy(editor));
+    observeTextEditorEvents([grammar], 'changes').subscribe(editor =>
+      spy(editor),
+    );
     triggerAtomEvent(fakeTextEditor);
     expect(spy).toHaveBeenCalledWith(fakeTextEditor);
   });

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {CompositeDisposable} from 'atom';
@@ -19,19 +20,23 @@ export function activate(state: ?Object): void {
   const _subscriptions = new CompositeDisposable();
   const _watchers = new Map();
 
-  _subscriptions.add(observeTextEditors(editor => {
-    if (_watchers.has(editor)) {
-      return;
-    }
+  _subscriptions.add(
+    observeTextEditors(editor => {
+      if (_watchers.has(editor)) {
+        return;
+      }
 
-    const fileWatcher = new FileWatcher(editor);
-    _watchers.set(editor, fileWatcher);
+      const fileWatcher = new FileWatcher(editor);
+      _watchers.set(editor, fileWatcher);
 
-    _subscriptions.add(editor.onDidDestroy(() => {
-      fileWatcher.destroy();
-      _watchers.delete(editor);
-    }));
-  }));
+      _subscriptions.add(
+        editor.onDidDestroy(() => {
+          fileWatcher.destroy();
+          _watchers.delete(editor);
+        }),
+      );
+    }),
+  );
 
   watchers = _watchers;
   subscriptions = _subscriptions;

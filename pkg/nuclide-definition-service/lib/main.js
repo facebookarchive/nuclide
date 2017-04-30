@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -22,13 +23,19 @@ export type DefinitionProvider = {
   // used.
   priority: number,
   grammarScopes: Array<string>,
-  getDefinition: (editor: TextEditor, position: atom$Point) => Promise<?DefinitionQueryResult>,
+  getDefinition: (
+    editor: TextEditor,
+    position: atom$Point,
+  ) => Promise<?DefinitionQueryResult>,
   // filename is any file/path in the project containing id.
   getDefinitionById: (filename: NuclideUri, id: string) => Promise<?Definition>,
 };
 
 export type DefinitionService = {
-  getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult>,
+  getDefinition(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult>,
 };
 
 // Provides definitions given a file & position.
@@ -40,18 +47,21 @@ export class Service {
     this._providers = new ProviderRegistry();
   }
 
-  dispose() {
+  dispose() {}
 
-  }
-
-  async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
+  async getDefinition(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
     const provider = this._providers.getProviderForEditor(editor);
     return provider == null ? null : provider.getDefinition(editor, position);
   }
 
   consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
     this._providers.addProvider(provider);
-    return new Disposable(() => { this._providers.removeProvider(provider); });
+    return new Disposable(() => {
+      this._providers.removeProvider(provider);
+    });
   }
 }
 
@@ -70,7 +80,9 @@ export function deactivate() {
   }
 }
 
-export function consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+export function consumeDefinitionProvider(
+  provider: DefinitionProvider,
+): IDisposable {
   invariant(activation != null);
   return activation.consumeDefinitionProvider(provider);
 }

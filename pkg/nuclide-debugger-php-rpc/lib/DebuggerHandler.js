@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -64,9 +65,7 @@ export class DebuggerHandler extends Handler {
     this._files = new FileCache(clientCallback);
     this._emitter = new EventEmitter();
     this._subscriptions = new CompositeDisposable(
-      this._connectionMultiplexer.onStatus(
-        this._onStatusChanged.bind(this),
-      ),
+      this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this)),
       this._connectionMultiplexer.onNotification(
         this._onNotification.bind(this),
       ),
@@ -117,7 +116,9 @@ export class DebuggerHandler extends Handler {
       case 'getScriptSource':
         // TODO: Handle file read errors.
         // TODO: Handle non-file scriptIds
-        this.replyToCommand(id, {scriptSource: await this._files.getFileSource(params.scriptId)});
+        this.replyToCommand(id, {
+          scriptSource: await this._files.getFileSource(params.scriptId),
+        });
         break;
 
       case 'setBreakpointByUrl':
@@ -177,15 +178,20 @@ export class DebuggerHandler extends Handler {
 
   async _setPauseOnExceptions(id: number, params: Object): Promise<any> {
     const {state} = params;
-    await this._connectionMultiplexer.getBreakpointStore().setPauseOnExceptions(String(id), state);
+    await this._connectionMultiplexer
+      .getBreakpointStore()
+      .setPauseOnExceptions(String(id), state);
     this.replyToCommand(id, {});
   }
 
   async _setBreakpointByUrl(id: number, params: Object): Promise<void> {
     const {lineNumber, url, columnNumber, condition} = params;
     if (!url || columnNumber !== 0) {
-      this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: '
-        + JSON.stringify(params));
+      this.replyWithError(
+        id,
+        'Invalid arguments to Debugger.setBreakpointByUrl: ' +
+          JSON.stringify(params),
+      );
       return;
     }
     this._files.registerFile(url);
@@ -204,9 +210,7 @@ export class DebuggerHandler extends Handler {
     this.replyToCommand(id, {
       breakpointId,
       resolved: breakpoint.resolved,
-      locations: [
-        getBreakpointLocation(breakpoint),
-      ],
+      locations: [getBreakpointLocation(breakpoint)],
     });
   }
 
@@ -226,8 +230,11 @@ export class DebuggerHandler extends Handler {
     }
 
     if (!scriptId || columnNumber !== 0) {
-      this.replyWithError(id, 'Invalid arguments to Debugger.continueToLocation: '
-        + JSON.stringify(params));
+      this.replyWithError(
+        id,
+        'Invalid arguments to Debugger.continueToLocation: ' +
+          JSON.stringify(params),
+      );
       return;
     }
 
@@ -244,7 +251,9 @@ export class DebuggerHandler extends Handler {
       /* condition */ '',
     );
 
-    const breakpoint = breakpointStore.getBreakpoint(this._temporaryBreakpointpointId);
+    const breakpoint = breakpointStore.getBreakpoint(
+      this._temporaryBreakpointpointId,
+    );
     invariant(breakpoint != null);
     invariant(breakpoint.connectionId === enabledConnection.getId());
 
@@ -266,19 +275,25 @@ export class DebuggerHandler extends Handler {
   }
 
   async _getStackFrames(id: number): Promise<Array<Object>> {
-    const frames =
-        await this._connectionMultiplexer.getConnectionStackFrames(id);
+    const frames = await this._connectionMultiplexer.getConnectionStackFrames(
+      id,
+    );
 
-    if (frames != null && frames.stack != null || frames.stack.length === 0) {
+    if ((frames != null && frames.stack != null) || frames.stack.length === 0) {
       return Promise.all(
-        frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
+        frames.stack.map((frame, frameIndex) =>
+          this._convertFrame(frame, frameIndex),
+        ),
+      );
     }
 
     return Promise.resolve([]);
   }
 
   async _getTopFrameForConnection(id: number): Promise<?Object> {
-    const frames = await this._connectionMultiplexer.getConnectionStackFrames(id);
+    const frames = await this._connectionMultiplexer.getConnectionStackFrames(
+      id,
+    );
     if (frames == null || frames.stack == null || frames.stack.length === 0) {
       return null;
     }
@@ -296,7 +311,9 @@ export class DebuggerHandler extends Handler {
 
     let scopeChain = null;
     try {
-      scopeChain = await this._connectionMultiplexer.getScopesForFrame(frameIndex);
+      scopeChain = await this._connectionMultiplexer.getScopesForFrame(
+        frameIndex,
+      );
     } catch (e) {
       // Couldn't get scopes.
     }
@@ -322,7 +339,9 @@ export class DebuggerHandler extends Handler {
     if (!this._hadFirstContinuationCommand) {
       this._hadFirstContinuationCommand = true;
       this.sendMethod('Debugger.resumed');
-      this._subscriptions.add(this._connectionMultiplexer.listen(this._endSession.bind(this)));
+      this._subscriptions.add(
+        this._connectionMultiplexer.listen(this._endSession.bind(this)),
+      );
       return;
     }
     this._connectionMultiplexer.resume();
@@ -356,18 +375,18 @@ export class DebuggerHandler extends Handler {
     const breakpoint = breakpointStore.getBreakpoint(temporaryBreakpointId);
     const enabledConnection = this._connectionMultiplexer.getEnabledConnection();
     if (
-      enabledConnection == null
-      || breakpoint == null
-      || enabledConnection.getId() !== breakpoint.connectionId
+      enabledConnection == null ||
+      breakpoint == null ||
+      enabledConnection.getId() !== breakpoint.connectionId
     ) {
       return;
     }
     const {breakpointInfo} = breakpoint;
     const stopLocation = enabledConnection.getStopBreakpointLocation();
     if (
-      stopLocation != null
-      && stopLocation.filename === breakpointInfo.filename
-      && stopLocation.lineNumber === breakpointInfo.lineNumber
+      stopLocation != null &&
+      stopLocation.filename === breakpointInfo.filename &&
+      stopLocation.lineNumber === breakpointInfo.lineNumber
     ) {
       await breakpointStore.removeBreakpoint(temporaryBreakpointId);
       this._temporaryBreakpointpointId = null;
@@ -386,8 +405,9 @@ export class DebuggerHandler extends Handler {
         break;
       case ConnectionMultiplexerNotification.RequestUpdate:
         invariant(params);
-        const frame = params.status === ConnectionStatus.Break ?
-          await this._getTopFrameForConnection(params.id) : null;
+        const frame = params.status === ConnectionStatus.Break
+          ? await this._getTopFrameForConnection(params.id)
+          : null;
         this.sendMethod('Debugger.threadUpdated', {
           thread: {
             id: String(params.id),
@@ -416,17 +436,15 @@ export class DebuggerHandler extends Handler {
       });
     }
     const enabledConnectionId = this._connectionMultiplexer.getEnabledConnectionId();
-    this.sendMethod(
-      'Debugger.paused',
-      {
-        callFrames: enabledConnectionId != null ?
-          await this._getStackFrames(enabledConnectionId) : [],
-        reason: 'breakpoint', // TODO: better reason?
-        threadSwitchMessage: requestSwitchMessage,
-        data: {},
-        stopThreadId: enabledConnectionId,
-      },
-    );
+    this.sendMethod('Debugger.paused', {
+      callFrames: enabledConnectionId != null
+        ? await this._getStackFrames(enabledConnectionId)
+        : [],
+      reason: 'breakpoint', // TODO: better reason?
+      threadSwitchMessage: requestSwitchMessage,
+      data: {},
+      stopThreadId: enabledConnectionId,
+    });
 
     // Send an update for the enabled thread to cause the request window in the
     // front-end to update.
@@ -439,7 +457,9 @@ export class DebuggerHandler extends Handler {
           address: frame != null ? frame.functionName : 'N/A',
           location: frame != null ? frame.location : null,
           hasSource: true,
-          stopReason: this._connectionMultiplexer.getConnectionStopReason(enabledConnectionId),
+          stopReason: this._connectionMultiplexer.getConnectionStopReason(
+            enabledConnectionId,
+          ),
           description: 'N/A',
         },
       });
@@ -447,13 +467,11 @@ export class DebuggerHandler extends Handler {
   }
 
   _sendFakeLoaderBreakpoint(): void {
-    this.sendMethod(
-      'Debugger.paused',
-      {
-        callFrames: [],
-        reason: 'initial break',
-        data: {},
-      });
+    this.sendMethod('Debugger.paused', {
+      callFrames: [],
+      reason: 'initial break',
+      data: {},
+    });
   }
 
   _endSession(): void {

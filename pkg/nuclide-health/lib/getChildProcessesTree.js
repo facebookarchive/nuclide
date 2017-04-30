@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ChildProcessInfo, IOBytesStats} from './types';
@@ -34,11 +35,9 @@ export default function getChildProcessesTree(): Observable<?ChildProcessInfo> {
     return Observable.of(null);
   }
 
-  return runCommand(
-    'ps',
-    ['axo', 'ppid,pid,pcpu,command'],
-    {dontLogInNuclide: true},
-  )
+  return runCommand('ps', ['axo', 'ppid,pid,pcpu,command'], {
+    dontLogInNuclide: true,
+  })
     .map(parsePSOutput)
     .map(ps => buildTree(ps, process.pid));
 }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import child_process from 'child_process';
@@ -57,22 +58,20 @@ function getFilesFromCommand(
 }
 
 function getTrackedHgFiles(localDirectory: string): Promise<Array<string>> {
-  return fsPromise.exists(nuclideUri.join(localDirectory, '.hg')).then(isRoot => {
-    if (isRoot) {
-      return getFilesFromCommand(
-        'hg',
-        ['locate'],
-        localDirectory,
-      );
-    } else {
-      return getFilesFromCommand(
-        'hg',
-        ['locate', '--fullpath', '--include', '.'],
-        localDirectory,
-        filePath => filePath.slice(localDirectory.length + 1),
-      );
-    }
-  });
+  return fsPromise
+    .exists(nuclideUri.join(localDirectory, '.hg'))
+    .then(isRoot => {
+      if (isRoot) {
+        return getFilesFromCommand('hg', ['locate'], localDirectory);
+      } else {
+        return getFilesFromCommand(
+          'hg',
+          ['locate', '--fullpath', '--include', '.'],
+          localDirectory,
+          filePath => filePath.slice(localDirectory.length + 1),
+        );
+      }
+    });
 }
 
 /**
@@ -88,7 +87,12 @@ function getUntrackedHgFiles(localDirectory: string): Promise<Array<string>> {
     // 2. It returns the paths relative to the directory in which this command is
     //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
     //    which is what we want.
-    ['status', '--unknown', '--no-status' /* No status code. */, localDirectory],
+    [
+      'status',
+      '--unknown',
+      '--no-status' /* No status code. */,
+      localDirectory,
+    ],
     localDirectory,
   );
 }
@@ -105,12 +109,10 @@ function getFilesFromHg(localDirectory: string): Promise<Array<string>> {
     getTrackedHgFiles(localDirectory),
     // It's not a dealbreaker if untracked files fail to show up.
     getUntrackedHgFiles(localDirectory).catch(() => []),
-  ]).then(
-    returnedFiles => {
-      const [trackedFiles, untrackedFiles] = returnedFiles;
-      return trackedFiles.concat(untrackedFiles);
-    },
-  );
+  ]).then(returnedFiles => {
+    const [trackedFiles, untrackedFiles] = returnedFiles;
+    return trackedFiles.concat(untrackedFiles);
+  });
 }
 
 function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
@@ -123,7 +125,11 @@ function getTrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  */
 function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
   // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
-  return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
+  return getFilesFromCommand(
+    'git',
+    ['ls-files', '--exclude-standard', '--others'],
+    localDirectory,
+  );
 }
 
 /**
@@ -134,25 +140,31 @@ function getUntrackedGitFiles(localDirectory: string): Promise<Array<string>> {
  *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
  */
 function getFilesFromGit(localDirectory: string): Promise<Array<string>> {
-  return Promise.all(
-      [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
-    returnedFiles => {
-      const [trackedFiles, untrackedFiles] = returnedFiles;
-      return trackedFiles.concat(untrackedFiles);
-    },
-  );
+  return Promise.all([
+    getTrackedGitFiles(localDirectory),
+    getUntrackedGitFiles(localDirectory),
+  ]).then(returnedFiles => {
+    const [trackedFiles, untrackedFiles] = returnedFiles;
+    return trackedFiles.concat(untrackedFiles);
+  });
 }
 
-async function getFilesFromRepo(localDirectory: string): Promise<Array<string>> {
+async function getFilesFromRepo(
+  localDirectory: string,
+): Promise<Array<string>> {
   if (!await fsPromise.exists(nuclideUri.join(localDirectory, '.repo'))) {
     throw new Error(`${localDirectory} is not a repo root`);
   }
-  const subRoots = (await runCommand('repo', ['list', '-p'], {cwd: localDirectory}).toPromise())
-    .split(/\n/).filter(s => s.length > 0);
+  const subRoots = (await runCommand('repo', ['list', '-p'], {
+    cwd: localDirectory,
+  }).toPromise())
+    .split(/\n/)
+    .filter(s => s.length > 0);
 
   const fileLists = await asyncLimit(subRoots, 20, subRoot => {
-    return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))
-      .then(files => files.map(file => nuclideUri.join(subRoot, file)));
+    return getFilesFromGit(
+      nuclideUri.join(localDirectory, subRoot),
+    ).then(files => files.map(file => nuclideUri.join(subRoot, file)));
   });
 
   return [].concat(...fileLists);
@@ -160,14 +172,15 @@ async function getFilesFromRepo(localDirectory: string): Promise<Array<string>> 
 
 function getAllFiles(localDirectory: string): Promise<Array<string>> {
   return getFilesFromCommand(
-      'find',
-      ['.', '-type', 'f'],
-      localDirectory,
-      // Slice off the leading `./` that find will add on here.
-      filePath => filePath.substring(2));
+    'find',
+    ['.', '-type', 'f'],
+    localDirectory,
+    // Slice off the leading `./` that find will add on here.
+    filePath => filePath.substring(2),
+  );
 }
 
-function getAllFilesFromWatchman(  // eslint-disable-line no-unused-vars
+function getAllFilesFromWatchman( // eslint-disable-line no-unused-vars
   localDirectory: string,
 ): Promise<Array<string>> {
   const client = new WatchmanClient();
@@ -183,12 +196,16 @@ export function getPaths(localDirectory: string): Promise<Array<string>> {
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  return getFilesFromHg(localDirectory)
+  return (
+    getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
       // .catch(() => getAllFilesFromWatchman(localDirectory))
       .catch(() => getFilesFromRepo(localDirectory))
       .catch(() => getAllFiles(localDirectory))
-      .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
+      .catch(() => {
+        throw new Error(`Failed to populate FileSearch for ${localDirectory}`);
+      })
+  );
 }
 
 export const __test__ = {

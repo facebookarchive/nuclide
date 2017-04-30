@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../commons-node/UniversalDisposable';
@@ -30,7 +31,9 @@ export class Modal extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleContainerInnerElement = this._handleContainerInnerElement.bind(this);
+    (this: any)._handleContainerInnerElement = this._handleContainerInnerElement.bind(
+      this,
+    );
     (this: any)._handleWindowClick = this._handleWindowClick.bind(this);
   }
 
@@ -45,7 +48,10 @@ export class Modal extends React.Component {
 
   _handleWindowClick(event: SyntheticMouseEvent): void {
     // If the user clicks outside of the modal, close it.
-    if (this._innerElement && !this._innerElement.contains(((event.target: any): Node))) {
+    if (
+      this._innerElement &&
+      !this._innerElement.contains(((event.target: any): Node))
+    ) {
       this.props.onDismiss();
     }
   }
@@ -57,11 +63,15 @@ export class Modal extends React.Component {
     }
 
     this._innerElement = el;
-    if (el == null) { return; }
+    if (el == null) {
+      return;
+    }
 
     el.focus();
     this._cancelDisposable = new UniversalDisposable(
-      atom.commands.add(window, 'core:cancel', () => { this.props.onDismiss(); }),
+      atom.commands.add(window, 'core:cancel', () => {
+        this.props.onDismiss();
+      }),
       Observable.fromEvent(window, 'mousedown')
         // Ignore clicks in the current tick. We don't want to capture the click that showed this
         // modal.
@@ -75,10 +85,7 @@ export class Modal extends React.Component {
     delete props.onDismiss;
     return (
       <Portal container={this._container}>
-        <div
-          tabIndex="0"
-          {...props}
-          ref={this._handleContainerInnerElement}>
+        <div tabIndex="0" {...props} ref={this._handleContainerInnerElement}>
           {this.props.children}
         </div>
       </Portal>

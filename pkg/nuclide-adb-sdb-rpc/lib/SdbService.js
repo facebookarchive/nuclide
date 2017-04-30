@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {pathForDebugBridge, getStore} from './DebugBridgePathStore';
@@ -28,7 +29,9 @@ async function getSdb(): Promise<Sdb> {
   return new Sdb((await pathForDebugBridge('sdb')));
 }
 
-export async function getDeviceInfo(name: string): Promise<Map<string, string>> {
+export async function getDeviceInfo(
+  name: string,
+): Promise<Map<string, string>> {
   return (await getSdb()).getCommonDeviceInfo(name);
 }
 
@@ -57,7 +60,8 @@ export async function getFileContentsAtPath(
 export function installPackage(
   device: string,
   packagePath: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return Observable.defer(() => getSdb())
     .switchMap(d => d.installPackage(device, packagePath))
     .publish();
@@ -73,7 +77,8 @@ export async function launchApp(
 export function uninstallPackage(
   device: string,
   packageName: string,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return Observable.defer(() => getSdb())
     .switchMap(d => d.uninstallPackage(device, packageName))
     .publish();

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -15,9 +16,13 @@ import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export function createTizenDeviceListProvider(): ATDeviceListProvider {
-  return new ATDeviceListProvider('tizen', (host: NuclideUri) => getSdbServiceByNuclideUri(host));
+  return new ATDeviceListProvider('tizen', (host: NuclideUri) =>
+    getSdbServiceByNuclideUri(host),
+  );
 }
 
 export function createTizenInfoProvider(): ATDeviceInfoProvider {
-  return new ATDeviceInfoProvider('tizen', (host: NuclideUri) => getSdbServiceByNuclideUri(host));
+  return new ATDeviceInfoProvider('tizen', (host: NuclideUri) =>
+    getSdbServiceByNuclideUri(host),
+  );
 }

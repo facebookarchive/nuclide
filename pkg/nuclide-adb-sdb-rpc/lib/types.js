@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type AndroidJavaProcess = {
@@ -13,7 +14,6 @@ export type AndroidJavaProcess = {
   pid: string,
   name: string,
 };
-
 
 export type DebugBridgeType = 'adb' | 'sdb';
 

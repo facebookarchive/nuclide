@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -23,9 +24,12 @@ export class PanelComponentScroller extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
-    const style = (this.props.overflowX == null) ? null : {overflowX: this.props.overflowX};
+    const style = this.props.overflowX == null
+      ? null
+      : {overflowX: this.props.overflowX};
     const className = classnames('nuclide-ui-panel-component-scroller', {
-      'nuclide-ui-panel-component-scroller--column': (this.props.flexDirection === 'column'),
+      'nuclide-ui-panel-component-scroller--column': this.props
+        .flexDirection === 'column',
     });
 
     return (

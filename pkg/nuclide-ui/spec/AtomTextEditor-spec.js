@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {AtomTextEditor} from '../AtomTextEditor';
@@ -29,7 +30,9 @@ describe('nuclide-ui-atom-text-editor', () => {
     });
 
     it('loads the desired `Grammar`', () => {
-      const element = TestUtils.renderIntoDocument(<AtomTextEditor path=".ansi" />);
+      const element = TestUtils.renderIntoDocument(
+        <AtomTextEditor path=".ansi" />,
+      );
       expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi');
     });
   });
@@ -63,7 +66,9 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     describe('is true', () => {
       beforeEach(() => {
-        element = TestUtils.renderIntoDocument(<AtomTextEditor readOnly={true} />);
+        element = TestUtils.renderIntoDocument(
+          <AtomTextEditor readOnly={true} />,
+        );
       });
 
       it('allows copying', () => {

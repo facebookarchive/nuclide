@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -44,12 +45,14 @@ type ParserOptions = {
   editorConfig: {[name: string]: any},
 };
 
-export default function onlineParser(options: ParserOptions = {
-  eatWhitespace: stream => stream.eatWhile(isIgnored),
-  lexRules: LexRules,
-  parseRules: ParseRules,
-  editorConfig: {},
-}): {
+export default function onlineParser(
+  options: ParserOptions = {
+    eatWhitespace: stream => stream.eatWhile(isIgnored),
+    lexRules: LexRules,
+    parseRules: ParseRules,
+    editorConfig: {},
+  },
+): {
   startState: () => State,
   token: (stream: CharacterStream, state: State) => string,
 } {
@@ -90,9 +93,8 @@ function getToken(
 
   // Remember initial indentation
   if (stream.sol()) {
-    const tabSize = editorConfig && editorConfig.tabSize || 2;
-    state.indentLevel =
-      Math.floor(stream.indentation() / tabSize);
+    const tabSize = (editorConfig && editorConfig.tabSize) || 2;
+    state.indentLevel = Math.floor(stream.indentation() / tabSize);
   }
 
   // Consume spaces and ignored characters
@@ -128,7 +130,7 @@ function getToken(
       // Pop from the stack of levels.
       // If the top of the stack is lower than the current level, lower the
       // current level to match.
-      const levels = state.levels = (state.levels || []).slice(0, -1);
+      const levels = (state.levels = (state.levels || []).slice(0, -1));
       if (state.indentLevel) {
         if (
           levels.length > 0 &&
@@ -143,10 +145,9 @@ function getToken(
   while (state.rule) {
     // If this is a forking rule, determine what rule to use based on
     // the current token, otherwise expect based on the current step.
-    let expected: any =
-      typeof state.rule === 'function' ?
-        state.step === 0 ? state.rule(token, stream) : null :
-        state.rule[state.step];
+    let expected: any = typeof state.rule === 'function'
+      ? state.step === 0 ? state.rule(token, stream) : null
+      : state.rule[state.step];
 
     // Seperator between list elements if necessary.
     if (state.needsSeperator) {
@@ -282,9 +283,11 @@ function advanceRule(state: State, successful: boolean): void {
 }
 
 function isList(state: State): ?boolean {
-  return Array.isArray(state.rule) &&
+  return (
+    Array.isArray(state.rule) &&
     typeof state.rule[state.step] !== 'string' &&
-    state.rule[state.step].isList;
+    state.rule[state.step].isList
+  );
 }
 
 // Unwind the state after an unsuccessful match.

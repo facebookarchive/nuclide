@@ -6,13 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
-import type {
-  Callstack,
-  CallstackItem,
-} from './types';
+import type {Callstack, CallstackItem} from './types';
 import type DebuggerActions from './DebuggerActions';
 import type CallstackStore from './CallstackStore';
 
@@ -51,37 +49,44 @@ export class DebuggerCallstackComponent extends React.Component {
   }
 
   _locationComponent(
-    props: {data: {
-      path: string,
-      line: number,
-      column?: number,
-      hasSource?: boolean,
-    }},
+    props: {
+      data: {
+        path: string,
+        line: number,
+        column?: number,
+        hasSource?: boolean,
+      },
+    },
   ): React.Element<any> {
-    const missingSourceItem =
-      this.props.callstackStore.getDebuggerStore().getCanSetSourcePaths() && !props.data.hasSource ?
-        <span className={classnames('text-error', 'icon', 'icon-alert')}
+    const missingSourceItem = this.props.callstackStore
+      .getDebuggerStore()
+      .getCanSetSourcePaths() && !props.data.hasSource
+      ? <span
+          className={classnames('text-error', 'icon', 'icon-alert')}
           onClick={() => this.props.actions.configureSourcePaths()}
           ref={addTooltip({
             title: 'Source file not found! Some debugger features will not work without source.' +
               '<br/><br/>' +
               'Click to configure source file paths...',
-          },
-          )}
-        /> :
-        null;
+          })}
+        />
+      : null;
 
     // Callstack paths may have a format like file://foo/bar, or
     // lldb://asm/0x1234. These are not valid paths that can be used to
     // construct a nuclideUri so we need to skip the protocol prefix.
-    const path = nuclideUri.basename(props.data.path.replace(/^[a-zA-Z]+:\/\//, ''));
+    const path = nuclideUri.basename(
+      props.data.path.replace(/^[a-zA-Z]+:\/\//, ''),
+    );
 
     // Chrome line numbers are actually 0-based, so add 1.
     const line = props.data.line + 1;
-    return <div title={`${path}:${line}`}>
-      {missingSourceItem}
-      <span>{path}:{line}</span>
-      </div>;
+    return (
+      <div title={`${path}:${line}`}>
+        {missingSourceItem}
+        <span>{path}:{line}</span>
+      </div>
+    );
   }
 
   componentDidMount(): void {
@@ -113,26 +118,24 @@ export class DebuggerCallstackComponent extends React.Component {
     const rows = callstack == null
       ? []
       : callstack.map((callstackItem, i) => {
-        const {
-          location,
-        } = callstackItem;
-        const isSelected = this.state.selectedCallFrameIndex === i;
-        const cellData = {
-          data: {
-            frame: i,
-            address: callstackItem.name,
-            location,
-            isSelected,
-          },
-        };
+          const {location} = callstackItem;
+          const isSelected = this.state.selectedCallFrameIndex === i;
+          const cellData = {
+            data: {
+              frame: i,
+              address: callstackItem.name,
+              location,
+              isSelected,
+            },
+          };
 
-        if (isSelected) {
-          // $FlowIssue className is an optional property of a table row
-          cellData.className = 'nuclide-debugger-callstack-item-selected';
-        }
+          if (isSelected) {
+            // $FlowIssue className is an optional property of a table row
+            cellData.className = 'nuclide-debugger-callstack-item-selected';
+          }
 
-        return cellData;
-      });
+          return cellData;
+        });
 
     const columns = [
       {
@@ -151,10 +154,11 @@ export class DebuggerCallstackComponent extends React.Component {
       },
     ];
 
-    const emptyComponent = () =>
+    const emptyComponent = () => (
       <div className="nuclide-debugger-callstack-list-empty">
         callstack unavailable
-      </div>;
+      </div>
+    );
 
     return (
       <Table

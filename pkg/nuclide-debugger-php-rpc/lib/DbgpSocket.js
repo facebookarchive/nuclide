@@ -6,14 +6,22 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import dedent from 'dedent';
 import logger from './utils';
-import {base64Decode, base64Encode, isContinuationCommand, isEvaluationCommand} from './helpers';
+import {
+  base64Decode,
+  base64Encode,
+  isContinuationCommand,
+  isEvaluationCommand,
+} from './helpers';
 import EventEmitter from 'events';
-import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
+import {
+  DbgpMessageHandler,
+  getDbgpMessageHandlerInstance,
+} from './DbgpMessageHandler';
 import {attachEvent} from '../../commons-node/event';
 import invariant from 'assert';
 import type {Socket} from 'net';
@@ -156,7 +164,9 @@ export class DbgpSocket {
     return attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
-  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
+  onNotification(
+    callback: (notifyName: string, notify: Object) => mixed,
+  ): IDisposable {
     return attachEvent(this._emitter, DBGP_SOCKET_NOTIFICATION_EVENT, callback);
   }
 
@@ -219,10 +229,13 @@ export class DbgpSocket {
         // Then send a user-friendly message to the console, and trigger a UI update by moving to
         // running status briefly, and then back to break status.
         this._emitStatus(ConnectionStatus.DummyIsViewable);
-        this._emitStatus(ConnectionStatus.Stdout, 'Hit breakpoint in evaluated code.');
+        this._emitStatus(
+          ConnectionStatus.Stdout,
+          'Hit breakpoint in evaluated code.',
+        );
         this._emitStatus(ConnectionStatus.Running);
         this._emitStatus(ConnectionStatus.Break);
-        return;  // Return early so that we don't complete any request.
+        return; // Return early so that we don't complete any request.
       }
       this._handleEvaluationCommand(transactionId, message);
     }
@@ -268,7 +281,10 @@ export class DbgpSocket {
       this._emitStatus(ConnectionStatus.DummyIsHidden);
     }
     const continuationCommandCall = this._calls.get(continuationId);
-    invariant(continuationCommandCall != null, 'no pending continuation command request');
+    invariant(
+      continuationCommandCall != null,
+      'no pending continuation command request',
+    );
     this._completeRequest(
       message,
       {$: {status: ConnectionStatus.Break}},
@@ -283,7 +299,9 @@ export class DbgpSocket {
     // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
     const outputText = stream._ != null ? base64Decode(stream._) : '';
     logger.log(`${outputType} message received: ${outputText}`);
-    const status = outputType === 'stdout' ? ConnectionStatus.Stdout : ConnectionStatus.Stderr;
+    const status = outputType === 'stdout'
+      ? ConnectionStatus.Stdout
+      : ConnectionStatus.Stderr;
     // TODO: t13439903 -- add a way to fetch the rest of the data.
     const truncatedOutputText = outputText.slice(0, STREAM_MESSAGE_MAX_SIZE);
     this._emitStatus(status, truncatedOutputText);
@@ -314,15 +332,21 @@ export class DbgpSocket {
   ): void {
     this._calls.delete(transactionId);
     if (call.command !== command) {
-      logger.logError('Bad command in response. Found ' +
-        command + '. expected ' + call.command);
+      logger.logError(
+        'Bad command in response. Found ' +
+          command +
+          '. expected ' +
+          call.command,
+      );
       return;
     }
     try {
       logger.log('Completing call: ' + message);
       call.complete(response);
     } catch (e) {
-      logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
+      logger.logError(
+        'Exception: ' + e.toString() + ' handling call: ' + message,
+      );
     }
   }
 
@@ -331,12 +355,21 @@ export class DbgpSocket {
   }
 
   async getContextsForFrame(frameIndex: number): Promise<Array<DbgpContext>> {
-    const result = await this._callDebugger('context_names', `-d ${frameIndex}`);
+    const result = await this._callDebugger(
+      'context_names',
+      `-d ${frameIndex}`,
+    );
     return result.context.map(context => context.$);
   }
 
-  async getContextProperties(frameIndex: number, contextId: string): Promise<Array<DbgpProperty>> {
-    const result = await this._callDebugger('context_get', `-d ${frameIndex} -c ${contextId}`);
+  async getContextProperties(
+    frameIndex: number,
+    contextId: string,
+  ): Promise<Array<DbgpProperty>> {
+    const result = await this._callDebugger(
+      'context_get',
+      `-d ${frameIndex} -c ${contextId}`,
+    );
     // 0 results yields missing 'property' member
     return result.property || [];
   }
@@ -367,10 +400,18 @@ export class DbgpSocket {
     page: number,
   ): Promise<Array<DbgpProperty>> {
     // Pass zero as contextId to search all contexts.
-    return this.getPropertiesByFullname(frameIndex, /* contextId */ '0', fullname, page);
+    return this.getPropertiesByFullname(
+      frameIndex,
+      /* contextId */ '0',
+      fullname,
+      page,
+    );
   }
 
-  async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<EvaluationResult> {
+  async evaluateOnCallFrame(
+    frameIndex: number,
+    expression: string,
+  ): Promise<EvaluationResult> {
     // Escape any double quote in the expression.
     const escapedExpression = expression.replace(/"/g, '\\"');
     // Quote the input expression so that we can support expression with
@@ -444,7 +485,10 @@ export class DbgpSocket {
    * Sets a given config setting in the debugger to a given value.
    */
   async setFeature(name: string, value: string): Promise<boolean> {
-    const response = await this._callDebugger('feature_set', `-n ${name} -v ${value}`);
+    const response = await this._callDebugger(
+      'feature_set',
+      `-n ${name} -v ${value}`,
+    );
     return response.$.success !== '0';
   }
 
@@ -452,7 +496,10 @@ export class DbgpSocket {
    * Evaluate the expression in the debugger's current context.
    */
   async runtimeEvaluate(expr: string): Promise<EvaluationResult> {
-    const response = await this._callDebugger('eval', `-- ${base64Encode(expr)}`);
+    const response = await this._callDebugger(
+      'eval',
+      `-- ${base64Encode(expr)}`,
+    );
     if (response.error && response.error.length > 0) {
       return {
         error: response.error[0],
@@ -464,7 +511,9 @@ export class DbgpSocket {
         wasThrown: false,
       };
     } else {
-      logger.log(`Received non-error runtimeEvaluate response with no properties: ${expr}`);
+      logger.log(
+        `Received non-error runtimeEvaluate response with no properties: ${expr}`,
+      );
     }
     return {
       result: DEFAULT_DBGP_PROPERTY,
@@ -476,9 +525,14 @@ export class DbgpSocket {
    * Returns the exception breakpoint id.
    */
   async setExceptionBreakpoint(exceptionName: string): Promise<string> {
-    const response = await this._callDebugger('breakpoint_set', `-t exception -x ${exceptionName}`);
+    const response = await this._callDebugger(
+      'breakpoint_set',
+      `-t exception -x ${exceptionName}`,
+    );
     if (response.error) {
-      throw new Error('Error from setPausedOnExceptions: ' + JSON.stringify(response));
+      throw new Error(
+        'Error from setPausedOnExceptions: ' + JSON.stringify(response),
+      );
     }
     // TODO: Validate that response.$.state === 'enabled'
     return response.$.id;
@@ -496,16 +550,15 @@ export class DbgpSocket {
     if (conditionExpression != null) {
       params += ` -- ${base64Encode(conditionExpression)}`;
     }
-    const response = await this._callDebugger(
-      'breakpoint_set',
-      params,
-    );
+    const response = await this._callDebugger('breakpoint_set', params);
     if (response.error) {
-      throw new Error(dedent`
+      throw new Error(
+        dedent`
         Error setting breakpoint for command: breakpoint_set ${params}
         Got response: ${JSON.stringify(response)}
         BreakpointInfo is: ${JSON.stringify(breakpointInfo)}
-      `);
+      `,
+      );
     }
     // TODO: Validate that response.$.state === 'enabled'
     return response.$.id;
@@ -519,7 +572,8 @@ export class DbgpSocket {
       'breakpoint_get',
       `-d ${breakpointId}`,
     );
-    if (response.error != null ||
+    if (
+      response.error != null ||
       response.breakpoint == null ||
       response.breakpoint[0] == null ||
       response.breakpoint[0].$ == null
@@ -530,7 +584,10 @@ export class DbgpSocket {
   }
 
   async removeBreakpoint(breakpointId: string): Promise<any> {
-    const response = await this._callDebugger('breakpoint_remove', `-d ${breakpointId}`);
+    const response = await this._callDebugger(
+      'breakpoint_remove',
+      `-d ${breakpointId}`,
+    );
     if (response.error) {
       throw new Error('Error removing breakpoint: ' + JSON.stringify(response));
     }
@@ -538,10 +595,7 @@ export class DbgpSocket {
 
   // Sends command to hhvm.
   // Returns an object containing the resulting attributes.
-  _callDebugger(
-    command: string,
-    params: ?string,
-  ): Promise<Object> {
+  _callDebugger(command: string, params: ?string): Promise<Object> {
     const transactionId = this._sendCommand(command, params);
     if (isEvaluationCommand(command)) {
       this._pendingEvalTransactionIds.add(transactionId);

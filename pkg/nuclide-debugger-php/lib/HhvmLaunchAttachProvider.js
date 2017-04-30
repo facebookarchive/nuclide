@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -25,7 +26,10 @@ export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return Promise.resolve(['Attach', 'Launch']);
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(
+    action: string,
+    parentEventEmitter: EventEmitter,
+  ): ?React.Element<any> {
     if (action === 'Launch') {
       return (
         <LaunchUiComponent

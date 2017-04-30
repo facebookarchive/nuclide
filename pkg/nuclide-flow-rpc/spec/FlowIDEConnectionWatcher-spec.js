@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FlowIDEConnection} from '../lib/FlowIDEConnection';
@@ -28,7 +29,10 @@ describe('FlowIDEConnectionWatcher', () => {
   let watcher: FlowIDEConnectionWatcher = (null: any);
 
   let currentTime: number = (null: any);
-  let waitingPromises: Set<{dueTime: number, resolve: () => void}> = (null: any);
+  let waitingPromises: Set<{
+    dueTime: number,
+    resolve: () => void,
+  }> = (null: any);
 
   // Apparently Jasmine doesn't mock Date.now(), and for whatever reason, using the Jasmine clock
   // mocks didn't properly call setTimeout (which sleep relies upon), which caused things to hang.
@@ -45,7 +49,9 @@ describe('FlowIDEConnectionWatcher', () => {
 
   const sleep: (millis: number) => Promise<void> = millis => {
     let resolve = null;
-    const promise = new Promise(r => { resolve = r; });
+    const promise = new Promise(r => {
+      resolve = r;
+    });
     invariant(resolve != null);
     const dueTime = currentTime + millis;
     waitingPromises.add({dueTime, resolve});
@@ -59,7 +65,9 @@ describe('FlowIDEConnectionWatcher', () => {
         'dispose',
       ]): any);
     };
-    processFactory = Observable.defer(() => Observable.of(processFactoryReturn));
+    processFactory = Observable.defer(() =>
+      Observable.of(processFactoryReturn),
+    );
     // We can use a stub value here because it's just passed through to the ideConnectionFactory
     processFactoryReturn = ({}: any);
 
@@ -93,19 +101,24 @@ describe('FlowIDEConnectionWatcher', () => {
     });
     waitsFor(() => currentFakeIDEConnection != null);
     runs(() => {
-      expect(ideConnectionCallback.calls[0].args).toEqual([currentFakeIDEConnection]);
+      expect(ideConnectionCallback.calls[0].args).toEqual([
+        currentFakeIDEConnection,
+      ]);
       expect(ideConnectionCallback.callCount).toBe(1);
       invariant(currentFakeIDEConnection != null);
       expect(currentFakeIDEConnection.onWillDispose).toHaveBeenCalled();
 
       // TODO check that when the underlying connection dies, it gets re-established
-      const onWillDisposeHandler: any = currentFakeIDEConnection.onWillDispose.calls[0].args[0];
+      const onWillDisposeHandler: any =
+        currentFakeIDEConnection.onWillDispose.calls[0].args[0];
       onWillDisposeHandler();
     });
     waitsFor(() => ideConnectionCallback.callCount === 3);
     runs(() => {
       expect(ideConnectionCallback.calls[1].args).toEqual([null]);
-      expect(ideConnectionCallback.calls[2].args).toEqual([currentFakeIDEConnection]);
+      expect(ideConnectionCallback.calls[2].args).toEqual([
+        currentFakeIDEConnection,
+      ]);
       invariant(currentFakeIDEConnection != null);
       watcher.dispose();
       expect(currentFakeIDEConnection.dispose).toHaveBeenCalled();
@@ -114,7 +127,9 @@ describe('FlowIDEConnectionWatcher', () => {
 
   it('should retry when the IDE process fails to start', () => {
     // Obviously, this will have to be updated if the number of retries is changed
-    const processFactoryReturns = (([null, null, {}]: any): Array<?child_process$ChildProcess>);
+    const processFactoryReturns = (([null, null, {}]: any): Array<
+      ?child_process$ChildProcess
+    >);
     runs(() => {
       let currentCall = 0;
       processFactory = Observable.defer(() => {
@@ -130,7 +145,9 @@ describe('FlowIDEConnectionWatcher', () => {
     runs(() => {
       expect(ideConnectionCallback.callCount).toBe(1);
       expect(ideConnectionFactory.callCount).toBe(1);
-      expect(ideConnectionFactory.calls[0].args[0]).toBe(processFactoryReturns[2]);
+      expect(ideConnectionFactory.calls[0].args[0]).toBe(
+        processFactoryReturns[2],
+      );
       expect(processFactory.subscribe.callCount).toBe(3);
       watcher.dispose();
     });
@@ -138,8 +155,9 @@ describe('FlowIDEConnectionWatcher', () => {
 
   it('should give up when the IDE process fails to start too many times', () => {
     // Obviously, this will have to be updated if the number of retries is changed
-    const processFactoryReturns =
-      (([null, null, null, {}]: any): Array<?child_process$ChildProcess>);
+    const processFactoryReturns = (([null, null, null, {}]: any): Array<
+      ?child_process$ChildProcess
+    >);
     runs(() => {
       let currentCall = 0;
       processFactory = Observable.defer(() => {
@@ -182,7 +200,9 @@ describe('FlowIDEConnectionWatcher', () => {
         'onWillDispose',
         'dispose',
       ]);
-      spy.onWillDispose = spy.onWillDispose.andCallFake(cb => { cb(); });
+      spy.onWillDispose = spy.onWillDispose.andCallFake(cb => {
+        cb();
+      });
       return (spy: any);
     };
     runs(() => {

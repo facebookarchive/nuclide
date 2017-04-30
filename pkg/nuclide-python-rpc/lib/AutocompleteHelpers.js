@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {PythonCompletion} from './PythonService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type JediServerManager from './JediServerManager';
 
 import {matchRegexEndingAt} from '../../commons-node/range';
@@ -48,9 +51,9 @@ function getText(
   if (completion.params) {
     const params = includeOptionalArgs
       ? completion.params
-      : completion.params.filter(param =>
-        param.indexOf('=') < 0 && param.indexOf('*') < 0,
-      );
+      : completion.params.filter(
+          param => param.indexOf('=') < 0 && param.indexOf('*') < 0,
+        );
 
     const paramTexts = params.map((param, index) => {
       return createPlaceholders ? `\${${index + 1}:${param}}` : param;
@@ -70,7 +73,10 @@ export async function getAutocompleteSuggestions(
   autocompleteArguments: boolean,
   includeOptionalArguments: boolean,
 ): Promise<AutocompleteResult> {
-  if (!activatedManually && matchRegexEndingAt(buffer, position, TRIGGER_REGEX) == null) {
+  if (
+    !activatedManually &&
+    matchRegexEndingAt(buffer, position, TRIGGER_REGEX) == null
+  ) {
     return {isIncomplete: false, items: []};
   }
 
@@ -90,7 +96,11 @@ export async function getAutocompleteSuggestions(
     const displayText = getText(completion);
     // Only autocomplete arguments if the include optional arguments setting is on.
     const snippet = autocompleteArguments
-      ? getText(completion, includeOptionalArguments, true /* createPlaceholders */)
+      ? getText(
+          completion,
+          includeOptionalArguments,
+          true /* createPlaceholders */,
+        )
       : completion.text;
     return {
       displayText,
@@ -113,10 +123,5 @@ export async function getCompletions(
   column: number,
 ): Promise<?Array<PythonCompletion>> {
   const service = await serverManager.getJediService(src);
-  return service.get_completions(
-    src,
-    contents,
-    line,
-    column,
-  );
+  return service.get_completions(src, contents, line, column);
 }

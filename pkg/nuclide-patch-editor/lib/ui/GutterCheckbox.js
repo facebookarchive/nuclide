@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Checkbox} from '../../../nuclide-ui/Checkbox';
@@ -38,10 +39,9 @@ export class GutterCheckbox extends React.Component {
     }
     this._gutter = gutter;
 
-    this._marker = props.editor.markBufferPosition(
-      [props.lineNumber, 0],
-      {invalidate: 'never'},
-    );
+    this._marker = props.editor.markBufferPosition([props.lineNumber, 0], {
+      invalidate: 'never',
+    });
 
     gutter.decorateMarker(this._marker, {type: 'gutter', item: this._node});
   }

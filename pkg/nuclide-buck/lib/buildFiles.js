@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -14,7 +15,9 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
 

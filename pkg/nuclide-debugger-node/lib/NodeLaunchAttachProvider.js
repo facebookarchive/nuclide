@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -25,7 +26,10 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
     this._dispatcher = new LaunchAttachDispatcher();
-    this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
+    this._actions = new LaunchAttachActions(
+      this._dispatcher,
+      this.getTargetUri(),
+    );
     this._store = new LaunchAttachStore(this._dispatcher);
   }
 
@@ -33,7 +37,10 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return Promise.resolve(['Attach']);
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(
+    action: string,
+    parentEventEmitter: EventEmitter,
+  ): ?React.Element<any> {
     if (action === 'Attach') {
       this._actions.updateAttachTargetList();
       return (

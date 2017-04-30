@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -28,7 +29,11 @@ const ToolbarExampleLeft = (): React.Element<any> => (
     </Block>
     <Block>
       <div>
-        Be sure to use {'<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>'} as children.
+        Be sure to use
+        {' '}
+        {'<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>'}
+        {' '}
+        as children.
       </div>
     </Block>
   </div>

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NavigationStackController} from './NavigationStackController';
@@ -28,13 +29,14 @@ export function consumeStatusBar(
 ): IDisposable {
   const onBack = () => controller.navigateBackwards();
   const onForward = () => controller.navigateForwards();
-  const props: Observable<Props> = controller.observeStackChanges()
-    .map(stack => ({
-      enableBack: stack.hasPrevious(),
-      enableForward: stack.hasNext(),
-      onBack,
-      onForward,
-    }));
+  const props: Observable<
+    Props
+  > = controller.observeStackChanges().map(stack => ({
+    enableBack: stack.hasPrevious(),
+    enableForward: stack.hasNext(),
+    onBack,
+    onForward,
+  }));
   const Tile = bindObservableAsProps(props, NavStackStatusBarTile);
   const item = renderReactRoot(<Tile />);
   item.className = 'nuclide-navigation-stack-tile inline-block';
@@ -44,7 +46,9 @@ export function consumeStatusBar(
     priority: STATUS_BAR_PRIORITY,
   });
 
-  return new Disposable(() => { statusBarTile.destroy(); });
+  return new Disposable(() => {
+    statusBarTile.destroy();
+  });
 }
 
 type Props = {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
@@ -33,14 +34,18 @@ export function activate(rawState: ?Object): void {
   invariant(disposables == null);
   initialState = rawState;
   disposables = new CompositeDisposable(
-    new Disposable(() => { buildSystem = null; }),
-    new Disposable(() => { initialState = null; }),
+    new Disposable(() => {
+      buildSystem = null;
+    }),
+    new Disposable(() => {
+      initialState = null;
+    }),
     atom.commands.add(
       'atom-workspace',
       OPEN_NEAREST_BUILD_FILE_COMMAND,
       event => {
         const target = ((event.target: any): HTMLElement);
-        openNearestBuildFile(target);  // Note this returns a Promise.
+        openNearestBuildFile(target); // Note this returns a Promise.
       },
     ),
   );
@@ -71,10 +76,12 @@ function getBuildSystem(): BuckBuildSystem {
 
 export function consumeOutputService(service: OutputService): void {
   invariant(disposables != null);
-  disposables.add(service.registerOutputProvider({
-    messages: getBuildSystem().getOutputMessages(),
-    id: 'Buck',
-  }));
+  disposables.add(
+    service.registerOutputProvider({
+      messages: getBuildSystem().getOutputMessages(),
+      id: 'Buck',
+    }),
+  );
 }
 
 export function provideObservableDiagnosticUpdates() {
@@ -99,7 +106,8 @@ export function getHyperclickProvider(): HyperclickProvider {
 
 export function provideBuckBuilder(): BuckBuilder {
   return {
-    build: (options: BuckBuilderBuildOptions) => getBuildSystem().buildArtifact(options),
+    build: (options: BuckBuilderBuildOptions) =>
+      getBuildSystem().buildArtifact(options),
   };
 }
 

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Option} from '../../nuclide-ui/Dropdown';
@@ -27,7 +28,9 @@ export default class ArcToolbarSection extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._arcBuild = this._arcBuild.bind(this);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(
+      this,
+    );
     (this: any)._reloadBuildTargets = this._reloadBuildTargets.bind(this);
   }
 
@@ -44,7 +47,9 @@ export default class ArcToolbarSection extends React.Component {
     invariant(model.isArcSupported());
     const error = model.getBuildTargetsError();
     if (error != null) {
-      return [{value: null, disabled: true, label: 'Error loading build steps!'}];
+      return [
+        {value: null, disabled: true, label: 'Error loading build steps!'},
+      ];
     }
     const targets = model.getBuildTargets();
     if (targets == null) {
@@ -55,13 +60,19 @@ export default class ArcToolbarSection extends React.Component {
 
   _renderReloadTargetsButton(): ?React.Element<any> {
     const error = this.props.model.getBuildTargetsError();
-    if (error == null) { return null; }
+    if (error == null) {
+      return null;
+    }
     return (
       <Button
         icon="sync"
         size={ButtonSizes.SMALL}
         onClick={this._reloadBuildTargets}
-        tooltip={{title: 'Reload build steps', delay: {show: 500, hide: 0}, placement: 'bottom'}}
+        tooltip={{
+          title: 'Reload build steps',
+          delay: {show: 500, hide: 0},
+          placement: 'bottom',
+        }}
       />
     );
   }

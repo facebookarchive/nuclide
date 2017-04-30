@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -17,7 +18,7 @@ type FileIconsAddItemToElementFn = (element: HTMLElement) => IDisposable;
 
 type Props = {
   className?: string,
-  children?: (React.Element<any> | Array<?React.Element<any>>),
+  children?: React.Element<any> | Array<?React.Element<any>>,
   isFolder?: boolean,
   path: string,
 };
@@ -58,7 +59,9 @@ export default class PathWithFileIcon extends React.Component {
   }
 
   // This only gets called if the file-icons package is installed.
-  _consumeFileIconService(addItemToElement: FileIconsAddItemToElementFn): IDisposable {
+  _consumeFileIconService(
+    addItemToElement: FileIconsAddItemToElementFn,
+  ): IDisposable {
     this._addItemToElement = addItemToElement;
     this._forceIconUpdate();
     return new UniversalDisposable(() => {
@@ -91,10 +94,7 @@ export default class PathWithFileIcon extends React.Component {
   }
 
   _getDefaultClassName(): string {
-    const {
-      className,
-      isFolder,
-    } = this.props;
+    const {className, isFolder} = this.props;
     return classnames(
       'icon',
       'name',

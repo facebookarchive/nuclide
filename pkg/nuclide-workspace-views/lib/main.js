@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -19,7 +20,10 @@ import type {
 } from './types';
 
 import createPackage from '../../commons-atom/createPackage';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {nextTick} from '../../commons-node/observable';
@@ -45,7 +49,10 @@ class Activation {
       // We don't know if this package is being activated as part of Atom's initial package
       // activation phase or being enabled through the settings later (in which case we would have
       // missed the `onDidActivatePackage` event).
-      observableFromSubscribeFunction(cb => atom.packages.onDidActivatePackage(cb)).race(nextTick)
+      observableFromSubscribeFunction(cb =>
+        atom.packages.onDidActivatePackage(cb),
+      )
+        .race(nextTick)
         .first()
         .subscribe(() => {
           this._needToDispatchActivatedAction = true;
@@ -81,15 +88,21 @@ class Activation {
 
   provideWorkspaceViewsService(): WorkspaceViewsService {
     let pkg = this; // eslint-disable-line consistent-this
-    this._disposables.add(() => { pkg = null; });
+    this._disposables.add(() => {
+      pkg = null;
+    });
 
     return {
       registerLocation: locationFactory => {
         invariant(pkg != null, 'Viewables API used after deactivation');
-        pkg._getStore().dispatch(Actions.registerLocationFactory(locationFactory));
+        pkg
+          ._getStore()
+          .dispatch(Actions.registerLocationFactory(locationFactory));
         return new Disposable(() => {
           if (pkg != null) {
-            pkg._getStore().dispatch(Actions.unregisterLocation(locationFactory.id));
+            pkg
+              ._getStore()
+              .dispatch(Actions.unregisterLocation(locationFactory.id));
           }
         });
       },
@@ -103,7 +116,9 @@ class Activation {
         });
       },
       destroyWhere(predicate: (item: Viewable) => boolean) {
-        if (pkg == null) { return; }
+        if (pkg == null) {
+          return;
+        }
         pkg._getStore().dispatch(Actions.destroyWhere(predicate));
       },
       open(uri: string, options?: OpenOptions): void {
@@ -146,8 +161,12 @@ class CompatActivation {
           atom.workspace.open(uri, {searchAllPanes: true});
         } else if (visible === false) {
           // TODO: Add `atom.workspace.hide()` and use that instead.
-          const hasItem = atom.workspace.getPaneItems()
-            .some(item => typeof item.getURI === 'function' && item.getURI() === uri);
+          const hasItem = atom.workspace
+            .getPaneItems()
+            .some(
+              item =>
+                typeof item.getURI === 'function' && item.getURI() === uri,
+            );
           if (hasItem) {
             // TODO(matthewwithanm): Add this to the Flow defs once docks land
             // $FlowIgnore
@@ -168,14 +187,13 @@ function createPackageStore(rawState: Object): Store {
   const epics = Object.keys(Epics)
     .map(k => Epics[k])
     .filter(epic => typeof epic === 'function');
-  const rootEpic = (actions, store) => (
+  const rootEpic = (actions, store) =>
     combineEpics(...epics)(actions, store)
       // Log errors and continue.
       .catch((err, stream) => {
         getLogger().error(err);
         return stream;
-      })
-  );
+      });
   const store = createStore(
     combineReducers(Reducers),
     initialState,
@@ -186,8 +204,8 @@ function createPackageStore(rawState: Object): Store {
 }
 
 if (
-  typeof atom.workspace.getLeftDock === 'function'
-  && typeof atom.workspace.toggle === 'function'
+  typeof atom.workspace.getLeftDock === 'function' &&
+  typeof atom.workspace.toggle === 'function'
 ) {
   createPackage(module.exports, CompatActivation);
 } else {

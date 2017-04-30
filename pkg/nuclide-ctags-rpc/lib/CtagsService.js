@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -41,7 +42,11 @@ export class CtagsService {
 
   findTags(
     query: string,
-    options?: {caseInsensitive?: boolean, partialMatch?: boolean, limit?: number},
+    options?: {
+      caseInsensitive?: boolean,
+      partialMatch?: boolean,
+      limit?: number,
+    },
   ): Promise<Array<CtagsResult>> {
     let ctags;
     try {
@@ -53,29 +58,36 @@ export class CtagsService {
 
     const dir = nuclideUri.dirname(this._tagsPath);
     return new Promise((resolve, reject) => {
-      ctags.findTags(this._tagsPath, query, options, async (error, tags: Array<Object>) => {
-        if (error != null) {
-          reject(error);
-        } else {
-          const processed = await Promise.all(tags.map(async tag => {
-            // Convert relative paths to absolute ones.
-            tag.file = nuclideUri.join(dir, tag.file);
-            // Tag files are often not perfectly in sync - filter out missing files.
-            if (await fsPromise.exists(tag.file)) {
-              if (tag.fields != null) {
-                const map = new Map();
-                for (const key in tag.fields) {
-                  map.set(key, tag.fields[key]);
+      ctags.findTags(
+        this._tagsPath,
+        query,
+        options,
+        async (error, tags: Array<Object>) => {
+          if (error != null) {
+            reject(error);
+          } else {
+            const processed = await Promise.all(
+              tags.map(async tag => {
+                // Convert relative paths to absolute ones.
+                tag.file = nuclideUri.join(dir, tag.file);
+                // Tag files are often not perfectly in sync - filter out missing files.
+                if (await fsPromise.exists(tag.file)) {
+                  if (tag.fields != null) {
+                    const map = new Map();
+                    for (const key in tag.fields) {
+                      map.set(key, tag.fields[key]);
+                    }
+                    tag.fields = map;
+                  }
+                  return tag;
                 }
-                tag.fields = map;
-              }
-              return tag;
-            }
-            return null;
-          }));
-          resolve(arrayCompact(processed));
-        }
-      });
+                return null;
+              }),
+            );
+            resolve(arrayCompact(processed));
+          }
+        },
+      );
     });
   }
 
@@ -85,7 +97,10 @@ export class CtagsService {
 }
 
 export async function getCtagsService(uri: NuclideUri): Promise<?CtagsService> {
-  const dir = await fsPromise.findNearestFile(TAGS_FILENAME, nuclideUri.dirname(uri));
+  const dir = await fsPromise.findNearestFile(
+    TAGS_FILENAME,
+    nuclideUri.dirname(uri),
+  );
   if (dir == null) {
     return null;
   }

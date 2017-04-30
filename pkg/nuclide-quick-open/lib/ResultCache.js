@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileResult} from './types';
@@ -43,7 +44,7 @@ export default class ResultCache {
     this._debouncedCleanCache = debounce(
       () => this._cleanCache(),
       CACHE_CLEAN_DEBOUNCE_DELAY,
-      /* immediate */false,
+      /* immediate */ false,
     );
   }
 
@@ -62,7 +63,8 @@ export default class ResultCache {
     query: string,
     results: Array<FileResult>,
     loading: boolean = false,
-    error: ?Object = null): void {
+    error: ?Object = null,
+  ): void {
     this._ensureCacheEntry(providerName, directory);
     this._cachedResults[providerName][directory][query] = {
       results,

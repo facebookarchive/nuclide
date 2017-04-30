@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nullthrows from 'nullthrows';
@@ -31,16 +32,14 @@ describe('ClangFlagsManager', () => {
     spyOn(BuckService, 'getBuildFile').andReturn(
       nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
     );
-    buildSpy = spyOn(BuckService, 'build').andReturn(
-      {
-        success: true,
-        results: {
-          '//test#compilation-database': {
-            output: 'compile_commands.json',
-          },
+    buildSpy = spyOn(BuckService, 'build').andReturn({
+      success: true,
+      results: {
+        '//test#compilation-database': {
+          output: 'compile_commands.json',
         },
       },
-    );
+    });
   });
 
   it('sanitizeCommand()', () => {
@@ -102,7 +101,10 @@ describe('ClangFlagsManager', () => {
     ];
     const buckProjectRoot = '/Users/whoami/project/';
     const sanitizedCommandArgs = sanitizeCommand(
-        '/Users/whoami/project/local/path/EXExample.m', originalArgs, buckProjectRoot);
+      '/Users/whoami/project/local/path/EXExample.m',
+      originalArgs,
+      buckProjectRoot,
+    );
 
     const expectedArgs = [
       '/usr/bin/clang',
@@ -204,19 +206,41 @@ describe('ClangFlagsManager', () => {
       // in the same directory.
       const spy = ownerSpy.andReturn(['//test:__default_headers__']);
       const dir = nuclideUri.join(__dirname, 'fixtures');
-      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'testInternal.h'));
-      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3', '-x', 'c++']);
+      result = await flagsManager.getFlagsForSrc(
+        nuclideUri.join(dir, 'testInternal.h'),
+      );
+      expect(nullthrows(result).flags).toEqual([
+        'g++',
+        '-fPIC',
+        '-O3',
+        '-x',
+        'c++',
+      ]);
 
-      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test-inl.h'));
-      expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3', '-x', 'c++']);
+      result = await flagsManager.getFlagsForSrc(
+        nuclideUri.join(dir, 'test-inl.h'),
+      );
+      expect(nullthrows(result).flags).toEqual([
+        'g++',
+        '-fPIC',
+        '-O3',
+        '-x',
+        'c++',
+      ]);
 
-      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'test2.h'));
+      result = await flagsManager.getFlagsForSrc(
+        nuclideUri.join(dir, 'test2.h'),
+      );
       expect(nullthrows(result).flags).toBeNull();
 
       // Make sure we don't try get flags for non-source files.
-      result = await flagsManager.getFlagsForSrc(nuclideUri.join(dir, 'compile_commands.h'));
+      result = await flagsManager.getFlagsForSrc(
+        nuclideUri.join(dir, 'compile_commands.h'),
+      );
       expect(nullthrows(result).flags).toBeNull();
-      expect(spy).not.toHaveBeenCalledWith(nuclideUri.join(dir, 'compile_commands.json'));
+      expect(spy).not.toHaveBeenCalledWith(
+        nuclideUri.join(dir, 'compile_commands.json'),
+      );
     });
   });
 
@@ -248,7 +272,8 @@ describe('ClangFlagsManager', () => {
         '-fPIC',
         '-D_THIS_IS_MY_CRAZY_DEFINE',
         '-O2',
-        '-isystem', '/usr/local/include',
+        '-isystem',
+        '/usr/local/include',
       ];
 
       let testFile = nuclideUri.join(testDir, 'test.cpp');
@@ -273,7 +298,9 @@ describe('ClangFlagsManager', () => {
       const file = await ClangFlagsManager._guessBuildFile(
         nuclideUri.join(__dirname, 'fixtures', 'a.cpp'),
       );
-      expect(file).toBe(nuclideUri.join(__dirname, 'fixtures', 'compile_commands.json'));
+      expect(file).toBe(
+        nuclideUri.join(__dirname, 'fixtures', 'compile_commands.json'),
+      );
     });
   });
 });

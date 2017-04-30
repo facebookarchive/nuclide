@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as ImportService from './ImportService';
@@ -22,11 +23,16 @@ describe('ImportService', () => {
     testHelper = new ServiceTester();
     waitsForPromise(() => {
       invariant(testHelper);
-      return testHelper.start([{
-        name: 'ImportService',
-        definition: nuclideUri.join(__dirname, 'ImportService.js'),
-        implementation: nuclideUri.join(__dirname, 'ImportService.js'),
-      }], 'import_protocol');
+      return testHelper.start(
+        [
+          {
+            name: 'ImportService',
+            definition: nuclideUri.join(__dirname, 'ImportService.js'),
+            implementation: nuclideUri.join(__dirname, 'ImportService.js'),
+          },
+        ],
+        'import_protocol',
+      );
     });
 
     runs(() => {

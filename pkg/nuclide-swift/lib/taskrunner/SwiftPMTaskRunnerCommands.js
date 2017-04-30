@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import featureConfig from '../../../commons-atom/featureConfig';
@@ -23,8 +24,10 @@ export function buildCommand(
 } {
   const commandArgs = [
     'build',
-    '--chdir', chdir,
-    '--configuration', configuration,
+    '--chdir',
+    chdir,
+    '--configuration',
+    configuration,
   ];
   if (Xcc.length > 0) {
     commandArgs.push('-Xcc', Xcc);
@@ -51,10 +54,7 @@ export function testCommand(
   command: string,
   args: Array<string>,
 } {
-  const commandArgs = [
-    'test',
-    '--chdir', chdir,
-  ];
+  const commandArgs = ['test', '--chdir', chdir];
   if (buildPath.length > 0) {
     commandArgs.push('--build-path', buildPath);
   }

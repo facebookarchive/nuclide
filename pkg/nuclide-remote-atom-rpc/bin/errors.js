@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -46,9 +47,7 @@ export async function setupLogging() {
   await initialUpdateConfig();
 
   const config = {
-    appenders: [
-      FileAppender,
-    ],
+    appenders: [FileAppender],
   };
 
   const serverLogAppenderConfig = await getServerLogAppenderConfig();
@@ -62,7 +61,7 @@ export async function setupLogging() {
 export function reportConnectionErrorAndExit(detailMessage: string): void {
   process.stderr.write(`Error: ${detailMessage}.\n`);
   process.stderr.write('Do you have Atom with Nuclide open?\n');
-  process.stderr.write((new Error()).stack);
+  process.stderr.write(new Error().stack);
   process.stderr.write('\n');
   process.exit(EXIT_CODE_CONNECTION_ERROR);
 }

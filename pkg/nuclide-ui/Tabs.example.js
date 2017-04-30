@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -46,7 +47,9 @@ class TabExample extends React.Component {
     };
   }
 
-  handleTabChange(newTabName: {name: string, tabContent: React.Element<any>}): void {
+  handleTabChange(
+    newTabName: {name: string, tabContent: React.Element<any>},
+  ): void {
     this.setState({
       activeTabName: newTabName.name,
     });

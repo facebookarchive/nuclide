@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FlowStatusOutput} from './flowOutputTypes';
@@ -31,16 +32,20 @@ type RpcConnection = {
   dispose(): void,
 };
 
-export type PushDiagnosticsMessage = RecheckBookend | {
-  kind: 'errors',
-  errors: FlowStatusOutput,
-};
+export type PushDiagnosticsMessage =
+  | RecheckBookend
+  | {
+      kind: 'errors',
+      errors: FlowStatusOutput,
+    };
 
-export type RecheckBookend = {
-  kind: 'start-recheck',
-} | {
-  kind: 'end-recheck',
-};
+export type RecheckBookend =
+  | {
+      kind: 'start-recheck',
+    }
+  | {
+      kind: 'end-recheck',
+    };
 
 const SUBSCRIBE_METHOD_NAME = 'subscribeToDiagnostics';
 
@@ -64,16 +69,14 @@ export class FlowIDEConnection {
   _diagnostics: Observable<FlowStatusOutput>;
   _recheckBookends: Observable<RecheckBookend>;
 
-  constructor(
-    process: child_process$ChildProcess,
-  ) {
+  constructor(process: child_process$ChildProcess) {
     this._disposables = new UniversalDisposable();
     this._ideProcess = process;
-    this._ideProcess.stderr.pipe(through(
-      msg => {
+    this._ideProcess.stderr.pipe(
+      through(msg => {
         getLogger().info('Flow IDE process stderr: ', msg.toString());
-      },
-    ));
+      }),
+    );
     this._connection = rpc.createMessageConnection(
       new rpc.StreamMessageReader(this._ideProcess.stdout),
       new rpc.StreamMessageWriter(this._ideProcess.stdin),
@@ -85,9 +88,12 @@ export class FlowIDEConnection {
 
     this._diagnostics = Observable.fromEventPattern(
       handler => {
-        this._connection.onNotification(NOTIFICATION_METHOD_NAME, (errors: FlowStatusOutput) => {
-          handler(errors);
-        });
+        this._connection.onNotification(
+          NOTIFICATION_METHOD_NAME,
+          (errors: FlowStatusOutput) => {
+            handler(errors);
+          },
+        );
       },
       // no-op: vscode-jsonrpc offers no way to unsubscribe
       () => {},

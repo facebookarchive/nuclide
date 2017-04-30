@@ -6,10 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import NuclideBridge from './NuclideBridge';
-import UnresolvedBreakpointsSidebarPane from './UnresolvedBreakpointsSidebarPane';
+import UnresolvedBreakpointsSidebarPane
+  from './UnresolvedBreakpointsSidebarPane';
 import ThreadsWindowPane from './ThreadsWindowPane';
 import WebInspector from '../../lib/WebInspector';
 
@@ -24,38 +26,46 @@ class NuclideApp extends WebInspector.App {
   _threadsWindow: Object;
 
   presentUI() {
-    NuclideBridge.onDebuggerSettingsChanged(this._handleSettingsUpdated.bind(this));
+    NuclideBridge.onDebuggerSettingsChanged(
+      this._handleSettingsUpdated.bind(this),
+    );
 
     const rootView = new WebInspector.RootView();
     WebInspector.inspectorView.show(rootView.element);
-    WebInspector.inspectorView.panel('sources').then(panel => {
-      // Force Sources view to hide the editor.
-      const sourcesPanel: any = panel;
-      sourcesPanel._splitView.addEventListener(
-        WebInspector.SplitView.Events.ShowModeChanged,
-        this._forceOnlySidebar,
-        this);
-      sourcesPanel.sidebarPanes.domBreakpoints.setVisible(false);
-      sourcesPanel.sidebarPanes.xhrBreakpoints.setVisible(false);
-      sourcesPanel.sidebarPanes.eventListenerBreakpoints.setVisible(false);
-      sourcesPanel.sidebarPanes.unresolvedBreakpoints = new UnresolvedBreakpointsSidebarPane();
-      this._threadsWindow = new ThreadsWindowPane();
-      sourcesPanel.sidebarPanes.threads = this._threadsWindow;
-      this._handleSettingsUpdated();
-      // Force redraw
-      sourcesPanel.sidebarPaneView.detach();
-      sourcesPanel.sidebarPaneView = null;
-      sourcesPanel._dockSideChanged();
+    WebInspector.inspectorView
+      .panel('sources')
+      .then(panel => {
+        // Force Sources view to hide the editor.
+        const sourcesPanel: any = panel;
+        sourcesPanel._splitView.addEventListener(
+          WebInspector.SplitView.Events.ShowModeChanged,
+          this._forceOnlySidebar,
+          this,
+        );
+        sourcesPanel.sidebarPanes.domBreakpoints.setVisible(false);
+        sourcesPanel.sidebarPanes.xhrBreakpoints.setVisible(false);
+        sourcesPanel.sidebarPanes.eventListenerBreakpoints.setVisible(false);
+        sourcesPanel.sidebarPanes.unresolvedBreakpoints = new UnresolvedBreakpointsSidebarPane();
+        this._threadsWindow = new ThreadsWindowPane();
+        sourcesPanel.sidebarPanes.threads = this._threadsWindow;
+        this._handleSettingsUpdated();
+        // Force redraw
+        sourcesPanel.sidebarPaneView.detach();
+        sourcesPanel.sidebarPaneView = null;
+        sourcesPanel._dockSideChanged();
 
-      WebInspector.inspectorView.showInitialPanel();
-      sourcesPanel._splitView.hideMain();
-      rootView.attachToDocument(document);
-    // eslint-disable-next-line no-console
-    }).catch(e => console.error(e));
+        WebInspector.inspectorView.showInitialPanel();
+        sourcesPanel._splitView.hideMain();
+        rootView.attachToDocument(document);
+      })
+      // eslint-disable-next-line no-console
+      .catch(e => console.error(e));
 
     // Clear breakpoints whenever they are saved to localStorage.
     WebInspector.settings.breakpoints.addChangeListener(
-      this._onBreakpointSettingsChanged, this);
+      this._onBreakpointSettingsChanged,
+      this,
+    );
   }
 
   _handleSettingsUpdated(): void {

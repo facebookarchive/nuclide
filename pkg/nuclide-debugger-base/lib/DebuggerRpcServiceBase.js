@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ConnectableObservable} from 'rxjs';
@@ -24,7 +25,9 @@ export class DebuggerRpcServiceBase {
 
   constructor(debuggerRpcServiceName: string) {
     this._clientCallback = new ClientCallback();
-    this._logger = getCategoryLogger(`nuclide-debugger-${debuggerRpcServiceName}`);
+    this._logger = getCategoryLogger(
+      `nuclide-debugger-${debuggerRpcServiceName}`,
+    );
     this._subscriptions = new UniversalDisposable(this._clientCallback);
   }
 
@@ -57,9 +60,7 @@ export class DebuggerRpcServiceBase {
 export class DebuggerWebsocketRpcService extends DebuggerRpcServiceBase {
   _webSocket: ?WS;
 
-  async registerWebsocketClient(
-    websocketAddress: string,
-  ): Promise<void> {
+  async registerWebsocketClient(websocketAddress: string): Promise<void> {
     const webSocket = await this._startWebsocketClient(websocketAddress);
     this._webSocket = webSocket;
     this._subscriptions.add(() => webSocket.terminate());
@@ -86,7 +87,9 @@ export class DebuggerWebsocketRpcService extends DebuggerRpcServiceBase {
       this.getLogger().logTrace(`forward client message to server: ${message}`);
       webSocket.send(message);
     } else {
-      this.getLogger().logInfo(`Nuclide sent message to server after socket closed: ${message}`);
+      this.getLogger().logInfo(
+        `Nuclide sent message to server after socket closed: ${message}`,
+      );
     }
     return Promise.resolve();
   }

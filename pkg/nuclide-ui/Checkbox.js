@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -77,7 +78,9 @@ export class Checkbox extends React.PureComponent {
    */
   _setIndeterminate(): void {
     // $FlowFixMe
-    ReactDOM.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
+    ReactDOM.findDOMNode(
+      this.refs.input,
+    ).indeterminate = this.props.indeterminate;
   }
 
   render(): React.Element<any> {

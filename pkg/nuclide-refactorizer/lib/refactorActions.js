@@ -6,13 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  AvailableRefactoring,
-  RefactorRequest,
-  RefactorProvider,
-} from '..';
+import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
 
 import type {
   CloseAction,
@@ -59,7 +56,9 @@ export function error(source: ErrorSource, err: Error): ErrorAction {
   };
 }
 
-export function pickedRefactor(refactoring: AvailableRefactoring): PickedRefactorAction {
+export function pickedRefactor(
+  refactoring: AvailableRefactoring,
+): PickedRefactorAction {
   return {
     type: 'picked-refactor',
     payload: {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -85,9 +86,7 @@ export class DevicesPanelState {
       DevicePanel,
     );
 
-    return renderReactRoot(
-      <PreparedDevicePanel />,
-    );
+    return renderReactRoot(<PreparedDevicePanel />);
   }
 
   serialize(): {deserializer: string} {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -47,7 +48,9 @@ export default class DebuggerControllerView extends React.Component {
 
   componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: this.props.store.onChange(
+        this._updateStateFromStore,
+      ),
     });
     this._updateStateFromStore();
   }
@@ -65,7 +68,9 @@ export default class DebuggerControllerView extends React.Component {
       listener.dispose();
     }
     this.setState({
-      debuggerStoreChangeListener: nextProps.store.onChange(this._updateStateFromStore),
+      debuggerStoreChangeListener: nextProps.store.onChange(
+        this._updateStateFromStore,
+      ),
     });
     this._updateStateFromStore(nextProps.store);
   }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Message} from '../../nuclide-console/lib/types';
@@ -13,10 +14,7 @@ import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 
 import {Subject} from 'rxjs';
 
-import {
-  dispatchConsoleToggle,
-  pipeProcessMessagesToConsole,
-} from './main';
+import {dispatchConsoleToggle, pipeProcessMessagesToConsole} from './main';
 
 const SHOW_CONSOLE_ON_PROCESS_EVENTS = ['stdout', 'stderr', 'error'];
 
@@ -46,7 +44,10 @@ export default class ConsoleClient {
       this._showNotificationOnCompletion,
       processMessage,
     );
-    if (!this._consoleShown && SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)) {
+    if (
+      !this._consoleShown &&
+      SHOW_CONSOLE_ON_PROCESS_EVENTS.includes(processMessage.kind)
+    ) {
       dispatchConsoleToggle(true);
       this._consoleShown = true;
     }

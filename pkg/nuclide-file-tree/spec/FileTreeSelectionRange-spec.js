@@ -6,9 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import {RangeKey, SelectionRange, RangeUtil} from '../lib/FileTreeSelectionRange';
+import {
+  RangeKey,
+  SelectionRange,
+  RangeUtil,
+} from '../lib/FileTreeSelectionRange';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import {FileTreeNode} from '../lib/FileTreeNode';
@@ -95,7 +100,8 @@ describe('FileTreeSelectionRange', () => {
         'dir/foo/foo2',
         'dir/bar/bar1',
         'dir/bar/bar2',
-        'dir/bar/bar3');
+        'dir/bar/bar3',
+      );
       const dir = map.get('dir');
       invariant(dir);
       actions.setRootKeys([dir]);

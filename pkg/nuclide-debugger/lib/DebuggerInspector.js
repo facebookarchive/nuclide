@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import BreakpointStore from './BreakpointStore';
@@ -55,5 +56,8 @@ export default class DebuggerInspector extends React.PureComponent {
 }
 
 function hideDebuggerPane(): void {
-  atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:hide');
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'nuclide-debugger:hide',
+  );
 }

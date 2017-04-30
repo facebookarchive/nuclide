@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import logger from './utils';
 import {base64Decode} from './helpers';
@@ -54,9 +54,10 @@ export function convertValue(
 function convertStringValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   let value;
   if (dbgpProperty.hasOwnProperty('_')) {
-    // $FlowFixMe(peterhal)
-    value = dbgpProperty.$.encoding === 'base64' ? base64Decode(dbgpProperty._) :
-      `TODO: Non-base64 encoded string: ${JSON.stringify(dbgpProperty)}`;
+    value = dbgpProperty.$.encoding === 'base64'
+      ? // $FlowFixMe(peterhal)
+        base64Decode(dbgpProperty._)
+      : `TODO: Non-base64 encoded string: ${JSON.stringify(dbgpProperty)}`;
   } else {
     // zero length strings have no dbgpProperty._ property
     value = '';
@@ -69,8 +70,8 @@ function convertStringValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
 }
 
 function convertIntValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
-  const value = dbgpProperty.$.encoding === 'base64' ?
-    `TODO: Base64 encoded int: ${JSON.stringify(dbgpProperty)}`
+  const value = dbgpProperty.$.encoding === 'base64'
+    ? `TODO: Base64 encoded int: ${JSON.stringify(dbgpProperty)}`
     : dbgpProperty._;
   return {
     type: 'number',
@@ -79,8 +80,8 @@ function convertIntValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
 }
 
 function convertFloatValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
-  const value = dbgpProperty.$.encoding === 'base64' ?
-    `TODO: Base64 encoded float: ${JSON.stringify(dbgpProperty)}`
+  const value = dbgpProperty.$.encoding === 'base64'
+    ? `TODO: Base64 encoded float: ${JSON.stringify(dbgpProperty)}`
     : dbgpProperty._;
   return {
     type: 'number',
@@ -114,9 +115,14 @@ function getUndefinedValue(): Runtime$RemoteObject {
   };
 }
 
-function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertArrayValue(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty,
+): Runtime$RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
-  const numchildren = String(dbgpProperty.$.numchildren != null ? dbgpProperty.$.numchildren : 0);
+  const numchildren = String(
+    dbgpProperty.$.numchildren != null ? dbgpProperty.$.numchildren : 0,
+  );
   let description = `Array[${numchildren}]`;
   if (dbgpProperty.$.recursive != null) {
     description = '* Recursive *';
@@ -128,7 +134,10 @@ function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Run
   };
 }
 
-function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertObjectValue(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty,
+): Runtime$RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
   let description = getObjectDescription(dbgpProperty);
   if (dbgpProperty.$.recursive != null) {
@@ -168,7 +177,9 @@ function getAggregateRemoteObjectId(
   if (pagesize !== 0) {
     pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize) || 0;
   }
-  logger.log(`numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`);
+  logger.log(
+    `numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`,
+  );
   if (pageCount > 1) {
     const elementRange = {
       pagesize,
@@ -177,10 +188,13 @@ function getAggregateRemoteObjectId(
     };
     invariant(dbgpProperty.$.fullname != null);
     return remoteObjectIdOfObjectId(
-      pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange));
+      pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange),
+    );
   } else {
     invariant(dbgpProperty.$.fullname != null);
-    return remoteObjectIdOfObjectId(singlePageObjectId(contextId, dbgpProperty.$.fullname, 0));
+    return remoteObjectIdOfObjectId(
+      singlePageObjectId(contextId, dbgpProperty.$.fullname, 0),
+    );
   }
 }
 
@@ -193,8 +207,11 @@ function convertUnknownValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
 
 function toBool(value: string): mixed {
   switch (value) {
-    case '0': return false;
-    case '1': return true;
-    default: return 'Unexpected bool value: ' + value;
+    case '0':
+      return false;
+    case '1':
+      return true;
+    default:
+      return 'Unexpected bool value: ' + value;
   }
 }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
@@ -20,7 +21,10 @@ export class ATDeviceListProvider implements DeviceListProvider {
   _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
   _dbAvailable: Map<NuclideUri, Promise<boolean>>;
 
-  constructor(type: string, rpcFactory: (host: NuclideUri) => AdbService | SdbService) {
+  constructor(
+    type: string,
+    rpcFactory: (host: NuclideUri) => AdbService | SdbService,
+  ) {
     this._type = type;
     this._rpcFactory = rpcFactory;
     this._dbAvailable = new Map();
@@ -41,27 +45,29 @@ export class ATDeviceListProvider implements DeviceListProvider {
         const db = this._type === 'android' ? 'adb' : 'sdb';
         atom.notifications.addError(
           `Couldn't start the ${db} server. Check if ${db} is in your $PATH and that it works ` +
-          'properly.',
+            'properly.',
           {dismissable: true},
         );
       }
     }
     if (await dbAvailable) {
-      return rpc.getDeviceList().then(
-        devices => devices.map(device => this.parseRawDevice(device)),
-      );
+      return rpc
+        .getDeviceList()
+        .then(devices => devices.map(device => this.parseRawDevice(device)));
     }
     return [];
   }
 
   parseRawDevice(device: DeviceDescription): Device {
-    const deviceArchitecture =
-      device.architecture.startsWith('arm64') ? 'arm64' :
-      device.architecture.startsWith('arm') ? 'arm' :
-      device.architecture;
+    const deviceArchitecture = device.architecture.startsWith('arm64')
+      ? 'arm64'
+      : device.architecture.startsWith('arm') ? 'arm' : device.architecture;
 
-    const displayName = (device.name.startsWith('emulator') ? device.name : device.model)
-      .concat(` (${deviceArchitecture}, API ${device.apiVersion})`);
+    const displayName = (device.name.startsWith('emulator')
+      ? device.name
+      : device.model).concat(
+      ` (${deviceArchitecture}, API ${device.apiVersion})`,
+    );
 
     return {
       name: device.name,

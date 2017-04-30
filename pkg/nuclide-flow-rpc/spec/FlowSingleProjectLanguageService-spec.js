@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -39,7 +40,10 @@ describe('FlowSingleProjectLanguageService', () => {
   let fakeExecFlow: any;
 
   function newFlowService() {
-    return new FlowSingleProjectLanguageService(root, new FlowExecInfoContainer());
+    return new FlowSingleProjectLanguageService(
+      root,
+      new FlowExecInfoContainer(),
+    );
   }
 
   beforeEach(() => {
@@ -67,8 +71,11 @@ describe('FlowSingleProjectLanguageService', () => {
         // Flow uses 1-based indexing, Atom uses 0-based.
         const result = await runWith({path: file, line: 5, start: 8});
         invariant(result != null);
-        expect(result.definitions[0])
-          .toEqual({path: file, position: new Point(4, 7), language: 'Flow'});
+        expect(result.definitions[0]).toEqual({
+          path: file,
+          position: new Point(4, 7),
+          language: 'Flow',
+        });
       });
     });
 
@@ -109,19 +116,21 @@ describe('FlowSingleProjectLanguageService', () => {
       endLine: number,
       endCol: number,
     ) {
-      return runWithString(JSON.stringify({
-        type: outputType,
-        loc: {
-          start: {
-            line: startLine,
-            column: startCol,
+      return runWithString(
+        JSON.stringify({
+          type: outputType,
+          loc: {
+            start: {
+              line: startLine,
+              column: startCol,
+            },
+            end: {
+              line: endLine,
+              column: endCol,
+            },
           },
-          end: {
-            line: endLine,
-            column: endCol,
-          },
-        },
-      }));
+        }),
+      );
     }
 
     it('should return the type on success', () => {
@@ -153,14 +162,13 @@ describe('FlowSingleProjectLanguageService', () => {
 
     it('should return null if the flow process fails', () => {
       waitsForPromise(async () => {
-        fakeExecFlow = () => { throw new Error('error'); };
+        fakeExecFlow = () => {
+          throw new Error('error');
+        };
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
         expect(
-          await flowRoot.typeHint(
-            file,
-            buffer,
-            new Point(line, column)),
+          await flowRoot.typeHint(file, buffer, new Point(line, column)),
         ).toBe(null);
       });
     });
@@ -176,13 +184,7 @@ describe('FlowSingleProjectLanguageService', () => {
       waitsForPromise(async () => {
         prefix = '';
         activatedManually = false;
-        resultNames = [
-          'Foo',
-          'foo',
-          'Bar',
-          'BigLongNameOne',
-          'BigLongNameTwo',
-        ];
+        resultNames = ['Foo', 'foo', 'Bar', 'BigLongNameOne', 'BigLongNameTwo'];
         result = resultNames.map(name => ({name, type: 'foo'}));
       });
     });
@@ -207,7 +209,7 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     async function getNameSet(_: void): Promise<Set<?string>> {
-      return new Set(await getNameArray());
+      return new Set((await getNameArray()));
     }
 
     function hasEqualElements(set1: Set<?string>, set2: Set<?string>): boolean {
@@ -231,14 +233,18 @@ describe('FlowSingleProjectLanguageService', () => {
     it('should always provide suggestions when activated manually', () => {
       activatedManually = true;
       waitsForPromise(async () => {
-        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(true);
+        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
+          true,
+        );
       });
     });
 
     it('should always provide suggestions when the prefix contains .', () => {
       prefix = '   .   ';
       waitsForPromise(async () => {
-        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(true);
+        expect(hasEqualElements(await getNameSet(), new Set(resultNames))).toBe(
+          true,
+        );
       });
     });
 

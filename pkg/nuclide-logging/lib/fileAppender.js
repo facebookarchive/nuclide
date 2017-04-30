@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 const fileAppender = require('log4js/lib/appenders/file');

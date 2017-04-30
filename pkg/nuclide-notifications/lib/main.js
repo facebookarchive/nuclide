@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -29,8 +30,10 @@ function proxyToNativeNotification(notification: atom$Notification): void {
   const options = notification.getOptions();
 
   // Don't proceed if user only wants 'nativeFriendly' proxied notifications and this isn't one.
-  if (!options.nativeFriendly &&
-      featureConfig.get('nuclide-notifications.onlyNativeFriendly')) {
+  if (
+    !options.nativeFriendly &&
+    featureConfig.get('nuclide-notifications.onlyNativeFriendly')
+  ) {
     return;
   }
 
@@ -41,18 +44,18 @@ function proxyToNativeNotification(notification: atom$Notification): void {
 }
 
 function raiseNativeNotification(title: string, body: string): void {
-  if (!featureConfig.get('nuclide-notifications.whenFocused') &&
-      remote.getCurrentWindow().isFocused()) {
+  if (
+    !featureConfig.get('nuclide-notifications.whenFocused') &&
+    remote.getCurrentWindow().isFocused()
+  ) {
     return;
   }
 
   // eslint-disable-next-line no-new, no-undef
-  new Notification(
-    title, {
-      body,
-      icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
-    },
-  );
+  new Notification(title, {
+    body,
+    icon: 'atom://nuclide/pkg/nuclide-notifications/notification.png',
+  });
 }
 
 export function provideRaiseNativeNotification(): typeof raiseNativeNotification {

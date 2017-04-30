@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import createPackage from '../../commons-atom/createPackage';
@@ -16,7 +17,10 @@ import invariant from 'invariant';
 import {
   ServerConnection,
 } from '../../nuclide-remote-connection/lib/ServerConnection';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 import {applyMiddleware, createStore} from 'redux';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';
@@ -28,7 +32,9 @@ import {
   getDeviceActionsProviders,
 } from './providers';
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 import type {
   Store,
   DeviceListProvider,
@@ -51,12 +57,10 @@ class Activation {
       applyMiddleware(createEpicMiddleware(combineEpics(...epics))),
     );
     this._disposables = new UniversalDisposable(
-      ServerConnection.observeRemoteConnections().subscribe(
-        conns => {
-          const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
-          this._store.dispatch(Actions.setHosts(['local'].concat(hosts)));
-        },
-      ),
+      ServerConnection.observeRemoteConnections().subscribe(conns => {
+        const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
+        this._store.dispatch(Actions.setHosts(['local'].concat(hosts)));
+      }),
     );
   }
 
@@ -72,11 +76,9 @@ class Activation {
         }
       }),
       () => api.destroyWhere(item => item instanceof DevicesPanelState),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-devices:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
+      atom.commands.add('atom-workspace', 'nuclide-devices:toggle', event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      }),
     );
   }
 
@@ -85,15 +87,20 @@ class Activation {
   }
 
   _refreshDeviceTypes(): void {
-    this._store.dispatch(Actions.setDeviceTypes(
-      Array.from(getDeviceListProviders()).map(p => p.getType()),
-    ));
+    this._store.dispatch(
+      Actions.setDeviceTypes(
+        Array.from(getDeviceListProviders()).map(p => p.getType()),
+      ),
+    );
   }
 
   provideDevicePanelServiceApi(): DevicePanelServiceApi {
     let pkg = this;
-    this._disposables.add(() => { pkg = null; });
-    const expiredPackageMessage = 'Device panel service API used after deactivation';
+    this._disposables.add(() => {
+      pkg = null;
+    });
+    const expiredPackageMessage =
+      'Device panel service API used after deactivation';
     return {
       registerListProvider: (provider: DeviceListProvider) => {
         invariant(pkg != null, expiredPackageMessage);

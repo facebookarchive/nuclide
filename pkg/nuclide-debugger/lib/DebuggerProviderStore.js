@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -31,7 +32,10 @@ export class DebuggerProviderStore {
   _debuggerProviders: Set<NuclideDebuggerProvider>;
   _connections: Array<string>;
 
-  constructor(dispatcher: DebuggerDispatcher, debuggerActions: DebuggerActions) {
+  constructor(
+    dispatcher: DebuggerDispatcher,
+    debuggerActions: DebuggerActions,
+  ) {
     this._dispatcher = dispatcher;
     this._disposables = new CompositeDisposable(
       this._registerDispatcherEvents(),
@@ -44,7 +48,9 @@ export class DebuggerProviderStore {
   }
 
   _registerDispatcherEvents(): IDisposable {
-    const dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
+    const dispatcherToken = this._dispatcher.register(
+      this._handlePayload.bind(this),
+    );
     return new Disposable(() => this._dispatcher.unregister(dispatcherToken));
   }
 
@@ -73,7 +79,9 @@ export class DebuggerProviderStore {
    * Return available launch/attach provider for input connection.
    * Caller is responsible for disposing the results.
    */
-  getLaunchAttachProvidersForConnection(connection: string): Array<DebuggerLaunchAttachProvider> {
+  getLaunchAttachProvidersForConnection(
+    connection: string,
+  ): Array<DebuggerLaunchAttachProvider> {
     const availableLaunchAttachProviders = [];
     for (const provider of this._debuggerProviders) {
       const launchAttachProvider = provider.getLaunchAttachProvider(connection);

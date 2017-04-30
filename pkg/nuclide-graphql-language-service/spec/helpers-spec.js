@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Point} from '../lib/utils/Range';
@@ -69,10 +70,6 @@ describe('pointToOffset', () => {
 
   it('takes EOL into account', () => {
     const text = 'lorem\n';
-    expect(
-      pointToOffset(text, new Point(1, 0)),
-    ).toEqual(
-      text.length,
-    );
+    expect(pointToOffset(text, new Point(1, 0))).toEqual(text.length);
   });
 });

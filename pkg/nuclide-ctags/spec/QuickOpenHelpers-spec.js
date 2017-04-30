@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
@@ -26,38 +27,38 @@ describe('QuickOpenHelpers', () => {
 
   beforeEach(() => {
     // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-    spyOn(require('../../nuclide-hack/lib/config'), 'getConfig')
-      .andReturn({
-        hhClientPath: 'hh_client',
-        logLevel: 'OFF',
-      });
-    spyOn(require('../../nuclide-remote-connection'), 'getServiceByNuclideUri')
-      .andReturn({
-        async getCtagsService() {
-          return {
-            async findTags(path, query): Promise<Array<CtagsResult>> {
-              return [
-                {
-                  name: 'A',
-                  file: '/path1/a',
-                  lineNumber: 1,
-                  kind: 'c',
-                  pattern: '/^class A$/',
-                },
-                {
-                  name: 'test::A',
-                  file: '/test/a',
-                  lineNumber: 2,
-                  kind: '',
-                  pattern: '/^struct A$/',
-                },
-              ];
-            },
-            dispose() {
-            },
-          };
-        },
-      });
+    spyOn(require('../../nuclide-hack/lib/config'), 'getConfig').andReturn({
+      hhClientPath: 'hh_client',
+      logLevel: 'OFF',
+    });
+    spyOn(
+      require('../../nuclide-remote-connection'),
+      'getServiceByNuclideUri',
+    ).andReturn({
+      async getCtagsService() {
+        return {
+          async findTags(path, query): Promise<Array<CtagsResult>> {
+            return [
+              {
+                name: 'A',
+                file: '/path1/a',
+                lineNumber: 1,
+                kind: 'c',
+                pattern: '/^class A$/',
+              },
+              {
+                name: 'test::A',
+                file: '/test/a',
+                lineNumber: 2,
+                kind: '',
+                pattern: '/^struct A$/',
+              },
+            ];
+          },
+          dispose() {},
+        };
+      },
+    });
     spyOn(hackService, 'isFileInHackProject').andReturn(false);
   });
 
@@ -105,9 +106,12 @@ describe('QuickOpenHelpers', () => {
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
       const renderedNode = ReactDOM.findDOMNode(renderedComponent);
 
-    // $FlowFixMe
-      expect(renderedNode.querySelectorAll('.omnisearch-symbol-result-filename').length).toBe(1);
-    // $FlowFixMe
+      expect(
+        // $FlowFixMe
+        renderedNode.querySelectorAll('.omnisearch-symbol-result-filename')
+          .length,
+      ).toBe(1);
+      // $FlowFixMe
       expect(renderedNode.querySelectorAll('.icon-code').length).toBe(1);
     });
   });

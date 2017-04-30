@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -39,25 +40,21 @@ export class Socket {
     this._webSocketClosed = false;
     const webSocket = new WS(url);
     // It's not enough to just construct the websocket -- we have to also wait for it to open.
-    this._webSocketOpenPromise = new Promise(
-      resolve => webSocket.on('open', () => resolve(webSocket)),
+    this._webSocketOpenPromise = new Promise(resolve =>
+      webSocket.on('open', () => resolve(webSocket)),
     );
-    webSocket.on(
-      'close',
-      () => {
-        this._webSocketClosed = true;
-        handleSocketEnd();
-      },
+    webSocket.on('close', () => {
+      this._webSocketClosed = true;
+      handleSocketEnd();
+    });
+    const socketMessages: Observable<string> = createWebSocketListener(
+      webSocket,
     );
-    const socketMessages: Observable<string> = createWebSocketListener(webSocket);
-    this._disposables = new UniversalDisposable(
-      () => {
-        if (!this._webSocketClosed) {
-          webSocket.close();
-        }
-      },
-      socketMessages.subscribe(message => this._handleSocketMessage(message)),
-    );
+    this._disposables = new UniversalDisposable(() => {
+      if (!this._webSocketClosed) {
+        webSocket.close();
+      }
+    }, socketMessages.subscribe(message => this._handleSocketMessage(message)));
   }
 
   async sendCommand(message: Object): Promise<Object> {
@@ -80,7 +77,10 @@ export class Socket {
       this._handleChromeEvent(obj);
     } else {
       const resolve = this._pendingRequests.get(obj.id);
-      invariant(resolve != null, `Got response for a request that wasn't sent: ${message}`);
+      invariant(
+        resolve != null,
+        `Got response for a request that wasn't sent: ${message}`,
+      );
       this._pendingRequests.delete(obj.id);
       resolve(obj);
     }

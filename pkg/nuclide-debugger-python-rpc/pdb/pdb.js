@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -18,7 +19,9 @@ import yargs from 'yargs';
 
 export default function main(args: Array<string>) {
   const argv = yargs
-    .usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>')
+    .usage(
+      'Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>',
+    )
     .help('help')
     .alias('h', 'help')
     .demand(1, 'Must specify a Python file')
@@ -36,7 +39,10 @@ export default function main(args: Array<string>) {
 }
 
 /* eslint-disable no-console */
-function interact(observable: Observable<DebuggerEvent>, commander: DebuggerCommander) {
+function interact(
+  observable: Observable<DebuggerEvent>,
+  commander: DebuggerCommander,
+) {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -84,7 +90,9 @@ function interact(observable: Observable<DebuggerEvent>, commander: DebuggerComm
     next(message) {
       if (message.event === 'start') {
         // Give the user a chance to set breakpoints before starting the program.
-        console.log('Program started. Type \'c\' to continue or \'s\' to start stepping.');
+        console.log(
+          "Program started. Type 'c' to continue or 's' to start stepping.",
+        );
         ask();
       } else if (message.event === 'stop') {
         const {file, line} = message;

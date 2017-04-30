@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -39,7 +39,11 @@ export type FileEditEvent = {
 };
 
 // TODO: Save Events?
-export type FileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent | FileSyncEvent;
+export type FileEvent =
+  | FileOpenEvent
+  | FileCloseEvent
+  | FileEditEvent
+  | FileSyncEvent;
 
 export type LocalFileEvent = FileOpenEvent | FileCloseEvent | FileEditEvent;
 

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -97,8 +98,7 @@ describe('HgService', () => {
   });
 
   describe('::fetchDiffInfo', () => {
-    const mockHgDiffOutput =
-    `diff --git test-test/blah/blah.js test-test/blah/blah.js
+    const mockHgDiffOutput = `diff --git test-test/blah/blah.js test-test/blah/blah.js
     --- test1.js
     +++ test1.js
     @@ -150,1 +150,2 @@
@@ -109,12 +109,14 @@ describe('HgService', () => {
     const expectedDiffInfo = {
       added: 2,
       deleted: 1,
-      lineDiffs: [{
-        oldStart: 150,
-        oldLines: 1,
-        newStart: 150,
-        newLines: 2,
-      }],
+      lineDiffs: [
+        {
+          oldStart: 150,
+          oldLines: 1,
+          newStart: 150,
+          newLines: 2,
+        },
+      ],
     };
 
     it('fetches the unified diff output for the given path.', () => {
@@ -148,9 +150,13 @@ describe('HgService', () => {
     });
 
     it('returns `null` on errors', () => {
-      spyOn(hgService, '_hgAsyncExecute').andThrow(new Error('Something failed'));
+      spyOn(hgService, '_hgAsyncExecute').andThrow(
+        new Error('Something failed'),
+      );
       waitsForPromise(async () => {
-        const config = await hgService.getConfigValueAsync('non.existent.config');
+        const config = await hgService.getConfigValueAsync(
+          'non.existent.config',
+        );
         expect(config).toBeNull();
       });
     });
@@ -269,7 +275,11 @@ describe('HgService', () => {
       it('can commit changes', () => {
         expectedArgs = ['commit', '-m', commitMessage];
         waitsForPromise(async () => {
-          await hgService.commit(commitMessage).refCount().toArray().toPromise();
+          await hgService
+            .commit(commitMessage)
+            .refCount()
+            .toArray()
+            .toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
         });
       });
@@ -279,7 +289,11 @@ describe('HgService', () => {
       it('can amend changes with a message', () => {
         expectedArgs = ['amend', '-m', commitMessage];
         waitsForPromise(async () => {
-          await hgService.amend(commitMessage, AmendMode.CLEAN).refCount().toArray().toPromise();
+          await hgService
+            .amend(commitMessage, AmendMode.CLEAN)
+            .refCount()
+            .toArray()
+            .toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
         });
       });
@@ -287,7 +301,11 @@ describe('HgService', () => {
       it('can amend changes without a message', () => {
         expectedArgs = ['amend'];
         waitsForPromise(async () => {
-          await hgService.amend(null, AmendMode.CLEAN).refCount().toArray().toPromise();
+          await hgService
+            .amend(null, AmendMode.CLEAN)
+            .refCount()
+            .toArray()
+            .toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
         });
       });
@@ -295,7 +313,11 @@ describe('HgService', () => {
       it('can amend with --rebase & a commit message', () => {
         expectedArgs = ['amend', '--rebase', '-m', commitMessage];
         waitsForPromise(async () => {
-          await hgService.amend(commitMessage, AmendMode.REBASE).refCount().toArray().toPromise();
+          await hgService
+            .amend(commitMessage, AmendMode.REBASE)
+            .refCount()
+            .toArray()
+            .toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
         });
       });
@@ -303,7 +325,11 @@ describe('HgService', () => {
       it('can amend with --fixup', () => {
         expectedArgs = ['amend', '--fixup'];
         waitsForPromise(async () => {
-          await hgService.amend(null, AmendMode.FIXUP).refCount().toArray().toPromise();
+          await hgService
+            .amend(null, AmendMode.FIXUP)
+            .refCount()
+            .toArray()
+            .toPromise();
           expect(committedToHg).toBeTruthy('Looks like commit did not happen');
         });
       });
@@ -315,10 +341,15 @@ describe('HgService', () => {
     const relativePath2 = relativize(PATH_2);
 
     beforeEach(() => {
-      spyOn(hgService, '_checkOrigFile').andCallFake((origbackupPath, relativePath) => {
+      spyOn(
+        hgService,
+        '_checkOrigFile',
+      ).andCallFake((origbackupPath, relativePath) => {
         return relativePath === relativePath1;
       });
-      spyOn(hgService, '_getOrigBackupPath').andReturn(Promise.resolve(TEST_WORKING_DIRECTORY));
+      spyOn(hgService, '_getOrigBackupPath').andReturn(
+        Promise.resolve(TEST_WORKING_DIRECTORY),
+      );
       spyOn(hgService, '_hgAsyncExecute').andReturn({
         stdout: JSON.stringify([
           {path: relativePath1, status: StatusCodeId.UNRESOLVED},
@@ -336,12 +367,14 @@ describe('HgService', () => {
           {cwd: TEST_WORKING_DIRECTORY},
         );
         expect(mergeConflicts.length).toBe(2);
-        expect(mergeConflicts[0]).toEqual(
-          {path: relativePath1, status: MergeConflictStatus.BOTH_CHANGED},
-        );
-        expect(mergeConflicts[1]).toEqual(
-          {path: relativePath2, status: MergeConflictStatus.DELETED_IN_THEIRS},
-        );
+        expect(mergeConflicts[0]).toEqual({
+          path: relativePath1,
+          status: MergeConflictStatus.BOTH_CHANGED,
+        });
+        expect(mergeConflicts[1]).toEqual({
+          path: relativePath2,
+          status: MergeConflictStatus.DELETED_IN_THEIRS,
+        });
       });
     });
   });
@@ -355,10 +388,11 @@ describe('HgService', () => {
 
     it('calls hg resolve', () => {
       waitsForPromise(async () => {
-        await hgService.markConflictedFile(
-          PATH_1,
-          /* resolved */ true,
-        ).refCount().toArray().toPromise();
+        await hgService
+          .markConflictedFile(PATH_1, /* resolved */ true)
+          .refCount()
+          .toArray()
+          .toPromise();
         expect(hgService._hgObserveExecution).toHaveBeenCalledWith(
           ['resolve', '-m', PATH_1],
           {cwd: TEST_WORKING_DIRECTORY},
@@ -380,7 +414,7 @@ describe('HgService', () => {
       spyOn(hgService, 'fetchMergeConflicts').andCallFake(() => mergeConflicts);
     });
 
-    it('reports no conflicts when the merge directory isn\'t there', () => {
+    it("reports no conflicts when the merge directory isn't there", () => {
       waitsForPromise(async () => {
         mergeDirectoryExists = false;
         await hgService._checkConflictChange();

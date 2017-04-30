@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -128,7 +129,7 @@ export type SetDeviceActionsAction = {
 };
 
 export type Action =
-  RefreshDevicesAction
+  | RefreshDevicesAction
   | SetHostAction
   | SetHostsAction
   | SetDevicesAction

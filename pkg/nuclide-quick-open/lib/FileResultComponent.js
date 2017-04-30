@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileResult} from './types';
@@ -20,18 +21,18 @@ function renderSubsequence(seq: string, props: Object): ?React.Element<any> {
   return seq.length === 0 ? null : <span {...props}>{seq}</span>;
 }
 
-function renderUnmatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
+function renderUnmatchedSubsequence(
+  seq: string,
+  key: Key,
+): ?React.Element<any> {
   return renderSubsequence(seq, {key});
 }
 
 function renderMatchedSubsequence(seq: string, key: Key): ?React.Element<any> {
-  return renderSubsequence(
-    seq,
-    {
-      key,
-      className: 'quick-open-file-search-match',
-    },
-  );
+  return renderSubsequence(seq, {
+    key,
+    className: 'quick-open-file-search-match',
+  });
 }
 
 export default class FileResultComponent {
@@ -56,24 +57,40 @@ export default class FileResultComponent {
     matchIndexes.forEach((i, n) => {
       if (matchIndexes[n + 1] === i + 1) {
         if (!streakOngoing) {
-          pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, i), i));
+          pathComponents.push(
+            renderUnmatchedSubsequence(filePath.slice(start, i), i),
+          );
           start = i;
           streakOngoing = true;
         }
       } else {
         if (streakOngoing) {
-          pathComponents.push(renderMatchedSubsequence(filePath.slice(start, i + 1), i));
+          pathComponents.push(
+            renderMatchedSubsequence(filePath.slice(start, i + 1), i),
+          );
           streakOngoing = false;
         } else {
           if (i > 0) {
-            pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, i), `before${i}`));
+            pathComponents.push(
+              renderUnmatchedSubsequence(
+                filePath.slice(start, i),
+                `before${i}`,
+              ),
+            );
           }
-          pathComponents.push(renderMatchedSubsequence(filePath.slice(i, i + 1), i));
+          pathComponents.push(
+            renderMatchedSubsequence(filePath.slice(i, i + 1), i),
+          );
         }
         start = i + 1;
       }
     });
-    pathComponents.push(renderUnmatchedSubsequence(filePath.slice(start, filePath.length), 'last'));
+    pathComponents.push(
+      renderUnmatchedSubsequence(
+        filePath.slice(start, filePath.length),
+        'last',
+      ),
+    );
     return (
       <PathWithFileIcon path={nuclideUri.basename(filePath)}>
         {pathComponents}

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
@@ -48,7 +49,6 @@ export default class HyperclickProviderHelpers {
     if (match == null) {
       return null;
     }
-
 
     const {index, url} = match;
     const matchLength = url.length;

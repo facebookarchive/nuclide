@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -33,7 +34,11 @@ import type {
 import {ActionTypes} from './DebuggerDispatcher';
 import {AnalyticsEvents} from './constants';
 import {CompositeDisposable} from 'atom';
-import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
+import {
+  beginTimerTracking,
+  failTimerTracking,
+  endTimerTracking,
+} from './AnalyticsHelper';
 import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
@@ -71,25 +76,37 @@ export default class DebuggerActions {
     this.setDebuggerMode(DebuggerMode.STARTING);
     this.setDebugProcessInfo(processInfo);
     try {
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-debugger:show',
+      );
       const debuggerInstance = await processInfo.debug();
       this._registerConsole();
-      const supportThreadsWindow = processInfo.supportThreads()
-        && await this._allowThreadsForPhp(processInfo);
-      this._store.getSettings().set('SupportThreadsWindow', supportThreadsWindow);
+      const supportThreadsWindow =
+        processInfo.supportThreads() &&
+        (await this._allowThreadsForPhp(processInfo));
+      this._store
+        .getSettings()
+        .set('SupportThreadsWindow', supportThreadsWindow);
       if (supportThreadsWindow) {
-        this._store.getSettings().set('CustomThreadColumns', processInfo.getThreadColumns());
-        this._store.getSettings().set(
-          'threadsComponentTitle',
-          processInfo.getThreadsComponentTitle(),
-        );
+        this._store
+          .getSettings()
+          .set('CustomThreadColumns', processInfo.getThreadColumns());
+        this._store
+          .getSettings()
+          .set('threadsComponentTitle', processInfo.getThreadsComponentTitle());
       }
       const singleThreadStepping = processInfo.supportSingleThreadStepping();
-      this._store.getSettings().set('SingleThreadStepping', singleThreadStepping);
+      this._store
+        .getSettings()
+        .set('SingleThreadStepping', singleThreadStepping);
       this.toggleSingleThreadStepping(
-          singleThreadStepping &&
-          processInfo.singleThreadSteppingEnabled());
-      if (processInfo.getServiceName() !== 'hhvm' || await passesGK(GK_DEBUGGER_REQUEST_SENDER)) {
+        singleThreadStepping && processInfo.singleThreadSteppingEnabled(),
+      );
+      if (
+        processInfo.getServiceName() !== 'hhvm' ||
+        (await passesGK(GK_DEBUGGER_REQUEST_SENDER))
+      ) {
         const customControlButtons = processInfo.customControlButtons();
         if (customControlButtons.length > 0) {
           this.updateControlButtons(customControlButtons);
@@ -117,7 +134,9 @@ export default class DebuggerActions {
     }
   }
 
-  async _allowThreadsForPhp(processInfo: DebuggerProcessInfo): Promise<boolean> {
+  async _allowThreadsForPhp(
+    processInfo: DebuggerProcessInfo,
+  ): Promise<boolean> {
     if (processInfo.getServiceName() === 'hhvm') {
       return passesGK(GK_DEBUGGER_REQUEST_WINDOW);
     }
@@ -131,7 +150,9 @@ export default class DebuggerActions {
     });
   }
 
-  async _waitForChromeConnection(debuggerInstance: DebuggerInstanceBase): Promise<void> {
+  async _waitForChromeConnection(
+    debuggerInstance: DebuggerInstanceBase,
+  ): Promise<void> {
     this._setDebuggerInstance(debuggerInstance);
     if (debuggerInstance.onSessionEnd != null) {
       const handler = this._handleSessionEnd.bind(this, debuggerInstance);
@@ -259,14 +280,18 @@ export default class DebuggerActions {
     });
   }
 
-  addEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
+  addEvaluationExpressionProvider(
+    provider: NuclideEvaluationExpressionProvider,
+  ) {
     this._dispatcher.dispatch({
       actionType: ActionTypes.ADD_EVALUATION_EXPRESSION_PROVIDER,
       data: provider,
     });
   }
 
-  removeEvaluationExpressionProvider(provider: NuclideEvaluationExpressionProvider) {
+  removeEvaluationExpressionProvider(
+    provider: NuclideEvaluationExpressionProvider,
+  ) {
     this._dispatcher.dispatch({
       actionType: ActionTypes.REMOVE_EVALUATION_EXPRESSION_PROVIDER,
       data: provider,
@@ -302,14 +327,18 @@ export default class DebuggerActions {
    */
   _getRemoteConnections(): Array<string> {
     // TODO: move this logic into RemoteConnection package.
-    return atom.project.getPaths().filter(path => {
-      return nuclideUri.isRemote(path);
-    }).map(remotePath => {
-      const {hostname} = nuclideUri.parseRemoteUri(remotePath);
-      return nuclideUri.createRemoteUri(hostname, '/');
-    }).filter((path, index, inputArray) => {
-      return inputArray.indexOf(path) === index;
-    });
+    return atom.project
+      .getPaths()
+      .filter(path => {
+        return nuclideUri.isRemote(path);
+      })
+      .map(remotePath => {
+        const {hostname} = nuclideUri.parseRemoteUri(remotePath);
+        return nuclideUri.createRemoteUri(hostname, '/');
+      })
+      .filter((path, index, inputArray) => {
+        return inputArray.indexOf(path) === index;
+      });
   }
 
   addWatchExpression(expression: string): void {
@@ -404,7 +433,9 @@ export default class DebuggerActions {
     });
   }
 
-  setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
+  setSelectedCallFrameLine(
+    options: ?{sourceURL: string, lineNumber: number},
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_SELECTED_CALLFRAME_LINE,
       data: {
@@ -521,7 +552,9 @@ export default class DebuggerActions {
   }
 
   togglePauseOnCaughtException(pauseOnCaughtException: boolean): void {
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_CAUGHT_EXCEPTION, {pauseOnCaughtException});
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_CAUGHT_EXCEPTION, {
+      pauseOnCaughtException,
+    });
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION,
       data: pauseOnCaughtException,
@@ -529,7 +562,9 @@ export default class DebuggerActions {
   }
 
   toggleSingleThreadStepping(singleThreadStepping: boolean): void {
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_SINGLE_THREAD_STEPPING, {singleThreadStepping});
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_SINGLE_THREAD_STEPPING, {
+      singleThreadStepping,
+    });
     this._dispatcher.dispatch({
       actionType: ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING,
       data: singleThreadStepping,
@@ -575,7 +610,11 @@ export default class DebuggerActions {
     });
   }
 
-  notifyThreadSwitch(sourceURL: string, lineNumber: number, message: string): void {
+  notifyThreadSwitch(
+    sourceURL: string,
+    lineNumber: number,
+    message: string,
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.NOTIFY_THREAD_SWITCH,
       data: {
@@ -590,7 +629,10 @@ export default class DebuggerActions {
     this._dispatcher.dispatch({actionType: ActionTypes.OPEN_DEV_TOOLS});
   }
 
-  receiveExpressionEvaluationResponse(id: number, response: ExpressionResult): void {
+  receiveExpressionEvaluationResponse(
+    id: number,
+    response: ExpressionResult,
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.RECEIVED_EXPRESSION_EVALUATION_RESPONSE,
       data: {
@@ -600,7 +642,10 @@ export default class DebuggerActions {
     });
   }
 
-  receiveGetPropertiesResponse(id: number, response: GetPropertiesResult): void {
+  receiveGetPropertiesResponse(
+    id: number,
+    response: GetPropertiesResult,
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.RECEIVED_GET_PROPERTIES_RESPONSE,
       data: {

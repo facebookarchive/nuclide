@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {ConfigCache} from '../../commons-node/ConfigCache';
@@ -20,11 +21,11 @@ const PATH_TO_HH_CLIENT = 'hh_client';
 
 // From hack/src/utils/findUtils.ml
 export const HACK_FILE_EXTENSIONS: Array<string> = [
-  '.php',  // normal php file
-  '.hh',   // Hack extension some open source code is starting to use
+  '.php', // normal php file
+  '.hh', // Hack extension some open source code is starting to use
   '.phpt', // our php template files
-  '.hhi',  // interface files only visible to the type checker
-  '.xhp',  // XHP extensions
+  '.hhi', // interface files only visible to the type checker
+  '.xhp', // XHP extensions
 ];
 
 // Kick this off early, so we don't need to repeat this on every call.

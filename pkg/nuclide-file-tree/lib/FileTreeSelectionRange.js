@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -55,7 +56,9 @@ export class SelectionRange {
     return new SelectionRange(anchor, this._range);
   }
   equals(other: SelectionRange): boolean {
-    return this._anchor.equals(other._anchor) && this._range.equals(other._range);
+    return (
+      this._anchor.equals(other._anchor) && this._range.equals(other._range)
+    );
   }
 }
 

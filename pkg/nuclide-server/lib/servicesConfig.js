@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {loadServicesConfig} from '../../nuclide-rpc';

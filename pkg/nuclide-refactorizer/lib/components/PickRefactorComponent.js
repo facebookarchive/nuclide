@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  Store,
-  PickPhase,
-} from '../types';
+import type {Store, PickPhase} from '../types';
 
 import type {AvailableRefactoring} from '../..';
 
@@ -33,12 +31,11 @@ export class PickRefactorComponent extends React.Component {
       return <div>No refactorings available at this location</div>;
     }
 
-    const elements = availableRefactorings
-      .map((r, i) => (
-        <div key={i} className="nuclide-refactorizer-refactor-option">
-          {this._renderRefactorOption(r)}
-        </div>
-      ));
+    const elements = availableRefactorings.map((r, i) => (
+      <div key={i} className="nuclide-refactorizer-refactor-option">
+        {this._renderRefactorOption(r)}
+      </div>
+    ));
     // Class used to identify this element in integration tests
     return <div className="nuclide-refactorizer-pick-refactor">{elements}</div>;
   }
@@ -52,9 +49,11 @@ export class PickRefactorComponent extends React.Component {
       case 'rename':
         return (
           <Button
-              // Used to identify this element in integration tests
-              className="nuclide-refactorizer-pick-rename"
-              onClick={() => { this._pickRefactor(refactoring); }}>
+            // Used to identify this element in integration tests
+            className="nuclide-refactorizer-pick-rename"
+            onClick={() => {
+              this._pickRefactor(refactoring);
+            }}>
             Rename
           </Button>
         );
@@ -63,9 +62,11 @@ export class PickRefactorComponent extends React.Component {
         return (
           <div>
             <Button
-                className="nuclide-refactorizer-pick-freeform"
-                onClick={() => { this._pickRefactor(refactoring); }}
-                disabled={refactoring.disabled}>
+              className="nuclide-refactorizer-pick-freeform"
+              onClick={() => {
+                this._pickRefactor(refactoring);
+              }}
+              disabled={refactoring.disabled}>
               {refactoring.name}
             </Button>
             {refactoring.description}

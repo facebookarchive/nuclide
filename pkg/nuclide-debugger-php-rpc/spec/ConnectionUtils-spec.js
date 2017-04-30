@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -16,8 +17,7 @@ import {
 import {makeDbgpMessage} from '../lib/helpers';
 import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
 
-const payload1 =
-`<init
+const payload1 = `<init
   xmlns="urn:debugger_protocol_v1"
   xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
   fileuri="file:///test1.php"
@@ -38,8 +38,7 @@ const payload1 =
   </copyright>
 </init>`;
 
-const payload2 =
-`<init
+const payload2 = `<init
   xmlns="urn:debugger_protocol_v1"
   xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
   fileuri="file:///test2.php"
@@ -60,8 +59,7 @@ const payload2 =
   </copyright>
 </init>`;
 
-const dummyPayload =
-`<init
+const dummyPayload = `<init
   xmlns="urn:debugger_protocol_v1"
   xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
   fileuri="file://foo/scripts/xdebug_includes.php"
@@ -83,7 +81,9 @@ const dummyPayload =
 </init>`;
 
 function convertMessageIntoJson(payload: string): Object {
-  return getDbgpMessageHandlerInstance().parseMessages(makeDbgpMessage(payload))[0];
+  return getDbgpMessageHandlerInstance().parseMessages(
+    makeDbgpMessage(payload),
+  )[0];
 }
 
 const xdebugAttachPort = 1234;
@@ -101,7 +101,9 @@ const config = {
 
 describe('debugger-php-rpc ConnectionUtils', () => {
   beforeEach(() => {
-    spyOn(require('../../commons-node/fsPromise').default, 'exists').andReturn(true);
+    spyOn(require('../../commons-node/fsPromise').default, 'exists').andReturn(
+      true,
+    );
     spyOn(require('../lib/config'), 'getConfig').andReturn(config);
   });
 
@@ -112,13 +114,19 @@ describe('debugger-php-rpc ConnectionUtils', () => {
   describe('isCorrectConnection', () => {
     it('reject', () => {
       const message = convertMessageIntoJson(payload1);
-      const result = isCorrectConnection(true /* isAttachConnection */, message);
+      const result = isCorrectConnection(
+        true /* isAttachConnection */,
+        message,
+      );
       expect(result).toBe(false);
     });
 
     it('pass', () => {
       const message = convertMessageIntoJson(payload2);
-      const result = isCorrectConnection(true /* isAttachConnection */, message);
+      const result = isCorrectConnection(
+        true /* isAttachConnection */,
+        message,
+      );
       expect(result).toBe(true);
     });
   });

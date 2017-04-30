@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileSearchResult} from './rpc-types';
@@ -58,34 +59,38 @@ export class PathSet {
     }
     // If a full path is pasted, make the path relative.
     const rootPath = nuclideUri.ensureTrailingSeparator(this._rootPath);
-    const basePath = nuclideUri.ensureTrailingSeparator(nuclideUri.dirname(rootPath));
+    const basePath = nuclideUri.ensureTrailingSeparator(
+      nuclideUri.dirname(rootPath),
+    );
     if (relQuery.startsWith(rootPath)) {
       relQuery = relQuery.substr(rootPath.length);
     }
 
-    return this._matcher
-      .match(relQuery, {
-        maxResults: 20,
-        numThreads: os.cpus().length,
-        recordMatchIndexes: true,
-      })
-      // Expand the search results to the full path.
-      .map(result => {
-        let {matchIndexes} = result;
-        if (matchIndexes != null) {
-          matchIndexes = matchIndexes
-            .map(idx => idx + basePath.length)
-            // Discard all matching characters in the basepath.
-            // It can be a little confusing when the highlights don't match, but unless
-            // the basename is explicitly used in the query this usually doesn't happen.
-            .filter(idx => idx >= rootPath.length);
-        }
-        return {
-          score: result.score,
-          path: basePath + result.value,
-          matchIndexes: matchIndexes || [],
-        };
-      });
+    return (
+      this._matcher
+        .match(relQuery, {
+          maxResults: 20,
+          numThreads: os.cpus().length,
+          recordMatchIndexes: true,
+        })
+        // Expand the search results to the full path.
+        .map(result => {
+          let {matchIndexes} = result;
+          if (matchIndexes != null) {
+            matchIndexes = matchIndexes
+              .map(idx => idx + basePath.length)
+              // Discard all matching characters in the basepath.
+              // It can be a little confusing when the highlights don't match, but unless
+              // the basename is explicitly used in the query this usually doesn't happen.
+              .filter(idx => idx >= rootPath.length);
+          }
+          return {
+            score: result.score,
+            path: basePath + result.value,
+            matchIndexes: matchIndexes || [],
+          };
+        })
+    );
   }
 
   _isIgnored(path: string): boolean {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ExtraFileChangesData, HunkData} from '../types';
@@ -43,11 +44,16 @@ export class SelectHunkChanges extends React.Component {
   constructor(props: Props) {
     super(props);
 
-    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(props);
-    this._onToggleHunk = () => actionCreators.toggleHunk(patchId, fileId, props.hunk.oldStart);
+    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(
+      props,
+    );
+    this._onToggleHunk = () =>
+      actionCreators.toggleHunk(patchId, fileId, props.hunk.oldStart);
 
     const hunkData = getHunkData(props);
-    const firstChangeIndex = props.hunk.changes.findIndex(change => change.type !== 'normal');
+    const firstChangeIndex = props.hunk.changes.findIndex(
+      change => change.type !== 'normal',
+    );
 
     this.state = {editor: null, firstChangeIndex, hunkData};
   }
@@ -70,21 +76,29 @@ export class SelectHunkChanges extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(this.props);
+    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(
+      this.props,
+    );
 
     let gutterCheckboxes;
     const {editor} = this.state;
     if (editor != null) {
-      gutterCheckboxes = this.state.hunkData.allChanges.map((isEnabled, index) =>
-        <GutterCheckbox
-          checked={isEnabled}
-          editor={editor}
-          key={index}
-          lineNumber={index + this.state.firstChangeIndex}
-          onToggleLine={
-            () => actionCreators.toggleLine(patchId, fileId, this.props.hunk.oldStart, index)
-          }
-        />,
+      gutterCheckboxes = this.state.hunkData.allChanges.map(
+        (isEnabled, index) => (
+          <GutterCheckbox
+            checked={isEnabled}
+            editor={editor}
+            key={index}
+            lineNumber={index + this.state.firstChangeIndex}
+            onToggleLine={() =>
+              actionCreators.toggleLine(
+                patchId,
+                fileId,
+                this.props.hunk.oldStart,
+                index,
+              )}
+          />
+        ),
       );
     }
 
@@ -97,7 +111,10 @@ export class SelectHunkChanges extends React.Component {
           onChange={this._onToggleHunk}
         />
         <div className="nuclide-patch-editor-hunk-changes">
-          <HunkDiff {...this.props} ref={hunk => hunk && this.setState({editor: hunk.editor})} />
+          <HunkDiff
+            {...this.props}
+            ref={hunk => hunk && this.setState({editor: hunk.editor})}
+          />
         </div>
         {gutterCheckboxes}
       </div>

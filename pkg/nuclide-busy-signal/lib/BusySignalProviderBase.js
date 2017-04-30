@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {BusySignalMessage} from './types';
@@ -37,7 +38,10 @@ export class BusySignalProviderBase {
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string, optionsArg?: MessageDisplayOptions): IDisposable {
+  displayMessage(
+    message: string,
+    optionsArg?: MessageDisplayOptions,
+  ): IDisposable {
     // Reassign as const so the type refinement holds in the closure below
     const options = optionsArg;
     if (options == null || options.onlyForFile == null) {
@@ -53,9 +57,11 @@ export class BusySignalProviderBase {
     };
     return new CompositeDisposable(
       atom.workspace.observeActivePaneItem(item => {
-        if (item != null &&
-            typeof item.getPath === 'function' &&
-            item.getPath() === options.onlyForFile) {
+        if (
+          item != null &&
+          typeof item.getPath === 'function' &&
+          item.getPath() === options.onlyForFile
+        ) {
           if (displayedDisposable == null) {
             displayedDisposable = this._displayMessage(message);
           }
@@ -76,7 +82,9 @@ export class BusySignalProviderBase {
     });
   }
 
-  _nextMessagePair(message: string): {busy: BusySignalMessage, done: BusySignalMessage} {
+  _nextMessagePair(
+    message: string,
+  ): {busy: BusySignalMessage, done: BusySignalMessage} {
     const busy = {
       status: 'busy',
       id: this._nextId,
@@ -97,7 +105,11 @@ export class BusySignalProviderBase {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  reportBusy<T>(message: string, f: () => Promise<T>, options?: MessageDisplayOptions): Promise<T> {
+  reportBusy<T>(
+    message: string,
+    f: () => Promise<T>,
+    options?: MessageDisplayOptions,
+  ): Promise<T> {
     const messageRemover = this.displayMessage(message, options);
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {

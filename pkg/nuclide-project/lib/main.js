@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import createPackage from '../../commons-atom/createPackage';
@@ -27,12 +28,12 @@ class Activation {
         if (realPath !== projectPath) {
           atom.notifications.addWarning(
             'You have mounted a non-canonical project path. ' +
-            'Nuclide only supports mounting canonical paths as local projects.<br />' +
-            '<strong>Some Nuclide features such as Flow might not work properly.</strong>',
+              'Nuclide only supports mounting canonical paths as local projects.<br />' +
+              '<strong>Some Nuclide features such as Flow might not work properly.</strong>',
             {
               dismissable: true,
               detail: `Mounted path: ${projectPath}\n \n ` +
-              `Try re-mounting the canonical project path instead:\n${realPath}`,
+                `Try re-mounting the canonical project path instead:\n${realPath}`,
             },
           );
         }

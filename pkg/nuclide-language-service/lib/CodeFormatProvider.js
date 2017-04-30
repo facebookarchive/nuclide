@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LanguageService} from './LanguageService';
@@ -61,26 +62,28 @@ export class CodeFormatProvider<T: LanguageService> {
       config.version,
       config.formatEntireFile
         ? new FileFormatProvider(
-          name,
-          selector,
-          config.priority,
-          config.analyticsEventName,
-          connectionToLanguageService,
-          busySignalProvider,
-        )
+            name,
+            selector,
+            config.priority,
+            config.analyticsEventName,
+            connectionToLanguageService,
+            busySignalProvider,
+          )
         : new RangeFormatProvider(
-          name,
-          selector,
-          config.priority,
-          config.analyticsEventName,
-          connectionToLanguageService,
-          busySignalProvider,
-        ));
+            name,
+            selector,
+            config.priority,
+            config.analyticsEventName,
+            connectionToLanguageService,
+            busySignalProvider,
+          ),
+    );
   }
 }
 
-class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
-    implements CodeFormatProviderType {
+class RangeFormatProvider<T: LanguageService>
+  extends CodeFormatProvider<T>
+  implements CodeFormatProviderType {
   constructor(
     name: string,
     selector: string,
@@ -99,16 +102,22 @@ class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
     );
   }
 
-  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<Array<TextEdit>> {
+  formatCode(
+    editor: atom$TextEditor,
+    range: atom$Range,
+  ): Promise<Array<TextEdit>> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
       if (languageService != null && fileVersion != null) {
         const result = await this._busySignalProvider.reportBusy(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
             return (await languageService).formatSource(fileVersion, range);
-          });
+          },
+        );
         if (result != null) {
           return result;
         }
@@ -119,8 +128,9 @@ class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
   }
 }
 
-class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
-    implements CodeFormatProviderType {
+class FileFormatProvider<T: LanguageService>
+  extends CodeFormatProvider<T>
+  implements CodeFormatProviderType {
   constructor(
     name: string,
     selector: string,
@@ -139,19 +149,25 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T>
     );
   }
 
-  formatEntireFile(editor: atom$TextEditor, range: atom$Range): Promise<{
+  formatEntireFile(
+    editor: atom$TextEditor,
+    range: atom$Range,
+  ): Promise<{
     newCursor?: number,
     formatted: string,
   }> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
       if (languageService != null && fileVersion != null) {
         const result = await this._busySignalProvider.reportBusy(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
             return (await languageService).formatEntireFile(fileVersion, range);
-          });
+          },
+        );
         if (result != null) {
           return result;
         }

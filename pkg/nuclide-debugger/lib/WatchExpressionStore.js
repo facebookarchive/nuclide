@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type Bridge from './Bridge';
@@ -50,7 +51,9 @@ export class WatchExpressionStore {
     // `this._disposables`.
     this._previousEvaluationSubscriptions = new UniversalDisposable();
     this._disposables.add(this._previousEvaluationSubscriptions);
-    const _dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+    const _dispatcherToken = dispatcher.register(
+      this._handlePayload.bind(this),
+    );
     this._disposables.add(() => {
       dispatcher.unregister(_dispatcherToken);
     });
@@ -98,7 +101,11 @@ export class WatchExpressionStore {
         this._watchExpressions.delete(expression);
         continue;
       }
-      this._requestExpressionEvaluation(expression, subject, false /* no REPL support */);
+      this._requestExpressionEvaluation(
+        expression,
+        subject,
+        false /* no REPL support */,
+      );
     }
   }
 
@@ -119,19 +126,25 @@ export class WatchExpressionStore {
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
   getProperties(objectId: string): Observable<?ExpansionResult> {
-    const getPropertiesPromise: Promise<?ExpansionResult> = this._sendEvaluationCommand(
-      'getProperties',
-      objectId,
-    );
+    const getPropertiesPromise: Promise<
+      ?ExpansionResult
+    > = this._sendEvaluationCommand('getProperties', objectId);
     return Observable.fromPromise(getPropertiesPromise);
   }
 
-  evaluateConsoleExpression(expression: Expression): Observable<?EvaluationResult> {
+  evaluateConsoleExpression(
+    expression: Expression,
+  ): Observable<?EvaluationResult> {
     return this._evaluateExpression(expression, true /* support REPL */);
   }
 
-  evaluateWatchExpression(expression: Expression): Observable<?EvaluationResult> {
-    return this._evaluateExpression(expression, false /* do not support REPL */);
+  evaluateWatchExpression(
+    expression: Expression,
+  ): Observable<?EvaluationResult> {
+    return this._evaluateExpression(
+      expression,
+      false /* do not support REPL */,
+    );
   }
 
   /**
@@ -169,12 +182,14 @@ export class WatchExpressionStore {
         ? this._evaluateOnSelectedCallFrame(expression, 'console')
         : this._runtimeEvaluate(expression);
     } else {
-      evaluationPromise = this._evaluateOnSelectedCallFrame(expression, 'watch-group');
+      evaluationPromise = this._evaluateOnSelectedCallFrame(
+        expression,
+        'watch-group',
+      );
     }
 
     const evaluationDisposable = new UniversalDisposable(
-      Observable
-        .fromPromise(evaluationPromise)
+      Observable.fromPromise(evaluationPromise)
         .merge(Observable.never()) // So that we do not unsubscribe `subject` when disposed.
         .subscribe(subject),
     );
@@ -239,7 +254,10 @@ export class WatchExpressionStore {
     }
   }
 
-  async _sendEvaluationCommand(command: EvalCommand, ...args: Array<mixed>): Promise<any> {
+  async _sendEvaluationCommand(
+    command: EvalCommand,
+    ...args: Array<mixed>
+  ): Promise<any> {
     const deferred = new Deferred();
     const evalId = this._evaluationId;
     ++this._evaluationId;
@@ -262,7 +280,10 @@ export class WatchExpressionStore {
     return result;
   }
 
-  _handleResponseForPendingRequest(id: number, response: ChromeProtocolResponse): void {
+  _handleResponseForPendingRequest(
+    id: number,
+    response: ChromeProtocolResponse,
+  ): void {
     const {result, error} = response;
     const deferred = this._evaluationRequestsInFlight.get(id);
     if (deferred == null) {

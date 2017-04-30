@@ -6,9 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import typeof * as FileSystemService from '../../lib/services/FileSystemService';
+import typeof * as FileSystemService
+  from '../../lib/services/FileSystemService';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import ServiceTestHelper from './ServiceTestHelper';
@@ -33,13 +35,16 @@ describe('FileSystemService', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
-      const FILE_SYSTEM_SERVICE_PATH =
-        require.resolve('../../lib/services/FileSystemService');
-      await testHelper.start([{
-        name: 'FileSystemService',
-        definition: FILE_SYSTEM_SERVICE_PATH,
-        implementation: FILE_SYSTEM_SERVICE_PATH,
-      }]);
+      const FILE_SYSTEM_SERVICE_PATH = require.resolve(
+        '../../lib/services/FileSystemService',
+      );
+      await testHelper.start([
+        {
+          name: 'FileSystemService',
+          definition: FILE_SYSTEM_SERVICE_PATH,
+          implementation: FILE_SYSTEM_SERVICE_PATH,
+        },
+      ]);
       service = testHelper.getRemoteService('FileSystemService');
     });
   });
@@ -47,7 +52,7 @@ describe('FileSystemService', () => {
   it('can readFile', () => {
     waitsForPromise(async () => {
       const body = await service.readFile(pathToTestFile);
-      expect(body.toString()).toEqual('I\'m a little teapot.\n');
+      expect(body.toString()).toEqual("I'm a little teapot.\n");
     });
   });
 
@@ -66,8 +71,10 @@ describe('FileSystemService', () => {
 
   it('can writeFile', () => {
     waitsForPromise(async () => {
-      await service.writeFile(pathToWriteFile, 'I\'m a little teapot.\n');
-      expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('I\'m a little teapot.\n');
+      await service.writeFile(pathToWriteFile, "I'm a little teapot.\n");
+      expect(fs.readFileSync(pathToWriteFile).toString()).toEqual(
+        "I'm a little teapot.\n",
+      );
       // eslint-disable-next-line no-bitwise
       expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(0o644);
     });
@@ -77,7 +84,10 @@ describe('FileSystemService', () => {
     waitsForPromise(async () => {
       let err;
       try {
-        await service.writeFile(pathToWriteFile + '/that/is/missing', 'something');
+        await service.writeFile(
+          pathToWriteFile + '/that/is/missing',
+          'something',
+        );
       } catch (e) {
         err = e;
       }
@@ -234,7 +244,11 @@ describe('FileSystemService', () => {
       waitsForPromise(async () => {
         const sourcePath = nuclideUri.join(dirPath, 'file');
         fs.writeFileSync(sourcePath, '');
-        const destinationPath = nuclideUri.join(dirPath, 'non-existent', 'destination_file');
+        const destinationPath = nuclideUri.join(
+          dirPath,
+          'non-existent',
+          'destination_file',
+        );
 
         await service.rename(sourcePath, destinationPath);
 
@@ -465,23 +479,37 @@ describe('FileSystemService', () => {
 
     it('findNearestAncestorNamed in dir', async () => {
       const pathToDirectory1 = nuclideUri.join(dirPath, 'foo');
-      const nearestFile1 = await service.findNearestAncestorNamed('BUCK', pathToDirectory1);
+      const nearestFile1 = await service.findNearestAncestorNamed(
+        'BUCK',
+        pathToDirectory1,
+      );
       expect(nearestFile1).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
 
       const pathToDirectory2 = nuclideUri.join(dirPath, 'foo', 'bar', 'baz');
-      const nearestFile2 = await service.findNearestAncestorNamed('BUCK', pathToDirectory2);
-      expect(nearestFile2).toBe(nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'));
+      const nearestFile2 = await service.findNearestAncestorNamed(
+        'BUCK',
+        pathToDirectory2,
+      );
+      expect(nearestFile2).toBe(
+        nuclideUri.join(dirPath, 'foo', 'bar', 'baz', 'BUCK'),
+      );
     });
 
     it('findNearestAncestorNamed in ancestor', async () => {
       const pathToDirectory = nuclideUri.join(dirPath, 'foo', 'bar');
-      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
+      const nearestFile = await service.findNearestAncestorNamed(
+        'BUCK',
+        pathToDirectory,
+      );
       expect(nearestFile).toBe(nuclideUri.join(dirPath, 'foo', 'BUCK'));
     });
 
     it('findNearestAncestorNamed not in ancestor', async () => {
       const pathToDirectory = nuclideUri.join(dirPath, 'boo');
-      const nearestFile = await service.findNearestAncestorNamed('BUCK', pathToDirectory);
+      const nearestFile = await service.findNearestAncestorNamed(
+        'BUCK',
+        pathToDirectory,
+      );
       expect(nearestFile).toBe(null);
     });
   });
@@ -525,7 +553,10 @@ describe('FileSystemService', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await service.findFilesInDirectories([], fileName).refCount().toPromise();
+          await service
+            .findFilesInDirectories([], fileName)
+            .refCount()
+            .toPromise();
         } catch (e) {
           error = e;
         }
@@ -537,7 +568,8 @@ describe('FileSystemService', () => {
       waitsForPromise(async () => {
         const foundFiles = await service
           .findFilesInDirectories([dirPath], 'not_existing')
-          .refCount().toPromise();
+          .refCount()
+          .toPromise();
         expect(foundFiles.length).toBe(0);
       });
     });
@@ -546,24 +578,28 @@ describe('FileSystemService', () => {
       waitsForPromise(async () => {
         const foundFiles = await service
           .findFilesInDirectories([dirPath], fileName)
-          .refCount().toPromise();
+          .refCount()
+          .toPromise();
         expect(foundFiles.length).toBe(3);
-        expect(toLocalPaths(foundFiles).sort())
-          .toEqual([filePaths[0], filePaths[1], filePaths[5]].sort());
+        expect(toLocalPaths(foundFiles).sort()).toEqual(
+          [filePaths[0], filePaths[1], filePaths[5]].sort(),
+        );
       });
     });
 
     it('return matching file names in specific search directories', () => {
       waitsForPromise(async () => {
         const foundFiles = await service
-          .findFilesInDirectories([
-            nuclideUri.join(dirPath, 'baz'),
-            nuclideUri.join(dirPath, 'foo'),
-          ], fileName)
-          .refCount().toPromise();
+          .findFilesInDirectories(
+            [nuclideUri.join(dirPath, 'baz'), nuclideUri.join(dirPath, 'foo')],
+            fileName,
+          )
+          .refCount()
+          .toPromise();
         expect(foundFiles.length).toBe(2);
-        expect(toLocalPaths(foundFiles).sort())
-          .toEqual([filePaths[1], filePaths[5]].sort());
+        expect(toLocalPaths(foundFiles).sort()).toEqual(
+          [filePaths[1], filePaths[5]].sort(),
+        );
       });
     });
   });
@@ -579,6 +615,8 @@ describe('FileSystemService', () => {
     }
     try {
       fs.unlinkSync(pathToBrokenLinkFile);
-    } catch (e) { /* exists can't check for broken symlinks, just absorb the error for cleanup */ }
+    } catch (e) {
+      /* exists can't check for broken symlinks, just absorb the error for cleanup */
+    }
   });
 });

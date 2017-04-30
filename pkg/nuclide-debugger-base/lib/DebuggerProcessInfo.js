@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type DebuggerInstanceBase from './DebuggerInstance';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
+import type {
+  ControlButtonSpecification,
+} from '../../nuclide-debugger/lib/types';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 export default class DebuggerProcessInfo {
@@ -75,6 +78,5 @@ export default class DebuggerProcessInfo {
     throw new Error('abstract method');
   }
 
-  dispose(): void {
-  }
+  dispose(): void {}
 }

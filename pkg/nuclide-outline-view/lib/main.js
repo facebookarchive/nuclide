@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 
 import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {observeActivePaneItemDebounced} from '../../commons-atom/debounced';
@@ -27,7 +30,7 @@ import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import type {Outline} from './rpc-types';
 
 export type OutlineTreeForUi = {
-  icon?: string,  // from atom$Octicon, but we use string for convenience of remoting
+  icon?: string, // from atom$Octicon, but we use string for convenience of remoting
   plainText?: string,
   tokenizedText?: TokenizedText,
 
@@ -41,34 +44,40 @@ export type OutlineTreeForUi = {
  * Includes additional information that is useful to the UI, but redundant or nonsensical for
  * providers to include in their responses.
  */
-export type OutlineForUi = {
-  // The initial state at startup.
-  kind: 'empty',
-} | {
-  // The thing that currently has focus is not a text editor.
-  kind: 'not-text-editor',
-} | {
-  // Currently awaiting results from a provider (for longer than a certain delay).
-  kind: 'loading',
-} | {
-  // Indicates that no provider is registered for the given grammar.
-  kind: 'no-provider',
-  // Human-readable name for the grammar.
-  grammar: string,
-} | {
-  // Indicates that a provider is registered but that it did not return an outline.
-  kind: 'provider-no-outline',
-} | {
-  kind: 'outline',
-  outlineTrees: Array<OutlineTreeForUi>,
-  /**
+export type OutlineForUi =
+  | {
+      // The initial state at startup.
+      kind: 'empty',
+    }
+  | {
+      // The thing that currently has focus is not a text editor.
+      kind: 'not-text-editor',
+    }
+  | {
+      // Currently awaiting results from a provider (for longer than a certain delay).
+      kind: 'loading',
+    }
+  | {
+      // Indicates that no provider is registered for the given grammar.
+      kind: 'no-provider',
+      // Human-readable name for the grammar.
+      grammar: string,
+    }
+  | {
+      // Indicates that a provider is registered but that it did not return an outline.
+      kind: 'provider-no-outline',
+    }
+  | {
+      kind: 'outline',
+      outlineTrees: Array<OutlineTreeForUi>,
+      /**
    * Use a TextEditor instead of a path so that:
    * - If there are multiple editors for a file, we always jump to outline item
    *   locations in the correct editor.
    * - Jumping to outline item locations works for new, unsaved files.
    */
-  editor: atom$TextEditor,
-};
+      editor: atom$TextEditor,
+    };
 
 export type OutlineProvider = {
   name: string,
@@ -124,7 +133,9 @@ class Activation {
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
     element.classList.add('nuclide-outline-view-toolbar-button');
-    const disposable = new UniversalDisposable(() => { toolBar.removeItems(); });
+    const disposable = new UniversalDisposable(() => {
+      toolBar.removeItems();
+    });
     this._disposables.add(disposable);
     return disposable;
   }
@@ -145,7 +156,9 @@ class Activation {
       atom.commands.add(
         'atom-workspace',
         'nuclide-outline-view:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+        event => {
+          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+        },
       ),
     );
   }

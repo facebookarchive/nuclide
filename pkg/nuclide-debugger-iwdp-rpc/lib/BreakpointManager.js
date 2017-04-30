@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -34,7 +35,9 @@ export class BreakpointManager {
     this._breakpoints = new Map();
     this._connections = new Set();
     this._sendMessageToClient = sendMessageToClient;
-    this._disposables = new UniversalDisposable(() => this._connections.clear());
+    this._disposables = new UniversalDisposable(() =>
+      this._connections.clear(),
+    );
     this._setPauseOnExceptionsState = 'none';
   }
 
@@ -52,7 +55,9 @@ export class BreakpointManager {
     this._connections.delete(connection);
   }
 
-  async _sendLineBreakpointsToTarget(connection: DebuggerConnection): Promise<void> {
+  async _sendLineBreakpointsToTarget(
+    connection: DebuggerConnection,
+  ): Promise<void> {
     const responsePromises = [];
     for (const breakpoint of this._breakpoints.values()) {
       const responsePromise = connection.sendCommand({
@@ -82,7 +87,9 @@ export class BreakpointManager {
     await Promise.all(responsePromises);
   }
 
-  _sendSetPauseOnExceptionToTarget(connection: DebuggerConnection): Promise<mixed> {
+  _sendSetPauseOnExceptionToTarget(
+    connection: DebuggerConnection,
+  ): Promise<mixed> {
     const resolve = this._resolvePendingExceptionBreakpointMessage;
     if (resolve != null) {
       resolve();
@@ -167,9 +174,9 @@ export class BreakpointManager {
     for (const response of responses) {
       // We will receive multiple responses, so just send the first non-error one.
       if (
-        response.result != null
-        && response.error == null
-        && response.result.breakpointId != null
+        response.result != null &&
+        response.error == null &&
+        response.result.breakpointId != null
       ) {
         breakpoint.jscId = response.result.breakpointId;
         response.result.breakpointId = nuclideId;

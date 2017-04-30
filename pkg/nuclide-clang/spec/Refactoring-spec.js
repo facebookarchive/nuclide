@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -75,23 +76,25 @@ describe('Refactoring', () => {
           originalPoint: new Point(1, 25),
         });
         invariant(response != null, 'Expected edits');
-        expect(Array.from(response.edits)).toEqual([[
-          TEST_PATH,
+        expect(Array.from(response.edits)).toEqual([
           [
-            {
-              // param declaration
-              oldRange: new Range([1, 25], [1, 29]),
-              oldText: 'var1',
-              newText: 'new_var',
-            },
-            {
-              // int var2 = var1
-              oldRange: new Range([2, 13], [2, 17]),
-              oldText: 'var1',
-              newText: 'new_var',
-            },
+            TEST_PATH,
+            [
+              {
+                // param declaration
+                oldRange: new Range([1, 25], [1, 29]),
+                oldText: 'var1',
+                newText: 'new_var',
+              },
+              {
+                // int var2 = var1
+                oldRange: new Range([2, 13], [2, 17]),
+                oldText: 'var1',
+                newText: 'new_var',
+              },
+            ],
           ],
-        ]]);
+        ]);
       });
     });
   });

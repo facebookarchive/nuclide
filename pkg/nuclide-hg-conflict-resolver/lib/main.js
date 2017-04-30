@@ -6,9 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {CheckoutSideName, MergeConflict} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  CheckoutSideName,
+  MergeConflict,
+} from '../../nuclide-hg-rpc/lib/HgService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
@@ -42,8 +46,7 @@ export type ConflictsApi = {
   hideForContext(repositoryContext: RepositoryContext): void,
 };
 
-export function activate() {
-}
+export function activate() {}
 
 export function deactivate() {
   if (conflictDetector != null) {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Disposable} from 'atom';
@@ -32,8 +33,12 @@ describe('createAdapters', () => {
 
   beforeEach(() => {
     const fakeEditor = {
-      getPath() { return 'foo'; },
-      getGrammar() { return {scopeName: grammar}; },
+      getPath() {
+        return 'foo';
+      },
+      getGrammar() {
+        return {scopeName: grammar};
+      },
     };
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     fakeLinter = {
@@ -85,8 +90,6 @@ describe('validateLinter', () => {
 
   it('should return errors for a linter where lint is not a function', () => {
     linter.lint = [];
-    expect(validateLinter(linter)).toEqual([
-      'lint must be a function',
-    ]);
+    expect(validateLinter(linter)).toEqual(['lint must be a function']);
   });
 });

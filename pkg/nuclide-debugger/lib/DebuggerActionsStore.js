@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type Bridge from './Bridge';
@@ -13,10 +14,7 @@ import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 
 export default class DebuggerActionsStore {

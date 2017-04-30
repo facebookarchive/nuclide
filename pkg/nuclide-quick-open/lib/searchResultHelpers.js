@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -35,7 +36,9 @@ export type GroupedResults = {
 
 import {isEmpty} from '../../commons-node/collection';
 
-export function filterEmptyResults(resultsGroupedByService: GroupedResults): GroupedResults {
+export function filterEmptyResults(
+  resultsGroupedByService: GroupedResults,
+): GroupedResults {
   const filteredTree = {};
   for (const serviceName in resultsGroupedByService) {
     const directories = resultsGroupedByService[serviceName].results;
@@ -52,7 +55,9 @@ export function filterEmptyResults(resultsGroupedByService: GroupedResults): Gro
   return filteredTree;
 }
 
-export function flattenResults(resultsGroupedByService: GroupedResults): Array<FileResult> {
+export function flattenResults(
+  resultsGroupedByService: GroupedResults,
+): Array<FileResult> {
   const items = [];
   for (const serviceName in resultsGroupedByService) {
     for (const dirName in resultsGroupedByService[serviceName].results) {

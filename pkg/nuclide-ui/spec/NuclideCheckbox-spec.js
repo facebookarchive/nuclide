@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Checkbox} from '../Checkbox';
@@ -37,7 +38,10 @@ describe('Checkbox', () => {
       onChange,
     });
 
-    const inputEl = TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input');
+    const inputEl = TestUtils.findRenderedDOMComponentWithTag(
+      reactElement,
+      'input',
+    );
     // Unfortunately, TestUtils does not seem to turn a click into a change event for a checkbox.
     TestUtils.Simulate.change(inputEl);
     expect(onChange.callCount).toBe(1);
@@ -55,7 +59,10 @@ describe('Checkbox', () => {
       onChange() {},
     });
 
-    const inputEl = TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input');
+    const inputEl = TestUtils.findRenderedDOMComponentWithTag(
+      reactElement,
+      'input',
+    );
     expect(inputEl.indeterminate).toBe(true);
   });
 });

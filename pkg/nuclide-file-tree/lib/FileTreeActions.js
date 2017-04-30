@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {ShowUncommittedChangesKind} from './Constants';
@@ -62,9 +63,12 @@ export default class FileTreeActions {
   }
 
   setRootKeys(rootKeys: Array<string>): void {
-    const existingRootKeySet: Immutable.Set<string> = new Immutable.Set(this._store.getRootKeys());
-    const addedRootKeys: Immutable.Set<string> =
-      new Immutable.Set(rootKeys).subtract(existingRootKeySet);
+    const existingRootKeySet: Immutable.Set<string> = new Immutable.Set(
+      this._store.getRootKeys(),
+    );
+    const addedRootKeys: Immutable.Set<string> = new Immutable.Set(
+      rootKeys,
+    ).subtract(existingRootKeySet);
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_ROOT_KEYS,
       rootKeys,
@@ -204,7 +208,11 @@ export default class FileTreeActions {
     });
   }
 
-  confirmNode(rootKey: string, nodeKey: string, pending: boolean = false): void {
+  confirmNode(
+    rootKey: string,
+    nodeKey: string,
+    pending: boolean = false,
+  ): void {
     const node = this._store.getNode(rootKey, nodeKey);
     if (node == null) {
       return;
@@ -253,7 +261,10 @@ export default class FileTreeActions {
     );
   }
 
-  setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: StatusCodeNumberValue}): void {
+  setVcsStatuses(
+    rootKey: string,
+    vcsStatuses: {[path: string]: StatusCodeNumberValue},
+  ): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_VCS_STATUSES,
       rootKey,
@@ -270,13 +281,15 @@ export default class FileTreeActions {
   /**
    * Updates the root repositories to match the provided directories.
    */
-  async updateRepositories(rootDirectories: Array<atom$Directory>): Promise<void> {
-    const rootKeys = rootDirectories.map(
-      directory => FileTreeHelpers.dirPathToKey(directory.getPath()),
+  async updateRepositories(
+    rootDirectories: Array<atom$Directory>,
+  ): Promise<void> {
+    const rootKeys = rootDirectories.map(directory =>
+      FileTreeHelpers.dirPathToKey(directory.getPath()),
     );
-    const rootRepos: Array<?atom$Repository> = await Promise.all(rootDirectories.map(
-      directory => repositoryForPath(directory.getPath()),
-    ));
+    const rootRepos: Array<?atom$Repository> = await Promise.all(
+      rootDirectories.map(directory => repositoryForPath(directory.getPath())),
+    );
 
     // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
     // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
@@ -293,8 +306,9 @@ export default class FileTreeActions {
     const prevRepos = this._store.getRepositories();
 
     // Let the store know we have some new repos!
-    const nextRepos: Immutable.Set<atom$Repository> =
-      new Immutable.Set(rootKeysForRepository.keys());
+    const nextRepos: Immutable.Set<atom$Repository> = new Immutable.Set(
+      rootKeysForRepository.keys(),
+    );
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_REPOSITORIES,
       repositories: nextRepos,
@@ -302,7 +316,6 @@ export default class FileTreeActions {
 
     const removedRepos = prevRepos.subtract(nextRepos);
     const addedRepos = nextRepos.subtract(prevRepos);
-
 
     // TODO: Rewrite `_repositoryAdded` to return the subscription instead of adding it to a map as
     //       a side effect. The map can be created here with something like
@@ -315,7 +328,9 @@ export default class FileTreeActions {
     removedRepos.forEach(repo => this._repositoryRemoved(repo));
 
     // Create subscriptions for addedRepos.
-    addedRepos.forEach(repo => this._repositoryAdded(repo, rootKeysForRepository));
+    addedRepos.forEach(repo =>
+      this._repositoryAdded(repo, rootKeysForRepository),
+    );
   }
 
   updateWorkingSet(workingSet: WorkingSet): void {
@@ -476,30 +491,36 @@ export default class FileTreeActions {
 
   async _repositoryAdded(
     repo: atom$GitRepository | HgRepositoryClient,
-    rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
+    rootKeysForRepository: Immutable.Map<
+      atom$Repository,
+      Immutable.Set<string>
+    >,
   ): Promise<void> {
     // We support HgRepositoryClient and GitRepositoryAsync objects.
 
     // Observe the repository so that the VCS statuses are kept up to date.
     // This observer should fire off an initial value after we subscribe to it,
     // and subsequent values after any changes to the repository.
-    let vcsChanges: Observable<{[filePath: NuclideUri]: StatusCodeNumberValue}>
-      = Observable.empty();
-    let vcsCalculating: Observable<boolean>
-      = Observable.of(false);
+    let vcsChanges: Observable<{
+      [filePath: NuclideUri]: StatusCodeNumberValue,
+    }> = Observable.empty();
+    let vcsCalculating: Observable<boolean> = Observable.of(false);
 
     if (repo.isDestroyed()) {
-       // Don't observe anything on a destroyed repo.
-    } else if (repo.getType() === 'git' || !(await FileTreeHelpers.areStackChangesEnabled())) {
+      // Don't observe anything on a destroyed repo.
+    } else if (
+      repo.getType() === 'git' ||
+      !await FileTreeHelpers.areStackChangesEnabled()
+    ) {
       // Different repo types emit different events at individual and refresh updates.
       // Hence, the need to debounce and listen to both change types.
       vcsChanges = Observable.merge(
         observableFromSubscribeFunction(repo.onDidChangeStatus.bind(repo)),
         observableFromSubscribeFunction(repo.onDidChangeStatuses.bind(repo)),
       )
-      .debounceTime(1000)
-      .startWith(null)
-      .map(_ => this._getCachedPathStatuses(repo));
+        .debounceTime(1000)
+        .startWith(null)
+        .map(_ => this._getCachedPathStatuses(repo));
     } else if (repo.getType() === 'hg') {
       // We special-case the HgRepository because it offers up the
       // required observable directly, and because it actually allows us to pick
@@ -521,7 +542,8 @@ export default class FileTreeActions {
               );
               return {statusChanges: error, isCalculatingChanges: error};
           }
-        }).share();
+        })
+        .share();
 
       vcsChanges = hgChanges.switchMap(c => c.statusChanges).map(objectFromMap);
       vcsCalculating = hgChanges.switchMap(c => c.isCalculatingChanges);
@@ -533,9 +555,11 @@ export default class FileTreeActions {
       }
     });
 
-    const subscriptionCalculating = vcsCalculating.subscribe(isCalculatingChanges => {
-      this.setIsCalculatingChanges(isCalculatingChanges);
-    });
+    const subscriptionCalculating = vcsCalculating.subscribe(
+      isCalculatingChanges => {
+        this.setIsCalculatingChanges(isCalculatingChanges);
+      },
+    );
 
     this._disposableForRepository = this._disposableForRepository.set(
       repo,

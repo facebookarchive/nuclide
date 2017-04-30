@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type WS from 'ws';
@@ -48,7 +49,8 @@ export class WebSocketTransport {
     this._emitter = new Emitter();
     this._socket = socket;
     this._messages = new Subject();
-    this._syncCompression = options == null || options.syncCompression !== false;
+    this._syncCompression =
+      options == null || options.syncCompression !== false;
 
     logger.info('Client #%s connecting with a new socket!', this.id);
     socket.on('message', (data, flags) => {
@@ -63,10 +65,16 @@ export class WebSocketTransport {
     socket.on('close', () => {
       if (this._socket != null) {
         invariant(this._socket === socket);
-        logger.info('Client #%s socket close recieved on open socket!', this.id);
+        logger.info(
+          'Client #%s socket close recieved on open socket!',
+          this.id,
+        );
         this._setClosed();
       } else {
-        logger.info('Client #%s recieved socket close on already closed socket!', this.id);
+        logger.info(
+          'Client #%s recieved socket close on already closed socket!',
+          this.id,
+        );
       }
     });
 
@@ -112,7 +120,10 @@ export class WebSocketTransport {
   send(message: string): Promise<boolean> {
     const socket = this._socket;
     if (socket == null) {
-      logger.error('Attempt to send socket message after connection closed', new Error());
+      logger.error(
+        'Attempt to send socket message after connection closed',
+        new Error(),
+      );
       return Promise.resolve(false);
     }
 
@@ -125,7 +136,11 @@ export class WebSocketTransport {
       }
       socket.send(data, {compress: !compressed}, err => {
         if (err != null) {
-          logger.warn('Failed sending socket message to client:', this.id, JSON.parse(message));
+          logger.warn(
+            'Failed sending socket message to client:',
+            this.id,
+            JSON.parse(message),
+          );
           resolve(false);
         } else {
           resolve(true);

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import logger from './utils';
@@ -101,7 +102,7 @@ export class PhpDebuggerService {
     logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
     await this._warnIfHphpdAttached();
-    if (!(await passesGK(GK_PAUSE_ONE_PAUSE_ALL))) {
+    if (!await passesGK(GK_PAUSE_ONE_PAUSE_ALL)) {
       config.stopOneStopAll = false;
     }
 
@@ -112,7 +113,9 @@ export class PhpDebuggerService {
 
     const translator = new MessageTranslator(this._clientCallback);
     this._disposables.add(translator);
-    translator.onSessionEnd(() => { this._onEnd(); });
+    translator.onSessionEnd(() => {
+      this._onEnd();
+    });
     this._translator = translator;
 
     this._setState(CONNECTED);
@@ -132,8 +135,7 @@ export class PhpDebuggerService {
     if (mightBeAttached) {
       this._clientCallback.sendUserMessage('notification', {
         type: 'warning',
-        message:
-          'You may have an hphpd instance currently attached to your server!' +
+        message: 'You may have an hphpd instance currently attached to your server!' +
           '<br />Please kill it, or the Nuclide debugger may not work properly.',
       });
     }

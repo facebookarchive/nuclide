@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -18,8 +19,8 @@ import type {GraphQLDiagnosticMessage} from './GraphQLServerService';
 export function convertDiagnostics(
   result: Array<GraphQLDiagnosticMessage>,
 ): DiagnosticProviderUpdate {
-  const fileDiagnostics = result.map(
-    diagnostic => graphqlMessageToDiagnosticMessage(diagnostic),
+  const fileDiagnostics = result.map(diagnostic =>
+    graphqlMessageToDiagnosticMessage(diagnostic),
   );
 
   const filePathToMessages = new Map();
@@ -32,7 +33,6 @@ export function convertDiagnostics(
     }
     diagnosticArray.push(diagnostic);
   }
-
 
   return {filePathToMessages};
 }

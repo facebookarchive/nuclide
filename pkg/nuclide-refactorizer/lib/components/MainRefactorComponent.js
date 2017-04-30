@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  Store,
-  RefactorState,
-} from '../types';
+import type {Store, RefactorState} from '../types';
 
 import React from 'react';
 import invariant from 'assert';
@@ -45,7 +43,8 @@ export class MainRefactorComponent extends React.Component {
       <div>
         {this.getHeaderElement()}
         {this.getInnerElement()}
-      </div>);
+      </div>
+    );
   }
 
   getHeaderElement(): React.Element<any> {
@@ -54,7 +53,9 @@ export class MainRefactorComponent extends React.Component {
     return (
       <div className="nuclide-refactorizer-header">
         <span>Refactor</span>
-        <Button onClick={() => this.props.store.dispatch(Actions.close())}>Close</Button>
+        <Button onClick={() => this.props.store.dispatch(Actions.close())}>
+          Close
+        </Button>
       </div>
     );
   }
@@ -67,11 +68,15 @@ export class MainRefactorComponent extends React.Component {
       case 'get-refactorings':
         return <div>Waiting for refactorings...</div>;
       case 'pick':
-        return <PickRefactorComponent pickPhase={phase} store={this.props.store} />;
+        return (
+          <PickRefactorComponent pickPhase={phase} store={this.props.store} />
+        );
       case 'rename':
         return <RenameComponent phase={phase} store={this.props.store} />;
       case 'freeform':
-        return <FreeformRefactorComponent phase={phase} store={this.props.store} />;
+        return (
+          <FreeformRefactorComponent phase={phase} store={this.props.store} />
+        );
       case 'execute':
         return <div>Executing refactoring...</div>;
       default:

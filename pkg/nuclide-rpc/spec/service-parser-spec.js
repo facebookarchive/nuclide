@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import fs from 'fs';
@@ -25,7 +26,11 @@ describe('Nuclide service parser test suite.', () => {
         const fixturePath = nuclideUri.join(__dirname, 'fixtures', file);
         const code = fs.readFileSync(fixturePath, 'utf8');
         const expected = JSON.parse(
-          fs.readFileSync(nuclideUri.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
+          fs.readFileSync(
+            nuclideUri.join(__dirname, 'fixtures', file) + '.json',
+            'utf8',
+          ),
+        );
         const definitions = parseServiceDefinition(fixturePath, code, []);
         stripLocationsFileName(definitions);
         expect(definitions).diffJson(expected);

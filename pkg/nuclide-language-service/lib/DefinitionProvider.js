@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -66,13 +67,19 @@ export class DefinitionProvider<T: LanguageService> {
         config.definitionEventName,
         config.definitionByIdEventName,
         connectionToLanguageService,
-      ));
+      ),
+    );
   }
 
-  async getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
+  async getDefinition(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
     return trackTiming(this._definitionEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
       if (languageService == null || fileVersion == null) {
         return null;
       }
@@ -82,7 +89,9 @@ export class DefinitionProvider<T: LanguageService> {
 
   getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
     return trackTiming(this._definitionByIdEventName, async () => {
-      const languageService = this._connectionToLanguageService.getForUri(filePath);
+      const languageService = this._connectionToLanguageService.getForUri(
+        filePath,
+      );
       if (languageService == null) {
         return null;
       }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -26,9 +27,8 @@ export default class DefinitionHelpers {
     editor: TextEditor,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    return trackTiming(
-      'clang.get-definition',
-      () => DefinitionHelpers._getDefinition(editor, position),
+    return trackTiming('clang.get-definition', () =>
+      DefinitionHelpers._getDefinition(editor, position),
     );
   }
 
@@ -57,8 +57,13 @@ export default class DefinitionHelpers {
       return null;
     }
 
-    const wholeRange =
-      findWholeRangeOfSymbol(editor, contents, range, result.spelling, result.extent);
+    const wholeRange = findWholeRangeOfSymbol(
+      editor,
+      contents,
+      range,
+      result.spelling,
+      result.extent,
+    );
     const definition: Definition = {
       path: result.file,
       position: result.point,

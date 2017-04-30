@@ -6,18 +6,23 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
   PhpDebuggerService as PhpDebuggerServiceType,
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
+import type {
+  ControlButtonSpecification,
+} from '../../nuclide-debugger/lib/types';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getPhpDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import utils from './utils';
@@ -42,7 +47,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     await this.preAttachActions();
 
     const rpcService = this._getRpcService();
-    const sessionConfig = getSessionConfig(nuclideUri.getPath(this.getTargetUri()), false);
+    const sessionConfig = getSessionConfig(
+      nuclideUri.getPath(this.getTargetUri()),
+      false,
+    );
     logInfo(`Connection session config: ${JSON.stringify(sessionConfig)}`);
     const result = await rpcService.debug(sessionConfig);
     logInfo(`Launch process result: ${result}`);
@@ -96,16 +104,21 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   }
 
   customControlButtons(): Array<ControlButtonSpecification> {
-    const customControlButtons = [{
-      icon: 'link-external',
-      title: 'Toggle HTTP Request Sender',
-      onClick: () => atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-http-request-sender:toggle-http-request-edit-dialog',
-      ),
-    }];
+    const customControlButtons = [
+      {
+        icon: 'link-external',
+        title: 'Toggle HTTP Request Sender',
+        onClick: () =>
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-http-request-sender:toggle-http-request-edit-dialog',
+          ),
+      },
+    ];
     try {
-      return customControlButtons.concat(require('./fb/services').customControlButtons);
+      return customControlButtons.concat(
+        require('./fb/services').customControlButtons,
+      );
     } catch (_) {
       return customControlButtons;
     }

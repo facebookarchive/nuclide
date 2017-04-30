@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -55,7 +56,7 @@ module.exports = {
     return output.entries.map(item => {
       return {
         text: item.name,
-        rightLabel: (item.desc === '' ? '(module)' : item.desc),
+        rightLabel: item.desc === '' ? '(module)' : item.desc,
         replacementPrefix,
       };
     });

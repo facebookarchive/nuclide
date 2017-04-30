@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  OutlineTree,
-} from '../../nuclide-outline-view/lib/rpc-types';
+import type {OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
 import type {TextToken} from '../../commons-node/tokenizedText-rpc-types';
 import type {
   PythonOutlineItem,
@@ -49,11 +48,7 @@ function classToOutlineTree(
   item: PythonClassItem,
 ): OutlineTree {
   return {
-    tokenizedText: [
-      keyword('class'),
-      whitespace(' '),
-      method(item.name),
-    ],
+    tokenizedText: [keyword('class'), whitespace(' '), method(item.name)],
     representativeName: item.name,
     children: itemsToOutline(mode, item.children),
     ...itemToPositions(item),
@@ -91,9 +86,7 @@ function statementToOutlineTree(
   }
 
   return {
-    tokenizedText: [
-      plain(name),
-    ],
+    tokenizedText: [plain(name)],
     representativeName: name,
     children: [],
     ...itemToPositions(item),
@@ -125,7 +118,9 @@ function argsToText(args: Array<string>): Array<TextToken> {
   return result;
 }
 
-function itemToPositions(item: PythonOutlineItem): {
+function itemToPositions(
+  item: PythonOutlineItem,
+): {
   startPosition: atom$Point,
   endPosition: atom$Point,
 } {

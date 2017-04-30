@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
@@ -14,7 +15,8 @@ import type {IconName} from '../../nuclide-ui/types';
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
-import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
+import observePaneItemVisibility
+  from '../../commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
@@ -53,18 +55,25 @@ export class DiagnosticsPanelModel {
     disableLinter: () => void,
     warnAboutLinterStream: Observable<boolean>,
     initialfilterByActiveTextEditor: boolean,
-    onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
+    onFilterByActiveTextEditorChange: (
+      filterByActiveTextEditor: boolean,
+    ) => void,
   ) {
     // TODO(T17495163)
-    this._visibilitySubscription = observePaneItemVisibility(this)
-      .subscribe(visible => { this.didChangeVisibility(visible); });
+    this._visibilitySubscription = observePaneItemVisibility(
+      this,
+    ).subscribe(visible => {
+      this.didChangeVisibility(visible);
+    });
     this._visibility = new BehaviorSubject(true);
 
     this._visibilitySubscription = this._visibility
       .debounceTime(1000)
       .distinctUntilChanged()
       .filter(Boolean)
-      .subscribe(() => { track('diagnostics-show-table'); });
+      .subscribe(() => {
+        track('diagnostics-show-table');
+      });
 
     // A stream that contains the props, but is "muted" when the panel's not visible.
     this._props = toggle(
@@ -146,13 +155,19 @@ function getPropsStream(
 
   const sortedDiagnostics = Observable.concat(
     Observable.of([]),
-    diagnosticsStream.map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
+    diagnosticsStream.map(diagnostics =>
+      diagnostics.slice().sort(compareMessagesByFile),
+    ),
     // If the diagnostics stream ever terminates, clear all messages.
     Observable.of([]),
   );
 
-  const filterByActiveTextEditorStream = new BehaviorSubject(initialfilterByActiveTextEditor);
-  const handleFilterByActiveTextEditorChange = (filterByActiveTextEditor: boolean) => {
+  const filterByActiveTextEditorStream = new BehaviorSubject(
+    initialfilterByActiveTextEditor,
+  );
+  const handleFilterByActiveTextEditorChange = (
+    filterByActiveTextEditor: boolean,
+  ) => {
     filterByActiveTextEditorStream.next(filterByActiveTextEditor);
     onFilterByActiveTextEditorChange(filterByActiveTextEditor);
   };
@@ -163,8 +178,10 @@ function getPropsStream(
     warnAboutLinterStream,
     filterByActiveTextEditorStream,
     showTracesStream,
-  )
-    .map(([pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces]) => ({
+  ).map(
+    (
+      [pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces],
+    ) => ({
       pathToActiveTextEditor,
       diagnostics,
       warnAboutLinter,
@@ -173,5 +190,6 @@ function getPropsStream(
       disableLinter,
       filterByActiveTextEditor: filter,
       onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-    }));
+    }),
+  );
 }

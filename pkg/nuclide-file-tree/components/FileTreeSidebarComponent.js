@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
@@ -14,7 +15,8 @@ import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
+import observePaneItemVisibility
+  from '../../commons-atom/observePaneItemVisibility';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import {Observable} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
@@ -42,9 +44,16 @@ import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
+import {
+  MultiRootChangedFilesView,
+} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
-import {nextAnimationFrame, toggle, throttle, compact} from '../../commons-node/observable';
+import {
+  nextAnimationFrame,
+  toggle,
+  throttle,
+  compact,
+} from '../../commons-node/observable';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import {cacheWhileSubscribed} from '../../commons-node/observable';
@@ -68,7 +77,10 @@ type State = {
   activeUri: ?NuclideUri,
   hasUncommittedChanges: boolean,
   hidden: boolean,
-  uncommittedFileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+  uncommittedFileChanges: Map<
+    NuclideUri,
+    Map<NuclideUri, FileChangeStatusValue>
+  >,
   isCalculatingChanges: boolean,
   areStackChangesEnabled: boolean,
 };
@@ -105,13 +117,16 @@ export default class FileTreeSidebarComponent extends React.Component {
       areStackChangesEnabled: false,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
-      (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<any>),
+      (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
+        any
+      >),
     );
     this._showUncommittedConfigValue = cacheWhileSubscribed(
-      (featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY): Observable<any>),
+      (featureConfig.observeAsStream(
+        SHOW_UNCOMMITTED_CHANGES_CONFIG_KEY,
+      ): Observable<any>),
     );
-    this._showUncommittedKindConfigValue =
-      FileTreeHelpers.observeUncommittedChangesKindConfigKey();
+    this._showUncommittedKindConfigValue = FileTreeHelpers.observeUncommittedChangesKindConfigKey();
 
     this._disposables = new UniversalDisposable();
     this._scrollWasTriggeredProgrammatically = false;
@@ -120,11 +135,15 @@ export default class FileTreeSidebarComponent extends React.Component {
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
     (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
-    (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(this);
-    (this: any)._handleUncommittedFilesExpandedChange =
-      this._handleUncommittedFilesExpandedChange.bind(this);
-    (this: any)._handleUncommittedChangesKindDownArrow =
-      this._handleUncommittedChangesKindDownArrow.bind(this);
+    (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(
+      this,
+    );
+    (this: any)._handleUncommittedFilesExpandedChange = this._handleUncommittedFilesExpandedChange.bind(
+      this,
+    );
+    (this: any)._handleUncommittedChangesKindDownArrow = this._handleUncommittedChangesKindDownArrow.bind(
+      this,
+    );
   }
 
   componentDidMount(): void {
@@ -133,37 +152,44 @@ export default class FileTreeSidebarComponent extends React.Component {
     const remeasureEvents = Observable.merge(
       Observable.of(null),
       Observable.fromEvent(window, 'resize'),
-      observableFromSubscribeFunction(atom.commands.onDidDispatch.bind(atom.commands))
-        .filter(event => event.type === 'nuclide-file-tree:toggle'),
+      observableFromSubscribeFunction(
+        atom.commands.onDidDispatch.bind(atom.commands),
+      ).filter(event => event.type === 'nuclide-file-tree:toggle'),
       Observable.interval(2000), // We poll because lots of things can change the height :(
     );
 
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
-      toggle(observeAllModifiedStatusChanges(), this._showOpenConfigValues)
-        .subscribe(() => this._setModifiedUris()),
+      toggle(
+        observeAllModifiedStatusChanges(),
+        this._showOpenConfigValues,
+      ).subscribe(() => this._setModifiedUris()),
       this._monitorActiveUri(),
-      Observable.fromPromise(FileTreeHelpers.areStackChangesEnabled()).subscribe(
-        areStackChangesEnabled => this.setState({areStackChangesEnabled}),
+      Observable.fromPromise(
+        FileTreeHelpers.areStackChangesEnabled(),
+      ).subscribe(areStackChangesEnabled =>
+        this.setState({areStackChangesEnabled}),
       ),
-      this._showOpenConfigValues.subscribe(showOpenFiles => this.setState({showOpenFiles})),
-      this._showUncommittedConfigValue.subscribe(
-        showUncommittedChanges => this.setState({showUncommittedChanges}),
+      this._showOpenConfigValues.subscribe(showOpenFiles =>
+        this.setState({showOpenFiles}),
+      ),
+      this._showUncommittedConfigValue.subscribe(showUncommittedChanges =>
+        this.setState({showUncommittedChanges}),
       ),
       this._showUncommittedKindConfigValue.subscribe(
-        showUncommittedChangesKind => this.setState({showUncommittedChangesKind}),
+        showUncommittedChangesKind =>
+          this.setState({showUncommittedChangesKind}),
       ),
-
       compact(
-        throttle(remeasureEvents, () => nextAnimationFrame)
-          .map(() => this._getScrollerHeight()),
+        throttle(remeasureEvents, () => nextAnimationFrame).map(() =>
+          this._getScrollerHeight(),
+        ),
       )
         .distinctUntilChanged()
         .subscribe(scrollerHeight => {
           this.setState({scrollerHeight});
         }),
-
       // Customize the context menu to remove items that match the 'atom-pane' selector.
       Observable.fromEvent(ReactDOM.findDOMNode(this), 'contextmenu')
         .switchMap(event => {
@@ -176,19 +202,25 @@ export default class FileTreeSidebarComponent extends React.Component {
 
           // Find all the item sets that match the 'atom-pane' selector. We're going to remove these
           // by changing their selector.
-          const paneItemSets =
-            atom.contextMenu.itemSets.filter(itemSet => itemSet.selector === 'atom-pane');
+          const paneItemSets = atom.contextMenu.itemSets.filter(
+            itemSet => itemSet.selector === 'atom-pane',
+          );
           // Override the selector while we get the template.
-          paneItemSets.forEach(itemSet => { itemSet.selector = 'do-not-match-anything'; });
+          paneItemSets.forEach(itemSet => {
+            itemSet.selector = 'do-not-match-anything';
+          });
           const menuTemplate = atom.contextMenu.templateForEvent(event);
-          paneItemSets.forEach(itemSet => { itemSet.selector = 'atom-pane'; });
+          paneItemSets.forEach(itemSet => {
+            itemSet.selector = 'atom-pane';
+          });
           // Wrap the disposable in an observable. This way we don't have to manually track these
           // disposables, they'll be managed for us.
           return Observable.create(() => showMenuForEvent(event, menuTemplate));
         })
         .subscribe(),
-
-      observePaneItemVisibility(this).subscribe(visible => { this.didChangeVisibility(visible); }),
+      observePaneItemVisibility(this).subscribe(visible => {
+        this.didChangeVisibility(visible);
+      }),
     );
   }
 
@@ -253,7 +285,9 @@ export default class FileTreeSidebarComponent extends React.Component {
             analyticsSurface="file-tree-uncommitted-changes"
             commandPrefix="file-tree-sidebar"
             enableInlineActions={true}
-            fileChanges={filterMultiRootFileChanges(this.state.uncommittedFileChanges)}
+            fileChanges={filterMultiRootFileChanges(
+              this.state.uncommittedFileChanges,
+            )}
             selectedFile={this.state.activeUri}
             hideEmptyFolders={true}
             onFileChosen={this._onFileChosen}
@@ -265,22 +299,22 @@ export default class FileTreeSidebarComponent extends React.Component {
       if (!this.state.areStackChangesEnabled) {
         uncommittedChangesHeadline = 'UNCOMMITTED CHANGES';
       } else {
-        const showDropdown =
-          Array.from(this.state.uncommittedFileChanges.keys())
-          .some(path => {
-            const repo = repositoryForPath(path);
-            return (repo != null) && repo.getType() === 'hg';
-          });
+        const showDropdown = Array.from(
+          this.state.uncommittedFileChanges.keys(),
+        ).some(path => {
+          const repo = repositoryForPath(path);
+          return repo != null && repo.getType() === 'hg';
+        });
 
-        const dropdownIcon = (!showDropdown) ? null :
-          <Icon
-            icon="triangle-down"
-            className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
-            onClick={this._handleUncommittedChangesKindDownArrow}
-          />;
+        const dropdownIcon = !showDropdown
+          ? null
+          : <Icon
+              icon="triangle-down"
+              className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+              onClick={this._handleUncommittedChangesKindDownArrow}
+            />;
 
-        const dropdownTooltip =
-`<div style="text-align: left;">
+        const dropdownTooltip = `<div style="text-align: left;">
 This section shows the file changes you've made:<br />
 <br />
 <b>UNCOMMITTED</b><br />
@@ -293,28 +327,28 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
-        const calculatingChangesSpinner = (!this.state.isCalculatingChanges) ? null :
-          <span
-            className="nuclide-file-tree-spinner">&nbsp;
-            <LoadingSpinner
-              className="inline-block"
-              size={LoadingSpinnerSizes.EXTRA_SMALL}
-            />
-          </span>;
+        const calculatingChangesSpinner = !this.state.isCalculatingChanges
+          ? null
+          : <span className="nuclide-file-tree-spinner">
+              &nbsp;
+              <LoadingSpinner
+                className="inline-block"
+                size={LoadingSpinnerSizes.EXTRA_SMALL}
+              />
+            </span>;
 
-        uncommittedChangesHeadline =
-          <span
-            ref={addTooltip({title: dropdownTooltip})}>
-            <span
-              className="nuclide-dropdown-label-text-wrapper">
+        uncommittedChangesHeadline = (
+          <span ref={addTooltip({title: dropdownTooltip})}>
+            <span className="nuclide-dropdown-label-text-wrapper">
               {this.state.showUncommittedChangesKind.toUpperCase()}
             </span>
             {dropdownIcon}
             {calculatingChangesSpinner}
-          </span>;
+          </span>
+        );
       }
 
-      uncommittedChangesSection =
+      uncommittedChangesSection = (
         <Section
           className="nuclide-file-tree-section-caption"
           collapsable={true}
@@ -323,7 +357,8 @@ All the changes across your entire stacked diff.
           onChange={this._handleUncommittedFilesExpandedChange}
           size="small">
           {uncommittedChangesList}
-        </Section>;
+        </Section>
+      );
     }
 
     let openFilesSection = null;
@@ -338,7 +373,7 @@ All the changes across your entire stacked diff.
           />
         );
       }
-      openFilesSection =
+      openFilesSection = (
         <Section
           className="nuclide-file-tree-section-caption"
           collapsable={true}
@@ -347,13 +382,19 @@ All the changes across your entire stacked diff.
           onChange={this._handleOpenFilesExpandedChange}
           size="small">
           {openFilesList}
-        </Section>;
+        </Section>
+      );
     }
 
     let foldersCaption;
     if (uncommittedChangesSection != null || openFilesSection != null) {
-      foldersCaption =
-        <Section className="nuclide-file-tree-section-caption" headline="FOLDERS" size="small" />;
+      foldersCaption = (
+        <Section
+          className="nuclide-file-tree-section-caption"
+          headline="FOLDERS"
+          size="small"
+        />
+      );
     }
 
     // Include `tabIndex` so this component can be focused by calling its native `focus` method.
@@ -366,9 +407,7 @@ All the changes across your entire stacked diff.
         {openFilesSection}
         {foldersCaption}
         {toolbar}
-        <PanelComponentScroller
-          ref="scroller"
-          onScroll={this._handleScroll}>
+        <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
           <FileTree
             ref="fileTree"
             containerHeight={this.state.scrollerHeight}
@@ -384,7 +423,8 @@ All the changes across your entire stacked diff.
     const shouldRenderToolbar = !this._store.roots.isEmpty();
     const openFilesUris = this._store.getOpenFilesWorkingSet().getUris();
 
-    if (shouldRenderToolbar !== this.state.shouldRenderToolbar ||
+    if (
+      shouldRenderToolbar !== this.state.shouldRenderToolbar ||
       openFilesUris !== this.state.openFilesUris
     ) {
       this.setState({shouldRenderToolbar, openFilesUris});
@@ -397,12 +437,17 @@ All the changes across your entire stacked diff.
     // to know if the section is empty or not is by checking each directory entry
     // and checking if they are empty. If all are empty hide the section.
     const uncommittedFileChanges = this._store.getFileChanges();
-    const hasUncommittedChanges = Array.from(uncommittedFileChanges.values())
-      .some(fileChanges => fileChanges.size > 0);
+    const hasUncommittedChanges = Array.from(
+      uncommittedFileChanges.values(),
+    ).some(fileChanges => fileChanges.size > 0);
 
     const isCalculatingChanges = this._store.getIsCalculatingChanges();
 
-    this.setState({uncommittedFileChanges, hasUncommittedChanges, isCalculatingChanges});
+    this.setState({
+      uncommittedFileChanges,
+      hasUncommittedChanges,
+      isCalculatingChanges,
+    });
   }
 
   _onFileChosen(filePath: NuclideUri): void {
@@ -423,12 +468,15 @@ All the changes across your entire stacked diff.
     invariant(remote != null);
     const menu = new remote.Menu();
     for (const enumKey in ShowUncommittedChangesKind) {
-      const kind: ShowUncommittedChangesKindValue = ShowUncommittedChangesKind[enumKey];
+      const kind: ShowUncommittedChangesKindValue =
+        ShowUncommittedChangesKind[enumKey];
       const menuItem = new remote.MenuItem({
         type: 'checkbox',
         checked: this.state.showUncommittedChangesKind === kind,
         label: kind,
-        click: () => { this._handleShowUncommittedChangesKindChange(kind); },
+        click: () => {
+          this._handleShowUncommittedChangesKindChange(kind);
+        },
       });
       menu.append(menuItem);
     }
@@ -451,7 +499,10 @@ All the changes across your entire stacked diff.
         track('filetree-changes-kind-stack');
         break;
     }
-    featureConfig.set(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY, showUncommittedChangesKind);
+    featureConfig.set(
+      SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
+      showUncommittedChangesKind,
+    );
   }
 
   _setModifiedUris(): void {
@@ -469,9 +520,12 @@ All the changes across your entire stacked diff.
     );
 
     return new UniversalDisposable(
-      toggle(activeEditors, this._showOpenConfigValues)
-      .subscribe(editor => {
-        if (editor == null || typeof editor.getPath !== 'function' || editor.getPath() == null) {
+      toggle(activeEditors, this._showOpenConfigValues).subscribe(editor => {
+        if (
+          editor == null ||
+          typeof editor.getPath !== 'function' ||
+          editor.getPath() == null
+        ) {
           this.setState({activeUri: null});
           return;
         }
@@ -509,18 +563,26 @@ All the changes across your entire stacked diff.
 
   _scrollToPosition(top: number, height: number): void {
     const requestedBottom = top + height;
-    const currentBottom = this.state.scrollerScrollTop + this.state.scrollerHeight;
-    if (top > this.state.scrollerScrollTop && requestedBottom <= currentBottom) {
-      return;  // Already in the view
+    const currentBottom =
+      this.state.scrollerScrollTop + this.state.scrollerHeight;
+    if (
+      top > this.state.scrollerScrollTop &&
+      requestedBottom <= currentBottom
+    ) {
+      return; // Already in the view
     }
 
     const node = ReactDOM.findDOMNode(this.refs.scroller);
     if (node == null) {
       return;
     }
-    const newTop = Math.max(top + height / 2 - this.state.scrollerHeight / 2, 0);
+    const newTop = Math.max(
+      top + height / 2 - this.state.scrollerHeight / 2,
+      0,
+    );
     setImmediate(() => {
-      try {  // For the rather unlikely chance that the node is already gone from the DOM
+      try {
+        // For the rather unlikely chance that the node is already gone from the DOM
         this._scrollWasTriggeredProgrammatically = true;
         // $FlowFixMe
         node.scrollTop = newTop;
@@ -586,16 +648,17 @@ function observeAllModifiedStatusChanges(): Observable<void> {
     observableFromSubscribeFunction(
       atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
     ),
-  )
-  .startWith(undefined);
+  ).startWith(undefined);
 
-  return paneItemChangeEvents
-  .map(getCurrentBuffers)
-  .switchMap(buffers => Observable.merge(
-    ...(buffers.map(buffer => {
-      return observableFromSubscribeFunction(buffer.onDidChangeModified.bind(buffer));
-    }): Array<Observable<void>>),
-  ));
+  return paneItemChangeEvents.map(getCurrentBuffers).switchMap(buffers =>
+    Observable.merge(
+      ...(buffers.map(buffer => {
+        return observableFromSubscribeFunction(
+          buffer.onDidChangeModified.bind(buffer),
+        );
+      }): Array<Observable<void>>),
+    ),
+  );
 }
 
 function getCurrentBuffers(): Array<atom$TextBuffer> {

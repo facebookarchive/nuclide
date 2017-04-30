@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
@@ -84,7 +85,10 @@ export async function getOutline(editor: atom$TextEditor): Promise<?Outline> {
   if (path == null) {
     return null;
   }
-  const instance: ?MerlinProcess = getServiceByNuclideUri('MerlinService', path);
+  const instance: ?MerlinProcess = getServiceByNuclideUri(
+    'MerlinService',
+    path,
+  );
   if (!instance) {
     return null;
   }

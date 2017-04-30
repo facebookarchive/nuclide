@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -36,7 +37,9 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
-export type DiagnosticsConfig = FileDiagnosticsConfig | ObservableDiagnosticsConfig;
+export type DiagnosticsConfig =
+  | FileDiagnosticsConfig
+  | ObservableDiagnosticsConfig;
 
 export type FileDiagnosticsConfig = {|
   version: '0.1.0',
@@ -83,10 +86,13 @@ export function registerDiagnostics<T: LanguageService>(
     default:
       throw new Error('Unexpected diagnostics version');
   }
-  result.add(atom.packages.serviceHub.provide(
-    diagnosticService,
-    config.version,
-    provider));
+  result.add(
+    atom.packages.serviceHub.provide(
+      diagnosticService,
+      config.version,
+      provider,
+    ),
+  );
   return result;
 }
 
@@ -122,7 +128,8 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       grammarScopes: new Set(grammars),
       shouldRunOnTheFly,
       onTextEditorEvent: editor => this._runDiagnostics(editor),
-      onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
+      onNewUpdateSubscriber: callback =>
+        this._receivedNewUpdateSubscriber(callback),
     };
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
@@ -132,7 +139,8 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       onDidRemoveProjectPath(projectPath => {
         this.invalidateProjectPath(projectPath);
       }),
-      this._providerBase);
+      this._providerBase,
+    );
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {
@@ -149,8 +157,13 @@ export class FileDiagnosticsProvider<T: LanguageService> {
         return;
       }
 
-      const diagnosisResult = await this._requestSerializer.run(this.findDiagnostics(textEditor));
-      if (diagnosisResult.status === 'outdated' || diagnosisResult.result == null) {
+      const diagnosisResult = await this._requestSerializer.run(
+        this.findDiagnostics(textEditor),
+      );
+      if (
+        diagnosisResult.status === 'outdated' ||
+        diagnosisResult.result == null
+      ) {
         return;
       }
 
@@ -159,16 +172,23 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       if (filePath == null) {
         return;
       }
-      const languageService = this._connectionToLanguageService.getForUri(filePath);
+      const languageService = this._connectionToLanguageService.getForUri(
+        filePath,
+      );
       if (languageService == null) {
         return;
       }
-      const projectRoot = await (await languageService).getProjectRoot(filePath);
+      const projectRoot = await (await languageService).getProjectRoot(
+        filePath,
+      );
       if (projectRoot == null) {
         return;
       }
 
-      this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
+      this._providerBase.publishMessageInvalidation({
+        scope: 'file',
+        filePaths: [filePath],
+      });
       this._invalidatePathsForProjectRoot(projectRoot);
 
       const pathsForHackLanguage = new Set();
@@ -179,19 +199,17 @@ export class FileDiagnosticsProvider<T: LanguageService> {
         }
       };
       if (diagnostics.filePathToMessages != null) {
-        diagnostics.filePathToMessages.forEach(
-          (messages, messagePath) => {
-            addPath(messagePath);
-            messages.forEach(
-              message => {
-                addPath(message.filePath);
-                if (message.trace != null) {
-                  message.trace.forEach(trace => {
-                    addPath(trace.filePath);
-                  });
-                }
+        diagnostics.filePathToMessages.forEach((messages, messagePath) => {
+          addPath(messagePath);
+          messages.forEach(message => {
+            addPath(message.filePath);
+            if (message.trace != null) {
+              message.trace.forEach(trace => {
+                addPath(trace.filePath);
               });
+            }
           });
+        });
       }
 
       this._providerBase.publishMessageUpdate(diagnostics);
@@ -213,8 +231,15 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     // Once we provide all diagnostics, instead of just the current file, we can
     // probably remove the activeTextEditor parameter.
     const activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor && !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())) {
-      if (this._providerBase.getGrammarScopes().has(activeTextEditor.getGrammar().scopeName)) {
+    if (
+      activeTextEditor &&
+      !nuclideUri.isBrokenDeserializedUri(activeTextEditor.getPath())
+    ) {
+      if (
+        this._providerBase
+          .getGrammarScopes()
+          .has(activeTextEditor.getGrammar().scopeName)
+      ) {
         this._runDiagnostics(activeTextEditor);
       }
     }
@@ -240,8 +265,11 @@ export class FileDiagnosticsProvider<T: LanguageService> {
       // This will err on the side of removing messages,
       // which should be fine, as they will come back once a file is reopened
       // or edited.
-      .filter(rootPath => nuclideUri.contains(projectPath, rootPath)
-        || nuclideUri.contains(rootPath, projectPath))
+      .filter(
+        rootPath =>
+          nuclideUri.contains(projectPath, rootPath) ||
+          nuclideUri.contains(rootPath, projectPath),
+      )
       .forEach(removedPath => {
         this._invalidatePathsForProjectRoot(removedPath);
       });
@@ -249,9 +277,10 @@ export class FileDiagnosticsProvider<T: LanguageService> {
 
   _invalidatePathsForProjectRoot(projectRoot: NuclideUri): void {
     const pathsToInvalidate = this._getPathsToInvalidate(projectRoot);
-    this._providerBase.publishMessageInvalidation(
-      {scope: 'file', filePaths: pathsToInvalidate},
-    );
+    this._providerBase.publishMessageInvalidation({
+      scope: 'file',
+      filePaths: pathsToInvalidate,
+    });
     this._projectRootToFilePaths.delete(projectRoot);
   }
 
@@ -263,7 +292,9 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     editor: atom$TextEditor,
   ): Promise<?DiagnosticProviderUpdate> {
     const fileVersion = await getFileVersionOfEditor(editor);
-    const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+    const languageService = this._connectionToLanguageService.getForUri(
+      editor.getPath(),
+    );
     if (languageService == null || fileVersion == null) {
       return null;
     }
@@ -289,28 +320,33 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
     this._analyticsEventName = analyticsEventName;
     this._connectionToFiles = new Cache(connection => new Set());
     this._connectionToLanguageService = connectionToLanguageService;
-    this.updates = this._connectionToLanguageService.observeEntries()
+    this.updates = this._connectionToLanguageService
+      .observeEntries()
       .mergeMap(([connection, languageService]) => {
         const connectionName = ServerConnection.toDebugString(connection);
         this._logger.log(
-          `Starting observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
+          `Starting observing diagnostics ${connectionName}, ${this._analyticsEventName}`,
+        );
         return Observable.fromPromise(languageService)
           .catch(error => {
-            this._logger.logError(`Error: languageService, ${this._analyticsEventName} ${error}`);
+            this._logger.logError(
+              `Error: languageService, ${this._analyticsEventName} ${error}`,
+            );
             return Observable.empty();
           })
           .mergeMap((language: LanguageService) => {
             this._logger.log(
-              `Observing diagnostics ${connectionName}, ${this._analyticsEventName}`);
-            return ensureInvalidations(this._logger,
-              language.observeDiagnostics()
-              .refCount()
-              .catch(error => {
+              `Observing diagnostics ${connectionName}, ${this._analyticsEventName}`,
+            );
+            return ensureInvalidations(
+              this._logger,
+              language.observeDiagnostics().refCount().catch(error => {
                 this._logger.logError(
                   `Error: observeDiagnostics, ${this._analyticsEventName} ${error}`,
                 );
                 return Observable.empty();
-              }));
+              }),
+            );
           })
           .map((update: FileDiagnosticUpdate) => {
             const {filePath, messages} = update;
@@ -318,18 +354,21 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             const fileCache = this._connectionToFiles.get(connection);
             if (messages.length === 0) {
               this._logger.log(
-                `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`);
+                `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`,
+              );
               fileCache.delete(filePath);
             } else {
               this._logger.log(
-                `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`);
+                `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`,
+              );
               fileCache.add(filePath);
             }
             return {
               filePathToMessages: new Map([[filePath, messages]]),
             };
           });
-      }).catch(error => {
+      })
+      .catch(error => {
         this._logger.logError(
           `Error: observeEntries, ${this._analyticsEventName} ${error}`,
         );
@@ -337,22 +376,24 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
       });
 
     this.invalidations = observableFromSubscribeFunction(
-      ServerConnection.onDidCloseServerConnection)
-        .map(connection => {
-          this._logger.log(
-            `Diagnostics closing ${connection.getRemoteHostname()}, ${this._analyticsEventName}`);
-          const files = Array.from(this._connectionToFiles.get(connection));
-          this._connectionToFiles.delete(connection);
-          return {
-            scope: 'file',
-            filePaths: files,
-          };
-        })
-        .catch(error => {
-          this._logger.logError(
-            `Error: invalidations, ${this._analyticsEventName} ${error}`,
-          );
-          throw error;
-        });
+      ServerConnection.onDidCloseServerConnection,
+    )
+      .map(connection => {
+        this._logger.log(
+          `Diagnostics closing ${connection.getRemoteHostname()}, ${this._analyticsEventName}`,
+        );
+        const files = Array.from(this._connectionToFiles.get(connection));
+        this._connectionToFiles.delete(connection);
+        return {
+          scope: 'file',
+          filePaths: files,
+        };
+      })
+      .catch(error => {
+        this._logger.logError(
+          `Error: invalidations, ${this._analyticsEventName} ${error}`,
+        );
+        throw error;
+      });
   }
 }

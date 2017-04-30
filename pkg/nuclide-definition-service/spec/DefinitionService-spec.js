@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DefinitionProvider} from '..';
@@ -47,14 +48,16 @@ describe('DefinitionService', () => {
     waitsForPromise(async () => {
       const result = {
         queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [{
-          path: 'path',
-          position: new Point(42, 43),
-          range: null,
-          id: null,
-          name: null,
-          projectRoot: null,
-        }],
+        definitions: [
+          {
+            path: 'path',
+            position: new Point(42, 43),
+            range: null,
+            id: null,
+            name: null,
+            projectRoot: null,
+          },
+        ],
       };
       provider.getDefinition.andReturn(Promise.resolve(result));
 

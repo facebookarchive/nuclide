@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -226,7 +227,8 @@ async function _runBuckCommandFromProjectRoot(
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   logger.debug('Buck command:', pathToBuck, newArgs, options);
   return getPool(rootPath, readOnly).submit(() =>
-    runCommand(pathToBuck, newArgs, options).toPromise());
+    runCommand(pathToBuck, newArgs, options).toPromise(),
+  );
 }
 
 /**
@@ -237,8 +239,10 @@ async function _getBuckCommandAndOptions(
   commandOptions?: ObserveProcessOptions = {},
 ): Promise<BuckCommandAndOptions> {
   // $UPFixMe: This should use nuclide-features-config
-  let pathToBuck = (global.atom &&
-    global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) || 'buck';
+  let pathToBuck =
+    (global.atom &&
+      global.atom.config.get('nuclide.nuclide-buck.pathToBuck')) ||
+    'buck';
   if (pathToBuck === 'buck' && os.platform() === 'win32') {
     pathToBuck = 'buck.bat';
   }
@@ -407,7 +411,8 @@ export function buildWithOutput(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   extraArguments: Array<string>,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {extraArguments}).publish();
 }
 
@@ -427,7 +432,8 @@ export function testWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   debug: boolean,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     test: true,
     extraArguments,
@@ -453,7 +459,8 @@ export function installWithOutput(
   simulator: ?string,
   run: boolean,
   debug: boolean,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     install: true,
     simulator,
@@ -468,7 +475,8 @@ export function runWithOutput(
   buildTargets: Array<string>,
   extraArguments: Array<string>,
   simulator: ?string,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   return _buildWithOutput(rootPath, buildTargets, {
     run: true,
     simulator,
@@ -485,7 +493,8 @@ function _buildWithOutput(
   rootPath: NuclideUri,
   buildTargets: Array<string>,
   options: BaseBuckBuildOptions,
-): Observable<LegacyProcessMessage> { // TODO(T17463635)
+): Observable<LegacyProcessMessage> {
+  // TODO(T17463635)
   const args = _translateOptionsToBuckBuildArgs({
     baseOptions: {...options},
     buildTargets,
@@ -493,16 +502,16 @@ function _buildWithOutput(
   return Observable.fromPromise(
     _getBuckCommandAndOptions(rootPath),
   ).switchMap(({pathToBuck, buckCommandOptions}) =>
-    observeProcess(
-      pathToBuck,
-      args,
-      {...buckCommandOptions, /* TODO(T17353599) */ isExitError: () => false},
-    )
+    observeProcess(pathToBuck, args, {
+      ...buckCommandOptions,
+      /* TODO(T17353599) */ isExitError: () => false,
+    })
       .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .startWith({
         kind: 'stdout',
         data: `Starting "${pathToBuck} ${_getArgsStringSkipClientId(args)}"`,
-      }));
+      }),
+  );
 }
 
 function _getArgsStringSkipClientId(args: Array<string>): string {
@@ -520,11 +529,7 @@ function _getArgsStringSkipClientId(args: Array<string>): string {
 function _translateOptionsToBuckBuildArgs(
   options: FullBuckBuildOptions,
 ): Array<string> {
-  const {
-    baseOptions,
-    pathToBuildReport,
-    buildTargets,
-  } = options;
+  const {baseOptions, pathToBuildReport, buildTargets} = options;
   const {
     install: doInstall,
     run,

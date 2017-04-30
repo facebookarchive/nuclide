@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  FileDiagnosticMessage,
-} from './rpc-types';
+import type {FileDiagnosticMessage} from './rpc-types';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -101,8 +100,9 @@ export class MarkerTracker {
       // wrong place already. Consider detecting such cases (perhaps with a checksum included in the
       // fix) and rejecting the fixes, since we can't accurately track their locations.
 
-      const editorForFile =
-        atom.workspace.getTextEditors().filter(editor => editor.getPath() === message.filePath)[0];
+      const editorForFile = atom.workspace
+        .getTextEditors()
+        .filter(editor => editor.getPath() === message.filePath)[0];
       if (editorForFile != null) {
         this._addMarker(editorForFile, message);
       }

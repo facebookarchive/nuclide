@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import featureConfig from '../../commons-atom/featureConfig';
 
 export function getFormatOnSave(): boolean {
-  const formatOnSave = (featureConfig.get('nuclide-code-format.formatOnSave'): any);
-  return (formatOnSave == null) ? false : formatOnSave;
+  const formatOnSave = (featureConfig.get(
+    'nuclide-code-format.formatOnSave',
+  ): any);
+  return formatOnSave == null ? false : formatOnSave;
 }

@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -19,13 +19,17 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  FindReferencesReturn,
+} from '../../nuclide-find-references/lib/rpc-types';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 
 // Subtype of atom$AutocompleteSuggestion.
 export type Completion = {
@@ -65,10 +69,7 @@ export type SymbolResult = {
 };
 
 export interface LanguageService {
-
-  getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate>,
+  getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
 
@@ -84,23 +85,16 @@ export interface LanguageService {
     position: atom$Point,
   ): Promise<?DefinitionQueryResult>,
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition>,
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition>,
 
   findReferences(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn>,
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult>,
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
-  getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline>,
+  getOutline(fileVersion: FileVersion): Promise<?Outline>,
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
 
@@ -114,19 +108,22 @@ export interface LanguageService {
     range: atom$Range,
   ): Promise<?Array<TextEdit>>,
 
-  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }>,
+  formatEntireFile(
+    fileVersion: FileVersion,
+    range: atom$Range,
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  >,
 
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression>,
 
-  supportsSymbolSearch(
-    directories: Array<NuclideUri>,
-  ): Promise<boolean>,
+  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean>,
 
   symbolSearch(
     query: string,

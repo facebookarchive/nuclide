@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileTreeProjectSelectionManager} from './FileTreeController';
@@ -13,7 +14,9 @@ import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import invariant from 'assert';
@@ -22,7 +25,9 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import createPackage from '../../commons-atom/createPackage';
 import {observableFromSubscribeFunction} from '../../commons-node/event';
 import featureConfig from '../../commons-atom/featureConfig';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {
+  viewableFromReactElement,
+} from '../../commons-atom/viewableFromReactElement';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import {nextAnimationFrame} from '../../commons-node/observable';
 
@@ -57,7 +62,8 @@ class Activation {
 
   constructor(rawState: ?SerializedState) {
     let state = rawState || {};
-    const serializedVersionMatches = (state.version || 1) === DESERIALIZER_VERSION;
+    const serializedVersionMatches =
+      (state.version || 1) === DESERIALIZER_VERSION;
     if (!serializedVersionMatches) {
       state = {};
     }
@@ -71,10 +77,12 @@ class Activation {
     // package's `activate` is called during an traversal of all initial packages to activate.
     // Disabling a package during the traversal has no effect if this is a startup load because
     // `PackageManager` does not re-load the list of packages to activate after each iteration.
-    this._didActivateDisposable = atom.packages.onDidActivateInitialPackages(() => {
-      disableTreeViewPackage();
-      this._didActivateDisposable.dispose();
-    });
+    this._didActivateDisposable = atom.packages.onDidActivateInitialPackages(
+      () => {
+        disableTreeViewPackage();
+        this._didActivateDisposable.dispose();
+      },
+    );
 
     this._disposables = new UniversalDisposable(
       this._didActivateDisposable,
@@ -83,42 +91,57 @@ class Activation {
       },
     );
 
-    this._fileTreeController = new FileTreeController(state == null ? null : state.tree);
+    this._fileTreeController = new FileTreeController(
+      state == null ? null : state.tree,
+    );
     this._restored = state.restored === true;
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
     const ignoredNamesSetting = 'core.ignoredNames';
-    const prefixKeyNavSetting = 'nuclide-file-tree.allowKeyboardPrefixNavigation';
+    const prefixKeyNavSetting =
+      'nuclide-file-tree.allowKeyboardPrefixNavigation';
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
 
     this._disposables.add(
       this._fixContextMenuHighlight(),
-      featureConfig.observe(prefixKeyNavSetting, (x: any) => this._setPrefixKeyNavSetting(x)),
-      featureConfig.observe(
-        REVEAL_FILE_ON_SWITCH_SETTING,
-        (x: any) => this._setRevealOnFileSwitch(x),
+      featureConfig.observe(prefixKeyNavSetting, (x: any) =>
+        this._setPrefixKeyNavSetting(x),
       ),
-      atom.config.observe(ignoredNamesSetting, (x: any) => this._setIgnoredNames(x)),
-      featureConfig.observe(hideIgnoredNamesSetting, (x: any) => this._setHideIgnoredNames(x)),
+      featureConfig.observe(REVEAL_FILE_ON_SWITCH_SETTING, (x: any) =>
+        this._setRevealOnFileSwitch(x),
+      ),
+      atom.config.observe(ignoredNamesSetting, (x: any) =>
+        this._setIgnoredNames(x),
+      ),
+      featureConfig.observe(hideIgnoredNamesSetting, (x: any) =>
+        this._setHideIgnoredNames(x),
+      ),
       atom.config.observe(
         excludeVcsIgnoredPathsSetting,
         this._setExcludeVcsIgnoredPaths.bind(this),
       ),
-      atom.config.observe(allowPendingPaneItems, this._setUsePreviewTabs.bind(this)),
-      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle-focus', () => {
-        const component = this._fileTreeComponent;
-        if (component == null) {
-          return;
-        }
-        if (component.isFocused()) {
-          // Focus the text editor.
-          atom.workspace.getActivePane().activate();
-        } else {
-          // Focus the file tree.
-          component.focus();
-        }
-      }),
+      atom.config.observe(
+        allowPendingPaneItems,
+        this._setUsePreviewTabs.bind(this),
+      ),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-file-tree:toggle-focus',
+        () => {
+          const component = this._fileTreeComponent;
+          if (component == null) {
+            return;
+          }
+          if (component.isFocused()) {
+            // Focus the text editor.
+            atom.workspace.getActivePane().activate();
+          } else {
+            // Focus the file tree.
+            component.focus();
+          }
+        },
+      ),
     );
   }
 
@@ -150,7 +173,9 @@ class Activation {
     }
     const controller = this._fileTreeController;
     controller.setCwdApi(cwdApi);
-    this._cwdApiSubscription = new UniversalDisposable(() => controller.setCwdApi(null));
+    this._cwdApiSubscription = new UniversalDisposable(() =>
+      controller.setCwdApi(null),
+    );
     return this._cwdApiSubscription;
   }
 
@@ -165,8 +190,10 @@ class Activation {
   dispose() {
     // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
     // environment the way this package found it.
-    if (featureConfig.isFeatureDisabled('nuclide-file-tree')
-      && atom.packages.isPackageDisabled('tree-view')) {
+    if (
+      featureConfig.isFeatureDisabled('nuclide-file-tree') &&
+      atom.packages.isPackageDisabled('tree-view')
+    ) {
       atom.packages.enablePackage('tree-view');
     }
 
@@ -189,32 +216,44 @@ class Activation {
     this._fileTreeController.updateWorkingSetsStore(workingSetsStore);
     this._fileTreeController.updateWorkingSet(workingSetsStore.getCurrent());
 
-    const currentSubscription = workingSetsStore.subscribeToCurrent(currentWorkingSet => {
-      this._fileTreeController.updateWorkingSet(currentWorkingSet);
-    });
+    const currentSubscription = workingSetsStore.subscribeToCurrent(
+      currentWorkingSet => {
+        this._fileTreeController.updateWorkingSet(currentWorkingSet);
+      },
+    );
     this._disposables.add(currentSubscription);
 
     const rebuildSignals = Observable.merge(
-      Observable.of(null),  // None of the subscriptions below will trigger at startup.
-      observableFromSubscribeFunction(atom.workspace.onDidAddPaneItem.bind(atom.workspace)),
-      observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace)),
-      observableFromSubscribeFunction(observeTextEditors)
-        .flatMap(textEditor => {
-          return observableFromSubscribeFunction(textEditor.onDidChangePath.bind(textEditor))
-            .takeUntil(
-              observableFromSubscribeFunction(textEditor.onDidDestroy.bind(textEditor)),
-            );
-        }),
-    )
-    .debounceTime(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS);
+      Observable.of(null), // None of the subscriptions below will trigger at startup.
+      observableFromSubscribeFunction(
+        atom.workspace.onDidAddPaneItem.bind(atom.workspace),
+      ),
+      observableFromSubscribeFunction(
+        atom.workspace.onDidDestroyPaneItem.bind(atom.workspace),
+      ),
+      observableFromSubscribeFunction(
+        observeTextEditors,
+      ).flatMap(textEditor => {
+        return observableFromSubscribeFunction(
+          textEditor.onDidChangePath.bind(textEditor),
+        ).takeUntil(
+          observableFromSubscribeFunction(
+            textEditor.onDidDestroy.bind(textEditor),
+          ),
+        );
+      }),
+    ).debounceTime(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS);
 
-    this._disposables.add(rebuildSignals.subscribe(() => {
-      const openUris = atom.workspace.getTextEditors()
-        .filter(te => te.getPath() != null && te.getPath() !== '')
-        .map(te => (te.getPath(): any));
-      const openFilesWorkingSet = new WorkingSet(openUris);
-      this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
-    }));
+    this._disposables.add(
+      rebuildSignals.subscribe(() => {
+        const openUris = atom.workspace
+          .getTextEditors()
+          .filter(te => te.getPath() != null && te.getPath() !== '')
+          .map(te => (te.getPath(): any));
+        const openFilesWorkingSet = new WorkingSet(openUris);
+        this._fileTreeController.updateOpenFilesWorkingSet(openFilesWorkingSet);
+      }),
+    );
 
     return new UniversalDisposable(() => {
       this._fileTreeController.updateWorkingSetsStore(null);
@@ -296,7 +335,9 @@ class Activation {
 
   _createView(): FileTreeSidebarComponent {
     // Currently, we assume that only one will be created.
-    this._fileTreeComponent = viewableFromReactElement(<FileTreeSidebarComponent />);
+    this._fileTreeComponent = viewableFromReactElement(
+      <FileTreeSidebarComponent />,
+    );
     return this._fileTreeComponent;
   }
 
@@ -308,11 +349,9 @@ class Activation {
         }
       }),
       () => api.destroyWhere(item => item instanceof FileTreeSidebarComponent),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-file-tree:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
+      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle', event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      }),
     );
     if (!this._restored) {
       api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});

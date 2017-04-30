@@ -6,13 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import {FileTreeNode} from '../lib/FileTreeNode';
 import Immutable from 'immutable';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-
 
 const CONF = {
   vcsStatuses: new Immutable.Map(),
@@ -30,13 +29,15 @@ const CONF = {
   reposByRoot: {},
 };
 
-
 describe('FileTreeNode', () => {
   it('properly sets the default properties', () => {
-    const node = new FileTreeNode({
-      uri: '/abc/def',
-      rootUri: '/abc/',
-    }, CONF);
+    const node = new FileTreeNode(
+      {
+        uri: '/abc/def',
+        rootUri: '/abc/',
+      },
+      CONF,
+    );
 
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
@@ -52,16 +53,19 @@ describe('FileTreeNode', () => {
 
   it('properly sets the supplied properties', () => {
     const children = new Immutable.OrderedMap();
-    const node = new FileTreeNode({
-      uri: '/abc/def',
-      rootUri: '/abc/',
-      isExpanded: true,
-      isSelected: true,
-      isLoading: true,
-      isCwd: true,
-      isTracked: true,
-      children,
-    }, CONF);
+    const node = new FileTreeNode(
+      {
+        uri: '/abc/def',
+        rootUri: '/abc/',
+        isExpanded: true,
+        isSelected: true,
+        isLoading: true,
+        isCwd: true,
+        isTracked: true,
+        children,
+      },
+      CONF,
+    );
 
     expect(node.uri).toBe('/abc/def');
     expect(node.rootUri).toBe('/abc/');
@@ -76,10 +80,13 @@ describe('FileTreeNode', () => {
   });
 
   it('derives properties', () => {
-    const node = new FileTreeNode({
-      uri: '/abc/def/ghi',
-      rootUri: '/abc/',
-    }, CONF);
+    const node = new FileTreeNode(
+      {
+        uri: '/abc/def/ghi',
+        rootUri: '/abc/',
+      },
+      CONF,
+    );
 
     // Derived
     expect(node.name).toBe('ghi');
@@ -94,30 +101,39 @@ describe('FileTreeNode', () => {
   });
 
   it('preserves instance on non-modifying updates', () => {
-    const child1 = new FileTreeNode({
-      uri: '/abc/def/ghi1',
-      rootUri: '/abc/',
-    }, CONF);
+    const child1 = new FileTreeNode(
+      {
+        uri: '/abc/def/ghi1',
+        rootUri: '/abc/',
+      },
+      CONF,
+    );
 
-    const child2 = new FileTreeNode({
-      uri: '/abc/def/ghi2',
-      rootUri: '/abc/',
-    }, CONF);
+    const child2 = new FileTreeNode(
+      {
+        uri: '/abc/def/ghi2',
+        rootUri: '/abc/',
+      },
+      CONF,
+    );
 
     const children = new Immutable.OrderedMap([
       [child1.name, child1],
       [child2.name, child2],
     ]);
-    const node = new FileTreeNode({
-      uri: '/abc/def',
-      rootUri: '/abc/',
-      isExpanded: true,
-      isSelected: false,
-      isLoading: false,
-      isCwd: true,
-      isTracked: false,
-      children,
-    }, CONF);
+    const node = new FileTreeNode(
+      {
+        uri: '/abc/def',
+        rootUri: '/abc/',
+        isExpanded: true,
+        isSelected: false,
+        isLoading: false,
+        isCwd: true,
+        isTracked: false,
+        children,
+      },
+      CONF,
+    );
 
     expect(node.isExpanded).toBe(true);
     let updatedNode = node.setIsExpanded(true);

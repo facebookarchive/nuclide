@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -24,7 +25,10 @@ export class IwdpLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     return Promise.resolve(['Attach']);
   }
 
-  getComponent(action: string, parentEventEmitter: EventEmitter): ?React.Element<any> {
+  getComponent(
+    action: string,
+    parentEventEmitter: EventEmitter,
+  ): ?React.Element<any> {
     if (action === 'Attach') {
       return (
         <AttachUiComponent

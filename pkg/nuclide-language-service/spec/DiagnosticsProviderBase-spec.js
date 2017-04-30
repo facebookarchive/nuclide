@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Disposable} from 'atom';
@@ -36,13 +37,20 @@ describe('DiagnosticsProviderBase', () => {
   }
 
   function newProviderBase(options) {
-    return new DiagnosticsProviderBase(options, (new FakeEventDispatcher(): any));
+    return new DiagnosticsProviderBase(
+      options,
+      (new FakeEventDispatcher(): any),
+    );
   }
 
   beforeEach(() => {
     fakeEditor = {
-      getPath() { return 'foo'; },
-      getGrammar() { return {scopeName: grammar}; },
+      getPath() {
+        return 'foo';
+      },
+      getGrammar() {
+        return {scopeName: grammar};
+      },
     };
     eventCallback = null;
     subscribedToAny = null;

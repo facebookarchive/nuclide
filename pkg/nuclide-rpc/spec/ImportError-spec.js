@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -17,13 +18,21 @@ describe('Import Errors', () => {
     waitsForPromise(async () => {
       let hadError = false;
       try {
-        invariant(new ServiceRegistry(
-          [],
-          [{
-            name: 'ImportClassService',
-            definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
-            implementation: nuclideUri.join(__dirname, 'ImportClassService.js'),
-          }]) != null);
+        invariant(
+          new ServiceRegistry(
+            [],
+            [
+              {
+                name: 'ImportClassService',
+                definition: nuclideUri.join(__dirname, 'ImportClassService.js'),
+                implementation: nuclideUri.join(
+                  __dirname,
+                  'ImportClassService.js',
+                ),
+              },
+            ],
+          ) != null,
+        );
       } catch (e) {
         hadError = true;
         expect(e.message).toMatch('Exported class in imported RPC file');
@@ -36,13 +45,24 @@ describe('Import Errors', () => {
     waitsForPromise(async () => {
       let hadError = false;
       try {
-        invariant(new ServiceRegistry(
-          [],
-          [{
-            name: 'ImportFunctionService',
-            definition: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
-            implementation: nuclideUri.join(__dirname, 'ImportFunctionService.js'),
-          }]) != null);
+        invariant(
+          new ServiceRegistry(
+            [],
+            [
+              {
+                name: 'ImportFunctionService',
+                definition: nuclideUri.join(
+                  __dirname,
+                  'ImportFunctionService.js',
+                ),
+                implementation: nuclideUri.join(
+                  __dirname,
+                  'ImportFunctionService.js',
+                ),
+              },
+            ],
+          ) != null,
+        );
       } catch (e) {
         hadError = true;
         expect(e.message).toMatch('Exported function in imported RPC file');

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {RevisionInfo, RevisionSuccessorInfo} from './HgService';
@@ -84,12 +85,17 @@ function expressionForRevisionsBefore(
   }
 }
 
-export function expressionForRevisionsBeforeHead(numberOfRevsBefore_: number): string {
+export function expressionForRevisionsBeforeHead(
+  numberOfRevsBefore_: number,
+): string {
   let numberOfRevsBefore = numberOfRevsBefore_;
   if (numberOfRevsBefore < 0) {
     numberOfRevsBefore = 0;
   }
-  return expressionForRevisionsBefore(HEAD_REVISION_EXPRESSION, numberOfRevsBefore);
+  return expressionForRevisionsBefore(
+    HEAD_REVISION_EXPRESSION,
+    numberOfRevsBefore,
+  );
 }
 
 // Section: Revision Sets
@@ -114,20 +120,28 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
   const args = [
     'log',
-    '--template', '{rev}',
-    '--rev', ancestorExpression,
-    '--limit', '1',
+    '--template',
+    '{rev}',
+    '--rev',
+    ancestorExpression,
+    '--limit',
+    '1',
   ];
   const options = {
     cwd: workingDirectory,
   };
 
   try {
-    const {stdout: ancestorRevisionNumber} = await hgAsyncExecute(args, options);
+    const {stdout: ancestorRevisionNumber} = await hgAsyncExecute(
+      args,
+      options,
+    );
     return ancestorRevisionNumber;
   } catch (e) {
     getLogger().warn('Failed to get hg common ancestor: ', e.stderr, e.command);
-    throw new Error('Could not fetch common ancestor of head and revision: ' + revision);
+    throw new Error(
+      'Could not fetch common ancestor of head and revision: ' + revision,
+    );
   }
 }
 
@@ -140,20 +154,19 @@ export function fetchRevisionsInfo(
   },
 ): Observable<Array<RevisionInfo>> {
   const revisionLogArgs = [
-    'log', '--template', REVISION_INFO_TEMPLATE,
-    '--rev', revisionExpression,
+    'log',
+    '--template',
+    REVISION_INFO_TEMPLATE,
+    '--rev',
+    revisionExpression,
   ];
   if (options == null || options.shouldLimit == null || options.shouldLimit) {
-    revisionLogArgs.push(
-      '--limit', '20',
-    );
+    revisionLogArgs.push('--limit', '20');
   }
 
   // --hidden prevents mercurial from loading the obsstore, which can be expensive.
   if (options && options.hidden === true) {
-    revisionLogArgs.push(
-      '--hidden',
-    );
+    revisionLogArgs.push('--hidden');
   }
 
   const hgOptions = {
@@ -164,7 +177,7 @@ export function fetchRevisionsInfo(
     .catch(e => {
       getLogger().warn(
         'Failed to get revision info for revisions' +
-        ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
+          ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
       );
       throw new Error(
         `Could not fetch revision info for revisions: ${revisionExpression}`,
@@ -193,10 +206,13 @@ export function fetchRevisionInfoBetweenRevisions(
 }
 
 export async function fetchRevisionInfo(
-    revisionExpression: string,
-    workingDirectory: string,
-  ): Promise<RevisionInfo> {
-  const [revisionInfo] = await fetchRevisionsInfo(revisionExpression, workingDirectory).toPromise();
+  revisionExpression: string,
+  workingDirectory: string,
+): Promise<RevisionInfo> {
+  const [revisionInfo] = await fetchRevisionsInfo(
+    revisionExpression,
+    workingDirectory,
+  ).toPromise();
   return revisionInfo;
 }
 
@@ -206,14 +222,17 @@ export function fetchSmartlogRevisions(
   // This will get the `smartlog()` expression revisions
   // and the head revision commits to the nearest public commit parent.
   const revisionExpression = 'smartlog(all) + parents(smartlog(all))';
-  return fetchRevisionsInfo(revisionExpression, workingDirectory, {shouldLimit: false})
-    .publish();
+  return fetchRevisionsInfo(revisionExpression, workingDirectory, {
+    shouldLimit: false,
+  }).publish();
 }
 
 /**
  * Helper function to `fetchRevisionInfoBetweenRevisions`.
  */
-export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<RevisionInfo> {
+export function parseRevisionInfoOutput(
+  revisionsInfoOutput: string,
+): Array<RevisionInfo> {
   const revisions = revisionsInfoOutput.split(INFO_REV_END_MARK);
   const revisionInfo = [];
   for (const chunk of revisions) {
@@ -235,8 +254,9 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
       bookmarks: splitLine(revisionLines[7]),
       remoteBookmarks: splitLine(revisionLines[8]),
       tags: splitLine(revisionLines[9]),
-      parents: splitLine(revisionLines[10])
-        .filter(hash => hash !== NO_NODE_HASH),
+      parents: splitLine(revisionLines[10]).filter(
+        hash => hash !== NO_NODE_HASH,
+      ),
       isHead: revisionLines[11] === HEAD_MARKER,
       successorInfo,
       description: revisionLines.slice(18).join('\n'),
@@ -245,7 +265,9 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
   return revisionInfo;
 }
 
-function parseSuccessorData(successorLines: Array<string>): ?RevisionSuccessorInfo {
+function parseSuccessorData(
+  successorLines: Array<string>,
+): ?RevisionSuccessorInfo {
   invariant(successorLines.length === SUCCESSOR_TEMPLATE_ORDER.length);
   for (let i = 0; i < SUCCESSOR_TEMPLATE_ORDER.length; i++) {
     if (successorLines[i].length > 0) {

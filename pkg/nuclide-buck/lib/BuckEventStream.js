@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
@@ -62,11 +63,12 @@ function convertJavaLevel(level: string): Level {
 export function getEventsFromSocket(
   socketStream: Observable<BuckWebSocketMessage>,
 ): Observable<BuckEvent> {
-  const log = (message, level = 'log') => Observable.of({
-    type: 'log',
-    message,
-    level,
-  });
+  const log = (message, level = 'log') =>
+    Observable.of({
+      type: 'log',
+      message,
+      level,
+    });
 
   const eventStream = socketStream
     .flatMap((message: BuckWebSocketMessage) => {

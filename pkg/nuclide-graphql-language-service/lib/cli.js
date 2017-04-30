@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import yargs from 'yargs';
@@ -13,17 +14,20 @@ import client from './client';
 import startServer from './server/startServer';
 
 const {argv} = yargs
-  .usage('Usage: $0 <command> <file>\n\n' +
-    '    [-h | --help]\n' +
-    '    [-c | --config] {configPath}\n' +
-    '    [-t | --text] {textBuffer}\n' +
-    '    [-f | --file] {filePath}\n' +
-    '    [-s | --schema] {schemaPath}',
+  .usage(
+    'Usage: $0 <command> <file>\n\n' +
+      '    [-h | --help]\n' +
+      '    [-c | --config] {configPath}\n' +
+      '    [-t | --text] {textBuffer}\n' +
+      '    [-f | --file] {filePath}\n' +
+      '    [-s | --schema] {schemaPath}',
   )
   .help('h')
   .alias('h', 'help')
-  .demand(1, 'At least one command is required.\n' +
-    'Commands: "server, lint, autocomplete, outline"\n',
+  .demand(
+    1,
+    'At least one command is required.\n' +
+      'Commands: "server, lint, autocomplete, outline"\n',
   )
   .option('c', {
     alias: 'config',

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
@@ -42,7 +43,9 @@ export class DefinitionPreviewView extends React.Component {
     const buffer = props.definition != null
       ? bufferForUri(props.definition.path)
       : new TextBuffer();
-    const heightSetting = ((featureConfig.get('nuclide-definition-preview.editorHeight')): any);
+    const heightSetting = (featureConfig.get(
+      'nuclide-definition-preview.editorHeight',
+    ): any);
     let height: number = 50;
     if (heightSetting != null) {
       height = heightSetting;
@@ -60,8 +63,9 @@ export class DefinitionPreviewView extends React.Component {
       (newHeight: any) => this._setEditorHeight((newHeight: number)),
     );
 
-    (this: any)._openCurrentDefinitionInMainEditor =
-      this._openCurrentDefinitionInMainEditor.bind(this);
+    (this: any)._openCurrentDefinitionInMainEditor = this._openCurrentDefinitionInMainEditor.bind(
+      this,
+    );
     (this: any)._increaseEditorHeight = this._increaseEditorHeight.bind(this);
     (this: any)._decreaseEditorHeight = this._decreaseEditorHeight.bind(this);
   }
@@ -73,7 +77,10 @@ export class DefinitionPreviewView extends React.Component {
       // the correct path if the new definition prop has a different path than the
       // currently loaded buffer.
       if (definition.path !== this.state.buffer.getPath()) {
-        this.setState({buffer: bufferForUri(definition.path), oldBuffer: this.state.buffer});
+        this.setState({
+          buffer: bufferForUri(definition.path),
+          oldBuffer: this.state.buffer,
+        });
       }
     } else {
       // A null definition has no associated file path, so make a new TextBuffer()
@@ -128,12 +135,14 @@ export class DefinitionPreviewView extends React.Component {
 
   render(): React.Element<any> {
     const {ContextViewMessage, definition} = this.props;
-    const atMinHeight = (this.state.editorHeight - EDITOR_HEIGHT_DELTA) < MINIMUM_EDITOR_HEIGHT;
+    const atMinHeight =
+      this.state.editorHeight - EDITOR_HEIGHT_DELTA < MINIMUM_EDITOR_HEIGHT;
     // Show either a "No definition" message or the definition in an editors
     return definition == null
       ? <ContextViewMessage message={ContextViewMessage.NO_DEFINITION} />
       : <div className="pane-item nuclide-definition-preview">
-          <div className="nuclide-definition-preview-editor"
+          <div
+            className="nuclide-definition-preview-editor"
             style={{height: `${this.state.editorHeight}em`}}>
             <AtomTextEditor
               ref="editor"
@@ -147,7 +156,9 @@ export class DefinitionPreviewView extends React.Component {
               syncTextContents={false}
             />
             <ButtonContainer
-              _openCurrentDefinitionInMainEditor={this._openCurrentDefinitionInMainEditor}
+              _openCurrentDefinitionInMainEditor={
+                this._openCurrentDefinitionInMainEditor
+              }
               _increaseEditorHeight={this._increaseEditorHeight}
               _decreaseEditorHeight={this._decreaseEditorHeight}
               atMinHeight={atMinHeight}
@@ -202,13 +213,22 @@ const ButtonContainer = (props: ButtonContainerProps) => {
       <div className="nuclide-definition-preview-buttons">
         <div className="nuclide-definition-preview-buttons-left">
           <span style={{paddingRight: '1em'}}>Height:</span>
-          <Button onClick={props._decreaseEditorHeight}
+          <Button
+            onClick={props._decreaseEditorHeight}
             size={ButtonSizes.SMALL}
-            disabled={props.atMinHeight}>-</Button>
-          <Button onClick={props._increaseEditorHeight} size={ButtonSizes.SMALL}>+</Button>
+            disabled={props.atMinHeight}>
+            -
+          </Button>
+          <Button
+            onClick={props._increaseEditorHeight}
+            size={ButtonSizes.SMALL}>
+            +
+          </Button>
         </div>
         <div className="nuclide-definition-preview-buttons-right">
-          <Button onClick={props._openCurrentDefinitionInMainEditor} size={ButtonSizes.SMALL}>
+          <Button
+            onClick={props._openCurrentDefinitionInMainEditor}
+            size={ButtonSizes.SMALL}>
             Open in main editor
           </Button>
         </div>

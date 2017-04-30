@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -53,7 +54,10 @@ class ResizeSensor extends React.Component {
 
   componentDidUpdate(prevProps: SensorProps): void {
     const {targetWidth, targetHeight} = this.props;
-    if (prevProps.targetWidth !== targetWidth || prevProps.targetHeight !== targetHeight) {
+    if (
+      prevProps.targetWidth !== targetWidth ||
+      prevProps.targetHeight !== targetHeight
+    ) {
       this._resetScrollbars();
     }
   }
@@ -190,8 +194,9 @@ export class ResizeSensitiveContainer extends React.Component {
     if (this._rafDisposable != null) {
       this._rafDisposable.unsubscribe();
     }
-    this._rafDisposable =
-      nextAnimationFrame.subscribe(this._updateContainerSize);
+    this._rafDisposable = nextAnimationFrame.subscribe(
+      this._updateContainerSize,
+    );
   }
 
   render(): React.Element<any> {
@@ -209,13 +214,13 @@ export class ResizeSensitiveContainer extends React.Component {
           tabIndex={tabIndex}>
           {children}
         </div>
-        {this._containerRendered() ? (
-          <ResizeSensor
-            targetHeight={height}
-            targetWidth={width}
-            onDetectedResize={this._handleResize}
-          />
-        ) : null}
+        {this._containerRendered()
+          ? <ResizeSensor
+              targetHeight={height}
+              targetWidth={width}
+              onDetectedResize={this._handleResize}
+            />
+          : null}
       </div>
     );
   }

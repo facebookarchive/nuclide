@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -34,7 +35,11 @@ import TypeHintHelpers from './TypeHintHelpers';
 import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
-import {reset, registerCompilationDatabaseProvider, getRelatedSourceOrHeader} from './libclang';
+import {
+  reset,
+  registerCompilationDatabaseProvider,
+  getRelatedSourceOrHeader,
+} from './libclang';
 
 let busySignalProvider: ?BusySignalProviderBase = null;
 let subscriptions: ?CompositeDisposable = null;
@@ -45,17 +50,21 @@ export function activate() {
   // and reset all compilation flags. Useful when BUCK targets or headers change,
   // since those are heavily cached for performance. Also great for testing!
   subscriptions.add(
-    atom.commands.add('atom-workspace', 'nuclide-clang:clean-and-rebuild', async () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor == null) {
-        return;
-      }
-      const path = editor.getPath();
-      if (path == null) {
-        return;
-      }
-      await reset(editor);
-    }),
+    atom.commands.add(
+      'atom-workspace',
+      'nuclide-clang:clean-and-rebuild',
+      async () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        const path = editor.getPath();
+        if (path == null) {
+          return;
+        }
+        await reset(editor);
+      },
+    ),
   );
 
   busySignalProvider = new BusySignalProviderBase();
@@ -66,7 +75,7 @@ export function createAutocompleteProvider(): atom$AutocompleteProvider {
   return {
     selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
     inclusionPriority: 1,
-    suggestionPriority: 5,  // Higher than the snippets provider.
+    suggestionPriority: 5, // Higher than the snippets provider.
     getSuggestions(request) {
       return AutocompleteHelpers.getAutocompleteSuggestions(request);
     },
@@ -89,7 +98,10 @@ export function provideDefinitions(): DefinitionProvider {
     name: PACKAGE_NAME,
     priority: 20,
     grammarScopes: GRAMMARS,
-    getDefinition(editor: TextEditor, position: atom$Point): Promise<?DefinitionQueryResult> {
+    getDefinition(
+      editor: TextEditor,
+      position: atom$Point,
+    ): Promise<?DefinitionQueryResult> {
       return DefinitionHelpers.getDefinition(editor, position);
     },
     getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
@@ -167,7 +179,9 @@ export function provideRelatedFiles(): RelatedFilesProvider {
   };
 }
 
-export function consumeCompilationDatabase(provider: ClangCompilationDatabaseProvider): Disposable {
+export function consumeCompilationDatabase(
+  provider: ClangCompilationDatabaseProvider,
+): Disposable {
   return registerCompilationDatabaseProvider(provider);
 }
 

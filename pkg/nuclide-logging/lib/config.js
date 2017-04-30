@@ -6,25 +6,35 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LoggingAppender} from './types';
 import ScribeProcess from '../../commons-node/ScribeProcess';
-import {isRunningInTest, isRunningInClient} from '../../commons-node/system-info';
+import {
+  isRunningInTest,
+  isRunningInClient,
+} from '../../commons-node/system-info';
 import fsPromise from '../../commons-node/fsPromise';
 
 import os from 'os';
 import nuclideUri from '../../commons-node/nuclideUri';
 
-const LOG_DIRECTORY = nuclideUri.join(os.tmpdir(), `/nuclide-${os.userInfo().username}-logs`);
+const LOG_DIRECTORY = nuclideUri.join(
+  os.tmpdir(),
+  `/nuclide-${os.userInfo().username}-logs`,
+);
 export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
 let logDirectoryInitialized = false;
-const scribeAppenderPath = nuclideUri.join(__dirname, '../fb/scribeAppender.js');
+const scribeAppenderPath = nuclideUri.join(
+  __dirname,
+  '../fb/scribeAppender.js',
+);
 
 export type AdditionalLogFile = {
-    title: string,
-    filename: string,
+  title: string,
+  filename: string,
 };
 
 const additionalLogFiles: Array<AdditionalLogFile> = [];
@@ -36,8 +46,10 @@ export async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip config scribe_cat logger if
   // 1) or running in open sourced version of nuclide
   // 2) or the scribe_cat command is missing.
-  if (!(await fsPromise.exists(scribeAppenderPath)) ||
-      !(await ScribeProcess.isScribeCatOnPath())) {
+  if (
+    !await fsPromise.exists(scribeAppenderPath) ||
+    !await ScribeProcess.isScribeCatOnPath()
+  ) {
     return null;
   }
 
@@ -116,8 +128,11 @@ export function addAdditionalLogFile(title: string, filename: string) {
     filename: filePath,
   };
 
-  if (additionalLogFiles
-        .filter(entry => entry.filename === filename && entry.title === title).length === 0) {
+  if (
+    additionalLogFiles.filter(
+      entry => entry.filename === filename && entry.title === title,
+    ).length === 0
+  ) {
     additionalLogFiles.push(logFile);
   }
 }

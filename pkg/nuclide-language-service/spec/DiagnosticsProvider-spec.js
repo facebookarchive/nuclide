@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
@@ -17,12 +18,18 @@ import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
-  let diagnosticsProvider: FileDiagnosticsProvider<LanguageService> = (null: any);
+  let diagnosticsProvider: FileDiagnosticsProvider<
+    LanguageService
+  > = (null: any);
 
   beforeEach(() => {
-    class FakeProviderBase { dispose() {} }
-    const file: DiagnosticsProviderFile
-      = (uncachedRequire(require, '../lib/DiagnosticsProvider'): any);
+    class FakeProviderBase {
+      dispose() {}
+    }
+    const file: DiagnosticsProviderFile = (uncachedRequire(
+      require,
+      '../lib/DiagnosticsProvider',
+    ): any);
     diagnosticsProvider = new file.FileDiagnosticsProvider(
       'Hack',
       ['text.html.hack', 'text.html.php'],
@@ -53,10 +60,14 @@ describe('DiagnosticsProvider', () => {
 
       diagnosticsProvider.invalidateProjectPath('/hack/root1');
       expect(publishHandler.callCount).toBe(1);
-      expect(publishHandler.argsForCall[0][0]).toEqual({scope: 'file', filePaths: root1Paths});
+      expect(publishHandler.argsForCall[0][0]).toEqual({
+        scope: 'file',
+        filePaths: root1Paths,
+      });
       expect(diagnosticsProvider._projectRootToFilePaths.size).toBe(1);
-      expect(diagnosticsProvider._projectRootToFilePaths.get('/hack/root2'))
-        .toEqual(new Set(root2Paths));
+      expect(
+        diagnosticsProvider._projectRootToFilePaths.get('/hack/root2'),
+      ).toEqual(new Set(root2Paths));
     });
   });
 });

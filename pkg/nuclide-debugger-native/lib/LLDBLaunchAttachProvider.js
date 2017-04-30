@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {DebuggerActionUIProvider} from './actions/DebuggerActionUIProvider';
+import type {
+  DebuggerActionUIProvider,
+} from './actions/DebuggerActionUIProvider';
 import type EventEmitter from 'events';
 
 import {asyncFilter} from '../../commons-node/promise';
@@ -20,7 +23,6 @@ import {LaunchAttachActions} from './LaunchAttachActions';
 import * as LaunchActionUIProvider from './actions/LaunchActionUIProvider';
 import * as AttachActionUIProvider from './actions/AttachActionUIProvider';
 
-
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;
   _actions: LaunchAttachActions;
@@ -30,7 +32,10 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
     this._dispatcher = new LaunchAttachDispatcher();
-    this._actions = new LaunchAttachActions(this._dispatcher, this.getTargetUri());
+    this._actions = new LaunchAttachActions(
+      this._dispatcher,
+      this.getTargetUri(),
+    );
     this._store = new LaunchAttachStore(this._dispatcher);
 
     this._uiProviderMap = new Map();
@@ -58,10 +63,15 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
 
   getComponent(
     actionName: string,
-    parentEventEmitter: EventEmitter): ?React.Element<any> {
+    parentEventEmitter: EventEmitter,
+  ): ?React.Element<any> {
     const action = this._uiProviderMap.get(actionName);
     if (action) {
-      return action.getComponent(this._store, this._actions, parentEventEmitter);
+      return action.getComponent(
+        this._store,
+        this._actions,
+        parentEventEmitter,
+      );
     }
     return null;
   }

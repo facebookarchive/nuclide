@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -36,11 +37,7 @@ const MessageTypeClassNames = Object.freeze({
 });
 
 export const Message = (props: Props) => {
-  const {
-    className,
-    children,
-    type,
-  } = props;
+  const {className, children, type} = props;
   const resolvedType = type == null ? MessageTypes.default : type;
   const newClassName = classnames(
     className,

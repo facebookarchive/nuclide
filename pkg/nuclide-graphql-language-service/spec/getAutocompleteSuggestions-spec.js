@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {AutocompleteSuggestionType} from '../lib/types/Types';
@@ -17,7 +18,9 @@ import {buildSchema} from 'graphql/utilities';
 import path from 'path';
 
 import {Point} from '../lib/utils/Range';
-import {getAutocompleteSuggestions} from '../lib/interfaces/getAutocompleteSuggestions';
+import {
+  getAutocompleteSuggestions,
+} from '../lib/interfaces/getAutocompleteSuggestions';
 
 describe('getAutocompleteSuggestions', () => {
   let schema;
@@ -34,23 +37,22 @@ describe('getAutocompleteSuggestions', () => {
     query: string,
     point: Point,
   ): Array<AutocompleteSuggestionType> {
-    return getAutocompleteSuggestions(schema, query, point).filter(
-      field => !['__schema', '__type'].some(name => name === field.text),
-    ).sort(
-      (a, b) => a.text.localeCompare(b.text),
-    ).map(suggestion => {
-      const response = {text: suggestion.text};
-      if (suggestion.type) {
-        Object.assign(response, {type: getNamedType(suggestion.type).name});
-      }
-      return response;
-    });
+    return getAutocompleteSuggestions(schema, query, point)
+      .filter(
+        field => !['__schema', '__type'].some(name => name === field.text),
+      )
+      .sort((a, b) => a.text.localeCompare(b.text))
+      .map(suggestion => {
+        const response = {text: suggestion.text};
+        if (suggestion.type) {
+          Object.assign(response, {type: getNamedType(suggestion.type).name});
+        }
+        return response;
+      });
   }
 
   it('provides correct initial keywords', () => {
-    expect(
-      testSuggestions('', new Point(0, 0)),
-    ).toEqual([
+    expect(testSuggestions('', new Point(0, 0))).toEqual([
       {text: '{'},
       {text: 'fragment'},
       {text: 'mutation'},
@@ -58,9 +60,7 @@ describe('getAutocompleteSuggestions', () => {
       {text: 'subscription'},
     ]);
 
-    expect(
-      testSuggestions('q', new Point(0, 1)),
-    ).toEqual([
+    expect(testSuggestions('q', new Point(0, 1))).toEqual([
       {text: '{'},
       {text: 'query'},
     ]);
@@ -68,9 +68,7 @@ describe('getAutocompleteSuggestions', () => {
 
   it('provides correct suggestions for the cursor location', () => {
     // Below should provide initial keywords
-    expect(
-      testSuggestions(' {}', new Point(0, 0)),
-    ).toEqual([
+    expect(testSuggestions(' {}', new Point(0, 0))).toEqual([
       {text: '{'},
       {text: 'fragment'},
       {text: 'mutation'},
@@ -78,9 +76,7 @@ describe('getAutocompleteSuggestions', () => {
       {text: 'subscription'},
     ]);
     // Below should provide root field names
-    expect(
-      testSuggestions(' {}', new Point(0, 2)),
-    ).toEqual([
+    expect(testSuggestions(' {}', new Point(0, 2))).toEqual([
       {text: 'droid', type: 'Droid'},
       {text: 'hero', type: 'Character'},
       {text: 'human', type: 'Human'},
@@ -141,10 +137,7 @@ describe('getAutocompleteSuggestions', () => {
   });
 
   it('provides correct argument suggestions when using aliases', () => {
-    const result = testSuggestions(
-      '{ aliasTest: human( ',
-      new Point(0, 20),
-    );
+    const result = testSuggestions('{ aliasTest: human( ', new Point(0, 20));
     expect(result).toEqual([{text: 'id', type: 'String'}]);
   });
 
@@ -155,7 +148,8 @@ describe('getAutocompleteSuggestions', () => {
     ).toEqual([{text: 'Query'}]);
 
     const suggestionsOnCompositeType = testSuggestions(
-      '{ hero(episode: JEDI) { ... on } }', new Point(0, 31),
+      '{ hero(episode: JEDI) { ... on } }',
+      new Point(0, 31),
     );
     expect(suggestionsOnCompositeType).toEqual([
       {text: 'Character'},
@@ -163,21 +157,13 @@ describe('getAutocompleteSuggestions', () => {
       {text: 'Human'},
     ]);
 
-    expect(testSuggestions(
-      'fragment Foo on Character { ... on }',
-      new Point(0, 35),
-    )).toEqual([
-      {text: 'Character'},
-      {text: 'Droid'},
-      {text: 'Human'},
-    ]);
+    expect(
+      testSuggestions('fragment Foo on Character { ... on }', new Point(0, 35)),
+    ).toEqual([{text: 'Character'}, {text: 'Droid'}, {text: 'Human'}]);
   });
 
   it('provides correct typeCondition suggestions on fragment', () => {
-    const result = testSuggestions(
-      'fragment Foo on {}',
-      new Point(0, 16),
-    );
+    const result = testSuggestions('fragment Foo on {}', new Point(0, 16));
     expect(result.filter(({text}) => !text.startsWith('__'))).toEqual([
       {text: 'Character'},
       {text: 'Droid'},
@@ -188,9 +174,7 @@ describe('getAutocompleteSuggestions', () => {
   });
 
   it('provides correct ENUM suggestions', () => {
-    const result = testSuggestions(
-      '{ hero(episode: ', new Point(0, 16),
-    );
+    const result = testSuggestions('{ hero(episode: ', new Point(0, 16));
     expect(result).toEqual([
       {text: 'EMPIRE', type: 'Episode'},
       {text: 'JEDI', type: 'Episode'},
@@ -202,65 +186,55 @@ describe('getAutocompleteSuggestions', () => {
     const fragmentDef = 'fragment Foo on Human { id }';
 
     // Test on concrete types
-    expect(testSuggestions(
-      `${fragmentDef} query { human(id: "1") { ...`,
-      new Point(0, 57),
-    )).toEqual([
-      {text: 'Foo', type: 'Human'},
-    ]);
-    expect(testSuggestions(
-      `query { human(id: "1") { ... }} ${fragmentDef}`,
-      new Point(0, 28),
-    )).toEqual([
-      {text: 'Foo', type: 'Human'},
-    ]);
+    expect(
+      testSuggestions(
+        `${fragmentDef} query { human(id: "1") { ...`,
+        new Point(0, 57),
+      ),
+    ).toEqual([{text: 'Foo', type: 'Human'}]);
+    expect(
+      testSuggestions(
+        `query { human(id: "1") { ... }} ${fragmentDef}`,
+        new Point(0, 28),
+      ),
+    ).toEqual([{text: 'Foo', type: 'Human'}]);
 
     // Test on abstract type
-    expect(testSuggestions(
-      `${fragmentDef} query { hero(episode: JEDI) { ...`,
-      new Point(0, 62),
-    )).toEqual([
-      {text: 'Foo', type: 'Human'},
-    ]);
+    expect(
+      testSuggestions(
+        `${fragmentDef} query { hero(episode: JEDI) { ...`,
+        new Point(0, 62),
+      ),
+    ).toEqual([{text: 'Foo', type: 'Human'}]);
   });
 
   it('provides correct directive suggestions', () => {
-    expect(testSuggestions(
-      '{ test @',
-      new Point(0, 8),
-    )).toEqual([
+    expect(testSuggestions('{ test @', new Point(0, 8))).toEqual([
       {text: 'include'},
       {text: 'skip'},
       {text: 'test'},
     ]);
-    expect(testSuggestions(
-      '{ aliasTest: test @ }',
-      new Point(0, 19),
-    )).toEqual([
+    expect(testSuggestions('{ aliasTest: test @ }', new Point(0, 19))).toEqual([
       {text: 'include'},
       {text: 'skip'},
       {text: 'test'},
     ]);
-    expect(
-      testSuggestions('query @', new Point(0, 7)),
-    ).toEqual([]);
+    expect(testSuggestions('query @', new Point(0, 7))).toEqual([]);
   });
 
   it('provides correct testInput suggestions', () => {
-    expect(testSuggestions(
-      '{ inputTypeTest(args: {',
-      new Point(0, 23),
-    )).toEqual([
-      {text: 'key', type: 'String'},
-      {text: 'value', type: 'Int'},
-    ]);
+    expect(
+      testSuggestions('{ inputTypeTest(args: {', new Point(0, 23)),
+    ).toEqual([{text: 'key', type: 'String'}, {text: 'value', type: 'Int'}]);
   });
 
   it('provides correct field name suggestion inside inline fragment', () => {
-    expect(testSuggestions(
-      'fragment Foo on Character { ... on Human { }}',
-      new Point(0, 42),
-    )).toEqual([
+    expect(
+      testSuggestions(
+        'fragment Foo on Character { ... on Human { }}',
+        new Point(0, 42),
+      ),
+    ).toEqual([
       {text: 'appearsIn', type: 'Episode'},
       {text: 'friends', type: 'Character'},
       {text: 'id', type: 'String'},
@@ -269,10 +243,9 @@ describe('getAutocompleteSuggestions', () => {
     ]);
 
     // Typeless inline fragment assumes the type automatically
-    expect(testSuggestions(
-      'fragment Foo on Droid { ... { ',
-      new Point(0, 30),
-    )).toEqual([
+    expect(
+      testSuggestions('fragment Foo on Droid { ... { ', new Point(0, 30)),
+    ).toEqual([
       {text: 'appearsIn', type: 'Episode'},
       {text: 'friends', type: 'Character'},
       {text: 'id', type: 'String'},

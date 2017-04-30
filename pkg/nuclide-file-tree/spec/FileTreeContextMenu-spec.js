@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -40,8 +41,9 @@ describe('FileTreeContextMenu', () => {
 
   it('puts ShowIn items in the same group', () => {
     const groups = itemGroups(fileTreeItems());
-    expect(groups.get('Copy Full Path'))
-      .toBe(groups.get('Search in Directory'));
+    expect(groups.get('Copy Full Path')).toBe(
+      groups.get('Search in Directory'),
+    );
   });
 
   it('has separators between groups', () => {
@@ -73,8 +75,9 @@ describe('FileTreeContextMenu', () => {
     waitsFor(() => fileTreeItems().some(x => x.label === label));
     runs(() => {
       const groups = itemGroups(fileTreeItems());
-      expect(getNonNull(groups, label))
-        .toBe(getNonNull(groups, 'Copy Full Path'));
+      expect(getNonNull(groups, label)).toBe(
+        getNonNull(groups, 'Copy Full Path'),
+      );
     });
   });
 });
@@ -83,7 +86,9 @@ function testItem(): FileTreeContextMenuItem {
   return {
     label: 'Test Label',
     command: 'command-for-test',
-    shouldDisplay() { return true; },
+    shouldDisplay() {
+      return true;
+    },
   };
 }
 
@@ -98,7 +103,7 @@ function fileTreeItemsOrNull(): ?Array<atom$ContextMenuItem> {
     x => x.selector === EVENT_HANDLER_SELECTOR,
   );
   invariant(itemSets.length <= 1);
-  return (itemSets.length === 0) ? null : itemSets[0].items;
+  return itemSets.length === 0 ? null : itemSets[0].items;
 }
 
 function itemGroups(

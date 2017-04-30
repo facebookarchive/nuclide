@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
@@ -194,15 +195,15 @@ export function getDeployBuildEvents(
           });
         })
         .startWith(
-        {
-          type: 'log',
-          message: `Launching debugger for ${buildTarget}${argString}...`,
-          level: 'log',
-        },
-        {
-          type: 'progress',
-          progress: null,
-        },
+          {
+            type: 'log',
+            message: `Launching debugger for ${buildTarget}${argString}...`,
+            level: 'log',
+          },
+          {
+            type: 'progress',
+            progress: null,
+          },
         );
     });
 }

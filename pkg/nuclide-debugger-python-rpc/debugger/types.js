@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type Breakpoint = {
@@ -41,8 +42,8 @@ export type DebuggerEventStop = {
 };
 
 export type DebuggerEvent =
-  DebuggerEventExit |
-  DebuggerEventLog |
-  DebuggerEventConnected |
-  DebuggerEventStart |
-  DebuggerEventStop;
+  | DebuggerEventExit
+  | DebuggerEventLog
+  | DebuggerEventConnected
+  | DebuggerEventStart
+  | DebuggerEventStop;

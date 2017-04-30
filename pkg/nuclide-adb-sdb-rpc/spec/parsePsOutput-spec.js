@@ -6,16 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {parsePsTableOutput} from '../lib/Adb';
 
 describe('parsePsOutput', () => {
   it('splits the output by message', () => {
-    const fakePsOutput = 'USER      PID   PPID  VSIZE  RSS   WCHAN            PC  NAME\n'
-      + 'u0_a2    2326  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n'
-      + 'u0_a16   2359  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n'
-      + 'u0_a48   2386  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
+    const fakePsOutput =
+      'USER      PID   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' +
+      'u0_a2    2326  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' +
+      'u0_a16   2359  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' +
+      'u0_a48   2386  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
 
     let parsed = parsePsTableOutput(fakePsOutput, ['user', 'pid', 'name']);
     expect(parsed.length).toBe(3);
@@ -33,10 +35,11 @@ describe('parsePsOutput', () => {
     expect(parsed[2].name).toEqual('com.google.android.apps.maps');
 
     // Try another output with different column ordering to confirm column mapping is working.
-    const fakePsOutput2 = 'PID      USER   PPID  VSIZE  RSS   WCHAN            PC  NAME\n'
-      + '2326   u0_a2  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n'
-      + '2359   u0_a16  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n'
-      + '2386   u0_a48  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
+    const fakePsOutput2 =
+      'PID      USER   PPID  VSIZE  RSS   WCHAN            PC  NAME\n' +
+      '2326   u0_a2  1257  1113392 38148 SyS_epoll_ 00000000 S com.android.providers.calendar\n' +
+      '2359   u0_a16  1257  1109708 33484 SyS_epoll_ 00000000 S com.android.managedprovisioning\n' +
+      '2386   u0_a48  1257  1215388 56116 SyS_epoll_ 00000000 S com.google.android.apps.maps\n';
 
     parsed = parsePsTableOutput(fakePsOutput2, ['user', 'pid']);
     expect(parsed.length).toBe(3);

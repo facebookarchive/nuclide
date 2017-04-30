@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -75,7 +75,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       lldbPythonPath: getConfig().lldbPythonPath,
       envPythonPath: '',
     };
-    const service = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
+    const service = getServiceByNuclideUri(
+      'NativeDebuggerService',
+      this.getTargetUri(),
+    );
     invariant(service);
     return new service.NativeDebuggerService(debuggerConfig);
   }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -32,11 +33,16 @@ describe('BidiService', () => {
   beforeEach(() => {
     testHelper = new ServiceTester();
     waitsForPromise(async () => {
-      await testHelper.start([{
-        name: 'BidiService',
-        definition: nuclideUri.join(__dirname, 'BidiService.def'),
-        implementation: nuclideUri.join(__dirname, 'BidiService.js'),
-      }], 'bidi_protocol');
+      await testHelper.start(
+        [
+          {
+            name: 'BidiService',
+            definition: nuclideUri.join(__dirname, 'BidiService.def'),
+            implementation: nuclideUri.join(__dirname, 'BidiService.js'),
+          },
+        ],
+        'bidi_protocol',
+      );
       service = testHelper.getRemoteService('BidiService');
     });
   });

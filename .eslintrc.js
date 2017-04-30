@@ -248,7 +248,7 @@ module.exports = {
     // 'quote-props': [1, 'as-needed'],
     'quotes': [1, 'single', 'avoid-escape'],
     'require-jsdoc': 0,
-    'semi-spacing': 1,
+    // 'semi-spacing': 1,
     'semi': 1,
     'sort-keys': 0,
     'sort-vars': 0,

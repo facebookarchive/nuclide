@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -17,10 +18,7 @@ import {RUNNING, PAUSED, ENDED} from './constants';
 import {BreakpointManager} from './BreakpointManager';
 import {Subject} from 'rxjs';
 
-import type {
-  DeviceInfo,
-  RuntimeStatus,
-} from './types';
+import type {DeviceInfo, RuntimeStatus} from './types';
 import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
 
 const {log, logError} = logger;
@@ -49,14 +47,19 @@ export class ConnectionMultiplexer {
 
   constructor(
     sendMessageToClient: (message: Object) => void,
-    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
+    sendAtomNotification: (
+      level: AtomNotificationType,
+      message: string,
+    ) => void,
   ) {
     this._connections = new Set();
     this._sendMessageToClient = sendMessageToClient;
     this._sendAtomNotification = sendAtomNotification;
     this._freshConnectionId = 0;
     this._newConnections = new Subject();
-    this._breakpointManager = new BreakpointManager(this._sendMessageToClient.bind(this));
+    this._breakpointManager = new BreakpointManager(
+      this._sendMessageToClient.bind(this),
+    );
     this._disposables = new UniversalDisposable(
       this._newConnections.subscribe(this._handleNewConnection.bind(this)),
       this._breakpointManager,
@@ -79,7 +82,10 @@ export class ConnectionMultiplexer {
         break;
       }
       default: {
-        this._replyWithError(message.id, `Unhandled message: ${JSON.stringify(message)}`);
+        this._replyWithError(
+          message.id,
+          `Unhandled message: ${JSON.stringify(message)}`,
+        );
       }
     }
   }
@@ -95,13 +101,17 @@ export class ConnectionMultiplexer {
         break;
       }
       case 'setBreakpointByUrl': {
-        const response = await this._breakpointManager.setBreakpointByUrl(message);
+        const response = await this._breakpointManager.setBreakpointByUrl(
+          message,
+        );
         response.id = message.id;
         this._sendMessageToClient(response);
         break;
       }
       case 'removeBreakpoint': {
-        const response = await this._breakpointManager.removeBreakpoint(message);
+        const response = await this._breakpointManager.removeBreakpoint(
+          message,
+        );
         response.id = message.id;
         this._sendMessageToClient(response);
         break;
@@ -127,12 +137,13 @@ export class ConnectionMultiplexer {
         break;
       }
       case 'setPauseOnExceptions': {
-        const response = await this._breakpointManager.setPauseOnExceptions(message);
+        const response = await this._breakpointManager.setPauseOnExceptions(
+          message,
+        );
         response.id = message.id;
         this._sendMessageToClient(response);
         break;
       }
-
       // Events.  Typically we will just forward these to the client.
       case 'scriptParsed': {
         this._sendMessageToClient(message);
@@ -152,7 +163,10 @@ export class ConnectionMultiplexer {
       }
 
       default: {
-        this._replyWithError(message.id, `Unhandled message: ${JSON.stringify(message)}`);
+        this._replyWithError(
+          message.id,
+          `Unhandled message: ${JSON.stringify(message)}`,
+        );
       }
     }
   }
@@ -168,7 +182,10 @@ export class ConnectionMultiplexer {
         break;
       }
       default: {
-        this._replyWithError(message.id, `Unhandled message: ${JSON.stringify(message)}`);
+        this._replyWithError(
+          message.id,
+          `Unhandled message: ${JSON.stringify(message)}`,
+        );
       }
     }
   }
@@ -180,7 +197,10 @@ export class ConnectionMultiplexer {
         break;
       }
       default: {
-        this._replyWithError(message.id, `Unhandled message: ${JSON.stringify(message)}`);
+        this._replyWithError(
+          message.id,
+          `Unhandled message: ${JSON.stringify(message)}`,
+        );
       }
     }
   }
@@ -215,7 +235,10 @@ export class ConnectionMultiplexer {
       const response = await connection.sendCommand(message);
       this._sendMessageToClient(response);
     } else {
-      this._replyWithError(message.id, 'Runtime.getProperties sent but we have no connections');
+      this._replyWithError(
+        message.id,
+        'Runtime.getProperties sent but we have no connections',
+      );
     }
   }
 
@@ -225,7 +248,10 @@ export class ConnectionMultiplexer {
       response.id = message.id;
       this._sendMessageToClient(response);
     } else {
-      this._replyWithError(message.id, `${message.method} sent to running connection`);
+      this._replyWithError(
+        message.id,
+        `${message.method} sent to running connection`,
+      );
     }
   }
 
@@ -280,14 +306,21 @@ export class ConnectionMultiplexer {
       responsePromises.push(connection.sendCommand(message));
     }
     const responses = await Promise.all(responsePromises);
-    if (!responses.every(response => response.result != null && response.error == null)) {
+    if (
+      !responses.every(
+        response => response.result != null && response.error == null,
+      )
+    ) {
       const err = `A prelude message response was an error: ${JSON.stringify(responses)}`;
       logError(err);
       throw new Error(err);
     }
   }
 
-  _handleStatusChange(status: RuntimeStatus, connection: DebuggerConnection): void {
+  _handleStatusChange(
+    status: RuntimeStatus,
+    connection: DebuggerConnection,
+  ): void {
     switch (status) {
       case RUNNING: {
         this._handleRunningMode(connection);

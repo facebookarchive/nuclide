@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -68,15 +69,14 @@ export function registerOutputProvider(
   //       way, we won't trigger cold observer side-effects when we don't need the results.
   return registerRecordProvider({
     ...outputProvider,
-    records: outputProvider.messages
-      .map(message => ({
-        ...message,
-        kind: 'message',
-        sourceId: outputProvider.id,
-        scopeName: null,
-        // Eventually, we'll want to allow providers to specify custom timestamps for records.
-        timestamp: new Date(),
-      })),
+    records: outputProvider.messages.map(message => ({
+      ...message,
+      kind: 'message',
+      sourceId: outputProvider.id,
+      scopeName: null,
+      // Eventually, we'll want to allow providers to specify custom timestamps for records.
+      timestamp: new Date(),
+    })),
   });
 }
 
@@ -89,11 +89,15 @@ export function registerRecordProvider(
   };
 }
 
-export function unregisterRecordProvider(recordProvider: RecordProvider): RemoveSourceAction {
+export function unregisterRecordProvider(
+  recordProvider: RecordProvider,
+): RemoveSourceAction {
   return removeSource(recordProvider.id);
 }
 
-export function unregisterOutputProvider(outputProvider: OutputProvider): RemoveSourceAction {
+export function unregisterOutputProvider(
+  outputProvider: OutputProvider,
+): RemoveSourceAction {
   return removeSource(outputProvider.id);
 }
 
@@ -104,7 +108,9 @@ export function selectExecutor(executorId: string): SelectExecutorAction {
   };
 }
 
-export function setMaxMessageCount(maxMessageCount: number): SetMaxMessageCountAction {
+export function setMaxMessageCount(
+  maxMessageCount: number,
+): SetMaxMessageCountAction {
   return {
     type: SET_MAX_MESSAGE_COUNT,
     payload: {maxMessageCount},
@@ -122,7 +128,10 @@ export function unregisterExecutor(executor: Executor): RemoveSourceAction {
   return removeSource(executor.id);
 }
 
-export function updateStatus(providerId: string, status: OutputProviderStatus): UpdateStatusAction {
+export function updateStatus(
+  providerId: string,
+  status: OutputProviderStatus,
+): UpdateStatusAction {
   return {
     type: UPDATE_STATUS,
     payload: {providerId, status},

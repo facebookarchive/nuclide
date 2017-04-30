@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
@@ -37,8 +38,12 @@ export class DebugUiComponent extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
-    (this: any)._handleDebugButtonClick = this._handleDebugButtonClick.bind(this);
+    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
+      this,
+    );
+    (this: any)._handleDebugButtonClick = this._handleDebugButtonClick.bind(
+      this,
+    );
 
     this.state = {
       startPackager: false,
@@ -50,13 +55,15 @@ export class DebugUiComponent extends React.Component {
   componentWillMount() {
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleDebugButtonClick);
+      this._handleDebugButtonClick,
+    );
   }
 
   componentWillUnmount() {
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleDebugButtonClick);
+      this._handleDebugButtonClick,
+    );
   }
 
   render(): React.Element<any> {
@@ -78,7 +85,7 @@ export class DebugUiComponent extends React.Component {
         </div>
         <div className="block">
           <Checkbox
-          checked={this.state.tailAdbLogs}
+            checked={this.state.tailAdbLogs}
             label="Tail adb Logcat Logs"
             onChange={tailAdbLogs => this.setState({tailAdbLogs})}
           />
@@ -89,8 +96,7 @@ export class DebugUiComponent extends React.Component {
         </div>
         <div className="nuclide-react-native-debugging-launch-attach-actions">
           <ButtonGroup>
-            <Button
-              onClick={this._handleCancelButtonClick}>
+            <Button onClick={this._handleCancelButtonClick}>
               Cancel
             </Button>
             <Button

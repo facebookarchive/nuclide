@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerConnection} from '..';
@@ -25,7 +26,7 @@ const fsService = {
   },
 };
 
-const connectionMock: ServerConnection & { getFsService(): Object } = ({
+const connectionMock: ServerConnection & {getFsService(): Object} = ({
   getFsService: () => fsService,
   createDirectory: uri => new RemoteDirectory(connectionMock, uri),
   createFile: uri => new RemoteFile(connectionMock, uri),

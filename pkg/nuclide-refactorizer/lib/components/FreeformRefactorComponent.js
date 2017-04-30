@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FreeformRefactoringArgument} from '../..';
@@ -53,8 +54,7 @@ export class FreeformRefactorComponent extends React.Component {
   constructor(props: Props) {
     super(props);
     const defaultArgs = new Map(
-      props.phase.refactoring.arguments
-        .map(arg => [arg.name, getDefault(arg)]),
+      props.phase.refactoring.arguments.map(arg => [arg.name, getDefault(arg)]),
     );
     this.state = {
       args: defaultArgs,

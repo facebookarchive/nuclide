@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  DefinitionService,
-} from '../../nuclide-definition-service';
+import type {DefinitionService} from '../../nuclide-definition-service';
 import type {
   Definition,
   DefinitionQueryResult,
@@ -20,7 +19,8 @@ import type {ContextProvider} from './types';
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
-import observePaneItemVisibility from '../../commons-atom/observePaneItemVisibility';
+import observePaneItemVisibility
+  from '../../commons-atom/observePaneItemVisibility';
 import {arrayCompact} from '../../commons-node/collection';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -78,8 +78,11 @@ export class ContextViewManager {
     this._panelDOMElement = document.createElement('div');
     this._panelDOMElement.style.display = 'flex';
 
-    this._visibilitySubscription = observePaneItemVisibility(this)
-      .subscribe(visible => { this.didChangeVisibility(visible); });
+    this._visibilitySubscription = observePaneItemVisibility(
+      this,
+    ).subscribe(visible => {
+      this.didChangeVisibility(visible);
+    });
 
     this._render();
   }
@@ -113,8 +116,9 @@ export class ContextViewManager {
       if (newProvider.id === providers[i].id) {
         return false;
       }
-      const existingPriority: number =
-        (featureConfig.get(providers[i].id + '.priority'): any);
+      const existingPriority: number = (featureConfig.get(
+        providers[i].id + '.priority',
+      ): any);
       if (!foundIndex && newPriority <= existingPriority) {
         insertIndex = i;
         foundIndex = true;
@@ -132,11 +136,14 @@ export class ContextViewManager {
     return true;
   }
 
-
   _sortProvidersBasedOnPriority(): void {
     this._contextProviders.sort((provider1, provider2) => {
-      const priority1: number = (featureConfig.get(provider1.id + '.priority'): any);
-      const priority2: number = (featureConfig.get(provider2.id + '.priority'): any);
+      const priority1: number = (featureConfig.get(
+        provider1.id + '.priority',
+      ): any);
+      const priority2: number = (featureConfig.get(
+        provider2.id + '.priority',
+      ): any);
       return priority1 - priority2;
     });
     this._render();
@@ -160,20 +167,24 @@ export class ContextViewManager {
     // Only subscribe if panel showing && there's something to subscribe to && not locked
     if (this._isVisible && this._definitionService != null && !this._locked) {
       this._defServiceSubscription = observeTextEditorsPositions(
-        EDITOR_DEBOUNCE_INTERVAL, POSITION_DEBOUNCE_INTERVAL)
+        EDITOR_DEBOUNCE_INTERVAL,
+        POSITION_DEBOUNCE_INTERVAL,
+      )
         .filter((editorPos: ?EditorPosition) => editorPos != null)
         .map((editorPos: ?EditorPosition) => {
           return trackTiming('nuclide-context-view:getDefinition', () => {
             invariant(editorPos != null);
             invariant(this._definitionService != null);
-            return this._definitionService.getDefinition(editorPos.editor, editorPos.position)
+            return this._definitionService
+              .getDefinition(editorPos.editor, editorPos.position)
               .catch(error => {
                 logger.error('Error querying definition service: ', error);
                 return null;
               });
           });
-        }).switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
-          return (queryResult != null)
+        })
+        .switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
+          return queryResult != null
             ? Observable.fromPromise(queryResult)
             : Observable.empty();
         })

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -18,7 +19,8 @@ import type EventEmitter from 'events';
 export function getComponent(
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
-  parentEventEmitter: EventEmitter): React.Element<any> {
+  parentEventEmitter: EventEmitter,
+): React.Element<any> {
   return (
     <LaunchUIComponent
       store={store}

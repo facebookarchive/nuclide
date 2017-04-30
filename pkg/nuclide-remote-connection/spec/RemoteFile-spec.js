@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerConnection} from '..';
@@ -123,11 +124,7 @@ describe('RemoteFile', () => {
       const targetFilePath = nuclideUri.join(tempDir, 'target');
       const symLinkedFilePath = nuclideUri.join(tempDir, 'linked');
       fs.writeFileSync(targetFilePath, '');
-      fs.symlinkSync(
-        targetFilePath,
-        symLinkedFilePath,
-        'file',
-      );
+      fs.symlinkSync(targetFilePath, symLinkedFilePath, 'file');
       expect(fs.lstatSync(symLinkedFilePath).isSymbolicLink()).toBe(true);
 
       const file = new RemoteFile(
@@ -200,7 +197,9 @@ describe('RemoteFile', () => {
       file = new RemoteFile(connectionMock, filePath);
       fs.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
-      waitsForPromise(() => connectionMock.getFsService().watchDirectoryRecursive(tempDir));
+      waitsForPromise(() =>
+        connectionMock.getFsService().watchDirectoryRecursive(tempDir),
+      );
       // wait for the watchman to settle on the created directory and file.
       waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
     });
@@ -244,7 +243,9 @@ describe('RemoteFile', () => {
         waitsFor(() => renameHandler.callCount > 0);
         runs(() => {
           expect(renameHandler.callCount).toBe(1);
-          expect(renameHandler.argsForCall[0][0]).toBe(nuclideUri.basename(filePath + '_moved'));
+          expect(renameHandler.argsForCall[0][0]).toBe(
+            nuclideUri.basename(filePath + '_moved'),
+          );
         });
       });
     });
@@ -394,7 +395,9 @@ describe('RemoteFile', () => {
       const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(server.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com/', null);
+        'nuclide://foo.bar.com/',
+        null,
+      );
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
@@ -405,7 +408,9 @@ describe('RemoteFile', () => {
       const file = new RemoteFile(server, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(server.createDirectory).toHaveBeenCalledWith(
-          'nuclide://foo.bar.com/a', null);
+        'nuclide://foo.bar.com/a',
+        null,
+      );
     });
   });
 

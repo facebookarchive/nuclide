@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -45,12 +46,20 @@ class TextCallbackContainer<CallbackArg> {
     this._allGrammarCallbacks = new Map();
   }
 
-  getCallbacks(grammar: string, event: Event): Set<(arg: CallbackArg) => mixed> {
+  getCallbacks(
+    grammar: string,
+    event: Event,
+  ): Set<(arg: CallbackArg) => mixed> {
     const eventMap = this._callbacks.get(grammar);
     const callbacksForGrammar = this._getCallbacksFromEventMap(eventMap, event);
-    const callbacksForAll = this._getCallbacksFromEventMap(this._allGrammarCallbacks, event);
+    const callbacksForAll = this._getCallbacksFromEventMap(
+      this._allGrammarCallbacks,
+      event,
+    );
     const resultSet = new Set();
-    const add = callback => { resultSet.add(callback); };
+    const add = callback => {
+      resultSet.add(callback);
+    };
     callbacksForGrammar.forEach(add);
     callbacksForAll.forEach(add);
     return resultSet;
@@ -62,8 +71,8 @@ class TextCallbackContainer<CallbackArg> {
 
   _getCallbacksFromEventMap(
     eventMap: ?Map<Event, Set<(arg: CallbackArg) => mixed>>,
-    event: Event): Set<(arg: CallbackArg
-  ) => mixed> {
+    event: Event,
+  ): Set<(arg: CallbackArg) => mixed> {
     if (!eventMap) {
       return new Set();
     }
@@ -75,10 +84,10 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   addCallback(
-      grammarScopes: Iterable<string> | 'all',
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed,
-      ): void {
+    grammarScopes: Iterable<string> | 'all',
+    events: Iterable<Event>,
+    callback: (arg: CallbackArg) => mixed,
+  ): void {
     if (grammarScopes === 'all') {
       this._addToEventMap(this._allGrammarCallbacks, events, callback);
     } else {
@@ -96,10 +105,10 @@ class TextCallbackContainer<CallbackArg> {
   // remove the callbacks, maintaining the invariant that there should be no
   // empty maps or sets in this._callbacks
   removeCallback(
-      grammarScopes: Iterable<string> | 'all',
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed,
-      ): void {
+    grammarScopes: Iterable<string> | 'all',
+    events: Iterable<Event>,
+    callback: (arg: CallbackArg) => mixed,
+  ): void {
     if (grammarScopes === 'all') {
       this._removeFromEventMap(this._allGrammarCallbacks, events, callback);
     } else {
@@ -115,9 +124,10 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   _addToEventMap(
-      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed): void {
+    eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+    events: Iterable<Event>,
+    callback: (arg: CallbackArg) => mixed,
+  ): void {
     for (const event of events) {
       let callbackSet = eventMap.get(event);
       if (!callbackSet) {
@@ -129,9 +139,10 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   _removeFromEventMap(
-      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Iterable<Event>,
-      callback: (arg: CallbackArg) => mixed): void {
+    eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+    events: Iterable<Event>,
+    callback: (arg: CallbackArg) => mixed,
+  ): void {
     for (const event of events) {
       const callbackSet = eventMap.get(event);
       invariant(callbackSet);
@@ -184,9 +195,17 @@ export class TextEventDispatcher {
     // Sometimes these events get triggered several times in succession
     // (particularly on startup).
     const debouncedCallback = debounce(callback, 50, true);
-    this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
+    this._callbackContainer.addCallback(
+      grammarScopes,
+      events,
+      debouncedCallback,
+    );
     const disposables = new Disposable(() => {
-      this._callbackContainer.removeCallback(grammarScopes, events, debouncedCallback);
+      this._callbackContainer.removeCallback(
+        grammarScopes,
+        events,
+        debouncedCallback,
+      );
       if (this._callbackContainer.isEmpty()) {
         this._deregisterEditorListeners();
       }
@@ -194,14 +213,20 @@ export class TextEventDispatcher {
     return disposables;
   }
 
-  onFileChange(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
+  onFileChange(
+    grammarScopes: Iterable<string>,
+    callback: EventCallback,
+  ): IDisposable {
     return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
   }
   onAnyFileChange(callback: EventCallback): IDisposable {
     return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }
 
-  onFileSave(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
+  onFileSave(
+    grammarScopes: Iterable<string>,
+    callback: EventCallback,
+  ): IDisposable {
     return this._onEvents(grammarScopes, FILE_SAVE_EVENTS, callback);
   }
 
@@ -216,35 +241,47 @@ export class TextEventDispatcher {
 
     // Whenever the active pane item changes, we check to see if there are any
     // pending events for the newly-focused TextEditor.
-    this._getEditorListenerDisposable().add(atom.workspace.onDidChangeActivePaneItem(() => {
-      const currentEditor = atom.workspace.getActiveTextEditor();
-      if (currentEditor) {
-        const pendingEvents = this._pendingEvents.get(currentEditor.getBuffer());
-        if (pendingEvents) {
-          for (const event of pendingEvents) {
-            this._dispatchEvents(currentEditor, event);
+    this._getEditorListenerDisposable().add(
+      atom.workspace.onDidChangeActivePaneItem(() => {
+        const currentEditor = atom.workspace.getActiveTextEditor();
+        if (currentEditor) {
+          const pendingEvents = this._pendingEvents.get(
+            currentEditor.getBuffer(),
+          );
+          if (pendingEvents) {
+            for (const event of pendingEvents) {
+              this._dispatchEvents(currentEditor, event);
+            }
+            this._pendingEvents.delete(currentEditor.getBuffer());
           }
-          this._pendingEvents.delete(currentEditor.getBuffer());
         }
-      }
-    }));
+      }),
+    );
 
-    this._getEditorListenerDisposable().add(observeTextEditors(editor => {
-      const buffer = editor.getBuffer();
-      const makeDispatch = (event: Event) => {
-        return () => {
-          this._dispatchEvents(editor, event);
+    this._getEditorListenerDisposable().add(
+      observeTextEditors(editor => {
+        const buffer = editor.getBuffer();
+        const makeDispatch = (event: Event) => {
+          return () => {
+            this._dispatchEvents(editor, event);
+          };
         };
-      };
-      this._getEditorListenerDisposable().add(buffer.onDidStopChanging(makeDispatch('did-change')));
-      this._getEditorListenerDisposable().add(buffer.onDidSave(makeDispatch('did-save')));
-      this._getEditorListenerDisposable().add(buffer.onDidReload(makeDispatch('did-reload')));
-      // During reload, many text editors are opened simultaneously.
-      // Due to the debounce on the event callback, this means that many editors never receive
-      // a 'did-open' event. To work around this, defer editor open events so that simultaneous
-      // open events are properly registered as pending.
-      setImmediate(() => this._dispatchEvents(editor, 'did-open'));
-    }));
+        this._getEditorListenerDisposable().add(
+          buffer.onDidStopChanging(makeDispatch('did-change')),
+        );
+        this._getEditorListenerDisposable().add(
+          buffer.onDidSave(makeDispatch('did-save')),
+        );
+        this._getEditorListenerDisposable().add(
+          buffer.onDidReload(makeDispatch('did-reload')),
+        );
+        // During reload, many text editors are opened simultaneously.
+        // Due to the debounce on the event callback, this means that many editors never receive
+        // a 'did-open' event. To work around this, defer editor open events so that simultaneous
+        // open events are properly registered as pending.
+        setImmediate(() => this._dispatchEvents(editor, 'did-open'));
+      }),
+    );
   }
 
   _deregisterEditorListeners() {
@@ -257,14 +294,20 @@ export class TextEventDispatcher {
   _dispatchEvents(editor: TextEditor, event: Event): void {
     const currentEditor = atom.workspace.getActiveTextEditor();
     if (currentEditor && editor === currentEditor) {
-      const callbacks = this._callbackContainer.getCallbacks(editor.getGrammar().scopeName, event);
+      const callbacks = this._callbackContainer.getCallbacks(
+        editor.getGrammar().scopeName,
+        event,
+      );
       for (const callback of callbacks) {
         callback(editor);
       }
-    // We want to avoid storing pending events if this event was generated by
-    // the same buffer as the current editor, to avoid duplicating events when
-    // multiple panes have the same file open.
-    } else if (!currentEditor || editor.getBuffer() !== currentEditor.getBuffer()) {
+      // We want to avoid storing pending events if this event was generated by
+      // the same buffer as the current editor, to avoid duplicating events when
+      // multiple panes have the same file open.
+    } else if (
+      !currentEditor ||
+      editor.getBuffer() !== currentEditor.getBuffer()
+    ) {
       // Trigger this event next time we switch to an editor with this buffer.
       const buffer = editor.getBuffer();
       let events = this._pendingEvents.get(buffer);
@@ -291,15 +334,23 @@ export function observeTextEditorEvents(
     const dispatcher = new TextEventDispatcher();
     if (events === 'changes') {
       if (grammarScopes === 'all') {
-        return observableFromSubscribeFunction(cb => dispatcher.onAnyFileChange(cb));
+        return observableFromSubscribeFunction(cb =>
+          dispatcher.onAnyFileChange(cb),
+        );
       } else {
-        return observableFromSubscribeFunction(cb => dispatcher.onFileChange(grammarScopes, cb));
+        return observableFromSubscribeFunction(cb =>
+          dispatcher.onFileChange(grammarScopes, cb),
+        );
       }
     } else {
       if (grammarScopes === 'all') {
-        return observableFromSubscribeFunction(cb => dispatcher.onAnyFileSave(cb));
+        return observableFromSubscribeFunction(cb =>
+          dispatcher.onAnyFileSave(cb),
+        );
       } else {
-        return observableFromSubscribeFunction(cb => dispatcher.onFileSave(grammarScopes, cb));
+        return observableFromSubscribeFunction(cb =>
+          dispatcher.onFileSave(grammarScopes, cb),
+        );
       }
     }
   });

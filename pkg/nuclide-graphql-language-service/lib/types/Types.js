@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ASTNode, FragmentDefinitionNode} from 'graphql/language';
@@ -21,8 +22,8 @@ import type {Point, Range} from '../utils/Range';
 
 // online-parser related
 export type ParseRule =
-  ((token: Token, stream: CharacterStream) => ?string) |
-  Array<Rule | string>;
+  | ((token: Token, stream: CharacterStream) => ?string)
+  | Array<Rule | string>;
 
 export type Token = {
   kind: string,
@@ -133,7 +134,8 @@ export type DefinitionQueryResult = {
 };
 
 // Outline view
-export type TokenKind = 'keyword'
+export type TokenKind =
+  | 'keyword'
   | 'class-name'
   | 'constructor'
   | 'method'
@@ -141,8 +143,7 @@ export type TokenKind = 'keyword'
   | 'string'
   | 'whitespace'
   | 'plain'
-  | 'type'
-  ;
+  | 'type';
 export type TextToken = {
   kind: TokenKind,
   value: string,

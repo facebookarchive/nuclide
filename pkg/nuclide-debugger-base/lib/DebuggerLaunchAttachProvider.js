@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type React from 'react';
@@ -80,7 +81,8 @@ export default class DebuggerLaunchAttachProvider {
    */
   getComponent(
     action: string,
-    parentEventEmitter: EventEmitter): ?React.Element<any> {
+    parentEventEmitter: EventEmitter,
+  ): ?React.Element<any> {
     throw new Error('abstract method');
   }
 

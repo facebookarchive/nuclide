@@ -6,11 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // TODO: Make it possible to move or split a pane with a VcsLogPaneItem.
 
-import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
+import type FileTreeContextMenu
+  from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {VcsLogResponse} from '../../nuclide-hg-rpc/lib/HgService';
 
@@ -173,9 +175,12 @@ function getActiveTextEditorURI(): ?string {
 
 function openLogPaneForURI(uri: string) {
   track('nuclide-vcs-log:open');
-  const openerURI = VCS_LOG_URI_PREFIX + '?' + querystring.stringify({
-    [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri,
-  });
+  const openerURI =
+    VCS_LOG_URI_PREFIX +
+    '?' +
+    querystring.stringify({
+      [VCS_LOG_URI_PATHS_QUERY_PARAM]: uri,
+    });
   // Not a file URI
   // eslint-disable-next-line nuclide-internal/atom-apis
   atom.workspace.open(openerURI);
@@ -192,7 +197,9 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
   }
 
   const pane = new VcsLogPaneItem();
-  const {showDifferentialRevision} = ((featureConfig.get('nuclide-vcs-log')): any);
+  const {showDifferentialRevision} = (featureConfig.get(
+    'nuclide-vcs-log',
+  ): any);
   invariant(typeof showDifferentialRevision === 'boolean');
   pane.initialize({
     iconName: 'repo',
@@ -203,9 +210,11 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
     title: `${repository.getType()} log ${maybeToString(getAtomProjectRelativePath(path))}`,
   });
 
-  repository.log([path], MAX_NUM_LOG_RESULTS).then((response: VcsLogResponse) =>
-    pane.updateWithLogEntries(response.entries),
-  );
+  repository
+    .log([path], MAX_NUM_LOG_RESULTS)
+    .then((response: VcsLogResponse) =>
+      pane.updateWithLogEntries(response.entries),
+    );
 
   return pane;
 }
@@ -225,7 +234,9 @@ export function deactivate() {
   }
 }
 
-export function addItemsToFileTreeContextMenu(contextMenu: FileTreeContextMenu): IDisposable {
+export function addItemsToFileTreeContextMenu(
+  contextMenu: FileTreeContextMenu,
+): IDisposable {
   invariant(activation);
   return activation.addItemsToFileTreeContextMenu(contextMenu);
 }

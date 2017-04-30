@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -78,7 +79,9 @@ export function updateConfig(config: any, options: any): void {
 // `lazyLogger.$level(...)` is called. This way, another package could require nuclide-logging
 // during activation without worrying about introducing a significant startup cost.
 function createLazyLogger(category: string): Logger {
-  function createLazyLoggerMethod(level: Level): (...args: Array<any>) => mixed {
+  function createLazyLoggerMethod(
+    level: Level,
+  ): (...args: Array<any>) => mixed {
     return function(...args: Array<any>) {
       const logger = getLog4jsLogger(category);
       invariant(logger);
@@ -115,12 +118,10 @@ function createLazyLogger(category: string): Logger {
  * Execute only once.
  */
 export function initialUpdateConfig(): Promise<void> {
-  return singleton.get(
-    INITIAL_UPDATE_CONFIG_KEY,
-    async () => {
-      const defaultConfig = await getDefaultConfig();
-      updateConfig(defaultConfig);
-    });
+  return singleton.get(INITIAL_UPDATE_CONFIG_KEY, async () => {
+    const defaultConfig = await getDefaultConfig();
+    updateConfig(defaultConfig);
+  });
 }
 
 // Get Logger instance which is singleton per logger category.
@@ -129,12 +130,9 @@ export function getLogger(category: ?string): Logger {
   initialUpdateConfig();
 
   const loggerCategory = getCategory(category);
-  return singleton.get(
-    loggerCategory,
-    () => {
-      return createLazyLogger(loggerCategory);
-    },
-  );
+  return singleton.get(loggerCategory, () => {
+    return createLazyLogger(loggerCategory);
+  });
 }
 
 export type CategoryLogger = {

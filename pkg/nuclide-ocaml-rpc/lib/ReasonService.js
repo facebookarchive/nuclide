@@ -6,13 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {refmt} from './ReasonProcess';
 
 export type refmtResult =
-  {type: 'result', formattedResult: string} | {type: 'error', error: string};
+  | {type: 'result', formattedResult: string}
+  | {type: 'error', error: string};
 
-export async function format(content: string, flags: Array<string>): Promise<refmtResult> {
+export async function format(
+  content: string,
+  flags: Array<string>,
+): Promise<refmtResult> {
   return refmt(content, flags);
 }

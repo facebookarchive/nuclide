@@ -6,13 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RelatedFilesProvider} from './types';
 
 import {Disposable} from 'atom';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {timeoutPromise} from '../../commons-node/promise';
 
@@ -28,7 +31,9 @@ const relatedFilesProviders: Set<RelatedFilesProvider> = new Set();
  * For now, we only search in the given path's directory for related files.
  */
 export default class RelatedFileFinder {
-  static registerRelatedFilesProvider(provider: RelatedFilesProvider): Disposable {
+  static registerRelatedFilesProvider(
+    provider: RelatedFilesProvider,
+  ): Disposable {
     relatedFilesProviders.add(provider);
     return new Disposable(() => relatedFilesProviders.delete(provider));
   }
@@ -37,9 +42,14 @@ export default class RelatedFileFinder {
     return new Disposable(() => relatedFilesProviders.clear());
   }
 
-  static async _findRelatedFilesFromProviders(path: NuclideUri): Promise<Array<string>> {
-    const relatedLists = await Promise.all(Array.from(relatedFilesProviders.values())
-      .map(provider => timeoutPromise(provider.getRelatedFiles(path), 2000)));
+  static async _findRelatedFilesFromProviders(
+    path: NuclideUri,
+  ): Promise<Array<string>> {
+    const relatedLists = await Promise.all(
+      Array.from(relatedFilesProviders.values()).map(provider =>
+        timeoutPromise(provider.getRelatedFiles(path), 2000),
+      ),
+    );
     const relatedFiles = new Set();
     for (const relatedList of relatedLists) {
       for (const relatedFile of relatedList) {
@@ -74,16 +84,16 @@ export default class RelatedFileFinder {
     const filelist = listing
       .filter(entry => {
         const [name, isFile] = entry;
-        return isFile && !name.endsWith('~') &&
-          getPrefix(name) === prefix;
+        return isFile && !name.endsWith('~') && getPrefix(name) === prefix;
       })
       .map(entry => nuclideUri.join(dirName, entry[0]))
       .concat(await RelatedFileFinder._findRelatedFilesFromProviders(filePath));
 
-    let wlFilelist = fileTypeWhitelist.size <= 0 ? filelist :
-      filelist.filter(otherFilePath => {
-        return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath));
-      });
+    let wlFilelist = fileTypeWhitelist.size <= 0
+      ? filelist
+      : filelist.filter(otherFilePath => {
+          return fileTypeWhitelist.has(nuclideUri.extname(otherFilePath));
+        });
     if (wlFilelist.length <= 0) {
       // no files in white list
       wlFilelist = filelist;

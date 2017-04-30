@@ -6,15 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  FileReferences,
-  ReferenceGroup,
-} from './types';
-import type {
-  Reference,
-} from './rpc-types';
+import type {FileReferences, ReferenceGroup} from './types';
+import type {Reference} from './rpc-types';
 
 type FindReferencesOptions = {
   // Lines of context to show around each preview block. Defaults to 1.
@@ -95,9 +91,9 @@ export default class FindReferencesModel {
     limit: number,
   ): Promise<Array<FileReferences>> {
     const fileReferences: Array<?FileReferences> = await Promise.all(
-      this._references.slice(offset, offset + limit).map(
-        this._makeFileReferences.bind(this),
-      ),
+      this._references
+        .slice(offset, offset + limit)
+        .map(this._makeFileReferences.bind(this)),
     );
     return arrayCompact(fileReferences);
   }
@@ -128,7 +124,7 @@ export default class FindReferencesModel {
     for (const reference of references) {
       let fileReferences = refsByFile.get(reference.uri);
       if (fileReferences == null) {
-        refsByFile.set(reference.uri, fileReferences = []);
+        refsByFile.set(reference.uri, (fileReferences = []));
       }
       fileReferences.push(reference);
     }
@@ -147,7 +143,10 @@ export default class FindReferencesModel {
         const range = ref.range;
         if (range.start.row <= curEndLine + 1 + this.getPreviewContext()) {
           // Remove references with the same range (happens in C++ with templates)
-          if (curGroup.length > 0 && compareReference(curGroup[curGroup.length - 1], ref) !== 0) {
+          if (
+            curGroup.length > 0 &&
+            compareReference(curGroup[curGroup.length - 1], ref) !== 0
+          ) {
             curGroup.push(ref);
             curEndLine = Math.max(curEndLine, range.end.row);
           } else {
@@ -187,7 +186,10 @@ export default class FindReferencesModel {
       let {startLine, endLine} = group;
       // Expand start/end lines with context.
       startLine = Math.max(startLine - this.getPreviewContext(), 0);
-      endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length - 1);
+      endLine = Math.min(
+        endLine + this.getPreviewContext(),
+        fileLines.length - 1,
+      );
       // However, don't include blank lines.
       while (startLine < endLine && fileLines[startLine] === '') {
         startLine++;

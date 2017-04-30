@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -18,10 +19,7 @@ import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
 import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
 import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
 import React from 'react';
-import {
-  Button,
-  ButtonSizes,
-} from '../../nuclide-ui/Button';
+import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {track} from '../../nuclide-analytics';
 
 type Props = {
@@ -43,12 +41,13 @@ export default class DiagnosticsPanel extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._onShowTracesChange =
-      this._onShowTracesChange.bind(this);
-    (this: any)._onFilterByActiveTextEditorChange =
-      this._onFilterByActiveTextEditorChange.bind(this);
-    (this: any)._openAllFilesWithErrors =
-      this._openAllFilesWithErrors.bind(this);
+    (this: any)._onShowTracesChange = this._onShowTracesChange.bind(this);
+    (this: any)._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(
+      this,
+    );
+    (this: any)._openAllFilesWithErrors = this._openAllFilesWithErrors.bind(
+      this,
+    );
   }
 
   render(): React.Element<any> {
@@ -60,7 +59,9 @@ export default class DiagnosticsPanel extends React.Component {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
       if (pathToFilterBy !== null) {
         diagnostics = diagnostics.filter(
-          diagnostic => diagnostic.scope === 'file' && diagnostic.filePath === pathToFilterBy,
+          diagnostic =>
+            diagnostic.scope === 'file' &&
+            diagnostic.filePath === pathToFilterBy,
         );
       } else {
         // Current pane is not a text editor; do not show diagnostics.
@@ -83,9 +84,14 @@ export default class DiagnosticsPanel extends React.Component {
           <ToolbarCenter>
             <span className="inline-block highlight-info">
               nuclide-diagnostics is not compatible with the linter package. We recommend that
-              you&nbsp;<a onClick={this.props.disableLinter}>disable the linter package</a>.&nbsp;
+              you&nbsp;
+              <a onClick={this.props.disableLinter}>
+                disable the linter package
+              </a>
+              .&nbsp;
               <a href="http://nuclide.io/docs/advanced-topics/linter-package-compatibility/">
-              Learn More</a>.
+                Learn More
+              </a>.
             </span>
           </ToolbarCenter>
         </Toolbar>
@@ -96,7 +102,13 @@ export default class DiagnosticsPanel extends React.Component {
     const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
     return (
-      <div style={{display: 'flex', flex: 1, flexDirection: 'column', width: '100%'}}>
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+          width: '100%',
+        }}>
         {linterWarning}
         <Toolbar location="top">
           <ToolbarLeft>
@@ -142,12 +154,16 @@ export default class DiagnosticsPanel extends React.Component {
   }
 
   _onShowTracesChange(isChecked: boolean) {
-    track('diagnostics-panel-toggle-show-traces', {isChecked: isChecked.toString()});
+    track('diagnostics-panel-toggle-show-traces', {
+      isChecked: isChecked.toString(),
+    });
     this.props.onShowTracesChange.call(null, isChecked);
   }
 
   _onFilterByActiveTextEditorChange(isChecked: boolean) {
-    track('diagnostics-panel-toggle-current-file', {isChecked: isChecked.toString()});
+    track('diagnostics-panel-toggle-current-file', {
+      isChecked: isChecked.toString(),
+    });
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Uri} from '../types/Types';
@@ -28,8 +29,8 @@ export async function getGraphQLConfig(configDir: Uri): Promise<GraphQLRC> {
           // eslint-disable-next-line no-console
           console.error(
             '.graphqlrc file is not available in the provided config ' +
-            `directory: ${configDir}\nPlease check the config directory ` +
-            'path and try again.',
+              `directory: ${configDir}\nPlease check the config directory ` +
+              'path and try again.',
           );
           reject(new Error());
         }
@@ -80,7 +81,7 @@ export class GraphQLRC {
     if (config === undefined) {
       throw new Error(
         `Config ${name} not defined. Choose one of: ` +
-        Object.keys(this._graphqlrc[CONFIG_LIST_NAME]).join(', '),
+          Object.keys(this._graphqlrc[CONFIG_LIST_NAME]).join(', '),
       );
     }
     return config;
@@ -149,13 +150,17 @@ export class GraphQLConfig {
 
   _normalizePath(modulePath: Uri): Uri {
     let resolvedPath;
-    if (modulePath.startsWith('~')) { // home directory
-      const homeDirPath = (process.platform === 'win32') ?
-        process.env.USERPROFILE : process.env.HOME;
+    if (modulePath.startsWith('~')) {
+      // home directory
+      const homeDirPath = process.platform === 'win32'
+        ? process.env.USERPROFILE
+        : process.env.HOME;
       resolvedPath = path.join(homeDirPath || '', modulePath.slice(1));
-    } else if (modulePath.startsWith('./')) { // relative local directory
+    } else if (modulePath.startsWith('./')) {
+      // relative local directory
       resolvedPath = path.join(this._rootDir, modulePath);
-    } else { // `/` or an actual module name (node_modules)
+    } else {
+      // `/` or an actual module name (node_modules)
       resolvedPath = modulePath;
     }
 

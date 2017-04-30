@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {AtomInput} from '../AtomInput';
@@ -22,8 +23,10 @@ function createWithProps(props: any): any {
 describe('AtomInput', () => {
   afterEach(() => {
     if (reactElement) {
-      // $FlowFixMe
-      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
+      ReactDOM.unmountComponentAtNode(
+        // $FlowFixMe
+        ReactDOM.findDOMNode(reactElement).parentNode,
+      );
     }
     reactElement = null;
   });
@@ -37,11 +40,15 @@ describe('AtomInput', () => {
   it('focus() focuses the end of the line', () => {
     const initialValue = 'some text';
     reactElement = createWithProps({initialValue});
-    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual(
-        [0, 0]);
+    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual([
+      0,
+      0,
+    ]);
     reactElement.focus();
-    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual(
-        [0, initialValue.length]);
+    expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual([
+      0,
+      initialValue.length,
+    ]);
   });
 
   it('onDidChange() does not fire initially', () => {
@@ -82,8 +89,10 @@ describe('AtomInput', () => {
     textEditor.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
 
-    // $FlowFixMe
-    ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
+    ReactDOM.unmountComponentAtNode(
+      // $FlowFixMe
+      ReactDOM.findDOMNode(reactElement).parentNode,
+    );
     reactElement = null;
 
     textEditor.setText('even more new text');

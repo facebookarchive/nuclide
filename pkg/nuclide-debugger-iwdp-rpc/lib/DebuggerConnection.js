@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -47,14 +48,20 @@ export class DebuggerConnection {
   constructor(
     connectionId: number,
     deviceInfo: DeviceInfo,
-    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
+    sendAtomNotification: (
+      level: AtomNotificationType,
+      message: string,
+    ) => void,
   ) {
     this._sendAtomNotification = sendAtomNotification;
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
     this._events = new Subject();
     this._status = new BehaviorSubject(RUNNING);
-    this._fileCache = new FileCache(this._getScriptSource.bind(this), sendAtomNotification);
+    this._fileCache = new FileCache(
+      this._getScriptSource.bind(this),
+      sendAtomNotification,
+    );
     const {webSocketDebuggerUrl} = deviceInfo;
     this._socket = new Socket(
       webSocketDebuggerUrl,
@@ -62,7 +69,9 @@ export class DebuggerConnection {
       () => this._status.next(ENDED),
     );
     this._disposables = new UniversalDisposable(this._socket);
-    log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);
+    log(
+      `DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`,
+    );
   }
 
   sendCommand(message: Object): Promise<Object> {
@@ -84,7 +93,9 @@ export class DebuggerConnection {
     }
   }
 
-  _getScriptSource(scriptId: string): Promise<{result: {scriptSource: string}}> {
+  _getScriptSource(
+    scriptId: string,
+  ): Promise<{result: {scriptSource: string}}> {
     return this.sendCommand({
       method: 'Debugger.getScriptSource',
       params: {
@@ -113,9 +124,7 @@ export class DebuggerConnection {
   }
 
   subscribeToEvents(toFrontend: (message: Object) => void): IDisposable {
-    return new UniversalDisposable(
-      this._events.subscribe(toFrontend),
-    );
+    return new UniversalDisposable(this._events.subscribe(toFrontend));
   }
 
   isPaused(): boolean {

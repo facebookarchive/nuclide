@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type CustomPaneItemOptions = {
@@ -17,7 +18,7 @@ export type CustomPaneItemOptions = {
 };
 
 export type Nuclicon =
-  'nuclicon-nuclide'
+  | 'nuclicon-nuclide'
   | 'nuclicon-react'
   | 'nuclicon-buck'
   | 'nuclicon-hhvm'

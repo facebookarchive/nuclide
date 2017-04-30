@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -125,10 +126,11 @@ function filterAndSortList(
     pair => !pair.entry.isDeprecated,
   );
 
-  const sortedMatches = conciseMatches.sort((a, b) =>
-    ((a.entry.isDeprecated ? 1 : 0) - (b.entry.isDeprecated ? 1 : 0)) ||
-    (a.proximity - b.proximity) ||
-    (a.entry.text.length - b.entry.text.length),
+  const sortedMatches = conciseMatches.sort(
+    (a, b) =>
+      (a.entry.isDeprecated ? 1 : 0) - (b.entry.isDeprecated ? 1 : 0) ||
+      a.proximity - b.proximity ||
+      a.entry.text.length - b.entry.text.length,
   );
 
   return sortedMatches.map(pair => pair.entry);
@@ -200,11 +202,7 @@ function lexicalDistance(a: string, b: string): number {
         d[i - 1][j - 1] + cost,
       );
 
-      if (
-        i > 1 && j > 1 &&
-        a[i - 1] === b[j - 2] &&
-        a[i - 2] === b[j - 1]
-      ) {
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
         d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
       }
     }

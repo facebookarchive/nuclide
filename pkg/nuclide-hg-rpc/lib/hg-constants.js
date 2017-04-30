@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* @providesModule HgConstants */
@@ -48,7 +49,9 @@ const StatusCodeNumber = Object.freeze({
 // This is to work around flow's missing support of enums.
 (StatusCodeNumber: {[key: string]: StatusCodeNumberValue});
 
-const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
+const StatusCodeIdToNumber: {
+  [key: StatusCodeIdValue]: StatusCodeNumberValue,
+} = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
   [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
   [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,

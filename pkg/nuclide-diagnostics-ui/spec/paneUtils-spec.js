@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Range} from 'atom';
 import {compareMessagesByFile} from '../lib/paneUtils';
@@ -70,11 +73,20 @@ describe('compareMessagesByFile', () => {
 
   it('sorts messages based on file path && by line number', () => {
     const msgs = [fileAMsgB, fileBMsgA, fileAMsgA];
-    expect(msgs.sort(compareMessagesByFile)).toEqual([fileAMsgA, fileAMsgB, fileBMsgA]);
+    expect(msgs.sort(compareMessagesByFile)).toEqual([
+      fileAMsgA,
+      fileAMsgB,
+      fileBMsgA,
+    ]);
   });
 
   it('sorts messages based on level', () => {
     const msgs = [fileAMsgA, fileAMsgB, fileAError, fileAInfo];
-    expect(msgs.sort(compareMessagesByFile)).toEqual([fileAError, fileAMsgA, fileAMsgB, fileAInfo]);
+    expect(msgs.sort(compareMessagesByFile)).toEqual([
+      fileAError,
+      fileAMsgA,
+      fileAMsgB,
+      fileAInfo,
+    ]);
   });
 });

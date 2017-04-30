@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
@@ -26,17 +29,16 @@ import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
-import {
-  HACK_GRAMMARS,
-  HACK_WORD_REGEX,
-} from '../../nuclide-hack-common';
+import {HACK_GRAMMARS, HACK_WORD_REGEX} from '../../nuclide-hack-common';
 import {
   sortAndFilterCompletions,
   getResultPrefix,
   getReplacementPrefix,
   findHackPrefix,
 } from '../../nuclide-hack-common/lib/autocomplete';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 import passesGK from '../../commons-node/passesGK';
 
@@ -49,7 +51,10 @@ async function getUseLspConnection(): Promise<boolean> {
 async function connectionToHackService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const hackService: HackService = getServiceByConnection(HACK_SERVICE_NAME, connection);
+  const hackService: HackService = getServiceByConnection(
+    HACK_SERVICE_NAME,
+    connection,
+  );
   const config = getConfig();
   const fileNotifier = await getNotifierByConnection(connection);
 
@@ -66,11 +71,14 @@ async function connectionToHackService(
     return hackService.initialize(
       config.hhClientPath,
       config.logLevel,
-      fileNotifier);
+      fileNotifier,
+    );
   }
 }
 
-async function createLanguageService(): Promise<AtomLanguageService<LanguageService>> {
+async function createLanguageService(): Promise<
+  AtomLanguageService<LanguageService>
+> {
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
@@ -135,12 +143,18 @@ async function createLanguageService(): Promise<AtomLanguageService<LanguageServ
     },
   };
 
-  return new AtomLanguageService(connectionToHackService, atomConfig, null, logger);
+  return new AtomLanguageService(
+    connectionToHackService,
+    atomConfig,
+    null,
+    logger,
+  );
 }
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
-export let hackLanguageService: Promise<AtomLanguageService<LanguageService>>
-  = createLanguageService();
+export let hackLanguageService: Promise<
+  AtomLanguageService<LanguageService>
+> = createLanguageService();
 
 export function resetHackLanguageService(): void {
   hackLanguageService.then(value => value.dispose());
@@ -149,11 +163,15 @@ export function resetHackLanguageService(): void {
   hackLanguageService = createLanguageService();
 }
 
-export async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?LanguageService> {
+export async function getHackLanguageForUri(
+  uri: ?NuclideUri,
+): Promise<?LanguageService> {
   return (await hackLanguageService).getLanguageServiceForUri(uri);
 }
 
-export async function isFileInHackProject(fileUri: NuclideUri): Promise<boolean> {
+export async function isFileInHackProject(
+  fileUri: NuclideUri,
+): Promise<boolean> {
   const fileSystemService = getFileSystemServiceByNuclideUri(fileUri);
   const foundDir = await fileSystemService.findNearestFile(
     '.hhconfig',
@@ -169,9 +187,19 @@ function updateAutocompleteResults(
   if (firstResult.isIncomplete) {
     return null;
   }
-  const replacementPrefix = findHackPrefix(request.editor.getBuffer(), request.bufferPosition);
-  const updatedCompletions = updateReplacementPrefix(request, firstResult.items, replacementPrefix);
-  return {...firstResult, items: sortAndFilterCompletions(updatedCompletions, replacementPrefix)};
+  const replacementPrefix = findHackPrefix(
+    request.editor.getBuffer(),
+    request.bufferPosition,
+  );
+  const updatedCompletions = updateReplacementPrefix(
+    request,
+    firstResult.items,
+    replacementPrefix,
+  );
+  return {
+    ...firstResult,
+    items: sortAndFilterCompletions(updatedCompletions, replacementPrefix),
+  };
 }
 
 function updateReplacementPrefix(
@@ -186,7 +214,10 @@ function updateReplacementPrefix(
     const name = completion.displayText;
     invariant(name != null);
     const resultPrefix = getResultPrefix(contents, offset, name);
-    const replacementPrefix = getReplacementPrefix(resultPrefix, prefixCandidate);
+    const replacementPrefix = getReplacementPrefix(
+      resultPrefix,
+      prefixCandidate,
+    );
     return {
       ...completion,
       replacementPrefix,

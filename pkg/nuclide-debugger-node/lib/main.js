@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -25,7 +26,9 @@ export function activate(state: mixed): void {
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'Node',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+    getLaunchAttachProvider(
+      connection: NuclideUri,
+    ): ?DebuggerLaunchAttachProvider {
       return new NodeLaunchAttachProvider('NodeJS', connection);
     },
   };

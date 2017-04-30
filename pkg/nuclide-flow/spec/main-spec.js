@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerStatusUpdate} from '../../nuclide-flow-rpc';
@@ -68,7 +69,9 @@ describe('serverStatusUpdatesToBusyMessages', () => {
       ];
 
       expect(
-        await serverStatusUpdatesToBusyMessages(Observable.from(input)).toArray().toPromise(),
+        await serverStatusUpdatesToBusyMessages(Observable.from(input))
+          .toArray()
+          .toPromise(),
       ).diffJson(expected);
     });
   });

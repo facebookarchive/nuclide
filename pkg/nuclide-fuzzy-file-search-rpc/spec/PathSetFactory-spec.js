@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -46,7 +47,10 @@ describe('PathSetFactory', () => {
       invariant(ignoredFile);
       invariant(untrackedFile);
       fs.writeFileSync(trackedFile, '');
-      fs.writeFileSync(nuclideUri.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
+      fs.writeFileSync(
+        nuclideUri.join(testDir, '.gitignore'),
+        `.gitignore\n${IGNORED_FILE_BASE}`,
+      );
       fs.writeFileSync(ignoredFile, '');
       await runCommand('git', ['add', '*'], {cwd: testDir}).toPromise();
       fs.writeFileSync(untrackedFile, '');
@@ -72,7 +76,10 @@ describe('PathSetFactory', () => {
       invariant(ignoredFile);
       invariant(untrackedFile);
       fs.writeFileSync(trackedFile, '');
-      fs.writeFileSync(nuclideUri.join(testDir, '.hgignore'), `.hgignore\n${IGNORED_FILE_BASE}`);
+      fs.writeFileSync(
+        nuclideUri.join(testDir, '.hgignore'),
+        `.hgignore\n${IGNORED_FILE_BASE}`,
+      );
       fs.writeFileSync(ignoredFile, '');
       await runCommand('hg', ['addremove'], {cwd: testDir}).toPromise();
       fs.writeFileSync(untrackedFile, '');

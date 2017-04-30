@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -87,16 +88,18 @@ export default class LinkTreeManager {
       return bins.map(bin => {
         const linkTreeSuffix = LINK_TREE_SUFFIXES[kind];
         const binPath = this._getDirForBuckTarget(bin);
-        return nuclideUri.join(buckRoot, BUCK_GEN_PATH, binPath + linkTreeSuffix);
+        return nuclideUri.join(
+          buckRoot,
+          BUCK_GEN_PATH,
+          binPath + linkTreeSuffix,
+        );
       });
     } catch (e) {
       return [];
     }
   }
 
-  reset(src: string): void {
-  }
+  reset(src: string): void {}
 
-  dispose() {
-  }
+  dispose() {}
 }

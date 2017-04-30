@@ -6,11 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
-   NuclideDebuggerProvider,
-   NuclideEvaluationExpressionProvider,
+  NuclideDebuggerProvider,
+  NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
 import type {
   DatatipProvider,
@@ -18,18 +19,14 @@ import type {
 } from '../../nuclide-datatip/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {
-  EvaluationResult,
-  SerializedBreakpoint,
-} from './types';
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
+import type {EvaluationResult, SerializedBreakpoint} from './types';
 import type {Observable} from 'rxjs';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
-import type {
-  RegisterNux,
-  TriggerNux,
-} from '../../nuclide-nux/lib/main';
+import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import {AnalyticsEvents} from './constants';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -94,10 +91,7 @@ function firstNonNull(...args) {
   return nullthrows(args.find(arg => arg != null));
 }
 
-function getLineForEvent(
-  editor: atom$TextEditor,
-  event: any,
-): number {
+function getLineForEvent(editor: atom$TextEditor, event: any): number {
   const cursorLine = editor.getLastCursor().getBufferRow();
   const target = event ? (event.target: HTMLElement) : null;
   if (target == null) {
@@ -173,16 +167,17 @@ class DebuggerView extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {
-      model,
-    } = this.props;
+    const {model} = this.props;
     const {showOldView} = this.state;
     return (
       <div className="nuclide-debugger-root">
-        <div className={classnames({'nuclide-debugger-container-old-enabled': showOldView})}>
+        <div
+          className={classnames({
+            'nuclide-debugger-container-old-enabled': showOldView,
+          })}>
           <DebuggerControllerView
             store={model.getStore()}
-            bridge = {model.getBridge()}
+            bridge={model.getBridge()}
             breakpointStore={model.getBreakpointStore()}
             openDevTools={this._openDevTools}
             stopDebugging={this._stopDebugging}
@@ -193,9 +188,8 @@ class DebuggerView extends React.Component {
               model={model}
               watchExpressionListStore={model.getWatchExpressionListStore()}
             />
-          : null
-        }
-        </div>
+          : null}
+      </div>
     );
   }
 }
@@ -230,11 +224,13 @@ class Activation {
         if (nuclideUri.isLocal(debuggeeTargetUri)) {
           return; // Nothing to do if our debug session is local.
         }
-        if (nuclideUri.getHostname(debuggeeTargetUri) === connection.getRemoteHostname()) {
+        if (
+          nuclideUri.getHostname(debuggeeTargetUri) ===
+          connection.getRemoteHostname()
+        ) {
           this._model.getActions().stopDebugging();
         }
       }),
-
       // Commands.
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle': this._toggleLaunchAttachDialog.bind(this),
@@ -258,13 +254,19 @@ class Activation {
         'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(this),
+        'nuclide-debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(
+          this,
+        ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(this),
+        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(
+          this,
+        ),
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(this),
+        'nuclide-debugger:remove-all-breakpoints': this._deleteAllBreakpoints.bind(
+          this,
+        ),
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
@@ -276,14 +278,15 @@ class Activation {
         'nuclide-debugger:run-to-location': this._runToLocation.bind(this),
       }),
       atom.commands.add('.nuclide-debugger-root', {
-        'nuclide-debugger:copy-debugger-expression-value':
-            this._copyDebuggerExpressionValue.bind(this),
+        'nuclide-debugger:copy-debugger-expression-value': this._copyDebuggerExpressionValue.bind(
+          this,
+        ),
       }),
       atom.commands.add('.nuclide-debugger-root', {
-        'nuclide-debugger:copy-debugger-callstack':
-            this._copyDebuggerCallstack.bind(this),
+        'nuclide-debugger:copy-debugger-callstack': this._copyDebuggerCallstack.bind(
+          this,
+        ),
       }),
-
       // Context Menu Items.
       atom.contextMenu.add({
         '.nuclide-debugger-breakpoint': [
@@ -323,7 +326,9 @@ class Activation {
                   if (
                     store.getDebuggerMode() === DebuggerMode.PAUSED &&
                     debuggerInstance != null &&
-                    debuggerInstance.getDebuggerProcessInfo().supportContinueToLocation()
+                    debuggerInstance
+                      .getDebuggerProcessInfo()
+                      .supportContinueToLocation()
                   ) {
                     return true;
                   }
@@ -338,10 +343,12 @@ class Activation {
                 label: 'Toggle Breakpoint enabled/disabled',
                 command: 'nuclide-debugger:toggle-breakpoint-enabled',
                 shouldDisplay: event =>
-                  this._executeWithEditorPath(event, (filePath, line) =>
-                    this.getModel()
-                      .getBreakpointStore()
-                      .getBreakpointAtLine(filePath, line) != null,
+                  this._executeWithEditorPath(
+                    event,
+                    (filePath, line) =>
+                      this.getModel()
+                        .getBreakpointStore()
+                        .getBreakpointAtLine(filePath, line) != null,
                   ) || false,
               },
               {
@@ -349,11 +356,16 @@ class Activation {
                 command: 'nuclide-debugger:add-to-watch',
                 shouldDisplay: event => {
                   const textEditor = atom.workspace.getActiveTextEditor();
-                  if (!this.getModel().getStore().isDebugging() || textEditor == null) {
+                  if (
+                    !this.getModel().getStore().isDebugging() ||
+                    textEditor == null
+                  ) {
                     return false;
                   }
-                  return textEditor.getSelections().length === 1
-                    && !textEditor.getSelectedBufferRange().isEmpty();
+                  return (
+                    textEditor.getSelections().length === 1 &&
+                    !textEditor.getSelectedBufferRange().isEmpty()
+                  );
                 },
               },
             ],
@@ -362,13 +374,17 @@ class Activation {
         ],
       }),
     );
-    (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(this);
+    (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(
+      this,
+    );
     (this: any)._handleDefaultAction = this._handleDefaultAction.bind(this);
   }
 
   serialize(): SerializedState {
     const state = {
-      breakpoints: this.getModel().getBreakpointStore().getSerializedBreakpoints(),
+      breakpoints: this.getModel()
+        .getBreakpointStore()
+        .getSerializedBreakpoints(),
     };
     return state;
   }
@@ -394,12 +410,18 @@ class Activation {
           return this._model;
         }
       }),
-      () => { api.destroyWhere(item => item instanceof DebuggerModel); },
+      () => {
+        api.destroyWhere(item => item instanceof DebuggerModel);
+      },
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show': () => { api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true}); },
+        'nuclide-debugger:show': () => {
+          api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+        },
       }),
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:hide': () => { api.destroyWhere(item => item instanceof DebuggerModel); },
+        'nuclide-debugger:hide': () => {
+          api.destroyWhere(item => item instanceof DebuggerModel);
+        },
       }),
     );
   }
@@ -502,7 +524,9 @@ class Activation {
     } else {
       dialog.show();
     }
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {visible: dialog.isVisible()});
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {
+      visible: dialog.isVisible(),
+    });
     this._emitLaunchAttachVisibilityChangedEvent();
   }
 
@@ -517,17 +541,20 @@ class Activation {
 
   _emitLaunchAttachVisibilityChangedEvent() {
     const dialog = this._getLaunchAttachDialog();
-    this._model.getLaunchAttachActionEventEmitter().emit(
-      DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
-      dialog.isVisible(),
-    );
+    this._model
+      .getLaunchAttachActionEventEmitter()
+      .emit(
+        DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
+        dialog.isVisible(),
+      );
   }
 
   _handleDefaultAction(): void {
     const dialog = this._getLaunchAttachDialog();
     if (dialog.isVisible()) {
-      this._model.getLaunchAttachActionEventEmitter().emit(
-        DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED);
+      this._model
+        .getLaunchAttachActionEventEmitter()
+        .emit(DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED);
     }
   }
 
@@ -596,7 +623,9 @@ class Activation {
     if (callstack) {
       let callstackText = '';
       callstack.forEach((item, i) => {
-        const path = nuclideUri.basename(item.location.path.replace(/^[a-zA-Z]+:\/\//, ''));
+        const path = nuclideUri.basename(
+          item.location.path.replace(/^[a-zA-Z]+:\/\//, ''),
+        );
         callstackText += `${i}\t${item.name}\t${path}:${item.location.line}${os.EOL}`;
       });
 
@@ -660,43 +689,56 @@ function registerConsoleExecutor(
     disposables.add(
       // We filter here because the first value in the BehaviorSubject is null no matter what, and
       // we want the console to unsubscribe the stream after the first non-null value.
-      watchExpressionStore.evaluateConsoleExpression(expression)
+      watchExpressionStore
+        .evaluateConsoleExpression(expression)
         .filter(result => result != null)
         .first()
         .subscribe(result => rawOutput.next(result)),
     );
     watchExpressionStore._triggerReevaluation();
   };
-  const output: Observable<{result?: EvaluationResult}> = rawOutput
-    .map(result => {
-      invariant(result != null);
-      return {data: result};
-    });
-  disposables.add(registerExecutor({
-    id: 'debugger',
-    name: 'Debugger',
-    send,
-    output,
-    getProperties: watchExpressionStore.getProperties.bind(watchExpressionStore),
-  }));
+  const output: Observable<{
+    result?: EvaluationResult,
+  }> = rawOutput.map(result => {
+    invariant(result != null);
+    return {data: result};
+  });
+  disposables.add(
+    registerExecutor({
+      id: 'debugger',
+      name: 'Debugger',
+      send,
+      output,
+      getProperties: watchExpressionStore.getProperties.bind(
+        watchExpressionStore,
+      ),
+    }),
+  );
   return disposables;
 }
 
-export function consumeRegisterExecutor(registerExecutor: RegisterExecutorFunction): IDisposable {
+export function consumeRegisterExecutor(
+  registerExecutor: RegisterExecutorFunction,
+): IDisposable {
   if (activation != null) {
     const model = activation.getModel();
-    const register = () => registerConsoleExecutor(
-      model.getWatchExpressionStore(),
-      registerExecutor,
-    );
+    const register = () =>
+      registerConsoleExecutor(
+        model.getWatchExpressionStore(),
+        registerExecutor,
+      );
     model.getActions().addConsoleRegisterFunction(register);
-    return new Disposable(() => model.getActions().removeConsoleRegisterFunction(register));
+    return new Disposable(() =>
+      model.getActions().removeConsoleRegisterFunction(register),
+    );
   } else {
     return new Disposable();
   }
 }
 
-export function consumeDebuggerProvider(provider: NuclideDebuggerProvider): IDisposable {
+export function consumeDebuggerProvider(
+  provider: NuclideDebuggerProvider,
+): IDisposable {
   if (activation) {
     activation.getModel().getActions().addDebuggerProvider(provider);
   }
@@ -711,11 +753,17 @@ export function consumeEvaluationExpressionProvider(
   provider: NuclideEvaluationExpressionProvider,
 ): IDisposable {
   if (activation) {
-    activation.getModel().getActions().addEvaluationExpressionProvider(provider);
+    activation
+      .getModel()
+      .getActions()
+      .addEvaluationExpressionProvider(provider);
   }
   return new Disposable(() => {
     if (activation) {
-      activation.getModel().getActions().removeEvaluationExpressionProvider(provider);
+      activation
+        .getModel()
+        .getActions()
+        .removeEvaluationExpressionProvider(provider);
     }
   });
 }
@@ -729,7 +777,9 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     tooltip: 'Toggle Debugger',
     priority: 500,
   }).element;
-  const disposable = new Disposable(() => { toolBar.removeItems(); });
+  const disposable = new Disposable(() => {
+    toolBar.removeItems();
+  });
   invariant(activation);
   activation._disposables.add(disposable);
   return disposable;
@@ -742,7 +792,9 @@ export function consumeNotifications(
 }
 
 export function provideRemoteControlService(): RemoteControlService {
-  return new RemoteControlService(() => (activation ? activation.getModel() : null));
+  return new RemoteControlService(
+    () => (activation ? activation.getModel() : null),
+  );
 }
 
 export function consumeDatatipService(service: DatatipService): IDisposable {

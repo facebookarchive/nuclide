@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -20,19 +21,24 @@ describe('PathSetUpdater', () => {
   const MOCK_WATCHMAN_PROJECT_ROOT = '/Mock/Root';
   const INITIAL_PATHS = ['a', 'b'];
   const TEST_DIRECTORY = '/Mock/Root/To/Test/Dir';
-  const RELATIVE_PATH = nuclideUri.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY);
+  const RELATIVE_PATH = nuclideUri.relative(
+    MOCK_WATCHMAN_PROJECT_ROOT,
+    TEST_DIRECTORY,
+  );
   let pathSet;
   let pathSetUpdater;
 
   const createMockWatchmanSubscription = (directoryPath: string) => {
-    return Promise.resolve(new WatchmanSubscription(
-      /* subscriptionRoot */ MOCK_WATCHMAN_PROJECT_ROOT,
-      /* pathFromSubscriptionRootToSubscriptionPath */ RELATIVE_PATH,
-      /* subscriptionPath */ TEST_DIRECTORY,
-      /* subscriptionName */ TEST_DIRECTORY,
-      /* subscriptionCount */ 1,
-      /* subscriptionOptions */ {fields: [], since: ''}, // Not used in this test.
-    ));
+    return Promise.resolve(
+      new WatchmanSubscription(
+        /* subscriptionRoot */ MOCK_WATCHMAN_PROJECT_ROOT,
+        /* pathFromSubscriptionRootToSubscriptionPath */ RELATIVE_PATH,
+        /* subscriptionPath */ TEST_DIRECTORY,
+        /* subscriptionName */ TEST_DIRECTORY,
+        /* subscriptionCount */ 1,
+        /* subscriptionOptions */ {fields: [], since: ''}, // Not used in this test.
+      ),
+    );
   };
 
   const mockWatchmanClient: Object = {
@@ -49,7 +55,6 @@ describe('PathSetUpdater', () => {
     }
     subscription.emit('change', update);
   };
-
 
   beforeEach(() => {
     pathSet = new PathSet(INITIAL_PATHS, [], '');
@@ -71,8 +76,13 @@ describe('PathSetUpdater', () => {
         // Attach the pathSetUpdater to the pathSet.
         invariant(pathSetUpdater);
         invariant(pathSet);
-        const disposable = await pathSetUpdater.startUpdatingPathSet(pathSet, TEST_DIRECTORY);
-        expect(mockWatchmanClient.watchDirectoryRecursive).toHaveBeenCalledWith(TEST_DIRECTORY);
+        const disposable = await pathSetUpdater.startUpdatingPathSet(
+          pathSet,
+          TEST_DIRECTORY,
+        );
+        expect(mockWatchmanClient.watchDirectoryRecursive).toHaveBeenCalledWith(
+          TEST_DIRECTORY,
+        );
 
         // Trigger mock 'file add' and 'file remove' events, and check that they
         // result in changes to the pathSet.

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {AppState} from '../lib/types';
@@ -27,7 +28,9 @@ describe('Epics', () => {
       const provider = {
         id: 'test',
         messages: Observable.never(),
-        observeStatus: cb => { setStatus = cb; },
+        observeStatus: cb => {
+          setStatus = cb;
+        },
         start: () => {},
         stop: () => {},
       };
@@ -35,7 +38,9 @@ describe('Epics', () => {
         Observable.of(Actions.registerOutputProvider(provider)),
       );
       const results = [];
-      Epics.registerRecordProviderEpic(actions, mockStore).subscribe(results.push.bind(results));
+      Epics.registerRecordProviderEpic(actions, mockStore).subscribe(
+        results.push.bind(results),
+      );
       invariant(setStatus != null);
       setStatus('running');
       setStatus('stopped');
@@ -46,8 +51,7 @@ describe('Epics', () => {
           invariant(action.type === Actions.UPDATE_STATUS);
           return action.payload.status;
         }),
-      )
-        .toEqual(['running', 'stopped', 'running']);
+      ).toEqual(['running', 'stopped', 'running']);
     });
   });
 });

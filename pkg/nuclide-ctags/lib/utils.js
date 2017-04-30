@@ -6,12 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
 
 import {getLogger} from '../../nuclide-logging';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 // Taken from http://ctags.sourceforge.net/FORMAT
@@ -67,13 +70,18 @@ export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
       const lines = contents.toString('utf8').split('\n');
       lineNumber = 0;
       for (let i = 0; i < lines.length; i++) {
-        if (exactMatch ? lines[i] === pattern : lines[i].indexOf(pattern) !== -1) {
+        if (
+          exactMatch ? lines[i] === pattern : lines[i].indexOf(pattern) !== -1
+        ) {
           lineNumber = i;
           break;
         }
       }
     } catch (e) {
-      getLogger().warn(`nuclide-ctags: Could not locate pattern in ${tag.file}`, e);
+      getLogger().warn(
+        `nuclide-ctags: Could not locate pattern in ${tag.file}`,
+        e,
+      );
     }
   }
 

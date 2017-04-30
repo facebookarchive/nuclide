@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  Store,
-  RenamePhase,
-} from '../types';
+import type {Store, RenamePhase} from '../types';
 
 import React from 'react';
 
@@ -41,22 +39,24 @@ export class RenameComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    return (<div>
-      <AtomInput
-        autofocus={true}
-        startSelected={true}
-        className="nuclide-refactorizer-rename-editor"
-        initialValue={this.props.phase.symbolAtPoint.text}
-        onDidChange={text => this.setState({newName: text})}
-        onConfirm={() => this._runRename()}
-      />
-      <Button
+    return (
+      <div>
+        <AtomInput
+          autofocus={true}
+          startSelected={true}
+          className="nuclide-refactorizer-rename-editor"
+          initialValue={this.props.phase.symbolAtPoint.text}
+          onDidChange={text => this.setState({newName: text})}
+          onConfirm={() => this._runRename()}
+        />
+        <Button
           // Used to identify this element in integration tests
           className="nuclide-refactorizer-execute-button"
           onClick={() => this._runRename()}>
-        Execute
-      </Button>
-    </div>);
+          Execute
+        </Button>
+      </div>
+    );
   }
 
   _runRename(): void {
@@ -69,6 +69,8 @@ export class RenameComponent extends React.Component {
       symbolAtPoint,
       editor,
     };
-    this.props.store.dispatch(Actions.execute(this.props.phase.provider, refactoring));
+    this.props.store.dispatch(
+      Actions.execute(this.props.phase.provider, refactoring),
+    );
   }
 }

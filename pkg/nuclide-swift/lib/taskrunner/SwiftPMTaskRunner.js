@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Task} from '../../../commons-node/tasks';
@@ -18,7 +19,10 @@ import {Observable, Subject} from 'rxjs';
 import React from 'react';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
-import {observeProcess, exitEventToMessage} from '../../../commons-node/process';
+import {
+  observeProcess,
+  exitEventToMessage,
+} from '../../../commons-node/process';
 import {observableFromSubscribeFunction} from '../../../commons-node/event';
 import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
@@ -31,7 +35,8 @@ import {
   SwiftPMTaskRunnerTaskMetadata,
 } from './SwiftPMTaskRunnerTaskMetadata';
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
-import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
+import SwiftPMAutocompletionProvider
+  from './providers/SwiftPMAutocompletionProvider';
 import {Icon} from '../../../nuclide-ui/Icon';
 import nullthrows from 'nullthrows';
 import nuclideUri from '../../../commons-node/nuclideUri.js';
@@ -75,7 +80,9 @@ export class SwiftPMTaskRunner {
     this._projectRoot = new Subject();
     this._disposables = new UniversalDisposable(
       this._outputMessages,
-      this._projectRoot.subscribe(path => this._getFlux().actions.updateProjectRoot(path)),
+      this._projectRoot.subscribe(path =>
+        this._getFlux().actions.updateProjectRoot(path),
+      ),
     );
   }
 
@@ -91,18 +98,15 @@ export class SwiftPMTaskRunner {
     const {store, actions} = this._getFlux();
     return class ExtraUi extends React.Component {
       render(): React.Element<any> {
-        return (
-          <SwiftPMTaskRunnerToolbar
-            store={store}
-            actions={actions}
-          />
-        );
+        return <SwiftPMTaskRunnerToolbar store={store} actions={actions} />;
       }
     };
   }
 
   getIcon(): ReactClass<any> {
-    return () => <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
+    return () => (
+      <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />
+    );
   }
 
   runTask(taskName: string): Task {
@@ -137,11 +141,9 @@ export class SwiftPMTaskRunner {
     );
     this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
 
-    const observable = observeProcess(
-      command.command,
-      command.args,
-      {/* TODO(T17353599) */isExitError: () => false},
-    )
+    const observable = observeProcess(command.command, command.args, {
+      /* TODO(T17353599) */ isExitError: () => false,
+    })
       .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .do(message => {
         switch (message.kind) {
@@ -185,7 +187,9 @@ export class SwiftPMTaskRunner {
 
   getAutocompletionProvider(): SwiftPMAutocompletionProvider {
     if (!this._autocompletionProvider) {
-      this._autocompletionProvider = new SwiftPMAutocompletionProvider(this._getFlux().store);
+      this._autocompletionProvider = new SwiftPMAutocompletionProvider(
+        this._getFlux().store,
+      );
     }
     return this._autocompletionProvider;
   }
@@ -201,11 +205,12 @@ export class SwiftPMTaskRunner {
     const path = projectRoot == null ? null : projectRoot.getPath();
 
     const storeReady = observableFromSubscribeFunction(
-      this._getFlux().store.subscribe.bind(this._getFlux().store))
-        .map(() => this._getFlux().store)
-        .startWith(this._getFlux().store)
-        .filter(store => store.getProjectRoot() === path)
-        .share();
+      this._getFlux().store.subscribe.bind(this._getFlux().store),
+    )
+      .map(() => this._getFlux().store)
+      .startWith(this._getFlux().store)
+      .filter(store => store.getProjectRoot() === path)
+      .share();
 
     const enabledObservable = storeReady
       .map(store => store.getProjectRoot())
@@ -218,11 +223,14 @@ export class SwiftPMTaskRunner {
       })
       .distinctUntilChanged();
 
-    const tasksObservable = storeReady
-      .map(store => SwiftPMTaskRunnerTaskMetadata);
+    const tasksObservable = storeReady.map(
+      store => SwiftPMTaskRunnerTaskMetadata,
+    );
 
-    const subscription = Observable.combineLatest(enabledObservable, tasksObservable)
-      .subscribe(([enabled, tasks]) => callback(enabled, tasks));
+    const subscription = Observable.combineLatest(
+      enabledObservable,
+      tasksObservable,
+    ).subscribe(([enabled, tasks]) => callback(enabled, tasks));
 
     this._projectRoot.next(path);
 

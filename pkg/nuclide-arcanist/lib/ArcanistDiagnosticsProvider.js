@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
@@ -28,10 +29,7 @@ const _runningProcess = new Map();
 const _promisePool = new PromisePool(Math.round(os.cpus().length / 2));
 
 export function lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
-  return trackTiming(
-    'nuclide-arcanist:lint',
-    () => _lint(textEditor),
-  );
+  return trackTiming('nuclide-arcanist:lint', () => _lint(textEditor));
 }
 
 async function _lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
@@ -66,7 +64,8 @@ async function _lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
       text = diagnostic.text;
     }
     const maybeProperties = {};
-    if (diagnostic.original != null &&
+    if (
+      diagnostic.original != null &&
       diagnostic.replacement != null &&
       // Sometimes linters set original and replacement to the same value. Obviously that won't
       // fix anything.
@@ -86,9 +85,12 @@ async function _lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
   });
 }
 
-async function _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>> {
-  const blacklistedLinters: Array<string> =
-    (featureConfig.get('nuclide-arcanist.blacklistedLinters'): any);
+async function _findDiagnostics(
+  filePath: string,
+): Promise<?Array<ArcDiagnostic>> {
+  const blacklistedLinters: Array<string> = (featureConfig.get(
+    'nuclide-arcanist.blacklistedLinters',
+  ): any);
   const runningProcess = _runningProcess.get(filePath);
   if (runningProcess != null) {
     // This will cause the previous lint run to resolve with `undefined`.
@@ -102,7 +104,8 @@ async function _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>
       return Promise.resolve(null);
     }
     const arcService = getArcanistServiceByNuclideUri(filePath);
-    const subscription = arcService.findDiagnostics(filePath, blacklistedLinters)
+    const subscription = arcService
+      .findDiagnostics(filePath, blacklistedLinters)
       .refCount()
       .toArray()
       .timeout((featureConfig.get('nuclide-arcanist.lintTimeout'): any))
@@ -118,10 +121,15 @@ async function _findDiagnostics(filePath: string): Promise<?Array<ArcDiagnostic>
 
 // This type is a bit different than an ArcDiagnostic since original and replacement are
 // mandatory.
-function _getFix(diagnostic: {row: number, col: number, original: string, replacement: string}) {
+function _getFix(
+  diagnostic: {row: number, col: number, original: string, replacement: string},
+) {
   // For now just remove the suffix. The prefix would be nice too but it's a bit harder since we
   // then also have to manipulate the row/col accordingly.
-  const [original, replacement] = removeCommonSuffix(diagnostic.original, diagnostic.replacement);
+  const [original, replacement] = removeCommonSuffix(
+    diagnostic.original,
+    diagnostic.replacement,
+  );
   return {
     range: _getRangeForFix(diagnostic.row, diagnostic.col, original),
     newText: replacement,
@@ -129,7 +137,11 @@ function _getFix(diagnostic: {row: number, col: number, original: string, replac
   };
 }
 
-function _getRangeForFix(startRow: number, startCol: number, originalText: string): atom$Range {
+function _getRangeForFix(
+  startRow: number,
+  startCol: number,
+  originalText: string,
+): atom$Range {
   let newlineCount = 0;
   for (const char of originalText) {
     if (char === '\n') {

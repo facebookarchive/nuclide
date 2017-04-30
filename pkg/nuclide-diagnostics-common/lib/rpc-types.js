@@ -6,20 +6,24 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
-export type InvalidationMessage = {
-  scope: 'file',
-  filePaths: Array<NuclideUri>,
-} | {
-  scope: 'project',
-} | {
-  scope: 'all',
-};
+export type InvalidationMessage =
+  | {
+      scope: 'file',
+      filePaths: Array<NuclideUri>,
+    }
+  | {
+      scope: 'project',
+    }
+  | {
+      scope: 'all',
+    };
 
 // Implicit invalidation semantics:
 //

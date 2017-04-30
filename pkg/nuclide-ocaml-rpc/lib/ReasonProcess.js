@@ -6,13 +6,17 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {refmtResult} from './ReasonService';
 
 import {runCommand, getOriginalEnvironment} from '../../commons-node/process';
 
-export async function refmt(content: string, flags: Array<string>): Promise<refmtResult> {
+export async function refmt(
+  content: string,
+  flags: Array<string>,
+): Promise<refmtResult> {
   const refmtPath = getPathToRefmt();
   const options = {
     // Starts the process with the user's bashrc, which might contain a
@@ -29,7 +33,10 @@ export async function refmt(content: string, flags: Array<string>): Promise<refm
   } catch (err) {
     // Unsuccessfully exited. Two cases: syntax error and refmt nonexistent.
     if (err.errno === 'ENOENT') {
-      return {type: 'error', error: 'refmt is not found. Is it available in the path?'};
+      return {
+        type: 'error',
+        error: 'refmt is not found. Is it available in the path?',
+      };
     }
     return {type: 'error', error: err.stderr};
   }
@@ -40,6 +47,9 @@ export async function refmt(content: string, flags: Array<string>): Promise<refm
  *   return value will be stale.
  */
 function getPathToRefmt(): string {
-  return global.atom
-    && global.atom.config.get('nuclide.nuclide-ocaml.pathToRefmt') || 'refmt';
+  return (
+    (global.atom &&
+      global.atom.config.get('nuclide.nuclide-ocaml.pathToRefmt')) ||
+    'refmt'
+  );
 }

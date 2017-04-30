@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -81,7 +82,9 @@ export default class VcsLog extends React.Component {
           }
           differentialCell = (
             <td className="nuclide-vcs-log-differential-cell">
-              <span className="nuclide-vcs-log-differential-cell-text" onClick={onClick}>
+              <span
+                className="nuclide-vcs-log-differential-cell-text"
+                onClick={onClick}>
                 {revision}
               </span>
             </td>
@@ -123,8 +126,7 @@ export default class VcsLog extends React.Component {
                   <th className="nuclide-vcs-log-header-cell">ID</th>
                   {showDifferentialRevision
                     ? <th className="nuclide-vcs-log-header-cell">Revision</th>
-                    : null
-                  }
+                    : null}
                   <th className="nuclide-vcs-log-header-cell">Author</th>
                   <th className="nuclide-vcs-log-header-cell">Summary</th>
                 </tr>

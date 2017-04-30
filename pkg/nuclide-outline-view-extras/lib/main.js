@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
@@ -31,7 +32,8 @@ class Activation {
       content: 'Check out the new Outline View!',
       selector: '.nuclide-outline-view-toolbar-button',
       position: 'auto',
-      completionPredicate: (() => document.querySelector('div.nuclide-outline-view') != null),
+      completionPredicate: () =>
+        document.querySelector('div.nuclide-outline-view') != null,
     };
 
     const outlineViewPanelNux = {
@@ -51,9 +53,10 @@ class Activation {
       return path.endsWith('.js') || path.endsWith('.php');
     };
 
-    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
-    const triggerCallback
-      = editor => isOutlineViewClosed() && isValidFileTypeForNux(editor);
+    const isOutlineViewClosed = () =>
+      document.querySelector('.nuclide-outline-view') == null;
+    const triggerCallback = editor =>
+      isOutlineViewClosed() && isValidFileTypeForNux(editor);
 
     const nuxTriggerModel = {
       triggerType: 'editor',

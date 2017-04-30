@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import logger from './utils';
@@ -33,9 +34,9 @@ function createMessage(method: string, params: ?Object): Object {
  * 4. Output window messages.
  */
 export class ClientCallback {
-  _serverMessages: Subject<string>;  // For server messages.
-  _notifications: ReplaySubject<NotificationMessage>;   // For atom UI notifications.
-  _outputWindowMessages: Subject<string>;   // For output window messages.
+  _serverMessages: Subject<string>; // For server messages.
+  _notifications: ReplaySubject<NotificationMessage>; // For atom UI notifications.
+  _outputWindowMessages: Subject<string>; // For output window messages.
 
   constructor() {
     this._serverMessages = new Subject();
@@ -83,7 +84,12 @@ export class ClientCallback {
     }
   }
 
-  unknownMethod(id: number, domain: string, method: string, params: ?Object): void {
+  unknownMethod(
+    id: number,
+    domain: string,
+    method: string,
+    params: ?Object,
+  ): void {
     const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
     logger.log(message);
     this.replyWithError(id, message);

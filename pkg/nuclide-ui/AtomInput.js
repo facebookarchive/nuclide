@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classNames from 'classnames';
@@ -86,7 +87,7 @@ export class AtomInput extends React.Component {
   }
 
   componentDidMount(): void {
-    const disposables = this._disposables = new CompositeDisposable();
+    const disposables = (this._disposables = new CompositeDisposable());
 
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change
@@ -134,10 +135,12 @@ export class AtomInput extends React.Component {
     this.getTextEditor().moveToBeginningOfLine();
 
     // Begin listening for changes only after initial value is set.
-    disposables.add(textEditor.onDidChange(() => {
-      this.setState({value: textEditor.getText()});
-      this.props.onDidChange.call(null, textEditor.getText());
-    }));
+    disposables.add(
+      textEditor.onDidChange(() => {
+        this.setState({value: textEditor.getText()});
+        this.props.onDidChange.call(null, textEditor.getText());
+      }),
+    );
 
     this._updateWidth();
   }
@@ -188,7 +191,8 @@ export class AtomInput extends React.Component {
   render(): React.Element<any> {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
-      [`atom-text-editor-${maybeToString(this.props.size)}`]: (this.props.size != null),
+      [`atom-text-editor-${maybeToString(this.props.size)}`]: this.props.size !=
+        null,
     });
 
     return (
@@ -196,13 +200,15 @@ export class AtomInput extends React.Component {
       // component class when "Use Shadow DOM" is disabled, this element should never have children.
       // If an element has no children, React guarantees it will never re-render the element (which
       // would wipe out the web component's work in this case).
-      <atom-text-editor
-        class={className}
-        mini
-        onClick={this.props.onClick}
-        onFocus={this.props.onFocus}
-        onBlur={this.props.onBlur}
-      />
+      (
+        <atom-text-editor
+          class={className}
+          mini
+          onClick={this.props.onClick}
+          onFocus={this.props.onFocus}
+          onBlur={this.props.onBlur}
+        />
+      )
     );
   }
 

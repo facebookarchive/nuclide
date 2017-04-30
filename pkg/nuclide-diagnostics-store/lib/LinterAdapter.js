@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -40,7 +41,9 @@ export function linterMessageToDiagnosticMessage(
   // does not need a filePath property, but a LinterTrace does. Trace is a subtype of LinterTrace,
   // so copying works but aliasing does not. For a detailed explanation see
   // https://github.com/facebook/flow/issues/908
-  const trace = msg.trace ? msg.trace.map(component => ({...component})) : undefined;
+  const trace = msg.trace
+    ? msg.trace.map(component => ({...component}))
+    : undefined;
   if (msg.filePath) {
     const {fix} = msg;
     return ({
@@ -52,11 +55,13 @@ export function linterMessageToDiagnosticMessage(
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
       trace,
-      fix: fix == null ? undefined : {
-        oldRange: Range.fromObject(fix.range),
-        oldText: fix.oldText,
-        newText: fix.newText,
-      },
+      fix: fix == null
+        ? undefined
+        : {
+            oldRange: Range.fromObject(fix.range),
+            oldText: fix.oldText,
+            newText: fix.newText,
+          },
     }: FileDiagnosticMessage);
   } else {
     return ({
@@ -86,13 +91,16 @@ export function linterMessageV2ToDiagnosticMessage(
   if (msg.trace != null) {
     trace = msg.trace.map(component => ({...component}));
   } else if (msg.reference != null) {
-    const point = msg.reference.position != null ?
-      Point.fromObject(msg.reference.position) : null;
-    trace = [{
-      type: 'Trace',
-      filePath: msg.reference.file,
-      range: point ? new Range(point, point) : undefined,
-    }];
+    const point = msg.reference.position != null
+      ? Point.fromObject(msg.reference.position)
+      : null;
+    trace = [
+      {
+        type: 'Trace',
+        filePath: msg.reference.file,
+        range: point ? new Range(point, point) : undefined,
+      },
+    ];
   }
   // TODO: handle multiple solutions and priority.
   let fix;
@@ -131,7 +139,10 @@ export function linterMessagesToDiagnosticUpdate(
   msgs: Array<LinterMessage>,
   providerName: string,
 ): DiagnosticProviderUpdate {
-  const filePathToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>> = new Map();
+  const filePathToMessages: Map<
+    NuclideUri,
+    Array<FileDiagnosticMessage>
+  > = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that
@@ -140,10 +151,9 @@ export function linterMessagesToDiagnosticUpdate(
   }
   const projectMessages = [];
   for (const msg of msgs) {
-    const diagnosticMessage =
-      msg.type === undefined ?
-        linterMessageV2ToDiagnosticMessage(msg, providerName) :
-        linterMessageToDiagnosticMessage(msg, providerName);
+    const diagnosticMessage = msg.type === undefined
+      ? linterMessageV2ToDiagnosticMessage(msg, providerName)
+      : linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
       const path = diagnosticMessage.filePath;
       let messages = filePathToMessages.get(path);
@@ -152,7 +162,8 @@ export function linterMessagesToDiagnosticUpdate(
         filePathToMessages.set(path, messages);
       }
       messages.push(diagnosticMessage);
-    } else { // Project scope.
+    } else {
+      // Project scope.
       projectMessages.push(diagnosticMessage);
     }
   }
@@ -182,19 +193,26 @@ export class LinterAdapter {
     this._invalidations = new Subject();
     this._disposables = new UniversalDisposable(
       observeTextEditorEvents(
-        this._provider.grammarScopes[0] === '*' ? 'all' : this._provider.grammarScopes,
-        this._provider.lintsOnChange || this._provider.lintOnFly ? 'changes' : 'saves',
+        this._provider.grammarScopes[0] === '*'
+          ? 'all'
+          : this._provider.grammarScopes,
+        this._provider.lintsOnChange || this._provider.lintOnFly
+          ? 'changes'
+          : 'saves',
       )
         // Group text editor events by their underlying text buffer.
         // Each grouped stream lasts until the buffer gets destroyed.
         .groupBy(
           editor => editor.getBuffer(),
           editor => editor,
-          // $FlowFixMe: add durationSelector to groupBy
-          grouped => observableFromSubscribeFunction(cb => grouped.key.onDidDestroy(cb))
-            .take(1),
+          grouped =>
+            // $FlowFixMe: add durationSelector to groupBy
+            observableFromSubscribeFunction(cb =>
+              // $FlowFixMe
+              grouped.key.onDidDestroy(cb),
+            ).take(1),
         )
-        .mergeMap(bufferObservable => (
+        .mergeMap(bufferObservable =>
           // Run the linter on each buffer event.
           Observable.concat(
             bufferObservable,
@@ -202,16 +220,19 @@ export class LinterAdapter {
             Observable.of(null),
           )
             // switchMap ensures that earlier lints are overridden by later ones.
-            .switchMap(editor => (editor == null ? Observable.of(null) : this._runLint(editor)))
+            .switchMap(
+              editor =>
+                (editor == null ? Observable.of(null) : this._runLint(editor)),
+            )
             // Track the previous update so we can invalidate its results.
             // (Prevents dangling diagnostics when a linter affects multiple files).
-            .scan(
-              (acc, update) => ({update, lastUpdate: acc.update}),
-              {update: null, lastUpdate: null},
-            )
-        ))
-        .subscribe(
-          ({update, lastUpdate}) => this._processUpdate(update, lastUpdate),
+            .scan((acc, update) => ({update, lastUpdate: acc.update}), {
+              update: null,
+              lastUpdate: null,
+            }),
+        )
+        .subscribe(({update, lastUpdate}) =>
+          this._processUpdate(update, lastUpdate),
         ),
     );
   }
@@ -222,24 +243,25 @@ export class LinterAdapter {
       if (lintPromise == null) {
         return Observable.empty();
       }
-      return Promise.resolve(lintPromise)
-        .catch(error => {
-          // Prevent errors from blowing up the entire stream.
-          getLogger().error(`Error in linter provider ${this._provider.name}:`, error);
-          return null;
-        });
-    })
-      .switchMap(linterMessages => {
-        if (linterMessages == null) {
-          return Observable.empty();
-        }
-        const update = linterMessagesToDiagnosticUpdate(
-          editor.getPath(),
-          linterMessages,
-          this._provider.name,
+      return Promise.resolve(lintPromise).catch(error => {
+        // Prevent errors from blowing up the entire stream.
+        getLogger().error(
+          `Error in linter provider ${this._provider.name}:`,
+          error,
         );
-        return Observable.of(update);
+        return null;
       });
+    }).switchMap(linterMessages => {
+      if (linterMessages == null) {
+        return Observable.empty();
+      }
+      const update = linterMessagesToDiagnosticUpdate(
+        editor.getPath(),
+        linterMessages,
+        this._provider.name,
+      );
+      return Observable.of(update);
+    });
   }
 
   _processUpdate(

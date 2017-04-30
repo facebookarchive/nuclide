@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -27,13 +28,19 @@ import {existingEditorForUri} from '../../commons-atom/text-editor';
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export function applyTextEdits(path: NuclideUri, ...edits: Array<TextEdit>): boolean {
+export function applyTextEdits(
+  path: NuclideUri,
+  ...edits: Array<TextEdit>
+): boolean {
   const editor = existingEditorForUri(path);
   invariant(editor != null);
   return applyTextEditsToBuffer(editor.getBuffer(), edits);
 }
 
-export function applyTextEditsToBuffer(buffer: atom$TextBuffer, edits: Array<TextEdit>): boolean {
+export function applyTextEditsToBuffer(
+  buffer: atom$TextBuffer,
+  edits: Array<TextEdit>,
+): boolean {
   // Special-case whole-buffer changes to minimize disruption.
   if (edits.length === 1 && edits[0].oldRange.isEqual(buffer.getRange())) {
     if (edits[0].oldText != null && edits[0].oldText !== buffer.getText()) {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerStatusType} from '..';
@@ -21,17 +22,12 @@ const logger = getLogger();
 
 import {track} from '../../nuclide-analytics';
 
-import {
-  runCommandDetailed,
-  spawn,
-} from '../../commons-node/process';
+import {runCommandDetailed, spawn} from '../../commons-node/process';
 import {sleep} from '../../commons-node/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
-import {
-  getStopFlowOnExit,
-} from './FlowHelpers';
+import {getStopFlowOnExit} from './FlowHelpers';
 
 import {ServerStatus} from './FlowConstants';
 import {FlowIDEConnection} from './FlowIDEConnection';
@@ -61,8 +57,10 @@ const SERVER_READY_TIMEOUT_MS = 60 * 1000;
 const EXEC_FLOW_RETRIES = 5;
 
 const NO_RETRY_ARGS = [
-  '--retry-if-init', 'false',
-  '--retries', '0',
+  '--retry-if-init',
+  'false',
+  '--retries',
+  '0',
   '--no-auto-start',
 ];
 
@@ -71,7 +69,6 @@ const TEMP_SERVER_STATES: Array<ServerStatusType> = [
   ServerStatus.BUSY,
   ServerStatus.INIT,
 ];
-
 
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
@@ -100,17 +97,19 @@ export class FlowProcess {
       logger.info(`[${status}]: Flow server in ${this._root}`);
     });
 
-    this._serverStatus.filter(x => x === ServerStatus.NOT_RUNNING).subscribe(() => {
-      this._startFlowServer();
-    });
+    this._serverStatus
+      .filter(x => x === ServerStatus.NOT_RUNNING)
+      .subscribe(() => {
+        this._startFlowServer();
+      });
 
     this._serverStatus
       .scan(
         ({previousState}, nextState) => {
           // We should start pinging if we move into a temp state
           const shouldStartPinging =
-              !TEMP_SERVER_STATES.includes(previousState) &&
-              TEMP_SERVER_STATES.includes(nextState);
+            !TEMP_SERVER_STATES.includes(previousState) &&
+            TEMP_SERVER_STATES.includes(nextState);
           return {
             shouldStartPinging,
             previousState: nextState,
@@ -123,9 +122,11 @@ export class FlowProcess {
         this._pingServer();
       });
 
-    this._serverStatus.filter(status => status === ServerStatus.FAILED).subscribe(() => {
-      track('flow-server-failed');
-    });
+    this._serverStatus
+      .filter(status => status === ServerStatus.FAILED)
+      .subscribe(() => {
+        track('flow-server-failed');
+      });
   }
 
   dispose(): void {
@@ -190,17 +191,20 @@ export class FlowProcess {
     const shouldStart: Observable<void> = isFailed
       .filter(failed => !failed)
       .mapTo(undefined);
-    return shouldStart
-      .switchMap(() => this._createSingleIDEConnectionStream())
-      .takeUntil(this._isDisposed.filter(x => x))
-      .concat(Observable.of(null))
-      // This is so we can passively observe IDE connections if somebody happens to be using one. We
-      // want to use it to more quickly update the Flow server status, but it's not crucial to
-      // correctness so we only want to do this if somebody is using the IDE connections anyway.
-      // Don't pass the Subject as an Observer since then it will complete if a client unsubscribes.
-      .do(conn => optionalIDEConnections.next(conn))
-      // multicast and store the current connection and immediately deliver it to new subscribers
-      .publishReplay(1).refCount();
+    return (
+      shouldStart
+        .switchMap(() => this._createSingleIDEConnectionStream())
+        .takeUntil(this._isDisposed.filter(x => x))
+        .concat(Observable.of(null))
+        // This is so we can passively observe IDE connections if somebody happens to be using one. We
+        // want to use it to more quickly update the Flow server status, but it's not crucial to
+        // correctness so we only want to do this if somebody is using the IDE connections anyway.
+        // Don't pass the Subject as an Observer since then it will complete if a client unsubscribes.
+        .do(conn => optionalIDEConnections.next(conn))
+        // multicast and store the current connection and immediately deliver it to new subscribers
+        .publishReplay(1)
+        .refCount()
+    );
   }
 
   _createSingleIDEConnectionStream(): Observable<?FlowIDEConnection> {
@@ -236,11 +240,7 @@ export class FlowProcess {
           return Observable.of(null);
         }
         return getAllExecInfo(
-          [
-            'ide',
-            '--protocol', 'very-unstable',
-            ...NO_RETRY_ARGS,
-          ],
+          ['ide', '--protocol', 'very-unstable', ...NO_RETRY_ARGS],
           this._root,
           this._execInfoContainer,
         );
@@ -250,16 +250,19 @@ export class FlowProcess {
           return Observable.of(null);
         }
 
-        return spawn(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
-          .do(proc => {
-            proc.once('exit', (code: ?number, signal: ?string) => {
-              // If it crashes we will get `null` or `undefined`, but that doesn't actually mean
-              // that Flow is not installed.
-              if (code != null) {
-                this._updateServerStatus(code);
-              }
-            });
+        return spawn(
+          allExecInfo.pathToFlow,
+          allExecInfo.args,
+          allExecInfo.options,
+        ).do(proc => {
+          proc.once('exit', (code: ?number, signal: ?string) => {
+            // If it crashes we will get `null` or `undefined`, but that doesn't actually mean
+            // that Flow is not installed.
+            if (code != null) {
+              this._updateServerStatus(code);
+            }
           });
+        });
       });
   }
 
@@ -279,14 +282,15 @@ export class FlowProcess {
     for (let i = 0; ; i++) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        const result = await this._rawExecFlow(
-          args,
-          options,
-        );
+        const result = await this._rawExecFlow(args, options);
         return result;
       } catch (e) {
-        const couldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
-          .indexOf(this._serverStatus.getValue()) !== -1;
+        const couldRetry =
+          [
+            ServerStatus.NOT_RUNNING,
+            ServerStatus.INIT,
+            ServerStatus.BUSY,
+          ].indexOf(this._serverStatus.getValue()) !== -1;
         if (i < maxRetries && couldRetry) {
           // eslint-disable-next-line no-await-in-loop
           await this._serverIsReady();
@@ -296,7 +300,9 @@ export class FlowProcess {
           // don't want to log because it just means the server is busy and we don't want to wait.
           if (!couldRetry && !suppressErrors) {
             // not sure what happened, but we'll let the caller deal with it
-            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+            logger.error(
+              `Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`,
+            );
           }
           throw e;
         }
@@ -310,7 +316,9 @@ export class FlowProcess {
     // If the server is restarting because of a change in the version specified in the .flowconfig,
     // then it's important not to use a stale path to start it, since we could have cached the path
     // to a different version. In that case, starting the server will fail.
-    const flowExecInfo = await this._execInfoContainer.reallyGetFlowExecInfo(this._root);
+    const flowExecInfo = await this._execInfoContainer.reallyGetFlowExecInfo(
+      this._root,
+    );
     if (flowExecInfo == null) {
       // This should not happen in normal use. If Flow is not installed we should have caught it by
       // now.
@@ -327,8 +335,10 @@ export class FlowProcess {
       flowExecInfo.pathToFlow,
       [
         'server',
-        '--from', 'nuclide',
-        '--max-workers', this._getMaxWorkers().toString(),
+        '--from',
+        'nuclide',
+        '--max-workers',
+        this._getMaxWorkers().toString(),
         this._root,
       ],
       flowExecInfo.execOptions,
@@ -356,12 +366,12 @@ export class FlowProcess {
   }
 
   /** Execute Flow with the given arguments */
-  async _rawExecFlow(args_: Array<any>, options?: Object = {}): Promise<?FlowExecResult> {
+  async _rawExecFlow(
+    args_: Array<any>,
+    options?: Object = {},
+  ): Promise<?FlowExecResult> {
     let args = args_;
-    args = [
-      ...args,
-      ...NO_RETRY_ARGS,
-    ];
+    args = [...args, ...NO_RETRY_ARGS];
     try {
       const result = await FlowProcess.execFlowClient(
         args,
@@ -388,7 +398,7 @@ export class FlowProcess {
     } else {
       switch (exitCode) {
         case FLOW_RETURN_CODES.ok:
-          // falls through
+        // falls through
         case FLOW_RETURN_CODES.typeError:
           status = ServerStatus.READY;
           break;
@@ -404,7 +414,10 @@ export class FlowProcess {
         case FLOW_RETURN_CODES.buildIdMismatch:
           // If the version doesn't match, the server is automatically killed and the client
           // returns 9.
-          logger.info('Killed flow server with incorrect version in', this._root);
+          logger.info(
+            'Killed flow server with incorrect version in',
+            this._root,
+          );
           status = ServerStatus.NOT_RUNNING;
           break;
         case FLOW_RETURN_CODES.unexpectedArgument:
@@ -422,12 +435,12 @@ export class FlowProcess {
   _setServerStatus(status: ServerStatusType): void {
     const currentStatus = this._serverStatus.getValue();
     if (
-        // Avoid duplicate updates
-        status !== currentStatus &&
-        // Avoid moving the status away from FAILED, to let any existing  work die out when the
-        // server fails.
-        currentStatus !== ServerStatus.FAILED
-      ) {
+      // Avoid duplicate updates
+      status !== currentStatus &&
+      // Avoid moving the status away from FAILED, to let any existing  work die out when the
+      // server fails.
+      currentStatus !== ServerStatus.FAILED
+    ) {
       this._serverStatus.next(status);
     }
     if (this._isDisposed.getValue()) {
@@ -468,14 +481,16 @@ export class FlowProcess {
     if (this._serverStatus.getValue() === ServerStatus.UNKNOWN) {
       this._pingServerOnce();
     }
-    return this._serverStatus
-      .filter(x => x === ServerStatus.READY)
-      .map(() => true)
-      .race(Observable.of(false).delay(SERVER_READY_TIMEOUT_MS))
-      // If the stream is completed timeout will not return its default value and we will see an
-      // EmptyError. So, provide a defaultValue here so the promise resolves.
-      .first(null, null, false)
-      .toPromise();
+    return (
+      this._serverStatus
+        .filter(x => x === ServerStatus.READY)
+        .map(() => true)
+        .race(Observable.of(false).delay(SERVER_READY_TIMEOUT_MS))
+        // If the stream is completed timeout will not return its default value and we will see an
+        // EmptyError. So, provide a defaultValue here so the promise resolves.
+        .first(null, null, false)
+        .toPromise()
+    );
   }
 
   _getMaxWorkers(): number {
@@ -498,14 +513,22 @@ export class FlowProcess {
     execInfoContainer: FlowExecInfoContainer,
     options: Object = {},
   ): Promise<?FlowExecResult> {
-    const allExecInfo = await getAllExecInfo(args, root, execInfoContainer, options);
+    const allExecInfo = await getAllExecInfo(
+      args,
+      root,
+      execInfoContainer,
+      options,
+    );
     if (allExecInfo == null) {
       return null;
     }
 
     // TODO: bubble up the exit code via return value instead of the error
-    return runCommandDetailed(allExecInfo.pathToFlow, allExecInfo.args, allExecInfo.options)
-      .toPromise();
+    return runCommandDetailed(
+      allExecInfo.pathToFlow,
+      allExecInfo.args,
+      allExecInfo.options,
+    ).toPromise();
   }
 }
 
@@ -526,10 +549,7 @@ async function getAllExecInfo(
     return null;
   }
   return {
-    args: [
-      ...args,
-      '--from', 'nuclide',
-    ],
+    args: [...args, '--from', 'nuclide'],
     options: {
       ...execInfo.execOptions,
       ...options,

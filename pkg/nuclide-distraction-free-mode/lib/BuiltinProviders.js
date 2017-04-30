@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DistractionFreeModeProvider} from '..';
@@ -31,10 +32,14 @@ export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
     providers.push(new DockProvider(atom.workspace.getLeftDock(), 'left-dock'));
   }
   if (atom.workspace.getRightDock != null) {
-    providers.push(new DockProvider(atom.workspace.getRightDock(), 'right-dock'));
+    providers.push(
+      new DockProvider(atom.workspace.getRightDock(), 'right-dock'),
+    );
   }
   if (atom.workspace.getBottomDock != null) {
-    providers.push(new DockProvider(atom.workspace.getBottomDock(), 'bottom-dock'));
+    providers.push(
+      new DockProvider(atom.workspace.getBottomDock(), 'bottom-dock'),
+    );
   }
 
   return providers;
@@ -49,9 +54,11 @@ class FindAndReplaceProvider {
     const paneElem = document.querySelector('.' + this.name);
     if (paneElem != null) {
       const paneContainer = paneElem.parentElement;
-      if (paneContainer != null
-        && paneContainer.style != null
-        && paneContainer.style.display != null) {
+      if (
+        paneContainer != null &&
+        paneContainer.style != null &&
+        paneContainer.style.display != null
+      ) {
         const display = paneContainer.style.display;
         if (display !== 'none') {
           return true;
@@ -62,7 +69,9 @@ class FindAndReplaceProvider {
     return false;
   }
   toggle(): void {
-    if (!atom.packages.isPackageActive('find-and-replace')) { return; }
+    if (!atom.packages.isPackageActive('find-and-replace')) {
+      return;
+    }
 
     const command = this.isVisible() ? 'toggle' : 'show';
     atom.commands.dispatch(

@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  Trace,
-} from '../nuclide-diagnostics-common/lib/rpc-types';
+import type {Trace} from '../nuclide-diagnostics-common/lib/rpc-types';
 
 import React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
@@ -22,10 +21,7 @@ type DiagnosticsTraceItemProps = {
 
 // TODO move LESS styles to nuclide-ui
 export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
-  const {
-    trace,
-    goToLocation,
-  } = props;
+  const {trace, goToLocation} = props;
   let locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
   const path = trace.filePath;

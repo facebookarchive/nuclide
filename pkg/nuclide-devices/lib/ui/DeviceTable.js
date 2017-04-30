@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -16,7 +17,7 @@ import type {Device} from '../types';
 type Props = {
   devices: Device[],
   device: ?Device,
-  setDevice: (?Device) => void,
+  setDevice: ?Device => void,
 };
 
 type State = {
@@ -31,15 +32,21 @@ export class DeviceTable extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = {selectedDeviceIndex: null};
-    (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(this);
-    this._emptyComponent = () => <div className="padded">No devices connected</div>;
+    (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(
+      this,
+    );
+    this._emptyComponent = () => (
+      <div className="padded">No devices connected</div>
+    );
   }
 
   componentWillReceiveProps(nextProps: Props): void {
     const nextDevice = nextProps.device;
     let selectedDeviceIndex = null;
     if (nextDevice != null) {
-      selectedDeviceIndex = nextProps.devices.findIndex(device => device.name === nextDevice.name);
+      selectedDeviceIndex = nextProps.devices.findIndex(
+        device => device.name === nextDevice.name,
+      );
     }
     if (selectedDeviceIndex !== this.state.selectedDeviceIndex) {
       this.setState({selectedDeviceIndex});
@@ -47,7 +54,9 @@ export class DeviceTable extends React.Component {
   }
 
   render(): React.Element<any> {
-    const rows = this.props.devices.map(device => ({data: {name: device.displayName}}));
+    const rows = this.props.devices.map(device => ({
+      data: {name: device.displayName},
+    }));
     const columns = [
       {
         key: 'name',
@@ -55,7 +64,6 @@ export class DeviceTable extends React.Component {
         width: 1.0,
       },
     ];
-
 
     return (
       <Table

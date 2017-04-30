@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Store, BoundActionCreators, PartialAppState} from './types';
@@ -19,7 +20,10 @@ import {applyMiddleware, bindActionCreators, createStore} from 'redux';
 import * as Actions from './Actions';
 import * as Epics from './Epics';
 import * as Reducers from './Reducers';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {track} from '../../nuclide-analytics';
@@ -81,14 +85,20 @@ class Activation {
     if (this._requestEditDialog != null) {
       return this._requestEditDialog;
     }
-    // $FlowFixMe -- Flow doesn't know about the Observable symbol used by from().
-    const BoundEditDialog = bindObservableAsProps(Observable.from(this._store), RequestEditDialog);
+    const BoundEditDialog = bindObservableAsProps(
+      // $FlowFixMe -- Flow doesn't know about the Observable symbol used by from().
+      Observable.from(this._store),
+      RequestEditDialog,
+    );
     const container = document.createElement('div');
     const requestEditDialog = atom.workspace.addModalPanel({
       item: container,
       visible: false,
     });
-    ReactDOM.render(<BoundEditDialog actionCreators={this._actionCreators} />, container);
+    ReactDOM.render(
+      <BoundEditDialog actionCreators={this._actionCreators} />,
+      container,
+    );
     this._disposables.add(
       new Disposable(() => {
         requestEditDialog.destroy();

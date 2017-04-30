@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Directory} from '../../../nuclide-remote-connection';
@@ -46,7 +47,9 @@ export function didActivateInitialPackages(): DidActivateInitialPackagesAction {
   return {type: DID_ACTIVATE_INITIAL_PACKAGES};
 }
 
-export function registerTaskRunner(taskRunner: TaskRunner): RegisterTaskRunnerAction {
+export function registerTaskRunner(
+  taskRunner: TaskRunner,
+): RegisterTaskRunnerAction {
   return {
     type: REGISTER_TASK_RUNNER,
     payload: {taskRunner},
@@ -116,7 +119,9 @@ export function toggleToolbarVisibility(
   };
 }
 
-export function unregisterTaskRunner(taskRunner: TaskRunner): UnregisterTaskRunnerAction {
+export function unregisterTaskRunner(
+  taskRunner: TaskRunner,
+): UnregisterTaskRunnerAction {
   return {
     type: UNREGISTER_TASK_RUNNER,
     payload: {taskRunner},

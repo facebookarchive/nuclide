@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
@@ -16,10 +17,7 @@ import React from 'react';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import {Table} from '../../nuclide-ui/Table';
-import {
-  Highlight,
-  HighlightColors,
-} from '../../nuclide-ui/Highlight';
+import {Highlight, HighlightColors} from '../../nuclide-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {getProjectRelativePathOfDiagnostic} from './paneUtils';
 import {DiagnosticsMessageNoHeader} from '../../nuclide-ui/DiagnosticsMessage';
@@ -45,11 +43,11 @@ export type DisplayDiagnostic = {
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
-const EmptyComponent = () =>
+const EmptyComponent = () => (
   <div className="nuclide-diagnostics-ui-empty-component">
     No diagnostic messages
-  </div>;
-
+  </div>
+);
 
 const TypeToHighlightColor = Object.freeze({
   ERROR: HighlightColors.error,
@@ -57,7 +55,9 @@ const TypeToHighlightColor = Object.freeze({
   INFO: HighlightColors.info,
 });
 
-function TypeComponent(props: {data: 'Warning' | 'Error' | 'Info'}): React.Element<any> {
+function TypeComponent(
+  props: {data: 'Warning' | 'Error' | 'Info'},
+): React.Element<any> {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
   return <Highlight color={highlightColor}>{text}</Highlight>;
@@ -71,7 +71,10 @@ function getMessageContent(
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
-  const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
+  const allMessages: Array<{html?: string, text?: string}> = [
+    diagnostic,
+    ...traces,
+  ];
   for (const message of allMessages) {
     // TODO: A mix of html and text diagnostics will yield a wonky sort ordering.
     if (message.html != null) {
@@ -87,11 +90,18 @@ function getMessageContent(
     text: text.trim(),
     html: isPlainText ? null : text.trim(),
     element: showTraces && diagnostic.scope === 'file'
-      ? DiagnosticsMessageNoHeader({message: diagnostic, goToLocation, fixer: () => {}}) : null,
+      ? DiagnosticsMessageNoHeader({
+          message: diagnostic,
+          goToLocation,
+          fixer: () => {},
+        })
+      : null,
   };
 }
 
-function DescriptionComponent(props: {data: DescriptionField}): React.Element<any> {
+function DescriptionComponent(
+  props: {data: DescriptionField},
+): React.Element<any> {
   const message = props.data;
   if (message.element != null) {
     return message.element;
@@ -116,7 +126,6 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
   const column = 0;
   goToLocation(uri, line, column);
 }
-
 
 type DiagnosticsPaneProps = {
   diagnostics: Array<DiagnosticMessage>,
@@ -148,7 +157,10 @@ export default class DiagnosticsPane extends React.Component {
     });
   }
 
-  _handleSelectTableRow(item: {diagnostic: DiagnosticMessage}, selectedIndex: number): void {
+  _handleSelectTableRow(
+    item: {diagnostic: DiagnosticMessage},
+    selectedIndex: number,
+  ): void {
     goToDiagnosticLocation(item.diagnostic);
   }
 
@@ -156,11 +168,13 @@ export default class DiagnosticsPane extends React.Component {
     const {showFileName} = this.props;
     const filePathColumnWidth = 0.2;
     const filePathColumn = showFileName
-      ? [{
-        key: 'filePath',
-        title: 'File',
-        width: filePathColumnWidth,
-      }]
+      ? [
+          {
+            key: 'filePath',
+            title: 'File',
+            width: filePathColumnWidth,
+          },
+        ]
       : [];
     return [
       {
@@ -191,10 +205,7 @@ export default class DiagnosticsPane extends React.Component {
 
   render(): React.Element<any> {
     const {diagnostics, showTraces} = this.props;
-    const {
-      sortedColumn,
-      sortDescending,
-    } = this.state;
+    const {sortedColumn, sortDescending} = this.state;
     const diagnosticRows = diagnostics.map(diagnostic => {
       const messageContent = getMessageContent(showTraces, diagnostic);
       return {
@@ -208,7 +219,11 @@ export default class DiagnosticsPane extends React.Component {
         },
       };
     });
-    let sortedRows = sortDiagnostics(diagnosticRows, sortedColumn, sortDescending);
+    let sortedRows = sortDiagnostics(
+      diagnosticRows,
+      sortedColumn,
+      sortDescending,
+    );
     let maxResultsMessage;
     if (sortedRows.length > MAX_RESULTS_COUNT) {
       sortedRows = sortedRows.slice(0, MAX_RESULTS_COUNT);
@@ -220,10 +235,12 @@ export default class DiagnosticsPane extends React.Component {
       );
     }
     return (
-      <div className={classnames({
-        'nuclide-diagnostics-ui-table-container': true,
-        'nuclide-diagnostics-ui-table-container-empty': sortedRows.length === 0,
-      })}>
+      <div
+        className={classnames({
+          'nuclide-diagnostics-ui-table-container': true,
+          'nuclide-diagnostics-ui-table-container-empty': sortedRows.length ===
+            0,
+        })}>
         <Table
           collapsable={true}
           columns={this._getColumns()}

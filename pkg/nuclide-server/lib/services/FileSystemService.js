@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -26,11 +27,7 @@ import {runCommand} from '../../../commons-node/process';
 import {observeRawStream} from '../../../commons-node/stream';
 import {Observable} from 'rxjs';
 
-export type DirectoryEntry = [
-  string,
-  boolean,
-  boolean,
-];
+export type DirectoryEntry = [string, boolean, boolean];
 
 // Attempting to read large files just crashes node, so just fail.
 // Atom can't handle files of this scale anyway.
@@ -52,7 +49,10 @@ export function exists(path: string): Promise<boolean> {
  *     1. It operates on NuclideUri instead of string.
  *     2. It returns the path to the file, not the directory (or null).
  */
-export function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+export function findNearestFile(
+  fileName: string,
+  pathToDirectory: string,
+): Promise<?string> {
   return fsPromise.findNearestFile(fileName, pathToDirectory);
 }
 
@@ -79,7 +79,9 @@ export function findFilesInDirectories(
   fileName: string,
 ): ConnectableObservable<Array<NuclideUri>> {
   if (searchPaths.length === 0) {
-    return Observable.throw(new Error('No directories to search in!')).publish();
+    return Observable.throw(
+      new Error('No directories to search in!'),
+    ).publish();
   }
   const findArgs = [...searchPaths, '-type', 'f', '-name', fileName];
   return runCommand('find', findArgs)
@@ -144,25 +146,26 @@ export async function newFile(filePath: string): Promise<boolean> {
  */
 export async function readdir(path: string): Promise<Array<DirectoryEntry>> {
   const files = await fsPromise.readdir(path);
-  const entries = await Promise.all(files.map(async file => {
-    const fullpath = nuclideUri.join(path, file);
-    const lstats = await fsPromise.lstat(fullpath);
-    if (!lstats.isSymbolicLink()) {
-      return {file, stats: lstats, isSymbolicLink: false};
-    } else {
-      try {
-        const stats = await fsPromise.stat(fullpath);
-        return {file, stats, isSymbolicLink: true};
-      } catch (error) {
-        return null;
+  const entries = await Promise.all(
+    files.map(async file => {
+      const fullpath = nuclideUri.join(path, file);
+      const lstats = await fsPromise.lstat(fullpath);
+      if (!lstats.isSymbolicLink()) {
+        return {file, stats: lstats, isSymbolicLink: false};
+      } else {
+        try {
+          const stats = await fsPromise.stat(fullpath);
+          return {file, stats, isSymbolicLink: true};
+        } catch (error) {
+          return null;
+        }
       }
-    }
-  }));
+    }),
+  );
   // TODO: Return entries directly and change client to handle error.
-  return arrayCompact(entries)
-    .map(entry => {
-      return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
-    });
+  return arrayCompact(entries).map(entry => {
+    return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
+  });
 }
 
 /**
@@ -185,25 +188,36 @@ export function resolveRealPath(path: string): Promise<string> {
 /**
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
-export function rename(sourcePath: string, destinationPath: string): Promise<void> {
+export function rename(
+  sourcePath: string,
+  destinationPath: string,
+): Promise<void> {
   return fsPromise.move(sourcePath, destinationPath);
 }
 
 /**
  * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
  */
-export async function move(sourcePaths: Array<string>, destDir: string): Promise<void> {
-  await Promise.all(sourcePaths.map(path => {
-    const destPath = nuclideUri.join(destDir, nuclideUri.basename(path));
-    return fsPromise.move(path, destPath);
-  }));
+export async function move(
+  sourcePaths: Array<string>,
+  destDir: string,
+): Promise<void> {
+  await Promise.all(
+    sourcePaths.map(path => {
+      const destPath = nuclideUri.join(destDir, nuclideUri.basename(path));
+      return fsPromise.move(path, destPath);
+    }),
+  );
 }
 
 /**
  * Runs the equivalent of `cp sourcePath destinationPath`.
  * @return true if the operation was successful; false if it wasn't.
  */
-export async function copy(sourcePath: string, destinationPath: string): Promise<boolean> {
+export async function copy(
+  sourcePath: string,
+  destinationPath: string,
+): Promise<boolean> {
   const isExistingFile = await fsPromise.exists(destinationPath);
   if (isExistingFile) {
     return false;
@@ -309,7 +323,10 @@ function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
   });
 }
 
-async function copyFilePermissions(sourcePath: string, destinationPath: string): Promise<void> {
+async function copyFilePermissions(
+  sourcePath: string,
+  destinationPath: string,
+): Promise<void> {
   let permissions;
   try {
     permissions = (await fsPromise.stat(sourcePath)).mode;
@@ -334,8 +351,11 @@ async function copyFilePermissions(sourcePath: string, destinationPath: string):
  *
  * TODO: move to nuclide-commons and rename to writeFileAtomic
  */
-export async function writeFile(path: string, data: string,
-    options?: {encoding?: string, mode?: number, flag?: string}): Promise<void> {
+export async function writeFile(
+  path: string,
+  data: string,
+  options?: {encoding?: string, mode?: number, flag?: string},
+): Promise<void> {
   let complete = false;
   const tempFilePath = await fsPromise.tempfile('nuclide');
   try {

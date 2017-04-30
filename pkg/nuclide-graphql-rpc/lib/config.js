@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -14,7 +15,9 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {getCategoryLogger} from '../../nuclide-logging';
 
-import {GraphQLRC} from '../../nuclide-graphql-language-service/lib/config/GraphQLConfig';
+import {
+  GraphQLRC,
+} from '../../nuclide-graphql-language-service/lib/config/GraphQLConfig';
 
 const GRAPHQL_LOGGER_CATEGORY = 'nuclide-graphql';
 export const logger = getCategoryLogger(GRAPHQL_LOGGER_CATEGORY);

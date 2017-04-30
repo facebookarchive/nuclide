@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Point, Range} from 'atom';
@@ -34,8 +35,8 @@ describe('ClangDiagnosticsProvider', () => {
 
   describe('processDiagnostics', () => {
     it('should group diagnostics by file', () => {
-      const messages = ClangLinter
-        ._processDiagnostics({
+      const messages = ClangLinter._processDiagnostics(
+        {
           diagnostics: [
             {
               severity: 2,
@@ -115,7 +116,9 @@ describe('ClangDiagnosticsProvider', () => {
             },
           ],
           accurateFlags: true,
-        }, fakeEditor);
+        },
+        fakeEditor,
+      );
 
       expect(messages).toEqual([
         {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
@@ -17,7 +18,8 @@ function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {
     return new LinterAdapter(provider);
   } else {
     const nameString = provider.name;
-    let message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
+    let message =
+      `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
       'Diagnostic messages from that linter will be unavailable.\n';
     message += validationErrors.map(error => `- ${error}\n`).join('');
     atom.notifications.addError(message, {dismissable: true});
@@ -55,7 +57,11 @@ export function validateLinter(provider: LinterProvider): Array<string> {
 
   if (errors.length === 0) {
     validate(provider.grammarScopes, 'Must specify grammarScopes', errors);
-    validate(Array.isArray(provider.grammarScopes), 'grammarScopes must be an Array', errors);
+    validate(
+      Array.isArray(provider.grammarScopes),
+      'grammarScopes must be an Array',
+      errors,
+    );
     if (errors.length === 0) {
       for (const grammar of provider.grammarScopes) {
         validate(
@@ -73,9 +79,17 @@ export function validateLinter(provider: LinterProvider): Array<string> {
     );
 
     validate(provider.lint, 'lint function must be specified', errors);
-    validate(typeof provider.lint === 'function', 'lint must be a function', errors);
+    validate(
+      typeof provider.lint === 'function',
+      'lint must be a function',
+      errors,
+    );
 
-    validate(typeof provider.name === 'string', 'provider must have a name', errors);
+    validate(
+      typeof provider.name === 'string',
+      'provider must have a name',
+      errors,
+    );
   }
 
   return errors;

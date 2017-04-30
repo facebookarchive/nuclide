@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -18,7 +19,8 @@ export type DebuggerActionUIProvider = {
   getComponent: (
     store: LaunchAttachStore,
     actions: LaunchAttachActions,
-    parentEventEmitter: EventEmitter) => React.Element<any>,
+    parentEventEmitter: EventEmitter,
+  ) => React.Element<any>,
   name: string,
   isEnabled: () => Promise<boolean>,
 };

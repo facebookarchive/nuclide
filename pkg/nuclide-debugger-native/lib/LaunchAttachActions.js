@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
@@ -45,14 +46,18 @@ export class LaunchAttachActions extends LaunchAttachActionsBase {
   }
 
   async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider('nuclide-debugger.remote');
+    const debuggerService = await consumeFirstProvider(
+      'nuclide-debugger.remote',
+    );
     await debuggerService.startDebugging(processInfo);
   }
 
   // Override.
   async updateAttachTargetList(): Promise<void> {
-    const rpcService: ?NativeDebuggerService
-      = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
+    const rpcService: ?NativeDebuggerService = getServiceByNuclideUri(
+      'NativeDebuggerService',
+      this.getTargetUri(),
+    );
     invariant(rpcService);
     const attachTargetList = await rpcService.getAttachTargetInfoList();
     this._dispatcher.dispatch({

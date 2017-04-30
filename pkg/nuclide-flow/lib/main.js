@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as FlowService from '../../nuclide-flow-rpc';
@@ -19,7 +20,10 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {BusySignalProvider, BusySignalMessage} from '../../nuclide-busy-signal/lib/types';
+import type {
+  BusySignalProvider,
+  BusySignalMessage,
+} from '../../nuclide-busy-signal/lib/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -35,7 +39,10 @@ import {
   shouldFilter,
   JAVASCRIPT_IDENTIFIER_REGEX,
 } from '../../nuclide-flow-common';
-import {ConnectionCache, getServiceByConnection} from '../../nuclide-remote-connection';
+import {
+  ConnectionCache,
+  getServiceByConnection,
+} from '../../nuclide-remote-connection';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -55,29 +62,28 @@ export async function activate() {
   if (!disposables) {
     connectionCache = new ConnectionCache(connectionToFlowService);
 
-
     disposables = new UniversalDisposable(
       connectionCache,
-      () => { connectionCache = null; },
+      () => {
+        connectionCache = null;
+      },
       new FlowServiceWatcher(connectionCache),
       atom.commands.add(
         'atom-workspace',
         'nuclide-flow:restart-flow-server',
         allowFlowServerRestart,
       ),
-      Observable
-        .fromPromise(getLanguageServiceConfig())
-        .subscribe(lsConfig => {
-          const flowLanguageService = new AtomLanguageService(
-            connection => getConnectionCache().get(connection),
-            lsConfig,
-          );
-          flowLanguageService.activate();
-          // `disposables` is always disposed before it is set to null. If it has been disposed,
-          // this subscription will have been disposed as well and we will not enter this callback.
-          invariant(disposables != null);
-          disposables.add(flowLanguageService);
-        }),
+      Observable.fromPromise(getLanguageServiceConfig()).subscribe(lsConfig => {
+        const flowLanguageService = new AtomLanguageService(
+          connection => getConnectionCache().get(connection),
+          lsConfig,
+        );
+        flowLanguageService.activate();
+        // `disposables` is always disposed before it is set to null. If it has been disposed,
+        // this subscription will have been disposed as well and we will not enter this callback.
+        invariant(disposables != null);
+        disposables.add(flowLanguageService);
+      }),
     );
 
     registerGrammar('source.ini', ['.flowconfig']);
@@ -87,7 +93,10 @@ export async function activate() {
 async function connectionToFlowService(
   connection: ?ServerConnection,
 ): Promise<FlowLanguageServiceType> {
-  const flowService: FlowService = getServiceByConnection('FlowService', connection);
+  const flowService: FlowService = getServiceByConnection(
+    'FlowService',
+    connection,
+  );
   const fileNotifier = await getNotifierByConnection(connection);
   const config: FlowSettings = {
     functionSnippetShouldIncludeArguments: Boolean(
@@ -111,10 +120,11 @@ export function serverStatusUpdatesToBusyMessages(
     return id;
   };
   return statusUpdates
-      .groupBy(({pathToRoot}) => pathToRoot)
-      .mergeMap(messagesForRoot => {
-        return messagesForRoot
-          .scan(({lastBusyMessage}, nextStatus) => {
+    .groupBy(({pathToRoot}) => pathToRoot)
+    .mergeMap(messagesForRoot => {
+      return messagesForRoot
+        .scan(
+          ({lastBusyMessage}, nextStatus) => {
             const messages = [];
             // Invalidate the previous busy message, if there is one
             if (lastBusyMessage != null) {
@@ -123,12 +133,17 @@ export function serverStatusUpdatesToBusyMessages(
             let currentBusyMessage = null;
             // I would use constants here but the constant is in the flow-rpc package which we can't
             // load directly from this package. Casting to the appropriate type is just as safe.
-            if (nextStatus.status === ('init': ServerStatusType) ||
-                nextStatus.status === ('busy': ServerStatusType)) {
-              const readablePath = nuclideUri.nuclideUriToDisplayString(nextStatus.pathToRoot);
-              const readableStatus = nextStatus.status === ('init': ServerStatusType) ?
-                  'initializing' :
-                  'busy';
+            if (
+              nextStatus.status === ('init': ServerStatusType) ||
+              nextStatus.status === ('busy': ServerStatusType)
+            ) {
+              const readablePath = nuclideUri.nuclideUriToDisplayString(
+                nextStatus.pathToRoot,
+              );
+              const readableStatus = nextStatus.status ===
+                ('init': ServerStatusType)
+                ? 'initializing'
+                : 'busy';
               currentBusyMessage = {
                 status: 'busy',
                 id: getMessageId(),
@@ -137,19 +152,21 @@ export function serverStatusUpdatesToBusyMessages(
               messages.push(currentBusyMessage);
             }
             return {lastBusyMessage: currentBusyMessage, messages};
-          }, {lastBusyMessage: null, messages: []})
-          .concatMap(({messages}) => Observable.from(messages));
-      });
+          },
+          {lastBusyMessage: null, messages: []},
+        )
+        .concatMap(({messages}) => Observable.from(messages));
+    });
 }
 
 export function provideBusySignal(): BusySignalProvider {
   const serverStatusUpdates = getConnectionCache()
-      .observeValues()
-      // mergeAll loses type info
-      .mergeMap(x => x)
-      .mergeMap(ls => {
-        return ls.getServerStatusUpdates().refCount();
-      });
+    .observeValues()
+    // mergeAll loses type info
+    .mergeMap(x => x)
+    .mergeMap(ls => {
+      return ls.getServerStatusUpdates().refCount();
+    });
 
   return {
     messages: serverStatusUpdatesToBusyMessages(serverStatusUpdates),
@@ -171,18 +188,28 @@ async function allowFlowServerRestart(): Promise<void> {
 }
 
 async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
-  const enableHighlight = featureConfig.get('nuclide-flow.enableReferencesHighlight');
-  const excludeLowerPriority = Boolean(featureConfig.get('nuclide-flow.excludeOtherAutocomplete'));
-  const flowResultsFirst = Boolean(featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'));
-  const enableTypeHints = Boolean(featureConfig.get('nuclide-flow.enableTypeHints'));
+  const enableHighlight = featureConfig.get(
+    'nuclide-flow.enableReferencesHighlight',
+  );
+  const excludeLowerPriority = Boolean(
+    featureConfig.get('nuclide-flow.excludeOtherAutocomplete'),
+  );
+  const flowResultsFirst = Boolean(
+    featureConfig.get('nuclide-flow.flowAutocompleteResultsFirst'),
+  );
+  const enableTypeHints = Boolean(
+    featureConfig.get('nuclide-flow.enableTypeHints'),
+  );
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
-    highlight: enableHighlight ? {
-      version: '0.0.0',
-      priority: 1,
-      analyticsEventName: 'flow.codehighlight',
-    } : undefined,
+    highlight: enableHighlight
+      ? {
+          version: '0.0.0',
+          priority: 1,
+          analyticsEventName: 'flow.codehighlight',
+        }
+      : undefined,
     outline: {
       version: '0.0.0',
       priority: 1,
@@ -209,25 +236,29 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       inclusionPriority: 1,
       analyticsEventName: 'flow.autocomplete',
       autocompleteCacherConfig: {
-        updateResults: (request, results) => filterResultsByPrefix(request.prefix, results),
+        updateResults: (request, results) =>
+          filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },
       onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
     },
-    diagnostics: await shouldUsePushDiagnostics() ? {
-      version: '0.2.0',
-      analyticsEventName: 'flow.receive-push-diagnostics',
-    } : {
-      version: '0.1.0',
-      shouldRunOnTheFly: false,
-      analyticsEventName: 'flow.run-diagnostics',
-    },
-    typeHint: enableTypeHints ?
-    {
-      version: '0.0.0',
-      priority: 1,
-      analyticsEventName: 'nuclide-flow.typeHint',
-    } : undefined,
+    diagnostics: (await shouldUsePushDiagnostics())
+      ? {
+          version: '0.2.0',
+          analyticsEventName: 'flow.receive-push-diagnostics',
+        }
+      : {
+          version: '0.1.0',
+          shouldRunOnTheFly: false,
+          analyticsEventName: 'flow.run-diagnostics',
+        },
+    typeHint: enableTypeHints
+      ? {
+          version: '0.0.0',
+          priority: 1,
+          analyticsEventName: 'nuclide-flow.typeHint',
+        }
+      : undefined,
     evaluationExpression: {
       version: '0.0.0',
       analyticsEventName: 'flow.evaluationExpression',
@@ -237,12 +268,17 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
 }
 
 async function shouldUsePushDiagnostics(): Promise<boolean> {
-  const settingEnabled = Boolean(featureConfig.get('nuclide-flow.enablePushDiagnostics'));
+  const settingEnabled = Boolean(
+    featureConfig.get('nuclide-flow.enablePushDiagnostics'),
+  );
 
   getLogger().info('Checking the Flow persistent connection gk...');
 
   // Wait 15 seconds for the gk check
-  const doesPassGK = await passesGK('nuclide_flow_persistent_connection', 15 * 1000);
+  const doesPassGK = await passesGK(
+    'nuclide_flow_persistent_connection',
+    15 * 1000,
+  );
   getLogger().info(`Got Flow persistent connection gk: ${String(doesPassGK)}`);
   const result = settingEnabled || doesPassGK;
   getLogger().info(`Enabling Flow persistent connection: ${String(result)}`);

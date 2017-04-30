@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import logger from './utils';
@@ -65,19 +66,21 @@ export class DbgpMessageHandler {
     if (prevIncompletedMessage && components.length !== 0) {
       logger.logErrorAndThrow(
         'Error: got extra messages without completing previous message. ' +
-        `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
-        `Remaining components: ${JSON.stringify(components)}`,
+          `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
+          `Remaining components: ${JSON.stringify(components)}`,
       );
     }
 
-    const isIncompleteResponse = (components.length % 2 === 0);
+    const isIncompleteResponse = components.length % 2 === 0;
 
     // Verify empty tail component for completed response.
     if (!isIncompleteResponse) {
       const lastComponent = components.pop();
       if (lastComponent.length !== 0) {
-        logger.logErrorAndThrow('The complete response should terminate with' +
-          ` zero character while got: ${lastComponent} `);
+        logger.logErrorAndThrow(
+          'The complete response should terminate with' +
+            ` zero character while got: ${lastComponent} `,
+        );
       }
     }
 
@@ -89,8 +92,10 @@ export class DbgpMessageHandler {
       const length = Number(components.pop());
       const lastMessage = {length, content};
       if (!this._isIncompletedMessage(lastMessage)) {
-        logger.logErrorAndThrow('The last message should be a fragment of a full message: ' +
-          JSON.stringify(lastMessage));
+        logger.logErrorAndThrow(
+          'The last message should be a fragment of a full message: ' +
+            JSON.stringify(lastMessage),
+        );
       }
       prevIncompletedMessage = lastMessage;
     }
@@ -105,8 +110,8 @@ export class DbgpMessageHandler {
       if (!this._isCompletedMessage(message)) {
         logger.logErrorAndThrow(
           `Got message length(${message.content.length}) ` +
-          `not equal to expected(${message.length}). ` +
-          `Message was: ${JSON.stringify(message)}`,
+            `not equal to expected(${message.length}). ` +
+            `Message was: ${JSON.stringify(message)}`,
         );
       }
       results.push(this._parseXml(message));
@@ -147,9 +152,13 @@ export class DbgpMessageHandler {
       resultValue = result;
     });
     if (errorValue !== null) {
-      throw new Error('Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml);
+      throw new Error(
+        'Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml,
+      );
     }
-    logger.log('Translating server message result json: ' + JSON.stringify(resultValue));
+    logger.log(
+      'Translating server message result json: ' + JSON.stringify(resultValue),
+    );
     invariant(resultValue != null);
     return resultValue;
   }
@@ -161,8 +170,7 @@ export class DbgpMessageHandler {
 }
 
 export function getDbgpMessageHandlerInstance(): DbgpMessageHandler {
-  return singleton.get(
-    GLOBAL_HHVM_DEBUGGER_KEY, () => {
-      return new DbgpMessageHandler();
-    });
+  return singleton.get(GLOBAL_HHVM_DEBUGGER_KEY, () => {
+    return new DbgpMessageHandler();
+  });
 }

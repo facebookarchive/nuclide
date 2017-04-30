@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {registerConsoleLogging} from '../../nuclide-debugger-base';
@@ -48,15 +49,19 @@ export class ObservableManager {
 
   _subscribe(): void {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(sharedNotifications.subscribe(
-      this._handleNotificationMessage.bind(this),
-      this._handleNotificationError.bind(this),
-      this._handleNotificationEnd.bind(this),
-    ));
+    this._disposables.add(
+      sharedNotifications.subscribe(
+        this._handleNotificationMessage.bind(this),
+        this._handleNotificationError.bind(this),
+        this._handleNotificationEnd.bind(this),
+      ),
+    );
     this._registerConsoleLogging(this._outputWindowMessages.share());
   }
 
-  _registerConsoleLogging(sharedOutputWindowMessages: Observable<Object>): void {
+  _registerConsoleLogging(
+    sharedOutputWindowMessages: Observable<Object>,
+  ): void {
     const filteredMesages = sharedOutputWindowMessages
       .filter(messageObj => messageObj.method === 'Console.messageAdded')
       .map(messageObj => {

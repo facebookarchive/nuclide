@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -14,17 +15,23 @@ import {ServiceTester} from './ServiceTester';
 import typeof * as EchoServiceType from './EchoService';
 import {RemotableObject} from './EchoService';
 
-
 describe('EchoServer', () => {
   let testHelper;
   let service: EchoServiceType = (null: any);
   beforeEach(() => {
     testHelper = new ServiceTester();
-    waitsForPromise(() => testHelper.start([{
-      name: 'EchoService',
-      definition: nuclideUri.join(__dirname, 'EchoService.js'),
-      implementation: nuclideUri.join(__dirname, 'EchoService.js'),
-    }], 'echo_protocol'));
+    waitsForPromise(() =>
+      testHelper.start(
+        [
+          {
+            name: 'EchoService',
+            definition: nuclideUri.join(__dirname, 'EchoService.js'),
+            implementation: nuclideUri.join(__dirname, 'EchoService.js'),
+          },
+        ],
+        'echo_protocol',
+      ),
+    );
 
     runs(() => {
       service = testHelper.getRemoteService('EchoService');
@@ -82,7 +89,7 @@ describe('EchoServer', () => {
     });
   });
   it('Echoes a Regex.', () => {
-    const expected = /nuclide/ig;
+    const expected = /nuclide/gi;
     waitsForPromise(async () => {
       const results = await service.echoRegExp(expected);
       expect(results.source).toBe(expected.source);

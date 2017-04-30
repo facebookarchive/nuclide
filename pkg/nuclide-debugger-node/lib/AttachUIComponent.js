@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LaunchAttachStore} from './LaunchAttachStore';
@@ -19,10 +20,7 @@ import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Table} from '../../nuclide-ui/Table';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
+import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
 import type EventEmitter from 'events';
@@ -69,9 +67,8 @@ function getCompareFunction(
   switch (sortedColumn) {
     case 'pid':
       const order = sortDescending ? -1 : 1;
-      return (target1: NodeAttachTargetInfo, target2: NodeAttachTargetInfo) => (
-        order * (target1.pid - target2.pid)
-      );
+      return (target1: NodeAttachTargetInfo, target2: NodeAttachTargetInfo) =>
+        order * (target1.pid - target2.pid);
     case 'process':
       return (target1: NodeAttachTargetInfo, target2: NodeAttachTargetInfo) => {
         const first = sortDescending ? target2.name : target1.name;
@@ -80,32 +77,48 @@ function getCompareFunction(
       };
     case 'command':
       return (target1: NodeAttachTargetInfo, target2: NodeAttachTargetInfo) => {
-        const first = sortDescending ? target2.commandName : target1.commandName;
-        const second = sortDescending ? target1.commandName : target2.commandName;
+        const first = sortDescending
+          ? target2.commandName
+          : target1.commandName;
+        const second = sortDescending
+          ? target1.commandName
+          : target2.commandName;
         return first.toLowerCase().localeCompare(second.toLowerCase());
       };
-    default: break;
+    default:
+      break;
   }
   return () => 0;
 }
 
-export class AttachUIComponent extends React.Component<void, PropsType, StateType> {
+export class AttachUIComponent
+  extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
 
   constructor(props: PropsType) {
     super(props);
 
-    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(this);
+    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(
+      this,
+    );
     (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
+    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
+      this,
+    );
     (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
-    (this: any)._handleParentVisibilityChanged = this._handleParentVisibilityChanged.bind(this);
-    (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(this);
+    (this: any)._handleParentVisibilityChanged = this._handleParentVisibilityChanged.bind(
+      this,
+    );
+    (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(
+      this,
+    );
     (this: any)._updateList = this._updateList.bind(this);
     (this: any)._handleSort = this._handleSort.bind(this);
     this.state = {
-      targetListChangeDisposable: this.props.store.onAttachTargetListChanged(this._updateList),
+      targetListChangeDisposable: this.props.store.onAttachTargetListChanged(
+        this._updateList,
+      ),
       attachTargetInfos: [],
       selectedAttachTarget: null,
       filterText: '',
@@ -117,10 +130,12 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
   componentWillMount() {
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachClick);
+      this._handleAttachClick,
+    );
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
-      this._handleParentVisibilityChanged);
+      this._handleParentVisibilityChanged,
+    );
     this.props.actions.updateAttachUIVisibility(true);
   }
 
@@ -131,10 +146,12 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
     }
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
-      this._handleParentVisibilityChanged);
+      this._handleParentVisibilityChanged,
+    );
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachClick);
+      this._handleAttachClick,
+    );
   }
 
   _handleParentVisibilityChanged(visible: boolean): void {
@@ -169,17 +186,17 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
 
   render(): React.Element<any> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
-    const {
-      attachTargetInfos,
-      sortedColumn,
-      sortDescending,
-    } = this.state;
+    const {attachTargetInfos, sortedColumn, sortDescending} = this.state;
     const compareFn = getCompareFunction(sortedColumn, sortDescending);
     const {selectedAttachTarget} = this.state;
     let selectedIndex = null;
     const rows = attachTargetInfos
-      .filter(item => filterRegex.test(item.name) || filterRegex.test(item.pid.toString()) ||
-        filterRegex.test(item.commandName))
+      .filter(
+        item =>
+          filterRegex.test(item.name) ||
+          filterRegex.test(item.pid.toString()) ||
+          filterRegex.test(item.commandName),
+      )
       .sort(compareFn)
       .map((item, index) => {
         const row = {
@@ -189,7 +206,10 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
             command: item.commandName,
           },
         };
-        if (selectedAttachTarget != null && row.data.pid === selectedAttachTarget.pid) {
+        if (
+          selectedAttachTarget != null &&
+          row.data.pid === selectedAttachTarget.pid
+        ) {
           selectedIndex = index;
         }
         return row;
@@ -221,9 +241,9 @@ export class AttachUIComponent extends React.Component<void, PropsType, StateTyp
               Cancel
             </Button>
             <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._handleAttachClick}
-                disabled={selectedIndex == null}>
+              buttonType={ButtonTypes.PRIMARY}
+              onClick={this._handleAttachClick}
+              disabled={selectedIndex == null}>
               Attach
             </Button>
           </ButtonGroup>

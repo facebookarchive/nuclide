@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-base';
@@ -15,16 +16,24 @@ import React from 'react';
 
 import type EmitterEvent from 'events';
 
-export class ReactNativeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
+export class ReactNativeLaunchAttachProvider
+  extends DebuggerLaunchAttachProvider {
   getActions(): Promise<Array<string>> {
     return Promise.resolve(['Attach']);
   }
 
-  getComponent(action: string, parentEventEmitter: EmitterEvent): ?React.Element<any> {
+  getComponent(
+    action: string,
+    parentEventEmitter: EmitterEvent,
+  ): ?React.Element<any> {
     invariant(action === 'Attach');
-    return <DebugUiComponent targetUri={this.getTargetUri()} parentEmitter={parentEventEmitter} />;
+    return (
+      <DebugUiComponent
+        targetUri={this.getTargetUri()}
+        parentEmitter={parentEventEmitter}
+      />
+    );
   }
 
-  dispose(): void {
-  }
+  dispose(): void {}
 }

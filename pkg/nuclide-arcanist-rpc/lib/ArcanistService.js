@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -32,9 +33,7 @@ import {
 import {
   expressionForRevisionsBeforeHead,
 } from '../../nuclide-hg-rpc/lib/hg-revision-expression-helpers';
-import {
-  findHgRepository,
-} from '../../nuclide-source-control-helpers';
+import {findHgRepository} from '../../nuclide-source-control-helpers';
 import {getLogger} from '../../nuclide-logging';
 import LRU from 'lru-cache';
 
@@ -54,12 +53,19 @@ export type ArcDiagnostic = {
 };
 
 const CACHE_TIME = 30 * 1000; // 30 seconds
-const arcConfigDirectoryMap: LRUCache<NuclideUri, ?NuclideUri> = LRU({maxAge: CACHE_TIME});
+const arcConfigDirectoryMap: LRUCache<NuclideUri, ?NuclideUri> = LRU({
+  maxAge: CACHE_TIME,
+});
 const arcProjectMap: LRUCache<?NuclideUri, ?Object> = LRU({maxAge: CACHE_TIME});
 
-export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
+export async function findArcConfigDirectory(
+  fileName: NuclideUri,
+): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
-    const result = await fsPromise.findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
+    const result = await fsPromise.findNearestFile(
+      ARC_CONFIG_FILE_NAME,
+      fileName,
+    );
     arcConfigDirectoryMap.set(fileName, result);
   }
   return arcConfigDirectoryMap.get(fileName);
@@ -71,7 +77,10 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
     return null;
   }
   if (!arcProjectMap.has(arcConfigDirectory)) {
-    const arcconfigFile = nuclideUri.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
+    const arcconfigFile = nuclideUri.join(
+      arcConfigDirectory,
+      ARC_CONFIG_FILE_NAME,
+    );
     const contents = await fsPromise.readFile(arcconfigFile, 'utf8');
     invariant(typeof contents === 'string');
     const result = JSON.parse(contents);
@@ -85,21 +94,25 @@ export async function getArcConfigKey(
   key: string,
 ): Promise<?string> {
   return _callArcGetConfig(fileName, key)
-    .map(s => s.split(':')[1]
-               .trim()
-               .replace(/"/g, ''))
+    .map(s => s.split(':')[1].trim().replace(/"/g, ''))
     .toPromise();
 }
 
-export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
+export async function findArcProjectIdOfPath(
+  fileName: NuclideUri,
+): Promise<?string> {
   const project = await readArcConfig(fileName);
   return project ? project.project_id || project['project.name'] : null;
 }
 
-export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promise<?{
-  projectId: string,
-  directory: NuclideUri,
-}> {
+export async function findArcProjectIdAndDirectory(
+  fileName: NuclideUri,
+): Promise<
+  ?{
+    projectId: string,
+    directory: NuclideUri,
+  }
+> {
   const directory = await findArcConfigDirectory(fileName);
   if (directory != null) {
     // This will hit the directory map cache.
@@ -111,7 +124,9 @@ export async function findArcProjectIdAndDirectory(fileName: NuclideUri): Promis
   return null;
 }
 
-export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
+export async function getProjectRelativePath(
+  fileName: NuclideUri,
+): Promise<?string> {
   const arcPath = await findArcConfigDirectory(fileName);
   return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
 }
@@ -130,7 +145,9 @@ export function findDiagnostics(
     .publish();
 }
 
-async function getMercurialHeadCommitChanges(filePath: string): Promise<Array<string>> {
+async function getMercurialHeadCommitChanges(
+  filePath: string,
+): Promise<Array<string>> {
   const hgRepoDetails = findHgRepository(filePath);
   if (hgRepoDetails == null) {
     throw new Error('Cannot find source control root to diff from');
@@ -138,14 +155,18 @@ async function getMercurialHeadCommitChanges(filePath: string): Promise<Array<st
   const filesChanged = await fetchFilesChangedSinceRevision(
     expressionForRevisionsBeforeHead(1),
     hgRepoDetails.workingDirectoryPath,
-  ).refCount().toPromise();
+  )
+    .refCount()
+    .toPromise();
   if (filesChanged == null) {
     throw new Error('Failed to fetch commit changed files while diffing');
   }
   return filesChanged;
 }
 
-async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?string> {
+async function getCommitBasedArcConfigDirectory(
+  filePath: string,
+): Promise<?string> {
   // TODO Support other source control types file changes (e.g. `git`).
   const filesChanged = await getMercurialHeadCommitChanges(filePath);
   let configLookupPath = null;
@@ -157,14 +178,11 @@ async function getCommitBasedArcConfigDirectory(filePath: string): Promise<?stri
   return findArcConfigDirectory(configLookupPath);
 }
 
-
-async function getArcExecOptions(
-  cwd: string,
-): Promise<Object> {
+async function getArcExecOptions(cwd: string): Promise<Object> {
   const options = {
     cwd,
     env: {
-      ...await getOriginalEnvironment(),
+      ...(await getOriginalEnvironment()),
       // Setting the editor to a non-existant tool to prevent operations that rely
       // on the user's default editor from attempting to open up when needed.
       HGEDITOR: 'true',
@@ -178,9 +196,9 @@ function _callArcGetConfig(
   name: string,
 ): Observable<string> {
   const args = ['get-config', name];
-  return Observable
-    .fromPromise(getArcExecOptions(filePath))
-    .switchMap(opts => runCommand('arc', args, opts));
+  return Observable.fromPromise(getArcExecOptions(filePath)).switchMap(opts =>
+    runCommand('arc', args, opts),
+  );
 }
 
 function _callArcDiff(
@@ -189,30 +207,36 @@ function _callArcDiff(
 ): Observable<{stderr?: string, stdout?: string}> {
   const args = ['diff', '--json'].concat(extraArcDiffArgs);
 
-  return Observable
-    .fromPromise(getCommitBasedArcConfigDirectory(filePath))
+  return Observable.fromPromise(getCommitBasedArcConfigDirectory(filePath))
     .flatMap((arcConfigDir: ?string) => {
       if (arcConfigDir == null) {
         return Observable.throw(
-          new Error('Failed to find Arcanist config.  Is this project set up for Arcanist?'),
+          new Error(
+            'Failed to find Arcanist config.  Is this project set up for Arcanist?',
+          ),
         );
       }
-      return Observable.fromPromise(getArcExecOptions(arcConfigDir))
-        .switchMap(opts => {
-          const scriptArgs = scriptifyCommand('arc', args, opts);
-          return compact(
-            observeProcess(...scriptArgs)
-              .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-              .map(event => {
-                switch (event.kind) {
-                  case 'stdout': return {stdout: event.data};
-                  case 'stderr': return {stderr: event.data};
-                  default: return null;
-                }
-              }),
-          );
-        });
-    }).share();
+      return Observable.fromPromise(
+        getArcExecOptions(arcConfigDir),
+      ).switchMap(opts => {
+        const scriptArgs = scriptifyCommand('arc', args, opts);
+        return compact(
+          observeProcess(...scriptArgs)
+            .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+            .map(event => {
+              switch (event.kind) {
+                case 'stdout':
+                  return {stdout: event.data};
+                case 'stderr':
+                  return {stderr: event.data};
+                default:
+                  return null;
+              }
+            }),
+        );
+      });
+    })
+    .share();
 }
 
 function getArcDiffParams(
@@ -248,10 +272,7 @@ export function updatePhabricatorRevision(
   verbatimModeEnabled: boolean,
 ): ConnectableObservable<{stderr?: string, stdout?: string}> {
   const baseArgs = ['-m', message, ...getArcDiffParams(lintExcuse)];
-  const args = [
-    ...(verbatimModeEnabled ? ['--verbatim'] : []),
-    ...baseArgs,
-  ];
+  const args = [...(verbatimModeEnabled ? ['--verbatim'] : []), ...baseArgs];
 
   if (allowUntracked) {
     args.push('--allow-untracked');
@@ -263,7 +284,8 @@ export function execArcPull(
   cwd: NuclideUri,
   fetchLatest: boolean,
   allowDirtyChanges: boolean,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   const args = ['pull'];
   if (fetchLatest) {
     args.push('--latest');
@@ -274,29 +296,28 @@ export function execArcPull(
   }
 
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts =>
-      observeProcess(
-        'arc',
-        args,
-        {...opts, /* TODO(T17353599) */ isExitError: () => false},
-      )
-        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    .switchMap(
+      opts =>
+        observeProcess('arc', args, {
+          ...opts,
+          /* TODO(T17353599) */ isExitError: () => false,
+        }).catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
     )
     .publish();
 }
 
 export function execArcLand(
   cwd: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   const args = ['land'];
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts =>
-      observeProcess(
-        'arc',
-        args,
-        {...opts, /* TODO(T17353599) */ isExitError: () => false},
-      )
-        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    .switchMap(
+      opts =>
+        observeProcess('arc', args, {
+          ...opts,
+          /* TODO(T17353599) */ isExitError: () => false,
+        }).catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
     )
     .publish();
 }
@@ -304,20 +325,20 @@ export function execArcLand(
 export function execArcPatch(
   cwd: NuclideUri,
   differentialRevision: string,
-): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+): ConnectableObservable<LegacyProcessMessage> {
+  // TODO(T17463635)
   const args = ['patch'];
   if (differentialRevision.match(/^[0-9]+$/)) {
     args.push('--diff');
   }
   args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts =>
-      observeProcess(
-        'arc',
-        args,
-        {...opts, /* TODO(T17353599) */ isExitError: () => false},
-      )
-        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    .switchMap(
+      opts =>
+        observeProcess('arc', args, {
+          ...opts,
+          /* TODO(T17353599) */ isExitError: () => false,
+        }).catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
     )
     .publish();
 }
@@ -332,9 +353,12 @@ function execArcLint(
     args.push('--skip', skip.join(','));
   }
   return Observable.fromPromise(getArcExecOptions(cwd))
-    .switchMap(opts =>
-      niceObserveProcess('arc', args, {...opts, killTreeWhenDone: true})
-        .catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
+    .switchMap(
+      opts =>
+        niceObserveProcess('arc', args, {
+          ...opts,
+          killTreeWhenDone: true,
+        }).catch(error => Observable.of({kind: 'error', error})), // TODO(T17463635)
     )
     .mergeMap(event => {
       if (event.kind === 'error') {

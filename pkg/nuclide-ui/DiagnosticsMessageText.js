@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -19,13 +20,15 @@ type DiagnosticsMessageTextProps = {
   },
 };
 
-type UrlOrText = {
-  isUrl: true,
-  url: string,
-} | {
-  isUrl: false,
-  text: string,
-};
+type UrlOrText =
+  | {
+      isUrl: true,
+      url: string,
+    }
+  | {
+      isUrl: false,
+      text: string,
+    };
 
 // Exported for testing.
 export function separateUrls(message: string): Array<UrlOrText> {
@@ -36,10 +39,12 @@ export function separateUrls(message: string): Array<UrlOrText> {
   const urls = message.match(urlRegex);
   const nonUrls = message.split(urlRegex);
 
-  const parts: Array<UrlOrText> = [{
-    isUrl: false,
-    text: nonUrls[0],
-  }];
+  const parts: Array<UrlOrText> = [
+    {
+      isUrl: false,
+      text: nonUrls[0],
+    },
+  ];
   for (let i = 1; i < nonUrls.length; i++) {
     invariant(urls != null);
     parts.push({
@@ -56,7 +61,10 @@ export function separateUrls(message: string): Array<UrlOrText> {
 
 const LEADING_WHITESPACE_RE = /^\s+/;
 const NBSP = '\xa0';
-function renderRowWithLinks(message: string, rowIndex: number): React.Element<any> {
+function renderRowWithLinks(
+  message: string,
+  rowIndex: number,
+): React.Element<any> {
   const messageWithWhitespace = message.replace(
     LEADING_WHITESPACE_RE,
     whitespace => NBSP.repeat(whitespace.length),
@@ -65,7 +73,9 @@ function renderRowWithLinks(message: string, rowIndex: number): React.Element<an
     if (!part.isUrl) {
       return part.text;
     } else {
-      const openUrl = () => { shell.openExternal(part.url); };
+      const openUrl = () => {
+        shell.openExternal(part.url);
+      };
       return <a href="#" key={index} onClick={openUrl}>{part.url}</a>;
     }
   });
@@ -74,9 +84,7 @@ function renderRowWithLinks(message: string, rowIndex: number): React.Element<an
 }
 
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
-  const {
-    message,
-  } = props;
+  const {message} = props;
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {

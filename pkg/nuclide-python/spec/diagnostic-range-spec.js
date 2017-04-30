@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {PythonDiagnostic} from '../../nuclide-python-rpc';
@@ -16,7 +17,11 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {getDiagnosticRange} from '../lib/diagnostic-range';
 
 describe('Diagnostic range', () => {
-  const fixturePath = nuclideUri.join(__dirname, 'fixtures', 'bad_syntax_land.py');
+  const fixturePath = nuclideUri.join(
+    __dirname,
+    'fixtures',
+    'bad_syntax_land.py',
+  );
   let editor: ?atom$TextEditor = null;
 
   beforeEach(() => {
@@ -48,10 +53,7 @@ describe('Diagnostic range', () => {
   }
 
   it('Underlines leading whitespace for indentation messages', () => {
-    checkRange(
-      makeDiagnostic('E116', '', 24, 0),
-      new Range([24, 0], [24, 8]),
-    );
+    checkRange(makeDiagnostic('E116', '', 24, 0), new Range([24, 0], [24, 8]));
     checkRange(
       makeDiagnostic('E901', 'IndentationError: blahblah', 25, 0),
       new Range([25, 0], [25, 8]),
@@ -70,17 +72,11 @@ describe('Diagnostic range', () => {
       makeDiagnostic('E202', '', 20, 11),
       new Range([20, 10], [20, 11]),
     );
-    checkRange(
-      makeDiagnostic('E222', '', 31, 4),
-      new Range([31, 3], [31, 5]),
-    );
+    checkRange(makeDiagnostic('E222', '', 31, 4), new Range([31, 3], [31, 5]));
   });
 
   it('Underlines the whitespace when there is trailing whitespace', () => {
-    checkRange(
-      makeDiagnostic('W291', '', 37, 5),
-      new Range([37, 5], [37, 9]),
-    );
+    checkRange(makeDiagnostic('W291', '', 37, 5), new Range([37, 5], [37, 9]));
   });
 
   it('Underlines the comment for comment spacing issues', () => {
@@ -96,24 +92,15 @@ describe('Diagnostic range', () => {
   });
 
   it('Underlines the word for possibly undefined references', () => {
-    checkRange(
-      makeDiagnostic('F405', '', 40, 4),
-      new Range([40, 4], [40, 14]),
-    );
+    checkRange(makeDiagnostic('F405', '', 40, 4), new Range([40, 4], [40, 14]));
   });
 
   it('Underlines the symbol name for undefined references', () => {
-    checkRange(
-      makeDiagnostic('F821', '', 40, 4),
-      new Range([40, 4], [40, 14]),
-    );
+    checkRange(makeDiagnostic('F821', '', 40, 4), new Range([40, 4], [40, 14]));
   });
 
   it('Underlines the entire non-empty line contents for unused assignments', () => {
-    checkRange(
-      makeDiagnostic('F841', '', 42, 0),
-      new Range([42, 0], [42, 9]),
-    );
+    checkRange(makeDiagnostic('F841', '', 42, 0), new Range([42, 0], [42, 9]));
   });
 
   it('Underlines the entire non-empty line contents for syntax errors', () => {

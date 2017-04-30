@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ClangServerFlags} from './ClangServer';
@@ -27,7 +28,10 @@ const SERVER_LIMIT = 20;
 const MEMORY_LIMIT = Math.round(os.totalmem() * 15 / 100);
 
 let _getDefaultFlags;
-async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
+async function augmentDefaultFlags(
+  src: string,
+  flags: Array<string>,
+): Promise<Array<string>> {
   if (_getDefaultFlags === undefined) {
     _getDefaultFlags = null;
     try {
@@ -96,9 +100,7 @@ export default class ClangServerManager {
       findClangServerArgs(src),
       this._getFlags(src, compilationDBFile, defaultFlags),
     );
-    server
-      .waitForReady()
-      .then(() => this._checkMemoryUsage());
+    server.waitForReady().then(() => this._checkMemoryUsage());
     this._servers.set(src, server);
     return server;
   }
@@ -110,7 +112,8 @@ export default class ClangServerManager {
     compilationDBFile: ?NuclideUri,
     defaultFlags: ?Array<string>,
   ): Promise<?ClangServerFlags> {
-    const flagsData = await this._flagsManager.getFlagsForSrc(src, compilationDBFile)
+    const flagsData = await this._flagsManager
+      .getFlagsForSrc(src, compilationDBFile)
       .catch(e => {
         getLogger().error(`Error getting flags for ${src}:`, e);
         return null;
@@ -148,10 +151,12 @@ export default class ClangServerManager {
 
   async _checkMemoryUsageImpl(): Promise<void> {
     const usage = new Map();
-    await Promise.all(this._servers.values().map(async server => {
-      const mem = await server.getMemoryUsage();
-      usage.set(server, mem);
-    }));
+    await Promise.all(
+      this._servers.values().map(async server => {
+        const mem = await server.getMemoryUsage();
+        usage.set(server, mem);
+      }),
+    );
 
     // Servers may have been deleted in the meantime, so calculate the total now.
     let total = 0;

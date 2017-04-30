@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
@@ -25,8 +26,13 @@ describe('DefinitionHyperclick', () => {
   let goToLocation;
 
   beforeEach(() => {
-    service = (jasmine.createSpyObj('DefinitionService', ['getDefinition']): any);
-    goToLocation = spyOn(require('../../commons-atom/go-to-location'), 'goToLocation');
+    service = (jasmine.createSpyObj('DefinitionService', [
+      'getDefinition',
+    ]): any);
+    goToLocation = spyOn(
+      require('../../commons-atom/go-to-location'),
+      'goToLocation',
+    );
     const main = (uncachedRequire(require, '../lib/main'): any);
     consumeDefinitionService = main.consumeDefinitionService;
     provider = main.getHyperclickProvider();
@@ -62,20 +68,25 @@ describe('DefinitionHyperclick', () => {
     waitsForPromise(async () => {
       const definition = {
         queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
-        definitions: [{
-          path: 'path1',
-          position: new Point(1, 2),
-          range: null,
-          id: 'symbol-name',
-          name: null,
-          projectRoot: null,
-        }],
+        definitions: [
+          {
+            path: 'path1',
+            position: new Point(1, 2),
+            range: null,
+            id: 'symbol-name',
+            name: null,
+            projectRoot: null,
+          },
+        ],
       };
       service.getDefinition.andReturn(Promise.resolve(definition));
       consumeDefinitionService(service);
 
       invariant(provider.getSuggestion != null);
-      const result: ?HyperclickSuggestion = await provider.getSuggestion(editor, position);
+      const result: ?HyperclickSuggestion = await provider.getSuggestion(
+        editor,
+        position,
+      );
 
       invariant(result != null);
       expect(result.range).toEqual(definition.queryRange);
@@ -117,13 +128,19 @@ describe('DefinitionHyperclick', () => {
       consumeDefinitionService(service);
 
       invariant(provider.getSuggestion != null);
-      const result: ?HyperclickSuggestion = await provider.getSuggestion(editor, position);
+      const result: ?HyperclickSuggestion = await provider.getSuggestion(
+        editor,
+        position,
+      );
 
       invariant(result != null);
       expect(result.range).toEqual(defs.queryRange);
       expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
       expect(goToLocation).not.toHaveBeenCalled();
-      const callbacks: Array<{title: string, callback: () => mixed}> = (result.callback: any);
+      const callbacks: Array<{
+        title: string,
+        callback: () => mixed,
+      }> = (result.callback: any);
 
       expect(callbacks.length).toBe(2);
       expect(callbacks[0].title).toBe('d1 (b/path1)');

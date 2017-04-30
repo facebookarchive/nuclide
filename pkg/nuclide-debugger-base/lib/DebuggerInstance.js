@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type WS from 'ws';
@@ -28,7 +29,10 @@ import type {AtomNotification} from './types';
 
 import {Emitter} from 'atom';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {translateMessageFromServer, translateMessageToServer} from './ChromeMessageRemoting';
+import {
+  translateMessageFromServer,
+  translateMessageToServer,
+} from './ChromeMessageRemoting';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {
   WebSocketServer,
@@ -39,8 +43,10 @@ import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';
 
 export type RpcDebuggerService =
-  NodeDebuggerService | NativeDebuggerService | IwdpDebuggerService |
-  PhpDebuggerService;
+  | NodeDebuggerService
+  | NativeDebuggerService
+  | IwdpDebuggerService
+  | PhpDebuggerService;
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;
@@ -91,7 +97,9 @@ export class DebuggerInstance extends DebuggerInstanceBase {
       this._disposables.add(subscriptions);
     }
     this._disposables.add(rpcService);
-    this._logger = getCategoryLogger(`nuclide-debugger-${this.getProviderName()}`);
+    this._logger = getCategoryLogger(
+      `nuclide-debugger-${this.getProviderName()}`,
+    );
     this._chromeWebSocketServer = new WebSocketServer();
     this._chromeWebSocket = null;
     this._emitter = new Emitter();
@@ -105,11 +113,14 @@ export class DebuggerInstance extends DebuggerInstanceBase {
 
   _registerServerHandlers(): void {
     const disposables = new UniversalDisposable(
-      this._rpcService.getServerMessageObservable().refCount().subscribe(
-        this._handleServerMessage.bind(this),
-        this._handleServerError.bind(this),
-        this._handleSessionEnd.bind(this),
-      ),
+      this._rpcService
+        .getServerMessageObservable()
+        .refCount()
+        .subscribe(
+          this._handleServerMessage.bind(this),
+          this._handleServerError.bind(this),
+          this._handleSessionEnd.bind(this),
+        ),
     );
     if (rpcServiceSupportsAtomNotifications(this._rpcService)) {
       disposables.add(
@@ -134,7 +145,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   _startChromeWebSocketServer(): string {
     // setup web socket
     const wsPort = this._getWebSocketPort();
-    this._chromeWebSocketServer.start(wsPort)
+    this._chromeWebSocketServer
+      .start(wsPort)
       .catch(this._handleWebSocketServerError.bind(this))
       .then(this._handleWebSocketServerConnection.bind(this));
     const result = 'ws=localhost:' + String(wsPort) + '/';
@@ -155,7 +167,9 @@ export class DebuggerInstance extends DebuggerInstanceBase {
 
   _handleWebSocketServerConnection(webSocket: WS): void {
     if (this._chromeWebSocket) {
-      this.getLogger().log('Already connected to Chrome WebSocket. Discarding new connection.');
+      this.getLogger().log(
+        'Already connected to Chrome WebSocket. Discarding new connection.',
+      );
       webSocket.close();
       return;
     }
@@ -185,7 +199,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     if (nuclideUri.isRemote(this.getTargetUri())) {
       message = translateMessageFromServer(
         nuclideUri.getHostname(this.getTargetUri()),
-        message);
+        message,
+      );
     }
     return message;
   }
@@ -199,7 +214,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
       message = this._translateMessageIfNeeded(processedMessage);
       webSocket.send(message);
     } else {
-      this.getLogger().logError('Why isn\'t chrome websocket available?');
+      this.getLogger().logError("Why isn't chrome websocket available?");
     }
   }
 
@@ -230,7 +245,9 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   _handleChromeSocketError(error: Error): void {
-    this.getLogger().logError('Chrome webSocket error ' + stringifyError(error));
+    this.getLogger().logError(
+      'Chrome webSocket error ' + stringifyError(error),
+    );
     this.dispose();
   }
 

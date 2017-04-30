@@ -6,9 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import {DeviceListProvider, DeviceInfoProvider, DeviceActionsProvider} from './types';
+import {
+  DeviceListProvider,
+  DeviceInfoProvider,
+  DeviceActionsProvider,
+} from './types';
 
 const deviceListProviders: Set<DeviceListProvider> = new Set();
 const deviceInfoProviders: Set<DeviceInfoProvider> = new Set();

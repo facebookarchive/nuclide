@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {IconName} from '../../../nuclide-ui/types';
@@ -50,10 +51,15 @@ export class ToggleButton extends React.Component {
 
 function getIconName(position: Position, open: boolean): IconName {
   switch (position) {
-    case 'top': return open ? 'chevron-up' : 'chevron-down';
-    case 'right': return open ? 'chevron-right' : 'chevron-left';
-    case 'bottom': return open ? 'chevron-down' : 'chevron-up';
-    case 'left': return open ? 'chevron-left' : 'chevron-right';
-    default: throw new Error(`Invalid position: ${position}`);
+    case 'top':
+      return open ? 'chevron-up' : 'chevron-down';
+    case 'right':
+      return open ? 'chevron-right' : 'chevron-left';
+    case 'bottom':
+      return open ? 'chevron-down' : 'chevron-up';
+    case 'left':
+      return open ? 'chevron-left' : 'chevron-right';
+    default:
+      throw new Error(`Invalid position: ${position}`);
   }
 }

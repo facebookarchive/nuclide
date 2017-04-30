@@ -6,16 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  ServerConnection,
-} from '../../nuclide-remote-connection';
+import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
+import type {
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
+import typeof * as GraphQLService
+  from '../../nuclide-graphql-rpc/lib/GraphQLService';
 
 import {AtomLanguageService} from '../../nuclide-language-service';
 import {getNotifierByConnection} from '../../nuclide-open-files';
@@ -32,9 +34,7 @@ async function connectionToGraphQLService(
   );
   const fileNotifier = await getNotifierByConnection(connection);
 
-  return graphqlService.initialize(
-    fileNotifier,
-  );
+  return graphqlService.initialize(fileNotifier);
 }
 
 const diagnosticsConfig = {
@@ -76,8 +76,9 @@ const atomConfig: AtomLanguageServiceConfig = {
   autocomplete: autocompleteConfig,
 };
 
-export const graphqlLanguageService: AtomLanguageService<LanguageService>
- = new AtomLanguageService(connectionToGraphQLService, atomConfig);
+export const graphqlLanguageService: AtomLanguageService<
+  LanguageService
+> = new AtomLanguageService(connectionToGraphQLService, atomConfig);
 
 export function resetGraphQLLanguageService(): void {
   graphqlLanguageService.dispose();

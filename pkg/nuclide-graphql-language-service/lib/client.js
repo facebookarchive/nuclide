@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -55,10 +56,7 @@ function generateSchema(schemaPath) {
   }
 }
 
-function ensureText(
-  filePath: ?string,
-  queryText: ?string,
-): string {
+function ensureText(filePath: ?string, queryText: ?string): string {
   let text = queryText;
   // Always honor text argument over filePath.
   // If text isn't available, try reading from the filePath.
@@ -94,10 +92,7 @@ function performLint(
   }
 }
 
-function performOutline(
-  filePath: ?string,
-  queryText: ?string,
-): number {
+function performOutline(filePath: ?string, queryText: ?string): number {
   try {
     const text = ensureText(filePath, queryText);
     const outline = getOutline(text);

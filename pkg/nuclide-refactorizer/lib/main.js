@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /*
@@ -20,17 +21,18 @@ import type {
   RenameRefactoring,
 } from './rpc-types';
 
-import type {
-  Store,
-} from './types';
+import type {Store} from './types';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
 import createPackage from '../../commons-atom/createPackage';
-import observeGrammarForTextEditors from '../../commons-atom/observe-grammar-for-text-editors';
-import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
+import observeGrammarForTextEditors
+  from '../../commons-atom/observe-grammar-for-text-editors';
+import {
+  bufferPositionForMouseEvent,
+} from '../../commons-atom/mouse-to-position';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 
 import * as Actions from './refactorActions';
@@ -101,9 +103,13 @@ class Activation {
     let lastMouseEvent = null;
     this._disposables = new UniversalDisposable(
       initRefactorUIs(this._store),
-      atom.commands.add('atom-workspace', 'nuclide-refactorizer:refactorize', () => {
-        this._store.dispatch(Actions.open('generic'));
-      }),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-refactorizer:refactorize',
+        () => {
+          this._store.dispatch(Actions.open('generic'));
+        },
+      ),
       atom.commands.add(
         'atom-text-editor',
         // We don't actually want people calling this directly.
@@ -115,11 +121,14 @@ class Activation {
           invariant(
             mouseEvent != null,
             'No mouse event found. Do not invoke this command directly. ' +
-            'If you did use the context menu, please report this issue.',
+              'If you did use the context menu, please report this issue.',
           );
           const editor = atom.workspace.getActiveTextEditor();
           invariant(editor != null);
-          const bufferPosition = bufferPositionForMouseEvent(mouseEvent, editor);
+          const bufferPosition = bufferPositionForMouseEvent(
+            mouseEvent,
+            editor,
+          );
           editor.setCursorBufferPosition(bufferPosition);
 
           this._store.dispatch(Actions.open('generic'));
@@ -130,14 +139,18 @@ class Activation {
           {
             label: 'Refactor',
             command: 'nuclide-refactorizer:refactorize-from-context-menu',
-            created: event => { lastMouseEvent = event; },
+            created: event => {
+              lastMouseEvent = event;
+            },
           },
         ],
       }),
       atom.commands.add('atom-workspace', 'nuclide-refactorizer:rename', () => {
         this._store.dispatch(Actions.open('rename'));
       }),
-      observeGrammarForTextEditors(editor => this._addContextMenuIfEligible(editor)),
+      observeGrammarForTextEditors(editor =>
+        this._addContextMenuIfEligible(editor),
+      ),
     );
   }
 
@@ -155,7 +168,9 @@ class Activation {
   }
 
   _checkAllEditorContextMenus(): void {
-    atom.workspace.getTextEditors().forEach(editor => this._addContextMenuIfEligible(editor));
+    atom.workspace
+      .getTextEditors()
+      .forEach(editor => this._addContextMenuIfEligible(editor));
   }
 
   consumeRefactorProvider(provider: RefactorProvider): IDisposable {

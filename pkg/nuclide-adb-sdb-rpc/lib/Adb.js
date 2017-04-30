@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -21,7 +22,8 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 export class Adb extends DebugBridge {
   getAndroidProp(device: string, key: string): Observable<string> {
     return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s =>
-      s.trim());
+      s.trim(),
+    );
   }
 
   getDeviceArchitecture(device: string): Promise<string> {
@@ -49,8 +51,14 @@ export class Adb extends DebugBridge {
   async getDeviceInfo(device: string): Promise<Map<string, string>> {
     const infoTable = await this.getCommonDeviceInfo(device);
     const unknownCB = () => null;
-    infoTable.set('android_version', await this.getOSVersion(device).catch(unknownCB));
-    infoTable.set('manufacturer', await this.getManufacturer(device).catch(unknownCB));
+    infoTable.set(
+      'android_version',
+      await this.getOSVersion(device).catch(unknownCB),
+    );
+    infoTable.set(
+      'manufacturer',
+      await this.getManufacturer(device).catch(unknownCB),
+    );
     infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
     return infoTable;
   }
@@ -62,7 +70,8 @@ export class Adb extends DebugBridge {
   installPackage(
     device: string,
     packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
     return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
   }
@@ -70,7 +79,8 @@ export class Adb extends DebugBridge {
   uninstallPackage(
     device: string,
     packageName: string,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 
@@ -126,11 +136,10 @@ export class Adb extends DebugBridge {
       .toPromise();
 
     const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(
-      this._adbPath,
-      args,
-      {killTreeWhenDone: true, /* TDOO(17353599) */ isExitError: () => false},
-    )
+    return observeProcessRaw(this._adbPath, args, {
+      killTreeWhenDone: true,
+      /* TDOO(17353599) */ isExitError: () => false,
+    })
       .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .take(1)
       .map(output => {

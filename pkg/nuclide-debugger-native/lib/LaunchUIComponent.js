@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {shellParse} from '../../commons-node/string';
@@ -16,10 +17,7 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
+import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 
 import type EventEmitter from 'events';
@@ -42,7 +40,8 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   componentWillMount() {
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchClick);
+      this._handleLaunchClick,
+    );
   }
 
   componentDidMount(): void {
@@ -55,7 +54,8 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   componentWillUnmount() {
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchClick);
+      this._handleLaunchClick,
+    );
   }
 
   render(): React.Element<any> {
@@ -96,9 +96,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
         />
         <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
           <ButtonGroup>
-            <Button
-              tabIndex="17"
-              onClick={this._cancelClick}>
+            <Button tabIndex="17" onClick={this._cancelClick}>
               Cancel
             </Button>
             <Button
@@ -125,8 +123,11 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     const launchExecutable = this.refs.launchExecutable.getText().trim();
     const launchArguments = shellParse(this.refs.launchArguments.getText());
     const launchEnvironmentVariables = shellParse(
-      this.refs.launchEnvironmentVariables.getText());
-    const launchWorkingDirectory = this.refs.launchWorkingDirectory.getText().trim();
+      this.refs.launchEnvironmentVariables.getText(),
+    );
+    const launchWorkingDirectory = this.refs.launchWorkingDirectory
+      .getText()
+      .trim();
     const stdinFilePath = this.refs.stdinFilePath.getText().trim();
     const launchTarget = {
       executablePath: launchExecutable,

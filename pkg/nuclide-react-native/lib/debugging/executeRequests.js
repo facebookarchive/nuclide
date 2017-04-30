@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ExecutorResponse, ExecutorRequest} from './types';
@@ -28,32 +29,32 @@ export function executeRequests(
   // Wait until we get the first request, then spawn a worker process for processing them.
   const workerProcess = requests.first().switchMap(createWorker).share();
 
-  return workerProcess.switchMap(process => (
-    Observable.merge(
-      Observable.of({kind: 'pid', pid: process.pid}),
-
-      // The messages we're receiving from the worker process.
-      Observable.fromEvent(process, 'message'),
-
-      // Send the incoming requests to the worker process for evaluation.
-      requests.do(request => process.send(request)).ignoreElements(),
-
-      // Pipe output from forked process. This just makes things easier to debug for us.
-      getOutputStream(process, {/* TODO(T17353599) */isExitError: () => false})
-        .do(message => {
-          switch (message.kind) {
-            case 'error':
-              logger.error(message.error.message);
-              return;
-            case 'stderr':
-            case 'stdout':
-              logger.info(message.data.toString());
-              return;
-          }
+  return workerProcess
+    .switchMap(process =>
+      Observable.merge(
+        Observable.of({kind: 'pid', pid: process.pid}),
+        // The messages we're receiving from the worker process.
+        Observable.fromEvent(process, 'message'),
+        // Send the incoming requests to the worker process for evaluation.
+        requests.do(request => process.send(request)).ignoreElements(),
+        // Pipe output from forked process. This just makes things easier to debug for us.
+        getOutputStream(process, {
+          /* TODO(T17353599) */ isExitError: () => false,
         })
-        .ignoreElements(),
+          .do(message => {
+            switch (message.kind) {
+              case 'error':
+                logger.error(message.error.message);
+                return;
+              case 'stderr':
+              case 'stdout':
+                logger.info(message.data.toString());
+                return;
+            }
+          })
+          .ignoreElements(),
+      ),
     )
-  ))
     .share();
 }
 
@@ -65,7 +66,9 @@ function createWorker(): Observable<child_process$ChildProcess> {
     [],
     {
       execArgv: ['--debug-brk'],
-      execPath: ((featureConfig.get('nuclide-react-native.pathToNode'): any): string),
+      execPath: ((featureConfig.get(
+        'nuclide-react-native.pathToNode',
+      ): any): string),
       silent: true,
     },
   );

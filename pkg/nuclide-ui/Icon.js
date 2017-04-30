@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {IconName} from './types';
@@ -25,13 +26,11 @@ type Props = {
  * Renders an icon with optional text next to it.
  */
 export const Icon = (props: Props) => {
-  const {
-    icon,
-    children,
+  const {icon, children, className, ...remainingProps} = props;
+  const newClassName = classnames(
     className,
-    ...remainingProps
-  } = props;
-  const newClassName = classnames(className, icon == null ? null : `icon icon-${icon}`);
+    icon == null ? null : `icon icon-${icon}`,
+  );
   return (
     <span className={newClassName} {...remainingProps}>
       {children}

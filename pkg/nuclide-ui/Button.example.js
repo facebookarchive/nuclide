@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global alert */
@@ -130,10 +131,7 @@ const DropdownExample = (() => {
   ];
   return (): React.Element<any> => (
     <div>
-      <Dropdown
-        options={options}
-        value={2}
-      />
+      <Dropdown options={options} value={2} />
     </div>
   );
 })();
@@ -152,10 +150,8 @@ const SplitButtonDropdownExample = (() => {
       <SplitButtonDropdown
         options={options}
         value={2}
-        onConfirm={
-          // eslint-disable-next-line no-alert
-          x => alert(`You selected ${x}!`)
-        }
+        onConfirm={// eslint-disable-next-line no-alert
+        x => alert(`You selected ${x}!`)}
       />
     </div>
   );
@@ -179,7 +175,9 @@ class ModalMultiSelectExample extends React.Component {
     return (
       <ModalMultiSelect
         options={options}
-        onChange={value => { this.setState({value}); }}
+        onChange={value => {
+          this.setState({value});
+        }}
         value={this.state.value}
       />
     );

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -23,9 +24,9 @@ export type TypeCoverageConfig = {|
 
 // Provides Diagnostics for un-typed regions of Hack code.
 export class TypeCoverageProvider<T: LanguageService> {
-  displayName: string
+  displayName: string;
   priority: number;
-  grammarScopes: string
+  grammarScopes: string;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
@@ -58,7 +59,8 @@ export class TypeCoverageProvider<T: LanguageService> {
         config.priority,
         config.analyticsEventName,
         connectionToLanguageService,
-      ));
+      ),
+    );
   }
 
   async getCoverage(path: NuclideUri): Promise<?CoverageResult> {

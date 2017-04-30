@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Subscription} from 'rxjs';
@@ -24,7 +25,11 @@ import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';
 
-export type ClangServerStatus = 'finding_flags' | 'compiling' | 'ready' | 'disposed';
+export type ClangServerStatus =
+  | 'finding_flags'
+  | 'compiling'
+  | 'ready'
+  | 'disposed';
 
 let serviceRegistry: ?ServiceRegistry = null;
 
@@ -43,14 +48,23 @@ function getServiceRegistry(): ServiceRegistry {
  * If the compilation flags provide an absolute Clang path, and that Clang path
  * contains an actual libclang.so, then use that first.
  */
-async function getLibClangFromFlags(flagsData: ?ClangServerFlags): Promise<?string> {
-  if (flagsData == null || flagsData.flags == null || flagsData.flags.length === 0) {
+async function getLibClangFromFlags(
+  flagsData: ?ClangServerFlags,
+): Promise<?string> {
+  if (
+    flagsData == null ||
+    flagsData.flags == null ||
+    flagsData.flags.length === 0
+  ) {
     return null;
   }
   const clangPath = flagsData.flags[0];
   if (nuclideUri.isAbsolute(clangPath)) {
-    const libClangPath = nuclideUri.join(nuclideUri.dirname(clangPath), '../lib/libclang.so');
-    if (libClangPath != null && await fsPromise.exists(libClangPath)) {
+    const libClangPath = nuclideUri.join(
+      nuclideUri.dirname(clangPath),
+      '../lib/libclang.so',
+    );
+    if (libClangPath != null && (await fsPromise.exists(libClangPath))) {
       return libClangPath;
     }
   }
@@ -62,42 +76,47 @@ function spawnClangProcess(
   serverArgsPromise: Promise<ClangServerArgs>,
   flagsPromise: Promise<?ClangServerFlags>,
 ): Observable<child_process$ChildProcess> {
-  return Observable.fromPromise(Promise.all([
-    serverArgsPromise,
-    flagsPromise,
-    flagsPromise.then(getLibClangFromFlags),
-  ]))
-    .switchMap(([serverArgs, flagsData, libClangFromFlags]) => {
-      const flags = idx(flagsData, _ => _.flags);
-      if (flags == null) {
-        // We're going to reject here.
-        // ClangServer will also dispose itself upon encountering this.
-        throw new Error(`No flags found for ${src}`);
-      }
-      const {pythonPathEnv, pythonExecutable} = serverArgs;
-      const pathToLibClangServer = nuclideUri.join(__dirname, '../python/clang_server.py');
-      const args = [pathToLibClangServer];
-      const libClangLibraryFile = libClangFromFlags || serverArgs.libClangLibraryFile;
-      if (libClangLibraryFile != null) {
-        args.push('--libclang-file', libClangLibraryFile);
-      }
-      args.push('--', src);
-      // Note that the first flag is always the compiler path.
-      args.push(...flags.slice(1));
-      const options = {
-        cwd: nuclideUri.dirname(pathToLibClangServer),
-        stdio: 'pipe',
-        detached: false, // When Atom is killed, clang_server.py should be killed, too.
-        env: {
-          PYTHONPATH: pythonPathEnv,
-        },
-      };
+  return Observable.fromPromise(
+    Promise.all([
+      serverArgsPromise,
+      flagsPromise,
+      flagsPromise.then(getLibClangFromFlags),
+    ]),
+  ).switchMap(([serverArgs, flagsData, libClangFromFlags]) => {
+    const flags = idx(flagsData, _ => _.flags);
+    if (flags == null) {
+      // We're going to reject here.
+      // ClangServer will also dispose itself upon encountering this.
+      throw new Error(`No flags found for ${src}`);
+    }
+    const {pythonPathEnv, pythonExecutable} = serverArgs;
+    const pathToLibClangServer = nuclideUri.join(
+      __dirname,
+      '../python/clang_server.py',
+    );
+    const args = [pathToLibClangServer];
+    const libClangLibraryFile =
+      libClangFromFlags || serverArgs.libClangLibraryFile;
+    if (libClangLibraryFile != null) {
+      args.push('--libclang-file', libClangLibraryFile);
+    }
+    args.push('--', src);
+    // Note that the first flag is always the compiler path.
+    args.push(...flags.slice(1));
+    const options = {
+      cwd: nuclideUri.dirname(pathToLibClangServer),
+      stdio: 'pipe',
+      detached: false, // When Atom is killed, clang_server.py should be killed, too.
+      env: {
+        PYTHONPATH: pythonPathEnv,
+      },
+    };
 
-      // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
-      // options.env is undefined (which is not the case here). This will only be an issue if the
-      // system cannot find `pythonExecutable`.
-      return spawn(pythonExecutable, args, options);
-    });
+    // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
+    // options.env is undefined (which is not the case here). This will only be an issue if the
+    // system cannot find `pythonExecutable`.
+    return spawn(pythonExecutable, args, options);
+  });
 }
 
 export type ClangServerFlags = {
@@ -131,29 +150,28 @@ export default class ClangServer {
     this._pendingCompileRequests = 0;
     this._serverStatus = new BehaviorSubject(ClangServer.Status.FINDING_FLAGS);
     this._flagsChanged = false;
-    this._flagsSubscription =
-      Observable.fromPromise(flagsPromise)
-        .do(flagsData => {
-          if (flagsData == null) {
-            // Servers without flags will be left in the 'disposed' state forever.
-            // This ensures that all language requests bounce without erroring.
-            this.dispose();
-            return;
-          }
-          this._usesDefaultFlags = flagsData.usesDefaultFlags;
-        })
-        .switchMap(flagsData => {
-          if (flagsData != null && flagsData.flagsFile != null) {
-            return watchFile(flagsData.flagsFile)
-              .refCount()
-              .take(1);
-          }
-          return Observable.empty();
-        })
-        .subscribe(
-          x => { this._flagsChanged = true; },
-          () => {},  // ignore errors
-        );
+    this._flagsSubscription = Observable.fromPromise(flagsPromise)
+      .do(flagsData => {
+        if (flagsData == null) {
+          // Servers without flags will be left in the 'disposed' state forever.
+          // This ensures that all language requests bounce without erroring.
+          this.dispose();
+          return;
+        }
+        this._usesDefaultFlags = flagsData.usesDefaultFlags;
+      })
+      .switchMap(flagsData => {
+        if (flagsData != null && flagsData.flagsFile != null) {
+          return watchFile(flagsData.flagsFile).refCount().take(1);
+        }
+        return Observable.empty();
+      })
+      .subscribe(
+        x => {
+          this._flagsChanged = true;
+        },
+        () => {}, // ignore errors
+      );
     this._rpcProcess = new RpcProcess(
       `ClangServer-${src}`,
       getServiceRegistry(),
@@ -189,9 +207,12 @@ export default class ClangServer {
     }
     let stdout;
     try {
-      stdout = await runCommand('ps',
-        ['-p', _process.pid.toString(), '-o', 'rss='],
-      ).toPromise();
+      stdout = await runCommand('ps', [
+        '-p',
+        _process.pid.toString(),
+        '-o',
+        'rss=',
+      ]).toPromise();
     } catch (err) {
       return 0;
     }
@@ -210,11 +231,10 @@ export default class ClangServer {
       this._serverStatus.next(ClangServer.Status.COMPILING);
     }
     try {
-      return await service.compile(contents)
-        .then(result => ({
-          ...result,
-          accurateFlags: !this._usesDefaultFlags,
-        }));
+      return await service.compile(contents).then(result => ({
+        ...result,
+        accurateFlags: !this._usesDefaultFlags,
+      }));
     } finally {
       if (--this._pendingCompileRequests === 0 && !this.isDisposed()) {
         this._serverStatus.next(ClangServer.Status.READY);

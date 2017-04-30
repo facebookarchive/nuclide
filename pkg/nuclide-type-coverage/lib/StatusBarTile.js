@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -58,12 +59,14 @@ export class StatusBarTile extends React.Component {
 
   componentDidMount(): void {
     invariant(this.subscription == null);
-    const subscription = this.subscription = new Subscription();
+    const subscription = (this.subscription = new Subscription());
     subscription.add(
       this.props.results.subscribe(result => this._consumeResult(result)),
     );
     subscription.add(
-      this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)),
+      this.props.isActive.subscribe(isActive =>
+        this._consumeIsActive(isActive),
+      ),
     );
   }
 
@@ -89,10 +92,12 @@ export class StatusBarTile extends React.Component {
       case 'result':
         const coverageResult = result.result;
         this.setState({
-          result: coverageResult == null ? null : {
-            percentage: coverageResult.percentage,
-            providerName: result.provider.displayName,
-          },
+          result: coverageResult == null
+            ? null
+            : {
+                percentage: coverageResult.percentage,
+                providerName: result.provider.displayName,
+              },
           pending: false,
         });
         break;

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -31,8 +32,9 @@ export function moveLeft() {
 }
 
 function doSplit(
-    operation: MoveOperation,
-    splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
+  operation: MoveOperation,
+  splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane,
+) {
   const activePane = atom.workspace.getActivePane();
   if (activePane == null) {
     return;
@@ -87,11 +89,17 @@ function findTargetPane(
   if (candidatePanes.length === 1) {
     return candidatePanes[0];
   } else if (candidatePanes.length > 1) {
-    const xAxisComparator = (rect: ClientRect) => Math.abs(rect.left - activeRect.left);
-    const yAxisComparator = (rect: ClientRect) => Math.abs(rect.top - activeRect.top);
+    const xAxisComparator = (rect: ClientRect) =>
+      Math.abs(rect.left - activeRect.left);
+    const yAxisComparator = (rect: ClientRect) =>
+      Math.abs(rect.top - activeRect.top);
     const isHorizontalMove = operation === 'left' || operation === 'right';
-    const primaryComparator = isHorizontalMove ? xAxisComparator : yAxisComparator;
-    const secondaryComparator = isHorizontalMove ? yAxisComparator : xAxisComparator;
+    const primaryComparator = isHorizontalMove
+      ? xAxisComparator
+      : yAxisComparator;
+    const secondaryComparator = isHorizontalMove
+      ? yAxisComparator
+      : xAxisComparator;
     candidatePanes.sort((pane1, pane2) => {
       const rect1 = paneToRect.get(pane1);
       const rect2 = paneToRect.get(pane2);

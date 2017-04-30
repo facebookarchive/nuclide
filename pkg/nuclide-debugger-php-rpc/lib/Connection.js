@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DbgpSocket} from './DbgpSocket';
@@ -15,10 +16,7 @@ import {ConnectionStatus} from './DbgpSocket';
 import {CompositeDisposable} from 'event-kit';
 
 import type {Socket} from 'net';
-import type {
-  DbgpBreakpoint,
-  FileLineBreakpointInfo,
-} from './DbgpSocket';
+import type {DbgpBreakpoint, FileLineBreakpointInfo} from './DbgpSocket';
 
 let connectionCount = 1;
 
@@ -31,7 +29,7 @@ type StatusCallback = (
 type NotificationCallback = (
   connection: Connection,
   notifyName: string,
-  notify: Object
+  notify: Object,
 ) => void;
 
 export const ASYNC_BREAK = 'async_break';
@@ -67,12 +65,18 @@ export class Connection {
     this._breakCount = 0;
 
     if (onStatusCallback != null) {
-      this._disposables.add(this.onStatus((status, ...args) =>
-        onStatusCallback(this, status, ...args)));
+      this._disposables.add(
+        this.onStatus((status, ...args) =>
+          onStatusCallback(this, status, ...args),
+        ),
+      );
     }
     if (onNotificationCallback != null) {
-      this._disposables.add(this.onNotification((notifyName, notify) =>
-        onNotificationCallback(this, notifyName, notify)));
+      this._disposables.add(
+        this.onNotification((notifyName, notify) =>
+          onNotificationCallback(this, notifyName, notify),
+        ),
+      );
     }
     this._stopReason = null;
     this._stopBreakpointLocation = null;
@@ -86,7 +90,9 @@ export class Connection {
     return this._id;
   }
 
-  onStatus(callback: (status: string, ...args: Array<string>) => mixed): IDisposable {
+  onStatus(
+    callback: (status: string, ...args: Array<string>) => mixed,
+  ): IDisposable {
     return this._socket.onStatus(this._handleStatus.bind(this, callback));
   }
 
@@ -129,8 +135,10 @@ export class Connection {
         this._isDummyViewable = false;
         return;
     }
-    if (newStatus === ConnectionStatus.BreakMessageReceived &&
-      prevStatus !== ConnectionStatus.BreakMessageSent) {
+    if (
+      newStatus === ConnectionStatus.BreakMessageReceived &&
+      prevStatus !== ConnectionStatus.BreakMessageSent
+    ) {
       return;
     }
     this._status = newStatus;
@@ -166,7 +174,9 @@ export class Connection {
     return this._breakCount;
   }
 
-  onNotification(callback: (notifyName: string, notify: Object) => mixed): IDisposable {
+  onNotification(
+    callback: (notifyName: string, notify: Object) => mixed,
+  ): IDisposable {
     return this._socket.onNotification(callback);
   }
 
@@ -182,7 +192,9 @@ export class Connection {
     return this._socket.setExceptionBreakpoint(exceptionName);
   }
 
-  setFileLineBreakpoint(breakpointInfo: FileLineBreakpointInfo): Promise<string> {
+  setFileLineBreakpoint(
+    breakpointInfo: FileLineBreakpointInfo,
+  ): Promise<string> {
     return this._socket.setFileLineBreakpoint(breakpointInfo);
   }
 
@@ -227,7 +239,9 @@ export class Connection {
     return this._socket.setFeature(name, value);
   }
 
-  getProperties(remoteId: Runtime$RemoteObjectId): Promise<Array<Runtime$PropertyDescriptor>> {
+  getProperties(
+    remoteId: Runtime$RemoteObjectId,
+  ): Promise<Array<Runtime$PropertyDescriptor>> {
     return this._dataCache.getProperties(remoteId);
   }
 

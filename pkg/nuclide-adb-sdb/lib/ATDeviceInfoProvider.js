@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
@@ -18,16 +19,24 @@ export class ATDeviceInfoProvider implements DeviceInfoProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
 
-  constructor(type: string, rpcFactory: (host: NuclideUri) => AdbService | SdbService) {
+  constructor(
+    type: string,
+    rpcFactory: (host: NuclideUri) => AdbService | SdbService,
+  ) {
     this._type = type;
     this._rpcFactory = rpcFactory;
   }
 
   async fetch(host: NuclideUri, device: string): Promise<Map<string, string>> {
     const infoMap = new Map();
-    for (const [key, value] of await this._rpcFactory(host).getDeviceInfo(device)) {
+    for (const [key, value] of await this._rpcFactory(host).getDeviceInfo(
+      device,
+    )) {
       const beautifulKey = key.toLowerCase().replace('_', ' ');
-      infoMap.set(beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1), value);
+      infoMap.set(
+        beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1),
+        value,
+      );
     }
     return infoMap;
   }

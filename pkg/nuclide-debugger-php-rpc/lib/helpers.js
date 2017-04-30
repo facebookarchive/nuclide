@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Breakpoint} from './BreakpointStore';
@@ -22,14 +23,9 @@ import {runCommand} from '../../commons-node/process';
 export const DUMMY_FRAME_ID = 'Frame.0';
 
 export function isContinuationCommand(command: string): boolean {
-  return [
-    'run',
-    'step_into',
-    'step_over',
-    'step_out',
-    'stop',
-    'detach',
-  ].some(continuationCommand => continuationCommand === command);
+  return ['run', 'step_into', 'step_over', 'step_out', 'stop', 'detach'].some(
+    continuationCommand => continuationCommand === command,
+  );
 }
 
 export function isEvaluationCommand(command: string): boolean {
@@ -48,8 +44,9 @@ export function base64Encode(value: string): string {
 export async function hphpdMightBeAttached(): Promise<boolean> {
   const processes = await runCommand('ps', ['aux'], {}).toPromise();
   return processes.toString().split('\n').slice(1).some(line => {
-    return line.indexOf('m debug') >= 0 // hhvm -m debug
-      || line.indexOf('mode debug') >= 0; // hhvm --mode debug
+    return (
+      line.indexOf('m debug') >= 0 || line.indexOf('mode debug') >= 0 // hhvm -m debug
+    ); // hhvm --mode debug
   });
 }
 
@@ -60,7 +57,8 @@ export function makeDbgpMessage(message: string): string {
 export function makeMessage(obj: Object, body_: ?string): string {
   let body = body_;
   body = body || '';
-  let result = '<?xml version="1.0" encoding="iso-8859-1"?>' +
+  let result =
+    '<?xml version="1.0" encoding="iso-8859-1"?>' +
     '<response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="http://xdebug.org/dbgp/xdebug"';
   for (const key in obj) {
     result += ' ' + key + '="' + obj[key] + '"';
@@ -77,7 +75,9 @@ export function uriToPath(uri: string): string {
   const components = url.parse(uri);
   // Some filename returned from hhvm does not have protocol.
   if (components.protocol !== 'file:' && components.protocol != null) {
-    logger.logErrorAndThrow(`unexpected file protocol. Got: ${components.protocol}`);
+    logger.logErrorAndThrow(
+      `unexpected file protocol. Got: ${components.protocol}`,
+    );
   }
   return components.pathname || '';
 }
@@ -95,7 +95,9 @@ export function getBreakpointLocation(breakpoint: Breakpoint): Object {
  * Used to start the HHVM instance that the dummy connection connects to so we can evaluate
  * expressions in the REPL.
  */
-export function launchScriptForDummyConnection(scriptPath: string): child_process$ChildProcess {
+export function launchScriptForDummyConnection(
+  scriptPath: string,
+): child_process$ChildProcess {
   return launchPhpScriptWithXDebugEnabled(scriptPath);
 }
 
@@ -123,10 +125,12 @@ export function launchPhpScriptWithXDebugEnabled(
   const scriptArgs = shellParse(scriptPath);
   const args = [...runtimeArgs, ...scriptArgs];
   const proc = child_process.spawn(phpRuntimePath, args);
-  logger.log(dedent`
+  logger.log(
+    dedent`
     child_process(${proc.pid}) spawned with xdebug enabled.
     $ ${phpRuntimePath} ${args.join(' ')}
-  `);
+  `,
+  );
 
   proc.stdout.on('data', chunk => {
     // stdout should hopefully be set to line-buffering, in which case the
@@ -158,7 +162,8 @@ export function launchPhpScriptWithXDebugEnabled(
   proc.on('exit', code => {
     logger.log(`child_process(${proc.pid}) exit: ${code}`);
     if (code != null && sendToOutputWindowAndResolve != null) {
-      sendToOutputWindowAndResolve(`Script: ${scriptPath} exited with code: ${code}`,
+      sendToOutputWindowAndResolve(
+        `Script: ${scriptPath} exited with code: ${code}`,
         code === 0 ? 'info' : 'error',
       );
     }

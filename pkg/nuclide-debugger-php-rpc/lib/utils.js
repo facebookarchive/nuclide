@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {getCategoryLogger} from '../../nuclide-logging';
@@ -14,7 +15,9 @@ const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
 
 export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
 
-export function makeExpressionHphpdCompatible(params: {expression: string}): Object {
+export function makeExpressionHphpdCompatible(
+  params: {expression: string},
+): Object {
   // Hphpd requires that '=' is prefixed to expressions, but xdebug doesn't require this, so
   // we remove leading '=' if necessary.
   const expr = params.expression;

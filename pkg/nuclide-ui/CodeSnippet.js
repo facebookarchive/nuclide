@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {AtomInput} from './AtomInput';
@@ -38,7 +39,10 @@ export class CodeSnippet extends React.Component {
           [range.start.row - startLine, range.start.column],
           [range.end.row - startLine, range.end.column],
         ]);
-        editor.decorateMarker(marker, {type: 'highlight', class: 'code-snippet-highlight'});
+        editor.decorateMarker(marker, {
+          type: 'highlight',
+          class: 'code-snippet-highlight',
+        });
       });
 
       // Make sure at least one highlight is visible.

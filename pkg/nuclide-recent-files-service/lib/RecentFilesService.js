@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type FilePath = string;
@@ -52,12 +53,10 @@ export default class RecentFilesService {
    * Returns a reverse-chronological list of recently opened files.
    */
   getRecentFiles(): FileList {
-    return Array.from(this._fileList).reverse().map(pair =>
-      ({
-        path: pair[0],
-        timestamp: pair[1],
-      }),
-    );
+    return Array.from(this._fileList).reverse().map(pair => ({
+      path: pair[0],
+      timestamp: pair[1],
+    }));
   }
 
   dispose() {

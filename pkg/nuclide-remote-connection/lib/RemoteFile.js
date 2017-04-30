@@ -6,12 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
+import typeof * as FileSystemService
+  from '../../nuclide-server/lib/services/FileSystemService';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -78,30 +80,34 @@ export class RemoteFile {
       return;
     }
     const watchStream = this._server.getFileWatch(this._path);
-    this._watchSubscription = watchStream.subscribe(watchUpdate => {
-      // This only happens after a `setPath` and subsequent file rename.
-      // Getting this message signifies that the new file should be ready for watching.
-      if (watchUpdate.path !== this._path) {
-        logger.debug('watchFile renamed:', this._path);
-        this._unsubscribeFromNativeChangeEvents();
-        this._subscribeToNativeChangeEvents();
-        return;
-      }
-      logger.debug('watchFile update:', watchUpdate);
-      switch (watchUpdate.type) {
-        case 'change':
-          return this._handleNativeChangeEvent();
-        case 'delete':
-          return this._handleNativeDeleteEvent();
-      }
-    }, error => {
-      logger.error('Failed to subscribe RemoteFile:', this._path, error);
-      this._watchSubscription = null;
-    }, () => {
-      // Nothing needs to be done if the root directory watch has ended.
-      logger.debug(`watchFile ended: ${this._path}`);
-      this._watchSubscription = null;
-    });
+    this._watchSubscription = watchStream.subscribe(
+      watchUpdate => {
+        // This only happens after a `setPath` and subsequent file rename.
+        // Getting this message signifies that the new file should be ready for watching.
+        if (watchUpdate.path !== this._path) {
+          logger.debug('watchFile renamed:', this._path);
+          this._unsubscribeFromNativeChangeEvents();
+          this._subscribeToNativeChangeEvents();
+          return;
+        }
+        logger.debug('watchFile update:', watchUpdate);
+        switch (watchUpdate.type) {
+          case 'change':
+            return this._handleNativeChangeEvent();
+          case 'delete':
+            return this._handleNativeDeleteEvent();
+        }
+      },
+      error => {
+        logger.error('Failed to subscribe RemoteFile:', this._path, error);
+        this._watchSubscription = null;
+      },
+      () => {
+        // Nothing needs to be done if the root directory watch has ended.
+        logger.debug(`watchFile ended: ${this._path}`);
+        this._watchSubscription = null;
+      },
+    );
   }
 
   _handleNativeChangeEvent(): Promise<void> {
@@ -218,7 +224,9 @@ export class RemoteFile {
 
   async getRealPath(): Promise<string> {
     if (this._realpath == null) {
-      this._realpath = await this._getFileSystemService().realpath(this._localPath);
+      this._realpath = await this._getFileSystemService().realpath(
+        this._localPath,
+      );
     }
     invariant(this._realpath);
     return this._realpath;
@@ -229,7 +237,9 @@ export class RemoteFile {
   }
 
   async create(): Promise<boolean> {
-    const wasCreated = await this._getFileSystemService().newFile(this._localPath);
+    const wasCreated = await this._getFileSystemService().newFile(
+      this._localPath,
+    );
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
@@ -248,7 +258,10 @@ export class RemoteFile {
   }
 
   async copy(newPath: string): Promise<boolean> {
-    const wasCopied = await this._getFileSystemService().copy(this._localPath, newPath);
+    const wasCopied = await this._getFileSystemService().copy(
+      this._localPath,
+      newPath,
+    );
     this._subscribeToNativeChangeEvents();
     return wasCopied;
   }
@@ -276,9 +289,9 @@ export class RemoteFile {
   getParent(): RemoteDirectory {
     const directoryPath = nuclideUri.dirname(this._path);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
-    const hgRepositoryDescription = remoteConnection != null ?
-      remoteConnection.getHgRepositoryDescription() :
-      null;
+    const hgRepositoryDescription = remoteConnection != null
+      ? remoteConnection.getHgRepositoryDescription()
+      : null;
     return this._server.createDirectory(directoryPath, hgRepositoryDescription);
   }
 

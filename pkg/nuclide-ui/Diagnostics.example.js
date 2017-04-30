@@ -6,21 +6,22 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
   FileDiagnosticMessage,
 } from '../nuclide-diagnostics-common/lib/rpc-types';
 
-import {
-  Range,
-} from 'atom';
+import {Range} from 'atom';
 import React from 'react';
 import {Block} from './Block';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 
 const GOTOLOCATION = (path: string, line: number) => {
-  atom.notifications.addInfo(`Let's pretend I opened "${path}" at line ${line}.`);
+  atom.notifications.addInfo(
+    `Let's pretend I opened "${path}" at line ${line}.`,
+  );
 };
 const FIXER = () => {
   atom.notifications.addInfo('TADA! Fixed.');

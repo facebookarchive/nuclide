@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {DebugBridge} from './DebugBridge';
@@ -58,7 +59,8 @@ export class Sdb extends DebugBridge {
   installPackage(
     device: string,
     packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
     return this.runLongAdbCommand(device, ['install', packagePath]);
   }
@@ -74,7 +76,8 @@ export class Sdb extends DebugBridge {
   uninstallPackage(
     device: string,
     packageName: string,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 }

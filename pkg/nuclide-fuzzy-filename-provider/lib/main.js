@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Provider} from '../../nuclide-quick-open/lib/types';
@@ -16,7 +17,9 @@ import {CompositeDisposable} from 'atom';
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import createPackage from '../../commons-atom/createPackage';
 import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
-import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFuzzyFileSearchServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from '../../nuclide-logging';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
@@ -38,9 +41,7 @@ class Activation {
 
     // Do search preprocessing for all existing and future root directories.
     this._readySearch(atom.project.getPaths());
-    this._subscriptions.add(
-      atom.project.onDidChangePaths(this._readySearch),
-    );
+    this._subscriptions.add(atom.project.onDidChangePaths(this._readySearch));
   }
 
   _readySearch(projectPaths: Array<string>): void {
@@ -49,17 +50,24 @@ class Activation {
       if (!this._subscriptionsByRoot.has(projectPath)) {
         const disposables = new CompositeDisposable(
           // Wait a bit before starting the initial search, since it's a heavy op.
-          scheduleIdleCallback(() => {
-            this._initialSearch(projectPath).catch(err => {
-              // RPC timeout errors can often happen here, but don't dispose the search.
-              if (err instanceof RpcTimeoutError) {
-                logger.warn(`Warmup fuzzy filename search for ${projectPath} hit the RPC timeout.`);
-              } else {
-                logger.error(`Error starting fuzzy filename search for ${projectPath}: ${err}`);
-                this._disposeSearch(projectPath);
-              }
-            });
-          }, {timeout: 5000}),
+          scheduleIdleCallback(
+            () => {
+              this._initialSearch(projectPath).catch(err => {
+                // RPC timeout errors can often happen here, but don't dispose the search.
+                if (err instanceof RpcTimeoutError) {
+                  logger.warn(
+                    `Warmup fuzzy filename search for ${projectPath} hit the RPC timeout.`,
+                  );
+                } else {
+                  logger.error(
+                    `Error starting fuzzy filename search for ${projectPath}: ${err}`,
+                  );
+                  this._disposeSearch(projectPath);
+                }
+              });
+            },
+            {timeout: 5000},
+          ),
         );
         this._subscriptionsByRoot.set(projectPath, disposables);
       }
@@ -83,8 +91,9 @@ class Activation {
     const disposables = this._subscriptionsByRoot.get(projectPath);
     invariant(disposables != null);
 
-    const busySignalDisposable =
-      this._busySignalProvider.displayMessage(`File search: indexing ${projectPath}`);
+    const busySignalDisposable = this._busySignalProvider.displayMessage(
+      `File search: indexing ${projectPath}`,
+    );
     disposables.add(busySignalDisposable);
 
     // It doesn't matter what the search term is. Empirically, doing an initial
@@ -105,7 +114,10 @@ class Activation {
       const service = getFuzzyFileSearchServiceByNuclideUri(projectPath);
       service.disposeFuzzySearch(projectPath);
     } catch (err) {
-      logger.error(`Error disposing fuzzy filename service for ${projectPath}`, err);
+      logger.error(
+        `Error disposing fuzzy filename service for ${projectPath}`,
+        err,
+      );
     } finally {
       const disposables = this._subscriptionsByRoot.get(projectPath);
       if (disposables != null) {

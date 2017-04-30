@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CustomPaneItemOptions} from '../../nuclide-ui/types';
@@ -25,7 +26,6 @@ class VcsLogPaneItem extends CustomPaneItem {
   }
 }
 
-export default document.registerElement(
-  'nuclide-vcs-log',
-  {prototype: VcsLogPaneItem.prototype},
-);
+export default document.registerElement('nuclide-vcs-log', {
+  prototype: VcsLogPaneItem.prototype,
+});

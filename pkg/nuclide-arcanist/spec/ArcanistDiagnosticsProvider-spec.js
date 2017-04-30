@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -69,15 +70,17 @@ describe('ArcanistDiagnosticsProvider', () => {
       waitsForPromise(async () => {
         let mockObserver;
         const disposeSpy = jasmine.createSpy('dispose');
-        spyOn(require('../../nuclide-remote-connection'), 'getArcanistServiceByNuclideUri')
-          .andReturn({
-            findDiagnostics: () => {
-              return Observable.create(observer => {
-                mockObserver = observer;
-                return disposeSpy;
-              }).publish();
-            },
-          });
+        spyOn(
+          require('../../nuclide-remote-connection'),
+          'getArcanistServiceByNuclideUri',
+        ).andReturn({
+          findDiagnostics: () => {
+            return Observable.create(observer => {
+              mockObserver = observer;
+              return disposeSpy;
+            }).publish();
+          },
+        });
 
         const run1 = _findDiagnostics('test');
         const run2 = _findDiagnostics('test');

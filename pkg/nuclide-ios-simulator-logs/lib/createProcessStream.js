@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {observeProcess} from '../../commons-node/process';
@@ -21,7 +22,7 @@ export function createProcessStream(): Observable<string> {
   const currentDeviceUdids = observeProcess(
     'bash',
     ['-c', WATCH_CURRENT_UDID_SCRIPT],
-    {/* TODO(T17353599) */isExitError: () => false},
+    {/* TODO(T17353599) */ isExitError: () => false},
   )
     .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .map(event => {
@@ -42,38 +43,35 @@ export function createProcessStream(): Observable<string> {
     .distinctUntilChanged();
 
   // Whenever the current device changes, start tailing that device's logs.
-  return currentDeviceUdids
-    .switchMap(udid => {
-      const logDir = nuclideUri.join(
-        os.homedir(),
-        'Library',
-        'Logs',
-        'CoreSimulator',
-        udid,
-        'asl',
-      );
-      return observeProcess(
-        ((featureConfig.get('nuclide-ios-simulator-logs.pathToSyslog'): any): string),
-        [
-          '-w',
-          '-F', 'xml',
-          '-d', logDir,
-        ],
-        {/* TODO(T17353599) */isExitError: () => false},
-      )
-        .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-        .map(event => {
-          if (event.kind === 'error') {
-            throw event.error;
-          }
-          return event;
-        })
-        .filter(event => event.kind === 'stdout')
-        .map(event => {
-          invariant(typeof event.data === 'string');
-          return event.data;
-        });
-    });
+  return currentDeviceUdids.switchMap(udid => {
+    const logDir = nuclideUri.join(
+      os.homedir(),
+      'Library',
+      'Logs',
+      'CoreSimulator',
+      udid,
+      'asl',
+    );
+    return observeProcess(
+      ((featureConfig.get(
+        'nuclide-ios-simulator-logs.pathToSyslog',
+      ): any): string),
+      ['-w', '-F', 'xml', '-d', logDir],
+      {/* TODO(T17353599) */ isExitError: () => false},
+    )
+      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+      .map(event => {
+        if (event.kind === 'error') {
+          throw event.error;
+        }
+        return event;
+      })
+      .filter(event => event.kind === 'stdout')
+      .map(event => {
+        invariant(typeof event.data === 'string');
+        return event.data;
+      });
+  });
 }
 
 // A small shell script for polling the current device UDID. This allows us to avoid spawning a new

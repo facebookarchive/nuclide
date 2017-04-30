@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ASTNode} from 'graphql/language';
@@ -56,22 +57,22 @@ export class GraphQLLanguageService {
       schema = await this._graphQLCache.getSchema(
         graphQLConfig.getSchemaPath(),
       );
-      const fragmentDefinitions =
-        await this._graphQLCache.getFragmentDefinitions(graphQLConfig);
-      const fragmentDependencies =
-        await this._graphQLCache.getFragmentDependencies(
-          query,
-          fragmentDefinitions,
-        );
+      const fragmentDefinitions = await this._graphQLCache.getFragmentDefinitions(
+        graphQLConfig,
+      );
+      const fragmentDependencies = await this._graphQLCache.getFragmentDependencies(
+        query,
+        fragmentDefinitions,
+      );
       const dependenciesSource = fragmentDependencies.reduce(
-        (prev, cur) => `${prev} ${print(cur.definition)}`, '',
+        (prev, cur) => `${prev} ${print(cur.definition)}`,
+        '',
       );
 
       source = `${source} ${dependenciesSource}`;
 
       // Check if there are custom validation rules to be used
-      const customRulesModulePath =
-        graphQLConfig.getCustomValidationRulesModulePath();
+      const customRulesModulePath = graphQLConfig.getCustomValidationRulesModulePath();
       if (customRulesModulePath) {
         const rulesPath = require.resolve(customRulesModulePath);
         if (rulesPath) {
@@ -129,11 +130,7 @@ export class GraphQLLanguageService {
         );
       case FRAGMENT_DEFINITION:
       case OPERATION_DEFINITION:
-        return getDefinitionQueryResultForDefinitionNode(
-          filePath,
-          query,
-          node,
-        );
+        return getDefinitionQueryResultForDefinitionNode(filePath, query, node);
       default:
         return null;
     }
@@ -146,21 +143,22 @@ export class GraphQLLanguageService {
     filePath: Uri,
     graphQLConfig: GraphQLConfig,
   ): Promise<?DefinitionQueryResult> {
-    const fragmentDefinitions =
-      await this._graphQLCache.getFragmentDefinitions(graphQLConfig);
+    const fragmentDefinitions = await this._graphQLCache.getFragmentDefinitions(
+      graphQLConfig,
+    );
 
     const dependencies = await this._graphQLCache.getFragmentDependenciesForAST(
       ast,
       fragmentDefinitions,
     );
 
-    const localFragDefinitions = ast.definitions.filter(
-      definition => definition.kind === FRAGMENT_DEFINITION,
-    ).map(definition => ({
-      file: filePath,
-      content: query,
-      definition,
-    }));
+    const localFragDefinitions = ast.definitions
+      .filter(definition => definition.kind === FRAGMENT_DEFINITION)
+      .map(definition => ({
+        file: filePath,
+        content: query,
+        definition,
+      }));
 
     const result = await getDefinitionQueryResultForFragmentSpread(
       query,

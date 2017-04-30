@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';

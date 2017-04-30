@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import yaml from 'js-yaml';
@@ -46,7 +47,9 @@ export async function readCompileCommands(
     // This string is composed of the compiler arguments ("other-args"),
     // plus all of the Swift source files that need to be compiled together.
     llbuildCommand.sources.forEach(source => {
-      const otherArgs = llbuildCommand['other-args'] ? llbuildCommand['other-args'] : [];
+      const otherArgs = llbuildCommand['other-args']
+        ? llbuildCommand['other-args']
+        : [];
       compileCommands.set(
         source,
         otherArgs.concat(llbuildCommand.sources).join(' '),

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {MessageDisplayOptions} from './BusySignalProviderBase';
@@ -32,7 +33,10 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     this._messageRecords = new Map();
   }
 
-  displayMessage(message: string, options?: MessageDisplayOptions): IDisposable {
+  displayMessage(
+    message: string,
+    options?: MessageDisplayOptions,
+  ): IDisposable {
     this._incrementCount(message, options);
     return new Disposable(() => {
       this._decrementCount(message, options);

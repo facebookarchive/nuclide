@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 /* global Node */
 /* global HTMLElement */
@@ -52,19 +53,22 @@ export default function showModal(
     className: options.className,
   });
   const disposable = new UniversalDisposable(
-    options.disableDismissOnClickOutsideModal ? () => undefined :
-      Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
-        invariant(target instanceof Node);
-        if (!atomPanel.getItem().contains(target)) {
-          atomPanel.hide();
-        }
-      }),
+    options.disableDismissOnClickOutsideModal
+      ? () => undefined
+      : Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
+          invariant(target instanceof Node);
+          if (!atomPanel.getItem().contains(target)) {
+            atomPanel.hide();
+          }
+        }),
     atomPanel.onDidChangeVisible(visible => {
       if (!visible) {
         disposable.dispose();
       }
     }),
-    atom.commands.add('atom-workspace', 'core:cancel', () => disposable.dispose()),
+    atom.commands.add('atom-workspace', 'core:cancel', () =>
+      disposable.dispose(),
+    ),
     () => {
       // Call onDismiss before unmounting the component and destroying the panel:
       if (options.onDismiss) {
@@ -76,7 +80,9 @@ export default function showModal(
   );
 
   ReactDOM.render(
-    <ModalContainer>{contentFactory(disposable.dispose.bind(disposable))}</ModalContainer>,
+    <ModalContainer>
+      {contentFactory(disposable.dispose.bind(disposable))}
+    </ModalContainer>,
     hostElement,
   );
   return disposable;

@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
+import type {
+  LocalStorageJsonTable,
+} from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from '../../nuclide-ui/types';
 import type {Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
@@ -72,7 +75,7 @@ export type TaskRunner = {
   +setProjectRoot: (
     projectRoot: ?Directory,
     callback: (enabled: boolean, taskList: Array<TaskMetadata>) => mixed,
-    ) => IDisposable,
+  ) => IDisposable,
   // Priority to decide which task runner to select when multiple are available for a project
   // Default priority is 0, ties are resolved alphabetically.
   +getPriority?: () => number,
@@ -207,7 +210,7 @@ export type ToggleToolbarVisibilityAction = {
 };
 
 export type Action =
-  DidActivateInitialPackagesAction
+  | DidActivateInitialPackagesAction
   | RunTaskAction
   | SelectTaskRunnerAction
   | SetStatesForTaskRunnersAction

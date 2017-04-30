@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
@@ -19,15 +20,14 @@ type HackConfig = {
 };
 
 export const HACK_CONFIG_PATH = 'nuclide-hack';
-export const SHOW_TYPE_COVERAGE_CONFIG_PATH = HACK_CONFIG_PATH + '.showTypeCoverage';
+export const SHOW_TYPE_COVERAGE_CONFIG_PATH =
+  HACK_CONFIG_PATH + '.showTypeCoverage';
 
 export function getConfig(): HackConfig {
-  return featureConfig.getWithDefaults(
-    HACK_CONFIG_PATH,
-    {
-      hhClientPath: '',
-      logLevel: 'INFO',
-    });
+  return featureConfig.getWithDefaults(HACK_CONFIG_PATH, {
+    hhClientPath: '',
+    logLevel: 'INFO',
+  });
 }
 
 const LOGGER_CATEGORY = 'nuclide-hack';

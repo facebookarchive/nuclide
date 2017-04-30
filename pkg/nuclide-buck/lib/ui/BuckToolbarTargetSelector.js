@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {AppState} from '../types';
@@ -20,7 +21,8 @@ import {concatLatest} from '../../../commons-node/observable';
 import {getBuckService} from '../../../nuclide-buck-base';
 import {getLogger} from '../../../nuclide-logging';
 
-const NO_ACTIVE_PROJECT_ERROR = 'No active Buck project. Check your Current Working Root.';
+const NO_ACTIVE_PROJECT_ERROR =
+  'No active Buck project. Check your Current Working Root.';
 
 type Props = {
   appState: AppState,
@@ -40,7 +42,9 @@ export default class BuckToolbarTargetSelector extends React.Component {
   constructor(props: Props) {
     super(props);
     (this: any)._requestOptions = this._requestOptions.bind(this);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(
+      this,
+    );
     this._projectAliasesCache = new Map();
   }
 
@@ -58,7 +62,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
       .sort((a, b) => {
         // Prefer earlier matches, but don't break ties by string length.
         // Instead, make the sort stable by breaking ties with the index.
-        return (a.matchIndex - b.matchIndex) || (a.index - b.index);
+        return a.matchIndex - b.matchIndex || a.index - b.index;
       })
       .map(option => option.value);
   }
@@ -72,20 +76,23 @@ export default class BuckToolbarTargetSelector extends React.Component {
       Observable.of(inputText.trim() === '' ? [] : [inputText]),
       Observable.fromPromise(this._getActiveOwners(buckRoot)),
       Observable.fromPromise(this._getAliases(buckRoot)),
-    )
-      .map(list => Array.from(new Set(list)));
+    ).map(list => Array.from(new Set(list)));
   }
 
   _getAliases(buckRoot: string): Promise<Array<string>> {
     let cachedAliases = this._projectAliasesCache.get(buckRoot);
     if (cachedAliases == null) {
       const buckService = getBuckService(buckRoot);
-      cachedAliases = buckService == null ? Promise.resolve([]) :
-        buckService.listAliases(buckRoot)
-          // Sort in alphabetical order.
-          .then(aliases => aliases.sort(
-            (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
-          ));
+      cachedAliases = buckService == null
+        ? Promise.resolve([])
+        : buckService
+            .listAliases(buckRoot)
+            // Sort in alphabetical order.
+            .then(aliases =>
+              aliases.sort((a, b) =>
+                a.toLowerCase().localeCompare(b.toLowerCase()),
+              ),
+            );
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
@@ -104,16 +111,21 @@ export default class BuckToolbarTargetSelector extends React.Component {
       return this._cachedOwners;
     }
     const buckService = getBuckService(buckRoot);
-    this._cachedOwners = buckService == null ? Promise.resolve([]) :
-      buckService.getOwners(buckRoot, path)
-        .then(
-          // Strip off the optional leading "//" to match typical user input.
-          owners => owners.map(owner => (owner.startsWith('//') ? owner.substring(2) : owner)),
-        )
-        .catch(err => {
-          getLogger().error(`Error getting Buck owners for ${path}`, err);
-          return [];
-        });
+    this._cachedOwners = buckService == null
+      ? Promise.resolve([])
+      : buckService
+          .getOwners(buckRoot, path)
+          .then(
+            // Strip off the optional leading "//" to match typical user input.
+            owners =>
+              owners.map(
+                owner => (owner.startsWith('//') ? owner.substring(2) : owner),
+              ),
+          )
+          .catch(err => {
+            getLogger().error(`Error getting Buck owners for ${path}`, err);
+            return [];
+          });
     this._cachedOwnersPath = path;
     return this._cachedOwners;
   }

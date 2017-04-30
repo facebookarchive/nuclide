@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {PathSet} from './PathSet';
@@ -56,9 +57,13 @@ export default class PathSetUpdater {
     const subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);
 
-    subscription.on('change', files => this._processWatchmanUpdate(
-      subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files,
-    ));
+    subscription.on('change', files =>
+      this._processWatchmanUpdate(
+        subscription.pathFromSubscriptionRootToSubscriptionPath,
+        pathSet,
+        files,
+      ),
+    );
     return new Disposable(() => this._stopUpdatingPathSet(pathSet));
   }
 
@@ -70,7 +75,6 @@ export default class PathSetUpdater {
     }
   }
 
-
   // Section: Watchman Subscriptions
 
   _setupWatcherService() {
@@ -80,7 +84,9 @@ export default class PathSetUpdater {
     this._watchmanClient = new WatchmanClient();
   }
 
-  async _addWatchmanSubscription(localDirectory: string): Promise<WatchmanSubscription> {
+  async _addWatchmanSubscription(
+    localDirectory: string,
+  ): Promise<WatchmanSubscription> {
     if (!this._watchmanClient) {
       this._setupWatcherService();
     }
@@ -94,7 +100,6 @@ export default class PathSetUpdater {
     }
     this._watchmanClient.unwatch(subscription.path);
   }
-
 
   // Section: PathSet Updating
 
@@ -129,9 +134,9 @@ export default class PathSetUpdater {
       // different from (i.e. a parent directory of) the localDirectory passed into
       // PathSetUpdater::startUpdatingPathSet. But the PathSet expects paths
       // relative to the localDirectory. Thus we need to do this adjustment.
-      const adjustedPath = pathFromSubscriptionRootToDir ?
-        fileName.slice(pathFromSubscriptionRootToDir.length + 1) :
-        fileName;
+      const adjustedPath = pathFromSubscriptionRootToDir
+        ? fileName.slice(pathFromSubscriptionRootToDir.length + 1)
+        : fileName;
       if (!file.exists) {
         deletedPaths.push(adjustedPath);
       } else if (file.new) {

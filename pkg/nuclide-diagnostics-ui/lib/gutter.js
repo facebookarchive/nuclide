@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  FileMessageUpdate,
-} from '../../nuclide-diagnostics-common';
+import type {FileMessageUpdate} from '../../nuclide-diagnostics-common';
 import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
@@ -103,8 +102,9 @@ export function applyUpdateToEditor(
   }
 
   for (const message of update.messages) {
-    const wordRange = message.range != null && message.range.isEmpty() ?
-      wordAtPosition(editor, message.range.start) : null;
+    const wordRange = message.range != null && message.range.isEmpty()
+      ? wordAtPosition(editor, message.range.start)
+      : null;
     const range = wordRange != null ? wordRange.range : message.range;
 
     const highlightCssClass = classnames(
@@ -148,10 +148,9 @@ export function applyUpdateToEditor(
           end = lineText.length;
         }
 
-        highlightMarker = editor.markBufferRange(new Range(
-          [line, start],
-          [line, end],
-        ));
+        highlightMarker = editor.markBufferRange(
+          new Range([line, start], [line, end]),
+        );
         editor.decorateMarker(highlightMarker, {
           type: 'highlight',
           class: highlightCssClass,
@@ -172,7 +171,11 @@ export function applyUpdateToEditor(
       : WARNING_GUTTER_CSS;
 
     // This marker adds some UI to the gutter.
-    const {item, dispose} = createGutterItem(messages, gutterMarkerCssClass, fixer);
+    const {item, dispose} = createGutterItem(
+      messages,
+      gutterMarkerCssClass,
+      fixer,
+    );
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
@@ -247,11 +250,11 @@ function createGutterItem(
  * Shows a popup for the diagnostic just below the specified item.
  */
 function showPopupFor(
-    messages: Array<FileDiagnosticMessage>,
-    item: HTMLElement,
-    goToLocation: (filePath: NuclideUri, line: number) => mixed,
-    fixer: (message: FileDiagnosticMessage) => void,
-  ): HTMLElement {
+  messages: Array<FileDiagnosticMessage>,
+  item: HTMLElement,
+  goToLocation: (filePath: NuclideUri, line: number) => mixed,
+  fixer: (message: FileDiagnosticMessage) => void,
+): HTMLElement {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
   const workspaceElement = atom.views.getView((atom.workspace: Object));
@@ -286,16 +289,20 @@ function showPopupFor(
   const editor = itemToEditor.get(item);
   invariant(editor != null);
   const editorElement = atom.views.getView(editor);
-  const {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
+  const {
+    top: editorTop,
+    height: editorHeight,
+  } = editorElement.getBoundingClientRect();
   const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
   const popupElement = hostElement.firstElementChild;
   invariant(popupElement instanceof HTMLElement);
   const popupHeight = popupElement.clientHeight;
-  if ((itemTop + itemHeight + popupHeight) > (editorTop + editorHeight)) {
+  if (itemTop + itemHeight + popupHeight > editorTop + editorHeight) {
     // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
     // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
     // below. I don't know why.
-    popupElement.style.top = String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
+    popupElement.style.top =
+      String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
   }
 
   try {

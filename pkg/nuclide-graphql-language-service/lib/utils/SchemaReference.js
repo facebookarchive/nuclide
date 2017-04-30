@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {getNamedType} from 'graphql';
@@ -74,18 +75,20 @@ export function getDirectiveReference(typeInfo: any): DirectiveReference {
 }
 
 export function getArgumentReference(typeInfo: any): ArgumentReference {
-  return typeInfo.directiveDef ? {
-    kind: 'Argument',
-    schema: typeInfo.schema,
-    argument: typeInfo.argDef,
-    directive: typeInfo.directiveDef,
-  } : {
-    kind: 'Argument',
-    schema: typeInfo.schema,
-    argument: typeInfo.argDef,
-    field: typeInfo.fieldDef,
-    type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType,
-  };
+  return typeInfo.directiveDef
+    ? {
+        kind: 'Argument',
+        schema: typeInfo.schema,
+        argument: typeInfo.argDef,
+        directive: typeInfo.directiveDef,
+      }
+    : {
+        kind: 'Argument',
+        schema: typeInfo.schema,
+        argument: typeInfo.argDef,
+        field: typeInfo.fieldDef,
+        type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType,
+      };
 }
 
 export function getEnumValueReference(typeInfo: any): EnumValueReference {

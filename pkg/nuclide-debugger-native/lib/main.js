@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -31,7 +32,9 @@ export function consumeOutputService(api: OutputService): void {
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'lldb',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+    getLaunchAttachProvider(
+      connection: NuclideUri,
+    ): ?DebuggerLaunchAttachProvider {
       return new LLDBLaunchAttachProvider('Native', connection);
     },
   };

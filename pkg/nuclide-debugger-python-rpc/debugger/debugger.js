@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DebuggerEvent, Message} from './types';
@@ -51,7 +52,10 @@ export function launchDebugger(
           const method = args[PARAM_METHOD];
           if (method === METHOD_CONNECT) {
             // On initial connection, we should send the breakpoints over.
-            write({[PARAM_METHOD]: METHOD_INIT, [PARAM_BREAKPOINTS]: initialBreakpoints});
+            write({
+              [PARAM_METHOD]: METHOD_INIT,
+              [PARAM_BREAKPOINTS]: initialBreakpoints,
+            });
             observer.next({event: 'connected'});
           } else if (method === METHOD_STOP) {
             const {file, line} = args;
@@ -62,7 +66,9 @@ export function launchDebugger(
           } else if (method === METHOD_START) {
             observer.next({event: 'start'});
           } else {
-            const error = new Error(`Unrecognized message: ${JSON.stringify(args)}`);
+            const error = new Error(
+              `Unrecognized message: ${JSON.stringify(args)}`,
+            );
             observer.error(error);
           }
         });
@@ -72,7 +78,8 @@ export function launchDebugger(
       // because the Python code may be locked up such that it won't get the message.
       commander.subscribe(
         write,
-        (error: Error) => log(`Unexpected error from commander: ${String(error)}`),
+        (error: Error) =>
+          log(`Unexpected error from commander: ${String(error)}`),
         () => log('Apparently the commander is done.'),
       );
 

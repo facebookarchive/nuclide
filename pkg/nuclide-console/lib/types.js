@@ -6,13 +6,32 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
-import type {EvaluationResult, ExpansionResult} from '../../nuclide-debugger/lib/types';
+import type {
+  EvaluationResult,
+  ExpansionResult,
+} from '../../nuclide-debugger/lib/types';
 
-export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success' | Color;
-type Color = 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'violet' | 'rainbow';
+export type Level =
+  | 'info'
+  | 'log'
+  | 'warning'
+  | 'error'
+  | 'debug'
+  | 'success'
+  | Color;
+type Color =
+  | 'red'
+  | 'orange'
+  | 'yellow'
+  | 'green'
+  | 'blue'
+  | 'purple'
+  | 'violet'
+  | 'rainbow';
 
 type MessageKind = 'message' | 'request' | 'response';
 
@@ -56,8 +75,11 @@ export type DisplayableRecord = {
   expansionStateId: Object,
 };
 
-export type RecordHeightChangeHandler =
-  (recordId: number, newHeight: number, callback: () => void) => void;
+export type RecordHeightChangeHandler = (
+  recordId: number,
+  newHeight: number,
+  callback: () => void,
+) => void;
 
 export type OutputProviderStatus = 'starting' | 'running' | 'stopped';
 
@@ -75,7 +97,8 @@ type ControllableOutputProviderProps = {
   stop(): void,
 };
 
-type ControllableOutputProvider = BasicOutputProvider & ControllableOutputProviderProps;
+type ControllableOutputProvider = BasicOutputProvider &
+  ControllableOutputProviderProps;
 
 export type OutputProvider = BasicOutputProvider | ControllableOutputProvider;
 
@@ -85,7 +108,8 @@ type BasicRecordProvider = {
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
-type ControllableRecordProvider = BasicRecordProvider & ControllableOutputProviderProps;
+type ControllableRecordProvider = BasicRecordProvider &
+  ControllableOutputProviderProps;
 
 export type RecordProvider = BasicRecordProvider | ControllableRecordProvider;
 
@@ -179,7 +203,7 @@ export type UpdateStatusAction = {
 };
 
 export type Action =
-  ClearRecordsAction
+  | ClearRecordsAction
   | ExecuteAction
   | RecordReceivedAction
   | RegisterExecutorAction

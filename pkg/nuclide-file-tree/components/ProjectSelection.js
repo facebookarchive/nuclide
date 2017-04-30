@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -37,9 +38,7 @@ export class ProjectSelection extends React.Component {
     this._processExternalUpdate();
 
     this._disposables.add(
-      this._store.subscribe(
-        this._processExternalUpdate.bind(this),
-      ),
+      this._store.subscribe(this._processExternalUpdate.bind(this)),
     );
   }
 
@@ -78,7 +77,6 @@ export class ProjectSelection extends React.Component {
         </Button>
         {this.state.extraContent}
       </div>
-
     );
   }
 

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
@@ -21,7 +22,9 @@ import type {
 } from '../types';
 import type {CreatePasteFunction} from '../../../nuclide-paste-base';
 
-import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
+import {
+  viewableFromReactElement,
+} from '../../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import {nextAnimationFrame} from '../../../commons-node/observable';
 import getCurrentExecutorId from '../getCurrentExecutorId';
@@ -85,14 +88,19 @@ export class ConsoleContainer extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDisplayableRecordHeightChange =
-      this._handleDisplayableRecordHeightChange.bind(this);
+    (this: any)._handleDisplayableRecordHeightChange = this._handleDisplayableRecordHeightChange.bind(
+      this,
+    );
     (this: any)._selectSources = this._selectSources.bind(this);
     (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
     (this: any)._updateFilterText = this._updateFilterText.bind(this);
     (this: any)._resetAllFilters = this._resetAllFilters.bind(this);
     (this: any)._createPaste = this._createPaste.bind(this);
-    const {initialFilterText, initialEnableRegExpFilter, initialUnselectedSourceIds} = props;
+    const {
+      initialFilterText,
+      initialEnableRegExpFilter,
+      initialUnselectedSourceIds,
+    } = props;
     this.state = {
       ready: false,
       currentExecutor: null,
@@ -104,7 +112,9 @@ export class ConsoleContainer extends React.Component {
       sources: [],
       filterText: initialFilterText == null ? '' : initialFilterText,
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
-      unselectedSourceIds: initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
+      unselectedSourceIds: initialUnselectedSourceIds == null
+        ? []
+        : initialUnselectedSourceIds,
     };
     this._stateChanges = new Subject();
     this._titleChanges = this._stateChanges
@@ -124,9 +134,13 @@ export class ConsoleContainer extends React.Component {
 
   getTitle(): string {
     // If there's only one source selected, use its name in the tab title.
-    if (this.state.sources.length - this.state.unselectedSourceIds.length === 1) {
-      const selectedSource = this.state.sources
-        .find(source => this.state.unselectedSourceIds.indexOf(source.id) === -1);
+    if (
+      this.state.sources.length - this.state.unselectedSourceIds.length ===
+      1
+    ) {
+      const selectedSource = this.state.sources.find(
+        source => this.state.unselectedSourceIds.indexOf(source.id) === -1,
+      );
       if (selectedSource) {
         return `Console: ${selectedSource.name}`;
       }
@@ -152,8 +166,9 @@ export class ConsoleContainer extends React.Component {
       .audit(() => nextAnimationFrame)
       .subscribe(state => {
         const currentExecutorId = getCurrentExecutorId(state);
-        const currentExecutor =
-          currentExecutorId != null ? state.executors.get(currentExecutorId) : null;
+        const currentExecutor = currentExecutorId != null
+          ? state.executors.get(currentExecutorId)
+          : null;
         this.setState({
           ready: true,
           currentExecutor,
@@ -190,9 +205,15 @@ export class ConsoleContainer extends React.Component {
     if (this._actionCreators == null) {
       const {store} = this.props;
       this._actionCreators = {
-        execute: code => { store.dispatch(Actions.execute(code)); },
-        selectExecutor: executorId => { store.dispatch(Actions.selectExecutor(executorId)); },
-        clearRecords: () => { store.dispatch(Actions.clearRecords()); },
+        execute: code => {
+          store.dispatch(Actions.execute(code));
+        },
+        selectExecutor: executorId => {
+          store.dispatch(Actions.selectExecutor(executorId));
+        },
+        clearRecords: () => {
+          store.dispatch(Actions.clearRecords());
+        },
       };
     }
     return this._actionCreators;
@@ -216,7 +237,8 @@ export class ConsoleContainer extends React.Component {
         const level = record.level.toString().toUpperCase();
         const timestamp = record.timestamp.toLocaleString();
         return `[${level}][${record.sourceId}][${timestamp}]\t ${record.text}`;
-      }).join('\n');
+      })
+      .join('\n');
 
     if (lines === '') {
       // Can't create an empty paste!
@@ -245,12 +267,16 @@ export class ConsoleContainer extends React.Component {
     selectedSourceIds: Array<string>,
     displayableRecords: Array<DisplayableRecord>,
   } {
-    const {pattern, isValid} =
-      this._getFilterPattern(this.state.filterText, this.state.enableRegExpFilter);
+    const {pattern, isValid} = this._getFilterPattern(
+      this.state.filterText,
+      this.state.enableRegExpFilter,
+    );
 
     const selectedSourceIds = this.state.sources
       .map(source => source.id)
-      .filter(sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1);
+      .filter(
+        sourceId => this.state.unselectedSourceIds.indexOf(sourceId) === -1,
+      );
 
     const displayableRecords = filterRecords(
       this.state.displayableRecords,
@@ -267,18 +293,22 @@ export class ConsoleContainer extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    if (!this.state.ready) { return <span />; }
+    if (!this.state.ready) {
+      return <span />;
+    }
 
     const actionCreators = this._getBoundActionCreators();
-    const {isValid, selectedSourceIds, displayableRecords} = this._getFilterInfo();
-    const filteredRecordCount = (
-      this.state.displayableRecords.length -
-      displayableRecords.length
-    );
+    const {
+      isValid,
+      selectedSourceIds,
+      displayableRecords,
+    } = this._getFilterInfo();
+    const filteredRecordCount =
+      this.state.displayableRecords.length - displayableRecords.length;
 
-    const createPaste = this.props.createPasteFunction != null ?
-      this._createPaste :
-      null;
+    const createPaste = this.props.createPasteFunction != null
+      ? this._createPaste
+      : null;
 
     // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
     return (
@@ -302,7 +332,9 @@ export class ConsoleContainer extends React.Component {
         getProvider={id => this.state.providers.get(id)}
         toggleRegExpFilter={this._toggleRegExpFilter}
         updateFilterText={this._updateFilterText}
-        onDisplayableRecordHeightChange={this._handleDisplayableRecordHeightChange}
+        onDisplayableRecordHeightChange={
+          this._handleDisplayableRecordHeightChange
+        }
         resetAllFilters={this._resetAllFilters}
       />
     );
@@ -316,8 +348,9 @@ export class ConsoleContainer extends React.Component {
 
   _selectSources(selectedSourceIds: Array<string>): void {
     const sourceIds = this.state.sources.map(source => source.id);
-    const unselectedSourceIds = sourceIds
-      .filter(sourceId => selectedSourceIds.indexOf(sourceId) === -1);
+    const unselectedSourceIds = sourceIds.filter(
+      sourceId => selectedSourceIds.indexOf(sourceId) === -1,
+    );
     this.setState({unselectedSourceIds});
   }
 
@@ -329,7 +362,10 @@ export class ConsoleContainer extends React.Component {
     this.setState({filterText});
   }
 
-  _getFilterPattern(filterText: string, isRegExp: boolean): {pattern: ?RegExp, isValid: boolean} {
+  _getFilterPattern(
+    filterText: string,
+    isRegExp: boolean,
+  ): {pattern: ?RegExp, isValid: boolean} {
     if (filterText === '') {
       return {pattern: null, isValid: true};
     }
@@ -352,32 +388,37 @@ export class ConsoleContainer extends React.Component {
     newHeight: number,
     callback: () => void,
   ): void {
-    this.setState({
-      displayableRecords: this.state.displayableRecords.map(existing => {
-        return existing.id !== recordId ? existing : {
-          ...existing,
-          height: newHeight,
-        };
-      }),
-    }, callback);
+    this.setState(
+      {
+        displayableRecords: this.state.displayableRecords.map(existing => {
+          return existing.id !== recordId
+            ? existing
+            : {
+                ...existing,
+                height: newHeight,
+              };
+        }),
+      },
+      callback,
+    );
   }
 }
 
 function getSources(state: AppState): Array<Source> {
   // Convert the providers to a map of sources.
   const mapOfSources = new Map(
-    Array.from(state.providers.entries()).map(
-      ([k, provider]) => {
-        const source = {
-          id: provider.id,
-          name: provider.id,
-          status: state.providerStatuses.get(provider.id) || 'stopped',
-          start: typeof provider.start === 'function' ? provider.start : undefined,
-          stop: typeof provider.stop === 'function' ? provider.stop : undefined,
-        };
-        return [k, source];
-      },
-    ),
+    Array.from(state.providers.entries()).map(([k, provider]) => {
+      const source = {
+        id: provider.id,
+        name: provider.id,
+        status: state.providerStatuses.get(provider.id) || 'stopped',
+        start: typeof provider.start === 'function'
+          ? provider.start
+          : undefined,
+        stop: typeof provider.stop === 'function' ? provider.stop : undefined,
+      };
+      return [k, source];
+    }),
   );
 
   // Some providers may have been unregistered, but still have records. Add sources for them too.
@@ -385,16 +426,13 @@ function getSources(state: AppState): Array<Source> {
   for (let i = 0, len = state.records.length; i < len; i++) {
     const record = state.records[i];
     if (!mapOfSources.has(record.sourceId)) {
-      mapOfSources.set(
-        record.sourceId,
-        {
-          id: record.sourceId,
-          name: record.sourceId,
-          status: 'stopped',
-          start: undefined,
-          stop: undefined,
-        },
-      );
+      mapOfSources.set(record.sourceId, {
+        id: record.sourceId,
+        name: record.sourceId,
+        status: 'stopped',
+        start: undefined,
+        stop: undefined,
+      });
     }
   }
 
@@ -407,14 +445,21 @@ function filterRecords(
   filterPattern: ?RegExp,
   filterSources: boolean,
 ): Array<DisplayableRecord> {
-  if (!filterSources && filterPattern == null) { return displayableRecords; }
+  if (!filterSources && filterPattern == null) {
+    return displayableRecords;
+  }
 
   return displayableRecords.filter(({record}) => {
     // Only filter regular messages
-    if (record.kind !== 'message') { return true; }
+    if (record.kind !== 'message') {
+      return true;
+    }
 
     const sourceMatches = selectedSourceIds.indexOf(record.sourceId) !== -1;
-    return sourceMatches && (filterPattern == null || filterPattern.test(record.text));
+    return (
+      sourceMatches &&
+      (filterPattern == null || filterPattern.test(record.text))
+    );
   });
 }
 

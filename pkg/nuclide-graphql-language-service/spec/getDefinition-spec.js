@@ -6,10 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {parse} from 'graphql';
-import {getDefinitionQueryResultForFragmentSpread} from '../lib/interfaces/getDefinition';
+import {
+  getDefinitionQueryResultForFragmentSpread,
+} from '../lib/interfaces/getDefinition';
 
 describe('getDefinitionQueryResultForFragmentSpread', () => {
   it('returns correct Position', () => {
@@ -21,7 +24,8 @@ describe('getDefinitionQueryResultForFragmentSpread', () => {
       fragment Duck on Duck {
         cuack
       }`;
-      const fragmentSpread = parse(query).definitions[0].selectionSet.selections[0];
+      const fragmentSpread = parse(query).definitions[0].selectionSet
+        .selections[0];
       const fragmentDefinition = parse(fragment).definitions[0];
       const result = await getDefinitionQueryResultForFragmentSpread(
         query,

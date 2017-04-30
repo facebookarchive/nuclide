@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ContextElementProps, ContextProvider} from '../lib/types';
@@ -37,7 +38,7 @@ describe('ContextViewManager', () => {
 
   function elementFactory() {
     return (props: ContextElementProps) => {
-      return (<div>Some context provider view</div>);
+      return <div>Some context provider view</div>;
     };
   }
 
@@ -118,12 +119,24 @@ describe('ContextViewManager', () => {
     expect(managerShowing._contextProviders.length).toBe(1);
   });
   it('orders providers based on priority', () => {
-    const provider3 = {getElementFactory: elementFactory, id: '3',
-      title: '3', priority: 3};
-    const provider4 = {getElementFactory: elementFactory, id: '4',
-      title: '4', priority: 4};
-    const provider5 = {getElementFactory: elementFactory, id: '5',
-      title: '5', priority: 5};
+    const provider3 = {
+      getElementFactory: elementFactory,
+      id: '3',
+      title: '3',
+      priority: 3,
+    };
+    const provider4 = {
+      getElementFactory: elementFactory,
+      id: '4',
+      title: '4',
+      priority: 4,
+    };
+    const provider5 = {
+      getElementFactory: elementFactory,
+      id: '5',
+      title: '5',
+      priority: 5,
+    };
     featureConfig.set(provider3.id.concat('.priority'), provider3Priority);
     featureConfig.set(provider4.id.concat('.priority'), provider4Priority);
     featureConfig.set(provider5.id.concat('.priority'), provider5Priority);
@@ -158,8 +171,10 @@ describe('ContextViewManager', () => {
     expect(managerShowing._render).toHaveBeenCalled();
     expect(managerShowing._renderProviders).toHaveBeenCalled();
     // Unregister def service
-    invariant(managerShowing._defServiceSubscription != null,
-      'Subscription must be non-null if in visible state and consuming def. service');
+    invariant(
+      managerShowing._defServiceSubscription != null,
+      'Subscription must be non-null if in visible state and consuming def. service',
+    );
     const subscription = managerShowing._defServiceSubscription;
     spyOn(subscription, 'unsubscribe').andCallThrough();
     managerShowing.consumeDefinitionService(null);
@@ -208,8 +223,10 @@ describe('ContextViewManager', () => {
   it('disposes correctly', () => {
     managerShowing.consumeDefinitionService(defService);
     // i.e. the subscription is unsubscribed if not null
-    invariant(managerShowing._defServiceSubscription != null,
-      'Subscription should exist if panel is visible and def. service consumed');
+    invariant(
+      managerShowing._defServiceSubscription != null,
+      'Subscription should exist if panel is visible and def. service consumed',
+    );
     const subscription = managerShowing._defServiceSubscription;
     spyOn(subscription, 'unsubscribe');
     managerShowing.dispose();

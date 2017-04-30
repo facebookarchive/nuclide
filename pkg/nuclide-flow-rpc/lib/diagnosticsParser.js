@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -47,17 +48,18 @@ export function diagnosticToFix(diagnostic: FileDiagnosticMessage): ?Fix {
   return null;
 }
 
-const fixExtractionFunctions: Array<(diagnostic: FileDiagnosticMessage) => ?Fix> = [
-  unusedSuppressionFix,
-  namedImportTypo,
-];
+const fixExtractionFunctions: Array<
+  (diagnostic: FileDiagnosticMessage) => ?Fix
+> = [unusedSuppressionFix, namedImportTypo];
 
 function unusedSuppressionFix(diagnostic: FileDiagnosticMessage): ?Fix {
   // Automatically remove unused suppressions:
-  if (diagnostic.trace != null &&
-      diagnostic.trace.length === 1 &&
-      diagnostic.text === 'Error suppressing comment' &&
-      diagnostic.trace[0].text === 'Unused suppression') {
+  if (
+    diagnostic.trace != null &&
+    diagnostic.trace.length === 1 &&
+    diagnostic.text === 'Error suppressing comment' &&
+    diagnostic.trace[0].text === 'Unused suppression'
+  ) {
     const oldRange = diagnostic.range;
     invariant(oldRange != null);
     return {
@@ -121,7 +123,9 @@ function namedImportTypo(diagnostic: FileDiagnosticMessage): ?Fix {
  * files.
  */
 
-function extractPath(message: FlowStatusErrorMessageComponent): NuclideUri | void {
+function extractPath(
+  message: FlowStatusErrorMessageComponent,
+): NuclideUri | void {
   if (message.loc == null || message.loc.source === BUILTIN_LOCATION) {
     return undefined;
   }
@@ -139,7 +143,8 @@ function flowMessageToTrace(message: FlowStatusErrorMessageComponent): Trace {
 }
 
 function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
-  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
+  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
+    flowStatusError.message;
 
   const mainMessage = flowMessageComponents[0];
 
@@ -167,7 +172,8 @@ function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
 }
 
 function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
-  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> = flowStatusError.message;
+  const flowMessageComponents: Array<FlowStatusErrorMessageComponent> =
+    flowStatusError.message;
 
   const trace: Array<Trace> = [];
   // When the message is an array with multiple elements, the second element
@@ -196,11 +202,12 @@ function extractTraces(flowStatusError: FlowStatusError): Array<Trace> | void {
   }
 }
 
-
 // Use `atom$Range | void` rather than `?atom$Range` to exclude `null`, so that the type is
 // compatible with the `range` property, which is an optional property rather than a nullable
 // property.
-export function extractRange(message: FlowStatusErrorMessageComponent): atom$Range | void {
+export function extractRange(
+  message: FlowStatusErrorMessageComponent,
+): atom$Range | void {
   if (message.loc == null || message.loc.source === BUILTIN_LOCATION) {
     return undefined;
   } else {

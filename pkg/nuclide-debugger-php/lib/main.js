@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
@@ -27,7 +28,9 @@ export function consumeOutputService(api: OutputService): void {
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'hhvm',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+    getLaunchAttachProvider(
+      connection: NuclideUri,
+    ): ?DebuggerLaunchAttachProvider {
       if (nuclideUri.isRemote(connection)) {
         return new HhvmLaunchAttachProvider('PHP / Hack', connection);
       }

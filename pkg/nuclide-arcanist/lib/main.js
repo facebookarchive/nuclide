@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
@@ -94,7 +95,12 @@ class Activation {
       deepLink.subscribeToPath('open-arc', params => {
         const maybeCwd = this._cwdApi ? this._cwdApi.getCwd() : null;
         const maybeCwdPath = maybeCwd ? maybeCwd.getPath() : null;
-        openArcDeepLink(params, this._remoteProjectsService, deepLink, maybeCwdPath);
+        openArcDeepLink(
+          params,
+          this._remoteProjectsService,
+          deepLink,
+          maybeCwdPath,
+        );
       }),
     );
   }

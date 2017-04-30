@@ -6,13 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type CharacterStream from './CharacterStream';
 import type {State, Token, Rule, ParseRule} from '../types/Types';
 import {opt, list, butNot, t, p} from './RuleHelpers';
 
- /**
+/**
   * Whitespace tokens defined in GraphQL spec.
   */
 export const isIgnored = (ch: string) =>
@@ -43,7 +44,6 @@ export const LexRules = {
   Comment: /^#.*/,
 };
 
-
 /**
  * The parser rules. These are very close to, but not exactly the same as the
  * spec. Minor deviations allow for a simpler implementation. The resulting
@@ -53,20 +53,34 @@ export const ParseRules: {[name: string]: ParseRule} = {
   Document: [list('Definition')],
   Definition(token: Token) {
     switch (token.value) {
-      case '{': return 'ShortQuery';
-      case 'query': return 'Query';
-      case 'mutation': return 'Mutation';
-      case 'subscription': return 'Subscription';
-      case 'fragment': return 'FragmentDefinition';
-      case 'schema': return 'SchemaDef';
-      case 'scalar': return 'ScalarDef';
-      case 'type': return 'ObjectTypeDef';
-      case 'interface': return 'InterfaceDef';
-      case 'union': return 'UnionDef';
-      case 'enum': return 'EnumDef';
-      case 'input': return 'InputDef';
-      case 'extend': return 'ExtendDef';
-      case 'directive': return 'DirectiveDef';
+      case '{':
+        return 'ShortQuery';
+      case 'query':
+        return 'Query';
+      case 'mutation':
+        return 'Mutation';
+      case 'subscription':
+        return 'Subscription';
+      case 'fragment':
+        return 'FragmentDefinition';
+      case 'schema':
+        return 'SchemaDef';
+      case 'scalar':
+        return 'ScalarDef';
+      case 'type':
+        return 'ObjectTypeDef';
+      case 'interface':
+        return 'InterfaceDef';
+      case 'union':
+        return 'UnionDef';
+      case 'enum':
+        return 'EnumDef';
+      case 'input':
+        return 'InputDef';
+      case 'extend':
+        return 'ExtendDef';
+      case 'directive':
+        return 'DirectiveDef';
     }
   },
   // Note: instead of "Operation", these rules have been separated out.
@@ -98,10 +112,11 @@ export const ParseRules: {[name: string]: ParseRule} = {
   DefaultValue: [p('='), 'Value'],
   SelectionSet: [p('{'), list('Selection'), p('}')],
   Selection(token: Token, stream: CharacterStream) {
-    return token.value === '...' ?
-      stream.match(/[\s\u00a0,]*(on\b|@|{)/, false) ?
-        'InlineFragment' : 'FragmentSpread' :
-      stream.match(/[\s\u00a0,]*:/, false) ? 'AliasedField' : 'Field';
+    return token.value === '...'
+      ? stream.match(/[\s\u00a0,]*(on\b|@|{)/, false)
+          ? 'InlineFragment'
+          : 'FragmentSpread'
+      : stream.match(/[\s\u00a0,]*:/, false) ? 'AliasedField' : 'Field';
   },
   // Note: this minor deviation of "AliasedField" simplifies the lookahead.
   AliasedField: [
@@ -113,7 +128,10 @@ export const ParseRules: {[name: string]: ParseRule} = {
     opt('SelectionSet'),
   ],
   Field: [
-    name('property'), opt('Arguments'), list('Directive'), opt('SelectionSet'),
+    name('property'),
+    opt('Arguments'),
+    list('Directive'),
+    opt('SelectionSet'),
   ],
   Arguments: [p('('), list('Argument'), p(')')],
   Argument: [name('attribute'), p(':'), 'Value'],
@@ -131,25 +149,29 @@ export const ParseRules: {[name: string]: ParseRule} = {
     list('Directive'),
     'SelectionSet',
   ],
-  TypeCondition: [
-    word('on'),
-    'NamedType',
-  ],
+  TypeCondition: [word('on'), 'NamedType'],
   // Variables could be parsed in cases where only Const is expected by spec.
   Value(token: Token) {
     switch (token.kind) {
-      case 'Number': return 'NumberValue';
-      case 'String': return 'StringValue';
+      case 'Number':
+        return 'NumberValue';
+      case 'String':
+        return 'StringValue';
       case 'Punctuation':
         switch (token.value) {
-          case '[': return 'ListValue';
-          case '{': return 'ObjectValue';
-          case '$': return 'Variable';
+          case '[':
+            return 'ListValue';
+          case '{':
+            return 'ObjectValue';
+          case '$':
+            return 'Variable';
         }
         return null;
       case 'Name':
         switch (token.value) {
-          case 'true': case 'false': return 'BooleanValue';
+          case 'true':
+          case 'false':
+            return 'BooleanValue';
         }
         if (token.value === 'null') {
           return 'NullValue';

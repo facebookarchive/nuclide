@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TaskEvent} from '../../commons-node/tasks';
@@ -22,7 +23,7 @@ export const TASKS: Array<TaskMetadata> = [];
  * e.g. HHVM Debugger
  */
 export class ArcToolbarModel {
-  _projectPath: ?string
+  _projectPath: ?string;
   _outputMessages: Subject<Message>;
 
   constructor(outputMessages: Subject<Message>) {

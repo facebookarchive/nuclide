@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
@@ -38,14 +39,16 @@ class Activation {
   constructor(state: ?DistractionFreeModeState) {
     this._disposables = new CompositeDisposable();
     this._tunnelVision = new DistractionFreeMode(state);
-    this._disposables.add(atom.commands.add(
-      'atom-workspace',
-      'nuclide-distraction-free-mode:toggle',
-      () => {
-        track('distraction-free-mode:toggle');
-        this._tunnelVision.toggleDistractionFreeMode();
-      },
-    ));
+    this._disposables.add(
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-distraction-free-mode:toggle',
+        () => {
+          track('distraction-free-mode:toggle');
+          this._tunnelVision.toggleDistractionFreeMode();
+        },
+      ),
+    );
   }
 
   dispose(): void {
@@ -57,11 +60,17 @@ class Activation {
   }
 
   consumeDistractionFreeModeProvider(
-    providerOrList: DistractionFreeModeProvider | Array<DistractionFreeModeProvider>,
+    providerOrList:
+      | DistractionFreeModeProvider
+      | Array<DistractionFreeModeProvider>,
   ): IDisposable {
-    const providers = Array.isArray(providerOrList) ? providerOrList : [providerOrList];
+    const providers = Array.isArray(providerOrList)
+      ? providerOrList
+      : [providerOrList];
     return new CompositeDisposable(
-      ...providers.map(provider => this._tunnelVision.consumeDistractionFreeModeProvider(provider)),
+      ...providers.map(provider =>
+        this._tunnelVision.consumeDistractionFreeModeProvider(provider),
+      ),
     );
   }
 
@@ -76,7 +85,9 @@ class Activation {
       tooltip: 'Toggle Distraction-Free Mode',
       priority: 901,
     });
-    const disposable = new Disposable(() => { toolBar.removeItems(); });
+    const disposable = new Disposable(() => {
+      toolBar.removeItems();
+    });
     this._disposables.add(disposable);
     return disposable;
   }

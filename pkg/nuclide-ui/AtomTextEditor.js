@@ -6,18 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import invariant from 'assert';
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
-import {
-  enforceReadOnly,
-  enforceSoftWrap,
-} from '../commons-atom/text-editor';
+import {enforceReadOnly, enforceSoftWrap} from '../commons-atom/text-editor';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 
 const doNothing = () => {};
@@ -43,7 +40,9 @@ function setupTextEditor(props: Props): TextEditorSetup {
     lineNumberGutterVisible: !props.gutterHidden,
     autoHeight: props.autoGrow,
   };
-  const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(textEditorParams);
+  const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(
+    textEditorParams,
+  );
 
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
@@ -107,7 +106,7 @@ export class AtomTextEditor extends React.Component {
     readOnly: false,
     autoGrow: false,
     syncTextContents: true,
-    tabIndex: '0',  // Keep in line with other input elements.
+    tabIndex: '0', // Keep in line with other input elements.
     softWrapped: false,
   };
 
@@ -131,8 +130,9 @@ export class AtomTextEditor extends React.Component {
     this._editorDisposables = new UniversalDisposable(disposables);
 
     const container = ReactDOM.findDOMNode(this);
-    const textEditorElement: atom$TextEditorElement = this._textEditorElement =
-      (document.createElement('atom-text-editor'): any);
+    const textEditorElement: atom$TextEditorElement = (this._textEditorElement = (document.createElement(
+      'atom-text-editor',
+    ): any));
     textEditorElement.setModel(textEditor);
     textEditorElement.setAttribute('tabindex', this.props.tabIndex);
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for
@@ -149,25 +149,27 @@ export class AtomTextEditor extends React.Component {
     container.appendChild(textEditorElement);
 
     if (this.props.correctContainerWidth) {
-      this._editorDisposables.add(textEditorElement.onDidAttach(() => {
-        const correctlySizedElement = textEditorElement.querySelector(
-          '* /deep/ .lines > :first-child > :first-child',
-        );
-        if (correctlySizedElement == null) {
-          return;
-        }
-        const {width} = correctlySizedElement.style;
-        // $FlowFixMe
-        container.style.width = width;
-      }));
+      this._editorDisposables.add(
+        textEditorElement.onDidAttach(() => {
+          const correctlySizedElement = textEditorElement.querySelector(
+            '* /deep/ .lines > :first-child > :first-child',
+          );
+          if (correctlySizedElement == null) {
+            return;
+          }
+          const {width} = correctlySizedElement.style;
+          // $FlowFixMe
+          container.style.width = width;
+        }),
+      );
     }
   }
 
   componentWillReceiveProps(nextProps: Props): void {
     if (
-        nextProps.textBuffer !== this.props.textBuffer ||
-        nextProps.readOnly !== this.props.readOnly
-      ) {
+      nextProps.textBuffer !== this.props.textBuffer ||
+      nextProps.readOnly !== this.props.readOnly
+    ) {
       const previousTextContents = this.getTextBuffer().getText();
       const nextTextContents = nextProps.textBuffer == null
         ? nextProps.textBuffer
@@ -243,9 +245,7 @@ export class AtomTextEditor extends React.Component {
         'no-auto-grow': !this.props.autoGrow,
       },
     );
-    return (
-      <div className={className} />
-    );
+    return <div className={className} />;
   }
 
   // This component wraps the imperative API of `<atom-text-editor>`, and so React's rendering

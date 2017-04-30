@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -43,7 +44,9 @@ export function getLocationOfEditor(editor: atom$TextEditor): EditorLocation {
   };
 }
 
-export async function editorOfLocation(location: Location): Promise<atom$TextEditor> {
+export async function editorOfLocation(
+  location: Location,
+): Promise<atom$TextEditor> {
   if (location.type === 'uri') {
     return goToLocation(location.uri);
   } else {

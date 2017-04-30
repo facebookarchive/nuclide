@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TypeHintProvider} from './types';
@@ -44,9 +45,8 @@ export default class TypeHintManager {
       name = 'unknown';
       logger.error('Type hint provider has no name', provider);
     }
-    const typeHint = await trackTiming(
-      name + '.typeHint',
-      () => provider.typeHint(editor, position),
+    const typeHint = await trackTiming(name + '.typeHint', () =>
+      provider.typeHint(editor, position),
     );
     if (!typeHint || this._marker) {
       return;
@@ -63,13 +63,20 @@ export default class TypeHintManager {
     };
   }
 
-  _getMatchingProvidersForScopeName(scopeName: string): Array<TypeHintProvider> {
-    return this._typeHintProviders.filter((provider: TypeHintProvider) => {
-      const providerGrammars = provider.selector.split(/, ?/);
-      return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
-    }).sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
-      return providerA.inclusionPriority - providerB.inclusionPriority;
-    });
+  _getMatchingProvidersForScopeName(
+    scopeName: string,
+  ): Array<TypeHintProvider> {
+    return this._typeHintProviders
+      .filter((provider: TypeHintProvider) => {
+        const providerGrammars = provider.selector.split(/, ?/);
+        return (
+          provider.inclusionPriority > 0 &&
+          providerGrammars.indexOf(scopeName) !== -1
+        );
+      })
+      .sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
+        return providerA.inclusionPriority - providerB.inclusionPriority;
+      });
   }
 
   addProvider(provider: TypeHintProvider) {

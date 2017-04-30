@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -14,7 +15,7 @@ import {getInstance} from './MerlinProcess';
 
 export type MerlinPosition = {
   line: number, // 1-indexed
-  col: number,  // 0-indexed
+  col: number, // 0-indexed
 };
 
 export type MerlinType = {
@@ -60,7 +61,10 @@ export async function pushDotMerlinPath(path: NuclideUri): Promise<?any> {
   return instance ? instance.pushDotMerlinPath(path) : null;
 }
 
-export async function pushNewBuffer(name: NuclideUri, content: string): Promise<?any> {
+export async function pushNewBuffer(
+  name: NuclideUri,
+  content: string,
+): Promise<?any> {
   const instance = await getInstance(name);
   return instance ? instance.pushNewBuffer(name, content) : null;
 }
@@ -70,13 +74,15 @@ export async function locate(
   line: number,
   col: number,
   kind: string,
-): Promise<?{
-  file: NuclideUri,
-  pos: {
-    line: number,
-    col: number,
-  },
-}> {
+): Promise<
+  ?{
+    file: NuclideUri,
+    pos: {
+      line: number,
+      col: number,
+    },
+  }
+> {
   const instance = await getInstance(path);
   return instance ? instance.locate(path, line, col, kind) : null;
 }
@@ -104,9 +110,7 @@ export async function complete(
   return instance ? instance.complete(path, line, col, prefix) : null;
 }
 
-export async function errors(
-  path: NuclideUri,
-): Promise<?Array<MerlinError>> {
+export async function errors(path: NuclideUri): Promise<?Array<MerlinError>> {
   const instance = await getInstance(path);
   return instance ? instance.errors(path) : null;
 }
@@ -126,7 +130,11 @@ export async function cases(
   if (!instance) {
     return null;
   }
-  const result = await instance.enclosingType(path, position.row, position.column);
+  const result = await instance.enclosingType(
+    path,
+    position.row,
+    position.column,
+  );
   if (result && result[0]) {
     return instance.cases(path, result[0].start, result[0].end);
   }
@@ -139,7 +147,9 @@ export async function occurrences(
   position: atom$Point,
 ): Promise<?MerlinOccurrences> {
   const instance = await getInstance(path);
-  return instance ? instance.occurrences(path, position.row, position.column) : null;
+  return instance
+    ? instance.occurrences(path, position.row, position.column)
+    : null;
 }
 
 /**

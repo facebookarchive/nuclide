@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -46,7 +47,9 @@ export default class StatusBarTile {
     this._subscriptions = new UniversalDisposable();
   }
 
-  consumeDiagnosticUpdates(diagnosticUpdater: ObservableDiagnosticUpdater): void {
+  consumeDiagnosticUpdates(
+    diagnosticUpdater: ObservableDiagnosticUpdater,
+  ): void {
     if (this._diagnosticUpdaters.has(diagnosticUpdater)) {
       return;
     }
@@ -72,7 +75,7 @@ export default class StatusBarTile {
       return;
     }
 
-    const item = this._item = document.createElement('div');
+    const item = (this._item = document.createElement('div'));
     item.className = 'inline-block';
     this._render();
     this._tile = statusBar.addLeftTile({
@@ -118,7 +121,10 @@ export default class StatusBarTile {
 
   _render(): void {
     if (this._item) {
-      ReactDOM.render(<StatusBarTileComponent {...this._totalDiagnosticCount} />, this._item);
+      ReactDOM.render(
+        <StatusBarTileComponent {...this._totalDiagnosticCount} />,
+        this._item,
+      );
     }
   }
 
@@ -154,12 +160,18 @@ class StatusBarTileComponent extends React.Component {
     const warningCount = this.props.warningCount;
     const hasErrors = errorCount > 0;
     const hasWarnings = warningCount > 0;
-    const errorClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'text-error': hasErrors,
-    });
-    const warningClassName = classnames('nuclide-diagnostics-status-bar-highlight', {
-      'text-warning': hasWarnings,
-    });
+    const errorClassName = classnames(
+      'nuclide-diagnostics-status-bar-highlight',
+      {
+        'text-error': hasErrors,
+      },
+    );
+    const warningClassName = classnames(
+      'nuclide-diagnostics-status-bar-highlight',
+      {
+        'text-warning': hasWarnings,
+      },
+    );
     const errorLabel = hasErrors ? errorCount : 'No';
     const errorSuffix = errorCount !== 1 ? 's' : '';
     const warningLabel = hasWarnings ? warningCount : 'No';

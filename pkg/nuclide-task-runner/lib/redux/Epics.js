@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -80,8 +81,8 @@ export function setActiveTaskRunnerEpic(
         const preferredRunner = taskRunners.find(
           runner => runner.id === preferredId,
         );
-        const state = preferredRunner &&
-          statesForTaskRunners.get(preferredRunner);
+        const state =
+          preferredRunner && statesForTaskRunners.get(preferredRunner);
         if (state && state.enabled) {
           taskRunner = preferredRunner;
         }
@@ -143,7 +144,8 @@ export function combineTaskRunnerStatesEpic(
               ]);
             }),
           ),
-      ));
+      ),
+    );
 
     return (
       Observable.from(runnersAndStates)
@@ -157,7 +159,8 @@ export function combineTaskRunnerStatesEpic(
           return statesForTaskRunners;
         })
         .map(statesForTaskRunners =>
-          Actions.setStatesForTaskRunners(statesForTaskRunners))
+          Actions.setStatesForTaskRunners(statesForTaskRunners),
+        )
     );
   });
 }
@@ -379,7 +382,10 @@ export function toggleToolbarVisibilityEpic(
 
     // Otherwise, just toggle the visibility (unless the "visible" override is provided).
     return Observable.of(
-      Actions.setToolbarVisibility(visible != null ? visible : !state.visible, true),
+      Actions.setToolbarVisibility(
+        visible != null ? visible : !state.visible,
+        true,
+      ),
     );
   });
 }
@@ -446,28 +452,25 @@ function getBestEffortTaskRunner(
   taskRunners: Array<TaskRunner>,
   statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
 ): ?TaskRunner {
-  return taskRunners.reduce(
-    (memo, runner) => {
-      const state = statesForTaskRunners.get(runner);
-      // Disabled task runners aren't selectable
-      if (!state || !state.enabled) {
-        return memo;
-      }
-      // Select at least something
-      if (memo == null) {
-        return runner;
-      }
-
-      // Highest priority wins
-      const memoPriority = (memo.getPriority && memo.getPriority()) || 0;
-      const runnerPriority = (runner.getPriority && runner.getPriority()) || 0;
-      if (runnerPriority > memoPriority) {
-        return runner;
-      }
+  return taskRunners.reduce((memo, runner) => {
+    const state = statesForTaskRunners.get(runner);
+    // Disabled task runners aren't selectable
+    if (!state || !state.enabled) {
       return memo;
-    },
-    null,
-  );
+    }
+    // Select at least something
+    if (memo == null) {
+      return runner;
+    }
+
+    // Highest priority wins
+    const memoPriority = (memo.getPriority && memo.getPriority()) || 0;
+    const runnerPriority = (runner.getPriority && runner.getPriority()) || 0;
+    if (runnerPriority > memoPriority) {
+      return runner;
+    }
+    return memo;
+  }, null);
 }
 
 /**

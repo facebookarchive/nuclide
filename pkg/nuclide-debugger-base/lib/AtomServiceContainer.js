@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -24,7 +25,9 @@ export function getOutputService(): ?OutputService {
   return _outputServiceApi;
 }
 
-export function setNotificationService(raiseNativeNotification: raiseNativeNotificationFunc): void {
+export function setNotificationService(
+  raiseNativeNotification: raiseNativeNotificationFunc,
+): void {
   _raiseNativeNotification = raiseNativeNotification;
 }
 

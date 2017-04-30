@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
-import type {ObservableDiagnosticProvider} from '../../nuclide-diagnostics-common';
+import type {
+  ObservableDiagnosticProvider,
+} from '../../nuclide-diagnostics-common';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -42,19 +45,24 @@ async function resultFunction(
 
 class Activation {
   _disposables: UniversalDisposable;
-  _activeEditorRegistry: ActiveEditorRegistry<CoverageProvider, ?CoverageResult>;
+  _activeEditorRegistry: ActiveEditorRegistry<
+    CoverageProvider,
+    ?CoverageResult
+  >;
   _toggleEvents: Subject<void>;
   _shouldRenderDiagnostics: Observable<boolean>;
 
   constructor(state: ?Object) {
     this._toggleEvents = new Subject();
-    this._shouldRenderDiagnostics = this._toggleEvents.scan(prev => !prev, false);
+    this._shouldRenderDiagnostics = this._toggleEvents.scan(
+      prev => !prev,
+      false,
+    );
 
     this._disposables = new UniversalDisposable();
-    this._activeEditorRegistry = new ActiveEditorRegistry(
-      resultFunction,
-      {updateOnEdit: false},
-    );
+    this._activeEditorRegistry = new ActiveEditorRegistry(resultFunction, {
+      updateOnEdit: false,
+    });
 
     this._disposables.add(
       atom.commands.add(
@@ -126,7 +134,9 @@ export function deactivate() {
   }
 }
 
-export function consumeCoverageProvider(provider: CoverageProvider): IDisposable {
+export function consumeCoverageProvider(
+  provider: CoverageProvider,
+): IDisposable {
   invariant(activation != null);
   return activation.consumeCoverageProvider(provider);
 }

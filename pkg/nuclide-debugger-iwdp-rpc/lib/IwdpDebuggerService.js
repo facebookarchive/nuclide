@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -36,8 +37,10 @@ export class IwdpDebuggerService {
     lastServiceObjectDispose = this.dispose.bind(this);
     this._clientCallback = new ClientCallback();
     this._connectionMultiplexer = new ConnectionMultiplexer(
-      message => this._clientCallback.sendChromeMessage(JSON.stringify(message)),
-      (level, message) => this._clientCallback.sendAtomNotification(level, message),
+      message =>
+        this._clientCallback.sendChromeMessage(JSON.stringify(message)),
+      (level, message) =>
+        this._clientCallback.sendAtomNotification(level, message),
     );
     this._disposables = new UniversalDisposable(
       this._clientCallback,
@@ -67,7 +70,7 @@ export class IwdpDebuggerService {
             'warning',
             err.type === undefined
               ? 'The session has ended because the debug proxy was not found!  ' +
-                'Try running `js1 run` in the repo root.'
+                  'Try running `js1 run` in the repo root.'
               : err.type,
           );
           // We need to wait for the event loop to run before disposing, otherwise our atom
@@ -92,7 +95,9 @@ export class IwdpDebuggerService {
   }
 }
 
-function connectToTarget(targetEnvironment: TargetEnvironment): Observable<DeviceInfo> {
+function connectToTarget(
+  targetEnvironment: TargetEnvironment,
+): Observable<DeviceInfo> {
   if (targetEnvironment === 'iOS') {
     return connectToIwdp();
   } else if (targetEnvironment === 'Android') {

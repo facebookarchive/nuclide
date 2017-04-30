@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -21,15 +22,16 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
-import {
-  CompositeDisposable,
-} from 'atom';
+import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
-export async function datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
+export async function datatip(
+  editor: TextEditor,
+  position: atom$Point,
+): Promise<?Datatip> {
   invariant(fileDiagnostics);
   const messagesForFile = fileDiagnostics.get(editor);
   if (messagesForFile == null) {
@@ -77,30 +79,37 @@ export function activate(state: ?mixed): void {
   fileDiagnostics = new WeakMap();
 }
 
-export function consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
+export function consumeDiagnosticUpdates(
+  diagnosticUpdater: DiagnosticUpdater,
+): void {
   invariant(disposables);
-  disposables.add(observeTextEditors((editor: TextEditor) => {
-    invariant(fileDiagnostics);
-    const filePath = editor.getPath();
-    if (!filePath) {
-      return;
-    }
-    fileDiagnostics.set(editor, []);
-    const callback = (update: FileMessageUpdate) => {
+  disposables.add(
+    observeTextEditors((editor: TextEditor) => {
       invariant(fileDiagnostics);
-      fileDiagnostics.set(editor, update.messages);
-    };
-    const disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
-
-    editor.onDidDestroy(() => {
-      disposable.dispose();
-      if (fileDiagnostics != null) {
-        fileDiagnostics.delete(editor);
+      const filePath = editor.getPath();
+      if (!filePath) {
+        return;
       }
-    });
-    invariant(disposables);
-    disposables.add(disposable);
-  }));
+      fileDiagnostics.set(editor, []);
+      const callback = (update: FileMessageUpdate) => {
+        invariant(fileDiagnostics);
+        fileDiagnostics.set(editor, update.messages);
+      };
+      const disposable = diagnosticUpdater.onFileMessagesDidUpdate(
+        callback,
+        filePath,
+      );
+
+      editor.onDidDestroy(() => {
+        disposable.dispose();
+        if (fileDiagnostics != null) {
+          fileDiagnostics.delete(editor);
+        }
+      });
+      invariant(disposables);
+      disposables.add(disposable);
+    }),
+  );
 }
 
 export function deactivate(): void {

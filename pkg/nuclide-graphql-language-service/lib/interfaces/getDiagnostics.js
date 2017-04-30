@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {GraphQLErrorLocation, GraphQLError} from 'graphql/error';
@@ -34,22 +35,22 @@ export function getDiagnostics(
   try {
     ast = parse(queryText);
   } catch (error) {
-    const range = getRange(
-      error.locations[0],
-      queryText,
-    );
+    const range = getRange(error.locations[0], queryText);
 
-    return [{
-      name: 'graphql: Syntax',
-      type: 'Error',
-      text: error.message,
-      range,
-      filePath,
-    }];
+    return [
+      {
+        name: 'graphql: Syntax',
+        type: 'Error',
+        text: error.message,
+        range,
+        filePath,
+      },
+    ];
   }
 
-  const errors: Array<GraphQLError> = schema ?
-    validateWithCustomRules(schema, ast, customRules) : [];
+  const errors: Array<GraphQLError> = schema
+    ? validateWithCustomRules(schema, ast, customRules)
+    : [];
   return mapCat(errors, error => errorAnnotations(error, filePath));
 }
 
@@ -69,10 +70,9 @@ function errorAnnotations(
     return [];
   }
   return error.nodes.map(node => {
-    const highlightNode: ASTNode =
-      node.kind !== 'Variable' && node.name ? node.name :
-      node.variable ? node.variable :
-      node;
+    const highlightNode: ASTNode = node.kind !== 'Variable' && node.name
+      ? node.name
+      : node.variable ? node.variable : node;
 
     invariant(error.locations, 'GraphQL validation error requires locations.');
     const loc = error.locations[0];
@@ -112,10 +112,7 @@ function getRange(location: GraphQLErrorLocation, queryText: string) {
     }
   }
 
-  invariant(
-    stream,
-    'Expected Parser stream to be available.',
-  );
+  invariant(stream, 'Expected Parser stream to be available.');
 
   const line = location.line - 1;
   const start = stream.getStartOfToken();

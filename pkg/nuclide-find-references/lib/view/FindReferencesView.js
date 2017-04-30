@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileReferences} from '../types';
@@ -82,19 +83,19 @@ export default class FindReferencesView extends React.Component {
   }
 
   _childClick(i: number) {
-    this.setState({selected: (this.state.selected === i) ? -1 : i});
+    this.setState({selected: this.state.selected === i ? -1 : i});
   }
 
   render(): React.Element<any> {
-    const children = this.state.references.map((fileRefs, i) =>
+    const children = this.state.references.map((fileRefs, i) => (
       <FileReferencesView
         key={i}
         isSelected={this.state.selected === i}
         {...fileRefs}
         basePath={this.props.model.getBasePath()}
         clickCallback={() => this._childClick(i)}
-      />,
-    );
+      />
+    ));
 
     const refCount = this.props.model.getReferenceCount();
     const fileCount = this.props.model.getFileCount();
@@ -116,8 +117,11 @@ export default class FindReferencesView extends React.Component {
             {this.props.model.getSymbolName()}
           </span>
         </div>
-        <ul className="nuclide-find-references-files list-tree has-collapsable-children"
-            onScroll={this._onScroll} ref="root" tabIndex="0">
+        <ul
+          className="nuclide-find-references-files list-tree has-collapsable-children"
+          onScroll={this._onScroll}
+          ref="root"
+          tabIndex="0">
           {children}
         </ul>
       </div>

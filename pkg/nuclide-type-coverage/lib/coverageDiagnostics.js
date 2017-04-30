@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -77,8 +78,8 @@ function diagnosticsForResult(
 
   const providerName = result.provider.displayName;
 
-  const diagnostics = value.uncoveredRegions.map(
-    region => uncoveredRangeToDiagnostic(region, editorPath, providerName),
+  const diagnostics = value.uncoveredRegions.map(region =>
+    uncoveredRangeToDiagnostic(region, editorPath, providerName),
   );
 
   return {
@@ -91,9 +92,9 @@ function uncoveredRangeToDiagnostic(
   path: NuclideUri,
   providerName: string,
 ): FileDiagnosticMessage {
-  const text = region.message != null ?
-    region.message :
-    `Not covered by ${providerName}`;
+  const text = region.message != null
+    ? region.message
+    : `Not covered by ${providerName}`;
   return {
     scope: 'file',
     providerName: 'Type Coverage',

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -38,11 +39,11 @@ export async function getDefinition(
 
   const service = await serverManager.getJediService(filePath);
   const result = await service.get_definitions(
-      filePath,
-      contents,
-      line,
-      column,
-    );
+    filePath,
+    contents,
+    line,
+    column,
+  );
   if (result == null || result.length === 0) {
     return null;
   }

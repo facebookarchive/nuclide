@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -188,24 +189,26 @@ import {areSetsEqual} from '../../commons-node/collection';
 
 describe('importantCharactersForString', () => {
   it('returns the set of important characters for a given string', () => {
-    expect(areSetsEqual(
-      importantCharactersForString('foobar'),
-      new Set(['f', 'o']),
-    )).toBe(true);
+    expect(
+      areSetsEqual(importantCharactersForString('foobar'), new Set(['f', 'o'])),
+    ).toBe(true);
 
-    expect(areSetsEqual(
-      importantCharactersForString('fooBar'),
-      new Set(['f', 'o', 'B']),
-    )).toBe(true);
+    expect(
+      areSetsEqual(
+        importantCharactersForString('fooBar'),
+        new Set(['f', 'o', 'B']),
+      ),
+    ).toBe(true);
 
-    expect(areSetsEqual(
-      importantCharactersForString('foo.bar'),
-      new Set(['f', 'o', 'b']),
-    )).toBe(true);
+    expect(
+      areSetsEqual(
+        importantCharactersForString('foo.bar'),
+        new Set(['f', 'o', 'b']),
+      ),
+    ).toBe(true);
 
-    expect(areSetsEqual(
-      importantCharactersForString('foobar'),
-      new Set(['f', 'o']),
-    )).toBe(true);
+    expect(
+      areSetsEqual(importantCharactersForString('foobar'), new Set(['f', 'o'])),
+    ).toBe(true);
   });
 });

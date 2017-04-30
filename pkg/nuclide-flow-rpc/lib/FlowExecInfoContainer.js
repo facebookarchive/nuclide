@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LRUCache} from 'lru-cache';
@@ -98,7 +99,7 @@ export class FlowExecInfoContainer {
   // found.
   async _getPathToFlow(root: string | null): Promise<?string> {
     const flowBinPath = await this._getFlowBinPath(root);
-    if (flowBinPath != null && await canFindFlow(flowBinPath)) {
+    if (flowBinPath != null && (await canFindFlow(flowBinPath))) {
       return flowBinPath;
     }
 
@@ -151,10 +152,13 @@ export class FlowExecInfoContainer {
           this._pathToFlow = path;
           this._flowExecInfoCache.reset();
         }),
-        atom.config.observe('nuclide.nuclide-flow.canUseFlowBin', canUseFlowBin => {
-          this._canUseFlowBin = canUseFlowBin;
-          this._flowExecInfoCache.reset();
-        }),
+        atom.config.observe(
+          'nuclide.nuclide-flow.canUseFlowBin',
+          canUseFlowBin => {
+            this._canUseFlowBin = canUseFlowBin;
+            this._flowExecInfoCache.reset();
+          },
+        ),
       );
     }
   }
@@ -187,11 +191,11 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
     const dirPath = nuclideUri.dirname(flowPath);
     if (dirPath != null && dirPath !== '' && dirPath !== '.') {
       const whichPath = `${nuclideUri.dirname(flowPath)}:${nuclideUri.basename(flowPath)}`;
-      return await which(whichPath) != null;
+      return (await which(whichPath)) != null;
     }
   }
 
-  return await which(flowPath) != null;
+  return (await which(flowPath)) != null;
 }
 
 // `string | null` forces the presence of an explicit argument (`?string` allows undefined which

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -120,9 +121,13 @@ describe('Bridge', () => {
   });
 
   it('should add decoration to line of current call frame', () => {
-    waitsFor(() => {
-      return Boolean(getCallFrameDecorationInRow(1));
-    }, 'call frame highlight to appear', 100);
+    waitsFor(
+      () => {
+        return Boolean(getCallFrameDecorationInRow(1));
+      },
+      'call frame highlight to appear',
+      100,
+    );
 
     runs(() => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
@@ -130,9 +135,13 @@ describe('Bridge', () => {
   });
 
   it('should remove decoration when clear interface', () => {
-    waitsFor(() => {
-      return Boolean(getCallFrameDecorationInRow(1));
-    }, 'call frame highlight to appear', 100);
+    waitsFor(
+      () => {
+        return Boolean(getCallFrameDecorationInRow(1));
+      },
+      'call frame highlight to appear',
+      100,
+    );
 
     runs(() => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
@@ -142,9 +151,13 @@ describe('Bridge', () => {
   });
 
   it('should remove decoration and unregister listener when disposed', () => {
-    waitsFor(() => {
-      return Boolean(getCallFrameDecorationInRow(1));
-    }, 'call frame highlight to appear', 100);
+    waitsFor(
+      () => {
+        return Boolean(getCallFrameDecorationInRow(1));
+      },
+      'call frame highlight to appear',
+      100,
+    );
 
     runs(async () => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
@@ -156,9 +169,13 @@ describe('Bridge', () => {
   });
 
   it('should remove decoration and unregister listener after cleanup', () => {
-    waitsFor(() => {
-      return Boolean(getCallFrameDecorationInRow(1));
-    }, 'call frame highlight to appear', 100);
+    waitsFor(
+      () => {
+        return Boolean(getCallFrameDecorationInRow(1));
+      },
+      'call frame highlight to appear',
+      100,
+    );
 
     runs(async () => {
       expect(getCallFrameDecorationInRow(1)).toBeTruthy();
@@ -200,9 +217,13 @@ describe('Bridge', () => {
       lineNumber: line,
     });
 
-    waitsFor(() => {
-      return Boolean(getCursorInRow(line));
-    }, 'cursor at line to appear', 100);
+    waitsFor(
+      () => {
+        return Boolean(getCursorInRow(line));
+      },
+      'cursor at line to appear',
+      100,
+    );
 
     runs(() => {
       expect(editor.getCursorBufferPosition().row).toEqual(line);
@@ -221,13 +242,22 @@ describe('Bridge', () => {
       enabled,
       resolved,
     });
-    expect(breakpointStore._bindBreakpoint)
-      .toHaveBeenCalledWith(path, line, condition, enabled, resolved);
+    expect(breakpointStore._bindBreakpoint).toHaveBeenCalledWith(
+      path,
+      line,
+      condition,
+      enabled,
+      resolved,
+    );
 
     sendIpcNotification('BreakpointRemoved', {
       sourceURL: 'file://' + path,
       lineNumber: line,
     });
-    expect(breakpointStore._deleteBreakpoint).toHaveBeenCalledWith(path, line, false);
+    expect(breakpointStore._deleteBreakpoint).toHaveBeenCalledWith(
+      path,
+      line,
+      false,
+    );
   });
 });

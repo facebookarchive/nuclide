@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TrackingEvent} from '../../nuclide-analytics';
@@ -187,7 +188,7 @@ type TrackAction = {
 };
 
 export type Action =
-  AddOpenerAction
+  | AddOpenerAction
   | DestroyWhereAction
   | DidActivateInitialPackagesAction
   | RemoveOpenerAction

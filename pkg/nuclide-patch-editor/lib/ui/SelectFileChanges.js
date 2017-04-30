@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as BoundActionCreators from '../redux/Actions';
@@ -67,6 +68,9 @@ export class SelectFileChanges extends React.Component {
   }
 
   _onToggleFile(): void {
-    this.props.actionCreators.toggleFile(this.props.patchId, this.props.fileData.id);
+    this.props.actionCreators.toggleFile(
+      this.props.patchId,
+      this.props.fileData.id,
+    );
   }
 }

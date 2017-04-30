@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {logger} from './logger';
@@ -25,11 +26,9 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
     // Answer: The iwdp binary will aggressively buffer stdout, unless it thinks it is running
     // under a terminal environment.  `script` runs the binary in a terminal-like environment,
     // and gives us less-aggressive buffering behavior, i.e. newlines cause stdout to be flushed.
-    ...scriptifyCommand(
-      'ios_webkit_debug_proxy',
-      ['--no-frontend'],
-      {/* TODO(T17353599) */isExitError: () => false},
-    ),
+    ...scriptifyCommand('ios_webkit_debug_proxy', ['--no-frontend'], {
+      /* TODO(T17353599) */ isExitError: () => false,
+    }),
   )
     .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
     .mergeMap(message => {
@@ -39,7 +38,9 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
         if (matches != null) {
           const port = Number(matches[1]);
           log(`Fetching device data because we got ${data}`);
-          return Observable.interval(POLLING_INTERVAL).switchMap(() => fetchDeviceData(port));
+          return Observable.interval(POLLING_INTERVAL).switchMap(() =>
+            fetchDeviceData(port),
+          );
         }
         if (data.startsWith('Listing devices on :')) {
           log(`IWDP Connected!: ${data}`);
@@ -49,7 +50,9 @@ export function connectToIwdp(): Observable<IosDeviceInfo> {
         return Observable.empty();
       } else {
         return Observable.throw(
-          new Error(`Error for ios_webkit_debug_proxy: ${JSON.stringify(message)}`),
+          new Error(
+            `Error for ios_webkit_debug_proxy: ${JSON.stringify(message)}`,
+          ),
         );
       }
     })

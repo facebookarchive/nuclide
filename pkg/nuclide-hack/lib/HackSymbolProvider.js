@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -27,20 +28,22 @@ import {
 import nuclideUri from '../../commons-node/nuclideUri';
 import React from 'react';
 
-
 async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories
 ): Promise<Array<[LanguageService, Array<NuclideUri>]>> {
-  const promises: Array<Promise<?[LanguageService, NuclideUri]>> =
-    directories.map(async directory => {
-      const service = await getHackLanguageForUri(directory.getPath());
-      return service ? [service, directory.getPath()] : null;
-    });
-  const serviceDirectories: Array<?[LanguageService, NuclideUri]> =
-    await Promise.all(promises);
+  const promises: Array<
+    Promise<?[LanguageService, NuclideUri]>
+  > = directories.map(async directory => {
+    const service = await getHackLanguageForUri(directory.getPath());
+    return service ? [service, directory.getPath()] : null;
+  });
+  const serviceDirectories: Array<
+    ?[LanguageService, NuclideUri]
+  > = await Promise.all(promises);
 
-  const results: Map<LanguageService, Array<NuclideUri>> =
-    collect(arrayCompact(serviceDirectories));
+  const results: Map<LanguageService, Array<NuclideUri>> = collect(
+    arrayCompact(serviceDirectories),
+  );
 
   return Array.from(results.entries());
 }
@@ -58,9 +61,11 @@ export const HackSymbolProvider: GlobalProviderType = {
     directories: Array<atom$Directory>,
   ): Promise<boolean> {
     const serviceDirectories = await getHackDirectoriesByService(directories);
-    const eligibilities = await Promise.all(serviceDirectories.map(
-      ([service, dirs]) => service.supportsSymbolSearch(dirs),
-    ));
+    const eligibilities = await Promise.all(
+      serviceDirectories.map(([service, dirs]) =>
+        service.supportsSymbolSearch(dirs),
+      ),
+    );
     return eligibilities.some(e => e);
   },
 
@@ -73,9 +78,14 @@ export const HackSymbolProvider: GlobalProviderType = {
     }
 
     const serviceDirectories = await getHackDirectoriesByService(directories);
-    const results = await Promise.all(serviceDirectories.map(
-      ([service, dirs]) => service.symbolSearch(query, dirs)));
-    const flattenedResults: Array<SymbolResult> = arrayFlatten(arrayCompact(results));
+    const results = await Promise.all(
+      serviceDirectories.map(([service, dirs]) =>
+        service.symbolSearch(query, dirs),
+      ),
+    );
+    const flattenedResults: Array<SymbolResult> = arrayFlatten(
+      arrayCompact(results),
+    );
 
     return ((flattenedResults: any): Array<FileResult>);
     // Why the weird cast? Because services are expected to return their own
@@ -92,7 +102,9 @@ export const HackSymbolProvider: GlobalProviderType = {
     const filename = nuclideUri.basename(filePath);
     const name = item.name || '';
 
-    const symbolClasses = item.icon ? `file icon icon-${item.icon}` : 'file icon no-icon';
+    const symbolClasses = item.icon
+      ? `file icon icon-${item.icon}`
+      : 'file icon no-icon';
     return (
       <div title={item.hoverText || ''}>
         <span className={symbolClasses}><code>{name}</code></span>

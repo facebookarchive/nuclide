@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -20,8 +21,9 @@ export class InfoTable extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
-    const rows = Array.from(this.props.table.entries())
-      .map(([key, value]) => ({data: {property: key, value}}));
+    const rows = Array.from(this.props.table.entries()).map(([key, value]) => ({
+      data: {property: key, value},
+    }));
     const columns = [
       {
         key: 'property',

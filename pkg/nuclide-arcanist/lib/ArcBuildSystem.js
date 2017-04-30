@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Task, TaskEvent} from '../../commons-node/tasks';
@@ -44,10 +45,16 @@ export default class ArcBuildSystem {
     const path = projectRoot ? projectRoot.getPath() : null;
     this._model.setProjectPath(path);
 
-    const storeReady = observableFromSubscribeFunction(this._model.onChange.bind(this._model))
+    const storeReady = observableFromSubscribeFunction(
+      this._model.onChange.bind(this._model),
+    )
       .map(() => this._model)
       .startWith(this._model)
-      .filter(model => model.isArcSupported() !== null && model.getActiveProjectPath() === path);
+      .filter(
+        model =>
+          model.isArcSupported() !== null &&
+          model.getActiveProjectPath() === path,
+      );
 
     const enabledObservable = storeReady
       .map(model => model.isArcSupported() === true)
@@ -56,8 +63,10 @@ export default class ArcBuildSystem {
     const tasksObservable = storeReady.map(model => model.getTaskList());
 
     return new UniversalDisposable(
-      Observable.combineLatest(enabledObservable, tasksObservable)
-        .subscribe(([enabled, tasks]) => callback(enabled, tasks)),
+      Observable.combineLatest(
+        enabledObservable,
+        tasksObservable,
+      ).subscribe(([enabled, tasks]) => callback(enabled, tasks)),
     );
   }
 

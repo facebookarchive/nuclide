@@ -6,17 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import {
- addPath,
- confirmAndRevertPath,
- confirmAndDeletePath,
- forgetPath,
- FileChangeStatus,
- RevertibleStatusCodes,
+  addPath,
+  confirmAndRevertPath,
+  confirmAndDeletePath,
+  forgetPath,
+  FileChangeStatus,
+  RevertibleStatusCodes,
 } from '../nuclide-vcs-base';
 import {goToLocation} from '../commons-atom/go-to-location';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
@@ -52,157 +53,185 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     (this: any)._handleAddFile = this._handleAddFile.bind(this);
     (this: any)._handleDeleteFile = this._handleDeleteFile.bind(this);
     (this: any)._handleForgetFile = this._handleForgetFile.bind(this);
-    (this: any)._handleOpenFileInDiffView = this._handleOpenFileInDiffView.bind(this);
+    (this: any)._handleOpenFileInDiffView = this._handleOpenFileInDiffView.bind(
+      this,
+    );
     (this: any)._handleRevertFile = this._handleRevertFile.bind(this);
   }
 
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
-    const {
-      commandPrefix,
-      openInDiffViewOption,
-    } = this.props;
-    this._subscriptions.add(atom.contextMenu.add({
-      [`.${commandPrefix}-file-entry`]: [
-        {type: 'separator'},
-        {
-          label: 'Add file to Mercurial',
-          command: `${commandPrefix}:add`,
-          shouldDisplay: event => {
-            return this._getStatusCodeForFile(event) === FileChangeStatus.UNTRACKED;
+    const {commandPrefix, openInDiffViewOption} = this.props;
+    this._subscriptions.add(
+      atom.contextMenu.add({
+        [`.${commandPrefix}-file-entry`]: [
+          {type: 'separator'},
+          {
+            label: 'Add file to Mercurial',
+            command: `${commandPrefix}:add`,
+            shouldDisplay: event => {
+              return (
+                this._getStatusCodeForFile(event) === FileChangeStatus.UNTRACKED
+              );
+            },
           },
-        },
-        {
-          label: 'Open file in Diff View',
-          command: `${commandPrefix}:open-in-diff-view`,
-          shouldDisplay: event => {
-            return atom.packages.isPackageLoaded('fb-diff-view') && openInDiffViewOption;
+          {
+            label: 'Open file in Diff View',
+            command: `${commandPrefix}:open-in-diff-view`,
+            shouldDisplay: event => {
+              return (
+                atom.packages.isPackageLoaded('fb-diff-view') &&
+                openInDiffViewOption
+              );
+            },
           },
-        },
-        {
-          label: 'Revert File',
-          command: `${commandPrefix}:revert`,
-          shouldDisplay: event => {
-            const statusCode = this._getStatusCodeForFile(event);
-            if (statusCode == null) {
-              return false;
-            }
-            return RevertibleStatusCodes.includes(statusCode);
+          {
+            label: 'Revert File',
+            command: `${commandPrefix}:revert`,
+            shouldDisplay: event => {
+              const statusCode = this._getStatusCodeForFile(event);
+              if (statusCode == null) {
+                return false;
+              }
+              return RevertibleStatusCodes.includes(statusCode);
+            },
           },
-        },
-        {
-          label: 'Delete File',
-          command: `${commandPrefix}:delete-file`,
-          shouldDisplay: event => {
-            const statusCode = this._getStatusCodeForFile(event);
-            return statusCode !== FileChangeStatus.REMOVED;
+          {
+            label: 'Delete File',
+            command: `${commandPrefix}:delete-file`,
+            shouldDisplay: event => {
+              const statusCode = this._getStatusCodeForFile(event);
+              return statusCode !== FileChangeStatus.REMOVED;
+            },
           },
-        },
-        {
-          label: 'Goto File',
-          command: `${commandPrefix}:goto-file`,
-        },
-        {
-          label: 'Copy File Name',
-          command: `${commandPrefix}:copy-file-name`,
-        },
-        {
-          label: 'Copy Full Path',
-          command: `${commandPrefix}:copy-full-path`,
-        },
-        {
-          label: 'Forget file',
-          command: `${commandPrefix}:forget-file`,
-          shouldDisplay: event => {
-            const statusCode = this._getStatusCodeForFile(event);
-            return (
-              statusCode !== FileChangeStatus.REMOVED &&
-              statusCode !== FileChangeStatus.UNTRACKED
-            );
+          {
+            label: 'Goto File',
+            command: `${commandPrefix}:goto-file`,
           },
-        },
-        {type: 'separator'},
-      ],
-    }));
-
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:goto-file`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
-        if (filePath != null && filePath.length) {
-          goToLocation(filePath);
-        }
-      },
-    ));
-
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:copy-full-path`,
-      event => {
-        atom.clipboard.write(nuclideUri.getPath(this._getFilePathFromEvent(event) || ''));
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:delete-file`,
-      event => {
-        const nuclideFilePath = this._getFilePathFromEvent(event);
-        this._handleDeleteFile(nuclideFilePath);
+          {
+            label: 'Copy File Name',
+            command: `${commandPrefix}:copy-file-name`,
+          },
+          {
+            label: 'Copy Full Path',
+            command: `${commandPrefix}:copy-full-path`,
+          },
+          {
+            label: 'Forget file',
+            command: `${commandPrefix}:forget-file`,
+            shouldDisplay: event => {
+              const statusCode = this._getStatusCodeForFile(event);
+              return (
+                statusCode !== FileChangeStatus.REMOVED &&
+                statusCode !== FileChangeStatus.UNTRACKED
+              );
+            },
+          },
+          {type: 'separator'},
+        ],
       }),
     );
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:copy-file-name`,
-      event => {
-        atom.clipboard.write(nuclideUri.basename(this._getFilePathFromEvent(event) || ''));
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:add`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
-        if (filePath != null && filePath.length) {
-          this._handleAddFile(filePath);
-        }
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:revert`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
-        if (filePath != null && filePath.length) {
-          this._handleRevertFile(filePath);
-        }
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:open-in-diff-view`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
-        if (filePath != null && filePath.length) {
-          this._handleOpenFileInDiffView(filePath);
-        }
-      },
-    ));
-    this._subscriptions.add(atom.commands.add(
-      `.${commandPrefix}-file-entry`,
-      `${commandPrefix}:forget-file`,
-      event => {
-        const filePath = this._getFilePathFromEvent(event);
-        if (filePath != null && filePath.length) {
-          this._handleForgetFile(filePath);
-        }
-      },
-    ));
+
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:goto-file`,
+        event => {
+          const filePath = this._getFilePathFromEvent(event);
+          if (filePath != null && filePath.length) {
+            goToLocation(filePath);
+          }
+        },
+      ),
+    );
+
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:copy-full-path`,
+        event => {
+          atom.clipboard.write(
+            nuclideUri.getPath(this._getFilePathFromEvent(event) || ''),
+          );
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:delete-file`,
+        event => {
+          const nuclideFilePath = this._getFilePathFromEvent(event);
+          this._handleDeleteFile(nuclideFilePath);
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:copy-file-name`,
+        event => {
+          atom.clipboard.write(
+            nuclideUri.basename(this._getFilePathFromEvent(event) || ''),
+          );
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:add`,
+        event => {
+          const filePath = this._getFilePathFromEvent(event);
+          if (filePath != null && filePath.length) {
+            this._handleAddFile(filePath);
+          }
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:revert`,
+        event => {
+          const filePath = this._getFilePathFromEvent(event);
+          if (filePath != null && filePath.length) {
+            this._handleRevertFile(filePath);
+          }
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:open-in-diff-view`,
+        event => {
+          const filePath = this._getFilePathFromEvent(event);
+          if (filePath != null && filePath.length) {
+            this._handleOpenFileInDiffView(filePath);
+          }
+        },
+      ),
+    );
+    this._subscriptions.add(
+      atom.commands.add(
+        `.${commandPrefix}-file-entry`,
+        `${commandPrefix}:forget-file`,
+        event => {
+          const filePath = this._getFilePathFromEvent(event);
+          if (filePath != null && filePath.length) {
+            this._handleForgetFile(filePath);
+          }
+        },
+      ),
+    );
   }
 
   _getStatusCodeForFile(event: MouseEvent): ?number {
     // Walk up the DOM tree to the element containing the relevant data- attributes.
-    const target = ((event.target: any): HTMLElement).closest('.nuclide-file-changes-list-item');
+    const target = ((event.target: any): HTMLElement).closest(
+      '.nuclide-file-changes-list-item',
+    );
     invariant(target);
     const filePath = target.getAttribute('data-path');
     const rootPath = target.getAttribute('data-root');
@@ -230,14 +259,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void {
     addPath(filePath);
-    track(
-      `${ANALYTICS_PREFIX}-add-file`,
-      {
-        source: analyticsSource,
-        surface: this._getAnalyticsSurface(),
-
-      },
-    );
+    track(`${ANALYTICS_PREFIX}-add-file`, {
+      source: analyticsSource,
+      surface: this._getAnalyticsSurface(),
+    });
   }
 
   _handleDeleteFile(
@@ -245,13 +270,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void {
     confirmAndDeletePath(filePath);
-    track(
-      `${ANALYTICS_PREFIX}-delete-file`,
-      {
-        source: analyticsSource,
-        surface: this._getAnalyticsSurface(),
-      },
-    );
+    track(`${ANALYTICS_PREFIX}-delete-file`, {
+      source: analyticsSource,
+      surface: this._getAnalyticsSurface(),
+    });
   }
 
   _handleForgetFile(
@@ -259,13 +281,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void {
     forgetPath(filePath);
-    track(
-      `${ANALYTICS_PREFIX}-forget-file`,
-      {
-        source: analyticsSource,
-        surface: this._getAnalyticsSurface(),
-      },
-    );
+    track(`${ANALYTICS_PREFIX}-forget-file`, {
+      source: analyticsSource,
+      surface: this._getAnalyticsSurface(),
+    });
   }
 
   _handleOpenFileInDiffView(
@@ -273,13 +292,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
   ): void {
     openFileInDiffView(filePath);
-    track(
-      `${ANALYTICS_PREFIX}-file-in-diff-view`,
-      {
-        source: analyticsSource,
-        surface: this._getAnalyticsSurface(),
-      },
-    );
+    track(`${ANALYTICS_PREFIX}-file-in-diff-view`, {
+      source: analyticsSource,
+      surface: this._getAnalyticsSurface(),
+    });
   }
 
   _handleRevertFile(
@@ -292,13 +308,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       targetRevision = getRevertTargetRevision();
     }
     confirmAndRevertPath(filePath, targetRevision);
-    track(
-      `${ANALYTICS_PREFIX}-revert-file`,
-      {
-        source: analyticsSource,
-        surface: this._getAnalyticsSurface(),
-      },
-    );
+    track(`${ANALYTICS_PREFIX}-revert-file`, {
+      source: analyticsSource,
+      surface: this._getAnalyticsSurface(),
+    });
   }
 
   render(): React.Element<any> {
@@ -316,7 +329,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     const shouldShowFolderName = fileChangesByRoot.size > 1;
     return (
       <div className="nuclide-ui-multi-root-file-tree-container">
-        {Array.from(fileChangesByRoot.entries()).map(([root, fileChanges]) =>
+        {Array.from(fileChangesByRoot.entries()).map(([root, fileChanges]) => (
           <ChangedFilesList
             commandPrefix={commandPrefix}
             enableInlineActions={enableInlineActions === true}
@@ -332,8 +345,8 @@ export class MultiRootChangedFilesView extends React.PureComponent {
             rootPath={root}
             selectedFile={selectedFile}
             shouldShowFolderName={shouldShowFolderName}
-          />,
-        )}
+          />
+        ))}
       </div>
     );
   }

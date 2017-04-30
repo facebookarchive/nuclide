@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ConfigEntry, Transport} from './index';
@@ -18,10 +19,7 @@ import type {
   CallObjectMessage,
   NewObjectMessage,
 } from './messages';
-import type {
-  ClassDefinition,
-  FunctionImplementation,
-} from './ServiceRegistry';
+import type {ClassDefinition, FunctionImplementation} from './ServiceRegistry';
 import type {PredefinedTransformer} from './index';
 
 import invariant from 'assert';
@@ -92,7 +90,9 @@ class Subscription {
     try {
       this._observer.complete();
     } catch (e) {
-      logger.error(`Caught exception in Subscription.complete: ${e.toString()}`);
+      logger.error(
+        `Caught exception in Subscription.complete: ${e.toString()}`,
+      );
     }
   }
 
@@ -163,10 +163,12 @@ class Call {
   _timeout(): void {
     if (!this._complete) {
       this.cleanup();
-      this._reject(new RpcTimeoutError(
-        `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
-        `${this._message.id}, ${this._timeoutMessage}.`,
-      ));
+      this._reject(
+        new RpcTimeoutError(
+          `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for id: ` +
+            `${this._message.id}, ${this._timeoutMessage}.`,
+        ),
+      );
     }
   }
 }
@@ -197,8 +199,14 @@ export class RpcConnection<TransportType: Transport> {
     this._options = options;
     this._rpcRequestId = 1;
     this._serviceRegistry = serviceRegistry;
-    this._objectRegistry = new ObjectRegistry(kind, this._serviceRegistry, this);
-    this._transport.onMessage().subscribe(message => { this._handleMessage(message); });
+    this._objectRegistry = new ObjectRegistry(
+      kind,
+      this._serviceRegistry,
+      this,
+    );
+    this._transport.onMessage().subscribe(message => {
+      this._handleMessage(message);
+    });
     this._subscriptions = new Map();
     this._calls = new Map();
   }
@@ -208,10 +216,7 @@ export class RpcConnection<TransportType: Transport> {
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
   ): RpcConnection<TransportType> {
-    return new RpcConnection(
-      'server',
-      serviceRegistry,
-      transport);
+    return new RpcConnection('server', serviceRegistry, transport);
   }
 
   // Creates a client side connection to a server on another machine.
@@ -226,7 +231,8 @@ export class RpcConnection<TransportType: Transport> {
       'client',
       new ServiceRegistry(predefinedTypes, services, protocol),
       transport,
-      options);
+      options,
+    );
   }
 
   // Creates a client side connection to a server on the same machine.
@@ -239,7 +245,8 @@ export class RpcConnection<TransportType: Transport> {
     return new RpcConnection(
       'client',
       new ServiceRegistry(predefinedTypes, services, protocol),
-      transport);
+      transport,
+    );
   }
 
   getService(serviceName: string): Object {
@@ -268,14 +275,22 @@ export class RpcConnection<TransportType: Transport> {
     args: Array<any>,
     argTypes: Array<Parameter>,
   ): Promise<Object> {
-    return this._getTypeRegistry().marshalArguments(this._objectRegistry, args, argTypes);
+    return this._getTypeRegistry().marshalArguments(
+      this._objectRegistry,
+      args,
+      argTypes,
+    );
   }
 
   unmarshalArguments(
     args: Object,
     argTypes: Array<Parameter>,
   ): Promise<Array<any>> {
-    return this._getTypeRegistry().unmarshalArguments(this._objectRegistry, args, argTypes);
+    return this._getTypeRegistry().unmarshalArguments(
+      this._objectRegistry,
+      args,
+      argTypes,
+    );
   }
 
   /**
@@ -285,9 +300,18 @@ export class RpcConnection<TransportType: Transport> {
    *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote function with.
    */
-  callRemoteFunction(functionName: string, returnType: ReturnType, args: Object): any {
+  callRemoteFunction(
+    functionName: string,
+    returnType: ReturnType,
+    args: Object,
+  ): any {
     return this._sendMessageAndListenForResult(
-      createCallMessage(this._getProtocol(), functionName, this._generateRequestId(), args),
+      createCallMessage(
+        this._getProtocol(),
+        functionName,
+        this._generateRequestId(),
+        args,
+      ),
       returnType,
       `Calling function ${functionName}`,
     );
@@ -309,7 +333,12 @@ export class RpcConnection<TransportType: Transport> {
   ): any {
     return this._sendMessageAndListenForResult(
       createCallObjectMessage(
-        this._getProtocol(), methodName, objectId, this._generateRequestId(), args),
+        this._getProtocol(),
+        methodName,
+        objectId,
+        this._generateRequestId(),
+        args,
+      ),
       returnType,
       `Calling remote method ${methodName}.`,
     );
@@ -331,9 +360,17 @@ export class RpcConnection<TransportType: Transport> {
   ): void {
     const idPromise = (async () => {
       const marshalledArgs = await this._getTypeRegistry().marshalArguments(
-        this._objectRegistry, unmarshalledArgs, argTypes);
-      return this._sendMessageAndListenForResult(createNewObjectMessage(
-          this._getProtocol(), interfaceName, this._generateRequestId(), marshalledArgs),
+        this._objectRegistry,
+        unmarshalledArgs,
+        argTypes,
+      );
+      return this._sendMessageAndListenForResult(
+        createNewObjectMessage(
+          this._getProtocol(),
+          interfaceName,
+          this._generateRequestId(),
+          marshalledArgs,
+        ),
         'promise',
         `Creating instance of ${interfaceName}`,
       );
@@ -355,8 +392,14 @@ export class RpcConnection<TransportType: Transport> {
       logger.info('Dispose call on remote proxy after connection closed');
     } else {
       return this._sendMessageAndListenForResult(
-        createDisposeMessage(this._getProtocol(), this._generateRequestId(), objectId),
-        'promise', `Disposing object ${objectId}`);
+        createDisposeMessage(
+          this._getProtocol(),
+          this._generateRequestId(),
+          objectId,
+        ),
+        'promise',
+        `Disposing object ${objectId}`,
+      );
     }
   }
 
@@ -381,15 +424,12 @@ export class RpcConnection<TransportType: Transport> {
         // Listen for a single message, and resolve or reject a promise on that message.
         const promise = new Promise((resolve, reject) => {
           this._transport.send(JSON.stringify(message));
-          this._calls.set(message.id, new Call(
-            message,
-            timeoutMessage,
-            resolve,
-            reject,
-            () => {
+          this._calls.set(
+            message.id,
+            new Call(message, timeoutMessage, resolve, reject, () => {
               this._calls.delete(message.id);
-            },
-          ));
+            }),
+          );
         });
         const {trackSampleRate} = this._options;
         if (trackSampleRate && Math.random() * trackSampleRate <= 1) {
@@ -408,8 +448,9 @@ export class RpcConnection<TransportType: Transport> {
         };
         const sendUnsubscribe = () => {
           if (!this._transport.isClosed()) {
-            this._transport.send(JSON.stringify(
-              createUnsubscribeMessage(this._getProtocol(), id)));
+            this._transport.send(
+              JSON.stringify(createUnsubscribeMessage(this._getProtocol(), id)),
+            );
           }
         };
         let hadSubscription = false;
@@ -450,57 +491,84 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  _returnPromise(
-    id: number,
-    candidate: any,
-    type: Type,
-  ): void {
+  _returnPromise(id: number, candidate: any, type: Type): void {
     let returnVal = candidate;
     // Ensure that the return value is a promise.
     if (!isThenable(returnVal)) {
       returnVal = Promise.reject(
-        new Error('Expected a Promise, but the function returned something else.'));
+        new Error(
+          'Expected a Promise, but the function returned something else.',
+        ),
+      );
     }
 
     // Marshal the result, to send over the network.
     invariant(returnVal != null);
-    returnVal = returnVal.then(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, type));
+    returnVal = returnVal.then(value =>
+      this._getTypeRegistry().marshal(this._objectRegistry, value, type),
+    );
 
     // Send the result of the promise across the socket.
-    returnVal.then(result => {
-      this._transport.send(JSON.stringify(createPromiseMessage(this._getProtocol(), id, result)));
-    }, error => {
-      this._transport.send(JSON.stringify(
-        createErrorResponseMessage(this._getProtocol(), id, error)));
-    });
+    returnVal.then(
+      result => {
+        this._transport.send(
+          JSON.stringify(createPromiseMessage(this._getProtocol(), id, result)),
+        );
+      },
+      error => {
+        this._transport.send(
+          JSON.stringify(
+            createErrorResponseMessage(this._getProtocol(), id, error),
+          ),
+        );
+      },
+    );
   }
 
   _returnObservable(id: number, returnVal: any, elementType: Type): void {
     let result: ConnectableObservable<any>;
     // Ensure that the return value is an observable.
     if (!isConnectableObservable(returnVal)) {
-      result = Observable.throw(new Error(
-        'Expected an Observable, but the function returned something else.')).publish();
+      result = Observable.throw(
+        new Error(
+          'Expected an Observable, but the function returned something else.',
+        ),
+      ).publish();
     } else {
       result = returnVal;
     }
 
     // Marshal the result, to send over the network.
-    result.concatMap(value => this._getTypeRegistry().marshal(
-      this._objectRegistry, value, elementType))
-
-    // Send the next, error, and completion events of the observable across the socket.
-    .subscribe(data => {
-      this._transport.send(JSON.stringify(createNextMessage(this._getProtocol(), id, data)));
-    }, error => {
-      this._transport.send(JSON.stringify(
-        createObserveErrorMessage(this._getProtocol(), id, error)));
-      this._objectRegistry.removeSubscription(id);
-    }, completed => {
-      this._transport.send(JSON.stringify(createCompleteMessage(this._getProtocol(), id)));
-      this._objectRegistry.removeSubscription(id);
-    });
+    result
+      .concatMap(value =>
+        this._getTypeRegistry().marshal(
+          this._objectRegistry,
+          value,
+          elementType,
+        ),
+      )
+      // Send the next, error, and completion events of the observable across the socket.
+      .subscribe(
+        data => {
+          this._transport.send(
+            JSON.stringify(createNextMessage(this._getProtocol(), id, data)),
+          );
+        },
+        error => {
+          this._transport.send(
+            JSON.stringify(
+              createObserveErrorMessage(this._getProtocol(), id, error),
+            ),
+          );
+          this._objectRegistry.removeSubscription(id);
+        },
+        completed => {
+          this._transport.send(
+            JSON.stringify(createCompleteMessage(this._getProtocol(), id)),
+          );
+          this._objectRegistry.removeSubscription(id);
+        },
+      );
 
     this._objectRegistry.addSubscription(id, result.connect());
   }
@@ -521,27 +589,24 @@ export class RpcConnection<TransportType: Transport> {
     }
   }
 
-  async _callFunction(
-    id: number,
-    call: CallMessage,
-  ): Promise<void> {
-    const {
-      localImplementation,
-      type,
-    } = this._getFunctionImplemention(call.method);
+  async _callFunction(id: number, call: CallMessage): Promise<void> {
+    const {localImplementation, type} = this._getFunctionImplemention(
+      call.method,
+    );
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+      this._objectRegistry,
+      call.args,
+      type.argumentTypes,
+    );
 
     this._returnValue(
       id,
       localImplementation.apply(this, marshalledArgs),
-      type.returnType);
+      type.returnType,
+    );
   }
 
-  async _callMethod(
-    id: number,
-    call: CallObjectMessage,
-  ): Promise<void> {
+  async _callMethod(id: number, call: CallObjectMessage): Promise<void> {
     const object = this._objectRegistry.unmarshal(call.objectId);
     invariant(object != null);
 
@@ -553,43 +618,46 @@ export class RpcConnection<TransportType: Transport> {
     invariant(instanceMethods.hasOwnProperty(call.method) && type != null);
 
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, call.args, type.argumentTypes);
+      this._objectRegistry,
+      call.args,
+      type.argumentTypes,
+    );
 
     this._returnValue(
       id,
       object[call.method](...marshalledArgs),
-      type.returnType);
+      type.returnType,
+    );
   }
 
   async _callConstructor(
     id: number,
     constructorMessage: NewObjectMessage,
   ): Promise<void> {
-    const classDefinition = this._getClassDefinition(constructorMessage.interface);
+    const classDefinition = this._getClassDefinition(
+      constructorMessage.interface,
+    );
     invariant(classDefinition != null);
-    const {
-      localImplementation,
-      definition,
-    } = classDefinition;
+    const {localImplementation, definition} = classDefinition;
     const constructorArgs = definition.constructorArgs;
     invariant(constructorArgs != null);
 
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
-      this._objectRegistry, constructorMessage.args, constructorArgs);
+      this._objectRegistry,
+      constructorMessage.args,
+      constructorArgs,
+    );
 
     // Create a new object and put it in the registry.
     const newObject = new localImplementation(...marshalledArgs);
 
     // Return the object, which will automatically be converted to an id through the
     // marshalling system.
-    this._returnPromise(
-      id,
-      Promise.resolve(newObject),
-      {
-        kind: 'named',
-        name: constructorMessage.interface,
-        location: builtinLocation,
-      });
+    this._returnPromise(id, Promise.resolve(newObject), {
+      kind: 'named',
+      name: constructorMessage.interface,
+      location: builtinLocation,
+    });
   }
 
   getTransport(): TransportType {
@@ -620,7 +688,9 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _handleMessage(value: string): void {
-    const message: ?(RequestMessage | ResponseMessage) = this._parseMessage(value);
+    const message: ?(RequestMessage | ResponseMessage) = this._parseMessage(
+      value,
+    );
     if (message == null) {
       return;
     }
@@ -732,7 +802,9 @@ export class RpcConnection<TransportType: Transport> {
       }
     } catch (e) {
       logger.error(`Error handling RPC ${message.type} message`, e);
-      this._transport.send(JSON.stringify(createErrorResponseMessage(this._getProtocol(), id, e)));
+      this._transport.send(
+        JSON.stringify(createErrorResponseMessage(this._getProtocol(), id, e)),
+      );
     }
   }
 
@@ -757,8 +829,9 @@ export class RpcConnection<TransportType: Transport> {
       return;
     }
     const eventName = trackingIdOfMessage(this._objectRegistry, message);
-    const args = message.args != null ?
-      shorten(JSON.stringify(message.args), 100, '...') : '';
+    const args = message.args != null
+      ? shorten(JSON.stringify(message.args), 100, '...')
+      : '';
     logger.warn(`${eventName}: Large response of size ${size}. Args:`, args);
     track('large-rpc-response', {
       eventName,
@@ -780,7 +853,10 @@ export class RpcConnection<TransportType: Transport> {
   }
 }
 
-function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage): string {
+function trackingIdOfMessage(
+  registry: ObjectRegistry,
+  message: RequestMessage,
+): string {
   switch (message.type) {
     case 'call':
       return `service-framework:${message.method}`;
@@ -799,7 +875,10 @@ function trackingIdOfMessage(registry: ObjectRegistry, message: RequestMessage):
   }
 }
 
-function trackingIdOfMessageAndNetwork(registry: ObjectRegistry, message: RequestMessage): string {
+function trackingIdOfMessageAndNetwork(
+  registry: ObjectRegistry,
+  message: RequestMessage,
+): string {
   return trackingIdOfMessage(registry, message) + ':plus-network';
 }
 
@@ -814,5 +893,7 @@ function isThenable(object: any): boolean {
  * A helper function that checks if an object is an Observable.
  */
 function isConnectableObservable(object: any): boolean {
-  return Boolean(object && object.concatMap && object.subscribe && object.connect);
+  return Boolean(
+    object && object.concatMap && object.subscribe && object.connect,
+  );
 }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Emitter} from 'atom';
@@ -83,7 +84,9 @@ export class WorkingSetsStore {
   }
 
   updateApplicability(): void {
-    const {applicable, notApplicable} = this._sortOutApplicability(this._definitions);
+    const {applicable, notApplicable} = this._sortOutApplicability(
+      this._definitions,
+    );
     this._setDefinitions(applicable, notApplicable, this._definitions);
   }
 
@@ -134,10 +137,10 @@ export class WorkingSetsStore {
     }
   }
 
-  _updateCurrentWorkingSet(activeApplicable: Array<WorkingSetDefinition>): void {
-    const combinedUris = [].concat(
-      ...activeApplicable.map(d => d.uris),
-    );
+  _updateCurrentWorkingSet(
+    activeApplicable: Array<WorkingSetDefinition>,
+  ): void {
+    const combinedUris = [].concat(...activeApplicable.map(d => d.uris));
 
     const newWorkingSet = new WorkingSet(combinedUris);
     if (!this._current.equals(newWorkingSet)) {
@@ -158,14 +161,22 @@ export class WorkingSetsStore {
 
     let newDefinitions;
     if (nameIndex < 0) {
-      track('working-sets-create', {name, uris: workingSet.getUris().join(',')});
+      track('working-sets-create', {
+        name,
+        uris: workingSet.getUris().join(','),
+      });
 
-      newDefinitions = definitions.concat({name, uris: workingSet.getUris(), active: false});
+      newDefinitions = definitions.concat({
+        name,
+        uris: workingSet.getUris(),
+        active: false,
+      });
     } else {
-      track(
-        'working-sets-update',
-        {oldName: name, name: newName, uris: workingSet.getUris().join(',')},
-      );
+      track('working-sets-update', {
+        oldName: name,
+        name: newName,
+        uris: workingSet.getUris().join(','),
+      });
 
       const active = definitions[nameIndex].active;
       newDefinitions = [].concat(
@@ -223,7 +234,9 @@ export class WorkingSetsStore {
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
   }
 
-  _sortOutApplicability(definitions: Array<WorkingSetDefinition>): ApplicabilitySortedDefinitions {
+  _sortOutApplicability(
+    definitions: Array<WorkingSetDefinition>,
+  ): ApplicabilitySortedDefinitions {
     const applicable = [];
     const notApplicable = [];
 

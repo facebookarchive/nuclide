@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -44,10 +45,9 @@ export class MessageTranslator {
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(clientCallback));
     this._addHandler(new ConsoleHandler(clientCallback));
-    this._addHandler(new RuntimeHandler(
-      clientCallback,
-      this._connectionMultiplexer,
-    ));
+    this._addHandler(
+      new RuntimeHandler(clientCallback, this._connectionMultiplexer),
+    );
   }
 
   _addHandler(handler: Handler): void {

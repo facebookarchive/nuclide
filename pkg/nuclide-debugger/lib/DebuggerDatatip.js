@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -40,7 +41,9 @@ function getEvaluationExpression(
     }
   }
   return matchingProvider === null
-    ? Promise.resolve(getEvaluationExpressionFromRegexp(editor, position, DEFAULT_WORD_REGEX))
+    ? Promise.resolve(
+        getEvaluationExpressionFromRegexp(editor, position, DEFAULT_WORD_REGEX),
+      )
     : matchingProvider.getEvaluationExpression(editor, position);
 }
 
@@ -56,32 +59,36 @@ export async function debuggerDatatip(
   if (activeEditor == null) {
     return null;
   }
-  const evaluationExpression = await getEvaluationExpression(model, editor, position);
+  const evaluationExpression = await getEvaluationExpression(
+    model,
+    editor,
+    position,
+  );
   if (evaluationExpression == null) {
     return null;
   }
-  const {
-    expression,
-    range,
-  } = evaluationExpression;
+  const {expression, range} = evaluationExpression;
   if (expression == null) {
     return null;
   }
   const watchExpressionStore = model.getWatchExpressionStore();
   const evaluation = watchExpressionStore.evaluateWatchExpression(expression);
   // Avoid creating a datatip if the evaluation fails
-  const evaluationResult: ?EvaluationResult = await evaluation.take(1).toPromise();
+  const evaluationResult: ?EvaluationResult = await evaluation
+    .take(1)
+    .toPromise();
   if (evaluationResult === null) {
     return null;
   }
   const propStream = evaluation
     .filter(result => result != null)
-    .map(result => ({expression, evaluationResult: result, watchExpressionStore}));
+    .map(result => ({
+      expression,
+      evaluationResult: result,
+      watchExpressionStore,
+    }));
   return {
-    component: bindObservableAsProps(
-      propStream,
-      DebuggerDatatipComponent,
-    ),
+    component: bindObservableAsProps(propStream, DebuggerDatatipComponent),
     pinnable: true,
     range,
   };

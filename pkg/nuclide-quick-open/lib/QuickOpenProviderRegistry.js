@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -46,8 +47,10 @@ export default class QuickOpenProviderRegistry {
   }
 
   getProviderByName(serviceName: string): ?Provider {
-    return this._globalProviders.get(serviceName)
-        || this._directoryProviders.get(serviceName);
+    return (
+      this._globalProviders.get(serviceName) ||
+      this._directoryProviders.get(serviceName)
+    );
   }
 
   getGlobalProviderByName(serviceName: string): ?GlobalProviderType {
@@ -83,16 +86,14 @@ export default class QuickOpenProviderRegistry {
     } else {
       this._directoryProviders.set(service.name, service);
     }
-    const disposable = new UniversalDisposable(
-      () => {
-        if (service.providerType === 'GLOBAL') {
-          this._globalProviders.delete(service.name);
-        } else {
-          this._directoryProviders.delete(service.name);
-        }
-        this._emitter.emit('did-remove-provider', service);
-      },
-    );
+    const disposable = new UniversalDisposable(() => {
+      if (service.providerType === 'GLOBAL') {
+        this._globalProviders.delete(service.name);
+      } else {
+        this._directoryProviders.delete(service.name);
+      }
+      this._emitter.emit('did-remove-provider', service);
+    });
     this._subscriptions.add(disposable);
     this._emitter.emit('did-add-provider', service);
 

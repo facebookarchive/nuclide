@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {BoundActionCreators} from './types';
@@ -47,10 +48,12 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
 
   shouldComponentUpdate(nextProps: PropsType): boolean {
     const {uri, method, headers, body} = this.props;
-    return nextProps.uri !== uri
-      || nextProps.method !== method
-      || nextProps.body !== body
-      || !shallowequal(nextProps.headers, headers);
+    return (
+      nextProps.uri !== uri ||
+      nextProps.method !== method ||
+      nextProps.body !== body ||
+      !shallowequal(nextProps.headers, headers)
+    );
   }
 
   componentDidMount(): void {
@@ -119,19 +122,16 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
             options={METHOD_DROPDOWN_OPTIONS}
             onChange={method => this.props.actionCreators.updateState({method})}
           />
-         {
-           this.props.method !== 'POST'
-             ? null
-             : (
-               <div>
-                 <label>Body</label>
-                 <AtomInput
-                   tabIndex="2"
-                   onDidChange={body => this.props.actionCreators.updateState({body})}
-                 />
-               </div>
-             )
-         }
+          {this.props.method !== 'POST'
+            ? null
+            : <div>
+                <label>Body</label>
+                <AtomInput
+                  tabIndex="2"
+                  onDidChange={body =>
+                    this.props.actionCreators.updateState({body})}
+                />
+              </div>}
           <label>Headers: </label>
           <div className="nuclide-http-request-sender-headers">
             <AtomTextEditor
@@ -151,9 +151,7 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
               onClick={this._onSendHttpRequest}>
               Send HTTP Request
             </Button>
-            <Button
-              tabIndex="4"
-              onClick={this._onCancel}>
+            <Button tabIndex="4" onClick={this._onCancel}>
               Cancel
             </Button>
           </ButtonGroup>

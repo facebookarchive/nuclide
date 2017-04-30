@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -72,11 +73,7 @@ const TableExample = (): React.Element<any> => {
   ];
   return (
     <Block>
-      <Table
-        columns={columns}
-        rows={rows}
-        selectable={true}
-      />
+      <Table columns={columns} rows={rows} selectable={true} />
     </Block>
   );
 };
@@ -153,7 +150,9 @@ class SortableTableExample extends React.Component {
     return (
       <Block>
         <Table
-          emptyComponent={() => <div>An optional, custom "empty message" component.</div>}
+          emptyComponent={() => (
+            <div>An optional, custom "empty message" component.</div>
+          )}
           columns={columns}
           rows={this.state.rows}
           sortable={true}
@@ -184,10 +183,7 @@ const EmptyTableExample = (): React.Element<any> => {
   const rows = [];
   return (
     <Block>
-      <Table
-        columns={columns}
-        rows={rows}
-      />
+      <Table columns={columns} rows={rows} />
     </Block>
   );
 };

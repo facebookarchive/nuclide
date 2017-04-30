@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type BreakpointStore from './BreakpointStore';
@@ -21,10 +22,7 @@ export default class BreakpointManager {
   _displayControllers: Map<atom$TextEditor, BreakpointDisplayController>;
   _disposables: CompositeDisposable;
 
-  constructor(
-    store: BreakpointStore,
-    debuggerActions: DebuggerActions,
-  ) {
+  constructor(store: BreakpointStore, debuggerActions: DebuggerActions) {
     this._breakpointStore = store;
     this._debuggerActions = debuggerActions;
     this._displayControllers = new Map();

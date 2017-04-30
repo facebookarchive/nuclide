@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type React from 'react';
@@ -27,7 +28,7 @@ export type ContextProvider = {
    * contains the currentDefinition) of each provider. The factory should return
    * null if there is no element to be rendered.
    */
-  getElementFactory: () => ((props: ContextElementProps) => ?React.Element<any>),
+  getElementFactory: () => (props: ContextElementProps) => ?React.Element<any>,
   id: string, // Unique ID of the provider (suggested: use the package name of the provider)
   title: string, // Display name
 };

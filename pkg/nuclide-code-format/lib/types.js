@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
@@ -21,13 +22,19 @@ export interface CodeFormatProvider {
    * Formats the range specified, and returns a list of text edits to apply.
    * Text edits must be non-overlapping and preferably in reverse-sorted order.
    */
-  +formatCode?: (editor: atom$TextEditor, range: atom$Range) => Promise<Array<TextEdit>>,
+  +formatCode?: (
+    editor: atom$TextEditor,
+    range: atom$Range,
+  ) => Promise<Array<TextEdit>>,
 
   /**
    * Formats the range specified, but returns the entire file (along with the new cursor position).
    * Useful for less-flexible providers like clang-format.
    */
-  +formatEntireFile?: (editor: atom$TextEditor, range: atom$Range) => Promise<{
+  +formatEntireFile?: (
+    editor: atom$TextEditor,
+    range: atom$Range,
+  ) => Promise<{
     newCursor?: number,
     formatted: string,
   }>,

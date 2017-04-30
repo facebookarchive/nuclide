@@ -6,13 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  LocalFileEvent,
-  FileVersion,
-} from './rpc-types';
+import type {LocalFileEvent, FileVersion} from './rpc-types';
 
 import {FileEventKind} from './constants';
 import {Deferred} from '../../commons-node/promise';
@@ -79,9 +77,15 @@ export class FileVersionNotifier {
     }
 
     const requests = Array.from(this._requests.get(filePath));
-    const resolves = requests.filter(request => request.changeCount === currentVersion);
-    const rejects = requests.filter(request => request.changeCount < currentVersion);
-    const remaining = requests.filter(request => request.changeCount > currentVersion);
+    const resolves = requests.filter(
+      request => request.changeCount === currentVersion,
+    );
+    const rejects = requests.filter(
+      request => request.changeCount < currentVersion,
+    );
+    const remaining = requests.filter(
+      request => request.changeCount > currentVersion,
+    );
     this._requests.set(filePath, remaining);
 
     resolves.forEach(request => request.resolve(true));

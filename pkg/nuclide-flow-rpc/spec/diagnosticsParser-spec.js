@@ -6,13 +6,19 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {FileDiagnosticMessage} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {
+  FileDiagnosticMessage,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Range} from 'simple-text-buffer';
 
-import {flowStatusOutputToDiagnostics, diagnosticToFix} from '../lib/diagnosticsParser';
+import {
+  flowStatusOutputToDiagnostics,
+  diagnosticToFix,
+} from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 const flowOutput = {

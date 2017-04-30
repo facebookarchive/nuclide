@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -16,7 +17,9 @@ function PathWithFileIconExample(): React.Element<any> {
   return (
     <div>
       <Block>
-        <p>Simply wrap paths in &lt;PathWithFileIcon /&gt; to get the appropriate icons:</p>
+        <p>
+          Simply wrap paths in &lt;PathWithFileIcon /&gt; to get the appropriate icons:
+        </p>
         <div>
           <PathWithFileIcon path="maybe/some/javascript.js" />
           <PathWithFileIcon path="how/about/php.php" />

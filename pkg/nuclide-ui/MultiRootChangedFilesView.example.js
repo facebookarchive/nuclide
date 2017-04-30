@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -19,20 +20,26 @@ function onFileChosen(uri: string): void {
 
 function BasicExample(): React.Element<any> {
   const fileChanges = new Map([
-    ['nuclide://remote.host/someRemoteDir', new Map([
-      ['path/to/some/file/added.js', FileChangeStatus.ADDED],
-      ['path/to/some/file/modified.js', FileChangeStatus.MODIFIED],
-      ['path/to/some/file/missing.js', FileChangeStatus.MISSING],
-      ['path/to/some/file/removed.js', FileChangeStatus.REMOVED],
-      ['path/to/some/file/untracked.js', FileChangeStatus.UNTRACKED],
-    ])],
-    ['someLocalDir', new Map([
-      ['file/with/shared/prefix/foo.js', FileChangeStatus.MODIFIED],
-      ['file/with/shared/prefix/bar.js', FileChangeStatus.MODIFIED],
-      ['file/with/shared/prefix/baz.js', FileChangeStatus.MODIFIED],
-      ['file/with/another/prefix/foo.js', FileChangeStatus.MODIFIED],
-      ['file/with/another/prefix/bar.js', FileChangeStatus.MODIFIED],
-    ])],
+    [
+      'nuclide://remote.host/someRemoteDir',
+      new Map([
+        ['path/to/some/file/added.js', FileChangeStatus.ADDED],
+        ['path/to/some/file/modified.js', FileChangeStatus.MODIFIED],
+        ['path/to/some/file/missing.js', FileChangeStatus.MISSING],
+        ['path/to/some/file/removed.js', FileChangeStatus.REMOVED],
+        ['path/to/some/file/untracked.js', FileChangeStatus.UNTRACKED],
+      ]),
+    ],
+    [
+      'someLocalDir',
+      new Map([
+        ['file/with/shared/prefix/foo.js', FileChangeStatus.MODIFIED],
+        ['file/with/shared/prefix/bar.js', FileChangeStatus.MODIFIED],
+        ['file/with/shared/prefix/baz.js', FileChangeStatus.MODIFIED],
+        ['file/with/another/prefix/foo.js', FileChangeStatus.MODIFIED],
+        ['file/with/another/prefix/bar.js', FileChangeStatus.MODIFIED],
+      ]),
+    ],
   ]);
   return (
     <div>

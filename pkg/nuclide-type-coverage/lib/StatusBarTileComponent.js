@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -44,7 +45,8 @@ export class StatusBarTileComponent extends React.Component {
       if (featureConfig.get(COLOR_DISPLAY_SETTING)) {
         colorClasses = {
           'text-error': percentage <= REALLY_BAD_THRESHOLD,
-          'text-warning': percentage > REALLY_BAD_THRESHOLD && percentage <= NOT_GREAT_THRESHOLD,
+          'text-warning': percentage > REALLY_BAD_THRESHOLD &&
+            percentage <= NOT_GREAT_THRESHOLD,
           // Nothing applied if percentage > NOT_GREAT_THRESHOLD,
           'nuclide-type-coverage-status-bar-active': this.props.isActive,
         };
@@ -55,17 +57,20 @@ export class StatusBarTileComponent extends React.Component {
         ...colorClasses,
       });
       const formattedPercentage: string = `${Math.floor(percentage)}%`;
-      const tooltipString = getTooltipString(formattedPercentage, result.providerName);
+      const tooltipString = getTooltipString(
+        formattedPercentage,
+        result.providerName,
+      );
       return (
         <div
-            style={{cursor: 'pointer'}}
-            onClick={this.props.onClick}
-            className={classes}
-            ref={addTooltip({
-              title: tooltipString,
-              delay: 0,
-              placement: 'top',
-            })}>
+          style={{cursor: 'pointer'}}
+          onClick={this.props.onClick}
+          className={classes}
+          ref={addTooltip({
+            title: tooltipString,
+            delay: 0,
+            placement: 'top',
+          })}>
           {formattedPercentage}
         </div>
       );
@@ -75,7 +80,12 @@ export class StatusBarTileComponent extends React.Component {
   }
 }
 
-function getTooltipString(formattedPercentage: string, providerName: string): string {
-  return `This file is ${formattedPercentage} covered by ${providerName}.<br/>` +
-    'Click to toggle display of uncovered areas.';
+function getTooltipString(
+  formattedPercentage: string,
+  providerName: string,
+): string {
+  return (
+    `This file is ${formattedPercentage} covered by ${providerName}.<br/>` +
+    'Click to toggle display of uncovered areas.'
+  );
 }

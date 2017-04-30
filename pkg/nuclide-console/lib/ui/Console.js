@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -78,8 +79,10 @@ export default class Console extends React.Component {
   componentDidUpdate(prevProps: Props): void {
     // If records are added while we're scrolled to the bottom (or very very close, at least),
     // automatically scroll.
-    if (this._isScrolledNearBottom &&
-      this.props.displayableRecords.length > prevProps.displayableRecords.length) {
+    if (
+      this._isScrolledNearBottom &&
+      this.props.displayableRecords.length > prevProps.displayableRecords.length
+    ) {
       this._scrollToBottom();
     }
   }
@@ -87,11 +90,10 @@ export default class Console extends React.Component {
   _renderPromptButton(): React.Element<any> {
     invariant(this.props.currentExecutor != null);
     const {currentExecutor} = this.props;
-    const options = Array.from(this.props.executors.values())
-      .map(executor => ({
-        id: executor.id,
-        label: executor.name,
-      }));
+    const options = Array.from(this.props.executors.values()).map(executor => ({
+      id: executor.id,
+      label: executor.name,
+    }));
     return (
       <PromptButton
         value={currentExecutor.id}
@@ -102,12 +104,18 @@ export default class Console extends React.Component {
     );
   }
 
-  _isScrolledToBottom(offsetHeight: number, scrollHeight: number, scrollTop: number): boolean {
+  _isScrolledToBottom(
+    offsetHeight: number,
+    scrollHeight: number,
+    scrollTop: number,
+  ): boolean {
     return scrollHeight - (offsetHeight + scrollTop) < 5;
   }
 
   componentWillReceiveProps(nextProps: Props): void {
-    if (nextProps.displayableRecords.length > this.props.displayableRecords.length) {
+    if (
+      nextProps.displayableRecords.length > this.props.displayableRecords.length
+    ) {
       // If we receive new messages after we've scrolled away from the bottom, show the
       // "new messages" notification.
       if (!this._isScrolledNearBottom) {
@@ -121,7 +129,10 @@ export default class Console extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-    return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
+    return (
+      !shallowEqual(this.props, nextProps) ||
+      !shallowEqual(this.state, nextState)
+    );
   }
 
   _getExecutor(id: string): ?Executor {
@@ -164,7 +175,9 @@ export default class Console extends React.Component {
               getExecutor={this._getExecutor}
               getProvider={this._getProvider}
               onScroll={this._handleScroll}
-              onDisplayableRecordHeightChange={this.props.onDisplayableRecordHeightChange}
+              onDisplayableRecordHeightChange={
+                this.props.onDisplayableRecordHeightChange
+              }
             />
             <NewMessagesNotification
               visible={this.state.unseenMessages}
@@ -194,13 +207,27 @@ export default class Console extends React.Component {
     );
   }
 
-  _handleScroll(offsetHeight: number, scrollHeight: number, scrollTop: number): void {
+  _handleScroll(
+    offsetHeight: number,
+    scrollHeight: number,
+    scrollTop: number,
+  ): void {
     this._handleScrollEnd(offsetHeight, scrollHeight, scrollTop);
   }
 
-  _handleScrollEnd(offsetHeight: number, scrollHeight: number, scrollTop: number): void {
-    this._isScrolledNearBottom = this._isScrolledToBottom(offsetHeight, scrollHeight, scrollTop);
-    this.setState({unseenMessages: this.state.unseenMessages && !this._isScrolledNearBottom});
+  _handleScrollEnd(
+    offsetHeight: number,
+    scrollHeight: number,
+    scrollTop: number,
+  ): void {
+    this._isScrolledNearBottom = this._isScrolledToBottom(
+      offsetHeight,
+      scrollHeight,
+      scrollTop,
+    );
+    this.setState({
+      unseenMessages: this.state.unseenMessages && !this._isScrolledNearBottom,
+    });
   }
 
   _handleOutputTable(ref: OutputTable): void {

@@ -6,9 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
+import typeof * as OpenFilesService
+  from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
@@ -33,7 +35,10 @@ function getOpenFilesService(connection: ?ServerConnection): OpenFilesService {
   return getServiceByConnection(OPEN_FILES_SERVICE, connection);
 }
 
-function uriMatchesConnection(uri: NuclideUri, connection: ?ServerConnection): boolean {
+function uriMatchesConnection(
+  uri: NuclideUri,
+  connection: ?ServerConnection,
+): boolean {
   if (connection == null) {
     return nuclideUri.isLocal(uri);
   } else {
@@ -52,11 +57,13 @@ export class NotifiersByConnection {
   _getService: (connection: ?ServerConnection) => OpenFilesService;
 
   constructor(
-    getService: (connection: ?ServerConnection) => OpenFilesService = getOpenFilesService,
+    getService: (
+      connection: ?ServerConnection,
+    ) => OpenFilesService = getOpenFilesService,
   ) {
     this._getService = getService;
-    const filterByConnection =
-      (connection, dirs) => new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
+    const filterByConnection = (connection, dirs) =>
+      new Set(dirs.filter(dir => uriMatchesConnection(dir, connection)));
     this._notifiers = new ConnectionCache(connection => {
       const result = this._getService(connection).initialize();
       result.then(notifier => {
@@ -65,19 +72,19 @@ export class NotifiersByConnection {
       });
       return result;
     });
-    this._subscriptions = new ConnectionCache(
-      connection => {
-        const subscription =
-          observableFromSubscribeFunction(cb => atom.project.onDidChangePaths(cb))
-            .map(dirs => filterByConnection(connection, dirs))
-            .distinctUntilChanged(areSetsEqual)
-            .subscribe(dirs => {
-              this._notifiers.get(connection).then(notifier => {
-                notifier.onDirectoriesChanged(dirs);
-              });
-            });
-        return Promise.resolve(new Disposable(() => subscription.unsubscribe()));
-      });
+    this._subscriptions = new ConnectionCache(connection => {
+      const subscription = observableFromSubscribeFunction(cb =>
+        atom.project.onDidChangePaths(cb),
+      )
+        .map(dirs => filterByConnection(connection, dirs))
+        .distinctUntilChanged(areSetsEqual)
+        .subscribe(dirs => {
+          this._notifiers.get(connection).then(notifier => {
+            notifier.onDirectoriesChanged(dirs);
+          });
+        });
+      return Promise.resolve(new Disposable(() => subscription.unsubscribe()));
+    });
   }
 
   dispose() {
@@ -127,7 +134,10 @@ export class NotifiersByConnection {
 
           await message.fileVersion.notifier.onFileEvent(message);
         } catch (e) {
-          logger.error(`Error sending file close event: ${filePath} ${version}`, e);
+          logger.error(
+            `Error sending file close event: ${filePath} ${version}`,
+            e,
+          );
           setTimeout(sendMessage, RESYNC_TIMEOUT_MS);
         }
       }

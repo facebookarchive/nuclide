@@ -6,15 +6,19 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
-import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
+import typeof * as PythonService
+  from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 
 import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -38,16 +42,16 @@ let busySignalProvider: ?DedupedBusySignalProviderBase = null;
 async function connectionToPythonService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const pythonService: PythonService = getServiceByConnection(PYTHON_SERVICE_NAME, connection);
-  const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await pythonService.initialize(
-    fileNotifier,
-    {
-      showGlobalVariables: getShowGlobalVariables(),
-      autocompleteArguments: getAutocompleteArguments(),
-      includeOptionalArguments: getIncludeOptionalArguments(),
-    },
+  const pythonService: PythonService = getServiceByConnection(
+    PYTHON_SERVICE_NAME,
+    connection,
   );
+  const fileNotifier = await getNotifierByConnection(connection);
+  const languageService = await pythonService.initialize(fileNotifier, {
+    showGlobalVariables: getShowGlobalVariables(),
+    autocompleteArguments: getAutocompleteArguments(),
+    includeOptionalArguments: getIncludeOptionalArguments(),
+  });
 
   return languageService;
 }
@@ -73,7 +77,7 @@ const atomConfig: AtomLanguageServiceConfig = {
   autocomplete: {
     version: '2.0.0',
     inclusionPriority: 5,
-    suggestionPriority: 5,  // Higher than the snippets provider.
+    suggestionPriority: 5, // Higher than the snippets provider.
     disableForSelector: '.source.python .comment, .source.python .string',
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
@@ -93,7 +97,10 @@ let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
 export function activate() {
   busySignalProvider = new DedupedBusySignalProviderBase();
   if (pythonLanguageService == null) {
-    pythonLanguageService = new AtomLanguageService(connectionToPythonService, atomConfig);
+    pythonLanguageService = new AtomLanguageService(
+      connectionToPythonService,
+      atomConfig,
+    );
     pythonLanguageService.activate();
   }
 }

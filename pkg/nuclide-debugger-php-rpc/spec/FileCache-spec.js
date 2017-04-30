@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ClientCallback} from '../lib/ClientCallback';
@@ -24,12 +25,12 @@ describe('debugger-php-rpc FileCache', () => {
       'onNext',
       'onCompleted',
     ]);
-    callback = ((
-      jasmine.createSpyObj(
-        'callback',
-        ['replyToCommand', 'replyWithError', 'sendServerMethod', 'getServerMessageObservable'],
-      ): any
-    ): ClientCallback);
+    callback = ((jasmine.createSpyObj('callback', [
+      'replyToCommand',
+      'replyWithError',
+      'sendServerMethod',
+      'getServerMessageObservable',
+    ]): any): ClientCallback);
     // $FlowIssue -- instance method on object.
     callback.getServerMessageObservable = jasmine
       .createSpy('getServerMessageObservable')
@@ -43,16 +44,16 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const sourceFileUrl = `file://${filepath}`;
       cache.registerFile(sourceFileUrl);
-      expect(callback.sendServerMethod).toHaveBeenCalledWith(
-        'Debugger.scriptParsed',
-        {
-          scriptId: filepath,
-          url: sourceFileUrl,
-          startLine: 0,
-          startColumn: 0,
-          endLine: 0,
-          endColumn: 0,
-        });
+      expect(
+        callback.sendServerMethod,
+      ).toHaveBeenCalledWith('Debugger.scriptParsed', {
+        scriptId: filepath,
+        url: sourceFileUrl,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0,
+      });
       const source = await cache.getFileSource(filepath);
       expect(source).toBe('<?hh\n');
     });
@@ -62,16 +63,16 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const noSourceFileUrl = filepath;
       cache.registerFile(noSourceFileUrl);
-      expect(callback.sendServerMethod).toHaveBeenCalledWith(
-        'Debugger.scriptParsed',
-        {
-          scriptId: filepath,
-          url: noSourceFileUrl,
-          startLine: 0,
-          startColumn: 0,
-          endLine: 0,
-          endColumn: 0,
-        });
+      expect(
+        callback.sendServerMethod,
+      ).toHaveBeenCalledWith('Debugger.scriptParsed', {
+        scriptId: filepath,
+        url: noSourceFileUrl,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0,
+      });
       const source = await cache.getFileSource(filepath);
       expect(source).toBe('<?hh\n');
     });

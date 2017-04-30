@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import fs from 'fs';
@@ -45,7 +46,6 @@ export default function replaceInFile(
           return 0;
         })
         .reduce((acc, curr) => acc + curr, 0),
-
       // Wait for the temporary file to finish.
       // We need to ensure that the event handler is attached before end().
       Observable.create(observer => {
@@ -55,20 +55,15 @@ export default function replaceInFile(
         tempStream.end();
         return () => disposable.dispose();
       }),
-
       // Copy the permissions from the orignal file.
-      Observable.defer(() => copyPermissions(path, tempPath))
-        .ignoreElements(),
-
+      Observable.defer(() => copyPermissions(path, tempPath)).ignoreElements(),
       // Overwrite the original file with the temporary file.
-      Observable.defer(() => fsPromise.rename(tempPath, path))
-        .ignoreElements(),
-    )
-      .catch(err => {
-        // Make sure we clean up the temporary file if an error occurs.
-        fsPromise.unlink(tempPath).catch(() => {});
-        return Observable.throw(err);
-      });
+      Observable.defer(() => fsPromise.rename(tempPath, path)).ignoreElements(),
+    ).catch(err => {
+      // Make sure we clean up the temporary file if an error occurs.
+      fsPromise.unlink(tempPath).catch(() => {});
+      return Observable.throw(err);
+    });
   });
 }
 

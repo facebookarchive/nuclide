@@ -6,14 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
 import {Block} from './Block';
-import {
-  Highlight,
-  HighlightColors,
-} from './Highlight';
+import {Highlight, HighlightColors} from './Highlight';
 
 const HighlightExample = (): React.Element<any> => (
   <div>

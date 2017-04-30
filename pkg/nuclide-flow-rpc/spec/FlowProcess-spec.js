@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ServerStatusType} from '..';
@@ -47,13 +48,12 @@ describe('FlowProcess', () => {
     const processModule = require('../../commons-node/process');
     const runCommand = processModule.runCommand;
 
-    spyOn(processModule, 'runCommand')
-      .andCallFake((command, args, options) => {
-        if (args && args[0] === 'version' && args[1] === '--json') {
-          return new Observable.of(JSON.stringify({binary}));
-        }
-        return runCommand.call(this, command, args, options);
-      });
+    spyOn(processModule, 'runCommand').andCallFake((command, args, options) => {
+      if (args && args[0] === 'version' && args[1] === '--json') {
+        return new Observable.of(JSON.stringify({binary}));
+      }
+      return runCommand.call(this, command, args, options);
+    });
 
     spyOn(processModule, 'runCommandDetailed')
       // We need this level of indirection to ensure that if fakeRunCommandDetailed
@@ -68,10 +68,9 @@ describe('FlowProcess', () => {
     };
 
     const niceModule = require('../../commons-node/nice');
-    niceSpy = spyOn(niceModule, 'niceSafeSpawn')
-      .andCallFake(() => {
-        return childSpy;
-      });
+    niceSpy = spyOn(niceModule, 'niceSafeSpawn').andCallFake(() => {
+      return childSpy;
+    });
 
     const nuclideUri = require('../../commons-node/nuclideUri').default;
     root = nuclideUri.join(__dirname, 'fixtures/with-flow-bin');
@@ -84,7 +83,8 @@ describe('FlowProcess', () => {
     const FlowExecInfoContainerModule = require('../lib/FlowExecInfoContainer');
     FlowExecInfoContainer = FlowExecInfoContainerModule.FlowExecInfoContainer;
 
-    fakeRunCommandDetailed = jasmine.createSpy()
+    fakeRunCommandDetailed = jasmine
+      .createSpy()
       .andReturn(Observable.of({exitCode: FLOW_RETURN_CODES.ok}));
 
     flowProcess = new FlowProcess(root, new FlowExecInfoContainer());
@@ -107,7 +107,7 @@ describe('FlowProcess', () => {
           called = true;
           return Observable.throw({
             exitCode: FLOW_RETURN_CODES.noServerRunning,
-            stderr: 'There is no flow server running\n\'/path/to/flow/root\'',
+            stderr: "There is no flow server running\n'/path/to/flow/root'",
           });
         }
       };
@@ -115,7 +115,9 @@ describe('FlowProcess', () => {
       spyOn(childSpy, 'kill');
       spyOn(childSpy, 'on');
 
-      waitsForPromise(async () => { await execFlow(); });
+      waitsForPromise(async () => {
+        await execFlow();
+      });
     });
 
     describe('execFlow', () => {
@@ -123,14 +125,14 @@ describe('FlowProcess', () => {
         const expectedWorkers = os.cpus().length - 2;
         const args: Array<any> = niceSpy.mostRecentCall.args;
         expect(args[0]).toEqual(binary);
-        expect(args[1]).toEqual(
-          [
-            'server',
-            '--from', 'nuclide',
-            '--max-workers', expectedWorkers.toString(),
-            root,
-          ],
-        );
+        expect(args[1]).toEqual([
+          'server',
+          '--from',
+          'nuclide',
+          '--max-workers',
+          expectedWorkers.toString(),
+          root,
+        ]);
         expect(args[2].cwd).toEqual(root);
         expect(args[2].env.OCAMLRUNPARAM).toEqual('b');
       });
@@ -226,9 +228,13 @@ describe('FlowProcess', () => {
         fakeRunCommandDetailed = () => {
           switch (currentStatus) {
             case 'unknown':
-              return Observable.of({exitCode: FLOW_RETURN_CODES.noServerRunning});
+              return Observable.of({
+                exitCode: FLOW_RETURN_CODES.noServerRunning,
+              });
             case 'not running':
-              return Observable.of({exitCode: FLOW_RETURN_CODES.serverInitializing});
+              return Observable.of({
+                exitCode: FLOW_RETURN_CODES.serverInitializing,
+              });
             case 'init':
               return Observable.of({exitCode: FLOW_RETURN_CODES.ok});
             default:
@@ -238,7 +244,12 @@ describe('FlowProcess', () => {
         await execFlow(/* waitForServer */ false).catch(e => {
           expect(e.exitCode).toBe(FLOW_RETURN_CODES.noServerRunning);
         });
-        expect(await states).toEqual(['unknown', 'not running', 'init', 'ready']);
+        expect(await states).toEqual([
+          'unknown',
+          'not running',
+          'init',
+          'ready',
+        ]);
       });
     });
   });
@@ -246,7 +257,11 @@ describe('FlowProcess', () => {
   describe('execFlowClient', () => {
     it('should call runCommandDetailed', () => {
       waitsForPromise(async () => {
-        await FlowProcess.execFlowClient(['arg'], null, new FlowExecInfoContainer());
+        await FlowProcess.execFlowClient(
+          ['arg'],
+          null,
+          new FlowExecInfoContainer(),
+        );
         const [runCommandDetailedArgs] = fakeRunCommandDetailed.argsForCall;
         expect(runCommandDetailedArgs[0]).toEqual(binary);
         expect(runCommandDetailedArgs[1]).toEqual(['arg', '--from', 'nuclide']);

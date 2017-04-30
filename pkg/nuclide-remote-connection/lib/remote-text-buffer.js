@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -18,7 +19,9 @@ import {observableFromSubscribeFunction} from '../../commons-node/event';
 import NuclideTextBuffer from './NuclideTextBuffer';
 import {ServerConnection} from './ServerConnection';
 
-export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
+export async function loadBufferForUri(
+  uri: NuclideUri,
+): Promise<atom$TextBuffer> {
   let buffer = existingBufferForUri(uri);
   if (buffer == null) {
     buffer = createBufferForUri(uri);
@@ -50,7 +53,8 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   let buffer;
   const params = {
     filePath: uri,
-    shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs'),
+    shouldDestroyOnFileDelete: () =>
+      atom.config.get('core.closeDeletedFileTabs'),
   };
   if (nuclideUri.isLocal(uri)) {
     buffer = new TextBuffer(params);
@@ -77,7 +81,9 @@ export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
  * Provides an asynchronous interface for saving a buffer, regardless of whether it's an Atom
  * TextBuffer or NuclideTextBuffer.
  */
-export async function saveBuffer(buffer: atom$TextBuffer | NuclideTextBuffer): Promise<void> {
+export async function saveBuffer(
+  buffer: atom$TextBuffer | NuclideTextBuffer,
+): Promise<void> {
   const expectedPath = buffer.getPath();
   const promise = observableFromSubscribeFunction(buffer.onDidSave.bind(buffer))
     .filter(({path}) => path === expectedPath)

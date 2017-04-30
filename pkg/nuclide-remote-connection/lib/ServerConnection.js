@@ -6,12 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
+import type {
+  HgRepositoryDescription,
+} from '../../nuclide-source-control-helpers';
+import typeof * as InfoService
+  from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 
@@ -20,7 +24,10 @@ import invariant from 'assert';
 import {RpcConnection} from '../../nuclide-rpc';
 import {Observable} from 'rxjs';
 import servicesConfig from '../../nuclide-server/lib/servicesConfig';
-import {setConnectionConfig, clearConnectionConfig} from './RemoteConnectionConfigurationManager';
+import {
+  setConnectionConfig,
+  clearConnectionConfig,
+} from './RemoteConnectionConfigurationManager';
 import {ConnectionHealthNotifier} from './ConnectionHealthNotifier';
 import {RemoteFile} from './RemoteFile';
 import {RemoteDirectory} from './RemoteDirectory';
@@ -64,7 +71,9 @@ export class ServerConnection {
   static _connections: Map<string, ServerConnection> = new Map();
   static _emitter = new Emitter();
 
-  static async getOrCreate(config: ServerConnectionConfiguration): Promise<ServerConnection> {
+  static async getOrCreate(
+    config: ServerConnectionConfiguration,
+  ): Promise<ServerConnection> {
     const existingConnection = ServerConnection.getByHostname(config.host);
     if (existingConnection != null) {
       return existingConnection;
@@ -106,11 +115,15 @@ export class ServerConnection {
     this._client = null;
     this._connections = [];
     this._fileWatches = new SharedObservableCache(path => {
-      const fileWatcherService: FileWatcherService = this.getService('FileWatcherService');
+      const fileWatcherService: FileWatcherService = this.getService(
+        'FileWatcherService',
+      );
       return fileWatcherService.watchFile(path).refCount();
     });
     this._directoryWatches = new SharedObservableCache(path => {
-      const fileWatcherService: FileWatcherService = this.getService('FileWatcherService');
+      const fileWatcherService: FileWatcherService = this.getService(
+        'FileWatcherService',
+      );
       return fileWatcherService.watchDirectory(path).refCount();
     });
   }
@@ -137,7 +150,10 @@ export class ServerConnection {
 
   _monitorConnectionHeartbeat() {
     invariant(this._healthNotifier == null);
-    this._healthNotifier = new ConnectionHealthNotifier(this._config.host, this.getSocket());
+    this._healthNotifier = new ConnectionHealthNotifier(
+      this._config.host,
+      this.getSocket(),
+    );
   }
 
   getUriOfRemotePath(remotePath: string): string {
@@ -155,22 +171,15 @@ export class ServerConnection {
   ): RemoteDirectory {
     let {path} = nuclideUri.parse(uri);
     path = nuclideUri.normalize(path);
-    return new RemoteDirectory(
-      this,
-      this.getUriOfRemotePath(path),
-      symlink,
-      {hgRepositoryDescription},
-    );
+    return new RemoteDirectory(this, this.getUriOfRemotePath(path), symlink, {
+      hgRepositoryDescription,
+    });
   }
 
   createFile(uri: NuclideUri, symlink: boolean = false): RemoteFile {
     let {path} = nuclideUri.parse(uri);
     path = nuclideUri.normalize(path);
-    return new RemoteFile(
-      this,
-      this.getUriOfRemotePath(path),
-      symlink,
-    );
+    return new RemoteFile(this, this.getUriOfRemotePath(path), symlink);
   }
 
   getFileWatch(path: string): Observable<WatchResult> {
@@ -188,7 +197,8 @@ export class ServerConnection {
 
     function throwVersionMismatch(version) {
       const err = new Error(
-        `Version mismatch. Client at ${clientVersion} while server at ${version}.`);
+        `Version mismatch. Client at ${clientVersion} while server at ${version}.`,
+      );
       err.name = 'VersionMismatchError';
       throw err;
     }
@@ -238,7 +248,10 @@ export class ServerConnection {
   }
 
   getClient(): RpcConnection<NuclideSocket> {
-    invariant(!this._closed && this._client != null, 'Server connection has been closed.');
+    invariant(
+      !this._closed && this._client != null,
+      'Server connection has been closed.',
+    );
     return this._client;
   }
 
@@ -277,9 +290,9 @@ export class ServerConnection {
 
   _isSecure(): boolean {
     return Boolean(
-        this._config.certificateAuthorityCertificate
-        && this._config.clientCertificate
-        && this._config.clientKey,
+      this._config.certificateAuthorityCertificate &&
+        this._config.clientCertificate &&
+        this._config.clientKey,
     );
   }
 
@@ -299,9 +312,14 @@ export class ServerConnection {
     this._connections.push(connection);
   }
 
-  async removeConnection(connection: RemoteConnection, shutdownIfLast: boolean): Promise<void> {
-    invariant(this._connections.indexOf(connection) !== -1,
-      'Attempt to remove a non-existent RemoteConnection');
+  async removeConnection(
+    connection: RemoteConnection,
+    shutdownIfLast: boolean,
+  ): Promise<void> {
+    invariant(
+      this._connections.indexOf(connection) !== -1,
+      'Attempt to remove a non-existent RemoteConnection',
+    );
     this._connections.splice(this._connections.indexOf(connection), 1);
     if (this._connections.length === 0) {
       // The await here is subtle, it ensures that the shutdown call is sent
@@ -311,11 +329,15 @@ export class ServerConnection {
     }
   }
 
-  static onDidAddServerConnection(handler: (connection: ServerConnection) => mixed): IDisposable {
+  static onDidAddServerConnection(
+    handler: (connection: ServerConnection) => mixed,
+  ): IDisposable {
     return ServerConnection._emitter.on('did-add', handler);
   }
 
-  static onDidCloseServerConnection(handler: (connection: ServerConnection) => mixed): IDisposable {
+  static onDidCloseServerConnection(
+    handler: (connection: ServerConnection) => mixed,
+  ): IDisposable {
     return ServerConnection._emitter.on('did-close', handler);
   }
 
@@ -331,7 +353,9 @@ export class ServerConnection {
     return ServerConnection._connections.get(hostname);
   }
 
-  static observeConnections(handler: (connection: ServerConnection) => mixed): IDisposable {
+  static observeConnections(
+    handler: (connection: ServerConnection) => mixed,
+  ): IDisposable {
     ServerConnection._connections.forEach(handler);
     return ServerConnection.onDidAddServerConnection(handler);
   }
@@ -380,7 +404,6 @@ export class ServerConnection {
     ).map(() => Array.from(ServerConnection._connections.values()));
   }
 }
-
 
 export const __test__ = {
   connections: ServerConnection._connections,

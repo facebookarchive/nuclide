@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import fs from 'fs';
@@ -39,7 +40,9 @@ async function main(args) {
     const {port, expiration_days} = args;
     if (expiration_days) {
       setTimeout(() => {
-        logger.warn(`NuclideServer exiting - ${expiration_days} day expiration time reached.`);
+        logger.warn(
+          `NuclideServer exiting - ${expiration_days} day expiration time reached.`,
+        );
         flushLogsAndExit(0);
       }, expiration_days * 24 * 60 * 60 * 1000);
     }
@@ -49,13 +52,16 @@ async function main(args) {
       cert = fs.readFileSync(cert);
       ca = fs.readFileSync(ca);
     }
-    const server = new NuclideServer({
-      port,
-      serverKey: key,
-      serverCertificate: cert,
-      certificateAuthorityCertificate: ca,
-      trackEventLoop: true,
-    }, servicesConfig);
+    const server = new NuclideServer(
+      {
+        port,
+        serverKey: key,
+        serverCertificate: cert,
+        certificateAuthorityCertificate: ca,
+        trackEventLoop: true,
+      },
+      servicesConfig,
+    );
     await server.connect();
     serverStartTimer.onSuccess();
     logger.info(`NuclideServer started on port ${port}.`);
@@ -94,9 +100,7 @@ process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
 });
 
-const argv = yargs
-    .default('port', DEFAULT_PORT)
-    .argv;
+const argv = yargs.default('port', DEFAULT_PORT).argv;
 
 main(argv);
 

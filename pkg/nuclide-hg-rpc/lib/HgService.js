@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ConnectableObservable} from 'rxjs';
@@ -57,11 +58,15 @@ const logger = getLogger();
 const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
 const DEFAULT_FORK_BASE_NAME = 'default';
 
-const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
-const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
-const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS = 'hg-repository-watchman-subscription-hgbookmarks';
+const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY =
+  'hg-repository-watchman-subscription-primary';
+const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK =
+  'hg-repository-watchman-subscription-hgbookmark';
+const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS =
+  'hg-repository-watchman-subscription-hgbookmarks';
 const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
-const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS = 'hg-repository-watchman-subscription-conflicts';
+const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS =
+  'hg-repository-watchman-subscription-conflicts';
 
 const CHECK_CONFLICT_DELAY_MS = 2000;
 const COMMIT_CHANGE_DEBOUNCE_MS = 1000;
@@ -87,10 +92,10 @@ const IGNORABLE_ERROR_SUFFIXES = [
 export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?' | 'U';
 
 export type MergeConflictStatusValue =
-  'both changed' |
-  'deleted in theirs' |
-  'deleted in ours' |
-  'resolved';
+  | 'both changed'
+  | 'deleted in theirs'
+  | 'deleted in ours'
+  | 'resolved';
 
 export type MergeConflictStatusCodeId = 'R' | 'U';
 
@@ -126,7 +131,13 @@ export type DiffInfo = {
 
 export type CommitPhaseType = 'public' | 'draft' | 'secret';
 
-export type SuccessorTypeValue = 'public' | 'amend' | 'rebase' | 'split' | 'fold' | 'histedit';
+export type SuccessorTypeValue =
+  | 'public'
+  | 'amend'
+  | 'rebase'
+  | 'split'
+  | 'fold'
+  | 'histedit';
 
 export type RevisionSuccessorInfo = {
   hash: string,
@@ -231,9 +242,11 @@ export type CheckoutOptions = {
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
-    return arcConfig['arc.feature.start.default']
-      || arcConfig['arc.land.onto.default']
-      || DEFAULT_ARC_PROJECT_FORK_BASE;
+    return (
+      arcConfig['arc.feature.start.default'] ||
+      arcConfig['arc.land.onto.default'] ||
+      DEFAULT_ARC_PROJECT_FORK_BASE
+    );
   }
   return DEFAULT_FORK_BASE_NAME;
 }
@@ -278,12 +291,9 @@ export class HgService {
     this._hgConflictStateDidChangeObserver = new Subject();
     this._hgRepoCommitsDidChangeObserver = new Subject();
     this._isInConflict = false;
-    this._debouncedCheckConflictChange = debounce(
-      () => {
-        this._checkConflictChange();
-      },
-      CHECK_CONFLICT_DELAY_MS,
-    );
+    this._debouncedCheckConflictChange = debounce(() => {
+      this._checkConflictChange();
+    }, CHECK_CONFLICT_DELAY_MS);
     this._watchmanSubscriptionPromise = this._subscribeToWatchman();
   }
 
@@ -312,7 +322,8 @@ export class HgService {
   _hgObserveExecution(
     args: Array<string>,
     options: HgExecOptions,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     return hgObserveExecution(args, options);
   }
 
@@ -327,10 +338,12 @@ export class HgService {
    * Section: File and Repository Status
    */
 
-   /**
+  /**
     * Shells out of the `hg status` to get the statuses of the paths.
     */
-  fetchStatuses(toRevision?: string): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+  fetchStatuses(
+    toRevision?: string,
+  ): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -358,7 +371,9 @@ export class HgService {
    * Like fetchStatuses, but first calculates the root of the current
    * stack and fetches changes since that revision.
    */
-  fetchStackStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+  fetchStackStatuses(): ConnectableObservable<
+    Map<NuclideUri, StatusCodeIdValue>
+  > {
     // Note: an alternative which doesn't depend upon reading .arcconfig in getForkBaseName is:
     //   return this.fetchStatuses('ancestor(ancestor((not public()) and (:: .))^ or .)')
     // Both the code below and the alternative above have identical performance.
@@ -375,10 +390,11 @@ export class HgService {
    * Like fetchStatuses, but first checks whether the head is public. If so, returns
    * changes *since* the head. If not, returns changes *including* the head.
    */
-  fetchHeadStatuses(): ConnectableObservable<Map<NuclideUri, StatusCodeIdValue>> {
+  fetchHeadStatuses(): ConnectableObservable<
+    Map<NuclideUri, StatusCodeIdValue>
+  > {
     return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
   }
-
 
   async _subscribeToWatchman(): Promise<void> {
     // Using a local variable here to allow better type refinement.
@@ -386,7 +402,8 @@ export class HgService {
     this._watchmanClient = watchmanClient;
     const workingDirectory = this._workingDirectory;
 
-    let primarySubscriptionExpression: Array<mixed> = ['allof',
+    let primarySubscriptionExpression: Array<mixed> = [
+      'allof',
       ['not', ['dirname', '.hg']],
       // Hg appears to modify temporary files that begin with these
       // prefixes, every time a file is saved.
@@ -399,8 +416,9 @@ export class HgService {
       // This line restricts this subscription to only return files.
       ['type', 'f'],
     ];
-    primarySubscriptionExpression =
-      primarySubscriptionExpression.concat(getPrimaryWatchmanSubscriptionRefinements());
+    primarySubscriptionExpression = primarySubscriptionExpression.concat(
+      getPrimaryWatchmanSubscriptionRefinements(),
+    );
 
     // Subscribe to changes to files unrelated to source control.
     const primarySubscribtion = await watchmanClient.watchDirectoryRecursive(
@@ -413,8 +431,9 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`);
-
+    logger.debug(
+      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`,
+    );
 
     // Subscribe to changes to files unrelated to source control.
     const conflictStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
@@ -427,7 +446,9 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS} established.`);
+    logger.debug(
+      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS} established.`,
+    );
 
     // Subscribe to changes to the active Mercurial bookmark.
     const hgActiveBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
@@ -440,7 +461,9 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
+    logger.debug(
+      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`,
+    );
 
     // Subscribe to changes in Mercurial bookmarks.
     const hgBookmarksSubscription = await watchmanClient.watchDirectoryRecursive(
@@ -453,7 +476,9 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS} established.`);
+    logger.debug(
+      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS} established.`,
+    );
 
     const dirStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
       workingDirectory,
@@ -473,18 +498,24 @@ export class HgService {
     const hgStoreDirectory = nuclideUri.join(workingDirectory, '.hg', 'store');
     const commitChangeIndicators = ['00changelog.i', 'obsstore', 'inhibit'];
     try {
-      this._hgStoreDirWatcher = fs.watch(hgStoreDirectory, (event, fileName) => {
-        if (commitChangeIndicators.indexOf(fileName) === -1) {
-          this._commitsDidChange();
-        }
-      });
+      this._hgStoreDirWatcher = fs.watch(
+        hgStoreDirectory,
+        (event, fileName) => {
+          if (commitChangeIndicators.indexOf(fileName) === -1) {
+            this._commitsDidChange();
+          }
+        },
+      );
       getLogger().debug('Node watcher created for .hg/store.');
     } catch (error) {
       getLogger().error('Error when creating node watcher for hg store', error);
     }
 
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
-    hgActiveBookmarkSubscription.on('change', this._hgActiveBookmarkDidChange.bind(this));
+    hgActiveBookmarkSubscription.on(
+      'change',
+      this._hgActiveBookmarkDidChange.bind(this),
+    );
     hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
     dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
     conflictStateSubscribtion.on('change', this._debouncedCheckConflictChange);
@@ -507,7 +538,9 @@ export class HgService {
     }
 
     const workingDirectory = this._workingDirectory;
-    const changedFiles = fileChanges.map(change => nuclideUri.join(workingDirectory, change.name));
+    const changedFiles = fileChanges.map(change =>
+      nuclideUri.join(workingDirectory, change.name),
+    );
     this._filesDidChangeObserver.next(changedFiles);
   }
 
@@ -516,7 +549,9 @@ export class HgService {
   }
 
   _checkMergeDirectoryExists(): Promise<boolean> {
-    return fsPromise.exists(nuclideUri.join(this._workingDirectory, '.hg', 'merge'));
+    return fsPromise.exists(
+      nuclideUri.join(this._workingDirectory, '.hg', 'merge'),
+    );
   }
 
   async _checkConflictChange(): Promise<void> {
@@ -563,11 +598,13 @@ export class HgService {
    * (e.g. commit, amend, histedit, strip, rebase) that would require refetching from the service.
    */
   observeHgCommitsDidChange(): ConnectableObservable<void> {
-    return this._hgRepoCommitsDidChangeObserver
-      // Upon rebase, this can fire once per added commit!
-      // Apply a generous debounce to avoid overloading the RPC connection.
-      .debounceTime(COMMIT_CHANGE_DEBOUNCE_MS)
-      .publish();
+    return (
+      this._hgRepoCommitsDidChangeObserver
+        // Upon rebase, this can fire once per added commit!
+        // Apply a generous debounce to avoid overloading the RPC connection.
+        .debounceTime(COMMIT_CHANGE_DEBOUNCE_MS)
+        .publish()
+    );
   }
 
   /**
@@ -594,12 +631,16 @@ export class HgService {
    *   If the `hg diff` call fails, this method returns null.
    *   If a path has no changes, it will not appear in the returned Map.
    */
-  async fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
+  async fetchDiffInfo(
+    filePaths: Array<NuclideUri>,
+  ): Promise<?Map<NuclideUri, DiffInfo>> {
     // '--unified 0' gives us 0 lines of context around each change (we don't
     // care about the context).
     // '--noprefix' omits the a/ and b/ prefixes from filenames.
     // '--nodates' avoids appending dates to the file path line.
-    const args = ['diff', '--unified', '0', '--noprefix', '--nodates'].concat(filePaths);
+    const args = ['diff', '--unified', '0', '--noprefix', '--nodates'].concat(
+      filePaths,
+    );
     const options = {
       cwd: this._workingDirectory,
     };
@@ -608,7 +649,8 @@ export class HgService {
       output = await this._hgAsyncExecute(args, options);
     } catch (e) {
       getLogger().error(
-          `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${e.stderr}`);
+        `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${e.stderr}`,
+      );
       return null;
     }
     const pathToDiffInfo = parseMultiFileHgDiffUnifiedOutput(output.stdout);
@@ -641,7 +683,11 @@ export class HgService {
   }
 
   renameBookmark(name: string, nextName: string): Promise<void> {
-    return this._runSimpleInWorkingDirectory('bookmarks', ['--rename', name, nextName]);
+    return this._runSimpleInWorkingDirectory('bookmarks', [
+      '--rename',
+      name,
+      nextName,
+    ]);
   }
 
   /**
@@ -692,10 +738,16 @@ export class HgService {
     filePath: NuclideUri,
     revision: string,
   ): ConnectableObservable<string> {
-    return fetchFileContentAtRevision(filePath, revision, this._workingDirectory);
+    return fetchFileContentAtRevision(
+      filePath,
+      revision,
+      this._workingDirectory,
+    );
   }
 
-  fetchFilesChangedAtRevision(revision: string): ConnectableObservable<RevisionFileChanges> {
+  fetchFilesChangedAtRevision(
+    revision: string,
+  ): ConnectableObservable<RevisionFileChanges> {
     return fetchFilesChangedAtRevision(revision, this._workingDirectory);
   }
 
@@ -743,15 +795,18 @@ export class HgService {
         [
           'blame',
           '-c', // Query the hash
-          '-T', '{node|short}\n', // Just display the hash per line
-          '-r', 'wdir()', // Blank out uncommitted changes
+          '-T',
+          '{node|short}\n', // Just display the hash per line
+          '-r',
+          'wdir()', // Blank out uncommitted changes
           filePath,
         ],
         {cwd: this._workingDirectory},
       )).stdout.split('\n');
     } catch (e) {
       getLogger().error(
-        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
+      );
       throw e;
     }
 
@@ -766,7 +821,8 @@ export class HgService {
       ).toPromise();
     } catch (e) {
       getLogger().error(
-        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
+        `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
+      );
       throw e;
     }
 
@@ -803,8 +859,18 @@ export class HgService {
    * This implementation relies on the "phabdiff" template being available as defined in:
    * https://bitbucket.org/facebook/hg-experimental/src/fbf23b3f96bade5986121a7c57d7400585d75f54/phabdiff.py.
    */
-  async getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
-    const args = ['log', '-T', '{phabdiff}\n', '--limit', '1', '--rev', changeSetId];
+  async getDifferentialRevisionForChangeSetId(
+    changeSetId: string,
+  ): Promise<?string> {
+    const args = [
+      'log',
+      '-T',
+      '{phabdiff}\n',
+      '--limit',
+      '1',
+      '--rev',
+      changeSetId,
+    ];
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -814,7 +880,9 @@ export class HgService {
       return stdout ? stdout : null;
     } catch (e) {
       // This should not happen: `hg log` does not error even if it does not recognize the template.
-      getLogger().error(`Failed when trying to get differential revision for: ${changeSetId}`);
+      getLogger().error(
+        `Failed when trying to get differential revision for: ${changeSetId}`,
+      );
       return null;
     }
   }
@@ -826,10 +894,17 @@ export class HgService {
    * @param concise true to run `hg smartlog`; false to run `hg ssl`.
    * @return The output from running the command.
    */
-  async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<AsyncExecuteRet> {
+  async getSmartlog(
+    ttyOutput: boolean,
+    concise: boolean,
+  ): Promise<AsyncExecuteRet> {
     // disable the pager extension so that 'hg ssl' terminates. We can't just use
     // HGPLAIN because we have not found a way to get colored output when we do.
-    const args = ['--config', 'extensions.pager=!', concise ? 'ssl' : 'smartlog'];
+    const args = [
+      '--config',
+      'extensions.pager=!',
+      concise ? 'ssl' : 'smartlog',
+    ];
     const execOptions = {
       cwd: this._workingDirectory,
       NO_HGPLAIN: concise, // `hg ssl` is likely user-defined.
@@ -841,15 +916,18 @@ export class HgService {
   _commitCode(
     message: ?string,
     args: Array<string>,
-  ): Observable<LegacyProcessMessage> { // TODO(T17463635)
+  ): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
     let editMergeConfigs;
-    return Observable.fromPromise((async () => {
-      if (message == null) {
-        return args;
-      } else {
-        return [...args, '-m', formatCommitMessage(message)];
-      }
-    })()).switchMap(argumentsWithCommitFile => {
+    return Observable.fromPromise(
+      (async () => {
+        if (message == null) {
+          return args;
+        } else {
+          return [...args, '-m', formatCommitMessage(message)];
+        }
+      })(),
+    ).switchMap(argumentsWithCommitFile => {
       const execArgs = argumentsWithCommitFile;
       const execOptions: HgExecOptions = {
         cwd: this._workingDirectory,
@@ -862,10 +940,7 @@ export class HgService {
         // on the user's default editor from attempting to open up when needed.
         execOptions.HGEDITOR = 'true';
       }
-      return this._hgObserveExecution(
-        execArgs,
-        execOptions,
-      );
+      return this._hgObserveExecution(execArgs, execOptions);
     });
   }
 
@@ -873,9 +948,8 @@ export class HgService {
    * Commit code to version control.
    * @param message Commit message.
    */
-  commit(
-    message: string,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  commit(message: string): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     return this._commitCode(message, ['commit']).publish();
   }
 
@@ -890,7 +964,8 @@ export class HgService {
   amend(
     message: ?string,
     amendMode: AmendModeValue,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  ): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     const args = ['amend'];
     switch (amendMode) {
       case AmendMode.CLEAN:
@@ -907,24 +982,26 @@ export class HgService {
     return this._commitCode(message, args).publish();
   }
 
-  splitRevision(): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  splitRevision(): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     let editMergeConfigs;
-    return Observable.fromPromise((async () => {
-      editMergeConfigs = await getInteractiveCommitEditorConfig();
-    })()).switchMap(() => {
-      invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
-      const execOptions = {
-        cwd: this._workingDirectory,
-        HGEDITOR: editMergeConfigs.hgEditor,
-      };
-      return this._hgObserveExecution(
-        [
-          ...editMergeConfigs.args,
-          'split',
-        ],
-        execOptions,
-      );
-    }).publish();
+    return Observable.fromPromise(
+      (async () => {
+        editMergeConfigs = await getInteractiveCommitEditorConfig();
+      })(),
+    )
+      .switchMap(() => {
+        invariant(editMergeConfigs != null, 'editMergeConfigs cannot be null');
+        const execOptions = {
+          cwd: this._workingDirectory,
+          HGEDITOR: editMergeConfigs.hgEditor,
+        };
+        return this._hgObserveExecution(
+          [...editMergeConfigs.args, 'split'],
+          execOptions,
+        );
+      })
+      .publish();
   }
 
   revert(filePaths: Array<NuclideUri>, toRevision: ?string): Promise<void> {
@@ -966,7 +1043,8 @@ export class HgService {
     revision: string,
     create: boolean,
     options?: CheckoutOptions,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  ): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     const args = ['checkout', revision];
     if (options && options.clean) {
       args.push('--clean');
@@ -1045,7 +1123,7 @@ export class HgService {
   ): Promise<void> {
     const args = [
       ...filePaths.map(p => nuclideUri.getPath(p)), // Sources
-      nuclideUri.getPath(destPath),                 // Dest
+      nuclideUri.getPath(destPath), // Dest
     ];
     if (after) {
       args.unshift('--after');
@@ -1121,9 +1199,13 @@ export class HgService {
 
   async getHeadCommitMessage(): Promise<?string> {
     const args = [
-      'log', '-T', '{desc}\n',
-      '--limit', '1',
-      '--rev', expressionForRevisionsBeforeHead(0),
+      'log',
+      '-T',
+      '{desc}\n',
+      '--limit',
+      '1',
+      '--rev',
+      expressionForRevisionsBeforeHead(0),
     ];
     const execOptions = {
       cwd: this._workingDirectory,
@@ -1139,7 +1221,10 @@ export class HgService {
     }
   }
 
-  async log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse> {
+  async log(
+    filePaths: Array<NuclideUri>,
+    limit?: ?number,
+  ): Promise<VcsLogResponse> {
     const args = ['log', '-Tjson'];
     if (limit != null && limit > 0) {
       args.push('--limit', String(limit));
@@ -1156,7 +1241,9 @@ export class HgService {
     return {entries};
   }
 
-  fetchMergeConflictsWithDetails(): ConnectableObservable<?MergeConflictsEnriched> {
+  fetchMergeConflictsWithDetails(): ConnectableObservable<
+    ?MergeConflictsEnriched
+  > {
     const args = ['resolve', '--tool=internal:dumpjson', '--all'];
     const execOptions = {
       cwd: this._workingDirectory,
@@ -1195,14 +1282,22 @@ export class HgService {
    * Setting fetchResolved will return all resolved and unresolved conflicts,
    * the default would only fetch the current unresolved conflicts.
    */
-  async fetchMergeConflicts(fetchResolved: ?boolean): Promise<Array<MergeConflict>> {
-    const {stdout} = await this._hgAsyncExecute(['resolve', '--list', '-Tjson'], {
-      cwd: this._workingDirectory,
-    });
+  async fetchMergeConflicts(
+    fetchResolved: ?boolean,
+  ): Promise<Array<MergeConflict>> {
+    const {stdout} = await this._hgAsyncExecute(
+      ['resolve', '--list', '-Tjson'],
+      {
+        cwd: this._workingDirectory,
+      },
+    );
     const fileListStatuses = JSON.parse(stdout);
     const resolvedFiles = fetchResolved
       ? fileListStatuses
-          .filter(fileStatus => fileStatus.status === MergeConflictFileStatus.RESOLVED)
+          .filter(
+            fileStatus =>
+              fileStatus.status === MergeConflictFileStatus.RESOLVED,
+          )
           .map(fileStatus => ({
             path: fileStatus.path,
             status: MergeConflictStatus.RESOLVED,
@@ -1212,35 +1307,45 @@ export class HgService {
       return fileStatus.status === MergeConflictFileStatus.UNRESOLVED;
     });
     const origBackupPath = await this._getOrigBackupPath();
-    const conflicts = await Promise.all(conflictedFiles.map(async conflictedFile => {
-      let status;
-      // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
-      if (await this._checkOrigFile(origBackupPath, conflictedFile.path)) {
-        status = MergeConflictStatus.BOTH_CHANGED;
-      } else {
-        status = MergeConflictStatus.DELETED_IN_THEIRS;
-      }
-      return {
-        path: conflictedFile.path,
-        status,
-      };
-    }));
+    const conflicts = await Promise.all(
+      conflictedFiles.map(async conflictedFile => {
+        let status;
+        // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
+        if (await this._checkOrigFile(origBackupPath, conflictedFile.path)) {
+          status = MergeConflictStatus.BOTH_CHANGED;
+        } else {
+          status = MergeConflictStatus.DELETED_IN_THEIRS;
+        }
+        return {
+          path: conflictedFile.path,
+          status,
+        };
+      }),
+    );
     return [...conflicts, ...resolvedFiles];
   }
 
   async _getOrigBackupPath(): Promise<string> {
     if (this._origBackupPath == null) {
-      const relativeBackupPath = await this.getConfigValueAsync('ui.origbackuppath');
+      const relativeBackupPath = await this.getConfigValueAsync(
+        'ui.origbackuppath',
+      );
       if (relativeBackupPath == null) {
         this._origBackupPath = this._workingDirectory;
       } else {
-        this._origBackupPath = nuclideUri.join(this._workingDirectory, relativeBackupPath);
+        this._origBackupPath = nuclideUri.join(
+          this._workingDirectory,
+          relativeBackupPath,
+        );
       }
     }
     return this._origBackupPath;
   }
 
-  async _checkOrigFile(origBackupPath: string, filePath: string): Promise<boolean> {
+  async _checkOrigFile(
+    origBackupPath: string,
+    filePath: string,
+  ): Promise<boolean> {
     const origFilePath = nuclideUri.join(origBackupPath, `${filePath}.orig`);
     logger.info('origBackupPath:', origBackupPath);
     logger.info('filePath:', filePath);
@@ -1251,7 +1356,8 @@ export class HgService {
   markConflictedFile(
     filePath: NuclideUri,
     resolved: boolean,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  ): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     // -m marks file as resolved, -u marks file as unresolved
     const fileStatus = resolved ? '-m' : '-u';
     const args = ['resolve', fileStatus, filePath];
@@ -1265,7 +1371,8 @@ export class HgService {
 
   continueOperation(
     command: string,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  ): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     const args = [command, '--continue'];
     const execOptions = {
       cwd: this._workingDirectory,
@@ -1287,7 +1394,8 @@ export class HgService {
   rebase(
     destination: string,
     source?: string,
-  ): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  ): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     const args = ['rebase', '-d', destination];
     if (source != null) {
       args.push('-s', source);
@@ -1298,23 +1406,17 @@ export class HgService {
       // on the user's default editor from attempting to open up when needed.
       HGEDITOR: 'true',
     };
-    return this._hgObserveExecution(
-      args,
-      execOptions,
-    )
-    .publish();
+    return this._hgObserveExecution(args, execOptions).publish();
   }
 
-  pull(options: Array<string>): ConnectableObservable<LegacyProcessMessage> { // TODO(T17463635)
+  pull(options: Array<string>): ConnectableObservable<LegacyProcessMessage> {
+    // TODO(T17463635)
     const args = ['pull', ...options];
     const execOptions = {
       cwd: this._workingDirectory,
     };
 
-    return this._hgObserveExecution(
-      args,
-      execOptions,
-    ).publish();
+    return this._hgObserveExecution(args, execOptions).publish();
   }
 
   /**
@@ -1329,7 +1431,7 @@ export class HgService {
   ): Promise<void> {
     const args = [
       ...filePaths.map(p => nuclideUri.getPath(p)), // Sources
-      nuclideUri.getPath(destPath),                 // Dest
+      nuclideUri.getPath(destPath), // Dest
     ];
     if (after) {
       args.unshift('--after');

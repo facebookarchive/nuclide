@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -19,7 +20,10 @@ import classnames from 'classnames';
 import {track} from '../../nuclide-analytics';
 import {goToLocationInEditor} from '../../commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
-import {LoadingSpinner, LoadingSpinnerSizes} from '../../nuclide-ui/LoadingSpinner';
+import {
+  LoadingSpinner,
+  LoadingSpinnerSizes,
+} from '../../nuclide-ui/LoadingSpinner';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import {Message, MessageTypes} from '../../nuclide-ui/Message';
 
@@ -34,15 +38,15 @@ type Props = {
 };
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
-  'keyword': 'syntax--keyword',
+  keyword: 'syntax--keyword',
   'class-name': 'syntax--entity syntax--name syntax--class',
-  'constructor': 'syntax--entity syntax--name syntax--function',
-  'method': 'syntax--entity syntax--name syntax--function',
-  'param': 'syntax--variable',
-  'string': 'syntax--string',
-  'whitespace': '',
-  'plain': '',
-  'type': 'syntax--support syntax--type',
+  constructor: 'syntax--entity syntax--name syntax--function',
+  method: 'syntax--entity syntax--name syntax--function',
+  param: 'syntax--variable',
+  string: 'syntax--string',
+  whitespace: '',
+  plain: '',
+  type: 'syntax--support syntax--type',
 };
 
 export class OutlineView extends React.Component {
@@ -116,11 +120,9 @@ class OutlineViewComponent extends React.Component {
       case 'no-provider':
         return outline.grammar === 'Null Grammar'
           ? noOutlineAvailableMessage
-          : (
-            <Message type={MessageTypes.warning}>
+          : <Message type={MessageTypes.warning}>
               Outline view does not currently support {outline.grammar}.
-            </Message>
-          );
+            </Message>;
       case 'provider-no-outline':
         return noOutlineAvailableMessage;
       case 'outline':
@@ -155,7 +157,11 @@ class OutlineTree extends React.PureComponent {
       track('nuclide-outline-view:go-to-location');
       pane.activate();
       pane.activateItem(editor);
-      goToLocationInEditor(editor, outline.startPosition.row, outline.startPosition.column);
+      goToLocationInEditor(
+        editor,
+        outline.startPosition.row,
+        outline.startPosition.column,
+      );
     };
 
     const onDoubleClick = () => {
@@ -167,10 +173,9 @@ class OutlineTree extends React.PureComponent {
       }
     };
 
-    const classes = classnames(
-      'list-nested-item',
-      {selected: outline.highlighted},
-    );
+    const classes = classnames('list-nested-item', {
+      selected: outline.highlighted,
+    });
     return (
       <li className={classes}>
         <div
@@ -185,7 +190,9 @@ class OutlineTree extends React.PureComponent {
   }
 }
 
-function renderItem(outline: OutlineTreeForUi): Array<React.Element<any> | string> {
+function renderItem(
+  outline: OutlineTreeForUi,
+): Array<React.Element<any> | string> {
   const r = [];
 
   if (outline.icon != null) {
@@ -219,10 +226,12 @@ function renderTrees(
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
-    <ul className="list-tree" style={{position: 'relative'}}>
-      {outlines.map((outline, index) => (
-        <OutlineTree editor={editor} outline={outline} key={index} />
-      ))}
-    </ul>
+    (
+      <ul className="list-tree" style={{position: 'relative'}}>
+        {outlines.map((outline, index) => (
+          <OutlineTree editor={editor} outline={outline} key={index} />
+        ))}
+      </ul>
+    )
   );
 }

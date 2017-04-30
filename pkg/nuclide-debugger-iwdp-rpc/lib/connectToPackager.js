@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import xfetch from '../../commons-node/xfetch';
@@ -19,28 +20,32 @@ const PACKAGER_PORT = 8081;
 const ERROR_NO_DEVICES = 'Please run a debuggable app before attaching';
 const ERROR_LAST_DETACH = 'All app instances have been detached';
 
-
 export function connectToPackager(): Observable<DeviceInfo> {
   const origin = Observable.interval(POLLING_INTERVAL)
     .mergeMap(() => fetchDeviceData(PACKAGER_PORT))
     .share();
-  const sizes = origin.map(devices => devices.length)
-        .distinctUntilChanged()
-        .startWith(0);
+  const sizes = origin
+    .map(devices => devices.length)
+    .distinctUntilChanged()
+    .startWith(0);
   return Observable.merge(
-    origin.mergeMap(deviceInfos => deviceInfos)
+    origin
+      .mergeMap(deviceInfos => deviceInfos)
       .distinct(deviceInfo => deviceInfo.webSocketDebuggerUrl),
     // $FlowFixMe
-    Observable.zip(sizes.skip(1), sizes, (last, old) => [last, old])
-      .mergeMap(([last, old]) => {
-        if (last === 0 && old === 0) {
-          return Promise.reject(packagerError(ERROR_NO_DEVICES));
-        } else if (last === 0) {
-          return Promise.reject(packagerError(ERROR_LAST_DETACH));
-        } else {
-          return Observable.empty();
-        }
-      }));
+    Observable.zip(sizes.skip(1), sizes, (last, old) => [
+      last,
+      old,
+    ]).mergeMap(([last, old]) => {
+      if (last === 0 && old === 0) {
+        return Promise.reject(packagerError(ERROR_NO_DEVICES));
+      } else if (last === 0) {
+        return Promise.reject(packagerError(ERROR_LAST_DETACH));
+      } else {
+        return Observable.empty();
+      }
+    }),
+  );
 }
 
 function packagerError(type: string): Error & {type?: string} {
@@ -49,7 +54,9 @@ function packagerError(type: string): Error & {type?: string} {
   return error;
 }
 
-async function fetchDeviceData(port: number): Promise<Array<PackagerDeviceInfo>> {
+async function fetchDeviceData(
+  port: number,
+): Promise<Array<PackagerDeviceInfo>> {
   const response = await xfetch(`http://localhost:${port}/inspector/json`, {});
   if (response.ok) {
     const responseText = await response.text();

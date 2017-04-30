@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
@@ -64,7 +65,7 @@ module.exports = {
           },
         };
       }
-    } catch (e) { }
+    } catch (e) {}
 
     return null;
   },

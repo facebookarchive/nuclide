@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global getSelection */
@@ -15,7 +16,9 @@ import type {FindReferencesReturn} from './rpc-types';
 import crypto from 'crypto';
 import createPackage from '../../commons-atom/createPackage';
 import ContextMenu from '../../commons-atom/ContextMenu';
-import {bufferPositionForMouseEvent} from '../../commons-atom/mouse-to-position';
+import {
+  bufferPositionForMouseEvent,
+} from '../../commons-atom/mouse-to-position';
 import {observeTextEditors} from '../../commons-atom/text-editor';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
@@ -31,16 +34,23 @@ export type FindReferencesProvider = {
 
   // `findReferences` will only be called if `isEditorSupported` previously returned true
   // for the given TextEditor.
-  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesReturn>,
+  findReferences(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn>,
 };
 
 const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
 
 function showWarning(message: string): void {
-  atom.notifications.addWarning('nuclide-find-references: ' + message, {dismissable: true});
+  atom.notifications.addWarning('nuclide-find-references: ' + message, {
+    dismissable: true,
+  });
 }
 
-async function tryCreateView(data: ?FindReferencesReturn): Promise<?HTMLElement> {
+async function tryCreateView(
+  data: ?FindReferencesReturn,
+): Promise<?HTMLElement> {
   try {
     if (data == null) {
       showWarning('Symbol references are not available for this project.');
@@ -68,7 +78,9 @@ async function tryCreateView(data: ?FindReferencesReturn): Promise<?HTMLElement>
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
     logger.error('Exception in nuclide-find-references', e);
-    atom.notifications.addError(`nuclide-find-references: ${e}`, {dismissable: true});
+    atom.notifications.addError(`nuclide-find-references: ${e}`, {
+      dismissable: true,
+    });
   }
 }
 
@@ -85,7 +97,10 @@ function disableForEditor(editor: TextEditor): void {
 class Activation {
   _subscriptions: UniversalDisposable;
   _providers: Array<FindReferencesProvider> = [];
-  _supportedProviders: Map<TextEditor, Array<FindReferencesProvider>> = new Map();
+  _supportedProviders: Map<
+    TextEditor,
+    Array<FindReferencesProvider>
+  > = new Map();
 
   constructor(state: ?any): void {
     let lastMouseEvent;
@@ -95,9 +110,11 @@ class Activation {
         'atom-text-editor',
         'nuclide-find-references:activate',
         async event => {
-          const view = await tryCreateView(await this._getProviderData(
-            ContextMenu.isEventFromContextMenu(event) ? lastMouseEvent : null,
-          ));
+          const view = await tryCreateView(
+            await this._getProviderData(
+              ContextMenu.isEventFromContextMenu(event) ? lastMouseEvent : null,
+            ),
+          );
           if (view != null) {
             // Generate a unique identifier.
             const id = (crypto.randomBytes(8) || '').toString('hex');
@@ -115,7 +132,6 @@ class Activation {
           }
         },
       ),
-
       // Mark text editors with a working provider with a special CSS class.
       // This ensures the context menu option only appears in supported projects.
       observeTextEditors(async editor => {
@@ -124,42 +140,38 @@ class Activation {
           return;
         }
         this._supportedProviders.set(editor, []);
-        await Promise.all(this._providers.map(
-          async provider => {
+        await Promise.all(
+          this._providers.map(async provider => {
             if (await provider.isEditorSupported(editor)) {
               if (this._addSupportedProvider(editor, provider)) {
                 enableForEditor(editor);
               }
             }
-          },
-        ));
+          }),
+        );
         const disposable = editor.onDidDestroy(() => {
           this._supportedProviders.delete(editor);
           this._subscriptions.remove(disposable);
         });
         this._subscriptions.add(disposable);
       }),
-
       // Enable text copy from the symbol reference
-      atom.commands.add(
-        'nuclide-find-references-view',
-        'core:copy',
-        () => {
-          const selection = getSelection();
-          if (selection != null) {
-            const selectedText = selection.toString();
-            atom.clipboard.write(selectedText);
-          }
-        },
-      ),
-
+      atom.commands.add('nuclide-find-references-view', 'core:copy', () => {
+        const selection = getSelection();
+        if (selection != null) {
+          const selectedText = selection.toString();
+          atom.clipboard.write(selectedText);
+        }
+      }),
       // Add the context menu programmatically so we can capture the mouse event.
       atom.contextMenu.add({
         'atom-text-editor:not(.mini).enable-nuclide-find-references': [
           {
             label: 'Find References',
             command: 'nuclide-find-references:activate',
-            created: event => { lastMouseEvent = event; },
+            created: event => {
+              lastMouseEvent = event;
+            },
           },
         ],
       }),
@@ -217,9 +229,9 @@ class Activation {
     if (!supported) {
       return null;
     }
-    const providerData = await Promise.all(supported.map(
-      provider => provider.findReferences(editor, point),
-    ));
+    const providerData = await Promise.all(
+      supported.map(provider => provider.findReferences(editor, point)),
+    );
     return providerData.filter(x => Boolean(x))[0];
   }
 

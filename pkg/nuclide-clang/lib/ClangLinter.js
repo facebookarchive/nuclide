@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  ClangCompileResult,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangCompileResult} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
@@ -25,9 +24,7 @@ const DEFAULT_FLAGS_WARNING =
   'Diagnostics are disabled due to lack of compilation flags. ' +
   'Build this file with Buck, or create a compile_commands.json file manually.';
 
-function isValidRange(
-  clangRange: atom$Range,
-): boolean {
+function isValidRange(clangRange: atom$Range): boolean {
   // Some ranges are unbounded/invalid (end with -1) or empty.
   return (
     clangRange.start.row !== -1 &&
@@ -52,12 +49,9 @@ function getRangeFromPoint(
 }
 
 export default class ClangLinter {
-  static lint(
-    textEditor: atom$TextEditor,
-  ): Promise<Array<LinterMessage>> {
-    return trackTiming(
-      'nuclide-clang-atom.fetch-diagnostics',
-      () => ClangLinter._lint(textEditor),
+  static lint(textEditor: atom$TextEditor): Promise<Array<LinterMessage>> {
+    return trackTiming('nuclide-clang-atom.fetch-diagnostics', () =>
+      ClangLinter._lint(textEditor),
     );
   }
 
@@ -96,7 +90,10 @@ export default class ClangLinter {
     const buffer = editor.getBuffer();
     const bufferPath = buffer.getPath();
     invariant(bufferPath != null);
-    if (data.accurateFlags || featureConfig.get('nuclide-clang.defaultDiagnostics')) {
+    if (
+      data.accurateFlags ||
+      featureConfig.get('nuclide-clang.defaultDiagnostics')
+    ) {
       data.diagnostics.forEach(diagnostic => {
         // We show only warnings, errors and fatals (2, 3 and 4, respectively).
         if (diagnostic.severity < 2) {

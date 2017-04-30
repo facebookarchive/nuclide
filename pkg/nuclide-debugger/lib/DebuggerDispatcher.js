@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -30,184 +31,190 @@ import type {
 import Dispatcher from '../../commons-node/Dispatcher';
 
 export type DebuggerAction =
-  {
-    actionType: 'SET_DEBUGGER_INSTANCE',
-    data: ?DebuggerInstanceBase,
-  } |
-  {
-    actionType: 'SET_ERROR',
-    data: ?string,
-  } |
-  {
-    actionType: 'SET_PROCESS_SOCKET',
-    data: ?string,
-  } |
-  {
-    actionType: 'DEBUGGER_MODE_CHANGE',
-    data: DebuggerModeType,
-  } |
-  {
-    actionType: 'ADD_DEBUGGER_PROVIDER',
-    data: NuclideDebuggerProvider,
-  } |
-  {
-    actionType: 'REMOVE_DEBUGGER_PROVIDER',
-    data: NuclideDebuggerProvider,
-  } |
-  {
-    actionType: 'UPDATE_CONNECTIONS',
-    data: Array<string>,
-  } |
-  {
-    actionType: 'ADD_EVALUATION_EXPRESSION_PROVIDER',
-    data: NuclideEvaluationExpressionProvider,
-  } |
-  {
-    actionType: 'REMOVE_EVALUATION_EXPRESSION_PROVIDER',
-    data: NuclideEvaluationExpressionProvider,
-  } |
-  {
-    actionType: 'ADD_WATCH_EXPRESSION',
-    data: {expression: string},
-  } |
-  {
-    actionType: 'REMOVE_WATCH_EXPRESSION',
-    data: {index: number},
-  } |
-  {
-    actionType: 'UPDATE_WATCH_EXPRESSION',
-    data: {index: number, newExpression: string},
-  } |
-  {
-    actionType: 'TRIGGER_DEBUGGER_ACTION',
-    data: {actionId: string},
-  } |
-  {
-    actionType: 'ADD_REGISTER_EXECUTOR',
-    data: () => IDisposable,
-  } |
-  {
-    actionType: 'REMOVE_REGISTER_EXECUTOR',
-    data: () => IDisposable,
-  } |
-  {
-    actionType: 'REGISTER_CONSOLE',
-    data: {},
-  } |
-  {
-    actionType: 'UNREGISTER_CONSOLE',
-    data: {},
-  } |
-  {
-    actionType: 'UPDATE_CALLSTACK',
-    data: {callstack: Callstack},
-  } |
-  {
-    actionType: 'OPEN_DEV_TOOLS',
-  } |
-  {
-    actionType: 'OPEN_SOURCE_LOCATION',
-    data: {sourceURL: string, lineNumber: number},
-  } |
-  {
-    actionType: 'CLEAR_INTERFACE',
-    data: {},
-  } |
-  {
-    actionType: 'SET_SELECTED_CALLFRAME_INDEX',
-    data: {index: number},
-  } |
-  {
-    actionType: 'SET_SELECTED_CALLFRAME_LINE',
-    data: {options: ?{sourceURL: string, lineNumber: number}},
-  } |
-  {
-    actionType: 'ADD_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'UPDATE_BREAKPOINT_CONDITION',
-    data: {breakpointId: number, condition: string},
-  } |
-  {
-    actionType: 'UPDATE_BREAKPOINT_ENABLED',
-    data: {breakpointId: number, enabled: boolean},
-  } |
-  {
-    actionType: 'DELETE_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'DELETE_ALL_BREAKPOINTS',
-    data: {},
-  } |
-  {
-    actionType: 'TOGGLE_BREAKPOINT',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'DELETE_BREAKPOINT_IPC',
-    data: {path: string, line: number},
-  } |
-  {
-    actionType: 'BIND_BREAKPOINT_IPC',
-    data: {path: string, line: number, condition: string, enabled: boolean, resolved: boolean},
-  } |
-  {
-    actionType: 'UPDATE_SCOPES',
-    data: Array<ScopeSection>,
-  } |
-  {
-    actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',
-    data: boolean,
-  } |
-  {
-    actionType: 'TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION',
-    data: boolean,
-  } |
-  {
-    actionType: 'UPDATE_THREADS',
-    data: {threadData: NuclideThreadData},
-  } |
-  {
-    actionType: 'UPDATE_THREAD',
-    data: {thread: ThreadItem},
-  } |
-  {
-    actionType: 'UPDATE_STOP_THREAD',
-    data: {id: number},
-  } |
-  {
-    actionType: 'NOTIFY_THREAD_SWITCH',
-    data: {sourceURL: string, lineNumber: number, message: string},
-  } |
-  {
-    actionType: 'TOGGLE_SINGLE_THREAD_STEPPING',
-    data: boolean,
-  } |
-  {
-    actionType: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
-    data: {id: number, response: ExpressionResult},
-  } |
-  {
-    actionType: 'RECEIVED_GET_PROPERTIES_RESPONSE',
-    data: {id: number, response: GetPropertiesResult},
-  } |
-  {
-    actionType: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
-    data: Array<ControlButtonSpecification>,
-  } |
-  {
-    actionType: 'UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK',
-    data: ?() => void,
-  } |
-  {
-    actionType: 'CONFIGURE_SOURCE_PATHS',
-  } |
-  {
-    actionType: 'SET_DEBUG_PROCESS_INFO',
-    data: ?DebuggerProcessInfo,
-  };
+  | {
+      actionType: 'SET_DEBUGGER_INSTANCE',
+      data: ?DebuggerInstanceBase,
+    }
+  | {
+      actionType: 'SET_ERROR',
+      data: ?string,
+    }
+  | {
+      actionType: 'SET_PROCESS_SOCKET',
+      data: ?string,
+    }
+  | {
+      actionType: 'DEBUGGER_MODE_CHANGE',
+      data: DebuggerModeType,
+    }
+  | {
+      actionType: 'ADD_DEBUGGER_PROVIDER',
+      data: NuclideDebuggerProvider,
+    }
+  | {
+      actionType: 'REMOVE_DEBUGGER_PROVIDER',
+      data: NuclideDebuggerProvider,
+    }
+  | {
+      actionType: 'UPDATE_CONNECTIONS',
+      data: Array<string>,
+    }
+  | {
+      actionType: 'ADD_EVALUATION_EXPRESSION_PROVIDER',
+      data: NuclideEvaluationExpressionProvider,
+    }
+  | {
+      actionType: 'REMOVE_EVALUATION_EXPRESSION_PROVIDER',
+      data: NuclideEvaluationExpressionProvider,
+    }
+  | {
+      actionType: 'ADD_WATCH_EXPRESSION',
+      data: {expression: string},
+    }
+  | {
+      actionType: 'REMOVE_WATCH_EXPRESSION',
+      data: {index: number},
+    }
+  | {
+      actionType: 'UPDATE_WATCH_EXPRESSION',
+      data: {index: number, newExpression: string},
+    }
+  | {
+      actionType: 'TRIGGER_DEBUGGER_ACTION',
+      data: {actionId: string},
+    }
+  | {
+      actionType: 'ADD_REGISTER_EXECUTOR',
+      data: () => IDisposable,
+    }
+  | {
+      actionType: 'REMOVE_REGISTER_EXECUTOR',
+      data: () => IDisposable,
+    }
+  | {
+      actionType: 'REGISTER_CONSOLE',
+      data: {},
+    }
+  | {
+      actionType: 'UNREGISTER_CONSOLE',
+      data: {},
+    }
+  | {
+      actionType: 'UPDATE_CALLSTACK',
+      data: {callstack: Callstack},
+    }
+  | {
+      actionType: 'OPEN_DEV_TOOLS',
+    }
+  | {
+      actionType: 'OPEN_SOURCE_LOCATION',
+      data: {sourceURL: string, lineNumber: number},
+    }
+  | {
+      actionType: 'CLEAR_INTERFACE',
+      data: {},
+    }
+  | {
+      actionType: 'SET_SELECTED_CALLFRAME_INDEX',
+      data: {index: number},
+    }
+  | {
+      actionType: 'SET_SELECTED_CALLFRAME_LINE',
+      data: {options: ?{sourceURL: string, lineNumber: number}},
+    }
+  | {
+      actionType: 'ADD_BREAKPOINT',
+      data: {path: string, line: number},
+    }
+  | {
+      actionType: 'UPDATE_BREAKPOINT_CONDITION',
+      data: {breakpointId: number, condition: string},
+    }
+  | {
+      actionType: 'UPDATE_BREAKPOINT_ENABLED',
+      data: {breakpointId: number, enabled: boolean},
+    }
+  | {
+      actionType: 'DELETE_BREAKPOINT',
+      data: {path: string, line: number},
+    }
+  | {
+      actionType: 'DELETE_ALL_BREAKPOINTS',
+      data: {},
+    }
+  | {
+      actionType: 'TOGGLE_BREAKPOINT',
+      data: {path: string, line: number},
+    }
+  | {
+      actionType: 'DELETE_BREAKPOINT_IPC',
+      data: {path: string, line: number},
+    }
+  | {
+      actionType: 'BIND_BREAKPOINT_IPC',
+      data: {
+        path: string,
+        line: number,
+        condition: string,
+        enabled: boolean,
+        resolved: boolean,
+      },
+    }
+  | {
+      actionType: 'UPDATE_SCOPES',
+      data: Array<ScopeSection>,
+    }
+  | {
+      actionType: 'TOGGLE_PAUSE_ON_EXCEPTION',
+      data: boolean,
+    }
+  | {
+      actionType: 'TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION',
+      data: boolean,
+    }
+  | {
+      actionType: 'UPDATE_THREADS',
+      data: {threadData: NuclideThreadData},
+    }
+  | {
+      actionType: 'UPDATE_THREAD',
+      data: {thread: ThreadItem},
+    }
+  | {
+      actionType: 'UPDATE_STOP_THREAD',
+      data: {id: number},
+    }
+  | {
+      actionType: 'NOTIFY_THREAD_SWITCH',
+      data: {sourceURL: string, lineNumber: number, message: string},
+    }
+  | {
+      actionType: 'TOGGLE_SINGLE_THREAD_STEPPING',
+      data: boolean,
+    }
+  | {
+      actionType: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',
+      data: {id: number, response: ExpressionResult},
+    }
+  | {
+      actionType: 'RECEIVED_GET_PROPERTIES_RESPONSE',
+      data: {id: number, response: GetPropertiesResult},
+    }
+  | {
+      actionType: 'UPDATE_CUSTOM_CONTROL_BUTTONS',
+      data: Array<ControlButtonSpecification>,
+    }
+  | {
+      actionType: 'UPDATE_CONFIGURE_SOURCE_PATHS_CALLBACK',
+      data: ?() => void,
+    }
+  | {
+      actionType: 'CONFIGURE_SOURCE_PATHS',
+    }
+  | {
+      actionType: 'SET_DEBUG_PROCESS_INFO',
+      data: ?DebuggerProcessInfo,
+    };
 
 export const ActionTypes = Object.freeze({
   SET_DEBUGGER_INSTANCE: 'SET_DEBUGGER_INSTANCE',

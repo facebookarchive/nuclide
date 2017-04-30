@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -37,7 +38,9 @@ import type {
   Completion,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   InitializeParams,
@@ -70,10 +73,7 @@ import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {LanguageServerV2} from './languageserver';
-import {
-  DiagnosticSeverity,
-  SymbolKind,
-} from './protocol';
+import {DiagnosticSeverity, SymbolKind} from './protocol';
 import {
   className,
   method,
@@ -117,16 +117,24 @@ export class LanguageServerProtocolProcess {
     fileExtensions: Array<string>,
   ): Promise<LanguageServerProtocolProcess> {
     const result = new LanguageServerProtocolProcess(
-      logger, fileCache, createProcess, projectRoot, fileExtensions);
+      logger,
+      fileCache,
+      createProcess,
+      projectRoot,
+      fileExtensions,
+    );
     await result._ensureProcess();
     return result;
   }
 
   _subscribeToFileEvents(): void {
-    this._fileSubscription = this._fileCache.observeFileEvents()
+    this._fileSubscription = this._fileCache
+      .observeFileEvents()
       // TODO: Filter on projectRoot
       .filter(fileEvent => {
-        const fileExtension = nuclideUri.extname(fileEvent.fileVersion.filePath);
+        const fileExtension = nuclideUri.extname(
+          fileEvent.fileVersion.filePath,
+        );
         return this._fileExtensions.indexOf(fileExtension) !== -1;
       })
       .subscribe(fileEvent => {
@@ -149,7 +157,8 @@ export class LanguageServerProtocolProcess {
             });
             break;
           case FileEventKind.EDIT:
-            this._fileCache.getBufferAtVersion(fileEvent.fileVersion)
+            this._fileCache
+              .getBufferAtVersion(fileEvent.fileVersion)
               .then(buffer => {
                 if (buffer == null) {
                   // TODO: stale ... send full contents from current buffer version
@@ -163,14 +172,18 @@ export class LanguageServerProtocolProcess {
                   // Send full contents
                   // TODO: If the provider handles incremental diffs
                   // Then send them instead
-                  contentChanges: [{
-                    text: buffer.getText(),
-                  }],
+                  contentChanges: [
+                    {
+                      text: buffer.getText(),
+                    },
+                  ],
                 });
               });
             break;
           default:
-            throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
+            throw new Error(
+              `Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`,
+            );
         }
         this._fileVersionNotifier.onEvent(fileEvent);
       });
@@ -180,17 +193,24 @@ export class LanguageServerProtocolProcess {
   async _ensureProcess(): Promise<void> {
     try {
       const proc = await this._createProcess();
-      this._process = await LspProcess.create(this._logger, proc, this._projectRoot);
+      this._process = await LspProcess.create(
+        this._logger,
+        proc,
+        this._projectRoot,
+      );
       this._subscribeToFileEvents();
     } catch (e) {
-      this._logger.logError('LanguageServerProtocolProcess - error spawning child process: ' + e);
+      this._logger.logError(
+        'LanguageServerProtocolProcess - error spawning child process: ' + e,
+      );
       throw e;
     }
   }
 
   _onNotification(message: Object): void {
     this._logger.logError(
-      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
+      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`,
+    );
     // TODO: Handle incoming messages
   }
 
@@ -198,18 +218,20 @@ export class LanguageServerProtocolProcess {
     return this._projectRoot;
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
+  async getBufferAtVersion(
+    fileVersion: FileVersion,
+  ): Promise<?simpleTextBuffer$TextBuffer> {
     const buffer = await getBufferAtVersion(fileVersion);
     // Must also wait for edits to be sent to the LSP process
-    if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
+    if (!await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion)) {
       return null;
     }
-    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    return buffer != null && buffer.changeCount === fileVersion.version
+      ? buffer
+      : null;
   }
 
-  getDiagnostics(
-    fileVersion: FileVersion,
-  ): Promise<?DiagnosticProviderUpdate> {
+  getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
     this._logger.logError('NYI: getDiagnostics');
     return Promise.resolve(null);
   }
@@ -217,9 +239,9 @@ export class LanguageServerProtocolProcess {
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
     const con = this._process._connection;
     return (Observable.fromEventPattern(
-        con.onDiagnosticsNotification.bind(con),
-        () => undefined,
-      ): Observable<PublishDiagnosticsParams>)
+      con.onDiagnosticsNotification.bind(con),
+      () => undefined,
+    ): Observable<PublishDiagnosticsParams>)
       .map(convertDiagnostics)
       .publish();
   }
@@ -234,7 +256,8 @@ export class LanguageServerProtocolProcess {
       return null;
     }
     const result = await this._process._connection.completion(
-      await this.createTextDocumentPositionParams(fileVersion, position));
+      await this.createTextDocumentPositionParams(fileVersion, position),
+    );
     if (Array.isArray(result)) {
       return {
         isIncomplete: false,
@@ -256,7 +279,8 @@ export class LanguageServerProtocolProcess {
       return null;
     }
     const result = await this._process._connection.gotoDefinition(
-        await this.createTextDocumentPositionParams(fileVersion, position));
+      await this.createTextDocumentPositionParams(fileVersion, position),
+    );
     return {
       // TODO: use wordAtPos to determine queryrange
       queryRange: [new atom$Range(position, position)],
@@ -264,10 +288,7 @@ export class LanguageServerProtocolProcess {
     };
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
     this._logger.logError('NYI: getDefinitionById');
     return Promise.resolve(null);
   }
@@ -280,7 +301,10 @@ export class LanguageServerProtocolProcess {
       return null;
     }
     const buffer = await this.getBufferAtVersion(fileVersion);
-    const positionParams = createTextDocumentPositionParams(fileVersion, position);
+    const positionParams = createTextDocumentPositionParams(
+      fileVersion,
+      position,
+    );
     const params = {...positionParams, context: {includeDeclaration: true}};
     // ReferenceParams is like TextDocumentPositionParams but with one extra field.
     const response = await this._process._connection.findReferences(params);
@@ -320,9 +344,7 @@ export class LanguageServerProtocolProcess {
     };
   }
 
-  async getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     if (!this._process._capabilities.typeCoverageProvider) {
       return null;
     }
@@ -339,14 +361,14 @@ export class LanguageServerProtocolProcess {
     };
   }
 
-  async getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline> {
+  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
     if (!this._process._capabilities.documentSymbolProvider) {
       return null;
     }
     await this.getBufferAtVersion(fileVersion); // push out any pending edits
-    const params = {textDocument: toTextDocumentIdentifier(fileVersion.filePath)};
+    const params = {
+      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+    };
     const response = await this._process._connection.documentSymbol(params);
 
     // The response is a flat list of SymbolInformation, which has location+name+containerName.
@@ -357,13 +379,20 @@ export class LanguageServerProtocolProcess {
     // We'll also sort the nodes in lexical order of occurrence in the source
     // document. This is useful because containers always come lexically before their
     // children. (This isn't a LSP guarantee; just a heuristic.)
-    const list: Array<[SymbolInformation, OutlineTree]> = response.map(symbol => [symbol, {
-      icon: symbolKindToAtomIcon(symbol.kind),
-      tokenizedText: symbolToTokenizedText(symbol),
-      startPosition: positionToPoint(symbol.location.range.start),
-      children: [],
-    }]);
-    list.sort(([, aNode], [, bNode]) => aNode.startPosition.compare(bNode.startPosition));
+    const list: Array<
+      [SymbolInformation, OutlineTree]
+    > = response.map(symbol => [
+      symbol,
+      {
+        icon: symbolKindToAtomIcon(symbol.kind),
+        tokenizedText: symbolToTokenizedText(symbol),
+        startPosition: positionToPoint(symbol.location.range.start),
+        children: [],
+      },
+    ]);
+    list.sort(([, aNode], [, bNode]) =>
+      aNode.startPosition.compare(bNode.startPosition),
+    );
 
     // We'll need to look up for parents by name, so construct a map from names to nodes
     // of that name. Note: an undefined SymbolInformation.containerName means root,
@@ -371,7 +400,9 @@ export class LanguageServerProtocolProcess {
     const mapElements = list.map(([symbol, node]) => [symbol.name, node]);
     const map: Map<string, Array<OutlineTree>> = collect(mapElements);
     if (map.has('')) {
-      this._logger.logError('Outline textDocument/documentSymbol returned an empty symbol name');
+      this._logger.logError(
+        'Outline textDocument/documentSymbol returned an empty symbol name',
+      );
     }
 
     // The algorithm for reconstructing the tree out of list items rests on identifying
@@ -379,19 +410,26 @@ export class LanguageServerProtocolProcess {
     // parent of that name. But if there are multiple parent candidates, we'll try to pick
     // the one that comes immediately lexically before the item. (If there are no parent
     // candidates, we've been given a malformed item, so we'll just ignore it.)
-    const root: OutlineTree = {plainText: '', startPosition: new Point(0, 0), children: []};
+    const root: OutlineTree = {
+      plainText: '',
+      startPosition: new Point(0, 0),
+      children: [],
+    };
     map.set('', [root]);
     for (const [symbol, node] of list) {
       const parentName = symbol.containerName || '';
       const parentCandidates = map.get(parentName);
       if (parentCandidates == null) {
         this._logger.logError(
-          `Outline textDocument/documentSymbol ${symbol.name} is missing container ${parentName}`);
+          `Outline textDocument/documentSymbol ${symbol.name} is missing container ${parentName}`,
+        );
       } else {
         invariant(parentCandidates.length > 0);
         // Find the first candidate that's lexically *after* our symbol.
         const symbolPos = positionToPoint(symbol.location.range.start);
-        const iAfter = parentCandidates.findIndex(p => p.startPosition.compare(symbolPos) > 0);
+        const iAfter = parentCandidates.findIndex(
+          p => p.startPosition.compare(symbolPos) > 0,
+        );
         if (iAfter === -1) {
           // No candidates after item? Then item's parent is the last candidate.
           parentCandidates[parentCandidates.length - 1].children.push(node);
@@ -399,7 +437,8 @@ export class LanguageServerProtocolProcess {
           // All candidates after item? That's an error! We'll arbitrarily pick first one.
           parentCandidates[0].children.push(node);
           this._logger.logError(
-            `Outline textDocument/documentSymbol ${symbol.name} comes after its container`);
+            `Outline textDocument/documentSymbol ${symbol.name} comes after its container`,
+          );
         } else {
           // Some candidates before+after? Then item's parent is the last candidate before.
           parentCandidates[iAfter - 1].children.push(node);
@@ -417,13 +456,15 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.hoverProvider) {
       return null;
     }
-    const request =
-      await this.createTextDocumentPositionParams(fileVersion, position);
+    const request = await this.createTextDocumentPositionParams(
+      fileVersion,
+      position,
+    );
     const response = await this._process._connection.hover(request);
 
     let hint = response.contents;
     if (Array.isArray(hint)) {
-      hint = (hint.length > 0 ? hint[0] : '');
+      hint = hint.length > 0 ? hint[0] : '';
       // TODO: render multiple hints at once with a thin divider between them
     }
     if (typeof hint === 'string') {
@@ -438,7 +479,7 @@ export class LanguageServerProtocolProcess {
       range = rangeToAtomRange(response.range);
     }
 
-    return (hint) ? {hint, range} : null;
+    return hint ? {hint, range} : null;
   }
 
   async highlight(
@@ -448,7 +489,10 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.documentHighlightProvider) {
       return null;
     }
-    const params = await this.createTextDocumentPositionParams(fileVersion, position);
+    const params = await this.createTextDocumentPositionParams(
+      fileVersion,
+      position,
+    );
     const response = await this._process._connection.documentHighlight(params);
     const convertHighlight = highlight => rangeToAtomRange(highlight.range);
     return response.map(convertHighlight);
@@ -465,15 +509,22 @@ export class LanguageServerProtocolProcess {
     }
     const options = {tabSize: 2, insertSpaces: true};
     // TODO: from where should we pick up these options? Can we omit them?
-    const params = {textDocument: toTextDocumentIdentifier(fileVersion.filePath), options};
+    const params = {
+      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+      options,
+    };
     let edits;
 
     // The user might have requested to format either some or all of the buffer.
     // And the LSP server might have the capability to format some or all.
     // We'll match up the request+capability as best we can...
-    const canAll = Boolean(this._process._capabilities.documentFormattingProvider);
-    const canRange = Boolean(this._process._capabilities.documentRangeFormattingProvider);
-    const wantAll = (buffer.getRange().compare(atomRange) === 0);
+    const canAll = Boolean(
+      this._process._capabilities.documentFormattingProvider,
+    );
+    const canRange = Boolean(
+      this._process._capabilities.documentRangeFormattingProvider,
+    );
+    const wantAll = buffer.getRange().compare(atomRange) === 0;
     if (canAll && (wantAll || !canRange)) {
       edits = await this._process._connection.documentFormatting(params);
     } else if (canRange) {
@@ -481,7 +532,10 @@ export class LanguageServerProtocolProcess {
       // is character 0 of the start line, and range.end is character 0 of the
       // first line AFTER the selection.
       const range = atomRangeToRange(atomRange);
-      edits = await this._process._connection.documentRangeFormattting({...params, range});
+      edits = await this._process._connection.documentRangeFormattting({
+        ...params,
+        range,
+      });
     } else {
       this._logger.logError('LSP.formatSource - not supported by server');
       return null;
@@ -494,13 +548,20 @@ export class LanguageServerProtocolProcess {
     return edits.map(convertRange);
   }
 
-  formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  formatEntireFile(
+    fileVersion: FileVersion,
+    range: atom$Range,
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  > {
     // A language service implements either formatSource or formatEntireFile,
     // and we should pick formatSource in our AtomLanguageServiceConfig.
-    this._logger.logError('LSP CodeFormat providers should use formatEntireFile: false');
+    this._logger.logError(
+      'LSP CodeFormat providers should use formatEntireFile: false',
+    );
     return Promise.resolve(null);
   }
 
@@ -512,10 +573,10 @@ export class LanguageServerProtocolProcess {
     return Promise.resolve(null);
   }
 
-  supportsSymbolSearch(
-    directories: Array<NuclideUri>,
-  ): Promise<boolean> {
-    return Promise.resolve(Boolean(this._process._capabilities.workspaceSymbolProvider));
+  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
+    return Promise.resolve(
+      Boolean(this._process._capabilities.workspaceSymbolProvider),
+    );
   }
 
   async symbolSearch(
@@ -619,10 +680,14 @@ class LspProcess {
     this._projectRoot = projectRoot;
 
     this._logger.logInfo(
-      'LanguageServerProtocolProcess - created child process with PID: ' + process.pid);
+      'LanguageServerProtocolProcess - created child process with PID: ' +
+        process.pid,
+    );
 
     process.stdin.on('error', error => {
-      this._logger.logError('LanguageServerProtocolProcess - error writing data: ' + error);
+      this._logger.logError(
+        'LanguageServerProtocolProcess - error writing data: ' + error,
+      );
     });
 
     let reader;
@@ -636,16 +701,25 @@ class LspProcess {
     }
 
     const rpc_logger = {
-      error(message) { logger.logError('JsonRpc ' + message); },
-      warn(message) { logger.logInfo('JsonRpc ' + message); },
-      info(message) { logger.logInfo('JsonRpc ' + message); },
-      log(message) { logger.logInfo('JsonRpc ' + message); },
+      error(message) {
+        logger.logError('JsonRpc ' + message);
+      },
+      warn(message) {
+        logger.logInfo('JsonRpc ' + message);
+      },
+      info(message) {
+        logger.logInfo('JsonRpc ' + message);
+      },
+      log(message) {
+        logger.logInfo('JsonRpc ' + message);
+      },
     };
 
     const connection: JsonRpcConnection = rpc.createMessageConnection(
       reader,
       writer,
-      rpc_logger);
+      rpc_logger,
+    );
 
     connection.listen();
     // TODO: connection.onNotification(this._onNotification.bind(this));
@@ -680,15 +754,17 @@ class LspProcess {
       },
       */
     };
-    result._capabilities = (await
-      result._connection.initialize(init)).capabilities;
+    result._capabilities = (await result._connection.initialize(
+      init,
+    )).capabilities;
 
     return result;
   }
 
   _onNotification(message: Object): void {
     this._logger.logError(
-      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`);
+      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`,
+    );
     // TODO: Handle incoming messages
   }
 
@@ -697,7 +773,9 @@ class LspProcess {
   }
 }
 
-export function toTextDocumentIdentifier(filePath: NuclideUri): TextDocumentIdentifier {
+export function toTextDocumentIdentifier(
+  filePath: NuclideUri,
+): TextDocumentIdentifier {
   return {
     uri: filePath,
   };
@@ -716,7 +794,9 @@ export function positionToPoint(position: Position): atom$Point {
 
 export function rangeToAtomRange(range: Range): atom$Range {
   return new atom$Range(
-    positionToPoint(range.start), positionToPoint(range.end));
+    positionToPoint(range.start),
+    positionToPoint(range.end),
+  );
 }
 
 export function atomRangeToRange(range: atom$Range): Range {
@@ -731,8 +811,9 @@ export function convertDiagnostics(
 ): FileDiagnosticUpdate {
   return {
     filePath: params.uri,
-    messages: params.diagnostics.map(
-      diagnostic => convertDiagnostic(params.uri, diagnostic)),
+    messages: params.diagnostics.map(diagnostic =>
+      convertDiagnostic(params.uri, diagnostic),
+    ),
   };
 }
 
@@ -791,25 +872,44 @@ function symbolKindToAtomIcon(kind: number): string {
   // for reference, vscode: https://github.com/Microsoft/vscode/blob/be08f9f3a1010354ae2d8b84af017ed1043570e7/src/vs/editor/contrib/suggest/browser/media/suggest.css#L135
   // for reference, hack: https://github.com/facebook/nuclide/blob/20cf17dca439e02a64f4365f3a52b0f26cf53726/pkg/nuclide-hack-rpc/lib/SymbolSearch.js#L120
   switch (kind) {
-    case SymbolKind.File: return 'file';
-    case SymbolKind.Module: return 'file-submodule';
-    case SymbolKind.Namespace: return 'file-submodule';
-    case SymbolKind.Package: return 'package';
-    case SymbolKind.Class: return 'code';
-    case SymbolKind.Method: return 'zap';
-    case SymbolKind.Property: return 'key';
-    case SymbolKind.Field: return 'key';
-    case SymbolKind.Constructor: return 'zap';
-    case SymbolKind.Enum: return 'file-binary';
-    case SymbolKind.Interface: return 'puzzle';
-    case SymbolKind.Function: return 'zap';
-    case SymbolKind.Variable: return 'pencil';
-    case SymbolKind.Constant: return 'quote';
-    case SymbolKind.String: return 'quote';
-    case SymbolKind.Number: return 'quote';
-    case SymbolKind.Boolean: return 'quote';
-    case SymbolKind.Array: return 'list-ordered';
-    default: return 'question';
+    case SymbolKind.File:
+      return 'file';
+    case SymbolKind.Module:
+      return 'file-submodule';
+    case SymbolKind.Namespace:
+      return 'file-submodule';
+    case SymbolKind.Package:
+      return 'package';
+    case SymbolKind.Class:
+      return 'code';
+    case SymbolKind.Method:
+      return 'zap';
+    case SymbolKind.Property:
+      return 'key';
+    case SymbolKind.Field:
+      return 'key';
+    case SymbolKind.Constructor:
+      return 'zap';
+    case SymbolKind.Enum:
+      return 'file-binary';
+    case SymbolKind.Interface:
+      return 'puzzle';
+    case SymbolKind.Function:
+      return 'zap';
+    case SymbolKind.Variable:
+      return 'pencil';
+    case SymbolKind.Constant:
+      return 'quote';
+    case SymbolKind.String:
+      return 'quote';
+    case SymbolKind.Number:
+      return 'quote';
+    case SymbolKind.Boolean:
+      return 'quote';
+    case SymbolKind.Array:
+      return 'list-ordered';
+    default:
+      return 'question';
   }
 }
 
@@ -855,7 +955,6 @@ function symbolToTokenizedText(symbol: SymbolInformation): TokenizedText {
 
   return tokens;
 }
-
 
 export function convertSearchResult(info: SymbolInformation): SymbolResult {
   let hoverText = 'unknown';

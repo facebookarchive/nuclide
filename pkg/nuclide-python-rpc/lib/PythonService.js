@@ -6,11 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -20,13 +23,19 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  FindReferencesReturn,
+} from '../../nuclide-find-references/lib/rpc-types';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  AutocompleteResult,
+} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
@@ -101,7 +110,10 @@ export type PythonStatementItem = {
   docblock?: string,
 };
 
-export type PythonOutlineItem = PythonFunctionItem | PythonClassItem | PythonStatementItem;
+export type PythonOutlineItem =
+  | PythonFunctionItem
+  | PythonClassItem
+  | PythonStatementItem;
 
 export type PythonDiagnostic = {
   file: NuclideUri,
@@ -126,10 +138,7 @@ export async function initialize(
 ): Promise<LanguageService> {
   return new ServerLanguageService(
     fileNotifier,
-    new PythonSingleFileLanguageService(
-      fileNotifier,
-      config,
-    ),
+    new PythonSingleFileLanguageService(fileNotifier, config),
   );
 }
 
@@ -139,10 +148,7 @@ class PythonSingleFileLanguageService {
   _autocompleteArguments: boolean;
   _includeOptionalArguments: boolean;
 
-  constructor(
-    fileNotifier: FileNotifier,
-    config: PythonServiceConfig,
-  ) {
+  constructor(fileNotifier: FileNotifier, config: PythonServiceConfig) {
     invariant(fileNotifier instanceof FileCache);
     this._fileCache = fileNotifier;
     this._showGlobalVariables = config.showGlobalVariables;
@@ -186,10 +192,7 @@ class PythonSingleFileLanguageService {
     return getDefinition(serverManager, filePath, buffer, position);
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
     return Promise.resolve(null);
   }
 
@@ -199,11 +202,11 @@ class PythonSingleFileLanguageService {
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
     const result = await getReferences(
-        filePath,
-        buffer.getText(),
-        position.row,
-        position.column,
-      );
+      filePath,
+      buffer.getText(),
+      position.row,
+      position.column,
+    );
 
     if (!result || result.length === 0) {
       return {type: 'error', message: 'No usages were found.'};
@@ -225,8 +228,9 @@ class PythonSingleFileLanguageService {
 
     // Choose the project root as baseUri, or if no project exists,
     // use the dirname of the src file.
-    const baseUri = this._fileCache.getContainingDirectory(filePath)
-      || nuclideUri.dirname(filePath);
+    const baseUri =
+      this._fileCache.getContainingDirectory(filePath) ||
+      nuclideUri.dirname(filePath);
 
     return {
       type: 'data',
@@ -236,9 +240,7 @@ class PythonSingleFileLanguageService {
     };
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     throw new Error('Not Yet Implemented');
   }
 
@@ -287,10 +289,12 @@ class PythonSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  > {
     const contents = buffer.getText();
     const start = range.start.row + 1;
     const end = range.end.row + 1;
@@ -299,21 +303,17 @@ class PythonSingleFileLanguageService {
 
     let stdout;
     try {
-      stdout = await runCommand(
-        libCommand,
-        ['--line', `${start}-${end}`],
-        {
-          cwd: dirName,
-          input: contents,
-          // At the moment, yapf outputs 3 possible exit codes:
-          // 0 - success, no content change.
-          // 2 - success, contents changed.
-          // 1 - internal failure, most likely due to syntax errors.
-          //
-          // See: https://github.com/google/yapf/issues/228#issuecomment-198682079
-          isExitError: exit => exit.exitCode === 1,
-        },
-      ).toPromise();
+      stdout = await runCommand(libCommand, ['--line', `${start}-${end}`], {
+        cwd: dirName,
+        input: contents,
+        // At the moment, yapf outputs 3 possible exit codes:
+        // 0 - success, no content change.
+        // 2 - success, contents changed.
+        // 1 - internal failure, most likely due to syntax errors.
+        //
+        // See: https://github.com/google/yapf/issues/228#issuecomment-198682079
+        isExitError: exit => exit.exitCode === 1,
+      }).toPromise();
     } catch (err) {
       throw new Error(`"${libCommand}" failed, likely due to syntax errors.`);
     }
@@ -342,8 +342,7 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  dispose(): void {
-  }
+  dispose(): void {}
 }
 
 let formatterPath;
@@ -375,12 +374,7 @@ export async function getReferences(
   column: number,
 ): Promise<?Array<PythonReference>> {
   const service = await serverManager.getJediService(src);
-  return service.get_references(
-      src,
-      contents,
-      line,
-      column,
-    );
+  return service.get_references(src, contents, line, column);
 }
 
 // Set to false if flake8 isn't found, so we don't repeatedly fail.
@@ -414,7 +408,10 @@ export async function getDiagnostics(
   return parseFlake8Output(src, result);
 }
 
-async function runLinterCommand(src: NuclideUri, contents: string): Promise<string> {
+async function runLinterCommand(
+  src: NuclideUri,
+  contents: string,
+): Promise<string> {
   const dirName = nuclideUri.dirname(src);
   const configDir = await fsPromise.findNearestFile('.flake8', dirName);
   const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
@@ -436,7 +433,8 @@ async function runLinterCommand(src: NuclideUri, contents: string): Promise<stri
   }
 
   const command =
-    global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8') || 'flake8';
+    (global.atom && atom.config.get('nuclide.nuclide-python.pathToFlake8')) ||
+    'flake8';
   const args = [];
 
   if (configPath) {
@@ -447,14 +445,10 @@ async function runLinterCommand(src: NuclideUri, contents: string): Promise<stri
   // Read contents from stdin.
   args.push('-');
   invariant(typeof command === 'string');
-  return runCommand(
-    command,
-    args,
-    {
-      cwd: dirName,
-      input: contents,
-      // 1 indicates unclean lint result (i.e. has errors/warnings).
-      isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
-    })
-      .toPromise();
+  return runCommand(command, args, {
+    cwd: dirName,
+    input: contents,
+    // 1 indicates unclean lint result (i.e. has errors/warnings).
+    isExitError: exit => exit.exitCode == null || exit.exitCode > 1,
+  }).toPromise();
 }

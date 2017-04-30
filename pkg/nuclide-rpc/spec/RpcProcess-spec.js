@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as DummyService from './fixtures/dummy-service/DummyService';
@@ -21,7 +22,10 @@ describe('RpcProcess', () => {
   let server: RpcProcess;
 
   beforeEach(() => {
-    const PROCESS_PATH = nuclideUri.join(__dirname, 'fixtures/dummy-service/dummyioserver.py');
+    const PROCESS_PATH = nuclideUri.join(
+      __dirname,
+      'fixtures/dummy-service/dummyioserver.py',
+    );
     const OPTS = {
       cwd: nuclideUri.dirname(PROCESS_PATH),
       stdio: 'pipe',
@@ -30,12 +34,21 @@ describe('RpcProcess', () => {
 
     const serviceRegistry = new ServiceRegistry(
       [],
-      [{
-        name: 'dummy',
-        definition: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
-        implementation: nuclideUri.join(__dirname, 'fixtures/dummy-service/DummyService.js'),
-        preserveFunctionNames: true,
-      }]);
+      [
+        {
+          name: 'dummy',
+          definition: nuclideUri.join(
+            __dirname,
+            'fixtures/dummy-service/DummyService.js',
+          ),
+          implementation: nuclideUri.join(
+            __dirname,
+            'fixtures/dummy-service/DummyService.js',
+          ),
+          preserveFunctionNames: true,
+        },
+      ],
+    );
 
     const processStream = spawn('python', [PROCESS_PATH], OPTS)
       // For the sake of our tests, simulate creating the process asynchronously.
@@ -100,8 +113,11 @@ describe('RpcProcess', () => {
         await (await getService()).kill();
         invariant(false, 'Fail - expected promise to reject');
       } catch (e) {
-        expect(e.message.startsWith('Remote Error: Connection Closed processing message'))
-          .toBeTruthy();
+        expect(
+          e.message.startsWith(
+            'Remote Error: Connection Closed processing message',
+          ),
+        ).toBeTruthy();
       }
       expect((await message).exitCode).toBe(0);
     });

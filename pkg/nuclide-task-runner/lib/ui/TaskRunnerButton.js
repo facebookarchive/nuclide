@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ButtonSize} from '../../../nuclide-ui/Button';
@@ -27,9 +28,7 @@ export function TaskRunnerButton(props: Props): React.Element<any> {
   delete buttonProps.label;
   delete buttonProps.iconComponent;
   return (
-    <Button
-      {...buttonProps}
-      className="nuclide-task-runner-task-runner-button">
+    <Button {...buttonProps} className="nuclide-task-runner-task-runner-button">
       <div className="nuclide-task-runner-task-runner-icon-wrapper">
         {icon}
       </div>

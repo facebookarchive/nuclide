@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ConfigEntry} from '../../nuclide-rpc';
@@ -92,7 +93,8 @@ export default class NuclideServer {
 
     this._rpcServiceRegistry = new ServiceRegistry(
       getServerSideMarshalers,
-      services);
+      services,
+    );
   }
 
   _attachUtilHandlers() {
@@ -115,7 +117,9 @@ export default class NuclideServer {
   _createWebSocketServer(): WS.Server {
     const webSocketServer = new WS.Server({server: this._webServer});
     webSocketServer.on('connection', socket => this._onConnection(socket));
-    webSocketServer.on('error', error => logger.error('WebSocketServer Error:', error));
+    webSocketServer.on('error', error =>
+      logger.error('WebSocketServer Error:', error),
+    );
     return webSocketServer;
   }
 
@@ -127,21 +131,33 @@ export default class NuclideServer {
     this._setupClientInfoHandler();
 
     // Setup error handler.
-    this._app.use((error: ?connect$Error,
+    this._app.use(
+      (
+        error: ?connect$Error,
         request: http$fixed$IncomingMessage,
         response: http$fixed$ServerResponse,
-        next: Function) => {
-      if (error != null) {
-        sendJsonResponse(response, {code: error.code, message: error.message}, 500);
-      } else {
-        next();
-      }
-    });
+        next: Function,
+      ) => {
+        if (error != null) {
+          sendJsonResponse(
+            response,
+            {code: error.code, message: error.message},
+            500,
+          );
+        } else {
+          next();
+        }
+      },
+    );
   }
 
   _setupHeartbeatHandler() {
-    this._registerService('/' + HEARTBEAT_CHANNEL, async () => this._version,
-        'post', true);
+    this._registerService(
+      '/' + HEARTBEAT_CHANNEL,
+      async () => this._version,
+      'post',
+      true,
+    );
   }
 
   _setupClientInfoHandler() {
@@ -220,23 +236,35 @@ export default class NuclideServer {
    * endpoint calls with arguments serialized over http.
    */
   _registerService(
-      serviceName: string,
-      serviceFunction: () => Promise<any>,
-      method: string,
-      isTextResponse: boolean) {
+    serviceName: string,
+    serviceFunction: () => Promise<any>,
+    method: string,
+    isTextResponse: boolean,
+  ) {
     if (this._xhrServiceRegistry[serviceName]) {
-      throw new Error('A service with this name is already registered: ' + serviceName);
+      throw new Error(
+        'A service with this name is already registered: ' + serviceName,
+      );
     }
     this._xhrServiceRegistry[serviceName] = serviceFunction;
     this._registerHttpService(serviceName, method, isTextResponse);
   }
 
-  _registerHttpService(serviceName: string, method: string, isTextResponse: ?boolean) {
+  _registerHttpService(
+    serviceName: string,
+    method: string,
+    isTextResponse: ?boolean,
+  ) {
     const loweredCaseMethod = method.toLowerCase();
     // $FlowFixMe - Use map instead of computed property.
-    this._app[loweredCaseMethod](serviceName, async (request, response, next) => {
+    this._app[
+      loweredCaseMethod
+    ](serviceName, async (request, response, next) => {
       try {
-        const result = await this.callService(serviceName, deserializeArgs(request.url));
+        const result = await this.callService(
+          serviceName,
+          deserializeArgs(request.url),
+        );
         if (isTextResponse) {
           sendTextResponse(response, result || '');
         } else {
@@ -252,12 +280,11 @@ export default class NuclideServer {
   _onConnection(socket: WS): void {
     logger.debug('WebSocket connecting');
 
-
     let client: ?RpcConnection<QueuedTransport> = null;
 
-    const errorSubscription = attachEvent(
-      socket, 'error', e =>
-      logger.error('WebSocket error before first message', e));
+    const errorSubscription = attachEvent(socket, 'error', e =>
+      logger.error('WebSocket error before first message', e),
+    );
 
     socket.once('message', (clientId: string) => {
       errorSubscription.dispose();
@@ -266,7 +293,8 @@ export default class NuclideServer {
       if (client == null) {
         client = RpcConnection.createServer(
           this._rpcServiceRegistry,
-          new QueuedTransport(clientId, transport));
+          new QueuedTransport(clientId, transport),
+        );
         this._clients.set(clientId, client);
       } else {
         invariant(clientId === client.getTransport().id);

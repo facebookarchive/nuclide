@@ -6,12 +6,19 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {createAndroidDeviceListProvider, createAndroidInfoProvider} from './android_providers';
-import {createTizenDeviceListProvider, createTizenInfoProvider} from './tizen_providers';
+import {
+  createAndroidDeviceListProvider,
+  createAndroidInfoProvider,
+} from './android_providers';
+import {
+  createTizenDeviceListProvider,
+  createTizenInfoProvider,
+} from './tizen_providers';
 
 import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
 
@@ -27,9 +34,15 @@ class Activation {
   }
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(api.registerListProvider(createAndroidDeviceListProvider()));
-    this._disposables.add(api.registerListProvider(createTizenDeviceListProvider()));
-    this._disposables.add(api.registerInfoProvider(createAndroidInfoProvider()));
+    this._disposables.add(
+      api.registerListProvider(createAndroidDeviceListProvider()),
+    );
+    this._disposables.add(
+      api.registerListProvider(createTizenDeviceListProvider()),
+    );
+    this._disposables.add(
+      api.registerInfoProvider(createAndroidInfoProvider()),
+    );
     this._disposables.add(api.registerInfoProvider(createTizenInfoProvider()));
   }
 }

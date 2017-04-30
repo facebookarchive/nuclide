@@ -6,11 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
+import type {
+  AutocompleteCacherConfig,
+} from '../../commons-atom/AutocompleteCacher';
 
-import type {AutocompleteResult, Completion, LanguageService} from './LanguageService';
+import type {
+  AutocompleteResult,
+  Completion,
+  LanguageService,
+} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming, track} from '../../nuclide-analytics';
@@ -23,7 +30,9 @@ export type OnDidInsertSuggestionArgument = {
   suggestion: Completion,
 };
 
-export type OnDidInsertSuggestionCallback = (arg: OnDidInsertSuggestionArgument) => mixed;
+export type OnDidInsertSuggestionCallback = (
+  arg: OnDidInsertSuggestionArgument,
+) => mixed;
 
 export type AutocompleteConfig = {|
   inclusionPriority: number,
@@ -110,23 +119,22 @@ export class AutocompleteProvider<T: LanguageService> {
         config.onDidInsertSuggestionAnalyticsEventName,
         config.autocompleteCacherConfig,
         connectionToLanguageService,
-      ));
+      ),
+    );
   }
 
   getSuggestions(
     request: atom$AutocompleteRequest,
   ): Promise<?Array<Completion>> {
-    return trackTiming(
-      this._analyticsEventName,
-      async () => {
-        let result;
-        if (this._autocompleteCacher != null) {
-          result = await this._autocompleteCacher.getSuggestions(request);
-        } else {
-          result = await this._getSuggestionsFromLanguageService(request);
-        }
-        return result != null ? result.items : null;
-      });
+    return trackTiming(this._analyticsEventName, async () => {
+      let result;
+      if (this._autocompleteCacher != null) {
+        result = await this._autocompleteCacher.getSuggestions(request);
+      } else {
+        result = await this._getSuggestionsFromLanguageService(request);
+      }
+      return result != null ? result.items : null;
+    });
   }
 
   async _getSuggestionsFromLanguageService(
@@ -143,6 +151,10 @@ export class AutocompleteProvider<T: LanguageService> {
     }
 
     return (await languageService).getAutocompleteSuggestions(
-      fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
+      fileVersion,
+      position,
+      activatedManually == null ? false : activatedManually,
+      prefix,
+    );
   }
 }

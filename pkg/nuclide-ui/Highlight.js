@@ -6,12 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
 import React from 'react';
 
-export type HighlightColor = 'default' | 'info' | 'success' | 'warning' | 'error';
+export type HighlightColor =
+  | 'default'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error';
 
 type Props = {
   className?: string,
@@ -36,13 +42,9 @@ const HighlightColorClassNames = Object.freeze({
 });
 
 export const Highlight = (props: Props) => {
-  const {
-    className,
-    color,
-    children,
-    ...remainingProps
-  } = props;
-  const colorClassName = HighlightColorClassNames[color == null ? 'default' : color];
+  const {className, color, children, ...remainingProps} = props;
+  const colorClassName =
+    HighlightColorClassNames[color == null ? 'default' : color];
   const newClassName = classnames(colorClassName, className);
   return <span className={newClassName} {...remainingProps}>{children}</span>;
 };

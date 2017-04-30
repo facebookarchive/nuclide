@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileSearchResult} from './rpc-types';
@@ -29,7 +30,10 @@ class FileSearchProcess {
   constructor(task: Task, directory: string, ignoredNames: Array<string>) {
     this._task = task;
     task.onError(buffer => {
-      logger.error('File search process crashed with message:', buffer.toString());
+      logger.error(
+        'File search process crashed with message:',
+        buffer.toString(),
+      );
       this.dispose();
     });
     task.onExit(() => this.dispose());
@@ -101,12 +105,11 @@ export async function fileSearchForDirectory(
     fileSearch.dispose();
   }
 
-  const promise = newFileSearch(directory, ignoredNames)
-    .catch(error => {
-      // Remove errored processes from the cache so we can try again.
-      delete processForDirectory[directory];
-      throw error;
-    });
+  const promise = newFileSearch(directory, ignoredNames).catch(error => {
+    // Remove errored processes from the cache so we can try again.
+    delete processForDirectory[directory];
+    throw error;
+  });
   processForDirectory[directory] = promise;
   return promise;
 }
@@ -115,7 +118,9 @@ export function getExistingSearchDirectories(): Array<string> {
   return Object.keys(processForDirectory);
 }
 
-export async function disposeSearchForDirectory(directory: string): Promise<void> {
+export async function disposeSearchForDirectory(
+  directory: string,
+): Promise<void> {
   const cached = processForDirectory[directory];
   if (cached != null) {
     const search = await cached;

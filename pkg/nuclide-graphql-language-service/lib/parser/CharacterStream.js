@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -19,10 +20,7 @@
  *
  */
 
-type TokenPattern =
-  string |
-  ((char: string) => boolean) |
-  RegExp;
+type TokenPattern = string | ((char: string) => boolean) | RegExp;
 
 export default class CharacterStream {
   _start: number;
@@ -49,8 +47,9 @@ export default class CharacterStream {
     if (typeof pattern === 'string') {
       isMatched = character === pattern;
     } else {
-      isMatched = pattern instanceof RegExp ?
-        pattern.test(character) : pattern(character);
+      isMatched = pattern instanceof RegExp
+        ? pattern.test(character)
+        : pattern(character);
     }
     return isMatched;
   }
@@ -64,13 +63,14 @@ export default class CharacterStream {
   }
 
   peek(): string | null {
-    return this._sourceText.charAt(this._pos) ?
-      this._sourceText.charAt(this._pos) : null;
+    return this._sourceText.charAt(this._pos)
+      ? this._sourceText.charAt(this._pos)
+      : null;
   }
 
   next(): string {
     const char = this._sourceText.charAt(this._pos);
-    this._pos ++;
+    this._pos++;
     return char;
   }
 
@@ -78,7 +78,7 @@ export default class CharacterStream {
     const isMatched = this._testNextCharacter(pattern);
     if (isMatched) {
       this._start = this._pos;
-      this._pos ++;
+      this._pos++;
       return this._sourceText.charAt(this._pos - 1);
     }
     return undefined;
@@ -95,7 +95,7 @@ export default class CharacterStream {
     }
 
     while (isMatched) {
-      this._pos ++;
+      this._pos++;
       isMatched = this._testNextCharacter(match);
       didEat = true;
     }
@@ -124,7 +124,7 @@ export default class CharacterStream {
     let match = null;
 
     if (typeof pattern === 'string') {
-      const regex = new RegExp(pattern, (caseFold ? 'i' : 'g'));
+      const regex = new RegExp(pattern, caseFold ? 'i' : 'g');
       match = regex.test(this._sourceText.substr(this._pos, pattern.length));
       token = pattern;
     } else if (pattern instanceof RegExp) {
@@ -135,11 +135,11 @@ export default class CharacterStream {
     if (match != null) {
       if (
         typeof pattern === 'string' ||
-        match instanceof Array &&
-        // String.match returns 'index' property, which flow fails to detect
-        // for some reason. The below is a workaround, but an easier solution
-        // is just checking if `match.index === 0`
-        this._sourceText.startsWith(match[0], this._pos)
+        (match instanceof Array &&
+          // String.match returns 'index' property, which flow fails to detect
+          // for some reason. The below is a workaround, but an easier solution
+          // is just checking if `match.index === 0`
+          this._sourceText.startsWith(match[0], this._pos))
       ) {
         if (consume) {
           this._start = this._pos;

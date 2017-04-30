@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Task} from '../../commons-node/tasks';
@@ -62,10 +63,7 @@ export class ToolbarStatePreferences {
   }
 }
 
-export function createTask(
-  type: string,
-  disabled?: boolean,
-): TaskMetadata {
+export function createTask(type: string, disabled?: boolean): TaskMetadata {
   return {
     type,
     label: type,

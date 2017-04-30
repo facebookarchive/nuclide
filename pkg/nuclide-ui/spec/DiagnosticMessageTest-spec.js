@@ -6,15 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {separateUrls} from '../DiagnosticsMessageText';
 
 describe('DiagnosticsMessageText', () => {
   it('should leave text unchanged', () => {
-    expect(separateUrls('hello')).toEqual([
-      {isUrl: false, text: 'hello'},
-    ]);
+    expect(separateUrls('hello')).toEqual([{isUrl: false, text: 'hello'}]);
   });
 
   it('should handle a lone URL', () => {
@@ -26,9 +25,11 @@ describe('DiagnosticsMessageText', () => {
   });
 
   it('should separate URLs', () => {
-    expect(separateUrls(
-      'foo https://example.com/short-link bar https://example.com/abc_def0 baz',
-    )).toEqual([
+    expect(
+      separateUrls(
+        'foo https://example.com/short-link bar https://example.com/abc_def0 baz',
+      ),
+    ).toEqual([
       {isUrl: false, text: 'foo '},
       {isUrl: true, url: 'https://example.com/short-link'},
       {isUrl: false, text: ' bar '},

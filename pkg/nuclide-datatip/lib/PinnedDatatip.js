@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Datatip} from './types';
@@ -66,7 +67,8 @@ export class PinnedDatatip {
   constructor(
     datatip: Datatip,
     editor: TextEditor,
-    onDispose: (pinnedDatatip: PinnedDatatip) => void) {
+    onDispose: (pinnedDatatip: PinnedDatatip) => void,
+  ) {
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(new Disposable(() => onDispose(this)));
     this._datatip = datatip;
@@ -80,12 +82,26 @@ export class PinnedDatatip {
     this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
     this._boundHandleMouseLeave = this.handleMouseLeave.bind(this);
     this._boundHandleCapturedClick = this.handleCapturedClick.bind(this);
-    this._hostElement.addEventListener('mouseenter', this._boundHandleMouseEnter);
-    this._hostElement.addEventListener('mouseleave', this._boundHandleMouseLeave);
-    this._subscriptions.add(new Disposable(() => {
-      this._hostElement.removeEventListener('mouseenter', this._boundHandleMouseEnter);
-      this._hostElement.removeEventListener('mouseleave', this._boundHandleMouseLeave);
-    }));
+    this._hostElement.addEventListener(
+      'mouseenter',
+      this._boundHandleMouseEnter,
+    );
+    this._hostElement.addEventListener(
+      'mouseleave',
+      this._boundHandleMouseLeave,
+    );
+    this._subscriptions.add(
+      new Disposable(() => {
+        this._hostElement.removeEventListener(
+          'mouseenter',
+          this._boundHandleMouseEnter,
+        );
+        this._hostElement.removeEventListener(
+          'mouseleave',
+          this._boundHandleMouseLeave,
+        );
+      }),
+    );
     this._mouseUpTimeout = null;
     this._offset = {x: 0, y: 0};
     this._isDragging = false;
@@ -142,12 +158,17 @@ export class PinnedDatatip {
       y: evt.clientY - this._offset.y,
     };
     this._ensureMouseSubscriptionDisposed();
-    this._mouseSubscription =
-      documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(
-      (e: MouseEvent) => { this.handleGlobalMouseMove(e); },
-      (error: any) => {},
-      () => { this.handleGlobalMouseUp(); },
-    );
+    this._mouseSubscription = documentMouseMove$()
+      .takeUntil(documentMouseUp$())
+      .subscribe(
+        (e: MouseEvent) => {
+          this.handleGlobalMouseMove(e);
+        },
+        (error: any) => {},
+        () => {
+          this.handleGlobalMouseUp();
+        },
+      );
   }
 
   handleCapturedClick(event: SyntheticEvent): void {
@@ -158,29 +179,22 @@ export class PinnedDatatip {
 
   // Ensure positioning of the Datatip at the end of the current line.
   _updateHostElementPosition(): void {
-    const {
-      _editor,
-      _datatip,
-      _hostElement,
-      _offset,
-    } = this;
+    const {_editor, _datatip, _hostElement, _offset} = this;
     const {range} = _datatip;
     const charWidth = _editor.getDefaultCharWidth();
     const lineLength = _editor.getBuffer().getLines()[range.start.row].length;
     _hostElement.style.display = 'block';
-    _hostElement.style.top = -_editor.getLineHeightInPixels() + _offset.y + 'px';
+    _hostElement.style.top =
+      -_editor.getLineHeightInPixels() + _offset.y + 'px';
     _hostElement.style.left =
-      (lineLength - range.end.column) * charWidth + LINE_END_MARGIN + _offset.x + 'px';
+      (lineLength - range.end.column) * charWidth +
+      LINE_END_MARGIN +
+      _offset.x +
+      'px';
   }
 
   render(): void {
-    const {
-      _editor,
-      _datatip,
-      _hostElement,
-      _isDragging,
-      _isHovering,
-    } = this;
+    const {_editor, _datatip, _hostElement, _isDragging, _isHovering} = this;
     this._updateHostElementPosition();
     ReactDOM.render(
       <DatatipComponent
@@ -204,23 +218,19 @@ export class PinnedDatatip {
     }
 
     if (this._marker == null) {
-      const marker: atom$Marker = _editor.markBufferRange(_datatip.range, {invalidate: 'never'});
+      const marker: atom$Marker = _editor.markBufferRange(_datatip.range, {
+        invalidate: 'never',
+      });
       this._marker = marker;
-      _editor.decorateMarker(
-        marker,
-        {
-          type: 'overlay',
-          position: 'head',
-          item: this._hostElement,
-        },
-      );
-      this._rangeDecoration = _editor.decorateMarker(
-        marker,
-        {
-          type: 'highlight',
-          class: rangeClassname,
-        },
-      );
+      _editor.decorateMarker(marker, {
+        type: 'overlay',
+        position: 'head',
+        item: this._hostElement,
+      });
+      this._rangeDecoration = _editor.decorateMarker(marker, {
+        type: 'highlight',
+        class: rangeClassname,
+      });
     } else {
       // `this._rangeDecoration` is guaranteed to exist iff `this._marker` exists.
       invariant(this._rangeDecoration);

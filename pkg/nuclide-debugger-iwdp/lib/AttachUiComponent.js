@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -18,7 +19,9 @@ import {track} from '../../nuclide-analytics';
 
 import type EventEmitter from 'events';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {TargetEnvironment} from '../../nuclide-debugger-iwdp-rpc/lib/types';
+import type {
+  TargetEnvironment,
+} from '../../nuclide-debugger-iwdp-rpc/lib/types';
 
 type PropsType = {
   targetUri: NuclideUri,
@@ -34,14 +37,19 @@ const TARGET_ENVIRONMENTS = [
   {label: 'Android', value: 'Android'},
 ];
 
-export class AttachUiComponent extends React.Component<void, PropsType, StateType> {
+export class AttachUiComponent
+  extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
 
   constructor(props: PropsType) {
     super(props);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
-    (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(this);
+    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
+      this,
+    );
+    (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(
+      this,
+    );
     (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
     this.state = {
       selectedEnvironment: 'iOS',
@@ -93,9 +101,13 @@ export class AttachUiComponent extends React.Component<void, PropsType, StateTyp
 
   _handleAttachButtonClick(): void {
     track('nuclide-debugger-jsc-attach');
-    const processInfo = new AttachProcessInfo(this.props.targetUri, this.state.selectedEnvironment);
-    consumeFirstProvider('nuclide-debugger.remote')
-      .then(debuggerService => debuggerService.startDebugging(processInfo));
+    const processInfo = new AttachProcessInfo(
+      this.props.targetUri,
+      this.state.selectedEnvironment,
+    );
+    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
+      debuggerService.startDebugging(processInfo),
+    );
     this._showDebuggerPanel();
     this._handleCancelButtonClick();
   }

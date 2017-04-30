@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CodeFormatProvider} from './types';
@@ -21,13 +22,15 @@ export default class CodeFormatManager {
   _pendingFormats: Map<atom$TextEditor, boolean>;
 
   constructor() {
-    const subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-code-format:format-code',
-      // Atom doesn't accept in-command modification of the text editor contents.
-      () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
-    ));
+    const subscriptions = (this._subscriptions = new CompositeDisposable());
+    subscriptions.add(
+      atom.commands.add(
+        'atom-text-editor',
+        'nuclide-code-format:format-code',
+        // Atom doesn't accept in-command modification of the text editor contents.
+        () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
+      ),
+    );
     subscriptions.add(observeTextEditors(this._addEditor.bind(this)));
     this._codeFormatProviders = [];
     this._pendingFormats = new Map();
@@ -38,24 +41,26 @@ export default class CodeFormatManager {
       return;
     }
 
-    this._subscriptions.add(editor.getBuffer().onDidSave(async () => {
-      if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
-        // Because formatting code is async, we need to resave the file once
-        // we're done formatting, but prevent resaving from retriggering the
-        // onDidSave callback, which would be an infinite cycle.
-        this._pendingFormats.set(editor, true);
-        try {
-          const didFormat = await this._formatCodeInTextEditor(editor, false);
-          if (didFormat) {
-            // TextEditor.save is synchronous for local files, but our custom
-            // NuclideTextBuffer.saveAs implementation is asynchronous.
-            await editor.save();
+    this._subscriptions.add(
+      editor.getBuffer().onDidSave(async () => {
+        if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
+          // Because formatting code is async, we need to resave the file once
+          // we're done formatting, but prevent resaving from retriggering the
+          // onDidSave callback, which would be an infinite cycle.
+          this._pendingFormats.set(editor, true);
+          try {
+            const didFormat = await this._formatCodeInTextEditor(editor, false);
+            if (didFormat) {
+              // TextEditor.save is synchronous for local files, but our custom
+              // NuclideTextBuffer.saveAs implementation is asynchronous.
+              await editor.save();
+            }
+          } finally {
+            this._pendingFormats.delete(editor);
           }
-        } finally {
-          this._pendingFormats.delete(editor);
         }
-      }
-    }));
+      }),
+    );
 
     editor.onDidDestroy(() => {
       this._pendingFormats.delete(editor);
@@ -66,7 +71,9 @@ export default class CodeFormatManager {
   // anything has changed.
   _checkContentsAreSame(before: string, after: string): void {
     if (before !== after) {
-      throw new Error('The file contents were changed before formatting was complete.');
+      throw new Error(
+        'The file contents were changed before formatting was complete.',
+      );
     }
   }
 
@@ -93,7 +100,9 @@ export default class CodeFormatManager {
 
     if (!matchingProviders.length) {
       if (displayErrors) {
-        atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
+        atom.notifications.addError(
+          'No Code-Format providers registered for scope: ' + scopeName,
+        );
       }
       return false;
     }
@@ -123,8 +132,10 @@ export default class CodeFormatManager {
 
     try {
       const provider = matchingProviders[0];
-      if (provider.formatCode != null &&
-        (!selectionRangeEmpty || provider.formatEntireFile == null)) {
+      if (
+        provider.formatCode != null &&
+        (!selectionRangeEmpty || provider.formatEntireFile == null)
+      ) {
         const edits = await provider.formatCode(editor, formatRange);
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
@@ -134,13 +145,16 @@ export default class CodeFormatManager {
           throw new Error('Could not apply edits to text buffer.');
         }
       } else if (provider.formatEntireFile != null) {
-        const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
+        const {newCursor, formatted} = await provider.formatEntireFile(
+          editor,
+          formatRange,
+        );
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
 
         buffer.setTextViaDiff(formatted);
 
-        const newPosition = (newCursor != null)
+        const newPosition = newCursor != null
           ? buffer.positionForCharacterIndex(newCursor)
           : editor.getCursorBufferPosition();
 
@@ -148,7 +162,9 @@ export default class CodeFormatManager {
         // because it unselects the text selection.
         editor.setCursorBufferPosition(newPosition);
       } else {
-        throw new Error('code-format providers must implement formatCode or formatEntireFile');
+        throw new Error(
+          'code-format providers must implement formatCode or formatEntireFile',
+        );
       }
       return true;
     } catch (e) {
@@ -159,10 +175,15 @@ export default class CodeFormatManager {
     }
   }
 
-  _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {
+  _getMatchingProvidersForScopeName(
+    scopeName: string,
+  ): Array<CodeFormatProvider> {
     const matchingProviders = this._codeFormatProviders.filter(provider => {
       const providerGrammars = provider.selector.split(/, ?/);
-      return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
+      return (
+        provider.inclusionPriority > 0 &&
+        providerGrammars.indexOf(scopeName) !== -1
+      );
     });
     return matchingProviders.sort((providerA, providerB) => {
       // $FlowFixMe a comparator function should return a number

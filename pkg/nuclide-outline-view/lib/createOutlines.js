@@ -6,12 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {OutlineForUi, OutlineTreeForUi, OutlineProvider} from '..';
 import type {Outline, OutlineTree} from './rpc-types';
-import type ActiveEditorRegistry, {Result} from
-  '../../commons-atom/ActiveEditorRegistry';
+import type ActiveEditorRegistry, {
+  Result,
+} from '../../commons-atom/ActiveEditorRegistry';
 
 import {Observable} from 'rxjs';
 import featureConfig from '../../commons-atom/featureConfig';
@@ -33,7 +35,9 @@ function outlinesForProviderResults(
   return providerResults.switchMap(uiOutlinesForResult);
 }
 
-function uiOutlinesForResult(result: Result<OutlineProvider, ?Outline>): Observable<OutlineForUi> {
+function uiOutlinesForResult(
+  result: Result<OutlineProvider, ?Outline>,
+): Observable<OutlineForUi> {
   switch (result.kind) {
     case 'not-text-editor':
       return Observable.of({kind: 'not-text-editor'});
@@ -64,24 +68,34 @@ function uiOutlinesForResult(result: Result<OutlineProvider, ?Outline>): Observa
   }
 }
 
-function highlightedOutlines(outline: Outline, editor: atom$TextEditor): Observable<OutlineForUi> {
+function highlightedOutlines(
+  outline: Outline,
+  editor: atom$TextEditor,
+): Observable<OutlineForUi> {
   const nameOnly = featureConfig.get('nuclide-outline-view.nameOnly');
   const outlineForUi = {
     kind: 'outline',
-    outlineTrees: outline.outlineTrees.map(
-      outlineTree => treeToUiTree(outlineTree, Boolean(nameOnly))),
+    outlineTrees: outline.outlineTrees.map(outlineTree =>
+      treeToUiTree(outlineTree, Boolean(nameOnly)),
+    ),
     editor,
   };
 
-  return getCursorPositions(editor)
-    .map(cursorLocation => highlightCurrentNode(outlineForUi, cursorLocation));
+  return getCursorPositions(editor).map(cursorLocation =>
+    highlightCurrentNode(outlineForUi, cursorLocation),
+  );
 }
 
-function treeToUiTree(outlineTree: OutlineTree, nameOnly: boolean): OutlineTreeForUi {
+function treeToUiTree(
+  outlineTree: OutlineTree,
+  nameOnly: boolean,
+): OutlineTreeForUi {
   const shortName = nameOnly && outlineTree.representativeName != null;
   return {
     icon: nameOnly ? undefined : outlineTree.icon,
-    plainText: shortName ? outlineTree.representativeName : outlineTree.plainText,
+    plainText: shortName
+      ? outlineTree.representativeName
+      : outlineTree.plainText,
     tokenizedText: shortName ? undefined : outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
@@ -92,12 +106,18 @@ function treeToUiTree(outlineTree: OutlineTree, nameOnly: boolean): OutlineTreeF
 
 // Return an outline object with the node under the cursor highlighted. Does not mutate the
 // original.
-function highlightCurrentNode(outline: OutlineForUi, cursorLocation: atom$Point): OutlineForUi {
+function highlightCurrentNode(
+  outline: OutlineForUi,
+  cursorLocation: atom$Point,
+): OutlineForUi {
   invariant(outline.kind === 'outline');
   // $FlowIssue
   return {
     ...outline,
-    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation),
+    outlineTrees: highlightCurrentNodeInTrees(
+      outline.outlineTrees,
+      cursorLocation,
+    ),
   };
 }
 
@@ -124,7 +144,10 @@ function highlightCurrentNodeInTrees(
   return changed ? newTrees : outlineTrees;
 }
 
-function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom$Point): boolean {
+function shouldHighlightNode(
+  outlineTree: OutlineTreeForUi,
+  cursorLocation: atom$Point,
+): boolean {
   const startPosition = outlineTree.startPosition;
   const endPosition = outlineTree.endPosition;
   if (endPosition == null) {
@@ -135,9 +158,13 @@ function shouldHighlightNode(outlineTree: OutlineTreeForUi, cursorLocation: atom
     // Since the parent is rendered in the list above the children, it doesn't really make sense to
     // highlight it if you are below the start position of any child. However, if you are at the top
     // of a class it does seem desirable to highlight it.
-    return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-      cursorLocation.isLessThan(childStartPosition);
+    return (
+      cursorLocation.isGreaterThanOrEqual(startPosition) &&
+      cursorLocation.isLessThan(childStartPosition)
+    );
   }
-  return cursorLocation.isGreaterThanOrEqual(startPosition) &&
-   cursorLocation.isLessThanOrEqual(endPosition);
+  return (
+    cursorLocation.isGreaterThanOrEqual(startPosition) &&
+    cursorLocation.isLessThanOrEqual(endPosition)
+  );
 }

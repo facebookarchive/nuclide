@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
@@ -19,7 +20,9 @@ function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   }
 }
 
-export function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage): string {
+export function getProjectRelativePathOfDiagnostic(
+  diagnostic: DiagnosticMessage,
+): string {
   if (typeof diagnostic.filePath === 'string') {
     const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
     return relativePath;
@@ -28,7 +31,10 @@ export function getProjectRelativePathOfDiagnostic(diagnostic: DiagnosticMessage
   }
 }
 
-export function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
+export function compareMessagesByFile(
+  a: DiagnosticMessage,
+  b: DiagnosticMessage,
+): number {
   // This will sort by:
   //  - errors before warnings
   //  - local before remote
@@ -43,7 +49,9 @@ export function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage
 
   // We don't sort by project relative path as that will interleave diagnostics from
   // different projects.
-  compareVal = fileOfDiagnosticMessage(a).localeCompare(fileOfDiagnosticMessage(b));
+  compareVal = fileOfDiagnosticMessage(a).localeCompare(
+    fileOfDiagnosticMessage(b),
+  );
   // If the messages are from the same file (`filePath` is equal and `localeCompare`
   // returns 0), compare the line numbers within the file to determine their sort order.
   if (compareVal === 0 && (a.range !== undefined && b.range !== undefined)) {
@@ -59,6 +67,9 @@ const messageLevelRank: {[key: MessageType]: number} = {
   Info: 2,
 };
 
-function compareMessagesByLevel(a: DiagnosticMessage, b: DiagnosticMessage): number {
+function compareMessagesByLevel(
+  a: DiagnosticMessage,
+  b: DiagnosticMessage,
+): number {
   return messageLevelRank[a.type] - messageLevelRank[b.type];
 }

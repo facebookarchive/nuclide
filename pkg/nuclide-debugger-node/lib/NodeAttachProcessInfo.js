@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -19,7 +20,9 @@ import type {
   NodeAttachTargetInfo,
   NodeDebuggerService,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import {getNodeDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getNodeDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 
 export class NodeAttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: NodeAttachTargetInfo;

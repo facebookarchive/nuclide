@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ASTNode} from 'graphql/language';
@@ -22,10 +23,12 @@ export default function customRules(
   const NoAlphabetIDArgumentRule = (context: ValidationContext) => ({
     Argument(node: ASTNode): void {
       if (!/^\d+$/.test(node.value.value)) {
-        context.reportError(new GraphQLError(
-          'Argument ID must be a number written in string type.',
-          [node],
-        ));
+        context.reportError(
+          new GraphQLError(
+            'Argument ID must be a number written in string type.',
+            [node],
+          ),
+        );
       }
     },
   });

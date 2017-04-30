@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -76,8 +77,13 @@ export type ErrorMessage = {
   error: Object,
 };
 
-export type Message = StartMessage | SummaryMessage |
-    RunTestMessage | StderrMessage | StdoutMessage | ErrorMessage;
+export type Message =
+  | StartMessage
+  | SummaryMessage
+  | RunTestMessage
+  | StderrMessage
+  | StdoutMessage
+  | ErrorMessage;
 
 export type TestRunner = {
   label: string,

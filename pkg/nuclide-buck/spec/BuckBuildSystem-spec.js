@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Observable} from 'rxjs';
@@ -21,14 +22,16 @@ describe('BuckBuildSystem', () => {
     it('emits log messages', () => {
       waitsForPromise(async () => {
         const spy = jasmine.createSpy('output');
-        const subscription = buckBuildSystem.getOutputMessages()
-          .subscribe(spy);
+        const subscription = buckBuildSystem.getOutputMessages().subscribe(spy);
 
-        const result = await buckBuildSystem._consumeEventStream(Observable.from([
-          {type: 'log', message: 'test', level: 'error'},
-          {type: 'log', message: 'test2', level: 'warning'},
-          {type: 'progress', progress: 1},
-        ]))
+        const result = await buckBuildSystem
+          ._consumeEventStream(
+            Observable.from([
+              {type: 'log', message: 'test', level: 'error'},
+              {type: 'log', message: 'test2', level: 'warning'},
+              {type: 'progress', progress: 1},
+            ]),
+          )
           .toArray()
           .toPromise();
 
@@ -47,12 +50,13 @@ describe('BuckBuildSystem', () => {
     it('emits diagnostics', () => {
       waitsForPromise(async () => {
         const spy = jasmine.createSpy('diagnostics');
-        const subscription = buckBuildSystem.getDiagnosticProvider()
-          .updates
-          .subscribe(spy);
+        const subscription = buckBuildSystem
+          .getDiagnosticProvider()
+          .updates.subscribe(spy);
 
         const outputSpy = jasmine.createSpy('output');
-        const outputSubscription = buckBuildSystem.getOutputMessages()
+        const outputSubscription = buckBuildSystem
+          .getOutputMessages()
           .subscribe(outputSpy);
 
         const diagnostic = {
@@ -62,27 +66,30 @@ describe('BuckBuildSystem', () => {
           filePath: 'a',
         };
 
-        const result = await buckBuildSystem._consumeEventStream(Observable.from([
-          {
-            type: 'diagnostics',
-            diagnostics: [diagnostic],
-          },
-          {
-            type: 'diagnostics',
-            diagnostics: [{...diagnostic, type: 'Warning'}],
-          },
-          {
-            type: 'diagnostics',
-            diagnostics: [{...diagnostic, filePath: 'b'}],
-          },
-        ])).toArray().toPromise();
+        const result = await buckBuildSystem
+          ._consumeEventStream(
+            Observable.from([
+              {
+                type: 'diagnostics',
+                diagnostics: [diagnostic],
+              },
+              {
+                type: 'diagnostics',
+                diagnostics: [{...diagnostic, type: 'Warning'}],
+              },
+              {
+                type: 'diagnostics',
+                diagnostics: [{...diagnostic, filePath: 'b'}],
+              },
+            ]),
+          )
+          .toArray()
+          .toPromise();
 
         expect(result).toEqual([]);
         expect(spy.calls.map(call => call.args[0])).toEqual([
           {
-            filePathToMessages: new Map([
-              ['a', [diagnostic]],
-            ]),
+            filePathToMessages: new Map([['a', [diagnostic]]]),
           },
           {
             // Accumulate diagnostics per file.

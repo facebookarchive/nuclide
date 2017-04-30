@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ASTNode} from 'graphql/language';
@@ -24,7 +25,8 @@ export function getASTNodeAtPoint(
     enter(node) {
       if (
         node.kind !== 'Name' && // We're usually interested in their parents
-        node.loc.start <= offset && offset <= node.loc.end
+        node.loc.start <= offset &&
+        offset <= node.loc.end
       ) {
         nodeContainingPoint = node;
       } else {
@@ -42,7 +44,12 @@ export function getASTNodeAtPoint(
 
 export function pointToOffset(text: string, point: Point): number {
   const linesUntilPoint = text.split('\n').slice(0, point.row);
-  return point.column + linesUntilPoint.map(line =>
-    line.length + 1, // count EOL
-  ).reduce((a, b) => a + b, 0);
+  return (
+    point.column +
+    linesUntilPoint
+      .map(
+        line => line.length + 1, // count EOL
+      )
+      .reduce((a, b) => a + b, 0)
+  );
 }

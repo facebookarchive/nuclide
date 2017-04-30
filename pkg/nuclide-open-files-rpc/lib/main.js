@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileVersion} from './rpc-types';
@@ -26,6 +27,7 @@ export function getBufferAtVersion(
 ): Promise<?simpleTextBuffer$TextBuffer> {
   invariant(
     fileVersion.notifier instanceof FileCache,
-    'Don\'t call this from the Atom process');
+    "Don't call this from the Atom process",
+  );
   return (fileVersion.notifier: FileCache).getBufferAtVersion(fileVersion);
 }

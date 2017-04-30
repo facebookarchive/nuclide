@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -57,28 +58,31 @@ export class IndieLinterDelegate {
     this._messages = this._messages
       .filter(message => message.location.file !== filePath)
       .concat(messages);
-    this._updates.next(linterMessagesToDiagnosticUpdate(filePath, [...messages], this._name));
+    this._updates.next(
+      linterMessagesToDiagnosticUpdate(filePath, [...messages], this._name),
+    );
   }
 
   setAllMessages(messages: Array<LinterMessageV2>): void {
     this.clearMessages();
     this._messages = messages;
-    this._updates.next(linterMessagesToDiagnosticUpdate(null, [...messages], this._name));
+    this._updates.next(
+      linterMessagesToDiagnosticUpdate(null, [...messages], this._name),
+    );
   }
 
-  onDidUpdate(callback: (messages: Array<LinterMessageV2>) => mixed): IDisposable {
+  onDidUpdate(
+    callback: (messages: Array<LinterMessageV2>) => mixed,
+  ): IDisposable {
     return new UniversalDisposable(
-      Observable.merge(this.updates, this.invalidations)
-        .subscribe(() => {
-          callback(this._messages);
-        }),
+      Observable.merge(this.updates, this.invalidations).subscribe(() => {
+        callback(this._messages);
+      }),
     );
   }
 
   onDidDestroy(callback: () => mixed): IDisposable {
-    return new UniversalDisposable(
-      this._destroyed.take(1).subscribe(callback),
-    );
+    return new UniversalDisposable(this._destroyed.take(1).subscribe(callback));
   }
 
   dispose() {

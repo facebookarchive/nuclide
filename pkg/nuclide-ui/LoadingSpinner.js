@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import addTooltip from './add-tooltip';
@@ -68,11 +69,7 @@ export class LoadingSpinner extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    const {
-      className,
-      size,
-      tooltip,
-    } = this.props;
+    const {className, size, tooltip} = this.props;
     if (!this.state.shouldRender) {
       return null;
     }
@@ -82,13 +79,7 @@ export class LoadingSpinner extends React.Component {
       ? size
       : LoadingSpinnerSizes.MEDIUM;
     const sizeClassname = LoadingSpinnerClassnames[safeSize];
-    const newClassName = classnames(
-      className,
-      'loading',
-      sizeClassname,
-    );
-    return (
-      <div className={newClassName} ref={ref} />
-    );
+    const newClassName = classnames(className, 'loading', sizeClassname);
+    return <div className={newClassName} ref={ref} />;
   }
 }

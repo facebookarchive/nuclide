@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Range, Point} from 'simple-text-buffer';
@@ -52,11 +53,14 @@ describe('ClangServer', () => {
   it('can handle requests', () => {
     waitsForPromise(async () => {
       const serverArgs = findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, FILE_CONTENTS, serverArgs, serverFlags);
-      const service = await server.getService();
-      let response = await server.compile(
+      const server = new ClangServer(
+        TEST_FILE,
         FILE_CONTENTS,
+        serverArgs,
+        serverFlags,
       );
+      const service = await server.getService();
+      let response = await server.compile(FILE_CONTENTS);
       invariant(response);
       expect(response).toEqual({
         diagnostics: [
@@ -73,7 +77,7 @@ describe('ClangServer', () => {
               point: new Point(5, 2),
               file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
-            spelling: 'no matching function for call to \'main\'',
+            spelling: "no matching function for call to 'main'",
             children: [
               {
                 location: {
@@ -101,7 +105,7 @@ describe('ClangServer', () => {
               point: new Point(6, 10),
               file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
             },
-            spelling: 'expected \';\' after return statement',
+            spelling: "expected ';' after return statement",
             children: [],
           },
         ],
@@ -111,13 +115,7 @@ describe('ClangServer', () => {
       const mem = await server.getMemoryUsage();
       expect(mem).toBeGreaterThan(0);
 
-      response = await service.get_completions(
-        FILE_CONTENTS,
-        4,
-        7,
-        7,
-        'f',
-      );
+      response = await service.get_completions(FILE_CONTENTS, 4, 7, 7, 'f');
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([
         'f(int x)',
@@ -126,46 +124,24 @@ describe('ClangServer', () => {
       ]);
 
       // This will hit the cache. Double-check the result.
-      response = await service.get_completions(
-        FILE_CONTENTS,
-        4,
-        7,
-        7,
-        'fa',
-      );
+      response = await service.get_completions(FILE_CONTENTS, 4, 7, 7, 'fa');
       invariant(response);
-      expect(response.map(x => x.spelling).sort()).toEqual([
-        'false',
-      ]);
+      expect(response.map(x => x.spelling).sort()).toEqual(['false']);
 
       // Function argument completions are a little special.
-      response = await service.get_completions(
-        FILE_CONTENTS,
-        4,
-        4,
-        4,
-        '',
-      );
+      response = await service.get_completions(FILE_CONTENTS, 4, 4, 4, '');
       invariant(response);
       expect(response[0].spelling).toBe('f(int x)');
       expect(response[0].cursor_kind).toBe('OVERLOAD_CANDIDATE');
 
-      response = await service.get_declaration(
-        FILE_CONTENTS,
-        4,
-        2,
-      );
+      response = await service.get_declaration(FILE_CONTENTS, 4, 2);
       invariant(response);
       const {point, spelling, type} = response;
       expect(point).toEqual(new Point(0, 5));
       expect(spelling).toBe('f');
       expect(type).toBe('void (int)');
 
-      response = await service.get_declaration_info(
-        FILE_CONTENTS,
-        4,
-        2,
-      );
+      response = await service.get_declaration_info(FILE_CONTENTS, 4, 2);
       invariant(response);
       expect(response.length).toBe(1);
       expect(response[0].name).toBe('f(int)');
@@ -174,9 +150,7 @@ describe('ClangServer', () => {
       expect(response[0].cursor_usr).not.toBe(null);
       expect(response[0].is_definition).toBe(true);
 
-      response = await service.get_outline(
-        FILE_CONTENTS,
-      );
+      response = await service.get_outline(FILE_CONTENTS);
       invariant(response);
       expect(response).toEqual(EXPECTED_FILE_OUTLINE);
     });
@@ -185,10 +159,13 @@ describe('ClangServer', () => {
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
       const serverArgs = findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, FILE_CONTENTS, serverArgs, serverFlags);
-      let response = await server.compile(
+      const server = new ClangServer(
+        TEST_FILE,
         FILE_CONTENTS,
+        serverArgs,
+        serverFlags,
       );
+      let response = await server.compile(FILE_CONTENTS);
       expect(response).not.toBe(null);
 
       const {_process} = server._rpcProcess;
@@ -198,9 +175,7 @@ describe('ClangServer', () => {
       // This request should fail, but cleanup should occur.
       let thrown = false;
       try {
-        response = await server.compile(
-          FILE_CONTENTS,
-        );
+        response = await server.compile(FILE_CONTENTS);
       } catch (e) {
         thrown = true;
       }
@@ -208,11 +183,7 @@ describe('ClangServer', () => {
 
       // The next request should work as expected.
       const service = await server.getService();
-      response = await service.get_declaration(
-        FILE_CONTENTS,
-        4,
-        2,
-      );
+      response = await service.get_declaration(FILE_CONTENTS, 4, 2);
       expect(response).not.toBe(null);
     });
   });
@@ -222,7 +193,12 @@ describe('ClangServer', () => {
       const file = nuclideUri.join(__dirname, 'fixtures', 'references.cpp');
       const fileContents = fs.readFileSync(file).toString('utf8');
       const serverArgs = findClangServerArgs();
-      const server = new ClangServer(file, fileContents, serverArgs, serverFlags);
+      const server = new ClangServer(
+        file,
+        fileContents,
+        serverArgs,
+        serverFlags,
+      );
       const service = await server.getService();
 
       const compileResponse = await server.compile(fileContents);
@@ -259,9 +235,7 @@ describe('ClangServer', () => {
       expect(await service.get_local_references(fileContents, 2, 26)).diffJson({
         cursor_name: 'var3',
         cursor_kind: 'VAR_DECL',
-        references: [
-          {start: {row: 2, column: 26}, end: {row: 2, column: 30}},
-        ],
+        references: [{start: {row: 2, column: 26}, end: {row: 2, column: 30}}],
       });
 
       // inner var1
@@ -278,7 +252,9 @@ describe('ClangServer', () => {
 
       // nothing
       expect(await service.get_local_references(fileContents, 0, 0)).toBe(null);
-      expect(await service.get_local_references(fileContents, 11, 0)).toBe(null);
+      expect(await service.get_local_references(fileContents, 11, 0)).toBe(
+        null,
+      );
     });
   });
 
@@ -297,11 +273,16 @@ describe('ClangServer', () => {
       spyOn(FileWatcherService, 'watchFile').andReturn(subject.publish());
 
       const serverArgs = findClangServerArgs();
-      const server = new ClangServer(TEST_FILE, '', serverArgs, Promise.resolve({
-        flags: [],
-        usesDefaultFlags: false,
-        flagsFile: '',
-      }));
+      const server = new ClangServer(
+        TEST_FILE,
+        '',
+        serverArgs,
+        Promise.resolve({
+          flags: [],
+          usesDefaultFlags: false,
+          flagsFile: '',
+        }),
+      );
 
       await server.waitForReady();
       subject.next(null);

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
@@ -57,13 +58,16 @@ export class OutlineViewProvider<T: LanguageService> {
         config.priority,
         config.analyticsEventName,
         connectionToLanguageService,
-      ));
+      ),
+    );
   }
 
   getOutline(editor: atom$TextEditor): Promise<?Outline> {
     return trackTiming(this._analyticsEventName, async () => {
       const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
       if (languageService == null || fileVersion == null) {
         return null;
       }

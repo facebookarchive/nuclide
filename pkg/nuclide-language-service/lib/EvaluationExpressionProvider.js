@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {LanguageService} from './LanguageService';
 
 import {trackTiming} from '../../nuclide-analytics';
@@ -58,7 +61,8 @@ export class EvaluationExpressionProvider<T: LanguageService> {
         config.analyticsEventName,
         config.regexp == null ? null : config.regexp, // turn string|void into string|null
         connectionToLanguageService,
-      ));
+      ),
+    );
   }
 
   getEvaluationExpression(
@@ -67,17 +71,25 @@ export class EvaluationExpressionProvider<T: LanguageService> {
   ): Promise<?NuclideEvaluationExpression> {
     return trackTiming(this._analyticsEventName, async () => {
       if (this._regexp != null) {
-        return getEvaluationExpressionFromRegexp(editor, position, this._regexp);
+        return getEvaluationExpressionFromRegexp(
+          editor,
+          position,
+          this._regexp,
+        );
       }
 
       const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(editor.getPath());
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
       if (languageService == null || fileVersion == null) {
         return null;
       }
 
       return (await languageService).getEvaluationExpression(
-        fileVersion, position);
+        fileVersion,
+        position,
+      );
     });
   }
 }
@@ -93,5 +105,5 @@ export function getEvaluationExpressionFromRegexp(
   }
   const {range, wordMatch} = extractedIdentifier;
   const [expression] = wordMatch;
-  return (expression == null) ? null : {expression, range};
+  return expression == null ? null : {expression, range};
 }

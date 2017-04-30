@@ -6,12 +6,18 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
+import type {
+  LocalStorageJsonTable,
+} from '../../commons-atom/LocalStorageJsonTable';
 import type {Action, Store, ToolbarStatePreference} from '../lib/types';
 
-import {ActionsObservable, combineEpics} from '../../commons-node/redux-observable';
+import {
+  ActionsObservable,
+  combineEpics,
+} from '../../commons-node/redux-observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import * as Actions from '../lib/redux/Actions';
@@ -82,7 +88,9 @@ describe('Epics', () => {
             .first()
             .toPromise();
           invariant(output.type === Actions.SET_STATES_FOR_TASK_RUNNERS);
-          const runnerState = output.payload.statesForTaskRunners.get(taskRunner);
+          const runnerState = output.payload.statesForTaskRunners.get(
+            taskRunner,
+          );
           invariant(runnerState);
           expect(runnerState.enabled).toEqual(true);
           expect(runnerState.tasks[0].type).toEqual('test task');
@@ -120,7 +128,10 @@ describe('Epics', () => {
     describe('if this working root doesnt have a preference', () => {
       it('selects an enabled runner with the highest priority', () => {
         waitsForPromise(async () => {
-          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
+          const output = await runActions(
+            [Actions.setStatesForTaskRunners(newStates)],
+            state,
+          )
             .toArray()
             .toPromise();
           expect(output.length).toEqual(2);
@@ -133,7 +144,10 @@ describe('Epics', () => {
 
       it('shows the toolbar since it might be useful', () => {
         waitsForPromise(async () => {
-          const output = await runActions([Actions.setStatesForTaskRunners(newStates)], state)
+          const output = await runActions(
+            [Actions.setStatesForTaskRunners(newStates)],
+            state,
+          )
             .toArray()
             .toPromise();
           expect(output.length).toEqual(2);
@@ -157,7 +171,7 @@ describe('Epics', () => {
             [Actions.setStatesForTaskRunners(newStates)],
             state,
             createMockPreferences([{key: 'foo', value: preference}]),
-        )
+          )
             .toArray()
             .toPromise();
           expect(output.length).toEqual(2);
@@ -189,9 +203,9 @@ describe('Epics', () => {
 
         const actions = [
           Actions.runTask({...taskMeta, taskRunner}, false),
-          {type: Actions.TASK_STOPPED,
-            payload:
-           {taskStatus: {metadata: taskMeta, task, progress: 1}},
+          {
+            type: Actions.TASK_STOPPED,
+            payload: {taskStatus: {metadata: taskMeta, task, progress: 1}},
           },
         ];
         await runActions(actions, state).toArray().toPromise();
@@ -245,8 +259,9 @@ function createMockStore(state: Object): Store {
 function runActions(
   actions: Array<Action>,
   initialState: Object,
-  preferencesForWorkingRoots: LocalStorageJsonTable<?ToolbarStatePreference>
-    = createMockPreferences([]),
+  preferencesForWorkingRoots: LocalStorageJsonTable<
+    ?ToolbarStatePreference
+  > = createMockPreferences([]),
 ): ReplaySubject<Action> {
   const store = createMockStore(initialState);
   const input = new Subject();
@@ -264,6 +279,7 @@ function runActions(
 function createMockPreferences(
   db: Array<{key: string, value: ?ToolbarStatePreference}>,
 ): LocalStorageJsonTable<?ToolbarStatePreference> {
-  return ((new dummy.ToolbarStatePreferences(db): any):
-    LocalStorageJsonTable<?ToolbarStatePreference>);
+  return ((new dummy.ToolbarStatePreferences(db): any): LocalStorageJsonTable<
+    ?ToolbarStatePreference
+  >);
 }

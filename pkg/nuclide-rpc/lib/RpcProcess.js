@@ -6,11 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '..';
-import type {ProcessMessage, ProcessExitMessage} from '../../commons-node/process-rpc-types';
+import type {
+  ProcessMessage,
+  ProcessExitMessage,
+} from '../../commons-node/process-rpc-types';
 
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';
@@ -55,7 +59,9 @@ export class RpcProcess {
     name: string,
     serviceRegistry: ServiceRegistry,
     processStream: Observable<child_process$ChildProcess>,
-    messageLogger: MessageLogger = (direction, message) => { return; },
+    messageLogger: MessageLogger = (direction, message) => {
+      return;
+    },
   ) {
     this._processStream = processStream;
     this._messageLogger = messageLogger;
@@ -108,32 +114,38 @@ export class RpcProcess {
         .publish();
 
       processStream
-        .switchMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
+        .switchMap(proc =>
+          getOutputStream(proc, {
+            /* TODO(T17353599) */ isExitError: () => false,
+          }),
+        )
         // switchMap won't stop until the mapped observable stops.
         // Manual disposals shouldn't trigger the exit message.
         .takeUntil(this._disposals)
         .subscribe(this._onProcessMessage.bind(this));
 
-      const connection = this._rpcConnection =
-        processStream
-          .take(1)
-          .toPromise()
-          .then(proc => {
-            if (proc == null) {
-              throw new Error('RpcProcess disposed during getService');
-            }
-            this._process = proc;
-            logger.info(`${this._name} - created child process with PID: `, proc.pid);
+      const connection = (this._rpcConnection = processStream
+        .take(1)
+        .toPromise()
+        .then(proc => {
+          if (proc == null) {
+            throw new Error('RpcProcess disposed during getService');
+          }
+          this._process = proc;
+          logger.info(
+            `${this._name} - created child process with PID: `,
+            proc.pid,
+          );
 
-            proc.stdin.on('error', error => {
-              logger.error(`${this._name} - error writing data: `, error);
-            });
-            return new RpcConnection(
-              'client',
-              this._serviceRegistry,
-              new StreamTransport(proc.stdin, proc.stdout, this._messageLogger),
-            );
+          proc.stdin.on('error', error => {
+            logger.error(`${this._name} - error writing data: `, error);
           });
+          return new RpcConnection(
+            'client',
+            this._serviceRegistry,
+            new StreamTransport(proc.stdin, proc.stdout, this._messageLogger),
+          );
+        }));
 
       this._subscription = processStream.connect();
       return connection;
@@ -151,16 +163,24 @@ export class RpcProcess {
       case 'stdout':
         break;
       case 'stderr':
-        logger.warn(`${this._name} - error from stderr received: `, message.data.toString());
+        logger.warn(
+          `${this._name} - error from stderr received: `,
+          message.data.toString(),
+        );
         break;
       case 'exit':
-        logger.error(`${this._name} - exited with ${exitEventToMessage(message)}`);
+        logger.error(
+          `${this._name} - exited with ${exitEventToMessage(message)}`,
+        );
         this._exitMessage.next(message);
         this.dispose();
         break;
       default:
         // This case should never be reached.
-        invariant(false, `${this._name} - unknown message received: ${message}`);
+        invariant(
+          false,
+          `${this._name} - unknown message received: ${message}`,
+        );
     }
   }
 

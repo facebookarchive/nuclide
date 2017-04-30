@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -31,8 +32,12 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  FindReferencesReturn,
+} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 
 import invariant from 'assert';
 
@@ -65,20 +70,18 @@ class GraphQLLanguageAnalyzer {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getDiagnostics',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
-        if (!graphQLProcess) {
-          return null;
-        }
+    return trackTiming('GraphQLLanguageAnalyzer.getDiagnostics', async () => {
+      const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+      if (!graphQLProcess) {
+        return null;
+      }
 
-        const result = await graphQLProcess.getDiagnostics(
-          buffer.getText(),
-          filePath,
-        );
-        return convertDiagnostics(result);
-      });
+      const result = await graphQLProcess.getDiagnostics(
+        buffer.getText(),
+        filePath,
+      );
+      return convertDiagnostics(result);
+    });
   }
 
   /**
@@ -120,9 +123,9 @@ class GraphQLLanguageAnalyzer {
           text: completion.text,
           description: completion.description || null,
           iconHTML: '<i class="icon-nuclicon-graphql"></i>',
-          leftLabelHTML: completion.typeName ?
-            `<span style="color: #E10098;">${completion.typeName}</span>` :
-            null,
+          leftLabelHTML: completion.typeName
+            ? `<span style="color: #E10098;">${completion.typeName}</span>`
+            : null,
         }));
         return {
           isIncomplete: false,
@@ -137,27 +140,17 @@ class GraphQLLanguageAnalyzer {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getDefinition',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
-        if (!graphQLProcess || !position) {
-          logger.logError('no GraphQLProcess or position during getDefinition');
-          return null;
-        }
-        return graphQLProcess.getDefinition(
-          buffer.getText(),
-          position,
-          filePath,
-        );
-      },
-    );
+    return trackTiming('GraphQLLanguageAnalyzer.getDefinition', async () => {
+      const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+      if (!graphQLProcess || !position) {
+        logger.logError('no GraphQLProcess or position during getDefinition');
+        return null;
+      }
+      return graphQLProcess.getDefinition(buffer.getText(), position, filePath);
+    });
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
     throw new Error('Not implemented');
   }
 
@@ -169,9 +162,7 @@ class GraphQLLanguageAnalyzer {
     throw new Error('Not implemented');
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     throw new Error('Not implemented');
   }
 
@@ -179,18 +170,15 @@ class GraphQLLanguageAnalyzer {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline> {
-    return trackTiming(
-      'GraphQLLanguageAnalyzer.getOutline',
-      async () => {
-        const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
-        if (!graphQLProcess) {
-          logger.logError('no GraphQLProcess during getOutline');
-          return null;
-        }
+    return trackTiming('GraphQLLanguageAnalyzer.getOutline', async () => {
+      const graphQLProcess = await getGraphQLProcess(this._fileCache, filePath);
+      if (!graphQLProcess) {
+        logger.logError('no GraphQLProcess during getOutline');
+        return null;
+      }
 
-        return (await graphQLProcess.getService()).getOutline(buffer.getText());
-      },
-    );
+      return (await graphQLProcess.getService()).getOutline(buffer.getText());
+    });
   }
 
   typeHint(
@@ -221,10 +209,12 @@ class GraphQLLanguageAnalyzer {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  > {
     throw new Error('Not implemented');
   }
 
@@ -240,6 +230,5 @@ class GraphQLLanguageAnalyzer {
     throw new Error('Not implemented');
   }
 
-  dispose(): void {
-  }
+  dispose(): void {}
 }

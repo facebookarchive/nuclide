@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -40,6 +41,8 @@ export class DiagnosticsDatatipComponent extends React.Component {
   }
 }
 
-export function makeDiagnosticsDatatipComponent(message: FileDiagnosticMessage): ReactClass<any> {
+export function makeDiagnosticsDatatipComponent(
+  message: FileDiagnosticMessage,
+): ReactClass<any> {
   return () => <DiagnosticsDatatipComponent message={message} />;
 }

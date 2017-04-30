@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -29,7 +30,10 @@ export type TrackingEvent = {
  * @param eventName Name of the event to be tracked.
  * @param values The object containing the data to track.
  */
-export function track(eventName: string, values?: {[key: string]: mixed}): void {
+export function track(
+  eventName: string,
+  values?: {[key: string]: mixed},
+): void {
   rawTrack(eventName, values || {});
 }
 
@@ -112,13 +116,16 @@ export function trackTiming<T>(eventName: string, operation: () => T): T {
       // invariant(result instanceof Promise);
 
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return (result: any).then(value => {
-        tracker.onSuccess();
-        return value;
-      }, reason => {
-        tracker.onError(reason instanceof Error ? reason : new Error(reason));
-        return Promise.reject(reason);
-      });
+      return (result: any).then(
+        value => {
+          tracker.onSuccess();
+          return value;
+        },
+        reason => {
+          tracker.onError(reason instanceof Error ? reason : new Error(reason));
+          return Promise.reject(reason);
+        },
+      );
     } else {
       tracker.onSuccess();
       return result;

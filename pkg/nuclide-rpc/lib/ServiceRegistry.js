@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {PredefinedTransformer} from './index';
@@ -27,8 +28,14 @@ import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
 const logger = getLogger();
 
-export type FunctionImplementation = {localImplementation: Function, type: FunctionType};
-export type ClassDefinition = {localImplementation: any, definition: InterfaceDefinition};
+export type FunctionImplementation = {
+  localImplementation: Function,
+  type: FunctionType,
+};
+export type ClassDefinition = {
+  localImplementation: any,
+  definition: InterfaceDefinition,
+};
 export type ServiceDefinition = {
   name: string,
   factory: ProxyFactory, // Maps from RpcContext to proxy
@@ -61,7 +68,9 @@ export class ServiceRegistry {
   ) {
     this._protocol = protocol;
     this._typeRegistry = new TypeRegistry(predefinedTypes);
-    this._predefinedTypes = predefinedTypes.map(predefinedType => predefinedType.typeName);
+    this._predefinedTypes = predefinedTypes.map(
+      predefinedType => predefinedType.typeName,
+    );
     this._functionsByName = new Map();
     this._classesByName = new Map();
     this._services = new Map();
@@ -78,8 +87,8 @@ export class ServiceRegistry {
   }
 
   addService(service: ConfigEntry): void {
-    const preserveFunctionNames = service.preserveFunctionNames != null
-      && service.preserveFunctionNames;
+    const preserveFunctionNames =
+      service.preserveFunctionNames != null && service.preserveFunctionNames;
     try {
       const factory = createProxyFactory(
         service.name,
@@ -103,14 +112,22 @@ export class ServiceRegistry {
           case 'alias':
             if (definition.definition != null) {
               this._typeRegistry.registerAlias(
-                name, definition.location, (definition.definition: Type));
+                name,
+                definition.location,
+                (definition.definition: Type),
+              );
             }
             break;
           case 'function':
             // Register module-level functions.
             const functionName = service.preserveFunctionNames
-              ? name : `${service.name}/${name}`;
-            this._registerFunction(functionName, localImpl[name], definition.type);
+              ? name
+              : `${service.name}/${name}`;
+            this._registerFunction(
+              functionName,
+              localImpl[name],
+              definition.type,
+            );
             break;
           case 'interface':
             // Register interfaces.
@@ -122,25 +139,41 @@ export class ServiceRegistry {
             this._typeRegistry.registerType(
               name,
               definition.location,
-              (object, context: ObjectRegistry) => context.marshal(name, object),
+              (object, context: ObjectRegistry) =>
+                context.marshal(name, object),
               (objectId, context: ObjectRegistry) =>
-                context.unmarshal(objectId, name, context.getService(service.name)[name]));
+                context.unmarshal(
+                  objectId,
+                  name,
+                  context.getService(service.name)[name],
+                ),
+            );
 
             // Register all of the static methods as remote functions.
             Object.keys(definition.staticMethods).forEach(funcName => {
               const funcType = definition.staticMethods[funcName];
-              this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
+              this._registerFunction(
+                `${name}/${funcName}`,
+                localImpl[name][funcName],
+                funcType,
+              );
             });
             break;
         }
       });
     } catch (e) {
-      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
+      logger.error(
+        `Failed to load service ${service.name}. Stack Trace:\n${e.stack}`,
+      );
       throw e;
     }
   }
 
-  _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
+  _registerFunction(
+    name: string,
+    localImpl: Function,
+    type: FunctionType,
+  ): void {
     if (this._functionsByName.has(name)) {
       throw new Error(`Duplicate RPC function: ${name}`);
     }

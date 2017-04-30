@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Socket} from 'net';
@@ -22,7 +23,9 @@ export class SocketTransport extends StreamTransport {
 
   constructor(
     socket: Socket,
-    messageLogger: MessageLogger = (direction, message) => { return; },
+    messageLogger: MessageLogger = (direction, message) => {
+      return;
+    },
   ) {
     super(socket, socket, messageLogger);
     this._socket = socket;

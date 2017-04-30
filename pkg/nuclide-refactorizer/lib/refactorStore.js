@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  RefactorProvider,
-} from '..';
+import type {RefactorProvider} from '..';
 import type {Observable} from 'rxjs';
 
 import type {Store} from './types';
@@ -19,7 +18,10 @@ import {createStore, applyMiddleware} from 'redux';
 import {Subject} from 'rxjs';
 
 import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import {createEpicMiddleware, combineEpics} from '../../commons-node/redux-observable';
+import {
+  createEpicMiddleware,
+  combineEpics,
+} from '../../commons-node/redux-observable';
 import {getLogger} from '../../nuclide-logging';
 
 import refactorReducers from './refactorReducers';
@@ -33,15 +35,15 @@ function handleError(error: mixed): void {
   errors.next(error);
 }
 
-export function getStore(
-  providers: ProviderRegistry<RefactorProvider>,
-): Store {
+export function getStore(providers: ProviderRegistry<RefactorProvider>): Store {
   const rootEpic = (actions, store) => {
-    return combineEpics(...getEpics(providers))(actions, store)
-      .catch((error, stream) => {
-        handleError(error);
-        return stream;
-      });
+    return combineEpics(...getEpics(providers))(
+      actions,
+      store,
+    ).catch((error, stream) => {
+      handleError(error);
+      return stream;
+    });
   };
   const exceptionHandler = store => next => action => {
     try {

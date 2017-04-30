@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {BusySignalProvider} from './types';
@@ -19,10 +20,7 @@ import {BusySignalProviderBase} from './BusySignalProviderBase';
 import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
 import {StatusBarTile} from './StatusBarTile';
 
-export {
-  BusySignalProviderBase,
-  DedupedBusySignalProviderBase,
-};
+export {BusySignalProviderBase, DedupedBusySignalProviderBase};
 
 class Activation {
   _statusBarTile: ?StatusBarTileType;
@@ -39,7 +37,7 @@ class Activation {
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const statusBarTile = this._statusBarTile = new StatusBarTile();
+    const statusBarTile = (this._statusBarTile = new StatusBarTile());
     statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
     const disposable = new Disposable(() => {
       if (this._statusBarTile) {
@@ -71,7 +69,9 @@ export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
   return activation.consumeStatusBar(statusBar);
 }
 
-export function consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
+export function consumeBusySignalProvider(
+  provider: BusySignalProvider,
+): IDisposable {
   invariant(activation);
   return activation.consumeBusySignalProvider(provider);
 }

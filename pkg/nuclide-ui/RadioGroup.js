@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -55,7 +56,9 @@ export default class RadioGroup extends React.Component {
             checked={i === this.props.selectedIndex}
             name={'radiogroup-' + this.state.uid}
             id={id}
-            onChange={() => { onSelectedChange(i); }}
+            onChange={() => {
+              onSelectedChange(i);
+            }}
           />
           <label
             className="input-label nuclide-ui-radiogroup-label"

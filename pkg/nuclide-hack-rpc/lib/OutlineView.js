@@ -6,13 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {HackRange} from './rpc-types';
 import type {
-  HackRange,
-} from './rpc-types';
-import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
+  Outline,
+  OutlineTree,
+} from '../../nuclide-outline-view/lib/rpc-types';
 import {
   className,
   keyword,
@@ -33,8 +35,17 @@ export type HackSpan = {
 };
 
 export type HackIdeOutlineItem = {
-  kind: 'function' | 'class' | 'property' | 'method' | 'const'
-    | 'enum' | 'typeconst' | 'param' | 'trait' | 'interface',
+  kind:
+    | 'function'
+    | 'class'
+    | 'property'
+    | 'method'
+    | 'const'
+    | 'enum'
+    | 'typeconst'
+    | 'param'
+    | 'trait'
+    | 'interface',
   name: string,
   position: HackRange,
   id?: ?string,
@@ -47,7 +58,9 @@ export type HackIdeOutlineItem = {
 
 export type HackIdeOutline = Array<HackIdeOutlineItem>;
 
-export function outlineFromHackIdeOutline(hackOutline: HackIdeOutline): Outline {
+export function outlineFromHackIdeOutline(
+  hackOutline: HackIdeOutline,
+): Outline {
   return {
     outlineTrees: hackOutline.map(outlineFromHackIdeItem),
   };
@@ -113,8 +126,16 @@ function outlineFromHackIdeItem(hackItem: HackIdeOutlineItem): OutlineTree {
   return {
     tokenizedText,
     representativeName: hackItem.name,
-    startPosition: atomPointFromHack(hackItem.position.line, hackItem.position.char_start),
-    endPosition: atomPointFromHack(hackItem.span.line_end, hackItem.span.char_end),
-    children: hackItem.children == null ? [] : hackItem.children.map(outlineFromHackIdeItem),
+    startPosition: atomPointFromHack(
+      hackItem.position.line,
+      hackItem.position.char_start,
+    ),
+    endPosition: atomPointFromHack(
+      hackItem.span.line_end,
+      hackItem.span.char_end,
+    ),
+    children: hackItem.children == null
+      ? []
+      : hackItem.children.map(outlineFromHackIdeItem),
   };
 }

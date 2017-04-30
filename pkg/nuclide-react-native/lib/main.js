@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -17,7 +18,9 @@ import type {
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import nuclideUri from '../../commons-node/nuclideUri';
-import {ReactNativeLaunchAttachProvider} from './debugging/ReactNativeLaunchAttachProvider';
+import {
+  ReactNativeLaunchAttachProvider,
+} from './debugging/ReactNativeLaunchAttachProvider';
 import invariant from 'assert';
 import Activation from './Activation';
 
@@ -37,7 +40,9 @@ export function deactivate(): void {
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
     name: 'react-native',
-    getLaunchAttachProvider(connection: NuclideUri): ?DebuggerLaunchAttachProvider {
+    getLaunchAttachProvider(
+      connection: NuclideUri,
+    ): ?DebuggerLaunchAttachProvider {
       if (nuclideUri.isLocal(connection)) {
         return new ReactNativeLaunchAttachProvider('React Native', connection);
       }

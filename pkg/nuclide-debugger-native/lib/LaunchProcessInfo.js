@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
@@ -82,15 +83,18 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
-      lldbPythonPath: this._launchTargetInfo.lldbPythonPath || getConfig().lldbPythonPath,
+      lldbPythonPath: this._launchTargetInfo.lldbPythonPath ||
+        getConfig().lldbPythonPath,
       envPythonPath: '',
     };
   }
 
   _getRpcService(): NativeDebuggerServiceType {
     const debuggerConfig = this.getDebuggerConfig();
-    const service: ?NativeDebuggerService
-      = getServiceByNuclideUri('NativeDebuggerService', this.getTargetUri());
+    const service: ?NativeDebuggerService = getServiceByNuclideUri(
+      'NativeDebuggerService',
+      this.getTargetUri(),
+    );
     invariant(service);
     return new service.NativeDebuggerService(debuggerConfig);
   }

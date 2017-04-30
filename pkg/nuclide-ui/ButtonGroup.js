@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -37,20 +38,13 @@ const ButtonGroupSizeClassnames = Object.freeze({
  * Visually groups Buttons passed in as children.
  */
 export const ButtonGroup = (props: Props) => {
-  const {
-    size,
-    children,
-    className,
-  } = props;
-  const sizeClassName = size == null ? '' : ButtonGroupSizeClassnames[size] || '';
-  const newClassName = classnames(
-    className,
-    'btn-group',
-    'nuclide-btn-group',
-    {
-      [sizeClassName]: size != null,
-    },
-  );
+  const {size, children, className} = props;
+  const sizeClassName = size == null
+    ? ''
+    : ButtonGroupSizeClassnames[size] || '';
+  const newClassName = classnames(className, 'btn-group', 'nuclide-btn-group', {
+    [sizeClassName]: size != null,
+  });
   return (
     <div className={newClassName}>
       {children}

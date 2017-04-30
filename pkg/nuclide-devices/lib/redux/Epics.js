@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Observable} from 'rxjs';
@@ -25,38 +26,41 @@ export function setDevicesEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.REFRESH_DEVICES)
-    .switchMap(action => {
-      invariant(action.type === Actions.REFRESH_DEVICES);
-      const state = store.getState();
-      for (const fetcher of getDeviceListProviders()) {
-        if (fetcher.getType() === state.deviceType) {
-          return Observable.fromPromise(fetcher.fetch(state.host))
-          .switchMap(devices => Observable.of(Actions.setDevices(devices)));
-        }
+  return actions.ofType(Actions.REFRESH_DEVICES).switchMap(action => {
+    invariant(action.type === Actions.REFRESH_DEVICES);
+    const state = store.getState();
+    for (const fetcher of getDeviceListProviders()) {
+      if (fetcher.getType() === state.deviceType) {
+        return Observable.fromPromise(
+          fetcher.fetch(state.host),
+        ).switchMap(devices => Observable.of(Actions.setDevices(devices)));
       }
-      return Observable.empty();
-    });
+    }
+    return Observable.empty();
+  });
 }
 
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {
-  return actions.ofType(Actions.SET_DEVICE)
-    .switchMap(action => {
-      invariant(action.type === Actions.SET_DEVICE);
-      const state = store.getState();
-      return Observable.merge(
-        Observable.fromPromise(getInfoTables(state))
-          .switchMap(infoTables => Observable.of(Actions.setInfoTables(infoTables))),
-        Observable.fromPromise(getDeviceActions(state))
-          .switchMap(deviceActions => Observable.of(Actions.setDeviceActions(deviceActions))),
-      );
-    });
+  return actions.ofType(Actions.SET_DEVICE).switchMap(action => {
+    invariant(action.type === Actions.SET_DEVICE);
+    const state = store.getState();
+    return Observable.merge(
+      Observable.fromPromise(getInfoTables(state)).switchMap(infoTables =>
+        Observable.of(Actions.setInfoTables(infoTables)),
+      ),
+      Observable.fromPromise(getDeviceActions(state)).switchMap(deviceActions =>
+        Observable.of(Actions.setDeviceActions(deviceActions)),
+      ),
+    );
+  });
 }
 
-async function getInfoTables(state: AppState): Promise<Map<string, Map<string, string>>> {
+async function getInfoTables(
+  state: AppState,
+): Promise<Map<string, Map<string, string>>> {
   const device = state.device;
   if (device == null) {
     return new Map();
@@ -68,12 +72,17 @@ async function getInfoTables(state: AppState): Promise<Map<string, Map<string, s
       const pb = b.getPriority === undefined ? -1 : b.getPriority();
       return pb - pa;
     });
-  const infoTables = await Promise.all(sortedProviders.map(async provider => {
-    if (!await provider.isSupported(state.host)) {
-      return null;
-    }
-    return [provider.getTitle(), await provider.fetch(state.host, device.name)];
-  }));
+  const infoTables = await Promise.all(
+    sortedProviders.map(async provider => {
+      if (!await provider.isSupported(state.host)) {
+        return null;
+      }
+      return [
+        provider.getTitle(),
+        await provider.fetch(state.host, device.name),
+      ];
+    }),
+  );
   return new Map(arrayCompact(infoTables));
 }
 
@@ -92,5 +101,7 @@ async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {
         return provider.getActions(state.host, device.name);
       }),
   );
-  return arrayFlatten(arrayCompact(actions)).sort((a, b) => a.name.localeCompare(b.name));
+  return arrayFlatten(arrayCompact(actions)).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
 }

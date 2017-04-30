@@ -6,12 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {HyperclickProvider, HyperclickSuggestion} from '../../hyperclick/lib/types';
+import type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from '../../hyperclick/lib/types';
 import type {DefinitionService} from '../../nuclide-definition-service';
 
 import {goToLocation} from '../../commons-atom/go-to-location';
@@ -37,12 +41,19 @@ async function getSuggestion(
 
   function createCallback(definition) {
     return () => {
-      goToLocation(definition.path, definition.position.row, definition.position.column);
+      goToLocation(
+        definition.path,
+        definition.position.row,
+        definition.position.column,
+      );
     };
   }
 
   function createTitle(definition) {
-    invariant(definition.name != null, 'must include name when returning multiple definitions');
+    invariant(
+      definition.name != null,
+      'must include name when returning multiple definitions',
+    );
     const filePath = definition.projectRoot == null
       ? definition.path
       : nuclideUri.relative(definition.projectRoot, definition.path);
@@ -67,7 +78,9 @@ async function getSuggestion(
   }
 }
 
-export function consumeDefinitionService(service: DefinitionService): IDisposable {
+export function consumeDefinitionService(
+  service: DefinitionService,
+): IDisposable {
   invariant(currentService == null);
   currentService = service;
   return new Disposable(() => {
@@ -84,8 +97,6 @@ export function getHyperclickProvider(): HyperclickProvider {
   };
 }
 
-export function activate(state: Object | void) {
-}
+export function activate(state: Object | void) {}
 
-export function deactivate() {
-}
+export function deactivate() {}

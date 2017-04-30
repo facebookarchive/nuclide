@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Row} from '../../nuclide-ui/Table';
@@ -23,11 +24,10 @@ export function sortDiagnostics(
     return diagnostics;
   }
   const cmp: any = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
-  const getter = (displayDiagnostic: {+data: DisplayDiagnostic}) => (
-    sortedColumnName === 'description'
+  const getter = (displayDiagnostic: {+data: DisplayDiagnostic}) =>
+    (sortedColumnName === 'description'
       ? displayDiagnostic.data.description.text
-      : displayDiagnostic.data[sortedColumnName]
-    );
+      : displayDiagnostic.data[sortedColumnName]);
   // $FlowFixMe -- this whole thing is poorly typed
   return [...diagnostics].sort((a, b) => {
     // $FlowFixMe -- this whole thing is poorly typed

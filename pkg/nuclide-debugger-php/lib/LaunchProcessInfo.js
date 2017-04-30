@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -15,7 +16,9 @@ import type {
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getPhpDebuggerServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import nuclideUri from '../../commons-node/nuclideUri';
 
 import utils from './utils';
@@ -32,7 +35,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
   async debug(): Promise<PhpDebuggerInstance> {
     const rpcService = this._getRpcService();
-    const sessionConfig = getSessionConfig(nuclideUri.getPath(this.getTargetUri()), true);
+    const sessionConfig = getSessionConfig(
+      nuclideUri.getPath(this.getTargetUri()),
+      true,
+    );
 
     // Set config related to script launching.
     sessionConfig.endDebugWhenNoRequests = true;

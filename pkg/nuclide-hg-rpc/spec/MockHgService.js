@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {ConnectableObservable, Subject} from 'rxjs';
@@ -53,7 +54,9 @@ export default class MockHgService {
     return new Subject().publish();
   }
 
-  fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
+  fetchDiffInfo(
+    filePaths: Array<NuclideUri>,
+  ): Promise<?Map<NuclideUri, DiffInfo>> {
     return Promise.resolve(null);
   }
 

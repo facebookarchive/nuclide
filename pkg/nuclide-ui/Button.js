@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {IconName} from './types';
@@ -92,18 +93,16 @@ export class Button extends React.Component {
       ...remainingProps
     } = this.props;
     const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
-    const buttonTypeClassname = buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
+    const buttonTypeClassname = buttonType == null
+      ? ''
+      : ButtonTypeClassnames[buttonType] || '';
     const ref = tooltip ? addTooltip(tooltip) : null;
-    const newClassName = classnames(
-      className,
-      'btn',
-      {
-        [`icon icon-${maybeToString(icon)}`]: icon != null,
-        [sizeClassname]: size != null,
-        selected,
-        [buttonTypeClassname]: buttonType != null,
-      },
-    );
+    const newClassName = classnames(className, 'btn', {
+      [`icon icon-${maybeToString(icon)}`]: icon != null,
+      [sizeClassname]: size != null,
+      selected,
+      [buttonTypeClassname]: buttonType != null,
+    });
     const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
     return (
       <Wrapper className={newClassName} ref={ref} {...remainingProps}>

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Directory} from '../../nuclide-remote-connection';
@@ -29,8 +30,9 @@ export class CwdApi {
       // Re-check the CWD every time the project paths change.
       // Adding/removing projects can affect the validity of cwdPath.
       .merge(
-        observableFromSubscribeFunction(cb => atom.project.onDidChangePaths(cb))
-          .mapTo(null),
+        observableFromSubscribeFunction(cb =>
+          atom.project.onDidChangePaths(cb),
+        ).mapTo(null),
       )
       .map(() => this.getCwd())
       .map(directory => (isValidDirectory(directory) ? directory : null))
@@ -48,7 +50,9 @@ export class CwdApi {
 
   observeCwd(callback: (directory: ?Directory) => void): IDisposable {
     const disposable = new UniversalDisposable(
-      this._cwd$.subscribe(directory => { callback(directory); }),
+      this._cwd$.subscribe(directory => {
+        callback(directory);
+      }),
     );
     this._disposables.add(disposable);
     return disposable;
@@ -68,7 +72,10 @@ export class CwdApi {
   }
 
   getCwd(): ?Directory {
-    return getDirectory(this._cwdPath$.getValue()) || getDirectory(this._getDefaultCwdPath());
+    return (
+      getDirectory(this._cwdPath$.getValue()) ||
+      getDirectory(this._getDefaultCwdPath())
+    );
   }
 }
 

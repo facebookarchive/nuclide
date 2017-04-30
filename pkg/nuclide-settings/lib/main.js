@@ -6,12 +6,17 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {
+  viewableFromReactElement,
+} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import React from 'react';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
@@ -35,11 +40,9 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
       }
     }),
     () => api.destroyWhere(item => item instanceof SettingsPaneItem),
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-settings:toggle',
-      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-    ),
+    atom.commands.add('atom-workspace', 'nuclide-settings:toggle', event => {
+      api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+    }),
   );
 }
 
@@ -54,7 +57,9 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
     tooltip: 'Open Nuclide Settings',
     priority: -500,
   });
-  const disposable = new UniversalDisposable(() => { toolBar.removeItems(); });
+  const disposable = new UniversalDisposable(() => {
+    toolBar.removeItems();
+  });
   subscriptions.add(disposable);
   return disposable;
 }

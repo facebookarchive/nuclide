@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -18,7 +19,9 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  FindReferencesReturn,
+} from '../../nuclide-find-references/lib/rpc-types';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
@@ -30,7 +33,9 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {CategoryLogger} from '../../nuclide-logging';
 
 import invariant from 'assert';
@@ -64,10 +69,7 @@ export type SingleFileLanguageService = {
     position: atom$Point,
   ): Promise<?DefinitionQueryResult>,
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition>,
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition>,
 
   findReferences(
     filePath: NuclideUri,
@@ -75,9 +77,7 @@ export type SingleFileLanguageService = {
     position: atom$Point,
   ): Promise<?FindReferencesReturn>,
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult>,
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
   getOutline(
     filePath: NuclideUri,
@@ -106,10 +106,12 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }>,
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  >,
 
   getEvaluationExpression(
     filePath: NuclideUri,
@@ -124,7 +126,9 @@ export type SingleFileLanguageService = {
   dispose(): void,
 };
 
-export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLanguageService> {
+export class ServerLanguageService<
+  T: SingleFileLanguageService=SingleFileLanguageService
+> {
   _fileCache: FileCache;
   _service: T;
 
@@ -185,10 +189,7 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     return this._service.getDefinition(filePath, buffer, position);
   }
 
-  getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
     return this._service.getDefinitionById(file, id);
   }
 
@@ -204,15 +205,11 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     return this._service.findReferences(filePath, buffer, position);
   }
 
-  getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     return this._service.getCoverage(filePath);
   }
 
-  async getOutline(
-    fileVersion: FileVersion,
-  ): Promise<?Outline> {
+  async getOutline(fileVersion: FileVersion): Promise<?Outline> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
@@ -221,7 +218,10 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     return this._service.getOutline(filePath, buffer);
   }
 
-  async typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {
+  async typeHint(
+    fileVersion: FileVersion,
+    position: atom$Point,
+  ): Promise<?TypeHint> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
@@ -254,10 +254,15 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     return this._service.formatSource(filePath, buffer, range);
   }
 
-  async formatEntireFile(fileVersion: FileVersion, range: atom$Range): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  async formatEntireFile(
+    fileVersion: FileVersion,
+    range: atom$Range,
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  > {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
@@ -278,9 +283,7 @@ export class ServerLanguageService<T: SingleFileLanguageService = SingleFileLang
     return this._service.getEvaluationExpression(filePath, buffer, position);
   }
 
-  supportsSymbolSearch(
-    directories: Array<NuclideUri>,
-  ): Promise<boolean> {
+  supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
     return Promise.resolve(false);
     // A single-file language service by definition cannot offer
     // "project-wide symbol search". If you want your language to offer
@@ -315,30 +318,33 @@ export function ensureInvalidations(
   diagnostics: Observable<FileDiagnosticUpdate>,
 ): Observable<FileDiagnosticUpdate> {
   const filesWithErrors = new Set();
-  const trackedDiagnostics: Observable<FileDiagnosticUpdate> =
-    diagnostics
-    .do((diagnostic: FileDiagnosticUpdate) => {
-      const filePath = diagnostic.filePath;
-      if (diagnostic.messages.length === 0) {
-        logger.log(`Removing ${filePath} from files with errors`);
-        filesWithErrors.delete(filePath);
-      } else {
-        logger.log(`Adding ${filePath} to files with errors`);
-        filesWithErrors.add(filePath);
-      }
-    });
+  const trackedDiagnostics: Observable<
+    FileDiagnosticUpdate
+  > = diagnostics.do((diagnostic: FileDiagnosticUpdate) => {
+    const filePath = diagnostic.filePath;
+    if (diagnostic.messages.length === 0) {
+      logger.log(`Removing ${filePath} from files with errors`);
+      filesWithErrors.delete(filePath);
+    } else {
+      logger.log(`Adding ${filePath} to files with errors`);
+      filesWithErrors.add(filePath);
+    }
+  });
 
-  const fileInvalidations: Observable<FileDiagnosticUpdate> =
-    Observable.defer(() => {
-      logger.log('Clearing errors after stream closed');
-      return Observable.from(Array.from(filesWithErrors).map(file => {
+  const fileInvalidations: Observable<
+    FileDiagnosticUpdate
+  > = Observable.defer(() => {
+    logger.log('Clearing errors after stream closed');
+    return Observable.from(
+      Array.from(filesWithErrors).map(file => {
         logger.log(`Clearing errors for ${file} after connection closed`);
         return {
           filePath: file,
           messages: [],
         };
-      }));
-    });
+      }),
+    );
+  });
 
   return trackedDiagnostics.concat(fileInvalidations);
 }

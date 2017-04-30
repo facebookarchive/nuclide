@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -21,7 +22,7 @@ import React from 'react';
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function bindObservableAsProps<T : ReactClass<any>, U : T>(
+export function bindObservableAsProps<T: ReactClass<any>, U: T>(
   stream: Observable<{+[key: string]: any}>,
   ComposedComponent: T,
 ): U {

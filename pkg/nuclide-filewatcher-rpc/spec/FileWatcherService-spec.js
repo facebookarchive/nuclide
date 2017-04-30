@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {WatchResult} from '..';
@@ -13,7 +14,11 @@ import {Emitter} from 'event-kit';
 import fsPromise from '../../commons-node/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 import * as logging from '../../nuclide-logging';
-import {watchFile, watchDirectory, watchDirectoryRecursive} from '../lib/FileWatcherService';
+import {
+  watchFile,
+  watchDirectory,
+  watchDirectoryRecursive,
+} from '../lib/FileWatcherService';
 
 const TEST_FILE = '/path/to/file';
 const TEST_DIR = '/path/to';
@@ -33,22 +38,20 @@ describe('FileWatcherService', () => {
       },
     };
 
-    spyOn(watchmanHelpers, 'WatchmanClient')
-      .andReturn(mockWatchmanClient);
+    spyOn(watchmanHelpers, 'WatchmanClient').andReturn(mockWatchmanClient);
 
-    statMock = spyOn(fsPromise, 'stat')
-      .andCallFake(path => ({
-        isFile: () => path === TEST_FILE,
-      }));
+    statMock = spyOn(fsPromise, 'stat').andCallFake(path => ({
+      isFile: () => path === TEST_FILE,
+    }));
 
-    realpathMock = spyOn(fsPromise, 'realpath')
-      .andCallFake(x => x);
+    realpathMock = spyOn(fsPromise, 'realpath').andCallFake(x => x);
   });
 
   it('watches changes to files', () => {
     const watchReady = jasmine.createSpy('ready');
     runs(() => {
-      watchDirectoryRecursive(TEST_DIR).refCount()
+      watchDirectoryRecursive(TEST_DIR)
+        .refCount()
         .subscribe({next: watchReady});
     });
 
@@ -59,10 +62,10 @@ describe('FileWatcherService', () => {
     const completeMock: () => mixed = jasmine.createSpy('complete');
     runs(() => {
       expect(watchReady).toHaveBeenCalledWith('SUCCESS');
-      watchFile(TEST_FILE).refCount()
+      watchFile(TEST_FILE)
+        .refCount()
         .subscribe({next: nextMock, complete: completeMock});
-      watchDirectory(TEST_DIR).refCount()
-        .subscribe({next: parentNextMock});
+      watchDirectory(TEST_DIR).refCount().subscribe({next: parentNextMock});
     });
 
     // Hacky: there's no good way of checking if the inner observables are ready.
@@ -142,8 +145,7 @@ describe('FileWatcherService', () => {
     // Test that rewatching produces a new observer.
     const completeMock2 = jasmine.createSpy('completeMock2');
     runs(() => {
-      watchFile(TEST_FILE).refCount()
-        .subscribe({complete: completeMock2});
+      watchFile(TEST_FILE).refCount().subscribe({complete: completeMock2});
     });
 
     // Use the same hack again..
@@ -174,11 +176,12 @@ describe('FileWatcherService', () => {
       watch.subscribe();
       await watch.take(1).toPromise();
 
-      watchFile(TEST_FILE).refCount()
-        .subscribe({
-          next: change => changes.push(change),
-          complete: () => { completed = true; },
-        });
+      watchFile(TEST_FILE).refCount().subscribe({
+        next: change => changes.push(change),
+        complete: () => {
+          completed = true;
+        },
+      });
     });
 
     waitsFor(() => realpathMock.callCount === 1);

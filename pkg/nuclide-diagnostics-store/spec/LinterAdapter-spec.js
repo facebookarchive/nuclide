@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
@@ -61,9 +62,15 @@ describe('LinterAdapter', () => {
       isDestroyed: () => false,
     };
     fakeEditor = {
-      getPath() { return 'foo'; },
-      getGrammar() { return {scopeName: grammar}; },
-      getBuffer() { return fakeBuffer; },
+      getPath() {
+        return 'foo';
+      },
+      getGrammar() {
+        return {scopeName: grammar};
+      },
+      getBuffer() {
+        return fakeBuffer;
+      },
     };
     linterReturn = Promise.resolve([]);
     fakeLinter = {
@@ -159,9 +166,17 @@ describe('LinterAdapter', () => {
     // first, even though the timeout is larger
     advanceClock(30);
     advanceClock(30);
-    waitsFor(() => {
-      return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
-    }, 'There should be only the latest message', 100);
+    waitsFor(
+      () => {
+        return (
+          numMessages === 1 &&
+          lastMessage &&
+          lastMessage.filePathToMessages.has('baz')
+        );
+      },
+      'There should be only the latest message',
+      100,
+    );
   });
 
   it('invalidates files on close', () => {
@@ -218,7 +233,10 @@ describe('message transformation functions', () => {
   describe('linterMessageToDiagnosticMessage', () => {
     function checkMessage(linterMessage, expected) {
       invariant(providerName);
-      const actual = linterMessageToDiagnosticMessage(linterMessage, providerName);
+      const actual = linterMessageToDiagnosticMessage(
+        linterMessage,
+        providerName,
+      );
       const areEqual = arePropertiesEqual(actual, expected);
       expect(areEqual).toBe(true);
     }
@@ -245,27 +263,32 @@ describe('message transformation functions', () => {
 
   describe('linterMessageV2ToDiagnosticMessage', () => {
     it('should correctly convert messages', () => {
-      expect(linterMessageV2ToDiagnosticMessage({
-        location: {
-          file: 'file.txt',
-          position: [[0, 0], [0, 1]],
-        },
-        reference: {
-          file: 'ref.txt',
-          position: [1, 1],
-        },
-        excerpt: 'Error',
-        severity: 'error',
-        solutions: [
+      expect(
+        linterMessageV2ToDiagnosticMessage(
           {
-            title: 'Solution',
-            position: [[0, 0], [0, 1]],
-            currentText: '',
-            replaceWith: 'a',
+            location: {
+              file: 'file.txt',
+              position: [[0, 0], [0, 1]],
+            },
+            reference: {
+              file: 'ref.txt',
+              position: [1, 1],
+            },
+            excerpt: 'Error',
+            severity: 'error',
+            solutions: [
+              {
+                title: 'Solution',
+                position: [[0, 0], [0, 1]],
+                currentText: '',
+                replaceWith: 'a',
+              },
+            ],
+            description: 'Description',
           },
-        ],
-        description: 'Description',
-      }, 'test')).toEqual({
+          'test',
+        ),
+      ).toEqual({
         scope: 'file',
         providerName: 'test',
         type: 'Error',
@@ -291,7 +314,11 @@ describe('message transformation functions', () => {
 
   describe('linterMessagesToDiagnosticUpdate', () => {
     function runWith(linterMessages) {
-      return linterMessagesToDiagnosticUpdate(currentPath, linterMessages, providerName);
+      return linterMessagesToDiagnosticUpdate(
+        currentPath,
+        linterMessages,
+        providerName,
+      );
     }
 
     it('should invalidate diagnostics in the current file', () => {
@@ -312,7 +339,9 @@ describe('message transformation functions', () => {
     it('should use the provider name specified in message when available', () => {
       const result = runWith([fileMessageWithName]);
       invariant(result.filePathToMessages);
-      const messages = result.filePathToMessages.get(fileMessageWithName.filePath);
+      const messages = result.filePathToMessages.get(
+        fileMessageWithName.filePath,
+      );
       invariant(messages != null);
       const resultMessage = messages[0];
       expect(resultMessage.providerName).toEqual('Custom Linter Name');

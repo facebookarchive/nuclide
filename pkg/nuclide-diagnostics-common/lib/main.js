@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Observable} from 'rxjs';
@@ -25,7 +26,9 @@ export type {
 };
 
 export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
-export type MessageInvalidationCallback = (message: InvalidationMessage) => mixed;
+export type MessageInvalidationCallback = (
+  message: InvalidationMessage,
+) => mixed;
 
 // TODO figure out how to allow the diagnostic consumer to poll (for example, if
 // it was just activated and wants diagnostic messages without having to wait
@@ -40,14 +43,18 @@ export type ObservableDiagnosticProvider = {
   invalidations: Observable<InvalidationMessage>,
 };
 
-export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
+export type DiagnosticProvider =
+  | CallbackDiagnosticProvider
+  | ObservableDiagnosticProvider;
 
 export type FileMessageUpdate = {
   filePath: NuclideUri,
   messages: Array<FileDiagnosticMessage>,
 };
 
-export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;
+export type DiagnosticMessage =
+  | FileDiagnosticMessage
+  | ProjectDiagnosticMessage;
 
 export type DiagnosticUpdater = {
   onFileMessagesDidUpdate: (
@@ -69,7 +76,9 @@ export type ObservableDiagnosticUpdater = {
 
   // Sent only when the messages for a given file change. Consumers may use this to avoid
   // unnecessary work if the file(s) they are interested in are not changed.
-  getFileMessageUpdates: (filePath: NuclideUri) => Observable<FileMessageUpdate>,
+  getFileMessageUpdates: (
+    filePath: NuclideUri,
+  ) => Observable<FileMessageUpdate>,
   // Sent whenever any project message changes.
   projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>,
   // Sent whenever any message changes, and includes all messages.
@@ -131,20 +140,24 @@ export type LinterMessageV2 = {
   excerpt: string,
   severity: 'error' | 'warning' | 'info',
   // TODO: only the first solution is used at the moment.
-  solutions?: Array<{
-    title?: string,
-    position: atom$RangeLike,
-    priority?: number,
-    currentText?: string,
-    replaceWith: string,
-  } | {
-    // TODO: not currently supported.
-    title?: string,
-    position: atom$RangeLike,
-    priority?: number,
-    apply: (() => any),
-    replaceWith?: void, // Hint for Flow.
-  }>,
+  solutions?: Array<
+
+      | {
+          title?: string,
+          position: atom$RangeLike,
+          priority?: number,
+          currentText?: string,
+          replaceWith: string,
+        }
+      | {
+          // TODO: not currently supported.
+          title?: string,
+          position: atom$RangeLike,
+          priority?: number,
+          apply: () => any,
+          replaceWith?: void, // Hint for Flow.
+        }
+  >,
   // TODO: the callback version is not supported.
   description?: string | (() => Promise<string> | string),
 };

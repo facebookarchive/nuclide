@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -32,17 +33,26 @@ function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
 
 describe('Health', () => {
   beforeEach(() => {
-    waitsForPromise({label: 'workspace views to load', timeout: 10000}, async () => {
-      jasmine.unspy(window, 'setTimeout');
-      const WORKSPACE_VIEW_DIRS = [
-        nuclideUri.dirname(require.resolve('../../nuclide-workspace-views/package.json')),
-        nuclideUri.dirname(require.resolve('../../nuclide-workspace-view-locations/package.json')),
-      ];
-      await Promise.all([
-        ...WORKSPACE_VIEW_DIRS.map(dir => atom.packages.activatePackage(dir)),
-        atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
-      ]);
-    });
+    waitsForPromise(
+      {label: 'workspace views to load', timeout: 10000},
+      async () => {
+        jasmine.unspy(window, 'setTimeout');
+        const WORKSPACE_VIEW_DIRS = [
+          nuclideUri.dirname(
+            require.resolve('../../nuclide-workspace-views/package.json'),
+          ),
+          nuclideUri.dirname(
+            require.resolve(
+              '../../nuclide-workspace-view-locations/package.json',
+            ),
+          ),
+        ];
+        await Promise.all([
+          ...WORKSPACE_VIEW_DIRS.map(dir => atom.packages.activatePackage(dir)),
+          atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
+        ]);
+      },
+    );
   });
 
   it('contains stats after its first refresh', () => {

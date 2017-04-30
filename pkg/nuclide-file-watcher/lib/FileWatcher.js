@@ -6,12 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {CompositeDisposable} from 'atom';
 import {trackTiming, track} from '../../nuclide-analytics';
 import nuclideUri from '../../commons-node/nuclideUri';
-import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -27,12 +30,16 @@ export default class FileWatcher {
       return;
     }
     const _subscriptions = new CompositeDisposable();
-    _subscriptions.add(this._editor.onDidConflict(() => {
-      if (this._shouldPromptToReload()) {
-        logger.info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
-        this._promptReload();
-      }
-    }));
+    _subscriptions.add(
+      this._editor.onDidConflict(() => {
+        if (this._shouldPromptToReload()) {
+          logger.info(
+            `Conflict at file: ${this._editor.getPath() || 'File not found'}`,
+          );
+          this._promptReload();
+        }
+      }),
+    );
     this._subscriptions = _subscriptions;
   }
 
@@ -41,9 +48,8 @@ export default class FileWatcher {
   }
 
   _promptReload(): Promise<any> {
-    return trackTiming(
-      'file-watcher:promptReload',
-      () => this.__promptReload(),
+    return trackTiming('file-watcher:promptReload', () =>
+      this.__promptReload(),
     );
   }
 

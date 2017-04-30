@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {runCommand} from '../../commons-node/process';
@@ -61,10 +62,15 @@ export function getStore(db: DebugBridgeType): DebugBridgePathStore {
 const runningPromises: Map<string, Promise<string>> = new Map();
 
 // Ensure only one call is executed at a time
-function reusePromiseUntilResolved(id: string, cb: () => Promise<string>): Promise<string> {
+function reusePromiseUntilResolved(
+  id: string,
+  cb: () => Promise<string>,
+): Promise<string> {
   let runningPromise = runningPromises.get(id);
   if (runningPromise == null) {
-    runningPromise = lastly(cb(), () => { runningPromises.delete(id); });
+    runningPromise = lastly(cb(), () => {
+      runningPromises.delete(id);
+    });
     runningPromises.set(id, runningPromise);
   }
   return runningPromise;
@@ -73,24 +79,21 @@ function reusePromiseUntilResolved(id: string, cb: () => Promise<string>): Promi
 export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
   return reusePromiseUntilResolved(db, async () => {
     const store = getStore(db);
-    const workingPath = await asyncFind(
-      store.getPaths(),
-      async path => {
-        try {
-          await runCommand(path, ['start-server']).toPromise();
-          return path;
-        } catch (e) {
-          return null;
-        }
-      },
-    );
+    const workingPath = await asyncFind(store.getPaths(), async path => {
+      try {
+        await runCommand(path, ['start-server']).toPromise();
+        return path;
+      } catch (e) {
+        return null;
+      }
+    });
     store.notifyWorkingPath(workingPath);
     if (workingPath != null) {
       return workingPath;
     }
     throw new Error(
       `${db} is unavailable. Add it to your path and restart nuclide or make sure that ` +
-      `'${db} start-server' works.`,
+        `'${db} start-server' works.`,
     );
   });
 }

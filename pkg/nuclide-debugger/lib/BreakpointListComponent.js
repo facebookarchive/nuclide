@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type DebuggerActions from './DebuggerActions';
@@ -16,10 +17,7 @@ import invariant from 'assert';
 import React from 'react';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
-import {
-  ListView,
-  ListViewItem,
-} from '../../nuclide-ui/ListView';
+import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 import classnames from 'classnames';
 
@@ -39,7 +37,9 @@ export class BreakpointListComponent extends React.Component {
 
   constructor(props: BreakpointListComponentProps) {
     super(props);
-    (this: any)._handleBreakpointEnabledChange = this._handleBreakpointEnabledChange.bind(this);
+    (this: any)._handleBreakpointEnabledChange = this._handleBreakpointEnabledChange.bind(
+      this,
+    );
     (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
     this.state = {
       breakpoints: this.props.breakpointStore.getAllBreakpoints(),
@@ -63,7 +63,10 @@ export class BreakpointListComponent extends React.Component {
     }
   }
 
-  _handleBreakpointEnabledChange(breakpoint: FileLineBreakpoint, enabled: boolean): void {
+  _handleBreakpointEnabledChange(
+    breakpoint: FileLineBreakpoint,
+    enabled: boolean,
+  ): void {
     this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
   }
 
@@ -72,11 +75,11 @@ export class BreakpointListComponent extends React.Component {
     breakpoint: ?FileLineBreakpoint,
   ): void {
     invariant(breakpoint != null);
-    const {
-      path,
+    const {path, line} = breakpoint;
+    this.props.actions.openSourceLocation(
+      nuclideUri.nuclideUriToUri(path),
       line,
-    } = breakpoint;
-    this.props.actions.openSourceLocation(nuclideUri.nuclideUriToUri(path), line);
+    );
   }
 
   render(): ?React.Element<any> {
@@ -91,18 +94,14 @@ export class BreakpointListComponent extends React.Component {
         basename: nuclideUri.basename(breakpoint.path),
       }))
       // Show resolved breakpoints at the top of the list, then order by filename & line number.
-      .sort((breakpointA, breakpointB) =>
-        100 * (Number(breakpointB.resolved) - Number(breakpointA.resolved)) +
-         10 * breakpointA.basename.localeCompare(breakpointB.basename) +
-              Math.sign(breakpointA.line - breakpointB.line))
+      .sort(
+        (breakpointA, breakpointB) =>
+          100 * (Number(breakpointB.resolved) - Number(breakpointA.resolved)) +
+          10 * breakpointA.basename.localeCompare(breakpointB.basename) +
+          Math.sign(breakpointA.line - breakpointB.line),
+      )
       .map((breakpoint, i) => {
-        const {
-          basename,
-          line,
-          enabled,
-          resolved,
-          path,
-        } = breakpoint;
+        const {basename, line, enabled, resolved, path} = breakpoint;
         const label = `${basename}:${line + 1}`;
         const title = resolved ? null : 'Unresolved Breakpoint';
         const content = (
@@ -111,9 +110,14 @@ export class BreakpointListComponent extends React.Component {
               checked={enabled}
               indeterminate={!resolved}
               disabled={!resolved}
-              onChange={this._handleBreakpointEnabledChange.bind(this, breakpoint)}
+              onChange={this._handleBreakpointEnabledChange.bind(
+                this,
+                breakpoint,
+              )}
               title={title}
-              className={classnames(resolved ? '' : 'nuclide-debugger-breakpoint-unresolved')}
+              className={classnames(
+                resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
+              )}
             />
             <span
               className="nuclide-debugger-breakpoint"
@@ -124,7 +128,9 @@ export class BreakpointListComponent extends React.Component {
             </span>
           </div>
         );
-        return <ListViewItem key={label} value={breakpoint}>{content}</ListViewItem>;
+        return (
+          <ListViewItem key={label} value={breakpoint}>{content}</ListViewItem>
+        );
       });
     return (
       <ListView

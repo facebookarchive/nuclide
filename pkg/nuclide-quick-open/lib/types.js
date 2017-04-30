@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -37,7 +38,10 @@ export type DirectoryProviderType = {
   },
   priority?: number,
   isEligibleForDirectory(directory: atom$Directory): Promise<boolean>,
-  executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>>,
+  executeQuery(
+    query: string,
+    directory: atom$Directory,
+  ): Promise<Array<FileResult>>,
   getComponentForItem?: (item: FileResult) => React.Element<any>,
 };
 
@@ -52,8 +56,13 @@ export type GlobalProviderType = {
     canOpenAll?: boolean,
   },
   priority?: number,
-  isEligibleForDirectories(directories: Array<atom$Directory>): Promise<boolean>,
-  executeQuery(query: string, directories: Array<atom$Directory>): Promise<Array<FileResult>>,
+  isEligibleForDirectories(
+    directories: Array<atom$Directory>,
+  ): Promise<boolean>,
+  executeQuery(
+    query: string,
+    directories: Array<atom$Directory>,
+  ): Promise<Array<FileResult>>,
   getComponentForItem?: (item: FileResult) => React.Element<any>,
 };
 

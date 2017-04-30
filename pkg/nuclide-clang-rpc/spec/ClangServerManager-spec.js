@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -15,13 +16,16 @@ describe('ClangServerManager', () => {
   let serverManager;
   beforeEach(() => {
     serverManager = new ClangServerManager();
-    spyOn(serverManager._flagsManager, 'getFlagsForSrc')
-      .andReturn(Promise.resolve(null));
+    spyOn(serverManager._flagsManager, 'getFlagsForSrc').andReturn(
+      Promise.resolve(null),
+    );
   });
 
   it('uses flags from manager if available', () => {
     waitsForPromise(async () => {
-      serverManager._flagsManager.getFlagsForSrc.andReturn(Promise.resolve({flags: ['a']}));
+      serverManager._flagsManager.getFlagsForSrc.andReturn(
+        Promise.resolve({flags: ['a']}),
+      );
       const flagsResult = await serverManager._getFlags('test.cpp');
       expect(flagsResult).toEqual({flags: ['a'], usesDefaultFlags: false});
     });
@@ -29,8 +33,14 @@ describe('ClangServerManager', () => {
 
   it('falls back to default flags', () => {
     waitsForPromise(async () => {
-      const flagsResult = await serverManager._getFlags('test.cpp', null, ['b']);
-      expect(flagsResult).toEqual({flags: ['b'], usesDefaultFlags: true, flagsFile: null});
+      const flagsResult = await serverManager._getFlags('test.cpp', null, [
+        'b',
+      ]);
+      expect(flagsResult).toEqual({
+        flags: ['b'],
+        usesDefaultFlags: true,
+        flagsFile: null,
+      });
     });
   });
 
@@ -45,12 +55,30 @@ describe('ClangServerManager', () => {
   it('handles restartIfChanged', () => {
     waitsForPromise(async () => {
       const TEST_FILE = 'test.cpp';
-      const server = serverManager.getClangServer(TEST_FILE, '', null, [], true);
-      const server2 = serverManager.getClangServer(TEST_FILE, '', null, [], true);
+      const server = serverManager.getClangServer(
+        TEST_FILE,
+        '',
+        null,
+        [],
+        true,
+      );
+      const server2 = serverManager.getClangServer(
+        TEST_FILE,
+        '',
+        null,
+        [],
+        true,
+      );
       expect(server2).toBe(server);
 
       spyOn(server, 'getFlagsChanged').andReturn(true);
-      const server3 = serverManager.getClangServer(TEST_FILE, '', null, [], true);
+      const server3 = serverManager.getClangServer(
+        TEST_FILE,
+        '',
+        null,
+        [],
+        true,
+      );
       expect(server3).not.toBe(server);
     });
   });
@@ -60,7 +88,9 @@ describe('ClangServerManager', () => {
       const servers = [];
       for (let i = 0; i < 21; i++) {
         // eslint-disable-next-line no-await-in-loop
-        servers.push(serverManager.getClangServer(`test${i}.cpp`, '', null, []));
+        servers.push(
+          serverManager.getClangServer(`test${i}.cpp`, '', null, []),
+        );
       }
       invariant(servers[0]);
       expect(servers[0].isDisposed()).toBe(true);

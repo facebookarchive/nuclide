@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // Regenerates the .proxy baseline files in the spec/fixtures directory.

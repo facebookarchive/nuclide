@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Option} from './Dropdown';
@@ -37,7 +38,8 @@ export class SplitButtonDropdown extends React.Component {
   props: Props;
 
   render(): React.Element<any> {
-    const selectedOption = this._findSelectedOption(this.props.options) || this.props.options[0];
+    const selectedOption =
+      this._findSelectedOption(this.props.options) || this.props.options[0];
 
     invariant(selectedOption.type !== 'separator');
 
@@ -70,10 +72,14 @@ export class SplitButtonDropdown extends React.Component {
 
   _getDropdownSize(size: ?ButtonSize): 'sm' | 'xs' | 'lg' {
     switch (size) {
-      case ButtonSizes.EXTRA_SMALL: return 'xs';
-      case ButtonSizes.SMALL: return 'sm';
-      case ButtonSizes.LARGE: return 'lg';
-      default: return 'sm';
+      case ButtonSizes.EXTRA_SMALL:
+        return 'xs';
+      case ButtonSizes.SMALL:
+        return 'sm';
+      case ButtonSizes.LARGE:
+        return 'lg';
+      default:
+        return 'sm';
     }
   }
 
@@ -83,7 +89,7 @@ export class SplitButtonDropdown extends React.Component {
       if (option.type === 'separator') {
         continue;
       } else if (option.type === 'submenu') {
-        const submenu = (((option.submenu): any): Array<Option>);
+        const submenu = ((option.submenu: any): Array<Option>);
         result = this._findSelectedOption(submenu);
       } else if (option.value === this.props.value) {
         result = option;

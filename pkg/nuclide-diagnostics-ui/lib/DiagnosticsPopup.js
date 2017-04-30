@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -54,14 +55,7 @@ function renderMessage(
 
 // TODO move LESS styles to nuclide-ui
 export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {
-    fixer,
-    goToLocation,
-    left,
-    messages,
-    top,
-    ...rest
-  } = props;
+  const {fixer, goToLocation, left, messages, top, ...rest} = props;
   return (
     <div
       className="nuclide-diagnostics-gutter-ui-popup"

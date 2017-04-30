@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
@@ -22,10 +23,10 @@ export function getOutline(text: string): ?Outline {
       // Filter out property keys that aren't string literals, such as computed properties. They
       // aren't valid JSON but nothing actually enforces that we are getting valid JSON and we are
       // using a full JS parser so we have to handle cases like this.
-      .filter(prop => (
-        prop.type === 'ObjectProperty' &&
-        prop.key.type === 'StringLiteral'
-      ))
+      .filter(
+        prop =>
+          prop.type === 'ObjectProperty' && prop.key.type === 'StringLiteral',
+      )
       .map(prop => {
         return {
           plainText: String(prop.key.value),

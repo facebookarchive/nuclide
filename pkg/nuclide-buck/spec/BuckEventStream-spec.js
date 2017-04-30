@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Subject} from 'rxjs';
@@ -22,7 +23,11 @@ describe('combineEventStreams', () => {
 
   it('takes non-log-level messages from the process', () => {
     waitsForPromise(async () => {
-      const combinedStream = combineEventStreams('build', socketSubject, processSubject);
+      const combinedStream = combineEventStreams(
+        'build',
+        socketSubject,
+        processSubject,
+      );
       const promise = combinedStream.toArray().toPromise();
 
       socketSubject.next({type: 'progress', progress: 0});
@@ -43,7 +48,11 @@ describe('combineEventStreams', () => {
 
   it('falls back to process output when socket is empty', () => {
     waitsForPromise(async () => {
-      const combinedStream = combineEventStreams('build', socketSubject, processSubject);
+      const combinedStream = combineEventStreams(
+        'build',
+        socketSubject,
+        processSubject,
+      );
       const promise = combinedStream.toArray().toPromise();
 
       processSubject.next({type: 'log', message: 'take1', level: 'log'});
@@ -62,7 +71,11 @@ describe('combineEventStreams', () => {
 
   it('test: takes process messages after build finishes', () => {
     waitsForPromise(async () => {
-      const combinedStream = combineEventStreams('test', socketSubject, processSubject);
+      const combinedStream = combineEventStreams(
+        'test',
+        socketSubject,
+        processSubject,
+      );
       const promise = combinedStream.toArray().toPromise();
 
       processSubject.next({type: 'log', message: 'take', level: 'log'});
@@ -81,7 +94,11 @@ describe('combineEventStreams', () => {
 
   it('run: takes process messages after build finishes', () => {
     waitsForPromise(async () => {
-      const combinedStream = combineEventStreams('test', socketSubject, processSubject);
+      const combinedStream = combineEventStreams(
+        'test',
+        socketSubject,
+        processSubject,
+      );
       const promise = combinedStream.toArray().toPromise();
 
       processSubject.next({type: 'log', message: 'take', level: 'log'});
@@ -100,7 +117,11 @@ describe('combineEventStreams', () => {
 
   it('install: adds installing message after build finish', () => {
     waitsForPromise(async () => {
-      const combinedStream = combineEventStreams('install', socketSubject, processSubject);
+      const combinedStream = combineEventStreams(
+        'install',
+        socketSubject,
+        processSubject,
+      );
       const promise = combinedStream.toArray().toPromise();
 
       socketSubject.next({type: 'progress', progress: 1});

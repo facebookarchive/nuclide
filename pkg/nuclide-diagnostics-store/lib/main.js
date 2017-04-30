@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -43,13 +44,10 @@ class Activation {
     this._allLinterAdapters = new Set();
     this._diagnosticStore = new DiagnosticStore();
 
-    this._disposables = new UniversalDisposable(
-      this._diagnosticStore,
-      () => {
-        this._allLinterAdapters.forEach(adapter => adapter.dispose());
-        this._allLinterAdapters.clear();
-      },
-    );
+    this._disposables = new UniversalDisposable(this._diagnosticStore, () => {
+      this._allLinterAdapters.forEach(adapter => adapter.dispose());
+      this._allLinterAdapters.clear();
+    });
   }
 
   dispose() {
@@ -74,7 +72,9 @@ class Activation {
       const store = this._diagnosticStore;
       this._diagnosticUpdater = {
         onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
-        onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
+        onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(
+          store,
+        ),
         onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
         applyFix: store.applyFix.bind(store),
         applyFixesForFile: store.applyFixesForFile.bind(store),
@@ -128,28 +128,44 @@ class Activation {
     return adapterDisposables;
   }
 
-  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
+  consumeDiagnosticsProviderV1(
+    provider: CallbackDiagnosticProvider,
+  ): IDisposable {
     // Register the diagnostic store for updates from the new provider.
     const observableProvider = {
-      updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
-      invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
+      updates: observableFromSubscribeFunction(
+        provider.onMessageUpdate.bind(provider),
+      ),
+      invalidations: observableFromSubscribeFunction(
+        provider.onMessageInvalidation.bind(provider),
+      ),
     };
     return this.consumeDiagnosticsProviderV2(observableProvider);
   }
 
-  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
+  consumeDiagnosticsProviderV2(
+    provider: ObservableDiagnosticProvider,
+  ): IDisposable {
     const store = this._diagnosticStore;
 
     const subscriptions = new UniversalDisposable(
       provider.updates.subscribe(
         update => store.updateMessages(provider, update),
-        error => { getLogger().error(`Error: updates.subscribe ${error}`); },
-        () => { getLogger().error('updates.subscribe completed'); },
+        error => {
+          getLogger().error(`Error: updates.subscribe ${error}`);
+        },
+        () => {
+          getLogger().error('updates.subscribe completed');
+        },
       ),
       provider.invalidations.subscribe(
         invalidation => store.invalidateMessages(provider, invalidation),
-        error => { getLogger().error(`Error: invalidations.subscribe ${error}`); },
-        () => { getLogger().error('invalidations.subscribe completed'); },
+        error => {
+          getLogger().error(`Error: invalidations.subscribe ${error}`);
+        },
+        () => {
+          getLogger().error('invalidations.subscribe completed');
+        },
       ),
     );
     this._disposables.add(subscriptions);

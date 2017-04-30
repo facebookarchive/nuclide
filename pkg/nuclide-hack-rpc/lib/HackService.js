@@ -6,12 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -24,7 +27,9 @@ import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {FindReferencesReturn} from '../../nuclide-find-references/lib/rpc-types';
+import type {
+  FindReferencesReturn,
+} from '../../nuclide-find-references/lib/rpc-types';
 import type {HackReferencesResult} from './FindReferences';
 import type {
   DiagnosticProviderUpdate,
@@ -35,17 +40,19 @@ import type {
   AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {
+  NuclideEvaluationExpression,
+} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from '../../commons-node/range';
 import {arrayFlatten, arrayCompact} from '../../commons-node/collection';
 import invariant from 'assert';
-import {PerConnectionLanguageService} from '../../nuclide-vscode-language-service';
 import {
-  callHHClient,
-} from './HackHelpers';
+  PerConnectionLanguageService,
+} from '../../nuclide-vscode-language-service';
+import {callHHClient} from './HackHelpers';
 import {
   findHackConfigDir,
   setHackCommand,
@@ -60,17 +67,17 @@ import {
   closeProcesses,
 } from './HackProcess';
 import {convertDefinitions} from './Definitions';
-import {
-  hackRangeToAtomRange,
-  atomPointOfHackRangeStart,
-} from './HackHelpers';
+import {hackRangeToAtomRange, atomPointOfHackRangeStart} from './HackHelpers';
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
 import {hackMessageToDiagnosticMessage} from './Diagnostics';
 import {executeQuery} from './SymbolSearch';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {ServerLanguageService, ensureInvalidations} from '../../nuclide-language-service-rpc';
+import {
+  ServerLanguageService,
+  ensureInvalidations,
+} from '../../nuclide-language-service-rpc';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
 
@@ -137,7 +144,8 @@ class HackLanguageServiceImpl extends ServerLanguageService {
       configObserver,
       configObserver.observeConfigs().subscribe(configs => {
         ensureProcesses(fileNotifier, configs);
-      }));
+      }),
+    );
     this._resources.add(() => {
       closeProcesses(fileNotifier);
     });
@@ -150,7 +158,10 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     prefix: string,
   ): Promise<?AutocompleteResult> {
     try {
-      const process = await getHackProcess(this._fileCache, fileVersion.filePath);
+      const process = await getHackProcess(
+        this._fileCache,
+        fileVersion.filePath,
+      );
       return process.getAutocompleteSuggestions(
         fileVersion,
         position,
@@ -164,9 +175,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   /**
    * Does this service want the symbol-search tab to appear in quick-open?
    */
-  async supportsSymbolSearch(
-    directories: Array<NuclideUri>,
-  ): Promise<boolean> {
+  async supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
     const promises = directories.map(directory => findHackConfigDir(directory));
     const hackRoots = await Promise.all(promises);
     return arrayCompact(hackRoots).length > 0;
@@ -179,7 +188,9 @@ class HackLanguageServiceImpl extends ServerLanguageService {
     queryString: string,
     directories: Array<NuclideUri>,
   ): Promise<Array<SymbolResult>> {
-    const promises = directories.map(directory => executeQuery(directory, queryString));
+    const promises = directories.map(directory =>
+      executeQuery(directory, queryString),
+    );
     const results = await Promise.all(promises);
     return arrayFlatten(results);
   }
@@ -213,8 +224,9 @@ class HackSingleFileLanguageService {
       .mergeMap(connection => {
         logger.log('notifyDiagnostics');
         return ensureInvalidations(
-            logger,
-            connection.notifyDiagnostics()
+          logger,
+          connection
+            .notifyDiagnostics()
             .refCount()
             .catch(error => {
               logger.logError(`Error: notifyDiagnostics ${error}`);
@@ -229,13 +241,16 @@ class HackSingleFileLanguageService {
             })
             .map((hackDiagnostics: HackDiagnosticsMessage) => {
               logger.log(`Got hack error in ${hackDiagnostics.filename}`);
-              return ({
+              return {
                 filePath: hackDiagnostics.filename,
                 messages: hackDiagnostics.errors.map(diagnostic =>
-                  hackMessageToDiagnosticMessage(diagnostic.message)),
-              });
-            }));
-      }).catch(error => {
+                  hackMessageToDiagnosticMessage(diagnostic.message),
+                ),
+              };
+            }),
+        );
+      })
+      .catch(error => {
         logger.logError(`Error: observeDiagnostics ${error}`);
         throw error;
       });
@@ -273,10 +288,7 @@ class HackSingleFileLanguageService {
     return convertDefinitions(hackDefinitions, filePath, projectRoot);
   }
 
-  async getDefinitionById(
-    file: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
+  async getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
     const definition: ?HackIdeOutlineItem = (await callHHClient(
       /* args */ ['--get-definition-by-id', id],
       /* errorStream */ false,
@@ -327,9 +339,7 @@ class HackSingleFileLanguageService {
     return convertReferences(result, projectRoot);
   }
 
-  async getCoverage(
-    filePath: NuclideUri,
-  ): Promise<?CoverageResult> {
+  async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     const result: ?Array<HackTypedRegion> = (await callHHClient(
       /* args */ ['--colour', filePath],
       /* errorStream */ false,
@@ -407,9 +417,7 @@ class HackSingleFileLanguageService {
       /* processInput */ contents,
       /* file */ filePath,
     ): any);
-    return result == null
-      ? null
-      : result.map(hackRangeToAtomRange);
+    return result == null ? null : result.map(hackRangeToAtomRange);
   }
 
   async formatSource(
@@ -433,22 +441,28 @@ class HackSingleFileLanguageService {
     } else if (response.internal_error) {
       throw new Error('Internal error formatting hack source.');
     } else if (response.error_message !== '') {
-      throw new Error(`Error formatting hack source: ${response.error_message}`);
+      throw new Error(
+        `Error formatting hack source: ${response.error_message}`,
+      );
     }
-    return [{
-      oldRange: range,
-      newText: response.result,
-    }];
+    return [
+      {
+        oldRange: range,
+        newText: response.result,
+      },
+    ];
   }
 
   formatEntireFile(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<?{
-    newCursor?: number,
-    formatted: string,
-  }> {
+  ): Promise<
+    ?{
+      newCursor?: number,
+      formatted: string,
+    }
+  > {
     throw new Error('Not implemented');
   }
 
@@ -473,8 +487,7 @@ class HackSingleFileLanguageService {
     return hhconfigPath != null;
   }
 
-  dispose(): void {
-  }
+  dispose(): void {}
 }
 
 function formatAtomLineColumn(position: atom$Point): string {
@@ -490,8 +503,9 @@ function getIdentifierAndRange(
   position: atom$PointObject,
 ): ?{id: string, range: atom$Range} {
   const matchData = wordAtPositionFromBuffer(buffer, position, HACK_WORD_REGEX);
-  return (matchData == null || matchData.wordMatch.length === 0) ? null
-      : {id: matchData.wordMatch[0], range: matchData.range};
+  return matchData == null || matchData.wordMatch.length === 0
+    ? null
+    : {id: matchData.wordMatch[0], range: matchData.range};
 }
 
 function getIdentifierAtPosition(

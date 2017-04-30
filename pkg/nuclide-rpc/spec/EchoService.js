@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -17,15 +18,24 @@ export async function echoAny(arg: any): Promise<any> {
   return arg;
 }
 export async function echoString(arg: string): Promise<string> {
-  assert(typeof arg === 'string', `Argument to echoString must be a string, not ${typeof arg}.`);
+  assert(
+    typeof arg === 'string',
+    `Argument to echoString must be a string, not ${typeof arg}.`,
+  );
   return arg;
 }
 export async function echoNumber(arg: number): Promise<number> {
-  assert(typeof arg === 'number', `Argument to echoNumber must be a number, not ${typeof arg}.`);
+  assert(
+    typeof arg === 'number',
+    `Argument to echoNumber must be a number, not ${typeof arg}.`,
+  );
   return arg;
 }
 export async function echoBoolean(arg: boolean): Promise<boolean> {
-  assert(typeof arg === 'boolean', `Argument to echoBoolean must be a boolean, not ${typeof arg}.`);
+  assert(
+    typeof arg === 'boolean',
+    `Argument to echoBoolean must be a boolean, not ${typeof arg}.`,
+  );
   return arg;
 }
 export async function echoDefaultNumber(arg: number = 1): Promise<number> {
@@ -38,18 +48,26 @@ export async function echoDate(arg: Date): Promise<Date> {
   return arg;
 }
 export async function echoRegExp(arg: RegExp): Promise<RegExp> {
-  // $FlowFixMe
-  assert(arg instanceof RegExp, `Argument to echoRegExp must be a RegExp. Not ${arg.constructor}`);
+  assert(
+    arg instanceof RegExp,
+    // $FlowFixMe
+    `Argument to echoRegExp must be a RegExp. Not ${arg.constructor}`,
+  );
   return arg;
 }
 export async function echoBuffer(arg: Buffer): Promise<Buffer> {
-  // $FlowFixMe
-  assert(arg instanceof Buffer, `Argument to echoBuffer must be a Buffer. Not ${arg.constructor}`);
+  assert(
+    arg instanceof Buffer,
+    // $FlowFixMe
+    `Argument to echoBuffer must be a Buffer. Not ${arg.constructor}`,
+  );
   return arg;
 }
 
 // Parameterized types.
-export async function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<Array<Date>>> {
+export async function echoArrayOfArrayOfDate(
+  arg: Array<Array<Date>>,
+): Promise<Array<Array<Date>>> {
   return arg;
 }
 export async function echoObject(
@@ -60,10 +78,14 @@ export async function echoObject(
 export async function echoSet(arg: Set<string>): Promise<Set<string>> {
   return arg;
 }
-export async function echoMap(arg: Map<string, Date>): Promise<Map<string, Date>> {
+export async function echoMap(
+  arg: Map<string, Date>,
+): Promise<Map<string, Date>> {
   return arg;
 }
-export async function echoTuple(arg: [number, string]): Promise<[number, string]> {
+export async function echoTuple(
+  arg: [number, string],
+): Promise<[number, string]> {
   return arg;
 }
 
@@ -87,6 +109,8 @@ export async function echoNuclideUri(arg: NuclideUri): Promise<NuclideUri> {
 export class RemotableObject {
   dispose(): void {}
 }
-export async function echoRemotableObject(arg: RemotableObject): Promise<RemotableObject> {
+export async function echoRemotableObject(
+  arg: RemotableObject,
+): Promise<RemotableObject> {
   return arg;
 }

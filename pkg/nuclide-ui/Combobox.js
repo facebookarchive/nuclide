@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -32,7 +33,10 @@ type Props = DefaultProps & {
   placeholderText?: string,
   onRequestOptionsError?: (error: Error) => void,
   onBlur?: (text: string) => void,
-  filterOptions?: (options: Array<string>, filterValue: string) => Array<string>,
+  filterOptions?: (
+    options: Array<string>,
+    filterValue: string,
+  ) => Array<string>,
   requestOptions: (inputText: string) => Observable<Array<string>>,
   size: 'xs' | 'sm' | 'lg',
   disabled: boolean,
@@ -99,8 +103,9 @@ export class Combobox extends React.Component {
     (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
     (this: any)._handleCancel = this._handleCancel.bind(this);
     (this: any)._handleConfirm = this._handleConfirm.bind(this);
-    (this: any)._scrollSelectedOptionIntoViewIfNeeded =
-      this._scrollSelectedOptionIntoViewIfNeeded.bind(this);
+    (this: any)._scrollSelectedOptionIntoViewIfNeeded = this._scrollSelectedOptionIntoViewIfNeeded.bind(
+      this,
+    );
   }
 
   componentDidMount() {
@@ -135,26 +140,28 @@ export class Combobox extends React.Component {
 
     this.setState({error: null, loadingOptions: true});
 
-    this._updateSubscription = this.props.requestOptions(textInput)
-      .subscribe(
-        options => this.receiveUpdate(options),
-        err => {
-          this.setState({
-            error: err,
-            loadingOptions: false,
-            options: [],
-            filteredOptions: [],
-          });
-          if (this.props.onRequestOptionsError != null) {
-            this.props.onRequestOptionsError(err);
-          }
-        },
-        () => this.setState({loadingOptions: false}),
-      );
+    this._updateSubscription = this.props.requestOptions(textInput).subscribe(
+      options => this.receiveUpdate(options),
+      err => {
+        this.setState({
+          error: err,
+          loadingOptions: false,
+          options: [],
+          filteredOptions: [],
+        });
+        if (this.props.onRequestOptionsError != null) {
+          this.props.onRequestOptionsError(err);
+        }
+      },
+      () => this.setState({loadingOptions: false}),
+    );
   }
 
   receiveUpdate(newOptions: Array<string>) {
-    const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
+    const filteredOptions = this._getFilteredOptions(
+      newOptions,
+      this.state.textInput,
+    );
     this.setState({
       error: null,
       options: newOptions,
@@ -165,11 +172,14 @@ export class Combobox extends React.Component {
 
   selectValue(newValue: string, didRenderCallback?: () => void) {
     this.refs.freeformInput.setText(newValue);
-    this.setState({
-      textInput: newValue,
-      selectedIndex: -1,
-      optionsVisible: false,
-    }, didRenderCallback);
+    this.setState(
+      {
+        textInput: newValue,
+        selectedIndex: -1,
+        optionsVisible: false,
+      },
+      didRenderCallback,
+    );
     this.props.onSelect(newValue);
     // Selecting a value in the dropdown changes the text as well. Call the callback accordingly.
     this.props.onChange(newValue);
@@ -179,37 +189,37 @@ export class Combobox extends React.Component {
     return this.refs.freeformInput.getText();
   }
 
-  _getFilteredOptions(options: Array<string>, filterValue: string): Array<string> {
+  _getFilteredOptions(
+    options: Array<string>,
+    filterValue: string,
+  ): Array<string> {
     if (this.props.filterOptions != null) {
-      return this.props.filterOptions(options, filterValue)
+      return this.props
+        .filterOptions(options, filterValue)
         .slice(0, this.props.maxOptionCount);
     }
 
     const lowerCaseState = filterValue.toLowerCase();
     return options
-      .map(
-        option => {
-          const valueLowercase = option.toLowerCase();
-          return {
-            value: option,
-            matchIndex: valueLowercase.indexOf(lowerCaseState),
-          };
-        },
-      ).filter(
-        option => option.matchIndex !== -1,
-      ).sort(
-        (a, b) => {
-          // We prefer lower match indices
-          const indexDiff = a.matchIndex - b.matchIndex;
-          if (indexDiff !== 0) {
-            return indexDiff;
-          }
-          // Then we prefer smaller options, thus close to the input
-          return a.value.length - b.value.length;
-        },
-      ).map(
-        option => option.value,
-      ).slice(0, this.props.maxOptionCount);
+      .map(option => {
+        const valueLowercase = option.toLowerCase();
+        return {
+          value: option,
+          matchIndex: valueLowercase.indexOf(lowerCaseState),
+        };
+      })
+      .filter(option => option.matchIndex !== -1)
+      .sort((a, b) => {
+        // We prefer lower match indices
+        const indexDiff = a.matchIndex - b.matchIndex;
+        if (indexDiff !== 0) {
+          return indexDiff;
+        }
+        // Then we prefer smaller options, thus close to the input
+        return a.value.length - b.value.length;
+      })
+      .map(option => option.value)
+      .slice(0, this.props.maxOptionCount);
   }
 
   _getOptionsElement(): HTMLElement {
@@ -219,9 +229,9 @@ export class Combobox extends React.Component {
 
       this._optionsElement = document.createElement('div');
       workspaceElement.appendChild(this._optionsElement);
-      this._subscriptions.add(
-        () => { this._optionsElement.remove(); },
-      );
+      this._subscriptions.add(() => {
+        this._optionsElement.remove();
+      });
     }
     return this._optionsElement;
   }
@@ -230,8 +240,10 @@ export class Combobox extends React.Component {
     if (filteredOptions.length === 0) {
       // If there aren't any options, don't select anything.
       return -1;
-    } else if (this.state.selectedIndex === -1 ||
-        this.state.selectedIndex >= filteredOptions.length) {
+    } else if (
+      this.state.selectedIndex === -1 ||
+      this.state.selectedIndex >= filteredOptions.length
+    ) {
       // If there are options and the selected index is out of bounds,
       // default to the first item.
       return 0;
@@ -245,7 +257,10 @@ export class Combobox extends React.Component {
       return;
     }
     this.requestUpdate(newText);
-    const filteredOptions = this._getFilteredOptions(this.state.options, newText);
+    const filteredOptions = this._getFilteredOptions(
+      this.state.options,
+      newText,
+    );
     this.setState({
       textInput: newText,
       optionsVisible: true,
@@ -275,7 +290,8 @@ export class Combobox extends React.Component {
       relatedTarget == null ||
       // TODO(hansonw): Move this check inside AtomInput.
       // See https://github.com/atom/atom/blob/master/src/text-editor-element.coffee#L145
-      relatedTarget.tagName === 'INPUT' && relatedTarget.classList.contains('hidden-input') ||
+      (relatedTarget.tagName === 'INPUT' &&
+        relatedTarget.classList.contains('hidden-input')) ||
       // Selecting a menu item registers on the document body.
       relatedTarget === document.body
     ) {
@@ -303,22 +319,25 @@ export class Combobox extends React.Component {
   }
 
   _handleMoveDown() {
-    this.setState({
-      selectedIndex: Math.min(
-        this.props.maxOptionCount - 1,
-        this.state.selectedIndex + 1,
-        this.state.filteredOptions.length - 1,
-      ),
-    }, this._scrollSelectedOptionIntoViewIfNeeded);
+    this.setState(
+      {
+        selectedIndex: Math.min(
+          this.props.maxOptionCount - 1,
+          this.state.selectedIndex + 1,
+          this.state.filteredOptions.length - 1,
+        ),
+      },
+      this._scrollSelectedOptionIntoViewIfNeeded,
+    );
   }
 
   _handleMoveUp() {
-    this.setState({
-      selectedIndex: Math.max(
-        0,
-        this.state.selectedIndex - 1,
-      ),
-    }, this._scrollSelectedOptionIntoViewIfNeeded);
+    this.setState(
+      {
+        selectedIndex: Math.max(0, this.state.selectedIndex - 1),
+      },
+      this._scrollSelectedOptionIntoViewIfNeeded,
+    );
   }
 
   _handleCancel() {
@@ -358,8 +377,13 @@ export class Combobox extends React.Component {
       );
     }
 
-    if (this.state.error != null && this.props.formatRequestOptionsErrorMessage != null) {
-      const message = this.props.formatRequestOptionsErrorMessage(this.state.error);
+    if (
+      this.state.error != null &&
+      this.props.formatRequestOptionsErrorMessage != null
+    ) {
+      const message = this.props.formatRequestOptionsErrorMessage(
+        this.state.error,
+      );
       options.push(
         <li key="text-error" className="text-error">
           {message}
@@ -369,39 +393,35 @@ export class Combobox extends React.Component {
 
     if (this.state.optionsVisible) {
       const lowerCaseState = this.state.textInput.toLowerCase();
-      options.push(...this.state.filteredOptions.map((option, i) => {
-        const matchIndex = option.toLowerCase().indexOf(lowerCaseState);
-        let beforeMatch;
-        let highlightedMatch;
-        let afterMatch;
-        if (matchIndex >= 0) {
-          beforeMatch = option.substring(0, matchIndex);
-          const endOfMatchIndex = matchIndex + this.state.textInput.length;
-          highlightedMatch = option.substring(
-            matchIndex,
-            endOfMatchIndex,
+      options.push(
+        ...this.state.filteredOptions.map((option, i) => {
+          const matchIndex = option.toLowerCase().indexOf(lowerCaseState);
+          let beforeMatch;
+          let highlightedMatch;
+          let afterMatch;
+          if (matchIndex >= 0) {
+            beforeMatch = option.substring(0, matchIndex);
+            const endOfMatchIndex = matchIndex + this.state.textInput.length;
+            highlightedMatch = option.substring(matchIndex, endOfMatchIndex);
+            afterMatch = option.substring(endOfMatchIndex, option.length);
+          } else {
+            beforeMatch = option;
+          }
+          const isSelected = i === this.state.selectedIndex;
+          return (
+            <li
+              className={isSelected ? 'selected' : null}
+              key={'option-' + option}
+              onClick={this._handleItemClick.bind(this, option)}
+              onMouseOver={this._setSelectedIndex.bind(this, i)}
+              ref={isSelected ? 'selectedOption' : null}>
+              {beforeMatch}
+              <strong className="text-highlight">{highlightedMatch}</strong>
+              {afterMatch}
+            </li>
           );
-          afterMatch = option.substring(
-            endOfMatchIndex,
-            option.length,
-          );
-        } else {
-          beforeMatch = option;
-        }
-        const isSelected = i === this.state.selectedIndex;
-        return (
-          <li
-            className={isSelected ? 'selected' : null}
-            key={'option-' + option}
-            onClick={this._handleItemClick.bind(this, option)}
-            onMouseOver={this._setSelectedIndex.bind(this, i)}
-            ref={isSelected ? 'selectedOption' : null}>
-            {beforeMatch}
-            <strong className="text-highlight">{highlightedMatch}</strong>
-            {afterMatch}
-          </li>
-        );
-      }));
+        }),
+      );
 
       if (!options.length) {
         options.push(
@@ -426,18 +446,16 @@ export class Combobox extends React.Component {
       );
     }
 
-    const {
-      initialTextInput,
-      placeholderText,
-      size,
-      width,
-    } = this.props;
+    const {initialTextInput, placeholderText, size, width} = this.props;
     const wrapperStyle = {
       width: width == null ? undefined : `${width}px`,
     };
     return (
-      <div className={'select-list popover-list popover-list-subtle ' + this.props.className}
-           style={wrapperStyle}>
+      <div
+        className={
+          'select-list popover-list popover-list-subtle ' + this.props.className
+        }
+        style={wrapperStyle}>
         <AtomInput
           initialValue={initialTextInput}
           onBlur={this._handleInputBlur}

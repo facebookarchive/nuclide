@@ -6,14 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {
-  DebuggerInstanceBase,
-} from '../../nuclide-debugger-base';
+import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
@@ -70,7 +69,9 @@ export class DebuggerStore {
     this._dispatcher = dispatcher;
     this._model = model;
     this._emitter = new Emitter();
-    this._dispatcherToken = this._dispatcher.register(this._handlePayload.bind(this));
+    this._dispatcherToken = this._dispatcher.register(
+      this._handlePayload.bind(this),
+    );
 
     this._debuggerSettings = new DebuggerSettings();
     this._debuggerInstance = null;
@@ -135,8 +136,10 @@ export class DebuggerStore {
   }
 
   isDebugging(): boolean {
-    return this._debuggerMode !== DebuggerMode.STOPPED
-      && this._debuggerMode !== DebuggerMode.STOPPING;
+    return (
+      this._debuggerMode !== DebuggerMode.STOPPED &&
+      this._debuggerMode !== DebuggerMode.STOPPING
+    );
   }
 
   getTogglePauseOnException(): boolean {
@@ -194,7 +197,9 @@ export class DebuggerStore {
       case ActionTypes.TOGGLE_PAUSE_ON_CAUGHT_EXCEPTION:
         const pauseOnCaughtException = payload.data;
         this._togglePauseOnCaughtException = pauseOnCaughtException;
-        this._model.getBridge().setPauseOnCaughtException(pauseOnCaughtException);
+        this._model
+          .getBridge()
+          .setPauseOnCaughtException(pauseOnCaughtException);
         break;
       case ActionTypes.TOGGLE_SINGLE_THREAD_STEPPING:
         const singleThreadStepping = payload.data;

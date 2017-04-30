@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -29,12 +30,8 @@ export default class NewMessagesNotification extends React.Component {
       },
     );
     return (
-      <div
-        className={className}
-        onClick={this.props.onClick}>
-        <span
-          className="nuclide-console-new-messages-notification-icon icon icon-nuclicon-arrow-down"
-        />
+      <div className={className} onClick={this.props.onClick}>
+        <span className="nuclide-console-new-messages-notification-icon icon icon-nuclicon-arrow-down" />
         New Messages
       </div>
     );

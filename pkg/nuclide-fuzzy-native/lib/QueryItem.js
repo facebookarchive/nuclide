@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -38,7 +39,7 @@ function scoreCommonSubsequence(needle: string, haystack_: string): number {
       inGap = false;
     } else {
       haystackIndex++;
-      score += (inGap ? 2 : 20);
+      score += inGap ? 2 : 20;
       inGap = true;
     }
   }
@@ -54,8 +55,12 @@ const NOT_CAPITAL_LETTERS_REGEXP = /[^A-Z]/g;
  * `haystack`.  E.g. 'fbide' matches 'FaceBookIntegratedDevelopmentEnvironment' and
  *                                   'faceBookIntegratedDevelopmentEnvironment'.
  */
-function checkIfMatchesCamelCaseLetters(needle: string, haystack: string): boolean {
-  const uppercase = haystack.substring(0, 1) +
+function checkIfMatchesCamelCaseLetters(
+  needle: string,
+  haystack: string,
+): boolean {
+  const uppercase =
+    haystack.substring(0, 1) +
     haystack.substring(1).replace(NOT_CAPITAL_LETTERS_REGEXP, '');
   return needle.toLowerCase() === uppercase.toLowerCase();
 }
@@ -85,10 +90,7 @@ function importantCharactersForString(str: string): Set<string> {
   const importantCharacters = new Set();
   for (let index = 0; index < str.length; index++) {
     const char = str[index];
-    if (
-      !importantCharacters.has(char) &&
-      isLetterImportant(index, str)
-    ) {
+    if (!importantCharacters.has(char) && isLetterImportant(index, str)) {
       importantCharacters.add(char);
     }
   }
@@ -139,7 +141,9 @@ export default class QueryItem {
    */
   score(query: string): ?QueryScore {
     const score = this._getScoreFor(query);
-    return score == null ? null : {score, value: this._filepath, matchIndexes: []};
+    return score == null
+      ? null
+      : {score, value: this._filepath, matchIndexes: []};
   }
 
   _getScoreFor(query: string): ?number {
@@ -154,7 +158,10 @@ export default class QueryItem {
     if (!this._importantCharacters.has(firstChar)) {
       return null;
     }
-    if (query.length >= 3 && checkIfMatchesCamelCaseLetters(query, this._filename)) {
+    if (
+      query.length >= 3 &&
+      checkIfMatchesCamelCaseLetters(query, this._filename)
+    ) {
       // If we match the uppercase characters of the filename, we should be ranked the highest
       return 0;
     } else {

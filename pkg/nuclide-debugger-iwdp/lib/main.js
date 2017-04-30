@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
+import type {
+  NuclideDebuggerProvider,
+} from '../../nuclide-debugger-interfaces/service';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {IwdpLaunchAttachProvider} from './IwdpLaunchAttachProvider';

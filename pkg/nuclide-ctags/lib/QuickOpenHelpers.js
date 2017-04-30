@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileResult} from '../../nuclide-quick-open/lib/types';
@@ -39,7 +40,9 @@ async function getCtagsService(
 }
 
 export default class QuickOpenHelpers {
-  static async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+  static async isEligibleForDirectory(
+    directory: atom$Directory,
+  ): Promise<boolean> {
     const svc = await getCtagsService(directory);
     if (svc != null) {
       svc.dispose();
@@ -66,7 +69,10 @@ export default class QuickOpenHelpers {
     );
   }
 
-  static async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
+  static async executeQuery(
+    query: string,
+    directory: atom$Directory,
+  ): Promise<Array<FileResult>> {
     if (query.length < MIN_QUERY_LENGTH) {
       return [];
     }
@@ -92,17 +98,19 @@ export default class QuickOpenHelpers {
         limit: RESULTS_LIMIT,
       });
 
-      return await Promise.all(results
-        .filter(tag => !isHackProject || !tag.file.endsWith('.php'))
-        .map(async tag => {
-          const line = await getLineNumberForTag(tag);
-          return {
-            ...tag,
-            path: tag.file,
-            dir,
-            line,
-          };
-        }));
+      return await Promise.all(
+        results
+          .filter(tag => !isHackProject || !tag.file.endsWith('.php'))
+          .map(async tag => {
+            const line = await getLineNumberForTag(tag);
+            return {
+              ...tag,
+              path: tag.file,
+              dir,
+              line,
+            };
+          }),
+      );
     } finally {
       service.dispose();
     }

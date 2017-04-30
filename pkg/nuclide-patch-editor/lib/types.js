@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as BoundActionCreators from './redux/Actions';
@@ -46,7 +47,6 @@ export type ExtraFileChangesData = {
   fileData: FileData,
   patchId: string,
 };
-
 
 export type Store = {
   getState(): AppState,
@@ -95,9 +95,9 @@ export type ToggleLineAction = {
   },
 };
 
-export type Action = RegisterPatchEditorAction
-| DeregisterPatchEditorAction
-| ToggleFileAction
-| ToggleHunkAction
-| ToggleLineAction
-;
+export type Action =
+  | RegisterPatchEditorAction
+  | DeregisterPatchEditorAction
+  | ToggleFileAction
+  | ToggleHunkAction
+  | ToggleLineAction;

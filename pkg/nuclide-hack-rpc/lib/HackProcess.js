@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as HackConnectionService from './HackConnectionService';
@@ -14,13 +15,19 @@ import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HackCompletionsResult} from './rpc-types';
-import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  AutocompleteResult,
+} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand, spawn} from '../../commons-node/process';
 import {maybeToString} from '../../commons-node/string';
 import {RpcProcess} from '../../nuclide-rpc';
-import {getHackCommand, findHackConfigDir, HACK_FILE_EXTENSIONS} from './hack-config';
+import {
+  getHackCommand,
+  findHackConfigDir,
+  HACK_FILE_EXTENSIONS,
+} from './hack-config';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import invariant from 'assert';
@@ -71,15 +78,23 @@ class HackProcess {
     processStream: Observable<child_process$ChildProcess>,
     hhconfigPath: string,
   ) {
-    this._process = new RpcProcess(name, getServiceRegistry(), processStream, logMessage);
+    this._process = new RpcProcess(
+      name,
+      getServiceRegistry(),
+      processStream,
+      logMessage,
+    );
     this._fileCache = fileCache;
     this._fileVersionNotifier = new FileVersionNotifier();
     this._hhconfigPath = hhconfigPath;
 
-    this._fileSubscription = fileCache.observeFileEvents()
+    this._fileSubscription = fileCache
+      .observeFileEvents()
       // TODO: Filter on hhconfigPath
       .filter(fileEvent => {
-        const fileExtension = nuclideUri.extname(fileEvent.fileVersion.filePath);
+        const fileExtension = nuclideUri.extname(
+          fileEvent.fileVersion.filePath,
+        );
         return HACK_FILE_EXTENSIONS.indexOf(fileExtension) !== -1;
       })
       .combineLatest(Observable.fromPromise(this.getConnectionService()))
@@ -90,25 +105,24 @@ class HackProcess {
           case FileEventKind.OPEN:
             service.didOpenFile(filePath, version, fileEvent.contents);
             // TODO: Remove this once hack handles the initial contents in the open message.
-            service.didChangeFile(
-              filePath,
-              version,
-              [{
+            service.didChangeFile(filePath, version, [
+              {
                 text: fileEvent.contents,
-              }]);
+              },
+            ]);
             break;
           case FileEventKind.CLOSE:
             service.didCloseFile(filePath);
             break;
           case FileEventKind.EDIT:
-            service.didChangeFile(
-              filePath,
-              version,
-              [editToHackEdit(fileEvent)],
-            );
+            service.didChangeFile(filePath, version, [
+              editToHackEdit(fileEvent),
+            ]);
             break;
           default:
-            throw new Error(`Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`);
+            throw new Error(
+              `Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`,
+            );
         }
         this._fileVersionNotifier.onEvent(fileEvent);
       });
@@ -119,7 +133,10 @@ class HackProcess {
   }
 
   getConnectionService(): Promise<HackConnectionService> {
-    invariant(!this._process.isDisposed(), 'getService called on disposed hackProcess');
+    invariant(
+      !this._process.isDisposed(),
+      'getService called on disposed hackProcess',
+    );
     return this._process.getService('HackConnectionService');
   }
 
@@ -127,13 +144,17 @@ class HackProcess {
     return this._process.observeExitMessage();
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
+  async getBufferAtVersion(
+    fileVersion: FileVersion,
+  ): Promise<?simpleTextBuffer$TextBuffer> {
     const buffer = await getBufferAtVersion(fileVersion);
     // Must also wait for edits to be sent to Hack
-    if (!(await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion))) {
+    if (!await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion)) {
       return null;
     }
-    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    return buffer != null && buffer.changeCount === fileVersion.version
+      ? buffer
+      : null;
   }
 
   async getAutocompleteSuggestions(
@@ -142,7 +163,9 @@ class HackProcess {
     activatedManually: boolean,
   ): Promise<?AutocompleteResult> {
     const filePath = fileVersion.filePath;
-    logger.log(`Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`);
+    logger.log(
+      `Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`,
+    );
     const buffer = await this.getBufferAtVersion(fileVersion);
     if (buffer == null) {
       return {isIncomplete: false, items: []};
@@ -161,8 +184,10 @@ class HackProcess {
 
     logger.log('Got Hack Service');
     // TODO: Include version number to ensure agreement on file version.
-    const unfilteredItems: ?HackCompletionsResult =
-        await (await service).getCompletions(filePath, {line, column});
+    const unfilteredItems: ?HackCompletionsResult = await (await service).getCompletions(
+      filePath,
+      {line, column},
+    );
     if (unfilteredItems == null) {
       return null;
     }
@@ -199,19 +224,28 @@ class HackProcess {
 }
 
 // Maps FileCache => hack config dir => HackProcess
-const processes: Cache<FileCache, Cache<NuclideUri, Promise<HackProcess>>>
-  = new Cache(
-    fileCache => new Cache(
+const processes: Cache<
+  FileCache,
+  Cache<NuclideUri, Promise<HackProcess>>
+> = new Cache(
+  fileCache =>
+    new Cache(
       hackRoot => retryCreateHackProcess(fileCache, hackRoot),
-      value => { value.then(DISPOSE_VALUE); }),
-    DISPOSE_VALUE);
+      value => {
+        value.then(DISPOSE_VALUE);
+      },
+    ),
+  DISPOSE_VALUE,
+);
 
 // TODO: Is there any situation where these can be disposed before the
 //       remote connection is terminated?
 // Remove fileCache when the remote connection shuts down
-processes.observeKeys().subscribe(
-  fileCache => {
-    fileCache.observeFileEvents().ignoreElements().subscribe(
+processes.observeKeys().subscribe(fileCache => {
+  fileCache
+    .observeFileEvents()
+    .ignoreElements()
+    .subscribe(
       undefined, // next
       undefined, // error
       () => {
@@ -219,7 +253,7 @@ processes.observeKeys().subscribe(
         closeProcesses(fileCache);
       },
     );
-  });
+});
 
 export async function getHackProcess(
   fileCache: FileCache,
@@ -235,7 +269,10 @@ export async function getHackProcess(
 // Ensures that the only attached HackProcesses are those for the given configPaths.
 // Closes all HackProcesses not in configPaths, and starts new HackProcesses for any
 // paths in configPaths.
-export function ensureProcesses(fileCache: FileCache, configPaths: Set<NuclideUri>): void {
+export function ensureProcesses(
+  fileCache: FileCache,
+  configPaths: Set<NuclideUri>,
+): void {
   logger.logInfo(`Hack ensureProcesses. ${Array.from(configPaths).join(', ')}`);
   processes.get(fileCache).setKeys(configPaths);
 }
@@ -245,7 +282,10 @@ export function closeProcesses(fileCache: FileCache): void {
   logger.logInfo('Hack closeProcesses');
   if (processes.has(fileCache)) {
     logger.logInfo(
-      `Shutting down HackProcesses ${Array.from(processes.get(fileCache).keys()).join(',')}`);
+      `Shutting down HackProcesses ${Array.from(processes
+          .get(fileCache)
+          .keys()).join(',')}`,
+    );
     processes.delete(fileCache);
   }
 }
@@ -301,26 +341,25 @@ async function createHackProcess(
   logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
   logger.logInfo(`Current PATH: ${maybeToString(process.env.PATH)}`);
   try {
-    await runCommand(
-      command,
-      ['start', configDir],
-      {
-        isExitError: ({exitCode}) =>
-          !(exitCode === 0 || exitCode === HACK_SERVER_ALREADY_EXISTS_EXIT_CODE),
-      },
-    ).toPromise();
+    await runCommand(command, ['start', configDir], {
+      isExitError: ({exitCode}) =>
+        !(exitCode === 0 || exitCode === HACK_SERVER_ALREADY_EXISTS_EXIT_CODE),
+    }).toPromise();
   } catch (err) {
     if (err.exitCode != null) {
-      throw new Error(`Hack server start failed with code: ${String(err.exitCode)}`);
+      throw new Error(
+        `Hack server start failed with code: ${String(err.exitCode)}`,
+      );
     }
     throw new Error(`Hack server failed with error: ${err.message}`);
   }
-  const processStream = spawn(
-    command,
-    ['ide', configDir],
-  );
+  const processStream = spawn(command, ['ide', configDir]);
   const hackProcess = new HackProcess(
-    fileCache, `HackProcess-${configDir}`, processStream, configDir);
+    fileCache,
+    `HackProcess-${configDir}`,
+    processStream,
+    configDir,
+  );
 
   // If the process exits unexpectedly, create a new one immediately.
   const startTime = Date.now();
@@ -329,7 +368,10 @@ async function createHackProcess(
     if (processes.has(fileCache)) {
       processes.get(fileCache).delete(configDir);
     }
-    if (message != null && message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE) {
+    if (
+      message != null &&
+      message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE
+    ) {
       logger.logInfo('Not reconnecting Hack process--another client connected');
       return;
     }
@@ -358,9 +400,13 @@ function editToHackEdit(editEvent: FileEditEvent): TextEdit {
   };
 }
 
-export function observeConnections(fileCache: FileCache): Observable<HackConnectionService> {
+export function observeConnections(
+  fileCache: FileCache,
+): Observable<HackConnectionService> {
   logger.logInfo('observing connections');
-  return processes.get(fileCache).observeValues()
+  return processes
+    .get(fileCache)
+    .observeValues()
     .switchMap(process => process)
     .filter(process => process != null)
     .switchMap(process => {

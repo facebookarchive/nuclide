@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import fsPromise from '../../commons-node/fsPromise';
@@ -37,6 +38,9 @@ export default class File {
 
   async hasSource(): Promise<boolean> {
     // t12549106 -- this is a workaround for some HHVM goofiness.
-    return await fsPromise.exists(this._path) && (await fsPromise.lstat(this._path)).isFile();
+    return (
+      (await fsPromise.exists(this._path)) &&
+      (await fsPromise.lstat(this._path)).isFile()
+    );
   }
 }

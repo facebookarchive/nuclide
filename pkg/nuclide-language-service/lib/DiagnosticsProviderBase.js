@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -18,7 +19,9 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
-import {TextEventDispatcher} from '../../nuclide-diagnostics-common/lib/TextEventDispatcher';
+import {
+  TextEventDispatcher,
+} from '../../nuclide-diagnostics-common/lib/TextEventDispatcher';
 
 type ProviderBaseOptions = {
   /** The callback by which a provider is notified of text events, such as a file save. */
@@ -76,7 +79,9 @@ export class DiagnosticsProviderBase {
   // callbacks provided by client
   _textEventCallback: (editor: TextEditor) => mixed;
   _newUpdateSubscriberCallback: (callback: MessageUpdateCallback) => mixed;
-  _newInvalidateSubscriberCallback: (callback: MessageInvalidationCallback) => mixed;
+  _newInvalidateSubscriberCallback: (
+    callback: MessageInvalidationCallback,
+  ) => mixed;
 
   constructor(
     options: ProviderBaseOptions,
@@ -87,8 +92,12 @@ export class DiagnosticsProviderBase {
     this._disposables = new CompositeDisposable();
 
     this._textEventCallback = callbackOrNoop(options.onTextEditorEvent);
-    this._newUpdateSubscriberCallback = callbackOrNoop(options.onNewUpdateSubscriber);
-    this._newInvalidateSubscriberCallback = callbackOrNoop(options.onNewInvalidateSubscriber);
+    this._newUpdateSubscriberCallback = callbackOrNoop(
+      options.onNewUpdateSubscriber,
+    );
+    this._newInvalidateSubscriberCallback = callbackOrNoop(
+      options.onNewInvalidateSubscriber,
+    );
 
     // The Set constructor creates an empty Set if passed null or undefined.
     this._grammarScopes = new Set(options.grammarScopes);
@@ -108,13 +117,19 @@ export class DiagnosticsProviderBase {
       if (this._allGrammarScopes) {
         subscription = dispatcher.onAnyFileChange(this._textEventCallback);
       } else {
-        subscription = dispatcher.onFileChange(this._grammarScopes, this._textEventCallback);
+        subscription = dispatcher.onFileChange(
+          this._grammarScopes,
+          this._textEventCallback,
+        );
       }
     } else {
       if (this._allGrammarScopes) {
         subscription = dispatcher.onAnyFileSave(this._textEventCallback);
       } else {
-        subscription = dispatcher.onFileSave(this._grammarScopes, this._textEventCallback);
+        subscription = dispatcher.onFileSave(
+          this._grammarScopes,
+          this._textEventCallback,
+        );
       }
     }
     this._currentEventSubscription = subscription;
@@ -171,5 +186,5 @@ export class DiagnosticsProviderBase {
 }
 
 function callbackOrNoop<T>(callback: ?(arg: T) => mixed): (arg: T) => mixed {
-  return callback ? callback.bind(undefined) : () => { };
+  return callback ? callback.bind(undefined) : () => {};
 }

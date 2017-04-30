@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
@@ -19,8 +20,11 @@ import {getEnableLinting, getLintExtensionBlacklist} from './config';
 export default class LintHelpers {
   static lint(editor: TextEditor): Promise<Array<LinterMessage>> {
     const src = editor.getPath();
-    if (src == null || !getEnableLinting() ||
-        getLintExtensionBlacklist().includes(nuclideUri.extname(src))) {
+    if (
+      src == null ||
+      !getEnableLinting() ||
+      getLintExtensionBlacklist().includes(nuclideUri.extname(src))
+    ) {
       return Promise.resolve([]);
     }
 

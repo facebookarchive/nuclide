@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DebugMode} from './types';
@@ -87,7 +88,10 @@ export default class ProjectStore {
   }
 
   updateLastScriptCommand(command: string): void {
-    this._filePathsToScriptCommand.set(nuclideUri.getPath(this._currentFilePath), command);
+    this._filePathsToScriptCommand.set(
+      nuclideUri.getPath(this._currentFilePath),
+      command,
+    );
   }
 
   onChange(callback: () => void): IDisposable {

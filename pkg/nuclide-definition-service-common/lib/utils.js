@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
@@ -31,7 +32,10 @@ export function definitionsAreEqual(x: ?Definition, y: ?Definition): boolean {
   if (x.path !== y.path) {
     return false;
   }
-  if (x.position.row !== y.position.row || x.position.column !== y.position.column) {
+  if (
+    x.position.row !== y.position.row ||
+    x.position.column !== y.position.column
+  ) {
     return false;
   }
   if (x.language !== y.language) {

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
@@ -33,12 +34,19 @@ export class FileCache {
   _disposables: UniversalDisposable;
   _nuclidePathToFileData: Map<string, FileData>;
   _targetPathToFileData: Map<string, FileData>;
-  _getScriptSource: (scriptId: string) => Promise<{result: {scriptSource: string}}>;
+  _getScriptSource: (
+    scriptId: string,
+  ) => Promise<{result: {scriptSource: string}}>;
   _sendAtomNotification: (level: AtomNotificationType, message: string) => void;
 
   constructor(
-    getScriptSource: (scriptId: string) => Promise<{result: {scriptSource: string}}>,
-    sendAtomNotification: (level: AtomNotificationType, message: string) => void,
+    getScriptSource: (
+      scriptId: string,
+    ) => Promise<{result: {scriptSource: string}}>,
+    sendAtomNotification: (
+      level: AtomNotificationType,
+      message: string,
+    ) => void,
   ) {
     this._getScriptSource = getScriptSource;
     this._sendAtomNotification = sendAtomNotification;
@@ -97,7 +105,10 @@ export class FileCache {
 
   // Used to process `Debugger.scriptParsed` messages that have reported a `url` with an http:
   // prefix, indicating that we need to download our resources.
-  async _processScriptParsedWithDownloadableUrl(obj: Object, urlString: string): Promise<Object> {
+  async _processScriptParsedWithDownloadableUrl(
+    obj: Object,
+    urlString: string,
+  ): Promise<Object> {
     const url = new URL(urlString);
     const fileData = this._targetPathToFileData.get(urlString);
     if (fileData != null) {
@@ -106,7 +117,10 @@ export class FileCache {
     }
 
     log(`FileCache got url: ${urlString}`);
-    const localhostedUrl = urlString.replace(EMULATOR_LOCALHOST_ADDR, 'localhost');
+    const localhostedUrl = urlString.replace(
+      EMULATOR_LOCALHOST_ADDR,
+      'localhost',
+    );
     log(`Converted to: ${localhostedUrl}`);
     const fileResponse = await xfetch(localhostedUrl, {});
     const basename = nuclideUri.basename(url.pathname);
@@ -162,7 +176,10 @@ export class FileCache {
   }
 }
 
-async function getSourceMapFromUrl(url: URL, bundle: string): Promise<void | string> {
+async function getSourceMapFromUrl(
+  url: URL,
+  bundle: string,
+): Promise<void | string> {
   const matches = SOURCE_MAP_REGEX.exec(bundle);
   if (matches == null) {
     return undefined;

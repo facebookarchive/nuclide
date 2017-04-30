@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';

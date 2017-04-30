@@ -6,10 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {Viewable, WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  Viewable,
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
   OutputProvider,
@@ -20,8 +24,13 @@ import type {
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from '../../commons-atom/createPackage';
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import {combineEpics, createEpicMiddleware} from '../../commons-node/redux-observable';
+import {
+  viewableFromReactElement,
+} from '../../commons-atom/viewableFromReactElement';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 import featureConfig from '../../commons-atom/featureConfig';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import * as Actions from './redux/Actions';
@@ -32,7 +41,8 @@ import invariant from 'assert';
 import React from 'react';
 import {applyMiddleware, createStore} from 'redux';
 
-const MAXIMUM_SERIALIZED_MESSAGES_CONFIG = 'nuclide-console.maximumSerializedMessages';
+const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
+  'nuclide-console.maximumSerializedMessages';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -62,15 +72,15 @@ class Activation {
           atom.clipboard.write(el.innerText);
         },
       ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-console:clear',
-        () => this._getStore().dispatch(Actions.clearRecords()),
+      atom.commands.add('atom-workspace', 'nuclide-console:clear', () =>
+        this._getStore().dispatch(Actions.clearRecords()),
       ),
       featureConfig.observe(
         'nuclide-console.maximumMessageCount',
         (maxMessageCount: any) => {
-          this._getStore().dispatch(Actions.setMaxMessageCount(maxMessageCount));
+          this._getStore().dispatch(
+            Actions.setMaxMessageCount(maxMessageCount),
+          );
         },
       ),
     );
@@ -104,9 +114,9 @@ class Activation {
       tooltip: 'Toggle Console',
       priority: 700,
     });
-    this._disposables.add(
-      () => { toolBar.removeItems(); },
-    );
+    this._disposables.add(() => {
+      toolBar.removeItems();
+    });
   }
 
   consumePasteProvider(provider: any): void {
@@ -121,15 +131,14 @@ class Activation {
             <ConsoleContainer
               store={this._getStore()}
               createPasteFunction={this._createPasteFunction}
-            />);
+            />,
+          );
         }
       }),
       () => api.destroyWhere(item => item instanceof ConsoleContainer),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-console:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
+      atom.commands.add('atom-workspace', 'nuclide-console:toggle', event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      }),
     );
   }
 
@@ -138,22 +147,29 @@ class Activation {
       <ConsoleContainer
         store={this._getStore()}
         createPasteFunction={this._createPasteFunction}
-      />);
+      />,
+    );
   }
 
   provideOutputService(): OutputService {
     // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
     let activation = this;
-    this._disposables.add(() => { activation = null; });
+    this._disposables.add(() => {
+      activation = null;
+    });
 
     return {
       registerOutputProvider(outputProvider: OutputProvider): IDisposable {
         invariant(activation != null, 'Output service used after deactivation');
-        activation._getStore().dispatch(Actions.registerOutputProvider(outputProvider));
+        activation
+          ._getStore()
+          .dispatch(Actions.registerOutputProvider(outputProvider));
         return new UniversalDisposable(() => {
           if (activation != null) {
-            activation._getStore().dispatch(Actions.unregisterOutputProvider(outputProvider));
+            activation
+              ._getStore()
+              .dispatch(Actions.unregisterOutputProvider(outputProvider));
           }
         });
       },
@@ -164,10 +180,15 @@ class Activation {
     // Create a local, nullable reference so that the service consumers don't keep the Activation
     // instance in memory.
     let activation = this;
-    this._disposables.add(() => { activation = null; });
+    this._disposables.add(() => {
+      activation = null;
+    });
 
     return executor => {
-      invariant(activation != null, 'Executor registration attempted after deactivation');
+      invariant(
+        activation != null,
+        'Executor registration attempted after deactivation',
+      );
       activation._getStore().dispatch(Actions.registerExecutor(executor));
       return new UniversalDisposable(() => {
         if (activation != null) {
@@ -181,8 +202,9 @@ class Activation {
     if (this._store == null) {
       return {};
     }
-    const maximumSerializedMessages: number =
-      (featureConfig.get(MAXIMUM_SERIALIZED_MESSAGES_CONFIG): any);
+    const maximumSerializedMessages: number = (featureConfig.get(
+      MAXIMUM_SERIALIZED_MESSAGES_CONFIG,
+    ): any);
     return {
       records: this._store.getState().records.slice(-maximumSerializedMessages),
     };
@@ -193,7 +215,9 @@ function deserializeAppState(rawState: ?Object): AppState {
   return {
     executors: new Map(),
     currentExecutorId: null,
-    records: rawState && rawState.records ? rawState.records.map(deserializeRecord) : [],
+    records: rawState && rawState.records
+      ? rawState.records.map(deserializeRecord)
+      : [],
     history: [],
     providers: new Map(),
     providerStatuses: new Map(),

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -13,9 +14,7 @@ import {
   parseRevisionInfoOutput,
   INFO_REV_END_MARK,
 } from '../lib/hg-revision-expression-helpers';
-import {
-  SuccessorType,
-} from '../lib/hg-constants';
+import {SuccessorType} from '../lib/hg-constants';
 
 describe('hg-revision-expression-helpers', () => {
   describe('expressionForRevisionsBeforeHead', () => {
@@ -31,17 +30,14 @@ describe('hg-revision-expression-helpers', () => {
 
   describe('parseRevisionInfoOutput', () => {
     it('returns the parsed revision info if is valid.', () => {
-      const commit1Description =
-`Commit 1 'title'.
+      const commit1Description = `Commit 1 'title'.
 Continue Commit 1 message.`;
-      const commit2Description =
-`Commit 2 'title'.
+      const commit2Description = `Commit 2 'title'.
 
 Still, multi-line commit 2 message
 
 Test Plan: complete`;
-      const revisionsString =
-`124
+      const revisionsString = `124
 Commit 1 'title'.
 Author Name<auth_2_alias@domain.com>
 2015-10-15 16:03 -0700

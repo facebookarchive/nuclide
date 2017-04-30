@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
@@ -26,7 +27,9 @@ const RESPONSE_MESSAGE = 'response';
 const NEXT_MESSAGE = 'next';
 const COMPLETE_MESSAGE = 'complete';
 
-export default async function startServer(rawConfigDir: string): Promise<void> {
+export default (async function startServer(
+  rawConfigDir: string,
+): Promise<void> {
   const configDir = path.resolve(rawConfigDir);
 
   const graphQLCache = await getGraphQLCache(configDir || process.cwd());
@@ -53,14 +56,12 @@ export default async function startServer(rawConfigDir: string): Promise<void> {
       // There may be more than one message in the buffer.
       const messages = data.split('\n');
       data = messages.pop().trim();
-      messages.forEach(message => processMessage(
-        message,
-        graphQLCache,
-        languageService,
-      ));
+      messages.forEach(message =>
+        processMessage(message, graphQLCache, languageService),
+      );
     }
   });
-}
+});
 
 async function processMessage(
   message: string,
@@ -76,13 +77,15 @@ async function processMessage(
   try {
     json = JSON.parse(message);
   } catch (error) {
-    process.stdout.write(JSON.stringify(
-      convertToRpcMessage(
-        'error',
-        '-1',
-        'Request contains incorrect JSON format',
+    process.stdout.write(
+      JSON.stringify(
+        convertToRpcMessage(
+          'error',
+          '-1',
+          'Request contains incorrect JSON format',
+        ),
       ),
-    ));
+    );
     return;
   }
 
@@ -107,11 +110,7 @@ async function processMessage(
             diagnostic.range.end.lessThanOrEqualTo(lastCharacterPoint),
           );
         }
-        responseMsg = convertToRpcMessage(
-          'response',
-          id,
-          result,
-        );
+        responseMsg = convertToRpcMessage('response', id, result);
         process.stdout.write(JSON.stringify(responseMsg) + '\n');
         break;
       case 'getDefinition':
@@ -126,13 +125,11 @@ async function processMessage(
           filePath,
         );
 
-        const formatted = result.map(
-          res => ({
-            text: res.text,
-            typeName: res.type ? String(res.type) : null,
-            description: res.description || null,
-          }),
-        );
+        const formatted = result.map(res => ({
+          text: res.text,
+          typeName: res.type ? String(res.type) : null,
+          description: res.description || null,
+        }));
         responseMsg = convertToRpcMessage('response', id, formatted);
         process.stdout.write(JSON.stringify(responseMsg) + '\n');
         break;
@@ -155,11 +152,7 @@ function exitProcess(exitCode) {
   process.exit(exitCode);
 }
 
-function convertToRpcMessage(
-  type: string,
-  id: string,
-  response: any,
-) {
+function convertToRpcMessage(type: string, id: string, response: any) {
   let responseObj;
   switch (type) {
     case RESPONSE_MESSAGE:

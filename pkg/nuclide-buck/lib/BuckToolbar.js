@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -99,7 +100,8 @@ export default class BuckToolbar extends React.Component {
           title = 'No Current Working Root.';
         }
       } else {
-        title = `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
+        title =
+          `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
           `Check your Current Working Root: ${maybeToString(projectRoot)}`;
       }
 
@@ -189,22 +191,19 @@ export default class BuckToolbar extends React.Component {
   _optionsFromPlatformGroups(
     platformGroups: Array<PlatformGroup>,
   ): Array<Option> {
-    return platformGroups.reduce(
-      (options, platformGroup) => {
-        let dropdownGroup = null;
-        if (platformGroup.platforms.length === 1) {
-          dropdownGroup = this._turnDevicesIntoSelectableOptions(
-            platformGroup.platforms[0],
-          );
-        } else {
-          dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
-        }
+    return platformGroups.reduce((options, platformGroup) => {
+      let dropdownGroup = null;
+      if (platformGroup.platforms.length === 1) {
+        dropdownGroup = this._turnDevicesIntoSelectableOptions(
+          platformGroup.platforms[0],
+        );
+      } else {
+        dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
+      }
 
-        options.push(dropdownGroup.header);
-        return options.concat(dropdownGroup.selectableOptions);
-      },
-      [],
-    );
+      options.push(dropdownGroup.header);
+      return options.concat(dropdownGroup.selectableOptions);
+    }, []);
   }
 
   _turnDevicesIntoSelectableOptions(platform: Platform): DropdownGroup {

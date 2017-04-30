@@ -6,14 +6,17 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import type {
+  HgRepositoryDescription,
+} from '../../nuclide-source-control-helpers';
 
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
-import typeof * as SourceControlService from
-  '../../nuclide-server/lib/services/SourceControlService';
+import typeof * as SourceControlService
+  from '../../nuclide-server/lib/services/SourceControlService';
 import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
 
@@ -57,10 +60,15 @@ export class RemoteConnection {
 
   static _emitter = new Emitter();
 
-  static async findOrCreate(config: RemoteConnectionConfiguration): Promise<RemoteConnection> {
+  static async findOrCreate(
+    config: RemoteConnectionConfiguration,
+  ): Promise<RemoteConnection> {
     const serverConnection = await ServerConnection.getOrCreate(config);
     return RemoteConnection.findOrCreateFromConnection(
-      serverConnection, config.cwd, config.displayTitle);
+      serverConnection,
+      config.cwd,
+      config.displayTitle,
+    );
   }
 
   static findOrCreateFromConnection(
@@ -68,7 +76,11 @@ export class RemoteConnection {
     cwd: NuclideUri,
     displayTitle: string,
   ): Promise<RemoteConnection> {
-    const connection = new RemoteConnection(serverConnection, cwd, displayTitle);
+    const connection = new RemoteConnection(
+      serverConnection,
+      cwd,
+      displayTitle,
+    );
     return connection._initialize();
   }
 
@@ -114,7 +126,9 @@ export class RemoteConnection {
       const config = {...connectionConfig, cwd, displayTitle};
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
-      const log = e.name === 'VersionMismatchError' ? logger.warn : logger.error;
+      const log = e.name === 'VersionMismatchError'
+        ? logger.warn
+        : logger.error;
       log(`Failed to reuse connectionConfiguration for ${hostOrIp}`, e);
       return null;
     }
@@ -125,7 +139,9 @@ export class RemoteConnection {
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
     const remotePath = this.getPathForInitialWorkingDirectory();
-    const {getHgRepository} = (this.getService('SourceControlService'): SourceControlService);
+    const {getHgRepository} = (this.getService(
+      'SourceControlService',
+    ): SourceControlService);
     this._setHgRepositoryDescription(await getHgRepository(remotePath));
   }
 
@@ -138,11 +154,17 @@ export class RemoteConnection {
   }
 
   createDirectory(uri: string, symlink: boolean = false): RemoteDirectory {
-    return this._connection.createDirectory(uri, this._hgRepositoryDescription, symlink);
+    return this._connection.createDirectory(
+      uri,
+      this._hgRepositoryDescription,
+      symlink,
+    );
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  _setHgRepositoryDescription(hgRepositoryDescription: ?HgRepositoryDescription): void {
+  _setHgRepositoryDescription(
+    hgRepositoryDescription: ?HgRepositoryDescription,
+  ): void {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
@@ -166,8 +188,10 @@ export class RemoteConnection {
       // Now that we know the real path, it's possible this collides with an existing connection.
       // If so, we should just stop immediately.
       if (resolvedPath !== this._cwd) {
-        const existingConnection =
-            RemoteConnection.getByHostnameAndPath(this.getRemoteHostname(), resolvedPath);
+        const existingConnection = RemoteConnection.getByHostnameAndPath(
+          this.getRemoteHostname(),
+          resolvedPath,
+        );
         invariant(this !== existingConnection);
         if (existingConnection != null) {
           this.close(attemptShutdown);
@@ -192,49 +216,61 @@ export class RemoteConnection {
   _watchRootProjectDirectory(): void {
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
     const rootDirectoryPath = this.getPathForInitialWorkingDirectory();
-    const FileWatcherService: FileWatcherServiceType = this.getService(FILE_WATCHER_SERVICE);
+    const FileWatcherService: FileWatcherServiceType = this.getService(
+      FILE_WATCHER_SERVICE,
+    );
     invariant(FileWatcherService);
     const {watchDirectoryRecursive} = FileWatcherService;
     // Start watching the project for changes and initialize the root watcher
     // for next calls to `watchFile` and `watchDirectory`.
     const watchStream = watchDirectoryRecursive(rootDirectoryUri).refCount();
-    const subscription = watchStream.subscribe(watchUpdate => {
-      // Nothing needs to be done if the root directory was watched correctly.
-      // Let's just console log it anyway.
-      logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
-    }, async error => {
-      let warningMessageToUser = '';
-      const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
-      if (await FileSystemService.isNfs(rootDirectoryPath)) {
-        warningMessageToUser +=
-          `This project directory: \`${rootDirectoryPath}\` is on <b>\`NFS\`</b> filesystem. ` +
-          'Nuclide works best with local (non-NFS) root directory.' +
-          'e.g. `/data/users/$USER`' +
-          'features such as synced remote file editing, file search, ' +
-          'and Mercurial-related updates will not work.<br/>';
-      } else {
-        warningMessageToUser += 'You just connected to a remote project ' +
-          `\`${rootDirectoryPath}\` without Watchman support, which means that ` +
-          'crucial features such as synced remote file editing, file search, ' +
-          'and Mercurial-related updates will not work.<br/><br/>' +
-          'A possible workaround is to create an empty `.watchmanconfig` file ' +
-          'in the remote folder, which will enable Watchman if you have it installed.<br/><br/>';
-
-        const loggedErrorMessage = error.message || error;
-        logger.error(
-          `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`,
+    const subscription = watchStream.subscribe(
+      watchUpdate => {
+        // Nothing needs to be done if the root directory was watched correctly.
+        // Let's just console log it anyway.
+        logger.info(
+          `Watcher Features Initialized for project: ${rootDirectoryUri}`,
+          watchUpdate,
         );
+      },
+      async error => {
+        let warningMessageToUser = '';
+        const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
+        if (await FileSystemService.isNfs(rootDirectoryPath)) {
+          warningMessageToUser +=
+            `This project directory: \`${rootDirectoryPath}\` is on <b>\`NFS\`</b> filesystem. ` +
+            'Nuclide works best with local (non-NFS) root directory.' +
+            'e.g. `/data/users/$USER`' +
+            'features such as synced remote file editing, file search, ' +
+            'and Mercurial-related updates will not work.<br/>';
+        } else {
+          warningMessageToUser +=
+            'You just connected to a remote project ' +
+            `\`${rootDirectoryPath}\` without Watchman support, which means that ` +
+            'crucial features such as synced remote file editing, file search, ' +
+            'and Mercurial-related updates will not work.<br/><br/>' +
+            'A possible workaround is to create an empty `.watchmanconfig` file ' +
+            'in the remote folder, which will enable Watchman if you have it installed.<br/><br/>';
 
-        warningMessageToUser +=
-          '<b><a href="https://facebook.github.io/watchman/">Watchman</a> Error:</b>' +
-          loggedErrorMessage;
-      }
-      // Add a persistent warning message to make sure the user sees it before dismissing.
-      atom.notifications.addWarning(warningMessageToUser, {dismissable: true});
-    }, () => {
-      // Nothing needs to be done if the root directory watch has ended.
-      logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
-    });
+          const loggedErrorMessage = error.message || error;
+          logger.error(
+            `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`,
+          );
+
+          warningMessageToUser +=
+            '<b><a href="https://facebook.github.io/watchman/">Watchman</a> Error:</b>' +
+            loggedErrorMessage;
+        }
+        // Add a persistent warning message to make sure the user sees it before dismissing.
+        atom.notifications.addWarning(warningMessageToUser, {
+          dismissable: true,
+        });
+      },
+      () => {
+        // Nothing needs to be done if the root directory watch has ended.
+        logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
+      },
+    );
     this._subscriptions.add(subscription);
   }
 
@@ -269,14 +305,22 @@ export class RemoteConnection {
   }
 
   getConfig(): RemoteConnectionConfiguration {
-    return {...this._connection.getConfig(), cwd: this._cwd, displayTitle: this._displayTitle};
+    return {
+      ...this._connection.getConfig(),
+      cwd: this._cwd,
+      displayTitle: this._displayTitle,
+    };
   }
 
-  static onDidAddRemoteConnection(handler: (connection: RemoteConnection) => void): IDisposable {
+  static onDidAddRemoteConnection(
+    handler: (connection: RemoteConnection) => void,
+  ): IDisposable {
     return RemoteConnection._emitter.on('did-add', handler);
   }
 
-  static onDidCloseRemoteConnection(handler: (connection: RemoteConnection) => void): IDisposable {
+  static onDidCloseRemoteConnection(
+    handler: (connection: RemoteConnection) => void,
+  ): IDisposable {
     return RemoteConnection._emitter.on('did-close', handler);
   }
 
@@ -295,7 +339,10 @@ export class RemoteConnection {
    *   If path is null, empty or undefined, then return the connection which matches
    *   the hostname and ignore the initial working directory.
    */
-  static getByHostnameAndPath(hostname: string, path: string): ?RemoteConnection {
+  static getByHostnameAndPath(
+    hostname: string,
+    path: string,
+  ): ?RemoteConnection {
     return RemoteConnection.getByHostname(hostname).filter(connection => {
       return path.startsWith(connection.getPathForInitialWorkingDirectory());
     })[0];

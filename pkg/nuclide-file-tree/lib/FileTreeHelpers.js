@@ -6,10 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {RemoteDirectory, RemoteFile} from '../../nuclide-remote-connection';
+import type {
+  RemoteDirectory,
+  RemoteFile,
+} from '../../nuclide-remote-connection';
 import type {ShowUncommittedChangesKindValue} from './Constants';
 
 import {
@@ -34,7 +38,9 @@ type File = LocalFile | RemoteFile;
 type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
 
 function dirPathToKey(path: string): string {
-  return nuclideUri.ensureTrailingSeparator(nuclideUri.trimTrailingSeparator(path));
+  return nuclideUri.ensureTrailingSeparator(
+    nuclideUri.trimTrailingSeparator(path),
+  );
 }
 
 function isDirKey(key: string): boolean {
@@ -148,7 +154,9 @@ function isLocalEntry(entry: Entry): boolean {
 function isContextClick(event: SyntheticMouseEvent): boolean {
   return (
     event.button === 2 ||
-    (event.button === 0 && event.ctrlKey === true && process.platform === 'darwin')
+    (event.button === 0 &&
+      event.ctrlKey === true &&
+      process.platform === 'darwin')
   );
 }
 
@@ -156,26 +164,32 @@ function buildHashKey(nodeKey: string): string {
   return crypto.createHash('MD5').update(nodeKey).digest('base64');
 }
 
-function observeUncommittedChangesKindConfigKey(
-): Observable<ShowUncommittedChangesKindValue> {
+function observeUncommittedChangesKindConfigKey(): Observable<
+  ShowUncommittedChangesKindValue
+> {
   return cacheWhileSubscribed(
-    featureConfig.observeAsStream(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY)
-    .map(setting => {
-      // We need to map the unsanitized feature-setting string
-      // into a properly typed value:
-      switch (setting) {
-        case ShowUncommittedChangesKind.UNCOMMITTED:
-          return ShowUncommittedChangesKind.UNCOMMITTED;
-        case ShowUncommittedChangesKind.STACK:
-          return ShowUncommittedChangesKind.STACK;
-        default:
-          return ShowUncommittedChangesKind.HEAD;
-      }
-    })
-    .distinctUntilChanged());
+    featureConfig
+      .observeAsStream(SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY)
+      .map(setting => {
+        // We need to map the unsanitized feature-setting string
+        // into a properly typed value:
+        switch (setting) {
+          case ShowUncommittedChangesKind.UNCOMMITTED:
+            return ShowUncommittedChangesKind.UNCOMMITTED;
+          case ShowUncommittedChangesKind.STACK:
+            return ShowUncommittedChangesKind.STACK;
+          default:
+            return ShowUncommittedChangesKind.HEAD;
+        }
+      })
+      .distinctUntilChanged(),
+  );
 }
 
-function updatePathInOpenedEditors(oldPath: NuclideUri, newPath: NuclideUri): void {
+function updatePathInOpenedEditors(
+  oldPath: NuclideUri,
+  newPath: NuclideUri,
+): void {
   atom.workspace.getTextEditors().forEach(editor => {
     const buffer = editor.getBuffer();
     const bufferPath = buffer.getPath();

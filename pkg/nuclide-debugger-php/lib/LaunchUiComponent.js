@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global localStorage */
@@ -16,10 +17,7 @@ import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {
-  Button,
-  ButtonTypes,
-} from '../../nuclide-ui/Button';
+import {Button, ButtonTypes} from '../../nuclide-ui/Button';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
@@ -40,17 +38,26 @@ type StateType = {
   recentlyLaunchedScript: ?string,
 };
 
-export class LaunchUiComponent extends React.Component<void, PropsType, StateType> {
+export class LaunchUiComponent
+  extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
 
   constructor(props: PropsType) {
     super(props);
     (this: any)._getActiveFilePath = this._getActiveFilePath.bind(this);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
-    (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(this);
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
-    (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(this);
+    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
+      this,
+    );
+    (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(
+      this,
+    );
+    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
+      this,
+    );
+    (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(
+      this,
+    );
     this.state = {
       pathsDropdownIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
@@ -62,13 +69,15 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   componentWillMount() {
     this.props.parentEmitter.on(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick);
+      this._handleLaunchButtonClick,
+    );
   }
 
   componentWillUnmount() {
     this.props.parentEmitter.removeListener(
       DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick);
+      this._handleLaunchButtonClick,
+    );
   }
 
   render(): React.Element<any> {
@@ -86,7 +95,10 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
         <label>Recently launched commands: </label>
         <Dropdown
           className="inline-block nuclide-debugger-recently-launched"
-          options={[{label: '', value: null}, ...this.state.recentlyLaunchedScripts]}
+          options={[
+            {label: '', value: null},
+            ...this.state.recentlyLaunchedScripts,
+          ]}
           onChange={this._handleRecentSelectionChange}
           value={this.state.recentlyLaunchedScript}
         />
@@ -119,20 +131,20 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
   }
 
   _getRecentlyLaunchedScripts(): Array<{label: string, value: string}> {
-    const recentlyLaunched = localStorage.getItem(this._getRecentlyLaunchedKey());
+    const recentlyLaunched = localStorage.getItem(
+      this._getRecentlyLaunchedKey(),
+    );
     if (recentlyLaunched == null) {
       return [];
     }
 
     const items = JSON.parse(String(recentlyLaunched));
-    return items
-      .filter(script => script !== '')
-      .map(script => {
-        return {
-          label: script,
-          value: script,
-        };
-      });
+    return items.filter(script => script !== '').map(script => {
+      return {
+        label: script,
+        value: script,
+      };
+    });
   }
 
   _setRecentlyLaunchedScript(
@@ -148,7 +160,10 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
       }
     });
 
-    localStorage.setItem(this._getRecentlyLaunchedKey(), JSON.stringify(scriptNames));
+    localStorage.setItem(
+      this._getRecentlyLaunchedKey(),
+      JSON.stringify(scriptNames),
+    );
     this.setState({
       recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
       recentlyLaunchedScript: script,
@@ -182,11 +197,15 @@ export class LaunchUiComponent extends React.Component<void, PropsType, StateTyp
 
   _handleLaunchButtonClick(): void {
     const scriptPath = this.refs.scriptPath.getText().trim();
-    this._setRecentlyLaunchedScript(scriptPath, this.state.recentlyLaunchedScripts);
+    this._setRecentlyLaunchedScript(
+      scriptPath,
+      this.state.recentlyLaunchedScripts,
+    );
 
     const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
-    consumeFirstProvider('nuclide-debugger.remote')
-      .then(debuggerService => debuggerService.startDebugging(processInfo));
+    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
+      debuggerService.startDebugging(processInfo),
+    );
     this._showDebuggerPanel();
     this._handleCancelButtonClick();
   }

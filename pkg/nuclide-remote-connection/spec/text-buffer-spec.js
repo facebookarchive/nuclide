@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import {
-  existingBufferForUri,
-  bufferForUri,
-} from '../lib/remote-text-buffer';
+import {existingBufferForUri, bufferForUri} from '../lib/remote-text-buffer';
 
 describe('existingBufferForUri', () => {
   const file1 = '/tmp/file1.txt';
@@ -54,7 +52,8 @@ describe('bufferForUri', () => {
 
   it('should throw an error if remote connection not found', () => {
     const uri = 'nuclide://host/abc.txt';
-    expect(() => bufferForUri(uri))
-      .toThrow(`ServerConnection cannot be found for uri: ${uri}`);
+    expect(() => bufferForUri(uri)).toThrow(
+      `ServerConnection cannot be found for uri: ${uri}`,
+    );
   });
 });

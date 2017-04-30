@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /*
@@ -22,7 +23,7 @@ import type {
 
 export type Store = {
   // Returns unsubscribe function
-  subscribe(fn: () => mixed): (() => void),
+  subscribe(fn: () => mixed): () => void,
   dispatch(action: RefactorAction): void,
   getState(): RefactorState,
 };
@@ -81,11 +82,11 @@ export type ExecutePhase = {|
 |};
 
 export type Phase =
-  GetRefactoringsPhase |
-  PickPhase |
-  RenamePhase |
-  FreeformPhase |
-  ExecutePhase;
+  | GetRefactoringsPhase
+  | PickPhase
+  | RenamePhase
+  | FreeformPhase
+  | ExecutePhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
 
@@ -136,9 +137,9 @@ export type ExecuteAction = {|
 |};
 
 export type RefactorAction =
-  OpenAction |
-  CloseAction |
-  PickedRefactorAction |
-  GotRefactoringsAction |
-  ErrorAction |
-  ExecuteAction;
+  | OpenAction
+  | CloseAction
+  | PickedRefactorAction
+  | GotRefactoringsAction
+  | ErrorAction
+  | ExecuteAction;

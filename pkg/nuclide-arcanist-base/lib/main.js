@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global localStorage */
@@ -18,8 +19,12 @@ export type ArcProjectInfo = {
   directory: string,
 };
 
-const arcInfoCache: LRUCache<string, Promise<?ArcProjectInfo>> = new LRUCache({max: 200});
-const arcInfoResultCache: LRUCache<string, ?ArcProjectInfo> = new LRUCache({max: 200});
+const arcInfoCache: LRUCache<string, Promise<?ArcProjectInfo>> = new LRUCache({
+  max: 200,
+});
+const arcInfoResultCache: LRUCache<string, ?ArcProjectInfo> = new LRUCache({
+  max: 200,
+});
 const STORAGE_KEY = 'nuclide.last-arc-project-path';
 
 /**
@@ -27,11 +32,14 @@ const STORAGE_KEY = 'nuclide.last-arc-project-path';
  * The service also caches this, but since this is called so frequently we should
  * try to avoid going over the RPC layer as well.
  */
-export function findArcProjectIdAndDirectory(src: string): Promise<?ArcProjectInfo> {
+export function findArcProjectIdAndDirectory(
+  src: string,
+): Promise<?ArcProjectInfo> {
   let cached = arcInfoCache.get(src);
   if (cached == null) {
     const arcService = getArcanistServiceByNuclideUri(src);
-    cached = arcService.findArcProjectIdAndDirectory(src)
+    cached = arcService
+      .findArcProjectIdAndDirectory(src)
       .then(result => {
         // Store the path in local storage for `getLastProjectPath`.
         if (result != null) {
@@ -58,7 +66,9 @@ export function findArcProjectIdAndDirectory(src: string): Promise<?ArcProjectIn
  * has completed at some point in the past.
  * This is actually the common case due to its ubiquity.
  */
-export function getCachedArcProjectIdAndDirectory(src: string): ?ArcProjectInfo {
+export function getCachedArcProjectIdAndDirectory(
+  src: string,
+): ?ArcProjectInfo {
   return arcInfoResultCache.get(src);
 }
 

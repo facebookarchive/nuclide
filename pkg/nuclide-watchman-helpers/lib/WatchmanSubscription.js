@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Emitter} from 'event-kit';
@@ -47,13 +48,13 @@ export default class WatchmanSubscription extends Emitter {
   name: string;
   options: WatchmanSubscriptionOptions;
   constructor(
-      subscriptionRoot: string,
-      pathFromSubscriptionRootToSubscriptionPath: ?string,
-      subscriptionPath: string,
-      subscriptionName: string,
-      subscriptionCount: number,
-      subscriptionOptions: WatchmanSubscriptionOptions,
-      ) {
+    subscriptionRoot: string,
+    pathFromSubscriptionRootToSubscriptionPath: ?string,
+    subscriptionPath: string,
+    subscriptionName: string,
+    subscriptionCount: number,
+    subscriptionOptions: WatchmanSubscriptionOptions,
+  ) {
     super();
     this.root = subscriptionRoot;
     this.pathFromSubscriptionRootToSubscriptionPath = pathFromSubscriptionRootToSubscriptionPath;

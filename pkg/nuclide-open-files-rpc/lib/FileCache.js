@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -42,7 +43,11 @@ export class FileCache {
 
     this._resources = new UniversalDisposable();
     this._resources.add(this._requests);
-    this._resources.add(this._fileEvents.subscribe(event => { this._requests.onEvent(event); }));
+    this._resources.add(
+      this._fileEvents.subscribe(event => {
+        this._requests.onEvent(event);
+      }),
+    );
   }
 
   // If any out of sync state is detected then an Error is thrown.
@@ -65,7 +70,7 @@ export class FileCache {
         break;
       case FileEventKind.EDIT:
         invariant(buffer != null);
-        invariant(buffer.changeCount === (changeCount - 1));
+        invariant(buffer.changeCount === changeCount - 1);
         invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
         buffer.setTextInRange(event.oldRange, event.newText);
         invariant(buffer.changeCount === changeCount);
@@ -104,13 +109,15 @@ export class FileCache {
     buffer.setText(contents);
     const newRange = buffer.getRange();
     buffer.changeCount = changeCount;
-    this._fileEvents.next(createEditEvent(
-      this.createFileVersion(filePath, changeCount),
-      oldRange,
-      oldText,
-      newRange,
-      buffer.getText(),
-    ));
+    this._fileEvents.next(
+      createEditEvent(
+        this.createFileVersion(filePath, changeCount),
+        oldRange,
+        oldText,
+        newRange,
+        buffer.getText(),
+      ),
+    );
   }
 
   _open(filePath: NuclideUri, contents: string, changeCount: number): void {
@@ -119,7 +126,9 @@ export class FileCache {
     const newBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
     this._buffers.set(filePath, newBuffer);
-    this._fileEvents.next(createOpenEvent(this.createFileVersion(filePath, changeCount), contents));
+    this._fileEvents.next(
+      createOpenEvent(this.createFileVersion(filePath, changeCount), contents),
+    );
   }
 
   dispose(): void {
@@ -137,12 +146,16 @@ export class FileCache {
     return this._buffers.get(filePath);
   }
 
-  async getBufferAtVersion(fileVersion: FileVersion): Promise<?simpleTextBuffer$TextBuffer> {
-    if (!(await this._requests.waitForBufferAtVersion(fileVersion))) {
+  async getBufferAtVersion(
+    fileVersion: FileVersion,
+  ): Promise<?simpleTextBuffer$TextBuffer> {
+    if (!await this._requests.waitForBufferAtVersion(fileVersion)) {
       return null;
     }
     const buffer = this.getBuffer(fileVersion.filePath);
-    return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    return buffer != null && buffer.changeCount === fileVersion.version
+      ? buffer
+      : null;
   }
 
   getOpenDirectories(): Set<NuclideUri> {
@@ -172,8 +185,10 @@ export class FileCache {
         invariant(buffer != null);
         return createOpenEvent(
           this.createFileVersion(filePath, buffer.changeCount),
-          buffer.getText());
-      })).concat(this._fileEvents);
+          buffer.getText(),
+        );
+      }),
+    ).concat(this._fileEvents);
   }
 
   observeDirectoryEvents(): Observable<Set<NuclideUri>> {
@@ -181,14 +196,12 @@ export class FileCache {
   }
 
   _emitClose(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
-    this._fileEvents.next(createCloseEvent(
-      this.createFileVersion(filePath, buffer.changeCount)));
+    this._fileEvents.next(
+      createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)),
+    );
   }
 
-  createFileVersion(
-    filePath: NuclideUri,
-    version: number,
-  ): FileVersion {
+  createFileVersion(filePath: NuclideUri, version: number): FileVersion {
     return {
       notifier: this,
       filePath,
@@ -208,9 +221,7 @@ function createOpenEvent(
   };
 }
 
-function createCloseEvent(
-  fileVersion: FileVersion,
-): FileCloseEvent {
+function createCloseEvent(fileVersion: FileVersion): FileCloseEvent {
   return {
     kind: FileEventKind.CLOSE,
     fileVersion,

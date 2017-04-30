@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -30,17 +31,14 @@ export default class FileCache {
     const filepath = uriToPath(fileUrl);
     if (!this._files.has(filepath)) {
       this._files.set(filepath, new File(filepath));
-      this._callback.sendServerMethod(
-        'Debugger.scriptParsed',
-        {
-          scriptId: filepath,
-          url: fileUrl,
-          startLine: 0,
-          startColumn: 0,
-          endLine: 0,
-          endColumn: 0,
-        },
-      );
+      this._callback.sendServerMethod('Debugger.scriptParsed', {
+        scriptId: filepath,
+        url: fileUrl,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0,
+      });
     }
     const result = this._files.get(filepath);
     invariant(result != null);

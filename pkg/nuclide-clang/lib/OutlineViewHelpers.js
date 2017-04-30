@@ -6,9 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {Outline, OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+  OutlineTree,
+} from '../../nuclide-outline-view/lib/rpc-types';
 import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
@@ -109,7 +113,9 @@ function tokenizeCursor(cursor: ClangOutlineTree): TokenizedText {
   return [plain(cursor.name)];
 }
 
-export function outlineFromClangOutline(outline: Array<ClangOutlineTree>): Array<OutlineTree> {
+export function outlineFromClangOutline(
+  outline: Array<ClangOutlineTree>,
+): Array<OutlineTree> {
   return outline.map(cursor => {
     return {
       tokenizedText: tokenizeCursor(cursor),

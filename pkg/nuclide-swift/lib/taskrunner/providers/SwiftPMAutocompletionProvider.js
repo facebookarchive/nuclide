@@ -6,13 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {SourceKittenCompletion} from '../../sourcekitten/Complete';
 
 import SwiftPMTaskRunnerStore from '../SwiftPMTaskRunnerStore';
 import {asyncExecuteSourceKitten} from '../../sourcekitten/SourceKitten';
-import sourceKittenCompletionToAtomSuggestion from '../../sourcekitten/Complete';
+import sourceKittenCompletionToAtomSuggestion
+  from '../../sourcekitten/Complete';
 
 /**
  * An autocompletion provider that uses the compile commands in a built Swift
@@ -41,10 +43,14 @@ export default class SwiftPMAutocompletionProvider {
     }
 
     const {bufferPosition, editor, prefix} = request;
-    const offset = editor.getBuffer().characterIndexForPosition(bufferPosition) - prefix.length;
+    const offset =
+      editor.getBuffer().characterIndexForPosition(bufferPosition) -
+      prefix.length;
     const result = await asyncExecuteSourceKitten('complete', [
-      '--text', request.editor.getText(),
-      '--offset', String(offset),
+      '--text',
+      request.editor.getText(),
+      '--offset',
+      String(offset),
       '--',
       compilerArgs ? compilerArgs : '',
     ]);
@@ -54,7 +60,9 @@ export default class SwiftPMAutocompletionProvider {
     }
 
     return JSON.parse(result)
-      .filter((completion: SourceKittenCompletion) => completion.name.startsWith(prefix))
+      .filter((completion: SourceKittenCompletion) =>
+        completion.name.startsWith(prefix),
+      )
       .map(sourceKittenCompletionToAtomSuggestion);
   }
 }

@@ -6,12 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileResult, Provider} from './types';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {DeepLinkService, DeepLinkParams} from '../../nuclide-deep-link/lib/types';
+import type {
+  DeepLinkService,
+  DeepLinkParams,
+} from '../../nuclide-deep-link/lib/types';
 import type {QuickSelectionAction} from './QuickSelectionDispatcher';
 import type {SelectionIndex} from './QuickSelectionComponent';
 
@@ -27,7 +31,9 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import SearchResultManager from './SearchResultManager';
 import QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 import QuickSelectionActions from './QuickSelectionActions';
-import QuickSelectionDispatcher, {ActionTypes} from './QuickSelectionDispatcher';
+import QuickSelectionDispatcher, {
+  ActionTypes,
+} from './QuickSelectionDispatcher';
 
 // Don't pre-fill search input if selection is longer than this:
 const MAX_SELECTION_LENGTH = 1000;
@@ -64,7 +70,9 @@ class Activation {
     this._subscriptions = new UniversalDisposable(
       atom.commands.add('atom-workspace', {
         'nuclide-quick-open:find-anything-via-omni-search': () => {
-          this._quickSelectionActions.changeActiveProvider('OmniSearchResultProvider');
+          this._quickSelectionActions.changeActiveProvider(
+            'OmniSearchResultProvider',
+          );
         },
       }),
     );
@@ -131,7 +139,8 @@ class Activation {
      * quick-open UI becomes visible until it gets closed, either via file
      * selection or cancellation.
      */
-    this._analyticsSessionId = this._analyticsSessionId || Date.now().toString();
+    this._analyticsSessionId =
+      this._analyticsSessionId || Date.now().toString();
     track('quickopen-change-tab', {
       'quickopen-provider': newProviderName,
       'quickopen-session': this._analyticsSessionId,
@@ -177,7 +186,9 @@ class Activation {
       this._searchComponent != null &&
       this._searchComponent !== searchComponent
     ) {
-      throw new Error('Only one QuickSelectionComponent can be rendered at a time.');
+      throw new Error(
+        'Only one QuickSelectionComponent can be rendered at a time.',
+      );
     }
 
     // Start a new search "session" for analytics purposes.
@@ -198,7 +209,8 @@ class Activation {
     ) {
       // Only on initial render should you use the current selection as a query.
       const editor = atom.workspace.getActiveTextEditor();
-      const selectedText = editor != null && editor.getSelections()[0].getText();
+      const selectedText =
+        editor != null && editor.getSelections()[0].getText();
       if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
         searchComponent.setInputValue(selectedText.split('\n')[0]);
       }

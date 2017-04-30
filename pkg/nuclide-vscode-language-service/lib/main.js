@@ -6,14 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {CategoryLogger} from '../../nuclide-logging';
 
-import {
-  FileCache,
-} from '../../nuclide-open-files-rpc';
+import {FileCache} from '../../nuclide-open-files-rpc';
 import {LanguageServerProtocolProcess} from './process';
 import {MultiProjectLanguageService} from '../../nuclide-language-service-rpc';
 import {spawn} from '../../commons-node/process';
@@ -32,7 +31,9 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
         logger,
         fileCache,
         () => {
-          logger.logInfo(`PerConnectionLanguageService launch: ${command} ${args.join(' ')}`);
+          logger.logInfo(
+            `PerConnectionLanguageService launch: ${command} ${args.join(' ')}`,
+          );
           // TODO: This should be cancelable/killable.
           const processStream = spawn(command, args).publish(); // TODO: current dir?
           const processPromise = processStream.take(1).toPromise();
@@ -43,6 +44,12 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
         fileExtensions,
       );
     };
-    super(logger, fileCache, projectFileName, fileExtensions, languageServiceFactory);
+    super(
+      logger,
+      fileCache,
+      projectFileName,
+      fileExtensions,
+      languageServiceFactory,
+    );
   }
 }

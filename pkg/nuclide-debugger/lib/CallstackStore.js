@@ -6,17 +6,14 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {Callstack} from './types';
 import {DebuggerStore} from './DebuggerStore';
 
-import {
-  Disposable,
-  CompositeDisposable,
-  Emitter,
-} from 'atom';
+import {Disposable, CompositeDisposable, Emitter} from 'atom';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
 import debounce from '../../commons-node/debounce';
@@ -58,7 +55,10 @@ export default class CallstackStore {
         this._setSelectedCallFrameLine(payload.data.options);
         break;
       case ActionTypes.OPEN_SOURCE_LOCATION:
-        this._openSourceLocation(payload.data.sourceURL, payload.data.lineNumber);
+        this._openSourceLocation(
+          payload.data.sourceURL,
+          payload.data.lineNumber,
+        );
         break;
       case ActionTypes.UPDATE_CALLSTACK:
         this._updateCallstack(payload.data.callstack);
@@ -85,15 +85,15 @@ export default class CallstackStore {
   _openSourceLocation(sourceURL: string, lineNumber: number): void {
     try {
       const path = nuclideUri.uriToNuclideUri(sourceURL);
-      if (path != null && atom.workspace != null) { // only handle real files for now.
+      if (path != null && atom.workspace != null) {
+        // only handle real files for now.
         // This should be goToLocation instead but since the searchAllPanes option is correctly
         // provided it's not urgent.
         this._openPathInEditor(path).then(editor => {
           this._nagivateToLocation(editor, lineNumber);
         });
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   _openPathInEditor(path: string): Promise<atom$TextEditor> {
@@ -119,7 +119,8 @@ export default class CallstackStore {
     if (options) {
       const path = nuclideUri.uriToNuclideUri(options.sourceURL);
       const {lineNumber} = options;
-      if (path != null && atom.workspace != null) { // only handle real files for now
+      if (path != null && atom.workspace != null) {
+        // only handle real files for now
         // This should be goToLocation instead but since the searchAllPanes option is correctly
         // provided it's not urgent.
         this._openPathInEditor(path).then(editor => {
@@ -134,9 +135,9 @@ export default class CallstackStore {
   }
 
   _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
-    const marker = editor.markBufferRange(
-      [[line, 0], [line, Infinity]],
-      {invalidate: 'never'});
+    const marker = editor.markBufferRange([[line, 0], [line, Infinity]], {
+      invalidate: 'never',
+    });
     editor.decorateMarker(marker, {
       type: 'line',
       class: 'nuclide-current-line-highlight',

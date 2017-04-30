@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Server, Socket} from 'net';
@@ -47,7 +48,8 @@ export class SocketServer {
     const transport = new SocketTransport(socket);
     const connection = RpcConnection.createServer(
       this._serviceRegistry,
-      transport);
+      transport,
+    );
     transport.onClose(() => {
       this._connections.delete(connection);
     });

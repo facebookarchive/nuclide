@@ -6,12 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import net from 'net';
 import logger from './utils';
 import {Emitter} from 'event-kit';
-import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
+import {
+  DbgpMessageHandler,
+  getDbgpMessageHandlerInstance,
+} from './DbgpMessageHandler';
 import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
@@ -55,7 +59,9 @@ export class DbgpConnector {
     this._port = port;
   }
 
-  onAttach(callback: (params: {socket: Socket, message: Object}) => mixed): IDisposable {
+  onAttach(
+    callback: (params: {socket: Socket, message: Object}) => mixed,
+  ): IDisposable {
     return this._emitter.on(DBGP_ATTACH_EVENT, callback);
   }
 
@@ -82,7 +88,9 @@ export class DbgpConnector {
 
     server.on('error', error => this._onServerError(error));
     server.on('connection', socket => this._onSocketConnection(socket));
-    server.on('close', () => { logger.log('DBGP Server closed.'); });
+    server.on('close', () => {
+      logger.log('DBGP Server closed.');
+    });
 
     this._server = server;
   }
@@ -101,8 +109,8 @@ export class DbgpConnector {
     let errorMessage;
     if (error.code === 'EADDRINUSE') {
       errorMessage =
-        `Can't start debugging because port ${this._port} is being used by another process. `
-        + "Try running 'killall node' on your devserver and then restarting Nuclide.";
+        `Can't start debugging because port ${this._port} is being used by another process. ` +
+        "Try running 'killall node' on your devserver and then restarting Nuclide.";
     } else {
       errorMessage = `Unknown debugger socket error: ${error.code}.`;
     }
@@ -124,10 +132,12 @@ export class DbgpConnector {
     } catch (error) {
       this._failConnection(
         socket,
-        'Non XML connection string: ' + data.toString() + '. Discarding connection.',
+        'Non XML connection string: ' +
+          data.toString() +
+          '. Discarding connection.',
         'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
-        'Restarting the Nuclide Server may fix the issue.<br />' +
-        'Error: Non XML connection string.',
+          'Restarting the Nuclide Server may fix the issue.<br />' +
+          'Error: Non XML connection string.',
       );
       return;
     }
@@ -137,7 +147,7 @@ export class DbgpConnector {
         socket,
         'Expected a single connection message. Got ' + messages.length,
         'PHP sent a malformed request, please file a bug to the Nuclide developers.<br />' +
-        'Error: Expected a single connection message.',
+          'Error: Expected a single connection message.',
       );
       return;
     }
@@ -146,7 +156,11 @@ export class DbgpConnector {
     this._emitter.emit(DBGP_ATTACH_EVENT, {socket, message});
   }
 
-  _failConnection(socket: Socket, logMessage: string, userMessage: string): void {
+  _failConnection(
+    socket: Socket,
+    logMessage: string,
+    userMessage: string,
+  ): void {
     failConnection(socket, logMessage);
     this._emitter.emit(DBGP_ERROR_EVENT, userMessage);
   }
@@ -156,7 +170,13 @@ export class DbgpConnector {
    */
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
-      logger.log('Ignoring ' + message + ' on port ' + this._port + ' after stopped connection.');
+      logger.log(
+        'Ignoring ' +
+          message +
+          ' on port ' +
+          this._port +
+          ' after stopped connection.',
+      );
       return false;
     }
     return true;

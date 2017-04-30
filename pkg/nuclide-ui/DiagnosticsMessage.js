@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -31,10 +32,7 @@ const PROVIDER_CLASS_NAME = {
 };
 
 function diagnosticHeader(props: DiagnosticsMessageProps) {
-  const {
-    message,
-    fixer,
-  } = props;
+  const {message, fixer} = props;
   const providerClassName = PROVIDER_CLASS_NAME[message.type];
   let fixButton = null;
   if (message.fix != null) {
@@ -60,18 +58,15 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
 }
 
 function traceElements(props: DiagnosticsMessageProps) {
-  const {
-      message,
-      goToLocation,
-  } = props;
+  const {message, goToLocation} = props;
   return message.trace
-    ? message.trace.map((traceItem, i) =>
-      <DiagnosticsTraceItem
-        key={i}
-        trace={traceItem}
-        goToLocation={goToLocation}
-      />,
-    )
+    ? message.trace.map((traceItem, i) => (
+        <DiagnosticsTraceItem
+          key={i}
+          trace={traceItem}
+          goToLocation={goToLocation}
+        />
+      ))
     : null;
 }
 

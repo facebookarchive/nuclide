@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Subject, Observable} from 'rxjs';
@@ -30,7 +31,9 @@ export class NodeDebuggerHost {
     this._nodeSocketServer = new WebSocketServer();
     this._subscriptions.add(this._nodeSocketServer);
     this._close$ = new Subject();
-    this._close$.first().subscribe(() => { this.dispose(); });
+    this._close$.first().subscribe(() => {
+      this.dispose();
+    });
   }
 
   start(): string {
@@ -45,7 +48,7 @@ export class NodeDebuggerHost {
         debugPort,
         preload: false, // This makes the node inspector not load all the source files on startup.
         inject: false, // This causes the node inspector to fail to send an initial pause message
-                       // on attach.  We don't use this feature, so we turn it off.
+        // on attach.  We don't use this feature, so we turn it off.
       };
       const session = new Session(config, debugPort, websocket);
       Observable.fromEvent(session, 'close').subscribe(this._close$);

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
@@ -39,7 +40,8 @@ type StateType = {
   element: ?React.Element<any>,
 };
 
-export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, StateType> {
+export class DebuggerLaunchAttachUI
+  extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
 
@@ -47,14 +49,20 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
     super(props);
 
     (this: any)._resetConnections = this._resetConnections.bind(this);
-    (this: any)._handleConnectionDropdownChange = this._handleConnectionDropdownChange.bind(this);
-    (this: any)._handleDebuggingTypeDropdownChange =
-      this._handleDebuggingTypeDropdownChange.bind(this);
-    (this: any)._handleProviderActionsDropdownChange =
-      this._handleProviderActionsDropdownChange.bind(this);
+    (this: any)._handleConnectionDropdownChange = this._handleConnectionDropdownChange.bind(
+      this,
+    );
+    (this: any)._handleDebuggingTypeDropdownChange = this._handleDebuggingTypeDropdownChange.bind(
+      this,
+    );
+    (this: any)._handleProviderActionsDropdownChange = this._handleProviderActionsDropdownChange.bind(
+      this,
+    );
 
     this.state = {
-      connectionsUpdatedDisposable: this.props.store.onConnectionsUpdated(this._resetConnections),
+      connectionsUpdatedDisposable: this.props.store.onConnectionsUpdated(
+        this._resetConnections,
+      ),
       connections: [],
       availableProviders: [],
       providerActions: [],
@@ -75,14 +83,18 @@ export class DebuggerLaunchAttachUI extends React.Component<void, PropsType, Sta
 
   render(): React.Element<any> {
     const connectionItems = this.state.connections.map((connection, index) => ({
-      label: nuclideUri.isRemote(connection) ? nuclideUri.getHostname(connection) : connection,
+      label: nuclideUri.isRemote(connection)
+        ? nuclideUri.getHostname(connection)
+        : connection,
       value: index,
     }));
 
-    const debuggingTypeItems = this.state.availableProviders.map((provider, index) => ({
-      label: provider.getDebuggingTypeName(),
-      value: index,
-    }));
+    const debuggingTypeItems = this.state.availableProviders.map(
+      (provider, index) => ({
+        label: provider.getDebuggingTypeName(),
+        value: index,
+      }),
+    );
 
     const providerActions = this.state.providerActions.map((action, index) => ({
       label: action,

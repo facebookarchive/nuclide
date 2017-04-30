@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -33,13 +34,19 @@ import {BehaviorSubject, Subject, Observable} from 'rxjs';
 export default class DiagnosticStore {
   // A map from each diagnostic provider to:
   // a map from each file it has messages for to the array of messages for that file.
-  _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<FileDiagnosticMessage>>>;
+  _providerToFileToMessages: Map<
+    DiagnosticProvider,
+    Map<NuclideUri, Array<FileDiagnosticMessage>>
+  >;
   // A map from each file that has messages from any diagnostic provider
   // to the set of diagnostic providers that have messages for it.
   _fileToProviders: MultiMap<NuclideUri, DiagnosticProvider>;
 
   // A map from each diagnostic provider to the array of project messages from it.
-  _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<ProjectDiagnosticMessage>>;
+  _providerToProjectDiagnostics: Map<
+    DiagnosticProvider,
+    Array<ProjectDiagnosticMessage>
+  >;
 
   _fileChanges: Subject<FileMessageUpdate>;
   _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
@@ -68,7 +75,6 @@ export default class DiagnosticStore {
     this._allChanges.complete();
   }
 
-
   /**
    * Section: Methods to modify the store.
    */
@@ -82,9 +88,9 @@ export default class DiagnosticStore {
    * @param updates Set of updates to apply.
    */
   updateMessages(
-      diagnosticProvider: DiagnosticProvider,
-      updates: DiagnosticProviderUpdate,
-    ): void {
+    diagnosticProvider: DiagnosticProvider,
+    updates: DiagnosticProviderUpdate,
+  ): void {
     if (updates.filePathToMessages) {
       this._updateFileMessages(diagnosticProvider, updates.filePathToMessages);
     }
@@ -97,9 +103,9 @@ export default class DiagnosticStore {
   }
 
   _updateFileMessages(
-      diagnosticProvider: DiagnosticProvider,
-      newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
-    ): void {
+    diagnosticProvider: DiagnosticProvider,
+    newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
+  ): void {
     let fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
     if (!fileToMessages) {
       fileToMessages = new Map();
@@ -143,11 +149,14 @@ export default class DiagnosticStore {
    *   * filePaths: Array of absolute file paths (NuclideUri) to clear messages for.
    */
   invalidateMessages(
-      diagnosticProvider: DiagnosticProvider,
-      invalidationMessage: InvalidationMessage,
-    ): void {
+    diagnosticProvider: DiagnosticProvider,
+    invalidationMessage: InvalidationMessage,
+  ): void {
     if (invalidationMessage.scope === 'file') {
-      this._invalidateFileMessagesForProvider(diagnosticProvider, invalidationMessage.filePaths);
+      this._invalidateFileMessagesForProvider(
+        diagnosticProvider,
+        invalidationMessage.filePaths,
+      );
       this._emitAllMessages();
     } else if (invalidationMessage.scope === 'project') {
       this._invalidateProjectMessagesForProvider(diagnosticProvider);
@@ -161,7 +170,9 @@ export default class DiagnosticStore {
     diagnosticProvider: DiagnosticProvider,
     pathsToRemove: Iterable<NuclideUri>,
   ): void {
-    const fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+    const fileToDiagnostics = this._providerToFileToMessages.get(
+      diagnosticProvider,
+    );
     for (const filePath of pathsToRemove) {
       // Update _providerToFileToMessages.
       if (fileToDiagnostics) {
@@ -178,14 +189,20 @@ export default class DiagnosticStore {
     }
   }
 
-  _invalidateProjectMessagesForProvider(diagnosticProvider: DiagnosticProvider): void {
+  _invalidateProjectMessagesForProvider(
+    diagnosticProvider: DiagnosticProvider,
+  ): void {
     this._providerToProjectDiagnostics.delete(diagnosticProvider);
     this._emitProjectMessages();
   }
 
-  _invalidateAllMessagesForProvider(diagnosticProvider: DiagnosticProvider): void {
+  _invalidateAllMessagesForProvider(
+    diagnosticProvider: DiagnosticProvider,
+  ): void {
     // Invalidate all file messages.
-    const filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+    const filesToDiagnostics = this._providerToFileToMessages.get(
+      diagnosticProvider,
+    );
     if (filesToDiagnostics) {
       const allFilePaths = filesToDiagnostics.keys();
       this._invalidateFileMessagesForProvider(diagnosticProvider, allFilePaths);
@@ -219,8 +236,7 @@ export default class DiagnosticStore {
     const initialObservable = Observable.of({filePath, messages: fileMessages});
     return Observable.concat(
       initialObservable,
-      this._fileChanges
-        .filter(change => change.filePath === filePath),
+      this._fileChanges.filter(change => change.filePath === filePath),
     );
   }
 
@@ -244,7 +260,9 @@ export default class DiagnosticStore {
     callback: (update: FileMessageUpdate) => mixed,
     filePath: NuclideUri,
   ): IDisposable {
-    return new UniversalDisposable(this.getFileMessageUpdates(filePath).subscribe(callback));
+    return new UniversalDisposable(
+      this.getFileMessageUpdates(filePath).subscribe(callback),
+    );
   }
 
   /**
@@ -258,7 +276,9 @@ export default class DiagnosticStore {
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new UniversalDisposable(this.getProjectMessageUpdates().subscribe(callback));
+    return new UniversalDisposable(
+      this.getProjectMessageUpdates().subscribe(callback),
+    );
   }
 
   /**
@@ -271,7 +291,9 @@ export default class DiagnosticStore {
   onAllMessagesDidUpdate(
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable {
-    return new UniversalDisposable(this.getAllMessageUpdates().subscribe(callback));
+    return new UniversalDisposable(
+      this.getAllMessageUpdates().subscribe(callback),
+    );
   }
 
   /**
@@ -329,13 +351,17 @@ export default class DiagnosticStore {
   }
 
   applyFixesForFile(file: NuclideUri): void {
-    const messages = this._getFileMessages(file)
-      .filter(msg => msg.fix != null && msg.fix.speculative !== true);
+    const messages = this._getFileMessages(file).filter(
+      msg => msg.fix != null && msg.fix.speculative !== true,
+    );
     this._applyFixes(file, ...messages);
   }
 
   // Precondition: all messages have the given filePath
-  _applyFixes(filePath: NuclideUri, ...messages: Array<FileDiagnosticMessage>): void {
+  _applyFixes(
+    filePath: NuclideUri,
+    ...messages: Array<FileDiagnosticMessage>
+  ): void {
     const messagesWithFixes = messages.filter(msg => msg.fix != null);
     const fixes: Array<TextEdit> = [];
     for (const message of messagesWithFixes) {

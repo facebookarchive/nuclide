@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -21,7 +22,9 @@ describe('getCtagsService', () => {
       const filePath = nuclideUri.join(__dirname, 'fixtures', 'a.cpp');
       const svc = await getCtagsService(filePath);
       invariant(svc);
-      expect(await svc.getTagsPath()).toBe(nuclideUri.join(__dirname, 'fixtures', 'tags'));
+      expect(await svc.getTagsPath()).toBe(
+        nuclideUri.join(__dirname, 'fixtures', 'tags'),
+      );
     });
   });
 

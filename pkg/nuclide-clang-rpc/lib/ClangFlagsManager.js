@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -18,7 +19,12 @@ import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from '../../nuclide-logging';
 import * as BuckService from '../../nuclide-buck-rpc';
-import {isHeaderFile, isSourceFile, findIncludingSourceFile, commonPrefix} from './utils';
+import {
+  isHeaderFile,
+  isSourceFile,
+  findIncludingSourceFile,
+  commonPrefix,
+} from './utils';
 
 const logger = getLogger();
 
@@ -53,8 +59,7 @@ const TARGET_KIND_REGEX = [
 ].join('|');
 
 const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
-  Array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
-    .filter(item => item.length === 2),
+  Array.from(CLANG_FLAGS_THAT_TAKE_PATHS).filter(item => item.length === 2),
 );
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
@@ -97,7 +102,10 @@ function overrideIncludePath(src: string): string {
   return src;
 }
 
-function customizeBuckTarget(root: string, target: string): Promise<Array<string>> {
+function customizeBuckTarget(
+  root: string,
+  target: string,
+): Promise<Array<string>> {
   const customFlags = getCustomFlags();
   if (customFlags != null) {
     return customFlags.customizeBuckTarget(root, target);
@@ -133,7 +141,10 @@ export default class ClangFlagsManager {
    *     about the src file. For example, null will be returned if src is not
    *     under the project root.
    */
-  async getFlagsForSrc(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+  async getFlagsForSrc(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<?ClangFlags> {
     const data = await this._getFlagsForSrcCached(src, compilationDBFile);
     if (data == null) {
       return null;
@@ -148,13 +159,20 @@ export default class ClangFlagsManager {
           flags = shellParse(flags);
         }
         flags = await this._getModifiedFlags(src, flags);
-        data.flags = ClangFlagsManager.sanitizeCommand(rawData.file, flags, rawData.directory);
+        data.flags = ClangFlagsManager.sanitizeCommand(
+          rawData.file,
+          flags,
+          rawData.directory,
+        );
       }
     }
     return data;
   }
 
-  _getFlagsForSrcCached(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
+  _getFlagsForSrcCached(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<?ClangFlags> {
     const cacheKey = `${src}-${compilationDBFile || ''}`;
     let cached = this._pathToFlags.get(cacheKey);
     if (cached == null) {
@@ -164,10 +182,12 @@ export default class ClangFlagsManager {
     return cached;
   }
 
-  _getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
-    return trackTiming(
-      'nuclide-clang.get-flags',
-      () => this.__getFlagsForSrcImpl(src, compilationDBFile),
+  _getFlagsForSrcImpl(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<?ClangFlags> {
+    return trackTiming('nuclide-clang.get-flags', () =>
+      this.__getFlagsForSrcImpl(src, compilationDBFile),
     );
   }
 
@@ -177,8 +197,14 @@ export default class ClangFlagsManager {
   ): ?string {
     const basename = ClangFlagsManager._getFileBasename(header);
     const inferredSrcs = Array.from(dbFlags.keys())
-      .filter(path => ClangFlagsManager._getFileBasename(path) === basename && isSourceFile(path))
-      .map(path => { return {score: commonPrefix(path, header), path}; })
+      .filter(
+        path =>
+          ClangFlagsManager._getFileBasename(path) === basename &&
+          isSourceFile(path),
+      )
+      .map(path => {
+        return {score: commonPrefix(path, header), path};
+      })
       .sort((a, b) => b.score - a.score); // prefer bigger matches
     if (inferredSrcs.length > 0) {
       return inferredSrcs[0].path;
@@ -203,7 +229,10 @@ export default class ClangFlagsManager {
     sourceFile: string,
     compilationDBFile: ?NuclideUri,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(sourceFile, compilationDBFile);
+    const data = await this._getFlagsForSrcCached(
+      sourceFile,
+      compilationDBFile,
+    );
     if (data != null) {
       const {rawData} = data;
       if (rawData != null) {
@@ -224,7 +253,10 @@ export default class ClangFlagsManager {
     return data;
   }
 
-  async _getModifiedFlags(src: string, originalFlags: Array<string>): Promise<Array<string>> {
+  async _getModifiedFlags(
+    src: string,
+    originalFlags: Array<string>,
+  ): Promise<Array<string>> {
     // Look for the project-wide flags
     const projectFlagsDir = await fsPromise.findNearestFile(
       PROJECT_CLANG_FLAGS_FILE,
@@ -233,7 +265,10 @@ export default class ClangFlagsManager {
     if (projectFlagsDir == null) {
       return originalFlags;
     }
-    const projectFlagsFile = nuclideUri.join(projectFlagsDir, PROJECT_CLANG_FLAGS_FILE);
+    const projectFlagsFile = nuclideUri.join(
+      projectFlagsDir,
+      PROJECT_CLANG_FLAGS_FILE,
+    );
     const projectFlags = await this._loadProjectCompilerFlags(projectFlagsFile);
     if (projectFlags == null) {
       return originalFlags;
@@ -244,7 +279,10 @@ export default class ClangFlagsManager {
       .concat(projectFlags.extraCompilerFlags);
   }
 
-  async _getDBFlagsAndDirForSrc(src: string, compilationDBFile: ?NuclideUri): Promise<{
+  async _getDBFlagsAndDirForSrc(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<{
     dbFlags: ?Map<string, ClangFlags>,
     dbDir: ?string,
   }> {
@@ -274,7 +312,10 @@ export default class ClangFlagsManager {
     dbDir: ?string,
   ): Promise<?string> {
     if (dbFlags != null) {
-      const sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(src, dbFlags);
+      const sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(
+        src,
+        dbFlags,
+      );
       if (sourceFile != null) {
         return sourceFile;
       }
@@ -289,11 +330,10 @@ export default class ClangFlagsManager {
   }
 
   async _getFlagsForSrcImplFromBuck(src: string): Promise<?ClangFlags> {
-    const buckFlags = await this._loadFlagsFromBuck(src)
-      .catch(err => {
-        logger.error('Error getting flags from Buck', err);
-        return new Map();
-      });
+    const buckFlags = await this._loadFlagsFromBuck(src).catch(err => {
+      logger.error('Error getting flags from Buck', err);
+      return new Map();
+    });
     if (isHeaderFile(src)) {
       // Accept flags from any source file in the target.
       if (buckFlags.size > 0) {
@@ -306,13 +346,25 @@ export default class ClangFlagsManager {
     }
   }
 
-  async getRelatedSrcFileForHeader(src: string, compilationDBFile: ?NuclideUri): Promise<?string> {
-    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(src, compilationDBFile);
+  async getRelatedSrcFileForHeader(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<?string> {
+    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
+      src,
+      compilationDBFile,
+    );
     return this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
   }
 
-  async __getFlagsForSrcImpl(src: string, compilationDBFile: ?NuclideUri): Promise<?ClangFlags> {
-    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(src, compilationDBFile);
+  async __getFlagsForSrcImpl(
+    src: string,
+    compilationDBFile: ?NuclideUri,
+  ): Promise<?ClangFlags> {
+    const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
+      src,
+      compilationDBFile,
+    );
     if (dbFlags != null) {
       const flags = dbFlags.get(src);
       if (flags != null) {
@@ -321,9 +373,16 @@ export default class ClangFlagsManager {
     }
 
     if (isHeaderFile(src)) {
-      const sourceFile = await this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
+      const sourceFile = await this._getRelatedSrcFileForHeader(
+        src,
+        dbFlags,
+        dbDir,
+      );
       if (sourceFile != null) {
-        return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDBFile);
+        return this._getFlagsFromSourceFileForHeader(
+          sourceFile,
+          compilationDBFile,
+        );
       }
     }
 
@@ -344,7 +403,9 @@ export default class ClangFlagsManager {
     return null;
   }
 
-  async _loadProjectCompilerFlags(flagsFile: string): Promise<?ClangProjectFlags> {
+  async _loadProjectCompilerFlags(
+    flagsFile: string,
+  ): Promise<?ClangProjectFlags> {
     let cached = this._clangProjectFlags.get(flagsFile);
     if (cached == null) {
       cached = this._loadProjectCompilerFlagsImpl(flagsFile);
@@ -353,7 +414,9 @@ export default class ClangFlagsManager {
     return cached;
   }
 
-  async _loadProjectCompilerFlagsImpl(flagsFile: string): Promise<?ClangProjectFlags> {
+  async _loadProjectCompilerFlagsImpl(
+    flagsFile: string,
+  ): Promise<?ClangProjectFlags> {
     let result = null;
     try {
       const contents = await fsPromise.readFile(flagsFile, 'utf8');
@@ -377,7 +440,9 @@ export default class ClangFlagsManager {
     return result;
   }
 
-  async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<Map<string, ClangFlags>> {
+  async _loadFlagsFromCompilationDatabase(
+    dbFile: string,
+  ): Promise<Map<string, ClangFlags>> {
     const cache = this._compilationDatabases.get(dbFile);
     if (cache != null) {
       return cache;
@@ -389,29 +454,34 @@ export default class ClangFlagsManager {
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
       const dbDir = nuclideUri.dirname(dbFile);
-      await Promise.all(data.map(async entry => {
-        const {command, file} = entry;
-        const directory = await fsPromise.realpath(
-          // Relative directories aren't part of the spec, but resolving them
-          // relative to the compile_commands.json location seems reasonable.
-          nuclideUri.resolve(dbDir, entry.directory),
-          this._realpathCache,
-        );
-        const filename = nuclideUri.resolve(directory, file);
-        if (await fsPromise.exists(filename)) {
-          const realpath = await fsPromise.realpath(filename, this._realpathCache);
-          const result = {
-            rawData: {
-              flags: command,
-              file,
-              directory,
-            },
-            flagsFile: dbFile,
-          };
-          flags.set(realpath, result);
-          this._pathToFlags.set(realpath, Promise.resolve(result));
-        }
-      }));
+      await Promise.all(
+        data.map(async entry => {
+          const {command, file} = entry;
+          const directory = await fsPromise.realpath(
+            // Relative directories aren't part of the spec, but resolving them
+            // relative to the compile_commands.json location seems reasonable.
+            nuclideUri.resolve(dbDir, entry.directory),
+            this._realpathCache,
+          );
+          const filename = nuclideUri.resolve(directory, file);
+          if (await fsPromise.exists(filename)) {
+            const realpath = await fsPromise.realpath(
+              filename,
+              this._realpathCache,
+            );
+            const result = {
+              rawData: {
+                flags: command,
+                file,
+                directory,
+              },
+              flagsFile: dbFile,
+            };
+            flags.set(realpath, result);
+            this._pathToFlags.set(realpath, Promise.resolve(result));
+          }
+        }),
+      );
       this._compilationDatabases.set(dbFile, flags);
     } catch (e) {
       logger.error(`Error reading compilation flags from ${dbFile}`, e);
@@ -425,8 +495,11 @@ export default class ClangFlagsManager {
       return new Map();
     }
 
-    const target = (await BuckService.getOwners(buckRoot, src, TARGET_KIND_REGEX))
-      .find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+    const target = (await BuckService.getOwners(
+      buckRoot,
+      src,
+      TARGET_KIND_REGEX,
+    )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
 
     if (target == null) {
       return new Map();
@@ -459,7 +532,7 @@ export default class ClangFlagsManager {
         '--config',
         'client.skip-action-graph-cache=true',
 
-        ...await customizeBuckTarget(buckProjectRoot, buildTarget),
+        ...(await customizeBuckTarget(buckProjectRoot, buildTarget)),
         // TODO(hansonw): Any alternative to doing this?
         // '-L',
         // String(os.cpus().length / 2),
@@ -504,16 +577,18 @@ export default class ClangFlagsManager {
   static async _guessBuildFile(file: string): Promise<?string> {
     const dir = nuclideUri.dirname(file);
     let bestMatch = null;
-    await Promise.all(['BUCK', 'TARGETS', 'compile_commands.json'].map(async name => {
-      const nearestDir = await fsPromise.findNearestFile(name, dir);
-      if (nearestDir != null) {
-        const match = nuclideUri.join(nearestDir, name);
-        // Return the closest (most specific) match.
-        if (bestMatch == null || match.length > bestMatch.length) {
-          bestMatch = match;
+    await Promise.all(
+      ['BUCK', 'TARGETS', 'compile_commands.json'].map(async name => {
+        const nearestDir = await fsPromise.findNearestFile(name, dir);
+        if (nearestDir != null) {
+          const match = nuclideUri.join(nearestDir, name);
+          // Return the closest (most specific) match.
+          if (bestMatch == null || match.length > bestMatch.length) {
+            bestMatch = match;
+          }
         }
-      }
-    }));
+      }),
+    );
     return bestMatch;
   }
 
@@ -528,9 +603,10 @@ export default class ClangFlagsManager {
     // compilation database generated by Buck. It must be removed from the list of command-line
     // arguments passed to libclang.
     const normalizedSourceFile = nuclideUri.normalize(sourceFile);
-    args = args.filter(arg =>
-      normalizedSourceFile !== arg &&
-      normalizedSourceFile !== nuclideUri.resolve(basePath, arg),
+    args = args.filter(
+      arg =>
+        normalizedSourceFile !== arg &&
+        normalizedSourceFile !== nuclideUri.resolve(basePath, arg),
     );
 
     // Resolve relative path arguments against the Buck project root.
@@ -542,7 +618,9 @@ export default class ClangFlagsManager {
           filePath = nuclideUri.join(basePath, filePath);
         }
         args[nextIndex] = filePath;
-      } else if (SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))) {
+      } else if (
+        SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))
+      ) {
         let filePath = overrideIncludePath(arg.substring(2));
         if (!nuclideUri.isAbsolute(filePath)) {
           filePath = nuclideUri.join(basePath, filePath);
@@ -570,7 +648,10 @@ export default class ClangFlagsManager {
     const files = await fsPromise.readdir(dir);
     const basename = ClangFlagsManager._getFileBasename(header);
     for (const file of files) {
-      if (isSourceFile(file) && ClangFlagsManager._getFileBasename(file) === basename) {
+      if (
+        isSourceFile(file) &&
+        ClangFlagsManager._getFileBasename(file) === basename
+      ) {
         return nuclideUri.join(dir, file);
       }
     }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileSearchResult} from './rpc-types';
@@ -41,7 +42,10 @@ export async function fileSearchForDirectory(
   try {
     await thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
   } catch (e) {
-    logger.warn(`Could not update path sets for ${realpath}. Searches may be stale`, e);
+    logger.warn(
+      `Could not update path sets for ${realpath}. Searches may be stale`,
+      e,
+    );
     // TODO(hansonw): Fall back to manual refresh or node watches
   }
 

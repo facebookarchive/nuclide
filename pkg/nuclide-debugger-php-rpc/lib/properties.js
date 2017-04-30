@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import logger from './utils';
 import {
@@ -52,7 +52,9 @@ export function convertProperty(
  * Given an ObjectId for a multi page object, gets PropertyDescriptors
  * for the object's children.
  */
-export function getPagedProperties(pagedId: ObjectId): Array<Runtime$PropertyDescriptor> {
+export function getPagedProperties(
+  pagedId: ObjectId,
+): Array<Runtime$PropertyDescriptor> {
   invariant(pagedId.elementRange);
   const pagesize = pagedId.elementRange.pagesize;
   const endIndex = endIndexOfObjectId(pagedId);

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
@@ -278,8 +279,8 @@ export class BuckBuildSystem {
       'log',
     );
 
-    const capitalizedTaskType = taskType.slice(0, 1).toUpperCase() +
-      taskType.slice(1);
+    const capitalizedTaskType =
+      taskType.slice(0, 1).toUpperCase() + taskType.slice(1);
     const task = taskFromObservable(
       Observable.concat(
         Observable.defer(() => {
@@ -613,7 +614,8 @@ function runBuckCommand(
   args: Array<string>,
   debug: boolean,
   simulator: ?string,
-): Observable<LegacyProcessMessage> { // TODO(T17463635)
+): Observable<LegacyProcessMessage> {
+  // TODO(T17463635)
   if (debug) {
     // Stop any existing debugging sessions, as install hangs if an existing
     // app that's being overwritten is being debugged.

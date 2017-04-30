@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {locationToString} from './location';
@@ -35,7 +36,10 @@ import type {
  * NOTE: Will also mutate the incoming definitions in place to make them easier to marshal.
  */
 export function validateDefinitions(definitions: Definitions): void {
-  const namedTypes: Map<string, AliasDefinition | InterfaceDefinition> = new Map();
+  const namedTypes: Map<
+    string,
+    AliasDefinition | InterfaceDefinition
+  > = new Map();
   gatherKnownTypes();
   validate();
 
@@ -106,7 +110,9 @@ export function validateDefinitions(definitions: Definitions): void {
         type.types.forEach(checkTypeForMissingNames);
         break;
       case 'function':
-        type.argumentTypes.forEach(parameter => checkTypeForMissingNames(parameter.type));
+        type.argumentTypes.forEach(parameter =>
+          checkTypeForMissingNames(parameter.type),
+        );
         checkTypeForMissingNames(type.returnType);
         break;
       case 'named':
@@ -143,7 +149,10 @@ export function validateDefinitions(definitions: Definitions): void {
    *
    * If recursion is found the chain of types which recursively contain each other is reported.
    */
-  function validateLayoutRec(containingDefinitions: Array<AliasDefinition>, type: Type): void {
+  function validateLayoutRec(
+    containingDefinitions: Array<AliasDefinition>,
+    type: Type,
+  ): void {
     function validateTypeRec(typeRec: Type): void {
       validateLayoutRec(containingDefinitions, typeRec);
     }
@@ -192,13 +201,21 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'named':
         const name = type.name;
-        // $FlowFixMe(peterhal)
-        const definition: AliasDefinition | InterfaceDefinition = namedTypes.get(name);
+        const definition:
+          | AliasDefinition
+          // $FlowFixMe(peterhal)
+          | InterfaceDefinition = namedTypes.get(name);
         if (containingDefinitions.indexOf((definition: any)) !== -1) {
           throw errorDefinitions(
-            (containingDefinitions.slice(containingDefinitions.indexOf((definition: any))): any),
-            `Type ${name} contains itself.`);
-        } else if (definition.kind === 'alias' && definition.definition != null) {
+            (containingDefinitions.slice(
+              containingDefinitions.indexOf((definition: any)),
+            ): any),
+            `Type ${name} contains itself.`,
+          );
+        } else if (
+          definition.kind === 'alias' &&
+          definition.definition != null
+        ) {
           containingDefinitions.push(definition);
           invariant(definition.definition);
           validateLayoutRec(containingDefinitions, definition.definition);
@@ -224,7 +241,9 @@ export function validateDefinitions(definitions: Definitions): void {
           break;
         case 'interface':
           if (definition.constructorArgs != null) {
-            definition.constructorArgs.forEach(parameter => validateType(parameter.type));
+            definition.constructorArgs.forEach(parameter =>
+              validateType(parameter.type),
+            );
           }
           Object.keys(definition.instanceMethods).forEach(methodName => {
             validateType(definition.instanceMethods[methodName]);
@@ -241,8 +260,10 @@ export function validateDefinitions(definitions: Definitions): void {
   // Caller must resolve named types.
   function validateReturnType(funcType: FunctionType, type: Type): void {
     function invalidReturnTypeError(): Error {
-      return error(funcType,
-        'The return type of a remote function must be of type Void, Promise, or Observable');
+      return error(
+        funcType,
+        'The return type of a remote function must be of type Void, Promise, or Observable',
+      );
     }
 
     switch (type.kind) {
@@ -315,30 +336,45 @@ export function validateDefinitions(definitions: Definitions): void {
     } else if (alternates[0].kind === 'object') {
       validateObjectUnionType(type, alternates);
     } else {
-      throw errorLocations([type.location, alternates[0].location],
-        'Union alternates must be either be typed object or literal types.');
+      throw errorLocations(
+        [type.location, alternates[0].location],
+        'Union alternates must be either be typed object or literal types.',
+      );
     }
   }
 
-  function validateLiteralUnionType(type: UnionType, alternates: Array<Type>): void {
+  function validateLiteralUnionType(
+    type: UnionType,
+    alternates: Array<Type>,
+  ): void {
     alternates.reduce((previousAlternates, alternate) => {
       validateType(alternate);
 
       // Ensure a valid alternate
       if (!isLiteralType(alternate)) {
-        throw errorLocations([type.location, alternate.location],
-          'Union alternates may only be literal types.');
+        throw errorLocations(
+          [type.location, alternate.location],
+          'Union alternates may only be literal types.',
+        );
       }
 
       // Ensure no duplicates
       previousAlternates.forEach(previous => {
-        invariant(previous.kind === 'string-literal' || previous.kind === 'number-literal'
-            || previous.kind === 'boolean-literal');
-        invariant(alternate.kind === 'string-literal' || alternate.kind === 'number-literal'
-            || alternate.kind === 'boolean-literal');
+        invariant(
+          previous.kind === 'string-literal' ||
+            previous.kind === 'number-literal' ||
+            previous.kind === 'boolean-literal',
+        );
+        invariant(
+          alternate.kind === 'string-literal' ||
+            alternate.kind === 'number-literal' ||
+            alternate.kind === 'boolean-literal',
+        );
         if (previous.value === alternate.value) {
-          throw errorLocations([type.location, previous.location, alternate.location],
-            'Union alternates may not have the same value.');
+          throw errorLocations(
+            [type.location, previous.location, alternate.location],
+            'Union alternates may not have the same value.',
+          );
         }
       });
 
@@ -347,30 +383,47 @@ export function validateDefinitions(definitions: Definitions): void {
     }, []);
   }
 
-  function validateObjectUnionType(type: UnionType, alternates: Array<Type>): void {
+  function validateObjectUnionType(
+    type: UnionType,
+    alternates: Array<Type>,
+  ): void {
     alternates.forEach(alternate => {
       validateType(alternate);
 
       // Ensure alternates match
       if (alternate.kind !== 'object') {
-        throw errorLocations([type.location, alternates[0].location, alternate.location],
-          'Union alternates must be of the same type.');
+        throw errorLocations(
+          [type.location, alternates[0].location, alternate.location],
+          'Union alternates must be of the same type.',
+        );
       }
     });
 
-    type.discriminantField = findObjectUnionDiscriminant(type, (alternates: Array<any>));
+    type.discriminantField = findObjectUnionDiscriminant(
+      type,
+      (alternates: Array<any>),
+    );
   }
 
-  function findObjectUnionDiscriminant(type: UnionType, alternates: Array<ObjectType>): string {
+  function findObjectUnionDiscriminant(
+    type: UnionType,
+    alternates: Array<ObjectType>,
+  ): string {
     // Get set of fields which are literal types in al alternates.
     invariant(alternates.length > 0);
     // $FlowFixMe
-    const possibleFields: Set<string> = alternates.reduce(
+    const possibleFields: Set<
+      string
+    > = alternates.reduce(
       (possibilities: ?Set<string>, alternate: ObjectType) => {
-        const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(alternate);
+        const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(
+          alternate,
+        );
         if (alternatePossibilities.size === 0) {
-          throw errorLocations([type.location, alternate.location],
-            'Object union alternative has no possible discriminant fields.');
+          throw errorLocations(
+            [type.location, alternate.location],
+            'Object union alternative has no possible discriminant fields.',
+          );
         }
         // Use null to represent the set containing everything.
         if (possibilities == null) {
@@ -378,10 +431,13 @@ export function validateDefinitions(definitions: Definitions): void {
         } else {
           return setIntersect(alternatePossibilities, possibilities);
         }
-      }, null);
+      },
+      null,
+    );
 
-    const validFields = Array.from(possibleFields)
-        .filter(fieldName => isValidDiscriminantField(alternates, fieldName));
+    const validFields = Array.from(possibleFields).filter(fieldName =>
+      isValidDiscriminantField(alternates, fieldName),
+    );
     if (validFields.length > 0) {
       // If there are multiple valid discriminant fields, we just pick the first.
       return validFields[0];
@@ -391,11 +447,16 @@ export function validateDefinitions(definitions: Definitions): void {
     }
   }
 
-  function isValidDiscriminantField(alternates: Array<ObjectType>,
-      candidateField: string): boolean {
+  function isValidDiscriminantField(
+    alternates: Array<ObjectType>,
+    candidateField: string,
+  ): boolean {
     // $FlowFixMe
-    const fieldTypes: Array<LiteralType> = alternates.map(
-      alternate => resolvePossiblyNamedType(getObjectFieldByName(alternate, candidateField).type));
+    const fieldTypes: Array<LiteralType> = alternates.map(alternate =>
+      resolvePossiblyNamedType(
+        getObjectFieldByName(alternate, candidateField).type,
+      ),
+    );
 
     // Fields in all alternates must have same type.
     if (!fieldTypes.every(fieldType => fieldType.kind === fieldTypes[0].kind)) {
@@ -404,19 +465,29 @@ export function validateDefinitions(definitions: Definitions): void {
 
     // Must not have duplicate values in any alternate.
     // All alternates must be unique.
-    return (new Set(fieldTypes.map(fieldType => fieldType.value))).size === alternates.length;
+    return (
+      new Set(fieldTypes.map(fieldType => fieldType.value)).size ===
+      alternates.length
+    );
   }
 
-  function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
+  function getObjectFieldByName(
+    type: ObjectType,
+    fieldName: string,
+  ): ObjectField {
     const result = type.fields.find(field => field.name === fieldName);
     invariant(result != null);
     return result;
   }
 
-  function possibleDiscriminantFieldsOfUnionAlternate(alternate: ObjectType): Set<string> {
-    return new Set(alternate.fields
+  function possibleDiscriminantFieldsOfUnionAlternate(
+    alternate: ObjectType,
+  ): Set<string> {
+    return new Set(
+      alternate.fields
         .filter(field => isLiteralType(resolvePossiblyNamedType(field.type)))
-        .map(field => field.name));
+        .map(field => field.name),
+    );
   }
 
   // Validates a type which is not directly a return type.
@@ -434,7 +505,10 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'void':
       case 'promise':
       case 'observable':
-        throw error(type, 'Promise, void and Observable types may only be used as return types');
+        throw error(
+          type,
+          'Promise, void and Observable types may only be used as return types',
+        );
       case 'array':
         validateType(type.type);
         break;
@@ -474,8 +548,10 @@ export function validateDefinitions(definitions: Definitions): void {
           case 'void':
           case 'promise':
           case 'observable':
-            throw error(type,
-              'Promise, void and Observable types may only be used as return types');
+            throw error(
+              type,
+              'Promise, void and Observable types may only be used as return types',
+            );
         }
         break;
       default:
@@ -565,7 +641,9 @@ export function validateDefinitions(definitions: Definitions): void {
     };
   }
 
-  function flattenIntersection(intersectionType: IntersectionType): Array<ObjectField> {
+  function flattenIntersection(
+    intersectionType: IntersectionType,
+  ): Array<ObjectField> {
     const fields = [];
     for (const type of intersectionType.types) {
       const resolvedType = resolvePossiblyNamedType(type);
@@ -593,12 +671,14 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function flattenUnionAlternates(types: Array<Type>): Array<Type> {
-    return [].concat(...types.map(alternate => {
-      const resolvedAlternate = resolvePossiblyNamedType(alternate);
-      return resolvedAlternate.kind === 'union' ?
-          flattenUnionAlternates(resolvedAlternate.types) :
-          resolvedAlternate;
-    }));
+    return [].concat(
+      ...types.map(alternate => {
+        const resolvedAlternate = resolvePossiblyNamedType(alternate);
+        return resolvedAlternate.kind === 'union'
+          ? flattenUnionAlternates(resolvedAlternate.types)
+          : resolvedAlternate;
+      }),
+    );
   }
 
   // Returns the definition of a named type. If the type resolves to an alias it returns the
@@ -638,7 +718,9 @@ export function validateDefinitions(definitions: Definitions): void {
           break;
         case 'interface':
           if (definition.constructorArgs != null) {
-            definition.constructorArgs.forEach(parameter => operation(parameter.type));
+            definition.constructorArgs.forEach(parameter =>
+              operation(parameter.type),
+            );
           }
           Object.keys(definition.instanceMethods).forEach(methodName => {
             operation(definition.instanceMethods[methodName]);
@@ -658,16 +740,23 @@ export function validateDefinitions(definitions: Definitions): void {
   function errorLocations(locations: Array<Location>, message: string): Error {
     let fullMessage = `${locationToString(locations[0])}:${message}`;
     fullMessage = fullMessage.concat(
-      ...(locations.slice(1).map(location =>
-        `\n${locationToString(location)}: Related location`)));
+      ...locations
+        .slice(1)
+        .map(location => `\n${locationToString(location)}: Related location`),
+    );
     return new Error(fullMessage);
   }
 
   function errorDefinitions(defs: Array<Definition>, message: string): Error {
     let fullMessage = `${locationToString(defs[0].location)}:${message}`;
     fullMessage = fullMessage.concat(
-      ...(defs.slice(1).map(definition =>
-        `\n${locationToString(definition.location)}: Related definition ${definition.name}`)));
+      ...defs
+        .slice(1)
+        .map(
+          definition =>
+            `\n${locationToString(definition.location)}: Related definition ${definition.name}`,
+        ),
+    );
     return new Error(fullMessage);
   }
 }

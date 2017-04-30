@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ReferenceGroup} from '../types';
@@ -78,7 +79,15 @@ export default class FileReferencesView extends React.Component {
             className="nuclide-find-references-ref-name"
             onClick={evt => this._onRefClick(evt, firstRef)}>
             {'Line '}
-            {startRange.row + 1}:{startRange.column + 1} - {endRange.row + 1}:{endRange.column + 1}
+            {startRange.row + 1}
+            :
+            {startRange.column + 1}
+            {' '}
+            -
+            {' '}
+            {endRange.row + 1}
+            :
+            {endRange.column + 1}
             {caller}
           </div>
           <CodeSnippet
@@ -93,11 +102,14 @@ export default class FileReferencesView extends React.Component {
         </li>
       );
     });
-    const outerClassName = classnames('nuclide-find-references-file list-nested-item', {
-      collapsed: !this.state.isExpanded,
-      expanded: this.state.isExpanded,
-      selected: this.props.isSelected,
-    });
+    const outerClassName = classnames(
+      'nuclide-find-references-file list-nested-item',
+      {
+        collapsed: !this.state.isExpanded,
+        expanded: this.state.isExpanded,
+        selected: this.props.isSelected,
+      },
+    );
 
     return (
       <li className={`${outerClassName}`}>

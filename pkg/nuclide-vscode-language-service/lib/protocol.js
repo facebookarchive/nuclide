@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 // Flow definitions for Microsoft's Language Server Protocol
 // https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md
@@ -81,7 +81,7 @@ export type TextEdit = {
 
 export type WorkspaceEdit = {
   // Holds changes to existing resources.
-  changes: { [uri: string]: TextEdit[] },
+  changes: {[uri: string]: TextEdit[]},
 };
 
 export type TextDocumentIdentifier = {
@@ -243,7 +243,7 @@ export type ServerCapabilities = {
 export type PublishDiagnosticsParams = {
   // The URI for which diagnostic information is reported.
   uri: string,
-   // An array of diagnostic information items.
+  // An array of diagnostic information items.
   diagnostics: Diagnostic[],
 };
 
@@ -334,7 +334,7 @@ export type Hover = {
  * ${value};
  * ```
  */
-export type MarkedString = string | { language: string, value: string };
+export type MarkedString = string | {language: string, value: string};
 
 /**
  * Signature help represents the signature of something
@@ -517,12 +517,12 @@ export type DocumentFormattingParams = {
 
 // Value-object describing what options formatting should use.
 export type FormattingOptions = {
+  // Signature for further properties.
+  [key: string]: boolean | number | string,
   // Size of a tab in spaces.
   tabSize: number,
   // Prefer spaces over tabs.
   insertSpaces: boolean,
-  // Signature for further properties.
-  [key: string]: boolean | number | string,
 };
 
 export type DocumentRangeFormattingParams = {
@@ -570,9 +570,8 @@ export type TypeCoverageResult = {
 
 export type UncoveredRange = {
   range: Range,
-  message: string,  // human-readable explanation, maybe with suggested fix
+  message: string, // human-readable explanation, maybe with suggested fix
 };
-
 
 // Window
 

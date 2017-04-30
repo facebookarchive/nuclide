@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Datatip} from './types';
@@ -45,13 +46,7 @@ export class DatatipComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    const {
-      className,
-      action,
-      actionTitle,
-      datatip,
-      ...props
-    } = this.props;
+    const {className, action, actionTitle, datatip, ...props} = this.props;
     delete props.onActionClick;
     let actionButton;
     if (action != null && IconsForAction[action] != null) {

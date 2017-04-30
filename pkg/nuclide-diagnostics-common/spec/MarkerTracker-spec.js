@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {FileDiagnosticMessage} from '../lib/rpc-types';
@@ -32,8 +33,14 @@ describe('MarkerTracker', () => {
     tracker = new MarkerTracker();
 
     const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
-    initiallyOpenFilePath = nuclideUri.join(fixturesPath, 'initiallyOpenFile.txt');
-    initiallyClosedFilePath = nuclideUri.join(fixturesPath, 'initiallyClosedFile.txt');
+    initiallyOpenFilePath = nuclideUri.join(
+      fixturesPath,
+      'initiallyOpenFile.txt',
+    );
+    initiallyClosedFilePath = nuclideUri.join(
+      fixturesPath,
+      'initiallyClosedFile.txt',
+    );
 
     messageForInitiallyOpenFile = {
       scope: 'file',
@@ -84,7 +91,10 @@ describe('MarkerTracker', () => {
 
   it('should correctly track changes using markers', () => {
     tracker.addFileMessages([messageForInitiallyOpenFile]);
-    initiallyOpenEditor.setTextInBufferRange(new Range([1, 3], [1, 11]), 'are using');
+    initiallyOpenEditor.setTextInBufferRange(
+      new Range([1, 3], [1, 11]),
+      'are using',
+    );
     const range = tracker.getCurrentRange(messageForInitiallyOpenFile);
     invariant(range != null);
     expect(range.isEqual(new Range([1, 19], [1, 23]))).toBeTruthy();
@@ -104,12 +114,17 @@ describe('MarkerTracker', () => {
       tracker.addFileMessages([messageForInitiallyClosedFile]);
       checkRep(tracker);
       expect(tracker.getCurrentRange(messageForInitiallyClosedFile)).toBeNull();
-      const initiallyClosedEditor = await atom.workspace.open(initiallyClosedFilePath);
+      const initiallyClosedEditor = await atom.workspace.open(
+        initiallyClosedFilePath,
+      );
       let range = tracker.getCurrentRange(messageForInitiallyClosedFile);
       invariant(range != null);
       expect(range.isEqual(new Range([1, 4], [1, 31]))).toBeTruthy();
 
-      initiallyClosedEditor.setTextInBufferRange(new Range([0, 16], [0, 16]), '\n');
+      initiallyClosedEditor.setTextInBufferRange(
+        new Range([0, 16], [0, 16]),
+        '\n',
+      );
 
       range = tracker.getCurrentRange(messageForInitiallyClosedFile);
       invariant(range != null);
@@ -133,7 +148,9 @@ describe('MarkerTracker', () => {
 
     tracker.removeFileMessages([messageForInitiallyOpenFile]);
     expect(tracker._fileToMessages.hasAny(initiallyOpenFilePath)).toBeFalsy();
-    expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
+    expect(
+      tracker._messageToMarker.has(messageForInitiallyOpenFile),
+    ).toBeFalsy();
     expect(marker.isDestroyed()).toBeTruthy();
 
     checkRep(tracker);
@@ -141,7 +158,9 @@ describe('MarkerTracker', () => {
 
   it('should remove messages for closed files', () => {
     tracker.addFileMessages([messageForInitiallyClosedFile]);
-    expect(tracker._messageToMarker.has(messageForInitiallyClosedFile)).toBeFalsy();
+    expect(
+      tracker._messageToMarker.has(messageForInitiallyClosedFile),
+    ).toBeFalsy();
     const messagesSet = tracker._fileToMessages.get(initiallyClosedFilePath);
     invariant(messagesSet != null);
     expect(messagesSet.has(messageForInitiallyClosedFile)).toBeTruthy();
@@ -164,7 +183,9 @@ describe('MarkerTracker', () => {
 
     expect(messageSet.has(messageForInitiallyOpenFile)).toBeTruthy();
 
-    expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
+    expect(
+      tracker._messageToMarker.has(messageForInitiallyOpenFile),
+    ).toBeFalsy();
 
     expect(marker.isDestroyed()).toBeTruthy();
 
@@ -193,7 +214,9 @@ describe('MarkerTracker', () => {
  * into private properties.
  */
 function checkRep(tracker: MarkerTracker): void {
-  const openFiles = new Set(atom.workspace.getTextEditors().map(editor => editor.getPath()));
+  const openFiles = new Set(
+    atom.workspace.getTextEditors().map(editor => editor.getPath()),
+  );
 
   for (const message of tracker._messageToMarker.keys()) {
     expect(openFiles.has(message.filePath)).toBeTruthy();

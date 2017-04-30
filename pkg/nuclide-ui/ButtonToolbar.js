@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -20,10 +21,7 @@ type Props = {
  * Visually groups Buttons passed in as children.
  */
 export const ButtonToolbar = (props: Props) => {
-  const {
-    children,
-    className,
-  } = props;
+  const {children, className} = props;
   return (
     <div className={classnames('btn-toolbar', className)}>
       {children}

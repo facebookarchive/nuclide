@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Location} from 'graphql/language';
@@ -19,8 +20,7 @@ export class Range {
   }
 
   containsPoint(point: Point): boolean {
-    const withinRow =
-      this.start.row <= point.row && this.end.row >= point.row;
+    const withinRow = this.start.row <= point.row && this.end.row >= point.row;
     const withinColumn =
       this.start.column <= point.column && this.end.column >= point.column;
     return withinRow && withinColumn;

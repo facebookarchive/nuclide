@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
@@ -18,10 +19,7 @@ import type {
 } from './types';
 
 import invariant from 'assert';
-import {
-  Disposable,
-  CompositeDisposable,
-} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
 import {Emitter} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 import {DebuggerMode} from './DebuggerStore';
@@ -76,10 +74,16 @@ export default class BreakpointStore {
         this._addBreakpoint(payload.data.path, payload.data.line);
         break;
       case ActionTypes.UPDATE_BREAKPOINT_CONDITION:
-        this._updateBreakpointCondition(payload.data.breakpointId, payload.data.condition);
+        this._updateBreakpointCondition(
+          payload.data.breakpointId,
+          payload.data.condition,
+        );
         break;
       case ActionTypes.UPDATE_BREAKPOINT_ENABLED:
-        this._updateBreakpointEnabled(payload.data.breakpointId, payload.data.enabled);
+        this._updateBreakpointEnabled(
+          payload.data.breakpointId,
+          payload.data.enabled,
+        );
         break;
       case ActionTypes.DELETE_BREAKPOINT:
         this._deleteBreakpoint(payload.data.path, payload.data.line);
@@ -225,14 +229,14 @@ export default class BreakpointStore {
     // The Chrome devtools always bind a new breakpoint as enabled the first time. If this
     // breakpoint is known to be disabled in the front-end, sync the enabled state with Chrome.
     const existingBp = this.getBreakpointAtLine(path, line);
-    const updateEnabled = (existingBp != null) && (existingBp.enabled !== enabled);
+    const updateEnabled = existingBp != null && existingBp.enabled !== enabled;
 
     this._addBreakpoint(
       path,
       line,
       condition,
       resolved,
-      false,  // userAction
+      false, // userAction
       enabled,
     );
 
@@ -346,7 +350,9 @@ export default class BreakpointStore {
    * Register a change handler that is invoked when a breakpoint is changed
    * by user action, like user explicitly added, deleted a breakpoint.
    */
-  onUserChange(callback: (params: BreakpointUserChangeArgType) => void): IDisposable {
+  onUserChange(
+    callback: (params: BreakpointUserChangeArgType) => void,
+  ): IDisposable {
     return this._emitter.on(BREAKPOINT_USER_CHANGED, callback);
   }
 

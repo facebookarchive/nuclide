@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
@@ -29,7 +30,9 @@ export class Selectors extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDeviceActionSelected = this._handleDeviceActionSelected.bind(this);
+    (this: any)._handleDeviceActionSelected = this._handleDeviceActionSelected.bind(
+      this,
+    );
   }
 
   _handleDeviceActionSelected(value: ?string): void {
@@ -45,15 +48,19 @@ export class Selectors extends React.Component {
   }
 
   _getTypeOptions(): Array<{value: ?string, label: string}> {
-    const typeOptions = this.props.deviceTypes.map(type => ({value: type, label: type}));
+    const typeOptions = this.props.deviceTypes.map(type => ({
+      value: type,
+      label: type,
+    }));
     typeOptions.splice(0, 0, {value: null, label: 'Select...'});
     return typeOptions;
   }
 
   _getDeviceActionOptions(): Array<{value: ?string, label: string}> {
-    const actionOptions = this.props.deviceActions.map(
-      (action, index) => ({value: `${index}`, label: action.name}),
-    );
+    const actionOptions = this.props.deviceActions.map((action, index) => ({
+      value: `${index}`,
+      label: action.name,
+    }));
     if (actionOptions.length > 0) {
       actionOptions.splice(0, 0, {value: null, label: 'Select...'});
     }
@@ -86,18 +93,16 @@ export class Selectors extends React.Component {
 
     const deviceActionOptions = this._getDeviceActionOptions();
     if (deviceActionOptions.length > 0) {
-      dropdowns.push(
-        [
-          'Actions:',
-          <Dropdown
-            className="inline-block"
-            options={deviceActionOptions}
-            onChange={this._handleDeviceActionSelected}
-            value={null}
-            key="actions"
-          />,
-        ],
-      );
+      dropdowns.push([
+        'Actions:',
+        <Dropdown
+          className="inline-block"
+          options={deviceActionOptions}
+          onChange={this._handleDeviceActionSelected}
+          value={null}
+          key="actions"
+        />,
+      ]);
     }
 
     return (

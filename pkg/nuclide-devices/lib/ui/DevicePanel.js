@@ -6,10 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import React from 'react';
-import {PanelComponentScroller} from '../../../nuclide-ui/PanelComponentScroller';
+import {
+  PanelComponentScroller,
+} from '../../../nuclide-ui/PanelComponentScroller';
 import {Observable, Subscription} from 'rxjs';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';
@@ -68,12 +71,13 @@ export class DevicePanel extends React.Component {
   }
 
   _createInfoTables(): React.Element<any>[] {
-    return Array.from(this.props.infoTables.entries())
-      .map(([title, infoTable]) => (
-        <div className="block" key={title}>
-          <InfoTable title={title} table={infoTable} />
-        </div>
-      ));
+    return Array.from(
+      this.props.infoTables.entries(),
+    ).map(([title, infoTable]) => (
+      <div className="block" key={title}>
+        <InfoTable title={title} table={infoTable} />
+      </div>
+    ));
   }
 
   render(): React.Element<any> {

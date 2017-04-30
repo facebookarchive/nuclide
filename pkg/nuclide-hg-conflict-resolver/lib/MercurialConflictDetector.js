@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
@@ -26,7 +27,9 @@ export class MercurialConflictDetector {
     this._subscriptions = new CompositeDisposable();
     this._repositorySubscriptions = new Map();
     this._mercurialConflictContext = new MercurialConflictContext();
-    this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
+    this._subscriptions.add(
+      atom.project.onDidChangePaths(this._updateRepositories.bind(this)),
+    );
   }
 
   setConflictsApi(conflictsApi: ConflictsApi): void {
@@ -39,13 +42,16 @@ export class MercurialConflictDetector {
 
   _updateRepositories(): void {
     const repositories: Set<HgRepositoryClient> = (new Set(
-      atom.project.getRepositories().filter(
-        repository => repository != null && repository.getType() === 'hg',
-      ),
-    // Flow doesn't understand the implications of the filter, so we need to cast.
+      atom.project
+        .getRepositories()
+        .filter(
+          repository => repository != null && repository.getType() === 'hg',
+        ),
+      // Flow doesn't understand the implications of the filter, so we need to cast.
     ): Set<any>);
     // Dispose removed projects repositories, if any.
-    for (const [repository, repositorySubscription] of this._repositorySubscriptions) {
+    for (const [repository, repositorySubscription] of this
+      ._repositorySubscriptions) {
       if (repositories.has(repository)) {
         continue;
       }
@@ -66,7 +72,9 @@ export class MercurialConflictDetector {
     const subscriptions = new CompositeDisposable();
     this._conflictStateChanged(repository);
     subscriptions.add(
-      repository.onDidChangeConflictState(() => this._conflictStateChanged(repository)),
+      repository.onDidChangeConflictState(() =>
+        this._conflictStateChanged(repository),
+      ),
     );
     this._repositorySubscriptions.set(repository, subscriptions);
   }
@@ -82,13 +90,16 @@ export class MercurialConflictDetector {
       this._mercurialConflictContext.setConflictingRepository(repository);
       conflictsApi.showForContext(this._mercurialConflictContext);
       atom.notifications.addWarning(
-        'Nuclide detected merge conflicts in your active project\'s repository', {
+        "Nuclide detected merge conflicts in your active project's repository",
+        {
           detail: 'Use the conflicts resolver UI below to help resolve them',
           nativeFriendly: true,
         },
       );
     } else {
-      const toClear = this._mercurialConflictContext.getConflictingRepository() === repository;
+      const toClear =
+        this._mercurialConflictContext.getConflictingRepository() ===
+        repository;
       if (toClear) {
         track('hg-conflict-detctor.resolved-outside-nuclide');
         this._mercurialConflictContext.clearConflictState();

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
@@ -17,7 +18,11 @@ import type {
 } from '../../nuclide-definition-service/lib/rpc-types';
 
 import invariant from 'assert';
-import {atomPointOfHackRangeStart, hackRangeToAtomRange, hackSpanToAtomRange} from './HackHelpers';
+import {
+  atomPointOfHackRangeStart,
+  hackRangeToAtomRange,
+  hackSpanToAtomRange,
+} from './HackHelpers';
 
 export type HackDefinition = {
   name: string,
@@ -39,7 +44,9 @@ export function convertDefinitions(
     return {
       path: definition_pos.filename || filePath,
       position: atomPointOfHackRangeStart(definition_pos),
-      range: definition_span == null ? undefined : hackSpanToAtomRange(definition_span),
+      range: definition_span == null
+        ? undefined
+        : hackSpanToAtomRange(definition_span),
       // TODO: definition_id
       id: name,
       name,
@@ -48,14 +55,16 @@ export function convertDefinitions(
     };
   }
 
-  const filteredDefinitions = hackDefinitions
-    .filter(definition => definition.definition_pos != null);
+  const filteredDefinitions = hackDefinitions.filter(
+    definition => definition.definition_pos != null,
+  );
   if (filteredDefinitions.length === 0) {
     return null;
   }
 
-  const definitions: Array<Definition> = filteredDefinitions
-    .map(convertDefinition);
+  const definitions: Array<Definition> = filteredDefinitions.map(
+    convertDefinition,
+  );
 
   return {
     queryRange: [hackRangeToAtomRange(filteredDefinitions[0].pos)],

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global HTMLElement */
@@ -24,12 +25,16 @@ class ReactMountRootElement extends HTMLElement {
   }
 
   attachedCallback(): mixed {
-    if (this._reactElement == null) { return; }
+    if (this._reactElement == null) {
+      return;
+    }
     ReactDOM.render(this._reactElement, this);
   }
 
   detachedCallback(): mixed {
-    if (this._reactElement == null) { return; }
+    if (this._reactElement == null) {
+      return;
+    }
     ReactDOM.unmountComponentAtNode(this);
   }
 }
