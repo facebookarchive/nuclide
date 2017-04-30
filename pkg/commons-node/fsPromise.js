@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import fs from 'fs';
@@ -65,7 +66,10 @@ function tempfile(options: any): Promise<string> {
  *   not a file.
  * @return directory that contains the nearest file or null.
  */
-async function findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
+async function findNearestFile(
+  fileName: string,
+  pathToDirectory: string,
+): Promise<?string> {
   // TODO(5586355): If this becomes a bottleneck, we should consider memoizing
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
@@ -116,12 +120,13 @@ async function findFurthestFile(
 
 function getCommonAncestorDirectory(filePaths: Array<string>): string {
   let commonDirectoryPath = nuclideUri.dirname(filePaths[0]);
-  while (filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))) {
+  while (
+    filePaths.some(filePath => !filePath.startsWith(commonDirectoryPath))
+  ) {
     commonDirectoryPath = nuclideUri.dirname(commonDirectoryPath);
   }
   return commonDirectoryPath;
 }
-
 
 function exists(filePath: string): Promise<boolean> {
   return new Promise((resolve, reject) => {
@@ -172,7 +177,13 @@ function rmdir(filePath: string): Promise<void> {
 async function isNfs(entityPath: string): Promise<boolean> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
     try {
-      const stdout = await runCommand('stat', ['-f', '-L', '-c', '%T', entityPath]).toPromise();
+      const stdout = await runCommand('stat', [
+        '-f',
+        '-L',
+        '-c',
+        '%T',
+        entityPath,
+      ]).toPromise();
       return stdout.trim() === 'nfs';
     } catch (err) {
       return false;
@@ -199,7 +210,7 @@ async function isNonNfsDirectory(directoryPath: string): Promise<boolean> {
   try {
     const stats = await stat(directoryPath);
     if (stats.isDirectory()) {
-      return !(await isNfs(directoryPath));
+      return !await isNfs(directoryPath);
     } else {
       return false;
     }
@@ -301,11 +312,13 @@ function mkdir(path: string, mode?: number): Promise<void> {
 
 // `fs.readFile` returns a Buffer unless an encoding is specified.
 // This workaround is adapted from the Flow declarations.
-type ReadFileType =
-  ((filename: string, encoding: string) => Promise<string>) &
-  ((filename: string, options: { encoding: string, flag?: string }) => Promise<string>) &
+type ReadFileType = ((filename: string, encoding: string) => Promise<string>) &
+  ((
+    filename: string,
+    options: {encoding: string, flag?: string},
+  ) => Promise<string>) &
   ((filename: string) => Promise<Buffer>) &
-  ((filename: string, options: { flag?: string }) => Promise<Buffer>);
+  ((filename: string, options: {flag?: string}) => Promise<Buffer>);
 
 const readFile: ReadFileType = (function() {
   return new Promise((resolve, reject) => {

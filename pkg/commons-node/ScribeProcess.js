@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import os from 'os';
@@ -88,7 +89,9 @@ export default class ScribeProcess {
     }
     const child = await this._childPromise;
     await new Promise(resolve => {
-      child.on('exit', () => { resolve(); });
+      child.on('exit', () => {
+        resolve();
+      });
       setTimeout(resolve, timeout);
     });
   }
@@ -101,10 +104,7 @@ export default class ScribeProcess {
     // Kick off the process. Ideally we would store the subscription and unsubscribe when
     // `dispose()` was called. Practically, it probably doesn't matter since there's very little
     // chance we'd want to cancel before the process was ready.
-    const processStream = spawn(
-      SCRIBE_CAT_COMMAND,
-      [this._scribeCategory],
-    )
+    const processStream = spawn(SCRIBE_CAT_COMMAND, [this._scribeCategory])
       .do(child => {
         child.stdin.setDefaultEncoding('utf8');
       })
@@ -114,7 +114,7 @@ export default class ScribeProcess {
       })
       .publish();
 
-    const childPromise = this._childPromise = processStream
+    const childPromise = (this._childPromise = processStream
       .takeUntil(this._disposals)
       .first()
       .catch(err => {
@@ -125,7 +125,7 @@ export default class ScribeProcess {
         }
         throw err;
       })
-      .toPromise();
+      .toPromise());
     this._subscription = processStream.connect();
     return childPromise;
   }

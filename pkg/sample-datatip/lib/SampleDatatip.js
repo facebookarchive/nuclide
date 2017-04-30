@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Datatip} from '../../nuclide-datatip/lib/types';
@@ -23,10 +24,7 @@ export async function datatip(
   if (extractedWord == null) {
     return null;
   }
-  const {
-    wordMatch,
-    range,
-  } = extractedWord;
+  const {wordMatch, range} = extractedWord;
   const word = wordMatch[0] == null ? 'N/A' : wordMatch[0];
   if (editor.getGrammar().scopeName === 'source.gfm') {
     // Demo of the Markdown string-based API.

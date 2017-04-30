@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Disposable} from 'atom';
@@ -154,7 +155,10 @@ export default class ContextMenu {
     if (menuOptions.type === 'root') {
       const items = this._sortAndFilterItems();
       this._disposable = atom.contextMenu.add({
-        [menuOptions.cssSelector]: items.map(this._contextMenuItemForInternalItem, this),
+        [menuOptions.cssSelector]: items.map(
+          this._contextMenuItemForInternalItem,
+          this,
+        ),
       });
     } else if (menuOptions.type === 'submenu') {
       // Tell the parent menu to sort itself.
@@ -164,7 +168,9 @@ export default class ContextMenu {
   }
 
   /** Translates this object's internal representation of a menu item to Atom's representation. */
-  _contextMenuItemForInternalItem(internalItem: InternalItem): atom$ContextMenuItem {
+  _contextMenuItemForInternalItem(
+    internalItem: InternalItem,
+  ): atom$ContextMenuItem {
     if (internalItem.type === 'item') {
       return internalItem.item;
     } else if (internalItem.type === 'menu') {
@@ -208,7 +214,11 @@ export default class ContextMenu {
   static isEventFromContextMenu(event: Event) {
     // Context menu commands contain a specific `detail` parameter:
     // https://github.com/atom/atom/blob/v1.15.0/src/main-process/context-menu.coffee#L17
-    return Array.isArray(event.detail) && event.detail[0] && (event.detail[0]: any).contextCommand;
+    return (
+      Array.isArray(event.detail) &&
+      event.detail[0] &&
+      (event.detail[0]: any).contextCommand
+    );
   }
 }
 

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export function arrayRemove<T>(array: Array<T>, element: T): void {
@@ -153,7 +154,10 @@ export function areSetsEqual<T>(a: Set<T>, b: Set<T>): boolean {
 }
 
 // Array.every but for any iterable.
-export function every<T>(values: Iterable<T>, predicate: (element: T) => boolean): boolean {
+export function every<T>(
+  values: Iterable<T>,
+  predicate: (element: T) => boolean,
+): boolean {
   for (const element of values) {
     if (!predicate(element)) {
       return false;
@@ -170,11 +174,17 @@ export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
   // Avoids the extra Array allocations that `new Set([...a, ...b])` would incur. Some quick tests
   // indicate it would be about 60% slower.
   const result = new Set(a);
-  b.forEach(x => { result.add(x); });
+  b.forEach(x => {
+    result.add(x);
+  });
   return result;
 }
 
-export function setDifference<T>(a: Set<T>, b: Set<T>, hash_?: (v: T) => any): Set<T> {
+export function setDifference<T>(
+  a: Set<T>,
+  b: Set<T>,
+  hash_?: (v: T) => any,
+): Set<T> {
   if (a.size === 0) {
     return new Set();
   } else if (b.size === 0) {
@@ -334,15 +344,22 @@ export class MultiMap<K, V> {
   }
 
   forEach(callback: (value: V, key: K, obj: MultiMap<K, V>) => void): void {
-    this._map.forEach((values, key) => values.forEach(value => callback(value, key, this)));
+    this._map.forEach((values, key) =>
+      values.forEach(value => callback(value, key, this)),
+    );
   }
 }
 
 export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
-  if (obj == null) { throw new TypeError(); }
+  if (obj == null) {
+    throw new TypeError();
+  }
   const entries = [];
   for (const key in obj) {
-    if (obj.hasOwnProperty(key) && Object.prototype.propertyIsEnumerable.call(obj, key)) {
+    if (
+      obj.hasOwnProperty(key) &&
+      Object.prototype.propertyIsEnumerable.call(obj, key)
+    ) {
       entries.push([key, obj[key]]);
     }
   }
@@ -351,11 +368,15 @@ export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
 
 export function objectFromMap<T>(map: Map<string, T>): {[key: string]: T} {
   const obj = {};
-  map.forEach((v, k) => { obj[k] = v; });
+  map.forEach((v, k) => {
+    obj[k] = v;
+  });
   return obj;
 }
 
-export function *concatIterators<T>(...iterators: Array<Iterable<T>>): Iterator<T> {
+export function* concatIterators<T>(
+  ...iterators: Array<Iterable<T>>
+): Iterator<T> {
   for (const iterator of iterators) {
     for (const element of iterator) {
       yield element;
@@ -387,7 +408,7 @@ export function findInIterable<T>(
   return null;
 }
 
-export function *filterIterable<T>(
+export function* filterIterable<T>(
   iterable: Iterable<T>,
   predicate: (element: T) => boolean,
 ): Iterable<T> {
@@ -398,7 +419,7 @@ export function *filterIterable<T>(
   }
 }
 
-export function *mapIterable<T, M>(
+export function* mapIterable<T, M>(
   iterable: Iterable<T>,
   projectorFn: (element: T) => M,
 ): Iterable<M> {
@@ -420,5 +441,7 @@ export function iterableIsEmpty<T>(iterable: Iterable<T>): boolean {
 }
 
 export function iterableContains<T>(iterable: Iterable<T>, value: T): boolean {
-  return !iterableIsEmpty(filterIterable(iterable, element => element === value));
+  return !iterableIsEmpty(
+    filterIterable(iterable, element => element === value),
+  );
 }

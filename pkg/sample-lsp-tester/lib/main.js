@@ -6,14 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
+import type {
+  WorkspaceViewsService,
+} from '../../nuclide-workspace-views/lib/types';
 
 import createPackage from '../../commons-atom/createPackage';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {WORKSPACE_VIEW_URI, LspTester} from './LspTester';
-
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -34,20 +36,18 @@ class Activation {
         }
       }),
       () => api.destroyWhere(item => item instanceof LspTester),
-      atom.commands.add(
-        'atom-workspace',
-        'sample-lsp-tester:toggle',
-        event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
-      ),
+      atom.commands.add('atom-workspace', 'sample-lsp-tester:toggle', event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      }),
     );
   }
 
   deserializeLspTester(serialized: ?mixed): LspTester {
-    const data = serialized && serialized.data || null;
+    const data = (serialized && serialized.data) || null;
     return new LspTester({
       lastCommand: data != null && typeof data.lastCommand === 'string'
-      ? data.lastCommand || null
-      : null,
+        ? data.lastCommand || null
+        : null,
     });
   }
 }

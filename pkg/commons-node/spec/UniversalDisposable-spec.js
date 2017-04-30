@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import UniversalDisposable from '../UniversalDisposable';
@@ -23,8 +24,9 @@ describe('UniversalDisposable', () => {
   it('throws if you add after disposing', () => {
     const universal = new UniversalDisposable();
     universal.dispose();
-    expect(() => { universal.add(() => {}); })
-      .toThrow('Cannot add to an already disposed UniversalDisposable!');
+    expect(() => {
+      universal.add(() => {});
+    }).toThrow('Cannot add to an already disposed UniversalDisposable!');
   });
 
   it('calls function arguments', () => {
@@ -49,11 +51,7 @@ describe('UniversalDisposable', () => {
     const dispose = jasmine.createSpy('dispose');
     const unsubscribe = jasmine.createSpy('unsubscribe');
     const foo = jasmine.createSpy('foo');
-    const universal = new UniversalDisposable(
-      {dispose},
-      {unsubscribe},
-      foo,
-    );
+    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
 
     expect(dispose.wasCalled).toBe(false);
     expect(unsubscribe.wasCalled).toBe(false);
@@ -69,11 +67,7 @@ describe('UniversalDisposable', () => {
     const unsubscribe = jasmine.createSpy('unsubscribe');
     const foo = jasmine.createSpy('foo');
     const universal = new UniversalDisposable();
-    universal.add(
-      {dispose},
-      {unsubscribe},
-      foo,
-    );
+    universal.add({dispose}, {unsubscribe}, foo);
 
     expect(dispose.wasCalled).toBe(false);
     expect(unsubscribe.wasCalled).toBe(false);
@@ -88,11 +82,7 @@ describe('UniversalDisposable', () => {
     const dispose = jasmine.createSpy('dispose');
     const unsubscribe = jasmine.createSpy('unsubscribe');
     const foo = jasmine.createSpy('foo');
-    const universal = new UniversalDisposable(
-      {dispose},
-      {unsubscribe},
-      foo,
-    );
+    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
 
     expect(dispose.wasCalled).toBe(false);
     expect(unsubscribe.wasCalled).toBe(false);
@@ -107,11 +97,7 @@ describe('UniversalDisposable', () => {
     const dispose = jasmine.createSpy('dispose');
     const unsubscribe = jasmine.createSpy('unsubscribe');
     const foo = jasmine.createSpy('foo');
-    const universal = new UniversalDisposable(
-      {dispose},
-      {unsubscribe},
-      foo,
-    );
+    const universal = new UniversalDisposable({dispose}, {unsubscribe}, foo);
 
     expect(dispose.wasCalled).toBe(false);
     expect(unsubscribe.wasCalled).toBe(false);
@@ -129,11 +115,7 @@ describe('UniversalDisposable', () => {
     const dispose = {dispose: jasmine.createSpy('dispose')};
     const unsubscribe = {unsubscribe: jasmine.createSpy('unsubscribe')};
     const foo = jasmine.createSpy('foo');
-    const universal = new UniversalDisposable(
-      dispose,
-      unsubscribe,
-      foo,
-    );
+    const universal = new UniversalDisposable(dispose, unsubscribe, foo);
 
     universal.remove(unsubscribe);
     universal.remove(dispose);
@@ -150,11 +132,7 @@ describe('UniversalDisposable', () => {
     const dispose = {dispose: jasmine.createSpy('dispose')};
     const unsubscribe = {unsubscribe: jasmine.createSpy('unsubscribe')};
     const foo = jasmine.createSpy('foo');
-    const universal = new UniversalDisposable(
-      dispose,
-      unsubscribe,
-      foo,
-    );
+    const universal = new UniversalDisposable(dispose, unsubscribe, foo);
 
     universal.clear();
 

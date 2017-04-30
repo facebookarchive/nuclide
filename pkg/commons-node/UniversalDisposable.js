@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
@@ -77,5 +78,7 @@ function assertTeardown(teardown: AnyTeardown): void {
   ) {
     return;
   }
-  throw new TypeError('Arguments to UniversalDisposable.add must be disposable');
+  throw new TypeError(
+    'Arguments to UniversalDisposable.add must be disposable',
+  );
 }

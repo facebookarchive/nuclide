@@ -6,9 +6,12 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {HgService as HgServiceType} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  HgService as HgServiceType,
+} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {Directory, GitRepository} from 'atom';
 import {repositoryContainsPath} from '../../nuclide-vcs-base';
@@ -25,9 +28,10 @@ describe('repositoryContainsPath', () => {
   beforeEach(() => {
     // Create a temporary Hg repository.
     waitsForPromise(async () => {
-      tempFolder = await generateFixture('hg-git-bridge', new Map([
-        ['repoRoot/file.txt', 'hello world'],
-      ]));
+      tempFolder = await generateFixture(
+        'hg-git-bridge',
+        new Map([['repoRoot/file.txt', 'hello world']]),
+      );
       repoRoot = nuclideUri.join(tempFolder, 'repoRoot');
     });
   });

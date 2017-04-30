@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global performance */
@@ -20,11 +21,9 @@
  *   const timeItTookInMilliseconds = performanceNow() - now;
  */
 
-export default (
-  typeof performance !== 'undefined'
-    ? (): number => performance.now()
-    : (): number => {
+export default (typeof performance !== 'undefined'
+  ? (): number => performance.now()
+  : (): number => {
       const [seconds, nanoseconds] = process.hrtime();
       return seconds * 1000 + nanoseconds / 1000000;
-    }
-);
+    });

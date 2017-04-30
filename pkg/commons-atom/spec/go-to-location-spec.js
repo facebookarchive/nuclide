@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Point} from 'atom';
@@ -18,7 +19,9 @@ const FILE2_PATH = nuclideUri.join(__dirname, 'fixtures/file2.txt');
 
 describe('goToLocation', () => {
   beforeEach(() => {
-    atom.workspace.getTextEditors().forEach(editor => { editor.destroy(); });
+    atom.workspace.getTextEditors().forEach(editor => {
+      editor.destroy();
+    });
   });
 
   it('should work with nothing open', () => {
@@ -56,7 +59,9 @@ describe('goToLocation', () => {
       const editor1 = await atom.workspace.open(FILE1_PATH);
       const editor2 = await atom.workspace.open(FILE2_PATH, {split: 'right'});
       expect(atom.workspace.getActiveTextEditor()).toBe(editor2);
-      expect(atom.workspace.paneForItem(editor1)).not.toBe(atom.workspace.paneForItem(editor2));
+      expect(atom.workspace.paneForItem(editor1)).not.toBe(
+        atom.workspace.paneForItem(editor2),
+      );
 
       const editor3 = await goToLocation(FILE1_PATH);
       expect(atom.workspace.getActiveTextEditor()).toBe(editor3);

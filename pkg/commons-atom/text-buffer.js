@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
@@ -15,7 +16,9 @@ import {Observable} from 'rxjs';
 import nuclideUri from '../commons-node/nuclideUri';
 import {observableFromSubscribeFunction} from '../commons-node/event';
 
-export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed): IDisposable {
+export function observeBuffers(
+  observeBuffer: (buffer: atom$TextBuffer) => mixed,
+): IDisposable {
   return atom.project.observeBuffers(buffer => {
     if (!nuclideUri.isBrokenDeserializedUri(buffer.getPath())) {
       observeBuffer(buffer);
@@ -26,14 +29,17 @@ export function observeBuffers(observeBuffer: (buffer: atom$TextBuffer) => mixed
 // Observes all buffer opens.
 // Buffer renames are sent as an open of the new name.
 export function observeBufferOpen(): Observable<atom$TextBuffer> {
-  return observableFromSubscribeFunction(observeBuffers)
-    .mergeMap(buffer => {
-      const end = observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer));
-      const rename = observableFromSubscribeFunction(buffer.onDidChangePath.bind(buffer))
-        .map(() => buffer)
-        .takeUntil(end);
-      return Observable.of(buffer).concat(rename);
-    });
+  return observableFromSubscribeFunction(observeBuffers).mergeMap(buffer => {
+    const end = observableFromSubscribeFunction(
+      buffer.onDidDestroy.bind(buffer),
+    );
+    const rename = observableFromSubscribeFunction(
+      buffer.onDidChangePath.bind(buffer),
+    )
+      .map(() => buffer)
+      .takeUntil(end);
+    return Observable.of(buffer).concat(rename);
+  });
 }
 
 // Note that on a rename, the openedPath will be the path of the buffer when the open was sent,
@@ -46,11 +52,16 @@ export type CloseBufferEvent = {
 
 // Fires a single event when the buffer is destroyed or renamed.
 // Note that on a rename the buffer path will not be the same as the openedPath.
-export function observeBufferCloseOrRename(buffer: atom$TextBuffer): Observable<CloseBufferEvent> {
+export function observeBufferCloseOrRename(
+  buffer: atom$TextBuffer,
+): Observable<CloseBufferEvent> {
   const openedPath: ?NuclideUri = buffer.getPath();
   const end = observableFromSubscribeFunction(buffer.onDidDestroy.bind(buffer));
-  const rename = observableFromSubscribeFunction(buffer.onDidChangePath.bind(buffer));
-  return end.merge(rename)
+  const rename = observableFromSubscribeFunction(
+    buffer.onDidChangePath.bind(buffer),
+  );
+  return end
+    .merge(rename)
     .take(1)
     .map(() => ({kind: 'close', buffer, openedPath}));
 }

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -87,7 +88,9 @@ describe('arrayEqual', () => {
 
   it('checks object elements', () => {
     expect(arrayEqual([{}], [{}])).toBe(false);
-    expect(arrayEqual([{x: 1}, {x: 2}], [{x: 1}, {x: 2}], (a, b) => a.x === b.x)).toBe(true);
+    expect(
+      arrayEqual([{x: 1}, {x: 2}], [{x: 1}, {x: 2}], (a, b) => a.x === b.x),
+    ).toBe(true);
   });
 
   it('works with arrays of different lengths', () => {
@@ -98,7 +101,12 @@ describe('arrayEqual', () => {
 
 describe('arrayCompact', () => {
   it('filters out null and undefined elements', () => {
-    expect(arrayCompact([0, false, '', [], null, undefined])).toEqual([0, false, '', []]);
+    expect(arrayCompact([0, false, '', [], null, undefined])).toEqual([
+      0,
+      false,
+      '',
+      [],
+    ]);
   });
 });
 
@@ -317,11 +325,15 @@ describe('objectFromMap', () => {
 
 describe('concatIterators', () => {
   it('concatenates different iterable stuff to a single iterator', () => {
-    expect(Array.from(concatIterators(
-      new Set([1, 2, 3]),
-      [4, 5, 6],
-      new Set([7, 8, 9]).values(),
-    ))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(
+      Array.from(
+        concatIterators(
+          new Set([1, 2, 3]),
+          [4, 5, 6],
+          new Set([7, 8, 9]).values(),
+        ),
+      ),
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 });
 
@@ -346,80 +358,86 @@ describe('areSetsEqual', () => {
 
 describe('someOfIterable', () => {
   it('lazily returns whether any element of an iterable fulfills a given predicate', () => {
-    expect(someOfIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 2 === 0,
-    )).toEqual(true);
-    expect(someOfIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 5 === 0,
-    )).toEqual(true);
-    expect(someOfIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 6 === 0,
-    )).toEqual(false);
-    expect(someOfIterable(
-      [],
-      element => true,
-    )).toEqual(false);
+    expect(
+      someOfIterable(new Set([1, 2, 3, 4, 5]), element => element % 2 === 0),
+    ).toEqual(true);
+    expect(
+      someOfIterable(new Set([1, 2, 3, 4, 5]), element => element % 5 === 0),
+    ).toEqual(true);
+    expect(
+      someOfIterable(new Set([1, 2, 3, 4, 5]), element => element % 6 === 0),
+    ).toEqual(false);
+    expect(someOfIterable([], element => true)).toEqual(false);
   });
 });
 
 describe('findInIterable', () => {
   it('return the first element of an iterable which fulfills a given predicate', () => {
-    expect(findInIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 2 === 0,
-    )).toEqual(2);
-    expect(findInIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 5 === 0,
-    )).toEqual(5);
-    expect(findInIterable(
-      new Set([1, 2, 3, 4, 5]),
-      element => element % 6 === 0,
-    )).toEqual(null);
-    expect(findInIterable(
-      [],
-      element => true,
-    )).toEqual(null);
+    expect(
+      findInIterable(new Set([1, 2, 3, 4, 5]), element => element % 2 === 0),
+    ).toEqual(2);
+    expect(
+      findInIterable(new Set([1, 2, 3, 4, 5]), element => element % 5 === 0),
+    ).toEqual(5);
+    expect(
+      findInIterable(new Set([1, 2, 3, 4, 5]), element => element % 6 === 0),
+    ).toEqual(null);
+    expect(findInIterable([], element => true)).toEqual(null);
   });
 });
 
 describe('filterIterable', () => {
   it('returns a (lazy) iterable containing all elements which fulfill the given predicate', () => {
-    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => element % 2 === 0)))
-      .toEqual([2, 4]);
-    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => true)))
-      .toEqual([1, 2, 3, 4, 5]);
-    expect(Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false))).toEqual([]);
+    expect(
+      Array.from(
+        filterIterable(new Set([1, 2, 3, 4, 5]), element => element % 2 === 0),
+      ),
+    ).toEqual([2, 4]);
+    expect(
+      Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => true)),
+    ).toEqual([1, 2, 3, 4, 5]);
+    expect(
+      Array.from(filterIterable(new Set([1, 2, 3, 4, 5]), element => false)),
+    ).toEqual([]);
     expect(Array.from(filterIterable([], element => true))).toEqual([]);
   });
 });
 
 describe('mapEqual', () => {
   it('checks primary elements', () => {
-    expect(mapEqual(
-      new Map([[1, true], [2, false], [5, true]]),
-      new Map([[1, true], [2, false], [5, true]]),
-    )).toBe(true);
+    expect(
+      mapEqual(
+        new Map([[1, true], [2, false], [5, true]]),
+        new Map([[1, true], [2, false], [5, true]]),
+      ),
+    ).toBe(true);
     expect(mapEqual(new Map([[1, true]]), new Map([[1, false]]))).toBe(false);
     expect(mapEqual(new Map([[1, true]]), new Map([]))).toBe(false);
     expect(mapEqual(new Map([[1, true]]), new Map([[2, false]]))).toBe(false);
   });
 
   it('checks object value elements', () => {
-    expect(mapEqual(new Map([[1, {x: 1}]]), new Map([[1, {x: 1}]]))).toBe(false);
-    expect(mapEqual(new Map([[1, {x: 1}]]), new Map([[1, {x: 1}]]), (v1, v2) => v1.x === v2.x))
-      .toBe(true);
+    expect(mapEqual(new Map([[1, {x: 1}]]), new Map([[1, {x: 1}]]))).toBe(
+      false,
+    );
+    expect(
+      mapEqual(
+        new Map([[1, {x: 1}]]),
+        new Map([[1, {x: 1}]]),
+        (v1, v2) => v1.x === v2.x,
+      ),
+    ).toBe(true);
   });
 });
 
 describe('mapIterable', () => {
   it('projects each element of an iterable into a new iterable', () => {
     expect(Array.from(mapIterable(new Set(), element => true))).toEqual([]);
-    expect(Array.from(mapIterable(new Set([1, 2, 3, 4, 5]), element => element * element)))
-      .toEqual([1, 4, 9, 16, 25]);
+    expect(
+      Array.from(
+        mapIterable(new Set([1, 2, 3, 4, 5]), element => element * element),
+      ),
+    ).toEqual([1, 4, 9, 16, 25]);
   });
 });
 

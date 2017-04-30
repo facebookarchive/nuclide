@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -28,14 +29,18 @@ describe('attachEvent', () => {
 });
 
 describe('observableFromSubscribeFunction', () => {
-  let callback: ?((item: number) => mixed);
+  let callback: ?(item: number) => mixed;
   let disposable: ?IDisposable;
 
   // The subscribe function will put the given callback and the returned disposable in the variables
   // above for inspection.
   const subscribeFunction = fn => {
     callback = fn;
-    disposable = {dispose() { callback = null; }};
+    disposable = {
+      dispose() {
+        callback = null;
+      },
+    };
     spyOn(disposable, 'dispose').andCallThrough();
     return disposable;
   };

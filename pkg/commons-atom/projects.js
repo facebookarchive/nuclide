@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
@@ -14,14 +15,20 @@ import {File, Directory} from 'atom';
 import nuclideUri from '../commons-node/nuclideUri';
 
 function getValidProjectPaths(): Array<string> {
-  return atom.project.getDirectories().filter(directory => {
-    // If a remote directory path is a local `Directory` instance, the project path
-    // isn't yet ready for consumption.
-    if (nuclideUri.isRemote(directory.getPath()) && directory instanceof Directory) {
-      return false;
-    }
-    return true;
-  }).map(directory => directory.getPath());
+  return atom.project
+    .getDirectories()
+    .filter(directory => {
+      // If a remote directory path is a local `Directory` instance, the project path
+      // isn't yet ready for consumption.
+      if (
+        nuclideUri.isRemote(directory.getPath()) &&
+        directory instanceof Directory
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .map(directory => directory.getPath());
 }
 
 export function getAtomProjectRelativePath(path: NuclideUri): ?string {
@@ -44,7 +51,9 @@ export function getAtomProjectRootPath(path: NuclideUri): ?string {
  * This is intended to be used as a way to get a File object for any path
  * without worrying about remote vs. local paths.
  */
-export function relativizePathWithDirectory(path: NuclideUri): [?Directory, NuclideUri] {
+export function relativizePathWithDirectory(
+  path: NuclideUri,
+): [?Directory, NuclideUri] {
   for (const directory of atom.project.getDirectories()) {
     try {
       const relativePath = nuclideUri.relative(directory.getPath(), path);
@@ -72,12 +81,16 @@ export function getFileForPath(path: NuclideUri): ?File {
   return directory.getFile(relativePath);
 }
 
-export function observeProjectPaths(callback: (projectPath: string) => any): IDisposable {
+export function observeProjectPaths(
+  callback: (projectPath: string) => any,
+): IDisposable {
   getValidProjectPaths().forEach(callback);
   return onDidAddProjectPath(callback);
 }
 
-export function onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
+export function onDidAddProjectPath(
+  callback: (projectPath: string) => void,
+): IDisposable {
   let projectPaths: Array<string> = getValidProjectPaths();
   let changing: boolean = false;
   return atom.project.onDidChangePaths(() => {
@@ -96,7 +109,9 @@ export function onDidAddProjectPath(callback: (projectPath: string) => void): ID
   });
 }
 
-export function onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
+export function onDidRemoveProjectPath(
+  callback: (projectPath: string) => void,
+): IDisposable {
   let projectPaths: Array<string> = getValidProjectPaths();
   let changing: boolean = false;
   return atom.project.onDidChangePaths(() => {

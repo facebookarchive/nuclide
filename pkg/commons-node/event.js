@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Disposable} from 'event-kit';
@@ -30,9 +31,13 @@ export function attachEvent(
 type SubscribeCallback<T> = (item: T) => any;
 type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
 
-export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
+export function observableFromSubscribeFunction<T>(
+  fn: SubscribeFunction<T>,
+): Observable<T> {
   return Observable.create(observer => {
     const disposable = fn(observer.next.bind(observer));
-    return () => { disposable.dispose(); };
+    return () => {
+      disposable.dispose();
+    };
   });
 }

@@ -6,8 +6,8 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
-
 
 import {Cache} from '../cache';
 
@@ -18,12 +18,11 @@ describe('Cache', () => {
 
   it('creates values on demand', () => {
     let callCount = 0;
-    const factory = jasmine.createSpy('factory').andCallFake(
-      key => {
-        callCount += 1;
-        expect(key).toEqual(key1);
-        return value;
-      });
+    const factory = jasmine.createSpy('factory').andCallFake(key => {
+      callCount += 1;
+      expect(key).toEqual(key1);
+      return value;
+    });
     const cache: Cache<string, string> = new Cache(factory);
 
     expect(factory).not.toHaveBeenCalled();

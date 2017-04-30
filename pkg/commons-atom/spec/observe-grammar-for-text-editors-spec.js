@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import nullthrows from 'nullthrows';
@@ -20,9 +21,13 @@ describe('observeGrammarForTextEditors', () => {
     observeGrammarForTextEditors.__reset__();
     // The grammar registry is cleared automatically after Atom 1.3.0+
     atom.grammars.clear();
-    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/objective-c.cson'));
+    atom.grammars.loadGrammarSync(
+      nuclideUri.join(__dirname, 'grammars/objective-c.cson'),
+    );
     objcGrammar = nullthrows(atom.grammars.grammarForScopeName('source.objc'));
-    atom.grammars.loadGrammarSync(nuclideUri.join(__dirname, 'grammars/javascript.cson'));
+    atom.grammars.loadGrammarSync(
+      nuclideUri.join(__dirname, 'grammars/javascript.cson'),
+    );
     jsGrammar = nullthrows(atom.grammars.grammarForScopeName('source.js'));
   });
 

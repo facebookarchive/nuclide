@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -90,7 +91,11 @@ export function relativeDate(
   for (const [limit, relativeFormat, remainder] of formats) {
     if (delta < limit) {
       if (typeof remainder === 'number') {
-        return Math.round(delta / remainder) + (useShortVariant ? '' : ' ') + relativeFormat;
+        return (
+          Math.round(delta / remainder) +
+          (useShortVariant ? '' : ' ') +
+          relativeFormat
+        );
       } else {
         return relativeFormat;
       }
@@ -125,7 +130,9 @@ export function shellParse(str: string, env?: Object): Array<string> {
   const result = parse(str, env);
   for (let i = 0; i < result.length; i++) {
     if (typeof result[i] !== 'string') {
-      throw new Error(`Unexpected operator "${result[i].op}" provided to shellParse`);
+      throw new Error(
+        `Unexpected operator "${result[i].op}" provided to shellParse`,
+      );
     }
   }
   return result;
@@ -141,14 +148,24 @@ export function removeCommonPrefix(a: string, b: string): [string, string] {
 
 export function removeCommonSuffix(a: string, b: string): [string, string] {
   let i = 0;
-  while (a[a.length - 1 - i] === b[b.length - 1 - i] && i < a.length && i < b.length) {
+  while (
+    a[a.length - 1 - i] === b[b.length - 1 - i] &&
+    i < a.length &&
+    i < b.length
+  ) {
     i++;
   }
   return [a.substring(0, a.length - i), b.substring(0, b.length - i)];
 }
 
-export function shorten(str: string, maxLength: number, suffix?: string): string {
-  return str.length < maxLength ? str : str.slice(0, maxLength) + (suffix || '');
+export function shorten(
+  str: string,
+  maxLength: number,
+  suffix?: string,
+): string {
+  return str.length < maxLength
+    ? str
+    : str.slice(0, maxLength) + (suffix || '');
 }
 
 /**
@@ -164,7 +181,11 @@ export function splitOnce(str: string, separator: string): [string, ?string] {
 /**
  * Indents each line by the specified number of characters.
  */
-export function indent(str: string, level: number = 2, char: string = ' '): string {
+export function indent(
+  str: string,
+  level: number = 2,
+  char: string = ' ',
+): string {
   return str.replace(/^([^\n])/gm, char.repeat(level) + '$1');
 }
 

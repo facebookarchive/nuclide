@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import createPackage from '../createPackage';
@@ -15,21 +16,19 @@ describe('createPackage', () => {
     class Activation {
       initialize() {}
     }
-    expect(() => createPackage({}, Activation))
-      .toThrow(
-        'Your activation class contains an "initialize" method, but that work should be done in the'
-        + ' constructor.',
-      );
+    expect(() => createPackage({}, Activation)).toThrow(
+      'Your activation class contains an "initialize" method, but that work should be done in the' +
+        ' constructor.',
+    );
   });
 
   it('throws when the activation class contains a `deactivate()`', () => {
     class Activation {
       deactivate() {}
     }
-    expect(() => createPackage({}, Activation))
-      .toThrow(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
-      );
+    expect(() => createPackage({}, Activation)).toThrow(
+      'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
+    );
   });
 
   it("calls the activation's `dispose()` when deactivated", () => {
@@ -86,7 +85,9 @@ describe('createPackage', () => {
     createPackage(pkg, Activation);
     pkg.initialize();
     pkg.deactivate();
-    expect(() => { pkg.doSomething(); }).toThrow('Package not initialized');
+    expect(() => {
+      pkg.doSomething();
+    }).toThrow('Package not initialized');
     expect(called).toBe(false);
   });
 

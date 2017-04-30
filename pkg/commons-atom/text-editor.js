@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
@@ -36,7 +37,9 @@ export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
  * Returns a text editor that has the given buffer open, or null if none exists. If there are
  * multiple text editors for this buffer, one is chosen arbitrarily.
  */
-export function existingEditorForBuffer(buffer: atom$TextBuffer): ?atom$TextEditor {
+export function existingEditorForBuffer(
+  buffer: atom$TextBuffer,
+): ?atom$TextEditor {
   // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
   // real problem. And if you have more than a few hundred you probably have bigger problems.
   for (const editor of atom.workspace.getTextEditors()) {
@@ -48,7 +51,9 @@ export function existingEditorForBuffer(buffer: atom$TextBuffer): ?atom$TextEdit
   return null;
 }
 
-export function getViewOfEditor(editor: atom$TextEditor): atom$TextEditorElement {
+export function getViewOfEditor(
+  editor: atom$TextEditor,
+): atom$TextEditorElement {
   return atom.views.getView(editor);
 }
 
@@ -76,19 +81,24 @@ export function setPositionAndScroll(
   setScrollTop(editor, scrollTop);
 }
 
-export function getCursorPositions(editor: atom$TextEditor): Observable<atom$Point> {
+export function getCursorPositions(
+  editor: atom$TextEditor,
+): Observable<atom$Point> {
   // This will behave strangely in the face of multiple cursors. Consider supporting multiple
   // cursors in the future.
   const cursor = editor.getCursors()[0];
   invariant(cursor != null);
   return Observable.merge(
     Observable.of(cursor.getBufferPosition()),
-    observableFromSubscribeFunction(cursor.onDidChangePosition.bind(cursor))
-      .map(event => event.newBufferPosition),
+    observableFromSubscribeFunction(
+      cursor.onDidChangePosition.bind(cursor),
+    ).map(event => event.newBufferPosition),
   );
 }
 
-export function observeEditorDestroy(editor: atom$TextEditor): Observable<atom$TextEditor> {
+export function observeEditorDestroy(
+  editor: atom$TextEditor,
+): Observable<atom$TextEditor> {
   return observableFromSubscribeFunction(editor.onDidDestroy.bind(editor))
     .map(event => editor)
     .take(1);
@@ -154,7 +164,9 @@ export function enforceSoftWrap(
  * Small wrapper around `atom.workspace.observeTextEditors` that filters out
  * uninitialized remote editors. Most callers should use this one instead.
  */
-export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable {
+export function observeTextEditors(
+  callback: (editor: atom$TextEditor) => mixed,
+): IDisposable {
   // The one place where atom.workspace.observeTextEditors needs to be used.
   // eslint-disable-next-line nuclide-internal/atom-apis
   return atom.workspace.observeTextEditors(editor => {
@@ -170,7 +182,9 @@ export function observeTextEditors(callback: (editor: atom$TextEditor) => mixed)
 export function isValidTextEditor(item: mixed): boolean {
   // eslint-disable-next-line nuclide-internal/atom-apis
   if (atom.workspace.isTextEditor(item)) {
-    return !nuclideUri.isBrokenDeserializedUri(((item: any): atom$TextEditor).getPath());
+    return !nuclideUri.isBrokenDeserializedUri(
+      ((item: any): atom$TextEditor).getPath(),
+    );
   }
   return false;
 }

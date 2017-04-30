@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // NuclideUri's are either a local file path, or a URI
@@ -69,7 +70,10 @@ function isLocal(uri: NuclideUri): boolean {
 }
 
 function createRemoteUri(hostname: string, remotePath: string): string {
-  invariant(remotePath != null && remotePath !== '', 'NuclideUri must include a path.');
+  invariant(
+    remotePath != null && remotePath !== '',
+    'NuclideUri must include a path.',
+  );
   return `nuclide://${hostname}${remotePath}`;
 }
 
@@ -118,7 +122,7 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   invariant(
     parsedUri.hostname,
     `Remote Nuclide URIs must contain hostnames, '${maybeToString(parsedUri.hostname)}' found ` +
-    `while parsing '${remoteUri}'`,
+      `while parsing '${remoteUri}'`,
   );
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
@@ -153,7 +157,8 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
     relativePath.splice(0, 0, path);
     return createRemoteUri(
       hostname,
-      uriPathModule.join.apply(null, relativePath));
+      uriPathModule.join.apply(null, relativePath),
+    );
   } else {
     relativePath.splice(0, 0, uri);
     return uriPathModule.join.apply(null, relativePath);
@@ -165,10 +170,7 @@ function normalize(uri: NuclideUri): NuclideUri {
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.normalize(path),
-    );
+    return createRemoteUri(hostname, uriPathModule.normalize(path));
   } else {
     return uriPathModule.normalize(uri);
   }
@@ -187,9 +189,13 @@ function relative(uri: NuclideUri, other: NuclideUri): string {
   _testForAtomUri(uri);
   const uriPathModule = _pathModuleFor(uri);
   const remote = isRemote(uri);
-  if (remote !== isRemote(other) ||
-      (remote && getHostname(uri) !== getHostname(other))) {
-    throw new Error(`Cannot relative urls on different hosts: ${uri} and ${other}`);
+  if (
+    remote !== isRemote(other) ||
+    (remote && getHostname(uri) !== getHostname(other))
+  ) {
+    throw new Error(
+      `Cannot relative urls on different hosts: ${uri} and ${other}`,
+    );
   }
   if (remote) {
     return uriPathModule.relative(getPath(uri), getPath(other));
@@ -209,10 +215,7 @@ function dirname(uri: NuclideUri): NuclideUri {
   const uriPathModule = _pathModuleFor(uri);
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.dirname(path),
-    );
+    return createRemoteUri(hostname, uriPathModule.dirname(path));
   } else {
     return uriPathModule.dirname(uri);
   }
@@ -265,7 +268,8 @@ function uriToNuclideUri(uri: string): ?string {
   }
 
   const urlParts = url.parse(_escapeSpecialCharacters(uri), false);
-  if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
+  if (urlParts.protocol === 'file:' && urlParts.path) {
+    // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {
     return uri;
@@ -308,9 +312,11 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
   // equal OR if the next character in the path to check is a path
   // separator, then we know the checked path is in this path.
 
-  if (child.length < parent.length) {  // A strong indication of false
+  if (child.length < parent.length) {
+    // A strong indication of false
     // It could be a matter of a trailing separator, though
-    if (child.length < parent.length - 1) { // It must be more than just the separator
+    if (child.length < parent.length - 1) {
+      // It must be more than just the separator
       return false;
     }
 
@@ -334,9 +340,7 @@ function contains(parent: NuclideUri, child: NuclideUri): boolean {
  * [a/b/c, a/, c/d/, c/d/e] collapses to [a/, c/d/]
  */
 function collapse(paths: Array<NuclideUri>): Array<NuclideUri> {
-  return paths.filter(p =>
-    !paths.some(fp => contains(fp, p) && fp !== p),
-  );
+  return paths.filter(p => !paths.some(fp => contains(fp, p) && fp !== p));
 }
 
 const hostFormatters = [];
@@ -423,9 +427,7 @@ function resolve(uri: NuclideUri, ...paths: Array<string>): NuclideUri {
   if (isRemote(uri)) {
     const {hostname, path} = parseRemoteUri(uri);
     paths.splice(0, 0, path);
-    return createRemoteUri(
-      hostname,
-      uriPathModule.resolve.apply(null, paths));
+    return createRemoteUri(hostname, uriPathModule.resolve.apply(null, paths));
   } else {
     paths.splice(0, 0, uri);
     return uriPathModule.resolve.apply(null, paths);
@@ -445,7 +447,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
   // on Windows, so asking for any case is expected to work.
   const {HOME, UserProfile} = process.env;
 
-  const homePath = (os.platform() === 'win32') ? UserProfile : HOME;
+  const homePath = os.platform() === 'win32' ? UserProfile : HOME;
   invariant(homePath != null);
 
   if (uri === '~') {
@@ -467,7 +469,10 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
  * Since remote URI might contain the delimiter, only local paths are allowed.
  */
 function splitPathList(paths: string): Array<NuclideUri> {
-  invariant(paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0, 'Splitting remote URIs is not supported');
+  invariant(
+    paths.indexOf(REMOTE_PATH_URI_PREFIX) < 0,
+    'Splitting remote URIs is not supported',
+  );
   const uriPathModule = _pathModuleFor(paths);
 
   return paths.split(uriPathModule.delimiter);
@@ -484,7 +489,10 @@ function joinPathList(paths: Array<NuclideUri>): string {
     return '';
   }
 
-  invariant(paths.every(path => !isRemote(path)), 'Joining of remote URIs is not supported');
+  invariant(
+    paths.every(path => !isRemote(path)),
+    'Joining of remote URIs is not supported',
+  );
 
   const uriPathModule = _pathModuleFor(paths[0]);
   return paths.join(uriPathModule.delimiter);
@@ -499,7 +507,10 @@ function ensureLocalPrefix(uri: NuclideUri): NuclideUri {
   const uriPathModule = _pathModuleFor(uri);
 
   invariant(!isRemote(uri), 'Local prefix can not be added to a remote path');
-  invariant(!isAbsolute(uri), 'Local prefix can not be added to an absolute path');
+  invariant(
+    !isAbsolute(uri),
+    'Local prefix can not be added to an absolute path',
+  );
 
   const localPrefix = `.${uriPathModule.sep}`;
   if (uri.startsWith(localPrefix)) {
@@ -550,7 +561,10 @@ function _pathModuleFor(uri: NuclideUri): typeof pathModule {
     return pathModule.win32;
   }
 
-  if (uri.split(pathModule.win32.sep).length > uri.split(pathModule.posix.sep).length) {
+  if (
+    uri.split(pathModule.win32.sep).length >
+    uri.split(pathModule.posix.sep).length
+  ) {
     return pathModule.win32;
   } else {
     return pathModule.posix;
@@ -579,7 +593,10 @@ const NUCLIDE_URI_TYPE_NAME = 'NuclideUri';
 function validate(uri: NuclideUri, mustBeRemote?: boolean): void {
   // Be a little extra paranoid to catch places where the type system may be weak.
   invariant(uri != null, 'Unexpected null NuclideUri');
-  invariant(typeof uri === 'string', `Unexpected NuclideUri type: ${String(uri)}`);
+  invariant(
+    typeof uri === 'string',
+    `Unexpected NuclideUri type: ${String(uri)}`,
+  );
 
   if (isRemote(uri)) {
     parse(uri);

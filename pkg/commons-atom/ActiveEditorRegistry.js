@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -36,36 +37,46 @@ export type Provider = {
   updateOnEdit?: boolean,
 };
 
-export type Result<T, V> = {
-  kind: 'not-text-editor',
-} | {
-  kind: 'no-provider',
-  grammar: atom$Grammar,
-} | {
-  kind: 'provider-error',
-  provider: T,
-} | {
-  // Since providers can be slow, the pane-change and edit events are emitted immediately in case
-  // the UI needs to clear outdated results.
-  kind: 'pane-change',
-  editor: atom$TextEditor,
-} | {
-  kind: 'edit',
-  editor: atom$TextEditor,
-} | {
-  kind: 'save',
-  editor: atom$TextEditor,
-} | {
-  kind: 'result',
-  result: V,
-  // The editor that the result was computed from
-  editor: atom$TextEditor,
-  // The provider that computed the result
-  // TODO Use a type paramater for this type
-  provider: T,
-};
+export type Result<T, V> =
+  | {
+      kind: 'not-text-editor',
+    }
+  | {
+      kind: 'no-provider',
+      grammar: atom$Grammar,
+    }
+  | {
+      kind: 'provider-error',
+      provider: T,
+    }
+  | {
+      // Since providers can be slow, the pane-change and edit events are emitted immediately in case
+      // the UI needs to clear outdated results.
+      kind: 'pane-change',
+      editor: atom$TextEditor,
+    }
+  | {
+      kind: 'edit',
+      editor: atom$TextEditor,
+    }
+  | {
+      kind: 'save',
+      editor: atom$TextEditor,
+    }
+  | {
+      kind: 'result',
+      result: V,
+      // The editor that the result was computed from
+      editor: atom$TextEditor,
+      // The provider that computed the result
+      // TODO Use a type paramater for this type
+      provider: T,
+    };
 
-export type ResultFunction<T, V> = (provider: T, editor: atom$TextEditor) => Promise<V>;
+export type ResultFunction<T, V> = (
+  provider: T,
+  editor: atom$TextEditor,
+) => Promise<V>;
 
 type PartialEventSources = {
   +activeEditors?: Observable<?atom$TextEditor>,
@@ -119,12 +130,16 @@ export default class ActiveEditorRegistry<T: Provider, V> {
     this._providerRegistry = new ProviderRegistry();
     this._newProviderEvents = new Subject();
     this._resultsStream = this._createResultsStream({
-      activeEditors: eventSources.activeEditors || observeActiveEditorsDebounced(),
-      changesForEditor: eventSources.changesForEditor || (editor => editorChangesDebounced(editor)),
-      savesForEditor: eventSources.savesForEditor || (editor => {
-        return observableFromSubscribeFunction(callback => editor.onDidSave(callback))
-          .mapTo(undefined);
-      }),
+      activeEditors: eventSources.activeEditors ||
+        observeActiveEditorsDebounced(),
+      changesForEditor: eventSources.changesForEditor ||
+        (editor => editorChangesDebounced(editor)),
+      savesForEditor: eventSources.savesForEditor ||
+        (editor => {
+          return observableFromSubscribeFunction(callback =>
+            editor.onDidSave(callback),
+          ).mapTo(undefined);
+        }),
     });
   }
 
@@ -164,24 +179,24 @@ export default class ActiveEditorRegistry<T: Provider, V> {
           kind: 'pane-change',
           editor,
         }),
-        Observable.fromPromise(this._getResultForEditor(
-          this._getProviderForEditor(editor),
-          editor,
-        )),
+        Observable.fromPromise(
+          this._getResultForEditor(this._getProviderForEditor(editor), editor),
+        ),
         this._resultsForEditor(editor, eventSources),
       );
     });
     return cacheWhileSubscribed(results);
   }
 
-  _resultsForEditor(editor: atom$TextEditor, eventSources: EventSources): Observable<Result<T, V>> {
+  _resultsForEditor(
+    editor: atom$TextEditor,
+    eventSources: EventSources,
+  ): Observable<Result<T, V>> {
     // It's possible that the active provider for an editor changes over time.
     // Thus, we have to subscribe to both edits and saves.
     return Observable.merge(
-      eventSources.changesForEditor(editor)
-        .map(() => 'edit'),
-      eventSources.savesForEditor(editor)
-        .map(() => 'save'),
+      eventSources.changesForEditor(editor).map(() => 'edit'),
+      eventSources.savesForEditor(editor).map(() => 'save'),
     ).flatMap(event => {
       const provider = this._getProviderForEditor(editor);
       if (provider != null) {
@@ -206,7 +221,10 @@ export default class ActiveEditorRegistry<T: Provider, V> {
     return this._providerRegistry.getProviderForEditor(editor);
   }
 
-  async _getResultForEditor(provider: ?T, editor: atom$TextEditor): Promise<Result<T, V>> {
+  async _getResultForEditor(
+    provider: ?T,
+    editor: atom$TextEditor,
+  ): Promise<Result<T, V>> {
     if (provider == null) {
       return {
         kind: 'no-provider',
@@ -221,7 +239,10 @@ export default class ActiveEditorRegistry<T: Provider, V> {
         editor,
       };
     } catch (e) {
-      logger.error(`Error from provider for ${editor.getGrammar().scopeName}`, e);
+      logger.error(
+        `Error from provider for ${editor.getGrammar().scopeName}`,
+        e,
+      );
       return {
         provider,
         kind: 'provider-error',

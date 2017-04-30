@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Subject} from 'rxjs';
@@ -46,7 +47,12 @@ export async function goToLocation(
   const currentEditor = atom.workspace.getActiveTextEditor();
   if (currentEditor != null && currentEditor.getPath() === file) {
     if (line != null) {
-      goToLocationInEditor(currentEditor, line, column == null ? 0 : column, center);
+      goToLocationInEditor(
+        currentEditor,
+        line,
+        column == null ? 0 : column,
+        center,
+      );
     } else {
       invariant(column == null, 'goToLocation: Cannot specify just column');
     }

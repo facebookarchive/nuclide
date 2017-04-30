@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -14,7 +15,7 @@ export default function debounce<
   T,
   TArgs: Array<T>,
   TReturn,
-  TFunc:(...TArgs) => TReturn,
+  TFunc: (...TArgs) => TReturn // eslint-disable-line space-before-function-paren
 >(
   func: TFunc,
   wait: number,
@@ -28,7 +29,7 @@ export default function debounce<
   let args: ?TArgs;
   let context: any;
   let timestamp = 0;
-  let result: (TReturn | void);
+  let result: TReturn | void;
 
   const later = function() {
     const last = Date.now() - timestamp;
@@ -47,7 +48,7 @@ export default function debounce<
     }
   };
 
-  const debounced = function(...args_: TArgs): (TReturn | void) {
+  const debounced = function(...args_: TArgs): TReturn | void {
     context = this;
     args = args_;
     timestamp = Date.now();

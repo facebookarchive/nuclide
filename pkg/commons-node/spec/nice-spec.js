@@ -6,11 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import typeof {
-  niceSafeSpawn as niceSafeSpawnType,
-} from '../nice';
+import typeof {niceSafeSpawn as niceSafeSpawnType} from '../nice';
 
 import {uncachedRequire} from '../../nuclide-test-helpers';
 import {Observable} from 'rxjs';
@@ -39,8 +38,9 @@ describe('nice', () => {
         return null;
       }
     });
-    spawnSpy = spyOn(require('../process'), 'spawn')
-      .andReturn(Observable.of(fakeSafeSpawnReturn));
+    spawnSpy = spyOn(require('../process'), 'spawn').andReturn(
+      Observable.of(fakeSafeSpawnReturn),
+    );
     ({niceSafeSpawn} = (uncachedRequire(require, '../nice'): any));
   });
 
@@ -49,7 +49,9 @@ describe('nice', () => {
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
       expect(spawnSpy).toHaveBeenCalledWith(
-        'ionice', ['-n', '7', 'nice', 'echo', 'hi'], execOptions,
+        'ionice',
+        ['-n', '7', 'nice', 'echo', 'hi'],
+        execOptions,
       );
       expect(result).toBe(fakeSafeSpawnReturn);
     });
@@ -71,7 +73,11 @@ describe('nice', () => {
       shouldFindIoniceCommand = false;
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnSpy).toHaveBeenCalledWith('nice', ['echo', 'hi'], execOptions);
+      expect(spawnSpy).toHaveBeenCalledWith(
+        'nice',
+        ['echo', 'hi'],
+        execOptions,
+      );
       expect(result).toBe(fakeSafeSpawnReturn);
     });
   });
@@ -82,8 +88,11 @@ describe('nice', () => {
       shouldFindNiceCommand = false;
       const execOptions = {};
       const result = await niceSafeSpawn('echo', ['hi'], execOptions);
-      expect(spawnSpy)
-        .toHaveBeenCalledWith('ionice', ['-n', '7', 'echo', 'hi'], execOptions);
+      expect(spawnSpy).toHaveBeenCalledWith(
+        'ionice',
+        ['-n', '7', 'echo', 'hi'],
+        execOptions,
+      );
       expect(result).toBe(fakeSafeSpawnReturn);
     });
   });

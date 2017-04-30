@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -32,40 +33,40 @@ export function observeActivePaneItemDebounced(
 ): Observable<mixed> {
   return observableFromSubscribeFunction(callback => {
     return atom.workspace.observeActivePaneItem(callback);
-  })
-  .debounceTime(debounceInterval);
+  }).debounceTime(debounceInterval);
 }
 
 export function observeActiveEditorsDebounced(
   debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): Observable<?atom$TextEditor> {
-  return observeActivePaneItemDebounced(debounceInterval)
-    .map(paneItem => {
-      if (isValidTextEditor(paneItem)) {
-        // Flow cannot understand the type refinement provided by the isValidTextEditor function,
-        // so we have to cast.
-        return ((paneItem: any): atom$TextEditor);
-      }
-      return null;
-    });
+  return observeActivePaneItemDebounced(debounceInterval).map(paneItem => {
+    if (isValidTextEditor(paneItem)) {
+      // Flow cannot understand the type refinement provided by the isValidTextEditor function,
+      // so we have to cast.
+      return ((paneItem: any): atom$TextEditor);
+    }
+    return null;
+  });
 }
 
 export function editorChangesDebounced(
   editor: atom$TextEditor,
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<void> {
-  return observableFromSubscribeFunction(callback => editor.onDidChange(callback))
-    // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
-    // configurable.
-    .debounceTime(debounceInterval);
+  return (
+    observableFromSubscribeFunction(callback => editor.onDidChange(callback))
+      // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
+      // configurable.
+      .debounceTime(debounceInterval)
+  );
 }
 
 export function editorScrollTopDebounced(
   editor: atom$TextEditor,
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<number> {
-  return observableFromSubscribeFunction(
-    callback => atom.views.getView(editor).onDidChangeScrollTop(callback),
+  return observableFromSubscribeFunction(callback =>
+    atom.views.getView(editor).onDidChangeScrollTop(callback),
   ).debounceTime(debounceInterval);
 }
 
@@ -80,15 +81,16 @@ export function observeTextEditorsPositions(
   editorDebounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
   positionDebounceInterval: number = DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS,
 ): Observable<?EditorPosition> {
-  return observeActiveEditorsDebounced(editorDebounceInterval).switchMap(
-    editor => {
-      return editor == null
-        ? Observable.of(null)
-        : getCursorPositions(editor)
-            .debounceTime(positionDebounceInterval)
-            .map(position => {
-              invariant(editor != null);
-              return {editor, position};
-            });
-    });
+  return observeActiveEditorsDebounced(
+    editorDebounceInterval,
+  ).switchMap(editor => {
+    return editor == null
+      ? Observable.of(null)
+      : getCursorPositions(editor)
+          .debounceTime(positionDebounceInterval)
+          .map(position => {
+            invariant(editor != null);
+            return {editor, position};
+          });
+  });
 }

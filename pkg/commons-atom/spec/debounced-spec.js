@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Point} from 'atom';
@@ -34,8 +35,8 @@ xdescribe('editorScrollTopDebounced', () => {
   it('debounces scroll event', () => {
     const LINES = 1000;
     const mockText = Array(LINES)
-                      .fill('MOCK LINE\n')
-                      .reduce((a, b) => a.concat(b));
+      .fill('MOCK LINE\n')
+      .reduce((a, b) => a.concat(b));
 
     waitsForPromise(async () => {
       const editor = await atom.workspace.open();
@@ -86,7 +87,9 @@ xdescribe('pane item change events', () => {
         // Ordinarily we would have to provide an element or register a view, but since we are just
         // testing the model here and not actually rendering anything Atom doesn't complain. If
         // these tests start failing because Atom can't find a view, look here.
-        getTitle() { return 'foo'; },
+        getTitle() {
+          return 'foo';
+        },
       };
       pane.addItem(nonEditor);
       pane.activateItem(editor1);
@@ -113,10 +116,7 @@ xdescribe('pane item change events', () => {
 
     it('should debounce', () => {
       waitsForPromise(async () => {
-        const itemsPromise = activePaneItems
-          .take(2)
-          .toArray()
-          .toPromise();
+        const itemsPromise = activePaneItems.take(2).toArray().toPromise();
 
         await sleep(SLEEP_INTERVAL);
 
@@ -136,10 +136,7 @@ xdescribe('pane item change events', () => {
 
     it('should return null if the item is not an editor', () => {
       waitsForPromise(async () => {
-        const itemsPromise = activeEditors
-          .take(3)
-          .toArray()
-          .toPromise();
+        const itemsPromise = activeEditors.take(3).toArray().toPromise();
 
         await sleep(SLEEP_INTERVAL);
         pane.activateItem(nonEditor);
@@ -155,7 +152,10 @@ xdescribe('pane item change events', () => {
   describe('observeTextEditorsPositions', () => {
     it('cursor moves and non-editors', () => {
       waitsForPromise(async () => {
-        const itemsPromise = observeTextEditorsPositions(DEBOUNCE_INTERVAL, DEBOUNCE_INTERVAL)
+        const itemsPromise = observeTextEditorsPositions(
+          DEBOUNCE_INTERVAL,
+          DEBOUNCE_INTERVAL,
+        )
           .take(5)
           .toArray()
           .toPromise();
@@ -213,9 +213,7 @@ xdescribe('editorChangesDebounced', () => {
   it('debounces changes', () => {
     waitsForPromise(async () => {
       const eventsPromise = editorChanges
-        .takeUntil(
-          Observable.of(null).delay(50),
-        )
+        .takeUntil(Observable.of(null).delay(50))
         .toArray()
         .toPromise();
 

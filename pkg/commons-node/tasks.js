@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // It's really convenient to model processes with Observables but Atom use a more OO [Task
@@ -86,12 +87,16 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
     let finished = false;
 
     const events = typeof task.onProgress === 'function'
-      ? observableFromSubscribeFunction(task.onProgress.bind(task))
-          .map(progress => ({type: 'progress', progress}))
+      ? observableFromSubscribeFunction(
+          task.onProgress.bind(task),
+        ).map(progress => ({type: 'progress', progress}))
       : Observable.never();
-    const completeEvents = observableFromSubscribeFunction(task.onDidComplete.bind(task));
-    const errors = observableFromSubscribeFunction(task.onDidError.bind(task))
-      .switchMap(Observable.throw);
+    const completeEvents = observableFromSubscribeFunction(
+      task.onDidComplete.bind(task),
+    );
+    const errors = observableFromSubscribeFunction(
+      task.onDidError.bind(task),
+    ).switchMap(Observable.throw);
 
     const subscription = new Subscription();
 
@@ -105,8 +110,12 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
       Observable.merge(events, errors)
         .takeUntil(completeEvents)
         .do({
-          complete: () => { finished = true; },
-          error: () => { finished = true; },
+          complete: () => {
+            finished = true;
+          },
+          error: () => {
+            finished = true;
+          },
         })
         .subscribe(observer),
     );

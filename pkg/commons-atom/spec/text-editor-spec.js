@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import {
-  existingEditorForUri,
-  observeTextEditors,
-} from '../text-editor';
+import {existingEditorForUri, observeTextEditors} from '../text-editor';
 
 describe('existingEditorForUri', () => {
   const file1 = '/tmp/file1.txt';
@@ -54,10 +52,7 @@ describe('observeTextEditors', () => {
       await atom.workspace.open('');
       await atom.workspace.open('/tmp/test');
 
-      expect(paths).toEqual([
-        undefined,
-        '/tmp/test',
-      ]);
+      expect(paths).toEqual([undefined, '/tmp/test']);
     });
   });
 });

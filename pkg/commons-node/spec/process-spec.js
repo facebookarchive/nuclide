@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {ProcessExitMessage} from '../process-rpc-types';
@@ -58,7 +59,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         jasmine.useRealClock();
         // Create a tree that's more than level child deep.
-        const proc = child_process.spawn('bash', ['-c', '( (sleep 1000)& sleep 1000 )& wait']);
+        const proc = child_process.spawn('bash', [
+          '-c',
+          '( (sleep 1000)& sleep 1000 )& wait',
+        ]);
         spyOn(console, 'error'); // suppress error printing
         spyOn(console, 'log'); // suppress log printing
         spyOn(process, 'kill').andCallThrough();
@@ -79,16 +83,19 @@ describe('commons-node/process', () => {
         spyOn(child_process, 'exec');
         await killProcess((proc: any), true);
         expect(child_process.exec.calls.length).toBe(1);
-        expect(child_process.exec.calls[0].args[0]).toBe(`taskkill /pid ${proc.pid} /T /F`);
+        expect(child_process.exec.calls[0].args[0]).toBe(
+          `taskkill /pid ${proc.pid} /T /F`,
+        );
       });
     });
   });
 
   describe('process.parsePsOutput', () => {
     it('parse `ps` unix output', () => {
-      const unixPsOut = ' PPID   PID COMM\n'
-        + '    0     1  /sbin/launchd\n'
-        + '    1    42  command with spaces';
+      const unixPsOut =
+        ' PPID   PID COMM\n' +
+        '    0     1  /sbin/launchd\n' +
+        '    1    42  command with spaces';
       const processList = parsePsOutput(unixPsOut);
       expect(processList).toEqual([
         {command: '/sbin/launchd', pid: 1, parentPid: 0},
@@ -97,9 +104,10 @@ describe('commons-node/process', () => {
     });
 
     it('parse `ps` windows output', () => {
-      const windowsProcessOut = 'ParentProcessId   ProcessId   Name\r\n'
-        + '           0                4     System Process\r\n'
-        + '           4                228   smss.exe';
+      const windowsProcessOut =
+        'ParentProcessId   ProcessId   Name\r\n' +
+        '           0                4     System Process\r\n' +
+        '           4                228   smss.exe';
 
       const processList = parsePsOutput(windowsProcessOut);
       expect(processList).toEqual([
@@ -112,11 +120,11 @@ describe('commons-node/process', () => {
   describe('getOutputStream', () => {
     it('captures stdout, stderr and exitCode', () => {
       waitsForPromise(async () => {
-        const child = child_process.spawn(process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(0);']);
-        const results = await getOutputStream(child)
-          .toArray()
-          .toPromise();
+        const child = child_process.spawn(process.execPath, [
+          '-e',
+          'console.error("stderr"); console.log("std out"); process.exit(0);',
+        ]);
+        const results = await getOutputStream(child).toArray().toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},
@@ -127,16 +135,20 @@ describe('commons-node/process', () => {
 
     it('errors on nonzero exit codes by default', () => {
       waitsForPromise(async () => {
-        const child = child_process.spawn(
-          process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
-        );
+        const child = child_process.spawn(process.execPath, [
+          '-e',
+          'console.error("stderr"); console.log("std out"); process.exit(42);',
+        ]);
         const results = await getOutputStream(child)
           // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
           .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        expect(results.map(notification => notification.kind)).toEqual([
+          'N',
+          'N',
+          'E',
+        ]);
         const {error} = results[2];
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
@@ -147,12 +159,15 @@ describe('commons-node/process', () => {
     it('accumulates the first `exitErrorBufferSize` bytes of stderr for the exit error', () => {
       waitsForPromise(async () => {
         let error;
-        const child = child_process.spawn(
-          process.execPath,
-          ['-e', 'console.error("stderr"); process.exit(42);'],
-        );
+        const child = child_process.spawn(process.execPath, [
+          '-e',
+          'console.error("stderr"); process.exit(42);',
+        ]);
         try {
-          await getOutputStream(child, {exitErrorBufferSize: 2, isExitError: () => true})
+          await getOutputStream(child, {
+            exitErrorBufferSize: 2,
+            isExitError: () => true,
+          })
             .toArray()
             .toPromise();
         } catch (err) {
@@ -190,21 +205,18 @@ describe('commons-node/process', () => {
         spyOn(child_process, 'spawn');
         try {
           await spawn('fakeCommand')
-            .retryWhen(errors => (
-              errors.scan(
-                (errorCount, err) => {
-                  // If this is the third time the process has errored (i.e. the have already been
-                  // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
-                  // have bugs with retrying shared observables that would give false negatives for
-                  // this test if we only tried twice.)
-                  if (errorCount === 2) {
-                    throw err;
-                  }
-                  return errorCount + 1;
-                },
-                0,
-              )
-            ))
+            .retryWhen(errors =>
+              errors.scan((errorCount, err) => {
+                // If this is the third time the process has errored (i.e. the have already been
+                // two errors before), stop retrying. (We try 3 times because because Rx 3 and 4
+                // have bugs with retrying shared observables that would give false negatives for
+                // this test if we only tried twice.)
+                if (errorCount === 2) {
+                  throw err;
+                }
+                return errorCount + 1;
+              }, 0),
+            )
             .toPromise();
         } catch (err) {}
         expect(child_process.spawn.callCount).toBe(3);
@@ -253,15 +265,19 @@ describe('commons-node/process', () => {
 
     it('errors on nonzero exit codes by default', () => {
       waitsForPromise(async () => {
-        const results = await observeProcess(
-          process.execPath,
-          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);'],
-        )
+        const results = await observeProcess(process.execPath, [
+          '-e',
+          'console.error("stderr"); console.log("std out"); process.exit(42);',
+        ])
           // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
           .toPromise();
-        expect(results.map(notification => notification.kind)).toEqual(['N', 'N', 'E']);
+        expect(results.map(notification => notification.kind)).toEqual([
+          'N',
+          'N',
+          'E',
+        ]);
         const {error} = results[2];
         expect(error.name).toBe('ProcessExitError');
         expect(error.exitCode).toBe(42);
@@ -271,7 +287,10 @@ describe('commons-node/process', () => {
 
     it("doesn't get an exit message when there's an exit error", () => {
       waitsForPromise(async () => {
-        const results = await observeProcess(process.execPath, ['-e', 'process.exit(42);'])
+        const results = await observeProcess(process.execPath, [
+          '-e',
+          'process.exit(42);',
+        ])
           // $FlowIssue: Add materialize to type defs
           .materialize()
           .toArray()
@@ -307,10 +326,10 @@ describe('commons-node/process', () => {
       spyOn(console, 'error');
       spyOn(console, 'log'); // suppress log printing
       waitsForPromise({timeout: 1000}, async () => {
-        const event = await observeProcessRaw(
-          process.execPath,
-          ['-e', 'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)'],
-        )
+        const event = await observeProcessRaw(process.execPath, [
+          '-e',
+          'process.stdout.write("stdout1\\nstdout2\\n"); process.exit(1)',
+        ])
           .take(1)
           .toPromise();
         invariant(event.kind === 'stdout');
@@ -326,11 +345,15 @@ describe('commons-node/process', () => {
       spyOn(console, 'log'); // suppress log printing
     });
 
-    if (origPlatform === 'win32') { return; }
+    if (origPlatform === 'win32') {
+      return;
+    }
 
     it('sends the stdin to the process', () => {
       waitsForPromise(async () => {
-        const output = await runCommand('cat', [], {input: 'hello'}).toPromise();
+        const output = await runCommand('cat', [], {
+          input: 'hello',
+        }).toPromise();
         expect(output).toBe('hello');
       });
     });
@@ -350,7 +373,9 @@ describe('commons-node/process', () => {
 
     it('returns stdout of the running process', () => {
       waitsForPromise(async () => {
-        const val = await runCommand('echo', ['-n', 'foo'], {env: process.env}).toPromise();
+        const val = await runCommand('echo', ['-n', 'foo'], {
+          env: process.env,
+        }).toPromise();
         expect(val).toEqual('foo');
       });
     });
@@ -372,7 +397,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise();
+          await runCommand(process.execPath, [
+            '-e',
+            'process.exit(1)',
+          ]).toPromise();
         } catch (err) {
           error = err;
         }
@@ -386,10 +414,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await runCommand(
-            process.execPath,
-            ['-e', 'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)'],
-          ).toPromise();
+          await runCommand(process.execPath, [
+            '-e',
+            'process.stderr.write("oopsy"); process.stdout.write("daisy"); process.exit(1)',
+          ]).toPromise();
         } catch (err) {
           error = err;
         }
@@ -404,10 +432,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await runCommand(
-            process.execPath,
-            ['-e', 'process.stderr.write("oopsy"); process.exit(1)'],
-          ).toPromise();
+          await runCommand(process.execPath, [
+            '-e',
+            'process.stderr.write("oopsy"); process.exit(1)',
+          ]).toPromise();
         } catch (err) {
           error = err;
         }
@@ -420,10 +448,10 @@ describe('commons-node/process', () => {
     // mutated value.
     it("doesn't share a mutable seed (regression test)", () => {
       waitsForPromise(async () => {
-        const observable = runCommand(
-          process.execPath,
-          ['-e', 'process.stdout.write("hello"); process.exit(0)'],
-        );
+        const observable = runCommand(process.execPath, [
+          '-e',
+          'process.stdout.write("hello"); process.exit(0)',
+        ]);
         await observable.toPromise();
         expect(await observable.toPromise()).toBe('hello');
       });
@@ -433,13 +461,18 @@ describe('commons-node/process', () => {
       if (origPlatform !== 'win32') {
         it('returns stdout of the running process', () => {
           waitsForPromise(async () => {
-            const val = await runCommand('echo', ['-n', 'foo'], {env: process.env}).toPromise();
+            const val = await runCommand('echo', ['-n', 'foo'], {
+              env: process.env,
+            }).toPromise();
             expect(val).toEqual('foo');
           });
         });
         it('throws an error if the exit code !== 0', () => {
           waitsForPromise({shouldReject: true}, async () => {
-            await runCommand(process.execPath, ['-e', 'process.exit(1)']).toPromise();
+            await runCommand(process.execPath, [
+              '-e',
+              'process.exit(1)',
+            ]).toPromise();
           });
         });
       }
@@ -453,11 +486,15 @@ describe('commons-node/process', () => {
       spyOn(console, 'log'); // suppress log printing
     });
 
-    if (origPlatform === 'win32') { return; }
+    if (origPlatform === 'win32') {
+      return;
+    }
 
     it('sends the stdin to the process', () => {
       waitsForPromise(async () => {
-        const output = await runCommandDetailed('cat', [], {input: 'hello'}).toPromise();
+        const output = await runCommandDetailed('cat', [], {
+          input: 'hello',
+        }).toPromise();
         expect(output.stdout).toBe('hello');
       });
     });
@@ -477,10 +514,10 @@ describe('commons-node/process', () => {
 
     it('returns stdout, stderr, and the exit code of the running process', () => {
       waitsForPromise(async () => {
-        const val = await runCommandDetailed(
-          process.execPath,
-          ['-e', 'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)'],
-        ).toPromise();
+        const val = await runCommandDetailed(process.execPath, [
+          '-e',
+          'process.stdout.write("out"); process.stderr.write("err"); process.exit(0)',
+        ]).toPromise();
         expect(val).toEqual({stdout: 'out', stderr: 'err', exitCode: 0});
       });
     });
@@ -502,7 +539,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await runCommandDetailed(process.execPath, ['-e', 'process.exit(1)']).toPromise();
+          await runCommandDetailed(process.execPath, [
+            '-e',
+            'process.exit(1)',
+          ]).toPromise();
         } catch (err) {
           error = err;
         }
@@ -516,10 +556,10 @@ describe('commons-node/process', () => {
       waitsForPromise(async () => {
         let error;
         try {
-          await runCommandDetailed(
-            process.execPath,
-            ['-e', 'process.stderr.write("oopsy"); process.exit(1)'],
-          ).toPromise();
+          await runCommandDetailed(process.execPath, [
+            '-e',
+            'process.stderr.write("oopsy"); process.exit(1)',
+          ]).toPromise();
         } catch (err) {
           error = err;
         }
@@ -535,8 +575,9 @@ describe('commons-node/process', () => {
     });
 
     it('signal', () => {
-      expect(exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}))
-        .toBe('signal SIGTERM');
+      expect(
+        exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}),
+      ).toBe('signal SIGTERM');
     });
   });
 });

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -96,11 +97,7 @@ describe('ContextMenu', () => {
         {label: 'two'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'A'},
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'A'}, {label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -137,11 +134,7 @@ describe('ContextMenu', () => {
         {label: 'two'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'A'},
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'A'}, {label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -154,11 +147,7 @@ describe('ContextMenu', () => {
         {label: 'one'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'A'},
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'A'}, {label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -169,10 +158,7 @@ describe('ContextMenu', () => {
         {label: 'one'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -217,11 +203,7 @@ describe('ContextMenu', () => {
         {label: 'two'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'A'},
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'A'}, {label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -247,9 +229,7 @@ describe('ContextMenu', () => {
         {label: 'two'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'D'},
-          ],
+          submenu: [{label: 'D'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -307,11 +287,7 @@ describe('ContextMenu', () => {
         {label: 'two'},
         {
           label: 'sub',
-          submenu: [
-            {label: 'A'},
-            {label: 'B'},
-            {label: 'C'},
-          ],
+          submenu: [{label: 'A'}, {label: 'B'}, {label: 'C'}],
         },
         {label: 'three'},
         {label: 'four'},
@@ -325,8 +301,9 @@ describe('ContextMenu', () => {
   });
 
   function getTemplateForContextMenu(): Array<atom$ContextMenuItem> {
-    // $FlowIgnore: This relies on an non-public API of Atom's ContextMenuManager.
-    const template: Array<atom$ContextMenuItem> = atom.contextMenu.templateForElement(div);
+    const template: Array<atom$ContextMenuItem> =
+      // $FlowIgnore: This relies on an non-public API of Atom's ContextMenuManager.
+      atom.contextMenu.templateForElement(div);
     const lastItem = template[template.length - 1];
     // Unfortunately, Atom does not give us a way to exclude the 'Inspect Element' item from
     // a custom context menu. For now, we exclude it from the template to reduce noise in our

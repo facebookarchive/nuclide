@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {runCommand} from './process';
@@ -17,7 +18,7 @@ import os from 'os';
  * We ran into problems with the npm `which` package (the nature of which I unfortunately don't
  * remember) so we can use this for now.
  */
-export default async function which(command: string): Promise<?string> {
+export default (async function which(command: string): Promise<?string> {
   const whichCommand = process.platform === 'win32' ? 'where' : 'which';
   try {
     const result = await runCommand(whichCommand, [command]).toPromise();
@@ -25,4 +26,4 @@ export default async function which(command: string): Promise<?string> {
   } catch (e) {
     return null;
   }
-}
+});

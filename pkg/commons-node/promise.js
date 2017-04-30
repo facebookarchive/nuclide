@@ -6,16 +6,19 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
 
-type RunReturn<T> = {
-  status: 'success',
-  result: T,
-} | {
-  status: 'outdated',
-};
+type RunReturn<T> =
+  | {
+      status: 'success',
+      result: T,
+    }
+  | {
+      status: 'outdated',
+    };
 
 /**
  * Allows a caller to ensure that the results it receives from consecutive
@@ -99,18 +102,21 @@ export class RequestSerializer<T> {
   }
 }
 
-
 /*
  * Returns a promise that will resolve after `milliSeconds` milli seconds.
  * this can be used to pause execution asynchronously.
  * e.g. await sleep(1000), pauses the async flow execution for 1 second.
  */
 export function sleep(milliSeconds: number): Promise<void> {
-  return new Promise(resolve => { setTimeout(resolve, milliSeconds); });
+  return new Promise(resolve => {
+    setTimeout(resolve, milliSeconds);
+  });
 }
 
 export function nextTick(): Promise<void> {
-  return new Promise(resolve => { process.nextTick(resolve); });
+  return new Promise(resolve => {
+    process.nextTick(resolve);
+  });
 }
 
 /**
@@ -150,24 +156,23 @@ export function timeoutPromise<T>(
   milliseconds: number,
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    let timeout = setTimeout(
-      () => {
-        timeout = null;
-        reject(new Error(`Promise timed out after ${String(milliseconds)} ms`));
-      },
-      milliseconds,
-    );
-    promise.then(value => {
-      if (timeout != null) {
-        clearTimeout(timeout);
-      }
-      resolve(value);
-    }).catch(value => {
-      if (timeout != null) {
-        clearTimeout(timeout);
-      }
-      reject(value);
-    });
+    let timeout = setTimeout(() => {
+      timeout = null;
+      reject(new Error(`Promise timed out after ${String(milliseconds)} ms`));
+    }, milliseconds);
+    promise
+      .then(value => {
+        if (timeout != null) {
+          clearTimeout(timeout);
+        }
+        resolve(value);
+      })
+      .catch(value => {
+        if (timeout != null) {
+          clearTimeout(timeout);
+        }
+        reject(value);
+      });
   });
 }
 
@@ -241,7 +246,9 @@ export async function retryLimit<T>(
  * const result3Promise = oneExecAtATime(); // Reuse scheduled promise and resolve to 2 in 400 ms.
  * ```
  */
-export function serializeAsyncCall<T>(asyncFun: () => Promise<T>): () => Promise<T> {
+export function serializeAsyncCall<T>(
+  asyncFun: () => Promise<T>,
+): () => Promise<T> {
   let scheduledCall = null;
   let pendingCall = null;
   const startAsyncCall = () => {
@@ -504,7 +511,11 @@ export async function asyncSome<T>(
  * Check if an object is Promise by testing if it has a `then` function property.
  */
 export function isPromise(object: any): boolean {
-  return Boolean(object) && typeof object === 'object' && typeof object.then === 'function';
+  return (
+    Boolean(object) &&
+    typeof object === 'object' &&
+    typeof object.then === 'function'
+  );
 }
 
 /**
@@ -515,12 +526,12 @@ export function lastly<T>(
   promise: Promise<T>,
   fn: () => Promise<mixed> | mixed,
 ): Promise<T> {
-  return promise
-    .then(ret => {
-      return Promise.resolve(fn())
-        .then(() => ret);
-    }, err => {
-      return Promise.resolve(fn())
-        .then(() => Promise.reject(err));
-    });
+  return promise.then(
+    ret => {
+      return Promise.resolve(fn()).then(() => ret);
+    },
+    err => {
+      return Promise.resolve(fn()).then(() => Promise.reject(err));
+    },
+  );
 }

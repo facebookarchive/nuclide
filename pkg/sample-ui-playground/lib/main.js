@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -13,7 +14,9 @@ import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {
+  viewableFromReactElement,
+} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {Playground, WORKSPACE_VIEW_URI} from './Playground';
 import invariant from 'assert';
@@ -43,7 +46,9 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     atom.commands.add(
       'atom-workspace',
       'sample-ui-playground:toggle',
-      event => { api.toggle(WORKSPACE_VIEW_URI, (event: any).detail); },
+      event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      },
     ),
   );
   // Optionally return a disposable to clean up this package's state when gadgets goes away

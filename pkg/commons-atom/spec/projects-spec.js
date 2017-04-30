@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -48,7 +49,9 @@ describe('projects', () => {
     it('observes existing projects and future added projects', () => {
       const projectPaths: Array<string> = [];
       atom.project.setPaths([firstProjectPath]);
-      observeProjectPaths(projectPath => { projectPaths.push(projectPath); });
+      observeProjectPaths(projectPath => {
+        projectPaths.push(projectPath);
+      });
       expect(projectPaths).toEqual([firstProjectPath]);
       atom.project.addPath(otherProjectPath);
       expect(projectPaths).toEqual([firstProjectPath, otherProjectPath]);
@@ -59,7 +62,9 @@ describe('projects', () => {
     it('listens only to newly added project paths', () => {
       const addedProjectPaths: Array<string> = [];
       atom.project.setPaths([firstProjectPath]);
-      onDidAddProjectPath(projectPath => { addedProjectPaths.push(projectPath); });
+      onDidAddProjectPath(projectPath => {
+        addedProjectPaths.push(projectPath);
+      });
       expect(addedProjectPaths.length).toBe(0);
       atom.project.addPath(otherProjectPath);
       expect(addedProjectPaths).toEqual([otherProjectPath]);
@@ -85,7 +90,9 @@ describe('projects', () => {
     it('listens to removed project paths', () => {
       const removedProjectPaths: Array<string> = [];
       atom.project.setPaths([firstProjectPath]);
-      onDidRemoveProjectPath(projectPath => { removedProjectPaths.push(projectPath); });
+      onDidRemoveProjectPath(projectPath => {
+        removedProjectPaths.push(projectPath);
+      });
       expect(removedProjectPaths.length).toBe(0);
       atom.project.removePath(firstProjectPath);
       expect(removedProjectPaths).toEqual([firstProjectPath]);

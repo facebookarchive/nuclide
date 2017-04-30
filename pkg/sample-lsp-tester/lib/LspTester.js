@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
@@ -74,16 +75,15 @@ export class LspTester extends SimpleModel {
   getElement(): HTMLElement {
     const initialMessage = this._getInitialMessage();
     // $FlowFixMe: Observable.from symbol-iterator
-    const props = (Observable.from(this): Observable<State>)
-      .map(state => ({
-        initialCommand: state.lastCommand,
-        initialMessage,
-        messages: this._messages,
-        running: state.running,
-        sendMessage: this._sendMessage,
-        startServer: this._startServer,
-        stopServer: this._stopServer,
-      }));
+    const props = (Observable.from(this): Observable<State>).map(state => ({
+      initialCommand: state.lastCommand,
+      initialMessage,
+      messages: this._messages,
+      running: state.running,
+      sendMessage: this._sendMessage,
+      startServer: this._startServer,
+      stopServer: this._stopServer,
+    }));
     const StatefulPanelView = bindObservableAsProps(props, PanelView);
     return renderReactRoot(<StatefulPanelView />);
   }
@@ -108,7 +108,10 @@ export class LspTester extends SimpleModel {
   }
 
   _sendMessage(message: Object): void {
-    this._messages.next({kind: 'request', body: JSON.stringify(message, undefined, 2)});
+    this._messages.next({
+      kind: 'request',
+      body: JSON.stringify(message, undefined, 2),
+    });
     invariant(this._writer != null);
     this._writer.write(message);
   }
@@ -125,11 +128,14 @@ export class LspTester extends SimpleModel {
           const reader = new rpc.StreamMessageReader(process.stdout);
           rpc.createMessageConnection(reader, this._writer).listen();
         })
-        .flatMap(proc => getOutputStream(proc, {/* TODO(T17353599) */isExitError: () => false}))
+        .flatMap(proc =>
+          getOutputStream(proc, {
+            /* TODO(T17353599) */ isExitError: () => false,
+          }),
+        )
         .subscribeOn(Scheduler.async),
       event => event.kind !== 'error' && event.kind !== 'exit',
-    )
-      .share();
+    ).share();
     const responses = parseResponses(
       events
         .catch(() => Observable.empty()) // We'll handle them on the "other" stream.
@@ -146,8 +152,10 @@ export class LspTester extends SimpleModel {
       running: true,
     });
 
-    const disposable = this._serverDisposable = new UniversalDisposable(
-      responses.subscribe(response => { this._messages.next({kind: 'response', body: response}); }),
+    const disposable = (this._serverDisposable = new UniversalDisposable(
+      responses.subscribe(response => {
+        this._messages.next({kind: 'response', body: response});
+      }),
       other.subscribe(
         this._handleEvent,
         err => {
@@ -158,9 +166,13 @@ export class LspTester extends SimpleModel {
           disposable.dispose();
         },
       ),
-      () => { this._writer = null; },
-      () => { this.setState({running: false}); },
-    );
+      () => {
+        this._writer = null;
+      },
+      () => {
+        this.setState({running: false});
+      },
+    ));
   }
 
   _stopServer(): void {
@@ -189,15 +201,13 @@ export class LspTester extends SimpleModel {
         atom.notifications.addError('LSP Server process exited unexpectedly.');
         break;
       case 'error':
-        atom.notifications.addError(
-          'Unexpected LSP Server process error',
-          {detail: String(event.error)},
-        );
+        atom.notifications.addError('Unexpected LSP Server process error', {
+          detail: String(event.error),
+        });
         break;
     }
   }
 }
-
 
 function parseChunks(chunks: Array<string>): ?{header: string, body: mixed} {
   const combined = chunks.join('');
@@ -224,5 +234,7 @@ function parseResponses(raw: Observable<string>): Observable<string> {
       invariant(parsed != null);
       return parsed;
     })
-    .map(({header, body}) => `${header}\n${JSON.stringify(body, undefined, 2)}`);
+    .map(
+      ({header, body}) => `${header}\n${JSON.stringify(body, undefined, 2)}`,
+    );
 }

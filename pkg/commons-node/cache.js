@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Observable, Subject} from 'rxjs';
@@ -73,7 +74,8 @@ export class Cache<KeyType, ValueType> {
   observeEntries(): Observable<[KeyType, ValueType]> {
     return Observable.concat(
       Observable.from(this._values.entries()),
-      this._entriesSubject);
+      this._entriesSubject,
+    );
   }
 
   observeKeys(): Observable<KeyType> {
@@ -107,4 +109,6 @@ export class Cache<KeyType, ValueType> {
 }
 
 // Useful for optional second parameter to Cache constructor.
-export const DISPOSE_VALUE = (value: IDisposable) => { value.dispose(); };
+export const DISPOSE_VALUE = (value: IDisposable) => {
+  value.dispose();
+};

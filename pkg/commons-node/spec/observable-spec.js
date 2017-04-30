@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -23,10 +24,10 @@ import {
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
 
-const setsAreEqual = (a, b) => a.size === b.size && Array.from(a).every(b.has.bind(b));
-const diffsAreEqual = (a, b) => (
-  setsAreEqual(a.added, b.added) && setsAreEqual(a.removed, b.removed)
-);
+const setsAreEqual = (a, b) =>
+  a.size === b.size && Array.from(a).every(b.has.bind(b));
+const diffsAreEqual = (a, b) =>
+  setsAreEqual(a.added, b.added) && setsAreEqual(a.removed, b.removed);
 const createDisposable = () => {
   const disposable = new Disposable(() => {});
   spyOn(disposable, 'dispose');
@@ -37,7 +38,9 @@ describe('commons-node/observable', () => {
   it('splitStream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
-      const output = await splitStream(Observable.from(input)).toArray().toPromise();
+      const output = await splitStream(Observable.from(input))
+        .toArray()
+        .toPromise();
       expect(output).toEqual(['foo\n', 'bar\n', '\n', 'baz\n', 'blar']);
     });
   });
@@ -115,10 +118,12 @@ describe('diffSets', () => {
       source.complete();
       const diffs = await diffsPromise;
       expect(diffs.length).toBe(1);
-      expect(diffsAreEqual(diffs[0], {
-        added: new Set([1, 2, 3]),
-        removed: new Set(),
-      })).toBe(true);
+      expect(
+        diffsAreEqual(diffs[0], {
+          added: new Set([1, 2, 3]),
+          removed: new Set(),
+        }),
+      ).toBe(true);
     });
   });
 
@@ -144,7 +149,9 @@ describe('diffSets', () => {
       source.next(new Set(secondItems));
       source.complete();
       const diffs = await diffsPromise;
-      expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(true);
+      expect(setsAreEqual(diffs[1].removed, new Set([firstItems[2]]))).toBe(
+        true,
+      );
     });
   });
 
@@ -170,7 +177,9 @@ describe('diffSets', () => {
       source.next(new Set(secondItems));
       source.complete();
       const diffs = await diffsPromise;
-      expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(true);
+      expect(setsAreEqual(diffs[1].added, new Set([secondItems[2]]))).toBe(
+        true,
+      );
     });
   });
 
@@ -357,14 +366,10 @@ describe('concatLatest', () => {
         Observable.of([], [1]),
         Observable.of([2]),
         Observable.of([3], [3, 4]),
-      ).toArray().toPromise();
-      expect(output).toEqual([
-        [],
-        [1],
-        [1, 2],
-        [1, 2, 3],
-        [1, 2, 3, 4],
-      ]);
+      )
+        .toArray()
+        .toPromise();
+      expect(output).toEqual([[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]);
     });
   });
 });
@@ -446,7 +451,10 @@ describe('nextAnimationFrame', () => {
 describe('bufferUntil', () => {
   it('buffers based on the predicate', () => {
     waitsForPromise(async () => {
-      const chunks = await bufferUntil(Observable.of(1, 2, 3, 4), x => x % 2 === 0)
+      const chunks = await bufferUntil(
+        Observable.of(1, 2, 3, 4),
+        x => x % 2 === 0,
+      )
         .toArray()
         .toPromise();
       expect(chunks).toEqual([[1, 2], [3, 4]]);
@@ -455,9 +463,9 @@ describe('bufferUntil', () => {
   it('provides the current buffer', () => {
     waitsForPromise(async () => {
       const chunks = await bufferUntil(
-          Observable.of(1, 2, 3, 4),
-          (x, buffer) => buffer.length === 2,
-        )
+        Observable.of(1, 2, 3, 4),
+        (x, buffer) => buffer.length === 2,
+      )
         .toArray()
         .toPromise();
       expect(chunks).toEqual([[1, 2], [3, 4]]);

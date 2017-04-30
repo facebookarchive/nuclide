@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global requestAnimationFrame, cancelAnimationFrame */
@@ -38,8 +39,14 @@ export function splitStream(input: Observable<string>): Observable<string> {
         current = lines.pop();
         lines.forEach(line => observer.next(line + '\n'));
       },
-      error => { onEnd(); observer.error(error); },
-      () => { onEnd(); observer.complete(); },
+      error => {
+        onEnd();
+        observer.error(error);
+      },
+      () => {
+        onEnd();
+        observer.complete();
+      },
     );
   });
 }
@@ -65,26 +72,25 @@ export function bufferUntil<T>(
         buffer = null;
       }
     };
-    return stream
-      .subscribe(
-        x => {
-          if (buffer == null) {
-            buffer = [];
-          }
-          buffer.push(x);
-          if (condition(x, buffer)) {
-            flush();
-          }
-        },
-        err => {
+    return stream.subscribe(
+      x => {
+        if (buffer == null) {
+          buffer = [];
+        }
+        buffer.push(x);
+        if (condition(x, buffer)) {
           flush();
-          observer.error(err);
-        },
-        () => {
-          flush();
-          observer.complete();
-        },
-      );
+        }
+      },
+      err => {
+        flush();
+        observer.error(err);
+      },
+      () => {
+        flush();
+        observer.complete();
+      },
+    );
   });
 }
 
@@ -109,11 +115,14 @@ type Diff<T> = {
  * Given a stream of sets, return a stream of diffs.
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
-export function diffSets<T>(sets: Observable<Set<T>>, hash?: (v: T) => any): Observable<Diff<T>> {
+export function diffSets<T>(
+  sets: Observable<Set<T>>,
+  hash?: (v: T) => any,
+): Observable<Diff<T>> {
   return Observable.concat(
-      Observable.of(new Set()), // Always start with no items with an empty set
-      sets,
-    )
+    Observable.of(new Set()), // Always start with no items with an empty set
+    sets,
+  )
     .pairwise()
     .map(([previous, next]) => ({
       added: setDifference(next, previous, hash),
@@ -140,14 +149,18 @@ export function reconcileSetDiffs<T>(
     itemsToDisposables.delete(item);
   };
   const disposeAll = () => {
-    itemsToDisposables.forEach(disposable => { disposable.dispose(); });
+    itemsToDisposables.forEach(disposable => {
+      disposable.dispose();
+    });
     itemsToDisposables.clear();
   };
 
   return new UniversalDisposable(
     diffs.subscribe(diff => {
       // For every item that got added, perform the add action.
-      diff.added.forEach(item => { itemsToDisposables.set(hash(item), addAction(item)); });
+      diff.added.forEach(item => {
+        itemsToDisposables.set(hash(item), addAction(item));
+      });
 
       // "Undo" the add action for each item that got removed.
       diff.removed.forEach(disposeItem);
@@ -214,7 +227,7 @@ export function takeWhileInclusive<T>(
   source: Observable<T>,
   predicate: (value: T) => boolean,
 ): Observable<T> {
-  return Observable.create(observer => (
+  return Observable.create(observer =>
     source.subscribe(
       x => {
         observer.next(x);
@@ -222,10 +235,14 @@ export function takeWhileInclusive<T>(
           observer.complete();
         }
       },
-      err => { observer.error(err); },
-      () => { observer.complete(); },
-    )
-  ));
+      err => {
+        observer.error(err);
+      },
+      () => {
+        observer.complete();
+      },
+    ),
+  );
 }
 
 // Concatenate the latest values from each input observable into one big list.
@@ -235,18 +252,16 @@ export function concatLatest<T>(
 ): Observable<Array<T>> {
   // First, tag all input observables with their index.
   // Flow errors with ambiguity without the explicit annotation.
-  const tagged: Array<Observable<[Array<T>, number]>> = observables.map(
-    (observable, index) => observable.map(list => [list, index]),
+  const tagged: Array<
+    Observable<[Array<T>, number]>
+  > = observables.map((observable, index) =>
+    observable.map(list => [list, index]),
   );
-  return Observable
-    .merge(...tagged)
-    .scan(
-      (accumulator, [list, index]) => {
-        accumulator[index] = list;
-        return accumulator;
-      },
-      observables.map(x => []),
-    )
+  return Observable.merge(...tagged)
+    .scan((accumulator, [list, index]) => {
+      accumulator[index] = list;
+      return accumulator;
+    }, observables.map(x => []))
     .map(accumulator => [].concat(...accumulator));
 }
 
@@ -260,7 +275,10 @@ type ThrottleOptions = {
  */
 export function throttle<T>(
   source: Observable<T>,
-  duration: number | Observable<any> | (value: T) => Observable<any> | Promise<any>,
+  duration:
+    | number
+    | Observable<any>
+    | ((value: T) => Observable<any> | Promise<any>),
   options_: ?ThrottleOptions,
 ): Observable<T> {
   const options = options_ || {};
@@ -284,7 +302,10 @@ export function throttle<T>(
 
   return Observable.create(observer => {
     const connectableSource = source.publish();
-    const throttled = Observable.merge(connectableSource.take(1), audit(connectableSource.skip(1)));
+    const throttled = Observable.merge(
+      connectableSource.take(1),
+      audit(connectableSource.skip(1)),
+    );
     return new UniversalDisposable(
       throttled.subscribe(observer),
       connectableSource.connect(),
@@ -307,5 +328,7 @@ export const nextAnimationFrame = Observable.create(observer => {
     observer.next();
     observer.complete();
   });
-  return () => { cancelAnimationFrame(id); };
+  return () => {
+    cancelAnimationFrame(id);
+  };
 });

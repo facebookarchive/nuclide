@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Disposable} from 'atom';
@@ -17,7 +18,7 @@ type ToolBarManager = {
     tooltip?: string,
     iconset?: string,
     icon?: string,
-    callback?: string | () => void,
+    callback?: string | (() => void),
   }): ToolBarButtonView,
   addSpacer(options: {
     priority?: number,

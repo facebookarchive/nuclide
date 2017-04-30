@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {Observable} from 'rxjs';
@@ -38,7 +39,10 @@ function get(
 ): mixed {
   // atom.config.get will crash if the second arg is present and undefined.
   // It does not crash if the second arg is missing.
-  return atom.config.get(formatKeyPath(keyPath), ...(options == null ? [] : [options]));
+  return atom.config.get(
+    formatKeyPath(keyPath),
+    ...(options == null ? [] : [options]),
+  );
 }
 
 function getWithDefaults<T>(
@@ -58,9 +62,7 @@ function getWithDefaults<T>(
  * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.getSchema`.
  */
-function getSchema(
-  keyPath: string,
-): atom$ConfigSchema {
+function getSchema(keyPath: string): atom$ConfigSchema {
   return atom.config.getSchema(formatKeyPath(keyPath));
 }
 
@@ -93,7 +95,7 @@ function observeAsStream(keyPath: string): Observable<mixed> {
  */
 function onDidChange(
   keyPath: string,
-  optionsOrCallback: (Object | (event: Object) => void),
+  optionsOrCallback: Object | ((event: Object) => void),
   callback?: (event: Object) => void,
 ): IDisposable {
   return atom.config.onDidChange(
@@ -114,17 +116,17 @@ function set(
     source?: string,
   },
 ): boolean {
-  return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  return atom.config.set(
+    formatKeyPath(keyPath),
+    ...Array.prototype.slice.call(arguments, 1),
+  );
 }
 
 /*
  * Sets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
  * `atom.config.setSchema`.
  */
-function setSchema(
-  keyPath: string,
-  schema: Object,
-): void {
+function setSchema(keyPath: string, schema: Object): void {
   return atom.config.setSchema(
     formatKeyPath(keyPath),
     ...Array.prototype.slice.call(arguments, 1),
@@ -142,7 +144,10 @@ function unset(
     source?: string,
   },
 ): void {
-  return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  return atom.config.unset(
+    formatKeyPath(keyPath),
+    ...Array.prototype.slice.call(arguments, 1),
+  );
 }
 
 /**
@@ -150,7 +155,10 @@ function unset(
  *   'nuclide' package itself is disabled.
  */
 function isFeatureDisabled(name: string): boolean {
-  return atom.packages.isPackageDisabled('nuclide') || !atom.config.get(`nuclide.use.${name}`);
+  return (
+    atom.packages.isPackageDisabled('nuclide') ||
+    !atom.config.get(`nuclide.use.${name}`)
+  );
 }
 
 export default {

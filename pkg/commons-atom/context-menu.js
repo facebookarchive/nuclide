@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -26,7 +27,9 @@ export function showMenuForEvent(
   invariant(remote != null);
   const win = (remote.getCurrentWindow(): any);
   const originalEmit = win.emit;
-  const restore = () => { win.emit = originalEmit; };
+  const restore = () => {
+    win.emit = originalEmit;
+  };
   win.emit = (eventType, ...args) => {
     if (eventType !== 'context-menu') {
       return originalEmit(eventType, ...args);

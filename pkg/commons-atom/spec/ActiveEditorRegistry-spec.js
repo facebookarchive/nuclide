@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {
@@ -30,7 +31,10 @@ type TestProvider = {
 };
 
 describe('ActiveEditorRegistry', () => {
-  let activeEditorRegistry: ActiveEditorRegistry<TestProvider, void> = (null: any);
+  let activeEditorRegistry: ActiveEditorRegistry<
+    TestProvider,
+    void
+  > = (null: any);
 
   let activeEditors: Subject<?atom$TextEditor> = (null: any);
   let editorChanges: Subject<void> = (null: any);

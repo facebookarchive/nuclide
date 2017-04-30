@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  TokenKind,
-  TextToken,
-} from './tokenizedText-rpc-types';
+import type {TokenKind, TextToken} from './tokenizedText-rpc-types';
 
 export function keyword(value: string): TextToken {
   return _buildToken('keyword', value);
@@ -48,7 +46,6 @@ export function plain(value: string): TextToken {
 export function type(value: string): TextToken {
   return _buildToken('type', value);
 }
-
 
 function _buildToken(kind: TokenKind, value: string): TextToken {
   return {kind, value};

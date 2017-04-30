@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // TODO(T17266325): Remove this module when `atom.whenShellEnvironmentLoaded()` lands.
@@ -23,4 +24,6 @@ function whenShellEnvironmentLoaded(cb: () => void): IDisposable {
   return new UniversalDisposable(emitter.take(1).subscribe(cb));
 }
 
-export default typeof atom === 'undefined' ? null : whenShellEnvironmentLoaded;
+export default (typeof atom === 'undefined'
+  ? null
+  : whenShellEnvironmentLoaded);

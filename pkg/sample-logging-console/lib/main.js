@@ -6,13 +6,16 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Level, OutputService} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-import {getNuclideConsoleMessages} from '../../nuclide-logging/lib/nuclideConsoleAppender';
+import {
+  getNuclideConsoleMessages,
+} from '../../nuclide-logging/lib/nuclideConsoleAppender';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -22,12 +25,13 @@ class Activation {
   }
 
   consumeOutputService(api: OutputService): void {
-    const messages = getNuclideConsoleMessages()
-      .map(loggingEvent => ({
-        text: loggingEvent.data,
-        level: getLevel(loggingEvent.level),
-      }));
-    this._disposables.add(api.registerOutputProvider({id: 'Nuclide', messages}));
+    const messages = getNuclideConsoleMessages().map(loggingEvent => ({
+      text: loggingEvent.data,
+      level: getLevel(loggingEvent.level),
+    }));
+    this._disposables.add(
+      api.registerOutputProvider({id: 'Nuclide', messages}),
+    );
   }
 
   dispose() {

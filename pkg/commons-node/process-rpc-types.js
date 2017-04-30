@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // Exactly one of exitCode and signal will be non-null.
@@ -30,7 +31,9 @@ export type ProcessMessage =
 
 // In older versions of process.js, errors were emitted as messages instead of errors. This type
 // exists to support the transition, but no new usages should be added.
-export type LegacyProcessMessage = ProcessMessage | {kind: 'error', error: Object};
+export type LegacyProcessMessage =
+  | ProcessMessage
+  | {kind: 'error', error: Object};
 
 export type ProcessInfo = {
   parentPid: number,

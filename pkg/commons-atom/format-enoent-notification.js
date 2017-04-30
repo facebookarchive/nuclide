@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import featureConfig from './featureConfig';
@@ -31,8 +32,7 @@ export default function formatEnoentNotification(options: Options): Result {
   const categoryTitle = capitalize(pathSetting.split('.').shift());
   const command: string = (featureConfig.get(pathSetting): any);
   const capitalizedFeature = capitalize(feature);
-  const description =
-    `${capitalizedFeature} needs *${toolName}* but Nuclide couldn't find it at \`${command}\`.
+  const description = `${capitalizedFeature} needs *${toolName}* but Nuclide couldn't find it at \`${command}\`.
 
 **Troubleshooting Tips**
 1. Make sure that *${toolName}* is installed. Some Nuclide features require tools that aren't

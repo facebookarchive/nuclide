@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {LRUCache} from 'lru-cache';
@@ -15,10 +16,7 @@ import type {ObserveProcessOptions} from './process';
 
 import LRU from 'lru-cache';
 
-import {
-  spawn,
-  observeProcess,
-} from './process';
+import {spawn, observeProcess} from './process';
 
 import which from './which';
 import {Observable} from 'rxjs';
@@ -94,7 +92,7 @@ function hasIoniceCommand(): Promise<boolean> {
 async function hasCommand(command: string): Promise<boolean> {
   let result: ?boolean = commandAvailabilityCache.get(command);
   if (result == null) {
-    result = await which(command) != null;
+    result = (await which(command)) != null;
     commandAvailabilityCache.set(command, result);
   }
   return result;
@@ -105,6 +103,7 @@ export function niceObserveProcess(
   args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return Observable.defer(() => nicifyCommand(command, args, options))
-    .switchMap(spawnArgs => observeProcess(...spawnArgs));
+  return Observable.defer(() =>
+    nicifyCommand(command, args, options),
+  ).switchMap(spawnArgs => observeProcess(...spawnArgs));
 }

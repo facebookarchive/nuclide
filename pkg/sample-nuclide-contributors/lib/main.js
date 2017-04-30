@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import createPackage from '../../commons-atom/createPackage';
@@ -37,7 +38,6 @@ class Activation {
           ipcRenderer.send('run-package-specs', activePath);
         },
       ),
-
       /**
        * Force saving Atom state (for debugging).
        */
@@ -60,7 +60,6 @@ class Activation {
           atom.notifications.addInfo('State saved!');
         },
       ),
-
       /**
        * Allows running `require('rxjs')` or `require('commons-node/promise');`.
        * Useful for debugging from the devtools console.
@@ -88,7 +87,6 @@ class Activation {
           });
         },
       ),
-
       () => {
         delete global.nuclide_contributors_tryReloadingPackage;
       },
@@ -107,7 +105,9 @@ class Activation {
       // remove cache
       Object.keys(require.cache)
         .filter(p => p.indexOf(pack.path + path.sep) === 0)
-        .forEach(p => { delete require.cache[p]; });
+        .forEach(p => {
+          delete require.cache[p];
+        });
 
       const pkg = atom.packages.loadPackage(pack.path);
       invariant(pkg != null);

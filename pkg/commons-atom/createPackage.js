@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -29,7 +30,10 @@ import invariant from 'assert';
  * `module.exports = createPackage(Activation)`, to avoid code style misunderstandings wrt
  * CommonJS vs ES Modules.
  */
-export default function createPackage(moduleExports: Object, Activation: Class<any>): void {
+export default function createPackage(
+  moduleExports: Object,
+  Activation: Class<any>,
+): void {
   let activation = null;
 
   // Proxy method calls on the package to the activation object.
@@ -42,8 +46,8 @@ export default function createPackage(moduleExports: Object, Activation: Class<a
     }
     if (property === 'initialize') {
       throw new Error(
-        'Your activation class contains an "initialize" method, but that work should be done in the'
-        + ' constructor.',
+        'Your activation class contains an "initialize" method, but that work should be done in the' +
+          ' constructor.',
       );
     }
     if (property === 'deactivate') {

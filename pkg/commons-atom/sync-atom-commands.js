@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type AtomCommands = {
@@ -41,9 +42,9 @@ export default function syncAtomCommands<T>(
     sets,
     item => {
       const commands = project(item);
-      const disposables = Object.keys(commands).map(target => (
-        atom.commands.add(target, commands[target])
-      ));
+      const disposables = Object.keys(commands).map(target =>
+        atom.commands.add(target, commands[target]),
+      );
       return new CompositeDisposable(...disposables);
     },
     hash,

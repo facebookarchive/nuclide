@@ -6,11 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // Separated out for RPC usage.
 
-export type TokenKind = 'keyword'
+export type TokenKind =
+  | 'keyword'
   | 'class-name'
   | 'constructor'
   | 'method'
@@ -18,8 +20,7 @@ export type TokenKind = 'keyword'
   | 'string'
   | 'whitespace'
   | 'plain'
-  | 'type'
-  ;
+  | 'type';
 
 export type TextToken = {
   kind: TokenKind,
