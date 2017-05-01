@@ -675,8 +675,6 @@ function logCall(duration, command, args) {
   });
 }
 
-const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
-
 function logError(...args) {
   // Can't use nuclide-logging here to not cause cycle dependency.
   // eslint-disable-next-line no-console
@@ -689,11 +687,14 @@ function monitorStreamErrors(
   args,
   options,
 ): Observable<empty> {
+  const streams = [
+    ['stdin', process.stdin],
+    ['stdout', process.stdout],
+    ['stderr', process.stderr],
+  ];
   return Observable.merge(
     ...arrayCompact(
-      STREAM_NAMES.map(name => {
-        // $FlowIssue
-        const stream = process[name];
+      streams.map(([name, stream]) => {
         return stream == null
           ? null
           : Observable.fromEvent(stream, 'error').do(err => {
