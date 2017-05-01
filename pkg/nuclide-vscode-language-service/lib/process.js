@@ -81,7 +81,7 @@ import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {LanguageServerV2} from './languageserver';
-import {DiagnosticSeverity, SymbolKind} from './protocol';
+import {TextDocumentSyncKind, DiagnosticSeverity, SymbolKind} from './protocol';
 import {
   className,
   method,
@@ -173,8 +173,6 @@ export class LanguageServerProtocolProcess {
           case FileEventKind.EDIT:
             this._fileEdit(fileEvent);
             break;
-          // TODO: _fileEdit kicks off asynchronous work in a fire-and-forget manner.
-          // It would be good to make it purely synchronous, for our own sanity.
           default:
             this._logger.logError(
               'Unrecognized fileEvent ' + JSON.stringify(fileEvent),
@@ -245,6 +243,9 @@ export class LanguageServerProtocolProcess {
   }
 
   _fileOpen(fileEvent: FileOpenEvent): void {
+    if (!this._process._derivedCapabilities.serverWantsOpenClose) {
+      return;
+    }
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri: fileEvent.fileVersion.filePath,
@@ -257,6 +258,9 @@ export class LanguageServerProtocolProcess {
   }
 
   _fileClose(fileEvent: FileCloseEvent): void {
+    if (!this._process._derivedCapabilities.serverWantsOpenClose) {
+      return;
+    }
     const params: DidCloseTextDocumentParams = {
       textDocument: {
         uri: fileEvent.fileVersion.filePath,
@@ -266,11 +270,25 @@ export class LanguageServerProtocolProcess {
   }
 
   _fileEdit(fileEvent: FileEditEvent): void {
-    const buffer = this._fileCache.getBufferForFileEdit(fileEvent);
-
-    const contentChange: TextDocumentContentChangeEvent = {
-      text: buffer.getText(),
-    }; // TODO: use incremental diff if LSP handles them
+    let contentChange: TextDocumentContentChangeEvent;
+    switch (this._process._derivedCapabilities.serverWantsChange) {
+      case 'incremental':
+        contentChange = {
+          range: atomRangeToRange(fileEvent.oldRange),
+          text: fileEvent.newText,
+        };
+        break;
+      case 'full':
+        const buffer = this._fileCache.getBufferForFileEdit(fileEvent);
+        contentChange = {
+          text: buffer.getText(),
+        };
+        break;
+      case 'none':
+        return;
+      default:
+        invariant(false); // unreachable
+    }
 
     const params: DidChangeTextDocumentParams = {
       textDocument: {
@@ -279,6 +297,10 @@ export class LanguageServerProtocolProcess {
       },
       contentChanges: [contentChange],
     };
+    // eslint-disable-next-line max-len
+    this._logger.logInfo(
+      `-->LSP ${this._process._derivedCapabilities.serverWantsChange} edit ${JSON.stringify(params)}`,
+    );
     this._process._connection.didChangeTextDocument(params);
   }
 
@@ -785,12 +807,55 @@ export class LanguageServerProtocolProcess {
   }
 }
 
+class DerivedServerCapabilities {
+  serverWantsOpenClose: boolean;
+  serverWantsChange: 'full' | 'incremental' | 'none';
+
+  constructor(capabilities: ServerCapabilities, logger: CategoryLogger) {
+    let syncKind;
+
+    // capabilities.textDocumentSync is either a number (protocol v2)
+    // or an object (protocol v3) or absent (indicating no capabilities).
+    const sync = capabilities.textDocumentSync;
+    if (typeof sync === 'number') {
+      this.serverWantsOpenClose = true;
+      syncKind = sync;
+    } else if (typeof sync === 'object') {
+      this.serverWantsOpenClose = Boolean(sync.openClose);
+      syncKind = Number(sync.change);
+    } else {
+      this.serverWantsOpenClose = false;
+      syncKind = TextDocumentSyncKind.None;
+      if (sync != null) {
+        logger.logError(
+          'LSP - invalid capabilities.textDocumentSync from server: ' +
+            JSON.stringify(sync),
+        );
+      }
+    }
+
+    // The syncKind is a number, supposed to fall in the TextDocumentSyncKind
+    // enumeration, so we verify that here:
+    if (syncKind === TextDocumentSyncKind.Full) {
+      this.serverWantsChange = 'full';
+    } else if (syncKind === TextDocumentSyncKind.Incremental) {
+      this.serverWantsChange = 'incremental';
+    } else if (syncKind === TextDocumentSyncKind.None) {
+      this.serverWantsChange = 'none';
+    } else {
+      logger.logError('LSP initialize: invalid TextDocumentSyncKind');
+      this.serverWantsChange = 'none';
+    }
+  }
+}
+
 // Encapsulates an LSP process
 class LspProcess {
   _logger: CategoryLogger;
   _process: child_process$ChildProcess;
   _connection: LanguageServerV2;
   _capabilities: ServerCapabilities;
+  _derivedCapabilities: DerivedServerCapabilities;
   _projectRoot: NuclideUri;
 
   constructor(
@@ -857,9 +922,9 @@ class LspProcess {
     process: child_process$ChildProcess,
     projectRoot: NuclideUri,
   ): Promise<LspProcess> {
-    const result = new LspProcess(logger, process, projectRoot, false);
+    const lspProcess = new LspProcess(logger, process, projectRoot, false);
 
-    const init: InitializeParams = {
+    const params: InitializeParams = {
       // TODO:
       initializationOptions: {},
       processId: process.pid,
@@ -878,11 +943,14 @@ class LspProcess {
       },
       */
     };
-    result._capabilities = (await result._connection.initialize(
-      init,
-    )).capabilities;
 
-    return result;
+    const result = await lspProcess._connection.initialize(params);
+    lspProcess._capabilities = result.capabilities;
+    lspProcess._derivedCapabilities = new DerivedServerCapabilities(
+      result.capabilities,
+      logger,
+    );
+    return lspProcess;
   }
 
   _onNotification(message: Object): void {
