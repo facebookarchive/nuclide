@@ -96,6 +96,7 @@ async function createLanguageService(): Promise<
       version: '0.0.0',
       priority: 10,
       analyticsEventName: 'hack:run-type-coverage',
+      icon: 'nuclicon-hack',
     },
     definition: {
       version: '0.0.0',
