@@ -12,6 +12,7 @@
 import type {Observable} from 'rxjs';
 
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {IconName} from '../../nuclide-ui/types';
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
@@ -32,6 +33,7 @@ type State = {
   result: ?{
     percentage: number,
     providerName: string,
+    icon?: IconName,
   },
   pending: boolean,
   isActive: boolean,
@@ -97,6 +99,7 @@ export class StatusBarTile extends React.Component {
             : {
                 percentage: coverageResult.percentage,
                 providerName: result.provider.displayName,
+                icon: result.provider.icon,
               },
           pending: false,
         });

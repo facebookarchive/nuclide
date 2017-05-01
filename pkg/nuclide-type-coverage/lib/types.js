@@ -10,6 +10,8 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {IconName} from '../../nuclide-ui/types';
+
 import type {CoverageResult} from './rpc-types';
 
 export interface CoverageProvider {
@@ -17,4 +19,5 @@ export interface CoverageProvider {
   priority: number,
   grammarScopes: Array<string>,
   displayName: string,
+  icon?: IconName,
 }

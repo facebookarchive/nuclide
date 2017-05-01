@@ -9,8 +9,11 @@
  * @format
  */
 
+import type {IconName} from '../../nuclide-ui/types';
+
 import React from 'react';
 
+import {Icon} from '../../nuclide-ui/Icon';
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import featureConfig from '../../commons-atom/featureConfig';
 import classnames from 'classnames';
@@ -19,6 +22,7 @@ type Props = {
   result: ?{
     percentage: number,
     providerName: string,
+    icon?: IconName,
   },
   pending: boolean,
   // true iff we are currently displaying uncovered regions in the editor.
@@ -71,12 +75,20 @@ export class StatusBarTileComponent extends React.Component {
             delay: 0,
             placement: 'top',
           })}>
+          {this._getIconElement(result.icon)}
           {formattedPercentage}
         </div>
       );
     } else {
       return null;
     }
+  }
+
+  _getIconElement(icon: ?IconName): ?React.Element<any> {
+    if (icon == null) {
+      return null;
+    }
+    return <Icon icon={icon} />;
   }
 }
 
