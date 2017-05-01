@@ -32,6 +32,7 @@ export type Nuclicon =
   | 'nuclicon-graphql'
   | 'nuclicon-comment-discussion'
   | 'nuclicon-comment'
-  | 'nuclicon-jest-outline';
+  | 'nuclicon-jest-outline'
+  | 'nuclicon-flow';
 
 export type IconName = Nuclicon | atom$Octicon;

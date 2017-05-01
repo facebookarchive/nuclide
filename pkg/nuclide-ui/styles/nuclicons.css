@@ -86,3 +86,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-biggrep::before {
   content: "\f111";
 }
+.icon-nuclicon-flow::before {
+  content: "\f112";
+}
