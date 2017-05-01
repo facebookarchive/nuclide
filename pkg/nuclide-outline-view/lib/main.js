@@ -176,6 +176,8 @@ class Activation {
 
 createPackage(module.exports, Activation);
 
+// TODO this can be removed once we no longer want to support versions of Atom less than 1.17.0
+// (D4973408)
 function getActiveEditorRegistryEventSources() {
   return {
     activeEditors: observeActivePaneItemDebounced()

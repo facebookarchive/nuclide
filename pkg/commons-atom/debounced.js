@@ -32,6 +32,9 @@ export function observeActivePaneItemDebounced(
   debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
 ): Observable<mixed> {
   return observableFromSubscribeFunction(callback => {
+    if (atom.workspace.getCenter != null) {
+      return atom.workspace.getCenter().observeActivePaneItem(callback);
+    }
     return atom.workspace.observeActivePaneItem(callback);
   }).debounceTime(debounceInterval);
 }
