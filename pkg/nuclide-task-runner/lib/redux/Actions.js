@@ -13,6 +13,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {
   DidActivateInitialPackagesAction,
   RegisterTaskRunnerAction,
+  RequestToggleToolbarVisibilityAction,
   RunTaskAction,
   SelectTaskRunnerAction,
   SetProjectRootAction,
@@ -28,6 +29,8 @@ import type {
 
 export const DID_ACTIVATE_INITIAL_PACKAGES = 'DID_ACTIVATE_INITIAL_PACKAGES';
 export const REGISTER_TASK_RUNNER = 'REGISTER_TASK_RUNNER';
+export const REQUEST_TOGGLE_TOOLBAR_VISIBILITY =
+  'REQUEST_TOGGLE_TOOLBAR_VISIBILITY';
 export const RUN_TASK = 'RUN_TASK';
 export const SELECT_TASK_RUNNER = 'SELECT_TASK_RUNNER';
 export const SET_STATES_FOR_TASK_RUNNERS = 'SET_STATES_FOR_TASK_RUNNERS';
@@ -107,6 +110,16 @@ export function setToolbarVisibility(
 
 export function stopTask(): StopTaskAction {
   return {type: STOP_TASK};
+}
+
+export function requestToggleToolbarVisibility(
+  visible: ?boolean,
+  taskRunner: ?TaskRunner,
+): RequestToggleToolbarVisibilityAction {
+  return {
+    type: REQUEST_TOGGLE_TOOLBAR_VISIBILITY,
+    payload: {visible, taskRunner},
+  };
 }
 
 export function toggleToolbarVisibility(

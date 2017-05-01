@@ -165,6 +165,22 @@ export function combineTaskRunnerStatesEpic(
   });
 }
 
+export function toggleToolbarVisibilityEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY)
+    .map(action => {
+      invariant(action.type === Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY);
+      const state = store.getState();
+      const {visible, taskRunner} = action.payload;
+      return state.activeTaskRunner == null
+        ? Actions.setToolbarVisibility(false, true)
+        : Actions.toggleToolbarVisibility(visible, taskRunner);
+    });
+}
+
 export function updatePreferredVisibilityEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -179,26 +195,25 @@ export function updatePreferredVisibilityEpic(
 
       // Only act if responding to an explicit user action
       if (updateUserPreferences) {
-        if (!projectRoot && visible) {
+        if (projectRoot == null) {
           atom.notifications.addError(
             'Add a project to use the task runner toolbar',
             {
               dismissable: true,
             },
           );
-        } else if (!activeTaskRunner && visible) {
+        } else if (activeTaskRunner == null) {
           atom.notifications.addError(
             'No task runner available for the current working root selected in file tree',
             {
               dismissable: true,
             },
           );
-        } else if (projectRoot) {
+        } else {
           // The user explicitly changed the visibility, remember this state
           const {preferencesForWorkingRoots} = options;
-          const taskRunnerId = activeTaskRunner ? activeTaskRunner.id : null;
           preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
-            taskRunnerId,
+            taskRunnerId: activeTaskRunner.id,
             visible,
           });
         }
@@ -355,7 +370,7 @@ export function stopTaskEpic(
   });
 }
 
-export function toggleToolbarVisibilityEpic(
+export function setToolbarVisibilityEpic(
   actions: ActionsObservable<Action>,
   store: Store,
 ): Observable<Action> {

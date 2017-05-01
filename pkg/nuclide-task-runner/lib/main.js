@@ -120,7 +120,9 @@ class Activation {
       this._panelRenderer,
       atom.commands.add('atom-workspace', {
         'nuclide-task-runner:toggle-toolbar-visibility': event => {
-          this._actionCreators.toggleToolbarVisibility(getVisible(event));
+          this._actionCreators.requestToggleToolbarVisibility(
+            getVisible(event),
+          );
         },
       }),
       // Add a command for each enabled task in each enabled task runner
@@ -204,7 +206,7 @@ class Activation {
         taskRunner => ({
           'atom-workspace': {
             [`nuclide-task-runner:toggle-${taskRunner.name.toLowerCase()}-toolbar`]: event => {
-              this._actionCreators.toggleToolbarVisibility(
+              this._actionCreators.requestToggleToolbarVisibility(
                 getVisible(event),
                 taskRunner,
               );
@@ -318,7 +320,7 @@ class Activation {
       },
       toggle() {
         invariant(pkg != null);
-        pkg._actionCreators.toggleToolbarVisibility();
+        pkg._actionCreators.requestToggleToolbarVisibility();
       },
     };
   }
