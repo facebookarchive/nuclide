@@ -55,7 +55,7 @@ import type {
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
 import child_process from 'child_process';
-import {MultiMap} from './collection';
+import {arrayCompact, MultiMap} from './collection';
 import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
@@ -160,10 +160,9 @@ export function observeProcess(
   args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return _createProcessStream(
-    () => _makeChildProcess('spawn', command, args, options),
-    options,
-  ).flatMap(process => getOutputStream(process, options));
+  return spawn(command, args, options).flatMap(process =>
+    getOutputStream(process, options),
+  );
 }
 
 /**
@@ -223,10 +222,7 @@ export function observeProcessRaw(
   args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return _createProcessStream(
-    () => _makeChildProcess('spawn', command, args, options),
-    options,
-  ).flatMap(process =>
+  return spawn(command, args, options).flatMap(process =>
     getOutputStream(process, {...options, splitByLines: false}),
   );
 }
@@ -269,10 +265,7 @@ export function spawn(
   args?: Array<string>,
   options?: SpawnProcessOptions,
 ): Observable<child_process$ChildProcess> {
-  return _createProcessStream(
-    () => _makeChildProcess('spawn', command, args, options),
-    options,
-  );
+  return createProcessStream('spawn', command, args, options);
 }
 
 /**
@@ -283,10 +276,7 @@ export function fork(
   args?: Array<string>,
   options?: ForkProcessOptions,
 ): Observable<child_process$ChildProcess> {
-  return _createProcessStream(
-    () => _makeChildProcess('fork', modulePath, args, options),
-    {...options},
-  );
+  return createProcessStream('fork', modulePath, args, options);
 }
 
 /**
@@ -546,7 +536,9 @@ export function parsePsOutput(psOutput: string): Array<ProcessInfo> {
 // Types
 //
 
-type CreateProcessStreamOptions = {
+type CreateProcessStreamOptions = (
+  | child_process$spawnOpts
+  | child_process$forkOpts) & {
   killTreeWhenDone?: ?boolean,
   timeout?: ?number,
   input?: ?string,
@@ -561,7 +553,6 @@ type GetOutputStreamOptions = {
 };
 
 export type ObserveProcessOptions = SpawnProcessOptions &
-  CreateProcessStreamOptions &
   GetOutputStreamOptions;
 
 export type SpawnProcessOptions = child_process$spawnOpts &
@@ -698,58 +689,29 @@ function monitorStreamErrors(
   command,
   args,
   options,
-): void {
-  STREAM_NAMES.forEach(streamName => {
-    // $FlowIssue
-    const stream = process[streamName];
-    if (stream == null) {
-      return;
-    }
-    stream.on('error', error => {
-      // This can happen without the full execution of the command to fail,
-      // but we want to learn about it.
-      logError(
-        `stream error on stream ${streamName} with command:`,
-        command,
-        args,
-        options,
-        'error:',
-        error,
-      );
-    });
-  });
-}
-
-/**
- * Helper type/function to create child_process by spawning/forking the process.
- */
-type ChildProcessOpts = (child_process$spawnOpts | child_process$forkOpts) & {
-  input?: ?string,
-  dontLogInNuclide?: ?boolean,
-};
-
-function _makeChildProcess(
-  type: 'spawn' | 'fork' = 'spawn',
-  command: string,
-  args?: Array<string> = [],
-  options?: ChildProcessOpts = {},
-): child_process$ChildProcess {
-  const now = performanceNow();
-  // $FlowFixMe: child_process$spawnOpts and child_process$forkOpts have incompatable stdio types.
-  const child = child_process[type](nuclideUri.expandHomeDir(command), args, {
-    ...options,
-  });
-  monitorStreamErrors(child, command, args, options);
-  child.on('error', error => {
-    logError('error with command:', command, args, options, 'error:', error);
-  });
-  if (!options || !options.dontLogInNuclide) {
-    child.on('close', () => {
-      logCall(Math.round(performanceNow() - now), command, args);
-    });
-  }
-  writeToStdin(child, options.input);
-  return child;
+): Observable<empty> {
+  return Observable.merge(
+    ...arrayCompact(
+      STREAM_NAMES.map(name => {
+        // $FlowIssue
+        const stream = process[name];
+        return stream == null
+          ? null
+          : Observable.fromEvent(stream, 'error').do(err => {
+              // This can happen without the full execution of the command to fail,
+              // but we want to learn about it.
+              logError(
+                `stream error on stream ${name} with command:`,
+                command,
+                args,
+                options,
+                'error:',
+                err,
+              );
+            });
+      }),
+    ),
+  ).ignoreElements();
 }
 
 function writeToStdin(
@@ -781,43 +743,55 @@ function writeToStdin(
  *
  * IMPORTANT: The exit event does NOT mean that all stdout and stderr events have been received.
  */
-function _createProcessStream(
-  createProcess: () => child_process$ChildProcess,
-  options: CreateProcessStreamOptions = {},
+function createProcessStream(
+  type: 'spawn' | 'fork' = 'spawn',
+  commandOrModulePath: string,
+  args?: Array<string> = [],
+  options?: CreateProcessStreamOptions = {},
 ): Observable<child_process$ChildProcess> {
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
     .take(1)
     .switchMap(() => {
-      const process = createProcess();
-      const {killTreeWhenDone, timeout} = options;
+      const {dontLogInNuclide, killTreeWhenDone, timeout} = options;
       const enforceTimeout = timeout
-        ? // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
-          x =>
+        ? x =>
+            // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
             timeoutWith(
               x,
               timeout,
-              Observable.throw(new ProcessTimeoutError(timeout, process)),
+              Observable.throw(new ProcessTimeoutError(timeout, proc)),
             )
         : x => x;
-      let finished = false;
-
-      // If the process returned by `createProcess()` was not created by it (or at least in the same
-      // tick), it's possible that its error event has already been dispatched. This is a bug that
-      // needs to be fixed in the caller. Generally, that would just mean refactoring your code to
-      // create the process in the function you pass. If for some reason, this is absolutely not
-      // possible, you need to make sure that the process is passed here immediately after it's
-      // created (i.e. before an ENOENT error event would be dispatched). Don't refactor your code
-      // to avoid this function; you'll have the same bug, you just won't be notified! XD
-      invariant(
-        process.exitCode == null && !process.killed,
-        'Process already exited. (This indicates a race condition in Nuclide.)',
+      const proc = child_process[type](
+        nuclideUri.expandHomeDir(commandOrModulePath),
+        args,
+        // $FlowFixMe: child_process$spawnOpts and child_process$forkOpts have incompatable stdio types.
+        {...options},
       );
 
-      const errors = Observable.fromEvent(process, 'error').flatMap(
-        Observable.throw,
+      // An observable that emits no elements and is just used for its side-effects: it logs errors
+      // on the stdio streams.
+      const stdioErrorMonitors = monitorStreamErrors(
+        proc,
+        commandOrModulePath,
+        args,
+        options,
       );
+
+      const errors = Observable.fromEvent(proc, 'error')
+        .do(error => {
+          logError(
+            'error with command:',
+            commandOrModulePath,
+            args,
+            options,
+            'error:',
+            error,
+          );
+        })
+        .flatMap(Observable.throw);
       const exitEvents = Observable.fromEvent(
-        process,
+        proc,
         'exit',
         (exitCode: ?number, signal: ?string) => ({
           kind: 'exit',
@@ -829,12 +803,40 @@ function _createProcessStream(
         .filter(message => message.signal !== 'SIGUSR1')
         .take(1);
 
+      if (dontLogInNuclide !== true) {
+        // Log the completion of the process. Note that we intentionally don't merge this with the
+        // returned observable (like we do with the stdioErrorMonitors) because we don't want to
+        // cancel the side-effect when the user unsubscribes or when the process exits ("close"
+        // events come after "exit" events).
+        const now = performanceNow();
+        Observable.fromEvent(proc, 'close')
+          .do(() => {
+            logCall(
+              Math.round(performanceNow() - now),
+              commandOrModulePath,
+              args,
+            );
+          })
+          .subscribe();
+      }
+
+      let finished = false;
       return enforceTimeout(
-        Observable.of(process)
-          // Don't complete until we say so!
-          .merge(Observable.never())
+        Observable.merge(
+          Observable.of(proc),
+          Observable.never(), // Don't complete until we say so!
+          stdioErrorMonitors,
+        )
           .takeUntil(errors)
           .takeUntil(exitEvents)
+          .merge(
+            // Write any input to stdin. This observable is just created for the side-effect and we
+            // merge it here to ensure that it happens after the listeners are added.
+            Observable.create(observer => {
+              writeToStdin(proc, options.input);
+              observer.complete();
+            }),
+          )
           .do({
             error: () => {
               finished = true;
@@ -844,8 +846,8 @@ function _createProcessStream(
             },
           }),
       ).finally(() => {
-        if (!process.wasKilled && !finished) {
-          killProcess(process, Boolean(killTreeWhenDone));
+        if (!proc.wasKilled && !finished) {
+          killProcess(proc, Boolean(killTreeWhenDone));
         }
       });
     });
