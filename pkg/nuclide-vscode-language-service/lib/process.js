@@ -265,16 +265,8 @@ export class LanguageServerProtocolProcess {
     this._process._connection.didCloseTextDocument(params);
   }
 
-  async _fileEdit(fileEvent: FileEditEvent): Promise<void> {
-    const buffer = await this._fileCache.getBufferAtVersion(
-      fileEvent.fileVersion,
-    );
-    // TODO: That's the wrong call. We should do _fileCache.getBufferForFileEdit()
-    // which is synchronous and is guaranteed to succeed at this moment.
-    if (buffer == null) {
-      // TODO: stale ... send full contents from current buffer version
-      return;
-    }
+  _fileEdit(fileEvent: FileEditEvent): void {
+    const buffer = this._fileCache.getBufferForFileEdit(fileEvent);
 
     const contentChange: TextDocumentContentChangeEvent = {
       text: buffer.getText(),
@@ -370,10 +362,6 @@ export class LanguageServerProtocolProcess {
     // ReferenceParams is like TextDocumentPositionParams but with one extra field.
     const response = await this._process._connection.findReferences(params);
     const references = response.map(this.locationToFindReference);
-    // TODO: even if buffer was non-null (meaning our buffer and LSP were at the exact
-    // same version at the moment of the call), buffer might have mutated under our
-    // feet while awaiting findReferences(), and indeed all buffers might, so getting
-    // ranges from them below is dodgy. But it's the best we can do.
 
     // We want to know the name of the symbol. The best we can do is reconstruct
     // this from the range of one (any) of the references we got back. We're only
@@ -381,11 +369,28 @@ export class LanguageServerProtocolProcess {
     // thanks to includeDeclaration:true then the file where the user clicked will
     // assuredly be in the cache!
     let referencedSymbolName = null;
-    for (const ref of references) {
-      const refBuffer = this._fileCache.getBuffer(ref.uri);
-      if (refBuffer != null) {
-        referencedSymbolName = refBuffer.getTextInRange(ref.range);
-        break;
+    // The very best we can do is if we and LSP were in sync at the moment the
+    // request was dispatched, and buffer still hasn't been modified since then,
+    // so we can guarantee that the ranges returned by LSP are identical
+    // to what we have in hand.
+    if (buffer != null && buffer.version === fileVersion.version) {
+      const refInBuffer = references.find(
+        ref => ref.uri === fileVersion.filePath,
+      );
+      if (refInBuffer != null) {
+        referencedSymbolName = buffer.getTextInRange(refInBuffer.range);
+      }
+    }
+    // Failing that, if any of the buffers are open we'll use them (even if we
+    // have no guarantees about which version our buffers are at compared to
+    // the ranges that LSP sent us back, so it might be a little off.)
+    if (referencedSymbolName == null) {
+      for (const ref of references) {
+        const refBuffer = this._fileCache.getBuffer(ref.uri);
+        if (refBuffer != null) {
+          referencedSymbolName = refBuffer.getTextInRange(ref.range);
+          break;
+        }
       }
     }
     // Failing that we'll try using a regexp on the buffer. (belt and braces!)
@@ -430,7 +435,7 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.documentSymbolProvider) {
       return null;
     }
-    await this.tryGetBufferWhenWeAndLspAtSameVersion(fileVersion);
+    await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion);
     // That pushes out any pending edits.
     // TODO: It's the wrong way to do it. All we should do is wait
     // until this._lspFileVersionNotifier has caught up to FileVersion.
@@ -570,18 +575,23 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     atomRange: atom$Range,
   ): Promise<?Array<TextEdit>> {
+    // In general, what should happen if we request a reformat but the user does typing
+    // while we're waiting for the reformat results to be (asynchronously) delivered?
+    // This is entirely handled by our upstream caller in CodeFormatManager.js which
+    // verifies that the buffer's contents haven't changed between asking for reformat and
+    // applying it; if they have, then it displays an error message to the user.
+    // So: this function doesn't need to do any such verification itself.
+
+    // But we do need the buffer, to know whether atomRange covers the whole document.
+    // And if we can't get it for reasons of syncing, then we'll have to bail by reporting
+    // the same error as that upstream caller.
     const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
       fileVersion,
     );
     if (buffer == null) {
-      // If buffer is null, the user had requested a reformat but typed in more characters
-      // either before this formatSource method had a chance to be invoked, or before LSP
-      // had a chance to catch up with edits. In either case a reformat would lose that
-      // typing, so we must abort.
-      this._logger.logError(
-        'LSP.formatSource - file version changed before starting reformat',
+      throw new Error(
+        'The file contents were changed before formatting was complete.',
       );
-      return null;
     }
     const options = {tabSize: 2, insertSpaces: true};
     // TODO: from where should we pick up these options? Can we omit them?
@@ -617,8 +627,8 @@ export class LanguageServerProtocolProcess {
       return null;
     }
 
-    // TODO: what if the user typed characters while we were awaiting
-    // for the LSP server to deliver its formatting? Must fix.
+    // As mentioned, the user might have done further typing during that 'await', but if so then
+    // our upstream caller will catch it and report an error: no need to re-verify here.
 
     const convertRange = lspTextEdit => ({
       oldRange: rangeToAtomRange(lspTextEdit.range),
