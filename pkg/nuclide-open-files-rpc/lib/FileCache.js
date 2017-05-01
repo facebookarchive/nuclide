@@ -129,6 +129,14 @@ export class FileCache {
     );
   }
 
+  _close(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
+    this._buffers.delete(filePath);
+    this._fileEvents.next(
+      createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)),
+    );
+    buffer.destroy();
+  }
+
   dispose(): void {
     // The _close routine will delete elements from the _buffers map.
     // Per ES6 this is safe to do even while iterating.
@@ -192,14 +200,6 @@ export class FileCache {
 
   observeDirectoryEvents(): Observable<Set<NuclideUri>> {
     return this._directoryEvents;
-  }
-
-  _close(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
-    this._buffers.delete(filePath);
-    this._fileEvents.next(
-      createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)),
-    );
-    buffer.destroy();
   }
 
   createFileVersion(filePath: NuclideUri, version: number): FileVersion {
