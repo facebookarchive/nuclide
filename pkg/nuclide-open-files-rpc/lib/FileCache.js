@@ -54,10 +54,8 @@ export class FileCache {
 
     // invariant: because the above two lines have updated both _buffers and _requests,
     // then getBufferAtVersion will necessarily return immediately and succesfully.
-    invariant(
-      event.kind === 'close' ||
-        this._tryGetBufferAtVersionSynchronously(event.fileVersion) != null,
-    );
+    // And getBufferForFileEdit will also succeed.
+    invariant(event.kind !== 'edit' || this.getBufferForFileEdit(event));
 
     this._fileEvents.next(event);
   }
@@ -188,18 +186,17 @@ export class FileCache {
       : null;
   }
 
-  // _tryGetBufferAtVersionSynchronously - a synchronous version of getBufferAtVersion above
-  _tryGetBufferAtVersionSynchronously(
-    fileVersion: FileVersion,
-  ): ?simpleTextBuffer$TextBuffer {
+  // getBufferForFileEdit - this function may be called immediately when an edit event
+  // happens, before any awaits. At that time the buffer is guaranteed to be
+  // available. If called at any other time, the buffer may no longer be available,
+  // in which case it may throw.
+  getBufferForFileEdit(fileEvent: FileEditEvent): simpleTextBuffer$TextBuffer {
     // TODO: change this to return a string, like getBuffer() above.
-    if (!this._requests.isBufferAtVersion(fileVersion)) {
-      return null;
-    }
+    const fileVersion = fileEvent.fileVersion;
+    invariant(this._requests.isBufferAtVersion(fileVersion));
     const buffer = this.getBuffer(fileVersion.filePath);
-    return buffer != null && buffer.changeCount === fileVersion.version
-      ? buffer
-      : null;
+    invariant(buffer != null && buffer.changeCount === fileVersion.version);
+    return buffer;
   }
 
   getOpenDirectories(): Set<NuclideUri> {
