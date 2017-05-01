@@ -166,6 +166,7 @@ export class FileCache {
     this._directoryEvents.complete();
   }
 
+  // getBuffer: returns whatever is the current version of the buffer.
   getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
     // TODO: change this to return a string, to ensure that no caller will ever mutate
     // the buffer contents (and hence its changeCount). The only modifications allowed
@@ -173,6 +174,11 @@ export class FileCache {
     return this._buffers.get(filePath);
   }
 
+  // getBufferAtVersion(version): if the stream of onFileEvent gets up to this particular
+  // version, either now or in the future, then will return the buffer for that version.
+  // But if for whatever reason the stream of onFileEvent won't hit that precise version
+  // then returns null. See comments in _requests.waitForBufferAtVersion for
+  // the subtle scenarios where it might return null.
   async getBufferAtVersion(
     fileVersion: FileVersion,
   ): Promise<?simpleTextBuffer$TextBuffer> {
