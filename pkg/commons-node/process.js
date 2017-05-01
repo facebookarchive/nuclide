@@ -414,7 +414,6 @@ export function killProcess(
   childProcess: child_process$ChildProcess,
   killTree: boolean,
 ): void {
-  log(`Ending process stream. Killing process ${childProcess.pid}`);
   _killProcess(childProcess, killTree).then(
     () => {},
     error => {
@@ -692,12 +691,6 @@ function logError(...args) {
   // Can't use nuclide-logging here to not cause cycle dependency.
   // eslint-disable-next-line no-console
   console.error(...args);
-}
-
-function log(...args) {
-  // Can't use nuclide-logging here to not cause cycle dependency.
-  // eslint-disable-next-line no-console
-  console.log(...args);
 }
 
 function monitorStreamErrors(
