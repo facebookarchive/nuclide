@@ -21,6 +21,7 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
+import {track} from '../../nuclide-analytics';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import {PlatformService} from './PlatformService';
 
@@ -44,6 +45,8 @@ export function activate(rawState: ?Object): void {
       'atom-workspace',
       OPEN_NEAREST_BUILD_FILE_COMMAND,
       event => {
+        track(OPEN_NEAREST_BUILD_FILE_COMMAND);
+        // Add feature logging.
         const target = ((event.target: any): HTMLElement);
         openNearestBuildFile(target); // Note this returns a Promise.
       },
