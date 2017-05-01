@@ -17,6 +17,7 @@ import type {
   Source,
 } from '../types';
 
+import UniversalDisposable from '../../../commons-node/UniversalDisposable';
 import debounce from '../../../commons-node/debounce';
 import React from 'react';
 import FilteredMessagesReminder from './FilteredMessagesReminder';
@@ -58,7 +59,7 @@ type State = {
 export default class Console extends React.Component {
   props: Props;
   state: State;
-
+  _disposables: UniversalDisposable;
   _isScrolledNearBottom: boolean;
   _outputTable: ?OutputTable;
 
@@ -67,13 +68,30 @@ export default class Console extends React.Component {
     this.state = {
       unseenMessages: false,
     };
-    this._isScrolledNearBottom = false;
+    this._disposables = new UniversalDisposable();
+    this._isScrolledNearBottom = true;
     (this: any)._getExecutor = this._getExecutor.bind(this);
     (this: any)._getProvider = this._getProvider.bind(this);
     (this: any)._handleOutputTable = this._handleOutputTable.bind(this);
     (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
     (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
+  }
+
+  componentDidMount(): void {
+    // Wait for `<OutputTable />` to render itself via react-virtualized before scrolling and
+    // re-measuring; Otherwise, the scrolled location will be inaccurate, preventing the Console
+    // from auto-scrolling.
+    const immediate = setImmediate(() => {
+      this._scrollToBottom();
+    });
+    this._disposables.add(() => {
+      clearImmediate(immediate);
+    });
+  }
+
+  componentWillUnmount(): void {
+    this._disposables.dispose();
   }
 
   componentDidUpdate(prevProps: Props): void {
