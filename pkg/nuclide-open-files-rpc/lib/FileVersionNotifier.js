@@ -56,6 +56,13 @@ export class FileVersionNotifier {
     return this._versions.get(filePath);
   }
 
+  isBufferAtVersion(fileVersion: FileVersion): boolean {
+    const filePath = fileVersion.filePath;
+    const version = fileVersion.version;
+    const currentVersion = this._versions.get(filePath);
+    return currentVersion === version;
+  }
+
   waitForBufferAtVersion(fileVersion: FileVersion): Promise<boolean> {
     const filePath = fileVersion.filePath;
     const version = fileVersion.version;

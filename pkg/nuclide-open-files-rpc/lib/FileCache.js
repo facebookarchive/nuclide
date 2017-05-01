@@ -184,6 +184,20 @@ export class FileCache {
       : null;
   }
 
+  // _tryGetBufferAtVersionSynchronously - a synchronous version of getBufferAtVersion above
+  _tryGetBufferAtVersionSynchronously(
+    fileVersion: FileVersion,
+  ): ?simpleTextBuffer$TextBuffer {
+    // TODO: change this to return a string, like getBuffer() above.
+    if (!this._requests.isBufferAtVersion(fileVersion)) {
+      return null;
+    }
+    const buffer = this.getBuffer(fileVersion.filePath);
+    return buffer != null && buffer.changeCount === fileVersion.version
+      ? buffer
+      : null;
+  }
+
   getOpenDirectories(): Set<NuclideUri> {
     return this._directoryEvents.getValue();
   }
