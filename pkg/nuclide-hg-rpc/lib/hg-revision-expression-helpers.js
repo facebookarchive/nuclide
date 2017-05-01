@@ -28,6 +28,8 @@ import {Observable} from 'rxjs';
 
 // Exported for testing.
 export const INFO_REV_END_MARK = '<<NUCLIDE_REV_END_MARK>>';
+export const NULL_CHAR = '\0';
+const ESCAPED_NULL_CHAR = '\\0';
 
 // We use `{p1node|short} {p2node|short}` instead of `{parents}`
 // because `{parents}` only prints when a node has more than one parent,
@@ -43,10 +45,10 @@ const REVISION_INFO_TEMPLATE = `{rev}
 {node|short}
 {branch}
 {phase}
-{bookmarks}
-{remotenames}
-{tags}
-{p1node|short} {p2node|short}
+{bookmarks % '{bookmark}${ESCAPED_NULL_CHAR}'}
+{remotenames % '{remotename}${ESCAPED_NULL_CHAR}'}
+{tags % '{tag}${ESCAPED_NULL_CHAR}'}
+{p1node|short}${ESCAPED_NULL_CHAR}{p2node|short}${ESCAPED_NULL_CHAR}
 {ifcontains(rev, revset('.'), '${HEAD_MARKER}')}
 {singlepublicsuccessor}
 {amendsuccessors}
@@ -281,9 +283,5 @@ function parseSuccessorData(
 }
 
 function splitLine(line: string): Array<string> {
-  if (line.length === 0) {
-    return [];
-  } else {
-    return line.split(' ');
-  }
+  return line.split(NULL_CHAR).filter(e => e.length > 0);
 }

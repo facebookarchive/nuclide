@@ -13,6 +13,7 @@ import {
   expressionForRevisionsBeforeHead,
   parseRevisionInfoOutput,
   INFO_REV_END_MARK,
+  NULL_CHAR,
 } from '../lib/hg-revision-expression-helpers';
 import {SuccessorType} from '../lib/hg-constants';
 
@@ -44,10 +45,10 @@ Author Name<auth_2_alias@domain.com>
 a343fb3
 default
 draft
-b-1 b-2
+b-1${NULL_CHAR}b-2${NULL_CHAR}
 
-tip
-a343fb211111 000000000000
+tip${NULL_CHAR}
+a343fb211111${NULL_CHAR}000000000000${NULL_CHAR}
 @
 
 
@@ -65,9 +66,9 @@ a343fb2
 default
 public
 
-remote/master
+remote/master${NULL_CHAR}
 
-abc123411111 000000000000
+abc123411111${NULL_CHAR}000000000000${NULL_CHAR}
 
 
 af3435454321
