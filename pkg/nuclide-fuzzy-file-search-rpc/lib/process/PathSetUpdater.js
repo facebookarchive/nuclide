@@ -129,18 +129,10 @@ export default class PathSetUpdater {
       if ((file.mode & S_IFDIR) !== 0) {
         return;
       }
-      const fileName = file.name;
-      // Watchman returns paths relative to the subscription root, which may be
-      // different from (i.e. a parent directory of) the localDirectory passed into
-      // PathSetUpdater::startUpdatingPathSet. But the PathSet expects paths
-      // relative to the localDirectory. Thus we need to do this adjustment.
-      const adjustedPath = pathFromSubscriptionRootToDir
-        ? fileName.slice(pathFromSubscriptionRootToDir.length + 1)
-        : fileName;
       if (!file.exists) {
-        deletedPaths.push(adjustedPath);
+        deletedPaths.push(file.name);
       } else if (file.new) {
-        newPaths.push(adjustedPath);
+        newPaths.push(file.name);
       }
     });
 
