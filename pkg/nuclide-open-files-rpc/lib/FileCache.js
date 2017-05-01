@@ -32,7 +32,7 @@ export class FileCache {
   _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
   _requests: FileVersionNotifier;
   _fileEvents: Subject<LocalFileEvent>;
-  // Care! update() is the only way you're allowed to update _buffers
+  // Care! update() is the only way you're allowed to update _buffers or _requests
   // or to fire a _fileEvents.next() event. That's to ensure that the three things
   // stay in sync.
   _directoryEvents: BehaviorSubject<Set<NuclideUri>>;
@@ -46,15 +46,19 @@ export class FileCache {
 
     this._resources = new UniversalDisposable();
     this._resources.add(this._requests);
-    this._resources.add(
-      this._fileEvents.subscribe(event => {
-        this._requests.onEvent(event);
-      }),
-    );
   }
 
   update(updateBufferAndMakeEventFunc: () => LocalFileEvent) {
     const event = updateBufferAndMakeEventFunc();
+    this._requests.onEvent(event);
+
+    // invariant: because the above two lines have updated both _buffers and _requests,
+    // then getBufferAtVersion will necessarily return immediately and succesfully.
+    invariant(
+      event.kind === 'close' ||
+        this._tryGetBufferAtVersionSynchronously(event.fileVersion) != null,
+    );
+
     this._fileEvents.next(event);
   }
 
