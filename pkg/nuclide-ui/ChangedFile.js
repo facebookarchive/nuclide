@@ -27,7 +27,7 @@ import {Icon} from './Icon';
 import PathWithFileIcon from './PathWithFileIcon';
 
 const ANALYTICS_SOURCE_KEY = 'inline';
-
+const LF = '\u000A';
 type ChangedFileProps = {
   commandPrefix: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
@@ -206,12 +206,7 @@ export default class ChangedFile extends React.Component {
           />
           <PathWithFileIcon
             path={baseName}
-            ref={addTooltip({
-              title: `${statusName}: ${projectRelativePath} – Click to open`,
-              // Extra long delay to limit spawning aggressive follow-through behavior.
-              delay: 1000,
-              placement: 'top',
-            })}
+            title={`${statusName}:${LF}${projectRelativePath}${LF}(Click to open in Nuclide)`}
           />
         </span>
         {actions}
