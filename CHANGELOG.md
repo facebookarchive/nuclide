@@ -1,5 +1,51 @@
 # Nuclide Changelog
 
+## v0.221.0
+
+### Highlights
+
+* Perf: Reduce calls to `hg bookmarks` from O(n) users to O(1) (sharing managed data).
+* Improved reliability of console auto-scrolling.
+* PHP/Hack debugger: stdout from launched scripts is now redirected to the Nuclide console while debugging.
+
+### General
+
+* The Hack and Flow icons will now appear alongside the type coverage indicator in the status bar.
+* Fuzzy file search now strongly prioritizes exact-case matches when the query includes an uppercase character.
+* Fixed some minor flickering issues in Quick Open.
+* Fixed Cmd-F from the file-tree. The directory is auto populated.
+* Fix Ctrl-Click highlighting in the file-tree on Mac.
+* Fixed test runner invocation from the menu.
+* Remove the desktop computer icon in the status bar for local connections.
+* Upgraded the React Developer Tools for a host of improvements (thanks [Dan](https://github.com/gaearon) and [Andres](https://github.com/zertosh)!)
+* Nuclide's Diagnostics now supports (most of) the Linter [Standard and Indie v2 APIs](https://github.com/steelbrain/linter/tree/master/docs). See the [Nuclide Diagnostics README](https://github.com/facebook/nuclide/blob/master/pkg/nuclide-diagnostics-store/README.md) for more info.
+
+### C++
+
+* Fixed edge case causing invalid diagnostic highlighting.
+
+### Source Control
+
+* The “update” button in Interactive Smartlog is now labeled “Check out” to make it more intuitive.
+* Redundant “clean up” buttons on landed stacks are now being grouped as “clean up stack”.
+* Tooltips on uncommitted files now show the file's status and use the shorter, project-relative path.
+* Fix a bug with bookshelf serialization that wouldn’t restore open files when `hg bookmarks` failed.
+* UX: Add editor context menu item for “Open in Phabricator”.
+* Fix “Open in Diff View” editor context menu item.
+* Fix space-separated bookmark handling.
+
+### Debugger
+
+* Cleaned up debugger interface a bit and removed extra “stop” buttons from debugger pane
+* Fixed UX flashing/jitter when rendering a loading spinner in the console while waiting for an expression to be evaluated by the debugger.
+* Fixed several UX jitter issues with pinned data tips.
+* PHP/Hack debugger: added functionality to show exceptions with stack traces when a launched script exits due to an uncaught exception.
+
+### Console
+
+* Hide the "New Messages" button on console clear.
+* Fixed an issue that prevented the console from auto-scrolling after first opening it.
+
 ## v0.220.0
 
 **Hotfix from 0.219.0**
