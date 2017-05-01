@@ -475,6 +475,12 @@ export default class SearchResultManager {
           if (cachedQueries) {
             if (cachedQueries[query]) {
               cachedResult = cachedQueries[query];
+              // It's important to ensure that we update lastCachedQuery here.
+              // Consider the case where we enter "abc", then "abcd",
+              // then correct back to "abc" and finally enter "abce".
+              // We need to ensure that "abce" displays the results for "abc"
+              // while loading rather than the results for "abcd".
+              this._resultCache.setLastCachedQuery(providerName, query);
             } else if (
               lastCachedQuery != null &&
               cachedQueries[lastCachedQuery]

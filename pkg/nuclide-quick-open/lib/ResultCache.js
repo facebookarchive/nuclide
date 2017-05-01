@@ -107,6 +107,10 @@ export default class ResultCache {
     return this._lastCachedQuery.get(providerName);
   }
 
+  setLastCachedQuery(providerName: string, query: string): void {
+    this._lastCachedQuery.set(providerName, query);
+  }
+
   _ensureCacheEntry(providerName: string, directory: string): void {
     if (!this._cachedResults[providerName]) {
       this._cachedResults[providerName] = {};
