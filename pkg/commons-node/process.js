@@ -160,8 +160,8 @@ export function observeProcess(
   args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return spawn(command, args, options).flatMap(process =>
-    getOutputStream(process, options),
+  return spawn(command, args, options).flatMap(proc =>
+    getOutputStream(proc, options),
   );
 }
 
@@ -222,8 +222,8 @@ export function observeProcessRaw(
   args?: Array<string>,
   options?: ObserveProcessOptions,
 ): Observable<ProcessMessage> {
-  return spawn(command, args, options).flatMap(process =>
-    getOutputStream(process, {...options, splitByLines: false}),
+  return spawn(command, args, options).flatMap(proc =>
+    getOutputStream(proc, {...options, splitByLines: false}),
   );
 }
 
@@ -291,7 +291,7 @@ export function fork(
  * conjunction with `spawn()` which does that already.
  */
 export function getOutputStream(
-  process: child_process$ChildProcess,
+  proc: child_process$ChildProcess,
   options?: GetOutputStreamOptions,
   rest: void,
 ): Observable<ProcessMessage> {
@@ -303,10 +303,10 @@ export function getOutputStream(
   const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
   return Observable.defer(() => {
     const stdoutEvents = chunk(
-      limitBufferSize(observeStream(process.stdout), maxBuffer, 'stdout'),
+      limitBufferSize(observeStream(proc.stdout), maxBuffer, 'stdout'),
     ).map(data => ({kind: 'stdout', data}));
     const stderrEvents = chunk(
-      limitBufferSize(observeStream(process.stderr), maxBuffer, 'stderr'),
+      limitBufferSize(observeStream(proc.stderr), maxBuffer, 'stderr'),
     )
       .map(data => ({kind: 'stderr', data}))
       .share();
@@ -326,7 +326,7 @@ export function getOutputStream(
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
     const closeEvents = Observable.fromEvent(
-      process,
+      proc,
       // We listen to the "close" event instead of "exit" because we want to get all of the stdout
       // and stderr.
       'close',
@@ -344,7 +344,7 @@ export function getOutputStream(
           throw new ProcessExitError(
             event.exitCode,
             event.signal,
-            process,
+            proc,
             stderr,
           );
         }
@@ -400,13 +400,13 @@ export function scriptifyCommand<T>(
  * Kills a process and, optionally, its descendants.
  */
 export function killProcess(
-  childProcess: child_process$ChildProcess,
+  proc: child_process$ChildProcess,
   killTree: boolean,
 ): void {
-  _killProcess(childProcess, killTree).then(
+  _killProcess(proc, killTree).then(
     () => {},
     error => {
-      logError(`Killing process ${childProcess.pid} failed`, error);
+      logError(`Killing process ${proc.pid} failed`, error);
     },
   );
 }
@@ -682,15 +682,15 @@ function logError(...args) {
 }
 
 function monitorStreamErrors(
-  process: child_process$ChildProcess,
+  proc: child_process$ChildProcess,
   command,
   args,
   options,
 ): Observable<empty> {
   const streams = [
-    ['stdin', process.stdin],
-    ['stdout', process.stdout],
-    ['stderr', process.stderr],
+    ['stdin', proc.stdin],
+    ['stdout', proc.stdout],
+    ['stderr', proc.stderr],
   ];
   return Observable.merge(
     ...arrayCompact(
@@ -714,11 +714,8 @@ function monitorStreamErrors(
   ).ignoreElements();
 }
 
-function writeToStdin(
-  childProcess: child_process$ChildProcess,
-  input: ?string,
-): void {
-  if (typeof input === 'string' && childProcess.stdin != null) {
+function writeToStdin(proc: child_process$ChildProcess, input: ?string): void {
+  if (typeof input === 'string' && proc.stdin != null) {
     // Note that the Node docs have this scary warning about stdin.end() on
     // http://nodejs.org/api/child_process.html#child_process_child_stdin:
     //
@@ -726,8 +723,8 @@ function writeToStdin(
     // this stream via end() often causes the child process to terminate."
     //
     // In practice, this has not appeared to cause any issues thus far.
-    childProcess.stdin.write(input);
-    childProcess.stdin.end();
+    proc.stdin.write(input);
+    proc.stdin.end();
   }
 }
 
@@ -849,18 +846,18 @@ function isRealExit(event: {exitCode: ?number, signal: ?string}): boolean {
 }
 
 async function _killProcess(
-  childProcess: child_process$ChildProcess & {wasKilled?: boolean},
+  proc: child_process$ChildProcess & {wasKilled?: boolean},
   killTree: boolean,
 ): Promise<void> {
-  childProcess.wasKilled = true;
+  proc.wasKilled = true;
   if (!killTree) {
-    childProcess.kill();
+    proc.kill();
     return;
   }
   if (/^win/.test(process.platform)) {
-    await killWindowsProcessTree(childProcess.pid);
+    await killWindowsProcessTree(proc.pid);
   } else {
-    await killUnixProcessTree(childProcess);
+    await killUnixProcessTree(proc);
   }
 }
 
@@ -877,9 +874,9 @@ function killWindowsProcessTree(pid: number): Promise<void> {
 }
 
 export async function killUnixProcessTree(
-  childProcess: child_process$ChildProcess,
+  proc: child_process$ChildProcess,
 ): Promise<void> {
-  const descendants = await getDescendantsOfProcess(childProcess.pid);
+  const descendants = await getDescendantsOfProcess(proc.pid);
   // Kill the processes, starting with those of greatest depth.
   for (const info of descendants.reverse()) {
     killPid(info.pid);
