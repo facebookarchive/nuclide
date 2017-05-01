@@ -32,6 +32,9 @@ export class FileCache {
   _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
   _requests: FileVersionNotifier;
   _fileEvents: Subject<LocalFileEvent>;
+  // Care! update() is the only way you're allowed to update _buffers
+  // or to fire a _fileEvents.next() event. That's to ensure that the three things
+  // stay in sync.
   _directoryEvents: BehaviorSubject<Set<NuclideUri>>;
   _resources: UniversalDisposable;
 
@@ -48,6 +51,11 @@ export class FileCache {
         this._requests.onEvent(event);
       }),
     );
+  }
+
+  update(updateBufferAndMakeEventFunc: () => LocalFileEvent) {
+    const event = updateBufferAndMakeEventFunc();
+    this._fileEvents.next(event);
   }
 
   // If any out of sync state is detected then an Error is thrown.
@@ -70,9 +78,11 @@ export class FileCache {
         invariant(buffer != null);
         invariant(buffer.changeCount === changeCount - 1);
         invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
-        buffer.setTextInRange(event.oldRange, event.newText);
-        invariant(buffer.changeCount === changeCount);
-        this._fileEvents.next(event);
+        this.update(() => {
+          buffer.setTextInRange(event.oldRange, event.newText);
+          invariant(buffer.changeCount === changeCount);
+          return event;
+        });
         break;
       case FileEventKind.SYNC:
         if (buffer == null) {
@@ -104,18 +114,18 @@ export class FileCache {
 
     const oldText = buffer.getText();
     const oldRange = buffer.getRange();
-    buffer.setText(contents);
-    const newRange = buffer.getRange();
-    buffer.changeCount = changeCount;
-    this._fileEvents.next(
-      createEditEvent(
+    this.update(() => {
+      buffer.setText(contents);
+      const newRange = buffer.getRange();
+      buffer.changeCount = changeCount;
+      return createEditEvent(
         this.createFileVersion(filePath, changeCount),
         oldRange,
         oldText,
         newRange,
         buffer.getText(),
-      ),
-    );
+      );
+    });
   }
 
   _open(filePath: NuclideUri, contents: string, changeCount: number): void {
@@ -123,17 +133,22 @@ export class FileCache {
     // start the TextBuffer attempting to sync with the file system.
     const newBuffer = new TextBuffer(contents);
     newBuffer.changeCount = changeCount;
-    this._buffers.set(filePath, newBuffer);
-    this._fileEvents.next(
-      createOpenEvent(this.createFileVersion(filePath, changeCount), contents),
-    );
+    this.update(() => {
+      this._buffers.set(filePath, newBuffer);
+      return createOpenEvent(
+        this.createFileVersion(filePath, changeCount),
+        contents,
+      );
+    });
   }
 
   _close(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
-    this._buffers.delete(filePath);
-    this._fileEvents.next(
-      createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)),
-    );
+    this.update(() => {
+      this._buffers.delete(filePath);
+      return createCloseEvent(
+        this.createFileVersion(filePath, buffer.changeCount),
+      );
+    });
     buffer.destroy();
   }
 
@@ -150,12 +165,16 @@ export class FileCache {
   }
 
   getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
+    // TODO: change this to return a string, to ensure that no caller will ever mutate
+    // the buffer contents (and hence its changeCount). The only modifications allowed
+    // are those that come from the editor inside this.onFileEvent.
     return this._buffers.get(filePath);
   }
 
   async getBufferAtVersion(
     fileVersion: FileVersion,
   ): Promise<?simpleTextBuffer$TextBuffer> {
+    // TODO: change this to return a string, like getBuffer() above.
     if (!await this._requests.waitForBufferAtVersion(fileVersion)) {
       return null;
     }
