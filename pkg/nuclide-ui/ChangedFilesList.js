@@ -10,23 +10,22 @@
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-import type {IconName} from '../nuclide-ui/types';
 
+import {
+  repositoryForPath,
+} from '../nuclide-vcs-base';
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
-import {
- FileChangeStatusToIcon,
- FileChangeStatusToTextColor,
- repositoryForPath,
-} from '../nuclide-vcs-base';
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
-import {FileChangeStatus} from '../nuclide-vcs-base';
-import {Icon} from './Icon';
-import PathWithFileIcon from './PathWithFileIcon';
+import ChangedFile from './ChangedFile';
+
+function isHgPath(path: NuclideUri): boolean {
+  const repo = repositoryForPath(path);
+  return (repo != null) && repo.getType() === 'hg';
+}
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
-const ANALYTICS_SOURCE_KEY = 'inline';
 
 type ChangedFilesProps = {
   commandPrefix: string,
@@ -53,11 +52,6 @@ type ChangedFilesState = {
   visiblePagesCount: number,
 };
 
-function isHgPath(path: NuclideUri): boolean {
-  const repo = repositoryForPath(path);
-  return (repo != null) && repo.getType() === 'hg';
-}
-
 export default class ChangedFilesList extends React.Component {
   props: ChangedFilesProps;
   state: ChangedFilesState;
@@ -70,98 +64,21 @@ export default class ChangedFilesList extends React.Component {
     };
   }
 
-  _getFileClassname(file: NuclideUri, fileChangeValue: FileChangeStatusValue): string {
-    const {commandPrefix, rootPath, selectedFile} = this.props;
-    const repository = repositoryForPath(rootPath);
-    return classnames(
-      'nuclide-file-changes-list-item',
-      'list-item', {
-        selected: file === selectedFile,
-        [`${commandPrefix}-file-entry`]: repository != null && repository.getType() === 'hg',
-      },
-      FileChangeStatusToTextColor[fileChangeValue],
-    );
-  }
-
-  _renderAction(
-    key: string,
-    icon: IconName,
-    tooltipTitle: string,
-    onClick: () => void,
-  ): React.Element<any> {
-    return (
-      <div
-        className="nuclide-file-changes-file-action"
-        key={key}
-        onClick={onClick}
-        ref={addTooltip({
-          delay: 300,
-          placement: 'top',
-          title: tooltipTitle,
-        })}>
-        <Icon icon={icon} />
-      </div>
-    );
-  }
-
-  _renderForgetAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'forget', /* key */
-      'circle-slash', /* icon */
-      'Forget (stop tracking file in version control)', /* title */
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderDeleteAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'delete', /* key */
-      'trashcan', /* icon */
-      'Delete file from file system', /* title */
-      this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderMarkDeletedAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'mark-deleted', /* key */
-      'circle-slash', /* icon */
-      'Mark file as deleted (remove from version control)', /* title */
-      this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderRestoreAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'restore', /* key */
-      'playback-rewind', /* icon */
-      'Restore file (revert to last known version)', /* title */
-      this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderAddAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'add', /* key */
-      'plus', /* icon */
-      'Add file to version control', /* title */
-      this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
-  _renderOpenInDiffViewAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'diff', /* key */
-      'diff', /* icon */
-      'Open file in Diff View', /* title */
-      this.props.onOpenFileInDiffView.bind(this, filePath, ANALYTICS_SOURCE_KEY),
-    );
-  }
-
   render(): ?React.Element<any> {
     const {
+      commandPrefix,
+      enableFileExpansion,
       enableInlineActions,
+      fileChanges,
       fileStatuses,
+      onAddFile,
+      onDeleteFile,
+      onFileChosen,
+      onForgetFile,
+      onOpenFileInDiffView,
+      onRevertFile,
+      rootPath,
+      selectedFile,
     } = this.props;
     if (fileStatuses.size === 0 && this.props.hideEmptyFolders) {
       return null;
@@ -186,6 +103,7 @@ export default class ChangedFilesList extends React.Component {
         />
       : null;
 
+    const isHgRoot = isHgPath(rootPath);
     return (
       <ul className="list-tree has-collapsable-children">
         <li className={rootClassName}>
@@ -203,74 +121,25 @@ export default class ChangedFilesList extends React.Component {
             null
           }
           <ul className="list-tree has-flat-children">
-            {sizeLimitedFileChanges.map(
-              ([filePath, fileChangeValue]) => {
-                const baseName = nuclideUri.basename(filePath);
-                let actions;
-                if (enableInlineActions && isHgPath(filePath)) {
-                  const eligibleActions = [
-                    this._renderOpenInDiffViewAction(filePath),
-                  ];
-                  switch (fileChangeValue) {
-                    case FileChangeStatus.ADDED:
-                      eligibleActions.push(
-                        this._renderForgetAction(filePath),
-                        this._renderDeleteAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.UNTRACKED:
-                      eligibleActions.push(
-                        this._renderAddAction(filePath),
-                        this._renderDeleteAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.MISSING: // removed from FS but not VCS
-                      eligibleActions.push(
-                        this._renderRestoreAction(filePath),
-                        this._renderMarkDeletedAction(filePath),
-                      );
-                      break;
-                    case FileChangeStatus.MODIFIED:
-                    case FileChangeStatus.REMOVED: // removed from both FS and VCS
-                      eligibleActions.push(
-                        this._renderRestoreAction(filePath),
-                      );
-                      break;
-                  }
-                  actions = (
-                    <div className="nuclide-file-changes-file-actions">
-                      {eligibleActions}
-                    </div>
-                  );
-                }
-                return (
-                  <li
-                    data-name={baseName}
-                    data-path={filePath}
-                    data-root={this.props.rootPath}
-                    className={this._getFileClassname(filePath, fileChangeValue)}
-                    key={filePath}>
-                    <span
-                      className="nuclide-file-changes-file-entry"
-                      onClick={() => this.props.onFileChosen(filePath)}>
-                      <Icon
-                        className="nuclide-file-changes-file-entry-icon"
-                        icon={FileChangeStatusToIcon[fileChangeValue]}
-                      />
-                      <PathWithFileIcon
-                        path={baseName}
-                        ref={addTooltip({
-                          title: `${filePath} – Click to open`,
-                          // Extra long delay to limit spawning aggressive follow-through behavior.
-                          delay: 1000,
-                          placement: 'top',
-                        })}
-                      />
-                    </span>
-                    {actions}
-                  </li>
-                );
-              },
+            {sizeLimitedFileChanges.map(([filePath, fileStatus]) =>
+              <ChangedFile
+                commandPrefix={commandPrefix}
+                enableFileExpansion={enableFileExpansion}
+                enableInlineActions={enableInlineActions}
+                fileChanges={fileChanges == null ? null : fileChanges.get(filePath)}
+                filePath={filePath}
+                fileStatus={fileStatus}
+                isHgPath={isHgRoot}
+                isSelected={selectedFile === filePath}
+                key={filePath}
+                onAddFile={onAddFile}
+                onDeleteFile={onDeleteFile}
+                onFileChosen={onFileChosen}
+                onForgetFile={onForgetFile}
+                onOpenFileInDiffView={onOpenFileInDiffView}
+                onRevertFile={onRevertFile}
+                rootPath={rootPath}
+              />,
             )}
             <li>{showMoreFilesElement}</li>
           </ul>
