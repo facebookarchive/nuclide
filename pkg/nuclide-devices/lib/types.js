@@ -29,7 +29,6 @@ export type DeviceAction = {
 
 export interface DeviceActionsProvider {
   getActions(host: NuclideUri, device: string): DeviceAction[],
-  getName(): string,
   getType(): string,
   isSupported(host: NuclideUri): Promise<boolean>,
 }
@@ -124,7 +123,7 @@ export type SetInfoTablesAction = {
 export type SetDeviceActionsAction = {
   type: 'SET_DEVICE_ACTIONS',
   payload: {
-    actions: DeviceAction[],
+    deviceActions: DeviceAction[],
   },
 };
 

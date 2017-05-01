@@ -72,10 +72,10 @@ export function app(state: AppState, action: Action): AppState {
       };
 
     case Actions.SET_DEVICE_ACTIONS:
-      const {actions} = action.payload;
+      const {deviceActions} = action.payload;
       return {
         ...state,
-        actions,
+        deviceActions,
       };
 
     default:

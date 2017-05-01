@@ -93,10 +93,10 @@ export function setDevice(device: ?Device): SetDeviceAction {
 }
 
 export function setDeviceActions(
-  actions: DeviceAction[],
+  deviceActions: DeviceAction[],
 ): SetDeviceActionsAction {
   return {
     type: SET_DEVICE_ACTIONS,
-    payload: {actions},
+    payload: {deviceActions},
   };
 }
