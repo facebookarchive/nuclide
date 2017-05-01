@@ -31,7 +31,11 @@ import ChangedFilesList from './ChangedFilesList';
 type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
   analyticsSurface?: string,
+  // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
+  enableFileExpansion?: true,
   enableInlineActions?: true,
+  // `null` values for FileDiffs for a given key are assumed to be in "loading" state.
+  fileChanges?: Map<NuclideUri, Map<NuclideUri, ?diffparser$FileDiff>>,
   fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
@@ -317,7 +321,9 @@ export class MultiRootChangedFilesView extends React.PureComponent {
   render(): React.Element<any> {
     const {
       commandPrefix,
+      enableFileExpansion,
       enableInlineActions,
+      fileChanges: fileChangesByRoot,
       fileStatuses: fileStatusesByRoot,
       hideEmptyFolders,
       onFileChosen,
@@ -331,24 +337,31 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       <div className="nuclide-ui-multi-root-file-tree-container">
         {Array.from(
           fileStatusesByRoot.entries(),
-        ).map(([root, fileStatuses]) => (
-          <ChangedFilesList
-            commandPrefix={commandPrefix}
-            enableInlineActions={enableInlineActions === true}
-            fileStatuses={fileStatuses}
-            hideEmptyFolders={hideEmptyFolders}
-            key={root}
-            onAddFile={this._handleAddFile}
-            onDeleteFile={this._handleDeleteFile}
-            onFileChosen={onFileChosen}
-            onForgetFile={this._handleForgetFile}
-            onOpenFileInDiffView={this._handleOpenFileInDiffView}
-            onRevertFile={this._handleRevertFile}
-            rootPath={root}
-            selectedFile={selectedFile}
-            shouldShowFolderName={shouldShowFolderName}
-          />
-        ))}
+        ).map(([root, fileStatuses]) => {
+          const fileChanges = fileChangesByRoot == null
+            ? null
+            : fileChangesByRoot.get(root);
+          return (
+            <ChangedFilesList
+              commandPrefix={commandPrefix}
+              enableFileExpansion={enableFileExpansion === true}
+              enableInlineActions={enableInlineActions === true}
+              fileChanges={fileChanges}
+              fileStatuses={fileStatuses}
+              hideEmptyFolders={hideEmptyFolders}
+              key={root}
+              onAddFile={this._handleAddFile}
+              onDeleteFile={this._handleDeleteFile}
+              onFileChosen={onFileChosen}
+              onForgetFile={this._handleForgetFile}
+              onOpenFileInDiffView={this._handleOpenFileInDiffView}
+              onRevertFile={this._handleRevertFile}
+              rootPath={root}
+              selectedFile={selectedFile}
+              shouldShowFolderName={shouldShowFolderName}
+            />
+          );
+        })}
       </div>
     );
   }

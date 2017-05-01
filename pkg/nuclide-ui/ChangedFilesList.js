@@ -30,7 +30,11 @@ const ANALYTICS_SOURCE_KEY = 'inline';
 
 type ChangedFilesProps = {
   commandPrefix: string,
+  // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
+  enableFileExpansion: boolean,
   enableInlineActions: boolean,
+  // `null` values for FileDiffs for a given key are assumed to be in "loading" state.
+  fileChanges: ?Map<NuclideUri, ?diffparser$FileDiff>,
   fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
