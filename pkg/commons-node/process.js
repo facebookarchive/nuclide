@@ -778,18 +778,9 @@ function createProcessStream(
         options,
       );
 
-      const errors = Observable.fromEvent(proc, 'error')
-        .do(error => {
-          logError(
-            'error with command:',
-            commandOrModulePath,
-            args,
-            options,
-            'error:',
-            error,
-          );
-        })
-        .flatMap(Observable.throw);
+      const errors = Observable.fromEvent(proc, 'error').flatMap(
+        Observable.throw,
+      );
       const exitEvents = Observable.fromEvent(
         proc,
         'exit',
