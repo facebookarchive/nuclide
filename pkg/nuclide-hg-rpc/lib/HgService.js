@@ -1248,34 +1248,38 @@ export class HgService {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return hgRunCommand(args, execOptions)
-      .map(data => {
-        const parsedData = JSON.parse(data)[0];
-        if (parsedData.command == null) {
-          return null;
-        }
-        const conflicts = parsedData.conflicts.map(conflict => {
-          const {local, other} = conflict;
-          let status;
-          if (local.exists && other.exists) {
-            status = MergeConflictStatus.BOTH_CHANGED;
-          } else if (local.exists) {
-            status = MergeConflictStatus.DELETED_IN_THEIRS;
-          } else {
-            status = MergeConflictStatus.DELETED_IN_OURS;
+    return (
+      hgRunCommand(args, execOptions)
+        .map(data => {
+          const parsedData = JSON.parse(data)[0];
+          if (parsedData.command == null) {
+            return null;
           }
+          const conflicts = parsedData.conflicts.map(conflict => {
+            const {local, other} = conflict;
+            let status;
+            if (local.exists && other.exists) {
+              status = MergeConflictStatus.BOTH_CHANGED;
+            } else if (local.exists) {
+              status = MergeConflictStatus.DELETED_IN_THEIRS;
+            } else {
+              status = MergeConflictStatus.DELETED_IN_OURS;
+            }
 
+            return {
+              ...conflict,
+              status,
+            };
+          });
           return {
-            ...conflict,
-            status,
+            ...parsedData,
+            conflicts,
           };
-        });
-        return {
-          ...parsedData,
-          conflicts,
-        };
-      })
-      .publish();
+        })
+        // `resolve --all` returns a non-zero exit code when there's no conflicts.
+        .catch(() => Observable.of(null))
+        .publish()
+    );
   }
 
   /*
