@@ -14,6 +14,7 @@ import type {IconName} from '../nuclide-ui/types';
 
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
+import {getAtomProjectRelativePath} from '../commons-atom/projects';
 import {
  FileChangeStatusToIcon,
  FileChangeStatusToLabel,
@@ -188,6 +189,7 @@ export default class ChangedFile extends React.Component {
       );
     }
     const statusName = FileChangeStatusToLabel[fileStatus];
+    const projectRelativePath = getAtomProjectRelativePath(filePath) || filePath;
     return (
       <li
         data-name={baseName}
@@ -205,7 +207,7 @@ export default class ChangedFile extends React.Component {
           <PathWithFileIcon
             path={baseName}
             ref={addTooltip({
-              title: `${statusName}: ${filePath} – Click to open`,
+              title: `${statusName}: ${projectRelativePath} – Click to open`,
               // Extra long delay to limit spawning aggressive follow-through behavior.
               delay: 1000,
               placement: 'top',
