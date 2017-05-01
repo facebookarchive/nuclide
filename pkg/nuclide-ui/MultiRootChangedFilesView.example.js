@@ -45,7 +45,7 @@ function BasicExample(): React.Element<any> {
     <div>
       <Block>
         <MultiRootChangedFilesView
-          fileChanges={fileChanges}
+          fileStatuses={fileChanges}
           commandPrefix="sample-ui-playground"
           selectedFile={null}
           onFileChosen={onFileChosen}

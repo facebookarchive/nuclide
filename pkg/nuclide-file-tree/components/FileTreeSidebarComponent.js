@@ -285,7 +285,7 @@ export default class FileTreeSidebarComponent extends React.Component {
             analyticsSurface="file-tree-uncommitted-changes"
             commandPrefix="file-tree-sidebar"
             enableInlineActions={true}
-            fileChanges={filterMultiRootFileChanges(
+            fileStatuses={filterMultiRootFileChanges(
               this.state.uncommittedFileChanges,
             )}
             selectedFile={this.state.activeUri}

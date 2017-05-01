@@ -32,7 +32,7 @@ type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
   analyticsSurface?: string,
   enableInlineActions?: true,
-  fileChanges: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
+  fileStatuses: Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>>,
   commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
@@ -236,10 +236,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     const filePath = target.getAttribute('data-path');
     const rootPath = target.getAttribute('data-root');
     // $FlowFixMe
-    const fileChangesForRoot = this.props.fileChanges.get(rootPath);
-    invariant(fileChangesForRoot, 'Invalid rootpath');
+    const fileStatusesForRoot = this.props.fileStatuses.get(rootPath);
+    invariant(fileStatusesForRoot, 'Invalid rootpath');
     // $FlowFixMe
-    const statusCode = fileChangesForRoot.get(filePath);
+    const statusCode = fileStatusesForRoot.get(filePath);
     return statusCode;
   }
 
@@ -318,22 +318,24 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     const {
       commandPrefix,
       enableInlineActions,
-      fileChanges: fileChangesByRoot,
+      fileStatuses: fileStatusesByRoot,
       hideEmptyFolders,
       onFileChosen,
       selectedFile,
     } = this.props;
-    if (fileChangesByRoot.size === 0) {
+    if (fileStatusesByRoot.size === 0) {
       return <div>No changes</div>;
     }
-    const shouldShowFolderName = fileChangesByRoot.size > 1;
+    const shouldShowFolderName = fileStatusesByRoot.size > 1;
     return (
       <div className="nuclide-ui-multi-root-file-tree-container">
-        {Array.from(fileChangesByRoot.entries()).map(([root, fileChanges]) => (
+        {Array.from(
+          fileStatusesByRoot.entries(),
+        ).map(([root, fileStatuses]) => (
           <ChangedFilesList
             commandPrefix={commandPrefix}
             enableInlineActions={enableInlineActions === true}
-            fileChanges={fileChanges}
+            fileStatuses={fileStatuses}
             hideEmptyFolders={hideEmptyFolders}
             key={root}
             onAddFile={this._handleAddFile}

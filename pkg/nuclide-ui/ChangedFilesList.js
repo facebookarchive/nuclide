@@ -31,7 +31,7 @@ const ANALYTICS_SOURCE_KEY = 'inline';
 type ChangedFilesProps = {
   commandPrefix: string,
   enableInlineActions: boolean,
-  fileChanges: Map<NuclideUri, FileChangeStatusValue>,
+  fileStatuses: Map<NuclideUri, FileChangeStatusValue>,
   hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
   onDeleteFile: (filePath: NuclideUri) => void,
@@ -156,21 +156,21 @@ export default class ChangedFilesList extends React.Component {
 
   render(): ?React.Element<any> {
     const {
-      fileChanges,
       enableInlineActions,
+      fileStatuses,
     } = this.props;
-    if (fileChanges.size === 0 && this.props.hideEmptyFolders) {
+    if (fileStatuses.size === 0 && this.props.hideEmptyFolders) {
       return null;
     }
 
     const filesToShow = FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
-    const sizeLimitedFileChanges = Array.from(fileChanges.entries()).slice(0, filesToShow);
+    const sizeLimitedFileChanges = Array.from(fileStatuses.entries()).slice(0, filesToShow);
 
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
     });
 
-    const showMoreFilesElement = fileChanges.size > filesToShow
+    const showMoreFilesElement = fileStatuses.size > filesToShow
       ? <div
           className="icon icon-ellipsis"
           ref={addTooltip({
