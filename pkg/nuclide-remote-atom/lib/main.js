@@ -83,6 +83,11 @@ class Activation {
     };
 
     this._disposables = new ConnectionCache(async connection => {
+      // Return a dummy object for the 'null' local connection.
+      // This doesn't have much utility locally.
+      if (connection == null) {
+        return {dispose: () => {}};
+      }
       const service: RemoteCommandServiceType = getServiceByConnection(
         REMOTE_COMMAND_SERVICE,
         connection,
