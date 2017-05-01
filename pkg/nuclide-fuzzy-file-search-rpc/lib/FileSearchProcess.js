@@ -47,7 +47,7 @@ class FileSearchProcess {
       throw new Error('Task has been disposed');
     }
     return task.invokeRemoteMethod({
-      file: require.resolve('./FileSearch'),
+      file: require.resolve('./process/FileSearch'),
       method: 'doSearch',
       args: [this._directory, query],
     });
@@ -84,7 +84,7 @@ async function newFileSearch(
 
   const task = new Task();
   await task.invokeRemoteMethod({
-    file: require.resolve('./FileSearch'),
+    file: require.resolve('./process/FileSearch'),
     method: 'initFileSearchForDirectory',
     args: [directory, ignoredNames],
   });

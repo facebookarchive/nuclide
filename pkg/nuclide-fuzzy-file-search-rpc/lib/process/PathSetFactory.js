@@ -11,11 +11,11 @@
 
 import child_process from 'child_process';
 import split from 'split';
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
-import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {runCommand} from '../../commons-node/process';
-import {asyncLimit} from '../../commons-node/promise';
+import {WatchmanClient} from '../../../nuclide-watchman-helpers';
+import fsPromise from '../../../commons-node/fsPromise';
+import nuclideUri from '../../../commons-node/nuclideUri';
+import {runCommand} from '../../../commons-node/process';
+import {asyncLimit} from '../../../commons-node/promise';
 
 function getFilesFromCommand(
   command: string,

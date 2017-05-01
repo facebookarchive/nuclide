@@ -10,12 +10,12 @@
  */
 
 import type {PathSet} from './PathSet';
-import type {WatchmanSubscription} from '../../nuclide-watchman-helpers';
+import type {WatchmanSubscription} from '../../../nuclide-watchman-helpers';
 
 import {Disposable} from 'event-kit';
 import invariant from 'assert';
 
-import {WatchmanClient} from '../../nuclide-watchman-helpers';
+import {WatchmanClient} from '../../../nuclide-watchman-helpers';
 
 // TODO: This probably won't work on Windows, but we'll worry about that
 // when Watchman officially supports Windows.

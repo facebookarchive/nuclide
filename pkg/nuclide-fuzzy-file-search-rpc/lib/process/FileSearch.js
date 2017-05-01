@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {FileSearchResult} from './rpc-types';
+import type {FileSearchResult} from '../rpc-types';
 
-import fsPromise from '../../commons-node/fsPromise';
-import {getLogger} from '../../nuclide-logging';
+import fsPromise from '../../../commons-node/fsPromise';
+import {getLogger} from '../../../nuclide-logging';
 
 import {PathSet} from './PathSet';
 import {getPaths} from './PathSetFactory';

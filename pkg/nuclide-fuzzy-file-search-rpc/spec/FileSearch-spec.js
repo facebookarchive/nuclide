@@ -14,7 +14,7 @@ import fs from 'fs';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
-import {fileSearchForDirectory} from '../lib/FileSearch';
+import {fileSearchForDirectory} from '../lib/process/FileSearch';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 
 function aFileSearchShould(typename, dirPathFn) {

@@ -14,8 +14,8 @@ import nuclideUri from '../../commons-node/nuclideUri';
 
 import {WatchmanSubscription} from '../../nuclide-watchman-helpers';
 
-import {PathSet} from '../lib/PathSet';
-import PathSetUpdater from '../lib/PathSetUpdater';
+import {PathSet} from '../lib/process/PathSet';
+import PathSetUpdater from '../lib/process/PathSetUpdater';
 
 describe('PathSetUpdater', () => {
   const MOCK_WATCHMAN_PROJECT_ROOT = '/Mock/Root';

@@ -15,7 +15,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
 
-import {__test__} from '../lib/PathSetFactory';
+import {__test__} from '../lib/process/PathSetFactory';
 const {getFilesFromGit, getFilesFromHg} = __test__;
 
 describe('PathSetFactory', () => {
