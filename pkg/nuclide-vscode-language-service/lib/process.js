@@ -10,7 +10,12 @@
  */
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
+import type {
+  FileVersion,
+  FileOpenEvent,
+  FileCloseEvent,
+  FileEditEvent,
+} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
@@ -50,6 +55,10 @@ import type {
   Range,
   Location,
   PublishDiagnosticsParams,
+  DidOpenTextDocumentParams,
+  DidCloseTextDocumentParams,
+  DidChangeTextDocumentParams,
+  TextDocumentContentChangeEvent,
   Diagnostic,
   CompletionItem,
   TextDocumentPositionParams,
@@ -138,51 +147,21 @@ export class LanguageServerProtocolProcess {
         return this._fileExtensions.indexOf(fileExtension) !== -1;
       })
       .subscribe(fileEvent => {
-        const filePath = fileEvent.fileVersion.filePath;
-        const version = fileEvent.fileVersion.version;
         switch (fileEvent.kind) {
           case FileEventKind.OPEN:
-            this._process._connection.didOpenTextDocument({
-              textDocument: {
-                uri: filePath,
-                languageId: 'python', // TODO
-                version,
-                text: fileEvent.contents,
-              },
-            });
+            this._fileOpen(fileEvent);
             break;
           case FileEventKind.CLOSE:
-            this._process._connection.didCloseTextDocument({
-              textDocument: toTextDocumentIdentifier(filePath),
-            });
+            this._fileClose(fileEvent);
             break;
           case FileEventKind.EDIT:
-            this._fileCache
-              .getBufferAtVersion(fileEvent.fileVersion)
-              .then(buffer => {
-                if (buffer == null) {
-                  // TODO: stale ... send full contents from current buffer version
-                  return;
-                }
-                this._process._connection.didChangeTextDocument({
-                  textDocument: {
-                    uri: filePath,
-                    version,
-                  },
-                  // Send full contents
-                  // TODO: If the provider handles incremental diffs
-                  // Then send them instead
-                  contentChanges: [
-                    {
-                      text: buffer.getText(),
-                    },
-                  ],
-                });
-              });
+            this._fileEdit(fileEvent);
             break;
+          // TODO: _fileEdit kicks off asynchronous work in a fire-and-forget manner.
+          // It would be good to make it purely synchronous, for our own sanity.
           default:
-            throw new Error(
-              `Unexpected FileEvent kind: ${JSON.stringify(fileEvent)}`,
+            this._logger.logError(
+              'Unrecognized fileEvent ' + JSON.stringify(fileEvent),
             );
         }
         this._fileVersionNotifier.onEvent(fileEvent);
@@ -229,6 +208,50 @@ export class LanguageServerProtocolProcess {
     return buffer != null && buffer.changeCount === fileVersion.version
       ? buffer
       : null;
+  }
+
+  _fileOpen(fileEvent: FileOpenEvent): void {
+    const params: DidOpenTextDocumentParams = {
+      textDocument: {
+        uri: fileEvent.fileVersion.filePath,
+        languageId: 'python', // TODO
+        version: fileEvent.fileVersion.version,
+        text: fileEvent.contents,
+      },
+    };
+    this._process._connection.didOpenTextDocument(params);
+  }
+
+  _fileClose(fileEvent: FileCloseEvent): void {
+    const params: DidCloseTextDocumentParams = {
+      textDocument: {
+        uri: fileEvent.fileVersion.filePath,
+      },
+    };
+    this._process._connection.didCloseTextDocument(params);
+  }
+
+  async _fileEdit(fileEvent: FileEditEvent): Promise<void> {
+    const buffer = await this._fileCache.getBufferAtVersion(
+      fileEvent.fileVersion,
+    );
+    if (buffer == null) {
+      // TODO: stale ... send full contents from current buffer version
+      return;
+    }
+
+    const contentChange: TextDocumentContentChangeEvent = {
+      text: buffer.getText(),
+    }; // TODO: use incremental diff if LSP handles them
+
+    const params: DidChangeTextDocumentParams = {
+      textDocument: {
+        uri: fileEvent.fileVersion.filePath,
+        version: fileEvent.fileVersion.version,
+      },
+      contentChanges: [contentChange],
+    };
+    this._process._connection.didChangeTextDocument(params);
   }
 
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
