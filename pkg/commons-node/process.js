@@ -336,8 +336,7 @@ export function getOutputStream(
         signal,
       }),
     )
-      // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-      .filter(message => message.signal !== 'SIGUSR1')
+      .filter(isRealExit)
       .take(1)
       .withLatestFrom(accumulatedStderr)
       .map(([event, stderr]) => {
@@ -790,8 +789,7 @@ function createProcessStream(
           signal,
         }),
       )
-        // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
-        .filter(message => message.signal !== 'SIGUSR1')
+        .filter(isRealExit)
         .take(1);
 
       if (dontLogInNuclide !== true) {
@@ -842,6 +840,11 @@ function createProcessStream(
         }
       });
     });
+}
+
+function isRealExit(event: {exitCode: ?number, signal: ?string}): boolean {
+  // An exit signal from SIGUSR1 doesn't actually exit the process, so skip that.
+  return event.signal !== 'SIGUSR1';
 }
 
 async function _killProcess(
