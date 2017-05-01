@@ -219,6 +219,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       version: '0.0.0',
       priority: 10,
       analyticsEventName: 'flow.coverage',
+      icon: 'nuclicon-flow',
     },
     definition: {
       version: '0.0.0',
