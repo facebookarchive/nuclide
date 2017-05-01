@@ -149,7 +149,8 @@ export function runCommand(
  * const subscription = filesToTail
  *   // `switchMap()` means only one file will be tailed at a time.
  *   .switchMap(path => observeProcess('tail', ['-f', path]))
- *   .map(event => event.kind === 'stdout')
+ *   .filter(event => event.kind === 'stdout')
+ *   .map(event => event.data)
  *   .subscribe(line => {
  *     console.log(line);
  *   });
