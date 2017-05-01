@@ -306,9 +306,18 @@ export class LanguageServerProtocolProcess {
     if (this._process._capabilities.completionProvider == null) {
       return null;
     }
-    const result = await this._process._connection.completion(
-      await this.createTextDocumentPositionParams(fileVersion, position),
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
+    const params = createTextDocumentPositionParams(
+      fileVersion.filePath,
+      position,
     );
+    const result = await this._process._connection.completion(params);
     if (Array.isArray(result)) {
       return {
         isIncomplete: false,
@@ -329,9 +338,18 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.definitionProvider) {
       return null;
     }
-    const result = await this._process._connection.gotoDefinition(
-      await this.createTextDocumentPositionParams(fileVersion, position),
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
+    const params = createTextDocumentPositionParams(
+      fileVersion.filePath,
+      position,
     );
+    const result = await this._process._connection.gotoDefinition(params);
     return {
       // TODO: use wordAtPos to determine queryrange
       queryRange: [new atom$Range(position, position)],
@@ -351,11 +369,18 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.referencesProvider) {
       return null;
     }
-    const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
-      fileVersion,
-    );
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
+    const buffer = await this._fileCache.getBufferAtVersion(fileVersion);
+    // buffer may still be null despite the above check. We do handle that!
+
     const positionParams = createTextDocumentPositionParams(
-      fileVersion,
+      fileVersion.filePath,
       position,
     );
     const params = {...positionParams, context: {includeDeclaration: true}};
@@ -373,7 +398,7 @@ export class LanguageServerProtocolProcess {
     // request was dispatched, and buffer still hasn't been modified since then,
     // so we can guarantee that the ranges returned by LSP are identical
     // to what we have in hand.
-    if (buffer != null && buffer.version === fileVersion.version) {
+    if (buffer != null) {
       const refInBuffer = references.find(
         ref => ref.uri === fileVersion.filePath,
       );
@@ -435,10 +460,13 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.documentSymbolProvider) {
       return null;
     }
-    await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion);
-    // That pushes out any pending edits.
-    // TODO: It's the wrong way to do it. All we should do is wait
-    // until this._lspFileVersionNotifier has caught up to FileVersion.
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
     const params = {
       textDocument: toTextDocumentIdentifier(fileVersion.filePath),
     };
@@ -529,11 +557,18 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.hoverProvider) {
       return null;
     }
-    const request = await this.createTextDocumentPositionParams(
-      fileVersion,
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
+    const params = createTextDocumentPositionParams(
+      fileVersion.filePath,
       position,
     );
-    const response = await this._process._connection.hover(request);
+    const response = await this._process._connection.hover(params);
 
     let hint = response.contents;
     if (Array.isArray(hint)) {
@@ -562,8 +597,15 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.documentHighlightProvider) {
       return null;
     }
-    const params = await this.createTextDocumentPositionParams(
-      fileVersion,
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+      // If the user typed more characters before we ended up being invoked, then there's
+      // no way we can fulfill the request.
+    }
+    const params = createTextDocumentPositionParams(
+      fileVersion.filePath,
       position,
     );
     const response = await this._process._connection.documentHighlight(params);
@@ -589,9 +631,10 @@ export class LanguageServerProtocolProcess {
       fileVersion,
     );
     if (buffer == null) {
-      throw new Error(
-        'The file contents were changed before formatting was complete.',
+      this._logger.logError(
+        'LSP.formatSource - buffer changed before we could format',
       );
+      return null;
     }
     const options = {tabSize: 2, insertSpaces: true};
     // TODO: from where should we pick up these options? Can we omit them?
@@ -739,17 +782,6 @@ export class LanguageServerProtocolProcess {
     } else {
       return [this.locationToDefinition(locations)];
     }
-  }
-
-  async createTextDocumentPositionParams(
-    fileVersion: FileVersion,
-    position: atom$Point,
-  ): Promise<TextDocumentPositionParams> {
-    // TODO: this is a bad method. The callers should make their own
-    // decisions about what syncing they want from the client and from
-    // LSP. The current method is rarely the right choice.
-    await this.tryGetBufferWhenWeAndLspAtSameVersion(fileVersion);
-    return createTextDocumentPositionParams(fileVersion, position);
   }
 }
 
@@ -939,11 +971,11 @@ export function convertSeverity(severity?: number): MessageType {
 }
 
 export function createTextDocumentPositionParams(
-  fileVersion: FileVersion,
+  filePath: string,
   position: atom$Point,
 ): TextDocumentPositionParams {
   return {
-    textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+    textDocument: toTextDocumentIdentifier(filePath),
     position: pointToPosition(position),
   };
 }
