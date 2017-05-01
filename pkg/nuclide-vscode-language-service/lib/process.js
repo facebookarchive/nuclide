@@ -77,7 +77,6 @@ import {
   FileVersionNotifier,
   FileEventKind,
 } from '../../nuclide-open-files-rpc';
-import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
@@ -95,9 +94,9 @@ import {
 // to VS Code's Language Server Protocol
 export class LanguageServerProtocolProcess {
   _projectRoot: string;
-  _fileCache: FileCache;
-  _fileSubscription: rxjs$ISubscription;
-  _fileVersionNotifier: FileVersionNotifier;
+  _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
+  _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
+  _fileEventSubscription: rxjs$ISubscription;
   _createProcess: () => Promise<child_process$ChildProcess>;
   _process: LspProcess;
   _fileExtensions: Array<string>;
@@ -112,7 +111,7 @@ export class LanguageServerProtocolProcess {
   ) {
     this._logger = logger;
     this._fileCache = fileCache;
-    this._fileVersionNotifier = new FileVersionNotifier();
+    this._lspFileVersionNotifier = new FileVersionNotifier();
     this._projectRoot = projectRoot;
     this._createProcess = createProcess;
     this._fileExtensions = fileExtensions;
@@ -137,7 +136,20 @@ export class LanguageServerProtocolProcess {
   }
 
   _subscribeToFileEvents(): void {
-    this._fileSubscription = this._fileCache
+    // This code's goal is to keep the LSP process aware of the current status of opened
+    // files. Challenge: LSP has no insight into fileversion: it relies wholly upon us
+    // to give a correct sequence of versions in didChange events and can't even verify them.
+    //
+    // The _lspFileVersionNotifier tracks which fileversion we've sent downstream to LSP so far.
+    //
+    // The _fileCache tracks our upstream connection to the Nuclide editor, and from that
+    // synthesizes a sequential consistent stream of Open/Edit/Close events.
+    // If the (potentially flakey) connection temporarily goes down, the _fileCache
+    // recovers, resyncs, and synthesizes for us an appropriate whole-document Edit event.
+    // Therefore, it's okay for us to simply send _fileCache's sequential stream of edits
+    // directly on to the LSP server.
+    //
+    this._fileEventSubscription = this._fileCache
       .observeFileEvents()
       // TODO: Filter on projectRoot
       .filter(fileEvent => {
@@ -147,6 +159,10 @@ export class LanguageServerProtocolProcess {
         return this._fileExtensions.indexOf(fileExtension) !== -1;
       })
       .subscribe(fileEvent => {
+        invariant(fileEvent.fileVersion.notifier === this._fileCache);
+        // This invariant just self-documents that _fileCache is asked on observe file
+        // events about fileVersions that themselves point directly back to the _fileCache.
+        // (It's a convenience so that folks can pass around just a fileVersion on its own.)
         switch (fileEvent.kind) {
           case FileEventKind.OPEN:
             this._fileOpen(fileEvent);
@@ -164,7 +180,7 @@ export class LanguageServerProtocolProcess {
               'Unrecognized fileEvent ' + JSON.stringify(fileEvent),
             );
         }
-        this._fileVersionNotifier.onEvent(fileEvent);
+        this._lspFileVersionNotifier.onEvent(fileEvent);
       });
   }
 
@@ -197,14 +213,32 @@ export class LanguageServerProtocolProcess {
     return this._projectRoot;
   }
 
-  async getBufferAtVersion(
+  async tryGetBufferWhenWeAndLspAtSameVersion(
     fileVersion: FileVersion,
   ): Promise<?simpleTextBuffer$TextBuffer> {
-    const buffer = await getBufferAtVersion(fileVersion);
-    // Must also wait for edits to be sent to the LSP process
-    if (!await this._fileVersionNotifier.waitForBufferAtVersion(fileVersion)) {
+    // Await until we have received this exact version from the client.
+    // (Might be null in the case the user had already typed further
+    // before we got a chance to be called.)
+    const buffer = await this._fileCache.getBufferAtVersion(fileVersion);
+    invariant(buffer == null || buffer.changeCount === fileVersion.version);
+
+    // Await until this exact version has been pushed to LSP too.
+    if (
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      if (buffer != null) {
+        // Invariant: LSP is never ahead of our fileCache.
+        // Therefore it will eventually catch up.
+        this._logger.logError(
+          'LSP.version - could not catch up to version=' + fileVersion.version,
+        );
+      }
       return null;
     }
+
+    // During that second await, if the server received further edits from the client,
+    // then the buffer object might have been mutated in place, so its file-verion will
+    // no longer match. In this case we return null.
     return buffer != null && buffer.changeCount === fileVersion.version
       ? buffer
       : null;
@@ -235,6 +269,8 @@ export class LanguageServerProtocolProcess {
     const buffer = await this._fileCache.getBufferAtVersion(
       fileEvent.fileVersion,
     );
+    // TODO: That's the wrong call. We should do _fileCache.getBufferForFileEdit()
+    // which is synchronous and is guaranteed to succeed at this moment.
     if (buffer == null) {
       // TODO: stale ... send full contents from current buffer version
       return;
@@ -323,7 +359,9 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.referencesProvider) {
       return null;
     }
-    const buffer = await this.getBufferAtVersion(fileVersion);
+    const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
+      fileVersion,
+    );
     const positionParams = createTextDocumentPositionParams(
       fileVersion,
       position,
@@ -332,6 +370,10 @@ export class LanguageServerProtocolProcess {
     // ReferenceParams is like TextDocumentPositionParams but with one extra field.
     const response = await this._process._connection.findReferences(params);
     const references = response.map(this.locationToFindReference);
+    // TODO: even if buffer was non-null (meaning our buffer and LSP were at the exact
+    // same version at the moment of the call), buffer might have mutated under our
+    // feet while awaiting findReferences(), and indeed all buffers might, so getting
+    // ranges from them below is dodgy. But it's the best we can do.
 
     // We want to know the name of the symbol. The best we can do is reconstruct
     // this from the range of one (any) of the references we got back. We're only
@@ -388,7 +430,10 @@ export class LanguageServerProtocolProcess {
     if (!this._process._capabilities.documentSymbolProvider) {
       return null;
     }
-    await this.getBufferAtVersion(fileVersion); // push out any pending edits
+    await this.tryGetBufferWhenWeAndLspAtSameVersion(fileVersion);
+    // That pushes out any pending edits.
+    // TODO: It's the wrong way to do it. All we should do is wait
+    // until this._lspFileVersionNotifier has caught up to FileVersion.
     const params = {
       textDocument: toTextDocumentIdentifier(fileVersion.filePath),
     };
@@ -525,9 +570,17 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     atomRange: atom$Range,
   ): Promise<?Array<TextEdit>> {
-    const buffer = await this.getBufferAtVersion(fileVersion);
+    const buffer = await this.tryGetBufferWhenWeAndLspAtSameVersion(
+      fileVersion,
+    );
     if (buffer == null) {
-      this._logger.logError('LSP.formatSource - null buffer');
+      // If buffer is null, the user had requested a reformat but typed in more characters
+      // either before this formatSource method had a chance to be invoked, or before LSP
+      // had a chance to catch up with edits. In either case a reformat would lose that
+      // typing, so we must abort.
+      this._logger.logError(
+        'LSP.formatSource - file version changed before starting reformat',
+      );
       return null;
     }
     const options = {tabSize: 2, insertSpaces: true};
@@ -563,6 +616,9 @@ export class LanguageServerProtocolProcess {
       this._logger.logError('LSP.formatSource - not supported by server');
       return null;
     }
+
+    // TODO: what if the user typed characters while we were awaiting
+    // for the LSP server to deliver its formatting? Must fix.
 
     const convertRange = lspTextEdit => ({
       oldRange: rangeToAtomRange(lspTextEdit.range),
@@ -638,8 +694,8 @@ export class LanguageServerProtocolProcess {
         this._logger.logError('Hack Process died before disconnect() could be sent.');
       }
       super.dispose();
-      this._fileVersionNotifier.dispose();
-      this._fileSubscription.unsubscribe();
+      this._lspFileVersionNotifier.dispose();
+      this._fileEventSubscription.unsubscribe();
       if (processes.has(this._fileCache)) {
         processes.get(this._fileCache).delete(this._projectRoot);
       }
@@ -679,7 +735,10 @@ export class LanguageServerProtocolProcess {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<TextDocumentPositionParams> {
-    await this.getBufferAtVersion(fileVersion);
+    // TODO: this is a bad method. The callers should make their own
+    // decisions about what syncing they want from the client and from
+    // LSP. The current method is rarely the right choice.
+    await this.tryGetBufferWhenWeAndLspAtSameVersion(fileVersion);
     return createTextDocumentPositionParams(fileVersion, position);
   }
 }
