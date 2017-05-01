@@ -63,9 +63,7 @@ export class FileCache {
         break;
       case FileEventKind.CLOSE:
         if (buffer != null) {
-          this._buffers.delete(filePath);
-          this._emitClose(filePath, buffer);
-          buffer.destroy();
+          this._close(filePath, buffer);
         }
         break;
       case FileEventKind.EDIT:
@@ -132,11 +130,12 @@ export class FileCache {
   }
 
   dispose(): void {
+    // The _close routine will delete elements from the _buffers map.
+    // Per ES6 this is safe to do even while iterating.
     for (const [filePath, buffer] of this._buffers.entries()) {
-      this._emitClose(filePath, buffer);
-      buffer.destroy();
+      this._close(filePath, buffer);
     }
-    this._buffers.clear();
+    invariant(this._buffers.size === 0);
     this._resources.dispose();
     this._fileEvents.complete();
     this._directoryEvents.complete();
@@ -195,10 +194,12 @@ export class FileCache {
     return this._directoryEvents;
   }
 
-  _emitClose(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
+  _close(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
+    this._buffers.delete(filePath);
     this._fileEvents.next(
       createCloseEvent(this.createFileVersion(filePath, buffer.changeCount)),
     );
+    buffer.destroy();
   }
 
   createFileVersion(filePath: NuclideUri, version: number): FileVersion {
