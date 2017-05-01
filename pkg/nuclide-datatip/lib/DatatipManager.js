@@ -468,11 +468,22 @@ class DatatipManagerForEditor {
       return;
     }
 
+    if (this._isHoveringOverPinnedTip()) {
+      this._setState(DatatipState.HIDDEN);
+      return;
+    }
+
     this._setState(DatatipState.VISIBLE);
     this._interactedWith = false;
     this._cumulativeWheelX = 0;
     this._range = data.range;
     this._marker = renderDatatip(this._editor, this._datatipElement, data);
+  }
+
+  _isHoveringOverPinnedTip(): boolean {
+    const pinnedDataTips = Array.from(this._pinnedDatatips.values());
+    const hoveringTips = pinnedDataTips.filter(dt => dt.isHovering());
+    return hoveringTips != null && hoveringTips.length > 0;
   }
 
   _hideDatatip(): void {
@@ -521,6 +532,12 @@ class DatatipManagerForEditor {
     if (this._insideDatatip) {
       return;
     }
+
+    if (this._isHoveringOverPinnedTip()) {
+      this._setState(DatatipState.HIDDEN);
+      return;
+    }
+
     const currentPosition = getBufferPosition(
       this._editor,
       this._editorView,
@@ -544,6 +561,9 @@ class DatatipManagerForEditor {
       /* onDispose */ () => {
         this._pinnedDatatips.delete(pinnedDatatip);
       },
+      /* hideDataTips */ () => {
+        this._hideDatatip();
+      },
     );
     return pinnedDatatip;
   }
@@ -561,6 +581,9 @@ class DatatipManagerForEditor {
           track('datatip-pinned-close', {
             duration: performanceNow() - startTime,
           });
+        },
+        /* hideDataTips */ () => {
+          this._hideDatatip();
         },
       ),
     );

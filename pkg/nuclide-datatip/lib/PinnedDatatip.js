@@ -63,11 +63,13 @@ export class PinnedDatatip {
   _isDragging: boolean;
   _offset: Position;
   _isHovering: boolean;
+  _hideDataTips: () => void;
 
   constructor(
     datatip: Datatip,
     editor: TextEditor,
     onDispose: (pinnedDatatip: PinnedDatatip) => void,
+    hideDataTips: () => void,
   ) {
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(new Disposable(() => onDispose(this)));
@@ -107,17 +109,21 @@ export class PinnedDatatip {
     this._isDragging = false;
     this._dragOrigin = null;
     this._isHovering = false;
+    this._hideDataTips = hideDataTips;
     this.render();
   }
 
   handleMouseEnter(event: MouseEvent): void {
     this._isHovering = true;
-    this.render();
+    this._hideDataTips();
   }
 
   handleMouseLeave(event: MouseEvent): void {
     this._isHovering = false;
-    this.render();
+  }
+
+  isHovering(): boolean {
+    return this._isHovering;
   }
 
   handleGlobalMouseMove(event: Event): void {
