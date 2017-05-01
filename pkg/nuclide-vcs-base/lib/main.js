@@ -128,6 +128,16 @@ export const FileChangeStatusToTextColor: {
   [FileChangeStatus.UNTRACKED]: 'text-error',
 });
 
+export const FileChangeStatusToLabel: {
+  [key: ?FileChangeStatusValue]: string,
+} = Object.freeze({
+  [FileChangeStatus.ADDED]: 'Added',
+  [FileChangeStatus.MODIFIED]: 'Modified',
+  [FileChangeStatus.MISSING]: 'Missing',
+  [FileChangeStatus.REMOVED]: 'Removed',
+  [FileChangeStatus.UNTRACKED]: 'Untracked',
+});
+
 export const RevertibleStatusCodes = [
   FileChangeStatus.ADDED,
   FileChangeStatus.MODIFIED,

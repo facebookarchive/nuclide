@@ -16,6 +16,7 @@ import addTooltip from './add-tooltip';
 import classnames from 'classnames';
 import {
  FileChangeStatusToIcon,
+ FileChangeStatusToLabel,
  FileChangeStatusToTextColor,
 } from '../nuclide-vcs-base';
 import nuclideUri from '../commons-node/nuclideUri';
@@ -186,6 +187,7 @@ export default class ChangedFile extends React.Component {
         </div>
       );
     }
+    const statusName = FileChangeStatusToLabel[fileStatus];
     return (
       <li
         data-name={baseName}
@@ -203,7 +205,7 @@ export default class ChangedFile extends React.Component {
           <PathWithFileIcon
             path={baseName}
             ref={addTooltip({
-              title: `${filePath} – Click to open`,
+              title: `${statusName}: ${filePath} – Click to open`,
               // Extra long delay to limit spawning aggressive follow-through behavior.
               delay: 1000,
               placement: 'top',
