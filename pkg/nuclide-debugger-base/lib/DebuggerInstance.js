@@ -12,18 +12,6 @@
 import type WS from 'ws';
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {
-  NodeDebuggerService,
-} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {
-  NativeDebuggerService,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import type {
-  IwdpDebuggerService,
-} from '../../nuclide-debugger-iwdp-rpc/lib/IwdpDebuggerService';
-import type {
-  PhpDebuggerService,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {AtomNotification} from './types';
 
@@ -41,12 +29,6 @@ import {stringifyError} from '../../commons-node/string';
 
 import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';
-
-export type RpcDebuggerService =
-  | NodeDebuggerService
-  | NativeDebuggerService
-  | IwdpDebuggerService
-  | PhpDebuggerService;
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;

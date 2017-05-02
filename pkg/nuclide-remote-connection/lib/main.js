@@ -73,7 +73,6 @@ import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
 import typeof * as InfoService
   from '../../nuclide-server/lib/services/InfoService';
-import typeof * as IwdpDebuggerService from '../../nuclide-debugger-iwdp-rpc';
 import typeof * as MerlinService
   from '../../nuclide-ocaml-rpc/lib/MerlinService';
 import typeof * as NativeDebuggerService
@@ -148,12 +147,6 @@ export function getHgServiceByNuclideUri(uri: NuclideUri): HgService {
 
 export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
   return nullthrows(getServiceByNuclideUri('InfoService', uri));
-}
-
-export function getIwdpDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): IwdpDebuggerService {
-  return nullthrows(getServiceByNuclideUri('IwdpDebuggerService', uri));
 }
 
 export function getMerlinServiceByNuclideUri(uri: NuclideUri): MerlinService {
