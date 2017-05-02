@@ -263,7 +263,7 @@ export class RemoteFile {
   }
 
   async read(flushCache?: boolean): Promise<string> {
-    const data = await this._getFileSystemService().readFile(this._localPath);
+    const data = await this._getFileSystemService().readFile(this._path);
     const contents = data.toString();
     this._setDigest(contents);
     // TODO: respect encoding

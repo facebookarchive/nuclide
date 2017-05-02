@@ -74,9 +74,7 @@ export async function findTargetLocation(target: Target): Promise<any> {
   let data;
   try {
     const fs = getFileSystemServiceByNuclideUri(target.path);
-    data = (await fs.readFile(nuclideUri.getPath(target.path))).toString(
-      'utf8',
-    );
+    data = (await fs.readFile(target.path)).toString('utf8');
   } catch (e) {
     return null;
   }

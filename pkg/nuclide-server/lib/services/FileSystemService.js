@@ -276,7 +276,7 @@ export function unlink(path: string): Promise<void> {
  *   Callers who want a string should call buffer.toString('utf8').
  */
 export async function readFile(
-  path: string,
+  path: NuclideUri,
   options?: {flag?: string},
 ): Promise<Buffer> {
   const stats = await fsPromise.stat(path);

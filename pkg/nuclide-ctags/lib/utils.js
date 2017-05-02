@@ -15,7 +15,6 @@ import {getLogger} from '../../nuclide-logging';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
 
 // Taken from http://ctags.sourceforge.net/FORMAT
 export const CTAGS_KIND_NAMES = {
@@ -66,7 +65,7 @@ export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
     try {
       // Search for the pattern in the file.
       const service = getFileSystemServiceByNuclideUri(tag.file);
-      const contents = await service.readFile(nuclideUri.getPath(tag.file));
+      const contents = await service.readFile(tag.file);
       const lines = contents.toString('utf8').split('\n');
       lineNumber = 0;
       for (let i = 0; i < lines.length; i++) {
