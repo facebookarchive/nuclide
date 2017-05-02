@@ -21,6 +21,7 @@ export function app(state: AppState, action: Action): AppState {
         ...state,
         deviceType: null,
         device: null,
+        devices: [],
         infoTables: new Map(),
         actions: [],
         host,
@@ -32,6 +33,7 @@ export function app(state: AppState, action: Action): AppState {
         ...state,
         deviceType,
         device: null,
+        devices: [],
         infoTables: new Map(),
         actions: [],
       };
