@@ -205,8 +205,8 @@ export async function move(
  * @return true if the operation was successful; false if it wasn't.
  */
 export async function copy(
-  sourcePath: string,
-  destinationPath: string,
+  sourcePath: NuclideUri,
+  destinationPath: NuclideUri,
 ): Promise<boolean> {
   const isExistingFile = await fsPromise.exists(destinationPath);
   if (isExistingFile) {

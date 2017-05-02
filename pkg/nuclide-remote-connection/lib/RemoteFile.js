@@ -253,9 +253,9 @@ export class RemoteFile {
     }
   }
 
-  async copy(newPath: string): Promise<boolean> {
+  async copy(newPath: NuclideUri): Promise<boolean> {
     const wasCopied = await this._getFileSystemService().copy(
-      this._localPath,
+      this._path,
       newPath,
     );
     this._subscribeToNativeChangeEvents();

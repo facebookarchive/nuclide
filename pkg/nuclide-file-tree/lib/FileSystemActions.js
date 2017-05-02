@@ -188,7 +188,6 @@ class FileSystemActions {
 
   async _onConfirmDuplicate(
     file: File | RemoteFile,
-    nodePath: string,
     newBasename: string,
     addToVCS: boolean,
     onDidConfirm: (filePath: ?string) => mixed,
@@ -197,7 +196,7 @@ class FileSystemActions {
     const newFile = directory.getFile(newBasename);
     const newPath = newFile.getPath();
     const service = getFileSystemServiceByNuclideUri(newPath);
-    const exists = !await service.copy(nodePath, nuclideUri.getPath(newPath));
+    const exists = !await service.copy(file.getPath(), newPath);
     if (exists) {
       atom.notifications.addError(`'${newPath}' already exists.`);
       onDidConfirm(null);
@@ -283,7 +282,6 @@ class FileSystemActions {
         }
         this._onConfirmDuplicate(
           file,
-          nodePath,
           newBasename.trim(),
           Boolean(options.addToVCS),
           onDidConfirm,
