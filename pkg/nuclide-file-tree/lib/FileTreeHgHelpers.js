@@ -76,10 +76,7 @@ async function renameNode(
   try {
     const service = getFileSystemServiceByNuclideUri(filePath);
     // Throws if the destPath already exists.
-    await service.rename(
-      nuclideUri.getPath(filePath),
-      nuclideUri.getPath(destPath),
-    );
+    await service.rename(filePath, destPath);
 
     const hgRepository = getHgRepositoryForNode(node);
     if (hgRepository == null) {
@@ -149,10 +146,7 @@ async function _moveNodesUnprotected(
     });
 
     const service = getFileSystemServiceByNuclideUri(paths[0]);
-    await service.move(
-      paths.map(p => nuclideUri.getPath(p)),
-      nuclideUri.getPath(destPath),
-    );
+    await service.move(paths, destPath);
 
     // All filtered nodes should have the same rootUri, so we simply attempt to
     // retrieve the hg repository using the first node.

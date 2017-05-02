@@ -258,7 +258,7 @@ export class RemoteDirectory {
 
   async create(): Promise<boolean> {
     invariant(!this._deleted, 'RemoteDirectory has been deleted');
-    const created = await this._getFileSystemService().mkdirp(this._localPath);
+    const created = await this._getFileSystemService().mkdirp(this._uri);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }

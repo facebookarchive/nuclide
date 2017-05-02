@@ -93,7 +93,7 @@ export function findFilesInDirectories(
  * The lstat endpoint is the same as the stat endpoint except it will return
  * the stat of a link instead of the file the link points to.
  */
-export function lstat(path: string): Promise<fs.Stats> {
+export function lstat(path: NuclideUri): Promise<fs.Stats> {
   return fsPromise.lstat(path);
 }
 
@@ -102,7 +102,7 @@ export function lstat(path: string): Promise<fs.Stats> {
  * Throws EEXIST error if the directory already exists.
  * Throws ENOENT if the path given is nested in a non-existing directory.
  */
-export function mkdir(path: string): Promise<void> {
+export function mkdir(path: NuclideUri): Promise<void> {
   return fsPromise.mkdir(path);
 }
 
@@ -113,14 +113,14 @@ export function mkdir(path: string): Promise<void> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-export function mkdirp(path: string): Promise<boolean> {
+export function mkdirp(path: NuclideUri): Promise<boolean> {
   return fsPromise.mkdirp(path);
 }
 
 /**
  * Changes permissions on a file.
  */
-export function chmod(path: string, mode: number): Promise<void> {
+export function chmod(path: NuclideUri, mode: number): Promise<void> {
   return fsPromise.chmod(path, mode);
 }
 
@@ -173,7 +173,7 @@ export async function readdir(path: string): Promise<Array<DirectoryEntry>> {
  * It could be different than the given path if the file is a symlink
  * or exists in a symlinked directory.
  */
-export function realpath(path: string): Promise<string> {
+export function realpath(path: NuclideUri): Promise<NuclideUri> {
   return fsPromise.realpath(path);
 }
 
@@ -189,8 +189,8 @@ export function resolveRealPath(path: string): Promise<string> {
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
 export function rename(
-  sourcePath: string,
-  destinationPath: string,
+  sourcePath: NuclideUri,
+  destinationPath: NuclideUri,
 ): Promise<void> {
   return fsPromise.move(sourcePath, destinationPath);
 }
@@ -199,8 +199,8 @@ export function rename(
  * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
  */
 export async function move(
-  sourcePaths: Array<string>,
-  destDir: string,
+  sourcePaths: Array<NuclideUri>,
+  destDir: NuclideUri,
 ): Promise<void> {
   await Promise.all(
     sourcePaths.map(path => {

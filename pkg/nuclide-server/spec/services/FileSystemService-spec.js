@@ -194,7 +194,7 @@ describe('FileSystemService', () => {
     it('gets the same exact path of a normal file', () => {
       waitsForPromise(async () => {
         const realpath = await service.realpath(pathToTestFile);
-        expect(realpath).toBe(pathToTestFile);
+        expect(realpath).toBe(testHelper.getUriOfRemotePath(pathToTestFile));
       });
     });
 
@@ -202,7 +202,7 @@ describe('FileSystemService', () => {
       waitsForPromise(async () => {
         fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
         const realpath = await service.realpath(pathToLinkFile);
-        expect(realpath).toBe(pathToTestFile);
+        expect(realpath).toBe(testHelper.getUriOfRemotePath(pathToTestFile));
       });
     });
   });

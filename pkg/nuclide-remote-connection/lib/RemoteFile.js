@@ -224,9 +224,7 @@ export class RemoteFile {
 
   async getRealPath(): Promise<string> {
     if (this._realpath == null) {
-      this._realpath = await this._getFileSystemService().realpath(
-        this._localPath,
-      );
+      this._realpath = await this._getFileSystemService().realpath(this._path);
     }
     invariant(this._realpath);
     return this._realpath;

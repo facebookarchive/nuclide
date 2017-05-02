@@ -15,6 +15,8 @@ import type {
 } from '../../nuclide-source-control-helpers';
 
 import typeof * as FileWatcherServiceType from '../../nuclide-filewatcher-rpc';
+import typeof * as FileSystemServiceType
+  from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as SourceControlService
   from '../../nuclide-server/lib/services/SourceControlService';
 import type {RemoteFile} from './RemoteFile';
@@ -182,8 +184,10 @@ export class RemoteConnection {
     // in a possible race.
     this._connection.addConnection(this);
     try {
-      const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
-      const resolvedPath = await FileSystemService.resolveRealPath(this._cwd);
+      const fileSystemService: FileSystemServiceType = this.getService(
+        FILE_SYSTEM_SERVICE,
+      );
+      const resolvedPath = await fileSystemService.resolveRealPath(this._cwd);
 
       // Now that we know the real path, it's possible this collides with an existing connection.
       // If so, we should just stop immediately.
