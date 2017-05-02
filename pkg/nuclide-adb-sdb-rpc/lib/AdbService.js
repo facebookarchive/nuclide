@@ -40,7 +40,11 @@ export async function getDeviceList(): Promise<Array<DeviceDescription>> {
 }
 
 export async function startServer(): Promise<boolean> {
-  return (await getAdb()).startServer();
+  try {
+    return (await getAdb()).startServer();
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function getPidFromPackageName(

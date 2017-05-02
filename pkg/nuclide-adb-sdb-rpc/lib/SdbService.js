@@ -36,7 +36,11 @@ export async function getDeviceInfo(
 }
 
 export async function startServer(): Promise<boolean> {
-  return (await getSdb()).startServer();
+  try {
+    return (await getSdb()).startServer();
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
