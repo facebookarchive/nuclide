@@ -281,8 +281,7 @@ export class HgRepositoryClient {
     );
 
     const shouldRevisionsUpdate = Observable.merge(
-      activeBookmarkChanges,
-      allBookmarkChanges,
+      this._bookmarks.asObservable(),
       commitChanges,
       repoStateChanges,
     ).debounceTime(REVISION_DEBOUNCE_DELAY);
