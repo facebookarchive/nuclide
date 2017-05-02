@@ -266,7 +266,7 @@ export class RemoteDirectory {
   }
 
   async delete(): Promise<any> {
-    await this._getFileSystemService().rmdir(this._localPath);
+    await this._getFileSystemService().rmdir(this._uri);
     this._handleNativeDeleteEvent();
   }
 

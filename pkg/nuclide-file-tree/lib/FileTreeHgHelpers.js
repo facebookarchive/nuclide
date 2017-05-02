@@ -190,9 +190,7 @@ async function deleteNodes(nodes: Array<FileTreeNode>): Promise<void> {
       pathsByHost.map(async pathGroup => {
         // Batch delete using fs service.
         const service = getFileSystemServiceByNuclideUri(pathGroup.get(0));
-        await service.rmdirAll(
-          pathGroup.map(path => nuclideUri.getPath(path)).toJS(),
-        );
+        await service.rmdirAll(pathGroup.toJS());
       }),
     );
   }
