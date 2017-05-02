@@ -30,6 +30,22 @@ export class Adb extends DebugBridge {
     return this.getAndroidProp(device, 'ro.product.cpu.abi').toPromise();
   }
 
+  async getInstalledPackages(device: string): Promise<Array<string>> {
+    const prefix = 'package:';
+    const stdout = await this.runShortAdbCommand(device, [
+      'shell',
+      'pm',
+      'list',
+      'packages',
+    ]).toPromise();
+    return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
+  }
+
+  async isPackageInstalled(device: string, pkg: string): Promise<boolean> {
+    const packages = await this.getInstalledPackages(device);
+    return packages.includes(pkg);
+  }
+
   getDeviceModel(device: string): Promise<string> {
     return this.getAndroidProp(device, 'ro.product.model')
       .map(s => (s === 'sdk' ? 'emulator' : s))
@@ -156,12 +172,15 @@ export class Adb extends DebugBridge {
       .toPromise();
   }
 
-  async dumpsysPackage(device: string, identifier: string): Promise<string> {
+  async dumpsysPackage(device: string, pkg: string): Promise<?string> {
+    if (!await this.isPackageInstalled(device, pkg)) {
+      return null;
+    }
     return this.runShortAdbCommand(device, [
       'shell',
       'dumpsys',
       'package',
-      identifier,
+      pkg,
     ]).toPromise();
   }
 }

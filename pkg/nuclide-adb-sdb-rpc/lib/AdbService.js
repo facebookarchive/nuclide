@@ -111,6 +111,6 @@ export async function getJavaProcesses(
 export async function dumpsysPackage(
   device: string,
   identifier: string,
-): Promise<string> {
+): Promise<?string> {
   return (await getAdb()).dumpsysPackage(device, identifier);
 }
