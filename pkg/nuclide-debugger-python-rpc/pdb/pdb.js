@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = main;
+
+var _DebuggerCommander;
+
+function _load_DebuggerCommander() {
+  return _DebuggerCommander = require('../debugger/DebuggerCommander');
+}
+
+var _debugger;
+
+function _load_debugger() {
+  return _debugger = require('../debugger/debugger');
+}
+
+var _readline = _interopRequireDefault(require('readline'));
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,47 +34,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Observable} from 'rxjs';
-import type {DebuggerEvent} from '../debugger/types';
+function main(args) {
+  const argv = (_yargs || _load_yargs()).default.usage('Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>').help('help').alias('h', 'help').demand(1, 'Must specify a Python file').parse(args);
 
-import {DebuggerCommander} from '../debugger/DebuggerCommander';
-import {launchDebugger} from '../debugger/debugger';
-import readline from 'readline';
-import yargs from 'yargs';
-
-export default function main(args: Array<string>) {
-  const argv = yargs
-    .usage(
-      'Python command-line debugger in JavaScript.\nUsage: $0 <file-to-run.py> <arg1> <arg2>',
-    )
-    .help('help')
-    .alias('h', 'help')
-    .demand(1, 'Must specify a Python file')
-    .parse(args);
-
-  const commander = new DebuggerCommander();
-  const observable = launchDebugger(
-    commander.asObservable(),
-    /* initialBreakpoints */ [],
-    /* pathToPythonExecutable */ 'python',
-    /* pythonArgs */ argv._,
-  );
+  const commander = new (_DebuggerCommander || _load_DebuggerCommander()).DebuggerCommander();
+  const observable = (0, (_debugger || _load_debugger()).launchDebugger)(commander.asObservable(),
+  /* initialBreakpoints */[],
+  /* pathToPythonExecutable */'python',
+  /* pythonArgs */argv._);
 
   interact(observable, commander);
 }
 
 /* eslint-disable no-console */
-function interact(
-  observable: Observable<DebuggerEvent>,
-  commander: DebuggerCommander,
-) {
-  const rl = readline.createInterface({
+function interact(observable, commander) {
+  const rl = _readline.default.createInterface({
     input: process.stdin,
-    output: process.stdout,
+    output: process.stdout
   });
 
   function ask() {
@@ -90,12 +99,10 @@ function interact(
     next(message) {
       if (message.event === 'start') {
         // Give the user a chance to set breakpoints before starting the program.
-        console.log(
-          "Program started. Type 'c' to continue or 's' to start stepping.",
-        );
+        console.log("Program started. Type 'c' to continue or 's' to start stepping.");
         ask();
       } else if (message.event === 'stop') {
-        const {file, line} = message;
+        const { file, line } = message;
         console.log(`Stopped at: ${file}:${line}`);
         ask();
       }
@@ -105,7 +112,7 @@ function interact(
     },
     complete() {
       rl.close();
-    },
+    }
   });
 }
 /* eslint-enable no-console */

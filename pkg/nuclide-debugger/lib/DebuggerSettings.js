@@ -1,41 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
-
-export class DebuggerSettings {
-  _settings: {
-    SupportThreadsWindow: boolean,
-    CustomThreadColumns: Array<ThreadColumn>,
-    threadsComponentTitle: string,
-  };
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class DebuggerSettings {
 
   constructor() {
     this._settings = {
       SupportThreadsWindow: false,
       SingleThreadStepping: false,
       CustomThreadColumns: [],
-      threadsComponentTitle: 'Threads',
+      threadsComponentTitle: 'Threads'
     };
   }
 
-  set(key: string, value: mixed): void {
+  set(key, value) {
     this._settings[key] = value;
   }
 
-  get(key: string): ?mixed {
+  get(key) {
     return this._settings[key];
   }
 
-  getSerializedData(): string {
+  getSerializedData() {
     return JSON.stringify(this._settings);
   }
 }
+exports.DebuggerSettings = DebuggerSettings; /**
+                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                              * All rights reserved.
+                                              *
+                                              * This source code is licensed under the license found in the LICENSE file in
+                                              * the root directory of this source tree.
+                                              *
+                                              * 
+                                              * @format
+                                              */

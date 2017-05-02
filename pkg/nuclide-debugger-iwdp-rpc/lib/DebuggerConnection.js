@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerConnection = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('../../commons-node/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _logger;
+
+function _load_logger() {
+  return _logger = require('./logger');
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _Socket;
+
+function _load_Socket() {
+  return _Socket = require('./Socket');
+}
+
+var _FileCache;
+
+function _load_FileCache() {
+  return _FileCache = require('./FileCache');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,22 +48,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {Observable, BehaviorSubject, Subject} from 'rxjs';
-import {logger} from './logger';
-import {RUNNING, PAUSED, ENDED} from './constants';
-import {Socket} from './Socket';
-import {FileCache} from './FileCache';
-
-import type {DeviceInfo, RuntimeStatus} from './types';
-import type {AnyTeardown} from '../../commons-node/UniversalDisposable';
-import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
-
-const {log} = logger;
+const { log } = (_logger || _load_logger()).logger;
 
 /**
  * A connection to a JSContext on the device (or simulator/emulator).  There are 2 channels of
@@ -35,125 +67,108 @@ const {log} = logger;
  * `subscribeToEvents` API, which accepts a callback called when events are emitted from the target.
  */
 
-export class DebuggerConnection {
-  _disposables: UniversalDisposable;
-  _status: BehaviorSubject<RuntimeStatus>;
-  _events: Subject<Object>;
-  _connectionId: number;
-  _deviceInfo: DeviceInfo;
-  _socket: Socket;
-  _fileCache: FileCache;
-  _sendAtomNotification: (level: AtomNotificationType, message: string) => void;
+class DebuggerConnection {
 
-  constructor(
-    connectionId: number,
-    deviceInfo: DeviceInfo,
-    sendAtomNotification: (
-      level: AtomNotificationType,
-      message: string,
-    ) => void,
-  ) {
+  constructor(connectionId, deviceInfo, sendAtomNotification) {
     this._sendAtomNotification = sendAtomNotification;
     this._deviceInfo = deviceInfo;
     this._connectionId = connectionId;
-    this._events = new Subject();
-    this._status = new BehaviorSubject(RUNNING);
-    this._fileCache = new FileCache(
-      this._getScriptSource.bind(this),
-      sendAtomNotification,
-    );
-    const {webSocketDebuggerUrl} = deviceInfo;
-    this._socket = new Socket(
-      webSocketDebuggerUrl,
-      this._handleChromeEvent.bind(this),
-      () => this._status.next(ENDED),
-    );
-    this._disposables = new UniversalDisposable(this._socket);
-    log(
-      `DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`,
-    );
+    this._events = new _rxjsBundlesRxMinJs.Subject();
+    this._status = new _rxjsBundlesRxMinJs.BehaviorSubject((_constants || _load_constants()).RUNNING);
+    this._fileCache = new (_FileCache || _load_FileCache()).FileCache(this._getScriptSource.bind(this), sendAtomNotification);
+    const { webSocketDebuggerUrl } = deviceInfo;
+    this._socket = new (_Socket || _load_Socket()).Socket(webSocketDebuggerUrl, this._handleChromeEvent.bind(this), () => this._status.next((_constants || _load_constants()).ENDED));
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._socket);
+    log(`DebuggerConnection created with device info: ${JSON.stringify(deviceInfo)}`);
   }
 
-  sendCommand(message: Object): Promise<Object> {
+  sendCommand(message) {
     switch (message.method) {
-      case 'Debugger.setBreakpointByUrl': {
-        const {params} = message;
-        const translatedMessage = {
-          method: 'Debugger.setBreakpointByUrl',
-          params: {
-            ...params,
-            url: this._fileCache.getUrlFromFilePath(params.url),
-          },
-        };
-        return this._socket.sendCommand(translatedMessage);
-      }
-      default: {
-        return this._socket.sendCommand(message);
-      }
+      case 'Debugger.setBreakpointByUrl':
+        {
+          const { params } = message;
+          const translatedMessage = {
+            method: 'Debugger.setBreakpointByUrl',
+            params: Object.assign({}, params, {
+              url: this._fileCache.getUrlFromFilePath(params.url)
+            })
+          };
+          return this._socket.sendCommand(translatedMessage);
+        }
+      default:
+        {
+          return this._socket.sendCommand(message);
+        }
     }
   }
 
-  _getScriptSource(
-    scriptId: string,
-  ): Promise<{result: {scriptSource: string}}> {
+  _getScriptSource(scriptId) {
     return this.sendCommand({
       method: 'Debugger.getScriptSource',
       params: {
-        scriptId,
-      },
+        scriptId
+      }
     });
   }
 
-  async _handleChromeEvent(message: Object): Promise<void> {
-    switch (message.method) {
-      case 'Debugger.paused': {
-        this._status.next(PAUSED);
-        break;
+  _handleChromeEvent(message) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      switch (message.method) {
+        case 'Debugger.paused':
+          {
+            _this._status.next((_constants || _load_constants()).PAUSED);
+            break;
+          }
+        case 'Debugger.resumed':
+          {
+            _this._status.next((_constants || _load_constants()).RUNNING);
+            break;
+          }
+        case 'Debugger.scriptParsed':
+          {
+            const clientMessage = yield _this._fileCache.scriptParsed(message);
+            _this._events.next(clientMessage);
+            return;
+          }
       }
-      case 'Debugger.resumed': {
-        this._status.next(RUNNING);
-        break;
-      }
-      case 'Debugger.scriptParsed': {
-        const clientMessage = await this._fileCache.scriptParsed(message);
-        this._events.next(clientMessage);
-        return;
-      }
-    }
-    this._events.next(message);
+      _this._events.next(message);
+    })();
   }
 
-  subscribeToEvents(toFrontend: (message: Object) => void): IDisposable {
-    return new UniversalDisposable(this._events.subscribe(toFrontend));
+  subscribeToEvents(toFrontend) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._events.subscribe(toFrontend));
   }
 
-  isPaused(): boolean {
-    return this._status.getValue() === PAUSED;
+  isPaused() {
+    return this._status.getValue() === (_constants || _load_constants()).PAUSED;
   }
 
-  getName(): string {
+  getName() {
     return this._deviceInfo.title;
   }
 
-  getStatus(): RuntimeStatus {
+  getStatus() {
     return this._status.getValue();
   }
 
-  getStatusChanges(): Observable<RuntimeStatus> {
+  getStatusChanges() {
     return this._status.asObservable();
   }
 
-  getId(): number {
+  getId() {
     return this._connectionId;
   }
 
-  onDispose(...teardowns: Array<AnyTeardown>): void {
+  onDispose(...teardowns) {
     for (const teardown of teardowns) {
       this._disposables.add(teardown);
     }
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.DebuggerConnection = DebuggerConnection;

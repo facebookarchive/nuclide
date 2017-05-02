@@ -1,58 +1,83 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import type {
-  NodeAttachTargetInfo,
-} from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchAttachActions = undefined;
 
-import {ActionTypes} from './LaunchAttachDispatcher';
-import {NodeAttachProcessInfo} from './NodeAttachProcessInfo';
-import {
-  getNodeDebuggerServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import {LaunchAttachActionsBase} from '../../nuclide-debugger-base';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class LaunchAttachActions extends LaunchAttachActionsBase {
-  _dispatcher: LaunchAttachDispatcher;
+var _LaunchAttachDispatcher;
 
-  constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = require('./LaunchAttachDispatcher');
+}
+
+var _NodeAttachProcessInfo;
+
+function _load_NodeAttachProcessInfo() {
+  return _NodeAttachProcessInfo = require('./NodeAttachProcessInfo');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class LaunchAttachActions extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).LaunchAttachActionsBase {
+
+  constructor(dispatcher, targetUri) {
     super(targetUri);
     this._dispatcher = dispatcher;
   }
 
-  attachDebugger(attachTarget: NodeAttachTargetInfo): Promise<void> {
-    const attachInfo = new NodeAttachProcessInfo(
-      this.getTargetUri(),
-      attachTarget,
-    );
+  attachDebugger(attachTarget) {
+    const attachInfo = new (_NodeAttachProcessInfo || _load_NodeAttachProcessInfo()).NodeAttachProcessInfo(this.getTargetUri(), attachTarget);
     return this._startDebugging(attachInfo);
   }
 
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
-    await debuggerService.startDebugging(processInfo);
+  _startDebugging(processInfo) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+      yield debuggerService.startDebugging(processInfo);
+    })();
   }
 
-  async updateAttachTargetList(): Promise<void> {
-    const rpcService = getNodeDebuggerServiceByNuclideUri(this.getTargetUri());
-    const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
-      attachTargetInfos: attachTargetList,
-    });
+  updateAttachTargetList() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getNodeDebuggerServiceByNuclideUri)(_this.getTargetUri());
+      const attachTargetList = yield rpcService.getAttachTargetInfoList();
+      _this._dispatcher.dispatch({
+        actionType: (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).ActionTypes.UPDATE_ATTACH_TARGET_LIST,
+        attachTargetInfos: attachTargetList
+      });
+    })();
   }
 }
+exports.LaunchAttachActions = LaunchAttachActions; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    * 
+                                                    * @format
+                                                    */
