@@ -130,6 +130,9 @@ class Activation {
         providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {
+            if (typeof provider.dispose === 'function') {
+              provider.dispose();
+            }
             providers.delete(provider);
           }
         });
