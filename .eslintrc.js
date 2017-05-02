@@ -347,10 +347,12 @@ module.exports = {
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/use-nuclide-ui-components': 1,
-    'nuclide-internal/prettier': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
+
+    // prettify (https://github.com/zertosh/eslint-plugin-prettify)
+    'prettify/prettier': [1, 'fb'],
 
     // React (https://github.com/yannickcr/eslint-plugin-react)
     'react/display-name': 0,
@@ -418,6 +420,7 @@ module.exports = {
     'jasmine',
     'nuclide-internal',
     'prefer-object-spread',
+    'prettify',
     'react',
   ],
 };

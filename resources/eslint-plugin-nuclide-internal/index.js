@@ -21,7 +21,6 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': require('./no-unnecessary-disposable-wrapping'),
     'prefer-nuclide-uri': require('./prefer-nuclide-uri'),
     'use-nuclide-ui-components': require('./use-nuclide-ui-components'),
-    'prettier': require('./prettier'),
   },
   rulesConfig: {
     'atom-apis': 0,
@@ -32,6 +31,5 @@ module.exports = {
     'no-unnecessary-disposable-wrapping': 0,
     'prefer-nuclide-uri': 0,
     'use-nuclide-ui-components': 0,
-    'prettier': 0,
   },
 };
