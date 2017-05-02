@@ -273,7 +273,13 @@ describe('HgService', () => {
 
     describe('::commit', () => {
       it('can commit changes', () => {
-        expectedArgs = ['commit', '-m', commitMessage];
+        expectedArgs = [
+          'commit',
+          '--config',
+          'ui.merge=:merge',
+          '-m',
+          commitMessage,
+        ];
         waitsForPromise(async () => {
           await hgService
             .commit(commitMessage)
@@ -287,7 +293,13 @@ describe('HgService', () => {
 
     describe('::amend', () => {
       it('can amend changes with a message', () => {
-        expectedArgs = ['amend', '-m', commitMessage];
+        expectedArgs = [
+          'amend',
+          '--config',
+          'ui.merge=:merge',
+          '-m',
+          commitMessage,
+        ];
         waitsForPromise(async () => {
           await hgService
             .amend(commitMessage, AmendMode.CLEAN)
@@ -299,7 +311,7 @@ describe('HgService', () => {
       });
 
       it('can amend changes without a message', () => {
-        expectedArgs = ['amend'];
+        expectedArgs = ['amend', '--config', 'ui.merge=:merge'];
         waitsForPromise(async () => {
           await hgService
             .amend(null, AmendMode.CLEAN)
@@ -311,7 +323,14 @@ describe('HgService', () => {
       });
 
       it('can amend with --rebase & a commit message', () => {
-        expectedArgs = ['amend', '--rebase', '-m', commitMessage];
+        expectedArgs = [
+          'amend',
+          '--rebase',
+          '--config',
+          'ui.merge=:merge',
+          '-m',
+          commitMessage,
+        ];
         waitsForPromise(async () => {
           await hgService
             .amend(commitMessage, AmendMode.REBASE)
@@ -323,7 +342,7 @@ describe('HgService', () => {
       });
 
       it('can amend with --fixup', () => {
-        expectedArgs = ['amend', '--fixup'];
+        expectedArgs = ['amend', '--fixup', '--config', 'ui.merge=:merge'];
         waitsForPromise(async () => {
           await hgService
             .amend(null, AmendMode.FIXUP)
