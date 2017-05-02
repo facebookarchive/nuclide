@@ -39,7 +39,6 @@ import {
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
 import passesGK from '../../commons-node/passesGK';
 
 const HACK_SERVICE_NAME = 'HackService';
@@ -174,9 +173,9 @@ export async function isFileInHackProject(
   fileUri: NuclideUri,
 ): Promise<boolean> {
   const fileSystemService = getFileSystemServiceByNuclideUri(fileUri);
-  const foundDir = await fileSystemService.findNearestFile(
+  const foundDir = await fileSystemService.findNearestAncestorNamed(
     '.hhconfig',
-    nuclideUri.getPath(fileUri),
+    fileUri,
   );
   return foundDir != null;
 }
