@@ -47,6 +47,7 @@ COPYRIGHT_BLOCK = """\
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */"""
 
 ATOM_MAIN_JS = """\
