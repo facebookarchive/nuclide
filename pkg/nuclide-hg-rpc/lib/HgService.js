@@ -921,6 +921,9 @@ export class HgService {
     let editMergeConfigs;
     return Observable.fromPromise(
       (async () => {
+        // prevent user-specified merge tools from attempting to
+        // open interactive editors
+        args.push('--config', 'ui.merge=:merge');
         if (message == null) {
           return args;
         } else {
@@ -935,10 +938,6 @@ export class HgService {
       if (editMergeConfigs != null) {
         execArgs.push(...editMergeConfigs.args);
         execOptions.HGEDITOR = editMergeConfigs.hgEditor;
-      } else {
-        // Setting the editor to a non-existant tool to prevent operations that rely
-        // on the user's default editor from attempting to open up when needed.
-        execOptions.HGEDITOR = 'true';
       }
       return this._hgObserveExecution(execArgs, execOptions);
     });
@@ -1377,10 +1376,12 @@ export class HgService {
     command: string,
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
-    const args = [command, '--continue'];
+
+    // prevent user-specified merge tools from attempting to
+    // open interactive editors
+    const args = [command, '--continue', '--config', 'ui.merge=:merge'];
     const execOptions = {
       cwd: this._workingDirectory,
-      HGEDITOR: 'true',
     };
     return this._hgObserveExecution(args, execOptions)
       .switchMap(processExitCodeAndThrow)
@@ -1400,7 +1401,10 @@ export class HgService {
     source?: string,
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
-    const args = ['rebase', '-d', destination];
+
+    // prevent user-specified merge tools from attempting to
+    // open interactive editors
+    const args = ['rebase', '-d', destination, '--config', 'ui.merge=:merge'];
     if (source != null) {
       args.push('-s', source);
     }
@@ -1408,7 +1412,6 @@ export class HgService {
       cwd: this._workingDirectory,
       // Setting the editor to a non-existant tool to prevent operations that rely
       // on the user's default editor from attempting to open up when needed.
-      HGEDITOR: 'true',
     };
     return this._hgObserveExecution(args, execOptions).publish();
   }
