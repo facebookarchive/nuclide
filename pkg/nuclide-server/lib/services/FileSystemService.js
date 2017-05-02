@@ -119,7 +119,7 @@ export function chmod(path: NuclideUri, mode: number): Promise<void> {
  *
  * @return A boolean indicating whether the file was created.
  */
-export async function newFile(filePath: string): Promise<boolean> {
+export async function newFile(filePath: NuclideUri): Promise<boolean> {
   const isExistingFile = await fsPromise.exists(filePath);
   if (isExistingFile) {
     return false;
@@ -132,7 +132,9 @@ export async function newFile(filePath: string): Promise<boolean> {
 /**
  * Lists all children of the given directory.
  */
-export async function readdir(path: string): Promise<Array<DirectoryEntry>> {
+export async function readdir(
+  path: NuclideUri,
+): Promise<Array<DirectoryEntry>> {
   const files = await fsPromise.readdir(path);
   const entries = await Promise.all(
     files.map(async file => {

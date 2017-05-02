@@ -289,7 +289,7 @@ export class RemoteDirectory {
   ): Promise<void> {
     let entries;
     try {
-      entries = await this._getFileSystemService().readdir(this._localPath);
+      entries = await this._getFileSystemService().readdir(this._uri);
     } catch (e) {
       callback(e, null);
       return;

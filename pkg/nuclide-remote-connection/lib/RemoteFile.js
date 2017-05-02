@@ -235,9 +235,7 @@ export class RemoteFile {
   }
 
   async create(): Promise<boolean> {
-    const wasCreated = await this._getFileSystemService().newFile(
-      this._localPath,
-    );
+    const wasCreated = await this._getFileSystemService().newFile(this._path);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }

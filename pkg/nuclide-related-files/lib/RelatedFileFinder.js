@@ -75,7 +75,7 @@ export default class RelatedFileFinder {
     const dirName = nuclideUri.dirname(filePath);
     const prefix = getPrefix(filePath);
     const service = getFileSystemServiceByNuclideUri(filePath);
-    const listing = await service.readdir(nuclideUri.getPath(dirName));
+    const listing = await service.readdir(dirName);
     // Here the filtering logic:
     // first get all files with the same prefix -> filelist,
     // add the related files from external providers
