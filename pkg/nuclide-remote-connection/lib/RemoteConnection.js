@@ -239,8 +239,10 @@ export class RemoteConnection {
       },
       async error => {
         let warningMessageToUser = '';
-        const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
-        if (await FileSystemService.isNfs(rootDirectoryPath)) {
+        const fileSystemService: FileSystemServiceType = this.getService(
+          FILE_SYSTEM_SERVICE,
+        );
+        if (await fileSystemService.isNfs(rootDirectoryUri)) {
           warningMessageToUser +=
             `This project directory: \`${rootDirectoryPath}\` is on <b>\`NFS\`</b> filesystem. ` +
             'Nuclide works best with local (non-NFS) root directory.' +

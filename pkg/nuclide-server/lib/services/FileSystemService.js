@@ -296,7 +296,7 @@ export function createReadStream(
 /**
  * Returns true if the path being checked exists in a `NFS` mounted directory device.
  */
-export function isNfs(path: string): Promise<boolean> {
+export function isNfs(path: NuclideUri): Promise<boolean> {
   return fsPromise.isNfs(path);
 }
 
@@ -342,7 +342,7 @@ async function copyFilePermissions(
  * TODO: move to nuclide-commons and rename to writeFileAtomic
  */
 export async function writeFile(
-  path: string,
+  path: NuclideUri,
   data: string,
   options?: {encoding?: string, mode?: number, flag?: string},
 ): Promise<void> {

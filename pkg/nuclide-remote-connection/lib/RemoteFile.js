@@ -276,7 +276,7 @@ export class RemoteFile {
 
   async write(text: string): Promise<void> {
     const previouslyExisted = await this.exists();
-    await this._getFileSystemService().writeFile(this._localPath, text);
+    await this._getFileSystemService().writeFile(this._path, text);
     if (!previouslyExisted && this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
