@@ -15,6 +15,8 @@ import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {DeviceAction} from '../types';
 
+const FB_HOST_SUFFIX = '.facebook.com';
+
 type Props = {
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
@@ -44,7 +46,13 @@ export class Selectors extends React.Component {
   }
 
   _getHostOptions(): Array<{value: ?string, label: string}> {
-    return this.props.hosts.map(host => ({value: host, label: host}));
+    return this.props.hosts
+      .map(host => {
+        return host.endsWith(FB_HOST_SUFFIX)
+          ? host.substring(0, host.length - FB_HOST_SUFFIX.length)
+          : host;
+      })
+      .map(host => ({value: host, label: host}));
   }
 
   _getTypeOptions(): Array<{value: ?string, label: string}> {

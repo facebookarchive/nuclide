@@ -31,6 +31,7 @@ import {
   getDeviceListProviders,
   getDeviceActionsProviders,
 } from './providers';
+import nuclideUri from '../../commons-node/nuclideUri';
 
 import type {
   WorkspaceViewsService,
@@ -58,7 +59,9 @@ class Activation {
     );
     this._disposables = new UniversalDisposable(
       ServerConnection.observeRemoteConnections().subscribe(conns => {
-        const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
+        const hosts = conns.map(conn =>
+          nuclideUri.getHostname(conn.getUriOfRemotePath('/')),
+        );
         this._store.dispatch(Actions.setHosts(['local'].concat(hosts)));
       }),
     );
