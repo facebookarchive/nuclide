@@ -29,7 +29,7 @@ export class RemoteFile {
   _emitter: Emitter;
   _encoding: ?string;
   _localPath: string;
-  _path: string;
+  _path: NuclideUri;
   _realpath: ?string;
   _server: ServerConnection;
   _subscriptionCount: number;
@@ -39,7 +39,7 @@ export class RemoteFile {
 
   constructor(
     server: ServerConnection,
-    remotePath: string,
+    remotePath: NuclideUri,
     symlink: boolean = false,
   ) {
     this._server = server;
@@ -164,7 +164,7 @@ export class RemoteFile {
   }
 
   exists(): Promise<boolean> {
-    return this._getFileSystemService().exists(this._localPath);
+    return this._getFileSystemService().exists(this._path);
   }
 
   existsSync(): boolean {

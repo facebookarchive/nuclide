@@ -16,6 +16,7 @@ import type {
   HgRepositoryDescription,
 } from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
@@ -37,7 +38,7 @@ export class RemoteDirectory {
 
   _watchSubscription: ?rxjs$ISubscription;
   _server: ServerConnection;
-  _uri: string;
+  _uri: NuclideUri;
   _emitter: atom$Emitter;
   _subscriptionCount: number;
   _host: string;
@@ -185,7 +186,7 @@ export class RemoteDirectory {
   }
 
   exists(): Promise<boolean> {
-    return this._getFileSystemService().exists(this._localPath);
+    return this._getFileSystemService().exists(this._uri);
   }
 
   existsSync(): boolean {

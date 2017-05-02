@@ -11,12 +11,14 @@
 
 /* global localStorage */
 
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
 import LRUCache from 'lru-cache';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export type ArcProjectInfo = {
   projectId: string,
-  directory: string,
+  directory: NuclideUri,
 };
 
 const arcInfoCache: LRUCache<string, Promise<?ArcProjectInfo>> = new LRUCache({

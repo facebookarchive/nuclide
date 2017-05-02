@@ -40,7 +40,7 @@ const READFILE_SIZE_LIMIT = 10 * 1024 * 1024;
 /**
  * Checks a certain path for existence and returns 'true'/'false' accordingly
  */
-export function exists(path: string): Promise<boolean> {
+export function exists(path: NuclideUri): Promise<boolean> {
   return fsPromise.exists(path);
 }
 

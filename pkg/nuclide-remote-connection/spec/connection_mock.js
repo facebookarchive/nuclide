@@ -12,6 +12,7 @@
 import type {ServerConnection} from '..';
 
 import fsPromise from '../../commons-node/fsPromise';
+import nuclideUri from '../../commons-node/nuclideUri';
 import {RemoteDirectory} from '../lib/RemoteDirectory';
 import {RemoteFile} from '../lib/RemoteFile';
 
@@ -23,6 +24,12 @@ const fsService = {
   async copy(src, dst) {
     await fsPromise.copy(src, dst);
     return true;
+  },
+  rmdir(uri) {
+    return fsPromise.rmdir(nuclideUri.getPath(uri));
+  },
+  exists(uri) {
+    return fsPromise.exists(nuclideUri.getPath(uri));
   },
 };
 
