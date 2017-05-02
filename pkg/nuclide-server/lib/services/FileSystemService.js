@@ -252,7 +252,7 @@ export async function rmdirAll(paths: Array<NuclideUri>): Promise<void> {
  * }
  *
  */
-export function stat(path: string): Promise<fs.Stats> {
+export function stat(path: NuclideUri): Promise<fs.Stats> {
   return fsPromise.stat(path);
 }
 
@@ -287,7 +287,7 @@ export async function readFile(
 }
 
 export function createReadStream(
-  path: string,
+  path: NuclideUri,
   options?: {flag?: string},
 ): ConnectableObservable<Buffer> {
   return observeRawStream(fs.createReadStream(path, options)).publish();

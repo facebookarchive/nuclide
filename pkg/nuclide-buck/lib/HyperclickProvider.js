@@ -213,7 +213,7 @@ async function findRelativeFilePath(
   let stat;
   try {
     const fs = getFileSystemServiceByNuclideUri(potentialPath);
-    stat = await fs.stat(nuclideUri.getPath(potentialPath));
+    stat = await fs.stat(potentialPath);
   } catch (e) {
     return null;
   }
