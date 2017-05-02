@@ -1014,26 +1014,26 @@ export class HgRepositoryClient {
   }
 
   copy(
-    filePaths: Array<string>,
-    destPath: string,
+    filePaths: Array<NuclideUri>,
+    destPath: NuclideUri,
     after: boolean = false,
   ): Promise<void> {
     return this._service.copy(filePaths, destPath, after);
   }
 
   rename(
-    filePaths: Array<string>,
-    destPath: string,
+    filePaths: Array<NuclideUri>,
+    destPath: NuclideUri,
     after: boolean = false,
   ): Promise<void> {
     return this._service.rename(filePaths, destPath, after);
   }
 
-  remove(filePaths: Array<string>, after: boolean = false): Promise<void> {
+  remove(filePaths: Array<NuclideUri>, after: boolean = false): Promise<void> {
     return this._service.remove(filePaths, after);
   }
 
-  forget(filePaths: Array<string>): Promise<void> {
+  forget(filePaths: Array<NuclideUri>): Promise<void> {
     return this._service.forget(filePaths);
   }
 

@@ -244,7 +244,7 @@ export class RemoteFile {
 
   async delete(): Promise<any> {
     try {
-      await this._getFileSystemService().unlink(this._localPath);
+      await this._getFileSystemService().unlink(this._path);
       this._handleNativeDeleteEvent();
     } catch (error) {
       if (error.code !== 'ENOENT') {

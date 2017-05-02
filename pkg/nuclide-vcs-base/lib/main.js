@@ -415,15 +415,17 @@ export async function confirmAndDeletePath(
 }
 
 async function deleteFile(nuclideFilePath: string): Promise<boolean> {
-  const filePath = nuclideUri.getPath(nuclideFilePath);
   const fsService = getFileSystemServiceByNuclideUri(nuclideFilePath);
   try {
-    await fsService.unlink(filePath);
+    await fsService.unlink(nuclideFilePath);
     const repository = repositoryForPath(nuclideFilePath);
     if (repository == null || repository.getType() !== 'hg') {
       return false;
     }
-    await ((repository: any): HgRepositoryClient).remove([filePath], true);
+    await ((repository: any): HgRepositoryClient).remove(
+      [nuclideFilePath],
+      true,
+    );
   } catch (error) {
     atom.notifications.addError('Failed to delete file', {
       detail: error,

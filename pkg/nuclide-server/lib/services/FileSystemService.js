@@ -259,7 +259,7 @@ export function stat(path: NuclideUri): Promise<fs.Stats> {
 /**
  * Removes files. Does not fail if the file doesn't exist.
  */
-export function unlink(path: string): Promise<void> {
+export function unlink(path: NuclideUri): Promise<void> {
   return fsPromise.unlink(path).catch(error => {
     if (error.code !== 'ENOENT') {
       throw error;
