@@ -234,7 +234,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
   _getStatusCodeForFile(event: MouseEvent): ?number {
     // Walk up the DOM tree to the element containing the relevant data- attributes.
     const target = ((event.target: any): HTMLElement).closest(
-      '.nuclide-file-changes-list-item',
+      '.nuclide-changed-file',
     );
     invariant(target);
     const filePath = target.getAttribute('data-path');
