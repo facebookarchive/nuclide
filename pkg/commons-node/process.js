@@ -55,7 +55,7 @@ import type {
 
 import {observableFromSubscribeFunction} from '../commons-node/event';
 import child_process from 'child_process';
-import {arrayCompact, MultiMap} from './collection';
+import {MultiMap} from './collection';
 import nuclideUri from './nuclideUri';
 import {splitStream, takeWhileInclusive} from './observable';
 import {observeStream} from './stream';
@@ -682,7 +682,11 @@ function logError(...args) {
   console.error(...args);
 }
 
-function monitorStreamErrors(
+/**
+ * Returns an observable that squelches stream errors, logging them so long as the observable is
+ * subscribed to.
+ */
+function suppressStreamErrors(
   proc: child_process$ChildProcess,
   command,
   args,
@@ -693,26 +697,35 @@ function monitorStreamErrors(
     ['stdout', proc.stdout],
     ['stderr', proc.stderr],
   ];
-  return Observable.merge(
-    ...arrayCompact(
-      streams.map(([name, stream]) => {
-        return stream == null
-          ? null
-          : Observable.fromEvent(stream, 'error').do(err => {
-              // This can happen without the full execution of the command to fail,
-              // but we want to learn about it.
-              logError(
-                `stream error on stream ${name} with command:`,
-                command,
-                args,
-                options,
-                'error:',
-                err,
-              );
-            });
-      }),
-    ),
-  ).ignoreElements();
+  return Observable.create(() => {
+    let subscribed = true;
+    // Add an error listener to each stream. Note that we DON'T want to remove the listener when you
+    // unsubscribe, as that would leave us with no error handler (causing node to throw an unhandled
+    // exception). Instead, when you unsubscribe we just want to stop logging the errors. In the
+    // future, we may want to consider throwing on these errors instead of swallowing them. Either
+    // way, we need to make sure that unsubscribing doesn't remove the "error" event in order to
+    // prevent node from throwing on the next tick.
+    streams.forEach(([name, stream]) => {
+      if (stream == null) {
+        return;
+      }
+      stream.on('error', err => {
+        if (subscribed) {
+          logError(
+            `stream error on stream ${name} with command:`,
+            command,
+            args,
+            options,
+            'error:',
+            err,
+          );
+        }
+      });
+      return () => {
+        subscribed = false;
+      };
+    });
+  });
 }
 
 function writeToStdin(proc: child_process$ChildProcess, input: ?string): void {
@@ -769,7 +782,7 @@ function createProcessStream(
 
       // An observable that emits no elements and is just used for its side-effects: it logs errors
       // on the stdio streams.
-      const stdioErrorMonitors = monitorStreamErrors(
+      const stdioErrorMonitors = suppressStreamErrors(
         proc,
         commandOrModulePath,
         args,
