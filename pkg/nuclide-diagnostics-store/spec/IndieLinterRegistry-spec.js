@@ -76,6 +76,7 @@ describe('IndieLinterRegistry', () => {
     it('supports onDidDestroy', () => {
       const spy = jasmine.createSpy();
       delegate.onDidDestroy(spy);
+      expect(spy.callCount).toBe(0);
       delegate.dispose();
       delegate.dispose();
       expect(spy.callCount).toBe(1);
