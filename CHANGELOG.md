@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.222.0
+
+* Fixed a redbox when right-clicking a file in the uncommitted changes section.
+* Fixed an issue with uncaught errors when spawning processes.
+
 ## v0.221.0
 
 ### Highlights
