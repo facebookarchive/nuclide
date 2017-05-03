@@ -776,9 +776,14 @@ function createProcessStream(
         options,
       );
 
-      const errors = Observable.fromEvent(proc, 'error').flatMap(
-        Observable.throw,
-      );
+      // If we were to connect the error handler as part of the returned observable, unsubscribing
+      // would cause it to be removed. That would leave no attached error handler, so node would
+      // throw, triggering Atom's uncaught exception handler.
+      const errors = Observable.fromEvent(proc, 'error')
+        .flatMap(Observable.throw)
+        .publish();
+      errors.connect();
+
       const exitEvents = Observable.fromEvent(
         proc,
         'exit',

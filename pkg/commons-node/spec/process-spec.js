@@ -14,6 +14,7 @@ import type {ProcessExitMessage} from '../process-rpc-types';
 import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
+import {Scheduler} from 'rxjs';
 
 import {
   spawn,
@@ -195,6 +196,33 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error);
         expect(error.code).toBe('ENOENT');
+      });
+    });
+
+    it('leaves an error handler when you unsubscribe', () => {
+      waitsForPromise(async () => {
+        spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
+        let resolve;
+        const promise = new Promise(r => {
+          resolve = r;
+        });
+        const sub = spawn('fakeCommand')
+          // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
+          // assigned yet in our `subscribe()` callback, so we use the async scheduler.
+          .subscribeOn(Scheduler.async)
+          .subscribe(proc => {
+            // As soon as we have a process, unsubscribe. This will happen before the error is
+            // thrown.
+            sub.unsubscribe();
+
+            // Make sure that the error handler is still registered. If it isn't, and the process
+            // errors, node will consider the error unhandled and we'll get a redbox.
+            expect(proc.listenerCount('error')).toBe(1);
+
+            resolve();
+          });
+        await promise;
       });
     });
 
