@@ -583,8 +583,11 @@ export async function listAliases(
 export async function listFlavors(
   rootPath: NuclideUri,
   targets: Array<string>,
+  additionalArgs: Array<string> = [],
 ): Promise<?Object> {
-  const args = ['audit', 'flavors', '--json'].concat(targets);
+  const args = ['audit', 'flavors', '--json']
+    .concat(targets)
+    .concat(additionalArgs);
   try {
     const result = await _runBuckCommandFromProjectRoot(rootPath, args);
     return JSON.parse(result);
