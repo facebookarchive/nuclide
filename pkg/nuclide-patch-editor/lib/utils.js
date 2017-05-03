@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.patchToString = patchToString;
+exports.isSpecialChange = isSpecialChange;
+exports.parseWithAnnotations = parseWithAnnotations;
+exports.createPatchData = createPatchData;
+exports.createHunkData = createHunkData;
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _diffparser;
+
+function _load_diffparser() {
+  return _diffparser = _interopRequireDefault(require('diffparser'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Export an Array of diffparser$FileDiff objects to a string utilizable by the
+// Mercurial edrecord extension
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,23 +38,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {HunkData, PatchData} from './types';
-
-import nullthrows from 'nullthrows';
-import parse from 'diffparser';
-import {SelectedState} from './constants';
-
-// Export an Array of diffparser$FileDiff objects to a string utilizable by the
-// Mercurial edrecord extension
-export function patchToString(patchData: PatchData): string {
-  const lines: Array<string> = [];
+function patchToString(patchData) {
+  const lines = [];
 
   patchData.files.forEach(fileData => {
-    if (fileData.selected === SelectedState.NONE) {
+    if (fileData.selected === (_constants || _load_constants()).SelectedState.NONE) {
       return;
     }
     const fileDiff = fileData.fileDiff;
@@ -29,10 +54,8 @@ export function patchToString(patchData: PatchData): string {
     if (!isSpecialChange(fileDiff)) {
       lines.push(`--- a/${fileDiff.from}\n+++ b/${fileDiff.to}`);
       fileDiff.chunks.forEach(hunk => {
-        const hunkData = nullthrows(
-          nullthrows(fileData.chunks).get(hunk.oldStart),
-        );
-        if (hunkData.selected === SelectedState.NONE) {
+        const hunkData = (0, (_nullthrows || _load_nullthrows()).default)((0, (_nullthrows || _load_nullthrows()).default)(fileData.chunks).get(hunk.oldStart));
+        if (hunkData.selected === (_constants || _load_constants()).SelectedState.NONE) {
           return;
         }
         lines.push(hunk.content);
@@ -58,15 +81,13 @@ export function patchToString(patchData: PatchData): string {
 
 // Special changes only require the first line of the header be printed
 // Examples of special changes: binary files, renaming files, deleting files, adding empty files
-export function isSpecialChange(fileDiff: diffparser$FileDiff): boolean {
+function isSpecialChange(fileDiff) {
   return fileDiff.chunks.length === 0;
 }
 
 // Special changes come with annotations that will be useful to display on the FileChanges UI
-export function parseWithAnnotations(
-  diffContent: string,
-): Array<diffparser$FileDiff> {
-  const patch = parse(diffContent);
+function parseWithAnnotations(diffContent) {
+  const patch = (0, (_diffparser || _load_diffparser()).default)(diffContent);
 
   const patchLines = diffContent.split('\n');
   let currentLine = 0;
@@ -86,45 +107,29 @@ export function parseWithAnnotations(
   return patch;
 }
 
-export function createPatchData(patch: Array<diffparser$FileDiff>): PatchData {
+function createPatchData(patch) {
   return {
-    files: new Map(
-      patch.map(fileDiff => {
-        const id = `${fileDiff.to}:${fileDiff.from}`;
-        return [
-          id,
-          {
-            chunks: isSpecialChange(fileDiff)
-              ? null
-              : new Map(
-                  fileDiff.chunks.map(chunk => [
-                    chunk.oldStart,
-                    createHunkData(chunk),
-                  ]),
-                ),
-            countEnabledChunks: fileDiff.chunks.length,
-            countPartialChunks: 0,
-            fileDiff,
-            id,
-            selected: SelectedState.ALL,
-          },
-        ];
-      }),
-    ),
+    files: new Map(patch.map(fileDiff => {
+      const id = `${fileDiff.to}:${fileDiff.from}`;
+      return [id, {
+        chunks: isSpecialChange(fileDiff) ? null : new Map(fileDiff.chunks.map(chunk => [chunk.oldStart, createHunkData(chunk)])),
+        countEnabledChunks: fileDiff.chunks.length,
+        countPartialChunks: 0,
+        fileDiff,
+        id,
+        selected: (_constants || _load_constants()).SelectedState.ALL
+      }];
+    }))
   };
 }
 
-export function createHunkData(hunk: diffparser$Hunk): HunkData {
-  const allChanges = hunk.changes
-    .map(change => change.type !== 'normal')
-    .filter(isChange => isChange);
-  const firstChangedLineIndex = hunk.changes.findIndex(
-    change => change.type !== 'normal',
-  );
+function createHunkData(hunk) {
+  const allChanges = hunk.changes.map(change => change.type !== 'normal').filter(isChange => isChange);
+  const firstChangedLineIndex = hunk.changes.findIndex(change => change.type !== 'normal');
   return {
     allChanges,
     countEnabledChanges: allChanges.length,
     firstChangedLineIndex,
-    selected: SelectedState.ALL,
+    selected: (_constants || _load_constants()).SelectedState.ALL
   };
 }

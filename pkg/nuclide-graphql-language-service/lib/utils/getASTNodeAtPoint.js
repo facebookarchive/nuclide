@@ -1,33 +1,30 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ASTNode} from 'graphql/language';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getASTNodeAtPoint = getASTNodeAtPoint;
+exports.pointToOffset = pointToOffset;
 
-import {Point} from './Range';
-import {visit} from 'graphql';
+var _Range;
 
-export function getASTNodeAtPoint(
-  query: string,
-  ast: ASTNode,
-  point: Point,
-): ?ASTNode {
+function _load_Range() {
+  return _Range = require('./Range');
+}
+
+var _graphql;
+
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
+
+function getASTNodeAtPoint(query, ast, point) {
   const offset = pointToOffset(query, point);
-  let nodeContainingPoint: ?ASTNode;
-  visit(ast, {
+  let nodeContainingPoint;
+  (0, (_graphql || _load_graphql()).visit)(ast, {
     enter(node) {
-      if (
-        node.kind !== 'Name' && // We're usually interested in their parents
-        node.loc.start <= offset &&
-        offset <= node.loc.end
-      ) {
+      if (node.kind !== 'Name' && // We're usually interested in their parents
+      node.loc.start <= offset && offset <= node.loc.end) {
         nodeContainingPoint = node;
       } else {
         return false;
@@ -37,19 +34,21 @@ export function getASTNodeAtPoint(
       if (node.loc.start <= offset && offset <= node.loc.end) {
         return false;
       }
-    },
+    }
   });
   return nodeContainingPoint;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function pointToOffset(text: string, point: Point): number {
+function pointToOffset(text, point) {
   const linesUntilPoint = text.split('\n').slice(0, point.row);
-  return (
-    point.column +
-    linesUntilPoint
-      .map(
-        line => line.length + 1, // count EOL
-      )
-      .reduce((a, b) => a + b, 0)
-  );
+  return point.column + linesUntilPoint.map(line => line.length + 1).reduce((a, b) => a + b, 0);
 }

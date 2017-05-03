@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = SettingsControl;
+
+var _SettingsCheckbox;
+
+function _load_SettingsCheckbox() {
+  return _SettingsCheckbox = _interopRequireDefault(require('./SettingsCheckbox'));
+}
+
+var _SettingsInput;
+
+function _load_SettingsInput() {
+  return _SettingsInput = _interopRequireDefault(require('./SettingsInput'));
+}
+
+var _SettingsSelect;
+
+function _load_SettingsSelect() {
+  return _SettingsSelect = _interopRequireDefault(require('./SettingsSelect'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,77 +34,62 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import SettingsCheckbox from './SettingsCheckbox';
-import SettingsInput from './SettingsInput';
-import SettingsSelect from './SettingsSelect';
-import invariant from 'assert';
-import React from 'react';
-
-type Props = {
-  keyPath: string,
-  schema: atom$ConfigSchema,
-  value: any,
-  onChange: (value: any) => mixed,
-};
-
-export default function SettingsControl(props: Props): ?React.Element<any> {
-  const {keyPath, value, onChange, schema} = props;
-  const {description, title} = schema;
+function SettingsControl(props) {
+  const { keyPath, value, onChange, schema } = props;
+  const { description, title } = schema;
 
   if (schema) {
     if (schema.enum) {
-      return (
-        <SettingsSelect
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-        />
-      );
+      return _react.default.createElement((_SettingsSelect || _load_SettingsSelect()).default, {
+        description: description,
+        keyPath: keyPath,
+        onChange: onChange,
+        title: title,
+        value: value
+      });
     } else if (schema.type === 'color') {
-      invariant(false); // Not implemented.
+      if (!false) {
+        throw new Error('Invariant violation: "false"');
+      } // Not implemented.
+
     } else if (isBoolean(value) || schema.type === 'boolean') {
-      return (
-        <SettingsCheckbox
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-        />
-      );
+      return _react.default.createElement((_SettingsCheckbox || _load_SettingsCheckbox()).default, {
+        description: description,
+        keyPath: keyPath,
+        onChange: onChange,
+        title: title,
+        value: value
+      });
     } else if (Array.isArray(value) || schema.type === 'array') {
       if (isEditableArray(value)) {
-        return (
-          <SettingsInput
-            description={description}
-            keyPath={keyPath}
-            onChange={onChange}
-            title={title}
-            value={value}
-            type="array"
-          />
-        );
+        return _react.default.createElement((_SettingsInput || _load_SettingsInput()).default, {
+          description: description,
+          keyPath: keyPath,
+          onChange: onChange,
+          title: title,
+          value: value,
+          type: 'array'
+        });
       }
     } else if (isObject(value) || schema.type === 'object') {
-      invariant(false); // Not implemented.
+      if (!false) {
+        throw new Error('Invariant violation: "false"');
+      } // Not implemented.
+
     } else {
       const type = isNumber(value) ? 'number' : 'string';
-      return (
-        <SettingsInput
-          description={description}
-          keyPath={keyPath}
-          onChange={onChange}
-          title={title}
-          value={value}
-          type={type}
-        />
-      );
+      return _react.default.createElement((_SettingsInput || _load_SettingsInput()).default, {
+        description: description,
+        keyPath: keyPath,
+        onChange: onChange,
+        title: title,
+        value: value,
+        type: type
+      });
     }
   }
 
@@ -83,9 +97,7 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
 }
 
 function isBoolean(obj) {
-  return (
-    obj === true || obj === false || toString.call(obj) === '[object Boolean]'
-  );
+  return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
 }
 
 function isNumber(obj) {
@@ -94,10 +106,10 @@ function isNumber(obj) {
 
 function isObject(obj) {
   const type = typeof obj;
-  return type === 'function' || (type === 'object' && Boolean(obj));
+  return type === 'function' || type === 'object' && Boolean(obj);
 }
 
-function isEditableArray(array): boolean {
+function isEditableArray(array) {
   for (let i = 0, len = array.length; i < len; i++) {
     const item = array[i];
     if (typeof item !== 'string') {

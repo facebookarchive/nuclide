@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LanguageServerV2 = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _vscodeJsonrpc;
+
+function _load_vscodeJsonrpc() {
+  return _vscodeJsonrpc = _interopRequireWildcard(require('vscode-jsonrpc'));
+}
+
+var _protocol;
+
+function _load_protocol() {
+  return _protocol = _interopRequireWildcard(require('./protocol'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +30,22 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CategoryLogger} from '../../nuclide-logging';
-import type {JsonRpcConnection} from './jsonrpc';
-
-import * as rpc from 'vscode-jsonrpc';
-import * as p from './protocol';
-
 const MAX_LOG_MESSAGE_LENGTH = 100;
 
-export class LanguageServerV2 {
-  _logger: CategoryLogger;
-  connection: JsonRpcConnection;
+class LanguageServerV2 {
 
-  constructor(logger: CategoryLogger, connection: rpc.connection) {
+  constructor(logger, connection) {
     this._logger = logger;
     this.connection = connection;
 
     connection.onError((e1, e2, e3) => {
       // TODO: What is the shape of args here?
       const args = Array.prototype.slice.call(arguments);
-      this._logger.logError(
-        `LanguageServerV2 - onError ${JSON.stringify(args)}`,
-      );
+      this._logger.logError(`LanguageServerV2 - onError ${JSON.stringify(args)}`);
     });
 
     connection.onClose(() => {
@@ -44,232 +59,179 @@ export class LanguageServerV2 {
     connection.onUnhandledNotification((e1, e2, e3) => {
       // TODO: What is the shape of args here?
       const args = Array.prototype.slice.call(arguments);
-      this._logger.logError(
-        `LanguageServerV2 - onUnhandledNotification ${JSON.stringify(args)}`.substr(
-          0,
-          MAX_LOG_MESSAGE_LENGTH,
-        ),
-      );
+      this._logger.logError(`LanguageServerV2 - onUnhandledNotification ${JSON.stringify(args)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
     });
 
     connection.onNotification((e1, e2, e3) => {
       // TODO: What is the shape of args here?
       const args = Array.prototype.slice.call(arguments);
-      this._logger.logInfo(
-        `LanguageServerV2 - onNotification ${JSON.stringify(args)}`.substr(
-          0,
-          MAX_LOG_MESSAGE_LENGTH,
-        ),
-      );
+      this._logger.logInfo(`LanguageServerV2 - onNotification ${JSON.stringify(args)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
     });
   }
 
-  initialize(params: p.InitializeParams): Promise<p.InitializeResult> {
+  initialize(params) {
     return this._sendRequest('initialize', params);
   }
 
-  shutdown(): Promise<void> {
+  shutdown() {
     return this._sendRequest('shutdown');
   }
 
-  exit(): void {
+  exit() {
     this._sendNotification('exit');
   }
 
-  showMessageNotification(params: p.ShowMessageParams): void {
+  showMessageNotification(params) {
     this._sendNotification('window/showMessage', params);
   }
 
-  showMessageRequest(
-    params: p.ShowMessageRequestParams,
-  ): Promise<p.MessageActionItem> {
+  showMessageRequest(params) {
     return this._sendRequest('window/showMessageRequest', params);
   }
 
-  logMessage(params: p.LogMessageParams): void {
+  logMessage(params) {
     this._sendNotification('window/logMessage', params);
   }
 
-  telemetry(params: any): void {
+  telemetry(params) {
     this._sendNotification('telemetry/event', params);
   }
 
-  didChangeConfiguration(params: p.DidChangeConfigurationParams): void {
+  didChangeConfiguration(params) {
     this._sendNotification('workspace/didChangeConfiguration', params);
   }
 
-  didOpenTextDocument(params: p.DidOpenTextDocumentParams): void {
+  didOpenTextDocument(params) {
     this._sendNotification('textDocument/didOpen', params);
   }
 
-  didChangeTextDocument(params: p.DidChangeTextDocumentParams): void {
+  didChangeTextDocument(params) {
     this._sendNotification('textDocument/didChange', params);
   }
 
-  didCloseTextDocument(params: p.DidCloseTextDocumentParams): void {
+  didCloseTextDocument(params) {
     this._sendNotification('textDocument/didClose', params);
   }
 
-  didSaveTextDocument(params: p.DidSaveTextDocumentParams): void {
+  didSaveTextDocument(params) {
     this._sendNotification('textDocument/didSave', params);
   }
 
-  didChangeWatchedFiles(params: p.DidChangeWatchedFilesParams): void {
+  didChangeWatchedFiles(params) {
     this._sendNotification('workspace/didChangeWatchedFiles', params);
   }
 
-  publishDiagnostics(params: p.PublishDiagnosticsParams): void {
+  publishDiagnostics(params) {
     this._sendNotification('textDocument/publishDiagnostics', params);
   }
 
-  completion(
-    params: p.TextDocumentPositionParams,
-  ): Promise<p.CompletionList | Array<p.CompletionItem>> {
+  completion(params) {
     return this._sendRequest('textDocument/completion', params);
   }
 
-  completionItemResolve(params: p.CompletionItem): Promise<p.CompletionItem> {
+  completionItemResolve(params) {
     return this._sendRequest('completionItem/resolve', params);
   }
 
-  hover(params: p.TextDocumentPositionParams): Promise<p.Hover> {
+  hover(params) {
     return this._sendRequest('textDocument/hover', params);
   }
 
-  signatureHelp(
-    params: p.TextDocumentPositionParams,
-  ): Promise<p.SignatureHelp> {
+  signatureHelp(params) {
     return this._sendRequest('textDocument/signatureHelp', params);
   }
 
-  gotoDefinition(
-    params: p.TextDocumentPositionParams,
-  ): Promise<p.Location | Array<p.Location>> {
+  gotoDefinition(params) {
     return this._sendRequest('textDocument/definition', params);
   }
 
-  findReferences(
-    params: p.TextDocumentPositionParams,
-  ): Promise<Array<p.Location>> {
+  findReferences(params) {
     return this._sendRequest('textDocument/references', params);
   }
 
-  documentHighlight(
-    params: p.TextDocumentPositionParams,
-  ): Promise<Array<p.DocumentHighlight>> {
+  documentHighlight(params) {
     return this._sendRequest('textDocument/documentHighlight', params);
   }
 
-  documentSymbol(
-    params: p.DocumentSymbolParams,
-  ): Promise<Array<p.SymbolInformation>> {
+  documentSymbol(params) {
     return this._sendRequest('textDocument/documentSymbol', params);
   }
 
-  typeCoverage(params: p.TypeCoverageParams): Promise<p.TypeCoverageResult> {
+  typeCoverage(params) {
     return this._sendRequest('textDocument/typeCoverage', params);
   }
 
-  workspaceSymbol(
-    params: p.WorkspaceSymbolParams,
-  ): Promise<Array<p.SymbolInformation>> {
+  workspaceSymbol(params) {
     return this._sendRequest('workspace/symbol', params);
   }
 
-  codeAction(params: p.CodeActionParams): Promise<Array<p.Command>> {
+  codeAction(params) {
     return this._sendRequest('textDocument/codeAction', params);
   }
 
-  codeLens(params: p.CodeLensParams): Promise<Array<p.CodeLens>> {
+  codeLens(params) {
     return this._sendRequest('textDocument/codeLens', params);
   }
 
-  codeLensResolve(params: p.CodeLens): Promise<p.CodeLens> {
+  codeLensResolve(params) {
     return this._sendRequest('codeLens/resolve', params);
   }
 
-  documentLink(params: p.DocumentLinkParams): Promise<?Array<p.DocumentLink>> {
+  documentLink(params) {
     return this._sendRequest('textDocument/documentLink', params);
   }
 
-  documentLinkResolve(params: p.DocumentLink): Promise<p.DocumentLink> {
+  documentLinkResolve(params) {
     return this._sendRequest('documentLink/resolve', params);
   }
 
-  documentFormatting(
-    params: p.DocumentFormattingParams,
-  ): Promise<Array<p.TextEdit>> {
+  documentFormatting(params) {
     return this._sendRequest('textDocument/formatting', params);
   }
 
-  documentRangeFormattting(
-    params: p.DocumentRangeFormattingParams,
-  ): Promise<Array<p.TextEdit>> {
+  documentRangeFormattting(params) {
     return this._sendRequest('textDocument/rangeFormatting', params);
   }
 
-  documentOnTypeFormatting(
-    params: p.DocumentOnTypeFormattingParams,
-  ): Promise<Array<p.TextEdit>> {
+  documentOnTypeFormatting(params) {
     return this._sendRequest('textDocument/onTypeFormatting', params);
   }
 
-  rename(params: p.RenameParams): Promise<p.WorkspaceEdit> {
+  rename(params) {
     return this._sendRequest('textDocument/rename', params);
   }
 
-  onDiagnosticsNotification(
-    callback: p.PublishDiagnosticsParams => void,
-  ): void {
-    this._onNotification({method: 'textDocument/publishDiagnostics'}, callback);
+  onDiagnosticsNotification(callback) {
+    this._onNotification({ method: 'textDocument/publishDiagnostics' }, callback);
   }
 
-  _sendNotification(method: string, args?: Object): void {
-    this._logger.logInfo(
-      `LanguageServerV2 - sendNotification: ${method} ${JSON.stringify(args)}`.substr(
-        0,
-        MAX_LOG_MESSAGE_LENGTH,
-      ),
-    );
+  _sendNotification(method, args) {
+    this._logger.logInfo(`LanguageServerV2 - sendNotification: ${method} ${JSON.stringify(args)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
     this.connection.sendNotification(method, args);
   }
 
-  async _sendRequest(method: string, args?: Object): Promise<any> {
-    this._logger.logInfo(
-      `LanguageServerV2 - sendMessage: ${method} ${JSON.stringify(args)}`.substr(
-        0,
-        MAX_LOG_MESSAGE_LENGTH,
-      ),
-    );
-    try {
-      const result = await this.connection.sendRequest(method, args);
-      this._logger.logInfo(
-        `LanguageServerV2 - result ${JSON.stringify(result)}`.substr(
-          0,
-          MAX_LOG_MESSAGE_LENGTH,
-        ),
-      );
-      return result;
-    } catch (e) {
-      this._logger.logInfo(
-        `LanguageServerV2 - request threw ${JSON.stringify(e)}`,
-      );
-      throw e;
-    }
+  _sendRequest(method, args) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._logger.logInfo(`LanguageServerV2 - sendMessage: ${method} ${JSON.stringify(args)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
+      try {
+        const result = yield _this.connection.sendRequest(method, args);
+        _this._logger.logInfo(`LanguageServerV2 - result ${JSON.stringify(result)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
+        return result;
+      } catch (e) {
+        _this._logger.logInfo(`LanguageServerV2 - request threw ${JSON.stringify(e)}`);
+        throw e;
+      }
+    })();
   }
 
-  _onNotification(type: {method: string}, callback: Object => void): void {
-    this._logger.logInfo(
-      `LanguageServerV2 - onNotification call: ${type.method}`,
-    );
+  _onNotification(type, callback) {
+    this._logger.logInfo(`LanguageServerV2 - onNotification call: ${type.method}`);
     this.connection.onNotification(type, value => {
-      this._logger.logInfo(
-        `LanguageServerV2 - onNotification: ${type.method} ${JSON.stringify(value)}`.substr(
-          0,
-          MAX_LOG_MESSAGE_LENGTH,
-        ),
-      );
+      this._logger.logInfo(`LanguageServerV2 - onNotification: ${type.method} ${JSON.stringify(value)}`.substr(0, MAX_LOG_MESSAGE_LENGTH));
       callback(value);
     });
   }
 }
+exports.LanguageServerV2 = LanguageServerV2;

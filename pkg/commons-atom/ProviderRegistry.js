@@ -1,40 +1,28 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";
 
-export type Provider = {
-  priority: number,
-  grammarScopes: Array<string>,
-};
-
-export default class ProviderRegistry<T: Provider> {
-  _providers: Set<T>;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+class ProviderRegistry {
 
   constructor() {
     this._providers = new Set();
   }
 
-  addProvider(provider: T): void {
+  addProvider(provider) {
     this._providers.add(provider);
   }
 
-  removeProvider(provider: T): void {
+  removeProvider(provider) {
     this._providers.delete(provider);
   }
 
-  getProviderForEditor(editor: atom$TextEditor): ?T {
+  getProviderForEditor(editor) {
     const grammar = editor.getGrammar().scopeName;
     return this.findProvider(grammar);
   }
 
-  findProvider(grammar: string): ?T {
+  findProvider(grammar) {
     let bestProvider = null;
     let bestPriority = Number.NEGATIVE_INFINITY;
     for (const provider of this._providers) {
@@ -48,3 +36,13 @@ export default class ProviderRegistry<T: Provider> {
     return bestProvider;
   }
 }
+exports.default = ProviderRegistry; /**
+                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the license found in the LICENSE file in
+                                     * the root directory of this source tree.
+                                     *
+                                     * 
+                                     * @format
+                                     */

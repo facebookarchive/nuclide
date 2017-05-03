@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Adb = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.parsePsTableOutput = parsePsTableOutput;
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _DebugBridge;
+
+function _load_DebugBridge() {
+  return _DebugBridge = require('./DebugBridge');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,104 +38,73 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {runCommand, observeProcessRaw} from '../../commons-node/process';
-import {DebugBridge} from './DebugBridge';
-import {Observable} from 'rxjs';
-
-import type {AndroidJavaProcess} from './types';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-
-export class Adb extends DebugBridge {
-  getAndroidProp(device: string, key: string): Observable<string> {
-    return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s =>
-      s.trim(),
-    );
+class Adb extends (_DebugBridge || _load_DebugBridge()).DebugBridge {
+  getAndroidProp(device, key) {
+    return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s => s.trim());
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
+  getDeviceArchitecture(device) {
     return this.getAndroidProp(device, 'ro.product.cpu.abi').toPromise();
   }
 
-  getDeviceModel(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.product.model')
-      .map(s => (s === 'sdk' ? 'emulator' : s))
-      .toPromise();
+  getDeviceModel(device) {
+    return this.getAndroidProp(device, 'ro.product.model').map(s => s === 'sdk' ? 'emulator' : s).toPromise();
   }
 
-  getAPIVersion(device: string): Promise<string> {
+  getAPIVersion(device) {
     return this.getAndroidProp(device, 'ro.build.version.sdk').toPromise();
   }
 
-  getBrand(device: string): Promise<string> {
+  getBrand(device) {
     return this.getAndroidProp(device, 'ro.product.brand').toPromise();
   }
 
-  getManufacturer(device: string): Promise<string> {
+  getManufacturer(device) {
     return this.getAndroidProp(device, 'ro.product.manufacturer').toPromise();
   }
 
-  async getDeviceInfo(device: string): Promise<Map<string, string>> {
-    const infoTable = await this.getCommonDeviceInfo(device);
-    const unknownCB = () => null;
-    infoTable.set(
-      'android_version',
-      await this.getOSVersion(device).catch(unknownCB),
-    );
-    infoTable.set(
-      'manufacturer',
-      await this.getManufacturer(device).catch(unknownCB),
-    );
-    infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
-    return infoTable;
+  getDeviceInfo(device) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const infoTable = yield _this.getCommonDeviceInfo(device);
+      const unknownCB = function () {
+        return null;
+      };
+      infoTable.set('android_version', (yield _this.getOSVersion(device).catch(unknownCB)));
+      infoTable.set('manufacturer', (yield _this.getManufacturer(device).catch(unknownCB)));
+      infoTable.set('brand', (yield _this.getBrand(device).catch(unknownCB)));
+      return infoTable;
+    })();
   }
 
-  getOSVersion(device: string): Promise<string> {
+  getOSVersion(device) {
     return this.getAndroidProp(device, 'ro.build.version.release').toPromise();
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> {
+  installPackage(device, packagePath) {
     // TODO(T17463635)
-    invariant(!nuclideUri.isRemote(packagePath));
+    if (!!(_nuclideUri || _load_nuclideUri()).default.isRemote(packagePath)) {
+      throw new Error('Invariant violation: "!nuclideUri.isRemote(packagePath)"');
+    }
+
     return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<LegacyProcessMessage> {
+  uninstallPackage(device, packageName) {
     // TODO(T17463635)
     return this.runLongAdbCommand(device, ['uninstall', packageName]);
   }
 
-  forwardJdwpPortToPid(
-    device: string,
-    tcpPort: number,
-    pid: number,
-  ): Promise<string> {
-    return this.runShortAdbCommand(device, [
-      'forward',
-      `tcp:${tcpPort}`,
-      `jdwp:${pid}`,
-    ]).toPromise();
+  forwardJdwpPortToPid(device, tcpPort, pid) {
+    return this.runShortAdbCommand(device, ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`]).toPromise();
   }
 
-  launchActivity(
-    device: string,
-    packageName: string,
-    activity: string,
-    debug: boolean,
-    action: ?string,
-  ): Promise<string> {
+  launchActivity(device, packageName, activity, debug, action) {
     const args = ['shell', 'am', 'start', '-W', '-n'];
     if (action != null) {
       args.push('-a', action);
@@ -114,62 +116,58 @@ export class Adb extends DebugBridge {
     return this.runShortAdbCommand(device, args).toPromise();
   }
 
-  activityExists(
-    device: string,
-    packageName: string,
-    activity: string,
-  ): Promise<boolean> {
+  activityExists(device, packageName, activity) {
     const packageActivityString = `${packageName}/${activity}`;
     const deviceArg = device !== '' ? ['-s', device] : [];
     const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
-    return runCommand(this._adbPath, command)
-      .map(stdout => stdout.includes(packageActivityString))
-      .toPromise();
+    return (0, (_process || _load_process()).runCommand)(this._adbPath, command).map(stdout => stdout.includes(packageActivityString)).toPromise();
   }
 
-  async getJavaProcesses(device: string): Promise<Array<AndroidJavaProcess>> {
-    const allProcesses = await this.runShortAdbCommand(device, ['shell', 'ps'])
-      .map(stdout => {
+  getJavaProcesses(device) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const allProcesses = yield _this2.runShortAdbCommand(device, ['shell', 'ps']).map(function (stdout) {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
-      })
-      .toPromise();
+      }).toPromise();
 
-    const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(this._adbPath, args, {
-      killTreeWhenDone: true,
-      /* TDOO(17353599) */ isExitError: () => false,
-    })
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .take(1)
-      .map(output => {
+      const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
+      return (0, (_process || _load_process()).observeProcessRaw)(_this2._adbPath, args, {
+        killTreeWhenDone: true,
+        /* TDOO(17353599) */isExitError: function () {
+          return false;
+        }
+      }).catch(function (error) {
+        return _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error });
+      }) // TODO(T17463635)
+      .take(1).map(function (output) {
         const jdwpPids = new Set();
         if (output.kind === 'stdout') {
-          const block: string = output.data;
-          block.split(/\s+/).forEach(pid => {
+          const block = output.data;
+          block.split(/\s+/).forEach(function (pid) {
             jdwpPids.add(pid.trim());
           });
         }
 
-        return allProcesses.filter(row => jdwpPids.has(row.pid));
-      })
-      .toPromise();
+        return allProcesses.filter(function (row) {
+          return jdwpPids.has(row.pid);
+        });
+      }).toPromise();
+    })();
   }
 
-  async dumpsysPackage(device: string, identifier: string): Promise<string> {
-    return this.runShortAdbCommand(device, [
-      'shell',
-      'dumpsys',
-      'package',
-      identifier,
-    ]).toPromise();
+  dumpsysPackage(device, identifier) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this3.runShortAdbCommand(device, ['shell', 'dumpsys', 'package', identifier]).toPromise();
+    })();
   }
 }
 
-export function parsePsTableOutput(
-  output: string,
-  desiredFields: Array<string>,
-): Array<Object> {
+exports.Adb = Adb;
+function parsePsTableOutput(output, desiredFields) {
   const lines = output.split(/\n/);
   const header = lines[0];
   const cols = header.split(/\s+/);
