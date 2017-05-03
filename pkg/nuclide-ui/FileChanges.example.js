@@ -1,17 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import parse from 'diffparser';
-import FileChanges from './FileChanges';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileChangesExamples = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _diffparser;
+
+function _load_diffparser() {
+  return _diffparser = _interopRequireDefault(require('diffparser'));
+}
+
+var _FileChanges;
+
+function _load_FileChanges() {
+  return _FileChanges = _interopRequireDefault(require('./FileChanges'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const sampleUnifiedDiff = `
 diff --git a/some/folder/filename.js b/some/folder/filename.js
@@ -63,29 +71,34 @@ index abc123..cde456 100644
    }
 
    // end of hunk
-`;
+`; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
-class FileChangesExample extends React.Component {
-  render(): React.Element<any> {
-    const diff = parse(sampleUnifiedDiff);
-    const changes = diff.map(file => (
-      <FileChanges diff={file} key={`${file.from}:${file.to}`} />
-    ));
-    return (
-      <div>
-        {changes}
-      </div>
+class FileChangesExample extends _react.default.Component {
+  render() {
+    const diff = (0, (_diffparser || _load_diffparser()).default)(sampleUnifiedDiff);
+    const changes = diff.map(file => _react.default.createElement((_FileChanges || _load_FileChanges()).default, { diff: file, key: `${file.from}:${file.to}` }));
+    return _react.default.createElement(
+      'div',
+      null,
+      changes
     );
   }
 }
 
-export const FileChangesExamples = {
+const FileChangesExamples = exports.FileChangesExamples = {
   sectionName: 'FileChanges',
   description: 'Displays unified diffs in separate, per-hunk TextEditor instances',
-  examples: [
-    {
-      title: 'Basic example',
-      component: FileChangesExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic example',
+    component: FileChangesExample
+  }]
 };

@@ -1,77 +1,95 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getCtagsService = exports.CtagsService = undefined;
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import fsPromise from '../../commons-node/fsPromise';
-import {arrayCompact} from '../../commons-node/collection';
-import {getLogger} from '../../nuclide-logging';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const TAGS_FILENAME = 'tags';
+let getCtagsService = exports.getCtagsService = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (uri) {
+    const dir = yield (_fsPromise || _load_fsPromise()).default.findNearestFile(TAGS_FILENAME, (_nuclideUri || _load_nuclideUri()).default.dirname(uri));
+    if (dir == null) {
+      return null;
+    }
+    return new CtagsService((_nuclideUri || _load_nuclideUri()).default.join(dir, TAGS_FILENAME));
+  });
 
-export type CtagsResult = {
-  name: string,
-  file: NuclideUri,
-  // As specified in the tags file; defaults to 0 if not specified.
-  lineNumber: number,
-  // As specified in the tags file; defaults to empty if not specified.
-  kind: string,
-  pattern?: string,
-  fields?: Map<string, string>,
-};
+  return function getCtagsService(_x4) {
+    return _ref3.apply(this, arguments);
+  };
+})();
 
-export class CtagsService {
-  _tagsPath: NuclideUri;
+var _nuclideUri;
 
-  constructor(tagsPath: NuclideUri) {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('../../commons-node/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('../../commons-node/collection');
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const TAGS_FILENAME = 'tags'; /**
+                               * Copyright (c) 2015-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the license found in the LICENSE file in
+                               * the root directory of this source tree.
+                               *
+                               * 
+                               * @format
+                               */
+
+class CtagsService {
+
+  constructor(tagsPath) {
     this._tagsPath = tagsPath;
   }
 
-  getTagsPath(): Promise<NuclideUri> {
+  getTagsPath() {
     return Promise.resolve(this._tagsPath);
   }
 
-  findTags(
-    query: string,
-    options?: {
-      caseInsensitive?: boolean,
-      partialMatch?: boolean,
-      limit?: number,
-    },
-  ): Promise<Array<CtagsResult>> {
+  findTags(query, options) {
     let ctags;
     try {
       ctags = require('nuclide-prebuilt-libs/ctags');
     } catch (e) {
-      getLogger().error('Could not load the ctags package:', e);
+      (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().error('Could not load the ctags package:', e);
       return Promise.resolve([]);
     }
 
-    const dir = nuclideUri.dirname(this._tagsPath);
+    const dir = (_nuclideUri || _load_nuclideUri()).default.dirname(this._tagsPath);
     return new Promise((resolve, reject) => {
-      ctags.findTags(
-        this._tagsPath,
-        query,
-        options,
-        async (error, tags: Array<Object>) => {
+      ctags.findTags(this._tagsPath, query, options, (() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (error, tags) {
           if (error != null) {
             reject(error);
           } else {
-            const processed = await Promise.all(
-              tags.map(async tag => {
+            const processed = yield Promise.all(tags.map((() => {
+              var _ref2 = (0, _asyncToGenerator.default)(function* (tag) {
                 // Convert relative paths to absolute ones.
-                tag.file = nuclideUri.join(dir, tag.file);
+                tag.file = (_nuclideUri || _load_nuclideUri()).default.join(dir, tag.file);
                 // Tag files are often not perfectly in sync - filter out missing files.
-                if (await fsPromise.exists(tag.file)) {
+                if (yield (_fsPromise || _load_fsPromise()).default.exists(tag.file)) {
                   if (tag.fields != null) {
                     const map = new Map();
                     for (const key in tag.fields) {
@@ -82,27 +100,26 @@ export class CtagsService {
                   return tag;
                 }
                 return null;
-              }),
-            );
-            resolve(arrayCompact(processed));
+              });
+
+              return function (_x3) {
+                return _ref2.apply(this, arguments);
+              };
+            })()));
+            resolve((0, (_collection || _load_collection()).arrayCompact)(processed));
           }
-        },
-      );
+        });
+
+        return function (_x, _x2) {
+          return _ref.apply(this, arguments);
+        };
+      })());
     });
   }
 
-  dispose(): void {
+  dispose() {
     // nothing here
   }
 }
 
-export async function getCtagsService(uri: NuclideUri): Promise<?CtagsService> {
-  const dir = await fsPromise.findNearestFile(
-    TAGS_FILENAME,
-    nuclideUri.dirname(uri),
-  );
-  if (dir == null) {
-    return null;
-  }
-  return new CtagsService(nuclideUri.join(dir, TAGS_FILENAME));
-}
+exports.CtagsService = CtagsService;

@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+var _atom = require('atom');
+
+var _move;
+
+function _load_move() {
+  return _move = require('./move');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +21,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {CompositeDisposable} from 'atom';
-import {moveDown, moveLeft, moveRight, moveUp} from './move';
-
 class Activation {
-  _disposables: CompositeDisposable;
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
   }
 
   activate() {
-    this._disposables.add(
-      atom.commands.add('atom-text-editor', {
-        // Pass the eta expansion of these functions to defer the loading of move.js.
-        'nuclide-move-item-to-available-pane:right': () => moveRight(),
-        'nuclide-move-item-to-available-pane:left': () => moveLeft(),
-        'nuclide-move-item-to-available-pane:up': () => moveUp(),
-        'nuclide-move-item-to-available-pane:down': () => moveDown(),
-      }),
-    );
+    this._disposables.add(atom.commands.add('atom-text-editor', {
+      // Pass the eta expansion of these functions to defer the loading of move.js.
+      'nuclide-move-item-to-available-pane:right': () => (0, (_move || _load_move()).moveRight)(),
+      'nuclide-move-item-to-available-pane:left': () => (0, (_move || _load_move()).moveLeft)(),
+      'nuclide-move-item-to-available-pane:up': () => (0, (_move || _load_move()).moveUp)(),
+      'nuclide-move-item-to-available-pane:down': () => (0, (_move || _load_move()).moveDown)()
+    }));
   }
 
   dispose() {
@@ -36,16 +46,16 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object) {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
     activation.activate();
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;

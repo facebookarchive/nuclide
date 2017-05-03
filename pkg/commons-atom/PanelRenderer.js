@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+
+/**
+ * A class that gives us an idempotent API for rendering panels, creating them lazily.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +15,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-type PanelLocation = 'top' | 'right' | 'bottom' | 'left';
-type Options = {
-  location: PanelLocation,
-  createItem: () => Object,
-  priority?: number,
-};
+class PanelRenderer {
 
-/**
- * A class that gives us an idempotent API for rendering panels, creating them lazily.
- */
-export default class PanelRenderer {
-  _createItem: () => Object;
-  _item: ?Object;
-  _location: PanelLocation;
-  _panel: ?atom$Panel;
-  _priority: ?number;
-
-  constructor(options: Options) {
+  constructor(options) {
     this._createItem = options.createItem;
     this._location = options.location;
     this._priority = options.priority;
   }
 
-  render(props: {visible: boolean}): void {
+  render(props) {
     if (props.visible) {
       if (this._panel == null) {
-        const item = this._item == null
-          ? (this._item = this._createItem())
-          : this._item;
+        const item = this._item == null ? this._item = this._createItem() : this._item;
         this._panel = addPanel(this._location, {
           item,
-          priority: this._priority == null ? undefined : this._priority,
+          priority: this._priority == null ? undefined : this._priority
         });
       } else {
         this._panel.show();
@@ -50,7 +43,7 @@ export default class PanelRenderer {
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (this._item != null && typeof this._item.destroy === 'function') {
       this._item.destroy();
     }
@@ -60,10 +53,8 @@ export default class PanelRenderer {
   }
 }
 
-function addPanel(
-  location: PanelLocation,
-  options: atom$WorkspaceAddPanelOptions,
-): atom$Panel {
+exports.default = PanelRenderer;
+function addPanel(location, options) {
   switch (location) {
     case 'top':
       return atom.workspace.addTopPanel(options);

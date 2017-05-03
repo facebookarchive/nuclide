@@ -1,17 +1,10 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AppState} from '../types';
-
-export function createEmptyAppState(): AppState {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEmptyAppState = createEmptyAppState;
+function createEmptyAppState() {
   return {
     hosts: ['local'],
     host: 'local',
@@ -20,6 +13,15 @@ export function createEmptyAppState(): AppState {
     deviceTypes: [],
     device: null,
     deviceActions: [],
-    infoTables: new Map(),
+    infoTables: new Map()
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

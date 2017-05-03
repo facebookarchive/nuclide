@@ -1,119 +1,160 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
-import type {BuckBuilderBuildOptions} from '../../nuclide-buck/lib/types';
-import type {OutputService} from '../../nuclide-console/lib/types';
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {BuckBuilder, SerializedState} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeTaskRunnerServiceApi = consumeTaskRunnerServiceApi;
+exports.consumeOutputService = consumeOutputService;
+exports.provideObservableDiagnosticUpdates = provideObservableDiagnosticUpdates;
+exports.serialize = serialize;
+exports.getHyperclickProvider = getHyperclickProvider;
+exports.provideBuckBuilder = provideBuckBuilder;
+exports.providePlatformService = providePlatformService;
 
-import registerGrammar from '../../commons-atom/register-grammar';
-import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
-import {openNearestBuildFile} from './buildFiles';
-import {getSuggestion} from './HyperclickProvider';
-import {track} from '../../nuclide-analytics';
-import {BuckBuildSystem} from './BuckBuildSystem';
-import {PlatformService} from './PlatformService';
+var _registerGrammar;
 
-const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
-
-let disposables: ?CompositeDisposable = null;
-let buildSystem: ?BuckBuildSystemType = null;
-let initialState: ?Object = null;
-
-export function activate(rawState: ?Object): void {
-  invariant(disposables == null);
-  initialState = rawState;
-  disposables = new CompositeDisposable(
-    new Disposable(() => {
-      buildSystem = null;
-    }),
-    new Disposable(() => {
-      initialState = null;
-    }),
-    atom.commands.add(
-      'atom-workspace',
-      OPEN_NEAREST_BUILD_FILE_COMMAND,
-      event => {
-        track(OPEN_NEAREST_BUILD_FILE_COMMAND);
-        // Add feature logging.
-        const target = ((event.target: any): HTMLElement);
-        openNearestBuildFile(target); // Note this returns a Promise.
-      },
-    ),
-  );
-  registerGrammar('source.python', ['BUCK']);
-  registerGrammar('source.json', ['BUCK.autodeps']);
-  registerGrammar('source.ini', ['.buckconfig']);
+function _load_registerGrammar() {
+  return _registerGrammar = _interopRequireDefault(require('../../commons-atom/register-grammar'));
 }
 
-export function deactivate(): void {
-  invariant(disposables != null);
+var _atom = require('atom');
+
+var _buildFiles;
+
+function _load_buildFiles() {
+  return _buildFiles = require('./buildFiles');
+}
+
+var _HyperclickProvider;
+
+function _load_HyperclickProvider() {
+  return _HyperclickProvider = require('./HyperclickProvider');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _BuckBuildSystem;
+
+function _load_BuckBuildSystem() {
+  return _BuckBuildSystem = require('./BuckBuildSystem');
+}
+
+var _PlatformService;
+
+function _load_PlatformService() {
+  return _PlatformService = require('./PlatformService');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file'; /**
+                                                                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                 * All rights reserved.
+                                                                                 *
+                                                                                 * This source code is licensed under the license found in the LICENSE file in
+                                                                                 * the root directory of this source tree.
+                                                                                 *
+                                                                                 * 
+                                                                                 * @format
+                                                                                 */
+
+let disposables = null;
+let buildSystem = null;
+let initialState = null;
+
+function activate(rawState) {
+  if (!(disposables == null)) {
+    throw new Error('Invariant violation: "disposables == null"');
+  }
+
+  initialState = rawState;
+  disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+    buildSystem = null;
+  }), new _atom.Disposable(() => {
+    initialState = null;
+  }), atom.commands.add('atom-workspace', OPEN_NEAREST_BUILD_FILE_COMMAND, event => {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(OPEN_NEAREST_BUILD_FILE_COMMAND);
+    // Add feature logging.
+    const target = event.target;
+    (0, (_buildFiles || _load_buildFiles()).openNearestBuildFile)(target); // Note this returns a Promise.
+  }));
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.python', ['BUCK']);
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.json', ['BUCK.autodeps']);
+  (0, (_registerGrammar || _load_registerGrammar()).default)('source.ini', ['.buckconfig']);
+}
+
+function deactivate() {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.dispose();
   disposables = null;
 }
 
-export function consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
-  invariant(disposables != null);
+function consumeTaskRunnerServiceApi(api) {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
   disposables.add(api.register(getBuildSystem()));
 }
 
-function getBuildSystem(): BuckBuildSystem {
+function getBuildSystem() {
   if (buildSystem == null) {
-    invariant(disposables != null);
-    buildSystem = new BuckBuildSystem(initialState);
+    if (!(disposables != null)) {
+      throw new Error('Invariant violation: "disposables != null"');
+    }
+
+    buildSystem = new (_BuckBuildSystem || _load_BuckBuildSystem()).BuckBuildSystem(initialState);
     disposables.add(buildSystem);
   }
   return buildSystem;
 }
 
-export function consumeOutputService(service: OutputService): void {
-  invariant(disposables != null);
-  disposables.add(
-    service.registerOutputProvider({
-      messages: getBuildSystem().getOutputMessages(),
-      id: 'Buck',
-    }),
-  );
+function consumeOutputService(service) {
+  if (!(disposables != null)) {
+    throw new Error('Invariant violation: "disposables != null"');
+  }
+
+  disposables.add(service.registerOutputProvider({
+    messages: getBuildSystem().getOutputMessages(),
+    id: 'Buck'
+  }));
 }
 
-export function provideObservableDiagnosticUpdates() {
+function provideObservableDiagnosticUpdates() {
   return getBuildSystem().getDiagnosticProvider();
 }
 
-export function serialize(): ?SerializedState {
+function serialize() {
   if (buildSystem != null) {
     return buildSystem.serialize();
   }
 }
 
-export function getHyperclickProvider(): HyperclickProvider {
+function getHyperclickProvider() {
   return {
     priority: 200,
     providerName: 'nuclide-buck',
     getSuggestion(editor, position) {
-      return getSuggestion(editor, position);
-    },
+      return (0, (_HyperclickProvider || _load_HyperclickProvider()).getSuggestion)(editor, position);
+    }
   };
 }
 
-export function provideBuckBuilder(): BuckBuilder {
+function provideBuckBuilder() {
   return {
-    build: (options: BuckBuilderBuildOptions) =>
-      getBuildSystem().buildArtifact(options),
+    build: options => getBuildSystem().buildArtifact(options)
   };
 }
 
-export function providePlatformService(): PlatformService {
+function providePlatformService() {
   return getBuildSystem().getPlatformService();
 }

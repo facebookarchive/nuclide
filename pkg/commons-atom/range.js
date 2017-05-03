@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.wordAtPosition = wordAtPosition;
+exports.trimRange = trimRange;
+
+var _atom = require('atom');
+
+var _range;
+
+function _load_range() {
+  return _range = require('../commons-node/range');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,24 +21,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {Range} from 'atom';
-import {wordAtPositionFromBuffer} from '../commons-node/range';
-
-export function wordAtPosition(
-  editor: atom$TextEditor,
-  position: atom$PointObject,
-  wordRegex_: ?RegExp,
-): ?{wordMatch: Array<string>, range: atom$Range} {
+function wordAtPosition(editor, position, wordRegex_) {
   let wordRegex = wordRegex_;
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }
   const buffer = editor.getBuffer();
-  return wordAtPositionFromBuffer(buffer, position, wordRegex);
+  return (0, (_range || _load_range()).wordAtPositionFromBuffer)(buffer, position, wordRegex);
 }
 
 /**
@@ -36,20 +45,16 @@ export function wordAtPosition(
  *   defaults to first non-whitespace character
  * @return atom$Range  the trimmed range
  */
-export function trimRange(
-  editor: atom$TextEditor,
-  rangeToTrim: atom$Range,
-  stopRegex: RegExp = /\S/,
-): atom$Range {
+function trimRange(editor, rangeToTrim, stopRegex = /\S/) {
   const buffer = editor.getBuffer();
-  let {start, end} = rangeToTrim;
-  buffer.scanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  let { start, end } = rangeToTrim;
+  buffer.scanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     start = range.start;
     stop();
   });
-  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     end = range.end;
     stop();
   });
-  return new Range(start, end);
+  return new _atom.Range(start, end);
 }

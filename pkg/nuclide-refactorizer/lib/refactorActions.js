@@ -1,3 +1,14 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.open = open;
+exports.gotRefactorings = gotRefactorings;
+exports.error = error;
+exports.pickedRefactor = pickedRefactor;
+exports.execute = execute;
+exports.close = close;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,83 +16,60 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
-
-import type {
-  CloseAction,
-  ErrorAction,
-  ErrorSource,
-  ExecuteAction,
-  GotRefactoringsAction,
-  OpenAction,
-  PickedRefactorAction,
-  RefactorUI,
-} from './types';
-
-export function open(ui: RefactorUI): OpenAction {
+function open(ui) {
   return {
     type: 'open',
-    ui,
+    ui
   };
 }
 
-export function gotRefactorings(
-  editor: atom$TextEditor,
-  originalPoint: atom$Point,
-  provider: RefactorProvider,
-  availableRefactorings: Array<AvailableRefactoring>,
-): GotRefactoringsAction {
+function gotRefactorings(editor, originalPoint, provider, availableRefactorings) {
   return {
     type: 'got-refactorings',
     payload: {
       editor,
       originalPoint,
       provider,
-      availableRefactorings,
-    },
+      availableRefactorings
+    }
   };
 }
 
-export function error(source: ErrorSource, err: Error): ErrorAction {
+function error(source, err) {
   return {
     type: 'error',
     payload: {
       source,
-      error: err,
-    },
+      error: err
+    }
   };
 }
 
-export function pickedRefactor(
-  refactoring: AvailableRefactoring,
-): PickedRefactorAction {
+function pickedRefactor(refactoring) {
   return {
     type: 'picked-refactor',
     payload: {
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function execute(
-  provider: RefactorProvider,
-  refactoring: RefactorRequest,
-): ExecuteAction {
+function execute(provider, refactoring) {
   return {
     type: 'execute',
     payload: {
       provider,
-      refactoring,
-    },
+      refactoring
+    }
   };
 }
 
-export function close(): CloseAction {
+function close() {
   return {
-    type: 'close',
+    type: 'close'
   };
 }
