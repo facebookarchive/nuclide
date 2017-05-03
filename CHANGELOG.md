@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.223.0
+
+* Fixed an issue with stream error handling.
+
 ## v0.222.0
 
 * Fixed a redbox when right-clicking a file in the uncommitted changes section.
