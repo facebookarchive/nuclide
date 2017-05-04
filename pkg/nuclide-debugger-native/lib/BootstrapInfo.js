@@ -37,6 +37,10 @@ export class BootstrapInfo extends DebuggerProcessInfo {
     this._bootstrapInfo = bootstrapInfo;
   }
 
+  clone(): BootstrapInfo {
+    return new BootstrapInfo(this._targetUri, this._bootstrapInfo);
+  }
+
   supportThreads(): boolean {
     return true;
   }

@@ -37,10 +37,6 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return new LaunchProcessInfo(this._targetUri, this._launchTarget);
   }
 
-  supportsRestartDebugging(): boolean {
-    return true;
-  }
-
   async debug(): Promise<PhpDebuggerInstance> {
     const rpcService = this._getRpcService();
     const sessionConfig = getSessionConfig(

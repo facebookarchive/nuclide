@@ -34,6 +34,10 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
+  clone(): AttachProcessInfo {
+    return new AttachProcessInfo(this._targetUri, this._targetInfo);
+  }
+
   supportThreads(): boolean {
     return true;
   }

@@ -19,6 +19,10 @@ export class ReactNativeProcessInfo extends DebuggerProcessInfo {
     super('react-native', targetUri);
   }
 
+  clone(): ReactNativeProcessInfo {
+    return new ReactNativeProcessInfo(this._targetUri);
+  }
+
   debug(): Promise<ReactNativeDebuggerInstance> {
     // This is the port that the V8 debugger usually listens on.
     // TODO(matthewwithanm): Provide a way to override this in the UI.

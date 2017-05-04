@@ -32,6 +32,10 @@ export class NodeAttachProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
+  clone(): NodeAttachProcessInfo {
+    return new NodeAttachProcessInfo(this._targetUri, this._targetInfo);
+  }
+
   async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
     await rpcService.attach(this._targetInfo);

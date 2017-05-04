@@ -167,10 +167,7 @@ export class DebuggerStore {
   }
 
   getCanRestartDebugger(): boolean {
-    return (
-      this._debugProcessInfo != null &&
-      this._debugProcessInfo.supportsRestartDebugging()
-    );
+    return this._debugProcessInfo != null;
   }
 
   getDebugProcessInfo(): ?DebuggerProcessInfo {

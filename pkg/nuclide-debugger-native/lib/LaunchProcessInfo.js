@@ -37,6 +37,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     this._launchTargetInfo = launchTargetInfo;
   }
 
+  clone(): LaunchProcessInfo {
+    return new LaunchProcessInfo(this._targetUri, this._launchTargetInfo);
+  }
+
   supportThreads(): boolean {
     return true;
   }

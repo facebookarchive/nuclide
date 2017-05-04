@@ -38,10 +38,6 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new AttachProcessInfo(this._targetUri);
   }
 
-  supportsRestartDebugging(): boolean {
-    return true;
-  }
-
   async preAttachActions(): Promise<void> {
     try {
       // $FlowFB
