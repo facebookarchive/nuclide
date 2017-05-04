@@ -9,13 +9,19 @@
  * @format
  */
 
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {BuckBuildSystem} from '../lib/BuckBuildSystem';
 
 describe('BuckBuildSystem', () => {
   let buckBuildSystem;
   beforeEach(() => {
-    buckBuildSystem = new BuckBuildSystem();
+    buckBuildSystem = new BuckBuildSystem(
+      new Subject(),
+      () => null,
+      () => ({
+        buildArguments: [],
+      }),
+    );
   });
 
   describe('_consumeEventStream', () => {

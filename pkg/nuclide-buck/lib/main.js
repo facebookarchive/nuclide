@@ -10,7 +10,6 @@
  */
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {BuckBuildSystem as BuckBuildSystemType} from './BuckBuildSystem';
 import type {BuckBuilderBuildOptions} from '../../nuclide-buck/lib/types';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
@@ -22,13 +21,13 @@ import {CompositeDisposable, Disposable} from 'atom';
 import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
 import {track} from '../../nuclide-analytics';
-import {BuckBuildSystem} from './BuckBuildSystem';
+import {BuckTaskRunner} from './BuckTaskRunner';
 import {PlatformService} from './PlatformService';
 
 const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 
 let disposables: ?CompositeDisposable = null;
-let buildSystem: ?BuckBuildSystemType = null;
+let taskRunner: ?BuckTaskRunner = null;
 let initialState: ?Object = null;
 
 export function activate(rawState: ?Object): void {
@@ -36,7 +35,7 @@ export function activate(rawState: ?Object): void {
   initialState = rawState;
   disposables = new CompositeDisposable(
     new Disposable(() => {
-      buildSystem = null;
+      taskRunner = null;
     }),
     new Disposable(() => {
       initialState = null;
@@ -65,35 +64,35 @@ export function deactivate(): void {
 
 export function consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
   invariant(disposables != null);
-  disposables.add(api.register(getBuildSystem()));
+  disposables.add(api.register(getTaskRunner()));
 }
 
-function getBuildSystem(): BuckBuildSystem {
-  if (buildSystem == null) {
+function getTaskRunner(): BuckTaskRunner {
+  if (taskRunner == null) {
     invariant(disposables != null);
-    buildSystem = new BuckBuildSystem(initialState);
-    disposables.add(buildSystem);
+    taskRunner = new BuckTaskRunner(initialState);
+    disposables.add(taskRunner);
   }
-  return buildSystem;
+  return taskRunner;
 }
 
 export function consumeOutputService(service: OutputService): void {
   invariant(disposables != null);
   disposables.add(
     service.registerOutputProvider({
-      messages: getBuildSystem().getOutputMessages(),
+      messages: getTaskRunner().getBuildSystem().getOutputMessages(),
       id: 'Buck',
     }),
   );
 }
 
 export function provideObservableDiagnosticUpdates() {
-  return getBuildSystem().getDiagnosticProvider();
+  return getTaskRunner().getBuildSystem().getDiagnosticProvider();
 }
 
 export function serialize(): ?SerializedState {
-  if (buildSystem != null) {
-    return buildSystem.serialize();
+  if (taskRunner != null) {
+    return taskRunner.serialize();
   }
 }
 
@@ -110,10 +109,10 @@ export function getHyperclickProvider(): HyperclickProvider {
 export function provideBuckBuilder(): BuckBuilder {
   return {
     build: (options: BuckBuilderBuildOptions) =>
-      getBuildSystem().buildArtifact(options),
+      getTaskRunner().getBuildSystem().buildArtifact(options),
   };
 }
 
 export function providePlatformService(): PlatformService {
-  return getBuildSystem().getPlatformService();
+  return getTaskRunner().getPlatformService();
 }
