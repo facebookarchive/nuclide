@@ -34,6 +34,14 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     super('hhvm', targetUri);
   }
 
+  clone(): AttachProcessInfo {
+    return new AttachProcessInfo(this._targetUri);
+  }
+
+  supportsRestartDebugging(): boolean {
+    return true;
+  }
+
   async preAttachActions(): Promise<void> {
     try {
       // $FlowFB
