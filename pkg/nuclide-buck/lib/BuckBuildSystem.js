@@ -329,29 +329,19 @@ function runBuckCommand(
     );
   }
 
+  const targets = splitTargets(buildTarget);
   if (subcommand === 'install') {
     return buckService
-      .installWithOutput(
-        buckRoot,
-        splitTargets(buildTarget),
-        args,
-        simulator,
-        true,
-        debug,
-      )
+      .installWithOutput(buckRoot, targets, args, simulator, true, debug)
       .refCount();
   } else if (subcommand === 'build') {
-    return buckService
-      .buildWithOutput(buckRoot, splitTargets(buildTarget), args)
-      .refCount();
+    return buckService.buildWithOutput(buckRoot, targets, args).refCount();
   } else if (subcommand === 'test') {
     return buckService
-      .testWithOutput(buckRoot, splitTargets(buildTarget), args, debug)
+      .testWithOutput(buckRoot, targets, args, debug)
       .refCount();
   } else if (subcommand === 'run') {
-    return buckService
-      .runWithOutput(buckRoot, splitTargets(buildTarget), args)
-      .refCount();
+    return buckService.runWithOutput(buckRoot, targets, args).refCount();
   } else {
     throw Error(`Unknown subcommand: ${subcommand}`);
   }
