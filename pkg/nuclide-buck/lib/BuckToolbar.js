@@ -28,7 +28,6 @@ import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
 import addTooltip from '../../nuclide-ui/add-tooltip';
-import invariant from 'assert';
 
 type Props = {
   appState: AppState,
@@ -213,7 +212,6 @@ export default class BuckToolbar extends React.Component {
       disabled: true,
     };
 
-    invariant(platform.deviceGroups.length === 1);
     const selectableOptions = platform.deviceGroups[0].devices.map(device => {
       return {
         label: `  ${device.name}`,
