@@ -146,6 +146,7 @@ The [Nuclide Debugger](/docs/features/debugger/) attaches to a running process. 
 | `F11` | `F11` | `nuclide-debugger:step-into` | Step into a piece of code. For example, if you are stopped at a method call, this will go into the first line of that method. |
 | `Shift-F11` | `Shift-F11` | `nuclide-debugger:step-out` | If you have stepped into a piece of code, this will step out to the point on which you entered that piece of code. For example, if you stepped into a method, this will step out back to the method call itself. |
 | `Shift-F5` | `Shift-F5` | `nuclide-debugger:stop-debugging` | Detach debugger. |
+| `Cmd-Shift-F8` | `Ctrl-Shift-F8` | `nuclide-debugger:restart-debugging` | Restart the current debugging session with the same configuration settings. |
 
 ## Editor Panes
 

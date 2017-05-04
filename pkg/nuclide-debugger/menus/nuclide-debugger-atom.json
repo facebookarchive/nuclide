@@ -28,6 +28,10 @@
               "command": "nuclide-debugger:toggle-launch-attach"
             },
             {
+              "label": "Restart debugger",
+              "command": "nuclide-debugger:restart-debugging"
+            },
+            {
               "label": "Detach debugger",
               "command": "nuclide-debugger:stop-debugging"
             },

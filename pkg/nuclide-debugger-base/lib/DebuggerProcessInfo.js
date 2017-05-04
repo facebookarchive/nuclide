@@ -66,8 +66,16 @@ export default class DebuggerProcessInfo {
     return false;
   }
 
+  supportsRestartDebugging(): boolean {
+    return false;
+  }
+
   singleThreadSteppingEnabled(): boolean {
     return false;
+  }
+
+  clone(): DebuggerProcessInfo {
+    throw new Error('Abstract method');
   }
 
   customControlButtons(): Array<ControlButtonSpecification> {

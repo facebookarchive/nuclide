@@ -166,6 +166,17 @@ export class DebuggerStore {
     return this._setSourcePathCallback != null;
   }
 
+  getCanRestartDebugger(): boolean {
+    return (
+      this._debugProcessInfo != null &&
+      this._debugProcessInfo.supportsRestartDebugging()
+    );
+  }
+
+  getDebugProcessInfo(): ?DebuggerProcessInfo {
+    return this._debugProcessInfo;
+  }
+
   initializeSingleThreadStepping(mode: boolean) {
     this._enableSingleThreadStepping = mode;
   }

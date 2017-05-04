@@ -242,6 +242,9 @@ class Activation {
         'nuclide-debugger:stop-debugging': this._stop.bind(this),
       }),
       atom.commands.add('atom-workspace', {
+        'nuclide-debugger:restart-debugging': this._restart.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:step-over': this._stepOver.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -445,6 +448,10 @@ class Activation {
 
   _stop() {
     this._model.getActions().stopDebugging();
+  }
+
+  _restart() {
+    this._model.getActions().restartDebugger();
   }
 
   _stepOver() {

@@ -202,9 +202,24 @@ export class DebuggerSteppingComponent extends React.Component {
           onClick={() => actions.configureSourcePaths()}
         />;
 
+    const restartDebuggerButton = !this.props.debuggerStore.getCanRestartDebugger()
+      ? null
+      : <Button
+          icon="sync"
+          className="nuclide-debugger-stepping-button-separated"
+          disabled={isStopped}
+          tooltip={{
+            ...defaultTooltipOptions,
+            title: 'Restart the debugger using the same settings as the current debug session',
+            keyBindingCommand: 'nuclide-debugger:restart-debugging',
+          }}
+          onClick={() => actions.restartDebugger()}
+        />;
+
     return (
       <div className="nuclide-debugger-stepping-component">
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
+          {restartDebuggerButton}
           <Button
             disabled={isStopped || isPausing}
             tooltip={{

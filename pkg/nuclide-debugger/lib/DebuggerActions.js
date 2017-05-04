@@ -218,6 +218,26 @@ export default class DebuggerActions {
     invariant(this._store.getDebuggerInstance() == null);
   }
 
+  restartDebugger() {
+    const currentDebuggerInfo = this._store.getDebugProcessInfo();
+    if (
+      currentDebuggerInfo == null ||
+      this._store.getDebuggerMode() === DebuggerMode.STOPPED
+    ) {
+      atom.notifications.addWarning(
+        'Cannot restart the debugger: the debugger is not currently running!',
+      );
+      return;
+    }
+
+    // Clone the current debugger info before stopping debugging, as stop will dispose it.
+    const newDebuggerInfo = currentDebuggerInfo.clone();
+    invariant(newDebuggerInfo);
+
+    atom.notifications.addInfo('Restarting debugger...');
+    this.startDebugging(newDebuggerInfo);
+  }
+
   _registerConsole(): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.REGISTER_CONSOLE,
