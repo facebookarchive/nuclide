@@ -223,6 +223,9 @@ export default class Bridge {
       case 'notification':
         switch (event.args[0]) {
           case 'ready':
+            if (atom.config.get('nuclide.nuclide-debugger.openDevToolsOnDebuggerStart')) {
+              this.openDevTools();
+            }
             this._updateDebuggerSettings();
             this._sendAllBreakpoints();
             this._injectCSS();
