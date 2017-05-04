@@ -38,6 +38,7 @@ while (chunks.length) {
   const ps = child_process.spawn(
     'node_modules/.bin/eslint',
     [
+      '--format', 'codeframe',
       '--max-warnings', '0',
       '--',
       ...chunk,
