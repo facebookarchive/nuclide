@@ -10,8 +10,16 @@
  */
 
 import type {
+  FileDiagnosticUpdate,
+} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {NuclideUri} from '../../commons-node/nuclideUri';
+
+import type {
   FlowSingleProjectLanguageService as FlowSingleProjectLanguageServiceType,
+  DiagnosticsState,
 } from '../lib/FlowSingleProjectLanguageService';
+import type {PushDiagnosticsMessage} from '../lib/FlowIDEConnection';
+import type {FlowStatusOutput, FlowStatusError} from '../lib/flowOutputTypes';
 
 import SimpleTextBuffer, {Point, Range} from 'simple-text-buffer';
 import invariant from 'assert';
@@ -19,6 +27,9 @@ import invariant from 'assert';
 import {
   FlowSingleProjectLanguageService,
   groupParamNames,
+  emptyDiagnosticsState,
+  updateDiagnostics,
+  getDiagnosticUpdates,
 } from '../lib/FlowSingleProjectLanguageService';
 import {FlowExecInfoContainer} from '../lib/FlowExecInfoContainer';
 import {addMatchers} from '../../nuclide-test-helpers';
@@ -305,3 +316,234 @@ describe('FlowSingleProjectLanguageService', () => {
     });
   });
 });
+
+// FYI, the order of the expected messages within the nested array is arbitrary, but deterministic.
+// However, using arrays makes it easy to compare output using diffJson. It would make sense to
+// switch to Sets as long as diffJson (or similar) is extended to compare Sets structurally.
+describe('push diagnostics collation', () => {
+  beforeEach(function() {
+    addMatchers(this);
+  });
+
+  it('should clear all previous errors upon each message if we are not in a recheck', () => {
+    waitsForPromise(async () => {
+      const messages = [
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('bar', '/path1'),
+            makeFakeFlowError('foo', '/path1'),
+          ),
+        },
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(),
+        },
+      ];
+      const expected: Array<Array<AbbreviatedResult>> = [
+        [],
+        [
+          {
+            filePath: '/path1',
+            messages: [['bar', false], ['foo', false]],
+          },
+        ],
+        [{filePath: '/path1', messages: []}],
+      ];
+      const results = await getAbbreviatedResults(messages);
+      expect(results).diffJson(expected);
+    });
+  });
+
+  it('should accumulate errors during a recheck', () => {
+    waitsForPromise(async () => {
+      const messages = [
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('foo', '/path1'),
+            makeFakeFlowError('bar', '/path2'),
+          ),
+        },
+        {kind: 'start-recheck'},
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(makeFakeFlowError('new', '/path1')),
+        },
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(makeFakeFlowError('asdf', '/path3')),
+        },
+        {kind: 'end-recheck'},
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('another new', '/path2'),
+            makeFakeFlowError('asdf', '/path3'),
+          ),
+        },
+      ];
+      const expected: Array<Array<AbbreviatedResult>> = [
+        [],
+        [
+          {filePath: '/path1', messages: [['foo', false]]},
+          {filePath: '/path2', messages: [['bar', false]]},
+        ],
+        [
+          {filePath: '/path1', messages: [['foo', true]]},
+          {filePath: '/path2', messages: [['bar', true]]},
+        ],
+        [{filePath: '/path1', messages: [['foo', true], ['new', false]]}],
+        [{filePath: '/path3', messages: [['asdf', false]]}],
+        [
+          {filePath: '/path1', messages: [['new', false]]},
+          {filePath: '/path2', messages: []},
+        ],
+        [
+          // 'new' is not included here since this message came after the 'end-recheck' message.
+          // Because of that, it is considered to be a complete set of errors.
+          {filePath: '/path2', messages: [['another new', false]]},
+          {filePath: '/path3', messages: [['asdf', false]]},
+          {filePath: '/path1', messages: []},
+        ],
+      ];
+      const results = await getAbbreviatedResults(messages);
+      expect(results).diffJson(expected);
+    });
+  });
+
+  it('should remove all diagnostics when the IDE connection is lost outside of a recheck', () => {
+    waitsForPromise(async () => {
+      const messages = [
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('foo', '/path1'),
+            makeFakeFlowError('bar', '/path2'),
+          ),
+        },
+        null,
+      ];
+      const expected: Array<Array<AbbreviatedResult>> = [
+        [],
+        [
+          {filePath: '/path1', messages: [['foo', false]]},
+          {filePath: '/path2', messages: [['bar', false]]},
+        ],
+        [
+          {filePath: '/path1', messages: []},
+          {filePath: '/path2', messages: []},
+        ],
+      ];
+      const results = await getAbbreviatedResults(messages);
+      expect(results).diffJson(expected);
+    });
+  });
+
+  it('should remove all diagnostics when the IDE connection is lost during a recheck', () => {
+    waitsForPromise(async () => {
+      const messages = [
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('foo', '/path1'),
+            makeFakeFlowError('bar', '/path2'),
+          ),
+        },
+        {kind: 'start-recheck'},
+        {
+          kind: 'errors',
+          errors: makeFakeFlowOutput(
+            makeFakeFlowError('baz', '/path1'),
+            makeFakeFlowError('asdf', '/path3'),
+          ),
+        },
+        null,
+      ];
+      const expected: Array<Array<AbbreviatedResult>> = [
+        [],
+        [
+          {filePath: '/path1', messages: [['foo', false]]},
+          {filePath: '/path2', messages: [['bar', false]]},
+        ],
+        [
+          {filePath: '/path1', messages: [['foo', true]]},
+          {filePath: '/path2', messages: [['bar', true]]},
+        ],
+        [
+          {filePath: '/path1', messages: [['foo', true], ['baz', false]]},
+          {filePath: '/path3', messages: [['asdf', false]]},
+        ],
+        [
+          {filePath: '/path1', messages: []},
+          {filePath: '/path2', messages: []},
+          {filePath: '/path3', messages: []},
+        ],
+      ];
+      const results = await getAbbreviatedResults(messages);
+      expect(results).diffJson(expected);
+    });
+  });
+});
+
+// For simpler comparison in tests. Other tests make sure that messages are properly transformed,
+// here we just need to make sure they are properly collated.
+type AbbreviatedResult = {
+  filePath: NuclideUri,
+  // message, stale
+  messages: Array<[?string, boolean]>,
+};
+
+async function getAbbreviatedResults(
+  messages: Array<?PushDiagnosticsMessage>,
+): Promise<Array<Array<AbbreviatedResult>>> {
+  const results: Array<Array<FileDiagnosticUpdate>> = [];
+  let state: DiagnosticsState = emptyDiagnosticsState();
+  results.push(await getDiagnosticUpdates(state).toArray().toPromise());
+  for (const message of messages) {
+    state = updateDiagnostics(state, message);
+    // eslint-disable-next-line no-await-in-loop
+    results.push(await getDiagnosticUpdates(state).toArray().toPromise());
+  }
+  return results.map(inner => {
+    return inner.map(result => {
+      return {
+        filePath: result.filePath,
+        messages: result.messages.map(msg => [msg.text, Boolean(msg.stale)]),
+      };
+    });
+  });
+}
+
+function makeFakeFlowOutput(
+  ...errors: Array<FlowStatusError>
+): FlowStatusOutput {
+  return {
+    passed: errors.length === 0,
+    flowVersion: '0.44.1',
+    errors,
+  };
+}
+
+function makeFakeFlowError(text: string, file: NuclideUri): FlowStatusError {
+  return {
+    level: 'error',
+    kind: 'infer',
+    message: [
+      {
+        descr: text,
+        loc: {
+          source: file,
+          start: {
+            line: 1,
+            column: 1,
+          },
+          end: {
+            line: 1,
+            column: 4,
+          },
+        },
+      },
+    ],
+  };
+}

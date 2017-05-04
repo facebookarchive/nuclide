@@ -20,6 +20,7 @@ import type {
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
+  FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   Definition,
@@ -37,12 +38,15 @@ import type {
   FindReferencesReturn,
 } from '../../nuclide-find-references/lib/rpc-types';
 
+import type {PushDiagnosticsMessage} from './FlowIDEConnection';
+
 import type {ServerStatusType} from '..';
 import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 import type {
   FlowAutocompleteOutput,
   FlowAutocompleteItem,
   TypeAtPosOutput,
+  FlowStatusOutput,
 } from './flowOutputTypes';
 
 import invariant from 'assert';
@@ -50,6 +54,7 @@ import {Range, Point} from 'simple-text-buffer';
 import {getConfig} from './config';
 import {Observable} from 'rxjs';
 
+import {setUnion, mapGetWithDefault} from '../../commons-node/collection';
 import {
   filterResultsByPrefix,
   getReplacementPrefix,
@@ -284,50 +289,15 @@ export class FlowSingleProjectLanguageService {
     return ideConnections
       .switchMap(ideConnection => {
         if (ideConnection != null) {
-          return ideConnection
-            .observeDiagnostics()
-            .filter(msg => msg.kind === 'errors')
-            .map(msg => {
-              invariant(msg.kind === 'errors');
-              return msg.errors;
-            })
-            .map(diagnosticsJson => {
-              const diagnostics = flowStatusOutputToDiagnostics(
-                diagnosticsJson,
-              );
-              const filePathToMessages = new Map();
-
-              for (const diagnostic of diagnostics) {
-                const path = diagnostic.filePath;
-                let diagnosticArray = filePathToMessages.get(path);
-                if (!diagnosticArray) {
-                  diagnosticArray = [];
-                  filePathToMessages.set(path, diagnosticArray);
-                }
-                diagnosticArray.push(diagnostic);
-              }
-              return filePathToMessages;
-            });
+          return ideConnection.observeDiagnostics();
         } else {
           // if ideConnection is null, it means there is currently no connection. So, invalidate the
           // current diagnostics so we don't display stale data.
-          return Observable.of(new Map());
+          return Observable.of(null);
         }
       })
-      .scan((oldDiagnostics, newDiagnostics) => {
-        for (const [filePath, diagnostics] of oldDiagnostics) {
-          if (diagnostics.length > 0 && !newDiagnostics.has(filePath)) {
-            newDiagnostics.set(filePath, []);
-          }
-        }
-        return newDiagnostics;
-      }, new Map())
-      .concatMap(filePathToMessages => {
-        const fileDiagnosticUpdates: Array<FileDiagnosticUpdate> = [
-          ...filePathToMessages.entries(),
-        ].map(([filePath, messages]) => ({filePath, messages}));
-        return Observable.from(fileDiagnosticUpdates);
-      })
+      .scan(updateDiagnostics, emptyDiagnosticsState())
+      .concatMap(getDiagnosticUpdates)
       .catch(err => {
         logger.error(err);
         throw err;
@@ -730,4 +700,145 @@ function isOptional(param: string): boolean {
   invariant(param.length > 0);
   const lastChar = param[param.length - 1];
   return lastChar === '?';
+}
+
+// This should be immutable, but lacking good immutable data structure implementations, we are just
+// going to mutate it
+// Exported only for testing
+export type DiagnosticsState = {
+  isInRecheck: boolean,
+  // Stale messages from the last recheck. We still want to display these, but as soon as the
+  // recheck ends we should invalidate them.
+  // invariants: empty if we are not in a recheck, all contained messages have `stale: true`.
+  staleMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
+  // All the currently-valid diagnostic messages. During a recheck, incoming messages get
+  // accumulated here.
+  currentMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
+  // All the files that need to be updated immediately. May include files that do not exist in
+  // allCurrentMessages, meaning that there are no associated messages and we just need to clear the
+  // previous errors.
+  filesToUpdate: Set<NuclideUri>,
+};
+
+// Exported only for testing
+export function emptyDiagnosticsState(): DiagnosticsState {
+  return {
+    isInRecheck: false,
+    staleMessages: new Map(),
+    currentMessages: new Map(),
+    filesToUpdate: new Set(),
+  };
+}
+
+// Exported only for testing
+export function updateDiagnostics(
+  state: DiagnosticsState,
+  // null means we have received a null ide connection (meaning the previous one has gone away)
+  msg: ?PushDiagnosticsMessage,
+): DiagnosticsState {
+  if (msg == null) {
+    return {
+      isInRecheck: false,
+      staleMessages: new Map(),
+      currentMessages: new Map(),
+      filesToUpdate: setUnion(
+        new Set(state.staleMessages.keys()),
+        new Set(state.currentMessages.keys()),
+      ),
+    };
+  }
+  switch (msg.kind) {
+    case 'errors':
+      const newErrors = collateDiagnostics(msg.errors);
+      if (state.isInRecheck) {
+        // Yes we are going to mutate this :(
+        const {currentMessages} = state;
+        for (const [file, newMessages] of newErrors) {
+          let messages = currentMessages.get(file);
+          if (messages == null) {
+            messages = [];
+            currentMessages.set(file, messages);
+          }
+          messages.push(...newMessages);
+        }
+        return {
+          isInRecheck: state.isInRecheck,
+          staleMessages: state.staleMessages,
+          currentMessages,
+          filesToUpdate: new Set(newErrors.keys()),
+        };
+      } else {
+        // Update the files that now have errors, and those that had errors the last time (we need
+        // to make sure to remove errors that no longer exist).
+        const filesToUpdate = setUnion(
+          new Set(newErrors.keys()),
+          new Set(state.currentMessages.keys()),
+        );
+        return {
+          isInRecheck: state.isInRecheck,
+          staleMessages: state.staleMessages,
+          currentMessages: newErrors,
+          filesToUpdate,
+        };
+      }
+    case 'start-recheck':
+      const staleMessages = new Map();
+      for (const [file, oldMessages] of state.currentMessages.entries()) {
+        const messages = oldMessages.map(message => ({
+          ...message,
+          stale: true,
+        }));
+        staleMessages.set(file, messages);
+      }
+      return {
+        isInRecheck: true,
+        staleMessages,
+        currentMessages: new Map(),
+        filesToUpdate: new Set(state.currentMessages.keys()),
+      };
+    case 'end-recheck':
+      return {
+        isInRecheck: false,
+        staleMessages: new Map(),
+        currentMessages: state.currentMessages,
+        filesToUpdate: new Set(state.staleMessages.keys()),
+      };
+    default:
+      // Enforce exhaustiveness
+      (msg.kind: empty);
+      throw new Error(`Unknown message kind ${msg.kind}`);
+  }
+}
+
+// Exported only for testing
+export function getDiagnosticUpdates(
+  state: DiagnosticsState,
+): Observable<FileDiagnosticUpdate> {
+  const updates = [];
+  for (const file of state.filesToUpdate) {
+    const messages = [
+      ...mapGetWithDefault(state.staleMessages, file, []),
+      ...mapGetWithDefault(state.currentMessages, file, []),
+    ];
+    updates.push({filePath: file, messages});
+  }
+  return Observable.from(updates);
+}
+
+function collateDiagnostics(
+  output: FlowStatusOutput,
+): Map<NuclideUri, Array<FileDiagnosticMessage>> {
+  const diagnostics = flowStatusOutputToDiagnostics(output);
+  const filePathToMessages = new Map();
+
+  for (const diagnostic of diagnostics) {
+    const path = diagnostic.filePath;
+    let diagnosticArray = filePathToMessages.get(path);
+    if (!diagnosticArray) {
+      diagnosticArray = [];
+      filePathToMessages.set(path, diagnosticArray);
+    }
+    diagnosticArray.push(diagnostic);
+  }
+  return filePathToMessages;
 }
