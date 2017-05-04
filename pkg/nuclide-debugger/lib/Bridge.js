@@ -26,6 +26,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import CommandDispatcher from './CommandDispatcher';
 
 const INJECTED_CSS = [
   /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
@@ -69,12 +70,14 @@ export default class Bridge {
   _cleanupDisposables: ?UniversalDisposable;
   _webview: ?WebviewElement;
   _webviewUrl: ?string;
+  _commandDipatcher: CommandDispatcher;
   _suppressBreakpointSync: boolean;
 
   constructor(debuggerModel: DebuggerModel) {
     (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
+    this._commandDipatcher = new CommandDispatcher();
     this._disposables = new UniversalDisposable(
       debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
@@ -94,98 +97,76 @@ export default class Bridge {
   }
 
   continue() {
-    if (this._webview) {
-      this._webview.send('command', 'Continue');
-    }
+    this._commandDipatcher.send('command', 'Continue');
   }
 
   stepOver() {
-    if (this._webview) {
-      this._webview.send('command', 'StepOver');
-    }
+    this._commandDipatcher.send('command', 'StepOver');
   }
 
   stepInto() {
-    if (this._webview) {
-      this._webview.send('command', 'StepInto');
-    }
+    this._commandDipatcher.send('command', 'StepInto');
   }
 
   stepOut() {
-    if (this._webview) {
-      this._webview.send('command', 'StepOut');
-    }
+    this._commandDipatcher.send('command', 'StepOut');
   }
 
   runToLocation(filePath: string, line: number) {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'RunToLocation',
-        filePath,
-        line,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'RunToLocation',
+      filePath,
+      line,
+    );
   }
 
   triggerAction(actionId: string): void {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'triggerDebuggerAction',
-        actionId,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'triggerDebuggerAction',
+      actionId,
+    );
   }
 
   setSelectedCallFrameIndex(callFrameIndex: number): void {
-    if (this._webview != null) {
-      this._webview.send(
+      this._commandDipatcher.send(
         'command',
         'setSelectedCallFrameIndex',
         callFrameIndex,
       );
-    }
   }
 
   setPauseOnException(pauseOnExceptionEnabled: boolean): void {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'setPauseOnException',
-        pauseOnExceptionEnabled,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'setPauseOnException',
+      pauseOnExceptionEnabled,
+    );
   }
 
   setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'setPauseOnCaughtException',
-        pauseOnCaughtExceptionEnabled,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'setPauseOnCaughtException',
+      pauseOnCaughtExceptionEnabled,
+    );
   }
 
   setSingleThreadStepping(singleThreadStepping: boolean): void {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'setSingleThreadStepping',
-        singleThreadStepping,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'setSingleThreadStepping',
+      singleThreadStepping,
+    );
   }
 
   selectThread(threadId: string): void {
-    if (this._webview) {
-      this._webview.send(
-        'command',
-        'selectThread',
-        threadId,
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'selectThread',
+      threadId,
+    );
   }
 
   sendEvaluationCommand(
@@ -193,9 +174,7 @@ export default class Bridge {
     evalId: number,
     ...args: Array<mixed>
   ): void {
-    if (this._webview != null) {
-      this._webview.send('command', command, evalId, ...args);
-    }
+    this._commandDipatcher.send('command', command, evalId, ...args);
   }
 
   _handleExpressionEvaluationResponse(response: ExpressionResult & {id: number}): void {
@@ -281,14 +260,11 @@ export default class Bridge {
   }
 
   _updateDebuggerSettings(): void {
-    const webview = this._webview;
-    if (webview != null) {
-      webview.send(
-        'command',
-        'UpdateSettings',
-        this._debuggerModel.getStore().getSettings().getSerializedData(),
-      );
-    }
+    this._commandDipatcher.send(
+      'command',
+      'UpdateSettings',
+      this._debuggerModel.getStore().getSettings().getSerializedData(),
+    );
   }
 
   _syncDebuggerState(): void {
@@ -383,16 +359,13 @@ export default class Bridge {
   }
 
   _handleUserBreakpointChange(params: BreakpointUserChangeArgType) {
-    const webview = this._webview;
-    if (webview != null) {
-      const {action, breakpoint} = params;
-      webview.send('command', action, {
-        sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
-        lineNumber: breakpoint.line,
-        condition: breakpoint.condition,
-        enabled: breakpoint.enabled,
-      });
-    }
+    const {action, breakpoint} = params;
+    this._commandDipatcher.send('command', action, {
+      sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+      lineNumber: breakpoint.line,
+      condition: breakpoint.condition,
+      enabled: breakpoint.enabled,
+    });
   }
 
   _handleThreadsUpdate(threadData: NuclideThreadData): void {
@@ -409,8 +382,7 @@ export default class Bridge {
 
   _sendAllBreakpoints() {
     // Send an array of file/line objects.
-    const webview = this._webview;
-    if (webview && !this._suppressBreakpointSync) {
+    if (!this._suppressBreakpointSync) {
       const results = [];
       this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(breakpoint => {
         results.push({
@@ -420,7 +392,7 @@ export default class Bridge {
           enabled: breakpoint.enabled,
         });
       });
-      webview.send('command', 'SyncBreakpoints', results);
+      this._commandDipatcher.send('command', 'SyncBreakpoints', results);
     }
   }
 
@@ -458,6 +430,7 @@ export default class Bridge {
   // Exposed for tests
   _setWebviewElement(webview: WebviewElement): void {
     this._webview = webview;
+    this._commandDipatcher.setWebview(webview);
     invariant(this._cleanupDisposables == null);
     this._cleanupDisposables = new UniversalDisposable(
       Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage),
