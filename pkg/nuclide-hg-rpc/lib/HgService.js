@@ -1246,7 +1246,7 @@ export class HgService {
       cwd: this._workingDirectory,
     };
     return (
-      hgRunCommand(args, execOptions)
+      this._hgRunCommand(args, execOptions)
         .map(data => {
           const parsedData = JSON.parse(data)[0];
           if (parsedData.command == null) {

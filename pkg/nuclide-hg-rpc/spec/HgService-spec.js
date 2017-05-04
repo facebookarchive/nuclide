@@ -355,6 +355,94 @@ describe('HgService', () => {
     });
   });
 
+  describe('::fetchMergeConflictsWithDetails', () => {
+    const mockOutput = `
+[
+   {
+      "command":"rebase",
+      "conflicts":[
+        {
+           "base":{
+              "contents": "",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false
+           },
+           "local":{
+              "contents": "t1",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false
+           },
+           "other":{
+              "contents":"t2",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false
+           },
+           "output":{
+              "contents": "\u003c\u003c\u003c\u003c\u003c\u003c\u003c dest:   aeef989d24c2 - asriram: t1\\nt1\\n=======\\nt2\\n\u003e\u003e\u003e\u003e\u003e\u003e\u003e source: 64c253f3c1d7 - asriram: t2\\n",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false,
+              "path":"temp1"
+           },
+           "path":"temp1"
+        },
+        {
+           "base":{
+              "contents": "",
+              "exists":false,
+              "isexec":false,
+              "issymlink":false
+           },
+           "local":{
+              "contents": "t1",
+              "exists":false,
+              "isexec":false,
+              "issymlink":false
+           },
+           "other":{
+              "contents":"t2",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false
+           },
+           "output":{
+              "contents": "\u003c\u003c\u003c\u003c\u003c\u003c\u003c dest:   aeef989d24c2 - asriram: t1\\nt1\\n=======\\nt2\\n\u003e\u003e\u003e\u003e\u003e\u003e\u003e source: 64c253f3c1d7 - asriram: t2\\n",
+              "exists":true,
+              "isexec":false,
+              "issymlink":false,
+              "path":"temp2"
+           },
+           "path":"temp2"
+        }
+      ]
+   }
+]`;
+
+    it('fetches rich merge conflict data', () => {
+      let wasCalled = false;
+      spyOn(hgService, '_hgRunCommand').andCallFake((args, options) => {
+        wasCalled = true;
+        return Observable.of(mockOutput);
+      });
+      waitsForPromise(async () => {
+        const mergeConflictsEnriched = await hgService
+          .fetchMergeConflictsWithDetails()
+          .refCount()
+          .toPromise();
+        expect(wasCalled).toBeTruthy();
+        expect(mergeConflictsEnriched).not.toBeNull();
+        invariant(mergeConflictsEnriched != null);
+        expect(mergeConflictsEnriched.conflicts.length).toBe(2);
+        const conflicts = mergeConflictsEnriched.conflicts;
+        expect(conflicts[0].status).toBe(MergeConflictStatus.BOTH_CHANGED);
+        expect(conflicts[1].status).toBe(MergeConflictStatus.DELETED_IN_OURS);
+      });
+    });
+  });
+
   describe('::fetchMergeConflicts()', () => {
     const relativePath1 = relativize(PATH_1);
     const relativePath2 = relativize(PATH_2);
