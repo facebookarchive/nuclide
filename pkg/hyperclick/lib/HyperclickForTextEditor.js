@@ -154,7 +154,6 @@ export default class HyperclickForTextEditor {
       clientY: mouseEvent.clientY,
     }: any);
 
-
     // Don't fetch suggestions if the mouse is still in the same 'word', where
     // 'word' is a whitespace-delimited group of characters.
     //
@@ -248,34 +247,43 @@ export default class HyperclickForTextEditor {
         return;
       }
     }
-    // this._lastSuggestionAtMouse will only be set if hyperclick returned a promise that
-    // resolved to a non-null value. So, in order to not ask hyperclick for the same thing
-    // again and again which will be anyway null, we check if the mouse position has changed.
-    if (this._lastPosition && position.compare(this._lastPosition) === 0) {
+
+    // if we don't have any prior hyperclick position data, or we don't
+    // have any prior suggestion data, or the cursor has moved since the
+    // last suggestion, then refetch hyperclick suggestions. Otherwise,
+    // we might be able to reuse it below.
+    if (
+      !this._lastPosition ||
+      !this._lastSuggestionAtMouse ||
+      position.compare(this._lastPosition) !== 0
+    ) {
+      this._isLoading = true;
+      this._lastPosition = position;
+
+      try {
+        this._lastSuggestionAtMousePromise =
+            this._hyperclick.getSuggestion(this._textEditor, position);
+        this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
+      } catch (e) {
+        logger.error('Error getting Hyperclick suggestion:', e);
+      } finally {
+        this._doneLoading();
+      }
+    }
+
+    // it's possible that the text editor buffer (and therefore this hyperclick
+    // provider for the editor) has been closed by the user since we
+    // asynchronously queried for suggestions.
+    if (this._isDestroyed) {
       return;
     }
 
-    this._isLoading = true;
-
-    try {
-      this._lastPosition = position;
-      this._lastSuggestionAtMousePromise =
-          this._hyperclick.getSuggestion(this._textEditor, position);
-      this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
-      if (this._isDestroyed) {
-        return;
-      }
-      if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
-        // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
-        this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
-      } else {
-        // Remove all the markers if we've finished loading and there's no suggestion.
-        this._updateNavigationMarkers(null);
-      }
-    } catch (e) {
-      logger.error('Error getting Hyperclick suggestion:', e);
-    } finally {
-      this._doneLoading();
+    if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
+      // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
+      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
+    } else {
+      // Remove all the markers if we've finished loading and there's no suggestion.
+      this._updateNavigationMarkers(null);
     }
   }
 
