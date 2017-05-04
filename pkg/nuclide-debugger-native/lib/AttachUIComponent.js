@@ -235,7 +235,7 @@ export class AttachUIComponent
           onSelect={this._handleSelectTableRow}
           collapsable={true}
         />
-        <div className="nuclide-debugger-native-launch-attach-actions">
+        <div className="nuclide-debugger-launch-attach-actions">
           <ButtonGroup>
             <Button onClick={this._handleCancelButtonClick}>
               Cancel

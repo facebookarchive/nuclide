@@ -12,6 +12,7 @@
 import React from 'react';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
+import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
@@ -80,13 +81,15 @@ export class AttachUiComponent
             value={this.state.selectedPathIndex}
           />
         </div>
-        <div className="padded text-right">
-          <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
-          <Button
-            buttonType={ButtonTypes.PRIMARY}
-            onClick={this._handleAttachButtonClick}>
-            Attach
-          </Button>
+        <div className="nuclide-debugger-launch-attach-actions">
+          <ButtonGroup>
+            <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
+            <Button
+              buttonType={ButtonTypes.PRIMARY}
+              onClick={this._handleAttachButtonClick}>
+              Attach
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
     );
