@@ -409,9 +409,10 @@ function getPreferredSize(item: Object, position: Position): ?number {
   }
 }
 
-function ResizeCursorOverlay(
-  props: {resizing: boolean, position: Position},
-): ?React.Element<any> {
+function ResizeCursorOverlay(props: {
+  resizing: boolean,
+  position: Position,
+}): ?React.Element<any> {
   // We create an overlay to always display the resize cursor while the user is resizing the panel,
   // even if their mouse leaves the handle.
   return props.resizing

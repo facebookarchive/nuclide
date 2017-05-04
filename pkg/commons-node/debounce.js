@@ -15,7 +15,7 @@ export default function debounce<
   T,
   TArgs: Array<T>,
   TReturn,
-  TFunc: (...TArgs) => TReturn // eslint-disable-line space-before-function-paren
+  TFunc: (...TArgs) => TReturn, // eslint-disable-line space-before-function-paren
 >(
   func: TFunc,
   wait: number,

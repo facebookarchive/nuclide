@@ -33,7 +33,7 @@ type TestProvider = {
 describe('ActiveEditorRegistry', () => {
   let activeEditorRegistry: ActiveEditorRegistry<
     TestProvider,
-    void
+    void,
   > = (null: any);
 
   let activeEditors: Subject<?atom$TextEditor> = (null: any);

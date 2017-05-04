@@ -322,7 +322,7 @@ export class HgRepositoryClient {
     fileChanges: Observable<Array<string>>,
     repoStateChanges: Observable<void>,
     fetchStatuses: () => ConnectableObservable<
-      Map<NuclideUri, StatusCodeIdValue>
+      Map<NuclideUri, StatusCodeIdValue>,
     >,
   ): HgStatusChanges {
     const triggers = Observable.merge(fileChanges, repoStateChanges)

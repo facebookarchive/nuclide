@@ -457,12 +457,10 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  > {
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
     throw new Error('Not implemented');
   }
 

@@ -259,9 +259,9 @@ function createMockStore(state: Object): Store {
 function runActions(
   actions: Array<Action>,
   initialState: Object,
-  preferencesForWorkingRoots: LocalStorageJsonTable<
-    ?ToolbarStatePreference
-  > = createMockPreferences([]),
+  preferencesForWorkingRoots: LocalStorageJsonTable<?ToolbarStatePreference> = createMockPreferences(
+    [],
+  ),
 ): ReplaySubject<Action> {
   const store = createMockStore(initialState);
   const input = new Subject();
@@ -279,7 +279,7 @@ function runActions(
 function createMockPreferences(
   db: Array<{key: string, value: ?ToolbarStatePreference}>,
 ): LocalStorageJsonTable<?ToolbarStatePreference> {
-  return ((new dummy.ToolbarStatePreferences(db): any): LocalStorageJsonTable<
-    ?ToolbarStatePreference
-  >);
+  return ((new dummy.ToolbarStatePreferences(
+    db,
+  ): any): LocalStorageJsonTable<?ToolbarStatePreference>);
 }

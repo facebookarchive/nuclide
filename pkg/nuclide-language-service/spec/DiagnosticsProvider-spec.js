@@ -19,7 +19,7 @@ import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
   let diagnosticsProvider: FileDiagnosticsProvider<
-    LanguageService
+    LanguageService,
   > = (null: any);
 
   beforeEach(() => {

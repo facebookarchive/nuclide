@@ -340,7 +340,7 @@ function pathsAreEqual(filePath1: string, filePath2: string): boolean {
 export function filterMultiRootFileChanges(
   unfilteredFileChanges: Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>
+    Map<NuclideUri, FileChangeStatusValue>,
   >,
 ): Map<NuclideUri, Map<NuclideUri, FileChangeStatusValue>> {
   const filteredFileChanges = new Map();

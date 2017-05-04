@@ -162,9 +162,9 @@ function getPackagerObservable(
   const stdout = Observable.fromPromise(getCommandInfo(projectRootPath))
     .switchMap(
       commandInfo =>
-        (commandInfo == null
+        commandInfo == null
           ? Observable.throw(new NoReactNativeProjectError())
-          : Observable.of(commandInfo)),
+          : Observable.of(commandInfo),
     )
     .switchMap(commandInfo => {
       const {command, cwd, args} = commandInfo;

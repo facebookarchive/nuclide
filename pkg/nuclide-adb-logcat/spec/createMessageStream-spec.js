@@ -18,9 +18,9 @@ describe('createMessageStream', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(
       name =>
-        (name === 'nuclide-adb-logcat.whitelistedTags'
+        name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('.*')
-          : original(name)),
+          : original(name),
     );
 
     waitsForPromise(async () => {
@@ -49,9 +49,9 @@ describe('createMessageStream', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(
       name =>
-        (name === 'nuclide-adb-logcat.whitelistedTags'
+        name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('ExampleTag')
-          : original(name)),
+          : original(name),
     );
 
     waitsForPromise(async () => {
@@ -78,9 +78,9 @@ describe('createMessageStream', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(
       name =>
-        (name === 'nuclide-adb-logcat.whitelistedTags'
+        name === 'nuclide-adb-logcat.whitelistedTags'
           ? Observable.of('(')
-          : original(name)),
+          : original(name),
     );
 
     waitsForPromise(async () => {

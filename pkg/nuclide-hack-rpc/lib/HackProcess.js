@@ -226,7 +226,7 @@ class HackProcess {
 // Maps FileCache => hack config dir => HackProcess
 const processes: Cache<
   FileCache,
-  Cache<NuclideUri, Promise<HackProcess>>
+  Cache<NuclideUri, Promise<HackProcess>>,
 > = new Cache(
   fileCache =>
     new Cache(

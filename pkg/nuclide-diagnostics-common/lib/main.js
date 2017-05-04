@@ -156,7 +156,7 @@ export type LinterMessageV2 = {
           priority?: number,
           apply: () => any,
           replaceWith?: void, // Hint for Flow.
-        }
+        },
   >,
   // TODO: the callback version is not supported.
   description?: string | (() => Promise<string> | string),

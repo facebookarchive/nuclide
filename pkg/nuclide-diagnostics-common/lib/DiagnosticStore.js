@@ -36,7 +36,7 @@ export default class DiagnosticStore {
   // a map from each file it has messages for to the array of messages for that file.
   _providerToFileToMessages: Map<
     DiagnosticProvider,
-    Map<NuclideUri, Array<FileDiagnosticMessage>>
+    Map<NuclideUri, Array<FileDiagnosticMessage>>,
   >;
   // A map from each file that has messages from any diagnostic provider
   // to the set of diagnostic providers that have messages for it.
@@ -45,7 +45,7 @@ export default class DiagnosticStore {
   // A map from each diagnostic provider to the array of project messages from it.
   _providerToProjectDiagnostics: Map<
     DiagnosticProvider,
-    Array<ProjectDiagnosticMessage>
+    Array<ProjectDiagnosticMessage>,
   >;
 
   _fileChanges: Subject<FileMessageUpdate>;

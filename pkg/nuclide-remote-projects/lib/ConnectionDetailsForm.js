@@ -385,18 +385,16 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
-  setFormFields(
-    fields: {
-      username?: string,
-      server?: string,
-      cwd?: string,
-      remoteServerCommand?: string,
-      sshPort?: string,
-      pathToPrivateKey?: string,
-      authMethod?: NuclideRemoteAuthMethods,
-      displayTitle?: string,
-    },
-  ): void {
+  setFormFields(fields: {
+    username?: string,
+    server?: string,
+    cwd?: string,
+    remoteServerCommand?: string,
+    sshPort?: string,
+    pathToPrivateKey?: string,
+    authMethod?: NuclideRemoteAuthMethods,
+    displayTitle?: string,
+  }): void {
     this._setText('username', fields.username);
     this._setText('server', fields.server);
     this._setText('cwd', fields.cwd);

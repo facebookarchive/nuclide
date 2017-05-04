@@ -18,9 +18,9 @@ describe('createMessageStream', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(
       name =>
-        (name === 'nuclide-ios-simulator-logs.whitelistedTags'
+        name === 'nuclide-ios-simulator-logs.whitelistedTags'
           ? Observable.of('.*')
-          : original(name)),
+          : original(name),
     );
     waitsForPromise(async () => {
       const output = Observable.from(OUTPUT_LINES);
@@ -37,9 +37,9 @@ describe('createMessageStream', () => {
       const original = featureConfig.observeAsStream.bind(featureConfig);
       spyOn(featureConfig, 'observeAsStream').andCallFake(
         name =>
-          (name === 'nuclide-ios-simulator-logs.whitelistedTags'
+          name === 'nuclide-ios-simulator-logs.whitelistedTags'
             ? Observable.of('X|ExampleTag')
-            : original(name)),
+            : original(name),
       );
       const output = Observable.from(OUTPUT_LINES);
       const messages = await createMessageStream(output)
@@ -55,9 +55,9 @@ describe('createMessageStream', () => {
     const original = featureConfig.observeAsStream.bind(featureConfig);
     spyOn(featureConfig, 'observeAsStream').andCallFake(
       name =>
-        (name === 'nuclide-ios-simulator-logs.whitelistedTags'
+        name === 'nuclide-ios-simulator-logs.whitelistedTags'
           ? Observable.of('(')
-          : original(name)),
+          : original(name),
     );
 
     waitsForPromise(async () => {

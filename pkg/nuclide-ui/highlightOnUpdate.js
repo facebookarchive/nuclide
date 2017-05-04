@@ -18,7 +18,7 @@ import shallowequal from 'shallowequal';
  */
 export function highlightOnUpdate<
   T: ReactClass<any>,
-  P: {+[key: string]: mixed}
+  P: {+[key: string]: mixed},
 >(
   ComposedComponent: T,
   /**

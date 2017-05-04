@@ -77,7 +77,7 @@ const atomConfig: AtomLanguageServiceConfig = {
 };
 
 export const graphqlLanguageService: AtomLanguageService<
-  LanguageService
+  LanguageService,
 > = new AtomLanguageService(connectionToGraphQLService, atomConfig);
 
 export function resetGraphQLLanguageService(): void {

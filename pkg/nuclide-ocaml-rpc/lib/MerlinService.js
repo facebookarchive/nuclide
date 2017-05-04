@@ -74,15 +74,13 @@ export async function locate(
   line: number,
   col: number,
   kind: string,
-): Promise<
-  ?{
-    file: NuclideUri,
-    pos: {
-      line: number,
-      col: number,
-    },
-  }
-> {
+): Promise<?{
+  file: NuclideUri,
+  pos: {
+    line: number,
+    col: number,
+  },
+}> {
   const instance = await getInstance(path);
   return instance ? instance.locate(path, line, col, kind) : null;
 }

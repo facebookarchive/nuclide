@@ -26,8 +26,12 @@ import nuclideUri from '../commons-node/nuclideUri';
 export function dispatchKeyboardEvent(
   key: string,
   target: ?HTMLElement,
-  metaKeys: {alt?: boolean, cmd?: boolean, ctrl?: boolean, shift?: boolean} = {
-  },
+  metaKeys: {
+    alt?: boolean,
+    cmd?: boolean,
+    ctrl?: boolean,
+    shift?: boolean,
+  } = {},
 ): void {
   const {alt, cmd, ctrl, shift} = metaKeys;
   // Atom requires `key` to be uppercase when `shift` is specified.

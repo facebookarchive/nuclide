@@ -45,7 +45,7 @@ export function getFbsimctlDevices(): Observable<Array<Device>> {
 }
 
 export const getFbsimctlSimulators: () => Observable<
-  Array<Simulator>
+  Array<Simulator>,
 > = memoize(() =>
   runCommand('fbsimctl', [
     '--json',

@@ -106,12 +106,10 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  >,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }>,
 
   getEvaluationExpression(
     filePath: NuclideUri,
@@ -127,7 +125,7 @@ export type SingleFileLanguageService = {
 };
 
 export class ServerLanguageService<
-  T: SingleFileLanguageService=SingleFileLanguageService
+  T: SingleFileLanguageService = SingleFileLanguageService,
 > {
   _fileCache: FileCache;
   _service: T;
@@ -257,12 +255,10 @@ export class ServerLanguageService<
   async formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  > {
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
@@ -319,7 +315,7 @@ export function ensureInvalidations(
 ): Observable<FileDiagnosticUpdate> {
   const filesWithErrors = new Set();
   const trackedDiagnostics: Observable<
-    FileDiagnosticUpdate
+    FileDiagnosticUpdate,
   > = diagnostics.do((diagnostic: FileDiagnosticUpdate) => {
     const filePath = diagnostic.filePath;
     if (diagnostic.messages.length === 0) {
@@ -332,7 +328,7 @@ export function ensureInvalidations(
   });
 
   const fileInvalidations: Observable<
-    FileDiagnosticUpdate
+    FileDiagnosticUpdate,
   > = Observable.defer(() => {
     logger.log('Clearing errors after stream closed');
     return Observable.from(

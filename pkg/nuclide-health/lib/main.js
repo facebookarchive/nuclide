@@ -196,9 +196,10 @@ function aggregate(
   return {avg, min, max};
 }
 
-function formatToolbarJewelLabel(
-  opts: {stats: HealthStats, toolbarJewel: string},
-): string {
+function formatToolbarJewelLabel(opts: {
+  stats: HealthStats,
+  toolbarJewel: string,
+}): string {
   const {stats, toolbarJewel} = opts;
   switch (toolbarJewel) {
     case 'CPU':

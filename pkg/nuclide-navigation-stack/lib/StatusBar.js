@@ -30,7 +30,7 @@ export function consumeStatusBar(
   const onBack = () => controller.navigateBackwards();
   const onForward = () => controller.navigateForwards();
   const props: Observable<
-    Props
+    Props,
   > = controller.observeStackChanges().map(stack => ({
     enableBack: stack.hasPrevious(),
     enableForward: stack.hasNext(),

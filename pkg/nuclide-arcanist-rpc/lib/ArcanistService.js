@@ -107,12 +107,10 @@ export async function findArcProjectIdOfPath(
 
 export async function findArcProjectIdAndDirectory(
   fileName: NuclideUri,
-): Promise<
-  ?{
-    projectId: string,
-    directory: NuclideUri,
-  }
-> {
+): Promise<?{
+  projectId: string,
+  directory: NuclideUri,
+}> {
   const directory = await findArcConfigDirectory(fileName);
   if (directory != null) {
     // This will hit the directory map cache.

@@ -75,7 +75,7 @@ function pushParsedDiagnostic(
     promises.push(
       fileSystemService.exists(localPath).then(
         exists =>
-          (!exists
+          !exists
             ? null
             : {
                 level,
@@ -83,7 +83,7 @@ function pushParsedDiagnostic(
                 text,
                 line,
                 column,
-              }),
+              },
         // Silently ignore files resulting in an error.
         () => null,
       ),

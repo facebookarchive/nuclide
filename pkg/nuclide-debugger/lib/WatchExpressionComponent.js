@@ -42,7 +42,7 @@ export class WatchExpressionComponent extends React.Component {
   coreCancelDisposable: ?IDisposable;
   _expansionStates: Map<
     string /* expression */,
-    /* unique reference for expression */ Object
+    /* unique reference for expression */ Object,
   >;
 
   constructor(props: WatchExpressionComponentProps) {

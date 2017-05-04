@@ -126,9 +126,10 @@ export class WatchExpressionStore {
    * Resources are automatically cleaned up once all subscribers of an expression have unsubscribed.
    */
   getProperties(objectId: string): Observable<?ExpansionResult> {
-    const getPropertiesPromise: Promise<
-      ?ExpansionResult
-    > = this._sendEvaluationCommand('getProperties', objectId);
+    const getPropertiesPromise: Promise<?ExpansionResult> = this._sendEvaluationCommand(
+      'getProperties',
+      objectId,
+    );
     return Observable.fromPromise(getPropertiesPromise);
   }
 

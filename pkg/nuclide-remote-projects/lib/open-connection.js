@@ -63,7 +63,7 @@ export function openConnectionDialog(
         // default connection profile. This array of profiles may change in the lifetime
         // of `openConnectionDialog` flow.
         let compositeConnectionProfiles: Array<
-          NuclideRemoteConnectionProfile
+          NuclideRemoteConnectionProfile,
         > = [defaultConnectionProfile];
         // Add any previously-created (saved) connection profiles.
         compositeConnectionProfiles = compositeConnectionProfiles.concat(

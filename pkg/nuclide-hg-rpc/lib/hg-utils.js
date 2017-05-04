@@ -171,9 +171,10 @@ export function formatCommitMessage(commitMessage: string): string {
   return commitMessage.replace(COMMIT_MESSAGE_STRIP_LINE, '');
 }
 
-export async function getInteractiveCommitEditorConfig(): Promise<
-  ?{args: Array<string>, hgEditor: string}
-> {
+export async function getInteractiveCommitEditorConfig(): Promise<?{
+  args: Array<string>,
+  hgEditor: string,
+}> {
   const connectionDetails = await getConnectionDetails();
   if (connectionDetails == null) {
     getLogger().error('CommandServer not initialized!');

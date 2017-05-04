@@ -141,7 +141,7 @@ export function linterMessagesToDiagnosticUpdate(
 ): DiagnosticProviderUpdate {
   const filePathToMessages: Map<
     NuclideUri,
-    Array<FileDiagnosticMessage>
+    Array<FileDiagnosticMessage>,
   > = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
@@ -222,7 +222,7 @@ export class LinterAdapter {
             // switchMap ensures that earlier lints are overridden by later ones.
             .switchMap(
               editor =>
-                (editor == null ? Observable.of(null) : this._runLint(editor)),
+                editor == null ? Observable.of(null) : this._runLint(editor),
             )
             // Track the previous update so we can invalidate its results.
             // (Prevents dangling diagnostics when a linter affects multiple files).

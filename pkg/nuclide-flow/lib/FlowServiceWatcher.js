@@ -26,7 +26,7 @@ export class FlowServiceWatcher {
     this._subscription = new Subscription();
 
     const flowLanguageServices: Observable<
-      FlowLanguageServiceType
+      FlowLanguageServiceType,
     > = connectionCache
       .observeValues()
       .mergeMap(p => Observable.fromPromise(p));

@@ -50,7 +50,7 @@ import {
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 
-export class MultiProjectLanguageService<T: LanguageService=LanguageService> {
+export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   // Maps project dir => LanguageService
   _processes: Cache<NuclideUri, Promise<?T>>;
   _resources: UniversalDisposable;
@@ -127,7 +127,7 @@ export class MultiProjectLanguageService<T: LanguageService=LanguageService> {
     filePaths: Array<string>,
   ): Promise<Array<[LanguageService, Array<string>]>> {
     const promises: Array<
-      Promise<?[LanguageService, string]>
+      Promise<?[LanguageService, string]>,
     > = filePaths.map(async filePath => {
       const service = await this._getLanguageServiceForFile(filePath);
       return service ? [service, filePath] : null;
@@ -300,12 +300,10 @@ export class MultiProjectLanguageService<T: LanguageService=LanguageService> {
   async formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  > {
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).formatEntireFile(fileVersion, range);

@@ -48,16 +48,14 @@ export class DebuggerCallstackComponent extends React.Component {
     };
   }
 
-  _locationComponent(
-    props: {
-      data: {
-        path: string,
-        line: number,
-        column?: number,
-        hasSource?: boolean,
-      },
+  _locationComponent(props: {
+    data: {
+      path: string,
+      line: number,
+      column?: number,
+      hasSource?: boolean,
     },
-  ): React.Element<any> {
+  }): React.Element<any> {
     const missingSourceItem = this.props.callstackStore
       .getDebuggerStore()
       .getCanSetSourcePaths() && !props.data.hasSource

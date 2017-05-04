@@ -108,7 +108,7 @@ export async function initialize(
 
 class FlowLanguageService
   extends MultiProjectLanguageService<
-    ServerLanguageService<FlowSingleProjectLanguageService>
+    ServerLanguageService<FlowSingleProjectLanguageService>,
   > {
   constructor(fileCache: FileCache, config: FlowSettings) {
     const logger = getCategoryLogger('Flow');
@@ -212,12 +212,10 @@ export interface FlowLanguageServiceType {
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  >,
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }>,
 
   getEvaluationExpression(
     fileVersion: FileVersion,

@@ -86,7 +86,7 @@ export class DebuggerProxyClient {
     // from another executor (probably Chrome), so filter both out. Otherwise, the messages from RN
     // are forwarded as-is to the executor.
     const executorRequests: Observable<
-      ExecutorRequest
+      ExecutorRequest,
     > = this._rnMessages.filter(
       message => message.$close == null && message.replyID == null,
     );

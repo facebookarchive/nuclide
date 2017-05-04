@@ -26,7 +26,7 @@ export type NodeAttachTargetInfo = {
 };
 
 export async function getAttachTargetInfoList(): Promise<
-  Array<NodeAttachTargetInfo>
+  Array<NodeAttachTargetInfo>,
 > {
   // Get processes list from ps utility.
   // -e: include all processes, does not require -ww argument since truncation of process names is

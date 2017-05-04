@@ -76,7 +76,7 @@ async function connectionToHackService(
 }
 
 async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>
+  AtomLanguageService<LanguageService>,
 > {
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
@@ -153,7 +153,7 @@ async function createLanguageService(): Promise<
 
 // This needs to be initialized eagerly for Hack Symbol search and the HHVM Toolbar.
 export let hackLanguageService: Promise<
-  AtomLanguageService<LanguageService>
+  AtomLanguageService<LanguageService>,
 > = createLanguageService();
 
 export function resetHackLanguageService(): void {

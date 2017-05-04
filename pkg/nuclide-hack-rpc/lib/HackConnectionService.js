@@ -100,7 +100,7 @@ export type HackDiagnosticsMessage = {
 };
 
 export function notifyDiagnostics(): ConnectableObservable<
-  HackDiagnosticsMessage
+  HackDiagnosticsMessage,
 > {
   throw new Error('RPC stub');
 }

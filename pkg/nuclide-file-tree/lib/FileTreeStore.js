@@ -54,7 +54,7 @@ export type ExportStoreData = {
 export type StoreConfigData = {
   vcsStatuses: Immutable.Map<
     NuclideUri,
-    {[path: NuclideUri]: StatusCodeNumberValue}
+    {[path: NuclideUri]: StatusCodeNumberValue},
   >,
   workingSet: WorkingSet,
   hideIgnoredNames: boolean,
@@ -68,7 +68,7 @@ export type StoreConfigData = {
   editedWorkingSet: WorkingSet,
   fileChanges: Immutable.Map<
     NuclideUri,
-    Immutable.Map<NuclideUri, FileChangeStatusValue>
+    Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
 };
 
@@ -108,7 +108,7 @@ export class FileTreeStore {
   _repositories: Immutable.Set<atom$Repository>;
   _fileChanges: Immutable.Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>
+    Map<NuclideUri, FileChangeStatusValue>,
   >;
 
   _dispatcher: FileTreeDispatcher;
@@ -686,7 +686,7 @@ export class FileTreeStore {
 
   getFileChanges(): Immutable.Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>
+    Map<NuclideUri, FileChangeStatusValue>,
   > {
     return this._fileChanges;
   }
@@ -1494,7 +1494,7 @@ export class FileTreeStore {
 
     // expand the range to merge existing selected nodes.
     const getNextNode = (cur: FileTreeNode) =>
-      (nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext());
+      nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
     let probe = getNextNode(nextRangeNode);
     while (probe != null && probe.isSelected) {
       nextRangeNode = probe;
@@ -1515,7 +1515,7 @@ export class FileTreeStore {
     }
     const {selectionRange, anchorNode, rangeNode, direction} = data;
     const getNextNode = (cur: FileTreeNode) =>
-      (move === 'up' ? cur.findPrevious() : cur.findNext());
+      move === 'up' ? cur.findPrevious() : cur.findNext();
 
     const isExpanding = direction === move || direction === 'none';
 

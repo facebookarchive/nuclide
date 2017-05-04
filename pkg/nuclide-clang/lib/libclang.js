@@ -33,7 +33,7 @@ type NuclideClangConfig = {
 };
 
 const compilationDatabaseProviders: Set<
-  ClangCompilationDatabaseProvider
+  ClangCompilationDatabaseProvider,
 > = new Set();
 
 function getDefaultFlags(): ?Array<string> {

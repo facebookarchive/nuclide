@@ -82,7 +82,7 @@ export default class HomePaneItem extends React.Component {
         this.setState({allHomeFragments}),
       ),
       (featureConfig.observeAsStream('nuclide-home.showHome'): Observable<
-        any
+        any,
       >).subscribe(showOnStartup => {
         this.setState({showOnStartup});
       }),

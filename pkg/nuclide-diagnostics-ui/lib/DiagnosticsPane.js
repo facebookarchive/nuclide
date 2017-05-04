@@ -55,9 +55,9 @@ const TypeToHighlightColor = Object.freeze({
   INFO: HighlightColors.info,
 });
 
-function TypeComponent(
-  props: {data: 'Warning' | 'Error' | 'Info'},
-): React.Element<any> {
+function TypeComponent(props: {
+  data: 'Warning' | 'Error' | 'Info',
+}): React.Element<any> {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
   return <Highlight color={highlightColor}>{text}</Highlight>;
@@ -99,9 +99,9 @@ function getMessageContent(
   };
 }
 
-function DescriptionComponent(
-  props: {data: DescriptionField},
-): React.Element<any> {
+function DescriptionComponent(props: {
+  data: DescriptionField,
+}): React.Element<any> {
   const message = props.data;
   if (message.element != null) {
     return message.element;

@@ -46,7 +46,7 @@ export default class RemoteDirectorySearcher {
     const services = directories.map(dir => this._serviceProvider(dir));
 
     const searchStreams: Array<
-      Observable<search$FileResult>
+      Observable<search$FileResult>,
     > = directories.map((dir, index) =>
       services[index]
         .grepSearch(

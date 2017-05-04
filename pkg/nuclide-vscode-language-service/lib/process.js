@@ -503,7 +503,7 @@ export class LanguageServerProtocolProcess {
     // document. This is useful because containers always come lexically before their
     // children. (This isn't a LSP guarantee; just a heuristic.)
     const list: Array<
-      [SymbolInformation, OutlineTree]
+      [SymbolInformation, OutlineTree],
     > = response.map(symbol => [
       symbol,
       {
@@ -705,12 +705,10 @@ export class LanguageServerProtocolProcess {
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  > {
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
     // A language service implements either formatSource or formatEntireFile,
     // and we should pick formatSource in our AtomLanguageServiceConfig.
     this._logger.logError(

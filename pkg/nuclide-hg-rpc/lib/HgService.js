@@ -372,7 +372,7 @@ export class HgService {
    * stack and fetches changes since that revision.
    */
   fetchStackStatuses(): ConnectableObservable<
-    Map<NuclideUri, StatusCodeIdValue>
+    Map<NuclideUri, StatusCodeIdValue>,
   > {
     // Note: an alternative which doesn't depend upon reading .arcconfig in getForkBaseName is:
     //   return this.fetchStatuses('ancestor(ancestor((not public()) and (:: .))^ or .)')
@@ -391,7 +391,7 @@ export class HgService {
    * changes *since* the head. If not, returns changes *including* the head.
    */
   fetchHeadStatuses(): ConnectableObservable<
-    Map<NuclideUri, StatusCodeIdValue>
+    Map<NuclideUri, StatusCodeIdValue>,
   > {
     return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
   }
@@ -1240,9 +1240,7 @@ export class HgService {
     return {entries};
   }
 
-  fetchMergeConflictsWithDetails(): ConnectableObservable<
-    ?MergeConflictsEnriched
-  > {
+  fetchMergeConflictsWithDetails(): ConnectableObservable<?MergeConflictsEnriched> {
     const args = ['resolve', '--tool=internal:dumpjson', '--all'];
     const execOptions = {
       cwd: this._workingDirectory,

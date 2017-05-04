@@ -36,7 +36,7 @@ let subscriptions: UniversalDisposable = (null: any);
 
 // A stream of all of the fragments. This is essentially the state of our panel.
 const allHomeFragmentsStream: BehaviorSubject<
-  Immutable.Set<HomeFragments>
+  Immutable.Set<HomeFragments>,
 > = new BehaviorSubject(Immutable.Set());
 
 export function activate(state: ?Object): void {

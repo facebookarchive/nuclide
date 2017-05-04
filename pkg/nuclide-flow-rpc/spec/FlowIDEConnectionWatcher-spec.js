@@ -127,9 +127,11 @@ describe('FlowIDEConnectionWatcher', () => {
 
   it('should retry when the IDE process fails to start', () => {
     // Obviously, this will have to be updated if the number of retries is changed
-    const processFactoryReturns = (([null, null, {}]: any): Array<
-      ?child_process$ChildProcess
-    >);
+    const processFactoryReturns = (([
+      null,
+      null,
+      {},
+    ]: any): Array<?child_process$ChildProcess>);
     runs(() => {
       let currentCall = 0;
       processFactory = Observable.defer(() => {
@@ -155,9 +157,12 @@ describe('FlowIDEConnectionWatcher', () => {
 
   it('should give up when the IDE process fails to start too many times', () => {
     // Obviously, this will have to be updated if the number of retries is changed
-    const processFactoryReturns = (([null, null, null, {}]: any): Array<
-      ?child_process$ChildProcess
-    >);
+    const processFactoryReturns = (([
+      null,
+      null,
+      null,
+      {},
+    ]: any): Array<?child_process$ChildProcess>);
     runs(() => {
       let currentCall = 0;
       processFactory = Observable.defer(() => {

@@ -30,7 +30,7 @@ import {diagnosticProviderForResultStream} from '../lib/coverageDiagnostics';
 
 describe('diagnosticProviderForResultStream', () => {
   let inputResults: Subject<
-    Result<CoverageProvider, ?CoverageResult>
+    Result<CoverageProvider, ?CoverageResult>,
   > = (null: any);
   let isEnabledStream: Subject<boolean> = (null: any);
 

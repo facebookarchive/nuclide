@@ -110,7 +110,7 @@ class Activation {
     return new DiagnosticsPanelModel(
       this._diagnosticUpdaters.switchMap(
         updater =>
-          (updater == null ? Observable.of([]) : updater.allMessageUpdates),
+          updater == null ? Observable.of([]) : updater.allMessageUpdates,
       ),
       ((featureConfig.observeAsStream(
         'nuclide-diagnostics-ui.showDiagnosticTraces',

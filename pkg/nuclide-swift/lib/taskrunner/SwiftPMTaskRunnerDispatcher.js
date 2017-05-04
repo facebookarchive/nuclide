@@ -42,7 +42,7 @@ export const ActionTypes = Object.freeze({
 
 // Flow hack: Every SwiftPMTaskRunnerAction actionType must be in ActionTypes.
 (('': $PropertyType<SwiftPMTaskRunnerAction, 'actionType'>): $Keys<
-  typeof ActionTypes
+  typeof ActionTypes,
 >);
 
 export default class SwiftPMTaskRunnerDispatcher

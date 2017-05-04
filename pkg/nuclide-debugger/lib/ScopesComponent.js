@@ -29,7 +29,7 @@ export class ScopesComponent extends React.Component {
   props: ScopesComponentProps;
   _expansionStates: Map<
     string /* expression */,
-    /* unique reference for expression */ Object
+    /* unique reference for expression */ Object,
   >;
 
   constructor(props: ScopesComponentProps) {

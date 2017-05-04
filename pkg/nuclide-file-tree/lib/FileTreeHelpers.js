@@ -165,7 +165,7 @@ function buildHashKey(nodeKey: string): string {
 }
 
 function observeUncommittedChangesKindConfigKey(): Observable<
-  ShowUncommittedChangesKindValue
+  ShowUncommittedChangesKindValue,
 > {
   return cacheWhileSubscribed(
     featureConfig

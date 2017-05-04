@@ -493,7 +493,7 @@ export default class FileTreeActions {
     repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<
       atom$Repository,
-      Immutable.Set<string>
+      Immutable.Set<string>,
     >,
   ): Promise<void> {
     // We support HgRepositoryClient and GitRepositoryAsync objects.

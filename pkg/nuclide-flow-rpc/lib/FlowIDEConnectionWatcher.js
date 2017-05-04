@@ -38,7 +38,7 @@ type IdeConnectionFactory = child_process$ChildProcess => FlowIDEConnection;
 // too many failures in a row.
 export class FlowIDEConnectionWatcher {
   _processFactory: Observable<?child_process$ChildProcess>;
-  _ideConnectionCallback: ?FlowIDEConnection => mixed;
+  _ideConnectionCallback: (?FlowIDEConnection) => mixed;
   _ideConnectionFactory: child_process$ChildProcess => FlowIDEConnection;
 
   _currentIDEConnection: ?FlowIDEConnection;
@@ -50,7 +50,7 @@ export class FlowIDEConnectionWatcher {
 
   constructor(
     processFactory: Observable<?child_process$ChildProcess>,
-    ideConnectionCallback: ?FlowIDEConnection => mixed,
+    ideConnectionCallback: (?FlowIDEConnection) => mixed,
     // Can be injected for testing purposes
     ideConnectionFactory: IdeConnectionFactory = defaultIDEConnectionFactory,
   ) {

@@ -47,12 +47,10 @@ function getHighlightClass(type: diffparser$ChangeType): ?string {
 }
 
 const NBSP = '\xa0';
-const GutterElement = (
-  props: {
-    lineNumber: number,
-    gutterWidth: number,
-  },
-): React.Element<any> => {
+const GutterElement = (props: {
+  lineNumber: number,
+  gutterWidth: number,
+}): React.Element<any> => {
   const {lineNumber, gutterWidth} = props;
   const fillWidth = gutterWidth - String(lineNumber).length;
   // Paralleling the original line-number implementation,

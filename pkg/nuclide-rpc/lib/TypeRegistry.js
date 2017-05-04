@@ -143,7 +143,7 @@ export class TypeRegistry {
     {
       marshaller: Transformer,
       unmarshaller: Transformer,
-    }
+    },
   >;
 
   /** Store marshallers and and unmarshallers, index by the name of the type. */
@@ -153,7 +153,7 @@ export class TypeRegistry {
       location: Location,
       marshaller: NamedTransformer,
       unmarshaller: NamedTransformer,
-    }
+    },
   >;
 
   constructor(predefinedTypes: Array<PredefinedTransformer>) {

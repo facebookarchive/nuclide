@@ -89,7 +89,7 @@ export function deserializeBookShelfState(
 
 export function getRepoPathToEditors(): Map<
   NuclideUri,
-  Array<atom$TextEditor>
+  Array<atom$TextEditor>,
 > {
   const reposToEditors = new Map();
   atom.workspace

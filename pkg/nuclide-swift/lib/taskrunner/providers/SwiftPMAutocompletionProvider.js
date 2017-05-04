@@ -27,14 +27,12 @@ export default class SwiftPMAutocompletionProvider {
     this._store = store;
   }
 
-  async getAutocompleteSuggestions(
-    request: {
-      editor: atom$TextEditor,
-      bufferPosition: atom$Point,
-      scopeDescriptor: any,
-      prefix: string,
-    },
-  ): Promise<?Array<atom$AutocompleteSuggestion>> {
+  async getAutocompleteSuggestions(request: {
+    editor: atom$TextEditor,
+    bufferPosition: atom$Point,
+    scopeDescriptor: any,
+    prefix: string,
+  }): Promise<?Array<atom$AutocompleteSuggestion>> {
     const filePath = request.editor.getPath();
     let compilerArgs;
     if (filePath) {

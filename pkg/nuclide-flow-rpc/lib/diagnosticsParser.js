@@ -49,7 +49,7 @@ export function diagnosticToFix(diagnostic: FileDiagnosticMessage): ?Fix {
 }
 
 const fixExtractionFunctions: Array<
-  (diagnostic: FileDiagnosticMessage) => ?Fix
+  (diagnostic: FileDiagnosticMessage) => ?Fix,
 > = [unusedSuppressionFix, namedImportTypo];
 
 function unusedSuppressionFix(diagnostic: FileDiagnosticMessage): ?Fix {

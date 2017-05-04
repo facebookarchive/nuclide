@@ -121,9 +121,12 @@ async function _findDiagnostics(
 
 // This type is a bit different than an ArcDiagnostic since original and replacement are
 // mandatory.
-function _getFix(
-  diagnostic: {row: number, col: number, original: string, replacement: string},
-) {
+function _getFix(diagnostic: {
+  row: number,
+  col: number,
+  original: string,
+  replacement: string,
+}) {
   // For now just remove the suffix. The prefix would be nice too but it's a bit harder since we
   // then also have to manipulate the row/col accordingly.
   const [original, replacement] = removeCommonSuffix(

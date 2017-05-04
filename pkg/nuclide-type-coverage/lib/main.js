@@ -47,7 +47,7 @@ class Activation {
   _disposables: UniversalDisposable;
   _activeEditorRegistry: ActiveEditorRegistry<
     CoverageProvider,
-    ?CoverageResult
+    ?CoverageResult,
   >;
   _toggleEvents: Subject<void>;
   _shouldRenderDiagnostics: Observable<boolean>;

@@ -35,13 +35,11 @@ import lookupPreferIpv6
  * the connection dialog and the default settings, plus the update logic we use
  * to change the remote server command.
  */
-export function getDefaultConnectionProfile(
-  options?: {
-    initialServer: string,
-    initialCwd: string,
-    initialRemoteServerCommand?: string,
-  },
-): NuclideRemoteConnectionProfile {
+export function getDefaultConnectionProfile(options?: {
+  initialServer: string,
+  initialCwd: string,
+  initialRemoteServerCommand?: string,
+}): NuclideRemoteConnectionProfile {
   const defaultConnectionSettings = getDefaultConfig();
   const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
@@ -108,10 +106,10 @@ export function getDefaultConnectionProfile(
  * Returns an array of saved connection profiles.
  */
 export function getSavedConnectionProfiles(): Array<
-  NuclideRemoteConnectionProfile
+  NuclideRemoteConnectionProfile,
 > {
   const connectionProfiles: ?Array<
-    NuclideRemoteConnectionProfile
+    NuclideRemoteConnectionProfile,
   > = (featureConfig.get('nuclide-remote-projects.connectionProfiles'): any);
   invariant(Array.isArray(connectionProfiles));
   prepareSavedConnectionProfilesForDisplay(connectionProfiles);

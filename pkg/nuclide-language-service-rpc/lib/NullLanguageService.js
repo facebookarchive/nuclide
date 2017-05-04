@@ -104,12 +104,10 @@ export class NullLanguageService {
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
-  ): Promise<
-    ?{
-      newCursor?: number,
-      formatted: string,
-    }
-  > {
+  ): Promise<?{
+    newCursor?: number,
+    formatted: string,
+  }> {
     return Promise.resolve(null);
   }
 

@@ -109,9 +109,10 @@ async function fetchDatatip(
 
   const datatipsAndProviders = arrayCompact(
     await Promise.all(
-      providers.map(async (provider: DatatipProvider): Promise<
-        ?{datatip: ?Datatip, provider: DatatipProvider}
-      > => {
+      providers.map(async (provider: DatatipProvider): Promise<?{
+        datatip: ?Datatip,
+        provider: DatatipProvider,
+      }> => {
         const name = getProviderName(provider);
         const timingTracker = new TimingTracker(name + '.datatip');
         try {

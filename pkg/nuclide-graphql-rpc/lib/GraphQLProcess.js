@@ -163,7 +163,7 @@ class GraphQLProcess {
 
 const processes: Cache<
   FileCache,
-  Cache<NuclideUri, GraphQLProcess>
+  Cache<NuclideUri, GraphQLProcess>,
 > = new Cache(
   fileCache =>
     new Cache(

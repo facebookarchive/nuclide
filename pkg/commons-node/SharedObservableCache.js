@@ -26,7 +26,7 @@ export default class SharedObservableCache<Tk, To> {
     {
       refCount: number,
       observable: Observable<To>,
-    }
+    },
   >;
 
   constructor(factory: (key: Tk) => Observable<To>) {

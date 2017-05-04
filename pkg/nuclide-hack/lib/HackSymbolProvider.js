@@ -32,14 +32,15 @@ async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories
 ): Promise<Array<[LanguageService, Array<NuclideUri>]>> {
   const promises: Array<
-    Promise<?[LanguageService, NuclideUri]>
+    Promise<?[LanguageService, NuclideUri]>,
   > = directories.map(async directory => {
     const service = await getHackLanguageForUri(directory.getPath());
     return service ? [service, directory.getPath()] : null;
   });
-  const serviceDirectories: Array<
-    ?[LanguageService, NuclideUri]
-  > = await Promise.all(promises);
+  const serviceDirectories: Array<?[
+    LanguageService,
+    NuclideUri,
+  ]> = await Promise.all(promises);
 
   const results: Map<LanguageService, Array<NuclideUri>> = collect(
     arrayCompact(serviceDirectories),

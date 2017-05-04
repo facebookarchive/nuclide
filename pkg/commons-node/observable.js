@@ -253,7 +253,7 @@ export function concatLatest<T>(
   // First, tag all input observables with their index.
   // Flow errors with ambiguity without the explicit annotation.
   const tagged: Array<
-    Observable<[Array<T>, number]>
+    Observable<[Array<T>, number]>,
   > = observables.map((observable, index) =>
     observable.map(list => [list, index]),
   );

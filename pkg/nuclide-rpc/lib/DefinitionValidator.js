@@ -38,7 +38,7 @@ import type {
 export function validateDefinitions(definitions: Definitions): void {
   const namedTypes: Map<
     string,
-    AliasDefinition | InterfaceDefinition
+    AliasDefinition | InterfaceDefinition,
   > = new Map();
   gatherKnownTypes();
   validate();
@@ -413,7 +413,7 @@ export function validateDefinitions(definitions: Definitions): void {
     invariant(alternates.length > 0);
     // $FlowFixMe
     const possibleFields: Set<
-      string
+      string,
     > = alternates.reduce(
       (possibilities: ?Set<string>, alternate: ObjectType) => {
         const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(

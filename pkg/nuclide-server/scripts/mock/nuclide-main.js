@@ -18,9 +18,9 @@ import url from 'url';
 const json = JSON.parse(
   fs.readFileSync(require.resolve('./package.json'), 'utf8'),
 );
-const version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[
-  2
-];
+const version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(
+  json.version,
+)[2];
 
 function processArgs() {
   const args = process.argv.slice(2);

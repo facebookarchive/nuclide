@@ -99,7 +99,7 @@ class Activation {
   _providers: Array<FindReferencesProvider> = [];
   _supportedProviders: Map<
     TextEditor,
-    Array<FindReferencesProvider>
+    Array<FindReferencesProvider>,
   > = new Map();
 
   constructor(state: ?any): void {

@@ -536,9 +536,7 @@ export function consumeStatusBar(statusBar: atom$StatusBar): void {
 export function serialize(): {
   remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>,
 } {
-  const remoteProjectsConfig: Array<
-    ?SerializableRemoteConnectionConfiguration
-  > = getRemoteRootDirectories()
+  const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> = getRemoteRootDirectories()
     .map(
       (
         directory: atom$Directory,

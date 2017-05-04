@@ -25,9 +25,9 @@ export function sortDiagnostics(
   }
   const cmp: any = sortedColumnName === 'range' ? _cmpNumber : _cmpString;
   const getter = (displayDiagnostic: {+data: DisplayDiagnostic}) =>
-    (sortedColumnName === 'description'
+    sortedColumnName === 'description'
       ? displayDiagnostic.data.description.text
-      : displayDiagnostic.data[sortedColumnName]);
+      : displayDiagnostic.data[sortedColumnName];
   // $FlowFixMe -- this whole thing is poorly typed
   return [...diagnostics].sort((a, b) => {
     // $FlowFixMe -- this whole thing is poorly typed

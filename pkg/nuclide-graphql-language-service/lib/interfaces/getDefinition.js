@@ -38,7 +38,7 @@ export async function getDefinitionQueryResultForFragmentSpread(
     return {queryRange: [], definitions: []};
   }
   const definitions: Array<
-    Definition
+    Definition,
   > = defNodes.map(({filePath, content, definition}) =>
     getDefinitionForFragmentDefinition(filePath || '', content, definition),
   );

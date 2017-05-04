@@ -103,9 +103,9 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
-  _renderOption(
-    optionProps: {option: {label: string, value: string}},
-  ): React.Element<any> {
+  _renderOption(optionProps: {
+    option: {label: string, value: string},
+  }): React.Element<any> {
     const {option} = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
     invariant(source != null);

@@ -126,7 +126,7 @@ export type SshConnectionDelegate = {
 
 const SshConnectionErrorLevelMap: Map<
   SshConnectionErrorLevel,
-  SshHandshakeErrorType
+  SshHandshakeErrorType,
 > = new Map([
   ['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT],
   ['client-socket', ErrorType.SSH_CONNECT_FAILED],

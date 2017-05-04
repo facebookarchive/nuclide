@@ -26,7 +26,7 @@ export const ActionTypes = Object.freeze({
 
 // Flow hack: Every LaunchAttachAction actionType must be in ActionTypes.
 (('': $PropertyType<LaunchAttachAction, 'actionType'>): $Keys<
-  typeof ActionTypes
+  typeof ActionTypes,
 >);
 
 export default class LaunchAttachDispatcher

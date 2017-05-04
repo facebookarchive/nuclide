@@ -79,7 +79,7 @@ type State = {
   hidden: boolean,
   uncommittedFileChanges: Map<
     NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>
+    Map<NuclideUri, FileChangeStatusValue>,
   >,
   isCalculatingChanges: boolean,
   areStackChangesEnabled: boolean,
@@ -118,7 +118,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
-        any
+        any,
       >),
     );
     this._showUncommittedConfigValue = cacheWhileSubscribed(

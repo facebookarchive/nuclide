@@ -44,7 +44,7 @@ describe('refactorStore', () => {
 
   let provider: RefactorProvider = (null: any);
   let refactoringsAtPointReturn: Promise<
-    Array<AvailableRefactoring>
+    Array<AvailableRefactoring>,
   > = (null: any);
   let refactorReturn: Promise<?RefactorResponse> = (null: any);
 

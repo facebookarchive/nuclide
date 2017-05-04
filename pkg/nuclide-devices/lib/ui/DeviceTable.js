@@ -17,7 +17,7 @@ import type {Device} from '../types';
 type Props = {
   devices: Device[],
   device: ?Device,
-  setDevice: ?Device => void,
+  setDevice: (?Device) => void,
 };
 
 type State = {

@@ -458,9 +458,10 @@ export async function getOriginalEnvironment(): Promise<Object> {
 /**
  * Returns a string suitable for including in displayed error messages.
  */
-export function exitEventToMessage(
-  event: {exitCode: ?number, signal: ?string},
-): string {
+export function exitEventToMessage(event: {
+  exitCode: ?number,
+  signal: ?string,
+}): string {
   if (event.exitCode != null) {
     return `exit code ${event.exitCode}`;
   } else {
