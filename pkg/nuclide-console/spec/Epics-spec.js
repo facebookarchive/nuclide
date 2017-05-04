@@ -37,7 +37,7 @@ describe('Epics', () => {
       const actions = new ActionsObservable(
         Observable.of(Actions.registerOutputProvider(provider)),
       );
-      const results = [];
+      let results = [];
       Epics.registerRecordProviderEpic(actions, mockStore).subscribe(
         results.push.bind(results),
       );
@@ -45,6 +45,7 @@ describe('Epics', () => {
       setStatus('running');
       setStatus('stopped');
       setStatus('running');
+      results = results.filter(action => action.type === Actions.UPDATE_STATUS);
       expect(results.length).toBe(3);
       expect(
         results.map(action => {

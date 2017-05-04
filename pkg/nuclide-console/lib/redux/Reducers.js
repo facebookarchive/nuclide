@@ -36,14 +36,14 @@ export default function accumulateState(
         records: state.records.slice(-maxMessageCount),
       };
     }
-    case Actions.REGISTER_RECORD_PROVIDER: {
-      const {recordProvider} = action.payload;
+    case Actions.REGISTER_SOURCE: {
+      const {source} = action.payload;
       return {
         ...state,
-        providers: new Map(state.providers).set(
-          recordProvider.id,
-          recordProvider,
-        ),
+        providers: new Map(state.providers).set(source.id, {
+          ...source,
+          name: source.name || source.id,
+        }),
       };
     }
     case Actions.CLEAR_RECORDS: {

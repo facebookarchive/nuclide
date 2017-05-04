@@ -16,7 +16,11 @@ import type {
 } from '../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
+  ConsoleService,
+  SourceInfo,
+  Message,
   OutputProvider,
+  OutputProviderStatus,
   OutputService,
   Record,
   RegisterExecutorFunction,
@@ -149,6 +153,78 @@ class Activation {
         createPasteFunction={this._createPasteFunction}
       />,
     );
+  }
+
+  /**
+   * This service provides a factory for creating a console object tied to a particular source. If
+   * the consumer wants to expose starting and stopping functionality through the Console UI (for
+   * example, to allow the user to decide when to start and stop tailing logs), they can include
+   * `start()` and `stop()` functions on the object they pass to the factory.
+   *
+   * When the factory is invoked, the source will be added to the Console UI's filter list. The
+   * factory returns a Disposable which should be disposed of when the source goes away (e.g. its
+   * package is disabled). This will remove the source from the Console UI's filter list (as long as
+   * there aren't any remaining messages from the source).
+   */
+  provideConsole(): ConsoleService {
+    // Create a local, nullable reference so that the service consumers don't keep the Activation
+    // instance in memory.
+    let activation = this;
+    this._disposables.add(() => {
+      activation = null;
+    });
+
+    return (sourceInfo: SourceInfo) => {
+      invariant(activation != null);
+      let disposed;
+      activation._getStore().dispatch(Actions.registerSource(sourceInfo));
+      const console = {
+        // TODO: Update these to be (object: any, ...objects: Array<any>): void.
+        log(object: string): void {
+          console.append({text: object, level: 'log'});
+        },
+        warn(object: string): void {
+          console.append({text: object, level: 'warning'});
+        },
+        error(object: string): void {
+          console.append({text: object, level: 'error'});
+        },
+        info(object: string): void {
+          console.append({text: object, level: 'info'});
+        },
+        append(message: Message): void {
+          invariant(activation != null && !disposed);
+          activation._getStore().dispatch(
+            Actions.recordReceived({
+              text: message.text,
+              level: message.level,
+              data: message.data,
+              tags: message.tags,
+              scopeName: message.scopeName,
+              sourceId: sourceInfo.id,
+              kind: message.kind || 'message',
+              timestamp: new Date(), // TODO: Allow this to come with the message?
+            }),
+          );
+        },
+        setStatus(status: OutputProviderStatus): void {
+          invariant(activation != null && !disposed);
+          activation
+            ._getStore()
+            .dispatch(Actions.updateStatus(sourceInfo.id, status));
+        },
+        dispose(): void {
+          invariant(activation != null);
+          if (!disposed) {
+            disposed = true;
+            activation
+              ._getStore()
+              .dispatch(Actions.removeSource(sourceInfo.id));
+          }
+        },
+      };
+      return console;
+    };
   }
 
   provideOutputService(): OutputService {

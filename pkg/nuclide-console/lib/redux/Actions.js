@@ -20,9 +20,11 @@ import type {
   RecordProvider,
   RecordReceivedAction,
   RegisterRecordProviderAction,
+  RegisterSourceAction,
   RemoveSourceAction,
   SelectExecutorAction,
   SetMaxMessageCountAction,
+  SourceInfo,
   UpdateStatusAction,
 } from '../types';
 
@@ -33,6 +35,7 @@ export const REGISTER_RECORD_PROVIDER = 'REGISTER_RECORD_PROVIDER';
 export const SELECT_EXECUTOR = 'SELECT_EXECUTOR';
 export const SET_MAX_MESSAGE_COUNT = 'SET_MAX_MESSAGE_COUNT';
 export const RECORD_RECEIVED = 'RECORD_RECEIVED';
+export const REGISTER_SOURCE = 'REGISTER_SOURCE';
 export const REMOVE_SOURCE = 'REMOVE_SOURCE';
 export const UPDATE_STATUS = 'UPDATE_STATUS';
 
@@ -70,7 +73,13 @@ export function registerOutputProvider(
   return registerRecordProvider({
     ...outputProvider,
     records: outputProvider.messages.map(message => ({
-      ...message,
+      // We duplicate the properties here instead of using spread because Flow (currently) has some
+      // issues with spread.
+      text: message.text,
+      level: message.level,
+      data: message.data,
+      tags: message.tags,
+
       kind: 'message',
       sourceId: outputProvider.id,
       scopeName: null,
@@ -86,6 +95,13 @@ export function registerRecordProvider(
   return {
     type: REGISTER_RECORD_PROVIDER,
     payload: {recordProvider},
+  };
+}
+
+export function registerSource(source: SourceInfo): RegisterSourceAction {
+  return {
+    type: REGISTER_SOURCE,
+    payload: {source},
   };
 }
 

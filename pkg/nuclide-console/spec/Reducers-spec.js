@@ -73,7 +73,7 @@ describe('createStateStream', () => {
     });
   });
 
-  describe('REGISTER_RECORD_PROVIDER', () => {
+  describe('REGISTER_SOURCE', () => {
     let initialProviders;
     let finalState;
 
@@ -85,10 +85,10 @@ describe('createStateStream', () => {
       };
       const actions = [
         {
-          type: Actions.REGISTER_RECORD_PROVIDER,
+          type: Actions.REGISTER_SOURCE,
           payload: {
-            recordProvider: {
-              sourceId: 'test',
+            source: {
+              id: 'test',
               records: Observable.empty(),
             },
           },
@@ -122,6 +122,7 @@ describe('createStateStream', () => {
           text: 'test',
           scopeName: null,
           timestamp: new Date('2017-01-01T12:34:56.789Z'),
+          data: null,
         },
       ];
       const initialState = {

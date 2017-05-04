@@ -30,6 +30,7 @@ export function registerExecutorEpic(
     const {executor} = action.payload;
     return Actions.registerRecordProvider({
       id: executor.id,
+      // $FlowIssue: Flow is having some trouble with the spread here.
       records: executor.output.map(message => ({
         ...message,
         kind: 'response',
@@ -70,6 +71,7 @@ export function executeEpic(
           level: 'log',
           text: code,
           scopeName: executor.scopeName,
+          data: null,
         }),
       )
         // Execute the code as a side-effect.
@@ -107,8 +109,12 @@ export function registerRecordProviderEpic(
         return a.payload.sourceId === recordProvider.id;
       });
 
-    return Observable.merge(messageActions, statusActions).takeUntil(
-      unregisteredEvents,
-    );
+    return Observable.merge(
+      Observable.of(
+        Actions.registerSource({...recordProvider, name: recordProvider.id}),
+      ),
+      messageActions,
+      statusActions,
+    ).takeUntil(unregisteredEvents);
   });
 }

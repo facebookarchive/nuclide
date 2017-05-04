@@ -41,11 +41,18 @@ export type Message = {
   level: Level,
   data?: EvaluationResult,
   tags?: ?Array<string>,
+  kind?: ?MessageKind,
+  scopeName?: ?string,
 };
 
 // A normalized type used internally to represent all possible kinds of messages. Responses and
 // Messages are transformed into these.
-export type Record = Message & {
+export type Record = {
+  text: string,
+  level: Level,
+  data?: EvaluationResult,
+  tags?: ?Array<string>,
+
   kind: MessageKind,
   sourceId: string,
   scopeName: ?string,
@@ -59,7 +66,7 @@ export type AppState = {
   maxMessageCount: number,
   records: Array<Record>,
   history: Array<string>,
-  providers: Map<string, RecordProvider>,
+  providers: Map<string, SourceInfo>,
   providerStatuses: Map<string, OutputProviderStatus>,
 };
 
@@ -117,12 +124,31 @@ export type Source = {
   id: string,
   name: string,
   status: OutputProviderStatus,
-  start: ?() => void,
-  stop: ?() => void,
+  start?: () => void,
+  stop?: () => void,
 };
 
 export type OutputService = {
   registerOutputProvider(outputProvider: OutputProvider): IDisposable,
+};
+
+export type SourceInfo = {
+  id: string,
+  name: string,
+  start?: () => void,
+  stop?: () => void,
+};
+export type ConsoleService = (options: SourceInfo) => ConsoleApi;
+export type ConsoleApi = {
+  setStatus(status: OutputProviderStatus): void,
+  append(message: Message): void,
+  dispose(): void,
+
+  // TODO: Update these to be (object: any, ...objects: Array<any>): void.
+  log(object: string, _: void): void,
+  error(object: string, _: void): void,
+  warn(object: string, _: void): void,
+  info(object: string, _: void): void,
 };
 
 export type Executor = {
@@ -173,6 +199,13 @@ export type RegisterRecordProviderAction = {
   },
 };
 
+export type RegisterSourceAction = {
+  type: 'REGISTER_SOURCE',
+  payload: {
+    source: SourceInfo,
+  },
+};
+
 export type RemoveSourceAction = {
   type: 'REMOVE_SOURCE',
   payload: {
@@ -208,6 +241,7 @@ export type Action =
   | RecordReceivedAction
   | RegisterExecutorAction
   | RegisterRecordProviderAction
+  | RegisterSourceAction
   | RemoveSourceAction
   | SelectExecutorAction
   | SetMaxMessageCountAction
