@@ -537,6 +537,11 @@ export class BuckBuildSystem {
             // Side effects: emit console output and diagnostics
             if (event.type === 'log') {
               this._logOutput(event.message, event.level);
+            } else if (event.type === 'build-output') {
+              const {target, path, successType} = event.output;
+              this._logOutput(`Target: ${target}`, 'log');
+              this._logOutput(`Output: ${path}`, 'log');
+              this._logOutput(`Success type: ${successType}`, 'log');
             } else if (event.type === 'diagnostics') {
               const {diagnostics} = event;
               // Update only the files that changed in this message.

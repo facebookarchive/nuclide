@@ -25,6 +25,13 @@ import {exitEventToMessage} from '../../commons-node/process';
 
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
+const BUILD_OUTPUT_REGEX = /^OK {3}(.*?) (.*?) (.*?)$/;
+
+export type BuckBuildOutput = {
+  target: string,
+  successType: string,
+  path: string,
+};
 
 export type BuckEvent =
   | {
@@ -46,7 +53,8 @@ export type BuckEvent =
     }
   | {
       type: 'socket-connected',
-    };
+    }
+  | {type: 'build-output', output: BuckBuildOutput};
 
 function convertJavaLevel(level: string): Level {
   switch (level) {
@@ -80,7 +88,19 @@ export function getEventsFromSocket(
         case 'ParseFinished':
           return log('Parsing finished. Starting build...');
         case 'ConsoleEvent':
-          return log(message.message, convertJavaLevel(message.level.name));
+          const match = message.message.match(BUILD_OUTPUT_REGEX);
+          if (match != null && match.length === 4) {
+            return Observable.of({
+              type: 'build-output',
+              output: {
+                target: match[1],
+                successType: match[2],
+                path: match[3],
+              },
+            });
+          } else {
+            return log(message.message, convertJavaLevel(message.level.name));
+          }
         case 'InstallFinished':
           return log('Install finished.', 'info');
         case 'BuildFinished':
