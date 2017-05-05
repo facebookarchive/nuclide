@@ -212,13 +212,26 @@ export default class BuckToolbar extends React.Component {
       disabled: true,
     };
 
-    const selectableOptions = platform.deviceGroups[0].devices.map(device => {
-      return {
-        label: `  ${device.name}`,
-        selectedLabel: device.name,
-        value: {platform, device},
-      };
-    });
+    let selectableOptions;
+
+    if (platform.deviceGroups.length === 0) {
+      selectableOptions = [
+        {
+          label: `  ${platform.name}`,
+          selectedLabel: platform.name,
+          value: {platform, device: null},
+        },
+      ];
+    } else {
+      selectableOptions = platform.deviceGroups[0].devices.map(device => {
+        return {
+          label: `  ${device.name}`,
+          selectedLabel: device.name,
+          value: {platform, device},
+        };
+      });
+    }
+
     return {header, selectableOptions};
   }
 
