@@ -10,6 +10,7 @@
  */
 
 import {getNamedType} from 'graphql';
+import invariant from 'invariant';
 
 import type {
   GraphQLArgument,
@@ -29,7 +30,7 @@ export type SchemaReference =
 
 export type FieldReference = {
   kind: 'Field',
-  field: GraphQLField,
+  field: GraphQLField<*, *>,
   type: ?GraphQLNamedType,
 };
 
@@ -41,7 +42,7 @@ export type DirectiveReference = {
 export type ArgumentReference = {
   kind: 'Argument',
   argument: GraphQLArgument,
-  field?: GraphQLField,
+  field?: GraphQLField<*, *>,
   type?: ?GraphQLNamedType,
   directive?: GraphQLDirective,
 };
@@ -92,10 +93,12 @@ export function getArgumentReference(typeInfo: any): ArgumentReference {
 }
 
 export function getEnumValueReference(typeInfo: any): EnumValueReference {
+  const type: ?GraphQLEnumType = getNamedType(typeInfo.inputType);
+  invariant(type, 'Expected type to be truthy.');
   return {
     kind: 'EnumValue',
     value: typeInfo.enumValue,
-    type: getNamedType(typeInfo.inputType),
+    type,
   };
 }
 

@@ -12,6 +12,7 @@
 import type {
   FragmentSpreadNode,
   FragmentDefinitionNode,
+  OperationDefinitionNode,
 } from 'graphql/language';
 import type {
   Definition,
@@ -20,6 +21,7 @@ import type {
   Uri,
 } from '../types/Types';
 
+import invariant from 'invariant';
 import {offsetToPoint, locToRange} from '../utils/Range';
 
 export const LANGUAGE = 'GraphQL';
@@ -51,24 +53,30 @@ export async function getDefinitionQueryResultForFragmentSpread(
 export function getDefinitionQueryResultForDefinitionNode(
   path: Uri,
   text: string,
-  definition: FragmentDefinitionNode,
+  definition: FragmentDefinitionNode | OperationDefinitionNode,
 ): DefinitionQueryResult {
+  const name = definition.name;
+  invariant(name, 'Name node expected.');
   return {
     definitions: [getDefinitionForFragmentDefinition(path, text, definition)],
-    queryRange: [locToRange(text, definition.name.loc)],
+    queryRange: [locToRange(text, name.loc)],
   };
 }
 
 function getDefinitionForFragmentDefinition(
   path: Uri,
   text: string,
-  definition: FragmentDefinitionNode,
+  definition: FragmentDefinitionNode | OperationDefinitionNode,
 ): Definition {
+  const name = definition.name;
+  invariant(name, 'Name node expected.');
+  const nameLoc = name.loc;
+  invariant(nameLoc, 'Location for Name node expected.');
   return {
     path,
-    position: offsetToPoint(text, definition.name.loc.start),
+    position: offsetToPoint(text, nameLoc.start),
     range: locToRange(text, definition.loc),
-    name: definition.name.value,
+    name: name.value,
     language: LANGUAGE,
     // This is a file inside the project root, good enough for now
     projectRoot: path,

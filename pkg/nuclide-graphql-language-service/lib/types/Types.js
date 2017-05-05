@@ -79,14 +79,14 @@ export type ContextToken = {
 };
 
 export type TypeInfo = {
-  type: GraphQLType,
-  parentType: GraphQLType,
-  inputType: GraphQLType,
-  directiveDef: GraphQLType,
+  type: ?GraphQLType,
+  parentType: ?GraphQLType,
+  inputType: ?GraphQLType,
+  directiveDef: ?GraphQLType,
   fieldDef: ?GraphQLField<*, *>,
-  argDef: GraphQLArgument,
+  argDef: ?GraphQLArgument,
   argDefs: ?Array<GraphQLArgument>,
-  objectFieldDefs: GraphQLInputField,
+  objectFieldDefs: ?GraphQLInputField,
 };
 
 export type FragmentInfo = {
@@ -109,7 +109,7 @@ export type AutocompleteSuggestionType = {
   text: string,
   type?: GraphQLType,
   description?: ?string,
-  isDeprecated?: ?string,
+  isDeprecated?: boolean,
   deprecationReason?: ?string,
 };
 

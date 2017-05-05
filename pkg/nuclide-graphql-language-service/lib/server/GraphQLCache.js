@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ASTNode} from 'graphql/language';
+import type {ASTNode, DocumentNode} from 'graphql/language';
 import type {
   GraphQLFileMetadata,
   GraphQLFileInfo,
@@ -423,9 +423,10 @@ function processGraphQLFiles(
 
   responses.forEach(response => {
     const {filePath, content, ast, mtime, size} = response;
+    const typeCastedAST = (ast: any);
 
-    if (ast) {
-      ast.definitions.forEach(definition => {
+    if (typeCastedAST) {
+      typeCastedAST.definitions.forEach(definition => {
         if (definition.kind === FRAGMENT_DEFINITION) {
           fragmentDefinitions.set(definition.name.value, {
             filePath,
@@ -458,7 +459,7 @@ function promiseToReadGraphQLFile(
 ): Promise<{
   filePath: Uri,
   content: string,
-  ast: ASTNode,
+  ast: ?DocumentNode,
 }> {
   return new Promise((resolve, reject) =>
     fs.readFile(filePath, 'utf8', (error, content) => {

@@ -9,7 +9,12 @@
  * @format
  */
 
-import type {ASTNode} from 'graphql/language';
+import type {
+  DocumentNode,
+  FragmentDefinitionNode,
+  FragmentSpreadNode,
+  OperationDefinitionNode,
+} from 'graphql/language';
 import type {GraphQLCache} from '../server/GraphQLCache';
 import type {GraphQLRC, GraphQLConfig} from '../config/GraphQLConfig';
 import type {
@@ -96,7 +101,9 @@ export class GraphQLLanguageService {
         graphQLConfig.getSchemaPath(),
       );
 
-      return getAutocompleteSuggestions(schema, query, position) || [];
+      if (schema) {
+        return getAutocompleteSuggestions(schema, query, position) || [];
+      }
     }
     return [];
   }
@@ -119,27 +126,33 @@ export class GraphQLLanguageService {
     }
 
     const node = getASTNodeAtPoint(query, ast, position);
-    switch (node ? node.kind : null) {
-      case FRAGMENT_SPREAD:
-        return this._getDefinitionForFragmentSpread(
-          query,
-          ast,
-          node,
-          filePath,
-          graphQLConfig,
-        );
-      case FRAGMENT_DEFINITION:
-      case OPERATION_DEFINITION:
-        return getDefinitionQueryResultForDefinitionNode(filePath, query, node);
-      default:
-        return null;
+    if (node) {
+      switch (node.kind) {
+        case FRAGMENT_SPREAD:
+          return this._getDefinitionForFragmentSpread(
+            query,
+            ast,
+            node,
+            filePath,
+            graphQLConfig,
+          );
+        case FRAGMENT_DEFINITION:
+        case OPERATION_DEFINITION:
+          return getDefinitionQueryResultForDefinitionNode(
+            filePath,
+            query,
+            (node: FragmentDefinitionNode | OperationDefinitionNode),
+          );
+        default:
+          return null;
+      }
     }
   }
 
   async _getDefinitionForFragmentSpread(
     query: string,
-    ast: ASTNode,
-    node: ASTNode,
+    ast: DocumentNode,
+    node: FragmentSpreadNode,
     filePath: Uri,
     graphQLConfig: GraphQLConfig,
   ): Promise<?DefinitionQueryResult> {
@@ -152,18 +165,22 @@ export class GraphQLLanguageService {
       fragmentDefinitions,
     );
 
-    const localFragDefinitions = ast.definitions
-      .filter(definition => definition.kind === FRAGMENT_DEFINITION)
-      .map(definition => ({
-        file: filePath,
-        content: query,
-        definition,
-      }));
+    const localFragDefinitions = ast.definitions.filter(
+      definition => definition.kind === FRAGMENT_DEFINITION,
+    );
+    const typeCastedDefs = ((localFragDefinitions: any): Array<
+      FragmentDefinitionNode,
+    >);
+    const localFragInfos = typeCastedDefs.map(definition => ({
+      file: filePath,
+      content: query,
+      definition,
+    }));
 
     const result = await getDefinitionQueryResultForFragmentSpread(
       query,
       node,
-      dependencies.concat(localFragDefinitions),
+      dependencies.concat(localFragInfos),
     );
 
     return result;

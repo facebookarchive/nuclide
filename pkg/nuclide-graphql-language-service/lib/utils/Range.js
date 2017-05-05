@@ -10,6 +10,7 @@
  */
 
 import type {Location} from 'graphql/language';
+import invariant from 'invariant';
 
 export class Range {
   start: Point;
@@ -55,7 +56,8 @@ export function offsetToPoint(text: string, loc: number): Point {
   return new Point(rows, loc - lastLineIndex - 1);
 }
 
-export function locToRange(text: string, loc: Location): Range {
+export function locToRange(text: string, loc: ?Location): Range {
+  invariant(loc, 'Location expected.');
   const start = offsetToPoint(text, loc.start);
   const end = offsetToPoint(text, loc.end);
   return new Range(start, end);

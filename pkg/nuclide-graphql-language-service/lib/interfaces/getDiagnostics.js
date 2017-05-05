@@ -9,8 +9,13 @@
  * @format
  */
 
-import type {GraphQLErrorLocation, GraphQLError} from 'graphql/error';
-import type {ASTNode} from 'graphql/language';
+import type {
+  ASTNode,
+  GraphQLErrorLocation,
+  GraphQLError,
+  GraphQLSchema,
+  Location,
+} from 'graphql';
 import type {DiagnosticType, CustomValidationRule, Uri} from '../types/Types';
 
 import invariant from 'assert';
@@ -24,7 +29,7 @@ import {validateWithCustomRules} from '../utils/validateWithCustomRules';
 export function getDiagnostics(
   filePath: string,
   queryText: string,
-  schema: ?string = null,
+  schema: ?GraphQLSchema = null,
   customRules?: Array<CustomValidationRule>,
 ): Array<DiagnosticType> {
   if (filePath == null) {
@@ -70,13 +75,16 @@ function errorAnnotations(
     return [];
   }
   return error.nodes.map(node => {
-    const highlightNode: ASTNode = node.kind !== 'Variable' && node.name
+    const highlightNode = node.kind !== 'Variable' && node.name
       ? node.name
       : node.variable ? node.variable : node;
+    const typeCastedNode = ((highlightNode: any): ASTNode);
 
     invariant(error.locations, 'GraphQL validation error requires locations.');
     const loc = error.locations[0];
-    const end = loc.column + (highlightNode.loc.end - highlightNode.loc.start);
+    const highlightNodeLoc: ?Location = typeCastedNode.loc;
+    invariant(highlightNodeLoc, 'Highlighted node requires location.');
+    const end = loc.column + (highlightNodeLoc.end - highlightNodeLoc.start);
     return {
       name: 'graphql: Validation',
       text: error.message,
