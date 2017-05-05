@@ -124,7 +124,7 @@
     "eslint-plugin-jasmine": "2.2.0",
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
     "eslint-plugin-prefer-object-spread": "1.1.0",
-    "eslint-plugin-prettify": "1.0.0",
+    "eslint-plugin-prettify": "2.0.0",
     "eslint-plugin-react": "6.8.0",
     "flow-bin": "0.45.0",
     "fs-extra": "2.0.0",
