@@ -531,6 +531,10 @@ function parsePath(uri: NuclideUri): ParsedPath {
   return uriPathModule.parse(getPath(uri));
 }
 
+function pathSeparatorFor(uri: NuclideUri): string {
+  return _pathModuleFor(uri).sep;
+}
+
 function split(uri: NuclideUri): Array<string> {
   const parts = [];
   let current = uri;
@@ -645,6 +649,7 @@ export default {
   isRoot,
   parsePath,
   split,
+  pathSeparatorFor,
   NUCLIDE_URI_TYPE_NAME,
 };
 
