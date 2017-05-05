@@ -33,7 +33,7 @@ describe('FileWatcherService', () => {
       watchDirectoryRecursive() {
         emitter = new Emitter();
         // $FlowIgnore
-        emitter.root = TEST_DIR;
+        emitter.path = TEST_DIR;
         return Promise.resolve(emitter);
       },
     };

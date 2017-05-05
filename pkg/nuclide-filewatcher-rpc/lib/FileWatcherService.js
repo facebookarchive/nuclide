@@ -136,7 +136,7 @@ function onWatcherChange(
 ): void {
   const directoryChanges = new Set();
   entries.forEach(entry => {
-    const entryPath = nuclideUri.join(subscription.root, entry.name);
+    const entryPath = nuclideUri.join(subscription.path, entry.name);
     const observer = entityObserver.get(entryPath);
     if (observer != null) {
       // TODO(most): handle `rename`, if needed.
