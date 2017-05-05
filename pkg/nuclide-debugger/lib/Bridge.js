@@ -28,40 +28,6 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import CommandDispatcher from './CommandDispatcher';
 
-const INJECTED_CSS = [
-  /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
-  'body > .root-view {overflow-y: scroll;}',
-  /* Force the contents of the mini console (on the bottom) to scroll vertically */
-  '.insertion-point-sidebar#drawer-contents {overflow-y: auto;}',
-  /* imitate chrome table styles for threads window */
-  `
-  .nuclide-chrome-debugger-data-grid table {
-    border-spacing: 0;
-  }
-
-  .nuclide-chrome-debugger-data-grid thead {
-    background-color: #eee;
-  }
-
-  .nuclide-chrome-debugger-data-grid thead td {
-    border-bottom: 1px solid #aaa;
-  }
-
-  .nuclide-chrome-debugger-data-grid tbody tr:nth-child(2n+1) {
-    background: aliceblue;
-  }
-
-  .nuclide-chrome-debugger-data-grid td {
-    border-left: 1px solid #aaa;
-    padding: 2px 4px;
-  }
-
-  .nuclide-chrome-debugger-data-grid td:first-child {
-    border-left: none;
-  }
-  `,
-].join('');
-
 export default class Bridge {
   _debuggerModel: DebuggerModel;
   _disposables: UniversalDisposable;
@@ -207,7 +173,6 @@ export default class Bridge {
             }
             this._updateDebuggerSettings();
             this._sendAllBreakpoints();
-            this._injectCSS();
             this._syncDebuggerState();
             break;
           case 'CallFrameSelected':
@@ -393,12 +358,6 @@ export default class Bridge {
         });
       });
       this._commandDipatcher.send('command', 'SyncBreakpoints', results);
-    }
-  }
-
-  _injectCSS() {
-    if (this._webview != null) {
-      this._webview.insertCSS(INJECTED_CSS);
     }
   }
 
