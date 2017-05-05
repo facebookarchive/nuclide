@@ -32,6 +32,8 @@
 
 /* eslint-disable */
 
+var DebuggerDomainDispatcher = require('./DebuggerDomainDispatcher');
+
 /**
  * @constructor
  */
@@ -189,18 +191,31 @@ InspectorBackendClass.prototype = {
     /**
      * @param {string} jsonUrl
      */
-    loadFromJSONIfNeeded: function(jsonUrl)
+    loadFromJSONIfNeeded: function(jsonUrl, transport)
     {
         if (this._initialized)
             return;
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", jsonUrl, false);
-        xhr.send(null);
+        var parseProtocolPromise = new Promise((resolve, reject) => {
+          var fs = require('fs')
+          fs.readFile(jsonUrl, 'utf8', function(err, data) {
+              if (err) throw err;
+              var schema = JSON.parse(data);
+              InspectorBackendClass._generateCommands(schema);
 
-        var schema = JSON.parse(xhr.responseText);
-        var code = InspectorBackendClass._generateCommands(schema);
-        eval(code);
+              var connection = new InspectorBackendClass.StubConnection(transport);
+              InspectorBackend.setConnection(connection);
+
+              var debuggerAgent = connection.agent('Debugger');
+              var debuggerDispatcher = new DebuggerDomainDispatcher(debuggerAgent);
+              debuggerDispatcher.setAgent(debuggerAgent);
+              connection.registerDispatcher('Debugger', debuggerDispatcher);
+
+              InspectorBackend._initialized = false;
+              resolve(debuggerDispatcher);
+          });
+        });
+        return parseProtocolPromise;
     },
 
     /**
@@ -241,7 +256,6 @@ InspectorBackendClass.prototype = {
 InspectorBackendClass._generateCommands = function(schema) {
     var jsTypes = { integer: "number", array: "object" };
     var rawTypes = {};
-    var result = [];
 
     var domains = schema["domains"] || [];
     for (var i = 0; i < domains.length; ++i) {
@@ -261,11 +275,11 @@ InspectorBackendClass._generateCommands = function(schema) {
         var members = [];
         for (var m = 0; m < items.length; ++m) {
             var value = items[m];
-            var name = value.replace(/-(\w)/g, toUpperCase.bind(null, 1)).toTitleCase();
+            var name = toTitleCase(value.replace(/-(\w)/g, toUpperCase.bind(null, 1)));
             name = name.replace(/HTML|XML|WML|API/ig, toUpperCase.bind(null, 0));
-            members.push(name + ": \"" + value +"\"");
+            members.push(`${name}: ${value}`);
         }
-        return "InspectorBackend.registerEnum(\"" + enumName + "\", {" + members.join(", ") + "});";
+        InspectorBackend.registerEnum(enumName, members);
     }
 
     for (var i = 0; i < domains.length; ++i) {
@@ -275,13 +289,13 @@ InspectorBackendClass._generateCommands = function(schema) {
         for (var j = 0; j < types.length; ++j) {
             var type = types[j];
             if ((type["type"] === "string") && type["enum"])
-                result.push(generateEnum(domain.domain + "." + type.id, type["enum"]));
+                generateEnum(domain.domain + "." + type.id, type["enum"]);
             else if (type["type"] === "object") {
                 var properties = type["properties"] || [];
                 for (var k = 0; k < properties.length; ++k) {
                     var property = properties[k];
                     if ((property["type"] === "string") && property["enum"])
-                        result.push(generateEnum(domain.domain + "." + type.id + property["name"].toTitleCase(), property["enum"]));
+                        generateEnum(domain.domain + "." + type.id + toTitleCase(property["name"]), property["enum"]);
                 }
             }
         }
@@ -305,7 +319,7 @@ InspectorBackendClass._generateCommands = function(schema) {
                         type = rawTypes[domain.domain + "." + ref];
                 }
 
-                var text = "{\"name\": \"" + parameter.name + "\", \"type\": \"" + type + "\", \"optional\": " + (parameter.optional ? "true" : "false") + "}";
+                var text = `name: ${parameter.name}, type: ${type}, optional: ${parameter.optional}`;
                 paramsText.push(text);
             }
 
@@ -316,7 +330,7 @@ InspectorBackendClass._generateCommands = function(schema) {
                 returnsText.push("\"" + parameter.name + "\"");
             }
             var hasErrorData = String(Boolean(command.error));
-            result.push("InspectorBackend.registerCommand(\"" + domain.domain + "." + command.name + "\", [" + paramsText.join(", ") + "], [" + returnsText.join(", ") + "], " + hasErrorData + ");");
+            InspectorBackend.registerCommand(domain.domain + "." + command.name, paramsText, returnsText, hasErrorData);
         }
 
         for (var j = 0; domain.events && j < domain.events.length; ++j) {
@@ -324,12 +338,11 @@ InspectorBackendClass._generateCommands = function(schema) {
             var paramsText = [];
             for (var k = 0; event.parameters && k < event.parameters.length; ++k) {
                 var parameter = event.parameters[k];
-                paramsText.push("\"" + parameter.name + "\"");
+                paramsText.push(parameter.name);
             }
-            result.push("InspectorBackend.registerEvent(\"" + domain.domain + "." + event.name + "\", [" + paramsText.join(", ") + "]);");
+            InspectorBackend.registerEvent(domain.domain + "." + event.name , paramsText);
         }
     }
-    return result.join("\n");
 }
 
 /**
@@ -724,9 +737,11 @@ InspectorBackendClass.WebSocketConnection.prototype = {
  * @constructor
  * @extends {InspectorBackendClass.Connection}
  */
-InspectorBackendClass.StubConnection = function()
+InspectorBackendClass.StubConnection = function(transport)
 {
     InspectorBackendClass.Connection.call(this);
+    this._transport = transport;
+    this._transport.registerNuclideNotificationHandler(this.handleServerMessage.bind(this));
 }
 
 InspectorBackendClass.StubConnection.prototype = {
@@ -736,15 +751,13 @@ InspectorBackendClass.StubConnection.prototype = {
      */
     sendMessage: function(messageObject)
     {
-        setTimeout(this._echoResponse.bind(this, messageObject), 0);
+        var message = JSON.stringify(messageObject);
+        this._transport.sendNuclideMessage(message);
     },
 
-    /**
-     * @param {!Object} messageObject
-     */
-    _echoResponse: function(messageObject)
+    handleServerMessage: function(message)
     {
-        this.dispatch(messageObject);
+        this.dispatch(message);
     },
 
     __proto__: InspectorBackendClass.Connection.prototype
@@ -1058,7 +1071,11 @@ InspectorBackendClass.DispatcherPrototype.prototype = {
         if (InspectorBackendClass.Options.dumpInspectorTimeStats)
             console.log("time-stats: " + messageObject.method + " = " + (Date.now() - processingStartTime));
     }
+}
 
+function toTitleCase(str)
+{
+    return str.replace(/\w+/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
 InspectorBackendClass.Options = {
@@ -1067,4 +1084,4 @@ InspectorBackendClass.Options = {
     suppressRequestErrors: false
 }
 
-InspectorBackend = new InspectorBackendClass();
+var InspectorBackend = new InspectorBackendClass();
