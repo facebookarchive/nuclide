@@ -14,6 +14,7 @@ import UniversalDisposable from '../../commons-node/UniversalDisposable';
 import {
   createAndroidDeviceListProvider,
   createAndroidInfoProvider,
+  createAndroidProcessesProvider,
 } from './android_providers';
 import {
   createTizenDeviceListProvider,
@@ -42,6 +43,9 @@ class Activation {
     );
     this._disposables.add(
       api.registerInfoProvider(createAndroidInfoProvider()),
+    );
+    this._disposables.add(
+      api.registerProcessesProvider(createAndroidProcessesProvider()),
     );
     this._disposables.add(api.registerInfoProvider(createTizenInfoProvider()));
   }

@@ -18,9 +18,10 @@ import invariant from 'invariant';
 import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
 import {InfoTable} from './InfoTable';
+import {ProcessTable} from './ProcessTable';
 
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {Device, DeviceAction} from '../types';
+import type {Device, DeviceAction, Process} from '../types';
 
 export type Props = {
   refreshDevices: () => void,
@@ -35,6 +36,7 @@ export type Props = {
   deviceActions: DeviceAction[],
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
+  processTable: Array<Process>,
 };
 
 export class DevicePanel extends React.Component {
@@ -80,6 +82,18 @@ export class DevicePanel extends React.Component {
     ));
   }
 
+  _createProcessTable(): React.Element<any> {
+    if (this.props.processTable.length === 0) {
+      return <div />;
+    }
+    const title = 'Process Table';
+    return (
+      <div className="block" key={title}>
+        <ProcessTable title={title} table={this.props.processTable} />
+      </div>
+    );
+  }
+
   render(): React.Element<any> {
     return (
       <PanelComponentScroller>
@@ -99,6 +113,7 @@ export class DevicePanel extends React.Component {
             {this._createDeviceTable()}
           </div>
           {this._createInfoTables()}
+          {this._createProcessTable()}
         </div>
       </PanelComponentScroller>
     );

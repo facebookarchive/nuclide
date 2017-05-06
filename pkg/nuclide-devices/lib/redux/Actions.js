@@ -19,9 +19,11 @@ import type {
   SetHostsAction,
   SetHostAction,
   SetInfoTablesAction,
+  SetProcessTableAction,
   RefreshDevicesAction,
   Device,
   DeviceAction,
+  Process,
 } from '../types';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
@@ -33,6 +35,7 @@ export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const REFRESH_DEVICES = 'REFRESH_DEVICES';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
+export const SET_PROCESS_TABLE = 'SET_PROCESS_TABLE';
 
 export function setInfoTables(
   infoTables: Map<string, Map<string, string>>,
@@ -40,6 +43,15 @@ export function setInfoTables(
   return {
     type: SET_INFO_TABLES,
     payload: {infoTables},
+  };
+}
+
+export function setProcessTable(
+  processTable: Array<Process>,
+): SetProcessTableAction {
+  return {
+    type: SET_PROCESS_TABLE,
+    payload: {processTable},
   };
 }
 

@@ -15,7 +15,7 @@ import {Adb} from './Adb';
 
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {DeviceDescription, AndroidJavaProcess} from './types';
+import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
 
 async function getAdb(): Promise<Adb> {
   return new Adb((await pathForDebugBridge('adb')));
@@ -33,6 +33,10 @@ export async function getDeviceInfo(
   device: string,
 ): Promise<Map<string, string>> {
   return (await getAdb()).getDeviceInfo(device);
+}
+
+export async function getProcesses(device: string): Promise<Array<Process>> {
+  return (await getAdb()).getProcesses(device);
 }
 
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {

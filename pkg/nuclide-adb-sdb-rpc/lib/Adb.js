@@ -15,7 +15,7 @@ import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {DebugBridge} from './DebugBridge';
 import {Observable} from 'rxjs';
 
-import type {AndroidJavaProcess} from './types';
+import type {AndroidJavaProcess, Process} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
@@ -77,6 +77,24 @@ export class Adb extends DebugBridge {
     );
     infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
     return infoTable;
+  }
+
+  async getProcesses(device: string): Promise<Array<Process>> {
+    const processes = (await this.runShortAdbCommand(device, [
+      'shell',
+      'ps',
+    ]).toPromise()).split(/\n/);
+    if (processes.length === 0) {
+      return [];
+    }
+    return processes.filter(x => x.startsWith('u0_')).map(x => {
+      const info = x.trim().split(/\s+/);
+      return {
+        user: info[0],
+        pid: info[1],
+        name: info[info.length - 1],
+      };
+    });
   }
 
   getOSVersion(device: string): Promise<string> {

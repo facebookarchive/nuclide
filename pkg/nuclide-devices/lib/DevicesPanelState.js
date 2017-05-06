@@ -69,6 +69,7 @@ export class DevicesPanelState {
       deviceType: state.deviceType,
       device: state.device,
       infoTables: state.infoTables,
+      processTable: state.processTable,
       deviceActions: state.deviceActions,
       refreshDevices,
       setHost,

@@ -23,6 +23,7 @@ export function app(state: AppState, action: Action): AppState {
         device: null,
         devices: [],
         infoTables: new Map(),
+        processesTable: [],
         actions: [],
         host,
       };
@@ -35,6 +36,7 @@ export function app(state: AppState, action: Action): AppState {
         device: null,
         devices: [],
         infoTables: new Map(),
+        processesTable: [],
         actions: [],
       };
 
@@ -64,6 +66,13 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         infoTables,
+      };
+
+    case Actions.SET_PROCESS_TABLE:
+      const {processTable} = action.payload;
+      return {
+        ...state,
+        processTable,
       };
 
     case Actions.SET_HOSTS:

@@ -23,3 +23,9 @@ export type DeviceDescription = {
   apiVersion: string,
   model: string,
 };
+
+export type Process = {
+  user: string,
+  pid: string,
+  name: string,
+};

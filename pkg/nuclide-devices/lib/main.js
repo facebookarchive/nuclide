@@ -28,6 +28,7 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {
   getDeviceInfoProviders,
+  getDeviceProcessesProviders,
   getDeviceListProviders,
   getDeviceActionsProviders,
 } from './providers';
@@ -40,6 +41,7 @@ import type {
   Store,
   DeviceListProvider,
   DeviceInfoProvider,
+  DeviceProcessesProvider,
   DeviceActionsProvider,
   DevicePanelServiceApi,
 } from './types';
@@ -120,6 +122,16 @@ class Activation {
       registerInfoProvider: (provider: DeviceInfoProvider) => {
         invariant(pkg != null, expiredPackageMessage);
         const providers = getDeviceInfoProviders();
+        providers.add(provider);
+        return new Disposable(() => {
+          if (pkg != null) {
+            providers.delete(provider);
+          }
+        });
+      },
+      registerProcessesProvider: (provider: DeviceProcessesProvider) => {
+        invariant(pkg != null, expiredPackageMessage);
+        const providers = getDeviceProcessesProviders();
         providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {

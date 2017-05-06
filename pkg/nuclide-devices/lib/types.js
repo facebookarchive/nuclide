@@ -14,6 +14,7 @@ import type {NuclideUri} from '../../commons-node/nuclideUri';
 export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
+  registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
   registerActionsProvider: (provider: DeviceActionsProvider) => IDisposable,
 };
 
@@ -46,6 +47,12 @@ export interface DeviceInfoProvider {
   isSupported(host: NuclideUri): Promise<boolean>,
 }
 
+export interface DeviceProcessesProvider {
+  fetch(host: NuclideUri, device: string): Promise<Array<Process>>,
+  getType(): string,
+  isSupported(host: NuclideUri): Promise<boolean>,
+}
+
 export type AppState = {
   hosts: NuclideUri[],
   host: NuclideUri,
@@ -54,12 +61,19 @@ export type AppState = {
   deviceTypes: string[],
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
+  processTable: Array<Process>,
   deviceActions: DeviceAction[],
 };
 
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
+};
+
+export type Process = {
+  user: string,
+  pid: string,
+  name: string,
 };
 
 //
@@ -120,6 +134,13 @@ export type SetInfoTablesAction = {
   },
 };
 
+export type SetProcessTableAction = {
+  type: 'SET_PROCESS_TABLE',
+  payload: {
+    processTable: Array<Process>,
+  },
+};
+
 export type SetDeviceActionsAction = {
   type: 'SET_DEVICE_ACTIONS',
   payload: {
@@ -135,5 +156,6 @@ export type Action =
   | SetDeviceTypeAction
   | SetDeviceTypesAction
   | SetInfoTablesAction
+  | SetProcessTableAction
   | SetDeviceActionsAction
   | SetDeviceAction;
