@@ -49,8 +49,12 @@ module.exports = function(context) {
     }
 
     const resolved = resolveFrom(dirname, id);
-    // Exclude modules that are not found or not ours.
-    if (resolved == null || resolved.includes('/node_modules/')) {
+    // Exclude modules that are not found, builtins, or not ours.
+    if (
+      resolved == null ||
+      resolved === id ||
+      resolved.includes('/node_modules/')
+    ) {
       return null;
     }
     const resolvedPackage = getPackage(resolved);
