@@ -98,8 +98,14 @@ function renameShortcut(store: Store): IDisposable {
           case 'pick':
             let renameRefactoring = null;
             for (const refactoring of phase.availableRefactorings) {
-              if (refactoring.kind === 'rename') {
+              if (
+                refactoring.kind === 'rename' ||
+                (refactoring.kind === 'freeform' &&
+                  refactoring.disabled !== false &&
+                  refactoring.name.match(/rename/i))
+              ) {
                 renameRefactoring = refactoring;
+                break;
               }
             }
             if (renameRefactoring == null) {
