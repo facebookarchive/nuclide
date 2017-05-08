@@ -23,7 +23,7 @@ export function app(state: AppState, action: Action): AppState {
         device: null,
         devices: [],
         infoTables: new Map(),
-        processesTable: [],
+        processTable: [],
         actions: [],
         host,
       };
@@ -36,7 +36,7 @@ export function app(state: AppState, action: Action): AppState {
         device: null,
         devices: [],
         infoTables: new Map(),
-        processesTable: [],
+        processTable: [],
         actions: [],
       };
 
