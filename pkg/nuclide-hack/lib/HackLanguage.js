@@ -40,6 +40,7 @@ import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
+import {getEvaluationExpression} from './evaluationExpression';
 
 const HACK_SERVICE_NAME = 'HackService';
 
@@ -121,7 +122,7 @@ async function createLanguageService(): Promise<
     evaluationExpression: {
       version: '0.0.0',
       analyticsEventName: 'hack.evaluationExpression',
-      matcher: {kind: 'default'},
+      matcher: {kind: 'custom', matcher: getEvaluationExpression},
     },
     autocomplete: {
       version: '2.0.0',
