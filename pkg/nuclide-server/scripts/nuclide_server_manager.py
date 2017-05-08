@@ -395,7 +395,7 @@ if __name__ == '__main__':
             result = server.get_server_info()
             result['success'] = True
         else:
-            result = {'succes': False, 'logs': get_buffered_logs()}
+            result = {'success': False, 'logs': get_buffered_logs()}
 
         if options.json_output_file:
             with open(options.json_output_file, 'w') as f:
