@@ -590,7 +590,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   async _callFunction(id: number, call: CallMessage): Promise<void> {
-    const {localImplementation, type} = this._getFunctionImplemention(
+    const {getLocalImplementation, type} = this._getFunctionImplemention(
       call.method,
     );
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
@@ -598,7 +598,7 @@ export class RpcConnection<TransportType: Transport> {
       call.args,
       type.argumentTypes,
     );
-
+    const localImplementation = getLocalImplementation();
     this._returnValue(
       id,
       localImplementation.apply(this, marshalledArgs),
@@ -611,11 +611,8 @@ export class RpcConnection<TransportType: Transport> {
     invariant(object != null);
 
     const interfaceName = this._objectRegistry.getInterface(call.objectId);
-    const classDefinition = this._getClassDefinition(interfaceName);
-    invariant(classDefinition != null);
-    const {instanceMethods} = classDefinition.definition;
-    const type = instanceMethods[call.method];
-    invariant(instanceMethods.hasOwnProperty(call.method) && type != null);
+    const {definition} = this._getClassDefinition(interfaceName);
+    const type = definition.instanceMethods[call.method];
 
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry,
@@ -634,20 +631,17 @@ export class RpcConnection<TransportType: Transport> {
     id: number,
     constructorMessage: NewObjectMessage,
   ): Promise<void> {
-    const classDefinition = this._getClassDefinition(
+    const {getLocalImplementation, definition} = this._getClassDefinition(
       constructorMessage.interface,
     );
-    invariant(classDefinition != null);
-    const {localImplementation, definition} = classDefinition;
-    const constructorArgs = definition.constructorArgs;
+    const {constructorArgs} = definition;
     invariant(constructorArgs != null);
-
     const marshalledArgs = await this._getTypeRegistry().unmarshalArguments(
       this._objectRegistry,
       constructorMessage.args,
       constructorArgs,
     );
-
+    const localImplementation = getLocalImplementation();
     // Create a new object and put it in the registry.
     const newObject = new localImplementation(...marshalledArgs);
 

@@ -13,12 +13,7 @@ import type {PredefinedTransformer} from './index';
 
 import {createProxyFactory} from './main';
 import {TypeRegistry} from './TypeRegistry';
-import type {
-  FunctionType,
-  Definitions,
-  InterfaceDefinition,
-  Type,
-} from './types';
+import type {FunctionType, Definitions, InterfaceDefinition} from './types';
 import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
@@ -29,11 +24,11 @@ import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 const logger = getLogger();
 
 export type FunctionImplementation = {
-  localImplementation: Function,
+  getLocalImplementation: Function,
   type: FunctionType,
 };
 export type ClassDefinition = {
-  localImplementation: any,
+  getLocalImplementation: any,
   definition: InterfaceDefinition,
 };
 export type ServiceDefinition = {
@@ -96,8 +91,6 @@ export class ServiceRegistry {
         service.definition,
         this._predefinedTypes,
       );
-      // $FlowIssue - the parameter passed to require must be a literal string.
-      const localImpl = require(service.implementation);
       this._services.set(service.name, {
         name: service.name,
         factory,
@@ -114,10 +107,11 @@ export class ServiceRegistry {
               this._typeRegistry.registerAlias(
                 name,
                 definition.location,
-                (definition.definition: Type),
+                definition.definition,
               );
             }
             break;
+
           case 'function':
             // Register module-level functions.
             const functionName = service.preserveFunctionNames
@@ -125,17 +119,20 @@ export class ServiceRegistry {
               : `${service.name}/${name}`;
             this._registerFunction(
               functionName,
-              localImpl[name],
+              service.implementation,
+              impl => impl[name],
               definition.type,
             );
             break;
+
           case 'interface':
             // Register interfaces.
-            this._classesByName.set(name, {
-              localImplementation: localImpl[name],
+            this._registerClass(
+              name,
+              service.implementation,
+              impl => impl[name],
               definition,
-            });
-
+            );
             this._typeRegistry.registerType(
               name,
               definition.location,
@@ -148,14 +145,13 @@ export class ServiceRegistry {
                   context.getService(service.name)[name],
                 ),
             );
-
             // Register all of the static methods as remote functions.
-            Object.keys(definition.staticMethods).forEach(funcName => {
-              const funcType = definition.staticMethods[funcName];
+            Object.keys(definition.staticMethods).forEach(methodName => {
               this._registerFunction(
-                `${name}/${funcName}`,
-                localImpl[name][funcName],
-                funcType,
+                `${name}/${methodName}`,
+                service.implementation,
+                impl => impl[name][methodName],
+                definition.staticMethods[methodName],
               );
             });
             break;
@@ -171,15 +167,42 @@ export class ServiceRegistry {
 
   _registerFunction(
     name: string,
-    localImpl: Function,
+    id: string,
+    accessor: Function,
     type: FunctionType,
   ): void {
     if (this._functionsByName.has(name)) {
       throw new Error(`Duplicate RPC function: ${name}`);
     }
+    let impl;
     this._functionsByName.set(name, {
-      localImplementation: localImpl,
+      getLocalImplementation() {
+        if (impl == null) {
+          // $FlowIgnore
+          impl = accessor(require(id));
+        }
+        return impl;
+      },
       type,
+    });
+  }
+
+  _registerClass(
+    name: string,
+    id: string,
+    accessor: Function,
+    definition: InterfaceDefinition,
+  ): void {
+    let impl;
+    this._classesByName.set(name, {
+      getLocalImplementation() {
+        if (impl == null) {
+          // $FlowIgnore
+          impl = accessor(require(id));
+        }
+        return impl;
+      },
+      definition,
     });
   }
 
