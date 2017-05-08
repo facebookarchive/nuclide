@@ -9,6 +9,8 @@
  * @format
  */
 
+import {Observable} from 'rxjs';
+
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
 export type DevicePanelServiceApi = {
@@ -35,7 +37,7 @@ export interface DeviceActionsProvider {
 }
 
 export interface DeviceListProvider {
-  fetch(host: NuclideUri): Promise<Device[]>,
+  observe(host: NuclideUri): Observable<Device[]>,
   getType(): string,
 }
 
@@ -94,11 +96,6 @@ export type SetHostsAction = {
   },
 };
 
-export type RefreshDevicesAction = {
-  type: 'REFRESH_DEVICES',
-  payload: {},
-};
-
 export type SetHostAction = {
   type: 'SET_HOST',
   payload: {
@@ -149,7 +146,6 @@ export type SetDeviceActionsAction = {
 };
 
 export type Action =
-  | RefreshDevicesAction
   | SetHostAction
   | SetHostsAction
   | SetDevicesAction

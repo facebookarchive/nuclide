@@ -20,7 +20,6 @@ import type {
   SetHostAction,
   SetInfoTablesAction,
   SetProcessTableAction,
-  RefreshDevicesAction,
   Device,
   DeviceAction,
   Process,
@@ -33,7 +32,6 @@ export const SET_DEVICE = 'SET_DEVICE';
 export const SET_DEVICE_ACTIONS = 'SET_DEVICE_ACTIONS';
 export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
-export const REFRESH_DEVICES = 'REFRESH_DEVICES';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
 export const SET_PROCESS_TABLE = 'SET_PROCESS_TABLE';
 
@@ -52,13 +50,6 @@ export function setProcessTable(
   return {
     type: SET_PROCESS_TABLE,
     payload: {processTable},
-  };
-}
-
-export function refreshDevices(): RefreshDevicesAction {
-  return {
-    type: REFRESH_DEVICES,
-    payload: {},
   };
 }
 

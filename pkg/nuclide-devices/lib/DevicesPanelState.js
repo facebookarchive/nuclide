@@ -17,15 +17,36 @@ import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
 
 import type {Props} from './ui/DevicePanel';
-import type {Store, AppState} from './types';
+import type {Store, AppState, Device} from './types';
+import {getDeviceListProviders} from './providers';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
 export class DevicesPanelState {
   _store: Store;
+  _deviceObs: Observable<Device[]>;
 
   constructor(store: Store) {
     this._store = store;
+    // $FlowFixMe: Teach flow about Symbol.observable
+    this._deviceObs = Observable.from(this._store)
+      .distinctUntilChanged(
+        (stateA, stateB) =>
+          stateA.deviceType === stateB.deviceType &&
+          stateA.host === stateB.host,
+      )
+      .switchMap(state => {
+        if (state.deviceType === null) {
+          return Observable.empty();
+        }
+        for (const fetcher of getDeviceListProviders()) {
+          if (fetcher.getType() === state.deviceType) {
+            return fetcher
+              .observe(state.host)
+              .do(devices => this._store.dispatch(Actions.setDevices(devices)));
+          }
+        }
+      });
   }
 
   getTitle() {
@@ -49,8 +70,8 @@ export class DevicesPanelState {
   }
 
   _appStateToProps(state: AppState): Props {
-    const refreshDevices = host => {
-      this._store.dispatch(Actions.refreshDevices());
+    const startFetchingDevices = () => {
+      return this._deviceObs.subscribe();
     };
     const setHost = host => {
       this._store.dispatch(Actions.setHost(host));
@@ -71,7 +92,7 @@ export class DevicesPanelState {
       infoTables: state.infoTables,
       processTable: state.processTable,
       deviceActions: state.deviceActions,
-      refreshDevices,
+      startFetchingDevices,
       setHost,
       setDeviceType,
       setDevice,

@@ -13,7 +13,7 @@ import React from 'react';
 import {
   PanelComponentScroller,
 } from '../../../nuclide-ui/PanelComponentScroller';
-import {Observable, Subscription} from 'rxjs';
+import {Subscription} from 'rxjs';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
@@ -24,10 +24,10 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {Device, DeviceAction, Process} from '../types';
 
 export type Props = {
-  refreshDevices: () => void,
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
+  startFetchingDevices: () => Subscription,
   hosts: NuclideUri[],
   devices: Device[],
   host: NuclideUri,
@@ -41,22 +41,21 @@ export type Props = {
 
 export class DevicePanel extends React.Component {
   props: Props;
-  _deviceFetcherSubscription: Subscription;
+  _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
-    this._deviceFetcherSubscription = new Subscription();
   }
 
   componentDidMount(): void {
-    this._deviceFetcherSubscription = Observable.interval(3000)
-      .startWith(0)
-      .subscribe(() => this.props.refreshDevices());
+    this._devicesSubscription = this.props.startFetchingDevices();
   }
 
   componentWillUnmount(): void {
-    this._deviceFetcherSubscription.unsubscribe();
+    if (this._devicesSubscription != null) {
+      this._devicesSubscription.unsubscribe();
+    }
   }
 
   _createDeviceTable(): ?React.Element<any> {

@@ -14,7 +14,6 @@ import * as Actions from './Actions';
 import invariant from 'invariant';
 import {arrayFlatten, arrayCompact} from '../../../commons-node/collection';
 import {
-  getDeviceListProviders,
   getDeviceInfoProviders,
   getDeviceProcessesProviders,
   getDeviceActionsProviders,
@@ -22,24 +21,6 @@ import {
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {Action, Store, AppState, DeviceAction, Process} from '../types';
-
-export function setDevicesEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REFRESH_DEVICES).switchMap(action => {
-    invariant(action.type === Actions.REFRESH_DEVICES);
-    const state = store.getState();
-    for (const fetcher of getDeviceListProviders()) {
-      if (fetcher.getType() === state.deviceType) {
-        return Observable.fromPromise(
-          fetcher.fetch(state.host),
-        ).switchMap(devices => Observable.of(Actions.setDevices(devices)));
-      }
-    }
-    return Observable.empty();
-  });
-}
 
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
