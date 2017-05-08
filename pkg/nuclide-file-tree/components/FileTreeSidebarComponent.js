@@ -638,6 +638,10 @@ All the changes across your entire stacked diff.
     // The file tree store wasn't written to support multiple instances, so try to prevent it.
     return false;
   }
+
+  isPermanentDockItem(): boolean {
+    return true;
+  }
 }
 
 function observeAllModifiedStatusChanges(): Observable<void> {
