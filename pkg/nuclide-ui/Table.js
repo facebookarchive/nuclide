@@ -359,7 +359,7 @@ export class Table extends React.Component {
             })}
             key={j}
             style={cellStyle}
-            title={datum != null ? String(datum) : null}>
+            title={typeof datum !== 'object' ? String(datum) : null}>
             {datum}
           </div>
         );
