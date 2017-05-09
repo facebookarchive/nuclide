@@ -9,7 +9,10 @@
  * @format
  */
 
-import {observeDevices} from '../../nuclide-adb-sdb-base/lib/DBPoller';
+import {
+  observeAndroidDevices,
+  observeTizenDevices,
+} from '../../nuclide-adb-sdb-base/lib/DevicePoller';
 import {Observable} from 'rxjs';
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
@@ -36,7 +39,10 @@ export class ATDeviceListProvider implements DeviceListProvider {
   }
 
   observe(host: NuclideUri): Observable<Device[]> {
-    const db = this._type === 'android' ? 'adb' : 'sdb';
-    return observeDevices(db, host);
+    if (this._type === 'android') {
+      return observeAndroidDevices(host);
+    } else {
+      return observeTizenDevices(host);
+    }
   }
 }

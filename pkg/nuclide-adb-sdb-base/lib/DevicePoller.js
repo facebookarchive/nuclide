@@ -19,7 +19,7 @@ import type {Device} from '../../nuclide-devices/lib/types';
 
 export type DBType = 'sdb' | 'adb';
 
-class DBPoller {
+class DevicePoller {
   _type: DBType;
   _dbAvailable: Map<NuclideUri, Promise<boolean>> = new Map();
   _observables: Map<NuclideUri, Observable<Device[]>> = new Map();
@@ -85,16 +85,21 @@ class DBPoller {
   }
 }
 
-const pollers: Map<DBType, DBPoller> = new Map();
+const pollers: Map<DBType, DevicePoller> = new Map();
 
-export function observeDevices(
-  type: DBType,
-  host: NuclideUri,
-): Observable<Device[]> {
+function observeDevices(type: DBType, host: NuclideUri): Observable<Device[]> {
   let poller = pollers.get(type);
   if (poller == null) {
-    poller = new DBPoller(type);
+    poller = new DevicePoller(type);
     pollers.set(type, poller);
   }
   return poller.observe(host);
+}
+
+export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
+  return observeDevices('adb', host);
+}
+
+export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
+  return observeDevices('sdb', host);
 }
