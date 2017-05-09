@@ -160,14 +160,12 @@ export function getDirtyFileChanges(
   return dirtyFileChanges;
 }
 
-const UPDATE_STATUS_DEBOUNCE_MS = 50;
 export function observeStatusChanges(
   repository: HgRepositoryClient,
 ): Observable<Map<NuclideUri, FileChangeStatusValue>> {
   return observableFromSubscribeFunction(
     repository.onDidChangeStatuses.bind(repository),
   )
-    .debounceTime(UPDATE_STATUS_DEBOUNCE_MS)
     .startWith(null)
     .map(() => getDirtyFileChanges(repository));
 }
