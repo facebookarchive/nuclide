@@ -34,6 +34,7 @@ class DBPoller {
       return observable;
     }
     observable = Observable.interval(3000)
+      .startWith(0)
       .switchMap(() => Observable.fromPromise(this.fetch(host)))
       .publish()
       .refCount();
