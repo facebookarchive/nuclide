@@ -23,6 +23,7 @@ export type DevicePanelServiceApi = {
 export type Device = {
   name: string,
   displayName: string,
+  architecture: string,
 };
 
 export type DeviceAction = {

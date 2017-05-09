@@ -80,6 +80,7 @@ class DBPoller {
     return {
       name: device.name,
       displayName,
+      architecture: device.architecture,
     };
   }
 }
