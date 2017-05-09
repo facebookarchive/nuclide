@@ -206,10 +206,10 @@ export type MergeConflict = {
 
 // Information about file for local, base and other commit that caused the conflict
 export type MergeConflictSideFileData = {
-  contents: string,
+  contents: ?string,
   exists: boolean,
-  isexec: boolean,
-  issymlink: boolean,
+  isexec: ?boolean,
+  issymlink: ?boolean,
 };
 
 // Information about the output file
