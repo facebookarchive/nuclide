@@ -1,5 +1,24 @@
 # Nuclide Changelog
 
+## v0.224.0
+
+### General
+
+* Added a keyboard shortcut for refactoring (cmd-ctrl-R on Mac, ctrl-shift-R elsewhere).
+* Windows: Fuzzy filename matcher now works with extensions.
+
+### Source control
+
+* The commit form won't let you submit an update without having entered a message.
+* The commit form will remember your last update message in the case that you exit the form or the update fails for some reason.
+* Various small conveniences+bug fixes.
+* Canceling `arc build/rebuild` actually stops the build (not just marks it as stopped).
+* Add `arc build` support for `configerator`.
+
+### Debugger
+
+* Added a “Restart Debugger” button that will quickly and easily disconnect and restart your debugging session with the same configuration and parameters as the current session.
+
 ## v0.223.0
 
 * Fixed an issue with stream error handling.
