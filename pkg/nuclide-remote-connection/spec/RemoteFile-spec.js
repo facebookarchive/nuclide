@@ -414,23 +414,25 @@ describe('RemoteFile', () => {
     });
   });
 
-  describe('RemoteFile resubscribes after a rename', () => {
-    const changeHandler = jasmine.createSpy('onDidChange');
-    const deletionHandler = jasmine.createSpy('onDidDelete');
-    const mockWatch = new Subject();
-    spyOn(connectionMock, 'getFileWatch').andReturn(mockWatch);
-    const file = new RemoteFile(connectionMock, 'test');
+  describe('RemoteFile::setPath()', () => {
+    it('resubscribes after a rename', () => {
+      const changeHandler = jasmine.createSpy('onDidChange');
+      const deletionHandler = jasmine.createSpy('onDidDelete');
+      const mockWatch = new Subject();
+      spyOn(connectionMock, 'getFileWatch').andReturn(mockWatch);
+      const file = new RemoteFile(connectionMock, 'test');
 
-    file.onDidChange(changeHandler);
-    file.onDidDelete(deletionHandler);
+      file.onDidChange(changeHandler);
+      file.onDidDelete(deletionHandler);
 
-    // The file tree sets the path before doing the rename.
-    file.setPath('test2');
+      // The file tree sets the path before doing the rename.
+      file.setPath('test2');
 
-    // Simulate a Watchman rename (delete + change)
-    mockWatch.next({type: 'delete', path: 'test'});
-    mockWatch.next({type: 'change', path: 'test2'});
-    expect(deletionHandler).not.toHaveBeenCalled();
-    expect(changeHandler).toHaveBeenCalled();
+      // Simulate a Watchman rename (delete + change)
+      mockWatch.next({type: 'delete', path: 'test'});
+      mockWatch.next({type: 'change', path: 'test2'});
+      expect(deletionHandler).not.toHaveBeenCalled();
+      expect(changeHandler).toHaveBeenCalled();
+    });
   });
 });

@@ -1436,6 +1436,7 @@ declare class atom$Project {
   getDirectories(): Array<atom$Directory>,
   relativizePath(relativizePath?: string): Array<string>, // [projectPath: ?string, relativePath: string]
   relativize(filePath: string): string,
+  contains(path: string): boolean,
 
   // Private API
   findBufferForPath(path: string): ?atom$TextBuffer,
