@@ -9,11 +9,12 @@
  * @format
  */
 
-import React from 'react';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
-
 import type {NuclideUri} from '../../../commons-node/nuclideUri';
 import type {DeviceAction} from '../types';
+
+import React from 'react';
+import {Dropdown} from '../../../nuclide-ui/Dropdown';
+import {Button, ButtonSizes, ButtonTypes} from '../../../nuclide-ui/Button';
 
 const FB_HOST_SUFFIX = '.facebook.com';
 
@@ -55,78 +56,73 @@ export class Selectors extends React.Component {
       .map(host => ({value: host, label: host}));
   }
 
-  _getTypeOptions(): Array<{value: ?string, label: string}> {
-    const typeOptions = this.props.deviceTypes.map(type => ({
-      value: type,
-      label: type,
-    }));
-    typeOptions.splice(0, 0, {value: null, label: 'Select...'});
-    return typeOptions;
-  }
-
-  _getDeviceActionOptions(): Array<{value: ?string, label: string}> {
+  _getActionsSelector(): ?React.Element<any> {
     const actionOptions = this.props.deviceActions.map((action, index) => ({
       value: `${index}`,
       label: action.name,
     }));
     if (actionOptions.length > 0) {
-      actionOptions.splice(0, 0, {value: null, label: 'Select...'});
-    }
-    return actionOptions;
-  }
-
-  render(): React.Element<any> {
-    const dropdowns = [
-      [
-        'Connection:',
+      actionOptions.splice(0, 0, {value: null, label: 'Select an action...'});
+      return (
         <Dropdown
           className="inline-block"
-          options={this._getHostOptions()}
-          onChange={this.props.setHost}
-          value={this.props.host}
-          key="connection"
-        />,
-      ],
-      [
-        'Device type:',
-        <Dropdown
-          className="inline-block"
-          options={this._getTypeOptions()}
-          onChange={this.props.setDeviceType}
-          value={this.props.deviceType}
-          key="devicetype"
-        />,
-      ],
-    ];
-
-    const deviceActionOptions = this._getDeviceActionOptions();
-    if (deviceActionOptions.length > 0) {
-      dropdowns.push([
-        'Actions:',
-        <Dropdown
-          className="inline-block"
-          options={deviceActionOptions}
+          options={actionOptions}
           onChange={this._handleDeviceActionSelected}
           value={null}
           key="actions"
-        />,
-      ]);
+        />
+      );
     }
+    return null;
+  }
 
+  _getTypesSelector(): React.Element<any>[] {
+    return this.props.deviceTypes.map(deviceType => {
+      if (deviceType === this.props.deviceType) {
+        return (
+          <Button
+            key={deviceType}
+            buttonType={ButtonTypes.PRIMARY}
+            size={ButtonSizes.SMALL}>
+            {deviceType}
+          </Button>
+        );
+      }
+      return (
+        <Button
+          key={deviceType}
+          size={ButtonSizes.SMALL}
+          onClick={() => this.props.setDeviceType(deviceType)}>
+          {deviceType}
+        </Button>
+      );
+    });
+  }
+
+  render(): React.Element<any> {
     return (
       <table>
-        {dropdowns.map(([label, dropdown]) => (
-          <tr key={label}>
-            <td>
-              <label className="inline-block">
-                {label}
-              </label>
-            </td>
-            <td>
-              {dropdown}
-            </td>
-          </tr>
-        ))}
+        <tr>
+          <td>
+            <Dropdown
+              className="inline-block"
+              options={this._getHostOptions()}
+              onChange={this.props.setHost}
+              value={this.props.host}
+              key="connection"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            {this._getTypesSelector()}
+          </td>
+        </tr>
+        <tr>
+          <td>
+            {this._getActionsSelector()}
+          </td>
+        </tr>
       </table>
     );
   }
