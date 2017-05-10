@@ -89,3 +89,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-flow::before {
   content: "\f112";
 }
+.icon-nuclicon-react-devtools::before {
+  content: "\f113";
+}
