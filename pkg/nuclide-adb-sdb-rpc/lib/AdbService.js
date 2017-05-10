@@ -39,6 +39,13 @@ export async function getProcesses(device: string): Promise<Array<Process>> {
   return (await getAdb()).getProcesses(device);
 }
 
+export async function forceStopPackage(
+  device: string,
+  packageName: string,
+): Promise<void> {
+  return (await getAdb()).forceStopPackage(device, packageName);
+}
+
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {
   return (await getAdb()).getDeviceList();
 }

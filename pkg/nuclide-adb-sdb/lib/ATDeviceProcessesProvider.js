@@ -37,4 +37,12 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
   isSupported(): Promise<boolean> {
     return Promise.resolve(true);
   }
+
+  async killRunningPackage(
+    host: NuclideUri,
+    device: string,
+    packageName: string,
+  ): Promise<void> {
+    return this._rpcFactory(host).forceStopPackage(device, packageName);
+  }
 }

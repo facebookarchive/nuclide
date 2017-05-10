@@ -54,6 +54,11 @@ export interface DeviceProcessesProvider {
   fetch(host: NuclideUri, device: string): Promise<Array<Process>>,
   getType(): string,
   isSupported(host: NuclideUri): Promise<boolean>,
+  killRunningPackage(
+    host: NuclideUri,
+    device: string,
+    packageName: string,
+  ): Promise<void>,
 }
 
 export type AppState = {
@@ -66,6 +71,7 @@ export type AppState = {
   infoTables: Map<string, Map<string, string>>,
   processTable: Array<Process>,
   deviceActions: DeviceAction[],
+  killProcess: ?KillProcessCallback,
 };
 
 export type Store = {
@@ -79,6 +85,7 @@ export type Process = {
   name: string,
 };
 
+export type KillProcessCallback = (packageName: string) => Promise<void>;
 //
 // Action types
 //
@@ -136,6 +143,7 @@ export type SetProcessTableAction = {
   type: 'SET_PROCESS_TABLE',
   payload: {
     processTable: Array<Process>,
+    killProcess: ?KillProcessCallback,
   },
 };
 

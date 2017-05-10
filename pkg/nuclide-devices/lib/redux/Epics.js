@@ -20,7 +20,14 @@ import {
 } from '../providers';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {Action, Store, AppState, DeviceAction, Process} from '../types';
+import type {
+  Action,
+  Store,
+  AppState,
+  DeviceAction,
+  Process,
+  KillProcessCallback,
+} from '../types';
 
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
@@ -33,8 +40,10 @@ export function setDeviceEpic(
       Observable.fromPromise(getInfoTables(state)).switchMap(infoTables =>
         Observable.of(Actions.setInfoTables(infoTables)),
       ),
-      Observable.fromPromise(getProcessTable(state)).switchMap(processTable =>
-        Observable.of(Actions.setProcessTable(processTable)),
+      Observable.fromPromise(
+        getProcessTable(state),
+      ).switchMap(([processTable, killProcess]) =>
+        Observable.of(Actions.setProcessTable(processTable, killProcess)),
       ),
       Observable.fromPromise(getDeviceActions(state)).switchMap(deviceActions =>
         Observable.of(Actions.setDeviceActions(deviceActions)),
@@ -71,18 +80,23 @@ async function getInfoTables(
   return new Map(arrayCompact(infoTables));
 }
 
-async function getProcessTable(state: AppState): Promise<Array<Process>> {
+async function getProcessTable(
+  state: AppState,
+): Promise<[Array<Process>, ?KillProcessCallback]> {
   const device = state.device;
   if (device == null) {
-    return [];
+    return [[], null];
   }
   const providers = Array.from(getDeviceProcessesProviders()).filter(
     provider => provider.getType() === state.deviceType,
   );
-  if (providers[0]) {
-    return providers[0].fetch(state.host, device.name);
+  if (providers[0] != null) {
+    return [
+      await providers[0].fetch(state.host, device.name),
+      p => providers[0].killRunningPackage(state.host, device.name, p),
+    ];
   }
-  return [];
+  return [[], null];
 }
 
 async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {

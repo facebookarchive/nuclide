@@ -8,7 +8,7 @@
  * @flow
  */
 
-import type {Process} from '../types';
+import type {Process, KillProcessCallback} from '../types';
 
 import React from 'react';
 import {InfoTable} from './InfoTable';
@@ -17,6 +17,7 @@ import {ProcessTable} from './ProcessTable';
 type Props = {
   infoTables: Map<string, Map<string, string>>,
   processTable: Array<Process>,
+  killProcess: ?KillProcessCallback,
 };
 
 export class DevicePanel extends React.Component {
@@ -39,7 +40,11 @@ export class DevicePanel extends React.Component {
     const title = 'Process Table';
     return (
       <div className="block" key={title}>
-        <ProcessTable title={title} table={this.props.processTable} />
+        <ProcessTable
+          title={title}
+          table={this.props.processTable}
+          killProcess={this.props.killProcess}
+        />
       </div>
     );
   }

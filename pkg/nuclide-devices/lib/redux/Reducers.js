@@ -69,10 +69,11 @@ export function app(state: AppState, action: Action): AppState {
       };
 
     case Actions.SET_PROCESS_TABLE:
-      const {processTable} = action.payload;
+      const {processTable, killProcess} = action.payload;
       return {
         ...state,
         processTable,
+        killProcess,
       };
 
     case Actions.SET_HOSTS:

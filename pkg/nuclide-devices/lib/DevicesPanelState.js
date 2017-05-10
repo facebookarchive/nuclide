@@ -96,6 +96,7 @@ export class DevicesPanelState {
       setHost,
       setDeviceType,
       setDevice,
+      killProcess: state.killProcess,
     };
   }
 

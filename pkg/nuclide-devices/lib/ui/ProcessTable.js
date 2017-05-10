@@ -9,15 +9,18 @@
  * @format
  */
 
-import type {Process} from '../types';
+import type {Process, KillProcessCallback} from '../types';
 import React from 'react';
 
 import {Table} from '../../../nuclide-ui/Table';
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
+import {Button} from '../../../nuclide-ui/Button';
+import addTooltip from '../../../nuclide-ui/add-tooltip';
 
 type Props = {
   table: Array<Process>,
   title: string,
+  killProcess: ?KillProcessCallback,
 };
 
 type State = {
@@ -33,6 +36,7 @@ export class ProcessTable extends React.Component {
     (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(
       this,
     );
+    (this: any)._getKillButton = this._getKillButton.bind(this);
     this.state = {
       filterText: '',
     };
@@ -47,17 +51,29 @@ export class ProcessTable extends React.Component {
           filterRegex.test(item.pid) ||
           filterRegex.test(item.name),
       )
-      .map(item => ({data: item}));
+      .map(item => ({
+        data: {
+          kill: this._getKillButton(item.name),
+          pid: item.pid,
+          user: item.user,
+          name: item.name,
+        },
+      }));
     const columns = [
+      {
+        key: 'kill',
+        title: '',
+        width: 0.1,
+      },
       {
         key: 'pid',
         title: 'PID',
-        width: 0.25,
+        width: 0.2,
       },
       {
         key: 'user',
         title: 'User',
-        width: 0.25,
+        width: 0.2,
       },
       {
         key: 'name',
@@ -91,5 +107,27 @@ export class ProcessTable extends React.Component {
     this.setState({
       filterText: text,
     });
+  }
+
+  _getKillButton(packageName: string): ?React.Element<any> {
+    if (this.props.killProcess == null || packageName == null) {
+      return null;
+    }
+    return (
+      <Button
+        size="EXTRA_SMALL"
+        onClick={() => {
+          return this.props.killProcess != null && packageName != null
+            ? this.props.killProcess(packageName)
+            : null;
+        }}
+        icon="x"
+        ref={addTooltip({
+          title: 'force-stop process',
+          delay: 300,
+          placement: 'left',
+        })}
+      />
+    );
   }
 }

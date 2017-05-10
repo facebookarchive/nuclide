@@ -97,6 +97,15 @@ export class Adb extends AdbSdbBase {
     });
   }
 
+  async forceStopPackage(device: string, packageName: string): Promise<void> {
+    await this.runShortCommand(device, [
+      'shell',
+      'am',
+      'force-stop',
+      packageName,
+    ]).toPromise();
+  }
+
   getOSVersion(device: string): Promise<string> {
     return this.getAndroidProp(device, 'ro.build.version.release').toPromise();
   }

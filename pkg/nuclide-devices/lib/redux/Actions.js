@@ -23,6 +23,7 @@ import type {
   Device,
   DeviceAction,
   Process,
+  KillProcessCallback,
 } from '../types';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
@@ -46,10 +47,11 @@ export function setInfoTables(
 
 export function setProcessTable(
   processTable: Array<Process>,
+  killProcess: ?KillProcessCallback,
 ): SetProcessTableAction {
   return {
     type: SET_PROCESS_TABLE,
-    payload: {processTable},
+    payload: {processTable, killProcess},
   };
 }
 
