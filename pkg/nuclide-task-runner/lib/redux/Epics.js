@@ -427,10 +427,13 @@ function createTaskObservable(
       payload: {taskStatus},
     })
       .concat(
-        events.filter(event => event.type === 'progress').map(event => ({
-          type: Actions.TASK_PROGRESS,
-          payload: {progress: event.progress},
-        })),
+        events.filter(event => event.type === 'progress').map(event => {
+          invariant(event.type === 'progress');
+          return {
+            type: Actions.TASK_PROGRESS,
+            payload: {progress: event.progress},
+          };
+        }),
       )
       .concat(
         Observable.of({

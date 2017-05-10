@@ -25,7 +25,18 @@ export type Task = {
   cancel: () => void,
   onDidComplete: (callback: () => mixed) => IDisposable,
   onDidError: (callback: (err: Error) => mixed) => IDisposable,
+  onMessage?: (callback: (message: Message) => mixed) => IDisposable,
   onProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
+  onResult?: (callback: (result: mixed) => mixed) => IDisposable,
+  onStatusChange?: (callback: (status: ?string) => mixed) => IDisposable,
+};
+
+export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
+export type Message = {text: string, level: Level};
+
+type MessageEvent = {
+  type: 'message',
+  message: Message,
 };
 
 type ProgressEvent = {
@@ -33,9 +44,21 @@ type ProgressEvent = {
   progress: ?number,
 };
 
-// Currently, there's only one type of task event (for progress), but there may be more in the
-// future.
-export type TaskEvent = ProgressEvent;
+type ResultEvent = {
+  type: 'result',
+  result: mixed,
+};
+
+type StatusEvent = {
+  type: 'status',
+  status: ?string,
+};
+
+export type TaskEvent =
+  | MessageEvent
+  | ProgressEvent
+  | ResultEvent
+  | StatusEvent;
 
 /**
  * Subscribe to an observable and transform it into the Task interface. The Task interface allows us
@@ -65,6 +88,17 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
     onDidError(callback: (err: Error) => mixed): IDisposable {
       return new UniversalDisposable(events.subscribe({error: callback}));
     },
+    onMessage(callback: (message: Message) => mixed): IDisposable {
+      return new UniversalDisposable(
+        events
+          .filter(event => event.type === 'message')
+          .map(event => {
+            invariant(event.type === 'message');
+            return event.message;
+          })
+          .subscribe({next: callback, error: () => {}}),
+      );
+    },
     onProgress(callback: (progress: ?number) => mixed): IDisposable {
       return new UniversalDisposable(
         events
@@ -72,6 +106,28 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
           .map(event => {
             invariant(event.type === 'progress');
             return event.progress;
+          })
+          .subscribe({next: callback, error: () => {}}),
+      );
+    },
+    onResult(callback: (result: mixed) => mixed): IDisposable {
+      return new UniversalDisposable(
+        events
+          .filter(event => event.type === 'result')
+          .map(event => {
+            invariant(event.type === 'result');
+            return event.result;
+          })
+          .subscribe({next: callback, error: () => {}}),
+      );
+    },
+    onStatusChange(callback: (status: ?string) => mixed): IDisposable {
+      return new UniversalDisposable(
+        events
+          .filter(event => event.type === 'status')
+          .map(event => {
+            invariant(event.type === 'status');
+            return event.status;
           })
           .subscribe({next: callback, error: () => {}}),
       );
@@ -86,11 +142,27 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
   return Observable.create(observer => {
     let finished = false;
 
-    const events = typeof task.onProgress === 'function'
+    const messages = typeof task.onMessage === 'function'
+      ? observableFromSubscribeFunction(
+          task.onMessage.bind(task),
+        ).map(message => ({type: 'message', message}))
+      : Observable.never();
+    const progresses = typeof task.onProgress === 'function'
       ? observableFromSubscribeFunction(
           task.onProgress.bind(task),
         ).map(progress => ({type: 'progress', progress}))
       : Observable.never();
+    const results = typeof task.onResult === 'function'
+      ? observableFromSubscribeFunction(
+          task.onResult.bind(task),
+        ).map(result => ({type: 'result', result}))
+      : Observable.never();
+    const statuses = typeof task.onStatusChange === 'function'
+      ? observableFromSubscribeFunction(
+          task.onStatusChange.bind(task),
+        ).map(status => ({type: 'status', status}))
+      : Observable.never();
+
     const completeEvents = observableFromSubscribeFunction(
       task.onDidComplete.bind(task),
     );
@@ -107,7 +179,7 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
     });
 
     subscription.add(
-      Observable.merge(events, errors)
+      Observable.merge(messages, progresses, results, statuses, errors)
         .takeUntil(completeEvents)
         .do({
           complete: () => {
@@ -123,5 +195,18 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
     task.start();
 
     return subscription;
+  });
+}
+
+/**
+ * Convenient function when using Observable and dealing with messages.
+ */
+export function createMessage(
+  text: string,
+  level: Level,
+): Observable<TaskEvent> {
+  return Observable.of({
+    type: 'message',
+    message: {text, level},
   });
 }

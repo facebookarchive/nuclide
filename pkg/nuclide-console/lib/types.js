@@ -10,19 +10,13 @@
  */
 
 import type {Observable} from 'rxjs';
+import type {Level as TaskLevelType} from '../../commons-node/tasks';
 import type {
   EvaluationResult,
   ExpansionResult,
 } from '../../nuclide-debugger/lib/types';
 
-export type Level =
-  | 'info'
-  | 'log'
-  | 'warning'
-  | 'error'
-  | 'debug'
-  | 'success'
-  | Color;
+export type Level = TaskLevelType | Color;
 type Color =
   | 'red'
   | 'orange'
