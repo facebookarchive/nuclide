@@ -36,7 +36,7 @@ class DevicePoller {
     observable = Observable.interval(3000)
       .startWith(0)
       .switchMap(() => Observable.fromPromise(this.fetch(host)))
-      .publish()
+      .publishReplay(1)
       .refCount();
     this._observables.set(host, observable);
     return observable;
