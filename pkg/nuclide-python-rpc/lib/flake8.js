@@ -33,7 +33,7 @@ export function parseFlake8Output(src: string, output: string): Array<Object> {
     results.push({
       file: src,
       line: parseInt(line, 10) - 1 || 0,
-      column: parseInt(column, 10) || 0,
+      column: parseInt(column, 10) - 1 || 0,
       code,
       type: classifyCode(code),
       message,

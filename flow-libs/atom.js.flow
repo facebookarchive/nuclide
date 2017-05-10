@@ -508,13 +508,13 @@ declare class atom$Point {
   negate(): atom$Point,
 
   // Comparison
-  min(point1: atom$Point, point2: atom$Point): atom$Point,
-  compare(other: atom$Point): -1 | 0 | 1,
+  min(point1: atom$PointLike, point2: atom$PointLike): atom$Point,
+  compare(other: atom$PointLike): -1 | 0 | 1,
   isEqual(otherRange: atom$PointLike): boolean,
-  isLessThan(other: atom$Point): boolean,
-  isLessThanOrEqual(other: atom$Point): boolean,
-  isGreaterThan(other: atom$Point): boolean,
-  isGreaterThanOrEqual(other: atom$Point): boolean,
+  isLessThan(other: atom$PointLike): boolean,
+  isLessThanOrEqual(other: atom$PointLike): boolean,
+  isGreaterThan(other: atom$PointLike): boolean,
+  isGreaterThanOrEqual(other: atom$PointLike): boolean,
 
   // Operations
   translate(other: atom$PointLike): atom$Point,

@@ -78,7 +78,7 @@ describe('FlowSingleProjectLanguageService', () => {
     it('should return the location', () => {
       waitsForPromise(async () => {
         line = 2;
-        column = 5;
+        column = 4;
         // Flow uses 1-based indexing, Atom uses 0-based.
         const result = await runWith({path: file, line: 5, start: 8});
         invariant(result != null);
@@ -93,7 +93,7 @@ describe('FlowSingleProjectLanguageService', () => {
     it('should return null if no location is found', () => {
       waitsForPromise(async () => {
         line = 2;
-        column = 5;
+        column = 4;
         expect(await runWith({})).toBe(null);
         expect(flowRoot._process.execFlow).toHaveBeenCalled();
       });

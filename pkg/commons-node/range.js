@@ -20,7 +20,10 @@ export function wordAtPositionFromBuffer(
   // Extract the expression from the row text.
   buffer.scanInRange(wordRegex, rowRange, data => {
     const {range} = data;
-    if (range.containsPoint(position)) {
+    if (
+      range.start.isLessThanOrEqual(position) &&
+      range.end.isGreaterThan(position)
+    ) {
       matchData = data;
     }
     // Stop the scan if the scanner has passed our position.

@@ -69,7 +69,7 @@ describe('Diagnostic range', () => {
 
   it('Underlines the whitespace when there is extra whitespace', () => {
     checkRange(
-      makeDiagnostic('E202', '', 20, 11),
+      makeDiagnostic('E202', '', 20, 10),
       new Range([20, 10], [20, 11]),
     );
     checkRange(makeDiagnostic('E222', '', 31, 4), new Range([31, 3], [31, 5]));
@@ -80,13 +80,12 @@ describe('Diagnostic range', () => {
   });
 
   it('Underlines the comment for comment spacing issues', () => {
-    // flake8 column result is one to the right of # for comment spacing.
     checkRange(
-      makeDiagnostic('E261', '', 27, 13),
+      makeDiagnostic('E261', '', 27, 12),
       new Range([27, 12], [27, 85]),
     );
     checkRange(
-      makeDiagnostic('E262', '', 28, 17),
+      makeDiagnostic('E262', '', 28, 16),
       new Range([28, 16], [28, 58]),
     );
   });

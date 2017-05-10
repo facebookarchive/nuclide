@@ -109,12 +109,12 @@ export function getDiagnosticRange(
       case 'E2':
         // '#' comment spacing
         if (code.startsWith('E26')) {
-          return new Range([line, column - 1], [line, trimmedEndCol]);
+          return new Range([line, column], [line, trimmedEndCol]);
         }
         const numericCode = parseInt(code.slice(1), 10);
         // Missing whitespace - underline the closest symbol
         if ((numericCode >= 225 && numericCode <= 231) || numericCode === 275) {
-          return new Range([line, column - 1], [line, column]);
+          return new Range([line, column], [line, column + 1]);
         }
         // Extra whitespace - underline the offending whitespace
         const whitespace = wordAtPosition(
