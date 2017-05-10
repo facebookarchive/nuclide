@@ -36,13 +36,15 @@ let exitCode;
 while (chunks.length) {
   const chunk = chunks.shift();
   const ps = child_process.spawn(
-    'node_modules/.bin/eslint',
+    process.execPath,
     [
+      'node_modules/.bin/eslint',
       '--format', 'codeframe',
       '--max-warnings', '0',
       '--',
       ...chunk,
-    ]
+    ],
+    {encoding: 'utf8'}
   )
   .once('exit', code => {
     stdOut += out;
@@ -59,9 +61,16 @@ while (chunks.length) {
 }
 
 process.once('beforeExit', code => {
-  if (!code && exitCode) { process.exitCode = exitCode; }
-  if (stdOut) { console.log(stdOut); }
-  if (stdErr) { console.error(stdErr); }
+  if (!code && exitCode) {
+    process.exitCode = exitCode;
+    console.error('ESLint exit code %s', exitCode);
+  }
+  if (stdOut) {
+    console.log(stdOut.replace(/^/gm, '[eslintstdout] '));
+  }
+  if (stdErr) {
+    console.error(stdErr.replace(/^/gm, '[eslintstderr] '));
+  }
 });
 
 function bucketize(arr, num) {
