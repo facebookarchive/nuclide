@@ -9,15 +9,17 @@
  * @format
  */
 
-import React from 'react';
-import {Table} from '../../../nuclide-ui/Table';
-
 import type {Device} from '../types';
 
+import React from 'react';
+import {Table} from '../../../nuclide-ui/Table';
+import {Subscription} from 'rxjs';
+
 type Props = {
+  setDevice: (?Device) => void,
+  startFetchingDevices: () => Subscription,
   devices: Device[],
   device: ?Device,
-  setDevice: (?Device) => void,
 };
 
 type State = {
@@ -28,6 +30,7 @@ export class DeviceTable extends React.Component {
   props: Props;
   state: State;
   _emptyComponent: () => React.Element<any>;
+  _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
@@ -38,6 +41,16 @@ export class DeviceTable extends React.Component {
     this._emptyComponent = () => (
       <div className="padded">No devices connected</div>
     );
+  }
+
+  componentDidMount(): void {
+    this._devicesSubscription = this.props.startFetchingDevices();
+  }
+
+  componentWillUnmount(): void {
+    if (this._devicesSubscription != null) {
+      this._devicesSubscription.unsubscribe();
+    }
   }
 
   componentWillReceiveProps(nextProps: Props): void {
@@ -60,7 +73,7 @@ export class DeviceTable extends React.Component {
     const columns = [
       {
         key: 'name',
-        title: 'Device',
+        title: 'Devices',
         width: 1.0,
       },
     ];

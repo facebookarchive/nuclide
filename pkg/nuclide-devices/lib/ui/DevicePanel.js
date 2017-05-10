@@ -6,70 +6,21 @@
  * the root directory of this source tree.
  *
  * @flow
- * @format
  */
 
+import type {Process} from '../types';
+
 import React from 'react';
-import {
-  PanelComponentScroller,
-} from '../../../nuclide-ui/PanelComponentScroller';
-import {Subscription} from 'rxjs';
-import invariant from 'invariant';
-import {Selectors} from './Selectors';
-import {DeviceTable} from './DeviceTable';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
-import type {Device, DeviceAction, Process} from '../types';
-
-export type Props = {
-  setHost: (host: NuclideUri) => void,
-  setDeviceType: (deviceType: string) => void,
-  setDevice: (device: ?Device) => void,
-  startFetchingDevices: () => Subscription,
-  hosts: NuclideUri[],
-  devices: Device[],
-  host: NuclideUri,
-  deviceTypes: string[],
-  deviceType: ?string,
-  deviceActions: DeviceAction[],
-  device: ?Device,
+type Props = {
   infoTables: Map<string, Map<string, string>>,
   processTable: Array<Process>,
 };
 
 export class DevicePanel extends React.Component {
   props: Props;
-  _devicesSubscription: ?Subscription = null;
-
-  constructor(props: Props) {
-    super(props);
-    invariant(props.hosts.length > 0);
-  }
-
-  componentDidMount(): void {
-    this._devicesSubscription = this.props.startFetchingDevices();
-  }
-
-  componentWillUnmount(): void {
-    if (this._devicesSubscription != null) {
-      this._devicesSubscription.unsubscribe();
-    }
-  }
-
-  _createDeviceTable(): ?React.Element<any> {
-    if (this.props.deviceType === null) {
-      return null;
-    }
-    return (
-      <DeviceTable
-        devices={this.props.devices}
-        device={this.props.device}
-        setDevice={this.props.setDevice}
-      />
-    );
-  }
 
   _createInfoTables(): React.Element<any>[] {
     return Array.from(
@@ -95,26 +46,10 @@ export class DevicePanel extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <PanelComponentScroller>
-        <div className="nuclide-device-panel-container">
-          <div className="block">
-            <Selectors
-              deviceType={this.props.deviceType}
-              deviceTypes={this.props.deviceTypes}
-              hosts={this.props.hosts}
-              host={this.props.host}
-              setDeviceType={this.props.setDeviceType}
-              setHost={this.props.setHost}
-              deviceActions={this.props.deviceActions}
-            />
-          </div>
-          <div className="block">
-            {this._createDeviceTable()}
-          </div>
-          {this._createInfoTables()}
-          {this._createProcessTable()}
-        </div>
-      </PanelComponentScroller>
+      <div>
+        {this._createInfoTables()}
+        {this._createProcessTable()}
+      </div>
     );
   }
 }

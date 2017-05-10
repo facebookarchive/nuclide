@@ -11,12 +11,12 @@
 
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {DevicePanel} from './ui/DevicePanel';
+import {RootPanel} from './ui/RootPanel';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
 
-import type {Props} from './ui/DevicePanel';
+import type {Props} from './ui/RootPanel';
 import type {Store, AppState, Device} from './types';
 import {getDeviceListProviders} from './providers';
 
@@ -105,7 +105,7 @@ export class DevicesPanelState {
       Observable.from(this._store)
         .distinctUntilChanged()
         .map(state => this._appStateToProps(state)),
-      DevicePanel,
+      RootPanel,
     );
 
     return renderReactRoot(<PreparedDevicePanel />);
