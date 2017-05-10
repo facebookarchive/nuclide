@@ -9,7 +9,7 @@
  * @format
  */
 
-import {pathForDebugBridge, getStore} from './DebugBridgePathStore';
+import {pathForDebugBridge, getStore} from './AdbSdbPathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Sdb} from './Sdb';
 

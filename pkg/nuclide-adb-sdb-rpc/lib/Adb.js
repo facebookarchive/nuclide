@@ -12,16 +12,16 @@
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand, observeProcessRaw} from '../../commons-node/process';
-import {DebugBridge} from './DebugBridge';
+import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
 
 import type {AndroidJavaProcess, Process} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class Adb extends DebugBridge {
+export class Adb extends AdbSdbBase {
   getAndroidProp(device: string, key: string): Observable<string> {
-    return this.runShortAdbCommand(device, ['shell', 'getprop', key]).map(s =>
+    return this.runShortCommand(device, ['shell', 'getprop', key]).map(s =>
       s.trim(),
     );
   }
@@ -32,7 +32,7 @@ export class Adb extends DebugBridge {
 
   async getInstalledPackages(device: string): Promise<Array<string>> {
     const prefix = 'package:';
-    const stdout = await this.runShortAdbCommand(device, [
+    const stdout = await this.runShortCommand(device, [
       'shell',
       'pm',
       'list',
@@ -80,7 +80,7 @@ export class Adb extends DebugBridge {
   }
 
   async getProcesses(device: string): Promise<Array<Process>> {
-    const processes = (await this.runShortAdbCommand(device, [
+    const processes = (await this.runShortCommand(device, [
       'shell',
       'ps',
     ]).toPromise()).split(/\n/);
@@ -107,7 +107,7 @@ export class Adb extends DebugBridge {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this.runLongAdbCommand(device, ['install', '-r', packagePath]);
+    return this.runLongCommand(device, ['install', '-r', packagePath]);
   }
 
   uninstallPackage(
@@ -115,7 +115,7 @@ export class Adb extends DebugBridge {
     packageName: string,
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this.runLongAdbCommand(device, ['uninstall', packageName]);
+    return this.runLongCommand(device, ['uninstall', packageName]);
   }
 
   forwardJdwpPortToPid(
@@ -123,7 +123,7 @@ export class Adb extends DebugBridge {
     tcpPort: number,
     pid: number,
   ): Promise<string> {
-    return this.runShortAdbCommand(device, [
+    return this.runShortCommand(device, [
       'forward',
       `tcp:${tcpPort}`,
       `jdwp:${pid}`,
@@ -145,7 +145,7 @@ export class Adb extends DebugBridge {
       args.push('-N', '-D');
     }
     args.push(`${packageName}/${activity}`);
-    return this.runShortAdbCommand(device, args).toPromise();
+    return this.runShortCommand(device, args).toPromise();
   }
 
   activityExists(
@@ -156,13 +156,13 @@ export class Adb extends DebugBridge {
     const packageActivityString = `${packageName}/${activity}`;
     const deviceArg = device !== '' ? ['-s', device] : [];
     const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
-    return runCommand(this._adbPath, command)
+    return runCommand(this._dbPath, command)
       .map(stdout => stdout.includes(packageActivityString))
       .toPromise();
   }
 
   async getJavaProcesses(device: string): Promise<Array<AndroidJavaProcess>> {
-    const allProcesses = await this.runShortAdbCommand(device, ['shell', 'ps'])
+    const allProcesses = await this.runShortCommand(device, ['shell', 'ps'])
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
@@ -170,7 +170,7 @@ export class Adb extends DebugBridge {
       .toPromise();
 
     const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(this._adbPath, args, {
+    return observeProcessRaw(this._dbPath, args, {
       killTreeWhenDone: true,
       /* TDOO(17353599) */ isExitError: () => false,
     })
@@ -194,7 +194,7 @@ export class Adb extends DebugBridge {
     if (!await this.isPackageInstalled(device, pkg)) {
       return null;
     }
-    return this.runShortAdbCommand(device, [
+    return this.runShortCommand(device, [
       'shell',
       'dumpsys',
       'package',

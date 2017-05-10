@@ -9,7 +9,7 @@
  * @format
  */
 
-import {DebugBridge} from './DebugBridge';
+import {AdbSdbBase} from './AdbSdbBase';
 import invariant from 'assert';
 import nuclideUri from '../../commons-node/nuclideUri';
 import {Observable} from 'rxjs';
@@ -17,11 +17,11 @@ import {Observable} from 'rxjs';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class Sdb extends DebugBridge {
+export class Sdb extends AdbSdbBase {
   getTizenModelConfigKey(device: string, key: string): Promise<string> {
     const modelConfigPath = '/etc/config/model-config.xml';
 
-    return this.runShortAdbCommand(device, ['shell', 'cat', modelConfigPath])
+    return this.runShortCommand(device, ['shell', 'cat', modelConfigPath])
       .map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0])
       .map(s => {
         const regex = /.*<.*>(.*)<.*>/g;
@@ -31,7 +31,7 @@ export class Sdb extends DebugBridge {
   }
 
   getDeviceArchitecture(device: string): Promise<string> {
-    return this.runShortAdbCommand(device, ['shell', 'uname', '-m'])
+    return this.runShortCommand(device, ['shell', 'uname', '-m'])
       .map(s => s.trim())
       .toPromise();
   }
@@ -62,11 +62,11 @@ export class Sdb extends DebugBridge {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this.runLongAdbCommand(device, ['install', packagePath]);
+    return this.runLongCommand(device, ['install', packagePath]);
   }
 
   launchApp(device: string, identifier: string): Promise<string> {
-    return this.runShortAdbCommand(device, [
+    return this.runShortCommand(device, [
       'shell',
       'launch_app',
       identifier,
@@ -78,6 +78,6 @@ export class Sdb extends DebugBridge {
     packageName: string,
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this.runLongAdbCommand(device, ['uninstall', packageName]);
+    return this.runLongCommand(device, ['uninstall', packageName]);
   }
 }

@@ -18,35 +18,32 @@ import type {DeviceDescription} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from '../../commons-node/nuclideUri';
 
-export class DebugBridge {
-  _adbPath: string;
+export class AdbSdbBase {
+  _dbPath: string;
 
-  constructor(adbPath: string) {
-    this._adbPath = adbPath;
+  constructor(dbPath: string) {
+    this._dbPath = dbPath;
   }
 
-  runShortAdbCommand(
-    device: string,
-    command: Array<string>,
-  ): Observable<string> {
+  runShortCommand(device: string, command: Array<string>): Observable<string> {
     const deviceArg = device !== '' ? ['-s', device] : [];
-    return runCommand(this._adbPath, deviceArg.concat(command));
+    return runCommand(this._dbPath, deviceArg.concat(command));
   }
 
-  runLongAdbCommand(
+  runLongCommand(
     device: string,
     command: string[],
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     const deviceArg = device !== '' ? ['-s', device] : [];
-    return observeProcess(this._adbPath, deviceArg.concat(command), {
+    return observeProcess(this._dbPath, deviceArg.concat(command), {
       killTreeWhenDone: true,
       /* TODO(T17353599) */ isExitError: () => false,
     }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   }
 
   startServer(): Promise<boolean> {
-    return runCommand(this._adbPath, ['start-server'])
+    return runCommand(this._dbPath, ['start-server'])
       .toPromise()
       .then(() => true, () => false);
   }
@@ -67,7 +64,7 @@ export class DebugBridge {
   }
 
   async getDeviceList(): Promise<Array<DeviceDescription>> {
-    const devices = await runCommand(this._adbPath, ['devices'])
+    const devices = await runCommand(this._dbPath, ['devices'])
       .map(stdout =>
         stdout
           .split(/\n+/g)
@@ -96,7 +93,7 @@ export class DebugBridge {
   }
 
   async getFileContentsAtPath(device: string, path: string): Promise<string> {
-    return this.runShortAdbCommand(device, ['shell', 'cat', path]).toPromise();
+    return this.runShortCommand(device, ['shell', 'cat', path]).toPromise();
   }
 
   getDeviceArchitecture(device: string): Promise<string> {
@@ -131,7 +128,7 @@ export class DebugBridge {
     device: string,
     packageName: string,
   ): Promise<number> {
-    const pidLine = (await this.runShortAdbCommand(device, [
+    const pidLine = (await this.runShortCommand(device, [
       'shell',
       'ps',
       '|',
