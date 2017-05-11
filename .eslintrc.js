@@ -424,3 +424,8 @@ module.exports = {
     'react',
   ],
 };
+
+// Register our custom rules as a plugin to avoid needing `--rulesdir` or
+// `node_modules` trickery.
+const Plugins = require('eslint/lib/config/plugins');
+Plugins.define('nuclide-internal', require('./resources/eslint-plugin-nuclide-internal'));
