@@ -78,7 +78,7 @@ export class ProcessTable extends React.Component {
       {
         key: 'name',
         title: 'Name',
-        width: 0.50,
+        width: 0.6,
       },
     ];
     const emptyComponent = () => <div className="padded">No information</div>;

@@ -9,15 +9,18 @@
  */
 
 import type {Process, KillProcessCallback} from '../types';
+import type {DeviceAction} from '../types';
 
 import React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
+import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
 
 type Props = {
   infoTables: Map<string, Map<string, string>>,
   processTable: Array<Process>,
   killProcess: ?KillProcessCallback,
+  deviceActions: DeviceAction[],
 };
 
 export class DevicePanel extends React.Component {
@@ -49,9 +52,24 @@ export class DevicePanel extends React.Component {
     );
   }
 
+  _getActions(): React.Element<any> {
+    const actions = this.props.deviceActions.map(action =>
+    (
+      <Button size={ButtonSizes.SMALL} onClick={() => action.callback()} key={action.name}>
+        {action.name}
+      </Button>
+    ));
+    return (
+      <div className="block" style={{flexDirection: 'column', display: 'flex'}}>
+        {actions}
+      </div>
+    );
+  }
+
   render(): React.Element<any> {
     return (
       <div>
+        {this._getActions()}
         {this._createInfoTables()}
         {this._createProcessTable()}
       </div>

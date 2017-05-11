@@ -74,6 +74,7 @@ export class RootPanel extends React.Component {
             infoTables={this.props.infoTables}
             processTable={this.props.processTable}
             killProcess={this.props.killProcess}
+            deviceActions={this.props.deviceActions}
           />
         </div>
       );
@@ -88,7 +89,6 @@ export class RootPanel extends React.Component {
             host={this.props.host}
             setDeviceType={this.props.setDeviceType}
             setHost={this.props.setHost}
-            deviceActions={this.props.deviceActions}
           />
         </div>
         <div className="block">
