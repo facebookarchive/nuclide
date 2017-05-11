@@ -512,9 +512,15 @@ class FileParser {
       definition.value.returnType != null,
       `${definition.key.name} missing a return type annotation.`,
     );
-
     const returnType = this._parseTypeAnnotation(definition.value.returnType);
     invariant(typeof definition.key.name === 'string');
+    invariant(typeof definition.optional === 'boolean');
+    if (definition.optional) {
+      throw this._error(
+        definition,
+        `${definition.key.name} optional interface methods are not supported.`,
+      );
+    }
     return {
       location: this._locationOfNode(definition.key),
       name: definition.key.name,
@@ -661,6 +667,11 @@ class FileParser {
         };
       case 'GenericTypeAnnotation':
         return this._parseGenericTypeAnnotation(typeAnnotation);
+      case 'FunctionTypeAnnotation':
+        throw this._error(
+          typeAnnotation,
+          'Properties that are of a function type are not supported. Use a method instead.',
+        );
       default:
         throw this._error(
           typeAnnotation,
