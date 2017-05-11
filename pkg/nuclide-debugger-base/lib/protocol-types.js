@@ -26,7 +26,8 @@ export type RemoteObject = {
     | 'string'
     | 'number'
     | 'boolean'
-    | 'symbol',
+    | 'symbol'
+    | 'text',
   /** Object subtype hint. Specified for 'object' type values only. */
   subtype?:
     | 'array'
@@ -253,6 +254,9 @@ export type CallFrame = {
   /** Location in the source code. */
   location: Location,
 
+  /** Whether this frame has source code or not. */
+  hasSource?: boolean,
+
   /** Scope chain for this call frame. */
   scopeChain: Scope[],
 
@@ -313,6 +317,9 @@ export type SetBreakpointByUrlResponse = {
 
   /** List of the locations this breakpoint resolved into upon addition. */
   locations: Location[],
+
+  /** Whether the breakpoint is resolved or not. */
+  resolved?: boolean,
 };
 
 export type RemoveBreakpointRequest = {
@@ -406,12 +413,65 @@ export type PausedEvent = {
     | 'debugCommand'
     | 'promiseRejection'
     | 'other',
+
+  /** The message to be shown to the user when the thread changes. */
+  threadSwitchMessage?: ?string,
+
   /** Object containing break-specific auxiliary properties. */
   data?: any,
 
+  /** ID of the stopped thread. */
+  stopThreadId?: number,
+
   /** Hit breakpoints IDs */
-  hitBreakpoints?: string[],
+  hitBreakpoints?: BreakpointId[],
 
   /** Async stack trace, if any. */
   asyncStackTrace?: StackTrace,
+};
+
+export type ThreadsUpdatedEvent = {
+  /** Process unique identifier. */
+  owningProcessId: number,
+
+  /** Unique identifier of the thread caused process to stop. */
+  stopThreadId: number,
+
+  /** List of threads. */
+  threads: Thread[],
+};
+
+// Currently PHP only.
+export type ThreadUpdatedEvent = {
+  thread: Thread,
+};
+
+export type Thread = {
+  id: number,
+  name: ?string,
+  /** Thread top frame address. */
+  address: string,
+  /** Thread current location in the source code. */
+  location: Location,
+  /** Thread stop reason if any. */
+  stopReason: string,
+  /** Description of the thread. */
+  description: string,
+  /** Wether the stop location has source. */
+  hasSource: boolean,
+};
+
+export type SelectThreadRequest = {
+  /** Switch to a different thread context. */
+  threadId: number,
+};
+
+export type GetThreadStackRequest = {
+  /** Target thread id. */
+  threadId: number,
+};
+
+export type GetThreadStackResponse = {
+  /** Target thread id. */
+  callFrames: CallFrame[],
 };
