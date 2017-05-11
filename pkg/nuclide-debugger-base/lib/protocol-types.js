@@ -9,41 +9,409 @@
  * @format
  */
 
-//------------------------------------------------------------------------------
-// Runtime domain types.
-//------------------------------------------------------------------------------
+/** Unique script identifier. */
+export type ScriptId = string;
 
-// description wins over value in display
-export type RemoteObject = {
-  className?: string,
-  description?: string,
-  objectId?: RemoteObjectId,
-  subtype?: 'array' | 'date' | 'node' | 'null' | 'regexp',
-  type: 'boolean' | 'function' | 'number' | 'object' | 'string' | 'undefined',
-  value?: mixed,
-};
-
+/** Unique object identifier. */
 export type RemoteObjectId = string;
 
+/** Mirror object referencing original JavaScript object. */
+// description wins over value in display
+export type RemoteObject = {
+  /** Object type. */
+  type:
+    | 'object'
+    | 'function'
+    | 'undefined'
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'symbol',
+  /** Object subtype hint. Specified for 'object' type values only. */
+  subtype?:
+    | 'array'
+    | 'null'
+    | 'node'
+    | 'regexp'
+    | 'date'
+    | 'map'
+    | 'set'
+    | 'iterator'
+    | 'generator'
+    | 'error'
+    | 'proxy'
+    | 'promise'
+    | 'typedarray',
+  /** Object class (constructor) name. Specified for 'object' type values only. */
+  className?: string,
+
+  /** Remote object value in case of primitive values or JSON values (if it was requested). */
+  value?: any,
+
+  /** String representation of the object. */
+  description?: string,
+
+  /** Unique object identifier (for non-primitive values). */
+  objectId?: RemoteObjectId,
+};
+
+/** Object property descriptor. */
 export type PropertyDescriptor = {
-  configurable: boolean,
-  enumerable: boolean,
-  get?: RemoteObject,
+  /** Property name or symbol description. */
   name: string,
-  set?: RemoteObject,
+
+  /** The value associated with the property. */
   value?: RemoteObject,
-  wasThrown?: boolean,
+
+  /** True if the value associated with the property may be changed (data descriptors only). */
   writable?: boolean,
+
+  /** A function which serves as a getter for the property, or 'undefined' if there is no getter (accessor descriptors only). */
+  get?: RemoteObject,
+
+  /** A function which serves as a setter for the property, or 'undefined' if there is no setter (accessor descriptors only). */
+  set?: RemoteObject,
+
+  /** True if the type of this property descriptor may be changed and if the property may be deleted from the corresponding object. */
+  configurable: boolean,
+
+  /** True if this property shows up during enumeration of the properties on the corresponding object. */
+  enumerable: boolean,
+
+  /** True if the result was thrown during the evaluation. */
+  wasThrown?: boolean,
+
+  /** True if the property is owned for the object. */
+  isOwn?: boolean,
+
+  /** Property symbol object, if the property is of the 'symbol' type. */
+  symbol?: RemoteObject,
+};
+
+/** Represents function call argument. Either remote object id 'objectId</code>, primitive <code>value', unserializable primitive value or neither of (for undefined) them should be specified. */
+export type CallArgument = {
+  /** Primitive value. */
+  value?: any,
+
+  /** Primitive value which can not be JSON-stringified. */
+  // unserializableValue?: UnserializableValue,
+
+  /** Remote object handle. */
+  objectId?: RemoteObjectId,
+};
+
+/** Id of an execution context. */
+export type ExecutionContextId = number;
+
+/** Number of milliseconds since epoch. */
+export type Timestamp = number;
+
+/** Call frames for assertions or error messages. */
+export type StackTrace = {
+  /** String label of this stack trace. For async traces this may be a name of the function that initiated the async call. */
+  description?: string,
+
+  /** JavaScript function name. */
+  callFrames: CallFrame[],
+
+  /** Asynchronous JavaScript stack trace that preceded this stack, if available. */
+  parent?: StackTrace,
+};
+
+/** Detailed information about exception (or error) that was thrown during script compilation or execution. */
+export type ExceptionDetails = {
+  /** Exception id. */
+  exceptionId: number,
+
+  /** Exception text, which should be used together with exception object when available. */
+  text: string,
+
+  /** Line number of the exception location (0-based). */
+  lineNumber: number,
+
+  /** Column number of the exception location (0-based). */
+  columnNumber: number,
+
+  /** Script ID of the exception location. */
+  scriptId?: ScriptId,
+
+  /** URL of the exception location, to be used when the script was not reported. */
+  url?: string,
+
+  /** JavaScript stack trace if available. */
+  stackTrace?: StackTrace,
+
+  /** Exception object if available. */
+  exception?: RemoteObject,
+
+  /** Identifier of the context where exception happened. */
+  executionContextId?: ExecutionContextId,
+};
+
+export type EvaluateRequest = {
+  /** Expression to evaluate. */
+  expression: string,
+
+  /** Symbolic group name that can be used to release multiple objects. */
+  objectGroup?: string,
+
+  /** Determines whether Command Line API should be available during the evaluation. */
+  includeCommandLineAPI?: boolean,
+
+  /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+  silent?: boolean,
+
+  /** Specifies in which execution context to perform evaluation. If the parameter is omitted the evaluation will be performed in the context of the inspected page. */
+  contextId?: ExecutionContextId,
+
+  /** Whether the result is expected to be a JSON object that should be sent by value. */
+  returnByValue?: boolean,
+
+  /** Whether preview should be generated for the result. */
+  generatePreview?: boolean,
+
+  /** Whether execution should be treated as initiated by user in the UI. */
+  userGesture?: boolean,
+
+  /** Whether execution should wait for promise to be resolved. If the result of evaluation is not a Promise, it's considered to be an error. */
+  awaitPromise?: boolean,
+};
+
+export type EvaluateResponse = {
+  /** Evaluation result. */
+  result: RemoteObject,
+
+  /** Exception details. */
+  exceptionDetails?: ExceptionDetails,
+};
+
+export type GetPropertiesRequest = {
+  /** Identifier of the object to return properties for. */
+  objectId: RemoteObjectId,
+
+  /** If true, returns properties belonging only to the element itself, not to its prototype chain. */
+  ownProperties?: boolean,
+
+  /** If true, returns accessor properties (with getter/setter) only; internal properties are not returned either. */
+  accessorPropertiesOnly?: boolean,
+
+  /** Whether preview should be generated for the results. */
+  generatePreview?: boolean,
+};
+
+export type GetPropertiesResponse = {
+  /** Object properties. */
+  result: PropertyDescriptor[],
+
+  /** Internal object properties (only of the element itself). */
+  // internalProperties?: InternalPropertyDescriptor[],
+
+  /** Exception details. */
+  exceptionDetails?: ExceptionDetails,
+};
+
+export type ExceptionThrownEvent = {
+  /** Timestamp of the exception. */
+  timestamp: Timestamp,
+
+  exceptionDetails: ExceptionDetails,
 };
 
 //------------------------------------------------------------------------------
 // Debugger domain types.
 //------------------------------------------------------------------------------
 
-// scope.object.description shows on RHS
-export type Scope = {
-  object: RemoteObject,
-  type: ScopeType,
+/** Breakpoint identifier. */
+export type BreakpointId = string;
+
+/** Call frame identifier. */
+export type CallFrameId = string;
+
+/** Location in the source code. */
+export type Location = {
+  /** Script identifier as reported in the 'Debugger.scriptParsed'. */
+  scriptId: ScriptId,
+
+  /** Line number in the script (0-based). */
+  lineNumber: number,
+
+  /** Column number in the script (0-based). */
+  columnNumber?: number,
 };
 
-export type ScopeType = 'catch' | 'closure' | 'global' | 'local' | 'with';
+/** JavaScript call frame. Array of call frames form the call stack. */
+export type CallFrame = {
+  /** Call frame identifier. This identifier is only valid while the virtual machine is paused. */
+  callFrameId: CallFrameId,
+
+  /** Name of the JavaScript function called on this call frame. */
+  functionName: string,
+
+  /** Location in the source code. */
+  functionLocation?: Location,
+
+  /** Location in the source code. */
+  location: Location,
+
+  /** Scope chain for this call frame. */
+  scopeChain: Scope[],
+
+  /** 'this' object for this call frame. */
+  this: RemoteObject,
+
+  /** The value being returned, if the function is at return point. */
+  returnValue?: RemoteObject,
+};
+
+/** Scope description. */
+// scope.object.description shows on RHS
+export type Scope = {
+  /** Scope type. */
+  type: ScopeType,
+
+  /** Object representing the scope. For 'global</code> and <code>with' scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties. */
+  object: RemoteObject,
+
+  name?: string,
+
+  /** Location in the source code where scope starts */
+  startLocation?: Location,
+
+  /** Location in the source code where scope ends */
+  endLocation?: Location,
+};
+
+export type ScopeType =
+  | 'catch'
+  | 'closure'
+  | 'global'
+  | 'local'
+  | 'with'
+  | 'block'
+  | 'script';
+
+export type SetBreakpointByUrlRequest = {
+  /** Line number to set breakpoint at. */
+  lineNumber: number,
+
+  /** URL of the resources to set breakpoint on. */
+  url?: string,
+
+  /** Regex pattern for the URLs of the resources to set breakpoints on. Either 'url</code> or <code>urlRegex' must be specified. */
+  urlRegex?: string,
+
+  /** Offset in the line to set breakpoint at. */
+  columnNumber?: number,
+
+  /** Expression to use as a breakpoint condition. When specified, debugger will only stop on the breakpoint if this expression evaluates to true. */
+  condition?: string,
+};
+
+export type SetBreakpointByUrlResponse = {
+  /** Id of the created breakpoint for further reference. */
+  breakpointId: BreakpointId,
+
+  /** List of the locations this breakpoint resolved into upon addition. */
+  locations: Location[],
+};
+
+export type RemoveBreakpointRequest = {
+  breakpointId: BreakpointId,
+};
+
+export type ContinueToLocationRequest = {
+  /** Location to continue to. */
+  location: Location,
+};
+
+export type GetScriptSourceRequest = {
+  /** Id of the script to get source for. */
+  scriptId: ScriptId,
+};
+
+export type GetScriptSourceResponse = {
+  /** Script source. */
+  scriptSource: string,
+};
+
+export type SetPauseOnExceptionsRequest = {
+  /** Pause on exceptions mode. */
+  state: 'none' | 'uncaught' | 'all',
+};
+
+export type EvaluateOnCallFrameRequest = {
+  /** Call frame identifier to evaluate on. */
+  callFrameId: CallFrameId,
+
+  /** Expression to evaluate. */
+  expression: string,
+
+  /** String object group name to put result into (allows rapid releasing resulting object handles using 'releaseObjectGroup'). */
+  objectGroup?: string,
+
+  /** Specifies whether command line API should be available to the evaluated expression, defaults to false. */
+  includeCommandLineAPI?: boolean,
+
+  /** In silent mode exceptions thrown during evaluation are not reported and do not pause execution. Overrides 'setPauseOnException' state. */
+  silent?: boolean,
+
+  /** Whether the result is expected to be a JSON object that should be sent by value. */
+  returnByValue?: boolean,
+
+  /** Whether preview should be generated for the result. */
+  generatePreview?: boolean,
+};
+
+export type EvaluateOnCallFrameResponse = {
+  /** Object wrapper for the evaluation result. */
+  result: RemoteObject,
+
+  /** Exception details. */
+  exceptionDetails?: ExceptionDetails,
+};
+
+export type SetVariableValueRequest = {
+  /** 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually. */
+  scopeNumber: number,
+
+  /** Variable name. */
+  variableName: string,
+
+  /** New variable value. */
+  newValue: CallArgument,
+
+  /** Id of callframe that holds variable. */
+  callFrameId: CallFrameId,
+};
+
+export type BreakpointResolvedEvent = {
+  /** Breakpoint unique identifier. */
+  breakpointId: BreakpointId,
+
+  /** Actual breakpoint location. */
+  location: Location,
+};
+
+export type PausedEvent = {
+  /** Call stack the virtual machine stopped on. */
+  callFrames: CallFrame[],
+
+  /** Pause reason. */
+  reason:
+    | 'XHR'
+    | 'DOM'
+    | 'EventListener'
+    | 'exception'
+    | 'assert'
+    | 'debugCommand'
+    | 'promiseRejection'
+    | 'other',
+  /** Object containing break-specific auxiliary properties. */
+  data?: any,
+
+  /** Hit breakpoints IDs */
+  hitBreakpoints?: string[],
+
+  /** Async stack trace, if any. */
+  asyncStackTrace?: StackTrace,
+};
