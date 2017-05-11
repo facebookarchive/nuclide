@@ -9,6 +9,16 @@
  * @format
  */
 
+import type {
+  DnsLookup,
+} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
+
+import type {
+  NuclideRemoteConnectionParams,
+  NuclideRemoteConnectionParamsWithPassword,
+  NuclideRemoteConnectionProfile,
+} from './connection-types';
+
 import addTooltip from '../../nuclide-ui/add-tooltip';
 import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
@@ -17,12 +27,6 @@ import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {HR} from '../../nuclide-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
 import React from 'react';
-
-import type {
-  NuclideRemoteConnectionParams,
-  NuclideRemoteConnectionParamsWithPassword,
-  NuclideRemoteConnectionProfile,
-} from './connection-types';
 
 type Props = {
   // The initial list of connection profiles that will be displayed.
@@ -48,7 +52,7 @@ type Props = {
 };
 
 type State = {
-  IPs: ?Promise<Array<string>>,
+  IPs: ?Promise<Array<DnsLookup>>,
   shouldDisplayTooltipWarning: boolean,
 };
 

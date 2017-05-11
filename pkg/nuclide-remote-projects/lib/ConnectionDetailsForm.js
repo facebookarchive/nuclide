@@ -10,6 +10,9 @@
  */
 
 import type {
+  DnsLookup,
+} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
+import type {
   NuclideRemoteAuthMethods,
   NuclideRemoteConnectionParamsWithPassword,
 } from './connection-types';
@@ -53,7 +56,7 @@ type Props = {
 type State = {
   cwd: string,
   displayTitle: string,
-  IPs: ?Promise<Array<string>>,
+  IPs: ?Promise<Array<DnsLookup>>,
   pathToPrivateKey: string,
   remoteServerCommand: string,
   selectedAuthMethodIndex: number,

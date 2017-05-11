@@ -20,9 +20,13 @@ import type {
 import type {
   SshConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
+import type {
+  DnsLookup,
+} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
+import {arrayCompact} from '../../commons-node/collection';
 import lookupPreferIpv6
   from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 
@@ -166,14 +170,12 @@ export function getUniqueHostsForProfiles(
  */
 export async function getIPsForHosts(
   hosts: Array<string>,
-): Promise<Array<string>> {
+): Promise<Array<DnsLookup>> {
   const promise_array = hosts.map(host =>
     lookupPreferIpv6(host).catch(() => {}),
   );
   const values = await Promise.all(promise_array);
-  return values.filter(element => {
-    return element !== undefined;
-  });
+  return arrayCompact(values);
 }
 
 /**

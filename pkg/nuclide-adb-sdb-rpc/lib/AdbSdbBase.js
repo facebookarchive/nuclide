@@ -57,8 +57,11 @@ export class AdbSdbBase {
     const model = await this.getDeviceModel(device).catch(unknownCB);
     return new Map([
       ['name', device],
+      // $FlowFixMe architecture could resolve to null if the promise throws
       ['architecture', architecture],
+      // $FlowFixMe apiVersion could resolve to null if the promise throws
       ['api_version', apiVersion],
+      // $FlowFixMe model could resolve to null if the promise throws
       ['model', model],
     ]);
   }

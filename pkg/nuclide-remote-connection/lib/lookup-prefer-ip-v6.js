@@ -12,9 +12,9 @@
 import invariant from 'assert';
 import dns from 'dns';
 
-type DnsFamily = 4 | 6;
+export type DnsFamily = 4 | 6;
 
-type DnsLookup = {
+export type DnsLookup = {
   address: string,
   family: DnsFamily,
 };

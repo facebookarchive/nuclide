@@ -69,12 +69,15 @@ export class Adb extends AdbSdbBase {
     const unknownCB = () => null;
     infoTable.set(
       'android_version',
+      // $FlowFixMe will resolve to null if an error is caught
       await this.getOSVersion(device).catch(unknownCB),
     );
     infoTable.set(
       'manufacturer',
+      // $FlowFixMe will resolve to null if an error is caught
       await this.getManufacturer(device).catch(unknownCB),
     );
+    // $FlowFixMe will resolve to null if an error is caught
     infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
     return infoTable;
   }

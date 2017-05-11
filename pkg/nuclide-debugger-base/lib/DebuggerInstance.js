@@ -147,7 +147,11 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this.dispose();
   }
 
-  _handleWebSocketServerConnection(webSocket: WS): void {
+  _handleWebSocketServerConnection(webSocket: ?WS): void {
+    if (webSocket == null) {
+      // This means there was an error, which was already handled by _handleWebSocketServerError
+      return;
+    }
     if (this._chromeWebSocket) {
       this.getLogger().log(
         'Already connected to Chrome WebSocket. Discarding new connection.',
