@@ -182,6 +182,9 @@ export type EvaluateResponse = {
   /** Evaluation result. */
   result: RemoteObject,
 
+  /** True if the result was thrown during the evaluation. */
+  wasThrown?: boolean,
+
   /** Exception details. */
   exceptionDetails?: ExceptionDetails,
 };
@@ -373,6 +376,9 @@ export type EvaluateOnCallFrameResponse = {
   /** Object wrapper for the evaluation result. */
   result: RemoteObject,
 
+  /** True if the result was thrown during the evaluation. */
+  wasThrown?: boolean,
+
   /** Exception details. */
   exceptionDetails?: ExceptionDetails,
 };
@@ -389,6 +395,9 @@ export type SetVariableValueRequest = {
 
   /** Id of callframe that holds variable. */
   callFrameId: CallFrameId,
+
+  /** Object id of closure (function) that holds variable. */
+  functionObjectId: RemoteObjectId,
 };
 
 export type BreakpointResolvedEvent = {
@@ -475,3 +484,160 @@ export type GetThreadStackResponse = {
   /** Target thread id. */
   callFrames: CallFrame[],
 };
+
+export type ExecutionContextCreatedEvent = {
+  /** A newly created execution context. */
+  context: ExecutionContextDescription,
+};
+
+/** Description of an isolated world. */
+export type ExecutionContextDescription = {
+  /** Unique id of the execution context. It can be used to specify in which execution context script evaluation should be performed. */
+  id: ExecutionContextId,
+
+  /** Execution context origin. */
+  origin: string,
+
+  /** Id of the owning frame. May be an empty string if the context is not associated with a frame. */
+  frameId: string,
+
+  /** Human readable name describing given context. */
+  name: string,
+};
+
+export type DebuggerCommand =
+  | {
+      id: number,
+      method: 'Debugger.enable',
+    }
+  | {
+      id: number,
+      method: 'Debugger.setBreakpointByUrl',
+      params: SetBreakpointByUrlRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.removeBreakpoint',
+      params: RemoveBreakpointRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.resume',
+    }
+  | {
+      id: number,
+      method: 'Debugger.stepOver',
+    }
+  | {
+      id: number,
+      method: 'Debugger.stepInto',
+    }
+  | {
+      id: number,
+      method: 'Debugger.stepOut',
+    }
+  | {
+      id: number,
+      method: 'Debugger.continueToLocation',
+      params: ContinueToLocationRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.evaluateOnCallFrame',
+      params: EvaluateOnCallFrameRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.setVariableValue',
+      params: SetVariableValueRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.setPauseOnExceptions',
+      params: SetPauseOnExceptionsRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.getScriptSource',
+      params: GetScriptSourceRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.skipStackFrames',
+    }
+  | {
+      id: number,
+      method: 'Debugger.setAsyncCallStackDepth',
+    }
+  | {
+      id: number,
+      method: 'Debugger.selectThread',
+      params: SelectThreadRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.getThreadStack',
+      params: GetThreadStackRequest,
+    }
+  | {
+      id: number,
+      method: 'Runtime.enable',
+    }
+  | {
+      id: number,
+      method: 'Runtime.getProperties',
+      params: GetPropertiesRequest,
+    }
+  | {
+      id: number,
+      method: 'Runtime.evaluate',
+      params: EvaluateRequest,
+    };
+
+export type DebuggerResponse =
+  | {id: number, result: {}}
+  | {id: number, error: any}
+  | {
+      id: number,
+      // method: 'Debugger.setBreakpointByUrl',
+      result: SetBreakpointByUrlResponse,
+    }
+  | {
+      id: number,
+      // method: 'Debugger.evaluateOnCallFrame',
+      result: EvaluateOnCallFrameResponse,
+    }
+  | {
+      id: number,
+      // method: 'Runtime.getProperties',
+      result: GetPropertiesResponse,
+    }
+  | {
+      id: number,
+      // method: 'Runtime.evaluate',
+      result: EvaluateResponse,
+    }
+  | {
+      id: number,
+      // method: 'Debugger.getScriptSource',
+      result: GetScriptSourceResponse,
+    }
+  | {
+      id: number,
+      // method: 'Debugger.getThreadStack',
+      result: GetThreadStackResponse,
+    };
+
+export type DebuggerEvent =
+  | {
+      method: 'Debugger.paused',
+      params: PausedEvent,
+    }
+  | {
+      method: 'Debugger.resumed',
+    }
+  | {
+      id: number,
+      method: 'Runtime.executionContextCreated',
+      params: ExecutionContextCreatedEvent,
+    };
