@@ -38,13 +38,13 @@ export class InfoTable extends React.Component {
 
     return (
       <div>
-        <strong>{this.props.title}</strong>
         <Table
           collapsable={false}
           columns={columns}
           maxBodyHeight="99999px"
           emptyComponent={emptyComponent}
           rows={rows}
+          headerTitle={this.props.title}
         />
       </div>
     );

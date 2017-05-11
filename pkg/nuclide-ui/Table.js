@@ -87,6 +87,11 @@ type Props = {
    * Whether a table row will be collapsed if its content is too large
    */
   collapsable?: boolean,
+  /**
+   * Whether there's a header title spanning all cells instead of the column titles.
+   * It disables the 'sortable' prop.
+   */
+  headerTitle?: string,
 };
 type State = {
   columnWidthRatios: WidthMap,
@@ -277,6 +282,7 @@ export class Table extends React.Component {
       alternateBackground,
       className,
       columns,
+      headerTitle,
       maxBodyHeight,
       rows,
       selectable,
@@ -285,7 +291,11 @@ export class Table extends React.Component {
       sortedColumn,
       sortDescending,
     } = this.props;
-    const header = columns.map((column, i) => {
+    const header = headerTitle != null
+      ? <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
+          {headerTitle}
+        </div>
+      : columns.map((column, i) => {
       const {title, key, shouldRightAlign} = column;
       const resizeHandle = i === columns.length - 1
         ? null
