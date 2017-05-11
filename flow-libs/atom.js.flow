@@ -433,6 +433,7 @@ declare class atom$Pane {
   removeItem(item: Object, moved: ?boolean): void,
   setActiveItem(item: Object): Object,
   setFlexScale(flexScale: number): number,
+  getContainer(): atom$PaneContainer,
 }
 
 declare type atom$PaneItem = {

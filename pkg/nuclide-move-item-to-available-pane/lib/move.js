@@ -76,7 +76,7 @@ function findTargetPane(
   const predicate = createPredicate(operation, activeRect);
 
   const paneToRect: WeakMap<atom$Pane, ClientRect> = new WeakMap();
-  const candidatePanes = atom.workspace.getPanes().filter(pane => {
+  const candidatePanes = activePane.getContainer().getPanes().filter(pane => {
     if (pane === activePane) {
       return false;
     } else {
