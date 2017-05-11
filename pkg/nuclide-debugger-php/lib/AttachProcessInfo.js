@@ -40,7 +40,8 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   async preAttachActions(): Promise<void> {
     try {
-      // $FlowFB
+      // TODO(t18124539) @nmote This should require FlowFB but when used flow
+      // complains that it is an unused supression.
       const services = require('./fb/services');
       services.startSlog();
     } catch (_) {}
@@ -121,6 +122,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     ];
     try {
       return customControlButtons.concat(
+        // $FlowFB
         require('./fb/services').customControlButtons,
       );
     } catch (_) {
