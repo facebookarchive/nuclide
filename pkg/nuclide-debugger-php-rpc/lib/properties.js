@@ -22,11 +22,14 @@ import invariant from 'assert';
 
 import type {ObjectId} from './ObjectId';
 import type {DbgpProperty} from './DbgpSocket';
+import type {
+  PropertyDescriptor,
+} from '../../nuclide-debugger-base/lib/protocol-types';
 
 export function convertProperties(
   id: ObjectId,
   properties: Array<DbgpProperty>,
-): Array<Runtime$PropertyDescriptor> {
+): Array<PropertyDescriptor> {
   logger.log('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));
 }
@@ -37,7 +40,7 @@ export function convertProperties(
 export function convertProperty(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
-): Runtime$PropertyDescriptor {
+): PropertyDescriptor {
   logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
   const result = {
     configurable: false,
@@ -54,7 +57,7 @@ export function convertProperty(
  */
 export function getPagedProperties(
   pagedId: ObjectId,
-): Array<Runtime$PropertyDescriptor> {
+): Array<PropertyDescriptor> {
   invariant(pagedId.elementRange);
   const pagesize = pagedId.elementRange.pagesize;
   const endIndex = endIndexOfObjectId(pagedId);

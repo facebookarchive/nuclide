@@ -9,6 +9,11 @@
  * @format
  */
 
+import type {
+  Scope,
+  PropertyDescriptor,
+  RemoteObjectId,
+} from '../../nuclide-debugger-base/lib/protocol-types';
 import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 import {ConnectionStatus} from './DbgpSocket';
@@ -210,7 +215,7 @@ export class Connection {
     return this._socket.getStackFrames();
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     return this._dataCache.getScopesForFrame(frameIndex);
   }
 
@@ -239,9 +244,7 @@ export class Connection {
     return this._socket.setFeature(name, value);
   }
 
-  getProperties(
-    remoteId: Runtime$RemoteObjectId,
-  ): Promise<Array<Runtime$PropertyDescriptor>> {
+  getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
     return this._dataCache.getProperties(remoteId);
   }
 

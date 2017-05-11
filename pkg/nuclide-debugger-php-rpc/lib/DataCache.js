@@ -9,6 +9,14 @@
  * @format
  */
 
+import type {
+  Scope,
+  ScopeType,
+  PropertyDescriptor,
+  RemoteObject,
+  RemoteObjectId,
+} from '../../nuclide-debugger-base/lib/protocol-types';
+
 import logger from './utils';
 import {
   remoteObjectIdOfObjectId,
@@ -77,7 +85,7 @@ export class DataCache {
     this._enabled = true;
   }
 
-  async getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
+  async getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     if (!this.isEnabled()) {
       throw new Error('Must be enabled to get scopes.');
     }
@@ -151,7 +159,7 @@ export class DataCache {
   _remoteObjectOfContext(
     frameIndex: number,
     context: DbgpContext,
-  ): Runtime$RemoteObject {
+  ): RemoteObject {
     return {
       description: context.name,
       type: 'object',
@@ -166,8 +174,8 @@ export class DataCache {
   }
 
   async getProperties(
-    remoteId: Runtime$RemoteObjectId,
-  ): Promise<Array<Runtime$PropertyDescriptor>> {
+    remoteId: RemoteObjectId,
+  ): Promise<Array<PropertyDescriptor>> {
     logger.log(`DataCache.getProperties call on ID: ${remoteId}`);
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
@@ -191,7 +199,7 @@ export class DataCache {
 
   async _getSinglePageOfProperties(
     id: ObjectId,
-  ): Promise<Array<Runtime$PropertyDescriptor>> {
+  ): Promise<Array<PropertyDescriptor>> {
     let properties = null;
     const {fullname, page} = id;
     invariant(fullname != null);
@@ -215,7 +223,7 @@ export class DataCache {
 
   async _getContextProperties(
     id: ObjectId,
-  ): Promise<Array<Runtime$PropertyDescriptor>> {
+  ): Promise<Array<PropertyDescriptor>> {
     const properties = await this._socket.getContextProperties(
       id.frameIndex,
       id.contextId,
@@ -229,7 +237,7 @@ export class DataCache {
   }
 }
 
-function contextNameToScopeType(name: string): Debugger$ScopeType {
+function contextNameToScopeType(name: string): ScopeType {
   switch (name) {
     case 'Locals':
       return 'local';

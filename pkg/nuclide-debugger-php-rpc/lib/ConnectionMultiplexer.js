@@ -9,6 +9,12 @@
  * @format
  */
 
+import type {
+  Scope,
+  PropertyDescriptor,
+  RemoteObjectId,
+} from '../../nuclide-debugger-base/lib/protocol-types';
+
 import logger from './utils';
 import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {Connection} from './Connection';
@@ -639,7 +645,7 @@ export class ConnectionMultiplexer {
     return null;
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Array<Debugger$Scope>> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     if (this._enabledConnection) {
       return this._enabledConnection.getScopesForFrame(frameIndex);
     } else {
@@ -749,9 +755,7 @@ export class ConnectionMultiplexer {
     this.sendContinuationCommand(COMMAND_RUN);
   }
 
-  getProperties(
-    remoteId: Runtime$RemoteObjectId,
-  ): Promise<Array<Runtime$PropertyDescriptor>> {
+  getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
     if (this._enabledConnection) {
       return this._enabledConnection.getProperties(remoteId);
     } else if (this._dummyConnection) {

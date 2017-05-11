@@ -9,6 +9,10 @@
  * @format
  */
 
+import type {
+  RemoteObjectId,
+} from '../../nuclide-debugger-base/lib/protocol-types';
+
 import invariant from 'assert';
 
 /*
@@ -67,7 +71,7 @@ export function getWatchContextObjectId(
   return createContextObjectId(enableCount, frameIndex, WATCH_CONTEXT_ID);
 }
 
-export function remoteObjectIdOfObjectId(id: ObjectId): Runtime$RemoteObjectId {
+export function remoteObjectIdOfObjectId(id: ObjectId): RemoteObjectId {
   return JSON.stringify(id);
 }
 

@@ -20,6 +20,10 @@ import invariant from 'assert';
 
 import type {DbgpProperty} from './DbgpSocket';
 import type {ObjectId} from './ObjectId';
+import type {
+  RemoteObject,
+  RemoteObjectId,
+} from '../../nuclide-debugger-base/lib/protocol-types';
 
 /**
  * Converts a dbgp value to a Chrome RemoteObject.
@@ -27,7 +31,7 @@ import type {ObjectId} from './ObjectId';
 export function convertValue(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
-): Runtime$RemoteObject {
+): RemoteObject {
   switch (dbgpProperty.$.type) {
     case 'string':
       return convertStringValue(dbgpProperty);
@@ -51,7 +55,7 @@ export function convertValue(
   }
 }
 
-function convertStringValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertStringValue(dbgpProperty: DbgpProperty): RemoteObject {
   let value;
   if (dbgpProperty.hasOwnProperty('_')) {
     value = dbgpProperty.$.encoding === 'base64'
@@ -69,7 +73,7 @@ function convertStringValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   };
 }
 
-function convertIntValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertIntValue(dbgpProperty: DbgpProperty): RemoteObject {
   const value = dbgpProperty.$.encoding === 'base64'
     ? `TODO: Base64 encoded int: ${JSON.stringify(dbgpProperty)}`
     : dbgpProperty._;
@@ -79,7 +83,7 @@ function convertIntValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   };
 }
 
-function convertFloatValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertFloatValue(dbgpProperty: DbgpProperty): RemoteObject {
   const value = dbgpProperty.$.encoding === 'base64'
     ? `TODO: Base64 encoded float: ${JSON.stringify(dbgpProperty)}`
     : dbgpProperty._;
@@ -89,7 +93,7 @@ function convertFloatValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   };
 }
 
-function convertBoolValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertBoolValue(dbgpProperty: DbgpProperty): RemoteObject {
   invariant(dbgpProperty._ != null);
   const value = dbgpProperty.$.encoding === 'base64'
     ? `TODO: Base64 encoded bool: ${JSON.stringify(dbgpProperty)}`
@@ -100,7 +104,7 @@ function convertBoolValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
   };
 }
 
-function getNullValue(): Runtime$RemoteObject {
+function getNullValue(): RemoteObject {
   return {
     type: 'undefined',
     subtype: 'null',
@@ -108,7 +112,7 @@ function getNullValue(): Runtime$RemoteObject {
   };
 }
 
-function getUndefinedValue(): Runtime$RemoteObject {
+function getUndefinedValue(): RemoteObject {
   return {
     type: 'undefined',
     value: undefined,
@@ -118,7 +122,7 @@ function getUndefinedValue(): Runtime$RemoteObject {
 function convertArrayValue(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
-): Runtime$RemoteObject {
+): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
   const numchildren = String(
     dbgpProperty.$.numchildren != null ? dbgpProperty.$.numchildren : 0,
@@ -137,7 +141,7 @@ function convertArrayValue(
 function convertObjectValue(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
-): Runtime$RemoteObject {
+): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
   let description = getObjectDescription(dbgpProperty);
   if (dbgpProperty.$.recursive != null) {
@@ -168,7 +172,7 @@ function getObjectDescription(dbgpProperty: DbgpProperty): string | void {
 function getAggregateRemoteObjectId(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
-): Runtime$RemoteObjectId {
+): RemoteObjectId {
   // If the DbgpProperty represents an empty array or object, the `pagesize` and `numchildren`
   // will be omitted so we handle this "zero" case specially.
   const numchildren = Number(dbgpProperty.$.numchildren || 0);
@@ -198,7 +202,7 @@ function getAggregateRemoteObjectId(
   }
 }
 
-function convertUnknownValue(dbgpProperty: DbgpProperty): Runtime$RemoteObject {
+function convertUnknownValue(dbgpProperty: DbgpProperty): RemoteObject {
   return {
     type: 'string',
     value: 'TODO: unknown: ' + JSON.stringify(dbgpProperty),

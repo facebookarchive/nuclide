@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 //------------------------------------------------------------------------------
@@ -13,24 +14,24 @@
 //------------------------------------------------------------------------------
 
 // description wins over value in display
-type Runtime$RemoteObject = {
+export type RemoteObject = {
   className?: string,
   description?: string,
-  objectId?: Runtime$RemoteObjectId,
+  objectId?: RemoteObjectId,
   subtype?: 'array' | 'date' | 'node' | 'null' | 'regexp',
   type: 'boolean' | 'function' | 'number' | 'object' | 'string' | 'undefined',
   value?: mixed,
 };
 
-type Runtime$RemoteObjectId = string;
+export type RemoteObjectId = string;
 
-type Runtime$PropertyDescriptor = {
+export type PropertyDescriptor = {
   configurable: boolean,
   enumerable: boolean,
-  get?: Runtime$RemoteObject,
+  get?: RemoteObject,
   name: string,
-  set?: Runtime$RemoteObject,
-  value?: Runtime$RemoteObject,
+  set?: RemoteObject,
+  value?: RemoteObject,
   wasThrown?: boolean,
   writable?: boolean,
 };
@@ -40,9 +41,9 @@ type Runtime$PropertyDescriptor = {
 //------------------------------------------------------------------------------
 
 // scope.object.description shows on RHS
-type Debugger$Scope = {
-  object: Runtime$RemoteObject,
-  type: Debugger$ScopeType,
+export type Scope = {
+  object: RemoteObject,
+  type: ScopeType,
 };
 
-type Debugger$ScopeType = 'catch' | 'closure' | 'global' | 'local' | 'with';
+export type ScopeType = 'catch' | 'closure' | 'global' | 'local' | 'with';
