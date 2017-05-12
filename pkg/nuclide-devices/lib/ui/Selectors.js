@@ -64,24 +64,17 @@ export class Selectors extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <table>
-        <tr>
-          <td>
-            <Dropdown
-              className="inline-block"
-              options={this._getHostOptions()}
-              onChange={this.props.setHost}
-              value={this.props.host}
-              key="connection"
-            />
-          </td>
-        </tr>
-        <tr>
-          <td>
-            {this._getTypesSelector()}
-          </td>
-        </tr>
-      </table>
+      <div>
+        <div className="nuclide-device-panel-host-selector">
+          <Dropdown
+            options={this._getHostOptions()}
+            onChange={this.props.setHost}
+            value={this.props.host}
+            key="connection"
+          />
+        </div>
+        {this._getTypesSelector()}
+      </div>
     );
   }
 }
