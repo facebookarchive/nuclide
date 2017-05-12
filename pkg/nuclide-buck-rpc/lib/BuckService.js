@@ -597,18 +597,6 @@ export async function listFlavors(
 }
 
 /**
- * Currently, if `aliasOrTarget` contains a flavor, this will fail.
- */
-export async function resolveAlias(
-  rootPath: NuclideUri,
-  aliasOrTarget: string,
-): Promise<string> {
-  const args = ['query', aliasOrTarget];
-  const result = await _runBuckCommandFromProjectRoot(rootPath, args);
-  return result.trim();
-}
-
-/**
  * Returns the build output metadata for the given target.
  * This will contain one element if the target is unique; otherwise it will
  * contain data for all the targets (e.g. for //path/to/targets:)

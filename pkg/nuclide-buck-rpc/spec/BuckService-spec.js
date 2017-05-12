@@ -10,9 +10,11 @@
  */
 
 import invariant from 'assert';
+import {Observable} from 'rxjs';
 import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from '../../commons-node/nuclideUri';
+import * as processJs from '../../commons-node/process';
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';
@@ -107,15 +109,6 @@ describe('BuckService (test-project-with-failing-targets)', () => {
     });
   });
 
-  describe('.resolveAlias(aliasOrTarget)', () => {
-    it('resolves an alias', () => {
-      waitsForPromise(async () => {
-        const target = await BuckService.resolveAlias(buckRoot, 'good');
-        expect(target).toBe('//:good_rule');
-      });
-    });
-  });
-
   describe('.showOutput(aliasOrTarget)', () => {
     it('returns the output data for a genrule()', () => {
       waitsForPromise(async () => {
@@ -148,6 +141,19 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors.length).toBe(0);
       });
+    });
+
+    it('does some parsing on rule names', () => {
+      // To speed up this test, mock out the actual Buck process calls.
+      spyOn(processJs, 'runCommand').andReturn(
+        Observable.of(
+          JSON.stringify({
+            '//:good_rule': {
+              'buck.type': 'genrule',
+            },
+          }),
+        ),
+      );
 
       waitsForPromise(async () => {
         // Omitting the // is fine too.
@@ -181,8 +187,9 @@ describe('BuckService (test-project-with-failing-targets)', () => {
         expect(resolved.buildTarget.qualifiedName).toBe('//:good_rule');
         expect(resolved.buildTarget.flavors[0]).toBe('foo');
       });
+    });
 
-      // Multi-target rules.
+    it('works for multi-target rules', () => {
       waitsForPromise(async () => {
         const resolved = await BuckService.buildRuleTypeFor(buckRoot, '//:');
         expect(resolved.type).toBe(BuckService.MULTIPLE_TARGET_RULE_TYPE);
