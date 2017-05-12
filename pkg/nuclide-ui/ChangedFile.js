@@ -39,12 +39,12 @@ type ChangedFileProps = {
   fileStatus: FileChangeStatusValue,
   isHgPath: boolean,
   isSelected: boolean,
-  onAddFile: (filePath: NuclideUri) => void,
-  onDeleteFile: (filePath: NuclideUri) => void,
+  onAddFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onDeleteFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   onFileChosen: (filePath: NuclideUri) => void,
-  onForgetFile: (filePath: NuclideUri) => void,
-  onOpenFileInDiffView: (filePath: NuclideUri) => void,
-  onRevertFile: (filePath: NuclideUri) => void,
+  onForgetFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onOpenFileInDiffView: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onRevertFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   rootPath: NuclideUri,
 };
 

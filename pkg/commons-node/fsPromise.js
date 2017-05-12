@@ -317,13 +317,12 @@ type ReadFileType = ((filename: string, encoding: string) => Promise<string>) &
     filename: string,
     options: {encoding: string, flag?: string},
   ) => Promise<string>) &
-  ((filename: string) => Promise<Buffer>) &
-  ((filename: string, options: {flag?: string}) => Promise<Buffer>);
+  ((filename: string, options?: {flag?: string}) => Promise<Buffer>);
 
-const readFile: ReadFileType = (function() {
+const readFile: ReadFileType = (function(...args: Array<any>) {
   return new Promise((resolve, reject) => {
     // $FlowIssue: spread operator doesn't preserve any-type
-    fs.readFile(...arguments, (err, result) => {
+    fs.readFile(...args, (err, result) => {
       if (err == null) {
         resolve(result);
       } else {

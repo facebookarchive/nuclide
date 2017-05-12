@@ -144,7 +144,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     const {ConnectionMultiplexer} = ((uncachedRequire(
       require,
       '../lib/ConnectionMultiplexer',
-    ): any): {ConnectionMultiplexer: () => ConnectionMultiplexerType});
+    ): any): {ConnectionMultiplexer: Class<ConnectionMultiplexerType>});
     connectionMultiplexer = new ConnectionMultiplexer(clientCallback);
     connectionMultiplexer.onStatus(onStatus);
     connectionMultiplexer.onNotification(onNotification);

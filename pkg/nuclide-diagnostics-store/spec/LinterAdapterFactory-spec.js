@@ -9,24 +9,13 @@
  * @format
  */
 
-import {Disposable} from 'atom';
-
 import {createAdapters, validateLinter} from '../lib/LinterAdapterFactory';
 
 const grammar = 'testgrammar';
 
 describe('createAdapters', () => {
-  class FakeDiagnosticsProviderBase {
-    onMessageUpdate(callback) {
-      return new Disposable(() => {});
-    }
-    onMessageInvalidation() {
-      return new Disposable(() => {});
-    }
-  }
-
   function createAdaptersWithMock(linterProviders) {
-    return createAdapters(linterProviders, (FakeDiagnosticsProviderBase: any));
+    return createAdapters(linterProviders);
   }
 
   let fakeLinter: any;

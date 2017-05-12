@@ -12,6 +12,7 @@
 import type {
   MessageTranslator as MessageTranslatorType,
 } from '../lib/MessageTranslator';
+import type {ClientCallback} from '../lib/ClientCallback';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 
@@ -46,8 +47,8 @@ describe('debugger-php-rpc MessageTranslator', () => {
     const {MessageTranslator} = ((uncachedRequire(
       require,
       '../lib/MessageTranslator',
-    ): any): {MessageTranslator: () => MessageTranslatorType});
-    translater = new MessageTranslator(clientCallback);
+    ): any): {MessageTranslator: Class<MessageTranslatorType>});
+    translater = new MessageTranslator(((clientCallback: any): ClientCallback));
   });
 
   afterEach(() => {

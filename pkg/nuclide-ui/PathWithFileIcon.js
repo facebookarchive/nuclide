@@ -14,7 +14,10 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import UniversalDisposable from '../commons-node/UniversalDisposable';
 
-type FileIconsAddItemToElementFn = (element: HTMLElement) => IDisposable;
+type FileIconsAddItemToElementFn = (
+  element: HTMLElement,
+  path: string,
+) => IDisposable;
 
 type Props = {
   className?: string,
