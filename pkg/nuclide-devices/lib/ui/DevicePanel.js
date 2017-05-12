@@ -63,7 +63,7 @@ export class DevicePanel extends React.Component {
       </Button>
     ));
     return (
-      <div className="block" style={{flexDirection: 'column', display: 'flex'}}>
+      <div className="block nuclide-device-panel-actions-container">
         {actions}
       </div>
     );
