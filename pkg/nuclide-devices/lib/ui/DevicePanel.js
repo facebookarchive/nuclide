@@ -11,6 +11,7 @@
 import type {Process, KillProcessCallback} from '../types';
 import type {DeviceAction} from '../types';
 
+import {Icon} from '../../../nuclide-ui/Icon';
 import React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
@@ -53,9 +54,11 @@ export class DevicePanel extends React.Component {
   }
 
   _getActions(): React.Element<any> {
-    const actions = this.props.deviceActions.map(action =>
-    (
-      <Button size={ButtonSizes.SMALL} onClick={() => action.callback()} key={action.name}>
+    const actions = this.props.deviceActions.map(action => (
+      <Button
+        size={ButtonSizes.SMALL}
+        onClick={() => action.callback()}
+        key={action.name}>
         {action.name}
       </Button>
     ));
@@ -66,9 +69,24 @@ export class DevicePanel extends React.Component {
     );
   }
 
+  _getBackButton(): React.Element<any> {
+    return (
+      <div className="block">
+        <span>
+          <a className="nuclide-device-panel-link-with-icon">
+            <Icon icon="chevron-left">
+              Choose another device
+            </Icon>
+          </a>
+        </span>
+      </div>
+    );
+  }
+
   render(): React.Element<any> {
     return (
       <div>
+        {this._getBackButton()}
         {this._getActions()}
         {this._createInfoTables()}
         {this._createProcessTable()}
