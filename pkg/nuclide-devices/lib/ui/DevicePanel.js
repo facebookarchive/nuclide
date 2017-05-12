@@ -18,6 +18,7 @@ import {ProcessTable} from './ProcessTable';
 import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
 
 type Props = {
+  goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
   processTable: Array<Process>,
   killProcess: ?KillProcessCallback,
@@ -73,7 +74,9 @@ export class DevicePanel extends React.Component {
     return (
       <div className="block">
         <span>
-          <a className="nuclide-device-panel-link-with-icon">
+          <a
+            className="nuclide-device-panel-link-with-icon"
+            onClick={() => this.props.goToRootPanel()}>
             <Icon icon="chevron-left">
               Choose another device
             </Icon>

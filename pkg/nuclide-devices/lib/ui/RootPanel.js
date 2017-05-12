@@ -50,6 +50,7 @@ export class RootPanel extends React.Component {
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
+    (this: any)._goToRootPanel = this._goToRootPanel.bind(this);
   }
 
   _createDeviceTable(): ?React.Element<any> {
@@ -66,6 +67,10 @@ export class RootPanel extends React.Component {
     );
   }
 
+  _goToRootPanel(): void {
+    this.props.setDevice(null);
+  }
+
   _getInnerPanel(): React.Element<any> {
     if (this.props.device != null) {
       return (
@@ -75,6 +80,7 @@ export class RootPanel extends React.Component {
             processTable={this.props.processTable}
             killProcess={this.props.killProcess}
             deviceActions={this.props.deviceActions}
+            goToRootPanel={this._goToRootPanel}
           />
         </div>
       );
