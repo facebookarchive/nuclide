@@ -28,4 +28,6 @@ export type Process = {
   user: string,
   pid: string,
   name: string,
+  cpuUsage: ?string,
+  memUsage: ?string,
 };

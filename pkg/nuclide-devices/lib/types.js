@@ -83,6 +83,8 @@ export type Process = {
   user: string,
   pid: string,
   name: string,
+  cpuUsage: ?string,
+  memUsage: ?string,
 };
 
 export type KillProcessCallback = (packageName: string) => Promise<void>;

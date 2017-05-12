@@ -57,28 +57,40 @@ export class ProcessTable extends React.Component {
           pid: item.pid,
           user: item.user,
           name: item.name,
+          cpuUsage: item.cpuUsage,
+          memUsage: item.memUsage,
         },
       }));
     const columns = [
       {
         key: 'kill',
         title: '',
-        width: 0.1,
+        width: 0.05,
       },
       {
         key: 'pid',
         title: 'PID',
-        width: 0.2,
+        width: 0.15,
       },
       {
         key: 'user',
         title: 'User',
-        width: 0.2,
+        width: 0.15,
       },
       {
         key: 'name',
         title: 'Name',
-        width: 0.6,
+        width: 0.5,
+      },
+      {
+        key: 'cpuUsage',
+        title: 'CPU',
+        width: 0.1,
+      },
+      {
+        key: 'memUsage',
+        title: 'Mem',
+        width: 0.15,
       },
     ];
     const emptyComponent = () => <div className="padded">No information</div>;
