@@ -14,6 +14,7 @@ import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
 import React from 'react';
 import featureConfig from '../../commons-atom/featureConfig';
+import {goToLocation} from '../../commons-atom/go-to-location';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -98,19 +99,19 @@ export default class QuickOpenHelpers {
         limit: RESULTS_LIMIT,
       });
 
-      return await Promise.all(
-        results
-          .filter(tag => !isHackProject || !tag.file.endsWith('.php'))
-          .map(async tag => {
-            const line = await getLineNumberForTag(tag);
-            return {
-              ...tag,
-              path: tag.file,
-              dir,
-              line,
-            };
-          }),
-      );
+      return results
+        .filter(tag => !isHackProject || !tag.file.endsWith('.php'))
+        .map(tag => {
+          return {
+            ...tag,
+            path: tag.file,
+            dir,
+            async callback() {
+              const line = await getLineNumberForTag(tag);
+              goToLocation(tag.file, line);
+            },
+          };
+        });
     } finally {
       service.dispose();
     }

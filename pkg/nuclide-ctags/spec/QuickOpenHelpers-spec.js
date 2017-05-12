@@ -77,7 +77,14 @@ describe('QuickOpenHelpers', () => {
       expect(results).toEqual([]);
 
       results = await executeQuery('test', mockDirectory);
-      expect(results).toEqual([
+      expect(
+        results.map(result => {
+          // Functions can't be compared with Jasmine.
+          const {callback, ...rest} = result;
+          expect(callback).not.toBe(null);
+          return rest;
+        }),
+      ).toEqual([
         {
           name: 'A',
           file: '/path1/a',
@@ -86,7 +93,6 @@ describe('QuickOpenHelpers', () => {
           pattern: '/^class A$/',
           path: '/path1/a',
           dir: TEST_DIR,
-          line: 0,
         },
         {
           name: 'test::A',
@@ -96,7 +102,6 @@ describe('QuickOpenHelpers', () => {
           pattern: '/^struct A$/',
           path: '/test/a',
           dir: TEST_DIR,
-          line: 1,
         },
       ]);
 
