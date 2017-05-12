@@ -31,6 +31,9 @@ export default class LintHelpers {
     return trackTiming('nuclide-python.lint', async () => {
       const service = getPythonServiceByNuclideUri(src);
       const diagnostics = await service.getDiagnostics(src, editor.getText());
+      if (editor.isDestroyed()) {
+        return [];
+      }
       return diagnostics.map(diagnostic => ({
         name: 'flake8: ' + diagnostic.code,
         type: diagnostic.type,

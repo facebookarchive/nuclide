@@ -48,6 +48,8 @@ async function _lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
 
   if (diagnostics == null) {
     return null;
+  } else if (textEditor.isDestroyed()) {
+    return [];
   }
 
   return diagnostics.map(diagnostic => {

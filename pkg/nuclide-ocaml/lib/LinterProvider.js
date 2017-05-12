@@ -40,7 +40,7 @@ module.exports = {
       }
       await instance.pushNewBuffer(filePath, textEditor.getText());
       const diagnostics = await instance.errors(filePath);
-      if (diagnostics == null) {
+      if (diagnostics == null || textEditor.isDestroyed()) {
         return [];
       }
       return diagnostics.map((diagnostic: MerlinError): LinterMessage => {
