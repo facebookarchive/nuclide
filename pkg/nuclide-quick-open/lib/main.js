@@ -103,7 +103,11 @@ class Activation {
   ): void {
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
-      goToLocation(selection.path, selection.line, selection.column);
+      if (selection.callback != null) {
+        selection.callback();
+      } else {
+        goToLocation(selection.path, selection.line, selection.column);
+      }
       track('quickopen-select-file', {
         'quickopen-filepath': selection.path,
         'quickopen-query': query,

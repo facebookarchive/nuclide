@@ -24,6 +24,8 @@ export type FileResult = {
   // Jump to line/column if provided.
   line?: number,
   column?: number,
+  // A custom callback to perform upon selection.
+  callback?: () => mixed,
 };
 
 export type DirectoryProviderType = {
