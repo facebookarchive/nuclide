@@ -430,10 +430,9 @@ class DatatipManagerForEditor {
 
     if (newState === DatatipState.HIDDEN) {
       this._blacklistedPosition = null;
-    }
-    if (oldState === DatatipState.VISIBLE && newState === DatatipState.HIDDEN) {
-      this._hideDatatip();
-      return;
+      if (oldState !== DatatipState.HIDDEN) {
+        this._hideDatatip();
+      }
     }
   }
 
@@ -499,9 +498,9 @@ class DatatipManagerForEditor {
     range: atom$Range,
     renderedProviders: React$Element<*>,
   }> {
-    let datatipAndProvider;
+    let datatipAndProviderPromise;
     if (this._lastPosition && position.isEqual(this._lastPosition)) {
-      datatipAndProvider = await this._lastDatatipAndProviderPromise;
+      datatipAndProviderPromise = this._lastDatatipAndProviderPromise;
     } else {
       this._lastDatatipAndProviderPromise = getTopDatatipAndProvider(
         this._datatipProviders,
@@ -509,36 +508,37 @@ class DatatipManagerForEditor {
         position,
         provider => provider.datatip(this._editor, position),
       );
-      datatipAndProvider = await this._lastDatatipAndProviderPromise;
+      datatipAndProviderPromise = this._lastDatatipAndProviderPromise;
       this._lastPosition = position;
     }
 
-    if (datatipAndProvider == null || datatipAndProvider.datatip == null) {
+    const datatipsAndProviders = arrayCompact(
+      await Promise.all([
+        datatipAndProviderPromise,
+        getTopDatatipAndProvider(
+          this._modifierDatatipProviders,
+          this._editor,
+          position,
+          provider =>
+            provider.modifierDatatip(this._editor, position, this._heldKeys),
+        ),
+      ]),
+    );
+
+    if (datatipsAndProviders.length === 0) {
       return null;
     }
 
-    const modifierDatatipAndProvider = await getTopDatatipAndProvider(
-      this._modifierDatatipProviders,
-      this._editor,
-      position,
-      provider =>
-        provider.modifierDatatip(this._editor, position, this._heldKeys),
-    );
-
-    const range = datatipAndProvider.datatip.range;
+    const range = datatipsAndProviders[0].datatip.range;
     track('datatip-popup', {
       scope: this._editor.getGrammar().scopeName,
-      providerName: getProviderName(datatipAndProvider.provider),
+      providerName: getProviderName(datatipsAndProviders[0].provider),
       rangeStartRow: String(range.start.row),
       rangeStartColumn: String(range.start.column),
       rangeEndRow: String(range.end.row),
       rangeEndColumn: String(range.end.column),
     });
 
-    const datatipsAndProviders = arrayCompact([
-      datatipAndProvider,
-      modifierDatatipAndProvider,
-    ]);
     const renderedProviders = (
       <div>
         {datatipsAndProviders.map(({datatip, provider}) => (
