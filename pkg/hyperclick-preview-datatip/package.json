@@ -20,5 +20,8 @@
         "0.0.0": "consumeDatatipService"
       }
     }
-  }
+  },
+  "activationHooks": [
+    "nuclide_hyperclick_preview:gk:nuclide"
+  ]
 }
