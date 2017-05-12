@@ -8,4 +8,29 @@
  * @flow
  */
 
-// Empty file to make module-cycle-check.sh happy.
+/**
+ * Responsible for sending and receiving debugger domain protocols from
+ * debug engine.
+ */
+class DebuggerDomainDispatcher {
+  _agent: Object; // debugger agent from chrome protocol.
+
+  constructor(agent: Object) {
+    this._agent = agent;
+  }
+
+  stepOver(): void {
+    this._agent.stepOver();
+  }
+
+  resumed(): void {
+    // TODO:
+  }
+
+  threadsUpdated(owningProcessId: string, stopThreadId: string, threads_payload: string): void {
+    // TODO
+  }
+}
+
+// Use old school export to allow legacy code to import it.
+module.exports = DebuggerDomainDispatcher;

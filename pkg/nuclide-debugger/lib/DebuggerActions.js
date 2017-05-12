@@ -81,6 +81,7 @@ export default class DebuggerActions {
         'nuclide-debugger:show',
       );
       const debuggerInstance = await processInfo.debug();
+      await this._store.getBridge().setupNuclideChannel(debuggerInstance);
       this._registerConsole();
       const supportThreadsWindow =
         processInfo.supportThreads() &&

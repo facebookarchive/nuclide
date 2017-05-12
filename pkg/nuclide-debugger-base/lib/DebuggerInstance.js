@@ -29,6 +29,7 @@ import {stringifyError} from '../../commons-node/string';
 
 import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';
+const RECEIVED_MESSAGE_EVENT = 'received-message-event';
 
 export default class DebuggerInstanceBase {
   _processInfo: DebuggerProcessInfo;
@@ -198,6 +199,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     const webSocket = this._chromeWebSocket;
     if (webSocket) {
       message = this._translateMessageIfNeeded(processedMessage);
+      this.receiveNuclideMessage(message);
       webSocket.send(message);
     } else {
       this.getLogger().logError("Why isn't chrome websocket available?");
@@ -218,6 +220,23 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this.getLogger().log('Recieved Chrome message: ' + message);
     const processedMessage = await this.preProcessClientMessage(message);
     this._rpcService.sendCommand(translateMessageToServer(processedMessage));
+  }
+
+  /**
+   * The following three methods are used by new Nuclide channel.
+   */
+  sendNuclideMessage(message: string): Promise<void> {
+    return this._handleChromeSocketMessage(message);
+  }
+
+  registerNuclideNotificationHandler(
+    callback: (message: string) => mixed,
+  ): IDisposable {
+    return this._emitter.on(RECEIVED_MESSAGE_EVENT, callback);
+  }
+
+  receiveNuclideMessage(message: string): void {
+    this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
   }
 
   // Preprocessing hook for client messsages before sending to server.

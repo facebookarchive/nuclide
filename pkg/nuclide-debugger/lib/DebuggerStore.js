@@ -17,6 +17,7 @@ import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {ControlButtonSpecification, DebuggerModeType} from './types';
+import type Bridge from './Bridge';
 
 import {Emitter} from 'atom';
 import {DebuggerSettings} from './DebuggerSettings';
@@ -117,6 +118,10 @@ export class DebuggerStore {
 
   getConsoleExecutorFunction(): ?RegisterExecutorFunction {
     return this._registerExecutor;
+  }
+
+  getBridge(): Bridge {
+    return this._model.getBridge();
   }
 
   getDebuggerInstance(): ?DebuggerInstanceBase {

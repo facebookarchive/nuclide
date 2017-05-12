@@ -208,7 +208,6 @@ InspectorBackendClass.prototype = {
 
               var debuggerAgent = connection.agent('Debugger');
               var debuggerDispatcher = new DebuggerDomainDispatcher(debuggerAgent);
-              debuggerDispatcher.setAgent(debuggerAgent);
               connection.registerDispatcher('Debugger', debuggerDispatcher);
 
               InspectorBackend._initialized = false;
@@ -1085,3 +1084,11 @@ InspectorBackendClass.Options = {
 }
 
 var InspectorBackend = new InspectorBackendClass();
+
+InspectorBackendClass.bootstrap = function(transport)
+{
+    var path = require('path');
+    return InspectorBackend.loadFromJSONIfNeeded(path.join(__dirname, 'protocol.json'), transport);
+}
+
+module.exports = InspectorBackendClass;

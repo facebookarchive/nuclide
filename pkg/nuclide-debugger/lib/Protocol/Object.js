@@ -27,6 +27,8 @@
 
 /* eslint-disable */
 
+WebInspector = {}
+
 /**
  * @constructor
  * @implements {WebInspector.EventTarget}

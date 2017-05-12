@@ -63,24 +63,23 @@ export default class Bridge {
   }
 
   continue() {
-    this._commandDipatcher.send('command', 'Continue');
+    this._commandDipatcher.send('Continue');
   }
 
   stepOver() {
-    this._commandDipatcher.send('command', 'StepOver');
+    this._commandDipatcher.send('StepOver');
   }
 
   stepInto() {
-    this._commandDipatcher.send('command', 'StepInto');
+    this._commandDipatcher.send('StepInto');
   }
 
   stepOut() {
-    this._commandDipatcher.send('command', 'StepOut');
+    this._commandDipatcher.send('StepOut');
   }
 
   runToLocation(filePath: string, line: number) {
     this._commandDipatcher.send(
-      'command',
       'RunToLocation',
       filePath,
       line,
@@ -89,7 +88,6 @@ export default class Bridge {
 
   triggerAction(actionId: string): void {
     this._commandDipatcher.send(
-      'command',
       'triggerDebuggerAction',
       actionId,
     );
@@ -97,7 +95,6 @@ export default class Bridge {
 
   setSelectedCallFrameIndex(callFrameIndex: number): void {
       this._commandDipatcher.send(
-        'command',
         'setSelectedCallFrameIndex',
         callFrameIndex,
       );
@@ -105,7 +102,6 @@ export default class Bridge {
 
   setPauseOnException(pauseOnExceptionEnabled: boolean): void {
     this._commandDipatcher.send(
-      'command',
       'setPauseOnException',
       pauseOnExceptionEnabled,
     );
@@ -113,7 +109,6 @@ export default class Bridge {
 
   setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
     this._commandDipatcher.send(
-      'command',
       'setPauseOnCaughtException',
       pauseOnCaughtExceptionEnabled,
     );
@@ -121,7 +116,6 @@ export default class Bridge {
 
   setSingleThreadStepping(singleThreadStepping: boolean): void {
     this._commandDipatcher.send(
-      'command',
       'setSingleThreadStepping',
       singleThreadStepping,
     );
@@ -129,7 +123,6 @@ export default class Bridge {
 
   selectThread(threadId: string): void {
     this._commandDipatcher.send(
-      'command',
       'selectThread',
       threadId,
     );
@@ -140,7 +133,7 @@ export default class Bridge {
     evalId: number,
     ...args: Array<mixed>
   ): void {
-    this._commandDipatcher.send('command', command, evalId, ...args);
+    this._commandDipatcher.send(command, evalId, ...args);
   }
 
   _handleExpressionEvaluationResponse(response: ExpressionResult & {id: number}): void {
@@ -226,7 +219,6 @@ export default class Bridge {
 
   _updateDebuggerSettings(): void {
     this._commandDipatcher.send(
-      'command',
       'UpdateSettings',
       this._debuggerModel.getStore().getSettings().getSerializedData(),
     );
@@ -325,7 +317,7 @@ export default class Bridge {
 
   _handleUserBreakpointChange(params: BreakpointUserChangeArgType) {
     const {action, breakpoint} = params;
-    this._commandDipatcher.send('command', action, {
+    this._commandDipatcher.send(action, {
       sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
       lineNumber: breakpoint.line,
       condition: breakpoint.condition,
@@ -357,7 +349,7 @@ export default class Bridge {
           enabled: breakpoint.enabled,
         });
       });
-      this._commandDipatcher.send('command', 'SyncBreakpoints', results);
+      this._commandDipatcher.send('SyncBreakpoints', results);
     }
   }
 
@@ -389,7 +381,7 @@ export default class Bridge {
   // Exposed for tests
   _setWebviewElement(webview: WebviewElement): void {
     this._webview = webview;
-    this._commandDipatcher.setWebview(webview);
+    this._commandDipatcher.setupChromeChannel(webview);
     invariant(this._cleanupDisposables == null);
     this._cleanupDisposables = new UniversalDisposable(
       Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage),
@@ -399,6 +391,10 @@ export default class Bridge {
         this._webviewUrl = null;
       },
     );
+  }
+
+  setupNuclideChannel(debuggerInstance: Object): Promise<void> {
+    return this._commandDipatcher.setupNuclideChannel(debuggerInstance);
   }
 
   openDevTools(): void {
