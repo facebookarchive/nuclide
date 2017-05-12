@@ -26,11 +26,17 @@ export default class MarkedStringSnippet extends React.Component {
   };
 
   render(): React.Element<any> {
-    const {value, grammar} = this.props;
+    const {value} = this.props;
     const shouldTruncate = value.length > MAX_LENGTH && !this.state.isExpanded;
     const buffer = new TextBuffer(
       shouldTruncate ? value.substr(0, MAX_LENGTH) + '...' : value,
     );
+    // Improve the display of Hack snippets.
+    let {grammar} = this.props;
+    if (grammar.scopeName === 'text.html.hack') {
+      grammar =
+        atom.grammars.grammarForScopeName('source.hackfragment') || grammar;
+    }
     return (
       <div
         className="nuclide-datatip-marked-text-editor-container"
