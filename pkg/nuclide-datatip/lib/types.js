@@ -9,6 +9,8 @@
  * @format
  */
 
+import type Immutable from 'immutable';
+
 // Borrowed from the LSP API.
 export type MarkedString =
   | {
@@ -33,26 +35,46 @@ export type Datatip =
       pinnable?: boolean,
     |};
 
+export const ModifierKeys = Object.freeze({
+  META: 'metaKey',
+  SHIFT: 'shiftKey',
+  ALT: 'altKey',
+  CTRL: 'ctrlKey',
+});
+
+export type ModifierKey = 'metaKey' | 'shiftKey' | 'altKey' | 'ctrlKey';
+
 export type PinnedDatatip = {
   dispose(): void,
 };
 
 export type DatatipProvider = {
-  datatip(
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-    // The mouse event that triggered the datatip.
-    // This is null for manually toggled datatips.
-    mouseEvent: ?MouseEvent,
-  ): Promise<?Datatip>,
   inclusionPriority: number,
   validForScope(scopeName: string): boolean,
   // A unique name for the provider to be used for analytics.
   // It is recommended that it be the name of the provider's package.
   providerName: string,
+  datatip(
+    editor: atom$TextEditor,
+    bufferPosition: atom$Point,
+  ): Promise<?Datatip>,
 };
+
+export type ModifierDatatipProvider = {
+  inclusionPriority: number,
+  validForScope(scopeName: string): boolean,
+  providerName: string,
+  modifierDatatip(
+    editor: atom$TextEditor,
+    bufferPosition: atom$Point,
+    heldKeys: Immutable.Set<ModifierKey>,
+  ): Promise<?Datatip>,
+};
+
+export type AnyDatatipProvider = DatatipProvider | ModifierDatatipProvider;
 
 export type DatatipService = {
   addProvider(provider: DatatipProvider): IDisposable,
+  addModifierProvider(provider: ModifierDatatipProvider): IDisposable,
   createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip,
 };

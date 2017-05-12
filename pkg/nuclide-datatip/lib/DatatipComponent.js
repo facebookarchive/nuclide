@@ -12,6 +12,7 @@
 import type {Datatip} from './types';
 
 import React from 'react';
+
 import {maybeToString} from '../../commons-node/string';
 import MarkedStringDatatip from './MarkedStringDatatip';
 
@@ -36,19 +37,28 @@ type DatatipComponentProps = {
 export class DatatipComponent extends React.Component {
   props: DatatipComponentProps;
 
-  constructor(props: DatatipComponentProps) {
-    super(props);
-    (this: any).handleActionClick = this.handleActionClick.bind(this);
-  }
-
-  handleActionClick(event: SyntheticEvent): void {
+  handleActionClick = (event: SyntheticEvent) => {
     this.props.onActionClick();
-  }
+  };
 
   render(): React.Element<any> {
-    const {className, action, actionTitle, datatip, ...props} = this.props;
-    delete props.onActionClick;
-    let actionButton;
+    const {
+      className,
+      action,
+      actionTitle,
+      datatip,
+      onActionClick,
+      ...props
+    } = this.props;
+
+    let content;
+    if (datatip.component != null) {
+      content = <datatip.component />;
+    } else if (datatip.markedStrings != null) {
+      content = <MarkedStringDatatip markedStrings={datatip.markedStrings} />;
+    }
+
+    let actionButton = null;
     if (action != null && IconsForAction[action] != null) {
       const actionIcon = IconsForAction[action];
       actionButton = (
@@ -59,12 +69,7 @@ export class DatatipComponent extends React.Component {
         />
       );
     }
-    let content;
-    if (datatip.component != null) {
-      content = <datatip.component />;
-    } else if (datatip.markedStrings != null) {
-      content = <MarkedStringDatatip markedStrings={datatip.markedStrings} />;
-    }
+
     return (
       <div
         className={`${maybeToString(className)} nuclide-datatip-container`}
