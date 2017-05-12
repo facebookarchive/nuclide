@@ -20,6 +20,10 @@
     "name": "CtagsService"
   },
   {
+    "implementation": "../nuclide-definition-preview-rpc/lib/DefinitionPreviewService.js",
+    "name": "DefinitionPreviewService"
+  },
+  {
     "implementation": "./lib/services/FileSystemService.js",
     "name": "FileSystemService"
   },

@@ -62,6 +62,8 @@ import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import typeof * as CtagsService from '../../nuclide-ctags-rpc';
+import typeof * as DefinitionPreviewService
+  from '../../nuclide-definition-preview-rpc';
 import typeof * as FileSystemService
   from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
@@ -109,6 +111,12 @@ export function getClangServiceByNuclideUri(uri: NuclideUri): ClangService {
 
 export function getCtagsServiceByNuclideUri(uri: NuclideUri): CtagsService {
   return nullthrows(getServiceByNuclideUri('CtagsService', uri));
+}
+
+export function getDefinitionPreviewServiceByNuclideUri(
+  uri: NuclideUri,
+): DefinitionPreviewService {
+  return nullthrows(getServiceByNuclideUri('DefinitionPreviewService', uri));
 }
 
 export function getFileSystemServiceByNuclideUri(

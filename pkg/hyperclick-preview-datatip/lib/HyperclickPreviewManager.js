@@ -13,57 +13,13 @@ import type {Datatip, ModifierKey} from '../../nuclide-datatip/lib/types';
 import type {DefinitionService} from '../../nuclide-definition-service';
 
 import Immutable from 'immutable';
-import dedent from 'dedent';
 import {Disposable} from 'atom';
 
 import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {countOccurrences} from '../../commons-node/string';
 import {
-  getFileSystemServiceByNuclideUri,
+  getDefinitionPreviewServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {track, trackTiming} from '../../nuclide-analytics';
-
-const MAX_PREVIEW_LINES = 10;
-
-const WHITESPACE_REGEX = /^\s*/;
-function getIndentLevel(line: string) {
-  return WHITESPACE_REGEX.exec(line)[0].length;
-}
-
-async function getDefinitionPreview(definition) {
-  const fs = getFileSystemServiceByNuclideUri(definition.path);
-  const contents = (await fs.readFile(definition.path)).toString();
-  const lines = contents.split('\n');
-
-  const start = definition.position.row;
-  const initialIndentLevel = getIndentLevel(lines[start]);
-
-  const buffer = [];
-  for (
-    let i = start, openParenCount = 0, closedParenCount = 0;
-    i < start + MAX_PREVIEW_LINES && i < lines.length;
-    i++
-  ) {
-    const line = lines[i];
-    const indentLevel = getIndentLevel(line);
-    openParenCount += countOccurrences(line, '(');
-    closedParenCount += countOccurrences(line, ')');
-
-    buffer.push(line);
-
-    // heuristic for the end of a function signature.
-    // we've returned back to the original indentation level
-    // and we have balanced pairs of parens
-    if (
-      indentLevel <= initialIndentLevel &&
-      openParenCount === closedParenCount
-    ) {
-      break;
-    }
-  }
-
-  return dedent(buffer.join('\n'));
-}
 
 function getPlatformKeys(platform) {
   if (platform === 'darwin') {
@@ -126,9 +82,14 @@ export default class HyperclickPreviewManager {
     });
 
     if (definitions.length === 1) {
+      const definition = definitions.pop();
+      const {getDefinitionPreview} = getDefinitionPreviewServiceByNuclideUri(
+        definition.path,
+      );
+
       const definitionPreview = await trackTiming(
         'hyperclickPreview.getDefinitionPreview',
-        () => getDefinitionPreview(definitions[0]),
+        () => getDefinitionPreview(definition),
       );
       return {
         markedStrings: [
