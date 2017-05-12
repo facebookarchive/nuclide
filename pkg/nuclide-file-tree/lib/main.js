@@ -134,8 +134,11 @@ class Activation {
             return;
           }
           if (component.isFocused()) {
-            // Focus the text editor.
-            atom.workspace.getActivePane().activate();
+            // Focus the center.
+            const center = atom.workspace.getCenter
+              ? atom.workspace.getCenter()
+              : atom.workspace;
+            center.getActivePane().activate();
           } else {
             // Focus the file tree.
             component.focus();

@@ -1176,6 +1176,7 @@ declare class atom$Dock {
 }
 
 declare class atom$WorkspaceCenter {
+  getActivePane(): atom$Pane;
   observeActivePaneItem(callback: atom$PaneItem => mixed): IDisposable;
   // This should be removed soon anyway, it's currently deprecated.
   paneContainer: Object;
