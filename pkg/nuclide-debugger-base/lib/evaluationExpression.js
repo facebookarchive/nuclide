@@ -1,4 +1,4 @@
-/*
+/**
 eslint-disable nuclide-internal/license-header
 
 Originally copied from https://github.com/Microsoft/vscode/blob/b34f17350f2d20dbbbfdb26df91dd50bb9160900/src/vs/workbench/parts/debug/electron-browser/debugHover.ts#L125-L166
