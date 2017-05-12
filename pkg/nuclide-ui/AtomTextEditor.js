@@ -142,11 +142,6 @@ export class AtomTextEditor extends React.Component {
     // the map manually. Filed as https://github.com/atom/atom/issues/7954.
     // $FlowFixMe
     atom.views.views.set(textEditor, textEditorElement);
-    // Attach to DOM.
-    // $FlowFixMe
-    container.innerHTML = '';
-    // $FlowFixMe
-    container.appendChild(textEditorElement);
 
     if (this.props.correctContainerWidth) {
       this._editorDisposables.add(
@@ -163,6 +158,12 @@ export class AtomTextEditor extends React.Component {
         }),
       );
     }
+
+    // Attach to DOM.
+    // $FlowFixMe
+    container.innerHTML = '';
+    // $FlowFixMe
+    container.appendChild(textEditorElement);
   }
 
   componentWillReceiveProps(nextProps: Props): void {
