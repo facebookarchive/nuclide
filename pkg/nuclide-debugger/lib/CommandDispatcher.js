@@ -6,9 +6,11 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import BridgeAdapter from './Protocol/BridgeAdapter';
+import passesGK from '../../commons-node/passesGK';
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.
@@ -18,25 +20,84 @@ import BridgeAdapter from './Protocol/BridgeAdapter';
 export default class CommandDispatcher {
   _webview: ?WebviewElement;
   _bridgeAdapter: BridgeAdapter;
+  _useNewChannel: boolean;
 
   constructor() {
     this._bridgeAdapter = new BridgeAdapter();
+    this._useNewChannel = false;
   }
 
   setupChromeChannel(webview: WebviewElement): void {
     this._webview = webview;
   }
 
-  setupNuclideChannel(debuggerInstance: Object): Promise<void> {
+  async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
+    this._useNewChannel = await passesGK(
+      'nuclide_new_debugger_protocol_channel',
+      10 * 1000,
+    );
     return this._bridgeAdapter.start(debuggerInstance);
   }
 
   send(...args: Array<any>): void {
-    this._sendViaChromeChannel(...args);
+    if (this._useNewChannel) {
+      this._sendViaNuclideChannel(...args);
+    } else {
+      this._sendViaChromeChannel(...args);
+    }
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
-    // TODO
+    switch (args[0]) {
+      case 'Continue':
+        this._bridgeAdapter.resume();
+        break;
+      case 'StepOver':
+        this._bridgeAdapter.stepOver();
+        break;
+      case 'StepInto':
+        this._bridgeAdapter.stepInto();
+        break;
+      case 'StepOut':
+        this._bridgeAdapter.stepOut();
+        break;
+      case 'triggerDebuggerAction':
+        this._triggerDebuggerAction(args[1]);
+        break;
+      default:
+        // Forward any unimplemented commands to chrome channel.
+        this._sendViaChromeChannel(...args);
+        break;
+    }
+  }
+
+  _triggerDebuggerAction(actionId: string): void {
+    switch (actionId) {
+      case 'debugger.toggle-pause':
+        // TODO[jetan]: 'debugger.toggle-pause' needs to implement state management which
+        // I haven't think well yet so forward to chrome for now.
+        this._sendViaChromeChannel(
+          'triggerDebuggerAction',
+          'debugger.toggle-pause',
+        );
+        break;
+      case 'debugger.step-over':
+        this._bridgeAdapter.stepOver();
+        break;
+      case 'debugger.step-into':
+        this._bridgeAdapter.stepInto();
+        break;
+      case 'debugger.step-out':
+        this._bridgeAdapter.stepOut();
+        break;
+      case 'debugger.run-snippet':
+        this._bridgeAdapter.resume();
+        break;
+      default:
+        throw Error(
+          `_triggerDebuggerAction: unrecognized actionId: ${actionId}`,
+        );
+    }
   }
 
   _sendViaChromeChannel(...args: Array<any>): void {

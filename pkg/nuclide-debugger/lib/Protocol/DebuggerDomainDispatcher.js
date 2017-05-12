@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /**
@@ -19,15 +20,31 @@ class DebuggerDomainDispatcher {
     this._agent = agent;
   }
 
+  resume(): void {
+    this._agent.resume();
+  }
+
   stepOver(): void {
     this._agent.stepOver();
+  }
+
+  stepInto(): void {
+    this._agent.stepInto();
+  }
+
+  stepOut(): void {
+    this._agent.stepOut();
   }
 
   resumed(): void {
     // TODO:
   }
 
-  threadsUpdated(owningProcessId: string, stopThreadId: string, threads_payload: string): void {
+  threadsUpdated(
+    owningProcessId: string,
+    stopThreadId: string,
+    threads_payload: string,
+  ): void {
     // TODO
   }
 }

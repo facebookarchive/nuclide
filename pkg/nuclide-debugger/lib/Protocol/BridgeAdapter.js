@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -29,9 +30,24 @@ export default class BridgeAdapter {
     );
   }
 
+  resume(): void {
+    invariant(this._debuggerDispatcher != null);
+    this._debuggerDispatcher.resume();
+  }
+
   stepOver(): void {
     invariant(this._debuggerDispatcher != null);
     this._debuggerDispatcher.stepOver();
+  }
+
+  stepInto(): void {
+    invariant(this._debuggerDispatcher != null);
+    this._debuggerDispatcher.stepInto();
+  }
+
+  stepOut(): void {
+    invariant(this._debuggerDispatcher != null);
+    this._debuggerDispatcher.stepOut();
   }
 
   _handleServerMessage(domain: string, method: string, params: Object): void {
