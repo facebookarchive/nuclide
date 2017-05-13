@@ -13,7 +13,8 @@ import type {NuclideUri} from '../../../commons-node/nuclideUri';
 
 import React from 'react';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {Button, ButtonSizes, ButtonTypes} from '../../../nuclide-ui/Button';
+import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
+import {ButtonGroup, ButtonGroupSizes} from '../../../nuclide-ui/ButtonGroup';
 
 const FB_HOST_SUFFIX = '.facebook.com';
 
@@ -39,14 +40,11 @@ export class Selectors extends React.Component {
       .map(host => ({value: host, label: host}));
   }
 
-  _getTypesSelector(): React.Element<any>[] {
+  _getTypesButtons(): React.Element<any>[] {
     return this.props.deviceTypes.map(deviceType => {
       if (deviceType === this.props.deviceType) {
         return (
-          <Button
-            key={deviceType}
-            buttonType={ButtonTypes.PRIMARY}
-            size={ButtonSizes.SMALL}>
+          <Button key={deviceType} buttonType={ButtonTypes.PRIMARY}>
             {deviceType}
           </Button>
         );
@@ -54,12 +52,19 @@ export class Selectors extends React.Component {
       return (
         <Button
           key={deviceType}
-          size={ButtonSizes.SMALL}
           onClick={() => this.props.setDeviceType(deviceType)}>
           {deviceType}
         </Button>
       );
     });
+  }
+
+  _getTypesSelector(): React.Element<any> {
+    return (
+      <ButtonGroup size={ButtonGroupSizes.SMALL}>
+        {this._getTypesButtons()}
+      </ButtonGroup>
+    );
   }
 
   render(): React.Element<any> {
