@@ -18,7 +18,7 @@ export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
   registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
-  registerActionsProvider: (provider: DeviceActionsProvider) => IDisposable,
+  registerTasksProvider: (provider: DeviceTasksProvider) => IDisposable,
 };
 
 export type Device = {
@@ -27,13 +27,13 @@ export type Device = {
   architecture: string,
 };
 
-export type DeviceAction = {
+export type DeviceTask = {
   name: string,
   task: Task,
 };
 
-export interface DeviceActionsProvider {
-  getActions(host: NuclideUri, device: string): DeviceAction[],
+export interface DeviceTasksProvider {
+  getTasks(host: NuclideUri, device: string): DeviceTask[],
   getType(): string,
   isSupported(host: NuclideUri): Promise<boolean>,
 }
@@ -71,8 +71,8 @@ export type AppState = {
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
-  deviceActions: DeviceAction[],
   killProcess: ?KillProcessCallback,
+  deviceTasks: DeviceTask[],
 };
 
 export type Store = {
@@ -150,10 +150,10 @@ export type SetProcessesAction = {
   },
 };
 
-export type SetDeviceActionsAction = {
-  type: 'SET_DEVICE_ACTIONS',
+export type SetDeviceTasksAction = {
+  type: 'SET_DEVICE_TASKS',
   payload: {
-    deviceActions: DeviceAction[],
+    deviceTasks: DeviceTask[],
   },
 };
 
@@ -165,5 +165,5 @@ export type Action =
   | SetDeviceTypesAction
   | SetInfoTablesAction
   | SetProcessesAction
-  | SetDeviceActionsAction
+  | SetDeviceTasksAction
   | SetDeviceAction;

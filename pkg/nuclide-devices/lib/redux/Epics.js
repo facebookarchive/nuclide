@@ -16,7 +16,7 @@ import {arrayFlatten, arrayCompact} from '../../../commons-node/collection';
 import {
   getDeviceInfoProviders,
   getDeviceProcessesProviders,
-  getDeviceActionsProviders,
+  getDeviceTasksProviders,
 } from '../providers';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
@@ -24,7 +24,7 @@ import type {
   Action,
   Store,
   AppState,
-  DeviceAction,
+  DeviceTask,
   Process,
   KillProcessCallback,
 } from '../types';
@@ -45,8 +45,8 @@ export function setDeviceEpic(
       ).switchMap(([processTable, killProcess]) =>
         Observable.of(Actions.setProcesses(processTable, killProcess)),
       ),
-      Observable.fromPromise(getDeviceActions(state)).switchMap(deviceActions =>
-        Observable.of(Actions.setDeviceActions(deviceActions)),
+      Observable.fromPromise(getDeviceTasks(state)).switchMap(deviceTasks =>
+        Observable.of(Actions.setDeviceTasks(deviceTasks)),
       ),
     );
   });
@@ -99,19 +99,19 @@ async function getProcesses(
   return [[], null];
 }
 
-async function getDeviceActions(state: AppState): Promise<DeviceAction[]> {
+async function getDeviceTasks(state: AppState): Promise<DeviceTask[]> {
   const device = state.device;
   if (device == null) {
     return [];
   }
   const actions = await Promise.all(
-    Array.from(getDeviceActionsProviders())
+    Array.from(getDeviceTasksProviders())
       .filter(provider => provider.getType() === state.deviceType)
       .map(async provider => {
         if (!await provider.isSupported(state.host)) {
           return null;
         }
-        return provider.getActions(state.host, device.name);
+        return provider.getTasks(state.host, device.name);
       }),
   );
   return arrayFlatten(arrayCompact(actions)).sort((a, b) =>

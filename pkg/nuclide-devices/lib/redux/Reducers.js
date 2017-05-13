@@ -83,11 +83,11 @@ export function app(state: AppState, action: Action): AppState {
         hosts,
       };
 
-    case Actions.SET_DEVICE_ACTIONS:
-      const {deviceActions} = action.payload;
+    case Actions.SET_DEVICE_TASKS:
+      const {deviceTasks} = action.payload;
       return {
         ...state,
-        deviceActions,
+        deviceTasks,
       };
 
     default:

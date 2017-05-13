@@ -14,14 +14,14 @@ import type {
   SetDeviceTypesAction,
   SetDeviceTypeAction,
   SetDevicesAction,
-  SetDeviceActionsAction,
+  SetDeviceTasksAction,
   SetDeviceAction,
   SetHostsAction,
   SetHostAction,
   SetInfoTablesAction,
   SetProcessesAction,
   Device,
-  DeviceAction,
+  DeviceTask,
   Process,
   KillProcessCallback,
 } from '../types';
@@ -30,7 +30,7 @@ export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
 export const SET_DEVICES = 'SET_DEVICES';
 export const SET_DEVICE = 'SET_DEVICE';
-export const SET_DEVICE_ACTIONS = 'SET_DEVICE_ACTIONS';
+export const SET_DEVICE_TASKS = 'SET_DEVICE_TASKS';
 export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
@@ -97,11 +97,11 @@ export function setDevice(device: ?Device): SetDeviceAction {
   };
 }
 
-export function setDeviceActions(
-  deviceActions: DeviceAction[],
-): SetDeviceActionsAction {
+export function setDeviceTasks(
+  deviceTasks: DeviceTask[],
+): SetDeviceTasksAction {
   return {
-    type: SET_DEVICE_ACTIONS,
-    payload: {deviceActions},
+    type: SET_DEVICE_TASKS,
+    payload: {deviceTasks},
   };
 }

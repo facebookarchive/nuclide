@@ -19,7 +19,7 @@ export function createEmptyAppState(): AppState {
     deviceType: null,
     deviceTypes: [],
     device: null,
-    deviceActions: [],
+    deviceTasks: [],
     infoTables: new Map(),
     processes: [],
     killProcess: null,

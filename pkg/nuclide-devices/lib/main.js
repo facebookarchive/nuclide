@@ -30,7 +30,7 @@ import {
   getDeviceInfoProviders,
   getDeviceProcessesProviders,
   getDeviceListProviders,
-  getDeviceActionsProviders,
+  getDeviceTasksProviders,
 } from './providers';
 import nuclideUri from '../../commons-node/nuclideUri';
 
@@ -42,7 +42,7 @@ import type {
   DeviceListProvider,
   DeviceInfoProvider,
   DeviceProcessesProvider,
-  DeviceActionsProvider,
+  DeviceTasksProvider,
   DevicePanelServiceApi,
 } from './types';
 
@@ -139,9 +139,9 @@ class Activation {
           }
         });
       },
-      registerActionsProvider: (provider: DeviceActionsProvider) => {
+      registerTasksProvider: (provider: DeviceTasksProvider) => {
         invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceActionsProviders();
+        const providers = getDeviceTasksProviders();
         providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {

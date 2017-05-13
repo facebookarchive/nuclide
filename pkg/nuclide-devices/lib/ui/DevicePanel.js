@@ -10,7 +10,7 @@
  */
 
 import type {Process, KillProcessCallback} from '../types';
-import type {DeviceAction} from '../types';
+import type {DeviceTask} from '../types';
 
 import {Icon} from '../../../nuclide-ui/Icon';
 import React from 'react';
@@ -23,7 +23,7 @@ type Props = {
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
   killProcess: ?KillProcessCallback,
-  deviceActions: DeviceAction[],
+  deviceTasks: DeviceTask[],
 };
 
 export class DevicePanel extends React.Component {
@@ -51,7 +51,7 @@ export class DevicePanel extends React.Component {
   }
 
   _getActions(): React.Element<any> {
-    const actions = this.props.deviceActions.map(action => (
+    const actions = this.props.deviceTasks.map(action => (
       <Button
         size={ButtonSizes.SMALL}
         onClick={() => action.task.start()}
