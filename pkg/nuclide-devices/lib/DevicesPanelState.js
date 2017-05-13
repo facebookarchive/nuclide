@@ -90,7 +90,7 @@ export class DevicesPanelState {
       deviceType: state.deviceType,
       device: state.device,
       infoTables: state.infoTables,
-      processTable: state.processTable,
+      processes: state.processes,
       deviceActions: state.deviceActions,
       startFetchingDevices,
       setHost,

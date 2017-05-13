@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {Process, KillProcessCallback} from '../types';
@@ -20,7 +21,7 @@ import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
 type Props = {
   goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
-  processTable: Array<Process>,
+  processes: Process[],
   killProcess: ?KillProcessCallback,
   deviceActions: DeviceAction[],
 };
@@ -39,15 +40,10 @@ export class DevicePanel extends React.Component {
   }
 
   _createProcessTable(): React.Element<any> {
-    if (this.props.processTable.length === 0) {
-      return <div />;
-    }
-    const title = 'Process Table';
     return (
-      <div className="block" key={title}>
+      <div className="block" key="process-table">
         <ProcessTable
-          title={title}
-          table={this.props.processTable}
+          processes={this.props.processes}
           killProcess={this.props.killProcess}
         />
       </div>

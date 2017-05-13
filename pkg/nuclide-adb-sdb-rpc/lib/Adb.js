@@ -14,6 +14,7 @@ import nuclideUri from '../../commons-node/nuclideUri';
 import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
+import {arrayCompact} from '../../commons-node/collection';
 
 import type {AndroidJavaProcess, Process} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
@@ -115,23 +116,28 @@ export class Adb extends AdbSdbBase {
       const memUsage = p1[1];
       cpuAndMemUsage.set(pid, [deltaProc / deltaCpu * 100, memUsage]);
     });
-    return processes.filter(x => x.startsWith('u0_')).map(x => {
-      const info = x.trim().split(/\s+/);
-      const cpuAndMem = cpuAndMemUsage.get(info[1]);
-      let cpu = '';
-      let mem = '';
-      if (cpuAndMem !== null && cpuAndMem !== undefined) {
-        cpu = cpuAndMem[0].toFixed(2) + '%';
-        mem = (cpuAndMem[1] / 1024).toFixed(2) + 'M';
-      }
-      return {
-        user: info[0],
-        pid: info[1],
-        name: info[info.length - 1],
-        cpuUsage: cpu,
-        memUsage: mem,
-      };
-    });
+    return arrayCompact(
+      processes.map(x => {
+        const info = x.trim().split(/\s+/);
+        if (!Number.isInteger(parseInt(info[1], 10))) {
+          return null;
+        }
+        const cpuAndMem = cpuAndMemUsage.get(info[1]);
+        let cpu = '';
+        let mem = '';
+        if (cpuAndMem !== null && cpuAndMem !== undefined) {
+          cpu = cpuAndMem[0].toFixed(2) + '%';
+          mem = (cpuAndMem[1] / 1024).toFixed(2) + 'M';
+        }
+        return {
+          user: info[0],
+          pid: info[1],
+          name: info[info.length - 1],
+          cpuUsage: cpu,
+          memUsage: mem,
+        };
+      }),
+    );
   }
 
   async getProcessTime(device: string): Promise<Map<string, [number, number]>> {
@@ -139,7 +145,7 @@ export class Adb extends AdbSdbBase {
     const procTime = (await this.runShortCommand(device, [
       'shell',
       'cat',
-      '/proc/*/stat',
+      '/proc/[0-9]*/stat',
     ]).toPromise())
       .split(/\n/)
       .filter(x => validProcess.test(x));

@@ -41,7 +41,7 @@ export type Props = {
   deviceActions: DeviceAction[],
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
-  processTable: Array<Process>,
+  processes: Process[],
 };
 
 export class RootPanel extends React.Component {
@@ -77,7 +77,7 @@ export class RootPanel extends React.Component {
         <div className="block">
           <DevicePanel
             infoTables={this.props.infoTables}
-            processTable={this.props.processTable}
+            processes={this.props.processes}
             killProcess={this.props.killProcess}
             deviceActions={this.props.deviceActions}
             goToRootPanel={this._goToRootPanel}

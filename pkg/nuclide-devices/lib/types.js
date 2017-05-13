@@ -70,7 +70,7 @@ export type AppState = {
   deviceTypes: string[],
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
-  processTable: Array<Process>,
+  processes: Process[],
   deviceActions: DeviceAction[],
   killProcess: ?KillProcessCallback,
 };
@@ -142,10 +142,10 @@ export type SetInfoTablesAction = {
   },
 };
 
-export type SetProcessTableAction = {
-  type: 'SET_PROCESS_TABLE',
+export type SetProcessesAction = {
+  type: 'SET_PROCESSES',
   payload: {
-    processTable: Array<Process>,
+    processes: Process[],
     killProcess: ?KillProcessCallback,
   },
 };
@@ -164,6 +164,6 @@ export type Action =
   | SetDeviceTypeAction
   | SetDeviceTypesAction
   | SetInfoTablesAction
-  | SetProcessTableAction
+  | SetProcessesAction
   | SetDeviceActionsAction
   | SetDeviceAction;

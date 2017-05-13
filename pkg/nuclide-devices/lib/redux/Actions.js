@@ -19,7 +19,7 @@ import type {
   SetHostsAction,
   SetHostAction,
   SetInfoTablesAction,
-  SetProcessTableAction,
+  SetProcessesAction,
   Device,
   DeviceAction,
   Process,
@@ -34,7 +34,7 @@ export const SET_DEVICE_ACTIONS = 'SET_DEVICE_ACTIONS';
 export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
-export const SET_PROCESS_TABLE = 'SET_PROCESS_TABLE';
+export const SET_PROCESSES = 'SET_PROCESSES';
 
 export function setInfoTables(
   infoTables: Map<string, Map<string, string>>,
@@ -45,13 +45,13 @@ export function setInfoTables(
   };
 }
 
-export function setProcessTable(
-  processTable: Array<Process>,
+export function setProcesses(
+  processes: Process[],
   killProcess: ?KillProcessCallback,
-): SetProcessTableAction {
+): SetProcessesAction {
   return {
-    type: SET_PROCESS_TABLE,
-    payload: {processTable, killProcess},
+    type: SET_PROCESSES,
+    payload: {processes, killProcess},
   };
 }
 

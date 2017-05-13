@@ -18,9 +18,8 @@ import {Button} from '../../../nuclide-ui/Button';
 import addTooltip from '../../../nuclide-ui/add-tooltip';
 
 type Props = {
-  table: Array<Process>,
-  title: string,
   killProcess: ?KillProcessCallback,
+  processes: Process[],
 };
 
 type State = {
@@ -44,11 +43,11 @@ export class ProcessTable extends React.Component {
 
   render(): React.Element<any> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
-    const rows = this.props.table
+    const rows = this.props.processes
       .filter(
         item =>
           filterRegex.test(item.user) ||
-          filterRegex.test(item.pid) ||
+          filterRegex.test(`${item.pid}`) ||
           filterRegex.test(item.name),
       )
       .map(item => ({
@@ -97,9 +96,8 @@ export class ProcessTable extends React.Component {
 
     return (
       <div>
-        <strong>{this.props.title}</strong>
         <AtomInput
-          placeholderText="Search..."
+          placeholderText="Filter process..."
           initialValue={this.state.filterText}
           onDidChange={this._handleFilterTextChange}
           size="sm"

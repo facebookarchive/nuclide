@@ -41,9 +41,9 @@ export function setDeviceEpic(
         Observable.of(Actions.setInfoTables(infoTables)),
       ),
       Observable.fromPromise(
-        getProcessTable(state),
+        getProcesses(state),
       ).switchMap(([processTable, killProcess]) =>
-        Observable.of(Actions.setProcessTable(processTable, killProcess)),
+        Observable.of(Actions.setProcesses(processTable, killProcess)),
       ),
       Observable.fromPromise(getDeviceActions(state)).switchMap(deviceActions =>
         Observable.of(Actions.setDeviceActions(deviceActions)),
@@ -80,7 +80,7 @@ async function getInfoTables(
   return new Map(arrayCompact(infoTables));
 }
 
-async function getProcessTable(
+async function getProcesses(
   state: AppState,
 ): Promise<[Array<Process>, ?KillProcessCallback]> {
   const device = state.device;
