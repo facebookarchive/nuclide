@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -37,7 +38,9 @@ describe('Edit remote file Integration Test', () => {
       invariant(connection, 'Failed to make connection to a remote server');
 
       const remotePath = nuclideUri.join(repoPath, 'test.txt');
-      const textEditor = await atom.workspace.open(connection.getUriOfRemotePath(remotePath));
+      const textEditor = await atom.workspace.open(
+        connection.getUriOfRemotePath(remotePath),
+      );
       invariant(textEditor);
       const textEditorView = atom.views.getView(textEditor);
 

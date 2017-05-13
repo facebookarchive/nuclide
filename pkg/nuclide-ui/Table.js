@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import classnames from 'classnames';
@@ -296,56 +297,58 @@ export class Table extends React.Component {
           {headerTitle}
         </div>
       : columns.map((column, i) => {
-      const {title, key, shouldRightAlign} = column;
-      const resizeHandle = i === columns.length - 1
-        ? null
-        : <div
-            className="nuclide-ui-table-header-resize-handle"
-            onMouseDown={this._handleResizerMouseDown.bind(this, key)}
-            onClick={(e: SyntheticMouseEvent) => {
-              // Prevent sortable column header click event from firing.
-              e.stopPropagation();
-            }}
-          />;
-      const width = this.state.columnWidthRatios[key];
-      const optionalHeaderCellProps = {};
-      if (width != null) {
-        optionalHeaderCellProps.style = {
-          width: width * 100 + '%',
-        };
-      }
-      let sortIndicator;
-      let titleOverlay = title;
-      if (sortable) {
-        optionalHeaderCellProps.onClick = this._handleSortByColumn.bind(
-          this,
-          key,
-        );
-        titleOverlay += ' – click to sort';
-        if (sortedColumn === key) {
-          sortIndicator = (
-            <span className="nuclide-ui-table-sort-indicator">
-              <Icon icon={sortDescending ? 'triangle-down' : 'triangle-up'} />
-            </span>
+          const {title, key, shouldRightAlign} = column;
+          const resizeHandle = i === columns.length - 1
+            ? null
+            : <div
+                className="nuclide-ui-table-header-resize-handle"
+                onMouseDown={this._handleResizerMouseDown.bind(this, key)}
+                onClick={(e: SyntheticMouseEvent) => {
+                  // Prevent sortable column header click event from firing.
+                  e.stopPropagation();
+                }}
+              />;
+          const width = this.state.columnWidthRatios[key];
+          const optionalHeaderCellProps = {};
+          if (width != null) {
+            optionalHeaderCellProps.style = {
+              width: width * 100 + '%',
+            };
+          }
+          let sortIndicator;
+          let titleOverlay = title;
+          if (sortable) {
+            optionalHeaderCellProps.onClick = this._handleSortByColumn.bind(
+              this,
+              key,
+            );
+            titleOverlay += ' – click to sort';
+            if (sortedColumn === key) {
+              sortIndicator = (
+                <span className="nuclide-ui-table-sort-indicator">
+                  <Icon
+                    icon={sortDescending ? 'triangle-down' : 'triangle-up'}
+                  />
+                </span>
+              );
+            }
+          }
+          return (
+            <div
+              className={classnames({
+                'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+                'nuclide-ui-table-header-cell': true,
+                'nuclide-ui-table-header-cell-sortable': sortable,
+              })}
+              title={titleOverlay}
+              key={key}
+              {...optionalHeaderCellProps}>
+              {title}
+              {sortIndicator}
+              {resizeHandle}
+            </div>
           );
-        }
-      }
-      return (
-        <div
-          className={classnames({
-            'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
-            'nuclide-ui-table-header-cell': true,
-            'nuclide-ui-table-header-cell-sortable': sortable,
-          })}
-          title={titleOverlay}
-          key={key}
-          {...optionalHeaderCellProps}>
-          {title}
-          {sortIndicator}
-          {resizeHandle}
-        </div>
-      );
-    });
+        });
     let body = rows.map((row, i) => {
       const {className: rowClassName, data} = row;
       const renderedRow = columns.map((column, j) => {

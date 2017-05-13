@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
@@ -16,9 +17,9 @@ import addTooltip from './add-tooltip';
 import classnames from 'classnames';
 import {getAtomProjectRelativePath} from '../commons-atom/projects';
 import {
- FileChangeStatusToIcon,
- FileChangeStatusToLabel,
- FileChangeStatusToTextColor,
+  FileChangeStatusToIcon,
+  FileChangeStatusToLabel,
+  FileChangeStatusToTextColor,
 } from '../nuclide-vcs-base';
 import nuclideUri from '../commons-node/nuclideUri';
 import React from 'react';
@@ -43,7 +44,10 @@ type ChangedFileProps = {
   onDeleteFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
-  onOpenFileInDiffView: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onOpenFileInDiffView: (
+    filePath: NuclideUri,
+    analyticsSourceKey: string,
+  ) => void,
   onRevertFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   rootPath: NuclideUri,
 };
@@ -52,15 +56,11 @@ export default class ChangedFile extends React.Component {
   props: ChangedFileProps;
 
   _getFileClassname(): string {
-    const {
-      commandPrefix,
-      fileStatus,
-      isHgPath,
-      isSelected,
-    } = this.props;
+    const {commandPrefix, fileStatus, isHgPath, isSelected} = this.props;
     return classnames(
       'nuclide-changed-file',
-      'list-item', {
+      'list-item',
+      {
         selected: isSelected,
         [`${commandPrefix}-file-entry`]: isHgPath,
       },
@@ -91,71 +91,68 @@ export default class ChangedFile extends React.Component {
 
   _renderForgetAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'forget', /* key */
-      'circle-slash', /* icon */
-      'Forget (stop tracking file in version control)', /* title */
+      'forget' /* key */,
+      'circle-slash' /* icon */,
+      'Forget (stop tracking file in version control)' /* title */,
       this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
 
   _renderDeleteAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'delete', /* key */
-      'trashcan', /* icon */
-      'Delete file from file system', /* title */
+      'delete' /* key */,
+      'trashcan' /* icon */,
+      'Delete file from file system' /* title */,
       this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
 
   _renderMarkDeletedAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'mark-deleted', /* key */
-      'circle-slash', /* icon */
-      'Mark file as deleted (remove from version control)', /* title */
+      'mark-deleted' /* key */,
+      'circle-slash' /* icon */,
+      'Mark file as deleted (remove from version control)' /* title */,
       this.props.onForgetFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
 
   _renderRestoreAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'restore', /* key */
-      'playback-rewind', /* icon */
-      'Restore file (revert to last known version)', /* title */
+      'restore' /* key */,
+      'playback-rewind' /* icon */,
+      'Restore file (revert to last known version)' /* title */,
       this.props.onRevertFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
 
   _renderAddAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'add', /* key */
-      'plus', /* icon */
-      'Add file to version control', /* title */
+      'add' /* key */,
+      'plus' /* icon */,
+      'Add file to version control' /* title */,
       this.props.onAddFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
   }
 
   _renderOpenInDiffViewAction(filePath: string): React.Element<any> {
     return this._renderAction(
-      'diff', /* key */
-      'diff', /* icon */
-      'Open file in Diff View', /* title */
-      this.props.onOpenFileInDiffView.bind(this, filePath, ANALYTICS_SOURCE_KEY),
+      'diff' /* key */,
+      'diff' /* icon */,
+      'Open file in Diff View' /* title */,
+      this.props.onOpenFileInDiffView.bind(
+        this,
+        filePath,
+        ANALYTICS_SOURCE_KEY,
+      ),
     );
   }
 
   render(): React.Element<any> {
-    const {
-      enableInlineActions,
-      isHgPath,
-      filePath,
-      fileStatus,
-    } = this.props;
+    const {enableInlineActions, isHgPath, filePath, fileStatus} = this.props;
     const baseName = nuclideUri.basename(filePath);
     let actions;
     if (enableInlineActions && isHgPath) {
-      const eligibleActions = [
-        this._renderOpenInDiffViewAction(filePath),
-      ];
+      const eligibleActions = [this._renderOpenInDiffViewAction(filePath)];
       switch (fileStatus) {
         case FileChangeStatus.ADDED:
           eligibleActions.push(
@@ -177,9 +174,7 @@ export default class ChangedFile extends React.Component {
           break;
         case FileChangeStatus.MODIFIED:
         case FileChangeStatus.REMOVED: // removed from both FS and VCS
-          eligibleActions.push(
-            this._renderRestoreAction(filePath),
-          );
+          eligibleActions.push(this._renderRestoreAction(filePath));
           break;
       }
       actions = (
@@ -189,7 +184,8 @@ export default class ChangedFile extends React.Component {
       );
     }
     const statusName = FileChangeStatusToLabel[fileStatus];
-    const projectRelativePath = getAtomProjectRelativePath(filePath) || filePath;
+    const projectRelativePath =
+      getAtomProjectRelativePath(filePath) || filePath;
     return (
       <li
         data-name={baseName}

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 // The tests for the nuclide-atom-script package cannot live in pkg/nuclide-atom-script/spec
@@ -18,7 +19,9 @@ import {runCommand} from '../pkg/commons-node/process';
 describe('atom-script', () => {
   describe('echo sample', () => {
     // This module is CommonJS (i.e. `module.exports = function() {}`)
-    const echoScript = require.resolve('./fixtures/atom-script-echo-in-commonjs');
+    const echoScript = require.resolve(
+      './fixtures/atom-script-echo-in-commonjs',
+    );
 
     it('with zero arguments', () => {
       waitsForPromise(async () => {
@@ -37,13 +40,15 @@ describe('atom-script', () => {
 
   describe('markdown sample', () => {
     // This is an ES Module (i.e. `export default function() {}`)
-    const markdownScript = require.resolve('../pkg/nuclide-atom-script/samples/markdown');
+    const markdownScript = require.resolve(
+      '../pkg/nuclide-atom-script/samples/markdown',
+    );
     const readme = require.resolve('../pkg/nuclide-atom-script/README.md');
 
     it(
       'verify that all of the output has been written to stdout ' +
-      '(Note this is important to verify because the logic for flushing a large amount of data ' +
-      'is a bit shaky.)',
+        '(Note this is important to verify because the logic for flushing a large amount of data ' +
+        'is a bit shaky.)',
       () => {
         waitsForPromise(async () => {
           const stdout = await runAtomScript(markdownScript, [readme]);

@@ -15,18 +15,6 @@ const FAKE_DISABLE_RE = /\s*eslint-disable\s+nuclide-internal\/license-header\s*
 
 const SHEBANG_RE = /^#!\/usr\/bin\/env node\n/;
 
-const FLOW_AND_TRANSPILE = `\
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- */
-`;
-
 const FLOW_FORMAT_AND_TRANSPILE = `\
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -70,10 +58,6 @@ module.exports = function(context) {
       const sourceCode = context.getSourceCode();
       const source = sourceCode.text;
 
-      if (source.startsWith(FLOW_AND_TRANSPILE)) {
-        return;
-      }
-
       if (source.startsWith(FLOW_FORMAT_AND_TRANSPILE)) {
         return;
       }
@@ -91,6 +75,5 @@ module.exports = function(context) {
 };
 
 module.exports.schema = [];
-module.exports.FLOW_AND_TRANSPILE = FLOW_AND_TRANSPILE;
 module.exports.FLOW_FORMAT_AND_TRANSPILE = FLOW_FORMAT_AND_TRANSPILE;
 module.exports.NO_FLOW_AND_NO_TRANSPILE = NO_FLOW_AND_NO_TRANSPILE;

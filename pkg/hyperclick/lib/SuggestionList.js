@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HyperclickSuggestion} from './types';
@@ -33,10 +34,13 @@ export default class SuggestionList {
     const {start: position} = Array.isArray(range) ? range[0] : range;
     this._suggestionMarker = textEditor.markBufferPosition(position);
     if (this._suggestionMarker) {
-      this._overlayDecoration = textEditor.decorateMarker(this._suggestionMarker, {
-        type: 'overlay',
-        item: this,
-      });
+      this._overlayDecoration = textEditor.decorateMarker(
+        this._suggestionMarker,
+        {
+          type: 'overlay',
+          item: this,
+        },
+      );
     }
   }
 

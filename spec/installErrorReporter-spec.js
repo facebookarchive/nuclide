@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import installErrorReporter from '../lib/installErrorReporter';
@@ -35,13 +36,17 @@ describe('installErrorReporter', () => {
 
   it('errors if called twice', () => {
     install();
-    expect(installErrorReporter).toThrow('installErrorReporter was called multiple times.');
+    expect(installErrorReporter).toThrow(
+      'installErrorReporter was called multiple times.',
+    );
   });
 
   it('adds an unhandled rejection listener', () => {
     install();
     expect(window.addEventListener).toHaveBeenCalled();
-    expect(window.addEventListener.mostRecentCall.args[0]).toBe('unhandledrejection');
+    expect(window.addEventListener.mostRecentCall.args[0]).toBe(
+      'unhandledrejection',
+    );
   });
 
   it('adds an uncaught exception listener', () => {
@@ -54,6 +59,8 @@ describe('installErrorReporter', () => {
     disp.dispose();
     expect(onWillThrowErrorDisposable.dispose).toHaveBeenCalled();
     expect(window.removeEventListener).toHaveBeenCalled();
-    expect(window.removeEventListener.mostRecentCall.args[0]).toBe('unhandledrejection');
+    expect(window.removeEventListener.mostRecentCall.args[0]).toBe(
+      'unhandledrejection',
+    );
   });
 });

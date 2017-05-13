@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global localStorage */
@@ -76,18 +77,22 @@ export default class HyperclickForTextEditor {
     (this: any)._onContextMenu = this._onContextMenu.bind(this);
     this._textEditorView.addEventListener('contextmenu', this._onContextMenu);
 
-    this._subscriptions.add(atom.commands.add(this._textEditorView, {
-      'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
-    }));
+    this._subscriptions.add(
+      atom.commands.add(this._textEditorView, {
+        'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
+      }),
+    );
 
     this._isDestroyed = false;
     this._isLoading = false;
 
     this._subscriptions.add(
       atom.config.observe(
-        process.platform === 'darwin' ? 'nuclide.hyperclick.darwinTriggerKeys' :
-        (process.platform === 'win32' ? 'nuclide.hyperclick.win32TriggerKeys' :
-                                        'nuclide.hyperclick.linuxTriggerKeys'),
+        process.platform === 'darwin'
+          ? 'nuclide.hyperclick.darwinTriggerKeys'
+          : process.platform === 'win32'
+              ? 'nuclide.hyperclick.win32TriggerKeys'
+              : 'nuclide.hyperclick.linuxTriggerKeys',
         (newValue: string) => {
           // For all Flow knows, newValue.split could return any old strings
           this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
@@ -114,8 +119,12 @@ export default class HyperclickForTextEditor {
       getLinesDomNode().addEventListener('mousemove', this._onMouseMove);
     };
     this._subscriptions.add(new Disposable(removeMouseListeners));
-    this._subscriptions.add(this._textEditorView.onDidDetach(removeMouseListeners));
-    this._subscriptions.add(this._textEditorView.onDidAttach(addMouseListeners));
+    this._subscriptions.add(
+      this._textEditorView.onDidDetach(removeMouseListeners),
+    );
+    this._subscriptions.add(
+      this._textEditorView.onDidAttach(addMouseListeners),
+    );
     addMouseListeners();
   }
 
@@ -161,12 +170,16 @@ export default class HyperclickForTextEditor {
     // fetch suggestions because the new word might be between those ranges.
     // This should be ok because it will reuse that last suggestion until the
     // mouse moves off of it.
-    const lastSuggestionIsNotMultiRange = !this._lastSuggestionAtMouse ||
-        !Array.isArray(this._lastSuggestionAtMouse.range);
+    const lastSuggestionIsNotMultiRange =
+      !this._lastSuggestionAtMouse ||
+      !Array.isArray(this._lastSuggestionAtMouse.range);
     if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
       return;
     }
-    const {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
+    const {range} = getWordTextAndRange(
+      this._textEditor,
+      this._getMousePositionAsBufferPosition(),
+    );
     this._lastWordRange = range;
 
     if (this._isHyperclickEvent(mouseEvent)) {
@@ -261,8 +274,10 @@ export default class HyperclickForTextEditor {
       this._lastPosition = position;
 
       try {
-        this._lastSuggestionAtMousePromise =
-            this._hyperclick.getSuggestion(this._textEditor, position);
+        this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(
+          this._textEditor,
+          position,
+        );
         this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
       } catch (e) {
         logger.error('Error getting Hyperclick suggestion:', e);
@@ -291,7 +306,9 @@ export default class HyperclickForTextEditor {
     const {component} = this._textEditorView;
     invariant(component);
     invariant(this._lastMouseEvent);
-    const screenPosition = component.screenPositionForMouseEvent(this._lastMouseEvent);
+    const screenPosition = component.screenPositionForMouseEvent(
+      this._lastMouseEvent,
+    );
     try {
       return this._textEditor.bufferPositionForScreenPosition(screenPosition);
     } catch (error) {
@@ -299,7 +316,10 @@ export default class HyperclickForTextEditor {
       // When navigating Atom workspace with `CMD/CTRL` down,
       // it triggers TextEditorElement's `mousemove` with invalid screen position.
       // This falls back to returning the start of the editor.
-      logger.error('Hyperclick: Error getting buffer position for screen position:', error);
+      logger.error(
+        'Hyperclick: Error getting buffer position for screen position:',
+        error,
+      );
       return new Point(0, 0);
     }
   }
@@ -310,7 +330,10 @@ export default class HyperclickForTextEditor {
     }
     const {range} = this._lastSuggestionAtMouse;
     invariant(range, 'Hyperclick result must have a valid Range');
-    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), range);
+    return this._isPositionInRange(
+      this._getMousePositionAsBufferPosition(),
+      range,
+    );
   }
 
   _isMouseAtLastWordRange(): boolean {
@@ -318,13 +341,19 @@ export default class HyperclickForTextEditor {
     if (lastWordRange == null) {
       return false;
     }
-    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), lastWordRange);
+    return this._isPositionInRange(
+      this._getMousePositionAsBufferPosition(),
+      lastWordRange,
+    );
   }
 
-  _isPositionInRange(position: atom$Point, range: atom$Range | Array<atom$Range>): boolean {
-    return (Array.isArray(range)
-        ? range.some(r => r.containsPoint(position))
-        : range.containsPoint(position));
+  _isPositionInRange(
+    position: atom$Point,
+    range: atom$Range | Array<atom$Range>,
+  ): boolean {
+    return Array.isArray(range)
+      ? range.some(r => r.containsPoint(position))
+      : range.containsPoint(position);
   }
 
   _clearSuggestion(): void {
@@ -336,8 +365,9 @@ export default class HyperclickForTextEditor {
 
   async _confirmSuggestionAtCursor(): Promise<void> {
     const suggestion = await this._hyperclick.getSuggestion(
-        this._textEditor,
-        this._textEditor.getCursorBufferPosition());
+      this._textEditor,
+      this._textEditor.getCursorBufferPosition(),
+    );
     if (suggestion) {
       this._confirmSuggestion(suggestion);
     }
@@ -346,7 +376,7 @@ export default class HyperclickForTextEditor {
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ? (atom$Range | Array<atom$Range>)): void {
+  _updateNavigationMarkers(range: ?(atom$Range | Array<atom$Range>)): void {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;
@@ -361,11 +391,13 @@ export default class HyperclickForTextEditor {
     this._textEditorView.classList.add('hyperclick');
     const ranges = Array.isArray(range) ? range : [range];
     this._navigationMarkers = ranges.map(markerRange => {
-      const marker = this._textEditor.markBufferRange(markerRange, {invalidate: 'never'});
-      this._textEditor.decorateMarker(
-        marker,
-        {type: 'highlight', class: 'hyperclick'},
-      );
+      const marker = this._textEditor.markBufferRange(markerRange, {
+        invalidate: 'never',
+      });
+      this._textEditor.decorateMarker(marker, {
+        type: 'highlight',
+        class: 'hyperclick',
+      });
       return marker;
     });
   }
@@ -392,7 +424,10 @@ export default class HyperclickForTextEditor {
     this._clearSuggestion();
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
-    this._textEditorView.removeEventListener('contextmenu', this._onContextMenu);
+    this._textEditorView.removeEventListener(
+      'contextmenu',
+      this._onContextMenu,
+    );
     this._subscriptions.dispose();
   }
 }
@@ -404,7 +439,8 @@ export default class HyperclickForTextEditor {
  */
 function isMulticursorEvent(event: MouseEvent): boolean {
   const {platform} = process;
-  const isLeftButton = event.button === 0 || event.button === 1 && platform === 'linux';
+  const isLeftButton =
+    event.button === 0 || (event.button === 1 && platform === 'linux');
   const {metaKey, ctrlKey} = event;
 
   if (!isLeftButton) {

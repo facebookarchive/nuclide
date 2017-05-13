@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 /* global HTMLElement */
@@ -86,14 +87,15 @@ class SuggestionList extends React.Component {
     const textEditorView = atom.views.getView(textEditor);
     const boundClose = this._close.bind(this);
     this._subscriptions.add(
-        atom.commands.add(textEditorView, {
-          'core:move-up': this._moveSelectionUp.bind(this),
-          'core:move-down': this._moveSelectionDown.bind(this),
-          'core:move-to-top': this._moveSelectionToTop.bind(this),
-          'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
-          'core:cancel': boundClose,
-          'editor:newline': this._boundConfirm,
-        }));
+      atom.commands.add(textEditorView, {
+        'core:move-up': this._moveSelectionUp.bind(this),
+        'core:move-down': this._moveSelectionDown.bind(this),
+        'core:move-to-top': this._moveSelectionToTop.bind(this),
+        'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
+        'core:cancel': boundClose,
+        'editor:newline': this._boundConfirm,
+      }),
+    );
 
     this._subscriptions.add(textEditor.onDidChange(boundClose));
     this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
@@ -101,12 +103,19 @@ class SuggestionList extends React.Component {
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = event => event.stopPropagation();
     // $FlowFixMe
-    ReactDOM.findDOMNode(this.refs.scroller).addEventListener('mousewheel', stopPropagation);
-    this._subscriptions.add(new Disposable(() => {
-    // $FlowFixMe
-      ReactDOM.findDOMNode(this.refs.scroller)
-        .removeEventListener('mousewheel', stopPropagation);
-    }));
+    ReactDOM.findDOMNode(this.refs.scroller).addEventListener(
+      'mousewheel',
+      stopPropagation,
+    );
+    this._subscriptions.add(
+      new Disposable(() => {
+        // $FlowFixMe
+        ReactDOM.findDOMNode(this.refs.scroller).removeEventListener(
+          'mousewheel',
+          stopPropagation,
+        );
+      }),
+    );
 
     const keydown = (event: KeyboardEvent) => {
       // If the user presses the enter key, confirm the selection.
@@ -116,9 +125,11 @@ class SuggestionList extends React.Component {
       }
     };
     textEditorView.addEventListener('keydown', keydown);
-    this._subscriptions.add(new Disposable(() => {
-      textEditorView.removeEventListener('keydown', keydown);
-    }));
+    this._subscriptions.add(
+      new Disposable(() => {
+        textEditorView.removeEventListener('keydown', keydown);
+      }),
+    );
   }
 
   render() {
@@ -128,18 +139,21 @@ class SuggestionList extends React.Component {
         className += ' selected';
       }
       return (
-        <li className={className}
-            key={index}
-            onMouseDown={this._boundConfirm}
-            onMouseEnter={this._setSelectedIndex.bind(this, index)}>
-            {item.title}
-            <span className="right-label">{item.rightLabel}</span>
+        <li
+          className={className}
+          key={index}
+          onMouseDown={this._boundConfirm}
+          onMouseEnter={this._setSelectedIndex.bind(this, index)}>
+          {item.title}
+          <span className="right-label">{item.rightLabel}</span>
         </li>
       );
     });
 
     return (
-      <div className="popover-list select-list hyperclick-suggestion-list-scroller" ref="scroller">
+      <div
+        className="popover-list select-list hyperclick-suggestion-list-scroller"
+        ref="scroller">
         <ol className="list-group" ref="selectionList">
           {itemComponents}
         </ol>

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 export type HyperclickProvider = {
@@ -38,5 +39,7 @@ export type HyperclickSuggestion = {
   range: ?atom$Range | ?Array<atom$Range>,
 
   // The function to call when the underlined text is clicked.
-  callback: (() => mixed) | Array<{rightLabel?: string, title: string, callback: () => mixed}>,
+  callback:
+    | (() => mixed)
+    | Array<{rightLabel?: string, title: string, callback: () => mixed}>,
 };

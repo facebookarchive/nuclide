@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {HyperclickProvider} from '../lib/types';
@@ -33,7 +34,9 @@ describe('Hyperclick', () => {
     jasmine.attachToDOM(textEditorView);
 
     hyperclick = new Hyperclick();
-    hyperclickForTextEditor = Array.from(hyperclick._hyperclickForTextEditors)[0];
+    hyperclickForTextEditor = Array.from(
+      hyperclick._hyperclickForTextEditors,
+    )[0];
   }
 
   /**
@@ -45,18 +48,22 @@ describe('Hyperclick', () => {
   function clientCoordinatesForScreenPosition(
     screenPosition: atom$Point,
   ): {clientX: number, clientY: number} {
-    const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
+    const positionOffset = textEditorView.pixelPositionForScreenPosition(
+      screenPosition,
+    );
     const {component} = textEditorView;
     invariant(component != null);
     const scrollViewElement = component.domNode.querySelector('.scroll-view');
     invariant(scrollViewElement != null);
     const scrollViewClientRect = scrollViewElement.getBoundingClientRect();
-    const clientX = scrollViewClientRect.left
-                  + positionOffset.left
-                  - textEditorView.getScrollLeft();
-    const clientY = scrollViewClientRect.top
-                  + positionOffset.top
-                  - textEditorView.getScrollTop();
+    const clientX =
+      scrollViewClientRect.left +
+      positionOffset.left -
+      textEditorView.getScrollLeft();
+    const clientY =
+      scrollViewClientRect.top +
+      positionOffset.top -
+      textEditorView.getScrollTop();
     return {clientX, clientY};
   }
 
@@ -144,9 +151,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
           expect(callback.callCount).toBe(1);
@@ -173,9 +181,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
           expect(callback.callCount).toBe(1);
@@ -187,10 +196,16 @@ describe('Hyperclick', () => {
           const callback = jasmine.createSpy('callback');
           const provider = {
             providerName: 'test',
-            async getSuggestion(sourceTextEditor: TextEditor, sourcePosition: Point) {
+            async getSuggestion(
+              sourceTextEditor: TextEditor,
+              sourcePosition: Point,
+            ) {
               const range = [
                 new Range(sourcePosition, sourcePosition.translate([0, 1])),
-                new Range(sourcePosition.translate([0, 2]), sourcePosition.translate([0, 3])),
+                new Range(
+                  sourcePosition.translate([0, 2]),
+                  sourcePosition.translate([0, 3]),
+                ),
               ];
               return {range, callback};
             },
@@ -202,7 +217,10 @@ describe('Hyperclick', () => {
 
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
-          expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position);
+          expect(provider.getSuggestion).toHaveBeenCalledWith(
+            textEditor,
+            position,
+          );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
           expect(callback.callCount).toBe(1);
@@ -238,9 +256,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider2.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
           expect(callback1.callCount).toBe(0);
@@ -276,9 +295,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider2.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
           expect(callback1.callCount).toBe(0);
@@ -302,8 +322,12 @@ describe('Hyperclick', () => {
 
           const position = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
-          dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {metaKey: true});
-          dispatch(MouseEvent, 'mousemove', position.translate([0, 2]), {metaKey: true});
+          dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {
+            metaKey: true,
+          });
+          dispatch(MouseEvent, 'mousemove', position.translate([0, 2]), {
+            metaKey: true,
+          });
 
           expect(provider.getSuggestionForWord.callCount).toBe(1);
         });
@@ -328,11 +352,14 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
-          dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {metaKey: true});
+          dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {
+            metaKey: true,
+          });
           await hyperclickForTextEditor.getSuggestionAtMouse();
 
           expect(provider.getSuggestionForWord.callCount).toBe(1);
@@ -361,9 +388,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position1, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText1,
-              expectedRange1);
+            textEditor,
+            expectedText1,
+            expectedRange1,
+          );
 
           const position2 = new Point(0, 8);
           const expectedText2 = 'word2';
@@ -371,9 +399,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position2, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText2,
-              expectedRange2);
+            textEditor,
+            expectedText2,
+            expectedRange2,
+          );
 
           expect(provider.getSuggestionForWord.callCount).toBe(2);
 
@@ -402,7 +431,10 @@ describe('Hyperclick', () => {
 
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
-          expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position);
+          expect(provider.getSuggestion).toHaveBeenCalledWith(
+            textEditor,
+            position,
+          );
 
           dispatch(MouseEvent, 'mousemove', new Point(0, 4), {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
@@ -434,12 +466,17 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', inRangePosition, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedRange);
+            textEditor,
+            expectedText,
+            expectedRange,
+          );
 
-          dispatch(MouseEvent, 'mousemove', outOfRangePosition, {metaKey: true});
-          dispatch(MouseEvent, 'mousedown', outOfRangePosition, {metaKey: true});
+          dispatch(MouseEvent, 'mousemove', outOfRangePosition, {
+            metaKey: true,
+          });
+          dispatch(MouseEvent, 'mousedown', outOfRangePosition, {
+            metaKey: true,
+          });
           expect(callback.callCount).toBe(0);
         });
       });
@@ -510,9 +547,10 @@ describe('Hyperclick', () => {
           textEditor.setCursorBufferPosition(new Point(0, 8));
           atom.commands.dispatch(textEditorView, 'hyperclick:confirm-cursor');
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              'word2',
-              Range.fromObject([[0, 6], [0, 11]]));
+            textEditor,
+            'word2',
+            Range.fromObject([[0, 6], [0, 11]]),
+          );
           waitsFor(() => callback.callCount === 1);
         });
       });
@@ -733,14 +771,18 @@ describe('Hyperclick', () => {
           await hyperclickForTextEditor.getSuggestionAtMouse();
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
 
-          const suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+          const suggestionListEl = textEditorView.querySelector(
+            'hyperclick-suggestion-list',
+          );
           expect(suggestionListEl).toExist();
 
           atom.commands.dispatch(textEditorView, 'editor:newline');
 
           expect(callback[0].callback.callCount).toBe(1);
           expect(callback[1].callback.callCount).toBe(0);
-          expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+          expect(
+            textEditorView.querySelector('hyperclick-suggestion-list'),
+          ).not.toExist();
         });
       });
 
@@ -769,7 +811,9 @@ describe('Hyperclick', () => {
           await hyperclickForTextEditor.getSuggestionAtMouse();
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
 
-          const suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+          const suggestionListEl = textEditorView.querySelector(
+            'hyperclick-suggestion-list',
+          );
           expect(suggestionListEl).toExist();
 
           atom.commands.dispatch(textEditorView, 'core:move-down');
@@ -777,7 +821,9 @@ describe('Hyperclick', () => {
 
           expect(callback[0].callback.callCount).toBe(0);
           expect(callback[1].callback.callCount).toBe(1);
-          expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+          expect(
+            textEditorView.querySelector('hyperclick-suggestion-list'),
+          ).not.toExist();
         });
       });
 
@@ -806,14 +852,18 @@ describe('Hyperclick', () => {
           await hyperclickForTextEditor.getSuggestionAtMouse();
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
 
-          const suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+          const suggestionListEl = textEditorView.querySelector(
+            'hyperclick-suggestion-list',
+          );
           expect(suggestionListEl).toExist();
 
           atom.commands.dispatch(textEditorView, 'core:cancel');
 
           expect(callback[0].callback.callCount).toBe(0);
           expect(callback[1].callback.callCount).toBe(0);
-          expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+          expect(
+            textEditorView.querySelector('hyperclick-suggestion-list'),
+          ).not.toExist();
         });
       });
     });
@@ -852,9 +902,10 @@ describe('Hyperclick', () => {
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
           await hyperclickForTextEditor.getSuggestionAtMouse();
           expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
-              textEditor,
-              expectedText,
-              expectedBufferRange);
+            textEditor,
+            expectedText,
+            expectedBufferRange,
+          );
           expect(provider.getSuggestionForWord.callCount).toBe(1);
         });
       });

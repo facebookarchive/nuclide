@@ -6,14 +6,13 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {NuclideUri} from '../commons-node/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
-import {
-  repositoryForPath,
-} from '../nuclide-vcs-base';
+import {repositoryForPath} from '../nuclide-vcs-base';
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
 import nuclideUri from '../commons-node/nuclideUri';
@@ -22,7 +21,7 @@ import ChangedFile from './ChangedFile';
 
 function isHgPath(path: NuclideUri): boolean {
   const repo = repositoryForPath(path);
-  return (repo != null) && repo.getType() === 'hg';
+  return repo != null && repo.getType() === 'hg';
 }
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
@@ -84,8 +83,12 @@ export default class ChangedFilesList extends React.Component {
       return null;
     }
 
-    const filesToShow = FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
-    const sizeLimitedFileChanges = Array.from(fileStatuses.entries()).slice(0, filesToShow);
+    const filesToShow =
+      FILE_CHANGES_INITIAL_PAGE_SIZE * this.state.visiblePagesCount;
+    const sizeLimitedFileChanges = Array.from(fileStatuses.entries()).slice(
+      0,
+      filesToShow,
+    );
 
     const rootClassName = classnames('list-nested-item', {
       collapsed: this.state.isCollapsed,
@@ -99,7 +102,10 @@ export default class ChangedFilesList extends React.Component {
             delay: 300,
             placement: 'bottom',
           })}
-          onClick={() => this.setState({visiblePagesCount: this.state.visiblePagesCount + 1})}
+          onClick={() =>
+            this.setState({
+              visiblePagesCount: this.state.visiblePagesCount + 1,
+            })}
         />
       : null;
 
@@ -107,26 +113,28 @@ export default class ChangedFilesList extends React.Component {
     return (
       <ul className="list-tree has-collapsable-children">
         <li className={rootClassName}>
-          {this.props.shouldShowFolderName ?
-            <div
-              className="list-item"
-              key={this.props.rootPath}
-              onClick={() => this.setState({isCollapsed: !this.state.isCollapsed})}>
-              <span
-                className="icon icon-file-directory nuclide-file-changes-root-entry"
-                data-path={this.props.rootPath}>
-                {nuclideUri.basename(this.props.rootPath)}
-              </span>
-            </div> :
-            null
-          }
+          {this.props.shouldShowFolderName
+            ? <div
+                className="list-item"
+                key={this.props.rootPath}
+                onClick={() =>
+                  this.setState({isCollapsed: !this.state.isCollapsed})}>
+                <span
+                  className="icon icon-file-directory nuclide-file-changes-root-entry"
+                  data-path={this.props.rootPath}>
+                  {nuclideUri.basename(this.props.rootPath)}
+                </span>
+              </div>
+            : null}
           <ul className="list-tree has-flat-children">
-            {sizeLimitedFileChanges.map(([filePath, fileStatus]) =>
+            {sizeLimitedFileChanges.map(([filePath, fileStatus]) => (
               <ChangedFile
                 commandPrefix={commandPrefix}
                 enableFileExpansion={enableFileExpansion}
                 enableInlineActions={enableInlineActions}
-                fileChanges={fileChanges == null ? null : fileChanges.get(filePath)}
+                fileChanges={
+                  fileChanges == null ? null : fileChanges.get(filePath)
+                }
                 filePath={filePath}
                 fileStatus={fileStatus}
                 isHgPath={isHgRoot}
@@ -139,8 +147,8 @@ export default class ChangedFilesList extends React.Component {
                 onOpenFileInDiffView={onOpenFileInDiffView}
                 onRevertFile={onRevertFile}
                 rootPath={rootPath}
-              />,
-            )}
+              />
+            ))}
             <li>{showMoreFilesElement}</li>
           </ul>
         </li>

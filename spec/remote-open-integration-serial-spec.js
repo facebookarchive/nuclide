@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type {TestContext} from './utils/remotable-tests';
@@ -30,16 +31,22 @@ describeRemote('Remote Open', (context: TestContext) => {
 
     waitsForPromise(async () => {
       // Open file via remote atom command
-      const remoteAtomCommand =
-        nuclideUri.join(__dirname, '../pkg/nuclide-remote-atom-rpc/bin/atom');
+      const remoteAtomCommand = nuclideUri.join(
+        __dirname,
+        '../pkg/nuclide-remote-atom-rpc/bin/atom',
+      );
       const result = await observeProcess(remoteAtomCommand, [localFilePath])
         .reduce(
           (acc, event) => {
             switch (event.kind) {
-              case 'stdout': return {...acc, stdout: acc.stdout + event.data};
-              case 'stderr': return {...acc, stderr: acc.stderr + event.data};
-              case 'exit': return {...acc, exitCode: event.exitCode};
-              default: return acc;
+              case 'stdout':
+                return {...acc, stdout: acc.stdout + event.data};
+              case 'stderr':
+                return {...acc, stderr: acc.stderr + event.data};
+              case 'exit':
+                return {...acc, exitCode: event.exitCode};
+              default:
+                return acc;
             }
           },
           {stdout: '', stderr: '', exitCode: null},

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import type DebuggerModel from './DebuggerModel';
@@ -45,7 +46,9 @@ export default class Bridge {
     this._suppressBreakpointSync = false;
     this._commandDipatcher = new CommandDispatcher();
     this._disposables = new UniversalDisposable(
-      debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)),
+      debuggerModel
+        .getBreakpointStore()
+        .onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
   }
 
@@ -79,32 +82,19 @@ export default class Bridge {
   }
 
   runToLocation(filePath: string, line: number) {
-    this._commandDipatcher.send(
-      'RunToLocation',
-      filePath,
-      line,
-    );
+    this._commandDipatcher.send('RunToLocation', filePath, line);
   }
 
   triggerAction(actionId: string): void {
-    this._commandDipatcher.send(
-      'triggerDebuggerAction',
-      actionId,
-    );
+    this._commandDipatcher.send('triggerDebuggerAction', actionId);
   }
 
   setSelectedCallFrameIndex(callFrameIndex: number): void {
-      this._commandDipatcher.send(
-        'setSelectedCallFrameIndex',
-        callFrameIndex,
-      );
+    this._commandDipatcher.send('setSelectedCallFrameIndex', callFrameIndex);
   }
 
   setPauseOnException(pauseOnExceptionEnabled: boolean): void {
-    this._commandDipatcher.send(
-      'setPauseOnException',
-      pauseOnExceptionEnabled,
-    );
+    this._commandDipatcher.send('setPauseOnException', pauseOnExceptionEnabled);
   }
 
   setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
@@ -122,10 +112,7 @@ export default class Bridge {
   }
 
   selectThread(threadId: string): void {
-    this._commandDipatcher.send(
-      'selectThread',
-      threadId,
-    );
+    this._commandDipatcher.send('selectThread', threadId);
   }
 
   sendEvaluationCommand(
@@ -136,12 +123,20 @@ export default class Bridge {
     this._commandDipatcher.send(command, evalId, ...args);
   }
 
-  _handleExpressionEvaluationResponse(response: ExpressionResult & {id: number}): void {
-    this._debuggerModel.getActions().receiveExpressionEvaluationResponse(response.id, response);
+  _handleExpressionEvaluationResponse(
+    response: ExpressionResult & {id: number},
+  ): void {
+    this._debuggerModel
+      .getActions()
+      .receiveExpressionEvaluationResponse(response.id, response);
   }
 
-  _handleGetPropertiesResponse(response: GetPropertiesResult & {id: number}): void {
-    this._debuggerModel.getActions().receiveGetPropertiesResponse(response.id, response);
+  _handleGetPropertiesResponse(
+    response: GetPropertiesResult & {id: number},
+  ): void {
+    this._debuggerModel
+      .getActions()
+      .receiveGetPropertiesResponse(response.id, response);
   }
 
   _handleCallstackUpdate(callstack: Callstack): void {
@@ -161,7 +156,11 @@ export default class Bridge {
       case 'notification':
         switch (event.args[0]) {
           case 'ready':
-            if (atom.config.get('nuclide.nuclide-debugger.openDevToolsOnDebuggerStart')) {
+            if (
+              atom.config.get(
+                'nuclide.nuclide-debugger.openDevToolsOnDebuggerStart',
+              )
+            ) {
               this.openDevTools();
             }
             this._updateDebuggerSettings();
@@ -186,7 +185,10 @@ export default class Bridge {
           case 'BreakpointAdded':
             // BreakpointAdded from chrome side is actually
             // binding the breakpoint.
-            this._bindBreakpoint(event.args[1], (event.args[1].resolved === true));
+            this._bindBreakpoint(
+              event.args[1],
+              event.args[1].resolved === true,
+            );
             break;
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
@@ -231,10 +233,16 @@ export default class Bridge {
     this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
   }
 
-  _handleDebuggerPaused(options: ?{
-    stopThreadId: number,
-    threadSwitchNotification: {sourceURL: string, lineNumber: number, message: string},
-  }): void {
+  _handleDebuggerPaused(
+    options: ?{
+      stopThreadId: number,
+      threadSwitchNotification: {
+        sourceURL: string,
+        lineNumber: number,
+        message: string,
+      },
+    },
+  ): void {
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
     if (options != null) {
       if (options.stopThreadId != null) {
@@ -256,7 +264,9 @@ export default class Bridge {
     this._debuggerModel.getActions().clearInterface();
   }
 
-  _setSelectedCallFrameLine(options: ?{sourceURL: string, lineNumber: number}): void {
+  _setSelectedCallFrameLine(
+    options: ?{sourceURL: string, lineNumber: number},
+  ): void {
     this._debuggerModel.getActions().setSelectedCallFrameLine(options);
   }
 
@@ -264,21 +274,24 @@ export default class Bridge {
     if (options == null) {
       return;
     }
-    this._debuggerModel.getActions().openSourceLocation(
-      options.sourceURL,
-      options.lineNumber,
-    );
+    this._debuggerModel
+      .getActions()
+      .openSourceLocation(options.sourceURL, options.lineNumber);
   }
 
-  _handleStopThreadSwitch(options: ?{sourceURL: string, lineNumber: number, message: string}) {
+  _handleStopThreadSwitch(
+    options: ?{sourceURL: string, lineNumber: number, message: string},
+  ) {
     if (options == null) {
       return;
     }
-    this._debuggerModel.getActions().notifyThreadSwitch(
-      options.sourceURL,
-      options.lineNumber,
-      options.message,
-    );
+    this._debuggerModel
+      .getActions()
+      .notifyThreadSwitch(
+        options.sourceURL,
+        options.lineNumber,
+        options.message,
+      );
   }
 
   _bindBreakpoint(breakpoint: IPCBreakpoint, resolved: boolean) {
@@ -288,13 +301,9 @@ export default class Bridge {
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel.getActions().bindBreakpointIPC(
-          path,
-          lineNumber,
-          condition,
-          enabled,
-          resolved,
-        );
+        this._debuggerModel
+          .getActions()
+          .bindBreakpointIPC(path, lineNumber, condition, enabled, resolved);
       } finally {
         this._suppressBreakpointSync = false;
       }
@@ -341,14 +350,17 @@ export default class Bridge {
     // Send an array of file/line objects.
     if (!this._suppressBreakpointSync) {
       const results = [];
-      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(breakpoint => {
-        results.push({
-          sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
-          lineNumber: breakpoint.line,
-          condition: breakpoint.condition,
-          enabled: breakpoint.enabled,
+      this._debuggerModel
+        .getBreakpointStore()
+        .getAllBreakpoints()
+        .forEach(breakpoint => {
+          results.push({
+            sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+            lineNumber: breakpoint.line,
+            condition: breakpoint.condition,
+            enabled: breakpoint.enabled,
+          });
         });
-      });
       this._commandDipatcher.send('SyncBreakpoints', results);
     }
   }
@@ -357,7 +369,9 @@ export default class Bridge {
     if (this._webview == null) {
       // Cast from HTMLElement down to WebviewElement without instanceof
       // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement('webview'): any): WebviewElement);
+      const webview = ((document.createElement(
+        'webview',
+      ): any): WebviewElement);
       webview.src = url;
       webview.nodeintegration = true;
       webview.disablewebsecurity = true;
@@ -384,7 +398,9 @@ export default class Bridge {
     this._commandDipatcher.setupChromeChannel(webview);
     invariant(this._cleanupDisposables == null);
     this._cleanupDisposables = new UniversalDisposable(
-      Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage),
+      Observable.fromEvent(webview, 'ipc-message').subscribe(
+        this._handleIpcMessage,
+      ),
       () => {
         webview.remove();
         this._webview = null;

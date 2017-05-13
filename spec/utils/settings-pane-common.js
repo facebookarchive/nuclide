@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -58,10 +59,14 @@ function testSettingsComponent(
     setValue(element, tmpValue);
   });
   waitsFor(`${keyPath} config to update`, () => {
-    return valueToString(featureConfig.get(keyPath)) === valueToString(tmpValue);
+    return (
+      valueToString(featureConfig.get(keyPath)) === valueToString(tmpValue)
+    );
   });
   runs(() => {
-    expect(valueToString(featureConfig.get(keyPath))).toEqual(valueToString(tmpValue));
+    expect(valueToString(featureConfig.get(keyPath))).toEqual(
+      valueToString(tmpValue),
+    );
   });
 
   // Change config directly
@@ -82,7 +87,9 @@ export function testSettingsCheckbox(keyPath: string, value: boolean) {
     elementForKeyPath(keyPath),
     value,
     !value,
-    (element: HTMLInputElement) => { return element.checked; },
+    (element: HTMLInputElement) => {
+      return element.checked;
+    },
     (element: HTMLInputElement, newValue: boolean) => {
       if (element.checked !== newValue) {
         element.click();
@@ -91,23 +98,32 @@ export function testSettingsCheckbox(keyPath: string, value: boolean) {
   );
 }
 
-export function testSettingsSelect(keyPath: string, value: mixed, tmpValue: mixed) {
+export function testSettingsSelect(
+  keyPath: string,
+  value: mixed,
+  tmpValue: mixed,
+) {
   testSettingsComponent(
     keyPath,
     elementForKeyPath(keyPath),
     value,
     tmpValue,
-    (element: HTMLInputElement) => { return element.value; },
+    (element: HTMLInputElement) => {
+      return element.value;
+    },
     (element: HTMLInputElement, newValue: string) => {
-      TestUtils.Simulate.change(
-        element,
-        {target: element.children[parseInt(newValue, 10)]},
-      );
+      TestUtils.Simulate.change(element, {
+        target: element.children[parseInt(newValue, 10)],
+      });
     },
   );
 }
 
-export function testSettingsInput(keyPath: string, value: mixed, tmpValue: mixed) {
+export function testSettingsInput(
+  keyPath: string,
+  value: mixed,
+  tmpValue: mixed,
+) {
   // testSettingsComponent(
   //   keyPath,
   //   document.querySelector(classSelector(keyPath)),

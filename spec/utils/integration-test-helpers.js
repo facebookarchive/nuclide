@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import typeof * as FlowService from '../../pkg/nuclide-flow-rpc';
@@ -14,7 +15,10 @@ import invariant from 'assert';
 import child_process from 'child_process';
 
 import nuclideUri from '../../pkg/commons-node/nuclideUri';
-import {RemoteConnection, getServiceByNuclideUri} from '../../pkg/nuclide-remote-connection';
+import {
+  RemoteConnection,
+  getServiceByNuclideUri,
+} from '../../pkg/nuclide-remote-connection';
 import {getMountedReactRootNames} from '../../pkg/commons-atom/testHelpers';
 import {reset} from '../../pkg/nuclide-open-files';
 
@@ -84,7 +88,8 @@ export async function activateAllPackages(): Promise<Array<string>> {
     if (pack == null) {
       return false;
     }
-    const isActivationDeferred = pack.hasActivationCommands() || pack.hasActivationHooks();
+    const isActivationDeferred =
+      pack.hasActivationCommands() || pack.hasActivationHooks();
     const isLanguagePackage = name.startsWith('language-');
     const inWhitelist = whitelist.indexOf(name) >= 0;
     return (isLanguagePackage || inWhitelist) && !isActivationDeferred;
@@ -93,9 +98,13 @@ export async function activateAllPackages(): Promise<Array<string>> {
   // Include the path to the nuclide package.
   packageNames.push(nuclideUri.dirname(require.resolve('../../package.json')));
   // Include the path to the tool-bar package
-  packageNames.push(nuclideUri.join(String(process.env.ATOM_HOME), 'packages/tool-bar'));
+  packageNames.push(
+    nuclideUri.join(String(process.env.ATOM_HOME), 'packages/tool-bar'),
+  );
 
-  await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
+  await Promise.all(
+    packageNames.map(pack => atom.packages.activatePackage(pack)),
+  );
   // $FlowIgnore atom implementation detail
   atom.packages.emitter.emit('did-activate-initial-packages');
   return atom.packages.getActivePackages().map(pack => pack.name);
@@ -116,7 +125,7 @@ export function deactivateAllPackages(): void {
     // eslint-disable-next-line no-console
     console.error(
       'Found a mounted React component. ' +
-      `Did you forget to call React.unmountComponentAtNode on "${rootDisplayName}"?`,
+        `Did you forget to call React.unmountComponentAtNode on "${rootDisplayName}"?`,
     );
   });
 

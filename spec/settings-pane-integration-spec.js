@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import {
@@ -16,7 +17,9 @@ import {
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import featureConfig from '../pkg/commons-atom/featureConfig';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {getDefaultConfigValue} from '../pkg/nuclide-settings/lib/settings-utils';
+import {
+  getDefaultConfigValue,
+} from '../pkg/nuclide-settings/lib/settings-utils';
 import {
   testSettingsCheckbox,
   // testSettingsSelect,
@@ -39,7 +42,10 @@ describe('Settings View Integration Test', () => {
       jasmineIntegrationTestSetup();
 
       // Show settings UI
-      dispatchKeyboardEvent(',', document.activeElement, {cmd: true, alt: true});
+      dispatchKeyboardEvent(',', document.activeElement, {
+        cmd: true,
+        alt: true,
+      });
       waitsFor('settings pane to show up', 10000, () => {
         return document.querySelector('.settings-gadgets-pane');
       });
@@ -57,8 +63,8 @@ describe('Settings View Integration Test', () => {
 
       // Input (string)
       const timeoutKeyPath = 'nuclide-health.analyticsTimeout';
-      const timeoutValue: number =
-        (featureConfig.get(timeoutKeyPath) || getDefaultConfigValue(timeoutKeyPath): any);
+      const timeoutValue: number = (featureConfig.get(timeoutKeyPath) ||
+        getDefaultConfigValue(timeoutKeyPath): any);
       const tmpTimeoutValue = timeoutValue + 1;
       testSettingsInput(timeoutKeyPath, timeoutValue, tmpTimeoutValue);
 

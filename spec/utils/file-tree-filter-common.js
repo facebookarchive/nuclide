@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
@@ -30,10 +31,14 @@ export function runTest(context: TestContext) {
     });
 
     const close = () => {
-      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {visible: true});
+      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {
+        visible: true,
+      });
     };
     const open = () => {
-      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {visible: false});
+      atom.commands.dispatch(workspaceEl, 'nuclide-file-tree:toggle', {
+        visible: false,
+      });
     };
 
     runs(() => {

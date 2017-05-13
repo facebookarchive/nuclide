@@ -6,12 +6,15 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
 import invariant from 'assert';
 
 export default function showTriggerConflictWarning(): atom$Notification {
-  const pkg = atom.config.get('nuclide.hyperclick') == null ? 'hyperclick' : 'nuclide.hyperclick';
+  const pkg = atom.config.get('nuclide.hyperclick') == null
+    ? 'hyperclick'
+    : 'nuclide.hyperclick';
   const triggerKeys = atom.config.get(`${pkg}.${process.platform}TriggerKeys`);
   invariant(typeof triggerKeys === 'string');
   const triggerKeyDescription = getTriggerDescription(pkg, triggerKeys);
@@ -24,14 +27,13 @@ export default function showTriggerConflictWarning(): atom$Notification {
   return atom.notifications.addInfo(
     `Hyperclick (jump to definition) is using ${triggerKeyDescription}`,
     {
-      description: `If you want to use ${triggerKeyDescription} for multiple cursors instead,`
-        + ' change the Hyperclick "Trigger Keys" setting.<br /><br />'
-        + `(You can still use ${alternative} + click for multiple cursors.)`,
+      description: `If you want to use ${triggerKeyDescription} for multiple cursors instead,` +
+        ' change the Hyperclick "Trigger Keys" setting.<br /><br />' +
+        `(You can still use ${alternative} + click for multiple cursors.)`,
       dismissable: true,
     },
   );
 }
-
 
 function getTriggerDescription(pkg: string, trigger: string): string {
   const schema = atom.config.getSchema(`${pkg}.${process.platform}TriggerKeys`);

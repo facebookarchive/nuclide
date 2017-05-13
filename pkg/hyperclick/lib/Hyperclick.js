@@ -6,12 +6,10 @@
  * the root directory of this source tree.
  *
  * @flow
+ * @format
  */
 
-import type {
-  HyperclickSuggestion,
-  HyperclickProvider,
-} from './types';
+import type {HyperclickSuggestion, HyperclickProvider} from './types';
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
@@ -25,7 +23,9 @@ import {observeTextEditors} from '../../commons-atom/text-editor';
 /**
  * Calls the given functions and returns the first non-null return value.
  */
-async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
+async function findTruthyReturnValue(
+  fns: Array<void | (() => Promise<any>)>,
+): Promise<any> {
   for (const fn of fns) {
     // eslint-disable-next-line no-await-in-loop
     const result = typeof fn === 'function' ? await fn() : null;
@@ -51,11 +51,15 @@ export default class Hyperclick {
     this._suggestionList = new SuggestionList();
     this._hyperclickForTextEditors = new Set();
     this._textEditorSubscription = observeTextEditors(
-      this.observeTextEditor.bind(this));
+      this.observeTextEditor.bind(this),
+    );
   }
 
   observeTextEditor(textEditor: TextEditor) {
-    const hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
+    const hyperclickForTextEditor = new HyperclickForTextEditor(
+      textEditor,
+      this,
+    );
     this._hyperclickForTextEditors.add(hyperclickForTextEditor);
     textEditor.onDidDestroy(() => {
       hyperclickForTextEditor.dispose();
@@ -80,12 +84,20 @@ export default class Hyperclick {
     }
   }
 
-  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
-    this._applyToAll(provider, singleProvider => this._consumeSingleProvider(singleProvider));
+  consumeProvider(
+    provider: HyperclickProvider | Array<HyperclickProvider>,
+  ): void {
+    this._applyToAll(provider, singleProvider =>
+      this._consumeSingleProvider(singleProvider),
+    );
   }
 
-  removeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
-    this._applyToAll(provider, singleProvider => this._removeSingleProvider(singleProvider));
+  removeProvider(
+    provider: HyperclickProvider | Array<HyperclickProvider>,
+  ): void {
+    this._applyToAll(provider, singleProvider =>
+      this._removeSingleProvider(singleProvider),
+    );
   }
 
   _consumeSingleProvider(provider: HyperclickProvider): void {
@@ -122,24 +134,37 @@ export default class Hyperclick {
     // Get the default word RegExp for this editor.
     const defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
 
-    return findTruthyReturnValue(this._consumedProviders.map((provider: HyperclickProvider) => {
-      if (provider.getSuggestion) {
-        const getSuggestion = provider.getSuggestion.bind(provider);
-        return () => getSuggestion(textEditor, position);
-      } else if (provider.getSuggestionForWord) {
-        const getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
-        return () => {
-          const wordRegExp = provider.wordRegExp || defaultWordRegExp;
-          const {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
-          return getSuggestionForWord(textEditor, text, range);
-        };
-      }
+    return findTruthyReturnValue(
+      this._consumedProviders.map((provider: HyperclickProvider) => {
+        if (provider.getSuggestion) {
+          const getSuggestion = provider.getSuggestion.bind(provider);
+          return () => getSuggestion(textEditor, position);
+        } else if (provider.getSuggestionForWord) {
+          const getSuggestionForWord = provider.getSuggestionForWord.bind(
+            provider,
+          );
+          return () => {
+            const wordRegExp = provider.wordRegExp || defaultWordRegExp;
+            const {text, range} = getWordTextAndRange(
+              textEditor,
+              position,
+              wordRegExp,
+            );
+            return getSuggestionForWord(textEditor, text, range);
+          };
+        }
 
-      throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`');
-    }));
+        throw new Error(
+          'Hyperclick must have either `getSuggestion` or `getSuggestionForWord`',
+        );
+      }),
+    );
   }
 
-  showSuggestionList(textEditor: TextEditor, suggestion: HyperclickSuggestion): void {
+  showSuggestionList(
+    textEditor: TextEditor,
+    suggestion: HyperclickSuggestion,
+  ): void {
     this._suggestionList.show(textEditor, suggestion);
   }
 }
