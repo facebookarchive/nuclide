@@ -16,7 +16,7 @@ import {Icon} from '../../../nuclide-ui/Icon';
 import React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
-import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
+import {TaskButton} from './TaskButton';
 
 type Props = {
   goToRootPanel: () => void,
@@ -50,18 +50,13 @@ export class DevicePanel extends React.Component {
     );
   }
 
-  _getActions(): React.Element<any> {
-    const actions = this.props.deviceTasks.map(action => (
-      <Button
-        size={ButtonSizes.SMALL}
-        onClick={() => action.task.start()}
-        key={action.name}>
-        {action.name}
-      </Button>
+  _getTasks(): React.Element<any> {
+    const tasks = this.props.deviceTasks.map(task => (
+      <TaskButton task={task} key={task.name} />
     ));
     return (
-      <div className="block nuclide-device-panel-actions-container">
-        {actions}
+      <div className="block nuclide-device-panel-tasks-container">
+        {tasks}
       </div>
     );
   }
@@ -86,7 +81,7 @@ export class DevicePanel extends React.Component {
     return (
       <div>
         {this._getBackButton()}
-        {this._getActions()}
+        {this._getTasks()}
         {this._createInfoTables()}
         {this._createProcessTable()}
       </div>
