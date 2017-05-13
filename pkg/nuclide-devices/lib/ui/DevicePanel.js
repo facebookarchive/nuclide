@@ -58,7 +58,7 @@ export class DevicePanel extends React.Component {
     const actions = this.props.deviceActions.map(action => (
       <Button
         size={ButtonSizes.SMALL}
-        onClick={() => action.callback()}
+        onClick={() => action.task.start()}
         key={action.name}>
         {action.name}
       </Button>

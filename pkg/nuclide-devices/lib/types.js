@@ -9,9 +9,10 @@
  * @format
  */
 
-import {Observable} from 'rxjs';
-
 import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {Task} from '../../commons-node/tasks';
+
+import {Observable} from 'rxjs';
 
 export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
@@ -28,7 +29,7 @@ export type Device = {
 
 export type DeviceAction = {
   name: string,
-  callback: () => Promise<void>,
+  task: Task,
 };
 
 export interface DeviceActionsProvider {
