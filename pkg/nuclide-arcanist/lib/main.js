@@ -9,60 +9,29 @@
  * @format
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
-import * as ArcanistDiagnosticsProvider from './ArcanistDiagnosticsProvider';
 import ArcBuildSystem from './ArcBuildSystem';
 import {openArcDeepLink} from './openArcDeepLink';
 
 class Activation {
   _disposables: CompositeDisposable;
-  _busySignalProvider: BusySignalProviderBase;
   _buildSystem: ?ArcBuildSystem;
   _cwdApi: ?CwdApi;
   _remoteProjectsService: ?RemoteProjectsService;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
-    this._busySignalProvider = new DedupedBusySignalProviderBase();
   }
 
   dispose(): void {
     this._disposables.dispose();
-  }
-
-  provideBusySignal(): BusySignalProvider {
-    return this._busySignalProvider;
-  }
-
-  provideLinter(): LinterProvider {
-    return {
-      name: 'Arc',
-      grammarScopes: ['*'],
-      scope: 'file',
-      lint: editor => {
-        const path = editor.getPath();
-        if (path == null) {
-          return null;
-        }
-        return this._busySignalProvider.reportBusy(
-          `Waiting for arc lint results for \`${editor.getTitle()}\``,
-          () => ArcanistDiagnosticsProvider.lint(editor),
-          {onlyForFile: path},
-        );
-      },
-    };
   }
 
   consumeCwdApi(api: CwdApi): IDisposable {

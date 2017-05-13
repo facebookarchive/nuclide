@@ -91,7 +91,7 @@ async function _findDiagnostics(
   filePath: string,
 ): Promise<?Array<ArcDiagnostic>> {
   const blacklistedLinters: Array<string> = (featureConfig.get(
-    'nuclide-arcanist.blacklistedLinters',
+    'nuclide-arc-lint.blacklistedLinters',
   ): any);
   const runningProcess = _runningProcess.get(filePath);
   if (runningProcess != null) {
@@ -110,7 +110,7 @@ async function _findDiagnostics(
       .findDiagnostics(filePath, blacklistedLinters)
       .refCount()
       .toArray()
-      .timeout((featureConfig.get('nuclide-arcanist.lintTimeout'): any))
+      .timeout((featureConfig.get('nuclide-arc-lint.lintTimeout'): any))
       .subscribe(subject);
     return subject
       .finally(() => {
