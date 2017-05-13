@@ -11,10 +11,10 @@
 
 import {Emitter} from 'atom';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import {arrayEqual} from '../../commons-node/collection';
+import {arrayEqual} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {WorkingSetDefinition} from './types';
 

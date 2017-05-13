@@ -12,7 +12,7 @@
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
-import {arrayFlatten, arrayCompact} from '../../../commons-node/collection';
+import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import {
   getDeviceInfoProviders,
   getDeviceProcessesProviders,

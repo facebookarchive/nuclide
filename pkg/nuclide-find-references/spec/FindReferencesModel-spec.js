@@ -10,7 +10,7 @@
  */
 
 import {Point, Range} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from '../../nuclide-test-helpers';
 import FindReferencesModel from '../lib/FindReferencesModel';
 

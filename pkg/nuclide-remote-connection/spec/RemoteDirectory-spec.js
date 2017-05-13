@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Directory} from 'atom';
 import {RemoteDirectory} from '../lib/RemoteDirectory';
 import connectionMock from './connection_mock';

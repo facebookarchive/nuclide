@@ -20,7 +20,7 @@ import loadServicesConfig from '../lib/loadServicesConfig';
 import {generateFixture} from '../../nuclide-test-helpers';
 import {ServiceRegistry} from '../lib/ServiceRegistry';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('SocketServer', () => {
   let configPath: ?string;

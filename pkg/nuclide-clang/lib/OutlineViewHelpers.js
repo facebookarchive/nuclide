@@ -17,7 +17,7 @@ import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 
 import {trackTiming} from '../../nuclide-analytics';
-import {sleep} from '../../commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 import {ClangCursorTypes} from '../../nuclide-clang-rpc';
 import {
   keyword,

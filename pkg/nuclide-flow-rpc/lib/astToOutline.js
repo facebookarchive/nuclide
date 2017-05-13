@@ -16,7 +16,7 @@ import type {
 
 import {Point} from 'simple-text-buffer';
 
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 
 import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
 import {

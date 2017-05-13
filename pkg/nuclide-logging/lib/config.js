@@ -18,7 +18,7 @@ import {
 import fsPromise from '../../commons-node/fsPromise';
 
 import os from 'os';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const LOG_DIRECTORY = nuclideUri.join(
   os.tmpdir(),

@@ -9,7 +9,7 @@
  * @format
  */
 
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
 
 /**

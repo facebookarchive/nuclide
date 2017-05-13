@@ -9,12 +9,12 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LocalFileEvent, FileVersion} from './rpc-types';
 
 import {FileEventKind} from './constants';
-import {Deferred} from '../../commons-node/promise';
-import {MultiMap} from '../../commons-node/collection';
+import {Deferred} from 'nuclide-commons/promise';
+import {MultiMap} from 'nuclide-commons/collection';
 
 export class FileVersionNotifier {
   _versions: Map<NuclideUri, number>;

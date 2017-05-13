@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {getLogger} from '../../nuclide-logging';
 
 const TAGS_FILENAME = 'tags';

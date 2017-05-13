@@ -15,7 +15,7 @@ import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
 
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
 import {BehaviorSubject, Observable} from 'rxjs';

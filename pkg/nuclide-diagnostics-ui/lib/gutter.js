@@ -13,7 +13,7 @@ import type {FileMessageUpdate} from '../../nuclide-diagnostics-common';
 import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 
 import {Range} from 'atom';

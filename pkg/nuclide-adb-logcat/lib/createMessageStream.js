@@ -12,7 +12,7 @@
 import type {Message} from '../../nuclide-console/lib/types';
 
 import featureConfig from '../../commons-atom/featureConfig';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createMessage from './createMessage';
 import parseLogcatMetadata from './parseLogcatMetadata';
 import {Observable} from 'rxjs';

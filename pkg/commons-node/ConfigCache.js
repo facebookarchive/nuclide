@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from './nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LRUCache} from 'lru-cache';
 
 import LRU from 'lru-cache';

@@ -11,7 +11,7 @@
 
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export default (async function tryReopenProject(
   projectId: string,

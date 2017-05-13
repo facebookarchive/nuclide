@@ -11,21 +11,21 @@
 
 import type WS from 'ws';
 import type DebuggerProcessInfo from './DebuggerProcessInfo';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {AtomNotification} from './types';
 
 import {Emitter} from 'atom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   translateMessageFromServer,
   translateMessageToServer,
 } from './ChromeMessageRemoting';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   WebSocketServer,
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
-import {stringifyError} from '../../commons-node/string';
+import {stringifyError} from 'nuclide-commons/string';
 
 import {getCategoryLogger} from '../../nuclide-logging';
 const SESSION_END_EVENT = 'session-end-event';

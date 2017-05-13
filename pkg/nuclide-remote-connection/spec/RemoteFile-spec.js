@@ -13,7 +13,7 @@ import type {ServerConnection} from '..';
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
 import {Subject} from 'rxjs';
 import temp from 'temp';

@@ -13,8 +13,8 @@ import type {PanelLocationId, SerializedPanelLocation} from './types';
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
 
 import createPaneContainer from '../../commons-atom/create-pane-container';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import TabBarView from '../../nuclide-ui/VendorLib/atom-tabs/lib/tab-bar-view';
 import addPanel from './addPanel';

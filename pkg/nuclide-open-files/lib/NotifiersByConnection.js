@@ -11,7 +11,7 @@
 
 import typeof * as OpenFilesService
   from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import {
@@ -22,10 +22,10 @@ import {
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
 import {getLogger} from '../../nuclide-logging';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Disposable} from 'atom';
-import {areSetsEqual} from '../../commons-node/collection';
+import {areSetsEqual} from 'nuclide-commons/collection';
 
 const logger = getLogger();
 

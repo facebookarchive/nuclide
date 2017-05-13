@@ -21,7 +21,7 @@ import WS from 'ws';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
-import {attachEvent} from '../../commons-node/event';
+import {attachEvent} from 'nuclide-commons/event';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 
 const connect: connect$module = require('connect');

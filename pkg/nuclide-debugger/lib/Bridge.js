@@ -22,8 +22,8 @@ import type {
   GetPropertiesResult,
 } from './types';
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import {Observable} from 'rxjs';

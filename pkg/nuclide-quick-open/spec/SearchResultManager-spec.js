@@ -17,7 +17,7 @@ import type {
   GroupedResults,
 } from '../lib/searchResultHelpers';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import SearchResultManager from '../lib/SearchResultManager';
 import QuickOpenProviderRegistry from '../lib/QuickOpenProviderRegistry';

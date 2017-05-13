@@ -13,8 +13,8 @@
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import debounce from '../../commons-node/debounce';
-import {maybeToString} from '../../commons-node/string';
+import debounce from 'nuclide-commons/debounce';
+import {maybeToString} from 'nuclide-commons/string';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 

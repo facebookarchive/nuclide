@@ -13,7 +13,7 @@
 
 import type FileTreeContextMenu
   from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VcsLogResponse} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {CompositeDisposable, Disposable} from 'atom';
@@ -21,7 +21,7 @@ import VcsLogPaneItem from './VcsLogPaneItem';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import querystring from 'querystring';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {shortNameForAuthor as shortNameForAuthorFn} from './util';

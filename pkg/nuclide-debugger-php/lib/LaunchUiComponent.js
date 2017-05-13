@@ -14,7 +14,7 @@
 import React from 'react';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button, ButtonTypes} from '../../nuclide-ui/Button';
@@ -22,7 +22,7 @@ import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 import type EventEmitter from 'events';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 const MAX_RECENTLY_LAUNCHED = 5;
 

@@ -9,12 +9,12 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Observable} from 'rxjs';
 
-import nuclideUri from '../commons-node/nuclideUri';
-import {observableFromSubscribeFunction} from '../commons-node/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 export function observeBuffers(
   observeBuffer: (buffer: atom$TextBuffer) => mixed,

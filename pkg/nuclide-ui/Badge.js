@@ -14,7 +14,7 @@ import type {IconName} from './types';
 import classnames from 'classnames';
 import React from 'react';
 
-import {maybeToString} from '../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 
 type BadgeSize = 'medium' | 'small' | 'large';
 type BadgeColor = 'info' | 'success' | 'warning' | 'error';

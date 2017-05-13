@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device, DeviceListProvider} from '../../nuclide-devices/lib/types';
 
 export class ATDeviceListProvider implements DeviceListProvider {

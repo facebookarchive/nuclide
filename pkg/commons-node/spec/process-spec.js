@@ -11,7 +11,7 @@
 
 import type {ProcessExitMessage} from '../process-rpc-types';
 
-import {sleep} from '../promise';
+import {sleep} from 'nuclide-commons/promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import {Scheduler} from 'rxjs';

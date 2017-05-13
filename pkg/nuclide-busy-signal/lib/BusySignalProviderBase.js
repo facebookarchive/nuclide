@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalMessage} from './types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 
 import {Disposable, CompositeDisposable} from 'atom';
@@ -18,7 +18,7 @@ import {Disposable, CompositeDisposable} from 'atom';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 
-import {isPromise} from '../../commons-node/promise';
+import {isPromise} from 'nuclide-commons/promise';
 
 export type MessageDisplayOptions = {
   onlyForFile: NuclideUri,

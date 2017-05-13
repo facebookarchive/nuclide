@@ -13,7 +13,7 @@ import {observeProcess} from '../../commons-node/process';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
 import os from 'os';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
 const VALID_UDID = /^[a-f0-9-]+$/i;

@@ -14,11 +14,11 @@ import type Immutable from 'immutable';
 
 import ContextMenu from '../../commons-atom/ContextMenu';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
 import {FileTreeStore} from './FileTreeStore';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 type MenuItemSingle = {
   +label: string,

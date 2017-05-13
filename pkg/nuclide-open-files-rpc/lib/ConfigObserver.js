@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {BehaviorSubject, Observable} from 'rxjs';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {areSetsEqual} from '../../commons-node/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {areSetsEqual} from 'nuclide-commons/collection';
 import {FileEventKind} from './constants';
 import {FileCache} from './FileCache';
 

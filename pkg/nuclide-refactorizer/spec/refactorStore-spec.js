@@ -25,8 +25,8 @@ import {Range, Point} from 'atom';
 import invariant from 'assert';
 
 import ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {Deferred, nextTick} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Deferred, nextTick} from 'nuclide-commons/promise';
 import {expectObservableToStartWith} from '../../nuclide-test-helpers';
 
 import {getStore, getErrors} from '../lib/refactorStore';

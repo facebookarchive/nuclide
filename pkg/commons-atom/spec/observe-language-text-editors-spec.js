@@ -10,7 +10,7 @@
  */
 
 import nullthrows from 'nullthrows';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import observeGrammarForTextEditors from '../observe-grammar-for-text-editors';
 import observeLanguageTextEditors from '../observe-language-text-editors';
 

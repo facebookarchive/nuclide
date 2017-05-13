@@ -15,7 +15,7 @@ import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
 import {
   viewableFromReactElement,
 } from '../../../commons-atom/viewableFromReactElement';
-import {nextAnimationFrame, throttle} from '../../../commons-node/observable';
+import {nextAnimationFrame, throttle} from 'nuclide-commons/observable';
 import * as Actions from '../redux/Actions';
 import {Toolbar} from './Toolbar';
 import React from 'react';

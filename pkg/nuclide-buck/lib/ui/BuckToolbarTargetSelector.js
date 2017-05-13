@@ -16,8 +16,8 @@ import {Observable} from 'rxjs';
 
 import {Combobox} from '../../../nuclide-ui/Combobox';
 
-import nuclideUri from '../../../commons-node/nuclideUri';
-import {concatLatest} from '../../../commons-node/observable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {concatLatest} from 'nuclide-commons/observable';
 import {getBuckService} from '../../../nuclide-buck-base';
 import {getLogger} from '../../../nuclide-logging';
 

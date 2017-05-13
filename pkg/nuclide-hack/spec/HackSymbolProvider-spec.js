@@ -12,7 +12,7 @@
 import type {
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import ReactDOM from 'react-dom';

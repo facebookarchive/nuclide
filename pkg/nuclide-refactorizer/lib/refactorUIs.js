@@ -11,7 +11,7 @@
 
 import type {RefactorUIFactory, Store, RefactorState} from './types';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';

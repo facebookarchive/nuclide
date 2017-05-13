@@ -15,11 +15,11 @@ import type {
 } from '../../nuclide-debugger-interfaces/service';
 import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {setOutputService} from '../../nuclide-debugger-base';
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export function consumeOutputService(api: OutputService): void {
   setOutputService(api);

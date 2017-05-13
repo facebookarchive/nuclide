@@ -13,7 +13,7 @@ import type {Level, OutputService} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
 import createPackage from '../../commons-atom/createPackage';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 class Activation {
   _disposables: CompositeDisposable;

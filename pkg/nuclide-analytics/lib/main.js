@@ -11,8 +11,8 @@
 
 import type {Observable} from 'rxjs';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {isPromise} from '../../commons-node/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {isPromise} from 'nuclide-commons/promise';
 import performanceNow from '../../commons-node/performanceNow';
 import {track as rawTrack} from './track';
 

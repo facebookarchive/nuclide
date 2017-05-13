@@ -14,7 +14,7 @@ import type {LRUCache} from 'lru-cache';
 import LRU from 'lru-cache';
 import {CompositeDisposable} from 'event-kit';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import which from '../../commons-node/which';
 import {runCommand} from '../../commons-node/process';
 import {ConfigCache} from '../../commons-node/ConfigCache';

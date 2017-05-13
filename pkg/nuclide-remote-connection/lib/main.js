@@ -10,7 +10,7 @@
  */
 
 import type {Directory as LocalDirectoryType} from 'atom';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import nullthrows from 'nullthrows';
 

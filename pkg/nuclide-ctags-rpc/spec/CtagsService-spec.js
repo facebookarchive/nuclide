@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {getCtagsService, CtagsService} from '..';
 

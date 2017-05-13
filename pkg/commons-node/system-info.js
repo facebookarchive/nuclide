@@ -13,7 +13,7 @@ import fs from 'fs';
 import invariant from 'assert';
 import once from './once';
 import os from 'os';
-import nuclideUri from './nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../package.json');
 const NUCLIDE_BASEDIR = nuclideUri.dirname(NUCLIDE_PACKAGE_JSON_PATH);

@@ -12,7 +12,7 @@
 import React from 'react';
 import {Button} from '../../nuclide-ui/Button';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type Props = {};
 

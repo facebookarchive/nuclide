@@ -14,20 +14,20 @@ import type {
   HgRepositoryClient,
 } from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {IconName} from '../../nuclide-ui/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {arrayCompact, mapFilter} from '../../commons-node/collection';
+import {arrayCompact, mapFilter} from 'nuclide-commons/collection';
 import {runCommand} from '../../commons-node/process';
-import {diffSets} from '../../commons-node/observable';
+import {diffSets} from 'nuclide-commons/observable';
 import {Directory} from 'atom';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {track} from '../../nuclide-analytics';
 
 type VcsInfo = {

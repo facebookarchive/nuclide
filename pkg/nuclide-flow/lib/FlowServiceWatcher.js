@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FlowLanguageServiceType} from '../../nuclide-flow-rpc';
 
 import {Observable, Subscription} from 'rxjs';

@@ -10,12 +10,12 @@
  */
 
 import type {ClangServerFlags} from './ClangServer';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import LRUCache from 'lru-cache';
 import os from 'os';
 
-import {serializeAsyncCall} from '../../commons-node/promise';
+import {serializeAsyncCall} from 'nuclide-commons/promise';
 import {getLogger} from '../../nuclide-logging';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';

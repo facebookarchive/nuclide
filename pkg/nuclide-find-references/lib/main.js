@@ -20,7 +20,7 @@ import {
   bufferPositionForMouseEvent,
 } from '../../commons-atom/mouse-to-position';
 import {observeTextEditors} from '../../commons-atom/text-editor';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';
 import {getLogger} from '../../nuclide-logging';

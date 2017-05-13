@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Tab} from '../../nuclide-ui/Tabs';
 import type QuickSelectionActions from './QuickSelectionActions';
 
@@ -41,14 +41,14 @@ import {Observable, Scheduler} from 'rxjs';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Button} from '../../nuclide-ui/Button';
 import Tabs from '../../nuclide-ui/Tabs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
-import {throttle, nextTick} from '../../commons-node/observable';
+import {throttle, nextTick} from 'nuclide-commons/observable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   filterEmptyResults,
   flattenResults,

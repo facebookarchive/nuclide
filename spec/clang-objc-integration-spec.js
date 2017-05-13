@@ -30,7 +30,7 @@ import {
   waitsForFilePosition,
 } from '../pkg/commons-atom/testHelpers';
 import busySignal from './utils/busy-signal-common';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 /**
  * This is a full integration test for (local) Objective-C support in Nuclide.

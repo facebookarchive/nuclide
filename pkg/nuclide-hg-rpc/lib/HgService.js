@@ -10,11 +10,11 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
@@ -46,7 +46,7 @@ import {
   processExitCodeAndThrow,
 } from './hg-utils';
 import fsPromise from '../../commons-node/fsPromise';
-import debounce from '../../commons-node/debounce';
+import debounce from 'nuclide-commons/debounce';
 import invariant from 'assert';
 
 import {fetchActiveBookmark} from './hg-bookmark-helpers';

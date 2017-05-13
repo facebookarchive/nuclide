@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {DebuggerProcessInfo} from '../../../nuclide-debugger-base';
 import {ReactNativeDebuggerInstance} from './ReactNativeDebuggerInstance';

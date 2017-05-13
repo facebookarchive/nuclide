@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {OutlineProvider} from '../../nuclide-outline-view';

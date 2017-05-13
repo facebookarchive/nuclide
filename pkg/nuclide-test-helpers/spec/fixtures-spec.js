@@ -13,7 +13,7 @@ import fs from 'fs';
 import glob from 'glob';
 import {copyFixture, copyBuildFixture, generateFixture} from '../lib/fixtures';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('copyFixture', () => {
   it('should copy a directory recursively', () => {

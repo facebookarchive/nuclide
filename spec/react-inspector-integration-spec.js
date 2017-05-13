@@ -9,7 +9,7 @@
  * @format
  */
 
-import {sleep} from '../pkg/commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 import {
   activateAllPackages,
   jasmineIntegrationTestSetup,

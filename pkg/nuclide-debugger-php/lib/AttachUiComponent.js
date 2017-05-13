@@ -16,10 +16,10 @@ import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type EventEmitter from 'events';
 

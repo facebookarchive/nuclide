@@ -12,7 +12,7 @@
 import type {FileSearchResult} from './rpc-types';
 
 import {getLogger} from '../../nuclide-logging';
-import {arrayEqual} from '../../commons-node/collection';
+import {arrayEqual} from 'nuclide-commons/collection';
 import fsPromise from '../../commons-node/fsPromise';
 import Task from '../../nuclide-task';
 

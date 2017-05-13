@@ -11,7 +11,7 @@
 
 import type {AppState, SerializedAppState} from './types';
 
-import {objectEntries, objectFromMap} from '../../commons-node/collection';
+import {objectEntries, objectFromMap} from 'nuclide-commons/collection';
 import getNewLocation from './getNewLocation';
 
 export function serialize(state: AppState): SerializedAppState {

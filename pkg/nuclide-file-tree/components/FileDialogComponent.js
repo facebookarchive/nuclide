@@ -9,13 +9,13 @@
  * @format
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 type Options = {[key: string]: boolean};
 

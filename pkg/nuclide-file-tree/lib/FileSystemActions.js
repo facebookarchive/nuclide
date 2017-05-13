@@ -11,7 +11,7 @@
 
 import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteFile} from '../../nuclide-remote-connection';
 
 import FileDialogComponent from '../components/FileDialogComponent';
@@ -20,7 +20,7 @@ import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {File} from 'atom';
 import {
   getFileSystemServiceByNuclideUri,

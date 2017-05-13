@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 

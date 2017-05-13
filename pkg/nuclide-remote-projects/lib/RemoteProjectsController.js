@@ -16,7 +16,7 @@ import ReactDOM from 'react-dom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import ConnectionState from './ConnectionState';
 
 export default class RemoteProjectsController {

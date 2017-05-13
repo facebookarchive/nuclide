@@ -13,7 +13,7 @@ import type {Datatip} from './types';
 
 import React from 'react';
 
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import MarkedStringDatatip from './MarkedStringDatatip';
 
 export const DATATIP_ACTIONS = Object.freeze({

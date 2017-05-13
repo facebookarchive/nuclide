@@ -16,10 +16,10 @@ import type {
   HgRepositoryDescription,
 } from '../../nuclide-source-control-helpers';
 import type {RemoteFile} from './RemoteFile';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Disposable, Emitter} from 'atom';
 import {getLogger} from '../../nuclide-logging';
 

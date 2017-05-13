@@ -13,7 +13,7 @@ import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import type {
   NodeAttachTargetInfo,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 
 import {ActionTypes} from './LaunchAttachDispatcher';

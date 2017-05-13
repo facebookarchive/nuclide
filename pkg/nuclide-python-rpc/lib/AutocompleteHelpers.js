@@ -10,13 +10,13 @@
  */
 
 import type {PythonCompletion} from './PythonService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutocompleteResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type JediServerManager from './JediServerManager';
 
-import {matchRegexEndingAt} from '../../commons-node/range';
+import {matchRegexEndingAt} from 'nuclide-commons/range';
 
 // Type mappings between Jedi types and autocomplete-plus types used for styling.
 const TYPES = {

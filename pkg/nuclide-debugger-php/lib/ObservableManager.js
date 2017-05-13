@@ -13,7 +13,7 @@ import {registerConsoleLogging} from '../../nuclide-debugger-base';
 import utils from './utils';
 const {log, logError} = utils;
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError',

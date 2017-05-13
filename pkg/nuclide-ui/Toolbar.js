@@ -11,7 +11,7 @@
 
 import classnames from 'classnames';
 import React from 'react';
-import {maybeToString} from '../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 
 type Props = {
   children?: mixed,

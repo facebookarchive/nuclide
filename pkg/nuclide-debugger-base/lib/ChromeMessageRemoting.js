@@ -10,7 +10,7 @@
  */
 
 import url from 'url';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
 export function translateMessageFromServer(

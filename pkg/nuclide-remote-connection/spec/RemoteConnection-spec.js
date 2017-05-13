@@ -12,7 +12,7 @@
 import fs from 'fs';
 import {RemoteConnection} from '../lib/RemoteConnection';
 import {ServerConnection, __test__} from '../lib/ServerConnection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');
 

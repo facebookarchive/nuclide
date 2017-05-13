@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {IconName} from '../../nuclide-ui/types';
 
 import type {CoverageResult} from './rpc-types';

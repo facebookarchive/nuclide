@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {AtomInput} from './AtomInput';
 import {Portal} from './Portal';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import {denodeify} from '../../../commons-node/promise';
+import {denodeify} from 'nuclide-commons/promise';
 
 import tempModule from 'temp';
 tempModule.track();
@@ -21,7 +21,7 @@ const mkdir = denodeify(makeTree);
 import touchModule from 'touch';
 const touch = denodeify(touchModule);
 
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export async function buildTempDirTree(
   ...paths: Array<string>

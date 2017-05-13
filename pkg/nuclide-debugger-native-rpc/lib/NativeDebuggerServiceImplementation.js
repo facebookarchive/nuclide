@@ -19,10 +19,10 @@ import type {
 
 import child_process from 'child_process';
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
 import {observeStream} from '../../commons-node/stream';
-import {splitStream} from '../../commons-node/observable';
+import {splitStream} from 'nuclide-commons/observable';
 import {runCommand} from '../../commons-node/process';
 import {Observable} from 'rxjs';
 

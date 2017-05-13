@@ -22,7 +22,7 @@ import {
   DbgpMessageHandler,
   getDbgpMessageHandlerInstance,
 } from './DbgpMessageHandler';
-import {attachEvent} from '../../commons-node/event';
+import {attachEvent} from 'nuclide-commons/event';
 import invariant from 'assert';
 import type {Socket} from 'net';
 

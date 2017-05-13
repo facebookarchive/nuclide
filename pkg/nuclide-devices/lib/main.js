@@ -10,7 +10,7 @@
  */
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DevicesPanelState, WORKSPACE_VIEW_URI} from './DevicesPanelState';
 import {Disposable} from 'atom';
 import invariant from 'invariant';
@@ -32,7 +32,7 @@ import {
   getDeviceListProviders,
   getDeviceTasksProviders,
 } from './providers';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {
   WorkspaceViewsService,

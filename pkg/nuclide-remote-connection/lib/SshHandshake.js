@@ -18,7 +18,7 @@ import net from 'net';
 import invariant from 'assert';
 import {RemoteConnection} from './RemoteConnection';
 import fsPromise from '../../commons-node/fsPromise';
-import {sleep} from '../../commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from '../../nuclide-logging';
 

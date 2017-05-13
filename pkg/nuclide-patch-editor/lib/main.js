@@ -24,13 +24,13 @@ import PatchEditor from './ui/PatchEditor';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import nullthrows from 'nullthrows';
 import {Observable, BehaviorSubject} from 'rxjs';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {parseWithAnnotations} from './utils';
 import React from 'react';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {rootReducer} from './redux/Reducers';
 import {track} from '../../nuclide-analytics';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';

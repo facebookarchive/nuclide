@@ -9,9 +9,9 @@
  * @format
  */
 
-import {arrayCompact, setDifference} from '../../commons-node/collection';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {arrayCompact, setDifference} from 'nuclide-commons/collection';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
 export function syncPaneItemVisibility(

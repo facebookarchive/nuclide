@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import watchman from 'fb-watchman';
 import WatchmanClient from '../lib/WatchmanClient';

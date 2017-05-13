@@ -10,7 +10,7 @@
  */
 
 import * as arcanist from '..';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {copyFixture} from '../../nuclide-test-helpers';
 import {Observable} from 'rxjs';

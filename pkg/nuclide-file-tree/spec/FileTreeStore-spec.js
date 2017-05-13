@@ -17,9 +17,9 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import {copyFixture} from '../../nuclide-test-helpers';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {denodeify} from '../../commons-node/promise';
+import {denodeify} from 'nuclide-commons/promise';
 
 import {buildTempDirTree} from './helpers/BuildTempDirTree';
 

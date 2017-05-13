@@ -18,7 +18,7 @@ import invariant from 'assert';
 import {
   bufferPositionForMouseEvent,
 } from '../../commons-atom/mouse-to-position';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
 
 /**

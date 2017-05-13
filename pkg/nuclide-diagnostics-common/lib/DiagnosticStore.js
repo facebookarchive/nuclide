@@ -21,12 +21,12 @@ import type {
   ProjectDiagnosticMessage,
 } from './rpc-types';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 
 import {applyTextEdits} from '../../nuclide-textedit';
-import {arrayRemove, MultiMap} from '../../commons-node/collection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';

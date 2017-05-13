@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   FileOpenEvent,
   FileCloseEvent,
@@ -23,8 +23,8 @@ import TextBuffer from 'simple-text-buffer';
 import invariant from 'assert';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
 import {FileVersionNotifier} from './FileVersionNotifier';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {FileEventKind} from './constants';
 

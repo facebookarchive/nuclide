@@ -26,7 +26,7 @@ import type {
 
 import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import lookupPreferIpv6
   from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 

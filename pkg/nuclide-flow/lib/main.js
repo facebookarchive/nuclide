@@ -39,8 +39,8 @@ import {
   ConnectionCache,
   getServiceByConnection,
 } from '../../nuclide-remote-connection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import nuclideUri from '../../commons-node/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {FlowServiceWatcher} from './FlowServiceWatcher';
 

@@ -13,7 +13,7 @@ import type {FileSearchResult} from '../rpc-types';
 
 import os from 'os';
 import {makeRe} from 'minimatch';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Matcher} from '../../../nuclide-fuzzy-native';
 
 export class PathSet {

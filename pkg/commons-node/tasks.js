@@ -13,8 +13,8 @@
 // interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
 // two.
 
-import UniversalDisposable from './UniversalDisposable';
-import {observableFromSubscribeFunction} from './event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import invariant from 'assert';
 import {Observable, Subscription} from 'rxjs';
 

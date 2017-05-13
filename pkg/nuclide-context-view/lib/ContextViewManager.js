@@ -21,7 +21,7 @@ import invariant from 'assert';
 import featureConfig from '../../commons-atom/featureConfig';
 import observePaneItemVisibility
   from '../../commons-atom/observePaneItemVisibility';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {observeTextEditorsPositions} from '../../commons-atom/debounced';

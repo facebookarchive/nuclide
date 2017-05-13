@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import {ReplaySubject} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import {openConnectionDialog} from './open-connection';
 

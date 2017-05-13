@@ -9,9 +9,9 @@
  * @format
  */
 
-import {setDifference} from '../../commons-node/collection';
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {setDifference} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getGrepServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 /**

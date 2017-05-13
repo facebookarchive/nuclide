@@ -9,7 +9,7 @@
  * @format
  */
 
-import {stringifyError} from '../../commons-node/string';
+import {stringifyError} from 'nuclide-commons/string';
 import {track} from '../../nuclide-analytics';
 
 import type {

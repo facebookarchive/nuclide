@@ -12,7 +12,7 @@
 import type {Server, Socket} from 'net';
 
 import net from 'net';
-import {Deferred} from '../../commons-node/promise';
+import {Deferred} from 'nuclide-commons/promise';
 import {RpcConnection} from './RpcConnection';
 import {SocketTransport} from './SocketTransport';
 import {ServiceRegistry} from './ServiceRegistry';

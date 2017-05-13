@@ -14,7 +14,7 @@ import {Range} from 'simple-text-buffer';
 import type {
   Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 
 import {HACK_WORD_REGEX} from './constants';
 

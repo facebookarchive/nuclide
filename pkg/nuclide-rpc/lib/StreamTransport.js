@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import {splitStream} from '../../commons-node/observable';
+import {splitStream} from 'nuclide-commons/observable';
 import {observeStream} from '../../commons-node/stream';
 import invariant from 'assert';
 import type {MessageLogger} from './index';

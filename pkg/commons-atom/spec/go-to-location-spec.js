@@ -11,7 +11,7 @@
 
 import {Point} from 'atom';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation, observeNavigatingEditors} from '../go-to-location';
 
 const FILE1_PATH = nuclideUri.join(__dirname, 'fixtures/file1.txt');

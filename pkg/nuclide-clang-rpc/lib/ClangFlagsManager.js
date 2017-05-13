@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {shellParse} from '../../commons-node/string';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {shellParse} from 'nuclide-commons/string';
 import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';

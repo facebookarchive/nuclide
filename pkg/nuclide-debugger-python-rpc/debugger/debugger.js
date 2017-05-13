@@ -14,7 +14,7 @@ import type {DebuggerEvent, Message} from './types';
 import {Observable} from 'rxjs';
 import child_process from 'child_process';
 import net from 'net';
-import pathUtil from '../../commons-node/nuclideUri';
+import pathUtil from 'nuclide-commons/nuclideUri';
 import split from 'split';
 import uuid from 'uuid';
 import os from 'os';

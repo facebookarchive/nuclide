@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {
   DiagnosticMessage,
@@ -29,8 +29,8 @@ import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
 import {observeTextEditorEvents} from '../../nuclide-diagnostics-common';
 import {getLogger} from '../../nuclide-logging';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(

@@ -15,9 +15,9 @@ import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   ReactNativeLaunchAttachProvider,
 } from './debugging/ReactNativeLaunchAttachProvider';

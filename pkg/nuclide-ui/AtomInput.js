@@ -15,7 +15,7 @@ import {CompositeDisposable} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {maybeToString} from '../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 
 type DefaultProps = {
   disabled: boolean,

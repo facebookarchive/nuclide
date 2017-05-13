@@ -15,7 +15,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
-import {pluralize} from '../../../commons-node/string';
+import {pluralize} from 'nuclide-commons/string';
 
 // Number of files to show on every page.
 const PAGE_SIZE = 10;

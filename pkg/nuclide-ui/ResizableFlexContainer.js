@@ -9,7 +9,7 @@
  * @format
  */
 
-import {arrayCompact, arrayEqual} from '../commons-node/collection';
+import {arrayCompact, arrayEqual} from 'nuclide-commons/collection';
 import classnames from 'classnames';
 import createPaneContainer from '../commons-atom/create-pane-container';
 import React from 'react';

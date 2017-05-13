@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import {
   addPath,
@@ -23,9 +23,9 @@ import {goToLocation} from '../commons-atom/go-to-location';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
 import {track} from '../nuclide-analytics';
 import invariant from 'assert';
-import nuclideUri from '../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
 
 type Props = {

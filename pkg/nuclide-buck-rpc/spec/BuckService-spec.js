@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {Observable} from 'rxjs';
 import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as processJs from '../../commons-node/process';
 
 // Disable buckd so it doesn't linger around after the test.

@@ -13,7 +13,7 @@ import {pathForDebugBridge, getStore} from './AdbSdbPathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Adb} from './Adb';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
 

@@ -11,7 +11,7 @@
 
 import type {AtomCommands, AtomFileEvent, ConnectionDetails} from './rpc-types';
 import type {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
@@ -20,7 +20,7 @@ import {
   ServiceRegistry,
   SocketServer,
 } from '../../nuclide-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createNewEntry, RPC_PROTOCOL} from '../shared/ConfigDirectory';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {
@@ -29,7 +29,7 @@ import {
   iterableContains,
   firstOfIterable,
   concatIterators,
-} from '../../commons-node/collection';
+} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 
 // Ties the AtomCommands registered via RemoteCommandService to

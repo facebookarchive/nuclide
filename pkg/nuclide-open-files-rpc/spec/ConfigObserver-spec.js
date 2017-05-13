@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {FileCache} from '../lib/FileCache';
 import {ConfigObserver} from '../lib/ConfigObserver';

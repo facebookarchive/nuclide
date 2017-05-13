@@ -9,15 +9,15 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RelatedFilesProvider} from './types';
 
 import {Disposable} from 'atom';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {timeoutPromise} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {timeoutPromise} from 'nuclide-commons/promise';
 
 const relatedFilesProviders: Set<RelatedFilesProvider> = new Set();
 

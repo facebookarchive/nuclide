@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import {Button, ButtonTypes} from '../../../nuclide-ui/Button';

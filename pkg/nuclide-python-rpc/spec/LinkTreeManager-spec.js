@@ -9,7 +9,7 @@
  * @format
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as BuckService from '../../nuclide-buck-rpc';
 import LinkTreeManager from '../lib/LinkTreeManager';
 import {copyBuildFixture} from '../../nuclide-test-helpers';

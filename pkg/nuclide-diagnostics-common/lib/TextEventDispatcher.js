@@ -13,8 +13,8 @@ import invariant from 'assert';
 import {Disposable, CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
 import {observeTextEditors} from '../../commons-atom/text-editor';
-import debounce from '../../commons-node/debounce';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import debounce from 'nuclide-commons/debounce';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 type EventCallback = (editor: TextEditor) => mixed;
 

@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {File, Directory} from 'atom';
-import nuclideUri from '../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 function getValidProjectPaths(): Array<string> {
   return atom.project

@@ -10,7 +10,7 @@
  */
 
 import type DebuggerInstanceBase from './DebuggerInstance';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   ControlButtonSpecification,
 } from '../../nuclide-debugger/lib/types';

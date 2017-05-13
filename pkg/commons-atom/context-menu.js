@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {remote} from 'electron';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**
 * Shows the provided menu template. This will result in [an extra call to `templateForEvent()`][1],

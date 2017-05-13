@@ -24,9 +24,9 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {nextTick} from '../../commons-node/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {nextTick} from 'nuclide-commons/observable';
 import {getLogger} from '../../nuclide-logging';
 import * as AppSerialization from './AppSerialization';
 import * as Actions from './redux/Actions';

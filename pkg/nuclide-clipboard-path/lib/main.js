@@ -10,12 +10,12 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAtomProjectRelativePath} from '../../commons-atom/projects';
 import {trackTiming} from '../../nuclide-analytics';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 function copyAbsolutePath(): void {
   trackOperation('copyAbsolutePath', () => {

@@ -16,7 +16,7 @@ import type {
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ExampleGadgetA, WORKSPACE_VIEW_URI_A} from './ExampleGadgetA';
 import {ExampleGadgetB, WORKSPACE_VIEW_URI_B} from './ExampleGadgetB';
 import invariant from 'assert';

@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {relativeDate} from '../commons-node/string';
+import {relativeDate} from 'nuclide-commons/string';
 import addTooltip from './add-tooltip';
 
 type DefaultProps = {

@@ -10,7 +10,7 @@
  */
 
 import {findArcProjectIdAndDirectory} from '../../nuclide-arcanist-base';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export default (async function getMatchingProjects(
   projectId: string,

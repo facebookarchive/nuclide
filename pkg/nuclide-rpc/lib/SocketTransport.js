@@ -14,7 +14,7 @@ import type {MessageLogger} from './index';
 
 import {StreamTransport} from './StreamTransport';
 import {Emitter} from 'event-kit';
-import {Deferred} from '../../commons-node/promise';
+import {Deferred} from 'nuclide-commons/promise';
 
 export class SocketTransport extends StreamTransport {
   _socket: Socket;

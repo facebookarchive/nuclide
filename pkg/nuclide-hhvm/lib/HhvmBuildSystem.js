@@ -14,8 +14,8 @@ import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {Icon} from '../../nuclide-ui/Icon';

@@ -12,9 +12,9 @@
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
 
 import {isValidTextEditor} from '../../commons-atom/text-editor';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 
 import {getLogger} from '../../nuclide-logging';
 import {track} from '../../nuclide-analytics';

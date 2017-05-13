@@ -33,7 +33,7 @@ import observeGrammarForTextEditors
 import {
   bufferPositionForMouseEvent,
 } from '../../commons-atom/mouse-to-position';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as Actions from './refactorActions';
 import {getStore} from './refactorStore';

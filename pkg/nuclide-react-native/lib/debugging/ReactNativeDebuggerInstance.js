@@ -9,8 +9,8 @@
  * @format
  */
 
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
   DebuggerInstanceBase,
   DebuggerProcessInfo,

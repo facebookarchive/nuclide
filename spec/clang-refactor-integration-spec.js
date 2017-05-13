@@ -14,7 +14,7 @@ import invariant from 'assert';
 
 import busySignal from './utils/busy-signal-common';
 import {describeRemotableTest} from './utils/remotable-tests';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {copyFixture} from '../pkg/nuclide-test-helpers';
 import {waitsForFile} from '../pkg/commons-atom/testHelpers';
 

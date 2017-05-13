@@ -13,10 +13,10 @@ import logger from './utils';
 import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath, getMode} from './helpers';
 import fsPromise from '../../commons-node/fsPromise';
-import {maybeToString} from '../../commons-node/string';
-import nuclideUri from '../../commons-node/nuclideUri';
+import {maybeToString} from 'nuclide-commons/string';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
-import {shellParse} from '../../commons-node/string';
+import {shellParse} from 'nuclide-commons/string';
 
 import type {Socket} from 'net';
 

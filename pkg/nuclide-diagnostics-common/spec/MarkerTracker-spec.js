@@ -16,7 +16,7 @@ import {Range} from 'atom';
 
 import {MarkerTracker} from '../lib/MarkerTracker';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('MarkerTracker', () => {
   let tracker: MarkerTracker = (null: any);

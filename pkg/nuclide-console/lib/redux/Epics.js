@@ -12,7 +12,7 @@
 import type {Action, Store} from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as Actions from './Actions';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import invariant from 'assert';

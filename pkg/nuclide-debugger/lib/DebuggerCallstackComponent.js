@@ -14,8 +14,8 @@ import type {Callstack, CallstackItem} from './types';
 import type DebuggerActions from './DebuggerActions';
 import type CallstackStore from './CallstackStore';
 
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Bridge from './Bridge';
 import {Table} from '../../nuclide-ui/Table';
 import classnames from 'classnames';

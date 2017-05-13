@@ -11,8 +11,8 @@
 
 /* global getComputedStyle */
 
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
-import {nextAnimationFrame} from '../../../commons-node/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 import rectContainsPoint from '../../../commons-node/rectContainsPoint';
 import {View} from '../../../nuclide-ui/View';
 import {ToggleButton} from './ToggleButton';

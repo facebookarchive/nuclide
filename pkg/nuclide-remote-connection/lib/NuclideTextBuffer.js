@@ -17,8 +17,8 @@ import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
 import {RpcTimeoutError} from '../../nuclide-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {countOccurrences} from '../../commons-node/string';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {countOccurrences} from 'nuclide-commons/string';
 import loadingNotification from '../../commons-atom/loading-notification';
 
 // Diffing is O(lines^2), so don't bother for files with too many lines.

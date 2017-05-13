@@ -15,7 +15,7 @@ import electron from 'electron';
 import invariant from 'invariant';
 import {Observable} from 'rxjs';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 const {ipcRenderer} = electron;

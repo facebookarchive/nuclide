@@ -14,7 +14,7 @@ import type {
   ConnectionMultiplexer as ConnectionMultiplexerType,
 } from '../lib/ConnectionMultiplexer';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
 import {DebuggerHandler} from '../lib/DebuggerHandler';
 

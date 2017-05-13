@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Result} from '../../commons-atom/ActiveEditorRegistry';
 import type {
   ObservableDiagnosticProvider,
@@ -25,7 +25,7 @@ import type {CoverageResult, UncoveredRegion} from './rpc-types';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {toggle, compact} from '../../commons-node/observable';
+import {toggle, compact} from 'nuclide-commons/observable';
 
 export function diagnosticProviderForResultStream(
   results: Observable<Result<CoverageProvider, ?CoverageResult>>,

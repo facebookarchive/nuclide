@@ -28,8 +28,8 @@ import {track} from '../../nuclide-analytics';
 
 import createPackage from '../../commons-atom/createPackage';
 import {observeTextEditors} from '../../commons-atom/text-editor';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
   DiagnosticsPanelModel,
   WORKSPACE_VIEW_URI,

@@ -9,9 +9,9 @@
  * @format
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export function dedupeUris(uris: Array<NuclideUri>): Array<NuclideUri> {
   const deduped = uris.map(nuclideUri.ensureTrailingSeparator);

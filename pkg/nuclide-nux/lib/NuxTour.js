@@ -12,7 +12,7 @@
 import type {NuxTriggerModel, NuxTriggerType} from './NuxModel';
 
 import {track} from '../../nuclide-analytics';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import {NuxView} from './NuxView';
 
 export class NuxTour {

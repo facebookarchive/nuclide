@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 
 import {SshHandshake} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export function notifyLocalDiskFile(fileUri: string): void {
   atom.notifications.addInfo(

@@ -14,7 +14,7 @@ import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {
   BuckBuilderBuildOptions,
@@ -31,10 +31,10 @@ import type {
 } from '../../nuclide-diagnostics-common';
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {getLogger} from '../../nuclide-logging';
-import {compact} from '../../commons-node/observable';
+import {compact} from 'nuclide-commons/observable';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from '../../commons-atom/featureConfig';
 import {

@@ -20,8 +20,8 @@ import type {LinterAdapter} from './LinterAdapter';
 import type {IndieLinterDelegate} from './IndieLinterRegistry';
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getLogger} from '../../nuclide-logging';
 import {DiagnosticStore} from '../../nuclide-diagnostics-common';
 

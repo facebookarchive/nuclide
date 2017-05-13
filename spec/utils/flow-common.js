@@ -14,7 +14,7 @@ import type {TestContext} from './remotable-tests';
 import dedent from 'dedent';
 import busySignal from './busy-signal-common';
 import {generateFixture} from '../../pkg/nuclide-test-helpers';
-import {Deferred} from '../../pkg/commons-node/promise';
+import {Deferred} from 'nuclide-commons/promise';
 
 export function generateFlowProject(): Promise<string> {
   // When a test fails, the generated fixtures can be found in

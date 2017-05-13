@@ -10,7 +10,7 @@
  */
 
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import React from 'react';
@@ -53,10 +53,10 @@ import {
   toggle,
   throttle,
   compact,
-} from '../../commons-node/observable';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {cacheWhileSubscribed} from '../../commons-node/observable';
+} from 'nuclide-commons/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Section} from '../../nuclide-ui/Section';
 import featureConfig from '../../commons-atom/featureConfig';
 import {goToLocation} from '../../commons-atom/go-to-location';

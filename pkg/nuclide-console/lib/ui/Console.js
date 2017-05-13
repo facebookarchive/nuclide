@@ -17,8 +17,8 @@ import type {
   Source,
 } from '../types';
 
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
-import debounce from '../../../commons-node/debounce';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import debounce from 'nuclide-commons/debounce';
 import React from 'react';
 import FilteredMessagesReminder from './FilteredMessagesReminder';
 import OutputTable from './OutputTable';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
 import type {
   LanguageService,

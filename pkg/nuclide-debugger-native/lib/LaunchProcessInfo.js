@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   LaunchTargetInfo,
   DebuggerConfig,
@@ -27,7 +27,7 @@ import {
 import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;

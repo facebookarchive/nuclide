@@ -9,12 +9,12 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 import NuclideTextBuffer from './NuclideTextBuffer';
 import {ServerConnection} from './ServerConnection';

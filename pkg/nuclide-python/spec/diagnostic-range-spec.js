@@ -13,7 +13,7 @@ import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
 import invariant from 'assert';
 import {Range} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getDiagnosticRange} from '../lib/diagnostic-range';
 
 describe('Diagnostic range', () => {

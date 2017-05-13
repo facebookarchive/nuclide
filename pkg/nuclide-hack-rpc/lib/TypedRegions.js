@@ -13,7 +13,7 @@ import type {
   CoverageResult,
   UncoveredRegion,
 } from '../../nuclide-type-coverage/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {Range} from 'simple-text-buffer';

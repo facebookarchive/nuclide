@@ -20,8 +20,8 @@ import {WebSocketTransport} from './WebSocketTransport';
 import {QueuedTransport} from './QueuedTransport';
 import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
-import {attachEvent} from '../../commons-node/event';
-import {maybeToString} from '../../commons-node/string';
+import {attachEvent} from 'nuclide-commons/event';
+import {maybeToString} from 'nuclide-commons/string';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();

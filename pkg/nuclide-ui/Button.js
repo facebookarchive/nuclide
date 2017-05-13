@@ -14,7 +14,7 @@ import type {IconName} from './types';
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {maybeToString} from '../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import addTooltip from './add-tooltip';
 
 export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';

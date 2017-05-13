@@ -23,8 +23,8 @@ import {DebuggerMode} from './DebuggerStore';
 import {ActionTypes} from './DebuggerDispatcher';
 import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {Deferred} from '../../commons-node/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Deferred} from 'nuclide-commons/promise';
 import {getLogger} from '../../nuclide-logging';
 import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 

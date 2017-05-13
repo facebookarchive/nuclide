@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-commons",
+  "version": "0.1.0",
+  "description": "Common Nuclide node modules.",
+  "scripts": {
+    "prepublishOnly": "../../scripts/release-transpile.js --overwrite .",
+    "test": "node ../../pkg/nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  },
+  "dependencies": {
+    "event-kit": "2.2.0",
+    "rxjs": "5.3.1",
+    "shell-quote": "1.6.1"
+  },
+  "devDependencies": {
+    "simple-text-buffer": "9.2.11"
+  }
+}

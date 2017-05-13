@@ -10,7 +10,7 @@
  */
 
 import yaml from 'js-yaml';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../../commons-node/fsPromise';
 
 /**

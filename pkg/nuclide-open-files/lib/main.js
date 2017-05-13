@@ -14,7 +14,7 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   observeBufferOpen,
   observeBufferCloseOrRename,

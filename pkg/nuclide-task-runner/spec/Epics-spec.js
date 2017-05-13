@@ -19,7 +19,7 @@ import {
   combineEpics,
 } from '../../commons-node/redux-observable';
 import {taskFromObservable} from '../../commons-node/tasks';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from '../lib/redux/Actions';
 import * as Epics from '../lib/redux/Epics';
 import * as dummy from './dummy';

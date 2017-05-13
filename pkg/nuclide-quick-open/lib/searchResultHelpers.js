@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileResult} from './types';
 
 export type ProviderResult = {
@@ -34,7 +34,7 @@ export type GroupedResults = {
   [key: string]: GroupedResult,
 };
 
-import {isEmpty} from '../../commons-node/collection';
+import {isEmpty} from 'nuclide-commons/collection';
 
 export function filterEmptyResults(
   resultsGroupedByService: GroupedResults,

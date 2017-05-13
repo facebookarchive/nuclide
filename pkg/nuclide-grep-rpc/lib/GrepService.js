@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {ConnectableObservable, Observable} from 'rxjs';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import replaceInFile from './replaceInFile';
 import search from './scanhandler';
 

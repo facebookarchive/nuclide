@@ -10,7 +10,7 @@
  */
 
 import type {Viewable} from '../../nuclide-workspace-views/lib/types';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeAddedPaneItems} from './observeAddedPaneItems';
 import {observePanes} from './observePanes';
 import {syncPaneItemVisibility} from './syncPaneItemVisibility';

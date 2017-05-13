@@ -12,7 +12,7 @@
 import {describeRemotableTest} from './utils/remotable-tests';
 import {dispatchKeyboardEvent} from '../pkg/commons-atom/testHelpers';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describeRemotableTest('Clipboard path integration test', context => {
   let repoPath;

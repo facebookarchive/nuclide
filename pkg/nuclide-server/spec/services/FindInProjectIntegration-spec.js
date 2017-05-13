@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 import {addMatchers} from '../../../nuclide-test-helpers';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('GrepSearch', () => {

@@ -13,7 +13,7 @@ import type {
   CheckoutSideName,
   MergeConflict,
 } from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import {MercurialConflictDetector} from './MercurialConflictDetector';

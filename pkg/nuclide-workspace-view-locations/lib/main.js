@@ -18,7 +18,7 @@ import type {
 import type {PanelLocationId} from './types';
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {PaneLocation} from './PaneLocation';
 import {PanelLocation} from './PanelLocation';
 import PanelLocationIds from './PanelLocationIds';

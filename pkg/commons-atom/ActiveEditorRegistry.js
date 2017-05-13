@@ -22,8 +22,8 @@ import {
   editorChangesDebounced,
 } from './debounced';
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
-import {cacheWhileSubscribed} from '../commons-node/observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
 import {getLogger} from '../nuclide-logging';
 const logger = getLogger();

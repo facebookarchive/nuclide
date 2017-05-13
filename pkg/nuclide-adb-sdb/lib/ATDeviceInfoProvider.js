@@ -13,7 +13,7 @@ import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 
 import type {DeviceInfoProvider} from '../../nuclide-devices/lib/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class ATDeviceInfoProvider implements DeviceInfoProvider {
   _type: string;

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   LanguageService,
@@ -40,9 +40,9 @@ import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
 import {runCommand, ProcessExitError} from '../../commons-node/process';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';
 import {ServerLanguageService} from '../../nuclide-language-service-rpc';

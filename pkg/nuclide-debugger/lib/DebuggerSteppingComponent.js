@@ -23,7 +23,7 @@ import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type DebuggerSteppingComponentProps = {
   actions: DebuggerActions,

@@ -17,7 +17,7 @@ import type {
   UpdatePaneItemStateAction,
   UpdateRepositoryBookmarksAction,
 } from '../lib/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {accumulateState} from '../lib/accumulateState';
 import {ActionType, EMPTY_SHORTHEAD} from '../lib/constants';

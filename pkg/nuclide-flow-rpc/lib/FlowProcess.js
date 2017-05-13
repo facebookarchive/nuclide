@@ -23,9 +23,9 @@ const logger = getLogger();
 import {track} from '../../nuclide-analytics';
 
 import {runCommandDetailed, spawn} from '../../commons-node/process';
-import {sleep} from '../../commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 import {niceSafeSpawn} from '../../commons-node/nice';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {getStopFlowOnExit} from './FlowHelpers';
 

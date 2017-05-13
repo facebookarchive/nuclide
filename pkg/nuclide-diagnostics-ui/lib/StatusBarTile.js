@@ -20,7 +20,7 @@ import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 
 type DiagnosticCount = {

@@ -12,16 +12,16 @@
 import typeof * as HackConnectionService from './HackConnectionService';
 import type {FileEditEvent} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from './HackConnectionService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HackCompletionsResult} from './rpc-types';
 import type {
   AutocompleteResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, spawn} from '../../commons-node/process';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import {RpcProcess} from '../../nuclide-rpc';
 import {
   getHackCommand,

@@ -10,15 +10,15 @@
  */
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 
 import type {AndroidJavaProcess, Process} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class Adb extends AdbSdbBase {
   getAndroidProp(device: string, key: string): Observable<string> {

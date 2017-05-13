@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LanguageService} from './LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {CodeHighlightConfig} from './CodeHighlightProvider';
@@ -29,7 +29,7 @@ import type {CategoryLogger} from '../../nuclide-logging';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {CodeHighlightProvider} from './CodeHighlightProvider';
 import {OutlineViewProvider} from './OutlineViewProvider';
 import {TypeCoverageProvider} from './TypeCoverageProvider';

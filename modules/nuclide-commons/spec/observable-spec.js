@@ -34,7 +34,7 @@ const createDisposable = () => {
   return disposable;
 };
 
-describe('commons-node/observable', () => {
+describe('nuclide-commons/observable', () => {
   it('splitStream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];

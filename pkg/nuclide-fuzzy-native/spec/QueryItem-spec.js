@@ -185,7 +185,7 @@ describe('isLetterImportant', () => {
   });
 });
 
-import {areSetsEqual} from '../../commons-node/collection';
+import {areSetsEqual} from 'nuclide-commons/collection';
 
 describe('importantCharactersForString', () => {
   it('returns the set of important characters for a given string', () => {

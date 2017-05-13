@@ -72,7 +72,7 @@ describe('FlowProcess', () => {
       return childSpy;
     });
 
-    const nuclideUri = require('../../commons-node/nuclideUri').default;
+    const nuclideUri = require('nuclide-commons/nuclideUri').default;
     root = nuclideUri.join(__dirname, 'fixtures/with-flow-bin');
     binary = nuclideUri.join(root, 'node_modules/.bin/flow');
 

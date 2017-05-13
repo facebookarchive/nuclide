@@ -14,7 +14,7 @@ import type {Reference} from '../rpc-types';
 
 import React from 'react';
 import classnames from 'classnames';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from '../../../commons-atom/go-to-location';
 import {CodeSnippet} from '../../../nuclide-ui/CodeSnippet';
 

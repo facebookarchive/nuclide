@@ -11,7 +11,7 @@
 
 import {FlowIDEConnection} from './FlowIDEConnection';
 
-import {sleep} from '../../commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 import {getLogger} from '../../nuclide-logging';
 import {Observable} from 'rxjs';
 

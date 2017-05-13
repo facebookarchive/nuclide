@@ -10,11 +10,11 @@
  */
 
 import type {RevisionFileChanges} from './HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
 import {hgRunCommand} from './hg-utils';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
 const ALL_FILES_LABEL = 'files:';

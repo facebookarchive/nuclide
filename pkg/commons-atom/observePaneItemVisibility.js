@@ -9,7 +9,7 @@
  * @format
  */
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import memoize from 'lodash.memoize';
 import {Observable, Scheduler} from 'rxjs';
 

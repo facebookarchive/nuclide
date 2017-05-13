@@ -10,7 +10,7 @@
  */
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import Module from 'module';
 import path from 'path'; // eslint-disable-line nuclide-internal/prefer-nuclide-uri
@@ -61,7 +61,7 @@ class Activation {
         },
       ),
       /**
-       * Allows running `require('rxjs')` or `require('commons-node/promise');`.
+       * Allows running `require('nuclide-commons/promise');`.
        * Useful for debugging from the devtools console.
        */
       atom.commands.add(

@@ -42,7 +42,7 @@ import {
 import {builtinLocation, voidType} from './builtin-types';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
-import {shorten} from '../../commons-node/string';
+import {shorten} from 'nuclide-commons/string';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();

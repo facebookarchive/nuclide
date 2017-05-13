@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HackCompletion, HackDiagnostic} from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 

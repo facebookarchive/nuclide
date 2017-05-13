@@ -12,7 +12,7 @@
 import type {FileResult} from './types';
 
 import React from 'react';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 
 type Key = number | string;

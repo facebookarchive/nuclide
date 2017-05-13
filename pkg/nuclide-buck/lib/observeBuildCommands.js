@@ -12,7 +12,7 @@
 import type {AppState, Store} from './types';
 
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {track} from '../../nuclide-analytics';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';

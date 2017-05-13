@@ -9,7 +9,7 @@
  * @format
  */
 
-import {shellParse} from '../../commons-node/string';
+import {shellParse} from 'nuclide-commons/string';
 
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';

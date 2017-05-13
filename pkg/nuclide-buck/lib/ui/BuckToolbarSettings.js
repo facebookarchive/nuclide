@@ -14,7 +14,7 @@ import type {PlatformProviderSettings, TaskSettings} from '../types';
 import React from 'react';
 import {quote} from 'shell-quote';
 
-import {shellParse} from '../../../commons-node/string';
+import {shellParse} from 'nuclide-commons/string';
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
 import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
 import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type WatchmanSubscription
   from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 import type {
@@ -17,7 +17,7 @@ import type {
 } from '../../nuclide-watchman-helpers/lib/WatchmanClient';
 import type {ConnectableObservable} from 'rxjs';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';

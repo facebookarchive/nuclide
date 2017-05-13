@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import {trackTiming, track} from '../../nuclide-analytics';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';

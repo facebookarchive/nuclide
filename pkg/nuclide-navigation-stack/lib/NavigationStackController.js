@@ -9,14 +9,14 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {EditorLocation, Location} from './Location';
 
 import {setPositionAndScroll} from '../../commons-atom/text-editor';
-import {maybeToString} from '../../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   getPathOfLocation,
   getLocationOfEditor,

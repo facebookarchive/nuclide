@@ -20,7 +20,7 @@
 
 import {Observable} from 'rxjs';
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getCursorPositions, isValidTextEditor} from './text-editor';
 import invariant from 'assert';
 

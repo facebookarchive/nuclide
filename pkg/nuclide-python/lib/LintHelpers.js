@@ -11,7 +11,7 @@
 
 import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getDiagnosticRange} from './diagnostic-range';

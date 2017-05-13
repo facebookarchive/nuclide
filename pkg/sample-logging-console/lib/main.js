@@ -11,7 +11,7 @@
 
 import type {Level, ConsoleService} from '../../nuclide-console/lib/types';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from '../../commons-atom/createPackage';
 import {
   getNuclideConsoleMessages,

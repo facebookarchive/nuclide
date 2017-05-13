@@ -19,8 +19,8 @@ import invariant from 'assert';
 import {remote} from 'electron';
 import {getLastProjectPath} from '../../nuclide-arcanist-base';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncFilter} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {asyncFilter} from 'nuclide-commons/promise';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';

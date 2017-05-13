@@ -9,8 +9,8 @@
  * @format
  */
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {nextAnimationFrame} from '../../commons-node/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import React from 'react';
 import ReactDOM from 'react-dom';

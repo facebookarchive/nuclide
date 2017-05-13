@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   FileVersion,
   FileOpenEvent,
@@ -69,9 +69,9 @@ import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {collect} from '../../commons-node/collection';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {collect} from 'nuclide-commons/collection';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {
   FileCache,
   FileVersionNotifier,

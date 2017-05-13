@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
   Device,
@@ -20,7 +20,7 @@ import type {TaskEvent} from '../../commons-node/tasks';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import * as IosSimulator from '../../nuclide-ios-common';

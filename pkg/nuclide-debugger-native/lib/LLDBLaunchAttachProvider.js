@@ -14,7 +14,7 @@ import type {
 } from './actions/DebuggerActionUIProvider';
 import type EventEmitter from 'events';
 
-import {asyncFilter} from '../../commons-node/promise';
+import {asyncFilter} from 'nuclide-commons/promise';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import React from 'react';
 import {LaunchAttachStore} from './LaunchAttachStore';

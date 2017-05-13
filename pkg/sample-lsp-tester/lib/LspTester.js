@@ -13,9 +13,9 @@ import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {Message} from './PanelView';
 
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {bufferUntil, takeWhileInclusive} from '../../commons-node/observable';
-import {splitOnce} from '../../commons-node/string';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
+import {splitOnce} from 'nuclide-commons/string';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from '../../commons-node/process';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';

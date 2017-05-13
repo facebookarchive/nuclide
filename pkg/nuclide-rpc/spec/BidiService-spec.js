@@ -9,7 +9,7 @@
  * @format
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServiceTester} from './ServiceTester';
 import typeof * as BidiServiceType from './BidiService';
 

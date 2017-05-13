@@ -15,8 +15,8 @@ import temp from 'temp';
 import invariant from 'assert';
 
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncLimit} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {asyncLimit} from 'nuclide-commons/promise';
 import {runCommand} from '../../commons-node/process';
 
 /**

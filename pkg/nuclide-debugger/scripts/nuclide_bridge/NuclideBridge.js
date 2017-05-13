@@ -22,8 +22,8 @@ import invariant from 'assert';
 import electron from 'electron';
 
 import Emitter from './Emitter';
-import {MultiMap} from '../../../commons-node/collection';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import {MultiMap} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {beginTimerTracking, endTimerTracking} from '../../lib/AnalyticsHelper';
 import WebInspector from '../../lib/WebInspector';
 

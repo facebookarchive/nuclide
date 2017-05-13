@@ -11,7 +11,7 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {GRAMMARS, EXTENSIONS} from './constants';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';

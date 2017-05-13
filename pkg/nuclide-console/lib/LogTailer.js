@@ -12,7 +12,7 @@
 import type {Message, OutputProviderStatus} from './types';
 import type {ConnectableObservable} from 'rxjs';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';

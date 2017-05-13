@@ -19,7 +19,7 @@ import {hgConstants} from '../pkg/nuclide-hg-rpc';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
 import nullthrows from 'nullthrows';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/nuclide-vcs-base';

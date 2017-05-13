@@ -11,7 +11,7 @@
 
 type Target = {path: NuclideUri, name: string};
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 import type {Point} from 'atom';
 
@@ -22,7 +22,7 @@ import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {goToLocation} from '../../commons-atom/go-to-location';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import escapeStringRegExp from 'escape-string-regexp';
 
 /**

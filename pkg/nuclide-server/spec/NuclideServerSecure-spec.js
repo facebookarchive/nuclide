@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import NuclideServer from '../lib/NuclideServer';
 import {RpcConnection} from '../../nuclide-rpc';
 import servicesConfig from '../lib/servicesConfig';

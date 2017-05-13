@@ -9,14 +9,14 @@
  * @format
  */
 
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {observeProcess, runCommand} from '../../commons-node/process';
 import os from 'os';
 import {Observable} from 'rxjs';
 
 import type {DeviceDescription} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class AdbSdbBase {
   _dbPath: string;

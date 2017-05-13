@@ -10,7 +10,7 @@
  */
 
 import {ConfigCache} from '../ConfigCache';
-import nuclideUri from '../nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const CONFIG_FILE_NAME = '.test_nuclide_config_file';
 

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   PhpDebuggerService as PhpDebuggerServiceType,
 } from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
@@ -19,7 +19,7 @@ import {PhpDebuggerInstance} from './PhpDebuggerInstance';
 import {
   getPhpDebuggerServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import utils from './utils';
 const {logInfo} = utils;

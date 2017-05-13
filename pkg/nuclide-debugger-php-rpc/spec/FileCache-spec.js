@@ -11,7 +11,7 @@
 
 import type {ClientCallback} from '../lib/ClientCallback';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import FileCache from '../lib/FileCache';
 
 describe('debugger-php-rpc FileCache', () => {

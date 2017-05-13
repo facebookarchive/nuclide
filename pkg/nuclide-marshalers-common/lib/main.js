@@ -11,7 +11,7 @@
 
 import type {PredefinedTransformer} from '../../nuclide-rpc';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Range as ServerRange, Point as ServerPoint} from 'simple-text-buffer';
 
 export function getRemoteNuclideUriMarshalers(

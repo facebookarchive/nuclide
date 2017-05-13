@@ -14,7 +14,7 @@ import {
   WebSocketServer,
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
 import {Session} from './Session';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import utils from './utils';
 const {log} = utils;
 

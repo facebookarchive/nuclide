@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-diagnostics-common';
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {linterMessagesToDiagnosticUpdate} from './LinterAdapter';
 
 export class IndieLinterDelegate {

@@ -18,7 +18,7 @@ import os from 'os';
 
 import featureConfig from '../../commons-atom/featureConfig';
 import {trackTiming} from '../../nuclide-analytics';
-import {removeCommonSuffix} from '../../commons-node/string';
+import {removeCommonSuffix} from 'nuclide-commons/string';
 import {PromisePool} from '../../commons-node/promise-executors';
 import {getLogger} from '../../nuclide-logging';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';

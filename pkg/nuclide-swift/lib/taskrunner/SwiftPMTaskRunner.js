@@ -17,13 +17,13 @@ import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
 import React from 'react';
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from '../../../commons-node/fsPromise';
 import {
   observeProcess,
   exitEventToMessage,
 } from '../../../commons-node/process';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
@@ -39,7 +39,7 @@ import SwiftPMAutocompletionProvider
   from './providers/SwiftPMAutocompletionProvider';
 import {Icon} from '../../../nuclide-ui/Icon';
 import nullthrows from 'nullthrows';
-import nuclideUri from '../../../commons-node/nuclideUri.js';
+import nuclideUri from 'nuclide-commons/nuclideUri.js';
 
 /**
  * nuclide-swift makes use of the Flux design pattern. The SwiftPMTaskRunner is

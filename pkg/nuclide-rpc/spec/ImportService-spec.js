@@ -12,7 +12,7 @@
 import typeof * as ImportService from './ImportService';
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServiceTester} from './ServiceTester';
 
 describe('ImportService', () => {

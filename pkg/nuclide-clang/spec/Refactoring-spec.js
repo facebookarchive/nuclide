@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {Point, Range} from 'atom';
 import fs from 'fs';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import Refactoring from '../lib/Refactoring';
 import {getDiagnostics} from '../lib/libclang';
 

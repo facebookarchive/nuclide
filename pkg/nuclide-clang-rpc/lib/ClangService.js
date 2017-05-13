@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as ClangProcessService from './ClangProcessService';
 import type {
   ClangCompileResult,
@@ -21,7 +21,7 @@ import type {
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {keyMirror} from '../../commons-node/collection';
+import {keyMirror} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import {runCommand} from '../../commons-node/process';
 import ClangServerManager from './ClangServerManager';

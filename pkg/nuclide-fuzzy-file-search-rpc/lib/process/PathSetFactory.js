@@ -13,9 +13,9 @@ import child_process from 'child_process';
 import split from 'split';
 import {WatchmanClient} from '../../../nuclide-watchman-helpers';
 import fsPromise from '../../../commons-node/fsPromise';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from '../../../commons-node/process';
-import {asyncLimit} from '../../../commons-node/promise';
+import {asyncLimit} from 'nuclide-commons/promise';
 
 function getFilesFromCommand(
   command: string,

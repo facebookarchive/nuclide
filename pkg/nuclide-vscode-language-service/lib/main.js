@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CategoryLogger} from '../../nuclide-logging';
 
 import {FileCache} from '../../nuclide-open-files-rpc';

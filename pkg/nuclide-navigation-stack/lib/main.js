@@ -16,7 +16,7 @@ import {
 } from '../../commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackTiming} from '../../nuclide-analytics';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
 import createPackage from '../../commons-atom/createPackage';
 import {consumeStatusBar} from './StatusBar';

@@ -11,7 +11,7 @@
 
 /* global MouseEvent */
 
-import {sleep} from '../pkg/commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   activateAllPackages,

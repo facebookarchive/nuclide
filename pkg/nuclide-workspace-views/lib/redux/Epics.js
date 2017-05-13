@@ -22,7 +22,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import {
   LocalStorageJsonTable,
 } from '../../../commons-atom/LocalStorageJsonTable';
-import {observableFromSubscribeFunction} from '../../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {trackEvent} from '../../../nuclide-analytics';
 import * as Actions from './Actions';
 import getNewLocation from '../getNewLocation';

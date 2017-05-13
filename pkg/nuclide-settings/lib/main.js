@@ -17,7 +17,7 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 

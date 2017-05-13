@@ -12,7 +12,7 @@
 import type {Task} from '../../commons-node/tasks';
 import type {TaskMetadata, ToolbarStatePreference} from '../lib/types';
 import type {Directory} from '../../nuclide-remote-connection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {Subject} from 'rxjs';
 

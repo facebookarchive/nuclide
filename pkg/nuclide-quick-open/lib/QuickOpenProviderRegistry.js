@@ -16,7 +16,7 @@ import type {
 } from './types';
 
 import {Emitter} from 'atom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class QuickOpenProviderRegistry {
   _emitter: Emitter;

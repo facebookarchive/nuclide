@@ -11,12 +11,12 @@
 
 import typeof * as FileSystemService
   from '../../lib/services/FileSystemService';
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import rimraf from 'rimraf';
 import temp from 'temp';
 

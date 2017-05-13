@@ -15,7 +15,7 @@ import invariant from 'assert';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**
  * Given a function to dismiss the modal, return a React element for the content.

@@ -14,7 +14,7 @@ import type {
   AttachTargetInfo,
   LaunchTargetInfo,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import typeof * as NativeDebuggerService
   from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';

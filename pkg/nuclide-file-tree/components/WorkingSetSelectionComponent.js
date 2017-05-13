@@ -17,7 +17,7 @@ import type {
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Button} from '../../nuclide-ui/Button';
 import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
 import {HR} from '../../nuclide-ui/HR';

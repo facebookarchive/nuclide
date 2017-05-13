@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   HgRepositoryDescription,
 } from '../../nuclide-source-control-helpers';
@@ -23,10 +23,10 @@ import type {RemoteFile} from './RemoteFile';
 import type {RemoteDirectory} from './RemoteDirectory';
 
 import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ServerConnection} from './ServerConnection';
 import {Emitter} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
 import {getLogger} from '../../nuclide-logging';
 

@@ -11,12 +11,12 @@
 
 import {AtomTextEditor} from './AtomTextEditor';
 import nullthrows from 'nullthrows';
-import {pluralize} from '../commons-node/string';
+import {pluralize} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Section} from './Section';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type Props = {
   collapsable?: boolean,

@@ -22,10 +22,10 @@ import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {track} from '../../nuclide-analytics';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {Disposable} from 'atom';
 import os from 'os';

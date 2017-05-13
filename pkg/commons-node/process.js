@@ -53,11 +53,11 @@ import type {
   ProcessInfo,
 } from './process-rpc-types';
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import child_process from 'child_process';
-import {MultiMap} from './collection';
-import nuclideUri from './nuclideUri';
-import {splitStream, takeWhileInclusive} from './observable';
+import {MultiMap} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {splitStream, takeWhileInclusive} from 'nuclide-commons/observable';
 import {observeStream} from './stream';
 import {Observable, TimeoutError} from 'rxjs';
 import invariant from 'assert';

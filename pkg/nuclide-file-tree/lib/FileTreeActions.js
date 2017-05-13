@@ -17,18 +17,18 @@ import Immutable from 'immutable';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
-import {objectFromMap} from '../../commons-node/collection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {objectFromMap} from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import type React from 'react';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 import type {WorkingSet} from '../../nuclide-working-sets-common';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 let instance: ?FileTreeActions;
 

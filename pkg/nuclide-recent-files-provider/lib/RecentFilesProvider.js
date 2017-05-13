@@ -9,13 +9,13 @@
  * @format
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
-import {arrayCompact} from '../../commons-node/collection';
-import {relativeDate} from '../../commons-node/string';
+import {arrayCompact} from 'nuclide-commons/collection';
+import {relativeDate} from 'nuclide-commons/string';
 import {Matcher} from '../../nuclide-fuzzy-native';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 

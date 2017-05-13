@@ -10,7 +10,7 @@
  */
 
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AttachTargetInfo,
   NativeDebuggerService as NativeDebuggerServiceType,
@@ -24,7 +24,7 @@ import invariant from 'assert';
 import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getConfig} from './utils';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export class AttachProcessInfo extends DebuggerProcessInfo {
   _targetInfo: AttachTargetInfo;

@@ -15,7 +15,7 @@ import type {
   FileSyncEvent,
   FileEvent,
 } from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {NotifiersByConnection} from './NotifiersByConnection';
 
 import invariant from 'assert';

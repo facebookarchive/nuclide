@@ -9,9 +9,9 @@
  * @format
  */
 
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {indent} from '../../commons-node/string';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {indent} from 'nuclide-commons/string';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AtomInput} from '../../nuclide-ui/AtomInput';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
 import {Button} from '../../nuclide-ui/Button';

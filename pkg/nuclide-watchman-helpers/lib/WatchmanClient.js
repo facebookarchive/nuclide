@@ -9,10 +9,10 @@
  * @format
  */
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import watchman from 'fb-watchman';
-import {serializeAsyncCall, sleep} from '../../commons-node/promise';
-import {maybeToString} from '../../commons-node/string';
+import {serializeAsyncCall, sleep} from 'nuclide-commons/promise';
+import {maybeToString} from 'nuclide-commons/string';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../nuclide-logging';

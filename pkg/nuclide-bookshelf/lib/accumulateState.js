@@ -20,7 +20,7 @@ import type {
   UpdatePaneItemStateAction,
   UpdateRepositoryBookmarksAction,
 } from './types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import Immutable from 'immutable';

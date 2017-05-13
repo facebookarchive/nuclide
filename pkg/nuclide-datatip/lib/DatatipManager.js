@@ -22,12 +22,12 @@ import type {
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import debounce from '../../commons-node/debounce';
-import {arrayCompact, arrayRemove} from '../../commons-node/collection';
+import debounce from 'nuclide-commons/debounce';
+import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
 import {track, TimingTracker} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {asyncFind} from '../../commons-node/promise';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {asyncFind} from 'nuclide-commons/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import Immutable from 'immutable';
 import {

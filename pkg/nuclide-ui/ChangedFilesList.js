@@ -9,13 +9,13 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
 import {repositoryForPath} from '../nuclide-vcs-base';
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
-import nuclideUri from '../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import ChangedFile from './ChangedFile';
 

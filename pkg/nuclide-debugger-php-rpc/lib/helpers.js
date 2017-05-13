@@ -17,7 +17,7 @@ import child_process from 'child_process';
 import url from 'url';
 import logger from './utils';
 import {getConfig} from './config';
-import {shellParse} from '../../commons-node/string';
+import {shellParse} from 'nuclide-commons/string';
 import {runCommand} from '../../commons-node/process';
 
 export const DUMMY_FRAME_ID = 'Frame.0';

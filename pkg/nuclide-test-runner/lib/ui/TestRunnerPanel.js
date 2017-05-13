@@ -13,7 +13,7 @@ import type TestSuiteModel from '../TestSuiteModel';
 import type {TestRunner} from '../types';
 
 import invariant from 'assert';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import Console from './Console';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {Toolbar} from '../../../nuclide-ui/Toolbar';

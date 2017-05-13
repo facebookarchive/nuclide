@@ -18,7 +18,7 @@ type FindReferencesOptions = {
 };
 
 import {getFileForPath} from '../../commons-atom/projects';
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {getLogger} from '../../nuclide-logging';
 
 const FRAGMENT_GRAMMARS = {

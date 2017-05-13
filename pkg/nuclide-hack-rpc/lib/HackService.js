@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
 import type {
@@ -46,8 +46,8 @@ import type {
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
-import {arrayFlatten, arrayCompact} from '../../commons-node/collection';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
+import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import invariant from 'assert';
 import {
   PerConnectionLanguageService,
@@ -78,7 +78,7 @@ import {
   ServerLanguageService,
   ensureInvalidations,
 } from '../../nuclide-language-service-rpc';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {HACK_WORD_REGEX} from '../../nuclide-hack-common';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;

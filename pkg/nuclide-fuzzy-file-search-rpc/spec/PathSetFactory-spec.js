@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand} from '../../commons-node/process';
 import {generateFixture} from '../../nuclide-test-helpers';
 

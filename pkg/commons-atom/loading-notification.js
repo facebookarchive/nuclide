@@ -9,7 +9,7 @@
  * @format
  */
 
-import {triggerAfterWait} from '../commons-node/promise';
+import {triggerAfterWait} from 'nuclide-commons/promise';
 
 /**
  * Displays a loading notification while waiting for a promise.

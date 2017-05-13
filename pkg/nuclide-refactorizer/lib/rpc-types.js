@@ -10,7 +10,7 @@
  */
 
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export type RenameRefactoring = {
   kind: 'rename',

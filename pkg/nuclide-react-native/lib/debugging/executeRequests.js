@@ -14,7 +14,7 @@ import type {ExecutorResponse, ExecutorRequest} from './types';
 import featureConfig from '../../../commons-atom/featureConfig';
 import {fork, getOutputStream} from '../../../commons-node/process';
 import {getLogger} from '../../../nuclide-logging';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
 const logger = getLogger();

@@ -9,14 +9,14 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {LRUCache} from 'lru-cache';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   exitEventToMessage,
   getOriginalEnvironment,
@@ -24,7 +24,7 @@ import {
   runCommand,
   scriptifyCommand,
 } from '../../commons-node/process';
-import {compact} from '../../commons-node/observable';
+import {compact} from 'nuclide-commons/observable';
 import {niceObserveProcess} from '../../commons-node/nice';
 import fsPromise from '../../commons-node/fsPromise';
 import {

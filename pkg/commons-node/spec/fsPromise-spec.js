@@ -9,7 +9,7 @@
  * @format
  */
 
-import nuclideUri from '../nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../fsPromise';
 import {generateFixture} from '../../nuclide-test-helpers';
 

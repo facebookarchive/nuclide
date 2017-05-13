@@ -29,7 +29,7 @@ import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 import {AnalyticsEvents} from './constants';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
@@ -41,7 +41,7 @@ import {debuggerDatatip} from './DebuggerDatatip';
 import React from 'react';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {setNotificationService} from '../../nuclide-debugger-base';
 import {DebuggerMode} from './DebuggerStore';

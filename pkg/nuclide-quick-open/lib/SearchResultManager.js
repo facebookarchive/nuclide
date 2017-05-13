@@ -46,16 +46,12 @@ import {getLogger} from '../../nuclide-logging';
 import React from 'react';
 import {Subject} from 'rxjs';
 import {CompositeDisposable, Emitter} from 'atom';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {triggerAfterWait} from '../../commons-node/promise';
-import debounce from '../../commons-node/debounce';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {triggerAfterWait} from 'nuclide-commons/promise';
+import debounce from 'nuclide-commons/debounce';
 import FileResultComponent from './FileResultComponent';
 import ResultCache from './ResultCache';
-import {
-  arrayEqual,
-  mapEqual,
-  areSetsEqual,
-} from '../../commons-node/collection';
+import {arrayEqual, mapEqual, areSetsEqual} from 'nuclide-commons/collection';
 
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;

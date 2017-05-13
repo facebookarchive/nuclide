@@ -9,7 +9,7 @@
  * @format
  */
 
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Portal} from './Portal';
 import React from 'react';
 import {Observable} from 'rxjs';

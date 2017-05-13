@@ -11,7 +11,7 @@
 
 import type {HgService, RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
-import {arrayEqual} from '../../commons-node/collection';
+import {arrayEqual} from 'nuclide-commons/collection';
 import {BehaviorSubject, Observable, Subject, TimeoutError} from 'rxjs';
 import {getLogger} from '../../nuclide-logging';
 

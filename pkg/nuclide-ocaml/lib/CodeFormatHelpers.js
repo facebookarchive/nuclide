@@ -12,8 +12,8 @@
 import type {refmtResult} from '../../nuclide-ocaml-rpc/lib/ReasonService';
 
 import {getReasonServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {shellParse} from '../../commons-node/string';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {shellParse} from 'nuclide-commons/string';
 import featureConfig from '../../commons-atom/featureConfig';
 
 function isInterfaceF(filePath: string) {

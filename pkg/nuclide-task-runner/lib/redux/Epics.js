@@ -22,7 +22,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
 import {saveBuffer} from '../../../nuclide-remote-connection';
 import {observableFromTask} from '../../../commons-node/tasks';
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import * as Actions from './Actions';
 import invariant from 'assert';

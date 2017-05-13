@@ -21,7 +21,7 @@ import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import {getRepoPathToEditors} from './utils';
 import invariant from 'assert';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getLogger} from '../../nuclide-logging';
 import {goToLocation} from '../../commons-atom/go-to-location';
 import {Observable} from 'rxjs';

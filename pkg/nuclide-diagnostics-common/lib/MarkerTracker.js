@@ -11,14 +11,14 @@
 
 import type {FileDiagnosticMessage} from './rpc-types';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {CompositeDisposable} from 'atom';
 
 import invariant from 'assert';
 
 import {observeTextEditors} from '../../commons-atom/text-editor';
-import {MultiMap} from '../../commons-node/collection';
+import {MultiMap} from 'nuclide-commons/collection';
 
 export class MarkerTracker {
   /**

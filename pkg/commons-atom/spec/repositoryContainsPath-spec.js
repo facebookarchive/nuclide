@@ -18,7 +18,7 @@ import {repositoryContainsPath} from '../../nuclide-vcs-base';
 import {runCommand} from '../../commons-node/process';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('repositoryContainsPath', () => {

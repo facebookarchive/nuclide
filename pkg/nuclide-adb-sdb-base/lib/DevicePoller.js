@@ -14,7 +14,7 @@ import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device} from '../../nuclide-devices/lib/types';
 
 export type DBType = 'sdb' | 'adb';

@@ -9,14 +9,14 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type JediServerManager from '../lib/JediServerManager';
 
 import {Point} from 'simple-text-buffer';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 
 const WORD_REGEXP = /[a-zA-Z_][a-zA-Z0-9_]*/g;
 

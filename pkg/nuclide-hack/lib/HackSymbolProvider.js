@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   FileResult,
   GlobalProviderType,
@@ -20,12 +20,8 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import {getHackLanguageForUri} from './HackLanguage';
-import {
-  collect,
-  arrayCompact,
-  arrayFlatten,
-} from '../../commons-node/collection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import {collect, arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 
 async function getHackDirectoriesByService(

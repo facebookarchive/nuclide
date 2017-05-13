@@ -32,8 +32,8 @@ import {
   ConnectionMultiplexerNotification,
   ConnectionMultiplexerStatus,
 } from './ConnectionMultiplexer.js';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {sleep} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {sleep} from 'nuclide-commons/promise';
 
 import FileCache from './FileCache';
 import EventEmitter from 'events';

@@ -16,7 +16,7 @@ import {Observable} from 'rxjs';
 import * as rpc from 'vscode-jsonrpc';
 import through from 'through';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 

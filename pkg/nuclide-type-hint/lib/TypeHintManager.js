@@ -12,7 +12,7 @@
 import type {TypeHintProvider} from './types';
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
-import {arrayRemove} from '../../commons-node/collection';
+import {arrayRemove} from 'nuclide-commons/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 

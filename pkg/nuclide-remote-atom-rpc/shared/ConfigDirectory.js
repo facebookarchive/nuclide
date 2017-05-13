@@ -9,13 +9,13 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import fs from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from '../../nuclide-logging';
-import {asyncFind} from '../../commons-node/promise';
+import {asyncFind} from 'nuclide-commons/promise';
 import os from 'os';
 
 const logger = getLogger();

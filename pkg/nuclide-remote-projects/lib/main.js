@@ -13,7 +13,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
   RemoteConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/RemoteConnection';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 
 import {getLogger} from '../../nuclide-logging';
@@ -31,7 +31,7 @@ import {
 } from '../../nuclide-remote-connection';
 import {trackImmediate} from '../../nuclide-analytics';
 import {openConnectionDialog} from './open-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import RemoteDirectorySearcher from './RemoteDirectorySearcher';
 import RemoteDirectoryProvider from './RemoteDirectoryProvider';
 import RemoteProjectsController from './RemoteProjectsController';

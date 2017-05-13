@@ -11,9 +11,9 @@
 
 import createPackage from '../../commons-atom/createPackage';
 import {observeProjectPaths} from '../../commons-atom/projects';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 class Activation {
   _disposables: UniversalDisposable;

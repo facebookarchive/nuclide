@@ -29,8 +29,8 @@ import {getHgRepositoryStream} from '../../nuclide-vcs-base';
 import {getLogger} from '../../nuclide-logging';
 import featureConfig from '../../commons-atom/featureConfig';
 import invariant from 'assert';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
   shortHeadChangedNotification,
   getShortHeadChangesFromStateStream,

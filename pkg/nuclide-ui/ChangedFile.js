@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 import type {IconName} from '../nuclide-ui/types';
 
@@ -21,7 +21,7 @@ import {
   FileChangeStatusToLabel,
   FileChangeStatusToTextColor,
 } from '../nuclide-vcs-base';
-import nuclideUri from '../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from './Icon';

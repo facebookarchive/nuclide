@@ -13,7 +13,7 @@ import fs from 'fs';
 import {addMatchers} from '../../nuclide-test-helpers';
 import {parseServiceDefinition} from '../lib/service-parser';
 import {stripLocationsFileName} from '../lib/location';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('Nuclide service parser test suite.', () => {
   beforeEach(function() {

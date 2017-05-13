@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import temp from 'temp';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   getFileForPath,
   observeProjectPaths,

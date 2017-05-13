@@ -10,8 +10,8 @@
  */
 
 import {runCommand} from '../../commons-node/process';
-import {asyncFind, lastly} from '../../commons-node/promise';
-import {arrayUnique} from '../../commons-node/collection';
+import {asyncFind, lastly} from 'nuclide-commons/promise';
+import {arrayUnique} from 'nuclide-commons/collection';
 
 import type {DebugBridgeType} from './types';
 

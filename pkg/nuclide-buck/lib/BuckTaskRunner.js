@@ -27,7 +27,7 @@ import {applyMiddleware, createStore} from 'redux';
 import {Observable, Subject} from 'rxjs';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {BuckBuildSystem} from './BuckBuildSystem';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   combineEpics,
   createEpicMiddleware,
@@ -42,7 +42,7 @@ import Reducers from './redux/Reducers';
 import BuckToolbar from './BuckToolbar';
 import observeBuildCommands from './observeBuildCommands';
 import React from 'react';
-import {arrayEqual} from '../../commons-node/collection';
+import {arrayEqual} from 'nuclide-commons/collection';
 import shallowequal from 'shallowequal';
 
 const TASKS = [

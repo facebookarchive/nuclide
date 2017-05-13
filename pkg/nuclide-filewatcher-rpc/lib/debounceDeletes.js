@@ -12,7 +12,7 @@
 import type {WatchResult} from '..';
 
 import {Observable} from 'rxjs';
-import {takeWhileInclusive} from '../../commons-node/observable';
+import {takeWhileInclusive} from 'nuclide-commons/observable';
 
 const DELETE_DELAY = 1000;
 

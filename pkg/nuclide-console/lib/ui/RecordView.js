@@ -26,8 +26,8 @@ import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
 import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
 import {MeasuredComponent} from '../../../nuclide-ui/MeasuredComponent';
-import debounce from '../../../commons-node/debounce';
-import {nextAnimationFrame} from '../../../commons-node/observable';
+import debounce from 'nuclide-commons/debounce';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 
 type Props = {
   displayableRecord: DisplayableRecord,

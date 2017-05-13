@@ -9,7 +9,7 @@
  * @format
  */
 
-import nuclideUri from '../nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../fsPromise';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 

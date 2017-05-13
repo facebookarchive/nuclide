@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import typeof * as GraphQLServerService from './GraphQLServerService';
 
@@ -28,7 +28,7 @@ import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 
 // Nuclide-specific utility functions
 import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fork} from '../../commons-node/process';
 
 const GRAPHQL_FILE_EXTENTIONS: Array<string> = ['.graphql'];

@@ -11,7 +11,7 @@
 
 /* global localStorage */
 
-import {nextAnimationFrame} from '../commons-node/observable';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 
 type Entry<T> = {key: string, value: T};
 

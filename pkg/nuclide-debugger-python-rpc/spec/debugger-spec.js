@@ -12,7 +12,7 @@
 import type {Breakpoint, DebuggerEvent} from '../debugger/types';
 
 import {launchDebugger} from '../debugger/debugger';
-import pathUtil from '../../commons-node/nuclideUri';
+import pathUtil from 'nuclide-commons/nuclideUri';
 import {DebuggerCommander} from '../debugger/DebuggerCommander';
 
 const simple_py = pathUtil.join(__dirname, 'simple.py');

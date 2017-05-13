@@ -19,7 +19,7 @@ import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
 import {observeActivePaneItemDebounced} from '../../commons-atom/debounced';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';

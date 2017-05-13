@@ -10,8 +10,8 @@
  */
 
 import {Observable} from 'rxjs';
-import {attachEvent} from './event';
-import UniversalDisposable from './UniversalDisposable';
+import {attachEvent} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Stream from 'stream';
 
 /**

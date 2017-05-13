@@ -18,11 +18,11 @@ import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
 import featureConfig from '../../commons-atom/featureConfig';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {getRuntimeInformation} from '../../commons-node/runtime-info';
 import {getAtomNuclideDir} from '../../commons-node/system-info';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';

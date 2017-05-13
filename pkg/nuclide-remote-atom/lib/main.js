@@ -15,7 +15,7 @@ import type {
   AtomCommands,
   AtomFileEvent,
 } from '../../nuclide-remote-atom-rpc/lib/rpc-types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
 
 import {
@@ -31,7 +31,7 @@ import {
   RemoteConnection,
   ServerConnection,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 
 const REMOTE_COMMAND_SERVICE = 'RemoteCommandService';

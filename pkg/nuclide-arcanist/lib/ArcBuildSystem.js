@@ -15,9 +15,9 @@ import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {Message} from '../../nuclide-console/lib/types';
 import type {Directory} from '../../nuclide-remote-connection';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
 import React from 'react';
 import {Observable, Subject} from 'rxjs';

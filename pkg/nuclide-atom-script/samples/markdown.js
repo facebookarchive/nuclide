@@ -15,7 +15,7 @@ import type {ExitCode} from '../lib/types';
 
 import fs from 'fs';
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import yargs from 'yargs';
 
 export default (async function runCommand(

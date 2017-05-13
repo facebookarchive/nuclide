@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ObserveProcessOptions} from '../../commons-node/process';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -21,7 +21,7 @@ import {
 } from '../../commons-node/process';
 import {PromisePool} from '../../commons-node/promise-executors';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
 import {getLogger} from '../../nuclide-logging';

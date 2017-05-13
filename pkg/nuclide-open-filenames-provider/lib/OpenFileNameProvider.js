@@ -11,7 +11,7 @@
 
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
-import {arrayCompact} from '../../commons-node/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {Matcher} from '../../nuclide-fuzzy-native';
 
 // Returns paths of currently opened editor tabs.

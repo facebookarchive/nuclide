@@ -11,7 +11,7 @@
 
 import nullthrows from 'nullthrows';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as BuckService from '../../nuclide-buck-rpc';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 import {copyFixture} from '../../../pkg/nuclide-test-helpers';

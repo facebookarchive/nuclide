@@ -9,13 +9,13 @@
  * @format
  */
 
-import type {NuclideUri} from '../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {observableFromSubscribeFunction} from '../commons-node/event';
-import nuclideUri from '../commons-node/nuclideUri';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 /**
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple

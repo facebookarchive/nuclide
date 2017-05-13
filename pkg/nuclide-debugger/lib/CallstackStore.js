@@ -14,9 +14,9 @@ import type {Callstack} from './types';
 import {DebuggerStore} from './DebuggerStore';
 
 import {Disposable, CompositeDisposable, Emitter} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
-import debounce from '../../commons-node/debounce';
+import debounce from 'nuclide-commons/debounce';
 
 export default class CallstackStore {
   _disposables: IDisposable;

@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
 
 import ClangServer from '../lib/ClangServer';

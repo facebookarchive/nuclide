@@ -19,7 +19,7 @@ import {
 } from './utils/integration-test-helpers';
 import pollFor from './utils/pollFor';
 import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fs from 'fs';
 
 import invariant from 'assert';

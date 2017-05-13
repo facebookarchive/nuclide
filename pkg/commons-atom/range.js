@@ -10,7 +10,7 @@
  */
 
 import {Range} from 'atom';
-import {wordAtPositionFromBuffer} from '../commons-node/range';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 
 export function wordAtPosition(
   editor: atom$TextEditor,

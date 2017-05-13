@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   RemoteDirectory,
   RemoteFile,
@@ -26,9 +26,9 @@ import {
   RemoteConnection,
   ServerConnection,
 } from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from '../../commons-atom/featureConfig';
-import {cacheWhileSubscribed} from '../../commons-node/observable';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 import crypto from 'crypto';

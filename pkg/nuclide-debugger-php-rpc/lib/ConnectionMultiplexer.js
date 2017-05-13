@@ -20,8 +20,8 @@ import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {Connection} from './Connection';
 import {getConfig} from './config';
 import {getSettings} from './settings';
-import nuclideUri from '../../commons-node/nuclideUri';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
 import {
@@ -41,7 +41,7 @@ import {ASYNC_BREAK, BREAKPOINT, EXCEPTION} from './Connection';
 import EventEmitter from 'events';
 import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
-import {attachEvent} from '../../commons-node/event';
+import {attachEvent} from 'nuclide-commons/event';
 
 import type {Socket} from 'net';
 import type {DbgpBreakpoint} from './DbgpSocket';

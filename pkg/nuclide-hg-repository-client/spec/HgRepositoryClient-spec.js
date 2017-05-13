@@ -17,7 +17,7 @@ import {Directory} from 'atom';
 import {HgRepositoryClient} from '../lib/HgRepositoryClient';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import temp from 'temp';
 
 temp.track();

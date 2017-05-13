@@ -15,8 +15,8 @@ import type DebuggerActions from './DebuggerActions';
 
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import React from 'react';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {asyncFilter} from '../../commons-node/promise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {asyncFilter} from 'nuclide-commons/promise';
 
 import type EventEmitter from 'events';
 

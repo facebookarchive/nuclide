@@ -13,7 +13,7 @@
 
 import yargs from 'yargs';
 import fs from 'fs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createProxyFactory, proxyFilename} from './main';
 import {stripLocationsFileName} from './location';
 import {generateProxy} from './proxy-generator';

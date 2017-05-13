@@ -14,7 +14,7 @@ import type {
 } from '../../nuclide-workspace-views/lib/types';
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WORKSPACE_VIEW_URI, LspTester} from './LspTester';
 
 class Activation {

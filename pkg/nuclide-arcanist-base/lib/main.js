@@ -11,7 +11,7 @@
 
 /* global localStorage */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import LRUCache from 'lru-cache';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';

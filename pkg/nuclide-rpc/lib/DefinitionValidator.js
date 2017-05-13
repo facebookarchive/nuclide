@@ -11,7 +11,7 @@
 
 import {locationToString} from './location';
 import invariant from 'assert';
-import {setIntersect} from '../../commons-node/collection';
+import {setIntersect} from 'nuclide-commons/collection';
 
 import type {
   Definitions,

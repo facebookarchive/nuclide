@@ -10,7 +10,7 @@
  */
 
 import {observeProcess} from '../../commons-node/process';
-import {compact} from '../../commons-node/observable';
+import {compact} from 'nuclide-commons/observable';
 import featureConfig from '../../commons-atom/featureConfig';
 import {Observable} from 'rxjs';
 

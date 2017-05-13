@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   MerlinError,
   MerlinOutline,
@@ -19,7 +19,7 @@ import type {
   MerlinOccurrences,
 } from '..';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import readline from 'readline';
 
 import fsPromise from '../../commons-node/fsPromise';

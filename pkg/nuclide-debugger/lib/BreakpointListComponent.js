@@ -12,10 +12,10 @@
 import type DebuggerActions from './DebuggerActions';
 import type BreakpointStore from './BreakpointStore';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import React from 'react';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from '../../nuclide-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';

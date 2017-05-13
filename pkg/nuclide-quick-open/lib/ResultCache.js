@@ -14,7 +14,7 @@ import type {ProviderResult} from './searchResultHelpers';
 
 import invariant from 'assert';
 
-import debounce from '../../commons-node/debounce';
+import debounce from 'nuclide-commons/debounce';
 
 // TODO use maps
 type CachedDirectoryResults = {[query: string]: ProviderResult};

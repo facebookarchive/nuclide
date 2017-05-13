@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
@@ -25,16 +25,16 @@ import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 
 import {Cache} from '../../commons-node/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {RequestSerializer} from '../../commons-node/promise';
+import {RequestSerializer} from 'nuclide-commons/promise';
 import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
 import {onDidRemoveProjectPath} from '../../commons-atom/projects';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
 export type DiagnosticsConfig =

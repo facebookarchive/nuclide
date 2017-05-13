@@ -13,7 +13,7 @@ import typeof * as GrepService from '../../nuclide-grep-rpc';
 import type {search$FileResult} from '../../nuclide-grep-rpc';
 
 import {Observable, ReplaySubject} from 'rxjs';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
 
 type RemoteDirectorySearch = {

@@ -22,7 +22,7 @@ import {
   runCommand,
 } from '../../commons-node/process';
 import {getConnectionDetails} from '../../nuclide-remote-atom-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 // Mercurial (as of v3.7.2) [strips lines][1] matching the following prefix when a commit message is
 // created by an editor invoked by Mercurial. Because Nuclide is not invoked by Mercurial, Nuclide

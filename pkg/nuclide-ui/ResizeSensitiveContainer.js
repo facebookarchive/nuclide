@@ -11,7 +11,7 @@
 
 import React from 'react';
 import classnames from 'classnames';
-import {nextAnimationFrame} from '../commons-node/observable';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 
 type SensorProps = {
   targetHeight: number,

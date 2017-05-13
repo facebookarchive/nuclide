@@ -19,8 +19,8 @@ import observePaneItemVisibility
   from '../../commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {isValidTextEditor} from '../../commons-atom/text-editor';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {toggle} from '../../commons-node/observable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {toggle} from 'nuclide-commons/observable';
 import {track} from '../../nuclide-analytics';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';

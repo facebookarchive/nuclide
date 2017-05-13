@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileSearchResult} from './rpc-types';
 
 import {
@@ -18,7 +18,7 @@ import {
   disposeSearchForDirectory,
 } from './FileSearchProcess';
 import fsPromise from '../../commons-node/fsPromise';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 /**
  * Performs a fuzzy file search in the specified directory.

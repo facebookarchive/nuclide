@@ -15,7 +15,7 @@ import type {
   DeviceProcessesProvider,
   Process,
 } from '../../nuclide-devices/lib/types';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
   _type: string;

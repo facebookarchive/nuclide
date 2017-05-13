@@ -11,13 +11,13 @@
 
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as FileSystemService
   from '../../nuclide-server/lib/services/FileSystemService';
 
 import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
 import {getLogger} from '../../nuclide-logging';

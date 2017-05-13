@@ -11,7 +11,7 @@
 
 import {Point} from 'atom';
 
-import {Deferred} from '../../commons-node/promise';
+import {Deferred} from 'nuclide-commons/promise';
 
 import AutocompleteCacher from '../AutocompleteCacher';
 

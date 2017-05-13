@@ -18,7 +18,7 @@ import type {BuckEvent} from './BuckEventStream';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {compact} from '../../commons-node/observable';
+import {compact} from 'nuclide-commons/observable';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
@@ -29,7 +29,7 @@ import {
   LaunchProcessInfo,
 } from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import {getLogger} from '../../nuclide-logging';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
 

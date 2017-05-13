@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -40,13 +40,9 @@ import type {CategoryLogger} from '../../nuclide-logging';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {Cache} from '../../commons-node/cache';
 import {Observable} from 'rxjs';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {compact} from '../../commons-node/observable';
-import {
-  arrayCompact,
-  arrayFlatten,
-  collect,
-} from '../../commons-node/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {compact} from 'nuclide-commons/observable';
+import {arrayCompact, arrayFlatten, collect} from 'nuclide-commons/collection';
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 

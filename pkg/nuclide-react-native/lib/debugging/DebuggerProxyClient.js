@@ -19,7 +19,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import formatEnoentNotification
   from '../../../commons-atom/format-enoent-notification';
-import UniversalDisposable from '../../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from '../../../nuclide-logging';
 import {executeRequests} from './executeRequests';
 import {runApp} from './runApp';

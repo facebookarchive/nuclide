@@ -15,7 +15,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 import Immutable from 'immutable';
 import {Disposable} from 'atom';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   getDefinitionPreviewServiceByNuclideUri,
 } from '../../nuclide-remote-connection';

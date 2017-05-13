@@ -18,12 +18,12 @@ import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 import {Icon} from '../../nuclide-ui/Icon';
 import {Table} from '../../nuclide-ui/Table';
 import type {Row} from '../../nuclide-ui/Table';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from '../../nuclide-ui/LoadingSpinner';
-import debounce from '../../commons-node/debounce';
+import debounce from 'nuclide-commons/debounce';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,

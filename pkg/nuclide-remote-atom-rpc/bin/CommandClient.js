@@ -19,7 +19,7 @@ import {
   RpcConnection,
   SocketTransport,
 } from '../../nuclide-rpc';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';
 import {reportConnectionErrorAndExit} from './errors';
 import invariant from 'assert';

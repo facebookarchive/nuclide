@@ -16,12 +16,12 @@
  */
 
 import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from '../../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import mv from 'mv';
 import fs from 'fs';
-import {arrayCompact} from '../../../commons-node/collection';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import {arrayCompact} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../../commons-node/fsPromise';
 import {runCommand} from '../../../commons-node/process';
 import {observeRawStream} from '../../../commons-node/stream';

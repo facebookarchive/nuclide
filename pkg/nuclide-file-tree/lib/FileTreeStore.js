@@ -22,12 +22,12 @@ import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
 import {matchesFilter} from './FileTreeFilterHelper';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import {nextAnimationFrame} from '../../commons-node/observable';
+import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from '../../nuclide-logging';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
@@ -35,7 +35,7 @@ const VERSION = 1;
 
 import type {FileTreeAction} from './FileTreeDispatcher';
 import type {Directory} from './FileTreeHelpers';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 

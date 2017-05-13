@@ -10,7 +10,7 @@
  */
 
 import featureConfig from './featureConfig';
-import {maybeToString} from '../commons-node/string';
+import {maybeToString} from 'nuclide-commons/string';
 
 type Options = {
   feature: string,

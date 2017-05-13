@@ -10,7 +10,7 @@
  */
 
 import child_process from 'child_process';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 function getApmNodePath(): string {
   const apmDir = nuclideUri.dirname(atom.packages.getApmPath());

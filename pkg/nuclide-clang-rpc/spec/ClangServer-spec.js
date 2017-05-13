@@ -14,7 +14,7 @@ import invariant from 'assert';
 import fs from 'fs';
 import {Subject} from 'rxjs';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {addMatchers} from '../../nuclide-test-helpers';
 import * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import ClangServer from '../lib/ClangServer';

@@ -13,7 +13,7 @@ import {
   llbuildYamlPath,
   readCompileCommands,
 } from '../../lib/taskrunner/LlbuildYamlParser';
-import nuclideUri from '../../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('llbuildYamlPath', () => {
   const chdir = '/path/to/chdir';

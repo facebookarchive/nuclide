@@ -15,7 +15,7 @@ import type {AtomNotification} from './types';
 
 import WS from 'ws';
 import {ClientCallback} from '../../nuclide-debugger-common';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 export class DebuggerRpcServiceBase {

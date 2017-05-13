@@ -27,7 +27,7 @@ import {
   fetchFilesChangedSinceRevision,
 } from '../pkg/nuclide-hg-rpc/lib/hg-revision-state-helpers';
 import fsPromise from '../pkg/commons-node/fsPromise';
-import nuclideUri from '../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 
 describe('Mercurial Repository Integration Tests', () => {

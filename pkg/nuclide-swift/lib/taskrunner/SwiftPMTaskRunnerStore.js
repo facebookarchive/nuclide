@@ -12,7 +12,7 @@
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 import type SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
 
-import {objectEntries, objectFromMap} from '../../../commons-node/collection';
+import {objectEntries, objectFromMap} from 'nuclide-commons/collection';
 import {Emitter} from 'atom';
 import {ActionTypes} from './SwiftPMTaskRunnerDispatcher';
 

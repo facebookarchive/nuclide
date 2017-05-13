@@ -23,8 +23,8 @@
 import type {ExitCode, TestRunnerParams} from './types';
 
 import invariant from 'assert';
-import nuclideUri from '../../commons-node/nuclideUri';
-import {shellParse} from '../../commons-node/string';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {shellParse} from 'nuclide-commons/string';
 import {Console} from 'console';
 import electron from 'electron';
 

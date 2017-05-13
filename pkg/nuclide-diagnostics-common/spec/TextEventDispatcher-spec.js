@@ -10,7 +10,7 @@
  */
 
 import {Disposable} from 'atom';
-import {sleep} from '../../commons-node/promise';
+import {sleep} from 'nuclide-commons/promise';
 
 import {
   TextEventDispatcher,

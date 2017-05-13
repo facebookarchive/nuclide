@@ -28,8 +28,8 @@ import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
 import featureConfig from '../../commons-atom/featureConfig';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {cacheWhileSubscribed} from '../../commons-node/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';

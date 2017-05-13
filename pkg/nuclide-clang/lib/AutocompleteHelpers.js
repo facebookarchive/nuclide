@@ -14,7 +14,7 @@ import type {ClangCompletion} from '../../nuclide-clang-rpc/lib/rpc-types';
 import {Point} from 'atom';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
-import {arrayFindLastIndex} from '../../commons-node/collection';
+import {arrayFindLastIndex} from 'nuclide-commons/collection';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {ClangCursorToDeclarationTypes} from '../../nuclide-clang-rpc';
 import {getCompletions} from './libclang';

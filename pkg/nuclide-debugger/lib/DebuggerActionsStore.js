@@ -12,7 +12,7 @@
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';

@@ -10,7 +10,7 @@
  */
 
 import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   createAndroidDeviceListProvider,
   createAndroidInfoProvider,

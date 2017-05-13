@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import nuclideUri from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import fsPromise from '../../commons-node/fsPromise';
 import {getCategoryLogger} from '../../nuclide-logging';

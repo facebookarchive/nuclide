@@ -30,7 +30,7 @@ import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
 import {Emitter} from 'atom';
-import {cacheWhileSubscribed} from '../../commons-node/observable';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
 import {
   StatusCodeIdToNumber,
@@ -118,13 +118,13 @@ function getRevisionStatusCache(
  * in addition to providing asynchronous methods for some getters.
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import invariant from 'assert';
-import {mapTransform} from '../../commons-node/collection';
+import {mapTransform} from 'nuclide-commons/collection';
 
 export type HgStatusChanges = {
   statusChanges: Observable<Map<NuclideUri, StatusCodeNumberValue>>,

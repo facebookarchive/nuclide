@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {Point, Range} from 'atom';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import typeof * as FileSystemService
   from '../../nuclide-server/lib/services/FileSystemService';
 import {

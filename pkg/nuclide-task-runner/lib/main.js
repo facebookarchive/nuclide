@@ -28,13 +28,13 @@ import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from '../../commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
-import {observableFromSubscribeFunction} from '../../commons-node/event';
-import {arrayEqual} from '../../commons-node/collection';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {arrayEqual} from 'nuclide-commons/collection';
 import {
   combineEpics,
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import * as Reducers from './redux/Reducers';

@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
-import {wordAtPositionFromBuffer} from '../../commons-node/range';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
@@ -54,7 +54,7 @@ import {Range, Point} from 'simple-text-buffer';
 import {getConfig} from './config';
 import {Observable} from 'rxjs';
 
-import {setUnion, mapGetWithDefault} from '../../commons-node/collection';
+import {setUnion, mapGetWithDefault} from 'nuclide-commons/collection';
 import {
   filterResultsByPrefix,
   getReplacementPrefix,

@@ -15,7 +15,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
 import {enforceReadOnly, enforceSoftWrap} from '../commons-atom/text-editor';
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const doNothing = () => {};
 

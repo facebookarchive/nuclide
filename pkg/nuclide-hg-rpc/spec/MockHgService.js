@@ -11,7 +11,7 @@
 
 import {ConnectableObservable, Subject} from 'rxjs';
 import type {DiffInfo, StatusCodeIdValue} from '../lib/HgService';
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 // This class is meant to be stubbed out.
 export default class MockHgService {

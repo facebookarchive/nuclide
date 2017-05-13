@@ -14,7 +14,7 @@ import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
 
-import type {NuclideUri} from '../../commons-node/nuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export function createAndroidDeviceListProvider(): ATDeviceListProvider {
   return new ATDeviceListProvider('android', (host: NuclideUri) =>

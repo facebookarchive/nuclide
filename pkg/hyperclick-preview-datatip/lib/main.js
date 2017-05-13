@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-datatip/lib/types';
 import type {DefinitionService} from '../../nuclide-definition-service';
 
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import createPackage from '../../commons-atom/createPackage';
 import HyperclickPreviewManager from './HyperclickPreviewManager';

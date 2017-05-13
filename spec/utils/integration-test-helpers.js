@@ -14,7 +14,7 @@ import typeof * as FlowService from '../../pkg/nuclide-flow-rpc';
 import invariant from 'assert';
 import child_process from 'child_process';
 
-import nuclideUri from '../../pkg/commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   RemoteConnection,
   getServiceByNuclideUri,

@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import loadServicesConfig from '../lib/loadServicesConfig';
-import nuclideUri from '../../commons-node/nuclideUri';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {generateFixture} from '../../nuclide-test-helpers';
 
 describe('loadServicesConfig()', () => {

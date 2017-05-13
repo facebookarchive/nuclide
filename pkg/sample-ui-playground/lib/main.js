@@ -17,7 +17,7 @@ import type {
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Playground, WORKSPACE_VIEW_URI} from './Playground';
 import invariant from 'assert';
 import React from 'react';

@@ -11,7 +11,7 @@
 
 // TODO(T17266325): Remove this module when `atom.whenShellEnvironmentLoaded()` lands.
 
-import UniversalDisposable from '../commons-node/UniversalDisposable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ReplaySubject} from 'rxjs';
 
 const emitter = new ReplaySubject(1);
