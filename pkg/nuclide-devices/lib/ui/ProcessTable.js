@@ -41,6 +41,20 @@ export class ProcessTable extends React.Component {
     };
   }
 
+  _formatCpuUsage(cpu: ?number): string {
+    return cpu == null ? '' : cpu.toFixed(2) + '%';
+  }
+
+  _formatMemUsage(mem: ?number): string {
+    if (mem == null) {
+      return '';
+    } else if (mem < 1024) {
+      return mem.toFixed(2) + 'K';
+    } else {
+      return (mem / 1024).toFixed(2) + 'M';
+    }
+  }
+
   render(): React.Element<any> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const rows = this.props.processes
@@ -56,8 +70,8 @@ export class ProcessTable extends React.Component {
           pid: item.pid,
           user: item.user,
           name: item.name,
-          cpuUsage: item.cpuUsage,
-          memUsage: item.memUsage,
+          cpuUsage: this._formatCpuUsage(item.cpuUsage),
+          memUsage: this._formatMemUsage(item.memUsage),
         },
       }));
     const columns = [

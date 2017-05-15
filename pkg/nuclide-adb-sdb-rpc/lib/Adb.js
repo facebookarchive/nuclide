@@ -14,9 +14,8 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, observeProcessRaw} from '../../commons-node/process';
 import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
-import {arrayCompact} from 'nuclide-commons/collection';
 
-import type {AndroidJavaProcess, Process} from './types';
+import type {AndroidJavaProcess} from './types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -81,105 +80,6 @@ export class Adb extends AdbSdbBase {
     // $FlowFixMe will resolve to null if an error is caught
     infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
     return infoTable;
-  }
-
-  async getProcesses(device: string): Promise<Array<Process>> {
-    const processes = (await this.runShortCommand(device, [
-      'shell',
-      'ps',
-    ]).toPromise()).split(/\n/);
-    if (processes.length === 0) {
-      return [];
-    }
-
-    const procTimePrev = await this.getProcessTime(device);
-    const cpuTimePrev = await this.getCPUTime(device);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const procTime = await this.getProcessTime(device);
-    const cpuTime = await this.getCPUTime(device);
-
-    // pid => cpuUsage, memory usage
-    // Reference for calculations: https://github.com/scaidermern/top-processes
-    const cpuAndMemUsage = new Map();
-    const deltaCpu = cpuTime - cpuTimePrev;
-    procTime.forEach((p1, pid) => {
-      if (!procTimePrev.has(pid)) {
-        return;
-      }
-      const p0 = procTimePrev.get(pid);
-      let deltaProc;
-      if (p0 !== null && p0 !== undefined) {
-        deltaProc = (p1[0] - p0[0]) * 1.0;
-      } else {
-        return;
-      }
-      const memUsage = p1[1];
-      cpuAndMemUsage.set(pid, [deltaProc / deltaCpu * 100, memUsage]);
-    });
-    return arrayCompact(
-      processes.map(x => {
-        const info = x.trim().split(/\s+/);
-        if (!Number.isInteger(parseInt(info[1], 10))) {
-          return null;
-        }
-        const cpuAndMem = cpuAndMemUsage.get(info[1]);
-        let cpu = '';
-        let mem = '';
-        if (cpuAndMem !== null && cpuAndMem !== undefined) {
-          cpu = cpuAndMem[0].toFixed(2) + '%';
-          mem = (cpuAndMem[1] / 1024).toFixed(2) + 'M';
-        }
-        return {
-          user: info[0],
-          pid: info[1],
-          name: info[info.length - 1],
-          cpuUsage: cpu,
-          memUsage: mem,
-        };
-      }),
-    );
-  }
-
-  async getProcessTime(device: string): Promise<Map<string, [number, number]>> {
-    const validProcess = new RegExp(/\d+\s()/);
-    const procTime = (await this.runShortCommand(device, [
-      'shell',
-      'cat',
-      '/proc/[0-9]*/stat',
-    ]).toPromise())
-      .split(/\n/)
-      .filter(x => validProcess.test(x));
-    // pid => utime + stime
-    const procTimeMap = new Map(
-      procTime.map(x => {
-        const info = x.trim().split(/\s/);
-        return [
-          info[0],
-          [
-            Number.parseInt(info[12], 10) + Number.parseInt(info[13], 10), // stime + utime
-            Number.parseInt(info[23], 10), // RSS
-          ],
-        ];
-      }),
-    );
-    return procTimeMap;
-  }
-
-  async getCPUTime(device: string): Promise<number> {
-    let cpuTime = (await this.runShortCommand(device, [
-      'shell',
-      'cat',
-      '/proc/stat',
-    ]).toPromise()).split(/\n/);
-    cpuTime = cpuTime[0]
-      .trim()
-      .split(/\s+/)
-      .slice(1, -2)
-      .reduce((acc, current) => {
-        const val = Number.parseInt(current, 10);
-        return acc + val;
-      }, 0);
-    return cpuTime;
   }
 
   async forceStopPackage(device: string, packageName: string): Promise<void> {

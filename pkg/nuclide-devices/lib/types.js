@@ -82,10 +82,10 @@ export type Store = {
 
 export type Process = {
   user: string,
-  pid: string,
+  pid: number,
   name: string,
-  cpuUsage: ?string,
-  memUsage: ?string,
+  cpuUsage: ?number,
+  memUsage: ?number,
 };
 
 export type KillProcessCallback = (packageName: string) => Promise<void>;

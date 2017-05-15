@@ -12,6 +12,7 @@
 import {pathForDebugBridge, getStore} from './AdbSdbPathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Adb} from './Adb';
+import {AdbTop} from './AdbTop';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
@@ -36,7 +37,7 @@ export async function getDeviceInfo(
 }
 
 export async function getProcesses(device: string): Promise<Array<Process>> {
-  return (await getAdb()).getProcesses(device);
+  return new AdbTop((await getAdb()), device).fetch();
 }
 
 export async function forceStopPackage(

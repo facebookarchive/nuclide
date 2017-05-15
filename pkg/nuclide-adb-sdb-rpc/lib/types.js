@@ -26,8 +26,8 @@ export type DeviceDescription = {
 
 export type Process = {
   user: string,
-  pid: string,
+  pid: number,
   name: string,
-  cpuUsage: ?string,
-  memUsage: ?string,
+  cpuUsage: ?number,
+  memUsage: ?number,
 };
