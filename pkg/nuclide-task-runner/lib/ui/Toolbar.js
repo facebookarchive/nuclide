@@ -71,6 +71,7 @@ export class Toolbar extends React.Component {
     const ButtonComponent = buttonProps => (
       <TaskRunnerButton
         {...buttonProps}
+        disabled={this.props.taskIsRunning}
         iconComponent={this.props.iconComponent}
       />
     );

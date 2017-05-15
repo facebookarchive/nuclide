@@ -11,6 +11,10 @@
 
 import type {Action, TaskRunner, TaskRunnerState, TaskStatus} from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
+import type {
+  ConsoleApi,
+  ConsoleService,
+} from '../../../nuclide-console/lib/types';
 
 import * as Actions from './Actions';
 
@@ -127,6 +131,46 @@ export function runningTask(
       return action.payload.taskStatus;
     case Actions.TASK_STOPPED:
       return null;
+    default:
+      return state;
+  }
+}
+
+export function consoleService(
+  state: ?ConsoleService = null,
+  action: Action,
+): ?ConsoleService {
+  switch (action.type) {
+    case Actions.SET_CONSOLE_SERVICE:
+      return action.payload.service;
+    default:
+      return state;
+  }
+}
+
+export function consolesForTaskRunners(
+  state: Map<TaskRunner, ConsoleApi> = new Map(),
+  action: Action,
+): Map<TaskRunner, ConsoleApi> {
+  switch (action.type) {
+    case Actions.SET_CONSOLES_FOR_TASK_RUNNERS:
+      state.forEach((value, key) => {
+        value.dispose();
+      });
+      return action.payload.consolesForTaskRunners;
+    case Actions.SET_CONSOLE_SERVICE:
+      return new Map();
+    case Actions.ADD_CONSOLE_FOR_TASK_RUNNER:
+      const {consoleApi, taskRunner} = action.payload;
+      return new Map(state.entries()).set(taskRunner, consoleApi);
+    case Actions.REMOVE_CONSOLE_FOR_TASK_RUNNER:
+      const previous = state.get(action.payload.taskRunner);
+      const newState = new Map(state.entries());
+      if (previous) {
+        previous.dispose();
+        newState.delete(action.payload.taskRunner);
+      }
+      return newState;
     default:
       return state;
   }

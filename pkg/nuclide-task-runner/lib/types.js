@@ -13,8 +13,9 @@ import type {
   LocalStorageJsonTable,
 } from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from '../../nuclide-ui/types';
-import type {Task} from '../../commons-node/tasks';
+import type {Message, Task} from '../../commons-node/tasks';
 import type {Directory} from '../../nuclide-remote-connection';
+import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
 
 export type AppState = {
   taskRunnersReady: boolean,
@@ -29,6 +30,9 @@ export type AppState = {
   statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
 
   runningTask: ?TaskStatus,
+
+  consoleService: ?ConsoleService,
+  consolesForTaskRunners: Map<TaskRunner, ConsoleApi>,
 };
 
 export type ToolbarStatePreference = {
@@ -95,6 +99,7 @@ export type BoundActionCreators = {
   registerTaskRunner(taskRunner: TaskRunner): void,
   runTask(taskId: TaskMetadata): void,
   setProjectRoot(dir: ?Directory): void,
+  setConsoleService(service: ?ConsoleService): void,
   setToolbarVisibility(visible: boolean): void,
   stopTask(): void,
   requestToggleToolbarVisibility(
@@ -131,6 +136,7 @@ export type TaskCompletedAction = {
   type: 'TASK_COMPLETED',
   payload: {
     taskStatus: TaskStatus,
+    taskRunner: TaskRunner,
   },
 };
 
@@ -138,6 +144,14 @@ type TaskProgressAction = {
   type: 'TASK_PROGRESS',
   payload: {
     progress: ?number,
+  },
+};
+
+type TaskMessageAction = {
+  type: 'TASK_MESSAGE',
+  payload: {
+    message: Message,
+    taskRunner: TaskRunner,
   },
 };
 
@@ -160,6 +174,7 @@ export type TaskStoppedAction = {
   type: 'TASK_STOPPED',
   payload: {
     taskStatus: TaskStatus,
+    taskRunner: TaskRunner,
   },
 };
 
@@ -189,6 +204,35 @@ export type SetProjectRootAction = {
   type: 'SET_PROJECT_ROOT',
   payload: {
     projectRoot: ?Directory,
+  },
+};
+
+export type SetConsoleServiceAction = {
+  type: 'SET_CONSOLE_SERVICE',
+  payload: {
+    service: ?ConsoleService,
+  },
+};
+
+export type SetConsolesForTaskRunnersAction = {
+  type: 'SET_CONSOLES_FOR_TASK_RUNNERS',
+  payload: {
+    consolesForTaskRunners: Map<TaskRunner, ConsoleApi>,
+  },
+};
+
+export type AddConsoleForTaskRunnerAction = {
+  type: 'ADD_CONSOLE_FOR_TASK_RUNNER',
+  payload: {
+    taskRunner: TaskRunner,
+    consoleApi: ConsoleApi,
+  },
+};
+
+export type RemoveConsoleForTaskRunnerAction = {
+  type: 'REMOVE_CONSOLE_FOR_TASK_RUNNER',
+  payload: {
+    taskRunner: TaskRunner,
   },
 };
 
@@ -227,10 +271,15 @@ export type Action =
   | SelectTaskRunnerAction
   | SetStatesForTaskRunnersAction
   | SetProjectRootAction
+  | SetConsoleServiceAction
+  | SetConsolesForTaskRunnersAction
+  | AddConsoleForTaskRunnerAction
+  | RemoveConsoleForTaskRunnerAction
   | SetToolbarVisibilityAction
   | StopTaskAction
   | TaskCompletedAction
   | TaskProgressAction
+  | TaskMessageAction
   | TaskErroredAction
   | TaskStartedAction
   | TaskStoppedAction

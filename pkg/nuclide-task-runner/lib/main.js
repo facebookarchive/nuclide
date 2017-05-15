@@ -23,6 +23,7 @@ import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
   DistractionFreeModeProvider,
 } from '../../nuclide-distraction-free-mode';
+import type {ConsoleService} from '../../nuclide-console/lib/types';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -276,6 +277,11 @@ class Activation {
       this._disposables.remove(buttonUpdatesDisposable);
       this._disposables.remove(buttonPresenceDisposable);
     });
+  }
+
+  consumeConsole(service: ConsoleService): IDisposable {
+    this._actionCreators.setConsoleService(service);
+    return new Disposable(() => this._actionCreators.setConsoleService(null));
   }
 
   provideTaskRunnerServiceApi(): TaskRunnerServiceApi {

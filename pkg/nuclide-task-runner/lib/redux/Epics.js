@@ -32,7 +32,6 @@ import {Observable} from 'rxjs';
 export function setProjectRootEpic(
   actions: ActionsObservable<Action>,
   store: Store,
-  options: EpicOptions,
 ): Observable<Action> {
   return (
     actions
@@ -44,6 +43,66 @@ export function setProjectRootEpic(
       // Refreshes everything. Not the most efficient, but good enough
       .map(() => Actions.setProjectRoot(store.getState().projectRoot))
   );
+}
+
+export function setConsolesForTaskRunnersEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.SET_CONSOLE_SERVICE, Actions.DID_ACTIVATE_INITIAL_PACKAGES)
+    .switchMap(() => {
+      const {consoleService, taskRunnersReady} = store.getState();
+      if (consoleService == null || !taskRunnersReady) {
+        return Observable.empty();
+      }
+
+      const consolesForTaskRunners = store
+        .getState()
+        .taskRunners.map(runner => [
+          runner,
+          consoleService({id: runner.name, name: runner.name}),
+        ]);
+      return Observable.of(
+        Actions.setConsolesForTaskRunners(new Map(consolesForTaskRunners)),
+      );
+    });
+}
+
+export function addConsoleForTaskRunnerEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
+    const {consoleService, taskRunnersReady} = store.getState();
+    if (consoleService == null || !taskRunnersReady) {
+      return Observable.empty();
+    }
+
+    invariant(action.type === Actions.REGISTER_TASK_RUNNER);
+    const {taskRunner} = action.payload;
+    const {id, name} = taskRunner;
+    return Observable.of(
+      Actions.addConsoleForTaskRunner(taskRunner, consoleService({id, name})),
+    );
+  });
+}
+
+export function removeConsoleForTaskRunnerEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.UNREGISTER_TASK_RUNNER).switchMap(action => {
+    const {consoleService, taskRunnersReady} = store.getState();
+    if (consoleService == null || !taskRunnersReady) {
+      return Observable.empty();
+    }
+
+    invariant(action.type === Actions.UNREGISTER_TASK_RUNNER);
+    return Observable.of(
+      Actions.removeConsoleForTaskRunner(action.payload.taskRunner),
+    );
+  });
 }
 
 export function setActiveTaskRunnerEpic(
@@ -359,13 +418,14 @@ export function stopTaskEpic(
   store: Store,
 ): Observable<Action> {
   return actions.ofType(Actions.STOP_TASK).switchMap(action => {
-    const {runningTask} = store.getState();
+    const {activeTaskRunner, runningTask} = store.getState();
     if (!runningTask) {
       return Observable.empty();
     }
+    invariant(activeTaskRunner);
     return Observable.of({
       type: Actions.TASK_STOPPED,
-      payload: {taskStatus: runningTask},
+      payload: {taskStatus: runningTask, taskRunner: activeTaskRunner},
     });
   });
 }
@@ -405,6 +465,63 @@ export function setToolbarVisibilityEpic(
   });
 }
 
+export function printTaskCancelledEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.TASK_STOPPED).map(action => {
+    invariant(action.type === Actions.TASK_STOPPED);
+    const {type} = action.payload.taskStatus.metadata;
+    const {taskRunner} = action.payload;
+    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
+    return {
+      type: Actions.TASK_MESSAGE,
+      payload: {
+        message: {text: `${capitalizedType} cancelled.`, level: 'warning'},
+        taskRunner,
+      },
+    };
+  });
+}
+
+export function printTaskSucceededEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.TASK_COMPLETED).map(action => {
+    invariant(action.type === Actions.TASK_COMPLETED);
+    const {type} = action.payload.taskStatus.metadata;
+    const {taskRunner} = action.payload;
+    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
+    return {
+      type: Actions.TASK_MESSAGE,
+      payload: {
+        message: {text: `${capitalizedType} succeeded.`, level: 'success'},
+        taskRunner,
+      },
+    };
+  });
+}
+
+export function appendMessageToConsoleEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.TASK_MESSAGE)
+    .do(action => {
+      invariant(action.type === Actions.TASK_MESSAGE);
+      const {message, taskRunner} = action.payload;
+      const consoleApi = store
+        .getState()
+        .consolesForTaskRunners.get(taskRunner);
+      if (consoleApi) {
+        consoleApi.append({...message});
+      }
+    })
+    .ignoreElements();
+}
+
 let taskFailedNotification;
 
 /**
@@ -427,18 +544,40 @@ function createTaskObservable(
       payload: {taskStatus},
     })
       .concat(
-        events.filter(event => event.type === 'progress').map(event => {
-          invariant(event.type === 'progress');
-          return {
-            type: Actions.TASK_PROGRESS,
-            payload: {progress: event.progress},
-          };
+        events.flatMap(event => {
+          if (event.type === 'progress') {
+            return Observable.of({
+              type: Actions.TASK_PROGRESS,
+              payload: {progress: event.progress},
+            });
+          } else if (event.type === 'message') {
+            return Observable.of({
+              type: Actions.TASK_MESSAGE,
+              payload: {
+                message: event.message,
+                taskRunner: taskMeta.taskRunner,
+              },
+            });
+          } else if (event.type === 'status' && event.status != null) {
+            return Observable.of({
+              type: Actions.TASK_MESSAGE,
+              payload: {
+                message: {text: event.status, level: 'info'},
+                taskRunner: taskMeta.taskRunner,
+              },
+            });
+          } else {
+            return Observable.empty();
+          }
         }),
       )
       .concat(
         Observable.of({
           type: Actions.TASK_COMPLETED,
-          payload: {taskStatus: {...taskStatus, progress: 1}},
+          payload: {
+            taskStatus: {...taskStatus, progress: 1},
+            taskRunner: taskMeta.taskRunner,
+          },
         }),
       );
   })
