@@ -1,5 +1,5 @@
-// flow-typed signature: bcc579222e2f2efa181af7a5ed2f18b9
-// flow-typed version: 5d68cb629f/rxjs_v5.0.x/flow_>=v0.34.x
+// flow-typed signature: 57c1daa47facabc5218125d6f08c8ec7
+// flow-typed version: 59827f92f4/rxjs_v5.0.x/flow_>=v0.34.x
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -110,6 +110,8 @@ declare class rxjs$Observable<+T> {
 
   static interval(period: number): rxjs$Observable<number>;
 
+  static timer(initialDelay: (number | Date), period?: number, scheduler?: rxjs$SchedulerClass): rxjs$Observable<number>;
+
   static merge<T, U>(
     source0: rxjs$Observable<T>,
     source1: rxjs$Observable<U>,
@@ -130,6 +132,8 @@ declare class rxjs$Observable<+T> {
   audit(durationSelector: (value: T) => rxjs$Observable<any> | Promise<any>): rxjs$Observable<T>;
 
   race(other: rxjs$Observable<T>): rxjs$Observable<T>;
+
+  repeat(): rxjs$Observable<T>;
 
   buffer(bufferBoundaries: rxjs$Observable<any>): rxjs$Observable<Array<T>>;
 
@@ -155,7 +159,7 @@ declare class rxjs$Observable<+T> {
 
   elementAt(index: number, defaultValue?: T): rxjs$Observable<T>;
 
-  filter(predicate: (value: T) => boolean): rxjs$Observable<T>;
+  filter(predicate: (value: T, index: number) => boolean, thisArg?: any): rxjs$Observable<T>;
 
   finally(f: () => mixed): rxjs$Observable<T>;
 
@@ -193,6 +197,16 @@ declare class rxjs$Observable<+T> {
     index?: number,
   ): rxjs$Observable<U>;
 
+  flatMapTo<U>(
+    innerObservable: rxjs$Observable<U>
+  ): rxjs$Observable<U>;
+
+  flatMapTo<U, V>(
+    innerObservable: rxjs$Observable < U >,
+    resultSelector: (outerValue: T, innerValue: U, outerIndex: number, innerIndex: number) => V,
+    concurrent ?: number
+  ): rxjs$Observable<V>;
+
   switchMap<U>(
     project: (value: T) => rxjs$Observable<U> | Promise<U> | Iterable<U>,
     index?: number,
@@ -214,6 +228,16 @@ declare class rxjs$Observable<+T> {
     project: (value: T, index?: number) => rxjs$Observable<U> | Promise<U> | Iterable<U>,
     index?: number,
   ): rxjs$Observable<U>;
+
+  mergeMapTo<U>(
+    innerObservable: rxjs$Observable<U>
+  ): rxjs$Observable<U>;
+
+  mergeMapTo<U, V>(
+    innerObservable: rxjs$Observable < U >,
+    resultSelector: (outerValue: T, innerValue: U, outerIndex: number, innerIndex: number) => V,
+    concurrent ?: number
+  ): rxjs$Observable<V>;
 
   multicast(
     subjectOrSubjectFactory: rxjs$Subject<T> | () => rxjs$Subject<T>,
@@ -258,7 +282,7 @@ declare class rxjs$Observable<+T> {
 
   skipUntil(other: rxjs$Observable<any> | Promise<any>): rxjs$Observable<T>;
 
-  skipWhile(predicate: (value: T) => boolean): rxjs$Observable<T>;
+  skipWhile(predicate: (value: T, index: number) => boolean): rxjs$Observable<T>;
 
   startWith(...values: Array<T>): rxjs$Observable<T>;
 
@@ -268,7 +292,7 @@ declare class rxjs$Observable<+T> {
 
   takeUntil(other: rxjs$Observable<any>): rxjs$Observable<T>;
 
-  takeWhile(f: (value: T) => boolean): rxjs$Observable<T>;
+  takeWhile(predicate: (value: T, index: number) => boolean): rxjs$Observable<T>;
 
   do(
     onNext?: (value: T) => mixed,
