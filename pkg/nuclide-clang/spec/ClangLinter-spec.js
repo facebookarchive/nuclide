@@ -11,7 +11,7 @@
 
 import {Point, Range} from 'atom';
 import ClangLinter from '../lib/ClangLinter';
-import * as range from '../../commons-atom/range';
+import * as range from 'nuclide-commons-atom/range';
 
 describe('ClangDiagnosticsProvider', () => {
   const TEST_PATH = '/path/test.cpp';

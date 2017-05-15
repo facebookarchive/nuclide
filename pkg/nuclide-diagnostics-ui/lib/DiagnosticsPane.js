@@ -14,7 +14,7 @@ import type {Column} from '../../nuclide-ui/Table';
 
 import classnames from 'classnames';
 import React from 'react';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import {Table} from '../../nuclide-ui/Table';
 import {Highlight, HighlightColors} from '../../nuclide-ui/Highlight';

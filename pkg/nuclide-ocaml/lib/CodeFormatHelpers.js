@@ -14,7 +14,7 @@ import type {refmtResult} from '../../nuclide-ocaml-rpc/lib/ReasonService';
 import {getReasonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 function isInterfaceF(filePath: string) {
   const ext = nuclideUri.extname(filePath);

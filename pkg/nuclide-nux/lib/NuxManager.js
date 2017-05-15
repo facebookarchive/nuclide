@@ -11,7 +11,7 @@
 
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
 
-import {isValidTextEditor} from '../../commons-atom/text-editor';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
 import {maybeToString} from 'nuclide-commons/string';

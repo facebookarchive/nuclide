@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 import type {WorkingSetDefinition} from './types';
 

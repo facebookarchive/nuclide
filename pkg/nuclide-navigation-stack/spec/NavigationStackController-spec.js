@@ -20,7 +20,7 @@ describe('NavigationStackController test suite', () => {
 
   beforeEach(() => {
     setPositionAndScroll = spyOn(
-      require('../../commons-atom/text-editor'),
+      require('nuclide-commons-atom/text-editor'),
       'setPositionAndScroll',
     );
     spyOn(

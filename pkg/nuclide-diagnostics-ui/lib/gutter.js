@@ -22,8 +22,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
   goToLocation as atomGoToLocation,
-} from '../../commons-atom/go-to-location';
-import {wordAtPosition} from '../../commons-atom/range';
+} from 'nuclide-commons-atom/go-to-location';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {track} from '../../nuclide-analytics';
 import {DiagnosticsPopup} from './DiagnosticsPopup';
 

@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-node-debugger';

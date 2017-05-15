@@ -13,7 +13,7 @@ import type {
   ActionsObservable,
   Epic,
 } from '../../commons-node/redux-observable';
-import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
+import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import type {RefactorAction, RefactorState, ExecuteAction} from './types';
 import type {RefactorProvider} from '..';
 

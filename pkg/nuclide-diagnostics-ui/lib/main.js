@@ -26,8 +26,8 @@ import invariant from 'assert';
 
 import {track} from '../../nuclide-analytics';
 
-import createPackage from '../../commons-atom/createPackage';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {
@@ -36,8 +36,8 @@ import {
 } from './DiagnosticsPanelModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import featureConfig from '../../commons-atom/featureConfig';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 const LINTER_PACKAGE = 'linter';

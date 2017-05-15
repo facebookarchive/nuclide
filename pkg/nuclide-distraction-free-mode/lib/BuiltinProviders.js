@@ -13,7 +13,7 @@ import type {DistractionFreeModeProvider} from '..';
 
 import invariant from 'assert';
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 export function getBuiltinProviders(): Array<DistractionFreeModeProvider> {
   const providers = [];

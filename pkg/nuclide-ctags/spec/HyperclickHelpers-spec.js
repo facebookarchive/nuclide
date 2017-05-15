@@ -10,7 +10,7 @@
  */
 
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
-import type {goToLocation} from '../../commons-atom/go-to-location';
+import type {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 import invariant from 'assert';
 import {Range} from 'atom';
@@ -29,7 +29,7 @@ describe('HyperclickHelpers', () => {
   beforeEach(() => {
     // HACK: goToLocation is a getter. Not too easy to mock out :(
     goToLocationSpy = spyOn(
-      require('../../commons-atom/go-to-location'),
+      require('nuclide-commons-atom/go-to-location'),
       'goToLocation',
     ).andCallThrough();
 

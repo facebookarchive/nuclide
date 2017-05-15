@@ -12,7 +12,7 @@
 import type {FileTreeNode} from './FileTreeNode';
 import type Immutable from 'immutable';
 
-import ContextMenu from '../../commons-atom/ContextMenu';
+import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';

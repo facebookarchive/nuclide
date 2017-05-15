@@ -12,8 +12,8 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import invariant from 'assert';
-import {getScrollTop} from '../../commons-atom/text-editor';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {getScrollTop} from 'nuclide-commons-atom/text-editor';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 // A location which can be navigated to. Includes the file (as uri for closed files and as
 // atom$TextEditor for open files) as well as the cursor position and scroll.

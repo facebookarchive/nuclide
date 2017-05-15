@@ -25,7 +25,7 @@ import type {
 } from '../../nuclide-distraction-free-mode';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import PanelRenderer from '../../commons-atom/PanelRenderer';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

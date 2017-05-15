@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import electron from 'electron';
 import {CompositeDisposable} from 'atom';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 const {remote} = electron;
 invariant(remote != null);

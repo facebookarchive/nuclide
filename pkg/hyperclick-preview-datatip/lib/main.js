@@ -18,7 +18,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import HyperclickPreviewManager from './HyperclickPreviewManager';
 
 const PACKAGE_NAME = 'hyperclick-preview-datatip';

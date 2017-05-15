@@ -17,7 +17,7 @@ import type {LanguageService} from './LanguageService';
 import {trackTiming} from '../../nuclide-analytics';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {wordAtPosition} from '../../commons-atom/range';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {getDefaultEvaluationExpression} from '../../nuclide-debugger-base';
 
 export type MatcherType =

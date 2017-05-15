@@ -13,7 +13,7 @@ import type {HgRepositoryClient} from '../pkg/nuclide-hg-repository-client';
 import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
 import type {TestContext} from './utils/remotable-tests';
 
-import featureConfig from '../pkg/commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import fsPromise from '../pkg/commons-node/fsPromise';
 import {hgConstants} from '../pkg/nuclide-hg-rpc';
 import invariant from 'assert';

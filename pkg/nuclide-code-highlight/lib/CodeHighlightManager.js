@@ -11,7 +11,7 @@
 
 import type {CodeHighlightProvider} from './types';
 import {CompositeDisposable} from 'atom';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import debounce from 'nuclide-commons/debounce';
 
 const HIGHLIGHT_DELAY_MS = 250;

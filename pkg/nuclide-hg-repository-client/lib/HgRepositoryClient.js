@@ -38,7 +38,7 @@ import {
 } from '../../nuclide-hg-rpc/lib/hg-constants';
 import {BehaviorSubject, Observable} from 'rxjs';
 import LRU from 'lru-cache';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   observeBufferOpen,
   observeBufferCloseOrRename,

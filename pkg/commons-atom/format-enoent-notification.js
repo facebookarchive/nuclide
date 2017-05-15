@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from './featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {maybeToString} from 'nuclide-commons/string';
 
 type Options = {

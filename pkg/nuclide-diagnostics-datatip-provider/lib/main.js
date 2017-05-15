@@ -25,7 +25,7 @@ import type {
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 
 const DATATIP_PACKAGE_NAME = 'nuclide-diagnostics-datatip';
 export async function datatip(

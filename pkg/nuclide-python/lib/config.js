@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 export function getAutocompleteArguments(): boolean {
   return (featureConfig.get('nuclide-python.autocompleteArguments'): any);

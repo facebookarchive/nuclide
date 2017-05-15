@@ -13,7 +13,7 @@ import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import React from 'react';
 import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
 

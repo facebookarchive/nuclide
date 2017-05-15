@@ -12,7 +12,7 @@
 import type {PhpDebuggerSessionConfig} from '../../nuclide-debugger-php-rpc';
 
 import invariant from 'assert';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';

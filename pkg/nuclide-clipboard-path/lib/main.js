@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAtomProjectRelativePath} from '../../commons-atom/projects';
+import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {trackTiming} from '../../nuclide-analytics';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 

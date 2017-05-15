@@ -19,7 +19,7 @@ import {
 import {applyActionMiddleware} from './applyActionMiddleware';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Commands} from './Commands';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   deserializeBookShelfState,
   getEmptBookShelfState,
@@ -27,7 +27,7 @@ import {
 } from './utils';
 import {getHgRepositoryStream} from '../../nuclide-vcs-base';
 import {getLogger} from '../../nuclide-logging';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

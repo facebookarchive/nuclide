@@ -14,7 +14,7 @@ import type {Definition, DefinitionQueryResult} from './rpc-types';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 
 // Provides definitions for a set of language grammars.
 export type DefinitionProvider = {

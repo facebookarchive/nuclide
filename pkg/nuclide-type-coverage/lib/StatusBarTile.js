@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rxjs';
 
-import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 import type {IconName} from '../../nuclide-ui/types';
 
 import type {CoverageProvider} from './types';

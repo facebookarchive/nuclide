@@ -19,7 +19,7 @@ import type {
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
 import {getLogger} from '../../nuclide-logging';
 

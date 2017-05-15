@@ -15,7 +15,7 @@ import type {DefinitionService} from '../../nuclide-definition-service';
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
 import React from 'react';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 
 const PROVIDER1_ID = 'context-provider-1';

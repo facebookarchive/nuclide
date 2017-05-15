@@ -14,8 +14,8 @@ import type {LinterMessage} from '../../nuclide-diagnostics-common';
 
 import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
-import featureConfig from '../../commons-atom/featureConfig';
-import {wordAtPosition} from '../../commons-atom/range';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
 import {getDiagnostics} from './libclang';
 

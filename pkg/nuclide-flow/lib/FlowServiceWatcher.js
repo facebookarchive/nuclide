@@ -14,7 +14,7 @@ import type {FlowLanguageServiceType} from '../../nuclide-flow-rpc';
 
 import {Observable, Subscription} from 'rxjs';
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 
 const WARN_NOT_INSTALLED_CONFIG = 'nuclide-flow.warnOnNotInstalled';

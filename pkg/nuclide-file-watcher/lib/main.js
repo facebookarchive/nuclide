@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import FileWatcher from './FileWatcher';
 
 let subscriptions: ?CompositeDisposable = null;

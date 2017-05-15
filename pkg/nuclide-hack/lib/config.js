@@ -11,7 +11,7 @@
 
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getCategoryLogger} from '../../nuclide-logging';
 
 type HackConfig = {

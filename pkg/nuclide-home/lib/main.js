@@ -17,7 +17,7 @@ import type {
 import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {getRuntimeInformation} from '../../commons-node/runtime-info';

@@ -9,16 +9,16 @@
  * @format
  */
 
-import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';
 import {
   getViewOfEditor,
   isValidTextEditor,
-} from '../../commons-atom/text-editor';
+} from 'nuclide-commons-atom/text-editor';
 import {NavigationStackController} from './NavigationStackController';
 import {trackTiming} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeNavigatingEditors} from '../../commons-atom/go-to-location';
-import createPackage from '../../commons-atom/createPackage';
+import {observeNavigatingEditors} from 'nuclide-commons-atom/go-to-location';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {consumeStatusBar} from './StatusBar';
 
 const controller = new NavigationStackController();

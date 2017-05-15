@@ -23,7 +23,7 @@ import {Disposable} from 'atom';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
-import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
+import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
 import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

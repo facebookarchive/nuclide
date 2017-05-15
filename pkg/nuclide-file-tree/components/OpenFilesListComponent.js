@@ -16,7 +16,7 @@ import classnames from 'classnames';
 import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 type OpenFileEntry = {
   name: string,

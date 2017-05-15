@@ -17,7 +17,7 @@ import type {
   InvalidationMessage,
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
-import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 
 import type {CoverageProvider} from '../lib/types';
 import type {CoverageResult} from '../lib/rpc-types';

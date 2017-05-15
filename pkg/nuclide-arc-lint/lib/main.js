@@ -13,7 +13,7 @@ import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
 import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import * as ArcanistDiagnosticsProvider from './ArcanistDiagnosticsProvider';

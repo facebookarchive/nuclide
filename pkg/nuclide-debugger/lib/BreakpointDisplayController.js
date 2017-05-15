@@ -17,7 +17,7 @@ import type DebuggerActions from './DebuggerActions';
 import invariant from 'assert';
 import {
   bufferPositionForMouseEvent,
-} from '../../commons-atom/mouse-to-position';
+} from 'nuclide-commons-atom/mouse-to-position';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
 

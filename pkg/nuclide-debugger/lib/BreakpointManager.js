@@ -13,7 +13,7 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import {CompositeDisposable} from 'atom';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import BreakpointDisplayController from './BreakpointDisplayController';
 
 export default class BreakpointManager {

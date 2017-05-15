@@ -12,7 +12,7 @@
 import type {CodeFormatProvider} from './types';
 
 import {CompositeDisposable, Range} from 'atom';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {applyTextEditsToBuffer} from '../../nuclide-textedit';
 import {getFormatOnSave} from './config';
 

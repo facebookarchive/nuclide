@@ -11,7 +11,7 @@
 
 import type {ExecutorResponse, ExecutorRequest} from './types';
 
-import featureConfig from '../../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {fork, getOutputStream} from '../../../commons-node/process';
 import {getLogger} from '../../../nuclide-logging';
 import nuclideUri from 'nuclide-commons/nuclideUri';

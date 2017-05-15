@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {EditorLocation, Location} from './Location';
 
-import {setPositionAndScroll} from '../../commons-atom/text-editor';
+import {setPositionAndScroll} from 'nuclide-commons-atom/text-editor';
 import {maybeToString} from 'nuclide-commons/string';
 import {NavigationStack} from './NavigationStack';
 import invariant from 'assert';

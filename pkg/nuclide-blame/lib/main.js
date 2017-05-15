@@ -19,7 +19,7 @@ import invariant from 'assert';
 
 import BlameGutter from './BlameGutter';
 import {getLogger} from '../../nuclide-logging';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
 

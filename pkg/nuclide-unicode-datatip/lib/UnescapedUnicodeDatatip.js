@@ -11,7 +11,7 @@
 
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
-import {wordAtPosition} from '../../commons-atom/range';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import makeUnescapedUnicodeDatatipComponent
   from './UnescapedUnicodeDatatipComponent';
 import {decodeSurrogateCodePoints, extractCodePoints} from './Unicode';

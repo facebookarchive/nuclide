@@ -11,7 +11,7 @@
 
 import {observeProcess} from '../../commons-node/process';
 import {compact} from 'nuclide-commons/observable';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {Observable} from 'rxjs';
 
 export function createProcessStream(): Observable<string> {

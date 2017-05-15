@@ -30,7 +30,7 @@ describe('DefinitionHyperclick', () => {
       'getDefinition',
     ]): any);
     goToLocation = spyOn(
-      require('../../commons-atom/go-to-location'),
+      require('nuclide-commons-atom/go-to-location'),
       'goToLocation',
     );
     const main = (uncachedRequire(require, '../lib/main'): any);

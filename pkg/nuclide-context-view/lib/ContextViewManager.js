@@ -14,17 +14,17 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {EditorPosition} from '../../commons-atom/debounced';
+import type {EditorPosition} from 'nuclide-commons-atom/debounced';
 import type {ContextProvider} from './types';
 
 import invariant from 'assert';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility
-  from '../../commons-atom/observePaneItemVisibility';
+  from 'nuclide-commons-atom/observePaneItemVisibility';
 import {arrayCompact} from 'nuclide-commons/collection';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {observeTextEditorsPositions} from '../../commons-atom/debounced';
+import {observeTextEditorsPositions} from 'nuclide-commons-atom/debounced';
 import {Observable} from 'rxjs';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';

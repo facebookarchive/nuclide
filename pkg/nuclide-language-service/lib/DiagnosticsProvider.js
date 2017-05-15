@@ -29,7 +29,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {RequestSerializer} from 'nuclide-commons/promise';
 import {DiagnosticsProviderBase} from './DiagnosticsProviderBase';
-import {onDidRemoveProjectPath} from '../../commons-atom/projects';
+import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';

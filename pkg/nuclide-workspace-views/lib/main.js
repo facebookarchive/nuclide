@@ -19,7 +19,7 @@ import type {
   WorkspaceViewsService,
 } from './types';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   combineEpics,
   createEpicMiddleware,

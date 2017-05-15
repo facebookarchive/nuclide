@@ -26,13 +26,13 @@ import type {Store} from './types';
 import {Disposable} from 'atom';
 import invariant from 'assert';
 
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
-import createPackage from '../../commons-atom/createPackage';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import observeGrammarForTextEditors
   from '../../commons-atom/observe-grammar-for-text-editors';
 import {
   bufferPositionForMouseEvent,
-} from '../../commons-atom/mouse-to-position';
+} from 'nuclide-commons-atom/mouse-to-position';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import * as Actions from './refactorActions';

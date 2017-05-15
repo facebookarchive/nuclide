@@ -15,12 +15,12 @@ import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import {Button, ButtonSizes} from '../../nuclide-ui/Button';
 import {Block} from '../../nuclide-ui/Block';
 import React from 'react';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
-import {existingEditorForBuffer} from '../../commons-atom/text-editor';
+import {existingEditorForBuffer} from 'nuclide-commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
 

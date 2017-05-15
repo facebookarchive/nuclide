@@ -18,7 +18,7 @@ import invariant from 'assert';
 import classnames from 'classnames';
 
 import {track} from '../../nuclide-analytics';
-import {goToLocationInEditor} from '../../commons-atom/go-to-location';
+import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
 import {
   LoadingSpinner,

@@ -47,7 +47,7 @@ import {setNotificationService} from '../../nuclide-debugger-base';
 import {DebuggerMode} from './DebuggerStore';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
-import {wordAtPosition, trimRange} from '../../commons-atom/range';
+import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import os from 'os';
 import nullthrows from 'nullthrows';

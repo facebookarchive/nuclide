@@ -16,7 +16,7 @@ import {GRAMMARS} from './constants';
 import {trackTiming} from '../../nuclide-analytics';
 import {Range} from 'atom';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 module.exports = {
   name: 'nuclide-ocaml',

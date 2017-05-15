@@ -16,7 +16,7 @@ import {Range} from 'atom';
 import {Subject} from 'rxjs';
 import os from 'os';
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {trackTiming} from '../../nuclide-analytics';
 import {removeCommonSuffix} from 'nuclide-commons/string';
 import {PromisePool} from '../../commons-node/promise-executors';

@@ -10,7 +10,7 @@
  */
 
 import {runCommandDetailed} from '../../../commons-node/process';
-import featureConfig from '../../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 /**
  * Commands that SourceKitten implements and nuclide-swift supports, such as

@@ -13,8 +13,8 @@ import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
 import React from 'react';
-import featureConfig from '../../commons-atom/featureConfig';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';

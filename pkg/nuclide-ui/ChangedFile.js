@@ -15,7 +15,7 @@ import type {IconName} from '../nuclide-ui/types';
 
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';
-import {getAtomProjectRelativePath} from '../commons-atom/projects';
+import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {
   FileChangeStatusToIcon,
   FileChangeStatusToLabel,

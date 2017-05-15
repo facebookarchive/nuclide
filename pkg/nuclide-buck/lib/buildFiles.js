@@ -19,7 +19,7 @@ import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {getLogger} from '../../nuclide-logging';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 const DEFAULT_BUILD_FILE_NAME = 'BUCK';
 

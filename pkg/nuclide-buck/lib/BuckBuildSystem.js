@@ -36,7 +36,7 @@ import {taskFromObservable} from '../../commons-node/tasks';
 import {getLogger} from '../../nuclide-logging';
 import {compact} from 'nuclide-commons/observable';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   combineEventStreams,
   getDiagnosticEvents,

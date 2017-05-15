@@ -14,7 +14,7 @@ import type {OutlineForUi, SerializedOutlineViewPanelState} from '..';
 import React from 'react';
 
 import observePaneItemVisibility
-  from '../../commons-atom/observePaneItemVisibility';
+  from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {OutlineView} from './OutlineView';
 import {BehaviorSubject, Observable} from 'rxjs';

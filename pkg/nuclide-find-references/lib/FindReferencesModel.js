@@ -17,7 +17,7 @@ type FindReferencesOptions = {
   previewContext?: number,
 };
 
-import {getFileForPath} from '../../commons-atom/projects';
+import {getFileForPath} from 'nuclide-commons-atom/projects';
 import {arrayCompact} from 'nuclide-commons/collection';
 import {getLogger} from '../../nuclide-logging';
 

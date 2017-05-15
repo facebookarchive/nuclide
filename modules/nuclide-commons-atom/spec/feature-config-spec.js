@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../featureConfig';
+import featureConfig from '../feature-config';
 
 describe('main', () => {
   it('returns numbers when numbers are set', () => {

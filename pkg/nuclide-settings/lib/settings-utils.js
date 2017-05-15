@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 function getConfigValueString(keyPath: string): string {
   const value = featureConfig.get(keyPath);

@@ -16,9 +16,9 @@ import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
 import observePaneItemVisibility
-  from '../../commons-atom/observePaneItemVisibility';
+  from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {toggle} from 'nuclide-commons/observable';
 import {track} from '../../nuclide-analytics';

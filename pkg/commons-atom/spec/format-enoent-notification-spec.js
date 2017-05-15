@@ -10,7 +10,7 @@
  */
 
 import formatEnoentNotification from '../format-enoent-notification';
-import featureConfig from '../featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 
 describe('formatEnoentNotification', () => {

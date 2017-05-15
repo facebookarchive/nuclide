@@ -18,7 +18,7 @@ import {
   getWordTextAndRange,
 } from './hyperclick-utils';
 
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 
 /**
  * Calls the given functions and returns the first non-null return value.

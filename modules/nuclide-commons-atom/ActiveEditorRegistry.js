@@ -25,8 +25,7 @@ import {
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 
-import {getLogger} from '../nuclide-logging';
-const logger = getLogger();
+import {getLogger} from 'log4js';
 
 import ProviderRegistry from './ProviderRegistry';
 
@@ -239,7 +238,7 @@ export default class ActiveEditorRegistry<T: Provider, V> {
         editor,
       };
     } catch (e) {
-      logger.error(
+      getLogger(this.constructor.name).error(
         `Error from provider for ${editor.getGrammar().scopeName}`,
         e,
       );

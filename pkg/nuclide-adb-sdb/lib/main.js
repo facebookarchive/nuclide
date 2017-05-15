@@ -9,7 +9,7 @@
  * @format
  */
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   createAndroidDeviceListProvider,

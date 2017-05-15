@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import {Disposable, CompositeDisposable} from 'atom';
 import {Observable} from 'rxjs';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import debounce from 'nuclide-commons/debounce';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 

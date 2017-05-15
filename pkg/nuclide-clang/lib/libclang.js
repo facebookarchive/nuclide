@@ -21,7 +21,7 @@ import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangCompilationDatabaseProvider} from './types';
 
 import {Disposable} from 'atom';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   getClangServiceByNuclideUri,
   getServiceByNuclideUri,

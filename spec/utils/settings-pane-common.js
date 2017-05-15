@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-import featureConfig from '../../pkg/commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {
   // getDefaultConfigValue,

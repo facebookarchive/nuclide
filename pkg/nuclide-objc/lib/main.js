@@ -9,7 +9,7 @@
  * @format
  */
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
 import ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
 

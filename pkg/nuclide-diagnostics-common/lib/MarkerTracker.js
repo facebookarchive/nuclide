@@ -17,7 +17,7 @@ import {CompositeDisposable} from 'atom';
 
 import invariant from 'assert';
 
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {MultiMap} from 'nuclide-commons/collection';
 
 export class MarkerTracker {

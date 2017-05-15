@@ -10,7 +10,7 @@
  */
 
 import {observeProcess} from '../../commons-node/process';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';

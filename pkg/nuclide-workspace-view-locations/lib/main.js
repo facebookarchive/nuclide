@@ -17,7 +17,7 @@ import type {
 } from '../../nuclide-workspace-views/lib/types';
 import type {PanelLocationId} from './types';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {PaneLocation} from './PaneLocation';
 import {PanelLocation} from './PanelLocation';

@@ -12,7 +12,7 @@
 import type {Store, BoundActionCreators, PartialAppState} from './types';
 
 import {Disposable, CompositeDisposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {RequestEditDialog} from './RequestEditDialog';

@@ -19,7 +19,7 @@ import {
   FileChangeStatus,
   RevertibleStatusCodes,
 } from '../nuclide-vcs-base';
-import {goToLocation} from '../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {openFileInDiffView} from '../commons-atom/open-in-diff-view';
 import {track} from '../nuclide-analytics';
 import invariant from 'assert';

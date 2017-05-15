@@ -16,7 +16,7 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import ArcBuildSystem from './ArcBuildSystem';
 import {openArcDeepLink} from './openArcDeepLink';
 

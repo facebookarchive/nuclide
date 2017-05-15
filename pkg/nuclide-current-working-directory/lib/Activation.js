@@ -11,7 +11,7 @@
 
 import {CwdApi} from './CwdApi';
 import {CompositeDisposable} from 'atom';
-import {getAtomProjectRootPath} from '../../commons-atom/projects';
+import {getAtomProjectRootPath} from 'nuclide-commons-atom/projects';
 
 export class Activation {
   _cwdApi: CwdApi;

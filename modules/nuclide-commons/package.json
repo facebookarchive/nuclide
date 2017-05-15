@@ -7,11 +7,11 @@
     "test": "node ../../pkg/nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
+    "async-to-generator": "1.0.0",
     "event-kit": "2.2.0",
     "rxjs": "5.3.1",
     "shell-quote": "1.6.1"
   },
   "devDependencies": {
-    "simple-text-buffer": "9.2.11"
   }
 }

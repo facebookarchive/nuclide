@@ -22,10 +22,10 @@ import {
   getServiceByConnection,
   ConnectionCache,
 } from '../../nuclide-remote-connection';
-import {goToLocation} from '../../commons-atom/go-to-location';
-import createPackage from '../../commons-atom/createPackage';
-import featureConfig from '../../commons-atom/featureConfig';
-import {observeEditorDestroy} from '../../commons-atom/text-editor';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {observeEditorDestroy} from 'nuclide-commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import {
   RemoteConnection,

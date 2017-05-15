@@ -18,7 +18,7 @@ import type {
 } from '../../hyperclick/lib/types';
 import type {DefinitionService} from '../../nuclide-definition-service';
 
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Disposable} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';

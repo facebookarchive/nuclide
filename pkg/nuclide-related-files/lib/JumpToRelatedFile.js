@@ -11,8 +11,8 @@
 
 import RelatedFileFinder from './RelatedFileFinder';
 import {trackTiming} from '../../nuclide-analytics';
-import featureConfig from '../../commons-atom/featureConfig';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 /**
  * Sets up listeners so the user can jump to related files.

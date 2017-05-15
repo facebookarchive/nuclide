@@ -13,13 +13,13 @@ import type {OutlineForUi, OutlineTreeForUi, OutlineProvider} from '..';
 import type {Outline, OutlineTree} from './rpc-types';
 import type ActiveEditorRegistry, {
   Result,
-} from '../../commons-atom/ActiveEditorRegistry';
+} from 'nuclide-commons-atom/ActiveEditorRegistry';
 
 import {Observable} from 'rxjs';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 
-import {getCursorPositions} from '../../commons-atom/text-editor';
+import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 
 const LOADING_DELAY_MS = 500;
 

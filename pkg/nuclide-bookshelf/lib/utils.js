@@ -25,7 +25,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import Immutable from 'immutable';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track} from '../../nuclide-analytics';

@@ -14,7 +14,7 @@ import type {TextEdit} from './rpc-types';
 
 import invariant from 'assert';
 
-import {existingEditorForUri} from '../../commons-atom/text-editor';
+import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 
 /**
  * Attempts to apply the given patches to the given file.

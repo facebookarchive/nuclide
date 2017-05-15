@@ -24,7 +24,7 @@ import {Observable, BehaviorSubject} from 'rxjs';
 import {Range, Point} from 'atom';
 import invariant from 'assert';
 
-import ProviderRegistry from '../../commons-atom/ProviderRegistry';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Deferred, nextTick} from 'nuclide-commons/promise';
 import {expectObservableToStartWith} from '../../nuclide-test-helpers';

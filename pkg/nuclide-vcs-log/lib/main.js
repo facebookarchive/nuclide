@@ -18,9 +18,9 @@ import type {VcsLogResponse} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import VcsLogPaneItem from './VcsLogPaneItem';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
-import {getAtomProjectRelativePath} from '../../commons-atom/projects';
+import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {maybeToString} from 'nuclide-commons/string';
 import querystring from 'querystring';
 import {repositoryForPath} from '../../nuclide-vcs-base';

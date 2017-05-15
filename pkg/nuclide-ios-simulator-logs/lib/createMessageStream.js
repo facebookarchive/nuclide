@@ -12,7 +12,7 @@
 import type {Message} from '../../nuclide-console/lib/types';
 
 import {bufferUntil} from 'nuclide-commons/observable';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {createMessage} from './createMessage';
 import plist from 'plist';
 import {Observable} from 'rxjs';

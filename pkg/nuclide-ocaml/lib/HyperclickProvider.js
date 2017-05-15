@@ -13,7 +13,7 @@ import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {GRAMMARS, EXTENSIONS} from './constants';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {getMerlinServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 module.exports = {

@@ -14,12 +14,12 @@
 import type {FindReferencesReturn} from './rpc-types';
 
 import crypto from 'crypto';
-import createPackage from '../../commons-atom/createPackage';
-import ContextMenu from '../../commons-atom/ContextMenu';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import ContextMenu from 'nuclide-commons-atom/ContextMenu';
 import {
   bufferPositionForMouseEvent,
-} from '../../commons-atom/mouse-to-position';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+} from 'nuclide-commons-atom/mouse-to-position';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import FindReferencesElement from './FindReferencesElement';

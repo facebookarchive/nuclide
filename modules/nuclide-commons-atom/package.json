@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-commons-atom",
+  "version": "0.1.0",
+  "description": "Common Nuclide node modules (for use with Atom only).",
+  "scripts": {
+    "prepublishOnly": "../../scripts/release-transpile.js --overwrite .",
+    "test": "atom --dev --test spec"
+  },
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "dependencies": {
+    "async-to-generator": "1.0.0",
+    "log4js": "1.1.1",
+    "rxjs": "5.3.1"
+  },
+  "devDependencies": {
+  }
+}

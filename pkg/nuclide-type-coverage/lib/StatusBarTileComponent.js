@@ -15,7 +15,7 @@ import React from 'react';
 
 import {Icon} from '../../nuclide-ui/Icon';
 import addTooltip from '../../nuclide-ui/add-tooltip';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import classnames from 'classnames';
 
 type Props = {

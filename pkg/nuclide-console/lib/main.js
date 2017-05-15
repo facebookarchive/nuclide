@@ -27,7 +27,7 @@ import type {
   Store,
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
@@ -35,7 +35,7 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';

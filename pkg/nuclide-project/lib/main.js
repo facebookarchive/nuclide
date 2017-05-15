@@ -9,8 +9,8 @@
  * @format
  */
 
-import createPackage from '../../commons-atom/createPackage';
-import {observeProjectPaths} from '../../commons-atom/projects';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import {observeProjectPaths} from 'nuclide-commons-atom/projects';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';

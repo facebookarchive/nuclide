@@ -17,7 +17,7 @@ import type {Store} from './types';
 import {createStore, applyMiddleware} from 'redux';
 import {Subject} from 'rxjs';
 
-import type ProviderRegistry from '../../commons-atom/ProviderRegistry';
+import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {
   createEpicMiddleware,
   combineEpics,

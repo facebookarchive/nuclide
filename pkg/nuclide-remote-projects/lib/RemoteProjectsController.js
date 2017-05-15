@@ -15,7 +15,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ConnectionState from './ConnectionState';
 

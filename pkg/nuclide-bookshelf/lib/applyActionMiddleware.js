@@ -23,7 +23,7 @@ import {getRepoPathToEditors} from './utils';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getLogger} from '../../nuclide-logging';
-import {goToLocation} from '../../commons-atom/go-to-location';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Observable} from 'rxjs';
 
 const HANDLED_ACTION_TYPES = [

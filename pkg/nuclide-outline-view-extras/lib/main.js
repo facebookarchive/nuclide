@@ -13,7 +13,7 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux} from '../../nuclide-nux/lib/main';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';

@@ -28,7 +28,7 @@ import type {
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
 import passesGK from '../../commons-node/passesGK';
 import {getNotifierByConnection} from '../../nuclide-open-files';

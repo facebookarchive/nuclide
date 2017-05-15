@@ -19,7 +19,7 @@ import type {OpenConnectionDialogOptions} from './open-connection';
 import {getLogger} from '../../nuclide-logging';
 import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
 import {getOpenFileEditorForRemoteProject} from './utils';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import loadingNotification from '../../commons-atom/loading-notification';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';

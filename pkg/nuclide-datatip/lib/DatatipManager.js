@@ -38,8 +38,8 @@ import {
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-import featureConfig from '../../commons-atom/featureConfig';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import performanceNow from '../../commons-node/performanceNow';
 
 const logger = getLogger();

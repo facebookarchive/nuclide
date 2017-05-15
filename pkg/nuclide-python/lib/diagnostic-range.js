@@ -12,7 +12,7 @@
 import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
 import {Point, Range} from 'atom';
-import {wordAtPosition, trimRange} from '../../commons-atom/range';
+import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();

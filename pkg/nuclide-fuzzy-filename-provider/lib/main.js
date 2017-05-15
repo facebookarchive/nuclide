@@ -15,7 +15,7 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
 import {
   getFuzzyFileSearchServiceByNuclideUri,

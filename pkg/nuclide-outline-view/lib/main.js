@@ -10,15 +10,15 @@
  */
 
 import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {Result} from '../../commons-atom/ActiveEditorRegistry';
+import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
 
-import ActiveEditorRegistry from '../../commons-atom/ActiveEditorRegistry';
-import {observeActivePaneItemDebounced} from '../../commons-atom/debounced';
-import {isValidTextEditor} from '../../commons-atom/text-editor';
-import createPackage from '../../commons-atom/createPackage';
+import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
+import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 

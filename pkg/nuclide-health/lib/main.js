@@ -23,11 +23,11 @@ import {Observable} from 'rxjs';
 
 // Imports from other Nuclide packages.
 import {track} from '../../nuclide-analytics';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 

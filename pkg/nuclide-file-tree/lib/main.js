@@ -22,13 +22,13 @@ import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import invariant from 'assert';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import featureConfig from '../../commons-atom/featureConfig';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
-import {observeTextEditors} from '../../commons-atom/text-editor';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';

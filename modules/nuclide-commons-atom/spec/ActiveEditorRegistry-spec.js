@@ -20,8 +20,6 @@ import type {Observable} from 'rxjs';
 
 import {Subject} from 'rxjs';
 
-import {expectObservableToStartWith} from '../../nuclide-test-helpers';
-
 import ActiveEditorRegistry from '../ActiveEditorRegistry';
 
 type TestProvider = {
@@ -29,6 +27,13 @@ type TestProvider = {
   grammarScopes: Array<string>,
   updateOnEdit?: boolean,
 };
+
+// TODO(hansonw): Unify with nuclide-test-helpers
+async function expectObservableToStartWith(source, expected) {
+  expect(await source.take(expected.length).toArray().toPromise()).toEqual(
+    expected,
+  );
+}
 
 describe('ActiveEditorRegistry', () => {
   let activeEditorRegistry: ActiveEditorRegistry<

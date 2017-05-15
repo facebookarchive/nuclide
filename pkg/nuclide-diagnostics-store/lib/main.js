@@ -19,7 +19,7 @@ import type {
 import type {LinterAdapter} from './LinterAdapter';
 import type {IndieLinterDelegate} from './IndieLinterRegistry';
 
-import createPackage from '../../commons-atom/createPackage';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {getLogger} from '../../nuclide-logging';
