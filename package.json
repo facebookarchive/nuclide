@@ -123,7 +123,7 @@
     "eslint-plugin-flowtype": "2.30.0",
     "eslint-plugin-jasmine": "2.2.0",
     "eslint-plugin-prefer-object-spread": "1.1.0",
-    "eslint-plugin-prettify": "2.0.1",
+    "eslint-plugin-prettify": "2.0.2",
     "eslint-plugin-react": "6.8.0",
     "flow-bin": "0.46.0",
     "fs-extra": "2.0.0",
