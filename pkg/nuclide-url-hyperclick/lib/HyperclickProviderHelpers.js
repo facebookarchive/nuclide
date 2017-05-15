@@ -13,14 +13,7 @@ import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
 
 import {Range} from 'atom';
 import {shell} from 'electron';
-
-// Originally copied from:
-// http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-// But adopted to match `www.` urls as well as `https?` urls
-// and `!` as acceptable url piece.
-// Then optimized with https://www.npmjs.com/package/regexp-tree
-// eslint-disable-next-line max-len
-const URL_REGEX = /(?:https?:\/\/(www.)?[-\w@:%.+~#=]{2,256}.[a-z]{2,6}\b([-\w@:%+.~#?&/=!]*))|(?:(www.)[-\w@:%.+~#=]{2,256}.[a-z]{2,6}\b([-\w@:%+.~#?&/=!]*))/;
+import {URL_REGEX} from 'nuclide-commons/string';
 
 const TRAILING_JUNK_REGEX = /[.,]?$/;
 

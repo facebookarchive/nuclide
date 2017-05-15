@@ -28,6 +28,7 @@ import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
 import {MeasuredComponent} from '../../../nuclide-ui/MeasuredComponent';
 import debounce from 'nuclide-commons/debounce';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
+import {URL_REGEX} from 'nuclide-commons/string';
 
 type Props = {
   displayableRecord: DisplayableRecord,
@@ -37,7 +38,6 @@ type Props = {
   onHeightChange: (recordId: number, newHeight: number) => void,
 };
 
-const URL_REGEX = /(https?:\/\/[\S]+)/i;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 export default class RecordView extends React.Component {
   props: Props;
