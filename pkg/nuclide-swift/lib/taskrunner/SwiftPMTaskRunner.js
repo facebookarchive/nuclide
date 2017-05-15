@@ -11,7 +11,6 @@
 
 import type {Task} from '../../../commons-node/tasks';
 import type {TaskMetadata} from '../../../nuclide-task-runner/lib/types';
-import type {Level, Message} from '../../../nuclide-console/lib/types';
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
@@ -24,7 +23,7 @@ import {
   exitEventToMessage,
 } from '../../../commons-node/process';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {taskFromObservable} from '../../../commons-node/tasks';
+import {createMessage, taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';
 import SwiftPMTaskRunnerActions from './SwiftPMTaskRunnerActions';
 import SwiftPMTaskRunnerDispatcher from './SwiftPMTaskRunnerDispatcher';
@@ -69,17 +68,14 @@ export class SwiftPMTaskRunner {
   _initialState: ?SwiftPMTaskRunnerStoreState;
   _flux: ?SwiftPMTaskRunnerFlux;
   _autocompletionProvider: ?SwiftPMAutocompletionProvider;
-  _outputMessages: Subject<Message>;
   _projectRoot: Subject<?string>;
 
   constructor(initialState: ?SwiftPMTaskRunnerStoreState) {
     this.id = 'swiftpm';
     this.name = 'Swift';
     this._initialState = initialState;
-    this._outputMessages = new Subject();
     this._projectRoot = new Subject();
     this._disposables = new UniversalDisposable(
-      this._outputMessages,
       this._projectRoot.subscribe(path =>
         this._getFlux().actions.updateProjectRoot(path),
       ),
@@ -139,50 +135,43 @@ export class SwiftPMTaskRunner {
       'nuclide-console:toggle',
       {visible: true},
     );
-    this._logOutput(`${command.command} ${command.args.join(' ')}`, 'log');
-
-    const observable = observeProcess(command.command, command.args, {
-      /* TODO(T17353599) */ isExitError: () => false,
-    })
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .do(message => {
-        switch (message.kind) {
-          case 'stderr':
-          case 'stdout':
-            this._logOutput(message.data, 'log');
-            break;
-          case 'exit':
-            if (message.exitCode === 0) {
-              this._logOutput(
-                `${command.command} exited successfully.`,
-                'success',
-              );
-              this._getFlux().actions.updateCompileCommands(
-                chdir,
-                configuration,
-                buildPath,
-              );
-            } else {
-              this._logOutput(
-                `${command.command} failed with ${exitEventToMessage(message)}`,
-                'error',
-              );
-            }
-            break;
-          default:
-            break;
-        }
+    const observable = createMessage(
+      `${command.command} ${command.args.join(' ')}`,
+      'log',
+    ).concat(
+      observeProcess(command.command, command.args, {
+        /* TODO(T17353599) */ isExitError: () => false,
       })
-      .ignoreElements();
+        .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+        .flatMap(message => {
+          switch (message.kind) {
+            case 'stderr':
+            case 'stdout':
+              return createMessage(message.data, 'log');
+            case 'exit':
+              if (message.exitCode === 0) {
+                this._getFlux().actions.updateCompileCommands(
+                  chdir,
+                  configuration,
+                  buildPath,
+                );
+                return createMessage(
+                  `${command.command} exited successfully.`,
+                  'success',
+                );
+              } else {
+                return createMessage(
+                  `${command.command} failed with ${exitEventToMessage(message)}`,
+                  'error',
+                );
+              }
+            default:
+              return Observable.empty();
+          }
+        }),
+    );
 
-    const task = taskFromObservable(observable);
-    return {
-      ...task,
-      cancel: () => {
-        this._logOutput('Task cancelled.', 'warning');
-        task.cancel();
-      },
-    };
+    return taskFromObservable(observable);
   }
 
   getAutocompletionProvider(): SwiftPMAutocompletionProvider {
@@ -192,10 +181,6 @@ export class SwiftPMTaskRunner {
       );
     }
     return this._autocompletionProvider;
-  }
-
-  getOutputMessages(): Observable<Message> {
-    return this._outputMessages;
   }
 
   setProjectRoot(
@@ -239,10 +224,6 @@ export class SwiftPMTaskRunner {
 
   async _packageFileExistsAtPath(path: string): Promise<boolean> {
     return fsPromise.exists(nuclideUri.join(path, 'Package.swift'));
-  }
-
-  _logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
   }
 
   _getFlux(): SwiftPMTaskRunnerFlux {

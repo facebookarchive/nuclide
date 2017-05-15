@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {OutputService} from '../../nuclide-console/lib/types';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {
   SwiftPMTaskRunner as SwiftPMTaskRunnerType,
@@ -50,16 +49,6 @@ export function consumeTaskRunnerServiceApi(
 ): void {
   invariant(_disposables != null);
   _disposables.add(serviceApi.register(_getTaskRunner()));
-}
-
-export function consumeOutputService(service: OutputService): void {
-  invariant(_disposables != null);
-  _disposables.add(
-    service.registerOutputProvider({
-      messages: _getTaskRunner().getOutputMessages(),
-      id: 'swift',
-    }),
-  );
 }
 
 export function serialize(): ?SwiftPMTaskRunnerStoreState {
