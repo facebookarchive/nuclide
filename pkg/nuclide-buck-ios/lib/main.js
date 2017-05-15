@@ -14,6 +14,7 @@ import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
   Device,
   PlatformGroup,
+  TaskSettings,
   TaskType,
 } from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from '../../commons-node/tasks';
@@ -63,8 +64,16 @@ function provideIosDevices(
         {
           name: 'iOS Simulators',
           tasksForDevice: device => getTasks(buckRoot, ruleType),
-          runTask: (builder, taskType, target, device) =>
-            _runTask(buckRoot, builder, taskType, ruleType, target, device),
+          runTask: (builder, taskType, target, settings, device) =>
+            _runTask(
+              builder,
+              taskType,
+              ruleType,
+              target,
+              settings,
+              device,
+              buckRoot,
+            ),
           deviceGroups: [
             {
               name: 'iOS Simulators',
@@ -94,12 +103,13 @@ function getTasks(buckRoot: NuclideUri, ruleType: string): Set<TaskType> {
 }
 
 function _runTask(
-  buckRoot: NuclideUri,
   builder: BuckBuildSystem,
   taskType: TaskType,
   ruleType: string,
   buildTarget: ResolvedBuildTarget,
+  settings: TaskSettings,
   device: ?Device,
+  buckRoot: NuclideUri,
 ): Observable<TaskEvent> {
   invariant(device);
   invariant(device.arch);
@@ -127,6 +137,7 @@ function _runTask(
           taskType,
           ruleType,
           buildTarget,
+          settings,
           udid,
           flavor,
         );
@@ -142,9 +153,10 @@ function _runTask(
     return runRemoteTask();
   } else {
     return builder.runSubcommand(
+      buckRoot,
       _getLocalSubcommand(taskType, ruleType),
       newTarget,
-      {},
+      settings,
       taskType === 'debug',
       udid,
     );

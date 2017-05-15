@@ -11,7 +11,6 @@
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {BuckBuilderBuildOptions} from '../../nuclide-buck/lib/types';
-import type {OutputService} from '../../nuclide-console/lib/types';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
 import type {BuckBuilder, SerializedState} from './types';
 
@@ -74,16 +73,6 @@ function getTaskRunner(): BuckTaskRunner {
     disposables.add(taskRunner);
   }
   return taskRunner;
-}
-
-export function consumeOutputService(service: OutputService): void {
-  invariant(disposables != null);
-  disposables.add(
-    service.registerOutputProvider({
-      messages: getTaskRunner().getBuildSystem().getOutputMessages(),
-      id: 'Buck',
-    }),
-  );
 }
 
 export function provideObservableDiagnosticUpdates() {

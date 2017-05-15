@@ -211,9 +211,6 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
   });
 }
 
-/**
- * Convenient function when using Observable and dealing with messages.
- */
 export function createMessage(
   text: string,
   level: Level,
@@ -222,4 +219,21 @@ export function createMessage(
     type: 'message',
     message: {text, level},
   });
+}
+
+export function createStatus(status: string): Observable<TaskEvent> {
+  return Observable.of({type: 'status', status});
+}
+
+export function createStep(
+  stepName: ?string,
+  action: () => Observable<TaskEvent>,
+): Observable<TaskEvent> {
+  return Observable.concat(
+    Observable.of({type: 'progress', progress: null}),
+    stepName
+      ? Observable.of({type: 'status', status: stepName})
+      : Observable.empty(),
+    Observable.defer(action),
+  );
 }

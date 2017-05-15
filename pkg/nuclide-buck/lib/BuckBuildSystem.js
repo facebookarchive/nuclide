@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {BuckEvent} from './BuckEventStream';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {TaskEvent} from '../../commons-node/tasks';
@@ -32,9 +31,8 @@ import type {
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {taskFromObservable} from '../../commons-node/tasks';
+import {createMessage, taskFromObservable} from '../../commons-node/tasks';
 import {getLogger} from '../../nuclide-logging';
-import {compact} from 'nuclide-commons/observable';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -53,23 +51,8 @@ import invariant from 'assert';
 const SOCKET_TIMEOUT = 30000;
 
 export class BuckBuildSystem {
-  _outputMessages: Subject<Message>;
-  _diagnosticUpdates: Subject<DiagnosticProviderUpdate>;
-  _diagnosticInvalidations: Subject<InvalidationMessage>;
-  _getBuckRoot: () => ?NuclideUri;
-  _getTaskSettings: () => TaskSettings;
-
-  constructor(
-    outputMessages: Subject<Message>,
-    rootFetcher: () => ?NuclideUri,
-    settingsFetcher: () => TaskSettings,
-  ) {
-    this._outputMessages = outputMessages;
-    this._diagnosticUpdates = new Subject();
-    this._diagnosticInvalidations = new Subject();
-    this._getBuckRoot = rootFetcher;
-    this._getTaskSettings = settingsFetcher;
-  }
+  _diagnosticUpdates: Subject<DiagnosticProviderUpdate> = new Subject();
+  _diagnosticInvalidations: Subject<InvalidationMessage> = new Subject();
 
   buildArtifact(opts: BuckBuilderBuildOptions): BuildArtifactTask {
     const {root, target, args} = opts;
@@ -80,6 +63,7 @@ export class BuckBuildSystem {
     const task = taskFromObservable(
       Observable.concat(
         this.runSubcommand(
+          root,
           'build',
           target,
           {buildArguments: args},
@@ -118,33 +102,26 @@ export class BuckBuildSystem {
   }
 
   runSubcommand(
+    buckRoot: NuclideUri,
     subcommand: BuckSubcommand,
     buildTarget: ResolvedBuildTarget,
-    additionalSettings: TaskSettings,
+    taskSettings: TaskSettings,
     isDebug: boolean,
     udid: ?string,
   ): Observable<TaskEvent> {
-    // Clear Buck diagnostics every time we run build.
+    // Clear Buck diagnostics every time we run a buck command.
     this._diagnosticInvalidations.next({scope: 'all'});
-    const buckRoot = this._getBuckRoot();
-    const taskSettings = this._getTaskSettings();
-
-    if (buckRoot == null || buildTarget == null) {
-      // All tasks should have been disabled.
-      return Observable.empty();
-    }
+    const buckService = getBuckServiceByNuclideUri(buckRoot);
+    const buildArguments = taskSettings.buildArguments || [];
+    const runArguments = taskSettings.runArguments || [];
 
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
-    const buildArguments = (taskSettings.buildArguments || [])
-      .concat(additionalSettings.buildArguments || []);
-    const runArguments = (taskSettings.runArguments || [])
-      .concat(additionalSettings.runArguments || []);
-
-    const buckService = getBuckServiceByNuclideUri(buckRoot);
-
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
-        getLogger().warn(`Failed to get httpPort for ${targetString}`, err);
+        getLogger().warn(
+          `Failed to get httpPort for ${nuclideUri.getPath(buckRoot)}`,
+          err,
+        );
         return Observable.of(-1);
       })
       .switchMap(httpPort => {
@@ -153,11 +130,6 @@ export class BuckBuildSystem {
           socketEvents = getEventsFromSocket(
             buckService.getWebSocketStream(buckRoot, httpPort).refCount(),
           ).share();
-        } else {
-          this._logOutput(
-            'For better logs, set httpserver.port in your Buck config and restart Nuclide.',
-            'info',
-          );
         }
 
         const args = runArguments.length > 0 &&
@@ -176,19 +148,26 @@ export class BuckBuildSystem {
         ).share();
         const processEvents = getEventsFromProcess(processMessages).share();
 
+        let httpRecommendation;
         let mergedEvents;
         if (socketEvents == null) {
           // Without a websocket, just pipe the Buck output directly.
           mergedEvents = processEvents;
+          httpRecommendation = createMessage(
+            'For better logs, set httpserver.port in your Buck config and restart Nuclide.',
+            'info',
+          );
         } else {
           mergedEvents = combineEventStreams(
             subcommand,
             socketEvents,
             processEvents,
           ).share();
+          httpRecommendation = Observable.empty();
         }
 
         return Observable.concat(
+          httpRecommendation,
           // Wait until the socket starts up before triggering the Buck process.
           socketEvents == null
             ? Observable.empty()
@@ -231,14 +210,6 @@ export class BuckBuildSystem {
       .share();
   }
 
-  _logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
-  }
-
-  getOutputMessages(): Observable<Message> {
-    return this._outputMessages;
-  }
-
   getDiagnosticProvider(): ObservableDiagnosticProvider {
     return {
       updates: this._diagnosticUpdates,
@@ -247,8 +218,7 @@ export class BuckBuildSystem {
   }
 
   /**
-     * Processes side effects (console output and diagnostics).
-     * Returns only the progress events.
+     * Processes side diagnostics, converts relevant events to TaskEvents.
      */
   _consumeEventStream(events: Observable<BuckEvent>): Observable<TaskEvent> {
     // TODO: the Diagnostics API does not allow emitting one message at a time.
@@ -257,56 +227,58 @@ export class BuckBuildSystem {
     // Save error messages until the end so diagnostics have a chance to finish.
     // Real exceptions will not be handled by this, of course.
     let errorMessage = null;
-    return compact(
-      events
-        .do({
-          next: event => {
-            // Side effects: emit console output and diagnostics
-            if (event.type === 'log') {
-              this._logOutput(event.message, event.level);
-            } else if (event.type === 'build-output') {
-              const {target, path, successType} = event.output;
-              this._logOutput(`Target: ${target}`, 'log');
-              this._logOutput(`Output: ${path}`, 'log');
-              this._logOutput(`Success type: ${successType}`, 'log');
-            } else if (event.type === 'diagnostics') {
-              const {diagnostics} = event;
-              // Update only the files that changed in this message.
-              // Since emitting messages for a file invalidates it, we have to
-              // be careful to emit all previous messages for it as well.
-              const changedFiles = new Map();
-              diagnostics.forEach(diagnostic => {
-                let messages = fileDiagnostics.get(diagnostic.filePath);
-                if (messages == null) {
-                  messages = [];
-                  fileDiagnostics.set(diagnostic.filePath, messages);
-                }
-                messages.push(diagnostic);
-                changedFiles.set(diagnostic.filePath, messages);
-              });
-              this._diagnosticUpdates.next({filePathToMessages: changedFiles});
-            } else if (event.type === 'error') {
-              errorMessage = event.message;
+    return Observable.concat(
+      events.flatMap(event => {
+        if (event.type === 'progress') {
+          return Observable.of(event);
+        } else if (event.type === 'log') {
+          return createMessage(event.message, event.level);
+        } else if (event.type === 'build-output') {
+          const {target, path, successType} = event.output;
+          return Observable.concat(
+            createMessage(`Target: ${target}`, 'log'),
+            createMessage(`Output: ${path}`, 'log'),
+            createMessage(`Success type: ${successType}`, 'log'),
+            Observable.of({type: 'result', result: event.output}),
+          );
+        } else if (event.type === 'diagnostics') {
+          // Warning: side effects below
+          const {diagnostics} = event;
+          // Update only the files that changed in this message.
+          // Since emitting messages for a file invalidates it, we have to
+          // be careful to emit all previous messages for it as well.
+          const changedFiles = new Map();
+          diagnostics.forEach(diagnostic => {
+            let messages = fileDiagnostics.get(diagnostic.filePath);
+            if (messages == null) {
+              messages = [];
+              fileDiagnostics.set(diagnostic.filePath, messages);
             }
-          },
-          complete: () => {
-            if (errorMessage != null) {
-              throw Error(errorMessage);
-            }
-          },
-        })
-        // Let progress events flow through to the task runner.
-        .map(event => {
-          return event.type === 'progress' ? event : null;
-        })
-        .finally(() => {
-          if (fileDiagnostics.size > 0) {
-            this._logOutput(
-              'Compilation errors detected: open the Diagnostics pane to jump to them.',
-              'info',
-            );
-          }
-        }),
+            messages.push(diagnostic);
+            changedFiles.set(diagnostic.filePath, messages);
+          });
+          this._diagnosticUpdates.next({filePathToMessages: changedFiles});
+        } else if (event.type === 'error') {
+          errorMessage = event.message;
+        }
+        return Observable.empty();
+      }),
+      Observable.defer(() => {
+        if (fileDiagnostics.size > 0) {
+          return createMessage(
+            'Compilation errors detected: open the Diagnostics pane to jump to them.',
+            'info',
+          );
+        } else {
+          return Observable.empty();
+        }
+      }),
+      Observable.defer(() => {
+        if (errorMessage != null) {
+          throw Error(errorMessage);
+        }
+        return Observable.empty();
+      }),
     );
   }
 }

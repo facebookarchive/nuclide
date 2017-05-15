@@ -66,6 +66,12 @@ export type BuildArtifactTask = Task & {
   getPathToBuildArtifact(): NuclideUri,
 };
 
+export type BuckBuildOutput = {
+  target: string,
+  successType: string,
+  path: string,
+};
+
 export type BuckBuilder = {
   build(opts: BuckBuilderBuildOptions): BuildArtifactTask,
 };
@@ -88,6 +94,7 @@ export type Platform = {
     builder: BuckBuildSystem,
     type: TaskType,
     buildTarget: ResolvedBuildTarget,
+    taskSettings: TaskSettings,
     device: ?Device,
   ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,

@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Level, Message} from '../../nuclide-console/lib/types';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Task} from '../../commons-node/tasks';
@@ -24,8 +23,8 @@ import {PlatformService} from './PlatformService';
 
 import invariant from 'assert';
 import {applyMiddleware, createStore} from 'redux';
-import {Observable, Subject} from 'rxjs';
-import {taskFromObservable} from '../../commons-node/tasks';
+import {Observable} from 'rxjs';
+import {createMessage, taskFromObservable} from '../../commons-node/tasks';
 import {BuckBuildSystem} from './BuckBuildSystem';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -86,7 +85,6 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
 export class BuckTaskRunner {
   _store: Store;
   _disposables: UniversalDisposable;
-  _outputMessages: Subject<Message>;
   _extraUi: ?ReactClass<any>;
   id: string;
   name: string;
@@ -97,12 +95,7 @@ export class BuckTaskRunner {
   constructor(initialState: ?SerializedState) {
     this.id = 'buck';
     this.name = 'Buck';
-    this._outputMessages = new Subject();
-    this._buildSystem = new BuckBuildSystem(
-      this._outputMessages,
-      () => this._getStore().getState().buckRoot,
-      () => this._getStore().getState().taskSettings,
-    );
+    this._buildSystem = new BuckBuildSystem();
     this._serializedState = initialState;
     this._disposables = new UniversalDisposable();
     this._platformService = new PlatformService();
@@ -255,20 +248,19 @@ export class BuckTaskRunner {
       buildRuleType,
       buildTarget,
       selectedDeploymentTarget,
+      taskSettings,
     } = state;
     invariant(buckRoot);
     invariant(buildRuleType);
 
     const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
-    this._logOutput(
-      `Resolving ${taskType} command for "${buildTarget}"${deploymentString}`,
-      'log',
-    );
 
-    const capitalizedTaskType =
-      taskType.slice(0, 1).toUpperCase() + taskType.slice(1);
     const task = taskFromObservable(
       Observable.concat(
+        createMessage(
+          `Resolving ${taskType} command for "${buildTarget}"${deploymentString}`,
+          'log',
+        ),
         Observable.defer(() => {
           if (selectedDeploymentTarget) {
             const {platform, device} = selectedDeploymentTarget;
@@ -276,42 +268,32 @@ export class BuckTaskRunner {
               this._buildSystem,
               taskType,
               buildRuleType.buildTarget,
+              taskSettings,
               device,
             );
           } else {
             const subcommand = taskType === 'debug' ? 'build' : taskType;
             return this._buildSystem.runSubcommand(
+              buckRoot,
               subcommand,
               buildRuleType.buildTarget,
-              {buildArguments: []},
+              taskSettings,
               taskType === 'debug',
               null,
             );
           }
-        }),
-        Observable.defer(() => {
-          this._logOutput(`${capitalizedTaskType} succeeded.`, 'success');
-          return Observable.empty();
         }),
       ),
     );
 
     return {
       ...task,
-      cancel: () => {
-        this._logOutput(`${capitalizedTaskType} stopped.`, 'warning');
-        task.cancel();
-      },
       getTrackingData: () => ({
         buckRoot,
         buildTarget,
         taskSettings: state.taskSettings,
       }),
     };
-  }
-
-  _logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
   }
 
   dispose(): void {

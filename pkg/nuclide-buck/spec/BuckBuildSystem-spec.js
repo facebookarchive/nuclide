@@ -9,27 +9,19 @@
  * @format
  */
 
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {BuckBuildSystem} from '../lib/BuckBuildSystem';
+import invariant from 'assert';
 
 describe('BuckBuildSystem', () => {
   let buckBuildSystem;
   beforeEach(() => {
-    buckBuildSystem = new BuckBuildSystem(
-      new Subject(),
-      () => null,
-      () => ({
-        buildArguments: [],
-      }),
-    );
+    buckBuildSystem = new BuckBuildSystem();
   });
 
   describe('_consumeEventStream', () => {
-    it('emits log messages', () => {
+    it('doesnt swallow log messages', () => {
       waitsForPromise(async () => {
-        const spy = jasmine.createSpy('output');
-        const subscription = buckBuildSystem.getOutputMessages().subscribe(spy);
-
         const result = await buckBuildSystem
           ._consumeEventStream(
             Observable.from([
@@ -41,15 +33,11 @@ describe('BuckBuildSystem', () => {
           .toArray()
           .toPromise();
 
-        // Progress events should filter through.
-        expect(result).toEqual([{type: 'progress', progress: 1}]);
-
-        expect(spy.calls.map(call => call.args[0])).toEqual([
-          {text: 'test', level: 'error'},
-          {text: 'test2', level: 'warning'},
+        expect(result).toEqual([
+          {type: 'message', message: {text: 'test', level: 'error'}},
+          {type: 'message', message: {text: 'test2', level: 'warning'}},
+          {type: 'progress', progress: 1},
         ]);
-
-        subscription.unsubscribe();
       });
     });
 
@@ -59,11 +47,6 @@ describe('BuckBuildSystem', () => {
         const subscription = buckBuildSystem
           .getDiagnosticProvider()
           .updates.subscribe(spy);
-
-        const outputSpy = jasmine.createSpy('output');
-        const outputSubscription = buckBuildSystem
-          .getOutputMessages()
-          .subscribe(outputSpy);
 
         const diagnostic = {
           scope: 'file',
@@ -92,7 +75,14 @@ describe('BuckBuildSystem', () => {
           .toArray()
           .toPromise();
 
-        expect(result).toEqual([]);
+        // Check for the message indicating to look in diagnostics.
+        expect(result.length).toEqual(1);
+        const msg = result[0];
+        expect(msg.type).toEqual('message');
+        invariant(msg.type === 'message');
+        expect(msg.message.level).toEqual('info');
+        expect(msg.message.text).toContain('Diagnostics');
+
         expect(spy.calls.map(call => call.args[0])).toEqual([
           {
             filePathToMessages: new Map([['a', [diagnostic]]]),
@@ -111,14 +101,7 @@ describe('BuckBuildSystem', () => {
           },
         ]);
 
-        // Check for the message indicating to look in diagnostics.
-        expect(outputSpy).toHaveBeenCalled();
-        const args: any = outputSpy.calls[0].args[0];
-        expect(args.text).toContain('Diagnostics');
-        expect(args.level).toBe('info');
-
         subscription.unsubscribe();
-        outputSubscription.unsubscribe();
       });
     });
   });

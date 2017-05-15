@@ -10,12 +10,12 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
-import type {Level} from '../../nuclide-console/lib/types';
+import type {Level} from '../../commons-node/tasks';
 import type {
   FileDiagnosticMessage,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {BuckSubcommand} from './types';
+import type {BuckBuildOutput, BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
@@ -26,12 +26,6 @@ import {exitEventToMessage} from '../../commons-node/process';
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';
 const BUILD_OUTPUT_REGEX = /^OK {3}(.*?) (.*?) (.*?)$/;
-
-export type BuckBuildOutput = {
-  target: string,
-  successType: string,
-  path: string,
-};
 
 export type BuckEvent =
   | {
