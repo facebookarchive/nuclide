@@ -161,9 +161,9 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
         ).map(message => ({type: 'message', message}))
       : Observable.never();
     const progresses = typeof task.onProgress === 'function'
-      ? observableFromSubscribeFunction(task.onProgress.bind(task))
-          /* $FlowFixMe */
-          .map(progress => ({type: 'progress', progress}))
+      ? observableFromSubscribeFunction(
+          task.onProgress.bind(task),
+        ).map(progress => ({type: 'progress', progress}))
       : Observable.never();
     const results = typeof task.onResult === 'function'
       ? observableFromSubscribeFunction(

@@ -21,6 +21,7 @@ flow-libs/
 [options]
 emoji=true
 experimental.const_params=true
+experimental.strict_call_arity=true
 experimental.strict_type_args=true
 module.use_strict=true
 module.system.node.resolve_dirname=node_modules
