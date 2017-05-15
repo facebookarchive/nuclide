@@ -62,21 +62,17 @@ export type SerializedState = {
   selectedDeviceName: ?string,
 };
 
-export type BuildArtifactTask = Task & {
-  getPathToBuildArtifact(): NuclideUri,
-};
-
 export type BuckBuildOutput = {
   target: string,
   successType: string,
   path: string,
 };
 
-export type BuckBuilder = {
-  build(opts: BuckBuilderBuildOptions): BuildArtifactTask,
+export type BuckBuildTask = Task & {
+  getBuildOutput(): BuckBuildOutput,
 };
 
-export type BuckBuilderBuildOptions = {
+export type BuckBuildOptions = {
   root: NuclideUri,
   target: ResolvedBuildTarget,
   args?: Array<string>,

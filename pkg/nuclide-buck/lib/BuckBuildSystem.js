@@ -16,9 +16,10 @@ import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type {
-  BuckBuilderBuildOptions,
+  BuckBuildTask,
+  BuckBuildOptions,
+  BuckBuildOutput,
   BuckSubcommand,
-  BuildArtifactTask,
   TaskSettings,
 } from './types';
 import type {
@@ -46,7 +47,6 @@ import {
   getDeployInstallEvents,
   getDeployTestEvents,
 } from './DeployEventStream';
-import invariant from 'assert';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -54,49 +54,31 @@ export class BuckBuildSystem {
   _diagnosticUpdates: Subject<DiagnosticProviderUpdate> = new Subject();
   _diagnosticInvalidations: Subject<InvalidationMessage> = new Subject();
 
-  buildArtifact(opts: BuckBuilderBuildOptions): BuildArtifactTask {
+  build(opts: BuckBuildOptions): BuckBuildTask {
     const {root, target, args} = opts;
-    let pathToArtifact = null;
-    const buckService = getBuckServiceByNuclideUri(root);
-    const targetString = getCommandStringForResolvedBuildTarget(target);
+    let buildOutput: ?BuckBuildOutput = null;
 
     const task = taskFromObservable(
-      Observable.concat(
-        this.runSubcommand(
-          root,
-          'build',
-          target,
-          {buildArguments: args},
-          false,
-          null,
-        ),
-        // Don't complete until we've determined the artifact path.
-        Observable.defer(() => buckService.showOutput(root, targetString, args))
-          .do(output => {
-            let outputPath;
-            if (
-              output == null ||
-              output[0] == null ||
-              output[0]['buck.outputPath'] == null ||
-              (outputPath = output[0]['buck.outputPath'].trim()) === ''
-            ) {
-              throw new Error(
-                "Couldn't determine binary path from Buck output!",
-              );
-            }
-            invariant(outputPath != null);
-            pathToArtifact = nuclideUri.join(root, outputPath);
-          })
-          .ignoreElements(),
-      ),
+      this.runSubcommand(
+        root,
+        'build',
+        target,
+        {buildArguments: args},
+        false,
+        null,
+      ).do(event => {
+        if (event.type === 'result') {
+          buildOutput = ((event.result: any): BuckBuildOutput);
+        }
+      }),
     );
     return {
       ...task,
-      getPathToBuildArtifact(): string {
-        if (pathToArtifact == null) {
-          throw new Error('No build artifact!');
+      getBuildOutput(): BuckBuildOutput {
+        if (buildOutput == null) {
+          throw new Error('No build output!');
         }
-        return pathToArtifact;
+        return buildOutput;
       },
     };
   }
@@ -204,6 +186,7 @@ export class BuckBuildSystem {
                 ? getDeployTestEvents(processMessages, buckRoot)
                 : Observable.empty(),
             ),
+            buckRoot,
           ),
         );
       })
@@ -220,7 +203,10 @@ export class BuckBuildSystem {
   /**
      * Processes side diagnostics, converts relevant events to TaskEvents.
      */
-  _consumeEventStream(events: Observable<BuckEvent>): Observable<TaskEvent> {
+  _consumeEventStream(
+    events: Observable<BuckEvent>,
+    buckRoot: NuclideUri,
+  ): Observable<TaskEvent> {
     // TODO: the Diagnostics API does not allow emitting one message at a time.
     // We have to accumulate messages per-file and emit them all.
     const fileDiagnostics = new Map();
@@ -239,7 +225,10 @@ export class BuckBuildSystem {
             createMessage(`Target: ${target}`, 'log'),
             createMessage(`Output: ${path}`, 'log'),
             createMessage(`Success type: ${successType}`, 'log'),
-            Observable.of({type: 'result', result: event.output}),
+            Observable.of({
+              type: 'result',
+              result: {...event.output, path: nuclideUri.join(buckRoot, path)},
+            }),
           );
         } else if (event.type === 'diagnostics') {
           // Warning: side effects below

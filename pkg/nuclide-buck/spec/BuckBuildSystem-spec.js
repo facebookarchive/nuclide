@@ -29,6 +29,7 @@ describe('BuckBuildSystem', () => {
               {type: 'log', message: 'test2', level: 'warning'},
               {type: 'progress', progress: 1},
             ]),
+            '',
           )
           .toArray()
           .toPromise();
@@ -71,6 +72,7 @@ describe('BuckBuildSystem', () => {
                 diagnostics: [{...diagnostic, filePath: 'b'}],
               },
             ]),
+            '',
           )
           .toArray()
           .toPromise();

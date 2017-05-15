@@ -10,9 +10,9 @@
  */
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {BuckBuilderBuildOptions} from '../../nuclide-buck/lib/types';
 import type {HyperclickProvider} from '../../hyperclick/lib/types';
-import type {BuckBuilder, SerializedState} from './types';
+import type {SerializedState} from './types';
+import type {BuckBuildSystem} from './BuckBuildSystem';
 
 import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
@@ -95,11 +95,8 @@ export function getHyperclickProvider(): HyperclickProvider {
   };
 }
 
-export function provideBuckBuilder(): BuckBuilder {
-  return {
-    build: (options: BuckBuilderBuildOptions) =>
-      getTaskRunner().getBuildSystem().buildArtifact(options),
-  };
+export function provideBuckBuilder(): BuckBuildSystem {
+  return getTaskRunner().getBuildSystem();
 }
 
 export function providePlatformService(): PlatformService {
