@@ -11,8 +11,7 @@
 
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {Level, Message} from '../../nuclide-console/lib/types';
-import type {Observable, Subject} from 'rxjs';
+import type {Observable} from 'rxjs';
 
 import {Disposable} from 'atom';
 
@@ -24,18 +23,11 @@ export const TASKS: Array<TaskMetadata> = [];
  */
 export class ArcToolbarModel {
   _projectPath: ?string;
-  _outputMessages: Subject<Message>;
 
-  constructor(outputMessages: Subject<Message>) {
-    this._outputMessages = outputMessages;
-  }
+  constructor() {}
 
   setProjectPath(projectPath: ?string) {
     this._projectPath = projectPath;
-  }
-
-  logOutput(text: string, level: Level) {
-    this._outputMessages.next({text, level});
   }
 
   getActiveProjectPath(): ?string {

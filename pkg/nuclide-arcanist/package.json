@@ -27,11 +27,6 @@
         "0.0.0": "consumeTaskRunnerServiceApi"
       }
     },
-    "nuclide-output": {
-      "versions": {
-        "0.0.0": "consumeOutputService"
-      }
-    },
     "nuclide-deep-link.provider": {
       "versions": {
         "0.0.0": "consumeDeepLinkService"

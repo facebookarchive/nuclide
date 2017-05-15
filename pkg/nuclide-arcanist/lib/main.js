@@ -11,7 +11,6 @@
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {DeepLinkService} from '../../nuclide-deep-link/lib/types';
-import type {OutputService} from '../../nuclide-console/lib/types';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 
@@ -45,15 +44,6 @@ class Activation {
     this._disposables.add(api.register(this._getBuildSystem()));
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'Arc Build',
-        messages: this._getBuildSystem().getOutputMessages(),
-      }),
-    );
-  }
-
   /**
    * Files can be opened relative to Arcanist directories via
    *   atom://nuclide/open-arc?project=<project_id>&path=<relative_path>
@@ -84,7 +74,6 @@ class Activation {
   _getBuildSystem(): ArcBuildSystem {
     if (this._buildSystem == null) {
       const buildSystem = new ArcBuildSystem();
-      this._disposables.add(buildSystem);
       this._buildSystem = buildSystem;
     }
     return this._buildSystem;
