@@ -1080,7 +1080,7 @@ export class HgService {
    * Undoes the effect of a local commit, specifically the working directory parent.
    */
   uncommit(): Promise<void> {
-    return this._runSimpleInWorkingDirectory('uncommit', []);
+    return this._runSimpleInWorkingDirectory('strip', ['.', '--keep']);
   }
 
   /**
