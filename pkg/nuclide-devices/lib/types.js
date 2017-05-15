@@ -52,9 +52,8 @@ export interface DeviceInfoProvider {
 }
 
 export interface DeviceProcessesProvider {
-  fetch(host: NuclideUri, device: string): Promise<Array<Process>>,
+  observe(host: NuclideUri, device: string): Observable<Process[]>,
   getType(): string,
-  isSupported(host: NuclideUri): Promise<boolean>,
   killRunningPackage(
     host: NuclideUri,
     device: string,
@@ -71,7 +70,7 @@ export type AppState = {
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
-  killProcess: ?KillProcessCallback,
+  processKiller: ?ProcessKiller,
   deviceTasks: DeviceTask[],
 };
 
@@ -88,7 +87,7 @@ export type Process = {
   memUsage: ?number,
 };
 
-export type KillProcessCallback = (packageName: string) => Promise<void>;
+export type ProcessKiller = (packageName: string) => Promise<void>;
 //
 // Action types
 //
@@ -146,7 +145,13 @@ export type SetProcessesAction = {
   type: 'SET_PROCESSES',
   payload: {
     processes: Process[],
-    killProcess: ?KillProcessCallback,
+  },
+};
+
+export type SetProcessKillerAction = {
+  type: 'SET_PROCESS_KILLER',
+  payload: {
+    processKiller: ?ProcessKiller,
   },
 };
 
@@ -165,5 +170,6 @@ export type Action =
   | SetDeviceTypesAction
   | SetInfoTablesAction
   | SetProcessesAction
+  | SetProcessKillerAction
   | SetDeviceTasksAction
   | SetDeviceAction;

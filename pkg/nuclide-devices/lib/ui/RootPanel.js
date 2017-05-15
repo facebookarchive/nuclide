@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, DeviceTask, Process, KillProcessCallback} from '../types';
+import type {Device, DeviceTask, Process, ProcessKiller} from '../types';
 
 import React from 'react';
 import {
@@ -27,7 +27,8 @@ export type Props = {
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
   startFetchingDevices: () => Subscription,
-  killProcess: ?KillProcessCallback,
+  startFetchingProcesses: () => Subscription,
+  killProcess: ?ProcessKiller,
   hosts: NuclideUri[],
   devices: Device[],
   host: NuclideUri,
@@ -76,6 +77,7 @@ export class RootPanel extends React.Component {
             killProcess={this.props.killProcess}
             deviceTasks={this.props.deviceTasks}
             goToRootPanel={this._goToRootPanel}
+            startFetchingProcesses={this.props.startFetchingProcesses}
           />
         </div>
       );

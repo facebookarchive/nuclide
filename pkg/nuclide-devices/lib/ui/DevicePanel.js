@@ -9,9 +9,10 @@
  * @format
  */
 
-import type {Process, KillProcessCallback} from '../types';
+import type {Process, ProcessKiller} from '../types';
 import type {DeviceTask} from '../types';
 
+import {Subscription} from 'rxjs';
 import {Icon} from '../../../nuclide-ui/Icon';
 import React from 'react';
 import {InfoTable} from './InfoTable';
@@ -19,10 +20,11 @@ import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
 
 type Props = {
+  startFetchingProcesses: () => Subscription,
   goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
-  killProcess: ?KillProcessCallback,
+  killProcess: ?ProcessKiller,
   deviceTasks: DeviceTask[],
 };
 
@@ -45,6 +47,7 @@ export class DevicePanel extends React.Component {
         <ProcessTable
           processes={this.props.processes}
           killProcess={this.props.killProcess}
+          startFetchingProcesses={this.props.startFetchingProcesses}
         />
       </div>
     );

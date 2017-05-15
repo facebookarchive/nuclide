@@ -25,8 +25,7 @@ import type {
   Store,
   AppState,
   DeviceTask,
-  Process,
-  KillProcessCallback,
+  ProcessKiller,
 } from '../types';
 
 export function setDeviceEpic(
@@ -40,10 +39,8 @@ export function setDeviceEpic(
       Observable.fromPromise(getInfoTables(state)).switchMap(infoTables =>
         Observable.of(Actions.setInfoTables(infoTables)),
       ),
-      Observable.fromPromise(
-        getProcesses(state),
-      ).switchMap(([processTable, killProcess]) =>
-        Observable.of(Actions.setProcesses(processTable, killProcess)),
+      Observable.fromPromise(getProcessKiller(state)).switchMap(processKiller =>
+        Observable.of(Actions.setProcesKiller(processKiller)),
       ),
       Observable.fromPromise(getDeviceTasks(state)).switchMap(deviceTasks =>
         Observable.of(Actions.setDeviceTasks(deviceTasks)),
@@ -80,23 +77,18 @@ async function getInfoTables(
   return new Map(arrayCompact(infoTables));
 }
 
-async function getProcesses(
-  state: AppState,
-): Promise<[Array<Process>, ?KillProcessCallback]> {
+async function getProcessKiller(state: AppState): Promise<?ProcessKiller> {
   const device = state.device;
   if (device == null) {
-    return [[], null];
+    return null;
   }
   const providers = Array.from(getDeviceProcessesProviders()).filter(
     provider => provider.getType() === state.deviceType,
   );
   if (providers[0] != null) {
-    return [
-      await providers[0].fetch(state.host, device.name),
-      p => providers[0].killRunningPackage(state.host, device.name, p),
-    ];
+    return p => providers[0].killRunningPackage(state.host, device.name, p);
   }
-  return [[], null];
+  return null;
 }
 
 async function getDeviceTasks(state: AppState): Promise<DeviceTask[]> {

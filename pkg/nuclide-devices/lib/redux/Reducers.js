@@ -69,11 +69,17 @@ export function app(state: AppState, action: Action): AppState {
       };
 
     case Actions.SET_PROCESSES:
-      const {processes, killProcess} = action.payload;
+      const {processes} = action.payload;
       return {
         ...state,
         processes,
-        killProcess,
+      };
+
+    case Actions.SET_PROCESS_KILLER:
+      const {processKiller} = action.payload;
+      return {
+        ...state,
+        processKiller,
       };
 
     case Actions.SET_HOSTS:

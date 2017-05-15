@@ -9,16 +9,18 @@
  * @format
  */
 
-import type {Process, KillProcessCallback} from '../types';
+import type {Process, ProcessKiller} from '../types';
 import React from 'react';
 
+import {Subscription} from 'rxjs';
 import {Table} from '../../../nuclide-ui/Table';
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
 import {Button} from '../../../nuclide-ui/Button';
 import addTooltip from '../../../nuclide-ui/add-tooltip';
 
 type Props = {
-  killProcess: ?KillProcessCallback,
+  startFetchingProcesses: () => Subscription,
+  killProcess: ?ProcessKiller,
   processes: Process[],
 };
 
@@ -29,6 +31,7 @@ type State = {
 export class ProcessTable extends React.Component {
   props: Props;
   state: State;
+  _processesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
@@ -39,6 +42,16 @@ export class ProcessTable extends React.Component {
     this.state = {
       filterText: '',
     };
+  }
+
+  componentDidMount(): void {
+    this._processesSubscription = this.props.startFetchingProcesses();
+  }
+
+  componentWillUnmount(): void {
+    if (this._processesSubscription != null) {
+      this._processesSubscription.unsubscribe();
+    }
   }
 
   _formatCpuUsage(cpu: ?number): string {

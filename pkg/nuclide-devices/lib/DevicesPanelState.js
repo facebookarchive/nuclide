@@ -9,22 +9,24 @@
  * @format
  */
 
+import type {Props} from './ui/RootPanel';
+
+import type {Store, AppState, Device, Process} from './types';
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
-
-import type {Props} from './ui/RootPanel';
-import type {Store, AppState, Device} from './types';
-import {getDeviceListProviders} from './providers';
+import {getDeviceListProviders, getDeviceProcessesProviders} from './providers';
+import shallowEqual from 'shallowequal';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
 export class DevicesPanelState {
   _store: Store;
   _deviceObs: Observable<Device[]>;
+  _processesObs: Observable<Process[]>;
 
   constructor(store: Store) {
     this._store = store;
@@ -47,6 +49,27 @@ export class DevicesPanelState {
           }
         }
       });
+    // $FlowFixMe: Teach flow about Symbol.observable
+    this._processesObs = Observable.from(this._store)
+      .distinctUntilChanged(
+        (stateA, stateB) =>
+          stateA.deviceType === stateB.deviceType &&
+          stateA.host === stateB.host &&
+          shallowEqual(stateA.device, stateB.device),
+      )
+      .switchMap(state => {
+        if (state.device === null) {
+          return Observable.empty();
+        }
+        const providers = Array.from(getDeviceProcessesProviders()).filter(
+          provider => provider.getType() === state.deviceType,
+        );
+        if (providers[0] != null) {
+          return providers[0].observe(state.host, state.device.name);
+        }
+        return Observable.empty();
+      })
+      .do(processes => this._store.dispatch(Actions.setProcesses(processes)));
   }
 
   getTitle() {
@@ -73,6 +96,9 @@ export class DevicesPanelState {
     const startFetchingDevices = () => {
       return this._deviceObs.subscribe();
     };
+    const startFetchingProcesses = () => {
+      return this._processesObs.subscribe();
+    };
     const setHost = host => {
       this._store.dispatch(Actions.setHost(host));
     };
@@ -93,10 +119,11 @@ export class DevicesPanelState {
       processes: state.processes,
       deviceTasks: state.deviceTasks,
       startFetchingDevices,
+      startFetchingProcesses,
       setHost,
       setDeviceType,
       setDevice,
-      killProcess: state.killProcess,
+      killProcess: state.processKiller,
     };
   }
 
