@@ -199,7 +199,6 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     const webSocket = this._chromeWebSocket;
     if (webSocket) {
       message = this._translateMessageIfNeeded(processedMessage);
-      this.receiveNuclideMessage(message);
       webSocket.send(message);
     } else {
       this.getLogger().logError("Why isn't chrome websocket available?");
