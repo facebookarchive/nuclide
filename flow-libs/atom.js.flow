@@ -1167,17 +1167,21 @@ declare class atom$Workspace {
   destroyActivePaneItem(): void,
 }
 
-declare class atom$Dock {
-  // This is a woefully incomplete list, items can be added as needed from
-  // https://github.com/atom/atom/blob/master/src/dock.js
+declare class atom$AbastractPaneContainer {
   isVisible(): boolean,
   show(): void,
   hide(): void,
-  toggle(): void;
+  getActivePane(): atom$Pane,
+  getPanes(): Array<atom$Pane>,
 }
 
-declare class atom$WorkspaceCenter {
-  getActivePane(): atom$Pane;
+declare class atom$Dock extends atom$AbastractPaneContainer {
+  // This is a woefully incomplete list, items can be added as needed from
+  // https://github.com/atom/atom/blob/master/src/dock.js
+  toggle(): void,
+}
+
+declare class atom$WorkspaceCenter extends atom$AbastractPaneContainer {
   observeActivePaneItem(callback: atom$PaneItem => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
   // This should be removed soon anyway, it's currently deprecated.
