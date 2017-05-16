@@ -151,6 +151,7 @@
     "language-ini",
     "language-lua",
     "language-ocaml",
+    "language-rust",
     "language-swift",
     "language-thrift",
     "MagicPython",
