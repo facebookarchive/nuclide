@@ -45,6 +45,7 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   HostServices,
+  ShowNotificationLevel,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
   NuclideEvaluationExpression,
@@ -58,6 +59,9 @@ import type {
   Range,
   Location,
   PublishDiagnosticsParams,
+  LogMessageParams,
+  ShowMessageParams,
+  ShowMessageRequestParams,
   DidOpenTextDocumentParams,
   DidCloseTextDocumentParams,
   DidChangeTextDocumentParams,
@@ -85,7 +89,12 @@ import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {LspConnection} from './LspConnection';
-import {TextDocumentSyncKind, DiagnosticSeverity, SymbolKind} from './protocol';
+import {
+  TextDocumentSyncKind,
+  DiagnosticSeverity,
+  SymbolKind,
+  MessageType as LspMessageType,
+} from './protocol';
 import {
   className,
   method,
@@ -102,6 +111,7 @@ export class LspLanguageService {
   _host: HostServices;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
+  _consoleSource: string;
   _command: string;
   _args: Array<string>;
   _lspConnection: LspConnection;
@@ -114,6 +124,7 @@ export class LspLanguageService {
     logger: CategoryLogger,
     fileCache: FileCache,
     host: HostServices,
+    consoleSource: string,
     command: string,
     args: Array<string>,
     projectRoot: string,
@@ -124,6 +135,7 @@ export class LspLanguageService {
     this._host = host;
     this._lspFileVersionNotifier = new FileVersionNotifier();
     this._projectRoot = projectRoot;
+    this._consoleSource = consoleSource;
     this._command = command;
     this._args = args;
     this._fileExtensions = fileExtensions;
@@ -192,6 +204,67 @@ export class LspLanguageService {
     }
   }
 
+  _handleLogMessageNotification(params: LogMessageParams): void {
+    this._host.consoleNotification(
+      this._consoleSource,
+      messageTypeToAtomLevel(params.type),
+      params.message,
+    );
+  }
+
+  _handleShowMessageNotification(params: ShowMessageParams): void {
+    this._host
+      .dialogNotification(messageTypeToAtomLevel(params.type), params.message)
+      .refCount()
+      .toPromise();
+  }
+
+  async _handleShowMessageRequest(
+    params: ShowMessageRequestParams,
+    cancellationToken: Object,
+  ): Promise<any> {
+    // NOT YET IMPLEMENTED: the cancellationToken will be fired if the LSP
+    // server sends a cancel notification for this ShowMessageRequest. We should
+    // respect it.
+    const actions = params.actions || [];
+    const titles = actions.map(action => action.title);
+    // LSP gives us just a list of titles e.g. ['Open', 'Close']
+    // But Nuclide prefers to display the dismiss icon separately as an X,
+    // not as a button. We'll use heuristics to bridge the two...
+    // * If amongst the LSP titles there is exactly one named Cancel/Close/
+    //   Ok, then use it for the X, and show the other titles as buttons.
+    // * If there are two more more, pick one of them (prefer Cancel over
+    //   Close over Ok) as the X, but show all of them as buttons.
+    // * If there were none, then synthesize a 'Close' action for the X,
+    //   and display all the LSP titles as buttons.
+    let closeTitle;
+    const heuristic = ['Cancel', 'cancel', 'Close', 'close', 'OK', 'Ok', 'ok'];
+    const candidates = titles.filter(title => heuristic.includes(title));
+    if (candidates.length === 0) {
+      closeTitle = 'Close';
+      actions.push({title: 'Close'});
+    } else if (candidates.length === 1) {
+      closeTitle = candidates[0];
+      titles.splice(titles.indexOf(closeTitle), 1);
+    } else {
+      closeTitle = candidates[0];
+    }
+
+    const response = await this._host
+      .dialogRequest(
+        messageTypeToAtomLevel(params.type),
+        params.message,
+        titles,
+        closeTitle,
+      )
+      .refCount()
+      .toPromise();
+
+    const chosenAction = actions.find(action => action.title === response);
+    invariant(chosenAction != null);
+    return chosenAction;
+  }
+
   // TODO: Handle the process termination/restart.
   async _ensureProcess(): Promise<void> {
     const childProcess = await this._launch();
@@ -212,6 +285,15 @@ export class LspLanguageService {
     // returned.
     this._lspConnection = new LspConnection(jsonRpcConnection);
 
+    this._lspConnection.onLogMessageNotification(
+      this._handleLogMessageNotification.bind(this),
+    );
+    this._lspConnection.onShowMessageNotification(
+      this._handleShowMessageNotification.bind(this),
+    );
+    this._lspConnection.onShowMessageRequest(
+      this._handleShowMessageRequest.bind(this),
+    );
     jsonRpcConnection.listen();
 
     const params: InitializeParams = {
@@ -966,6 +1048,21 @@ export function convertCompletion(item: CompletionItem): Completion {
     type: item.detail,
     description: item.documentation,
   };
+}
+
+function messageTypeToAtomLevel(type: number): ShowNotificationLevel {
+  switch (type) {
+    case LspMessageType.Info:
+      return 'info';
+    case LspMessageType.Warning:
+      return 'warning';
+    case LspMessageType.Log:
+      return 'log';
+    case LspMessageType.Error:
+      return 'error';
+    default:
+      return 'error';
+  }
 }
 
 // Converts an LSP SymbolInformation.kind number into an Atom icon

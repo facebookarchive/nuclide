@@ -235,4 +235,27 @@ export class LspConnection {
       callback,
     );
   }
+
+  onLogMessageNotification(callback: p.LogMessageParams => void): void {
+    this._jsonRpcConnection.onNotification(
+      {method: 'window/logMessage'},
+      callback,
+    );
+  }
+
+  onShowMessageNotification(callback: p.ShowMessageParams => void): void {
+    this._jsonRpcConnection.onNotification(
+      {method: 'window/showMessage'},
+      callback,
+    );
+  }
+
+  onShowMessageRequest(
+    callback: (p.ShowMessageRequestParams, Object) => Promise<any>,
+  ): void {
+    this._jsonRpcConnection.onRequest(
+      {method: 'window/showMessageRequest'},
+      callback,
+    );
+  }
 }

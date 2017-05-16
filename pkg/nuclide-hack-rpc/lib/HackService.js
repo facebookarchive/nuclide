@@ -115,6 +115,7 @@ export async function initializeLsp(
     logger,
     fileNotifier,
     host,
+    'Hack',
     cmd,
     args,
     projectFileName,

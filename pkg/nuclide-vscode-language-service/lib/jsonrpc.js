@@ -15,6 +15,10 @@ export type JsonRpcConnection = {
   sendNotification(method: string, params?: Object): void,
   listen(): void,
   onNotification(type: {method: string}, callback: (Object) => void): void,
+  onRequest(
+    type: {method: string},
+    callback: (Object, Object) => Promise<any>,
+  ): void,
   dispose(): void,
 
   onError(callback: (Error, Object, number) => void): void,
