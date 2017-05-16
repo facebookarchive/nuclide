@@ -76,10 +76,6 @@ export default class DebuggerActions {
     this.setDebuggerMode(DebuggerMode.STARTING);
     this.setDebugProcessInfo(processInfo);
     try {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-debugger:show',
-      );
       const debuggerInstance = await processInfo.debug();
       await this._store.getBridge().setupNuclideChannel(debuggerInstance);
       this._registerConsole();
@@ -123,6 +119,11 @@ export default class DebuggerActions {
       } else {
         this.updateConfigureSourcePathsCallback(null);
       }
+
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-debugger:show',
+      );
 
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
