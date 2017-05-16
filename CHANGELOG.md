@@ -1,5 +1,20 @@
 # Nuclide Changelog
 
+## v0.226.0
+
+### General
+
+* Fixed URL matcher inadvertently including punctuation (like parentheses) in the Console.
+* Fixed a performance issue with Ctags symbol search (from Quick Open).
+
+### Java
+
+* The Java language service now supports symbol-based identifier highlighting.
+
+### Hack
+
+* Hack type tooltips are now properly syntax highlighted.
+
 ## v0.225.0
 
 **Hotfix from 0.224.0**
