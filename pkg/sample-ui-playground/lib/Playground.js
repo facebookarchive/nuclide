@@ -18,6 +18,7 @@ import {
   ProgressIndicatorExamples,
 } from '../../nuclide-ui/ProgressIndicators.example';
 import {CheckboxExamples} from '../../nuclide-ui/Checkbox.example';
+import {DropdownExamples} from '../../nuclide-ui/Dropdown.example';
 import {TabExamples} from '../../nuclide-ui/Tabs.example';
 import {RadioGroupExamples} from '../../nuclide-ui/RadioGroup.example';
 import {TextInputExamples} from '../../nuclide-ui/TextInputs.example';
@@ -46,6 +47,7 @@ import {
 
 const playgroundComponents = [
   ButtonExamples,
+  DropdownExamples,
   ModalExamples,
   ProgressIndicatorExamples,
   CheckboxExamples,
