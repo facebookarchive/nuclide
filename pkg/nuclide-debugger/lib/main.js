@@ -165,26 +165,27 @@ class DebuggerPaneViewModel {
   _config: DebuggerPaneConfig;
   _isLifetimeView: boolean;
   _debuggerModel: DebuggerModel;
+  _paneDestroyed: (pane: DebuggerPaneConfig) => void;
   _removedFromLayout: boolean;
 
   constructor(
     config: DebuggerPaneConfig,
     debuggerModel: DebuggerModel,
     isLifetimeView: boolean,
+    paneDestroyed: (pane: DebuggerPaneConfig) => void,
   ) {
     this._config = config;
     this._debuggerModel = debuggerModel;
     this._isLifetimeView = isLifetimeView;
+    this._paneDestroyed = paneDestroyed;
     this._removedFromLayout = false;
   }
 
   dispose(): void {}
 
   destroy(): void {
-    if (this._isLifetimeView && !this._removedFromLayout) {
-      // If the view being destroyed is intended to control the lifetime
-      // of the debugging sessoin, destroy the model as well.
-      this._debuggerModel.destroy();
+    if (!this._removedFromLayout) {
+      this._paneDestroyed(this._config);
     }
   }
 
@@ -209,6 +210,9 @@ class DebuggerPaneViewModel {
   }
 
   createView(): React.Element<any> {
+    if (this._config.previousLocation != null) {
+      this._config.previousLocation.userHidden = false;
+    }
     return this._config.createView();
   }
 
@@ -339,12 +343,14 @@ class Activation {
   _debuggerPanes: Array<DebuggerPaneConfig>;
   _debuggerWorkspaceEnabled: boolean;
   _previousDebuggerMode: DebuggerModeType;
+  _paneHiddenWarningShown: boolean;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
     this._launchAttachDialog = null;
     this._debuggerWorkspaceEnabled = this._shouldEnableDebuggerWorkspace();
     this._previousDebuggerMode = DebuggerMode.STOPPED;
+    this._paneHiddenWarningShown = false;
     this._initializeDebuggerPanes(state);
     this._disposables = new UniversalDisposable(
       this._model,
@@ -568,6 +574,66 @@ class Activation {
         },
       }),
     );
+
+    this._disposables.add(
+      atom.contextMenu.add({
+        '.nuclide-debugger-container': [
+          {
+            label: 'Debugger Views',
+            submenu: [
+              {
+                label: 'Reset Layout',
+                command: 'nuclide-debugger:reset-layout',
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    // Add context menus to let the user restore hidden panes.
+    this._debuggerPanes.forEach(pane => {
+      const command = `nuclide-debugger:show-window-${pane
+        .title()
+        .replace(/ /g, '-')}`;
+      this._disposables.add(
+        atom.commands.add('atom-workspace', {
+          [String(command)]: () => this._showHiddenDebuggerPane(api, pane.uri),
+        }),
+      );
+
+      this._disposables.add(
+        atom.contextMenu.add({
+          '.nuclide-debugger-container': [
+            {
+              label: 'Debugger Views',
+              submenu: [
+                {
+                  label: `Show ${pane.title()} window`,
+                  command,
+                  shouldDisplay: event => {
+                    const debuggerPane = this._debuggerPanes.find(
+                      p => p.uri === pane.uri,
+                    );
+                    if (
+                      debuggerPane != null &&
+                      (debuggerPane.isEnabled == null ||
+                        debuggerPane.isEnabled())
+                    ) {
+                      return (
+                        debuggerPane.previousLocation != null &&
+                        debuggerPane.previousLocation.userHidden
+                      );
+                    }
+                    return false;
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      );
+    });
   }
 
   _shouldEnableDebuggerWorkspace(): boolean {
@@ -592,6 +658,15 @@ class Activation {
     this._restoreDebuggerPaneLocations();
   }
 
+  _showHiddenDebuggerPane(api: WorkspaceViewsService, uri: string): void {
+    const pane = this._debuggerPanes.find(p => p.uri === uri);
+    if (pane != null && pane.previousLocation != null) {
+      pane.previousLocation.userHidden = false;
+    }
+
+    this._showDebuggerViews(api);
+  }
+
   _getModelForDebuggerUri(uri: string): any {
     if (!this._debuggerWorkspaceEnabled) {
       if (uri === WORKSPACE_VIEW_URI) {
@@ -604,6 +679,7 @@ class Activation {
           config,
           this._model,
           config.isLifetimeView,
+          pane => this._paneDestroyed(pane),
         );
       }
     }
@@ -822,6 +898,7 @@ class Activation {
             config.debuggerModeFilter != null &&
             !config.debuggerModeFilter(mode)
           ) {
+            item.setRemovedFromLayout(true);
             return true;
           }
         }
@@ -864,6 +941,11 @@ class Activation {
           : b.previousLocation.layoutIndex;
         return aPos - bPos;
       })
+      .filter(
+        debuggerPane =>
+          debuggerPane.previousLocation == null ||
+          !debuggerPane.previousLocation.userHidden,
+      )
       .forEach(debuggerPane => {
         let targetDock = defaultDock;
 
@@ -888,6 +970,7 @@ class Activation {
               debuggerPane,
               this._model,
               debuggerPane.isLifetimeView,
+              pane => this._paneDestroyed(pane),
             ),
             addedItemsByDock,
           );
@@ -895,11 +978,58 @@ class Activation {
       });
   }
 
+  _paneDestroyed(pane: DebuggerPaneConfig): void {
+    if (pane.isLifetimeView) {
+      // Lifetime views are not hidden and remembered like the unimportant views.
+      // This view being destroyed means the debugger is exiting completely, and
+      // this view is never remembered as "hidden by the user" because it's reqiured
+      // for running the debugger.
+      this._hideDebuggerViews(null, false);
+      this._model.destroy();
+      return;
+    }
+
+    // Views can be selectively hidden by the user while the debugger is
+    // running and that preference should be remembered.
+    const config = this._debuggerPanes.find(p => p.uri === pane.uri);
+    invariant(config != null);
+
+    if (config.previousLocation == null) {
+      config.previousLocation = {
+        dock: '',
+        layoutIndex: 0,
+        userHidden: false,
+      };
+    }
+
+    if (config.isEnabled == null || config.isEnabled()) {
+      const mode = this._model.getStore().getDebuggerMode();
+      if (
+        config.debuggerModeFilter == null ||
+        config.debuggerModeFilter(mode)
+      ) {
+        invariant(config.previousLocation != null);
+        config.previousLocation.userHidden = true;
+
+        // Show a notification telling the user how to get the pane back
+        // only once per session.
+        if (!this._paneHiddenWarningShown) {
+          this._paneHiddenWarningShown = true;
+
+          atom.notifications.addInfo(
+            `${config.title()} has been hidden. Right click any Debugger pane to bring it back.`,
+          );
+        }
+      }
+    }
+  }
+
   _hideDebuggerViews(
-    api: WorkspaceViewsService,
+    api: ?WorkspaceViewsService,
     performingLayout: boolean,
   ): void {
     if (!this._debuggerWorkspaceEnabled) {
+      invariant(api != null);
       api.destroyWhere(item => item instanceof DebuggerModel);
       return;
     }
