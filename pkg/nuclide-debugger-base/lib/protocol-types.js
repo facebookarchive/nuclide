@@ -274,7 +274,8 @@ export type CallFrame = {
 // scope.object.description shows on RHS
 export type Scope = {
   /** Scope type. */
-  type: ScopeType,
+  type: string,
+  // type: ScopeType,
 
   /** Object representing the scope. For 'global</code> and <code>with' scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties. */
   object: RemoteObject,
@@ -413,15 +414,15 @@ export type PausedEvent = {
   callFrames: CallFrame[],
 
   /** Pause reason. */
-  reason:
-    | 'XHR'
-    | 'DOM'
-    | 'EventListener'
-    | 'exception'
-    | 'assert'
-    | 'debugCommand'
-    | 'promiseRejection'
-    | 'other',
+  reason: string,
+  // | 'XHR'
+  // | 'DOM'
+  // | 'EventListener'
+  // | 'exception'
+  // | 'assert'
+  // | 'debugCommand'
+  // | 'promiseRejection'
+  // | 'other',
 
   /** The message to be shown to the user when the thread changes. */
   threadSwitchMessage?: ?string,
@@ -595,7 +596,7 @@ export type DebuggerCommand =
     };
 
 export type DebuggerResponse =
-  | {id: number, result: {}}
+  | {id: number, result: {||}}
   | {id: number, error: any}
   | {
       id: number,
@@ -635,6 +636,18 @@ export type DebuggerEvent =
     }
   | {
       method: 'Debugger.resumed',
+    }
+  | {
+      method: 'Debugger.breakpointResolved',
+      params: BreakpointResolvedEvent,
+    }
+  | {
+      method: 'Debugger.threadUpdated',
+      params: ThreadUpdatedEvent,
+    }
+  | {
+      method: 'Debugger.threadsUpdated',
+      params: ThreadsUpdatedEvent,
     }
   | {
       id: number,
