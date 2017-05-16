@@ -11,7 +11,7 @@
 
 /* eslint-disable no-unused-vars */
 
-import type {IconName} from '../../nuclide-ui/types';
+import type {IconName} from '../../nuclide-ui/Icon';
 import type {Observable} from 'rxjs';
 
 export type ControlButtonSpecification = {

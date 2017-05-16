@@ -12,7 +12,7 @@
 import type {Observable} from 'rxjs';
 
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
-import type {IconName} from '../../nuclide-ui/types';
+import type {IconName} from '../../nuclide-ui/Icon';
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';

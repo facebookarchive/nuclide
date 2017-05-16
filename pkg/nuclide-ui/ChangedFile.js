@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-import type {IconName} from '../nuclide-ui/types';
+import type {IconName} from '../nuclide-ui/Icon';
 
 import addTooltip from './add-tooltip';
 import classnames from 'classnames';

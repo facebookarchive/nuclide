@@ -10,7 +10,7 @@
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
-import type {IconName} from '../../nuclide-ui/types';
+import type {IconName} from '../../nuclide-ui/Icon';
 
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';

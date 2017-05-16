@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IconName} from '../../../nuclide-ui/types';
+import type {IconName} from '../../../nuclide-ui/Icon';
 
 import {Icon} from '../../../nuclide-ui/Icon';
 import classnames from 'classnames';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IconName} from '../../nuclide-ui/types';
+import type {IconName} from '../../nuclide-ui/Icon';
 
 import React from 'react';
 import {renderReactRoot} from '../../commons-atom/renderReactRoot';

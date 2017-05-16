@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IconName} from './types';
+import type {IconName} from './Icon';
 
 import classnames from 'classnames';
 import React from 'react';

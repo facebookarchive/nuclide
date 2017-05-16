@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CustomPaneItemOptions} from '../../nuclide-ui/types';
+import type {CustomPaneItemOptions} from '../../nuclide-ui/CustomPaneItem';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 
 import React from 'react';

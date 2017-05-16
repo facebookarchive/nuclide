@@ -9,10 +9,29 @@
  * @format
  */
 
-import type {IconName} from './types';
-
 import classnames from 'classnames';
 import React from 'react';
+
+export type Nuclicon =
+  | 'nuclicon-nuclide'
+  | 'nuclicon-react'
+  | 'nuclicon-buck'
+  | 'nuclicon-hhvm'
+  | 'nuclicon-hack'
+  | 'nuclicon-swift'
+  | 'nuclicon-file-directory'
+  | 'nuclicon-file-directory-starred'
+  | 'nuclicon-debugger'
+  | 'nuclicon-arrow-down'
+  | 'nuclicon-bug'
+  | 'nuclicon-graphql'
+  | 'nuclicon-comment-discussion'
+  | 'nuclicon-comment'
+  | 'nuclicon-jest-outline'
+  | 'nuclicon-flow'
+  | 'nuclicon-react-devtools';
+
+export type IconName = Nuclicon | atom$Octicon;
 
 type Props = {
   /** Icon name, without the `icon-` prefix. E.g. `'arrow-up'` */
