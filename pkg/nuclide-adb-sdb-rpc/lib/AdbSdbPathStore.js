@@ -52,8 +52,7 @@ const pathStore = new Map();
 export function getStore(db: DebugBridgeType): DebugBridgePathStore {
   let cached = pathStore.get(db);
   if (cached == null) {
-    // $FlowFixMe TODO(T18161177) @wallace
-    cached = new DebugBridgePathStore(db);
+    cached = new DebugBridgePathStore();
     cached.registerPath('default', {path: db, priority: -1});
     pathStore.set(db, cached);
   }
