@@ -104,9 +104,11 @@ export class LspLanguageService {
   _fileEventSubscription: rxjs$ISubscription;
   _command: string;
   _args: Array<string>;
-  _process: LspProcess;
+  _lspConnection: LspConnection;
   _fileExtensions: Array<string>;
   _logger: CategoryLogger;
+  _serverCapabilities: ServerCapabilities;
+  _derivedServerCapabilities: DerivedServerCapabilities;
 
   constructor(
     logger: CategoryLogger,
@@ -174,32 +176,60 @@ export class LspLanguageService {
       });
   }
 
-  _launch(): Promise<child_process$ChildProcess> {
-    this._logger.logInfo(`LspLaunch: ${this._command} ${this._args.join(' ')}`);
-    // TODO: This should be cancelable/killable.
-    const processStream = spawn(this._command, this._args).publish();
-    const processPromise = processStream.take(1).toPromise();
-    processStream.connect();
-    return processPromise;
+  async _launch(): Promise<child_process$ChildProcess> {
+    try {
+      this._logger.logInfo(`Launch: ${this._command} ${this._args.join(' ')}`);
+      // TODO: This should be cancelable/killable.
+      const processStream = spawn(this._command, this._args).publish();
+      const processPromise = processStream.take(1).toPromise();
+      processStream.connect();
+      const childProcess = await processPromise;
+      this._logger.logInfo(`Launch: success PID=${childProcess.pid}`);
+      return childProcess;
+    } catch (e) {
+      this._logger.logError(`Launch: error ${e}`);
+      throw e;
+    }
   }
 
   // TODO: Handle the process termination/restart.
   async _ensureProcess(): Promise<void> {
-    try {
-      const proc = await this._launch();
-      this._process = await LspProcess.create(
-        this._host,
-        this._logger,
-        proc,
-        this._projectRoot,
-      );
-      this._subscribeToFileEvents();
-    } catch (e) {
-      this._logger.logError(
-        'LanguageServerProtocolProcess - error spawning child process: ' + e,
-      );
-      throw e;
-    }
+    const childProcess = await this._launch();
+
+    childProcess.stdin.on('error', error => {
+      this._logger.logError(`Lsp.ChildProcess - error writing: ${error}`);
+    });
+
+    const jsonRpcConnection: JsonRpcConnection = rpc.createMessageConnection(
+      new rpc.StreamMessageReader(childProcess.stdout),
+      new rpc.StreamMessageWriter(childProcess.stdin),
+      new JsonRpcLogger(this._logger),
+    );
+    // for IPC: use 'new rpc.IPCMessageReader' / rpc.IPCMessageWriter
+
+    // We wire up these notification+request handlers before calling initialize,
+    // because LSP allows for these messages to be sent before initialize has
+    // returned.
+    this._lspConnection = new LspConnection(jsonRpcConnection);
+
+    jsonRpcConnection.listen();
+
+    const params: InitializeParams = {
+      initializationOptions: {},
+      processId: process.pid,
+      rootPath: this._projectRoot,
+      capabilities: {},
+    };
+    // TODO: flesh out the InitializeParams
+
+    const initializeResult = await this._lspConnection.initialize(params);
+    this._serverCapabilities = initializeResult.capabilities;
+    this._derivedServerCapabilities = new DerivedServerCapabilities(
+      this._serverCapabilities,
+      this._logger,
+    );
+
+    this._subscribeToFileEvents();
   }
 
   _onNotification(message: Object): void {
@@ -245,7 +275,7 @@ export class LspLanguageService {
   }
 
   _fileOpen(fileEvent: FileOpenEvent): void {
-    if (!this._process._derivedCapabilities.serverWantsOpenClose) {
+    if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
     const params: DidOpenTextDocumentParams = {
@@ -256,11 +286,11 @@ export class LspLanguageService {
         text: fileEvent.contents,
       },
     };
-    this._process._connection.didOpenTextDocument(params);
+    this._lspConnection.didOpenTextDocument(params);
   }
 
   _fileClose(fileEvent: FileCloseEvent): void {
-    if (!this._process._derivedCapabilities.serverWantsOpenClose) {
+    if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
     const params: DidCloseTextDocumentParams = {
@@ -268,12 +298,12 @@ export class LspLanguageService {
         uri: fileEvent.fileVersion.filePath,
       },
     };
-    this._process._connection.didCloseTextDocument(params);
+    this._lspConnection.didCloseTextDocument(params);
   }
 
   _fileEdit(fileEvent: FileEditEvent): void {
     let contentChange: TextDocumentContentChangeEvent;
-    switch (this._process._derivedCapabilities.serverWantsChange) {
+    switch (this._derivedServerCapabilities.serverWantsChange) {
       case 'incremental':
         contentChange = {
           range: atomRangeToRange(fileEvent.oldRange),
@@ -301,9 +331,9 @@ export class LspLanguageService {
     };
     // eslint-disable-next-line max-len
     this._logger.logInfo(
-      `-->LSP ${this._process._derivedCapabilities.serverWantsChange} edit ${JSON.stringify(params)}`,
+      `-->LSP ${this._derivedServerCapabilities.serverWantsChange} edit ${JSON.stringify(params)}`,
     );
-    this._process._connection.didChangeTextDocument(params);
+    this._lspConnection.didChangeTextDocument(params);
   }
 
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
@@ -312,9 +342,8 @@ export class LspLanguageService {
   }
 
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
-    const con = this._process._connection;
     return (Observable.fromEventPattern(
-      con.onDiagnosticsNotification.bind(con),
+      this._lspConnection.onDiagnosticsNotification.bind(this._lspConnection),
       () => undefined,
     ): Observable<PublishDiagnosticsParams>)
       .map(convertDiagnostics)
@@ -327,7 +356,7 @@ export class LspLanguageService {
     activatedManually: boolean,
     prefix: string,
   ): Promise<?AutocompleteResult> {
-    if (this._process._capabilities.completionProvider == null) {
+    if (this._serverCapabilities.completionProvider == null) {
       return null;
     }
     if (
@@ -341,7 +370,7 @@ export class LspLanguageService {
       fileVersion.filePath,
       position,
     );
-    const result = await this._process._connection.completion(params);
+    const result = await this._lspConnection.completion(params);
     if (Array.isArray(result)) {
       return {
         isIncomplete: false,
@@ -359,7 +388,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult> {
-    if (!this._process._capabilities.definitionProvider) {
+    if (!this._serverCapabilities.definitionProvider) {
       return null;
     }
     if (
@@ -373,7 +402,7 @@ export class LspLanguageService {
       fileVersion.filePath,
       position,
     );
-    const result = await this._process._connection.gotoDefinition(params);
+    const result = await this._lspConnection.gotoDefinition(params);
     return {
       // TODO: use wordAtPos to determine queryrange
       queryRange: [new atom$Range(position, position)],
@@ -390,7 +419,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    if (!this._process._capabilities.referencesProvider) {
+    if (!this._serverCapabilities.referencesProvider) {
       return null;
     }
     if (
@@ -409,7 +438,7 @@ export class LspLanguageService {
     );
     const params = {...positionParams, context: {includeDeclaration: true}};
     // ReferenceParams is like TextDocumentPositionParams but with one extra field.
-    const response = await this._process._connection.findReferences(params);
+    const response = await this._lspConnection.findReferences(params);
     const references = response.map(this.locationToFindReference);
 
     // We want to know the name of the symbol. The best we can do is reconstruct
@@ -457,18 +486,18 @@ export class LspLanguageService {
 
     return {
       type: 'data',
-      baseUri: this._process._projectRoot,
+      baseUri: this._projectRoot,
       referencedSymbolName,
       references,
     };
   }
 
   async getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
-    if (!this._process._capabilities.typeCoverageProvider) {
+    if (!this._serverCapabilities.typeCoverageProvider) {
       return null;
     }
     const params = {textDocument: toTextDocumentIdentifier(filePath)};
-    const response = await this._process._connection.typeCoverage(params);
+    const response = await this._lspConnection.typeCoverage(params);
 
     const convertUncovered = (uncovered: UncoveredRange) => ({
       range: rangeToAtomRange(uncovered.range),
@@ -481,7 +510,7 @@ export class LspLanguageService {
   }
 
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {
-    if (!this._process._capabilities.documentSymbolProvider) {
+    if (!this._serverCapabilities.documentSymbolProvider) {
       return null;
     }
     if (
@@ -494,7 +523,7 @@ export class LspLanguageService {
     const params = {
       textDocument: toTextDocumentIdentifier(fileVersion.filePath),
     };
-    const response = await this._process._connection.documentSymbol(params);
+    const response = await this._lspConnection.documentSymbol(params);
 
     // The response is a flat list of SymbolInformation, which has location+name+containerName.
     // We're going to reconstruct a tree out of them. This can't be done with 100% accuracy in
@@ -578,7 +607,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    if (!this._process._capabilities.hoverProvider) {
+    if (!this._serverCapabilities.hoverProvider) {
       return null;
     }
     if (
@@ -592,7 +621,7 @@ export class LspLanguageService {
       fileVersion.filePath,
       position,
     );
-    const response = await this._process._connection.hover(params);
+    const response = await this._lspConnection.hover(params);
 
     let hint = response.contents;
     if (Array.isArray(hint)) {
@@ -618,7 +647,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    if (!this._process._capabilities.documentHighlightProvider) {
+    if (!this._serverCapabilities.documentHighlightProvider) {
       return null;
     }
     if (
@@ -632,7 +661,7 @@ export class LspLanguageService {
       fileVersion.filePath,
       position,
     );
-    const response = await this._process._connection.documentHighlight(params);
+    const response = await this._lspConnection.documentHighlight(params);
     const convertHighlight = highlight => rangeToAtomRange(highlight.range);
     return response.map(convertHighlight);
   }
@@ -671,21 +700,19 @@ export class LspLanguageService {
     // The user might have requested to format either some or all of the buffer.
     // And the LSP server might have the capability to format some or all.
     // We'll match up the request+capability as best we can...
-    const canAll = Boolean(
-      this._process._capabilities.documentFormattingProvider,
-    );
+    const canAll = Boolean(this._serverCapabilities.documentFormattingProvider);
     const canRange = Boolean(
-      this._process._capabilities.documentRangeFormattingProvider,
+      this._serverCapabilities.documentRangeFormattingProvider,
     );
     const wantAll = buffer.getRange().compare(atomRange) === 0;
     if (canAll && (wantAll || !canRange)) {
-      edits = await this._process._connection.documentFormatting(params);
+      edits = await this._lspConnection.documentFormatting(params);
     } else if (canRange) {
       // Range is exclusive, and Nuclide snaps it to entire rows. So range.start
       // is character 0 of the start line, and range.end is character 0 of the
       // first line AFTER the selection.
       const range = atomRangeToRange(atomRange);
-      edits = await this._process._connection.documentRangeFormattting({
+      edits = await this._lspConnection.documentRangeFormattting({
         ...params,
         range,
       });
@@ -729,7 +756,7 @@ export class LspLanguageService {
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
     return Promise.resolve(
-      Boolean(this._process._capabilities.workspaceSymbolProvider),
+      Boolean(this._serverCapabilities.workspaceSymbolProvider),
     );
   }
 
@@ -737,10 +764,10 @@ export class LspLanguageService {
     query: string,
     directories: Array<NuclideUri>,
   ): Promise<?Array<SymbolResult>> {
-    if (!this._process._capabilities.workspaceSymbolProvider) {
+    if (!this._serverCapabilities.workspaceSymbolProvider) {
       return null;
     }
-    const result = await this._process._connection.workspaceSymbol({query});
+    const result = await this._lspConnection.workspaceSymbol({query});
     return result.map(convertSearchResult);
   }
 
@@ -755,7 +782,6 @@ export class LspLanguageService {
   }
 
   dispose(): void {
-    this._process.dispose();
     /* TODO
     if (!this.isDisposed()) {
     this._host.dispose();
@@ -847,123 +873,6 @@ class DerivedServerCapabilities {
       logger.logError('LSP initialize: invalid TextDocumentSyncKind');
       this.serverWantsChange = 'none';
     }
-  }
-}
-
-// Encapsulates an LSP process
-class LspProcess {
-  _logger: CategoryLogger;
-  _process: child_process$ChildProcess;
-  _connection: LspConnection;
-  _capabilities: ServerCapabilities;
-  _derivedCapabilities: DerivedServerCapabilities;
-  _projectRoot: NuclideUri;
-
-  constructor(
-    logger: CategoryLogger,
-    process: child_process$ChildProcess,
-    projectRoot: NuclideUri,
-    isIpc: boolean,
-  ) {
-    this._logger = logger;
-    this._process = process;
-    this._projectRoot = projectRoot;
-
-    this._logger.logInfo(
-      'LanguageServerProtocolProcess - created child process with PID: ' +
-        process.pid,
-    );
-
-    process.stdin.on('error', error => {
-      this._logger.logError(
-        'LanguageServerProtocolProcess - error writing data: ' + error,
-      );
-    });
-
-    let reader;
-    let writer;
-    if (isIpc) {
-      reader = new rpc.IPCMessageReader(process);
-      writer = new rpc.IPCMessageWriter(process);
-    } else {
-      reader = new rpc.StreamMessageReader(process.stdout);
-      writer = new rpc.StreamMessageWriter(process.stdin);
-    }
-
-    const rpc_logger = {
-      error(message) {
-        logger.logError('JsonRpc ' + message);
-      },
-      warn(message) {
-        logger.logInfo('JsonRpc ' + message);
-      },
-      info(message) {
-        logger.logInfo('JsonRpc ' + message);
-      },
-      log(message) {
-        logger.logInfo('JsonRpc ' + message);
-      },
-    };
-
-    const connection: JsonRpcConnection = rpc.createMessageConnection(
-      reader,
-      writer,
-      rpc_logger,
-    );
-
-    connection.listen();
-    // TODO: connection.onNotification(this._onNotification.bind(this));
-
-    this._connection = new LspConnection(connection);
-  }
-
-  // Creates the connection and initializes capabilities
-  static async create(
-    host: HostServices,
-    logger: CategoryLogger,
-    process: child_process$ChildProcess,
-    projectRoot: NuclideUri,
-  ): Promise<LspProcess> {
-    const lspProcess = new LspProcess(logger, process, projectRoot, false);
-
-    const params: InitializeParams = {
-      // TODO:
-      initializationOptions: {},
-      processId: process.pid,
-      rootPath: projectRoot,
-      capabilities: {},
-      // TODO: capabilities
-      /*
-      capabilities: {
-        workspace: {},
-        textDocument: {
-          definition: {
-            dynamicRegistration: true,
-          },
-        },
-        experimental: {},
-      },
-      */
-    };
-
-    const result = await lspProcess._connection.initialize(params);
-    lspProcess._capabilities = result.capabilities;
-    lspProcess._derivedCapabilities = new DerivedServerCapabilities(
-      result.capabilities,
-      logger,
-    );
-    return lspProcess;
-  }
-
-  _onNotification(message: Object): void {
-    this._logger.logError(
-      `LanguageServerProtocolProcess - onNotification: ${JSON.stringify(message)}`,
-    );
-    // TODO: Handle incoming messages
-  }
-
-  dispose(): void {
-    // TODO
   }
 }
 
@@ -1166,4 +1075,28 @@ export function convertSearchResult(info: SymbolInformation): SymbolResult {
     icon: symbolKindToAtomIcon(info.kind),
     hoverText,
   };
+}
+
+class JsonRpcLogger {
+  _logger: CategoryLogger;
+
+  constructor(logger: CategoryLogger) {
+    this._logger = logger;
+  }
+
+  error(message: string): void {
+    this._logger.logError('Lsp.JsonRpc ' + message);
+  }
+
+  warn(message: string): void {
+    this._logger.logInfo('Lsp.JsonRpc ' + message);
+  }
+
+  info(message: string): void {
+    this._logger.logInfo('Lsp.JsonRpc ' + message);
+  }
+
+  log(message: string): void {
+    this._logger.logTrace('Jsp.JsonRpc ' + message);
+  }
 }
