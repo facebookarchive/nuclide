@@ -2,6 +2,9 @@
   "name": "nuclide-commons-atom",
   "version": "0.1.0",
   "description": "Common Nuclide node modules (for use with Atom only).",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://nuclide.io/",
+  "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "prepublishOnly": "../../scripts/release-transpile.js --overwrite .",
     "test": "atom --dev --test spec"
