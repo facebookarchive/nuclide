@@ -15,3 +15,5 @@ export {
   DebuggerRpcServiceBase,
   DebuggerRpcWebSocketService,
 } from './DebuggerRpcServiceBase';
+
+export {default as FileCache} from './FileCache';

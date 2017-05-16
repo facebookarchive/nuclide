@@ -14,11 +14,13 @@ import type {DebuggerMode} from './types';
 
 import dedent from 'dedent';
 import child_process from 'child_process';
-import url from 'url';
 import logger from './utils';
 import {getConfig} from './config';
 import {shellParse} from 'nuclide-commons/string';
 import {runCommand} from '../../commons-node/process';
+
+import {pathToUri, uriToPath} from '../../nuclide-debugger-common/lib/helpers';
+export {pathToUri, uriToPath};
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
@@ -65,21 +67,6 @@ export function makeMessage(obj: Object, body_: ?string): string {
   }
   result += '>' + body + '</response>';
   return makeDbgpMessage(result);
-}
-
-export function pathToUri(path: string): string {
-  return 'file://' + path;
-}
-
-export function uriToPath(uri: string): string {
-  const components = url.parse(uri);
-  // Some filename returned from hhvm does not have protocol.
-  if (components.protocol !== 'file:' && components.protocol != null) {
-    logger.logErrorAndThrow(
-      `unexpected file protocol. Got: ${components.protocol}`,
-    );
-  }
-  return components.pathname || '';
 }
 
 export function getBreakpointLocation(breakpoint: Breakpoint): Object {

@@ -35,7 +35,7 @@ import {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';
 
-import FileCache from './FileCache';
+import {FileCache} from '../../nuclide-debugger-common';
 import EventEmitter from 'events';
 import {CompositeDisposable} from 'event-kit';
 import type {Breakpoint} from './BreakpointStore';
@@ -62,7 +62,9 @@ export class DebuggerHandler extends Handler {
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
-    this._files = new FileCache(clientCallback);
+    this._files = new FileCache(
+      clientCallback.sendServerMethod.bind(clientCallback),
+    );
     this._emitter = new EventEmitter();
     this._subscriptions = new CompositeDisposable(
       this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this)),

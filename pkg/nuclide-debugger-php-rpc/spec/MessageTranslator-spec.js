@@ -43,6 +43,7 @@ describe('debugger-php-rpc MessageTranslator', () => {
     clientCallback = jasmine.createSpyObj('clientCallback', [
       'replyWithError',
       'replyToCommand',
+      'sendServerMethod',
     ]);
     const {MessageTranslator} = ((uncachedRequire(
       require,

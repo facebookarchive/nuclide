@@ -9,33 +9,17 @@
  * @format
  */
 
-import type {ClientCallback} from '../lib/ClientCallback';
-
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import FileCache from '../lib/FileCache';
 
-describe('debugger-php-rpc FileCache', () => {
-  let callback;
+describe('debugger-common FileCache', () => {
   let cache;
+  let sendServerMethod;
   let filepath;
-  let observableSpy;
 
   beforeEach(() => {
-    observableSpy = jasmine.createSpyObj('serverMessageObservable', [
-      'onNext',
-      'onCompleted',
-    ]);
-    callback = ((jasmine.createSpyObj('callback', [
-      'replyToCommand',
-      'replyWithError',
-      'sendServerMethod',
-      'getServerMessageObservable',
-    ]): any): ClientCallback);
-    // $FlowIssue -- instance method on object.
-    callback.getServerMessageObservable = jasmine
-      .createSpy('getServerMessageObservable')
-      .andReturn(observableSpy);
-    cache = new FileCache(callback);
+    sendServerMethod = jasmine.createSpy('sendServerMethod');
+    cache = new FileCache(sendServerMethod);
     const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
     filepath = nuclideUri.join(fixturesPath, 'test.php');
   });
@@ -44,9 +28,7 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const sourceFileUrl = `file://${filepath}`;
       cache.registerFile(sourceFileUrl);
-      expect(
-        callback.sendServerMethod,
-      ).toHaveBeenCalledWith('Debugger.scriptParsed', {
+      expect(sendServerMethod).toHaveBeenCalledWith('Debugger.scriptParsed', {
         scriptId: filepath,
         url: sourceFileUrl,
         startLine: 0,
@@ -63,9 +45,7 @@ describe('debugger-php-rpc FileCache', () => {
     waitsForPromise(async () => {
       const noSourceFileUrl = filepath;
       cache.registerFile(noSourceFileUrl);
-      expect(
-        callback.sendServerMethod,
-      ).toHaveBeenCalledWith('Debugger.scriptParsed', {
+      expect(sendServerMethod).toHaveBeenCalledWith('Debugger.scriptParsed', {
         scriptId: filepath,
         url: noSourceFileUrl,
         startLine: 0,

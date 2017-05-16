@@ -12,18 +12,17 @@
 import invariant from 'assert';
 
 import {uriToPath} from './helpers';
-import {ClientCallback} from './ClientCallback';
 import File from './File';
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
  */
 export default class FileCache {
-  _callback: ClientCallback;
+  _sendServerMethod: (method: string, params: ?Object) => mixed;
   _files: Map<string, File>;
 
-  constructor(callback: ClientCallback) {
-    this._callback = callback;
+  constructor(sendServerMethod: (method: string, params: ?Object) => mixed) {
+    this._sendServerMethod = sendServerMethod;
     this._files = new Map();
   }
 
@@ -31,7 +30,7 @@ export default class FileCache {
     const filepath = uriToPath(fileUrl);
     if (!this._files.has(filepath)) {
       this._files.set(filepath, new File(filepath));
-      this._callback.sendServerMethod('Debugger.scriptParsed', {
+      this._sendServerMethod('Debugger.scriptParsed', {
         scriptId: filepath,
         url: fileUrl,
         startLine: 0,
