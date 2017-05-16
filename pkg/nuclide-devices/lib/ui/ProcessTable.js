@@ -10,13 +10,13 @@
  */
 
 import type {Process, ProcessKiller} from '../types';
-import React from 'react';
 
+import React from 'react';
 import {Subscription} from 'rxjs';
 import {Table} from '../../../nuclide-ui/Table';
 import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {Button} from '../../../nuclide-ui/Button';
 import addTooltip from '../../../nuclide-ui/add-tooltip';
+import {Icon} from '../../../nuclide-ui/Icon';
 
 type Props = {
   startFetchingProcesses: () => Subscription,
@@ -83,7 +83,7 @@ export class ProcessTable extends React.Component {
     sortedColumnName: ?string,
     sortDescending: boolean,
   ): Process[] {
-    if (sortedColumnName == null || sortedColumnName === 'kill') {
+    if (sortedColumnName == null) {
       return processes;
     }
     // compare numerically pid, cpu and mem
@@ -118,8 +118,7 @@ export class ProcessTable extends React.Component {
       this.state.sortDescending,
     ).map(item => ({
       data: {
-        kill: this._getKillButton(item.name),
-        pid: item.pid,
+        pid: <span>{this._getKillButton(item.name)} {item.pid}</span>,
         user: item.user,
         name: item.name,
         cpuUsage: this._formatCpuUsage(item.cpuUsage),
@@ -128,14 +127,14 @@ export class ProcessTable extends React.Component {
     }));
     const columns = [
       {
-        key: 'kill',
-        title: '',
-        width: 0.05,
-      },
-      {
         key: 'pid',
         title: 'PID',
-        width: 0.15,
+        width: 0.17,
+      },
+      {
+        key: 'name',
+        title: 'Name',
+        width: 0.38,
       },
       {
         key: 'user',
@@ -143,14 +142,9 @@ export class ProcessTable extends React.Component {
         width: 0.15,
       },
       {
-        key: 'name',
-        title: 'Name',
-        width: 0.5,
-      },
-      {
         key: 'cpuUsage',
         title: 'CPU',
-        width: 0.1,
+        width: 0.15,
       },
       {
         key: 'memUsage',
@@ -194,20 +188,20 @@ export class ProcessTable extends React.Component {
       return null;
     }
     return (
-      <Button
-        size="EXTRA_SMALL"
+      <span
+        className="nuclide-device-panel-link-with-icon"
         onClick={() => {
           return this.props.killProcess != null && packageName != null
             ? this.props.killProcess(packageName)
             : null;
         }}
-        icon="x"
         ref={addTooltip({
           title: 'force-stop process',
           delay: 300,
           placement: 'left',
-        })}
-      />
+        })}>
+        <Icon icon="x" />
+      </span>
     );
   }
 }

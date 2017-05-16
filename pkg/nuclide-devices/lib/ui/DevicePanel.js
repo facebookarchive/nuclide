@@ -67,14 +67,12 @@ export class DevicePanel extends React.Component {
   _getBackButton(): React.Element<any> {
     return (
       <div className="block">
-        <span>
-          <a
-            className="nuclide-device-panel-link-with-icon"
-            onClick={() => this.props.goToRootPanel()}>
-            <Icon icon="chevron-left">
-              Choose another device
-            </Icon>
-          </a>
+        <span
+          className="nuclide-device-panel-link-with-icon"
+          onClick={() => this.props.goToRootPanel()}>
+          <Icon icon="chevron-left">
+            Choose another device
+          </Icon>
         </span>
       </div>
     );
