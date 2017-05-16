@@ -11,7 +11,6 @@
 
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
-import dedent from 'dedent';
 import {countOccurrences} from 'nuclide-commons/string';
 import fs from '../../commons-node/fsPromise';
 
@@ -42,7 +41,7 @@ export async function getDefinitionPreview(
     openParenCount += countOccurrences(line, '(');
     closedParenCount += countOccurrences(line, ')');
 
-    buffer.push(line);
+    buffer.push(line.substr(Math.min(indentLevel, initialIndentLevel))); // dedent
 
     // heuristic for the end of a function signature.
     // we've returned back to the original indentation level
@@ -55,5 +54,5 @@ export async function getDefinitionPreview(
     }
   }
 
-  return dedent(buffer.join('\n'));
+  return buffer.join('\n');
 }
