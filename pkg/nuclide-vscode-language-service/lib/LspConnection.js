@@ -22,6 +22,14 @@ export class LspConnection {
     this._jsonRpcConnection = jsonRpcConnection;
   }
 
+  dispose() {
+    this._jsonRpcConnection.dispose();
+  }
+
+  onDispose(callback: () => void) {
+    this._jsonRpcConnection.onDispose(callback);
+  }
+
   initialize(params: p.InitializeParams): Promise<p.InitializeResult> {
     return this._jsonRpcConnection.sendRequest('initialize', params);
   }
@@ -205,7 +213,7 @@ export class LspConnection {
     );
   }
 
-  documentRangeFormattting(
+  documentRangeFormatting(
     params: p.DocumentRangeFormattingParams,
   ): Promise<Array<p.TextEdit>> {
     return this._jsonRpcConnection.sendRequest(

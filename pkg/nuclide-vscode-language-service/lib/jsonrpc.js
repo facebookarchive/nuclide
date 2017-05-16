@@ -20,9 +20,16 @@ export type JsonRpcConnection = {
     callback: (Object, Object) => Promise<any>,
   ): void,
   dispose(): void,
+  trace(level: JsonRpcTraceValues, logger: JsonRpcTraceLogger): void,
 
-  onError(callback: (Error, Object, number) => void): void,
+  onError(callback: ([Error, ?Object, ?number]) => void): void,
   onClose(callback: () => void): void,
   onUnhandledNotification(callback: (Object) => void): void,
   onDispose(callback: () => void): void,
+};
+
+export type JsonRpcTraceValues = 'off' | 'messages' | 'verbose';
+
+export type JsonRpcTraceLogger = {
+  log(message: string, data: ?string): void,
 };
