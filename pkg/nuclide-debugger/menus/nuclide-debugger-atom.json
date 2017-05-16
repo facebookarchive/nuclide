@@ -24,6 +24,10 @@
               "command": "nuclide-debugger:hide"
             },
             {
+              "label": "Reset layout",
+              "command": "nuclide-debugger:reset-layout"
+            },
+            {
               "label": "Launch/Attach...",
               "command": "nuclide-debugger:toggle-launch-attach"
             },

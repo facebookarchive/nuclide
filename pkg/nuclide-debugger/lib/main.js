@@ -8,6 +8,7 @@
  * @flow
  * @format
  */
+/* global localStorage */
 
 import type {
   NuclideDebuggerProvider,
@@ -119,6 +120,12 @@ type State = {
   showOldView: boolean,
 };
 
+type DebuggerPaneLocation = {
+  dock: string,
+  layoutIndex: number,
+  userHidden: boolean,
+};
+
 // Configuration that defines a debugger pane. This controls what gets added
 // to the workspace when starting debugging.
 type DebuggerPaneConfig = {
@@ -146,10 +153,7 @@ type DebuggerPaneConfig = {
   debuggerModeFilter?: (mode: DebuggerModeType) => boolean,
 
   // Structure to remember the pane's previous location if the user moved it around.
-  previousLocation?: ?{
-    dock: string,
-    index: number,
-  },
+  previousLocation?: ?DebuggerPaneLocation,
 };
 
 // A model that will serve as the view model for all debugger panes. We must provide
@@ -334,11 +338,13 @@ class Activation {
   _tryTriggerNux: ?TriggerNux;
   _debuggerPanes: Array<DebuggerPaneConfig>;
   _debuggerWorkspaceEnabled: boolean;
+  _previousDebuggerMode: DebuggerModeType;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
     this._launchAttachDialog = null;
     this._debuggerWorkspaceEnabled = this._shouldEnableDebuggerWorkspace();
+    this._previousDebuggerMode = DebuggerMode.STOPPED;
     this._initializeDebuggerPanes(state);
     this._disposables = new UniversalDisposable(
       this._model,
@@ -556,6 +562,11 @@ class Activation {
       this._model
         .getStore()
         .onDebuggerModeChange(() => this._debuggerModeChanged(api)),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:reset-layout': () => {
+          this._resetLayout(api);
+        },
+      }),
     );
   }
 
@@ -576,9 +587,9 @@ class Activation {
     // This configures the debugger panes. By default, they'll appear below the stepping
     // controls from top to bottom in the order they're defined here. After that, the
     // user is free to move them around.
-    this._debuggerPanes = [
-      // TODO: Add panes here.
-    ];
+    this._debuggerPanes = [];
+
+    this._restoreDebuggerPaneLocations();
   }
 
   _getModelForDebuggerUri(uri: string): any {
@@ -709,6 +720,86 @@ class Activation {
     }
   }
 
+  _resetLayout(api: WorkspaceViewsService): void {
+    // Remove all debugger panes from the UI.
+    this._hideDebuggerViews(api, false);
+
+    // Forget all their previous locations.
+    for (const debuggerPane of this._debuggerPanes) {
+      debuggerPane.previousLocation = null;
+      const key = this._getPaneStorageKey(debuggerPane.uri);
+      localStorage.setItem(key, '');
+    }
+
+    // Pop the debugger open with the default layout.
+    this._debuggerPanes = [];
+    this._initializeDebuggerPanes(null);
+    this._showDebuggerViews(api);
+  }
+
+  _getPaneStorageKey(uri: string): string {
+    return 'nuclide-debugger-pane-location-' + uri;
+  }
+
+  _deserializeSavedLocation(savedItem: string): ?DebuggerPaneLocation {
+    try {
+      const obj = JSON.parse(savedItem);
+      if (
+        obj != null &&
+        obj.dock != null &&
+        obj.layoutIndex != null &&
+        obj.userHidden != null
+      ) {
+        return obj;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  _restoreDebuggerPaneLocations(): void {
+    // See if there are saved previous locations for the debugger panes.
+    for (const debuggerPane of this._debuggerPanes) {
+      const savedItem = localStorage.getItem(
+        this._getPaneStorageKey(debuggerPane.uri),
+      );
+      if (savedItem != null) {
+        debuggerPane.previousLocation = this._deserializeSavedLocation(
+          savedItem,
+        );
+      }
+    }
+  }
+
+  _saveDebuggerPaneLocations(): void {
+    for (const dockInfo of this._getWorkspaceDocks()) {
+      const {name, dock} = dockInfo;
+      const panes = dock.getPanes();
+      let layoutIndex = 0;
+      for (const pane of panes) {
+        for (const item of pane.getItems()) {
+          if (item instanceof DebuggerPaneViewModel) {
+            const location = {
+              dock: name,
+              layoutIndex,
+              userHidden: false,
+            };
+
+            item.getConfig().previousLocation = location;
+            layoutIndex++;
+          }
+        }
+      }
+    }
+
+    // Serialize to storage.
+    for (const debuggerPane of this._debuggerPanes) {
+      const loc = JSON.stringify(debuggerPane.previousLocation);
+      const key = this._getPaneStorageKey(debuggerPane.uri);
+      localStorage.setItem(key, loc);
+    }
+  }
+
   _debuggerModeChanged(api: WorkspaceViewsService): void {
     if (!this._debuggerWorkspaceEnabled) {
       return;
@@ -718,7 +809,12 @@ class Activation {
 
     // Most panes disappear when the debugger is stopped, only keep
     // the ones that should still be shown.
-    if (mode === DebuggerMode.STOPPED) {
+    if (
+      mode === DebuggerMode.STOPPING &&
+      this._previousDebuggerMode !== DebuggerMode.STOPPED
+    ) {
+      this._saveDebuggerPaneLocations();
+    } else if (mode === DebuggerMode.STOPPED) {
       api.destroyWhere(item => {
         if (item instanceof DebuggerPaneViewModel) {
           const config = item.getConfig();
@@ -732,10 +828,10 @@ class Activation {
         return false;
       });
     } else if (mode === DebuggerMode.STARTING) {
-      // On transitioning to starting debugging, some additional panes might
-      // want to be added.
       this._showDebuggerViews(api);
     }
+
+    this._previousDebuggerMode = mode;
   }
 
   _showDebuggerViews(api: WorkspaceViewsService): void {
@@ -752,17 +848,42 @@ class Activation {
     const defaultDock = this._getWorkspaceDocks().find(d => d.name === 'right');
     invariant(defaultDock != null);
 
-    // Lay out the debugger panes according to their configurations.
+    // Lay out the remaining debugger panes according to their configurations.
+    // Sort the debugger panes by the index at which they appeared the last
+    // time they were positioned, so we maintain the relative ordering of
+    // debugger panes within the same dock.
     const mode = this._model.getStore().getDebuggerMode();
-    this._debuggerPanes.forEach(debuggerPane => {
-      const targetDock = defaultDock.dock;
-      if (debuggerPane.isEnabled == null || debuggerPane.isEnabled()) {
+    this._debuggerPanes
+      .slice()
+      .sort((a, b) => {
+        const aPos = a.previousLocation == null
+          ? 0
+          : a.previousLocation.layoutIndex;
+        const bPos = b.previousLocation == null
+          ? 0
+          : b.previousLocation.layoutIndex;
+        return aPos - bPos;
+      })
+      .forEach(debuggerPane => {
+        let targetDock = defaultDock;
+
+        // If this pane had a previous location, restore to the previous dock.
+        const loc = debuggerPane.previousLocation;
+        if (loc != null) {
+          const previousDock = this._getWorkspaceDocks().find(
+            d => d.name === loc.dock,
+          );
+          if (previousDock != null) {
+            targetDock = previousDock;
+          }
+        }
+
         if (
           debuggerPane.debuggerModeFilter == null ||
           debuggerPane.debuggerModeFilter(mode)
         ) {
           this._appendItemToDock(
-            targetDock,
+            targetDock.dock,
             new DebuggerPaneViewModel(
               debuggerPane,
               this._model,
@@ -771,8 +892,7 @@ class Activation {
             addedItemsByDock,
           );
         }
-      }
-    });
+      });
   }
 
   _hideDebuggerViews(
