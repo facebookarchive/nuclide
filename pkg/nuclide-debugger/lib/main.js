@@ -586,6 +586,92 @@ class Activation {
     return null;
   }
 
+  _getWorkspaceDocks(): Array<{
+    name: string,
+    dock: atom$AbastractPaneContainer,
+    orientation: string,
+  }> {
+    invariant(this._debuggerWorkspaceEnabled === true);
+    const docks = new Array(4);
+
+    invariant(atom.workspace.getLeftDock != null);
+    docks[0] = {
+      name: 'left',
+      dock: atom.workspace.getLeftDock(),
+      orientation: 'vertical',
+    };
+
+    invariant(atom.workspace.getBottomDock != null);
+    docks[1] = {
+      name: 'bottom',
+      dock: atom.workspace.getBottomDock(),
+      orientation: 'horizontal',
+    };
+
+    invariant(atom.workspace.getCenter != null);
+    docks[2] = {
+      name: 'center',
+      dock: atom.workspace.getCenter(),
+      orientation: 'horizontal',
+    };
+
+    invariant(atom.workspace.getRightDock != null);
+    docks[3] = {
+      name: 'right',
+      dock: atom.workspace.getRightDock(),
+      orientation: 'vertical',
+    };
+
+    return docks;
+  }
+
+  _isDockEmpty(dock: atom$AbastractPaneContainer): boolean {
+    const panes = dock.getPanes();
+
+    // A dock is empty for our purposes if it has nothing visible in it. If a dock
+    // with no items is left open, Atom implicitly adds a single pane with no items
+    // in it, so check for no panes, or a single pane with no items.
+    return (
+      panes.length === 0 ||
+      (panes.length === 1 && panes[0].getItems().length === 0)
+    );
+  }
+
+  _appendItemToDock(dock: atom$AbastractPaneContainer, item: Object): void {
+    const panes = dock.getPanes();
+    invariant(panes.length >= 1);
+
+    const dockPane = panes[panes.length - 1];
+    if (this._isDockEmpty(dock)) {
+      dockPane.addItem(item);
+    } else {
+      const dockConfig = this._getWorkspaceDocks().find(d => d.dock === dock);
+      invariant(dockConfig != null);
+
+      if (dockConfig.orientation === 'horizontal') {
+        // Add the item as a new tab in the existing pane to the right of the current active pane for the dock.
+        dockPane.addItem(item);
+        try {
+          dockPane.activateItem(item);
+        } catch (e) {
+          // During testing, I saw some cases where Atom threw trying to activate an item
+          // that was still in progress of being added. This was tested on a Beta release
+          // and may indicate a temporary bug. However, there is no reason to throw here
+          // and stop laying out the debugger if an item could not be set as active.
+        }
+      } else {
+        // For vertical panes, split the pane down and add items vertically.
+        dockPane.splitDown({
+          items: [item],
+        });
+      }
+    }
+
+    if (dock.isVisible != null && dock.show != null && !dock.isVisible()) {
+      dock.show();
+    }
+  }
+
   _showDebuggerViews(api: WorkspaceViewsService): void {
     if (!this._debuggerWorkspaceEnabled) {
       api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
