@@ -55,8 +55,17 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   _resources: UniversalDisposable;
   _configCache: ConfigCache;
   _logger: CategoryLogger;
+  // A promise for when AtomLanguageService has called into this feature
+  _observeDiagnosticsPromise: Promise<void>;
+  _observeDiagnosticsPromiseResolver: () => void;
 
-  constructor(
+  constructor() {
+    this._observeDiagnosticsPromise = new Promise((resolve, reject) => {
+      this._observeDiagnosticsPromiseResolver = resolve;
+    });
+  }
+
+  initialize(
     logger: CategoryLogger,
     fileCache: FileCache,
     host: HostServices,
@@ -202,7 +211,13 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     )).getDiagnostics(fileVersion);
   }
 
+  hasObservedDiagnostics(): Promise<void> {
+    return this._observeDiagnosticsPromise;
+  }
+
   observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+    this._observeDiagnosticsPromiseResolver();
+
     return this.observeLanguageServices()
       .mergeMap((process: LanguageService) => {
         this._logger.logTrace('observeDiagnostics');

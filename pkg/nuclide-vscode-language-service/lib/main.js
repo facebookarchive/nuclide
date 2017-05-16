@@ -32,7 +32,11 @@ export function createMultiLspLanguageService(
   projectFileName: string,
   fileExtensions: Array<NuclideUri>,
 ): MultiProjectLanguageService<LspLanguageService> {
+  const result = new MultiProjectLanguageService();
+
   const languageServiceFactory = async (projectDir: string) => {
+    await result.hasObservedDiagnostics();
+
     const lsp = new LspLanguageService(
       logger,
       fileCache,
@@ -47,7 +51,7 @@ export function createMultiLspLanguageService(
     return lsp;
   };
 
-  return new MultiProjectLanguageService(
+  result.initialize(
     logger,
     fileCache,
     host,
@@ -55,4 +59,5 @@ export function createMultiLspLanguageService(
     fileExtensions,
     languageServiceFactory,
   );
+  return result;
 }

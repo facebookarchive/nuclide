@@ -116,7 +116,8 @@ class FlowLanguageService
   > {
   constructor(fileCache: FileCache, host: HostServices, config: FlowSettings) {
     const logger = getCategoryLogger('Flow');
-    super(
+    super();
+    this.initialize(
       logger,
       fileCache,
       host,
