@@ -13,7 +13,7 @@ import type {ShowNotificationLevel, HostServices} from './rpc-types';
 import type {CategoryLogger} from '../../nuclide-logging';
 
 import invariant from 'assert';
-import {Subject} from 'rxjs';
+import {Subject, ConnectableObservable} from 'rxjs';
 
 // This is how we declare in Flow that a type fulfills an interface.
 (((null: any): HostServicesAggregator): HostServices);
@@ -91,10 +91,31 @@ class HostServicesAggregator {
     this._selfRelay().consoleNotification(source, level, text);
   }
 
+  dialogNotification(
+    level: ShowNotificationLevel,
+    text: string,
+  ): ConnectableObservable<void> {
+    return this._selfRelay().dialogNotification(level, text);
+  }
+
+  dialogRequest(
+    level: ShowNotificationLevel,
+    text: string,
+    buttonLabels: Array<string>,
+    closeLabel: string,
+  ): ConnectableObservable<string> {
+    return this._selfRelay().dialogRequest(
+      level,
+      text,
+      buttonLabels,
+      closeLabel,
+    );
+  }
+
   dispose(): void {
     // Folks call this "dispose" method to dispose of the aggregate and
     // all of its children.
-    this._selfRelay()._childIsDisposed.complete();
+    this._selfRelay()._childIsDisposed.next();
     for (const relay of this._childRelays.values()) {
       if (relay._child != null) {
         relay._child.dispose();
@@ -118,7 +139,7 @@ class HostServicesRelay {
   _id: number;
   //
   _child: ?HostServices;
-  _childIsDisposed: Subject<void> = new Subject();
+  _childIsDisposed: Subject<void> = new Subject(); // signal by sending next().
 
   constructor(
     aggregator: HostServicesAggregator,
@@ -138,11 +159,38 @@ class HostServicesRelay {
     this._aggregator._parent.consoleNotification(source, level, text);
   }
 
+  dialogNotification(
+    level: ShowNotificationLevel,
+    text: string,
+  ): ConnectableObservable<void> {
+    return this._aggregator._parent
+      .dialogNotification(level, text)
+      .refCount()
+      .takeUntil(this._childIsDisposed)
+      .publish();
+    // If the host is disposed, then the ConnectedObservable we return will
+    // complete without ever having emitted a value. If you .toPromise on it
+    // your promise will complete successfully with value 'undefined'.
+  }
+
+  dialogRequest(
+    level: ShowNotificationLevel,
+    text: string,
+    buttonLabels: Array<string>,
+    closeLabel: string,
+  ): ConnectableObservable<string> {
+    return this._aggregator._parent
+      .dialogRequest(level, text, buttonLabels, closeLabel)
+      .refCount()
+      .takeUntil(this._childIsDisposed)
+      .publish();
+  }
+
   dispose(): void {
     // Remember, this is a notification relayed from one of the children that
     // it has just finished its "dispose" method. That's what a relay is.
     // It is *NOT* a means to dispose of this relay
-    this._childIsDisposed.complete();
+    this._childIsDisposed.next();
     this._aggregator._childRelays.delete(this._id);
   }
 

@@ -9,6 +9,8 @@
  * @format
  */
 
+import {ConnectableObservable} from 'rxjs';
+
 export type ShowNotificationLevel = 'info' | 'log' | 'warning' | 'error';
 
 // This interface is exposed by the client to the server
@@ -18,6 +20,18 @@ export interface HostServices {
     level: ShowNotificationLevel,
     text: string,
   ): void,
+
+  dialogNotification(
+    level: ShowNotificationLevel,
+    text: string,
+  ): ConnectableObservable<void>,
+
+  dialogRequest(
+    level: ShowNotificationLevel,
+    text: string,
+    buttonLabels: Array<string>,
+    closeLabel: string,
+  ): ConnectableObservable<string>,
 
   dispose(): void,
 

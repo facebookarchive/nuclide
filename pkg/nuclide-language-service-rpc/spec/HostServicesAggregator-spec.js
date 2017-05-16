@@ -12,21 +12,28 @@
 import type {HostServices} from '../lib/rpc-types';
 import type {CategoryLogger} from '../../nuclide-logging';
 
+import {Observable} from 'rxjs';
 import {forkHostServices} from '../';
 
 describe('HostServicesAggregator', () => {
+  let hostObj;
   let host;
+  let hostRelayObj;
   let hostRelay;
   let logger;
 
   beforeEach(() => {
-    const hostObj = jasmine.createSpyObj('host', [
+    hostObj = jasmine.createSpyObj('host', [
       'consoleNotification',
+      'dialogNotification',
+      'dialogRequest',
       'dispose',
       'childRegister',
     ]);
-    const hostRelayObj = jasmine.createSpyObj('hostRelay', [
+    hostRelayObj = jasmine.createSpyObj('hostRelay', [
       'consoleNotification',
+      'dialogNotification',
+      'dialogRequest',
       'dispose',
       'childRegister',
     ]);
@@ -173,6 +180,39 @@ describe('HostServicesAggregator', () => {
       expect(aggregator.dispose.callCount).toEqual(1);
       expect(hostRelay.dispose.callCount).toEqual(1);
       expect(host.dispose.callCount).toEqual(0);
+    });
+  });
+
+  it('will unsubscribe from dialogs upon dispose', () => {
+    waitsForPromise(async () => {
+      let hasSubscribed = false;
+      let hasUnsubscribed = false;
+
+      hostRelayObj.dialogRequest = jasmine.createSpy('dialogRequest').andReturn(
+        Observable.create(observer => {
+          hasSubscribed = true;
+          return () => {
+            hasUnsubscribed = true;
+          };
+        }).publish(),
+      );
+
+      const aggregator = await forkHostServices(host, logger);
+
+      expect(hasSubscribed).toEqual(false);
+
+      const promise = aggregator
+        .dialogRequest('info', 'hello', [], 'close')
+        .refCount()
+        .toPromise();
+
+      expect(hasSubscribed).toEqual(true);
+      expect(hasUnsubscribed).toEqual(false);
+
+      aggregator.dispose();
+
+      expect(hasUnsubscribed).toEqual(true);
+      expect(await promise).toBeUndefined();
     });
   });
 });
