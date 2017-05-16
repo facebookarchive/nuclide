@@ -550,8 +550,12 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:hide': () => {
           this._hideDebuggerViews(api, false);
+          this._model.destroy();
         },
       }),
+      this._model
+        .getStore()
+        .onDebuggerModeChange(() => this._debuggerModeChanged(api)),
     );
   }
 
@@ -705,6 +709,35 @@ class Activation {
     }
   }
 
+  _debuggerModeChanged(api: WorkspaceViewsService): void {
+    if (!this._debuggerWorkspaceEnabled) {
+      return;
+    }
+
+    const mode = this._model.getStore().getDebuggerMode();
+
+    // Most panes disappear when the debugger is stopped, only keep
+    // the ones that should still be shown.
+    if (mode === DebuggerMode.STOPPED) {
+      api.destroyWhere(item => {
+        if (item instanceof DebuggerPaneViewModel) {
+          const config = item.getConfig();
+          if (
+            config.debuggerModeFilter != null &&
+            !config.debuggerModeFilter(mode)
+          ) {
+            return true;
+          }
+        }
+        return false;
+      });
+    } else if (mode === DebuggerMode.STARTING) {
+      // On transitioning to starting debugging, some additional panes might
+      // want to be added.
+      this._showDebuggerViews(api);
+    }
+  }
+
   _showDebuggerViews(api: WorkspaceViewsService): void {
     if (!this._debuggerWorkspaceEnabled) {
       api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
@@ -724,15 +757,20 @@ class Activation {
     this._debuggerPanes.forEach(debuggerPane => {
       const targetDock = defaultDock.dock;
       if (debuggerPane.isEnabled == null || debuggerPane.isEnabled()) {
-        this._appendItemToDock(
-          targetDock,
-          new DebuggerPaneViewModel(
-            debuggerPane,
-            this._model,
-            debuggerPane.isLifetimeView,
-          ),
-          addedItemsByDock,
-        );
+        if (
+          debuggerPane.debuggerModeFilter == null ||
+          debuggerPane.debuggerModeFilter(mode)
+        ) {
+          this._appendItemToDock(
+            targetDock,
+            new DebuggerPaneViewModel(
+              debuggerPane,
+              this._model,
+              debuggerPane.isLifetimeView,
+            ),
+            addedItemsByDock,
+          );
+        }
       }
     });
   }
