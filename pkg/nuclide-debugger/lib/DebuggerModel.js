@@ -106,6 +106,15 @@ export default class DebuggerModel {
   destroy(): void {
     // Stop debugging when the view's destroyed.
     this.getActions().stopDebugging();
+
+    // If the debugger controls view is closed, send the debugger hide command
+    // to hide all the other debugger panels as well. This is equivalent to exiting
+    // the debugger perspective in other IDEs, those other panes should hide regardless
+    // of where they have been moved to.
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:hide',
+    );
   }
 
   dispose() {
