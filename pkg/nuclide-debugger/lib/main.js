@@ -22,7 +22,11 @@ import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
-import type {EvaluationResult, SerializedBreakpoint} from './types';
+import type {
+  EvaluationResult,
+  SerializedBreakpoint,
+  DebuggerModeType,
+} from './types';
 import type {Observable} from 'rxjs';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
@@ -114,6 +118,108 @@ type Props = {
 type State = {
   showOldView: boolean,
 };
+
+// Configuration that defines a debugger pane. This controls what gets added
+// to the workspace when starting debugging.
+type DebuggerPaneConfig = {
+  // Each pane must provide a unique URI.
+  uri: string,
+
+  // Function that returns the title for the pane. Some panes (like Threads) need
+  // to change their title depending on the debug target (ex "Threads" for C++ but
+  // "Requests" for PHP).
+  title: () => string,
+
+  // Optional function that indicates if the pane is enabled for the current debug
+  // session. If not enabled, the pane won't be added to the workspace.
+  isEnabled?: () => boolean,
+
+  // Boolean indicating if the debug session lifetime should be tied to this view.
+  // If true, the debug session will be terminated if this view is destroyed.
+  isLifetimeView: boolean,
+
+  // Function that returns a view for Atom to use for the workspace pane.
+  createView: () => React.Element<any>,
+
+  // Optional filter function that lets panes specify that they should be shown
+  // or hidden depending on the debugger mode (ex don't show threads when stopped).
+  debuggerModeFilter?: (mode: DebuggerModeType) => boolean,
+
+  // Structure to remember the pane's previous location if the user moved it around.
+  previousLocation?: ?{
+    dock: string,
+    index: number,
+  },
+};
+
+// A model that will serve as the view model for all debugger panes. We must provide
+// a unique instance of a view model for each pane, which Atom can destroy when the
+// pane that contains it is destroyed. We therefore cannot give it the actual debugger
+// model directly, since there is only one and its lifetime is tied to the lifetime
+// of the debugging session.
+class DebuggerPaneViewModel {
+  _config: DebuggerPaneConfig;
+  _isLifetimeView: boolean;
+  _debuggerModel: DebuggerModel;
+
+  constructor(
+    config: DebuggerPaneConfig,
+    debuggerModel: DebuggerModel,
+    isLifetimeView: boolean,
+  ) {
+    this._config = config;
+    this._debuggerModel = debuggerModel;
+    this._isLifetimeView = isLifetimeView;
+  }
+
+  dispose(): void {}
+
+  destroy(): void {
+    if (this._isLifetimeView) {
+      // If the view being destroyed is intended to control the lifetime
+      // of the debugging sessoin, destroy the model as well.
+      this._debuggerModel.destroy();
+    }
+  }
+
+  getIconName(): string {
+    return 'nuclicon-debugger';
+  }
+
+  getTitle(): string {
+    return this._config.title();
+  }
+
+  getDefaultLocation(): string {
+    return this._debuggerModel.getDefaultLocation();
+  }
+
+  getURI(): string {
+    return this._config.uri;
+  }
+
+  getPreferredWidth(): number {
+    return this._debuggerModel.getPreferredWidth();
+  }
+
+  createView(): React.Element<any> {
+    return this._config.createView();
+  }
+
+  getConfig(): DebuggerPaneConfig {
+    return this._config;
+  }
+
+  // Atom view needs to provide this, otherwise Atom throws an exception splitting panes for the view.
+  serialize(): Object {
+    return {};
+  }
+
+  copy(): boolean {
+    return false;
+  }
+}
+
 class DebuggerView extends React.Component {
   props: Props;
   state: State;
@@ -195,12 +301,20 @@ class DebuggerView extends React.Component {
 }
 
 export function createDebuggerView(model: mixed): ?HTMLElement {
-  if (!(model instanceof DebuggerModel)) {
-    return;
+  let view = null;
+  if (model instanceof DebuggerModel) {
+    view = <DebuggerView model={model} />;
+  } else if (model instanceof DebuggerPaneViewModel) {
+    view = model.createView();
   }
-  const elem = renderReactRoot(<DebuggerView model={model} />);
-  elem.className = 'nuclide-debugger-container';
-  return elem;
+
+  if (view != null) {
+    const elem = renderReactRoot(view);
+    elem.className = 'nuclide-debugger-container';
+    return elem;
+  }
+
+  return null;
 }
 
 class Activation {
@@ -208,10 +322,14 @@ class Activation {
   _model: DebuggerModel;
   _launchAttachDialog: ?atom$Panel;
   _tryTriggerNux: ?TriggerNux;
+  _debuggerPanes: Array<DebuggerPaneConfig>;
+  _debuggerWorkspaceEnabled: boolean;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
     this._launchAttachDialog = null;
+    this._debuggerWorkspaceEnabled = this._shouldEnableDebuggerWorkspace();
+    this._initializeDebuggerPanes(state);
     this._disposables = new UniversalDisposable(
       this._model,
       // Listen for removed connections and kill the debugger if it is using that connection.
@@ -409,24 +527,81 @@ class Activation {
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     this._disposables.add(
       api.addOpener(uri => {
-        if (uri === WORKSPACE_VIEW_URI) {
-          return this._model;
-        }
+        return this._getModelForDebuggerUri(uri);
       }),
       () => {
-        api.destroyWhere(item => item instanceof DebuggerModel);
+        this._hideAllDebuggerViews(api);
       },
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:show': () => {
-          api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+          this._showDebuggerViews(api);
         },
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:hide': () => {
-          api.destroyWhere(item => item instanceof DebuggerModel);
+          this._hideAllDebuggerViews(api);
         },
       }),
     );
+  }
+
+  _shouldEnableDebuggerWorkspace(): boolean {
+    // Enable workspace view layout only if the following required Atom APIs are available.
+    // Expected in Atom >= 1.17 only.
+    return (
+      atom.workspace.getLeftDock != null &&
+      atom.workspace.getBottomDock != null &&
+      atom.workspace.getCenter != null &&
+      atom.workspace.getRightDock != null
+    );
+  }
+
+  _initializeDebuggerPanes(state: ?SerializedState): void {
+    // const debuggerUriBase = 'atom://nuclide/debugger-';
+
+    // This configures the debugger panes. By default, they'll appear below the stepping
+    // controls from top to bottom in the order they're defined here. After that, the
+    // user is free to move them around.
+    this._debuggerPanes = [
+      // TODO: Add panes here.
+    ];
+  }
+
+  _getModelForDebuggerUri(uri: string): any {
+    if (!this._debuggerWorkspaceEnabled) {
+      if (uri === WORKSPACE_VIEW_URI) {
+        return this._model;
+      }
+    } else {
+      const config = this._debuggerPanes.find(pane => pane.uri === uri);
+      if (config != null) {
+        return new DebuggerPaneViewModel(
+          config,
+          this._model,
+          config.isLifetimeView,
+        );
+      }
+    }
+
+    return null;
+  }
+
+  _showDebuggerViews(api: WorkspaceViewsService): void {
+    if (!this._debuggerWorkspaceEnabled) {
+      api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+      return;
+    }
+
+    // TODO
+  }
+
+  _hideAllDebuggerViews(api: WorkspaceViewsService): void {
+    if (!this._debuggerWorkspaceEnabled) {
+      api.destroyWhere(item => item instanceof DebuggerModel);
+      return;
+    }
+
+    // TODO
   }
 
   setTriggerNux(triggerNux: TriggerNux): void {
