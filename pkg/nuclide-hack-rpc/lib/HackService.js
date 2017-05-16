@@ -53,7 +53,7 @@ import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import invariant from 'assert';
 import {
-  PerConnectionLanguageService,
+  createMultiLspLanguageService,
 } from '../../nuclide-vscode-language-service';
 import {callHHClient} from './HackHelpers';
 import {
@@ -111,7 +111,7 @@ export async function initializeLsp(
   invariant(fileNotifier instanceof FileCache);
   logger.setLogLevel(logLevel);
   const cmd = command === '' ? await getHackCommand() : command;
-  return new PerConnectionLanguageService(
+  return createMultiLspLanguageService(
     logger,
     fileNotifier,
     host,

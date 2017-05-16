@@ -36,7 +36,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
   FileDiagnosticUpdate,
-  MessageType,
+  MessageType as DiagnosticMessageType,
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {
   AutocompleteResult,
@@ -72,6 +72,7 @@ import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
 import invariant from 'assert';
+import {spawn} from '../../commons-node/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
@@ -83,7 +84,7 @@ import {
 import * as rpc from 'vscode-jsonrpc';
 import {Observable} from 'rxjs';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
-import {LanguageServerV2} from './languageserver';
+import {LspConnection} from './LspConnection';
 import {TextDocumentSyncKind, DiagnosticSeverity, SymbolKind} from './protocol';
 import {
   className,
@@ -95,13 +96,14 @@ import {
 
 // Marshals messages from Nuclide's LanguageService
 // to VS Code's Language Server Protocol
-export class LanguageServerProtocolProcess {
+export class LspLanguageService {
   _projectRoot: string;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
   _host: HostServices;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
-  _createProcess: () => Promise<child_process$ChildProcess>;
+  _command: string;
+  _args: Array<string>;
   _process: LspProcess;
   _fileExtensions: Array<string>;
   _logger: CategoryLogger;
@@ -110,7 +112,8 @@ export class LanguageServerProtocolProcess {
     logger: CategoryLogger,
     fileCache: FileCache,
     host: HostServices,
-    createProcess: () => Promise<child_process$ChildProcess>,
+    command: string,
+    args: Array<string>,
     projectRoot: string,
     fileExtensions: Array<string>,
   ) {
@@ -119,28 +122,9 @@ export class LanguageServerProtocolProcess {
     this._host = host;
     this._lspFileVersionNotifier = new FileVersionNotifier();
     this._projectRoot = projectRoot;
-    this._createProcess = createProcess;
+    this._command = command;
+    this._args = args;
     this._fileExtensions = fileExtensions;
-  }
-
-  static async create(
-    logger: CategoryLogger,
-    fileCache: FileCache,
-    host: HostServices,
-    createProcess: () => Promise<child_process$ChildProcess>,
-    projectRoot: string,
-    fileExtensions: Array<string>,
-  ): Promise<LanguageServerProtocolProcess> {
-    const result = new LanguageServerProtocolProcess(
-      logger,
-      fileCache,
-      host,
-      createProcess,
-      projectRoot,
-      fileExtensions,
-    );
-    await result._ensureProcess();
-    return result;
   }
 
   _subscribeToFileEvents(): void {
@@ -190,11 +174,21 @@ export class LanguageServerProtocolProcess {
       });
   }
 
+  _launch(): Promise<child_process$ChildProcess> {
+    this._logger.logInfo(`LspLaunch: ${this._command} ${this._args.join(' ')}`);
+    // TODO: This should be cancelable/killable.
+    const processStream = spawn(this._command, this._args).publish();
+    const processPromise = processStream.take(1).toPromise();
+    processStream.connect();
+    return processPromise;
+  }
+
   // TODO: Handle the process termination/restart.
   async _ensureProcess(): Promise<void> {
     try {
-      const proc = await this._createProcess();
+      const proc = await this._launch();
       this._process = await LspProcess.create(
+        this._host,
         this._logger,
         proc,
         this._projectRoot,
@@ -764,7 +758,7 @@ export class LanguageServerProtocolProcess {
     this._process.dispose();
     /* TODO
     if (!this.isDisposed()) {
-      this._host.dispose();
+    this._host.dispose();
       // Atempt to send disconnect message before shutting down connection
       try {
         this._logger.logTrace(
@@ -860,7 +854,7 @@ class DerivedServerCapabilities {
 class LspProcess {
   _logger: CategoryLogger;
   _process: child_process$ChildProcess;
-  _connection: LanguageServerV2;
+  _connection: LspConnection;
   _capabilities: ServerCapabilities;
   _derivedCapabilities: DerivedServerCapabilities;
   _projectRoot: NuclideUri;
@@ -920,11 +914,12 @@ class LspProcess {
     connection.listen();
     // TODO: connection.onNotification(this._onNotification.bind(this));
 
-    this._connection = new LanguageServerV2(this._logger, connection);
+    this._connection = new LspConnection(connection);
   }
 
   // Creates the connection and initializes capabilities
   static async create(
+    host: HostServices,
     logger: CategoryLogger,
     process: child_process$ChildProcess,
     projectRoot: NuclideUri,
@@ -1031,7 +1026,7 @@ export function convertDiagnostic(
   };
 }
 
-export function convertSeverity(severity?: number): MessageType {
+export function convertSeverity(severity?: number): DiagnosticMessageType {
   switch (severity) {
     case null:
     case undefined:

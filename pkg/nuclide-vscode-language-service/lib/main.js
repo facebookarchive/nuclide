@@ -16,49 +16,41 @@ import type {
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 
 import {FileCache} from '../../nuclide-open-files-rpc';
-import {LanguageServerProtocolProcess} from './process';
+import {LspLanguageService} from './LspLanguageService';
 import {
   MultiProjectLanguageService,
   forkHostServices,
 } from '../../nuclide-language-service-rpc';
-import {spawn} from '../../commons-node/process';
 
-export class PerConnectionLanguageService extends MultiProjectLanguageService {
-  constructor(
-    logger: CategoryLogger,
-    fileCache: FileCache,
-    host: HostServices,
-    command: string,
-    args: Array<string>,
-    projectFileName: string,
-    fileExtensions: Array<NuclideUri>,
-  ) {
-    const languageServiceFactory = async (projectDir: string) => {
-      return LanguageServerProtocolProcess.create(
-        logger,
-        fileCache,
-        await forkHostServices(host, logger), // LSP's responsible for disposing
-        () => {
-          logger.logInfo(
-            `PerConnectionLanguageService launch: ${command} ${args.join(' ')}`,
-          );
-          // TODO: This should be cancelable/killable.
-          const processStream = spawn(command, args).publish(); // TODO: current dir?
-          const processPromise = processStream.take(1).toPromise();
-          processStream.connect();
-          return processPromise;
-        },
-        projectDir,
-        fileExtensions,
-      );
-    };
-    super(
+export function createMultiLspLanguageService(
+  logger: CategoryLogger,
+  fileCache: FileCache,
+  host: HostServices,
+  command: string,
+  args: Array<string>,
+  projectFileName: string,
+  fileExtensions: Array<NuclideUri>,
+): MultiProjectLanguageService<LspLanguageService> {
+  const languageServiceFactory = async (projectDir: string) => {
+    const lsp = new LspLanguageService(
       logger,
       fileCache,
-      host,
-      projectFileName,
+      (await forkHostServices(host, logger)),
+      command,
+      args,
+      projectDir,
       fileExtensions,
-      languageServiceFactory,
     );
-  }
+    await lsp._ensureProcess();
+    return lsp;
+  };
+
+  return new MultiProjectLanguageService(
+    logger,
+    fileCache,
+    host,
+    projectFileName,
+    fileExtensions,
+    languageServiceFactory,
+  );
 }

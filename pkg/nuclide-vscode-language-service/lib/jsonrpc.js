@@ -11,7 +11,7 @@
 
 // https://github.com/Microsoft/vscode-languageserver-node/blob/master/jsonrpc/src/main.ts
 export type JsonRpcConnection = {
-  sendRequest(method: string, params?: Object): Promise<Object>,
+  sendRequest(method: string, params?: Object): Promise<any>,
   sendNotification(method: string, params?: Object): void,
   listen(): void,
   onNotification(type: {method: string}, callback: (Object) => void): void,
