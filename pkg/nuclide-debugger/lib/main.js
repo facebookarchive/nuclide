@@ -161,6 +161,7 @@ class DebuggerPaneViewModel {
   _config: DebuggerPaneConfig;
   _isLifetimeView: boolean;
   _debuggerModel: DebuggerModel;
+  _removedFromLayout: boolean;
 
   constructor(
     config: DebuggerPaneConfig,
@@ -170,12 +171,13 @@ class DebuggerPaneViewModel {
     this._config = config;
     this._debuggerModel = debuggerModel;
     this._isLifetimeView = isLifetimeView;
+    this._removedFromLayout = false;
   }
 
   dispose(): void {}
 
   destroy(): void {
-    if (this._isLifetimeView) {
+    if (this._isLifetimeView && !this._removedFromLayout) {
       // If the view being destroyed is intended to control the lifetime
       // of the debugging sessoin, destroy the model as well.
       this._debuggerModel.destroy();
@@ -208,6 +210,14 @@ class DebuggerPaneViewModel {
 
   getConfig(): DebuggerPaneConfig {
     return this._config;
+  }
+
+  isLifetimeView(): boolean {
+    return this._isLifetimeView;
+  }
+
+  setRemovedFromLayout(removed: boolean): void {
+    this._removedFromLayout = removed;
   }
 
   // Atom view needs to provide this, otherwise Atom throws an exception splitting panes for the view.
@@ -530,7 +540,7 @@ class Activation {
         return this._getModelForDebuggerUri(uri);
       }),
       () => {
-        this._hideAllDebuggerViews(api);
+        this._hideDebuggerViews(api, false);
       },
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:show': () => {
@@ -539,7 +549,7 @@ class Activation {
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:hide': () => {
-          this._hideAllDebuggerViews(api);
+          this._hideDebuggerViews(api, false);
         },
       }),
     );
@@ -591,7 +601,7 @@ class Activation {
     dock: atom$AbastractPaneContainer,
     orientation: string,
   }> {
-    invariant(this._debuggerWorkspaceEnabled === true);
+    invariant(this._debuggerWorkspaceEnabled);
     const docks = new Array(4);
 
     invariant(atom.workspace.getLeftDock != null);
@@ -637,7 +647,11 @@ class Activation {
     );
   }
 
-  _appendItemToDock(dock: atom$AbastractPaneContainer, item: Object): void {
+  _appendItemToDock(
+    dock: atom$AbastractPaneContainer,
+    item: Object,
+    debuggerItemsPerDock: Map<atom$AbastractPaneContainer, number>,
+  ): void {
     const panes = dock.getPanes();
     invariant(panes.length >= 1);
 
@@ -660,11 +674,30 @@ class Activation {
           // and stop laying out the debugger if an item could not be set as active.
         }
       } else {
-        // For vertical panes, split the pane down and add items vertically.
-        dockPane.splitDown({
-          items: [item],
-        });
+        // When adding to a vertical dock that is not empty, but contains no debugger
+        // items, split to create a new column for the debugger stuff. Otherwise, append
+        // downward.
+        if (debuggerItemsPerDock.get(dock) == null) {
+          dock.getActivePane().splitRight({
+            items: [item],
+          });
+        } else {
+          dockPane.splitDown({
+            items: [item],
+          });
+        }
       }
+    }
+
+    // Keep track of which dock(s) we've appended debugger panes into. This
+    // allows us to quickly check if the dock needs to be split to separate
+    // debugger panes and pre-existing panes that have nothing to do with
+    // the debugger.
+    if (debuggerItemsPerDock.get(dock) == null) {
+      debuggerItemsPerDock.set(dock, 1);
+    } else {
+      const itemCount = debuggerItemsPerDock.get(dock);
+      debuggerItemsPerDock.set(dock, itemCount + 1);
     }
 
     if (dock.isVisible != null && dock.show != null && !dock.isVisible()) {
@@ -678,16 +711,74 @@ class Activation {
       return;
     }
 
-    // TODO
+    // Hide any debugger panes other than the controls so we have a known
+    // starting point for preparing the layout.
+    this._hideDebuggerViews(api, true);
+
+    const addedItemsByDock = new Map();
+    const defaultDock = this._getWorkspaceDocks().find(d => d.name === 'right');
+    invariant(defaultDock != null);
+
+    // Lay out the debugger panes according to their configurations.
+    const mode = this._model.getStore().getDebuggerMode();
+    this._debuggerPanes.forEach(debuggerPane => {
+      const targetDock = defaultDock.dock;
+      if (debuggerPane.isEnabled == null || debuggerPane.isEnabled()) {
+        this._appendItemToDock(
+          targetDock,
+          new DebuggerPaneViewModel(
+            debuggerPane,
+            this._model,
+            debuggerPane.isLifetimeView,
+          ),
+          addedItemsByDock,
+        );
+      }
+    });
   }
 
-  _hideAllDebuggerViews(api: WorkspaceViewsService): void {
+  _hideDebuggerViews(
+    api: WorkspaceViewsService,
+    performingLayout: boolean,
+  ): void {
     if (!this._debuggerWorkspaceEnabled) {
       api.destroyWhere(item => item instanceof DebuggerModel);
       return;
     }
 
-    // TODO
+    // Docks do not toggle closed automatically when we remove all their items.
+    // They can contain things other than the debugger items though, and could
+    // have been left open and empty by the user. Toggle closed any docks that
+    // end up empty only as a result of closing the debugger.
+    const docks = this._getWorkspaceDocks();
+    const previouslyEmpty = docks.map(dock => this._isDockEmpty(dock.dock));
+
+    // Find and destroy all debugger items, and the panes that contained them.
+    atom.workspace.getPanes().forEach(pane => {
+      pane.getItems().forEach(item => {
+        if (item instanceof DebuggerPaneViewModel) {
+          // Remove the view model.
+          item.setRemovedFromLayout(true);
+          pane.destroyItem(item);
+
+          // If removing the model left an empty pane, remove the pane.
+          if (pane.getItems().length === 0) {
+            pane.destroy();
+          }
+        }
+      });
+    });
+
+    // If any docks became empty as a result of closing those panes, hide the dock.
+    if (!performingLayout) {
+      docks
+        .map(dock => this._isDockEmpty(dock.dock))
+        .forEach((empty, index) => {
+          if (empty && !previouslyEmpty[index]) {
+            docks[index].dock.hide();
+          }
+        });
+    }
   }
 
   setTriggerNux(triggerNux: TriggerNux): void {
