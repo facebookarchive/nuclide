@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObservableManager = undefined;
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,20 +34,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {registerConsoleLogging} from '../../nuclide-debugger-base';
-import utils from './utils';
-const {log, logError} = utils;
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+const { log, logError } = (_utils || _load_utils()).default;
 
-type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError',
-  message: string,
-};
 
 /**
  * The ObservableManager keeps track of the streams we use to talk to the server-side nuclide
@@ -32,54 +53,35 @@ type NotificationMessage = {
  * The ObservableManager takes ownership of its observables, and disposes them when its dispose
  * method is called.
  */
-export class ObservableManager {
-  _notifications: Observable<NotificationMessage>;
-  _outputWindowMessages: Observable<Object>;
-  _disposables: UniversalDisposable;
+class ObservableManager {
 
-  constructor(
-    notifications: Observable<NotificationMessage>,
-    outputWindowMessages: Observable<Object>,
-  ) {
+  constructor(notifications, outputWindowMessages) {
     this._notifications = notifications;
     this._outputWindowMessages = outputWindowMessages;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._subscribe();
   }
 
-  _subscribe(): void {
+  _subscribe() {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(
-      sharedNotifications.subscribe(
-        this._handleNotificationMessage.bind(this),
-        this._handleNotificationError.bind(this),
-        this._handleNotificationEnd.bind(this),
-      ),
-    );
+    this._disposables.add(sharedNotifications.subscribe(this._handleNotificationMessage.bind(this), this._handleNotificationError.bind(this), this._handleNotificationEnd.bind(this)));
     this._registerConsoleLogging(this._outputWindowMessages.share());
   }
 
-  _registerConsoleLogging(
-    sharedOutputWindowMessages: Observable<Object>,
-  ): void {
-    const filteredMesages = sharedOutputWindowMessages
-      .filter(messageObj => messageObj.method === 'Console.messageAdded')
-      .map(messageObj => {
-        return JSON.stringify({
-          level: messageObj.params.message.level,
-          text: messageObj.params.message.text,
-        });
+  _registerConsoleLogging(sharedOutputWindowMessages) {
+    const filteredMesages = sharedOutputWindowMessages.filter(messageObj => messageObj.method === 'Console.messageAdded').map(messageObj => {
+      return JSON.stringify({
+        level: messageObj.params.message.level,
+        text: messageObj.params.message.text
       });
-    const outputDisposable = registerConsoleLogging(
-      'PHP Debugger',
-      filteredMesages,
-    );
+    });
+    const outputDisposable = (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).registerConsoleLogging)('PHP Debugger', filteredMesages);
     if (outputDisposable != null) {
       this._disposables.add(outputDisposable);
     }
   }
 
-  _handleNotificationMessage(message: NotificationMessage): void {
+  _handleNotificationMessage(message) {
     switch (message.type) {
       case 'info':
         log('Notification observerable info: ' + message.message);
@@ -107,15 +109,16 @@ export class ObservableManager {
     }
   }
 
-  _handleNotificationError(error: string): void {
+  _handleNotificationError(error) {
     logError('Notification observerable error: ' + error);
   }
 
-  _handleNotificationEnd(): void {
+  _handleNotificationEnd() {
     log('Notification observerable ends.');
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.ObservableManager = ObservableManager;

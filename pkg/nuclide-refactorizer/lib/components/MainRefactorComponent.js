@@ -1,34 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Store, RefactorState} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MainRefactorComponent = undefined;
 
-import React from 'react';
-import invariant from 'assert';
+var _react = _interopRequireDefault(require('react'));
 
-import {Button} from '../../../nuclide-ui/Button';
+var _Button;
 
-import {FreeformRefactorComponent} from './FreeformRefactorComponent';
-import {PickRefactorComponent} from './PickRefactorComponent';
-import {RenameComponent} from './RenameComponent';
-import * as Actions from '../refactorActions';
+function _load_Button() {
+  return _Button = require('../../../nuclide-ui/Button');
+}
 
-type Props = {
-  appState: RefactorState,
-  store: Store,
-};
+var _FreeformRefactorComponent;
 
-export class MainRefactorComponent extends React.Component {
-  props: Props;
-  render(): React.Element<any> | null {
+function _load_FreeformRefactorComponent() {
+  return _FreeformRefactorComponent = require('./FreeformRefactorComponent');
+}
+
+var _PickRefactorComponent;
+
+function _load_PickRefactorComponent() {
+  return _PickRefactorComponent = require('./PickRefactorComponent');
+}
+
+var _RenameComponent;
+
+function _load_RenameComponent() {
+  return _RenameComponent = require('./RenameComponent');
+}
+
+var _refactorActions;
+
+function _load_refactorActions() {
+  return _refactorActions = _interopRequireWildcard(require('../refactorActions'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class MainRefactorComponent extends _react.default.Component {
+  render() {
     if (this.props.appState.type === 'closed') {
       return null;
     } else {
@@ -38,49 +52,77 @@ export class MainRefactorComponent extends React.Component {
     }
   }
 
-  _render(): React.Element<any> {
-    return (
-      <div>
-        {this.getHeaderElement()}
-        {this.getInnerElement()}
-      </div>
+  _render() {
+    return _react.default.createElement(
+      'div',
+      null,
+      this.getHeaderElement(),
+      this.getInnerElement()
     );
   }
 
-  getHeaderElement(): React.Element<any> {
+  getHeaderElement() {
     const appState = this.props.appState;
-    invariant(appState.type === 'open');
-    return (
-      <div className="nuclide-refactorizer-header">
-        <span>Refactor</span>
-        <Button onClick={() => this.props.store.dispatch(Actions.close())}>
-          Close
-        </Button>
-      </div>
+
+    if (!(appState.type === 'open')) {
+      throw new Error('Invariant violation: "appState.type === \'open\'"');
+    }
+
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-refactorizer-header' },
+      _react.default.createElement(
+        'span',
+        null,
+        'Refactor'
+      ),
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        { onClick: () => this.props.store.dispatch((_refactorActions || _load_refactorActions()).close()) },
+        'Close'
+      )
     );
   }
 
-  getInnerElement(): React.Element<any> {
+  getInnerElement() {
     const appState = this.props.appState;
-    invariant(appState.type === 'open');
+
+    if (!(appState.type === 'open')) {
+      throw new Error('Invariant violation: "appState.type === \'open\'"');
+    }
+
     const phase = appState.phase;
     switch (phase.type) {
       case 'get-refactorings':
-        return <div>Waiting for refactorings...</div>;
+        return _react.default.createElement(
+          'div',
+          null,
+          'Waiting for refactorings...'
+        );
       case 'pick':
-        return (
-          <PickRefactorComponent pickPhase={phase} store={this.props.store} />
-        );
+        return _react.default.createElement((_PickRefactorComponent || _load_PickRefactorComponent()).PickRefactorComponent, { pickPhase: phase, store: this.props.store });
       case 'rename':
-        return <RenameComponent phase={phase} store={this.props.store} />;
+        return _react.default.createElement((_RenameComponent || _load_RenameComponent()).RenameComponent, { phase: phase, store: this.props.store });
       case 'freeform':
-        return (
-          <FreeformRefactorComponent phase={phase} store={this.props.store} />
-        );
+        return _react.default.createElement((_FreeformRefactorComponent || _load_FreeformRefactorComponent()).FreeformRefactorComponent, { phase: phase, store: this.props.store });
       case 'execute':
-        return <div>Executing refactoring...</div>;
+        return _react.default.createElement(
+          'div',
+          null,
+          'Executing refactoring...'
+        );
       default:
         throw new Error(`Unknown phase ${phase.type}`);
     }
   }
 }
+exports.MainRefactorComponent = MainRefactorComponent; /**
+                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                        * All rights reserved.
+                                                        *
+                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                        * the root directory of this source tree.
+                                                        *
+                                                        * 
+                                                        * @format
+                                                        */

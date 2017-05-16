@@ -1,3 +1,10 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.offsetToPoint = offsetToPoint;
+exports.locToRange = locToRange;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +12,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Location} from 'graphql/language';
-import invariant from 'invariant';
-
-export class Range {
-  start: Point;
-  end: Point;
-  constructor(start: Point, end: Point): void {
+class Range {
+  constructor(start, end) {
     this.start = start;
     this.end = end;
   }
 
-  containsPoint(point: Point): boolean {
+  containsPoint(point) {
     const withinRow = this.start.row <= point.row && this.end.row >= point.row;
-    const withinColumn =
-      this.start.column <= point.column && this.end.column >= point.column;
+    const withinColumn = this.start.column <= point.column && this.end.column >= point.column;
     return withinRow && withinColumn;
   }
 }
 
-export class Point {
-  row: number;
-  column: number;
-  constructor(row: number, column: number): void {
+exports.Range = Range;
+class Point {
+  constructor(row, column) {
     this.row = row;
     this.column = column;
   }
 
-  lessThanOrEqualTo(point: Point): boolean {
-    if (
-      this.row < point.row ||
-      (this.row === point.row && this.column <= point.column)
-    ) {
+  lessThanOrEqualTo(point) {
+    if (this.row < point.row || this.row === point.row && this.column <= point.column) {
       return true;
     }
 
@@ -48,7 +45,8 @@ export class Point {
   }
 }
 
-export function offsetToPoint(text: string, loc: number): Point {
+exports.Point = Point;
+function offsetToPoint(text, loc) {
   const EOL = '\n';
   const buf = text.slice(0, loc);
   const rows = buf.split(EOL).length - 1;
@@ -56,8 +54,11 @@ export function offsetToPoint(text: string, loc: number): Point {
   return new Point(rows, loc - lastLineIndex - 1);
 }
 
-export function locToRange(text: string, loc: ?Location): Range {
-  invariant(loc, 'Location expected.');
+function locToRange(text, loc) {
+  if (!loc) {
+    throw new Error('Location expected.');
+  }
+
   const start = offsetToPoint(text, loc.start);
   const end = offsetToPoint(text, loc.end);
   return new Range(start, end);

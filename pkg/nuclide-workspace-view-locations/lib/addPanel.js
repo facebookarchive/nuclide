@@ -1,20 +1,10 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-type PanelLocation = 'top' | 'right' | 'bottom' | 'left';
-
-export default function addPanel(
-  location: PanelLocation,
-  options: atom$WorkspaceAddPanelOptions,
-): atom$Panel {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = addPanel;
+function addPanel(location, options) {
   switch (location) {
     case 'top':
       return atom.workspace.addTopPanel(options);
@@ -27,4 +17,13 @@ export default function addPanel(
     default:
       throw new Error(`Invalid location: ${location}`);
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

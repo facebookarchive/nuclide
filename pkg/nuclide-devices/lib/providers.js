@@ -1,38 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {
-  DeviceListProvider,
-  DeviceInfoProvider,
-  DeviceProcessesProvider,
-  DeviceTasksProvider,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDeviceListProviders = getDeviceListProviders;
+exports.getDeviceInfoProviders = getDeviceInfoProviders;
+exports.getDeviceTasksProviders = getDeviceTasksProviders;
+exports.getDeviceProcessesProviders = getDeviceProcessesProviders;
 
-const deviceListProviders: Set<DeviceListProvider> = new Set();
-const deviceInfoProviders: Set<DeviceInfoProvider> = new Set();
-const deviceTasksProviders: Set<DeviceTasksProvider> = new Set();
-const deviceProcessesProviders: Set<DeviceProcessesProvider> = new Set();
+var _types;
 
-export function getDeviceListProviders(): Set<DeviceListProvider> {
+function _load_types() {
+  return _types = require('./types');
+}
+
+const deviceListProviders = new Set(); /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        * @format
+                                        */
+
+const deviceInfoProviders = new Set();
+const deviceTasksProviders = new Set();
+const deviceProcessesProviders = new Set();
+
+function getDeviceListProviders() {
   return deviceListProviders;
 }
 
-export function getDeviceInfoProviders(): Set<DeviceInfoProvider> {
+function getDeviceInfoProviders() {
   return deviceInfoProviders;
 }
 
-export function getDeviceTasksProviders(): Set<DeviceTasksProvider> {
+function getDeviceTasksProviders() {
   return deviceTasksProviders;
 }
 
-export function getDeviceProcessesProviders(): Set<DeviceProcessesProvider> {
+function getDeviceProcessesProviders() {
   return deviceProcessesProviders;
 }

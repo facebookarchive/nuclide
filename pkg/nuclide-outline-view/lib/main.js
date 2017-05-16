@@ -1,3 +1,61 @@
+'use strict';
+
+var _ActiveEditorRegistry;
+
+function _load_ActiveEditorRegistry() {
+  return _ActiveEditorRegistry = _interopRequireDefault(require('nuclide-commons-atom/ActiveEditorRegistry'));
+}
+
+var _debounced;
+
+function _load_debounced() {
+  return _debounced = require('nuclide-commons-atom/debounced');
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _OutlineViewPanel;
+
+function _load_OutlineViewPanel() {
+  return _OutlineViewPanel = require('./OutlineViewPanel');
+}
+
+var _createOutlines;
+
+function _load_createOutlines() {
+  return _createOutlines = require('./createOutlines');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Includes additional information that is useful to the UI, but redundant or nonsensical for
+ * providers to include in their responses.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,194 +63,88 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
-
-import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
-import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
-import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
-
-import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
-import {createOutlines} from './createOutlines';
-import {Observable} from 'rxjs';
-
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
-import type {Outline, OutlineTreeKind} from './rpc-types';
-
-export type OutlineTreeForUi = {
-  icon?: string, // from atom$Octicon, but we use string for convenience of remoting
-  kind?: OutlineTreeKind, // kind you can pass to the UI for theming
-  plainText?: string,
-  tokenizedText?: TokenizedText,
-
-  startPosition: atom$Point,
-  endPosition?: atom$Point,
-  children: Array<OutlineTreeForUi>,
-  highlighted: boolean,
-};
-
-/**
- * Includes additional information that is useful to the UI, but redundant or nonsensical for
- * providers to include in their responses.
- */
-export type OutlineForUi =
-  | {
-      // The initial state at startup.
-      kind: 'empty',
-    }
-  | {
-      // The thing that currently has focus is not a text editor.
-      kind: 'not-text-editor',
-    }
-  | {
-      // Currently awaiting results from a provider (for longer than a certain delay).
-      kind: 'loading',
-    }
-  | {
-      // Indicates that no provider is registered for the given grammar.
-      kind: 'no-provider',
-      // Human-readable name for the grammar.
-      grammar: string,
-    }
-  | {
-      // Indicates that a provider is registered but that it did not return an outline.
-      kind: 'provider-no-outline',
-    }
-  | {
-      kind: 'outline',
-      outlineTrees: Array<OutlineTreeForUi>,
-      /**
-   * Use a TextEditor instead of a path so that:
-   * - If there are multiple editors for a file, we always jump to outline item
-   *   locations in the correct editor.
-   * - Jumping to outline item locations works for new, unsaved files.
-   */
-      editor: atom$TextEditor,
-    };
-
-export type OutlineProvider = {
-  name: string,
-  // If there are multiple providers for a given grammar, the one with the highest priority will be
-  // used.
-  priority: number,
-  grammarScopes: Array<string>,
-  updateOnEdit?: boolean,
-  getOutline: (editor: TextEditor) => Promise<?Outline>,
-};
-
-export type SerializedOutlineViewPanelState = {
-  deserializer: 'nuclide.OutlineViewPanelState',
-};
-
-export type ResultsStreamProvider = {
-  getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>,
-};
-
 class Activation {
-  _disposables: UniversalDisposable;
-
-  _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-    this._editorService = new ActiveEditorRegistry(
-      (provider, editor) => {
-        track('nuclide-outline-view-getoutline');
-        return provider.getOutline(editor);
-      },
-      {},
-      getActiveEditorRegistryEventSources(),
-    );
+    this._editorService = new (_ActiveEditorRegistry || _load_ActiveEditorRegistry()).default((provider, editor) => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-outline-view-getoutline');
+      return provider.getOutline(editor);
+    }, {}, getActiveEditorRegistryEventSources());
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeOutlineProvider(provider: OutlineProvider): IDisposable {
+  consumeOutlineProvider(provider) {
     return this._editorService.consumeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar) {
     const toolBar = getToolBar('nuclide-outline-view');
-    const {element} = toolBar.addButton({
+    const { element } = toolBar.addButton({
       icon: 'list-unordered',
       callback: 'nuclide-outline-view:toggle',
       tooltip: 'Toggle Outline View',
-      priority: 200,
+      priority: 200
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
     element.classList.add('nuclide-outline-view-toolbar-button');
-    const disposable = new UniversalDisposable(() => {
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);
     return disposable;
   }
 
-  _createOutlineViewPanelState(): OutlineViewPanelState {
-    track('nuclide-outline-view-show');
-    return new OutlineViewPanelState(createOutlines(this._editorService));
+  _createOutlineViewPanelState() {
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('nuclide-outline-view-show');
+    return new (_OutlineViewPanel || _load_OutlineViewPanel()).OutlineViewPanelState((0, (_createOutlines || _load_createOutlines()).createOutlines)(this._editorService));
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
-        if (uri === WORKSPACE_VIEW_URI) {
-          return this._createOutlineViewPanelState();
-        }
-      }),
-      () => api.destroyWhere(item => item instanceof OutlineViewPanelState),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:toggle',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
-        },
-      ),
-    );
+  consumeWorkspaceViewsService(api) {
+    this._disposables.add(api.addOpener(uri => {
+      if (uri === (_OutlineViewPanel || _load_OutlineViewPanel()).WORKSPACE_VIEW_URI) {
+        return this._createOutlineViewPanelState();
+      }
+    }), () => api.destroyWhere(item => item instanceof (_OutlineViewPanel || _load_OutlineViewPanel()).OutlineViewPanelState), atom.commands.add('atom-workspace', 'nuclide-outline-view:toggle', event => {
+      api.toggle((_OutlineViewPanel || _load_OutlineViewPanel()).WORKSPACE_VIEW_URI, event.detail);
+    }));
   }
 
-  deserializeOutlineViewPanelState(): OutlineViewPanelState {
+  deserializeOutlineViewPanelState() {
     return this._createOutlineViewPanelState();
   }
 
-  getOutlineViewResultsStream(): ResultsStreamProvider {
+  getOutlineViewResultsStream() {
     return {
-      getResultsStream: () => this._editorService.getResultsStream(),
+      getResultsStream: () => this._editorService.getResultsStream()
     };
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);
 
 // TODO this can be removed once we no longer want to support versions of Atom less than 1.17.0
 // (D4973408)
 function getActiveEditorRegistryEventSources() {
   return {
-    activeEditors: observeActivePaneItemDebounced()
-      .switchMap(item => {
-        if (isValidTextEditor(item)) {
-          // Flow cannot understand the type refinement provided by the isValidTextEditor function,
-          // so we have to cast.
-          return Observable.of(((item: any): atom$TextEditor));
-        } else if (item instanceof OutlineViewPanelState) {
-          // Ignore switching to the outline view.
-          return Observable.empty();
-        }
-        return Observable.of(null);
-      })
-      .distinctUntilChanged(),
+    activeEditors: (0, (_debounced || _load_debounced()).observeActivePaneItemDebounced)().switchMap(item => {
+      if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(item)) {
+        // Flow cannot understand the type refinement provided by the isValidTextEditor function,
+        // so we have to cast.
+        return _rxjsBundlesRxMinJs.Observable.of(item);
+      } else if (item instanceof (_OutlineViewPanel || _load_OutlineViewPanel()).OutlineViewPanelState) {
+        // Ignore switching to the outline view.
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      return _rxjsBundlesRxMinJs.Observable.of(null);
+    }).distinctUntilChanged()
   };
 }

@@ -1,143 +1,101 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-// It's really convenient to model processes with Observables but Atom use a more OO [Task
-// interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
-// two.
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.taskFromObservable = taskFromObservable;
+exports.observableFromTask = observableFromTask;
+exports.createMessage = createMessage;
+exports.createStatus = createStatus;
+exports.createStep = createStep;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import invariant from 'assert';
-import {Observable, Subscription} from 'rxjs';
+var _UniversalDisposable;
 
-// FIXME: This should really be an interface, but we're currently transpiling with Babel 5, which
-//   doesn't support that.
-export type Task = {
-  start: () => void,
-  cancel: () => void,
-  onDidComplete: (callback: () => mixed) => IDisposable,
-  onDidError: (callback: (err: Error) => mixed) => IDisposable,
-  onMessage?: (callback: (message: Message) => mixed) => IDisposable,
-  onProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
-  onResult?: (callback: (result: mixed) => mixed) => IDisposable,
-  onStatusChange?: (callback: (status: ?string) => mixed) => IDisposable,
-  isRunning: () => boolean,
-};
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
-export type Message = {text: string, level: Level};
+var _event;
 
-type MessageEvent = {
-  type: 'message',
-  message: Message,
-};
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
 
-type ProgressEvent = {
-  type: 'progress',
-  progress: ?number,
-};
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-type ResultEvent = {
-  type: 'result',
-  result: mixed,
-};
-
-type StatusEvent = {
-  type: 'status',
-  status: ?string,
-};
-
-export type TaskEvent =
-  | MessageEvent
-  | ProgressEvent
-  | ResultEvent
-  | StatusEvent;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Subscribe to an observable and transform it into the Task interface. The Task interface allows us
  * to interop nicely with Atom and Atom packages without forcing them to use Rx, but internally,
  * Observables are probably how we'll always build the functionality.
  */
-export function taskFromObservable(observable: Observable<TaskEvent>): Task {
+
+
+// FIXME: This should really be an interface, but we're currently transpiling with Babel 5, which
+//   doesn't support that.
+function taskFromObservable(observable) {
   const events = observable.share().publish();
   let subscription;
   let isRunning = false;
 
   const task = {
-    start(): void {
+    start() {
       if (subscription == null) {
         isRunning = true;
         subscription = events.connect();
       }
     },
-    cancel(): void {
+    cancel() {
       if (subscription != null) {
         subscription.unsubscribe();
       }
     },
-    onDidComplete(callback: () => mixed): IDisposable {
-      return new UniversalDisposable(
-        events.subscribe({complete: callback, error: () => {}}),
-      );
+    onDidComplete(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.subscribe({ complete: callback, error: () => {} }));
     },
-    onDidError(callback: (err: Error) => mixed): IDisposable {
-      return new UniversalDisposable(events.subscribe({error: callback}));
+    onDidError(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.subscribe({ error: callback }));
     },
-    onMessage(callback: (message: Message) => mixed): IDisposable {
-      return new UniversalDisposable(
-        events
-          .filter(event => event.type === 'message')
-          .map(event => {
-            invariant(event.type === 'message');
-            return event.message;
-          })
-          .subscribe({next: callback, error: () => {}}),
-      );
+    onMessage(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.filter(event => event.type === 'message').map(event => {
+        if (!(event.type === 'message')) {
+          throw new Error('Invariant violation: "event.type === \'message\'"');
+        }
+
+        return event.message;
+      }).subscribe({ next: callback, error: () => {} }));
     },
-    onProgress(callback: (progress: ?number) => mixed): IDisposable {
-      return new UniversalDisposable(
-        events
-          .filter(event => event.type === 'progress')
-          .map(event => {
-            invariant(event.type === 'progress');
-            return event.progress;
-          })
-          .subscribe({next: callback, error: () => {}}),
-      );
+    onProgress(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.filter(event => event.type === 'progress').map(event => {
+        if (!(event.type === 'progress')) {
+          throw new Error('Invariant violation: "event.type === \'progress\'"');
+        }
+
+        return event.progress;
+      }).subscribe({ next: callback, error: () => {} }));
     },
-    onResult(callback: (result: mixed) => mixed): IDisposable {
-      return new UniversalDisposable(
-        events
-          .filter(event => event.type === 'result')
-          .map(event => {
-            invariant(event.type === 'result');
-            return event.result;
-          })
-          .subscribe({next: callback, error: () => {}}),
-      );
+    onResult(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.filter(event => event.type === 'result').map(event => {
+        if (!(event.type === 'result')) {
+          throw new Error('Invariant violation: "event.type === \'result\'"');
+        }
+
+        return event.result;
+      }).subscribe({ next: callback, error: () => {} }));
     },
-    onStatusChange(callback: (status: ?string) => mixed): IDisposable {
-      return new UniversalDisposable(
-        events
-          .filter(event => event.type === 'status')
-          .map(event => {
-            invariant(event.type === 'status');
-            return event.status;
-          })
-          .subscribe({next: callback, error: () => {}}),
-      );
+    onStatusChange(callback) {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(events.filter(event => event.type === 'status').map(event => {
+        if (!(event.type === 'status')) {
+          throw new Error('Invariant violation: "event.type === \'status\'"');
+        }
+
+        return event.status;
+      }).subscribe({ next: callback, error: () => {} }));
     },
-    isRunning(): boolean {
+    isRunning() {
       return isRunning;
-    },
+    }
   };
   task.onDidError(() => {
     isRunning = false;
@@ -151,39 +109,34 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
 /**
  * Convert a task to an observable of events.
  */
-export function observableFromTask(task: Task): Observable<TaskEvent> {
-  return Observable.create(observer => {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+// It's really convenient to model processes with Observables but Atom use a more OO [Task
+// interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
+// two.
+
+function observableFromTask(task) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     let finished = false;
 
-    const messages = typeof task.onMessage === 'function'
-      ? observableFromSubscribeFunction(
-          task.onMessage.bind(task),
-        ).map(message => ({type: 'message', message}))
-      : Observable.never();
-    const progresses = typeof task.onProgress === 'function'
-      ? observableFromSubscribeFunction(
-          task.onProgress.bind(task),
-        ).map(progress => ({type: 'progress', progress}))
-      : Observable.never();
-    const results = typeof task.onResult === 'function'
-      ? observableFromSubscribeFunction(
-          task.onResult.bind(task),
-        ).map(result => ({type: 'result', result}))
-      : Observable.never();
-    const statuses = typeof task.onStatusChange === 'function'
-      ? observableFromSubscribeFunction(
-          task.onStatusChange.bind(task),
-        ).map(status => ({type: 'status', status}))
-      : Observable.never();
+    const messages = typeof task.onMessage === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onMessage.bind(task)).map(message => ({ type: 'message', message })) : _rxjsBundlesRxMinJs.Observable.never();
+    const progresses = typeof task.onProgress === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onProgress.bind(task)).map(progress => ({ type: 'progress', progress })) : _rxjsBundlesRxMinJs.Observable.never();
+    const results = typeof task.onResult === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onResult.bind(task)).map(result => ({ type: 'result', result })) : _rxjsBundlesRxMinJs.Observable.never();
+    const statuses = typeof task.onStatusChange === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onStatusChange.bind(task)).map(status => ({ type: 'status', status })) : _rxjsBundlesRxMinJs.Observable.never();
 
-    const completeEvents = observableFromSubscribeFunction(
-      task.onDidComplete.bind(task),
-    );
-    const errors = observableFromSubscribeFunction(
-      task.onDidError.bind(task),
-    ).switchMap(Observable.throw);
+    const completeEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onDidComplete.bind(task));
+    const errors = (0, (_event || _load_event()).observableFromSubscribeFunction)(task.onDidError.bind(task)).switchMap(_rxjsBundlesRxMinJs.Observable.throw);
 
-    const subscription = new Subscription();
+    const subscription = new _rxjsBundlesRxMinJs.Subscription();
 
     subscription.add(() => {
       if (!finished) {
@@ -191,19 +144,14 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
       }
     });
 
-    subscription.add(
-      Observable.merge(messages, progresses, results, statuses, errors)
-        .takeUntil(completeEvents)
-        .do({
-          complete: () => {
-            finished = true;
-          },
-          error: () => {
-            finished = true;
-          },
-        })
-        .subscribe(observer),
-    );
+    subscription.add(_rxjsBundlesRxMinJs.Observable.merge(messages, progresses, results, statuses, errors).takeUntil(completeEvents).do({
+      complete: () => {
+        finished = true;
+      },
+      error: () => {
+        finished = true;
+      }
+    }).subscribe(observer));
 
     task.start();
 
@@ -211,29 +159,17 @@ export function observableFromTask(task: Task): Observable<TaskEvent> {
   });
 }
 
-export function createMessage(
-  text: string,
-  level: Level,
-): Observable<TaskEvent> {
-  return Observable.of({
+function createMessage(text, level) {
+  return _rxjsBundlesRxMinJs.Observable.of({
     type: 'message',
-    message: {text, level},
+    message: { text, level }
   });
 }
 
-export function createStatus(status: string): Observable<TaskEvent> {
-  return Observable.of({type: 'status', status});
+function createStatus(status) {
+  return _rxjsBundlesRxMinJs.Observable.of({ type: 'status', status });
 }
 
-export function createStep(
-  stepName: ?string,
-  action: () => Observable<TaskEvent>,
-): Observable<TaskEvent> {
-  return Observable.concat(
-    Observable.of({type: 'progress', progress: null}),
-    stepName
-      ? Observable.of({type: 'status', status: stepName})
-      : Observable.empty(),
-    Observable.defer(action),
-  );
+function createStep(stepName, action) {
+  return _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of({ type: 'progress', progress: null }), stepName ? _rxjsBundlesRxMinJs.Observable.of({ type: 'status', status: stepName }) : _rxjsBundlesRxMinJs.Observable.empty(), _rxjsBundlesRxMinJs.Observable.defer(action));
 }

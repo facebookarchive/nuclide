@@ -1,3 +1,31 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../../nuclide-logging');
+}
+
+var _NuclideProtocolParser;
+
+function _load_NuclideProtocolParser() {
+  return _NuclideProtocolParser = _interopRequireDefault(require('./NuclideProtocolParser'));
+}
+
+var _DebuggerDomainDispatcher;
+
+function _load_DebuggerDomainDispatcher() {
+  return _DebuggerDomainDispatcher = _interopRequireDefault(require('./DebuggerDomainDispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +33,61 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import invariant from 'assert';
-
 require('./Object');
-import {getLogger} from '../../../nuclide-logging';
-const logger = getLogger('nuclide-debugger');
-import InspectorBackendClass from './NuclideProtocolParser';
-import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
-export default class BridgeAdapter {
-  _debuggerDispatcher: ?DebuggerDomainDispatcher;
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)('nuclide-debugger');
+class BridgeAdapter {
 
   constructor() {
-    (this: any)._handleServerMessage = this._handleServerMessage.bind(this);
+    this._handleServerMessage = this._handleServerMessage.bind(this);
   }
 
-  async start(debuggerInstance: Object): Promise<void> {
-    this._debuggerDispatcher = await InspectorBackendClass.bootstrap(
-      debuggerInstance,
-    );
+  start(debuggerInstance) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._debuggerDispatcher = yield (_NuclideProtocolParser || _load_NuclideProtocolParser()).default.bootstrap(debuggerInstance);
+    })();
   }
 
-  resume(): void {
-    invariant(this._debuggerDispatcher != null);
+  resume() {
+    if (!(this._debuggerDispatcher != null)) {
+      throw new Error('Invariant violation: "this._debuggerDispatcher != null"');
+    }
+
     this._debuggerDispatcher.resume();
   }
 
-  stepOver(): void {
-    invariant(this._debuggerDispatcher != null);
+  stepOver() {
+    if (!(this._debuggerDispatcher != null)) {
+      throw new Error('Invariant violation: "this._debuggerDispatcher != null"');
+    }
+
     this._debuggerDispatcher.stepOver();
   }
 
-  stepInto(): void {
-    invariant(this._debuggerDispatcher != null);
+  stepInto() {
+    if (!(this._debuggerDispatcher != null)) {
+      throw new Error('Invariant violation: "this._debuggerDispatcher != null"');
+    }
+
     this._debuggerDispatcher.stepInto();
   }
 
-  stepOut(): void {
-    invariant(this._debuggerDispatcher != null);
+  stepOut() {
+    if (!(this._debuggerDispatcher != null)) {
+      throw new Error('Invariant violation: "this._debuggerDispatcher != null"');
+    }
+
     this._debuggerDispatcher.stepOut();
   }
 
-  _handleServerMessage(domain: string, method: string, params: Object): void {
+  _handleServerMessage(domain, method, params) {
     logger.info(`domain: ${domain}, method: ${method}`);
   }
 }
+exports.default = BridgeAdapter;

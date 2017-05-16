@@ -1,53 +1,51 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
-import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import type {
-  CheckoutSideName,
-  MergeConflict,
-} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MercurialConflictContext = undefined;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {track} from '../../nuclide-analytics';
-import invariant from 'assert';
-import {Directory} from 'atom';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class MercurialConflictContext {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class MercurialConflictContext {
+  // Used in UI buttons (hg-specific).
+  constructor() {
+    this.resolveText = 'Resolve';
+    this.clearConflictState();
+  }
+  // The priority takes values: -1, 1, 2
+  // -1: when there are no conflicting repository.
+  //  1: when the conflicting repository isn't for the current working directory.
+  //  2: when the conflicting repository is for the current working directory.
+
+
+  /* `merge-conflicts` API */
+  // Used to join conflicting file paths (non-nullable).
+
   /**
    * The mercurial repository in a conflict state.
    * This would be `null` all the time except the timeframe in which one of the
    * projects' repositories
    */
-  _conflictingRepository: ?HgRepositoryClient;
-  _cachedMergeConflicts: Array<MergeConflict>;
 
-  /* `merge-conflicts` API */
-  // Used to join conflicting file paths (non-nullable).
-  workingDirectory: atom$Directory | RemoteDirectory;
-  // Used in UI buttons (hg-specific).
-  resolveText: string;
-  // The priority takes values: -1, 1, 2
-  // -1: when there are no conflicting repository.
-  //  1: when the conflicting repository isn't for the current working directory.
-  //  2: when the conflicting repository is for the current working directory.
-  priority: number;
 
-  constructor() {
-    this.resolveText = 'Resolve';
-    this.clearConflictState();
-  }
-
-  setConflictingRepository(conflictingRepository: HgRepositoryClient): void {
+  setConflictingRepository(conflictingRepository) {
     this._conflictingRepository = conflictingRepository;
     // TODO(most) Prioritize the current working directory's repository
     // in the non-typical case of multiple conflicting project repositories.
@@ -55,145 +53,161 @@ export class MercurialConflictContext {
     this.workingDirectory = conflictingRepository._workingDirectory;
   }
 
-  getConflictingRepository(): ?HgRepositoryClient {
+  getConflictingRepository() {
     return this._conflictingRepository;
   }
 
   /**
    * Set the ConflictsContext to no-conflicts state.
    */
-  clearConflictState(): void {
+  clearConflictState() {
     this._cachedMergeConflicts = [];
     this._conflictingRepository = null;
     this.priority = -1;
-    this.workingDirectory = new Directory('');
+    this.workingDirectory = new _atom.Directory('');
   }
 
-  async readConflicts(): Promise<Array<MergeConflict>> {
-    if (this._conflictingRepository == null) {
-      return [];
-    }
-    this._cachedMergeConflicts = await this._conflictingRepository.fetchMergeConflicts();
-    return this._cachedMergeConflicts.map(conflict => ({
-      ...conflict,
-      message: conflict.status,
-    }));
+  readConflicts() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this._conflictingRepository == null) {
+        return [];
+      }
+      _this._cachedMergeConflicts = yield _this._conflictingRepository.fetchMergeConflicts();
+      return _this._cachedMergeConflicts.map(function (conflict) {
+        return Object.assign({}, conflict, {
+          message: conflict.status
+        });
+      });
+    })();
   }
 
-  async isResolvedFile(filePath: NuclideUri): Promise<boolean> {
-    return (
-      this._cachedMergeConflicts.findIndex(mergeConflict => {
+  isResolvedFile(filePath) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this2._cachedMergeConflicts.findIndex(function (mergeConflict) {
         return mergeConflict.path === filePath;
-      }) === -1
-    );
+      }) === -1;
+    })();
   }
 
-  async checkoutSide(
-    sideName: CheckoutSideName,
-    filePath: NuclideUri,
-  ): Promise<void> {
-    track('hg-conflict-detctor.checkout-side-requested');
-    throw new Error('Checkout sides is still not working for Mercurial repos');
+  checkoutSide(sideName, filePath) {
+    return (0, _asyncToGenerator.default)(function* () {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.checkout-side-requested');
+      throw new Error('Checkout sides is still not working for Mercurial repos');
+    })();
   }
 
-  async resolveFile(filePath: NuclideUri): Promise<void> {
-    track('hg-conflict-detctor.resolve-file');
-    if (this._conflictingRepository == null) {
-      throw new Error(
-        "Mercurial merge conflict resolver doesn't have a conflicting repository",
-      );
-    }
-    await this._conflictingRepository
-      .markConflictedFile(filePath, /* resolved */ true)
-      .toPromise();
-    this._cachedMergeConflicts = this._cachedMergeConflicts.filter(
-      mergeConflict => {
+  resolveFile(filePath) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.resolve-file');
+      if (_this3._conflictingRepository == null) {
+        throw new Error("Mercurial merge conflict resolver doesn't have a conflicting repository");
+      }
+      yield _this3._conflictingRepository.markConflictedFile(filePath, /* resolved */true).toPromise();
+      _this3._cachedMergeConflicts = _this3._cachedMergeConflicts.filter(function (mergeConflict) {
         return mergeConflict.path !== filePath;
-      },
-    );
+      });
+    })();
   }
 
   // Deletermine if that's a rebase or merge operation.
-  isRebasing(): boolean {
+  isRebasing() {
     // TODO(most) check rebase or merge conflict state.
     return true;
   }
 
-  joinPath(relativePath: string): NuclideUri {
-    return nuclideUri.join(this.workingDirectory.getPath(), relativePath);
+  joinPath(relativePath) {
+    return (_nuclideUri || _load_nuclideUri()).default.join(this.workingDirectory.getPath(), relativePath);
   }
 
-  complete(wasRebasing: boolean): void {
-    track('hg-conflict-detctor.complete-resolving');
-    invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
-    invariant(
-      this._conflictingRepository != null,
-      'merge conflicts complete with no active repository!',
-    );
+  complete(wasRebasing) {
+    var _this4 = this;
+
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.complete-resolving');
+
+    if (!wasRebasing) {
+      throw new Error('Mercurial conflict resolver only handles rebasing');
+    }
+
+    if (!(this._conflictingRepository != null)) {
+      throw new Error('merge conflicts complete with no active repository!');
+    }
+
     const repository = this._conflictingRepository;
-    const notification = atom.notifications.addSuccess(
-      'All Conflicts Resolved\n' +
-        'Click `Continue` to run: `hg rebase --continue`',
-      {
-        buttons: [
-          {
-            onDidClick: async () => {
-              notification.dismiss();
-              this.clearConflictState();
-              try {
-                await repository
-                  .continueOperation(/* operation to continue */ 'rebase')
-                  .toPromise();
-                atom.notifications.addInfo('Rebase continued');
-              } catch (error) {
-                atom.notifications.addError(
-                  'Failed to continue rebase\n' +
-                    'You will have to run `hg rebase --continue` manually.',
-                );
-              }
-            },
-            text: 'Continue',
-          },
-        ],
-        dismissable: true,
-      },
-    );
+    const notification = atom.notifications.addSuccess('All Conflicts Resolved\n' + 'Click `Continue` to run: `hg rebase --continue`', {
+      buttons: [{
+        onDidClick: (() => {
+          var _ref = (0, _asyncToGenerator.default)(function* () {
+            notification.dismiss();
+            _this4.clearConflictState();
+            try {
+              yield repository.continueOperation( /* operation to continue */'rebase').toPromise();
+              atom.notifications.addInfo('Rebase continued');
+            } catch (error) {
+              atom.notifications.addError('Failed to continue rebase\n' + 'You will have to run `hg rebase --continue` manually.');
+            }
+          });
+
+          return function onDidClick() {
+            return _ref.apply(this, arguments);
+          };
+        })(),
+        text: 'Continue'
+      }],
+      dismissable: true
+    });
   }
 
-  quit(wasRebasing: boolean): void {
-    track('hg-conflict-detctor.quit-resolving');
-    invariant(wasRebasing, 'Mercurial conflict resolver only handles rebasing');
-    invariant(
-      this._conflictingRepository != null,
-      'merge conflicts quit with no active repository!',
-    );
+  quit(wasRebasing) {
+    var _this5 = this;
+
+    (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hg-conflict-detctor.quit-resolving');
+
+    if (!wasRebasing) {
+      throw new Error('Mercurial conflict resolver only handles rebasing');
+    }
+
+    if (!(this._conflictingRepository != null)) {
+      throw new Error('merge conflicts quit with no active repository!');
+    }
+
     const repository = this._conflictingRepository;
-    const notification = atom.notifications.addWarning(
-      'Careful, You still have conflict markers!<br/>\n' +
-        'Click `Abort` if you want to give up on this and run: `hg rebase --abort`.',
-      {
-        buttons: [
-          {
-            onDidClick: async () => {
-              notification.dismiss();
-              this.clearConflictState();
-              try {
-                await repository
-                  .abortOperation(/* operation to abort */ 'rebase')
-                  .toPromise();
-                atom.notifications.addInfo('Rebase aborted');
-              } catch (error) {
-                atom.notifications.addError(
-                  'Failed to abort rebase\n' +
-                    'You will have to run `hg rebase --abort` manually.',
-                );
-              }
-            },
-            text: 'Abort',
-          },
-        ],
-        dismissable: true,
-      },
-    );
+    const notification = atom.notifications.addWarning('Careful, You still have conflict markers!<br/>\n' + 'Click `Abort` if you want to give up on this and run: `hg rebase --abort`.', {
+      buttons: [{
+        onDidClick: (() => {
+          var _ref2 = (0, _asyncToGenerator.default)(function* () {
+            notification.dismiss();
+            _this5.clearConflictState();
+            try {
+              yield repository.abortOperation( /* operation to abort */'rebase').toPromise();
+              atom.notifications.addInfo('Rebase aborted');
+            } catch (error) {
+              atom.notifications.addError('Failed to abort rebase\n' + 'You will have to run `hg rebase --abort` manually.');
+            }
+          });
+
+          return function onDidClick() {
+            return _ref2.apply(this, arguments);
+          };
+        })(),
+        text: 'Abort'
+      }],
+      dismissable: true
+    });
   }
 }
+exports.MercurialConflictContext = MercurialConflictContext; /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              * 
+                                                              * @format
+                                                              */

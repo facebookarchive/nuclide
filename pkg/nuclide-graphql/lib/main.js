@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+var _atom = require('atom');
+
+var _GraphQLLanguage;
+
+function _load_GraphQLLanguage() {
+  return _GraphQLLanguage = require('./GraphQLLanguage');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,41 +21,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {CompositeDisposable} from 'atom';
-
-import {
-  graphqlLanguageService,
-  resetGraphQLLanguageService,
-} from './GraphQLLanguage';
-
 class Activation {
-  _disposables: CompositeDisposable;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
-    graphqlLanguageService.activate();
-    this._disposables.add(graphqlLanguageService);
+    this._disposables = new _atom.CompositeDisposable();
+    (_GraphQLLanguage || _load_GraphQLLanguage()).graphqlLanguageService.activate();
+    this._disposables.add((_GraphQLLanguage || _load_GraphQLLanguage()).graphqlLanguageService);
   }
 
   dispose() {
-    resetGraphQLLanguageService();
+    (0, (_GraphQLLanguage || _load_GraphQLLanguage()).resetGraphQLLanguageService)();
     this._disposables.dispose();
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?Object) {
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

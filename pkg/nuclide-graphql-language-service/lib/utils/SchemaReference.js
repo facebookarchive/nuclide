@@ -1,117 +1,82 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getNamedType} from 'graphql';
-import invariant from 'invariant';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getFieldReference = getFieldReference;
+exports.getDirectiveReference = getDirectiveReference;
+exports.getArgumentReference = getArgumentReference;
+exports.getEnumValueReference = getEnumValueReference;
+exports.getTypeReference = getTypeReference;
 
-import type {
-  GraphQLArgument,
-  GraphQLDirective,
-  GraphQLEnumType,
-  GraphQLEnumValue,
-  GraphQLField,
-  GraphQLNamedType,
-} from 'graphql';
+var _graphql;
 
-export type SchemaReference =
-  | FieldReference
-  | DirectiveReference
-  | ArgumentReference
-  | EnumValueReference
-  | TypeReference;
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
 
-export type FieldReference = {
-  kind: 'Field',
-  field: GraphQLField<*, *>,
-  type: ?GraphQLNamedType,
-};
-
-export type DirectiveReference = {
-  kind: 'Directive',
-  directive: GraphQLDirective,
-};
-
-export type ArgumentReference = {
-  kind: 'Argument',
-  argument: GraphQLArgument,
-  field?: GraphQLField<*, *>,
-  type?: ?GraphQLNamedType,
-  directive?: GraphQLDirective,
-};
-
-export type EnumValueReference = {
-  kind: 'EnumValue',
-  value: GraphQLEnumValue,
-  type: GraphQLEnumType,
-};
-
-export type TypeReference = {
-  kind: 'Type',
-  type: GraphQLNamedType,
-};
-
-export function getFieldReference(typeInfo: any): FieldReference {
+function getFieldReference(typeInfo) {
   return {
     kind: 'Field',
     schema: typeInfo.schema,
     field: typeInfo.fieldDef,
-    type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType,
+    type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function getDirectiveReference(typeInfo: any): DirectiveReference {
+function getDirectiveReference(typeInfo) {
   return {
     kind: 'Directive',
     schema: typeInfo.schema,
-    directive: typeInfo.directiveDef,
+    directive: typeInfo.directiveDef
   };
 }
 
-export function getArgumentReference(typeInfo: any): ArgumentReference {
-  return typeInfo.directiveDef
-    ? {
-        kind: 'Argument',
-        schema: typeInfo.schema,
-        argument: typeInfo.argDef,
-        directive: typeInfo.directiveDef,
-      }
-    : {
-        kind: 'Argument',
-        schema: typeInfo.schema,
-        argument: typeInfo.argDef,
-        field: typeInfo.fieldDef,
-        type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType,
-      };
+function getArgumentReference(typeInfo) {
+  return typeInfo.directiveDef ? {
+    kind: 'Argument',
+    schema: typeInfo.schema,
+    argument: typeInfo.argDef,
+    directive: typeInfo.directiveDef
+  } : {
+    kind: 'Argument',
+    schema: typeInfo.schema,
+    argument: typeInfo.argDef,
+    field: typeInfo.fieldDef,
+    type: isMetaField(typeInfo.fieldDef) ? null : typeInfo.parentType
+  };
 }
 
-export function getEnumValueReference(typeInfo: any): EnumValueReference {
-  const type: ?GraphQLEnumType = getNamedType(typeInfo.inputType);
-  invariant(type, 'Expected type to be truthy.');
+function getEnumValueReference(typeInfo) {
+  const type = (0, (_graphql || _load_graphql()).getNamedType)(typeInfo.inputType);
+
+  if (!type) {
+    throw new Error('Expected type to be truthy.');
+  }
+
   return {
     kind: 'EnumValue',
     value: typeInfo.enumValue,
-    type,
+    type
   };
 }
 
 // Note: for reusability, getTypeReference can produce a reference to any type,
 // though it defaults to the current type.
-export function getTypeReference(
-  typeInfo: any,
-  type?: GraphQLNamedType,
-): TypeReference {
+function getTypeReference(typeInfo, type) {
   return {
     kind: 'Type',
     schema: typeInfo.schema,
-    type: type || typeInfo.type,
+    type: type || typeInfo.type
   };
 }
 

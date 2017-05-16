@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +7,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -14,37 +16,33 @@
  * debug engine.
  */
 class DebuggerDomainDispatcher {
-  _agent: Object; // debugger agent from chrome protocol.
+  // debugger agent from chrome protocol.
 
-  constructor(agent: Object) {
+  constructor(agent) {
     this._agent = agent;
   }
 
-  resume(): void {
+  resume() {
     this._agent.resume();
   }
 
-  stepOver(): void {
+  stepOver() {
     this._agent.stepOver();
   }
 
-  stepInto(): void {
+  stepInto() {
     this._agent.stepInto();
   }
 
-  stepOut(): void {
+  stepOut() {
     this._agent.stepOut();
   }
 
-  resumed(): void {
+  resumed() {
     // TODO:
   }
 
-  threadsUpdated(
-    owningProcessId: string,
-    stopThreadId: string,
-    threads_payload: string,
-  ): void {
+  threadsUpdated(owningProcessId, stopThreadId, threads_payload) {
     // TODO
   }
 }

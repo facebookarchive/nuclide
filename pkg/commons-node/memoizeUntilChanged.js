@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = memoizeUntilChanged;
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _Hasher;
+
+function _load_Hasher() {
+  return _Hasher = _interopRequireDefault(require('./Hasher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +26,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import {arrayEqual} from 'nuclide-commons/collection';
-import Hasher from './Hasher';
-
-type CompareFunc = (a: Array<any>, b: Array<any>) => boolean;
-type KeySelector<T, U> = (x: T) => U;
 
 const NOTHING = Symbol('nothing');
 
@@ -34,16 +49,12 @@ const NOTHING = Symbol('nothing');
  *       }
  *     }
  */
-export default function memoizeUntilChanged<T: Function>(
-  func: T,
-  keySelector_?: KeySelector<T, any>,
-  compareKeys: CompareFunc = arrayEqual,
-): T {
+function memoizeUntilChanged(func, keySelector_, compareKeys = (_collection || _load_collection()).arrayEqual) {
   let prevArgKeys;
   let prevResult = NOTHING;
-  const keySelector: KeySelector<T, any> = keySelector_ || createKeySelector();
+  const keySelector = keySelector_ || createKeySelector();
   // $FlowIssue: Flow can't express that we want the args to be the same type as the input func's.
-  return function(...args) {
+  return function (...args) {
     const argKeys = args.map(keySelector);
     if (prevResult === NOTHING || !compareKeys(argKeys, prevArgKeys)) {
       prevArgKeys = argKeys;
@@ -53,7 +64,7 @@ export default function memoizeUntilChanged<T: Function>(
   };
 }
 
-function createKeySelector<T>(): KeySelector<T, any> {
-  const hasher: Hasher<any> = new Hasher();
+function createKeySelector() {
+  const hasher = new (_Hasher || _load_Hasher()).default();
   return x => hasher.getHash(x);
 }
