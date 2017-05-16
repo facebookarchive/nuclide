@@ -28,7 +28,10 @@ import invariant from 'assert';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from '../../nuclide-language-service';
+import {
+  AtomLanguageService,
+  getHostServices,
+} from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {
   sortAndFilterCompletions,
@@ -59,6 +62,7 @@ async function connectionToHackService(
   const fileNotifier = await getNotifierByConnection(connection);
 
   if (await getUseLspConnection()) {
+    const host = await getHostServices();
     return hackService.initializeLsp(
       config.hhClientPath, // command
       ['lsp'], // arguments
@@ -66,6 +70,7 @@ async function connectionToHackService(
       ['.php'], // which file-notifications should be sent to LSP
       config.logLevel,
       fileNotifier,
+      host,
     );
   } else {
     return hackService.initialize(

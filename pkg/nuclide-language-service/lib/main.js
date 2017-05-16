@@ -10,3 +10,4 @@
  */
 
 export {AtomLanguageService} from './AtomLanguageService';
+export {getHostServices} from './HostServices';

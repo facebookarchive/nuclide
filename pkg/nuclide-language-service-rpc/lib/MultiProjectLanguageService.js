@@ -32,6 +32,9 @@ import type {
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
+  HostServices,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -56,6 +59,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   constructor(
     logger: CategoryLogger,
     fileCache: FileCache,
+    host: HostServices,
     projectFileName: string,
     fileExtensions: Array<NuclideUri>,
     languageServiceFactory: (projectDir: NuclideUri) => Promise<?T>,

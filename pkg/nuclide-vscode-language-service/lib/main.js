@@ -11,6 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {
+  HostServices,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
 
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {LanguageServerProtocolProcess} from './process';
@@ -21,15 +24,17 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
   constructor(
     logger: CategoryLogger,
     fileCache: FileCache,
+    host: HostServices,
     command: string,
     args: Array<string>,
     projectFileName: string,
     fileExtensions: Array<NuclideUri>,
   ) {
-    const languageServiceFactory = (projectDir: string) => {
+    const languageServiceFactory = async (projectDir: string) => {
       return LanguageServerProtocolProcess.create(
         logger,
         fileCache,
+        host,
         () => {
           logger.logInfo(
             `PerConnectionLanguageService launch: ${command} ${args.join(' ')}`,
@@ -47,6 +52,7 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
     super(
       logger,
       fileCache,
+      host,
       projectFileName,
       fileExtensions,
       languageServiceFactory,

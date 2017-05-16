@@ -44,6 +44,9 @@ import type {
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
+  HostServices,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -95,6 +98,7 @@ import {
 export class LanguageServerProtocolProcess {
   _projectRoot: string;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
+  _host: HostServices;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
   _createProcess: () => Promise<child_process$ChildProcess>;
@@ -105,12 +109,14 @@ export class LanguageServerProtocolProcess {
   constructor(
     logger: CategoryLogger,
     fileCache: FileCache,
+    host: HostServices,
     createProcess: () => Promise<child_process$ChildProcess>,
     projectRoot: string,
     fileExtensions: Array<string>,
   ) {
     this._logger = logger;
     this._fileCache = fileCache;
+    this._host = host;
     this._lspFileVersionNotifier = new FileVersionNotifier();
     this._projectRoot = projectRoot;
     this._createProcess = createProcess;
@@ -120,6 +126,7 @@ export class LanguageServerProtocolProcess {
   static async create(
     logger: CategoryLogger,
     fileCache: FileCache,
+    host: HostServices,
     createProcess: () => Promise<child_process$ChildProcess>,
     projectRoot: string,
     fileExtensions: Array<string>,
@@ -127,6 +134,7 @@ export class LanguageServerProtocolProcess {
     const result = new LanguageServerProtocolProcess(
       logger,
       fileCache,
+      host,
       createProcess,
       projectRoot,
       fileExtensions,

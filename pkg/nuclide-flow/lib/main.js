@@ -32,7 +32,10 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import registerGrammar from '../../commons-atom/register-grammar';
 import passesGK from '../../commons-node/passesGK';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from '../../nuclide-language-service';
+import {
+  AtomLanguageService,
+  getHostServices,
+} from '../../nuclide-language-service';
 import {getLogger} from '../../nuclide-logging';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {
@@ -94,13 +97,18 @@ async function connectionToFlowService(
     connection,
   );
   const fileNotifier = await getNotifierByConnection(connection);
+  const host = await getHostServices();
   const config: FlowSettings = {
     functionSnippetShouldIncludeArguments: Boolean(
       featureConfig.get('nuclide-flow.functionSnippetShouldIncludeArguments'),
     ),
     stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
   };
-  const languageService = await flowService.initialize(fileNotifier, config);
+  const languageService = await flowService.initialize(
+    fileNotifier,
+    host,
+    config,
+  );
 
   return languageService;
 }

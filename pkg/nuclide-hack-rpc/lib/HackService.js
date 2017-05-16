@@ -15,6 +15,9 @@ import type {HackRange} from './rpc-types';
 import type {
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
+import type {
+  HostServices,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -103,6 +106,7 @@ export async function initializeLsp(
   fileExtensions: Array<NuclideUri>,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
+  host: HostServices,
 ): Promise<LanguageService> {
   invariant(fileNotifier instanceof FileCache);
   logger.setLogLevel(logLevel);
@@ -110,6 +114,7 @@ export async function initializeLsp(
   return new PerConnectionLanguageService(
     logger,
     fileNotifier,
+    host,
     cmd,
     args,
     projectFileName,

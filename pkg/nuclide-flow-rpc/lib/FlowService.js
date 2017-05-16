@@ -17,6 +17,9 @@ import type {
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
+  HostServices,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {
   FileVersion,
   FileNotifier,
 } from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -99,31 +102,39 @@ export function dispose(): void {
 
 export async function initialize(
   fileNotifier: FileNotifier,
+  host: HostServices,
   config: FlowSettings,
 ): Promise<FlowLanguageServiceType> {
   invariant(fileNotifier instanceof FileCache);
   const fileCache: FileCache = fileNotifier;
-  return new FlowLanguageService(fileCache, config);
+  return new FlowLanguageService(fileCache, host, config);
 }
 
 class FlowLanguageService
   extends MultiProjectLanguageService<
     ServerLanguageService<FlowSingleProjectLanguageService>,
   > {
-  constructor(fileCache: FileCache, config: FlowSettings) {
+  constructor(fileCache: FileCache, host: HostServices, config: FlowSettings) {
     const logger = getCategoryLogger('Flow');
-    super(logger, fileCache, '.flowconfig', ['.js', '.jsx'], projectDir => {
-      const execInfoContainer = getState().getExecInfoContainer();
-      const singleProjectLS = new FlowSingleProjectLanguageService(
-        projectDir,
-        execInfoContainer,
-      );
-      const languageService = new ServerLanguageService(
-        fileCache,
-        singleProjectLS,
-      );
-      return Promise.resolve(languageService);
-    });
+    super(
+      logger,
+      fileCache,
+      host,
+      '.flowconfig',
+      ['.js', '.jsx'],
+      projectDir => {
+        const execInfoContainer = getState().getExecInfoContainer();
+        const singleProjectLS = new FlowSingleProjectLanguageService(
+          projectDir,
+          execInfoContainer,
+        );
+        const languageService = new ServerLanguageService(
+          fileCache,
+          singleProjectLS,
+        );
+        return Promise.resolve(languageService);
+      },
+    );
     for (const key of Object.keys(config)) {
       setConfig(key, config[key]);
     }
