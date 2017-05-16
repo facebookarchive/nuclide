@@ -26,6 +26,8 @@ type Props = {
 
 type State = {
   filterText: string,
+  sortedColumn: ?string,
+  sortDescending: boolean,
 };
 
 export class ProcessTable extends React.Component {
@@ -35,12 +37,16 @@ export class ProcessTable extends React.Component {
 
   constructor(props: Props) {
     super(props);
+
     (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(
       this,
     );
-    (this: any)._getKillButton = this._getKillButton.bind(this);
+    (this: any)._handleSort = this._handleSort.bind(this);
+
     this.state = {
       filterText: '',
+      sortedColumn: 'cpuUsage',
+      sortDescending: true,
     };
   }
 
@@ -68,25 +74,58 @@ export class ProcessTable extends React.Component {
     }
   }
 
+  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+    this.setState({sortedColumn, sortDescending});
+  }
+
+  _sortProcesses(
+    processes: Process[],
+    sortedColumnName: ?string,
+    sortDescending: boolean,
+  ): Process[] {
+    if (sortedColumnName == null || sortedColumnName === 'kill') {
+      return processes;
+    }
+    // compare numerically pid, cpu and mem
+    const compare: any = ['cpuUsage', 'memUsage', 'pid'].includes(
+      sortedColumnName,
+    )
+      ? (a: ?number, b: ?number, isAsc: boolean): number => {
+          const cmp =
+            (a || Number.NEGATIVE_INFINITY) - (b || Number.NEGATIVE_INFINITY);
+          return isAsc ? cmp : -cmp;
+        }
+      : (a: string, b: string, isAsc: boolean): number => {
+          const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+          return isAsc ? cmp : -cmp;
+        };
+
+    return processes.sort((a, b) =>
+      compare(a[sortedColumnName], b[sortedColumnName], !sortDescending),
+    );
+  }
+
   render(): React.Element<any> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
-    const rows = this.props.processes
-      .filter(
+    const rows = this._sortProcesses(
+      this.props.processes.filter(
         item =>
           filterRegex.test(item.user) ||
           filterRegex.test(`${item.pid}`) ||
           filterRegex.test(item.name),
-      )
-      .map(item => ({
-        data: {
-          kill: this._getKillButton(item.name),
-          pid: item.pid,
-          user: item.user,
-          name: item.name,
-          cpuUsage: this._formatCpuUsage(item.cpuUsage),
-          memUsage: this._formatMemUsage(item.memUsage),
-        },
-      }));
+      ),
+      this.state.sortedColumn,
+      this.state.sortDescending,
+    ).map(item => ({
+      data: {
+        kill: this._getKillButton(item.name),
+        pid: item.pid,
+        user: item.user,
+        name: item.name,
+        cpuUsage: this._formatCpuUsage(item.cpuUsage),
+        memUsage: this._formatMemUsage(item.memUsage),
+      },
+    }));
     const columns = [
       {
         key: 'kill',
@@ -135,6 +174,10 @@ export class ProcessTable extends React.Component {
           maxBodyHeight="99999px"
           emptyComponent={emptyComponent}
           rows={rows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={this.state.sortedColumn}
+          sortDescending={this.state.sortDescending}
         />
       </div>
     );
