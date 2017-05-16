@@ -17,7 +17,10 @@ import type {
 
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {LanguageServerProtocolProcess} from './process';
-import {MultiProjectLanguageService} from '../../nuclide-language-service-rpc';
+import {
+  MultiProjectLanguageService,
+  forkHostServices,
+} from '../../nuclide-language-service-rpc';
 import {spawn} from '../../commons-node/process';
 
 export class PerConnectionLanguageService extends MultiProjectLanguageService {
@@ -34,7 +37,7 @@ export class PerConnectionLanguageService extends MultiProjectLanguageService {
       return LanguageServerProtocolProcess.create(
         logger,
         fileCache,
-        host,
+        await forkHostServices(host, logger), // LSP's responsible for disposing
         () => {
           logger.logInfo(
             `PerConnectionLanguageService launch: ${command} ${args.join(' ')}`,

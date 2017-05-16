@@ -76,7 +76,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
       });
     });
 
-    this._resources.add(this._processes);
+    this._resources.add(host, this._processes);
 
     // Observe projects as they are opened
     const configObserver = new ConfigObserver(

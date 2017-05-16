@@ -15,15 +15,25 @@ import type {
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {OutputService, Message} from '../../nuclide-console/lib/types';
 
+import invariant from 'assert';
+import {getCategoryLogger} from '../../nuclide-logging';
 import {Subject} from 'rxjs';
+import {
+  forkHostServices,
+} from '../../nuclide-language-service-rpc/lib/HostServicesAggregator';
 
-let services: ?HostServices;
+let rootAggregatorPromise: ?Promise<HostServices>;
+const logger = getCategoryLogger('HostServices');
 
 export async function getHostServices(): Promise<HostServices> {
-  if (services == null) {
-    services = new RootHostServices();
+  // This method doesn't need to be async. But out of laziness we're
+  // reusing 'forkHostServices', which is designed to work over NuclideRPC
+  // if necessary, so it has to be async.
+  if (rootAggregatorPromise == null) {
+    const rootServices = new RootHostServices();
+    rootAggregatorPromise = forkHostServices(rootServices, logger);
   }
-  return services;
+  return forkHostServices(await rootAggregatorPromise, logger);
 }
 
 // Following type implements the HostServicesForLanguage interface
@@ -60,5 +70,16 @@ class RootHostServices {
     // now-defunct sources will be visible in the Sources UI.
   }
 
-  dispose(): void {}
+  dispose(): void {
+    // No one can ever call this function because RootHostServices and
+    // RootAggregator are private to this module, and we don't call dispose.
+    invariant(false, 'RootHostServices and RootAggregator cannot be disposed.');
+  }
+
+  async childRegister(child: HostServices): Promise<HostServices> {
+    return this;
+    // Root only ever has exactly one child, the RootAggregator,
+    // so we don't bother with registration: when the aggregator relays
+    // commands, it will relay them straight to root services.
+  }
 }

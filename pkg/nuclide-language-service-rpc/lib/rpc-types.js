@@ -20,4 +20,8 @@ export interface HostServices {
   ): void,
 
   dispose(): void,
+
+  // Internal implementation method. Normally we'd keep it private.
+  // But we need it to be remotable across NuclideRPC, so it must be public.
+  childRegister(child: HostServices): Promise<HostServices>,
 }

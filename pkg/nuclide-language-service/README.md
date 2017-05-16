@@ -47,6 +47,12 @@ language into the Atom UI.
 * For places where the language services call into Atom (e.g. to display a message to the console log,
   or display busy status), Atom offers them a `HostServices` interface.
 
+  * Whenever the language service needs to multiplex (e.g. because two languages want to
+    display their busy status), it *forks* the `HostServices`. It gets its own private
+    fork of `HostServices`, which it must dispose of when done. A given `HostService`
+    instance knows how to aggregate reports from all of its children. Aggregation is done
+    locally where the fork was performed, either on the server or on the client.
+
 * Sometimes it's ambiguous which direction a call should go:
   whether the language should into the Atom to display something
   using `HostServices`, or Atom should call into the language to obtain an `Observable`

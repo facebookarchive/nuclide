@@ -19,3 +19,5 @@ export {
 export {NullLanguageService} from './NullLanguageService';
 
 export {MultiProjectLanguageService} from './MultiProjectLanguageService';
+
+export {forkHostServices} from './HostServicesAggregator';

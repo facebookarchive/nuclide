@@ -764,6 +764,7 @@ export class LanguageServerProtocolProcess {
     this._process.dispose();
     /* TODO
     if (!this.isDisposed()) {
+      this._host.dispose();
       // Atempt to send disconnect message before shutting down connection
       try {
         this._logger.logTrace(
