@@ -86,7 +86,7 @@ async function getProcessKiller(state: AppState): Promise<?ProcessKiller> {
     provider => provider.getType() === state.deviceType,
   );
   if (providers[0] != null) {
-    return p => providers[0].killRunningPackage(state.host, device.name, p);
+    return p => providers[0].killProcess(state.host, device.name, p);
   }
   return null;
 }

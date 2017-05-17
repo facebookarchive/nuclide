@@ -184,19 +184,16 @@ export class ProcessTable extends React.Component {
   }
 
   _getKillButton(packageName: string): ?React.Element<any> {
-    if (this.props.killProcess == null || packageName == null) {
+    const killProcess = this.props.killProcess;
+    if (killProcess == null) {
       return null;
     }
     return (
       <span
         className="nuclide-device-panel-link-with-icon"
-        onClick={() => {
-          return this.props.killProcess != null && packageName != null
-            ? this.props.killProcess(packageName)
-            : null;
-        }}
+        onClick={() => killProcess(packageName)}
         ref={addTooltip({
-          title: 'force-stop process',
+          title: 'Kill process',
           delay: 300,
           placement: 'left',
         })}>

@@ -54,11 +54,7 @@ export interface DeviceInfoProvider {
 export interface DeviceProcessesProvider {
   observe(host: NuclideUri, device: string): Observable<Process[]>,
   getType(): string,
-  killRunningPackage(
-    host: NuclideUri,
-    device: string,
-    packageName: string,
-  ): Promise<void>,
+  killProcess(host: NuclideUri, device: string, id: string): Promise<void>,
 }
 
 export type AppState = {
@@ -87,7 +83,7 @@ export type Process = {
   memUsage: ?number,
 };
 
-export type ProcessKiller = (packageName: string) => Promise<void>;
+export type ProcessKiller = (id: string) => Promise<void>;
 //
 // Action types
 //

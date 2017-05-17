@@ -39,11 +39,11 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
     return this._type;
   }
 
-  async killRunningPackage(
+  async killProcess(
     host: NuclideUri,
     device: string,
-    packageName: string,
+    id: string,
   ): Promise<void> {
-    return this._rpcFactory(host).forceStopPackage(device, packageName);
+    return this._rpcFactory(host).killProcess(device, id);
   }
 }
