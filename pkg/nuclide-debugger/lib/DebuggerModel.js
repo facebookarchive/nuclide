@@ -103,11 +103,6 @@ export default class DebuggerModel {
     );
   }
 
-  destroy(): void {
-    // Stop debugging when the view's destroyed.
-    this.getActions().stopDebugging();
-  }
-
   dispose() {
     this._disposables.dispose();
   }
