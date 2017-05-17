@@ -18,7 +18,8 @@ const os = require('os');
 
 const eslintGlobUtil = require('eslint/lib/util/glob-util');
 
-const numWorkers = Math.max(os.cpus().length - 1, 1);
+// At least one worker, but no more than 6.
+const numWorkers = Math.max(Math.min(os.cpus().length - 1, 6), 1);
 
 const files = eslintGlobUtil
   .listFilesToProcess(['**/*.js'])
