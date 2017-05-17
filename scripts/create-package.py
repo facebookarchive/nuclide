@@ -53,8 +53,8 @@ COPYRIGHT_BLOCK = """\
 ATOM_MAIN_JS = """\
 %s
 
-import createPackage from '../../commons-atom/createPackage';
-import UniversalDisposable from '../../commons-node/UniversalDisposable';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 class Activation {
   _disposables: UniversalDisposable;
