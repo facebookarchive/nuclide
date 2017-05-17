@@ -14,7 +14,7 @@ import type {ProcessExitMessage} from '../process-rpc-types';
 import {sleep} from 'nuclide-commons/promise';
 import child_process from 'child_process';
 import invariant from 'assert';
-import {Scheduler} from 'rxjs';
+import {Observable, Scheduler} from 'rxjs';
 
 import {
   spawn,
@@ -199,6 +199,28 @@ describe('commons-node/process', () => {
       });
     });
 
+    // Node delays the emission of the error until after the process is returned so that you have a
+    // chance to subscribe to the error event. Observables aren't bound by the same limitations as
+    // event-emitter APIs, so we can do better and not emit the process if there was an error
+    // spawning it.
+    it('errors before emitting the process', () => {
+      waitsForPromise(async () => {
+        spyOn(console, 'error'); // suppress error printing
+        spyOn(console, 'log'); // suppress log printing
+        let proc;
+        await spawn('fakeCommand')
+          .do(p => {
+            proc = p;
+          })
+          .catch(err => {
+            expect(proc).toBeUndefined();
+            expect(err.code).toBe('ENOENT');
+            return Observable.empty();
+          })
+          .toPromise();
+      });
+    });
+
     it('leaves an error handler when you unsubscribe', () => {
       waitsForPromise(async () => {
         spyOn(console, 'error'); // suppress error printing
@@ -207,7 +229,7 @@ describe('commons-node/process', () => {
         const promise = new Promise(r => {
           resolve = r;
         });
-        const sub = spawn('fakeCommand')
+        const sub = spawn('cat')
           // If we subscribe synchronously, and it emits synchronously, `sub` won't have been
           // assigned yet in our `subscribe()` callback, so we use the async scheduler.
           .subscribeOn(Scheduler.async)

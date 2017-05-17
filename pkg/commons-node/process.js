@@ -830,7 +830,15 @@ function createProcessStream(
       let finished = false;
       return enforceTimeout(
         Observable.merge(
-          Observable.of(proc),
+          // Node [delays the emission of process errors][1] by a tick in order to give consumers a
+          // chance to subscribe to the error event. This means that our observable would normally
+          // emit the process and then, a tick later, error. However, it's more convenient to never
+          // emit the process if there was an error. Although observables don't require the error to
+          // be delayed at all, the underlying event emitter abstraction does, so we'll just roll
+          // with that and use `pid == null` as a signal that an error is forthcoming.
+          //
+          // [1]: https://github.com/nodejs/node/blob/v7.10.0/lib/internal/child_process.js#L301
+          proc.pid == null ? Observable.empty() : Observable.of(proc),
           Observable.never(), // Don't complete until we say so!
           stdioErrorMonitors,
         )
