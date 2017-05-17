@@ -351,8 +351,8 @@ module.exports = {
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
 
-    // prettify (https://github.com/zertosh/eslint-plugin-prettify)
-    'prettify/prettier': [1, 'fb'],
+    // prettier (https://github.com/prettier/eslint-plugin-prettier)
+    'prettier/prettier': [1, 'fb', '@format'],
 
     // React (https://github.com/yannickcr/eslint-plugin-react)
     'react/display-name': 0,
@@ -420,7 +420,7 @@ module.exports = {
     'jasmine',
     'nuclide-internal',
     'prefer-object-spread',
-    'prettify',
+    'prettier',
     'react',
   ],
 };
