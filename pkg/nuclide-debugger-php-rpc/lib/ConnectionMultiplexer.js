@@ -166,7 +166,7 @@ export class ConnectionMultiplexer {
     this._debuggerStartupDisposable.dispose();
     this._sendOutput(
       'Connecting and pre-loading all of your PHP types and symbols. This may take a moment, ' +
-        ' please wait...',
+        'please wait...',
       'warning',
     );
 
