@@ -200,7 +200,17 @@ export class FlowProcess {
         // want to use it to more quickly update the Flow server status, but it's not crucial to
         // correctness so we only want to do this if somebody is using the IDE connections anyway.
         // Don't pass the Subject as an Observer since then it will complete if a client unsubscribes.
-        .do(conn => optionalIDEConnections.next(conn))
+        .do(
+          conn => optionalIDEConnections.next(conn),
+          () => {
+            // If we get an error, set the current ide connection to null
+            optionalIDEConnections.next(null);
+          },
+          () => {
+            // If we get a completion (happens when the downstream client unsubscribes), set the current ide connection to null.
+            optionalIDEConnections.next(null);
+          },
+        )
         // multicast and store the current connection and immediately deliver it to new subscribers
         .publishReplay(1)
         .refCount()
