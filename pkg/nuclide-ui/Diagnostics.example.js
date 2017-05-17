@@ -15,7 +15,7 @@ import type {
 
 import {Range} from 'atom';
 import React from 'react';
-import {Block} from './Block';
+import {Block} from 'nuclide-commons-ui/Block';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 
 const GOTOLOCATION = (path: string, line: number) => {

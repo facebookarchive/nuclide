@@ -15,12 +15,12 @@ import type {DebuggerStore} from './DebuggerStore';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
-} from '../../nuclide-ui/LoadingSpinner';
+} from 'nuclide-commons-ui/LoadingSpinner';
 
 import React from 'react';
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {Button} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 import {DebuggerMode} from './DebuggerStore';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

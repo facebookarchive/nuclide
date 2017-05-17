@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../nuclide-ui/Button';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 
 type Props = {
   isEditing: boolean,

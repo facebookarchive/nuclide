@@ -10,14 +10,14 @@
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
-import type {Column} from '../../nuclide-ui/Table';
+import type {Column} from 'nuclide-commons-ui/Table';
 
 import classnames from 'classnames';
 import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
-import {Table} from '../../nuclide-ui/Table';
-import {Highlight, HighlightColors} from '../../nuclide-ui/Highlight';
+import {Table} from 'nuclide-commons-ui/Table';
+import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {getProjectRelativePathOfDiagnostic} from './paneUtils';
 import {DiagnosticsMessageNoHeader} from '../../nuclide-ui/DiagnosticsMessage';

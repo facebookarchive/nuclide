@@ -12,7 +12,7 @@
 import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 import type {BlameForEditor, BlameProvider} from './types';
 
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';

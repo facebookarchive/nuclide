@@ -14,10 +14,10 @@ import type {Observable} from 'rxjs';
 
 import React from 'react';
 import {Disposable} from 'atom';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
+import {Button} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 
 // Since this is a button which can change the current file, place it where
 // it won't change position when the current file name changes, which means way left.

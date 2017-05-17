@@ -25,7 +25,7 @@ import {
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
 import {Observable} from 'rxjs';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {track} from '../../nuclide-analytics';
 
 export type HttpRequestSenderApi = {

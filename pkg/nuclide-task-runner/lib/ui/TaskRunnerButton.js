@@ -9,9 +9,9 @@
  * @format
  */
 
-import type {ButtonSize} from '../../../nuclide-ui/Button';
+import type {ButtonSize} from 'nuclide-commons-ui/Button';
 
-import {Button} from '../../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 import React from 'react';
 
 type Props = {

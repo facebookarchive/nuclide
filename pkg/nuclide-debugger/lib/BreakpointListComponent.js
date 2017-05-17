@@ -16,7 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 import classnames from 'classnames';

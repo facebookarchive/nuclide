@@ -9,7 +9,7 @@
  * @format
  */
 
-import {AtomTextEditor} from './AtomTextEditor';
+import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import nullthrows from 'nullthrows';
 import {pluralize} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';

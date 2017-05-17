@@ -32,9 +32,9 @@ import {
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
 
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger} from '../../nuclide-logging';
-import {Icon} from '../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';

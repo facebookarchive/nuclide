@@ -13,10 +13,10 @@ import type {Process, ProcessKiller} from '../types';
 
 import React from 'react';
 import {Subscription} from 'rxjs';
-import {Table} from '../../../nuclide-ui/Table';
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import addTooltip from '../../../nuclide-ui/add-tooltip';
-import {Icon} from '../../../nuclide-ui/Icon';
+import {Table} from 'nuclide-commons-ui/Table';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {
   startFetchingProcesses: () => Subscription,

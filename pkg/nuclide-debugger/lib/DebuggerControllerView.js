@@ -14,7 +14,7 @@ import BreakpointStore from './BreakpointStore.js';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
-import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {
   breakpointStore: BreakpointStore,

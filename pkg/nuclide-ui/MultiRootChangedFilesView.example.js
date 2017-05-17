@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Block} from './Block';
+import {Block} from 'nuclide-commons-ui/Block';
 import {MultiRootChangedFilesView} from './MultiRootChangedFilesView';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 

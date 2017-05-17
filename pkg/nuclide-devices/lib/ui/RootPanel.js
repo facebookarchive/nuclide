@@ -15,7 +15,7 @@ import type {Device, DeviceTask, Process, ProcessKiller} from '../types';
 import React from 'react';
 import {
   PanelComponentScroller,
-} from '../../../nuclide-ui/PanelComponentScroller';
+} from 'nuclide-commons-ui/PanelComponentScroller';
 import {Subscription} from 'rxjs';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';

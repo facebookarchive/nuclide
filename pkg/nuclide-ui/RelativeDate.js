@@ -11,7 +11,7 @@
 
 import React from 'react';
 import {relativeDate} from 'nuclide-commons/string';
-import addTooltip from './add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 
 type DefaultProps = {
   delay: number,

@@ -11,9 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
-import type {IconName} from '../nuclide-ui/Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import addTooltip from './add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {
@@ -24,7 +24,7 @@ import {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
-import {Icon} from './Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import PathWithFileIcon from './PathWithFileIcon';
 
 const ANALYTICS_SOURCE_KEY = 'inline';

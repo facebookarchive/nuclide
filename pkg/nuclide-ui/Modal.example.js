@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Button} from './Button';
+import {Button} from 'nuclide-commons-ui/Button';
 import {Modal} from './Modal';
 
 class ModalExample extends React.Component {

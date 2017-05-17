@@ -9,11 +9,11 @@
  * @format
  */
 
-import type {ButtonSize} from './Button';
+import type {ButtonSize} from 'nuclide-commons-ui/Button';
 import type {OptionComponentProps} from './MultiSelectList';
 
-import {Button, ButtonSizes, ButtonTypes} from './Button';
-import {ButtonGroup} from './ButtonGroup';
+import {Button, ButtonSizes, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Modal} from './Modal';
 import {MultiSelectList} from './MultiSelectList';
 import classnames from 'classnames';

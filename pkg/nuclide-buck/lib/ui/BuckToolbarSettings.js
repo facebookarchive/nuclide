@@ -15,9 +15,9 @@ import React from 'react';
 import {quote} from 'shell-quote';
 
 import {shellParse} from 'nuclide-commons/string';
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Modal} from '../../../nuclide-ui/Modal';
 
 type Props = {

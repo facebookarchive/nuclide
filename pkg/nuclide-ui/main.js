@@ -9,4 +9,14 @@
  * @format
  */
 
-// This module doesn't export anything
+// This module only exists to load stylesheets and grammars.
+
+let disposable: IDisposable;
+
+export function activate() {
+  disposable = require('nuclide-commons-ui');
+}
+
+export function deactivate() {
+  disposable.dispose();
+}

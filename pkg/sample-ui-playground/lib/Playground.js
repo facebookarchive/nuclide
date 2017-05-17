@@ -12,24 +12,24 @@
 import classnames from 'classnames';
 import React from 'react';
 
-import {Button} from '../../nuclide-ui/Button';
-import {ButtonExamples} from '../../nuclide-ui/Button.example';
+import {Button} from 'nuclide-commons-ui/Button';
+import {ButtonExamples} from 'nuclide-commons-ui/Button.example';
 import {
   ProgressIndicatorExamples,
-} from '../../nuclide-ui/ProgressIndicators.example';
-import {CheckboxExamples} from '../../nuclide-ui/Checkbox.example';
+} from 'nuclide-commons-ui/ProgressIndicators.example';
+import {CheckboxExamples} from 'nuclide-commons-ui/Checkbox.example';
 import {DropdownExamples} from '../../nuclide-ui/Dropdown.example';
 import {TabExamples} from '../../nuclide-ui/Tabs.example';
 import {RadioGroupExamples} from '../../nuclide-ui/RadioGroup.example';
-import {TextInputExamples} from '../../nuclide-ui/TextInputs.example';
-import {ToolbarExamples} from '../../nuclide-ui/Toolbar.example';
+import {TextInputExamples} from 'nuclide-commons-ui/TextInputs.example';
+import {ToolbarExamples} from 'nuclide-commons-ui/Toolbar.example';
 import {DiagnosticsExamples} from '../../nuclide-ui/Diagnostics.example';
 import {BadgeExamples} from '../../nuclide-ui/Badge.example';
-import {HighlightExamples} from '../../nuclide-ui/Highlight.example';
-import {IconExamples} from '../../nuclide-ui/Icon.example';
+import {HighlightExamples} from 'nuclide-commons-ui/Highlight.example';
+import {IconExamples} from 'nuclide-commons-ui/Icon.example';
 import {TreeExamples} from '../../nuclide-ui/Tree.example';
 import {ListviewExamples} from '../../nuclide-ui/ListView.example';
-import {TableExamples} from '../../nuclide-ui/Table.example';
+import {TableExamples} from 'nuclide-commons-ui/Table.example';
 import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {
   MultiRootChangedFilesViewExample,
@@ -40,7 +40,7 @@ import {
 } from '../../nuclide-ui/ResizableFlexContainer.example';
 import {ModalExamples} from '../../nuclide-ui/Modal.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
-import {MessageExamples} from '../../nuclide-ui/Message.example';
+import {MessageExamples} from 'nuclide-commons-ui/Message.example';
 import {
   PathWithFileIconExamples,
 } from '../../nuclide-ui/PathWithFileIcon.example';

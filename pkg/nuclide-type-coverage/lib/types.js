@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {IconName} from '../../nuclide-ui/Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import type {CoverageResult} from './rpc-types';
 

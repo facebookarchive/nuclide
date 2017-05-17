@@ -9,9 +9,9 @@
  * @format
  */
 
-import type {IconName} from './Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import {Icon} from './Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import React from 'react';
 import classnames from 'classnames';
 import nullthrows from 'nullthrows';

@@ -15,7 +15,7 @@ import type {WatchExpressionListStore} from './WatchExpressionListStore';
 
 import {CompositeDisposable} from 'atom';
 import React from 'react';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
 
 type Props = {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import addTooltip from './add-tooltip';
+import addTooltip from './addTooltip';
 import classnames from 'classnames';
 import React from 'react';
 

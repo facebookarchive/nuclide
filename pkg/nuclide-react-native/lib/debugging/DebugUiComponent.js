@@ -12,9 +12,9 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {DebuggerLaunchAttachEventTypes} from '../../../nuclide-debugger-base';
 
 import type EventEmitter from 'events';

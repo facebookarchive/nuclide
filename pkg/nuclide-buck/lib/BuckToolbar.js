@@ -24,10 +24,10 @@ import shallowequal from 'shallowequal';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {maybeToString} from 'nuclide-commons/string';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {LoadingSpinner} from '../../nuclide-ui/LoadingSpinner';
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 
 type Props = {
   appState: AppState,

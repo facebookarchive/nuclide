@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Button} from '../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

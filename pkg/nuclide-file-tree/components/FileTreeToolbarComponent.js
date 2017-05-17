@@ -19,8 +19,8 @@ import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
-import {ButtonGroup, ButtonGroupSizes} from '../../nuclide-ui/ButtonGroup';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
 
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 

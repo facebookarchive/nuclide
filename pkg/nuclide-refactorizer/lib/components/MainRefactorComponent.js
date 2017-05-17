@@ -14,7 +14,7 @@ import type {Store, RefactorState} from '../types';
 import React from 'react';
 import invariant from 'assert';
 
-import {Button} from '../../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 
 import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';

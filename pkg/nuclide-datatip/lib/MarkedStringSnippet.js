@@ -11,7 +11,7 @@
 
 import {TextBuffer} from 'atom';
 import React from 'react';
-import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
+import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 
 // Complex types can end up being super long. Truncate them.
 const MAX_LENGTH = 100;

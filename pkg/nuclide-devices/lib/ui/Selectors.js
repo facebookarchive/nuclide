@@ -13,8 +13,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {ButtonGroup, ButtonGroupSizes} from '../../../nuclide-ui/ButtonGroup';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
 
 const FB_HOST_SUFFIX = '.facebook.com';
 

@@ -10,8 +10,8 @@
  */
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import React from 'react';
 import ReactDOM from 'react-dom';
 

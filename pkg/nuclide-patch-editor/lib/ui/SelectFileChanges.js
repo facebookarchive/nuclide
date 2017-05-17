@@ -12,7 +12,7 @@
 import typeof * as BoundActionCreators from '../redux/Actions';
 import type {ExtraFileChangesData, FileData} from '../types';
 
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {SelectHunkChanges} from './SelectHunkChanges';
 import React from 'react';

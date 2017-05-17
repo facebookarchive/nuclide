@@ -16,7 +16,7 @@ import typeof * as BoundActionCreators from './redux/Actions';
 
 import * as Actions from './redux/Actions';
 import {bindActionCreators, createStore} from 'redux';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {Disposable} from 'atom';

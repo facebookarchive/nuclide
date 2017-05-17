@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
 type Props = {
   title: string,

@@ -19,7 +19,7 @@ import NuclideLogo from './NuclideLogo';
 import createUtmUrl from './createUtmUrl';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/home';
 

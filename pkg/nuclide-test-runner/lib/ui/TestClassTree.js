@@ -15,7 +15,7 @@ import type TestSuiteModel from '../TestSuiteModel';
 import React from 'react';
 import {
   PanelComponentScroller,
-} from '../../../nuclide-ui/PanelComponentScroller';
+} from 'nuclide-commons-ui/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
 import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';
 

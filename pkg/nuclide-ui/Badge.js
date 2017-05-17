@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {IconName} from './Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
 import React from 'react';

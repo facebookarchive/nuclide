@@ -45,7 +45,7 @@ import DebuggerModel, {WORKSPACE_VIEW_URI} from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
 import React from 'react';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {setNotificationService} from '../../nuclide-debugger-base';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Row} from '../../nuclide-ui/Table';
+import type {Row} from 'nuclide-commons-ui/Table';
 import type {DisplayDiagnostic} from './DiagnosticsPane';
 
 /*

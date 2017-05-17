@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {IconName} from '../../nuclide-ui/Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';

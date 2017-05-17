@@ -12,7 +12,7 @@
 import type {DeviceTask} from '../types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import React from 'react';
 
 type Props = {

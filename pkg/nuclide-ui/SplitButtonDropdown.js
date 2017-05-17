@@ -13,8 +13,8 @@ import type {Option} from './Dropdown';
 
 import invariant from 'assert';
 import React from 'react';
-import {Button, ButtonSizes} from './Button';
-import {ButtonGroup} from './ButtonGroup';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from './Dropdown';
 import electron from 'electron';
 

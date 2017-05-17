@@ -18,12 +18,13 @@ import type {Observable} from 'rxjs';
 
 import React from 'react';
 import invariant from 'assert';
-import {bindObservableAsProps} from './bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';
-import {LoadingSpinner} from './LoadingSpinner';
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import ignoreTextSelectionEvents
+  from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 import classnames from 'classnames';
 
 const SPINNER_DELAY = 100; /* ms */

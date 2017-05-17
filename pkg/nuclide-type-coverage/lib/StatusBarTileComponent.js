@@ -9,12 +9,12 @@
  * @format
  */
 
-import type {IconName} from '../../nuclide-ui/Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import React from 'react';
 
-import {Icon} from '../../nuclide-ui/Icon';
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import {Icon} from 'nuclide-commons-ui/Icon';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import classnames from 'classnames';
 

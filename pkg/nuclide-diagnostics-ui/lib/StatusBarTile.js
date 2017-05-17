@@ -14,8 +14,8 @@ import type {
   DiagnosticMessage,
 } from '../../nuclide-diagnostics-common';
 
-import addTooltip from '../../nuclide-ui/add-tooltip';
-import {Icon} from '../../nuclide-ui/Icon';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';

@@ -13,7 +13,9 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import classnames from 'classnames';
-import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
+import {
+  PanelComponentScroller,
+} from 'nuclide-commons-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';

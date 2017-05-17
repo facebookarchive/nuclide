@@ -17,7 +17,7 @@ import type {
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import {Disposable, CompositeDisposable, Emitter} from 'atom';
 import React from 'react';
-import {Icon} from '../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
 import passesGK from '../../commons-node/passesGK';

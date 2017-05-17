@@ -12,8 +12,8 @@
 import type {TaskRunner, TaskMetadata, TaskRunnerState} from '../types';
 import type {Option} from '../../../nuclide-ui/Dropdown';
 
-import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {ProgressBar} from './ProgressBar';
 import {TaskRunnerButton} from './TaskRunnerButton';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';

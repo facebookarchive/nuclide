@@ -20,7 +20,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     beforeEach(() => {
       // Path is relative to the root of this package (where "package.json" lives).
-      grammar = atom.grammars.loadGrammarSync('grammars/ansi.cson');
+      grammar = atom.grammars.loadGrammarSync('spec/grammars/test1.cson');
     });
 
     afterEach(() => {
@@ -31,9 +31,9 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     it('loads the desired `Grammar`', () => {
       const element = TestUtils.renderIntoDocument(
-        <AtomTextEditor path=".ansi" />,
+        <AtomTextEditor path=".test" />,
       );
-      expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi');
+      expect(element.getModel().getGrammar().scopeName).toEqual('text.test');
     });
   });
 
@@ -42,8 +42,8 @@ describe('nuclide-ui-atom-text-editor', () => {
     let grammar2;
 
     beforeEach(() => {
-      grammar1 = atom.grammars.loadGrammarSync('grammars/ansi.cson');
-      grammar2 = atom.grammars.loadGrammarSync('spec/grammars/ansi2.cson');
+      grammar1 = atom.grammars.loadGrammarSync('spec/grammars/test1.cson');
+      grammar2 = atom.grammars.loadGrammarSync('spec/grammars/test2.cson');
     });
 
     afterEach(() => {
@@ -55,9 +55,9 @@ describe('nuclide-ui-atom-text-editor', () => {
 
     it('updates the underlying models grammar', () => {
       const element = TestUtils.renderIntoDocument(
-        <AtomTextEditor path=".ansi" grammar={grammar2} />,
+        <AtomTextEditor path=".test" grammar={grammar2} />,
       );
-      expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi2');
+      expect(element.getModel().getGrammar().scopeName).toEqual('text.test2');
     });
   });
 

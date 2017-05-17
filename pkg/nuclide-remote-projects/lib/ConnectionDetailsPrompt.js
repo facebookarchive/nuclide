@@ -19,7 +19,7 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {getIPsForHosts} from './connection-profile-utils';

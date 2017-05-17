@@ -12,7 +12,8 @@
 import React from 'react';
 import classnames from 'classnames';
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+import ignoreTextSelectionEvents
+  from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 
 type DefaultProps = {
   disabled: boolean,

@@ -13,16 +13,16 @@ import type {Source} from '../types';
 
 import classnames from 'classnames';
 import React from 'react';
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {FunnelIcon} from './FunnelIcon';
 import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
-import {Toolbar} from '../../../nuclide-ui/Toolbar';
-import {ToolbarLeft} from '../../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../../nuclide-ui/ToolbarRight';
-import addTooltip from '../../../nuclide-ui/add-tooltip';
+import {Toolbar} from 'nuclide-commons-ui/Toolbar';
+import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
+import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 
-import {Button, ButtonSizes} from '../../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import invariant from 'assert';
 
 type Props = {

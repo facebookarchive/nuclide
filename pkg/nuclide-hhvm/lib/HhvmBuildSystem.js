@@ -17,8 +17,8 @@ import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {taskFromObservable} from '../../commons-node/tasks';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
-import {Icon} from '../../nuclide-ui/Icon';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 import {debug} from './HhvmDebug';
 import HhvmToolbar from './HhvmToolbar';

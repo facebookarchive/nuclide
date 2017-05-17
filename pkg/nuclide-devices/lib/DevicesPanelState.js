@@ -13,10 +13,10 @@ import type {Props} from './ui/RootPanel';
 
 import type {Store, AppState, Device, Process} from './types';
 import React from 'react';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';
 import {Observable} from 'rxjs';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
 import {getDeviceListProviders, getDeviceProcessesProviders} from './providers';
 import shallowEqual from 'shallowequal';

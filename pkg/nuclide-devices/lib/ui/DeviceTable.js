@@ -12,7 +12,7 @@
 import type {Device} from '../types';
 
 import React from 'react';
-import {Table} from '../../../nuclide-ui/Table';
+import {Table} from 'nuclide-commons-ui/Table';
 import {Subscription} from 'rxjs';
 
 type Props = {

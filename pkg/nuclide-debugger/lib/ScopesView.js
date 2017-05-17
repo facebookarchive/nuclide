@@ -14,7 +14,7 @@ import type DebuggerModel from './DebuggerModel';
 
 import {CompositeDisposable} from 'atom';
 import React from 'react';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {ScopesComponent} from './ScopesComponent';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';

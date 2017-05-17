@@ -12,12 +12,12 @@
 import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
-import {Block} from '../../nuclide-ui/Block';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {Block} from 'nuclide-commons-ui/Block';
 import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bufferForUri} from '../../nuclide-remote-connection';
-import {AtomTextEditor} from '../../nuclide-ui/AtomTextEditor';
+import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {existingEditorForBuffer} from 'nuclide-commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';

@@ -17,9 +17,9 @@ import type CallstackStore from './CallstackStore';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Bridge from './Bridge';
-import {Table} from '../../nuclide-ui/Table';
+import {Table} from 'nuclide-commons-ui/Table';
 import classnames from 'classnames';
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 
 type DebuggerCallstackComponentProps = {
   actions: DebuggerActions,

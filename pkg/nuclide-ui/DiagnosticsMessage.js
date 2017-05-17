@@ -14,8 +14,8 @@ import type {
 } from '../nuclide-diagnostics-common/lib/rpc-types';
 
 import React from 'react';
-import {Button, ButtonTypes} from './Button';
-import {ButtonGroup} from './ButtonGroup';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
 

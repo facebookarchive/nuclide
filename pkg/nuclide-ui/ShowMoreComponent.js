@@ -13,7 +13,7 @@ import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
 
 import React from 'react';
 import {MeasuredComponent} from './MeasuredComponent';
-import {Button} from './Button';
+import {Button} from 'nuclide-commons-ui/Button';
 
 type Props = {
   children?: React.Element<any>,

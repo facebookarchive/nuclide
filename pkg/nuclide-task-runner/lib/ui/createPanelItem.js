@@ -11,7 +11,7 @@
 
 import type {Store, TaskRunner} from '../types';
 
-import {bindObservableAsProps} from '../../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {
   viewableFromReactElement,
 } from '../../../commons-atom/viewableFromReactElement';

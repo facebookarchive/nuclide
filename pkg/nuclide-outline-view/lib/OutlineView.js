@@ -23,9 +23,11 @@ import {getLogger} from '../../nuclide-logging';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
-} from '../../nuclide-ui/LoadingSpinner';
-import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
-import {Message, MessageTypes} from '../../nuclide-ui/Message';
+} from 'nuclide-commons-ui/LoadingSpinner';
+import {
+  PanelComponentScroller,
+} from 'nuclide-commons-ui/PanelComponentScroller';
+import {Message, MessageTypes} from 'nuclide-commons-ui/Message';
 
 const logger = getLogger();
 

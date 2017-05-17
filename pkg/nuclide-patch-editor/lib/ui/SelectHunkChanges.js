@@ -12,7 +12,7 @@
 import type {ExtraFileChangesData, HunkData} from '../types';
 import type {HunkProps} from '../../../nuclide-ui/FileChanges';
 
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {GutterCheckbox} from './GutterCheckbox';
 import {HunkDiff} from '../../../nuclide-ui/FileChanges';
 import nullthrows from 'nullthrows';

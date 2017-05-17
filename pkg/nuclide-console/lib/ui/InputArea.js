@@ -11,7 +11,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AtomTextEditor} from '../../../nuclide-ui/AtomTextEditor';
+import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {Observable} from 'rxjs';
 
 type Props = {

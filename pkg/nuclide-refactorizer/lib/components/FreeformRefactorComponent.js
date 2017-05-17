@@ -14,9 +14,9 @@ import type {Store, FreeformPhase} from '../types';
 
 import React from 'react';
 
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {Button, ButtonTypes} from '../../../nuclide-ui/Button';
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 
 import * as Actions from '../refactorActions';

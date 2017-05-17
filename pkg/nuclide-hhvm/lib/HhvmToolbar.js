@@ -14,9 +14,9 @@ import type {DebugMode} from './types';
 import {shell} from 'electron';
 
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {Button} from '../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 import React from 'react';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};

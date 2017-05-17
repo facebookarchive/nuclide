@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Table} from '../../../nuclide-ui/Table';
+import {Table} from 'nuclide-commons-ui/Table';
 
 type Props = {
   table: Map<string, string>,

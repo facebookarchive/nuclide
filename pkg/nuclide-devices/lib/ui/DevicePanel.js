@@ -13,7 +13,7 @@ import type {Process, ProcessKiller} from '../types';
 import type {DeviceTask} from '../types';
 
 import {Subscription} from 'rxjs';
-import {Icon} from '../../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';

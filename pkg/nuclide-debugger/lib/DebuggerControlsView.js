@@ -12,7 +12,7 @@
 import type DebuggerModel from './DebuggerModel';
 import {CompositeDisposable} from 'atom';
 import React from 'react';
-import {Button} from '../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';

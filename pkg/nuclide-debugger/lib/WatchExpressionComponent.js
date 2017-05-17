@@ -19,8 +19,8 @@ import type {Observable} from 'rxjs';
 
 import React from 'react';
 import classnames from 'classnames';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {
   LazyNestedValueComponent,
 } from '../../nuclide-ui/LazyNestedValueComponent';

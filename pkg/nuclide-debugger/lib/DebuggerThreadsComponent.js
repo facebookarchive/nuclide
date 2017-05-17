@@ -15,14 +15,14 @@ import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
 import type ThreadStore from './ThreadStore';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
-import {Icon} from '../../nuclide-ui/Icon';
-import {Table} from '../../nuclide-ui/Table';
-import type {Row} from '../../nuclide-ui/Table';
+import {Icon} from 'nuclide-commons-ui/Icon';
+import {Table} from 'nuclide-commons-ui/Table';
+import type {Row} from 'nuclide-commons-ui/Table';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
-} from '../../nuclide-ui/LoadingSpinner';
+} from 'nuclide-commons-ui/LoadingSpinner';
 import debounce from 'nuclide-commons/debounce';
 
 type DebuggerThreadsComponentProps = {

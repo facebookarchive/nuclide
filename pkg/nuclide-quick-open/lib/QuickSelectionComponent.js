@@ -38,8 +38,8 @@ export type SelectionIndex = {
 };
 
 import {Observable, Scheduler} from 'rxjs';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
-import {Button} from '../../nuclide-ui/Button';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button} from 'nuclide-commons-ui/Button';
 import Tabs from '../../nuclide-ui/Tabs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

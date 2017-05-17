@@ -10,19 +10,19 @@
  */
 
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
-import type {IconName} from '../../nuclide-ui/Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
 import observePaneItemVisibility
   from 'nuclide-commons-atom/observePaneItemVisibility';
-import {renderReactRoot} from '../../commons-atom/renderReactRoot';
+import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {toggle} from 'nuclide-commons/observable';
 import {track} from '../../nuclide-analytics';
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 type PanelProps = {

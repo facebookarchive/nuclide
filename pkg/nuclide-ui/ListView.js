@@ -12,7 +12,8 @@
 import classnames from 'classnames';
 import React from 'react';
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+import ignoreTextSelectionEvents
+  from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 
 type ListViewItemProps = {
   index: number,

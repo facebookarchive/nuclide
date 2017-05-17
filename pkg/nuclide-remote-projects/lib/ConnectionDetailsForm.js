@@ -19,8 +19,8 @@ import type {
 
 import {getOfficialRemoteServerCommand} from './connection-profile-utils';
 
-import addTooltip from '../../nuclide-ui/add-tooltip';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {CompositeDisposable} from 'atom';
 import {getIPsForHosts} from './connection-profile-utils';
 import lookupPreferIpv6

@@ -10,9 +10,9 @@
  */
 
 import React from 'react';
-import {Block} from './Block';
+import {Block} from 'nuclide-commons-ui/Block';
 import {ListView, ListViewItem} from './ListView';
-import {Checkbox} from './Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {MultiSelectList} from './MultiSelectList';
 
 const NOOP = () => {};

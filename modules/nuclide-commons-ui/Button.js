@@ -15,7 +15,7 @@ import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {maybeToString} from 'nuclide-commons/string';
-import addTooltip from './add-tooltip';
+import addTooltip from './addTooltip';
 
 export type ButtonType = 'PRIMARY' | 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR';
 export type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';

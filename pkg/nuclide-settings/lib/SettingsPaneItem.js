@@ -14,7 +14,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import React from 'react';
 import SettingsCategory from './SettingsCategory';
 
-import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Section} from '../../nuclide-ui/Section';
 
 import {matchesFilter} from './settings-utils';

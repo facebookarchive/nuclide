@@ -13,8 +13,8 @@ import type {Store, RenamePhase} from '../types';
 
 import React from 'react';
 
-import {AtomInput} from '../../../nuclide-ui/AtomInput';
-import {Button} from '../../../nuclide-ui/Button';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {Button} from 'nuclide-commons-ui/Button';
 
 import * as Actions from '../refactorActions';
 

@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {IconName} from './Icon';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import {Button, ButtonSizes} from './Button';
-import {Icon} from './Icon';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
 import invariant from 'assert';
 import electron from 'electron';

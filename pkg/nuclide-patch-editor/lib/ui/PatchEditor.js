@@ -13,8 +13,8 @@ import typeof * as BoundActionCreators from '../redux/Actions';
 import type {PatchData} from '../types';
 
 import React from 'react';
-import {Button} from '../../../nuclide-ui/Button';
-import {ButtonGroup} from '../../../nuclide-ui/ButtonGroup';
+import {Button} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {patchToString} from '../utils';
 import {SelectFileChanges} from './SelectFileChanges';
 

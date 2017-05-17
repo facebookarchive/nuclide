@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import {Icon} from '../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {
   locked: boolean,

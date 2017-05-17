@@ -36,7 +36,7 @@ import {
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
 import SwiftPMAutocompletionProvider
   from './providers/SwiftPMAutocompletionProvider';
-import {Icon} from '../../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri.js';
 

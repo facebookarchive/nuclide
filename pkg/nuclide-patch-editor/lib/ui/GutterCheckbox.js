@@ -9,7 +9,7 @@
  * @format
  */
 
-import {Checkbox} from '../../../nuclide-ui/Checkbox';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Portal} from '../../../nuclide-ui/Portal';
 import React from 'react';
 

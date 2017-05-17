@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileChangeStatusValue} from '../nuclide-vcs-base';
 
 import {repositoryForPath} from '../nuclide-vcs-base';
-import addTooltip from './add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';

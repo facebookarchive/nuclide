@@ -14,14 +14,14 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {
   NodeAttachTargetInfo,
 } from '../../nuclide-debugger-node-rpc/lib/NodeDebuggerService';
-import type {Column} from '../../nuclide-ui/Table';
+import type {Column} from 'nuclide-commons-ui/Table';
 
 import React from 'react';
-import {AtomInput} from '../../nuclide-ui/AtomInput';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
-import {Table} from '../../nuclide-ui/Table';
-import {Button, ButtonTypes} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+import {Table} from 'nuclide-commons-ui/Table';
+import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 
 import type EventEmitter from 'events';
 

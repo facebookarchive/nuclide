@@ -17,7 +17,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import observePaneItemVisibility
   from 'nuclide-commons-atom/observePaneItemVisibility';
-import addTooltip from '../../nuclide-ui/add-tooltip';
+import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -36,9 +36,9 @@ import {
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
-} from '../../nuclide-ui/LoadingSpinner';
+} from 'nuclide-commons-ui/LoadingSpinner';
 import {FileTree} from './FileTree';
-import {Icon} from '../../nuclide-ui/Icon';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
@@ -47,7 +47,9 @@ import {FileTreeStore} from '../lib/FileTreeStore';
 import {
   MultiRootChangedFilesView,
 } from '../../nuclide-ui/MultiRootChangedFilesView';
-import {PanelComponentScroller} from '../../nuclide-ui/PanelComponentScroller';
+import {
+  PanelComponentScroller,
+} from 'nuclide-commons-ui/PanelComponentScroller';
 import {
   nextAnimationFrame,
   toggle,

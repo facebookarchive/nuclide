@@ -13,13 +13,13 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
 import DiagnosticsPane from './DiagnosticsPane';
-import {Checkbox} from '../../nuclide-ui/Checkbox';
-import {Toolbar} from '../../nuclide-ui/Toolbar';
-import {ToolbarCenter} from '../../nuclide-ui/ToolbarCenter';
-import {ToolbarLeft} from '../../nuclide-ui/ToolbarLeft';
-import {ToolbarRight} from '../../nuclide-ui/ToolbarRight';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import {Toolbar} from 'nuclide-commons-ui/Toolbar';
+import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
+import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
+import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import React from 'react';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {track} from '../../nuclide-analytics';
 
 type Props = {

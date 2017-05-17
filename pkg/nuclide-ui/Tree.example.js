@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import {Block} from './Block';
-import {Icon} from './Icon';
+import {Block} from 'nuclide-commons-ui/Block';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';
 
 const BasicTreeExample = (): React.Element<any> => (

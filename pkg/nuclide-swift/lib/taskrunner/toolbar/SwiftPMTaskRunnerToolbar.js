@@ -13,7 +13,7 @@ import type SwiftPMTaskRunnerStore from '../SwiftPMTaskRunnerStore';
 import type SwiftPMTaskRunnerActions from '../SwiftPMTaskRunnerActions';
 
 import React from 'react';
-import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import SwiftPMSettingsModal from './SwiftPMSettingsModal';
 
 type Props = {

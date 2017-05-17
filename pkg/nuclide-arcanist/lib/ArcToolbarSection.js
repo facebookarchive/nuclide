@@ -13,8 +13,8 @@ import type {Option} from '../../nuclide-ui/Dropdown';
 
 import React from 'react';
 import {ArcToolbarModel} from './ArcToolbarModel';
-import {Button, ButtonSizes} from '../../nuclide-ui/Button';
-import {ButtonGroup} from '../../nuclide-ui/ButtonGroup';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import invariant from 'assert';
 

@@ -16,7 +16,7 @@ import type {Datatip} from '../../nuclide-datatip/lib/types';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './types';
 
-import {bindObservableAsProps} from '../../nuclide-ui/bindObservableAsProps';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {
   getEvaluationExpressionFromRegexp,
 } from '../../nuclide-language-service/lib/EvaluationExpressionProvider';

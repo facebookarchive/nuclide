@@ -11,7 +11,7 @@
 
 import BreakpointStore from './BreakpointStore';
 import React from 'react';
-import {Button} from '../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 
 type Props = {
   breakpointStore: BreakpointStore,

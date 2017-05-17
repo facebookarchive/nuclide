@@ -24,7 +24,7 @@ type Props = {
   activeHandlesByType: HandlesByType,
 };
 
-import {Button, ButtonSizes} from '../../../../nuclide-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
 export default class BasicStatsSectionComponent extends React.Component {
   props: Props;

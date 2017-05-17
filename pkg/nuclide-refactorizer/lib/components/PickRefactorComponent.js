@@ -15,7 +15,7 @@ import type {AvailableRefactoring} from '../..';
 
 import React from 'react';
 
-import {Button} from '../../../nuclide-ui/Button';
+import {Button} from 'nuclide-commons-ui/Button';
 
 import * as Actions from '../refactorActions';
 
