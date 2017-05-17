@@ -561,15 +561,7 @@ export type SpawnProcessOptions = child_process$spawnOpts &
 export type ForkProcessOptions = child_process$forkOpts &
   CreateProcessStreamOptions;
 
-// Copied from https://github.com/facebook/flow/blob/v0.43.1/lib/node.js#L11-L16
-type ErrnoError = {
-  errno?: number,
-  code?: string,
-  path?: string,
-  syscall?: string,
-};
-
-export type ProcessError = ErrnoError | ProcessExitError;
+export type ProcessError = ProcessSystemError | ProcessExitError;
 
 //
 // Errors
@@ -614,6 +606,28 @@ export class ProcessExitError extends Error {
     this.signal = signal;
     this.stderr = stderr;
     this.stdout = stdout;
+    this.process = proc;
+  }
+}
+
+/**
+ * Process system errors are just augmented Error objects. We wrap the errors and expose the process
+ * since our utilities throw the errors before returning the process.
+ */
+export class ProcessSystemError extends Error {
+  errno: number | string;
+  code: string;
+  path: ?string;
+  syscall: ?string;
+  process: child_process$ChildProcess;
+
+  constructor(err: any, proc: child_process$ChildProcess) {
+    super(err.message);
+    this.name = 'ProcessSystemError';
+    this.errno = err.errono;
+    this.code = err.code;
+    this.path = err.path;
+    this.syscall = err.syscall;
     this.process = proc;
   }
 }
@@ -860,11 +874,20 @@ function createProcessStream(
               finished = true;
             },
           }),
-      ).finally(() => {
-        if (!proc.wasKilled && !finished) {
-          killProcess(proc, Boolean(killTreeWhenDone));
-        }
-      });
+      )
+        .catch(err => {
+          // Since this utility errors *before* emitting the process, add the process to the error
+          // so that users can get whatever info they need off of it.
+          if (err instanceof Error && err.name === 'Error' && 'errno' in err) {
+            throw new ProcessSystemError(err, proc);
+          }
+          throw err;
+        })
+        .finally(() => {
+          if (!proc.wasKilled && !finished) {
+            killProcess(proc, Boolean(killTreeWhenDone));
+          }
+        });
     });
 }
 

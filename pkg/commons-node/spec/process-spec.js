@@ -196,6 +196,7 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error);
         expect(error.code).toBe('ENOENT');
+        expect(error.name).toBe('ProcessSystemError');
       });
     });
 
@@ -215,6 +216,7 @@ describe('commons-node/process', () => {
           .catch(err => {
             expect(proc).toBeUndefined();
             expect(err.code).toBe('ENOENT');
+            expect(err.name).toBe('ProcessSystemError');
             return Observable.empty();
           })
           .toPromise();
@@ -310,6 +312,7 @@ describe('commons-node/process', () => {
         expect(error).toBeDefined();
         invariant(error);
         expect(error.code).toBe('ENOENT');
+        expect(error.name).toBe('ProcessSystemError');
       });
     });
 
@@ -440,6 +443,7 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.code).toBe('ENOENT');
+        expect(error.name).toBe('ProcessSystemError');
       });
     });
 
@@ -582,6 +586,7 @@ describe('commons-node/process', () => {
         }
         invariant(error != null);
         expect(error.code).toBe('ENOENT');
+        expect(error.name).toBe('ProcessSystemError');
       });
     });
 
