@@ -66,10 +66,10 @@ process.once('beforeExit', code => {
     console.error('ESLint exit code %s', exitCode);
   }
   if (stdOut) {
-    console.log(stdOut.replace(/^/gm, '[eslintstdout] '));
+    console.log(stdOut);
   }
   if (stdErr) {
-    console.error(stdErr.replace(/^/gm, '[eslintstderr] '));
+    console.error(stdErr);
   }
 });
 
