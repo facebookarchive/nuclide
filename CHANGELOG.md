@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.227.0
+
+**Hotfix from 0.226.0**
+
+* Fixing issue with debugger panes when running Nuclide on Atom 1.17
+
 ## v0.226.0
 
 ### General
