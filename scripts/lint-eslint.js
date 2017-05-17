@@ -38,7 +38,28 @@ while (chunks.length) {
   const ps = child_process.spawn(
     process.execPath,
     [
-      'node_modules/.bin/eslint',
+      '--eval',
+      `
+      (function retry(retries) {
+        try {
+          require('./node_modules/.bin/eslint');
+        } catch (err) {
+          if (--retries && Array.isArray(err) && err[2] instanceof Error) {
+            console.error('**ESLint flow-parser mystery v8 bug... retrying**');
+            console.error(require('util').inspect(err));
+            // Reset the module cache because ESLint is stateful
+            Object.keys(require.cache)
+              .filter(x => x.includes('/node_modules/'))
+              .forEach(x => { delete require.cache[x]; });
+            retry(retries);
+          } else {
+            throw err;
+          }
+        }
+      })(3);
+      `,
+      '--',
+      '',
       '--format', 'codeframe',
       '--max-warnings', '0',
       '--',
