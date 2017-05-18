@@ -572,12 +572,17 @@ export class LspLanguageService {
       return;
     }
 
+    const prevState = this._state;
     this._state = 'Stopped';
     if (this._lspConnection != null) {
       this._lspConnection.dispose();
     }
 
     // Should we restart or not? depends...
+    if (prevState !== 'Running') {
+      this._logger.logError("Lsp.Close - wasn't running, so won't restart.");
+      return;
+    }
     const now = Date.now();
     this._recentRestarts.push(now);
     while (this._recentRestarts[0] < now - 3 * 60 * 1000) {
