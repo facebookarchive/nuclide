@@ -79,6 +79,10 @@ export default class ThreadStore {
         this._updateStopThread(payload.data.id);
         this._emitter.emit('change');
         break;
+      case ActionTypes.UPDATE_SELECTED_THREAD:
+        this._updateSelectedThread(payload.data.id);
+        this._emitter.emit('change');
+        break;
       case ActionTypes.NOTIFY_THREAD_SWITCH:
         this._notifyThreadSwitch(
           payload.data.sourceURL,
@@ -132,6 +136,10 @@ export default class ThreadStore {
 
   _updateStopThread(id: number) {
     this._stopThreadId = Number(id);
+    this._selectedThreadId = Number(id);
+  }
+
+  _updateSelectedThread(id: number) {
     this._selectedThreadId = Number(id);
   }
 

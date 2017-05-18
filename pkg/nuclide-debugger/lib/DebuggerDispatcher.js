@@ -185,6 +185,10 @@ export type DebuggerAction =
       data: {id: number},
     }
   | {
+      actionType: 'UPDATE_SELECTED_THREAD',
+      data: {id: number},
+    }
+  | {
       actionType: 'NOTIFY_THREAD_SWITCH',
       data: {sourceURL: string, lineNumber: number, message: string},
     }
@@ -254,6 +258,7 @@ export const ActionTypes = Object.freeze({
   UPDATE_THREADS: 'UPDATE_THREADS',
   UPDATE_THREAD: 'UPDATE_THREAD',
   UPDATE_STOP_THREAD: 'UPDATE_STOP_THREAD',
+  UPDATE_SELECTED_THREAD: 'UPDATE_SELECTED_THREAD',
   NOTIFY_THREAD_SWITCH: 'NOTIFY_THREAD_SWITCH',
   TOGGLE_SINGLE_THREAD_STEPPING: 'TOGGLE_SINGLE_THREAD_STEPPING',
   RECEIVED_EXPRESSION_EVALUATION_RESPONSE: 'RECEIVED_EXPRESSION_EVALUATION_RESPONSE',

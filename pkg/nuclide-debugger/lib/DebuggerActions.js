@@ -632,6 +632,15 @@ export default class DebuggerActions {
     });
   }
 
+  updateSelectedThread(id: number): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_SELECTED_THREAD,
+      data: {
+        id,
+      },
+    });
+  }
+
   notifyThreadSwitch(
     sourceURL: string,
     lineNumber: number,
