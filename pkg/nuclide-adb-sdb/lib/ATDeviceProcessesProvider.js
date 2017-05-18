@@ -31,7 +31,9 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
     return Observable.interval(3000)
       .startWith(0)
       .switchMap(() =>
-        Observable.fromPromise(this._rpcFactory(host).getProcesses(device)),
+        Observable.fromPromise(
+          this._rpcFactory(host).getProcesses(device).catch(() => []),
+        ),
       );
   }
 

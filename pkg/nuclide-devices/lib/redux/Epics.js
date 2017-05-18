@@ -61,13 +61,17 @@ async function getInfoTables(
     });
   const infoTables = await Promise.all(
     sortedProviders.map(async provider => {
-      if (!await provider.isSupported(state.host)) {
+      try {
+        if (!await provider.isSupported(state.host)) {
+          return null;
+        }
+        return [
+          provider.getTitle(),
+          await provider.fetch(state.host, device.name),
+        ];
+      } catch (e) {
         return null;
       }
-      return [
-        provider.getTitle(),
-        await provider.fetch(state.host, device.name),
-      ];
     }),
   );
   return new Map(arrayCompact(infoTables));
@@ -99,17 +103,21 @@ async function getDeviceTasks(state: AppState): Promise<DeviceTask[]> {
     Array.from(getDeviceTaskProviders())
       .filter(provider => provider.getType() === state.deviceType)
       .map(async provider => {
-        if (!await provider.isSupported(state.host)) {
+        try {
+          if (!await provider.isSupported(state.host)) {
+            return null;
+          }
+          return deviceTaskCache.getOrCreate(
+            `${state.host}-${device.name}-${provider.getName()}`,
+            () =>
+              new DeviceTask(
+                () => provider.getTask(state.host, device.name),
+                provider.getName(),
+              ),
+          );
+        } catch (e) {
           return null;
         }
-        return deviceTaskCache.getOrCreate(
-          `${state.host}-${device.name}-${provider.getName()}`,
-          () =>
-            new DeviceTask(
-              () => provider.getTask(state.host, device.name),
-              provider.getName(),
-            ),
-        );
       }),
   );
   return arrayCompact(actions).sort((a, b) =>
