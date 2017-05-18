@@ -1,3 +1,30 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AdbSdbBase = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('../../commons-node/process');
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,146 +32,132 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {arrayCompact} from 'nuclide-commons/collection';
-import {observeProcess, runCommand} from '../../commons-node/process';
-import os from 'os';
-import {Observable} from 'rxjs';
+class AdbSdbBase {
 
-import type {DeviceDescription} from './types';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-export class AdbSdbBase {
-  _dbPath: string;
-
-  constructor(dbPath: string) {
+  constructor(dbPath) {
     this._dbPath = dbPath;
   }
 
-  runShortCommand(device: string, command: Array<string>): Observable<string> {
+  runShortCommand(device, command) {
     const deviceArg = device !== '' ? ['-s', device] : [];
-    return runCommand(this._dbPath, deviceArg.concat(command));
+    return (0, (_process || _load_process()).runCommand)(this._dbPath, deviceArg.concat(command));
   }
 
-  runLongCommand(
-    device: string,
-    command: string[],
-  ): Observable<LegacyProcessMessage> {
+  runLongCommand(device, command) {
     // TODO(T17463635)
     const deviceArg = device !== '' ? ['-s', device] : [];
-    return observeProcess(this._dbPath, deviceArg.concat(command), {
+    return (0, (_process || _load_process()).observeProcess)(this._dbPath, deviceArg.concat(command), {
       killTreeWhenDone: true,
-      /* TODO(T17353599) */ isExitError: () => false,
-    }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
+      /* TODO(T17353599) */isExitError: () => false
+    }).catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error })); // TODO(T17463635)
   }
 
-  startServer(): Promise<boolean> {
-    return runCommand(this._dbPath, ['start-server'])
-      .toPromise()
-      .then(() => true, () => false);
+  startServer() {
+    return (0, (_process || _load_process()).runCommand)(this._dbPath, ['start-server']).toPromise().then(() => true, () => false);
   }
 
-  async getCommonDeviceInfo(device: string): Promise<Map<string, string>> {
-    const unknownCB = () => null;
-    const architecture = await this.getDeviceArchitecture(device).catch(
-      unknownCB,
-    );
-    const apiVersion = await this.getAPIVersion(device).catch(unknownCB);
-    const model = await this.getDeviceModel(device).catch(unknownCB);
-    return new Map([
-      ['name', device],
+  getCommonDeviceInfo(device) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const unknownCB = function () {
+        return null;
+      };
+      const architecture = yield _this.getDeviceArchitecture(device).catch(unknownCB);
+      const apiVersion = yield _this.getAPIVersion(device).catch(unknownCB);
+      const model = yield _this.getDeviceModel(device).catch(unknownCB);
+      return new Map([['name', device],
       // $FlowFixMe architecture could resolve to null if the promise throws
       ['architecture', architecture],
       // $FlowFixMe apiVersion could resolve to null if the promise throws
       ['api_version', apiVersion],
       // $FlowFixMe model could resolve to null if the promise throws
-      ['model', model],
-    ]);
+      ['model', model]]);
+    })();
   }
 
-  async getDeviceList(): Promise<Array<DeviceDescription>> {
-    const devices = await runCommand(this._dbPath, ['devices'])
-      .map(stdout =>
-        stdout
-          .split(/\n+/g)
-          .slice(1)
-          .filter(s => s.length > 0 && !s.trim().startsWith('*'))
-          .map(s => s.split(/\s+/g))
-          .filter(a => a[0] !== '')
-          .map(a => a[0]),
-      )
-      .toPromise();
+  getDeviceList() {
+    var _this2 = this;
 
-    const deviceTable = await Promise.all(
-      devices.map(async name => {
-        try {
-          const architecture = await this.getDeviceArchitecture(name);
-          const apiVersion = await this.getAPIVersion(name);
-          const model = await this.getDeviceModel(name);
-          return {name, architecture, apiVersion, model};
-        } catch (error) {
-          return null;
-        }
-      }),
-    );
+    return (0, _asyncToGenerator.default)(function* () {
+      const devices = yield (0, (_process || _load_process()).runCommand)(_this2._dbPath, ['devices']).map(function (stdout) {
+        return stdout.split(/\n+/g).slice(1).filter(function (s) {
+          return s.length > 0 && !s.trim().startsWith('*');
+        }).map(function (s) {
+          return s.split(/\s+/g);
+        }).filter(function (a) {
+          return a[0] !== '';
+        }).map(function (a) {
+          return a[0];
+        });
+      }).toPromise();
 
-    return arrayCompact(deviceTable);
+      const deviceTable = yield Promise.all(devices.map((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (name) {
+          try {
+            const architecture = yield _this2.getDeviceArchitecture(name);
+            const apiVersion = yield _this2.getAPIVersion(name);
+            const model = yield _this2.getDeviceModel(name);
+            return { name, architecture, apiVersion, model };
+          } catch (error) {
+            return null;
+          }
+        });
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      })()));
+
+      return (0, (_collection || _load_collection()).arrayCompact)(deviceTable);
+    })();
   }
 
-  async getFileContentsAtPath(device: string, path: string): Promise<string> {
-    return this.runShortCommand(device, ['shell', 'cat', path]).toPromise();
+  getFileContentsAtPath(device, path) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this3.runShortCommand(device, ['shell', 'cat', path]).toPromise();
+    })();
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
+  getDeviceArchitecture(device) {
     throw new Error('not implemented');
   }
 
-  getDeviceModel(device: string): Promise<string> {
+  getDeviceModel(device) {
     throw new Error('not implemented');
   }
 
-  getAPIVersion(device: string): Promise<string> {
+  getAPIVersion(device) {
     throw new Error('not implemented');
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> {
+  installPackage(device, packagePath) {
     // TODO(T17463635)
     throw new Error('not implemented');
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<LegacyProcessMessage> {
+  uninstallPackage(device, packageName) {
     // TODO(T17463635)
     throw new Error('not implemented');
   }
 
-  async getPidFromPackageName(
-    device: string,
-    packageName: string,
-  ): Promise<number> {
-    const pidLine = (await this.runShortCommand(device, [
-      'shell',
-      'ps',
-      '|',
-      'grep',
-      '-i',
-      packageName,
-    ]).toPromise()).split(os.EOL)[0];
-    if (pidLine == null) {
-      throw new Error(
-        `Can not find a running process with package name: ${packageName}`,
-      );
-    }
-    // First column is 'USER', second is 'PID'.
-    return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */ 10);
+  getPidFromPackageName(device, packageName) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const pidLine = (yield _this4.runShortCommand(device, ['shell', 'ps', '|', 'grep', '-i', packageName]).toPromise()).split(_os.default.EOL)[0];
+      if (pidLine == null) {
+        throw new Error(`Can not find a running process with package name: ${packageName}`);
+      }
+      // First column is 'USER', second is 'PID'.
+      return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */10);
+    })();
   }
 }
+exports.AdbSdbBase = AdbSdbBase;

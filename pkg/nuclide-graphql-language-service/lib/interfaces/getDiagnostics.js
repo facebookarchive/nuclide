@@ -1,3 +1,42 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDiagnostics = getDiagnostics;
+
+var _graphql;
+
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
+
+var _CharacterStream;
+
+function _load_CharacterStream() {
+  return _CharacterStream = _interopRequireDefault(require('../parser/CharacterStream'));
+}
+
+var _onlineParser;
+
+function _load_onlineParser() {
+  return _onlineParser = _interopRequireDefault(require('../parser/onlineParser'));
+}
+
+var _Range;
+
+function _load_Range() {
+  return _Range = require('../utils/Range');
+}
+
+var _validateWithCustomRules;
+
+function _load_validateWithCustomRules() {
+  return _validateWithCustomRules = require('../utils/validateWithCustomRules');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,113 +44,82 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  ASTNode,
-  GraphQLErrorLocation,
-  GraphQLError,
-  GraphQLSchema,
-  Location,
-} from 'graphql';
-import type {DiagnosticType, CustomValidationRule, Uri} from '../types/Types';
-
-import invariant from 'assert';
-import {parse} from 'graphql';
-
-import CharacterStream from '../parser/CharacterStream';
-import onlineParser from '../parser/onlineParser';
-import {Point, Range} from '../utils/Range';
-import {validateWithCustomRules} from '../utils/validateWithCustomRules';
-
-export function getDiagnostics(
-  filePath: string,
-  queryText: string,
-  schema: ?GraphQLSchema = null,
-  customRules?: Array<CustomValidationRule>,
-): Array<DiagnosticType> {
+function getDiagnostics(filePath, queryText, schema = null, customRules) {
   if (filePath == null) {
     return [];
   }
 
   let ast = null;
   try {
-    ast = parse(queryText);
+    ast = (0, (_graphql || _load_graphql()).parse)(queryText);
   } catch (error) {
     const range = getRange(error.locations[0], queryText);
 
-    return [
-      {
-        name: 'graphql: Syntax',
-        type: 'Error',
-        text: error.message,
-        range,
-        filePath,
-      },
-    ];
+    return [{
+      name: 'graphql: Syntax',
+      type: 'Error',
+      text: error.message,
+      range,
+      filePath
+    }];
   }
 
-  const errors: Array<GraphQLError> = schema
-    ? validateWithCustomRules(schema, ast, customRules)
-    : [];
+  const errors = schema ? (0, (_validateWithCustomRules || _load_validateWithCustomRules()).validateWithCustomRules)(schema, ast, customRules) : [];
   return mapCat(errors, error => errorAnnotations(error, filePath));
 }
 
 // General utility for map-cating (aka flat-mapping).
-function mapCat<T>(
-  array: Array<T>,
-  mapper: (item: T) => Array<any>,
-): Array<any> {
+function mapCat(array, mapper) {
   return Array.prototype.concat.apply([], array.map(mapper));
 }
 
-function errorAnnotations(
-  error: GraphQLError,
-  filePath: Uri,
-): Array<DiagnosticType> {
+function errorAnnotations(error, filePath) {
   if (!error.nodes) {
     return [];
   }
   return error.nodes.map(node => {
-    const highlightNode = node.kind !== 'Variable' && node.name
-      ? node.name
-      : node.variable ? node.variable : node;
-    const typeCastedNode = ((highlightNode: any): ASTNode);
+    const highlightNode = node.kind !== 'Variable' && node.name ? node.name : node.variable ? node.variable : node;
+    const typeCastedNode = highlightNode;
 
-    invariant(error.locations, 'GraphQL validation error requires locations.');
+    if (!error.locations) {
+      throw new Error('GraphQL validation error requires locations.');
+    }
+
     const loc = error.locations[0];
-    const highlightNodeLoc: ?Location = typeCastedNode.loc;
-    invariant(highlightNodeLoc, 'Highlighted node requires location.');
+    const highlightNodeLoc = typeCastedNode.loc;
+
+    if (!highlightNodeLoc) {
+      throw new Error('Highlighted node requires location.');
+    }
+
     const end = loc.column + (highlightNodeLoc.end - highlightNodeLoc.start);
     return {
       name: 'graphql: Validation',
       text: error.message,
       type: 'error',
-      range: new Range(
-        new Point(loc.line - 1, loc.column),
-        new Point(loc.line - 1, end),
-      ),
-      filePath,
+      range: new (_Range || _load_Range()).Range(new (_Range || _load_Range()).Point(loc.line - 1, loc.column), new (_Range || _load_Range()).Point(loc.line - 1, end)),
+      filePath
     };
   });
 }
 
-function getRange(location: GraphQLErrorLocation, queryText: string) {
-  const parser = onlineParser();
+function getRange(location, queryText) {
+  const parser = (0, (_onlineParser || _load_onlineParser()).default)();
   const state = parser.startState();
   const lines = queryText.split('\n');
 
-  invariant(
-    lines.length >= location.line,
-    'Query text must have more lines than where the error happened',
-  );
+  if (!(lines.length >= location.line)) {
+    throw new Error('Query text must have more lines than where the error happened');
+  }
 
   let stream = null;
 
   for (let i = 0; i < location.line; i++) {
-    stream = new CharacterStream(lines[i]);
+    stream = new (_CharacterStream || _load_CharacterStream()).default(lines[i]);
     while (!stream.eol()) {
       const style = parser.token(stream, state);
       if (style === 'invalidchar') {
@@ -120,11 +128,13 @@ function getRange(location: GraphQLErrorLocation, queryText: string) {
     }
   }
 
-  invariant(stream, 'Expected Parser stream to be available.');
+  if (!stream) {
+    throw new Error('Expected Parser stream to be available.');
+  }
 
   const line = location.line - 1;
   const start = stream.getStartOfToken();
   const end = stream.getCurrentPosition();
 
-  return new Range(new Point(line, start), new Point(line, end));
+  return new (_Range || _load_Range()).Range(new (_Range || _load_Range()).Point(line, start), new (_Range || _load_Range()).Point(line, end));
 }

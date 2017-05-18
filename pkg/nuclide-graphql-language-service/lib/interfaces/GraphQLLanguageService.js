@@ -1,188 +1,171 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  DocumentNode,
-  FragmentDefinitionNode,
-  FragmentSpreadNode,
-  OperationDefinitionNode,
-} from 'graphql/language';
-import type {GraphQLCache} from '../server/GraphQLCache';
-import type {GraphQLRC, GraphQLConfig} from '../config/GraphQLConfig';
-import type {
-  AutocompleteSuggestionType,
-  DefinitionQueryResult,
-  DiagnosticType,
-  Uri,
-} from '../types/Types';
-import type {Point} from '../utils/Range';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.GraphQLLanguageService = undefined;
 
-import {
-  FRAGMENT_SPREAD,
-  FRAGMENT_DEFINITION,
-  OPERATION_DEFINITION,
-} from 'graphql/language/kinds';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {parse, print} from 'graphql';
-import {getAutocompleteSuggestions} from './getAutocompleteSuggestions';
-import {getDiagnostics as getDiagnosticsImpl} from './getDiagnostics';
-import {
-  getDefinitionQueryResultForFragmentSpread,
-  getDefinitionQueryResultForDefinitionNode,
-} from './getDefinition';
-import {getASTNodeAtPoint} from '../utils/getASTNodeAtPoint';
+var _kinds;
 
-export class GraphQLLanguageService {
-  _graphQLCache: GraphQLCache;
-  _graphQLRC: GraphQLRC;
+function _load_kinds() {
+  return _kinds = require('graphql/language/kinds');
+}
 
-  constructor(cache: GraphQLCache) {
+var _graphql;
+
+function _load_graphql() {
+  return _graphql = require('graphql');
+}
+
+var _getAutocompleteSuggestions;
+
+function _load_getAutocompleteSuggestions() {
+  return _getAutocompleteSuggestions = require('./getAutocompleteSuggestions');
+}
+
+var _getDiagnostics;
+
+function _load_getDiagnostics() {
+  return _getDiagnostics = require('./getDiagnostics');
+}
+
+var _getDefinition;
+
+function _load_getDefinition() {
+  return _getDefinition = require('./getDefinition');
+}
+
+var _getASTNodeAtPoint;
+
+function _load_getASTNodeAtPoint() {
+  return _getASTNodeAtPoint = require('../utils/getASTNodeAtPoint');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class GraphQLLanguageService {
+
+  constructor(cache) {
     this._graphQLCache = cache;
     this._graphQLRC = cache.getGraphQLRC();
   }
 
-  async getDiagnostics(
-    query: string,
-    filePath: Uri,
-  ): Promise<Array<DiagnosticType>> {
-    let source = query;
-    const graphQLConfig = this._graphQLRC.getConfigByFilePath(filePath);
-    // If there's a matching config, proceed to prepare to run validation
-    let schema;
-    let customRules;
-    if (graphQLConfig && graphQLConfig.getSchemaPath()) {
-      schema = await this._graphQLCache.getSchema(
-        graphQLConfig.getSchemaPath(),
-      );
-      const fragmentDefinitions = await this._graphQLCache.getFragmentDefinitions(
-        graphQLConfig,
-      );
-      const fragmentDependencies = await this._graphQLCache.getFragmentDependencies(
-        query,
-        fragmentDefinitions,
-      );
-      const dependenciesSource = fragmentDependencies.reduce(
-        (prev, cur) => `${prev} ${print(cur.definition)}`,
-        '',
-      );
+  getDiagnostics(query, filePath) {
+    var _this = this;
 
-      source = `${source} ${dependenciesSource}`;
+    return (0, _asyncToGenerator.default)(function* () {
+      let source = query;
+      const graphQLConfig = _this._graphQLRC.getConfigByFilePath(filePath);
+      // If there's a matching config, proceed to prepare to run validation
+      let schema;
+      let customRules;
+      if (graphQLConfig && graphQLConfig.getSchemaPath()) {
+        schema = yield _this._graphQLCache.getSchema(graphQLConfig.getSchemaPath());
+        const fragmentDefinitions = yield _this._graphQLCache.getFragmentDefinitions(graphQLConfig);
+        const fragmentDependencies = yield _this._graphQLCache.getFragmentDependencies(query, fragmentDefinitions);
+        const dependenciesSource = fragmentDependencies.reduce(function (prev, cur) {
+          return `${prev} ${(0, (_graphql || _load_graphql()).print)(cur.definition)}`;
+        }, '');
 
-      // Check if there are custom validation rules to be used
-      const customRulesModulePath = graphQLConfig.getCustomValidationRulesModulePath();
-      if (customRulesModulePath) {
-        const rulesPath = require.resolve(customRulesModulePath);
-        if (rulesPath) {
-          customRules = require(rulesPath)(graphQLConfig);
+        source = `${source} ${dependenciesSource}`;
+
+        // Check if there are custom validation rules to be used
+        const customRulesModulePath = graphQLConfig.getCustomValidationRulesModulePath();
+        if (customRulesModulePath) {
+          const rulesPath = require.resolve(customRulesModulePath);
+          if (rulesPath) {
+            customRules = require(rulesPath)(graphQLConfig);
+          }
         }
       }
-    }
 
-    return getDiagnosticsImpl(filePath, source, schema, customRules);
+      return (0, (_getDiagnostics || _load_getDiagnostics()).getDiagnostics)(filePath, source, schema, customRules);
+    })();
   }
 
-  async getAutocompleteSuggestions(
-    query: string,
-    position: Point,
-    filePath: Uri,
-  ): Promise<Array<AutocompleteSuggestionType>> {
-    const graphQLConfig = this._graphQLRC.getConfigByFilePath(filePath);
-    let schema;
-    if (graphQLConfig && graphQLConfig.getSchemaPath()) {
-      schema = await this._graphQLCache.getSchema(
-        graphQLConfig.getSchemaPath(),
-      );
+  getAutocompleteSuggestions(query, position, filePath) {
+    var _this2 = this;
 
-      if (schema) {
-        return getAutocompleteSuggestions(schema, query, position) || [];
+    return (0, _asyncToGenerator.default)(function* () {
+      const graphQLConfig = _this2._graphQLRC.getConfigByFilePath(filePath);
+      let schema;
+      if (graphQLConfig && graphQLConfig.getSchemaPath()) {
+        schema = yield _this2._graphQLCache.getSchema(graphQLConfig.getSchemaPath());
+
+        if (schema) {
+          return (0, (_getAutocompleteSuggestions || _load_getAutocompleteSuggestions()).getAutocompleteSuggestions)(schema, query, position) || [];
+        }
       }
-    }
-    return [];
+      return [];
+    })();
   }
 
-  async getDefinition(
-    query: string,
-    position: Point,
-    filePath: Uri,
-  ): Promise<?DefinitionQueryResult> {
-    const graphQLConfig = this._graphQLRC.getConfigByFilePath(filePath);
-    if (!graphQLConfig) {
-      return null;
-    }
+  getDefinition(query, position, filePath) {
+    var _this3 = this;
 
-    let ast;
-    try {
-      ast = parse(query);
-    } catch (error) {
-      return null;
-    }
-
-    const node = getASTNodeAtPoint(query, ast, position);
-    if (node) {
-      switch (node.kind) {
-        case FRAGMENT_SPREAD:
-          return this._getDefinitionForFragmentSpread(
-            query,
-            ast,
-            node,
-            filePath,
-            graphQLConfig,
-          );
-        case FRAGMENT_DEFINITION:
-        case OPERATION_DEFINITION:
-          return getDefinitionQueryResultForDefinitionNode(
-            filePath,
-            query,
-            (node: FragmentDefinitionNode | OperationDefinitionNode),
-          );
-        default:
-          return null;
+    return (0, _asyncToGenerator.default)(function* () {
+      const graphQLConfig = _this3._graphQLRC.getConfigByFilePath(filePath);
+      if (!graphQLConfig) {
+        return null;
       }
-    }
+
+      let ast;
+      try {
+        ast = (0, (_graphql || _load_graphql()).parse)(query);
+      } catch (error) {
+        return null;
+      }
+
+      const node = (0, (_getASTNodeAtPoint || _load_getASTNodeAtPoint()).getASTNodeAtPoint)(query, ast, position);
+      if (node) {
+        switch (node.kind) {
+          case (_kinds || _load_kinds()).FRAGMENT_SPREAD:
+            return _this3._getDefinitionForFragmentSpread(query, ast, node, filePath, graphQLConfig);
+          case (_kinds || _load_kinds()).FRAGMENT_DEFINITION:
+          case (_kinds || _load_kinds()).OPERATION_DEFINITION:
+            return (0, (_getDefinition || _load_getDefinition()).getDefinitionQueryResultForDefinitionNode)(filePath, query, node);
+          default:
+            return null;
+        }
+      }
+    })();
   }
 
-  async _getDefinitionForFragmentSpread(
-    query: string,
-    ast: DocumentNode,
-    node: FragmentSpreadNode,
-    filePath: Uri,
-    graphQLConfig: GraphQLConfig,
-  ): Promise<?DefinitionQueryResult> {
-    const fragmentDefinitions = await this._graphQLCache.getFragmentDefinitions(
-      graphQLConfig,
-    );
+  _getDefinitionForFragmentSpread(query, ast, node, filePath, graphQLConfig) {
+    var _this4 = this;
 
-    const dependencies = await this._graphQLCache.getFragmentDependenciesForAST(
-      ast,
-      fragmentDefinitions,
-    );
+    return (0, _asyncToGenerator.default)(function* () {
+      const fragmentDefinitions = yield _this4._graphQLCache.getFragmentDefinitions(graphQLConfig);
 
-    const localFragDefinitions = ast.definitions.filter(
-      definition => definition.kind === FRAGMENT_DEFINITION,
-    );
-    const typeCastedDefs = ((localFragDefinitions: any): Array<
-      FragmentDefinitionNode,
-    >);
-    const localFragInfos = typeCastedDefs.map(definition => ({
-      file: filePath,
-      content: query,
-      definition,
-    }));
+      const dependencies = yield _this4._graphQLCache.getFragmentDependenciesForAST(ast, fragmentDefinitions);
 
-    const result = await getDefinitionQueryResultForFragmentSpread(
-      query,
-      node,
-      dependencies.concat(localFragInfos),
-    );
+      const localFragDefinitions = ast.definitions.filter(function (definition) {
+        return definition.kind === (_kinds || _load_kinds()).FRAGMENT_DEFINITION;
+      });
+      const typeCastedDefs = localFragDefinitions;
+      const localFragInfos = typeCastedDefs.map(function (definition) {
+        return {
+          file: filePath,
+          content: query,
+          definition
+        };
+      });
 
-    return result;
+      const result = yield (0, (_getDefinition || _load_getDefinition()).getDefinitionQueryResultForFragmentSpread)(query, node, dependencies.concat(localFragInfos));
+
+      return result;
+    })();
   }
 }
+exports.GraphQLLanguageService = GraphQLLanguageService; /**
+                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                          * All rights reserved.
+                                                          *
+                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                          * the root directory of this source tree.
+                                                          *
+                                                          * 
+                                                          * @format
+                                                          */

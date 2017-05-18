@@ -1,85 +1,94 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Selectors = undefined;
 
-import React from 'react';
-import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
+var _react = _interopRequireDefault(require('react'));
 
-const FB_HOST_SUFFIX = '.facebook.com';
+var _Dropdown;
 
-type Props = {
-  setHost: (host: NuclideUri) => void,
-  setDeviceType: (deviceType: string) => void,
-  hosts: NuclideUri[],
-  host: NuclideUri,
-  deviceTypes: string[],
-  deviceType: ?string,
-};
+function _load_Dropdown() {
+  return _Dropdown = require('../../../nuclide-ui/Dropdown');
+}
 
-export class Selectors extends React.Component {
-  props: Props;
+var _Button;
 
-  _getHostOptions(): Array<{value: ?string, label: string}> {
-    return this.props.hosts
-      .map(host => {
-        return host.endsWith(FB_HOST_SUFFIX)
-          ? host.substring(0, host.length - FB_HOST_SUFFIX.length)
-          : host;
-      })
-      .map(host => ({value: host, label: host}));
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const FB_HOST_SUFFIX = '.facebook.com'; /**
+                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                         * All rights reserved.
+                                         *
+                                         * This source code is licensed under the license found in the LICENSE file in
+                                         * the root directory of this source tree.
+                                         *
+                                         * 
+                                         * @format
+                                         */
+
+class Selectors extends _react.default.Component {
+
+  _getHostOptions() {
+    return this.props.hosts.map(host => {
+      return host.endsWith(FB_HOST_SUFFIX) ? host.substring(0, host.length - FB_HOST_SUFFIX.length) : host;
+    }).map(host => ({ value: host, label: host }));
   }
 
-  _getTypesButtons(): React.Element<any>[] {
+  _getTypesButtons() {
     return this.props.deviceTypes.map(deviceType => {
       if (deviceType === this.props.deviceType) {
-        return (
-          <Button key={deviceType} buttonType={ButtonTypes.PRIMARY}>
-            {deviceType}
-          </Button>
+        return _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          { key: deviceType, buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY },
+          deviceType
         );
       }
-      return (
-        <Button
-          key={deviceType}
-          onClick={() => this.props.setDeviceType(deviceType)}>
-          {deviceType}
-        </Button>
+      return _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        {
+          key: deviceType,
+          onClick: () => this.props.setDeviceType(deviceType) },
+        deviceType
       );
     });
   }
 
-  _getTypesSelector(): React.Element<any> {
-    return (
-      <ButtonGroup size={ButtonGroupSizes.SMALL}>
-        {this._getTypesButtons()}
-      </ButtonGroup>
+  _getTypesSelector() {
+    return _react.default.createElement(
+      (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+      { size: (_ButtonGroup || _load_ButtonGroup()).ButtonGroupSizes.SMALL },
+      this._getTypesButtons()
     );
   }
 
-  render(): React.Element<any> {
-    return (
-      <div>
-        <div className="nuclide-device-panel-host-selector">
-          <Dropdown
-            options={this._getHostOptions()}
-            onChange={this.props.setHost}
-            value={this.props.host}
-            key="connection"
-          />
-        </div>
-        {this._getTypesSelector()}
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-device-panel-host-selector' },
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          options: this._getHostOptions(),
+          onChange: this.props.setHost,
+          value: this.props.host,
+          key: 'connection'
+        })
+      ),
+      this._getTypesSelector()
     );
   }
 }
+exports.Selectors = Selectors;

@@ -1,48 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {LanguageService} from './LanguageService';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
-import type {
-  CodeFormatProvider as CodeFormatProviderType,
-} from '../../nuclide-code-format/lib/types';
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeFormatProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type CodeFormatConfig = {|
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-  formatEntireFile: boolean,
-|};
+var _nuclideRemoteConnection;
 
-export class CodeFormatProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _busySignalProvider: BusySignalProviderBase;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
-  ) {
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeFormatProvider {
+
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService, busySignalProvider) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = priority;
@@ -50,130 +37,68 @@ export class CodeFormatProvider<T: LanguageService> {
     this._busySignalProvider = busySignalProvider;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: CodeFormatConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-code-format.provider',
-      config.version,
-      config.formatEntireFile
-        ? new FileFormatProvider(
-            name,
-            selector,
-            config.priority,
-            config.analyticsEventName,
-            connectionToLanguageService,
-            busySignalProvider,
-          )
-        : new RangeFormatProvider(
-            name,
-            selector,
-            config.priority,
-            config.analyticsEventName,
-            connectionToLanguageService,
-            busySignalProvider,
-          ),
-    );
+  static register(name, selector, config, connectionToLanguageService, busySignalProvider) {
+    return atom.packages.serviceHub.provide('nuclide-code-format.provider', config.version, config.formatEntireFile ? new FileFormatProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService, busySignalProvider) : new RangeFormatProvider(name, selector, config.priority, config.analyticsEventName, connectionToLanguageService, busySignalProvider));
   }
 }
 
-class RangeFormatProvider<T: LanguageService>
-  extends CodeFormatProvider<T>
-  implements CodeFormatProviderType {
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
-  ) {
-    super(
-      name,
-      selector,
-      priority,
-      analyticsEventName,
-      connectionToLanguageService,
-      busySignalProvider,
-    );
+exports.CodeFormatProvider = CodeFormatProvider; /**
+                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                  * All rights reserved.
+                                                  *
+                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                  * the root directory of this source tree.
+                                                  *
+                                                  * 
+                                                  * @format
+                                                  */
+
+class RangeFormatProvider extends CodeFormatProvider {
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService, busySignalProvider) {
+    super(name, selector, priority, analyticsEventName, connectionToLanguageService, busySignalProvider);
   }
 
-  formatCode(
-    editor: atom$TextEditor,
-    range: atom$Range,
-  ): Promise<Array<TextEdit>> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  formatCode(editor, range) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService != null && fileVersion != null) {
-        const result = await this._busySignalProvider.reportBusy(
-          `${this.name}: Formatting ${fileVersion.filePath}`,
-          async () => {
-            return (await languageService).formatSource(fileVersion, range);
-          },
-        );
+        const result = yield _this._busySignalProvider.reportBusy(`${_this.name}: Formatting ${fileVersion.filePath}`, (0, _asyncToGenerator.default)(function* () {
+          return (yield languageService).formatSource(fileVersion, range);
+        }));
         if (result != null) {
           return result;
         }
       }
 
       return [];
-    });
+    }));
   }
 }
 
-class FileFormatProvider<T: LanguageService>
-  extends CodeFormatProvider<T>
-  implements CodeFormatProviderType {
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
-  ) {
-    super(
-      name,
-      selector,
-      priority,
-      analyticsEventName,
-      connectionToLanguageService,
-      busySignalProvider,
-    );
+class FileFormatProvider extends CodeFormatProvider {
+  constructor(name, selector, priority, analyticsEventName, connectionToLanguageService, busySignalProvider) {
+    super(name, selector, priority, analyticsEventName, connectionToLanguageService, busySignalProvider);
   }
 
-  formatEntireFile(
-    editor: atom$TextEditor,
-    range: atom$Range,
-  ): Promise<{
-    newCursor?: number,
-    formatted: string,
-  }> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  formatEntireFile(editor, range) {
+    var _this2 = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this2._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService != null && fileVersion != null) {
-        const result = await this._busySignalProvider.reportBusy(
-          `${this.name}: Formatting ${fileVersion.filePath}`,
-          async () => {
-            return (await languageService).formatEntireFile(fileVersion, range);
-          },
-        );
+        const result = yield _this2._busySignalProvider.reportBusy(`${_this2.name}: Formatting ${fileVersion.filePath}`, (0, _asyncToGenerator.default)(function* () {
+          return (yield languageService).formatEntireFile(fileVersion, range);
+        }));
         if (result != null) {
           return result;
         }
       }
 
-      return {formatted: editor.getText()};
-    });
+      return { formatted: editor.getText() };
+    }));
   }
 }

@@ -1,48 +1,59 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ModifierKey} from './types';
-import {ModifierKeys} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getModifierKeysFromMouseEvent = getModifierKeysFromMouseEvent;
+exports.getModifierKeyFromKeyboardEvent = getModifierKeyFromKeyboardEvent;
 
-import Immutable from 'immutable';
+var _types;
+
+function _load_types() {
+  return _types = require('./types');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const KEYNAME_TO_PROPERTY = {
-  Meta: ModifierKeys.META,
-  Shift: ModifierKeys.SHIFT,
-  Alt: ModifierKeys.ALT,
-  Control: ModifierKeys.CTRL,
-};
+  Meta: (_types || _load_types()).ModifierKeys.META,
+  Shift: (_types || _load_types()).ModifierKeys.SHIFT,
+  Alt: (_types || _load_types()).ModifierKeys.ALT,
+  Control: (_types || _load_types()).ModifierKeys.CTRL
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
-export function getModifierKeysFromMouseEvent(
-  e: MouseEvent,
-): Immutable.Set<ModifierKey> {
-  let keys: Immutable.Set<ModifierKey> = new Immutable.Set();
+function getModifierKeysFromMouseEvent(e) {
+  let keys = new (_immutable || _load_immutable()).default.Set();
   if (e.metaKey) {
-    keys = keys.add(ModifierKeys.META);
+    keys = keys.add((_types || _load_types()).ModifierKeys.META);
   }
   if (e.shiftKey) {
-    keys = keys.add(ModifierKeys.SHIFT);
+    keys = keys.add((_types || _load_types()).ModifierKeys.SHIFT);
   }
   if (e.altKey) {
-    keys = keys.add(ModifierKeys.ALT);
+    keys = keys.add((_types || _load_types()).ModifierKeys.ALT);
   }
   if (e.ctrlKey) {
-    keys = keys.add(ModifierKeys.CTRL);
+    keys = keys.add((_types || _load_types()).ModifierKeys.CTRL);
   }
 
   return keys;
 }
 
-export function getModifierKeyFromKeyboardEvent(
-  e: KeyboardEvent,
-): ?ModifierKey {
+function getModifierKeyFromKeyboardEvent(e) {
   return KEYNAME_TO_PROPERTY[e.key];
 }

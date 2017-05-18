@@ -1,43 +1,57 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classnames from 'classnames';
-import type DebuggerModel from './DebuggerModel';
-import React from 'react';
-import {BreakpointListComponent} from './BreakpointListComponent';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BreakpointsView = undefined;
 
-type Props = {
-  model: DebuggerModel,
-};
+var _classnames;
 
-export class BreakpointsView extends React.PureComponent {
-  props: Props;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  constructor(props: Props) {
+var _react = _interopRequireDefault(require('react'));
+
+var _BreakpointListComponent;
+
+function _load_BreakpointListComponent() {
+  return _BreakpointListComponent = require('./BreakpointListComponent');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BreakpointsView extends _react.default.PureComponent {
+
+  constructor(props) {
     super(props);
   }
 
-  render(): React.Element<any> {
-    const {model} = this.props;
+  render() {
+    const { model } = this.props;
     const actions = model.getActions();
 
-    return (
-      <div className={classnames('nuclide-debugger-container-new')}>
-        <div className="nuclide-debugger-pane-content">
-          <BreakpointListComponent
-            actions={actions}
-            breakpointStore={model.getBreakpointStore()}
-          />
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: (0, (_classnames || _load_classnames()).default)('nuclide-debugger-container-new') },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-pane-content' },
+        _react.default.createElement((_BreakpointListComponent || _load_BreakpointListComponent()).BreakpointListComponent, {
+          actions: actions,
+          breakpointStore: model.getBreakpointStore()
+        })
+      )
     );
   }
 }
+exports.BreakpointsView = BreakpointsView; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            * @format
+                                            */

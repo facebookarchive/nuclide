@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProjectSelection = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('../lib/FileTreeStore');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,50 +34,34 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import {Button} from 'nuclide-commons-ui/Button';
-import {FileTreeStore} from '../lib/FileTreeStore';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+class ProjectSelection extends _react.default.Component {
 
-type Props = {};
-
-type State = {
-  extraContent: ?Array<React.Element<any>>,
-};
-
-export class ProjectSelection extends React.Component {
-  _store: FileTreeStore;
-  _disposables: UniversalDisposable;
-  state: State;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._store = FileTreeStore.getInstance();
-    this._disposables = new UniversalDisposable();
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
-      extraContent: this.calculateExtraContent(),
+      extraContent: this.calculateExtraContent()
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._processExternalUpdate();
 
-    this._disposables.add(
-      this._store.subscribe(this._processExternalUpdate.bind(this)),
-    );
+    this._disposables.add(this._store.subscribe(this._processExternalUpdate.bind(this)));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  _processExternalUpdate(): void {
+  _processExternalUpdate() {
     this.setState({
-      extraContent: this.calculateExtraContent(),
+      extraContent: this.calculateExtraContent()
     });
   }
 
@@ -60,27 +73,32 @@ export class ProjectSelection extends React.Component {
     return list.toJS();
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="padded">
-        <Button
-          onClick={() => this.runCommand('application:add-project-folder')}
-          icon="device-desktop"
-          className="btn-block">
-          Add Project Folder
-        </Button>
-        <Button
-          onClick={() => this.runCommand('nuclide-remote-projects:connect')}
-          icon="cloud-upload"
-          className="btn-block">
-          Add Remote Project Folder
-        </Button>
-        {this.state.extraContent}
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'padded' },
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        {
+          onClick: () => this.runCommand('application:add-project-folder'),
+          icon: 'device-desktop',
+          className: 'btn-block' },
+        'Add Project Folder'
+      ),
+      _react.default.createElement(
+        (_Button || _load_Button()).Button,
+        {
+          onClick: () => this.runCommand('nuclide-remote-projects:connect'),
+          icon: 'cloud-upload',
+          className: 'btn-block' },
+        'Add Remote Project Folder'
+      ),
+      this.state.extraContent
     );
   }
 
-  runCommand(command: string): void {
+  runCommand(command) {
     atom.commands.dispatch(atom.views.getView(atom.workspace), command);
   }
 }
+exports.ProjectSelection = ProjectSelection;

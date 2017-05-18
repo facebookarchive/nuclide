@@ -1,26 +1,44 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.normalizeIdentifier = normalizeIdentifier;
+exports.isDefaultConfigValue = isDefaultConfigValue;
+exports.getDefaultConfigValue = getDefaultConfigValue;
+exports.getDefaultConfigValueString = getDefaultConfigValueString;
+exports.parseValue = parseValue;
+exports.valueToString = valueToString;
+exports.strip = strip;
+exports.matchesFilter = matchesFilter;
 
-function getConfigValueString(keyPath: string): string {
-  const value = featureConfig.get(keyPath);
-  return valueToString(value);
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
 }
 
-export function normalizeIdentifier(id: string): string {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function getConfigValueString(keyPath) {
+  const value = (_featureConfig || _load_featureConfig()).default.get(keyPath);
+  return valueToString(value);
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function normalizeIdentifier(id) {
   return id.replace(/[^A-Za-z0-9_-]/g, '_');
 }
 
-export function isDefaultConfigValue(keyPath: string, value_: ?any): boolean {
+function isDefaultConfigValue(keyPath, value_) {
   let value = value_;
   const defaultValue = getDefaultConfigValueString(keyPath);
   if (value) {
@@ -31,16 +49,16 @@ export function isDefaultConfigValue(keyPath: string, value_: ?any): boolean {
   return !value || defaultValue === value;
 }
 
-export function getDefaultConfigValue(keyPath: string): mixed {
-  const params = {excludeSources: [atom.config.getUserConfigPath()]};
-  return featureConfig.get(keyPath, params);
+function getDefaultConfigValue(keyPath) {
+  const params = { excludeSources: [atom.config.getUserConfigPath()] };
+  return (_featureConfig || _load_featureConfig()).default.get(keyPath, params);
 }
 
-export function getDefaultConfigValueString(keyPath: string): string {
+function getDefaultConfigValueString(keyPath) {
   return valueToString(getDefaultConfigValue(keyPath));
 }
 
-export function parseValue(type: string, value: any): any {
+function parseValue(type, value) {
   let result = value;
   if (value === '') {
     result = undefined;
@@ -56,7 +74,7 @@ export function parseValue(type: string, value: any): any {
   return result;
 }
 
-export function valueToString(value: any): string {
+function valueToString(value) {
   if (Array.isArray(value)) {
     return value.join(', ');
   } else {
@@ -65,12 +83,12 @@ export function valueToString(value: any): string {
 }
 
 // Remove spaces and hypens
-export function strip(str: string): string {
+function strip(str) {
   return str.replace(/\s+/g, '').replace(/-+/g, '');
 }
 
 /** Returns true if filter matches search string. Return true if filter is empty. */
-export function matchesFilter(filter: string, searchString: string): boolean {
+function matchesFilter(filter, searchString) {
   if (filter.length === 0) {
     return true;
   }

@@ -1,139 +1,169 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchUiComponent = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
+
+var _LaunchProcessInfo;
+
+function _load_LaunchProcessInfo() {
+  return _LaunchProcessInfo = require('./LaunchProcessInfo');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const MAX_RECENTLY_LAUNCHED = 5; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  * @format
+                                  */
 
 /* global localStorage */
 
-import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {LaunchProcessInfo} from './LaunchProcessInfo';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+class LaunchUiComponent extends _react.default.Component {
 
-import type EventEmitter from 'events';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-const MAX_RECENTLY_LAUNCHED = 5;
-
-type PropsType = {
-  targetUri: NuclideUri,
-  parentEmitter: EventEmitter,
-};
-
-type StateType = {
-  pathsDropdownIndex: number,
-  pathMenuItems: Array<{label: string, value: number}>,
-  recentlyLaunchedScripts: Array<{label: string, value: string}>,
-  recentlyLaunchedScript: ?string,
-};
-
-export class LaunchUiComponent
-  extends React.Component<void, PropsType, StateType> {
-  props: PropsType;
-  state: StateType;
-
-  constructor(props: PropsType) {
+  constructor(props) {
     super(props);
-    (this: any)._getActiveFilePath = this._getActiveFilePath.bind(this);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
-      this,
-    );
-    (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(
-      this,
-    );
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
-      this,
-    );
-    (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(
-      this,
-    );
+    this._getActiveFilePath = this._getActiveFilePath.bind(this);
+    this._handleCancelButtonClick = this._handleCancelButtonClick.bind(this);
+    this._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(this);
+    this._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
+    this._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(this);
     this.state = {
       pathsDropdownIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
       recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
-      recentlyLaunchedScript: null,
+      recentlyLaunchedScript: null
     };
   }
 
   componentWillMount() {
-    this.props.parentEmitter.on(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick,
-    );
+    this.props.parentEmitter.on((_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED, this._handleLaunchButtonClick);
   }
 
   componentWillUnmount() {
-    this.props.parentEmitter.removeListener(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick,
-    );
+    this.props.parentEmitter.removeListener((_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED, this._handleLaunchButtonClick);
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="block">
-        <div className="nuclide-debugger-php-launch-attach-ui-select-project">
-          <label>Selected Project Directory: </label>
-          <Dropdown
-            className="inline-block nuclide-debugger-connection-box"
-            options={this.state.pathMenuItems}
-            onChange={this._handlePathsDropdownChange}
-            value={this.state.pathsDropdownIndex}
-          />
-        </div>
-        <label>Recently launched commands: </label>
-        <Dropdown
-          className="inline-block nuclide-debugger-recently-launched"
-          options={[
-            {label: '', value: null},
-            ...this.state.recentlyLaunchedScripts,
-          ]}
-          onChange={this._handleRecentSelectionChange}
-          value={this.state.recentlyLaunchedScript}
-        />
-        <label>Command: </label>
-        <AtomInput
-          ref="scriptPath"
-          tabIndex="11"
-          placeholderText="/path/to/my/script.php arg1 arg2"
-          initialValue={this._getActiveFilePath()}
-          value={this.state.recentlyLaunchedScript || ''}
-          sugges
-        />
-        <div className="padded text-right">
-          <Button onClick={this._handleCancelButtonClick}>
-            Cancel
-          </Button>
-          <Button
-            buttonType={ButtonTypes.PRIMARY}
-            onClick={this._handleLaunchButtonClick}>
-            Launch
-          </Button>
-        </div>
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'block' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-php-launch-attach-ui-select-project' },
+        _react.default.createElement(
+          'label',
+          null,
+          'Selected Project Directory: '
+        ),
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'inline-block nuclide-debugger-connection-box',
+          options: this.state.pathMenuItems,
+          onChange: this._handlePathsDropdownChange,
+          value: this.state.pathsDropdownIndex
+        })
+      ),
+      _react.default.createElement(
+        'label',
+        null,
+        'Recently launched commands: '
+      ),
+      _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+        className: 'inline-block nuclide-debugger-recently-launched',
+        options: [{ label: '', value: null }, ...this.state.recentlyLaunchedScripts],
+        onChange: this._handleRecentSelectionChange,
+        value: this.state.recentlyLaunchedScript
+      }),
+      _react.default.createElement(
+        'label',
+        null,
+        'Command: '
+      ),
+      _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        ref: 'scriptPath',
+        tabIndex: '11',
+        placeholderText: '/path/to/my/script.php arg1 arg2',
+        initialValue: this._getActiveFilePath(),
+        value: this.state.recentlyLaunchedScript || '',
+        sugges: true
+      }),
+      _react.default.createElement(
+        'div',
+        { className: 'padded text-right' },
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          { onClick: this._handleCancelButtonClick },
+          'Cancel'
+        ),
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+            onClick: this._handleLaunchButtonClick },
+          'Launch'
+        )
+      )
     );
   }
 
   _getRecentlyLaunchedKey() {
-    const hostname = nuclideUri.getHostname(this.props.targetUri);
+    const hostname = (_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri);
     return 'nuclide-debugger-php.recentlyLaunchedScripts:' + hostname;
   }
 
-  _getRecentlyLaunchedScripts(): Array<{label: string, value: string}> {
-    const recentlyLaunched = localStorage.getItem(
-      this._getRecentlyLaunchedKey(),
-    );
+  _getRecentlyLaunchedScripts() {
+    const recentlyLaunched = localStorage.getItem(this._getRecentlyLaunchedKey());
     if (recentlyLaunched == null) {
       return [];
     }
@@ -142,15 +172,12 @@ export class LaunchUiComponent
     return items.filter(script => script !== '').map(script => {
       return {
         label: script,
-        value: script,
+        value: script
       };
     });
   }
 
-  _setRecentlyLaunchedScript(
-    script: string,
-    recentlyLaunched: Array<{label: string, value: string}>,
-  ): void {
+  _setRecentlyLaunchedScript(script, recentlyLaunched) {
     // Act like a simple MRU cache, move the script being launched to the front.
     // NOTE: this array is expected to be really tiny.
     const scriptNames = [script];
@@ -160,86 +187,73 @@ export class LaunchUiComponent
       }
     });
 
-    localStorage.setItem(
-      this._getRecentlyLaunchedKey(),
-      JSON.stringify(scriptNames),
-    );
+    localStorage.setItem(this._getRecentlyLaunchedKey(), JSON.stringify(scriptNames));
     this.setState({
       recentlyLaunchedScripts: this._getRecentlyLaunchedScripts(),
-      recentlyLaunchedScript: script,
+      recentlyLaunchedScript: script
     });
   }
 
-  _getPathMenuItems(): Array<{label: string, value: number}> {
-    const hostname = nuclideUri.getHostname(this.props.targetUri);
-    const connections = RemoteConnection.getByHostname(hostname);
+  _getPathMenuItems() {
+    const hostname = (_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri);
+    const connections = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getByHostname(hostname);
     return connections.map((connection, index) => {
       const pathToProject = connection.getPathForInitialWorkingDirectory();
       return {
         label: pathToProject,
-        value: index,
+        value: index
       };
     });
   }
 
-  _handlePathsDropdownChange(newIndex: number): void {
+  _handlePathsDropdownChange(newIndex) {
     this.setState({
       pathsDropdownIndex: newIndex,
-      pathMenuItems: this._getPathMenuItems(),
+      pathMenuItems: this._getPathMenuItems()
     });
   }
 
-  _handleRecentSelectionChange(newValue: string): void {
+  _handleRecentSelectionChange(newValue) {
     this.setState({
-      recentlyLaunchedScript: newValue,
+      recentlyLaunchedScript: newValue
     });
   }
 
-  _handleLaunchButtonClick(): void {
+  _handleLaunchButtonClick() {
     const scriptPath = this.refs.scriptPath.getText().trim();
-    this._setRecentlyLaunchedScript(
-      scriptPath,
-      this.state.recentlyLaunchedScripts,
-    );
+    this._setRecentlyLaunchedScript(scriptPath, this.state.recentlyLaunchedScripts);
 
-    const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
-    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
-      debuggerService.startDebugging(processInfo),
-    );
+    const processInfo = new (_LaunchProcessInfo || _load_LaunchProcessInfo()).LaunchProcessInfo(this.props.targetUri, scriptPath);
+    (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote').then(debuggerService => debuggerService.startDebugging(processInfo));
     this._showDebuggerPanel();
     this._handleCancelButtonClick();
   }
 
-  _getActiveFilePath(): string {
+  _getActiveFilePath() {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor != null) {
       const fileUri = editor.getPath();
       if (fileUri != null && this._isValidScriptUri(fileUri)) {
-        return nuclideUri.getPath(fileUri);
+        return (_nuclideUri || _load_nuclideUri()).default.getPath(fileUri);
       }
     }
     return '';
   }
 
-  _isValidScriptUri(uri: NuclideUri): boolean {
-    if (!nuclideUri.isRemote(uri)) {
+  _isValidScriptUri(uri) {
+    if (!(_nuclideUri || _load_nuclideUri()).default.isRemote(uri)) {
       return false;
     }
-    const scriptPath = nuclideUri.getPath(uri);
+    const scriptPath = (_nuclideUri || _load_nuclideUri()).default.getPath(uri);
     return scriptPath.endsWith('.php') || scriptPath.endsWith('.hh');
   }
 
-  _showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
+  _showDebuggerPanel() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   }
 
-  _handleCancelButtonClick(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
+  _handleCancelButtonClick() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
   }
 }
+exports.LaunchUiComponent = LaunchUiComponent;

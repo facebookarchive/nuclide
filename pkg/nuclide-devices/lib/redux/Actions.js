@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setInfoTables = setInfoTables;
+exports.setProcesses = setProcesses;
+exports.setProcesKiller = setProcesKiller;
+exports.setDevices = setDevices;
+exports.setHosts = setHosts;
+exports.setHost = setHost;
+exports.setDeviceType = setDeviceType;
+exports.setDeviceTypes = setDeviceTypes;
+exports.setDevice = setDevice;
+exports.setDeviceTasks = setDeviceTasks;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,111 +20,87 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  SetDeviceTypesAction,
-  SetDeviceTypeAction,
-  SetDevicesAction,
-  SetDeviceTasksAction,
-  SetDeviceAction,
-  SetHostsAction,
-  SetHostAction,
-  SetInfoTablesAction,
-  SetProcessesAction,
-  SetProcessKillerAction,
-  Device,
-  DeviceTask,
-  Process,
-  ProcessKiller,
-} from '../types';
+const SET_DEVICE_TYPES = exports.SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
+const SET_DEVICE_TYPE = exports.SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
+const SET_DEVICES = exports.SET_DEVICES = 'SET_DEVICES';
+const SET_DEVICE = exports.SET_DEVICE = 'SET_DEVICE';
+const SET_DEVICE_TASKS = exports.SET_DEVICE_TASKS = 'SET_DEVICE_TASKS';
+const SET_HOSTS = exports.SET_HOSTS = 'SET_HOSTS';
+const SET_HOST = exports.SET_HOST = 'SET_HOST';
+const SET_INFO_TABLES = exports.SET_INFO_TABLES = 'SET_INFO_TABLES';
+const SET_PROCESSES = exports.SET_PROCESSES = 'SET_PROCESSES';
+const SET_PROCESS_KILLER = exports.SET_PROCESS_KILLER = 'SET_PROCESS_KILLER';
 
-export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
-export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';
-export const SET_DEVICES = 'SET_DEVICES';
-export const SET_DEVICE = 'SET_DEVICE';
-export const SET_DEVICE_TASKS = 'SET_DEVICE_TASKS';
-export const SET_HOSTS = 'SET_HOSTS';
-export const SET_HOST = 'SET_HOST';
-export const SET_INFO_TABLES = 'SET_INFO_TABLES';
-export const SET_PROCESSES = 'SET_PROCESSES';
-export const SET_PROCESS_KILLER = 'SET_PROCESS_KILLER';
-
-export function setInfoTables(
-  infoTables: Map<string, Map<string, string>>,
-): SetInfoTablesAction {
+function setInfoTables(infoTables) {
   return {
     type: SET_INFO_TABLES,
-    payload: {infoTables},
+    payload: { infoTables }
   };
 }
 
-export function setProcesses(processes: Process[]): SetProcessesAction {
+function setProcesses(processes) {
   return {
     type: SET_PROCESSES,
-    payload: {processes},
+    payload: { processes }
   };
 }
 
-export function setProcesKiller(
-  processKiller: ?ProcessKiller,
-): SetProcessKillerAction {
+function setProcesKiller(processKiller) {
   return {
     type: SET_PROCESS_KILLER,
-    payload: {processKiller},
+    payload: { processKiller }
   };
 }
 
-export function setDevices(devices: Device[]): SetDevicesAction {
+function setDevices(devices) {
   return {
     type: SET_DEVICES,
-    payload: {devices},
+    payload: { devices }
   };
 }
 
-export function setHosts(hosts: NuclideUri[]): SetHostsAction {
+function setHosts(hosts) {
   return {
     type: SET_HOSTS,
-    payload: {hosts},
+    payload: { hosts }
   };
 }
 
-export function setHost(host: NuclideUri): SetHostAction {
+function setHost(host) {
   return {
     type: SET_HOST,
-    payload: {host},
+    payload: { host }
   };
 }
 
-export function setDeviceType(deviceType: ?string): SetDeviceTypeAction {
+function setDeviceType(deviceType) {
   return {
     type: SET_DEVICE_TYPE,
-    payload: {deviceType},
+    payload: { deviceType }
   };
 }
 
-export function setDeviceTypes(deviceTypes: string[]): SetDeviceTypesAction {
+function setDeviceTypes(deviceTypes) {
   return {
     type: SET_DEVICE_TYPES,
-    payload: {deviceTypes},
+    payload: { deviceTypes }
   };
 }
 
-export function setDevice(device: ?Device): SetDeviceAction {
+function setDevice(device) {
   return {
     type: SET_DEVICE,
-    payload: {device},
+    payload: { device }
   };
 }
 
-export function setDeviceTasks(
-  deviceTasks: DeviceTask[],
-): SetDeviceTasksAction {
+function setDeviceTasks(deviceTasks) {
   return {
     type: SET_DEVICE_TASKS,
-    payload: {deviceTasks},
+    payload: { deviceTasks }
   };
 }

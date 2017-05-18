@@ -1,50 +1,66 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {uriToPath} from './helpers';
-import File from './File';
+var _helpers;
+
+function _load_helpers() {
+  return _helpers = require('./helpers');
+}
+
+var _File;
+
+function _load_File() {
+  return _File = _interopRequireDefault(require('./File'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
  */
-export default class FileCache {
-  _sendServerMethod: (method: string, params: ?Object) => mixed;
-  _files: Map<string, File>;
+class FileCache {
 
-  constructor(sendServerMethod: (method: string, params: ?Object) => mixed) {
+  constructor(sendServerMethod) {
     this._sendServerMethod = sendServerMethod;
     this._files = new Map();
   }
 
-  registerFile(fileUrl: string): File {
-    const filepath = uriToPath(fileUrl);
+  registerFile(fileUrl) {
+    const filepath = (0, (_helpers || _load_helpers()).uriToPath)(fileUrl);
     if (!this._files.has(filepath)) {
-      this._files.set(filepath, new File(filepath));
+      this._files.set(filepath, new (_File || _load_File()).default(filepath));
       this._sendServerMethod('Debugger.scriptParsed', {
         scriptId: filepath,
         url: fileUrl,
         startLine: 0,
         startColumn: 0,
         endLine: 0,
-        endColumn: 0,
+        endColumn: 0
       });
     }
     const result = this._files.get(filepath);
-    invariant(result != null);
+
+    if (!(result != null)) {
+      throw new Error('Invariant violation: "result != null"');
+    }
+
     return result;
   }
 
-  getFileSource(filepath: string): Promise<string> {
+  getFileSource(filepath) {
     return this.registerFile(filepath).getSource();
   }
 }
+exports.default = FileCache; /**
+                              * Copyright (c) 2015-present, Facebook, Inc.
+                              * All rights reserved.
+                              *
+                              * This source code is licensed under the license found in the LICENSE file in
+                              * the root directory of this source tree.
+                              *
+                              * 
+                              * @format
+                              */

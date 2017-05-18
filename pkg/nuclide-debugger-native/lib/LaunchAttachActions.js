@@ -1,3 +1,50 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchAttachActions = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _AttachProcessInfo;
+
+function _load_AttachProcessInfo() {
+  return _AttachProcessInfo = require('./AttachProcessInfo');
+}
+
+var _LaunchProcessInfo;
+
+function _load_LaunchProcessInfo() {
+  return _LaunchProcessInfo = require('./LaunchProcessInfo');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+var _LaunchAttachDispatcher;
+
+function _load_LaunchAttachDispatcher() {
+  return _LaunchAttachDispatcher = require('./LaunchAttachDispatcher');
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,64 +52,51 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type LaunchAttachDispatcher from './LaunchAttachDispatcher';
-import type {
-  AttachTargetInfo,
-  LaunchTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+class LaunchAttachActions extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).LaunchAttachActionsBase {
 
-import invariant from 'assert';
-import {AttachProcessInfo} from './AttachProcessInfo';
-import {LaunchProcessInfo} from './LaunchProcessInfo';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import {ActionTypes} from './LaunchAttachDispatcher';
-import {LaunchAttachActionsBase} from '../../nuclide-debugger-base';
-
-export class LaunchAttachActions extends LaunchAttachActionsBase {
-  _dispatcher: LaunchAttachDispatcher;
-
-  constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
+  constructor(dispatcher, targetUri) {
     super(targetUri);
     this._dispatcher = dispatcher;
   }
 
-  attachDebugger(attachTarget: AttachTargetInfo): Promise<void> {
-    const attachInfo = new AttachProcessInfo(this.getTargetUri(), attachTarget);
+  attachDebugger(attachTarget) {
+    const attachInfo = new (_AttachProcessInfo || _load_AttachProcessInfo()).AttachProcessInfo(this.getTargetUri(), attachTarget);
     return this._startDebugging(attachInfo);
   }
 
-  launchDebugger(launchTarget: LaunchTargetInfo): Promise<void> {
-    const launchInfo = new LaunchProcessInfo(this.getTargetUri(), launchTarget);
+  launchDebugger(launchTarget) {
+    const launchInfo = new (_LaunchProcessInfo || _load_LaunchProcessInfo()).LaunchProcessInfo(this.getTargetUri(), launchTarget);
     return this._startDebugging(launchInfo);
   }
 
-  async _startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
-    await debuggerService.startDebugging(processInfo);
+  _startDebugging(processInfo) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+      yield debuggerService.startDebugging(processInfo);
+    })();
   }
 
   // Override.
-  async updateAttachTargetList(): Promise<void> {
-    const rpcService: ?NativeDebuggerService = getServiceByNuclideUri(
-      'NativeDebuggerService',
-      this.getTargetUri(),
-    );
-    invariant(rpcService);
-    const attachTargetList = await rpcService.getAttachTargetInfoList();
-    this._dispatcher.dispatch({
-      actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
-      attachTargetInfos: attachTargetList,
-    });
+  updateAttachTargetList() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByNuclideUri)('NativeDebuggerService', _this.getTargetUri());
+
+      if (!rpcService) {
+        throw new Error('Invariant violation: "rpcService"');
+      }
+
+      const attachTargetList = yield rpcService.getAttachTargetInfoList();
+      _this._dispatcher.dispatch({
+        actionType: (_LaunchAttachDispatcher || _load_LaunchAttachDispatcher()).ActionTypes.UPDATE_ATTACH_TARGET_LIST,
+        attachTargetInfos: attachTargetList
+      });
+    })();
   }
 }
+exports.LaunchAttachActions = LaunchAttachActions;

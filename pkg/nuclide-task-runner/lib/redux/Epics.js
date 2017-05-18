@@ -1,147 +1,152 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  Action,
-  AppState,
-  EpicOptions,
-  Store,
-  TaskMetadata,
-  TaskRunner,
-  TaskRunnerState,
-} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setProjectRootEpic = setProjectRootEpic;
+exports.setConsolesForTaskRunnersEpic = setConsolesForTaskRunnersEpic;
+exports.addConsoleForTaskRunnerEpic = addConsoleForTaskRunnerEpic;
+exports.removeConsoleForTaskRunnerEpic = removeConsoleForTaskRunnerEpic;
+exports.setActiveTaskRunnerEpic = setActiveTaskRunnerEpic;
+exports.combineTaskRunnerStatesEpic = combineTaskRunnerStatesEpic;
+exports.toggleToolbarVisibilityEpic = toggleToolbarVisibilityEpic;
+exports.updatePreferredVisibilityEpic = updatePreferredVisibilityEpic;
+exports.updatePreferredTaskRunnerEpic = updatePreferredTaskRunnerEpic;
+exports.verifySavedBeforeRunningTaskEpic = verifySavedBeforeRunningTaskEpic;
+exports.runTaskEpic = runTaskEpic;
+exports.stopTaskEpic = stopTaskEpic;
+exports.setToolbarVisibilityEpic = setToolbarVisibilityEpic;
+exports.printTaskCancelledEpic = printTaskCancelledEpic;
+exports.printTaskSucceededEpic = printTaskSucceededEpic;
+exports.appendMessageToConsoleEpic = appendMessageToConsoleEpic;
 
-import {saveBuffer} from '../../../nuclide-remote-connection';
-import {observableFromTask} from '../../../commons-node/tasks';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getLogger} from '../../../nuclide-logging';
-import * as Actions from './Actions';
-import invariant from 'assert';
-import nullthrows from 'nullthrows';
-import {Observable} from 'rxjs';
+var _nuclideRemoteConnection;
 
-export function setProjectRootEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return (
-    actions
-      .ofType(
-        Actions.REGISTER_TASK_RUNNER,
-        Actions.UNREGISTER_TASK_RUNNER,
-        Actions.DID_ACTIVATE_INITIAL_PACKAGES,
-      )
-      // Refreshes everything. Not the most efficient, but good enough
-      .map(() => Actions.setProjectRoot(store.getState().projectRoot))
-  );
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../../nuclide-remote-connection');
 }
 
-export function setConsolesForTaskRunnersEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.SET_CONSOLE_SERVICE, Actions.DID_ACTIVATE_INITIAL_PACKAGES)
-    .switchMap(() => {
-      const {consoleService, taskRunnersReady} = store.getState();
-      if (consoleService == null || !taskRunnersReady) {
-        return Observable.empty();
-      }
+var _tasks;
 
-      const consolesForTaskRunners = store
-        .getState()
-        .taskRunners.map(runner => [
-          runner,
-          consoleService({id: runner.name, name: runner.name}),
-        ]);
-      return Observable.of(
-        Actions.setConsolesForTaskRunners(new Map(consolesForTaskRunners)),
-      );
-    });
+function _load_tasks() {
+  return _tasks = require('../../../commons-node/tasks');
 }
 
-export function addConsoleForTaskRunnerEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, taskRunnersReady} = store.getState();
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../../nuclide-logging');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function setProjectRootEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_TASK_RUNNER, (_Actions || _load_Actions()).UNREGISTER_TASK_RUNNER, (_Actions || _load_Actions()).DID_ACTIVATE_INITIAL_PACKAGES)
+  // Refreshes everything. Not the most efficient, but good enough
+  .map(() => (_Actions || _load_Actions()).setProjectRoot(store.getState().projectRoot));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function setConsolesForTaskRunnersEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).SET_CONSOLE_SERVICE, (_Actions || _load_Actions()).DID_ACTIVATE_INITIAL_PACKAGES).switchMap(() => {
+    const { consoleService, taskRunnersReady } = store.getState();
     if (consoleService == null || !taskRunnersReady) {
-      return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
     }
 
-    invariant(action.type === Actions.REGISTER_TASK_RUNNER);
-    const {taskRunner} = action.payload;
-    const {id, name} = taskRunner;
-    return Observable.of(
-      Actions.addConsoleForTaskRunner(taskRunner, consoleService({id, name})),
-    );
+    const consolesForTaskRunners = store.getState().taskRunners.map(runner => [runner, consoleService({ id: runner.name, name: runner.name })]);
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setConsolesForTaskRunners(new Map(consolesForTaskRunners)));
   });
 }
 
-export function removeConsoleForTaskRunnerEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.UNREGISTER_TASK_RUNNER).switchMap(action => {
-    const {consoleService, taskRunnersReady} = store.getState();
+function addConsoleForTaskRunnerEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_TASK_RUNNER).switchMap(action => {
+    const { consoleService, taskRunnersReady } = store.getState();
     if (consoleService == null || !taskRunnersReady) {
-      return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
     }
 
-    invariant(action.type === Actions.UNREGISTER_TASK_RUNNER);
-    return Observable.of(
-      Actions.removeConsoleForTaskRunner(action.payload.taskRunner),
-    );
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_TASK_RUNNER)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_TASK_RUNNER"');
+    }
+
+    const { taskRunner } = action.payload;
+    const { id, name } = taskRunner;
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).addConsoleForTaskRunner(taskRunner, consoleService({ id, name })));
   });
 }
 
-export function setActiveTaskRunnerEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-  options: EpicOptions,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_STATES_FOR_TASK_RUNNERS).switchMap(() => {
-    const {projectRoot} = store.getState();
+function removeConsoleForTaskRunnerEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).UNREGISTER_TASK_RUNNER).switchMap(action => {
+    const { consoleService, taskRunnersReady } = store.getState();
+    if (consoleService == null || !taskRunnersReady) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+
+    if (!(action.type === (_Actions || _load_Actions()).UNREGISTER_TASK_RUNNER)) {
+      throw new Error('Invariant violation: "action.type === Actions.UNREGISTER_TASK_RUNNER"');
+    }
+
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).removeConsoleForTaskRunner(action.payload.taskRunner));
+  });
+}
+
+function setActiveTaskRunnerEpic(actions, store, options) {
+  return actions.ofType((_Actions || _load_Actions()).SET_STATES_FOR_TASK_RUNNERS).switchMap(() => {
+    const { projectRoot } = store.getState();
 
     if (!projectRoot) {
-      return Observable.of(Actions.selectTaskRunner(null, false));
+      return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).selectTaskRunner(null, false));
     }
 
     const {
       activeTaskRunner,
       taskRunners,
-      statesForTaskRunners,
+      statesForTaskRunners
     } = store.getState();
-    const {preferencesForWorkingRoots} = options;
-    const preference = preferencesForWorkingRoots.getItem(
-      projectRoot.getPath(),
-    );
+    const { preferencesForWorkingRoots } = options;
+    const preference = preferencesForWorkingRoots.getItem(projectRoot.getPath());
 
     let visibilityAction;
     let taskRunner = activeTaskRunner;
 
     if (preference) {
       // The user had a session for this root in the past, restore it
-      visibilityAction = Observable.of(
-        Actions.setToolbarVisibility(preference.visible, false),
-      );
+      visibilityAction = _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setToolbarVisibility(preference.visible, false));
       const preferredId = preference.taskRunnerId;
       if (!activeTaskRunner || activeTaskRunner.id !== preferredId) {
-        const preferredRunner = taskRunners.find(
-          runner => runner.id === preferredId,
-        );
-        const state =
-          preferredRunner && statesForTaskRunners.get(preferredRunner);
+        const preferredRunner = taskRunners.find(runner => runner.id === preferredId);
+        const state = preferredRunner && statesForTaskRunners.get(preferredRunner);
         if (state && state.enabled) {
           taskRunner = preferredRunner;
         }
@@ -153,11 +158,9 @@ export function setActiveTaskRunnerEpic(
       });
       if (atLeastOneTaskRunnerEnabled) {
         // Advertise the toolbar if there's a chance it's useful at this new working root.
-        visibilityAction = Observable.of(
-          Actions.setToolbarVisibility(true, true),
-        );
+        visibilityAction = _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setToolbarVisibility(true, true));
       } else {
-        visibilityAction = Observable.empty();
+        visibilityAction = _rxjsBundlesRxMinJs.Observable.empty();
       }
       taskRunner = activeTaskRunner;
     }
@@ -167,359 +170,253 @@ export function setActiveTaskRunnerEpic(
       taskRunner = getBestEffortTaskRunner(taskRunners, statesForTaskRunners);
     }
 
-    return Observable.concat(
-      Observable.of(Actions.selectTaskRunner(taskRunner, false)),
-      visibilityAction,
-    );
+    return _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).selectTaskRunner(taskRunner, false)), visibilityAction);
   });
 }
 
-export function combineTaskRunnerStatesEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-  options: EpicOptions,
-): Observable<Action> {
-  return actions.ofType(Actions.SET_PROJECT_ROOT).switchMap(() => {
-    const {projectRoot, taskRunners, taskRunnersReady} = store.getState();
+function combineTaskRunnerStatesEpic(actions, store, options) {
+  return actions.ofType((_Actions || _load_Actions()).SET_PROJECT_ROOT).switchMap(() => {
+    const { projectRoot, taskRunners, taskRunnersReady } = store.getState();
 
     if (!taskRunnersReady) {
       // We will dispatch another set project root when everyone is ready.
-      return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
     }
 
     if (taskRunners.length === 0) {
-      return Observable.of(Actions.setStatesForTaskRunners(new Map()));
+      return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setStatesForTaskRunners(new Map()));
     }
 
     // This depends on the epic above, triggering setProjectRoot when taskRunners change
-    const runnersAndStates = taskRunners.map(taskRunner =>
-      Observable.create(
-        observer =>
-          new UniversalDisposable(
-            taskRunner.setProjectRoot(projectRoot, (enabled, tasks) => {
-              observer.next([
-                taskRunner,
-                {enabled, tasks: enabled ? tasks : []},
-              ]);
-            }),
-          ),
-      ),
-    );
+    const runnersAndStates = taskRunners.map(taskRunner => _rxjsBundlesRxMinJs.Observable.create(observer => new (_UniversalDisposable || _load_UniversalDisposable()).default(taskRunner.setProjectRoot(projectRoot, (enabled, tasks) => {
+      observer.next([taskRunner, { enabled, tasks: enabled ? tasks : [] }]);
+    }))));
 
-    return (
-      Observable.from(runnersAndStates)
-        // $FlowFixMe: type combineAll
-        .combineAll()
-        .map(tuples => {
-          const statesForTaskRunners = new Map();
-          tuples.forEach(([taskRunner, state]) => {
-            statesForTaskRunners.set(taskRunner, state);
-          });
-          return statesForTaskRunners;
-        })
-        .map(statesForTaskRunners =>
-          Actions.setStatesForTaskRunners(statesForTaskRunners),
-        )
-    );
+    return _rxjsBundlesRxMinJs.Observable.from(runnersAndStates)
+    // $FlowFixMe: type combineAll
+    .combineAll().map(tuples => {
+      const statesForTaskRunners = new Map();
+      tuples.forEach(([taskRunner, state]) => {
+        statesForTaskRunners.set(taskRunner, state);
+      });
+      return statesForTaskRunners;
+    }).map(statesForTaskRunners => (_Actions || _load_Actions()).setStatesForTaskRunners(statesForTaskRunners));
   });
 }
 
-export function toggleToolbarVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY)
-    .map(action => {
-      invariant(action.type === Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY);
-      const state = store.getState();
-      const {visible, taskRunner} = action.payload;
-      return state.activeTaskRunner == null
-        ? Actions.setToolbarVisibility(false, true)
-        : Actions.toggleToolbarVisibility(visible, taskRunner);
-    });
+function toggleToolbarVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REQUEST_TOGGLE_TOOLBAR_VISIBILITY).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REQUEST_TOGGLE_TOOLBAR_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY"');
+    }
+
+    const state = store.getState();
+    const { visible, taskRunner } = action.payload;
+    return state.activeTaskRunner == null ? (_Actions || _load_Actions()).setToolbarVisibility(false, true) : (_Actions || _load_Actions()).toggleToolbarVisibility(visible, taskRunner);
+  });
 }
 
-export function updatePreferredVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-  options: EpicOptions,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.SET_TOOLBAR_VISIBILITY)
-    .do(action => {
-      invariant(action.type === Actions.SET_TOOLBAR_VISIBILITY);
-      const {visible, updateUserPreferences} = action.payload;
-      const {projectRoot, activeTaskRunner} = store.getState();
+function updatePreferredVisibilityEpic(actions, store, options) {
+  return actions.ofType((_Actions || _load_Actions()).SET_TOOLBAR_VISIBILITY).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).SET_TOOLBAR_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.SET_TOOLBAR_VISIBILITY"');
+    }
 
-      // Only act if responding to an explicit user action
-      if (updateUserPreferences) {
-        if (projectRoot == null) {
-          atom.notifications.addError(
-            'Add a project to use the task runner toolbar',
-            {
-              dismissable: true,
-            },
-          );
-        } else if (activeTaskRunner == null) {
-          atom.notifications.addError(
-            'No task runner available for the current working root selected in file tree',
-            {
-              dismissable: true,
-            },
-          );
-        } else {
-          // The user explicitly changed the visibility, remember this state
-          const {preferencesForWorkingRoots} = options;
-          preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
-            taskRunnerId: activeTaskRunner.id,
-            visible,
-          });
-        }
-      }
-    })
-    .ignoreElements();
-}
+    const { visible, updateUserPreferences } = action.payload;
+    const { projectRoot, activeTaskRunner } = store.getState();
 
-export function updatePreferredTaskRunnerEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-  options: EpicOptions,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.SELECT_TASK_RUNNER)
-    .do(action => {
-      invariant(action.type === Actions.SELECT_TASK_RUNNER);
-      const {updateUserPreferences} = action.payload;
-      const {projectRoot, activeTaskRunner} = store.getState();
-
-      if (updateUserPreferences && projectRoot && activeTaskRunner) {
-        // The user explicitly selected this task runner, remember this state
-        const {preferencesForWorkingRoots} = options;
-        const updatedPreference = {
-          visible: true,
+    // Only act if responding to an explicit user action
+    if (updateUserPreferences) {
+      if (projectRoot == null) {
+        atom.notifications.addError('Add a project to use the task runner toolbar', {
+          dismissable: true
+        });
+      } else if (activeTaskRunner == null) {
+        atom.notifications.addError('No task runner available for the current working root selected in file tree', {
+          dismissable: true
+        });
+      } else {
+        // The user explicitly changed the visibility, remember this state
+        const { preferencesForWorkingRoots } = options;
+        preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
           taskRunnerId: activeTaskRunner.id,
-        };
-        preferencesForWorkingRoots.setItem(
-          projectRoot.getPath(),
-          updatedPreference,
-        );
+          visible
+        });
       }
-    })
-    .ignoreElements();
+    }
+  }).ignoreElements();
+}
+
+function updatePreferredTaskRunnerEpic(actions, store, options) {
+  return actions.ofType((_Actions || _load_Actions()).SELECT_TASK_RUNNER).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).SELECT_TASK_RUNNER)) {
+      throw new Error('Invariant violation: "action.type === Actions.SELECT_TASK_RUNNER"');
+    }
+
+    const { updateUserPreferences } = action.payload;
+    const { projectRoot, activeTaskRunner } = store.getState();
+
+    if (updateUserPreferences && projectRoot && activeTaskRunner) {
+      // The user explicitly selected this task runner, remember this state
+      const { preferencesForWorkingRoots } = options;
+      const updatedPreference = {
+        visible: true,
+        taskRunnerId: activeTaskRunner.id
+      };
+      preferencesForWorkingRoots.setItem(projectRoot.getPath(), updatedPreference);
+    }
+  }).ignoreElements();
 }
 
 /**
  * Verifies that all the files are saved prior to running a task.
  */
-export function verifySavedBeforeRunningTaskEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .filter(
-      action =>
-        action.type === Actions.RUN_TASK && action.payload.verifySaved === true,
-    )
-    .switchMap(action => {
-      invariant(action.type === Actions.RUN_TASK);
-      const {taskMeta} = action.payload;
-      const unsavedEditors = atom.workspace
-        .getTextEditors()
-        .filter(editor => editor.getPath() != null && editor.isModified());
-
-      // Everything saved? Run it!
-      if (unsavedEditors.length === 0) {
-        return Observable.of(Actions.runTask(taskMeta, false));
-      }
-
-      return promptForShouldSave(taskMeta).switchMap(shouldSave => {
-        if (shouldSave) {
-          const saveAll = Observable.defer(() => {
-            const stillUnsaved = atom.workspace
-              .getTextEditors()
-              .filter(
-                editor => editor.getPath() != null && editor.isModified(),
-              );
-            return Promise.all(
-              unsavedEditors
-                .filter(editor => stillUnsaved.indexOf(editor) !== -1)
-                .map(editor => saveBuffer(editor.getBuffer())),
-            );
-          });
-          return Observable.concat(
-            saveAll.ignoreElements(),
-            Observable.of(Actions.runTask(taskMeta)),
-          ).catch(err => {
-            atom.notifications.addError(
-              'An unexpected error occurred while saving the files.',
-              {dismissable: true, detail: err.stack.toString()},
-            );
-            return Observable.empty();
-          });
-        }
-        return Observable.of(Actions.runTask(taskMeta, false));
-      });
-    });
-}
-
-export function runTaskEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .filter(
-      action =>
-        action.type === Actions.RUN_TASK &&
-        action.payload.verifySaved === false,
-    )
-    .switchMap(action => {
-      invariant(action.type === Actions.RUN_TASK);
-      const state = store.getState();
-      const stopRunningTask = state.runningTask != null;
-
-      const {taskMeta} = action.payload;
-      const {activeTaskRunner} = state;
-      const newTaskRunner = taskMeta.taskRunner;
-
-      return Observable.concat(
-        stopRunningTask
-          ? Observable.of(Actions.stopTask())
-          : Observable.empty(),
-        activeTaskRunner === newTaskRunner
-          ? Observable.empty()
-          : Observable.of(Actions.selectTaskRunner(newTaskRunner, true)),
-        store.getState().visible
-          ? Observable.empty()
-          : Observable.of(Actions.setToolbarVisibility(true, true)),
-        Observable.defer(() => {
-          if (taskMeta.disabled) {
-            return Observable.empty();
-          }
-
-          return (
-            createTaskObservable(taskMeta, store.getState)
-              // Stop listening once the task is done.
-              .takeUntil(
-                actions.ofType(
-                  Actions.TASK_COMPLETED,
-                  Actions.TASK_ERRORED,
-                  Actions.TASK_STOPPED,
-                ),
-              )
-          );
-        }),
-      );
-    });
-}
-
-export function stopTaskEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.STOP_TASK).switchMap(action => {
-    const {activeTaskRunner, runningTask} = store.getState();
-    if (!runningTask) {
-      return Observable.empty();
+function verifySavedBeforeRunningTaskEpic(actions, store) {
+  return actions.filter(action => action.type === (_Actions || _load_Actions()).RUN_TASK && action.payload.verifySaved === true).switchMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).RUN_TASK)) {
+      throw new Error('Invariant violation: "action.type === Actions.RUN_TASK"');
     }
-    invariant(activeTaskRunner);
-    return Observable.of({
-      type: Actions.TASK_STOPPED,
-      payload: {taskStatus: runningTask, taskRunner: activeTaskRunner},
+
+    const { taskMeta } = action.payload;
+    const unsavedEditors = atom.workspace.getTextEditors().filter(editor => editor.getPath() != null && editor.isModified());
+
+    // Everything saved? Run it!
+    if (unsavedEditors.length === 0) {
+      return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).runTask(taskMeta, false));
+    }
+
+    return promptForShouldSave(taskMeta).switchMap(shouldSave => {
+      if (shouldSave) {
+        const saveAll = _rxjsBundlesRxMinJs.Observable.defer(() => {
+          const stillUnsaved = atom.workspace.getTextEditors().filter(editor => editor.getPath() != null && editor.isModified());
+          return Promise.all(unsavedEditors.filter(editor => stillUnsaved.indexOf(editor) !== -1).map(editor => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).saveBuffer)(editor.getBuffer())));
+        });
+        return _rxjsBundlesRxMinJs.Observable.concat(saveAll.ignoreElements(), _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).runTask(taskMeta))).catch(err => {
+          atom.notifications.addError('An unexpected error occurred while saving the files.', { dismissable: true, detail: err.stack.toString() });
+          return _rxjsBundlesRxMinJs.Observable.empty();
+        });
+      }
+      return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).runTask(taskMeta, false));
     });
   });
 }
 
-export function setToolbarVisibilityEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TOGGLE_TOOLBAR_VISIBILITY).switchMap(action => {
-    invariant(action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY);
+function runTaskEpic(actions, store) {
+  return actions.filter(action => action.type === (_Actions || _load_Actions()).RUN_TASK && action.payload.verifySaved === false).switchMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).RUN_TASK)) {
+      throw new Error('Invariant violation: "action.type === Actions.RUN_TASK"');
+    }
+
     const state = store.getState();
-    const {activeTaskRunner, statesForTaskRunners} = state;
-    const {visible, taskRunner} = action.payload;
+    const stopRunningTask = state.runningTask != null;
+
+    const { taskMeta } = action.payload;
+    const { activeTaskRunner } = state;
+    const newTaskRunner = taskMeta.taskRunner;
+
+    return _rxjsBundlesRxMinJs.Observable.concat(stopRunningTask ? _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).stopTask()) : _rxjsBundlesRxMinJs.Observable.empty(), activeTaskRunner === newTaskRunner ? _rxjsBundlesRxMinJs.Observable.empty() : _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).selectTaskRunner(newTaskRunner, true)), store.getState().visible ? _rxjsBundlesRxMinJs.Observable.empty() : _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setToolbarVisibility(true, true)), _rxjsBundlesRxMinJs.Observable.defer(() => {
+      if (taskMeta.disabled) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+
+      return createTaskObservable(taskMeta, store.getState)
+      // Stop listening once the task is done.
+      .takeUntil(actions.ofType((_Actions || _load_Actions()).TASK_COMPLETED, (_Actions || _load_Actions()).TASK_ERRORED, (_Actions || _load_Actions()).TASK_STOPPED));
+    }));
+  });
+}
+
+function stopTaskEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).STOP_TASK).switchMap(action => {
+    const { activeTaskRunner, runningTask } = store.getState();
+    if (!runningTask) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+
+    if (!activeTaskRunner) {
+      throw new Error('Invariant violation: "activeTaskRunner"');
+    }
+
+    return _rxjsBundlesRxMinJs.Observable.of({
+      type: (_Actions || _load_Actions()).TASK_STOPPED,
+      payload: { taskStatus: runningTask, taskRunner: activeTaskRunner }
+    });
+  });
+}
+
+function setToolbarVisibilityEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).TOGGLE_TOOLBAR_VISIBILITY).switchMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TOGGLE_TOOLBAR_VISIBILITY)) {
+      throw new Error('Invariant violation: "action.type === Actions.TOGGLE_TOOLBAR_VISIBILITY"');
+    }
+
+    const state = store.getState();
+    const { activeTaskRunner, statesForTaskRunners } = state;
+    const { visible, taskRunner } = action.payload;
 
     // If changing to a new task runner, select it and show it.
     if (taskRunner != null) {
       const taskRunnerState = statesForTaskRunners.get(taskRunner);
-      if (
-        taskRunnerState != null &&
-        taskRunnerState.enabled &&
-        taskRunner !== activeTaskRunner
-      ) {
-        return Observable.of(
-          Actions.selectTaskRunner(taskRunner, true),
-          Actions.setToolbarVisibility(visible != null ? visible : true, true),
-        );
+      if (taskRunnerState != null && taskRunnerState.enabled && taskRunner !== activeTaskRunner) {
+        return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).selectTaskRunner(taskRunner, true), (_Actions || _load_Actions()).setToolbarVisibility(visible != null ? visible : true, true));
       }
     }
 
     // Otherwise, just toggle the visibility (unless the "visible" override is provided).
-    return Observable.of(
-      Actions.setToolbarVisibility(
-        visible != null ? visible : !state.visible,
-        true,
-      ),
-    );
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).setToolbarVisibility(visible != null ? visible : !state.visible, true));
   });
 }
 
-export function printTaskCancelledEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TASK_STOPPED).map(action => {
-    invariant(action.type === Actions.TASK_STOPPED);
-    const {type} = action.payload.taskStatus.metadata;
-    const {taskRunner} = action.payload;
+function printTaskCancelledEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).TASK_STOPPED).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TASK_STOPPED)) {
+      throw new Error('Invariant violation: "action.type === Actions.TASK_STOPPED"');
+    }
+
+    const { type } = action.payload.taskStatus.metadata;
+    const { taskRunner } = action.payload;
     const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
     return {
-      type: Actions.TASK_MESSAGE,
+      type: (_Actions || _load_Actions()).TASK_MESSAGE,
       payload: {
-        message: {text: `${capitalizedType} cancelled.`, level: 'warning'},
-        taskRunner,
-      },
-    };
-  });
-}
-
-export function printTaskSucceededEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.TASK_COMPLETED).map(action => {
-    invariant(action.type === Actions.TASK_COMPLETED);
-    const {type} = action.payload.taskStatus.metadata;
-    const {taskRunner} = action.payload;
-    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
-    return {
-      type: Actions.TASK_MESSAGE,
-      payload: {
-        message: {text: `${capitalizedType} succeeded.`, level: 'success'},
-        taskRunner,
-      },
-    };
-  });
-}
-
-export function appendMessageToConsoleEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions
-    .ofType(Actions.TASK_MESSAGE)
-    .do(action => {
-      invariant(action.type === Actions.TASK_MESSAGE);
-      const {message, taskRunner} = action.payload;
-      const consoleApi = store
-        .getState()
-        .consolesForTaskRunners.get(taskRunner);
-      if (consoleApi) {
-        consoleApi.append({...message});
+        message: { text: `${capitalizedType} cancelled.`, level: 'warning' },
+        taskRunner
       }
-    })
-    .ignoreElements();
+    };
+  });
+}
+
+function printTaskSucceededEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).TASK_COMPLETED).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TASK_COMPLETED)) {
+      throw new Error('Invariant violation: "action.type === Actions.TASK_COMPLETED"');
+    }
+
+    const { type } = action.payload.taskStatus.metadata;
+    const { taskRunner } = action.payload;
+    const capitalizedType = type.slice(0, 1).toUpperCase() + type.slice(1);
+    return {
+      type: (_Actions || _load_Actions()).TASK_MESSAGE,
+      payload: {
+        message: { text: `${capitalizedType} succeeded.`, level: 'success' },
+        taskRunner
+      }
+    };
+  });
+}
+
+function appendMessageToConsoleEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).TASK_MESSAGE).do(action => {
+    if (!(action.type === (_Actions || _load_Actions()).TASK_MESSAGE)) {
+      throw new Error('Invariant violation: "action.type === Actions.TASK_MESSAGE"');
+    }
+
+    const { message, taskRunner } = action.payload;
+    const consoleApi = store.getState().consolesForTaskRunners.get(taskRunner);
+    if (consoleApi) {
+      consoleApi.append(Object.assign({}, message));
+    }
+  }).ignoreElements();
 }
 
 let taskFailedNotification;
@@ -527,88 +424,71 @@ let taskFailedNotification;
 /**
  * Run a task and transform its output into domain-specific actions.
  */
-function createTaskObservable(
-  taskMeta: TaskMetadata & {taskRunner: TaskRunner},
-  getState: () => AppState,
-): Observable<Action> {
-  return Observable.defer(() => {
+function createTaskObservable(taskMeta, getState) {
+  return _rxjsBundlesRxMinJs.Observable.defer(() => {
     if (taskFailedNotification != null) {
       taskFailedNotification.dismiss();
     }
     const task = taskMeta.taskRunner.runTask(taskMeta.type);
-    const taskStatus = {metadata: taskMeta, task};
-    const events = observableFromTask(task);
+    const taskStatus = { metadata: taskMeta, task };
+    const events = (0, (_tasks || _load_tasks()).observableFromTask)(task);
 
-    return Observable.of({
-      type: Actions.TASK_STARTED,
-      payload: {taskStatus},
-    })
-      .concat(
-        events.flatMap(event => {
-          if (event.type === 'progress') {
-            return Observable.of({
-              type: Actions.TASK_PROGRESS,
-              payload: {progress: event.progress},
-            });
-          } else if (event.type === 'message') {
-            return Observable.of({
-              type: Actions.TASK_MESSAGE,
-              payload: {
-                message: event.message,
-                taskRunner: taskMeta.taskRunner,
-              },
-            });
-          } else if (event.type === 'status' && event.status != null) {
-            return Observable.of({
-              type: Actions.TASK_MESSAGE,
-              payload: {
-                message: {text: event.status, level: 'info'},
-                taskRunner: taskMeta.taskRunner,
-              },
-            });
-          } else {
-            return Observable.empty();
-          }
-        }),
-      )
-      .concat(
-        Observable.of({
-          type: Actions.TASK_COMPLETED,
+    return _rxjsBundlesRxMinJs.Observable.of({
+      type: (_Actions || _load_Actions()).TASK_STARTED,
+      payload: { taskStatus }
+    }).concat(events.flatMap(event => {
+      if (event.type === 'progress') {
+        return _rxjsBundlesRxMinJs.Observable.of({
+          type: (_Actions || _load_Actions()).TASK_PROGRESS,
+          payload: { progress: event.progress }
+        });
+      } else if (event.type === 'message') {
+        return _rxjsBundlesRxMinJs.Observable.of({
+          type: (_Actions || _load_Actions()).TASK_MESSAGE,
           payload: {
-            taskStatus: {...taskStatus, progress: 1},
-            taskRunner: taskMeta.taskRunner,
-          },
-        }),
-      );
-  })
-    .catch(error => {
-      taskFailedNotification = atom.notifications.addError(
-        `The task "${taskMeta.label}" failed`,
-        {
-          description: error.message,
-          dismissable: true,
-        },
-      );
-      taskFailedNotification.onDidDismiss(() => {
-        taskFailedNotification = null;
-      });
-      const taskMetaForLogging = {...taskMeta, taskRunner: undefined};
-      getLogger().debug('Error running task:', taskMetaForLogging, error);
-      return Observable.of({
-        type: Actions.TASK_ERRORED,
-        payload: {
-          error,
-          taskStatus: nullthrows(getState().runningTask),
-        },
-      });
-    })
-    .share();
+            message: event.message,
+            taskRunner: taskMeta.taskRunner
+          }
+        });
+      } else if (event.type === 'status' && event.status != null) {
+        return _rxjsBundlesRxMinJs.Observable.of({
+          type: (_Actions || _load_Actions()).TASK_MESSAGE,
+          payload: {
+            message: { text: event.status, level: 'info' },
+            taskRunner: taskMeta.taskRunner
+          }
+        });
+      } else {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+    })).concat(_rxjsBundlesRxMinJs.Observable.of({
+      type: (_Actions || _load_Actions()).TASK_COMPLETED,
+      payload: {
+        taskStatus: Object.assign({}, taskStatus, { progress: 1 }),
+        taskRunner: taskMeta.taskRunner
+      }
+    }));
+  }).catch(error => {
+    taskFailedNotification = atom.notifications.addError(`The task "${taskMeta.label}" failed`, {
+      description: error.message,
+      dismissable: true
+    });
+    taskFailedNotification.onDidDismiss(() => {
+      taskFailedNotification = null;
+    });
+    const taskMetaForLogging = Object.assign({}, taskMeta, { taskRunner: undefined });
+    (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)().debug('Error running task:', taskMetaForLogging, error);
+    return _rxjsBundlesRxMinJs.Observable.of({
+      type: (_Actions || _load_Actions()).TASK_ERRORED,
+      payload: {
+        error,
+        taskStatus: (0, (_nullthrows || _load_nullthrows()).default)(getState().runningTask)
+      }
+    });
+  }).share();
 }
 
-function getBestEffortTaskRunner(
-  taskRunners: Array<TaskRunner>,
-  statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
-): ?TaskRunner {
+function getBestEffortTaskRunner(taskRunners, statesForTaskRunners) {
   return taskRunners.reduce((memo, runner) => {
     const state = statesForTaskRunners.get(runner);
     // Disabled task runners aren't selectable
@@ -621,8 +501,8 @@ function getBestEffortTaskRunner(
     }
 
     // Highest priority wins
-    const memoPriority = (memo.getPriority && memo.getPriority()) || 0;
-    const runnerPriority = (runner.getPriority && runner.getPriority()) || 0;
+    const memoPriority = memo.getPriority && memo.getPriority() || 0;
+    const runnerPriority = runner.getPriority && runner.getPriority() || 0;
     if (runnerPriority > memoPriority) {
       return runner;
     }
@@ -639,40 +519,36 @@ function getBestEffortTaskRunner(
  *       - nothing if the user decides to cancel
  *   - dismisses the notification when unsubscribed
  */
-function promptForShouldSave(taskMeta: TaskMetadata): Observable<boolean> {
-  return Observable.create(observer => {
-    let notification = atom.notifications.addInfo(
-      'You have files with unsaved changes.',
-      {
-        dismissable: true,
-        description: `Do you want to save them before running the ${taskMeta.label} task?`,
-        buttons: [
-          {
-            text: `Save All & ${taskMeta.label}`,
-            onDidClick() {
-              observer.next(true);
-              observer.complete();
-            },
-          },
-          {
-            text: `${taskMeta.label} Without Saving`,
-            onDidClick() {
-              observer.next(false);
-              observer.complete();
-            },
-          },
-          {
-            text: 'Cancel',
-            className: 'icon icon-circle-slash',
-            onDidClick() {
-              observer.complete();
-            },
-          },
-        ],
-      },
-    );
+function promptForShouldSave(taskMeta) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
+    let notification = atom.notifications.addInfo('You have files with unsaved changes.', {
+      dismissable: true,
+      description: `Do you want to save them before running the ${taskMeta.label} task?`,
+      buttons: [{
+        text: `Save All & ${taskMeta.label}`,
+        onDidClick() {
+          observer.next(true);
+          observer.complete();
+        }
+      }, {
+        text: `${taskMeta.label} Without Saving`,
+        onDidClick() {
+          observer.next(false);
+          observer.complete();
+        }
+      }, {
+        text: 'Cancel',
+        className: 'icon icon-circle-slash',
+        onDidClick() {
+          observer.complete();
+        }
+      }]
+    });
     return () => {
-      invariant(notification != null);
+      if (!(notification != null)) {
+        throw new Error('Invariant violation: "notification != null"');
+      }
+
       notification.dismiss();
       notification = null;
     };
