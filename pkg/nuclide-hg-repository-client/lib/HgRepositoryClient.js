@@ -1041,10 +1041,13 @@ export class HgRepositoryClient {
     return this._service.add(filePaths);
   }
 
-  commit(message: string): Observable<LegacyProcessMessage> {
+  commit(
+    message: string,
+    filePaths: Array<NuclideUri> = [],
+  ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._service
-      .commit(message)
+      .commit(message, filePaths)
       .refCount()
       .do(processMessage => this._clearOnSuccessExit(processMessage));
   }
@@ -1052,10 +1055,11 @@ export class HgRepositoryClient {
   amend(
     message: ?string,
     amendMode: AmendModeValue,
+    filePaths: Array<NuclideUri> = [],
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this._service
-      .amend(message, amendMode)
+      .amend(message, amendMode, filePaths)
       .refCount()
       .do(processMessage => this._clearOnSuccessExit(processMessage));
   }

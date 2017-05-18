@@ -946,10 +946,14 @@ export class HgService {
   /**
    * Commit code to version control.
    * @param message Commit message.
+   * @param filePaths List of changed files to commit. If empty, all will be committed
    */
-  commit(message: string): ConnectableObservable<LegacyProcessMessage> {
+  commit(
+    message: string,
+    filePaths: Array<NuclideUri> = [],
+  ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._commitCode(message, ['commit']).publish();
+    return this._commitCode(message, ['commit', ...filePaths]).publish();
   }
 
   /**
@@ -959,13 +963,15 @@ export class HgService {
    *  Clean to just amend.
    *  Rebase to amend and rebase the stacked diffs.
    *  Fixup to fix the stacked commits, rebasing them on top of this commit.
+   * @param filePaths List of changed files to commit. If empty, all will be committed
    */
   amend(
     message: ?string,
     amendMode: AmendModeValue,
+    filePaths: Array<NuclideUri> = [],
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
-    const args = ['amend'];
+    const args = ['amend', ...filePaths];
     switch (amendMode) {
       case AmendMode.CLEAN:
         break;
