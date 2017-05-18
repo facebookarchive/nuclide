@@ -26,10 +26,11 @@ import React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import PathWithFileIcon from './PathWithFileIcon';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 
 const ANALYTICS_SOURCE_KEY = 'inline';
 const LF = '\u000A';
-type ChangedFileProps = {
+type Props = {
   commandPrefix: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion: boolean,
@@ -38,10 +39,14 @@ type ChangedFileProps = {
   fileChanges: ?diffparser$FileDiff,
   filePath: NuclideUri,
   fileStatus: FileChangeStatusValue,
+  // Determines status of checkbox to left of the component. null -> no checkbox
+  isChecked: ?boolean,
   isHgPath: boolean,
   isSelected: boolean,
   onAddFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   onDeleteFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  // onFileChecked: What to do when the checkbox is toggled
+  onFileChecked: (filePath: NuclideUri) => void,
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   onOpenFileInDiffView: (
@@ -53,7 +58,13 @@ type ChangedFileProps = {
 };
 
 export default class ChangedFile extends React.Component {
-  props: ChangedFileProps;
+  props: Props;
+
+  constructor(props: Props) {
+    super(props);
+
+    (this: any)._onCheckboxChange = this._onCheckboxChange.bind(this);
+  }
 
   _getFileClassname(): string {
     const {commandPrefix, fileStatus, isHgPath, isSelected} = this.props;
@@ -147,8 +158,18 @@ export default class ChangedFile extends React.Component {
     );
   }
 
+  _onCheckboxChange(isChecked: boolean): void {
+    this.props.onFileChecked(this.props.filePath);
+  }
+
   render(): React.Element<any> {
-    const {enableInlineActions, isHgPath, filePath, fileStatus} = this.props;
+    const {
+      enableInlineActions,
+      isChecked,
+      isHgPath,
+      filePath,
+      fileStatus,
+    } = this.props;
     const baseName = nuclideUri.basename(filePath);
     let actions;
     if (enableInlineActions && isHgPath) {
@@ -186,6 +207,13 @@ export default class ChangedFile extends React.Component {
     const statusName = FileChangeStatusToLabel[fileStatus];
     const projectRelativePath =
       getAtomProjectRelativePath(filePath) || filePath;
+    const checkbox = isChecked != null
+      ? <Checkbox
+          className="nuclide-changed-file-checkbox"
+          checked={isChecked}
+          onChange={this._onCheckboxChange}
+        />
+      : null;
     return (
       <li
         data-name={baseName}
@@ -193,6 +221,7 @@ export default class ChangedFile extends React.Component {
         data-root={this.props.rootPath}
         className={this._getFileClassname()}
         key={filePath}>
+        {checkbox}
         <span
           className="nuclide-changed-file-name"
           onClick={() => this.props.onFileChosen(filePath)}>

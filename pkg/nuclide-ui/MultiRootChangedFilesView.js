@@ -31,6 +31,8 @@ import ChangedFilesList from './ChangedFilesList';
 type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
   analyticsSurface?: string,
+  // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
+  checkedFiles: ?Map<NuclideUri, Set<NuclideUri>>,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion?: true,
   enableInlineActions?: true,
@@ -40,9 +42,16 @@ type Props = {
   commandPrefix: string,
   selectedFile: ?NuclideUri,
   hideEmptyFolders?: boolean,
+  // Callback when a file's checkbox is toggled
+  onFileChecked?: (filePath: NuclideUri) => void,
   onFileChosen: (filePath: NuclideUri) => void,
   getRevertTargetRevision?: () => ?string,
   openInDiffViewOption?: boolean,
+};
+
+type DefaultProps = {
+  onFileChecked: (filePath: NuclideUri) => void,
+  checkedFiles: ?Map<NuclideUri, Set<NuclideUri>>,
 };
 
 const ANALYTICS_PREFIX = 'changed-files-view';
@@ -51,6 +60,11 @@ const DEFAULT_ANALYTICS_SOURCE_KEY = 'command';
 export class MultiRootChangedFilesView extends React.PureComponent {
   props: Props;
   _subscriptions: UniversalDisposable;
+
+  static defaultProps: DefaultProps = {
+    checkedFiles: null,
+    onFileChecked: () => {},
+  };
 
   constructor(props: Props) {
     super(props);
@@ -320,12 +334,14 @@ export class MultiRootChangedFilesView extends React.PureComponent {
 
   render(): React.Element<any> {
     const {
+      checkedFiles: checkedFilesByRoot,
       commandPrefix,
       enableFileExpansion,
       enableInlineActions,
       fileChanges: fileChangesByRoot,
       fileStatuses: fileStatusesByRoot,
       hideEmptyFolders,
+      onFileChecked,
       onFileChosen,
       selectedFile,
     } = this.props;
@@ -341,8 +357,12 @@ export class MultiRootChangedFilesView extends React.PureComponent {
           const fileChanges = fileChangesByRoot == null
             ? null
             : fileChangesByRoot.get(root);
+          const checkedFiles = checkedFilesByRoot == null
+            ? null
+            : checkedFilesByRoot.get(root);
           return (
             <ChangedFilesList
+              checkedFiles={checkedFiles}
               commandPrefix={commandPrefix}
               enableFileExpansion={enableFileExpansion === true}
               enableInlineActions={enableInlineActions === true}
@@ -352,6 +372,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
               key={root}
               onAddFile={this._handleAddFile}
               onDeleteFile={this._handleDeleteFile}
+              onFileChecked={onFileChecked}
               onFileChosen={onFileChosen}
               onForgetFile={this._handleForgetFile}
               onOpenFileInDiffView={this._handleOpenFileInDiffView}

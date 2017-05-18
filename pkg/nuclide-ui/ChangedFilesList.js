@@ -26,7 +26,9 @@ function isHgPath(path: NuclideUri): boolean {
 
 const FILE_CHANGES_INITIAL_PAGE_SIZE = 100;
 
-type ChangedFilesProps = {
+type Props = {
+  // List of files that have checked checkboxes next to their names. `null` -> no checkboxes
+  checkedFiles: ?Set<NuclideUri>,
   commandPrefix: string,
   // whether files can be expanded to reveal a diff of changes. Requires passing `fileChanges`.
   enableFileExpansion: boolean,
@@ -37,6 +39,9 @@ type ChangedFilesProps = {
   hideEmptyFolders: boolean,
   onAddFile: (filePath: NuclideUri) => void,
   onDeleteFile: (filePath: NuclideUri) => void,
+  // Callback when a file's checkbox is toggled
+  onFileChecked: (filePath: NuclideUri) => void,
+  // Call back when a file is clicked on
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri) => void,
   onOpenFileInDiffView: (filePath: NuclideUri) => void,
@@ -46,16 +51,16 @@ type ChangedFilesProps = {
   shouldShowFolderName: boolean,
 };
 
-type ChangedFilesState = {
+type State = {
   isCollapsed: boolean,
   visiblePagesCount: number,
 };
 
 export default class ChangedFilesList extends React.Component {
-  props: ChangedFilesProps;
-  state: ChangedFilesState;
+  props: Props;
+  state: State;
 
-  constructor(props: ChangedFilesProps) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       isCollapsed: false,
@@ -65,6 +70,7 @@ export default class ChangedFilesList extends React.Component {
 
   render(): ?React.Element<any> {
     const {
+      checkedFiles,
       commandPrefix,
       enableFileExpansion,
       enableInlineActions,
@@ -72,6 +78,7 @@ export default class ChangedFilesList extends React.Component {
       fileStatuses,
       onAddFile,
       onDeleteFile,
+      onFileChecked,
       onFileChosen,
       onForgetFile,
       onOpenFileInDiffView,
@@ -137,11 +144,15 @@ export default class ChangedFilesList extends React.Component {
                 }
                 filePath={filePath}
                 fileStatus={fileStatus}
+                isChecked={
+                  checkedFiles == null ? null : checkedFiles.has(filePath)
+                }
                 isHgPath={isHgRoot}
                 isSelected={selectedFile === filePath}
                 key={filePath}
                 onAddFile={onAddFile}
                 onDeleteFile={onDeleteFile}
+                onFileChecked={onFileChecked}
                 onFileChosen={onFileChosen}
                 onForgetFile={onForgetFile}
                 onOpenFileInDiffView={onOpenFileInDiffView}
