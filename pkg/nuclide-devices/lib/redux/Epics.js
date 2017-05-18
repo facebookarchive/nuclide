@@ -12,21 +12,17 @@
 import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
-import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {
   getDeviceInfoProviders,
   getDeviceProcessesProviders,
-  getDeviceTasksProviders,
+  getDeviceTaskProviders,
 } from '../providers';
+import {DeviceTask} from '../DeviceTask';
+import {createCache} from '../Cache';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {
-  Action,
-  Store,
-  AppState,
-  DeviceTask,
-  ProcessKiller,
-} from '../types';
+import type {Action, Store, AppState, ProcessKiller} from '../types';
 
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
@@ -91,22 +87,32 @@ async function getProcessKiller(state: AppState): Promise<?ProcessKiller> {
   return null;
 }
 
+// The actual device tasks are cached so that if a task is running when the store switches back and
+// forth from the device associated with that task, the same running task is used
+const deviceTaskCache = createCache();
 async function getDeviceTasks(state: AppState): Promise<DeviceTask[]> {
   const device = state.device;
   if (device == null) {
     return [];
   }
   const actions = await Promise.all(
-    Array.from(getDeviceTasksProviders())
+    Array.from(getDeviceTaskProviders())
       .filter(provider => provider.getType() === state.deviceType)
       .map(async provider => {
         if (!await provider.isSupported(state.host)) {
           return null;
         }
-        return provider.getTasks(state.host, device.name);
+        return deviceTaskCache.getOrCreate(
+          `${state.host}-${device.name}-${provider.getName()}`,
+          () =>
+            new DeviceTask(
+              () => provider.getTask(state.host, device.name),
+              provider.getName(),
+            ),
+        );
       }),
   );
-  return arrayFlatten(arrayCompact(actions)).sort((a, b) =>
-    a.name.localeCompare(b.name),
+  return arrayCompact(actions).sort((a, b) =>
+    a.getName().localeCompare(b.getName()),
   );
 }

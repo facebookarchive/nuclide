@@ -22,10 +22,11 @@ import type {
   SetProcessesAction,
   SetProcessKillerAction,
   Device,
-  DeviceTask,
   Process,
   ProcessKiller,
 } from '../types';
+
+import {DeviceTask} from '../DeviceTask';
 
 export const SET_DEVICE_TYPES = 'SET_DEVICE_TYPES';
 export const SET_DEVICE_TYPE = 'SET_DEVICE_TYPE';

@@ -9,16 +9,17 @@
  * @format
  */
 
+import type {TaskEvent} from '../../commons-node/tasks';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Task} from '../../commons-node/tasks';
 
+import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
 
 export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
   registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
-  registerTasksProvider: (provider: DeviceTasksProvider) => IDisposable,
+  registerTaskProvider: (provider: DeviceTaskProvider) => IDisposable,
 };
 
 export type Device = {
@@ -26,17 +27,6 @@ export type Device = {
   displayName: string,
   architecture: string,
 };
-
-export type DeviceTask = {
-  name: string,
-  task: Task,
-};
-
-export interface DeviceTasksProvider {
-  getTasks(host: NuclideUri, device: string): DeviceTask[],
-  getType(): string,
-  isSupported(host: NuclideUri): Promise<boolean>,
-}
 
 export interface DeviceListProvider {
   observe(host: NuclideUri): Observable<Device[]>,
@@ -55,6 +45,13 @@ export interface DeviceProcessesProvider {
   observe(host: NuclideUri, device: string): Observable<Process[]>,
   getType(): string,
   killProcess(host: NuclideUri, device: string, id: string): Promise<void>,
+}
+
+export interface DeviceTaskProvider {
+  getTask(host: NuclideUri, device: string): Observable<TaskEvent>,
+  getName(): string,
+  getType(): string,
+  isSupported(host: NuclideUri): Promise<boolean>,
 }
 
 export type AppState = {
@@ -84,6 +81,7 @@ export type Process = {
 };
 
 export type ProcessKiller = (id: string) => Promise<void>;
+
 //
 // Action types
 //

@@ -10,8 +10,9 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, DeviceTask, Process, ProcessKiller} from '../types';
+import type {Device, Process, ProcessKiller} from '../types';
 
+import {DeviceTask} from '../DeviceTask';
 import React from 'react';
 import {
   PanelComponentScroller,

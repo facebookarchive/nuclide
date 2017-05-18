@@ -30,10 +30,11 @@ import {
   getDeviceInfoProviders,
   getDeviceProcessesProviders,
   getDeviceListProviders,
-  getDeviceTasksProviders,
+  getDeviceTaskProviders,
 } from './providers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
+import type {DeviceTaskProvider} from './types';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
@@ -42,7 +43,6 @@ import type {
   DeviceListProvider,
   DeviceInfoProvider,
   DeviceProcessesProvider,
-  DeviceTasksProvider,
   DevicePanelServiceApi,
 } from './types';
 
@@ -143,9 +143,9 @@ class Activation {
           }
         });
       },
-      registerTasksProvider: (provider: DeviceTasksProvider) => {
+      registerTaskProvider: (provider: DeviceTaskProvider) => {
         invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceTasksProviders();
+        const providers = getDeviceTaskProviders();
         providers.add(provider);
         return new Disposable(() => {
           if (pkg != null) {

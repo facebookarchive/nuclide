@@ -29,7 +29,6 @@ export type Task = {
   onProgress?: (callback: (progress: ?number) => mixed) => IDisposable,
   onResult?: (callback: (result: mixed) => mixed) => IDisposable,
   onStatusChange?: (callback: (status: ?string) => mixed) => IDisposable,
-  isRunning: () => boolean,
 };
 
 export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
@@ -69,12 +68,10 @@ export type TaskEvent =
 export function taskFromObservable(observable: Observable<TaskEvent>): Task {
   const events = observable.share().publish();
   let subscription;
-  let isRunning = false;
 
   const task = {
     start(): void {
       if (subscription == null) {
-        isRunning = true;
         subscription = events.connect();
       }
     },
@@ -135,16 +132,7 @@ export function taskFromObservable(observable: Observable<TaskEvent>): Task {
           .subscribe({next: callback, error: () => {}}),
       );
     },
-    isRunning(): boolean {
-      return isRunning;
-    },
   };
-  task.onDidError(() => {
-    isRunning = false;
-  });
-  task.onDidComplete(() => {
-    isRunning = false;
-  });
   return task;
 }
 

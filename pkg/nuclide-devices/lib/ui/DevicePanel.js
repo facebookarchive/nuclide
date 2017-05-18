@@ -10,8 +10,11 @@
  */
 
 import type {Process, ProcessKiller} from '../types';
-import type {DeviceTask} from '../types';
+import type {Props as TaskButtonPropsType} from './TaskButton';
+import type {TaskEvent} from '../../../commons-node/tasks';
 
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {DeviceTask} from '../DeviceTask';
 import {Subscription} from 'rxjs';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import React from 'react';
@@ -53,10 +56,30 @@ export class DevicePanel extends React.Component {
     );
   }
 
+  _taskEventsToProps(
+    task: DeviceTask,
+    taskEvent: ?TaskEvent,
+  ): TaskButtonPropsType {
+    return {
+      name: task.getName(),
+      start: () => task.start(),
+      cancel: () => task.cancel(),
+      isRunning: taskEvent != null,
+      progress: null,
+    };
+  }
+
   _getTasks(): React.Element<any> {
-    const tasks = this.props.deviceTasks.map(task => (
-      <TaskButton task={task} key={task.name} />
-    ));
+    const tasks = Array.from(this.props.deviceTasks).map(task => {
+      const StreamedTaskButton = bindObservableAsProps(
+        task
+          .getTaskEvents()
+          .distinctUntilChanged()
+          .map(taskEvent => this._taskEventsToProps(task, taskEvent)),
+        TaskButton,
+      );
+      return <StreamedTaskButton key={task.getName()} />;
+    });
     return (
       <div className="block nuclide-device-panel-tasks-container">
         {tasks}

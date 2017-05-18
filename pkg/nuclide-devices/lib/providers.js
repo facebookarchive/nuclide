@@ -13,12 +13,12 @@ import {
   DeviceListProvider,
   DeviceInfoProvider,
   DeviceProcessesProvider,
-  DeviceTasksProvider,
+  DeviceTaskProvider,
 } from './types';
 
 const deviceListProviders: Set<DeviceListProvider> = new Set();
 const deviceInfoProviders: Set<DeviceInfoProvider> = new Set();
-const deviceTasksProviders: Set<DeviceTasksProvider> = new Set();
+const deviceTaskProviders: Set<DeviceTaskProvider> = new Set();
 const deviceProcessesProviders: Set<DeviceProcessesProvider> = new Set();
 
 export function getDeviceListProviders(): Set<DeviceListProvider> {
@@ -29,8 +29,8 @@ export function getDeviceInfoProviders(): Set<DeviceInfoProvider> {
   return deviceInfoProviders;
 }
 
-export function getDeviceTasksProviders(): Set<DeviceTasksProvider> {
-  return deviceTasksProviders;
+export function getDeviceTaskProviders(): Set<DeviceTaskProvider> {
+  return deviceTaskProviders;
 }
 
 export function getDeviceProcessesProviders(): Set<DeviceProcessesProvider> {

@@ -212,26 +212,13 @@ describe('commons-node/tasks', () => {
       observable.next({type: 'status', status: 'fine and dandy'});
       expect(handler).toHaveBeenCalledWith('fine and dandy');
     });
-
-    it('has a valid isRunning flag during a long call', () => {
-      const observable = new Subject();
-      const task = taskFromObservable(observable);
-      expect(task.isRunning()).not.toBeTruthy();
-      task.start();
-      expect(task.isRunning()).toBeTruthy();
-      observable.complete();
-      expect(task.isRunning()).not.toBeTruthy();
-    });
   });
 });
 
 function createMockTask() {
   const emitter = new Emitter();
-  let isRunning = false;
   const task = {
-    start: () => {
-      isRunning = true;
-    },
+    start: () => {},
     cancel: () => {},
     onDidComplete: (callback: () => mixed): IDisposable => {
       return emitter.on('complete', callback);
@@ -250,9 +237,6 @@ function createMockTask() {
     },
     onStatusChange: (callback: (status: string) => mixed): IDisposable => {
       return emitter.on('status', callback);
-    },
-    isRunning: () => {
-      return isRunning;
     },
     _complete: (): void => {
       emitter.emit('complete');
@@ -273,12 +257,6 @@ function createMockTask() {
       emitter.emit('status', status);
     },
   };
-  task.onDidError(() => {
-    isRunning = false;
-  });
-  task.onDidComplete(() => {
-    isRunning = false;
-  });
   spyOn(task, 'start');
   spyOn(task, 'cancel');
   return task;
