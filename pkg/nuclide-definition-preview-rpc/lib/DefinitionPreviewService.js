@@ -24,7 +24,7 @@ function getIndentLevel(line: string) {
 export async function getDefinitionPreview(
   definition: Definition,
 ): Promise<string> {
-  const contents = (await fs.readFile(definition.path)).toString();
+  const contents = await fs.readFile(definition.path, 'utf8');
   const lines = contents.split('\n');
 
   const start = definition.position.row;

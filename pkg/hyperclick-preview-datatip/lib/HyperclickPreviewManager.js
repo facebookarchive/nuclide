@@ -83,6 +83,11 @@ export default class HyperclickPreviewManager {
 
     if (definitions.length === 1) {
       const definition = definitions.pop();
+      // Some providers (e.g. Flow) return negative positions.
+      if (definition.position.row < 0) {
+        return null;
+      }
+
       const {getDefinitionPreview} = getDefinitionPreviewServiceByNuclideUri(
         definition.path,
       );
