@@ -95,4 +95,14 @@ export type ExternalEditResponse = {
   edits: Map<NuclideUri, Array<ExternalTextEdit>>,
 };
 
-export type RefactorResponse = EditResponse | ExternalEditResponse;
+// An intermediate response to display progress in the UI.
+export type ProgressResponse = {
+  type: 'progress',
+  message: string,
+  value: number,
+  max: number,
+};
+
+export type RefactorEditResponse = EditResponse | ExternalEditResponse;
+
+export type RefactorResponse = RefactorEditResponse | ProgressResponse;

@@ -16,6 +16,8 @@ import type {
 } from '../../nuclide-refactorizer';
 
 import invariant from 'assert';
+import {compact} from 'nuclide-commons/observable';
+import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import {
   getDiagnostics,
@@ -71,9 +73,9 @@ export default class RefactoringHelpers {
     ];
   }
 
-  static refactor(request: RefactorRequest): Promise<?RefactorResponse> {
-    return trackTiming('nuclide-clang:refactor', () =>
-      RefactoringHelpers._refactor(request),
+  static refactor(request: RefactorRequest): Observable<RefactorResponse> {
+    return compact(
+      Observable.fromPromise(RefactoringHelpers._refactor(request)),
     );
   }
 

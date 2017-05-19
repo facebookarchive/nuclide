@@ -31,7 +31,7 @@ describe('applyRefactoring', () => {
 
   it('is able to apply refactors to external files', () => {
     waitsForPromise(async () => {
-      const action = await applyRefactoring({
+      const actions = await applyRefactoring({
         type: 'apply',
         payload: {
           response: {
@@ -68,9 +68,17 @@ describe('applyRefactoring', () => {
             ]),
           },
         },
-      }).toPromise();
+      })
+        .toArray()
+        .toPromise();
 
-      expect(action).toEqual({type: 'close'});
+      const message = 'Applying edits...';
+      expect(actions).toEqual([
+        {type: 'progress', payload: {message, value: 0, max: 2}},
+        {type: 'progress', payload: {message, value: 1, max: 2}},
+        {type: 'progress', payload: {message, value: 2, max: 2}},
+        {type: 'close'},
+      ]);
       expect(fs.readFileSync(testFile1, 'utf8')).toBe('aaadddghi');
       expect(fs.readFileSync(testFile2, 'utf8')).toBe('123456000');
     });
@@ -78,7 +86,7 @@ describe('applyRefactoring', () => {
 
   it('errors on mismatch', () => {
     waitsForPromise(async () => {
-      const action = await applyRefactoring({
+      const actions = await applyRefactoring({
         type: 'apply',
         payload: {
           response: {
@@ -102,7 +110,7 @@ describe('applyRefactoring', () => {
         .toPromise()
         .catch(err => err);
 
-      expect(action instanceof Error).toBe(true);
+      expect(actions instanceof Error).toBe(true);
     });
   });
 });

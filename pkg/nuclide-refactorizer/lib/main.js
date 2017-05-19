@@ -13,6 +13,7 @@
  * WARNING: This package is still experimental and in early development. Use it at your own risk.
  */
 
+import type {Observable} from 'rxjs';
 import type {
   AvailableRefactoring,
   FreeformRefactoring,
@@ -85,7 +86,11 @@ export type RefactorProvider = {
     editor: atom$TextEditor,
     point: atom$Point,
   ): Promise<Array<AvailableRefactoring>>,
-  refactor(request: RefactorRequest): Promise<?RefactorResponse>,
+
+  // Providers may stream back progress responses.
+  // Note that the stream will terminate once an edit response is received.
+  // If no edit response is received, an error will be raised.
+  refactor(request: RefactorRequest): Observable<RefactorResponse>,
 };
 
 const CONTEXT_MENU_CLASS = 'enable-nuclide-refactorizer';

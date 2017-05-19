@@ -21,7 +21,7 @@ import type {
   RefactorProvider,
 } from '..';
 
-import type {RefactorResponse} from './rpc-types';
+import type {RefactorEditResponse} from './rpc-types';
 
 export type Store = {
   // Returns unsubscribe function
@@ -86,7 +86,14 @@ export type ExecutePhase = {|
 // For multi-file changes, add a confirmation step.
 export type ConfirmPhase = {|
   type: 'confirm',
-  response: RefactorResponse,
+  response: RefactorEditResponse,
+|};
+
+export type ProgressPhase = {|
+  type: 'progress',
+  message: string,
+  value: number,
+  max: number,
 |};
 
 export type Phase =
@@ -95,7 +102,8 @@ export type Phase =
   | RenamePhase
   | FreeformPhase
   | ExecutePhase
-  | ConfirmPhase;
+  | ConfirmPhase
+  | ProgressPhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
 
@@ -148,14 +156,23 @@ export type ExecuteAction = {|
 export type ConfirmAction = {|
   type: 'confirm',
   payload: {
-    response: RefactorResponse,
+    response: RefactorEditResponse,
   },
 |};
 
 export type ApplyAction = {|
   type: 'apply',
   payload: {
-    response: RefactorResponse,
+    response: RefactorEditResponse,
+  },
+|};
+
+export type ProgressAction = {|
+  type: 'progress',
+  payload: {
+    message: string,
+    value: number,
+    max: number,
   },
 |};
 
@@ -167,4 +184,5 @@ export type RefactorAction =
   | ErrorAction
   | ExecuteAction
   | ConfirmAction
-  | ApplyAction;
+  | ApplyAction
+  | ProgressAction;

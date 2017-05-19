@@ -53,9 +53,14 @@ export function getEpics(
       return actions.ofType('execute').switchMap(action => {
         // Flow doesn't understand the implications of ofType :(
         invariant(action.type === 'execute');
-        return Observable.fromPromise(executeRefactoring(action)).takeUntil(
-          actions,
-        );
+        return executeRefactoring(action)
+          .concat(
+            // Default handler if we don't get a result.
+            Observable.of(
+              Actions.error('execute', Error('Could not refactor.')),
+            ),
+          )
+          .takeUntil(actions.filter(x => x.type !== 'progress'));
       });
     },
 
@@ -79,7 +84,7 @@ export function getEpics(
           : 'executing refactor';
         getLogger().error(`Error ${sourceName}:`, error);
         atom.notifications.addError(`Error ${sourceName}`, {
-          detail: error.stack,
+          description: error.message,
           dismissable: true,
         });
         return Actions.close();
@@ -121,24 +126,30 @@ async function getRefactorings(
   }
 }
 
-async function executeRefactoring(
-  action: ExecuteAction,
-): Promise<RefactorAction> {
+function executeRefactoring(action: ExecuteAction): Observable<RefactorAction> {
   const {refactoring, provider} = action.payload;
-  let response;
-  try {
-    response = await provider.refactor(refactoring);
-  } catch (e) {
-    return Actions.error('execute', e);
-  }
-  if (response == null) {
-    // TODO use an error action here
-    return Actions.close();
-  }
-  if (response.edits.size <= 1) {
-    return Actions.apply(response);
-  }
-  return Actions.confirm(response);
+  return provider
+    .refactor(refactoring)
+    .map(response => {
+      switch (response.type) {
+        case 'progress':
+          return Actions.progress(
+            response.message,
+            response.value,
+            response.max,
+          );
+        case 'edit':
+        case 'external-edit':
+          if (response.edits.size <= 1) {
+            return Actions.apply(response);
+          }
+          return Actions.confirm(response);
+        default:
+          (response: empty);
+          throw Error();
+      }
+    })
+    .catch(e => Observable.of(Actions.error('execute', e)));
 }
 
 const FILE_IO_CONCURRENCY = 4;
@@ -191,7 +202,11 @@ export function applyRefactoring(
           });
           await file.write(data);
         }, FILE_IO_CONCURRENCY)
-        .ignoreElements();
+        .scan((done, _) => done + 1, 0)
+        .startWith(0)
+        .map(done =>
+          Actions.progress('Applying edits...', done, response.edits.size),
+        );
     }
     return Observable.concat(
       editStream,

@@ -20,11 +20,12 @@ import type {
   ExecuteAction,
   GotRefactoringsAction,
   OpenAction,
+  ProgressAction,
   PickedRefactorAction,
   RefactorUI,
 } from './types';
 
-import type {RefactorResponse} from './rpc-types';
+import type {RefactorEditResponse} from './rpc-types';
 
 export function open(ui: RefactorUI): OpenAction {
   return {
@@ -84,17 +85,28 @@ export function execute(
   };
 }
 
-export function confirm(response: RefactorResponse): ConfirmAction {
+export function confirm(response: RefactorEditResponse): ConfirmAction {
   return {
     type: 'confirm',
     payload: {response},
   };
 }
 
-export function apply(response: RefactorResponse): ApplyAction {
+export function apply(response: RefactorEditResponse): ApplyAction {
   return {
     type: 'apply',
     payload: {response},
+  };
+}
+
+export function progress(
+  message: string,
+  value: number,
+  max: number,
+): ProgressAction {
+  return {
+    type: 'progress',
+    payload: {message, value, max},
   };
 }
 

@@ -19,6 +19,7 @@ import {Button} from 'nuclide-commons-ui/Button';
 import {ConfirmRefactorComponent} from './ConfirmRefactorComponent';
 import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';
+import {ProgressComponent} from './ProgressComponent';
 import {RenameComponent} from './RenameComponent';
 import * as Actions from '../refactorActions';
 
@@ -84,6 +85,8 @@ export class MainRefactorComponent extends React.Component {
         return (
           <ConfirmRefactorComponent phase={phase} store={this.props.store} />
         );
+      case 'progress':
+        return <ProgressComponent phase={phase} />;
       default:
         (phase: empty);
         return <div />;

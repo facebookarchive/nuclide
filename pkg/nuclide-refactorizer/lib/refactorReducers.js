@@ -18,6 +18,7 @@ import type {
   OpenAction,
   PickedRefactorAction,
   PickPhase,
+  ProgressAction,
   RefactorAction,
   RefactoringPhase,
   RefactorState,
@@ -53,6 +54,8 @@ export default function refactorReducers(
       return executeRefactor(state, action);
     case 'confirm':
       return confirmRefactor(state, action);
+    case 'progress':
+      return progress(state, action);
     default:
       return state;
   }
@@ -164,6 +167,18 @@ function confirmRefactor(
     phase: {
       type: 'confirm',
       response: action.payload.response,
+    },
+  };
+}
+
+function progress(state: RefactorState, action: ProgressAction): RefactorState {
+  invariant(state.type === 'open');
+  return {
+    type: 'open',
+    ui: state.ui,
+    phase: {
+      type: 'progress',
+      ...action.payload,
     },
   };
 }

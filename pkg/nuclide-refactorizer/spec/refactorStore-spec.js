@@ -20,7 +20,7 @@ import type {
 } from '..';
 import type {Store, RefactorState} from '../lib/types';
 
-import {Observable, BehaviorSubject} from 'rxjs';
+import {Observable, BehaviorSubject, Subject} from 'rxjs';
 import {Range, Point} from 'atom';
 import invariant from 'assert';
 
@@ -46,7 +46,7 @@ describe('refactorStore', () => {
   let refactoringsAtPointReturn: Promise<
     Array<AvailableRefactoring>,
   > = (null: any);
-  let refactorReturn: Promise<?RefactorResponse> = (null: any);
+  let refactorReturn: Observable<RefactorResponse> = (null: any);
 
   let lastError: mixed = null;
   function expectNoUncaughtErrors(): void {
@@ -85,13 +85,13 @@ describe('refactorStore', () => {
       ): Promise<Array<AvailableRefactoring>> {
         return refactoringsAtPointReturn;
       },
-      refactor(request: RefactorRequest): Promise<?RefactorResponse> {
+      refactor(request: RefactorRequest): Observable<RefactorResponse> {
         return refactorReturn;
       },
     };
     // TODO spy on the provider and call through
     refactoringsAtPointReturn = Promise.resolve([]);
-    refactorReturn = Promise.resolve(null);
+    refactorReturn = Observable.empty();
 
     providers = new ProviderRegistry();
     store = getStore(providers);
@@ -162,7 +162,7 @@ describe('refactorStore', () => {
       it('runs the refactor', () => {
         waitsForPromise(async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Promise.resolve({
+          refactorReturn = Observable.of({
             type: 'edit',
             edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
           });
@@ -218,9 +218,9 @@ describe('refactorStore', () => {
 
       it('tolerates a provider returning refactor results after a close action', () => {
         waitsForPromise(async () => {
-          const deferred = new Deferred();
+          const deferred = new Subject();
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = deferred.promise;
+          refactorReturn = deferred;
           store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
@@ -236,7 +236,7 @@ describe('refactorStore', () => {
           await waitForPhase('execute');
           store.dispatch(Actions.close());
           await waitForClose();
-          deferred.resolve({
+          deferred.next({
             type: 'edit',
             edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
           });
@@ -261,7 +261,7 @@ describe('refactorStore', () => {
       it('tolerates a provider throwing in refactor', () => {
         waitsForPromise(async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Promise.reject(new Error());
+          refactorReturn = Observable.throw(new Error());
           store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
@@ -280,10 +280,10 @@ describe('refactorStore', () => {
         });
       });
 
-      it('tolerates a provider returning null from refactor', () => {
+      it('tolerates a provider returning empty from refactor', () => {
         waitsForPromise(async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
-          refactorReturn = Promise.resolve(null);
+          refactorReturn = Observable.empty();
           store.dispatch(Actions.open('generic'));
           await waitForPhase('pick');
           store.dispatch(Actions.pickedRefactor(TEST_FILE_RENAME));
@@ -314,7 +314,7 @@ describe('refactorStore', () => {
               newText: 'bar',
             },
           ];
-          refactorReturn = Promise.resolve({
+          refactorReturn = Observable.of({
             type: 'edit',
             edits: new Map([[TEST_FILE, edits]]),
           });
@@ -369,7 +369,7 @@ describe('refactorStore', () => {
           async refactoringsAtPoint() {
             return [refactoring];
           },
-          async refactor(request: RefactorRequest) {
+          refactor(request: RefactorRequest) {
             invariant(request.kind === 'freeform');
             const edits = [
               {
@@ -378,10 +378,10 @@ describe('refactorStore', () => {
                 newText: String(request.arguments.get('new_name')),
               },
             ];
-            return {
+            return Observable.of({
               type: 'edit',
               edits: new Map([[TEST_FILE, edits]]),
-            };
+            });
           },
         };
         providers.addProvider(provider);
