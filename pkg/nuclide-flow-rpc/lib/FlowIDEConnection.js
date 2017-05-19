@@ -9,7 +9,9 @@
  * @format
  */
 
-import type {FlowStatusOutput} from './flowOutputTypes';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import type {FlowStatusOutput, FlowAutocompleteOutput} from './flowOutputTypes';
 
 import {Disposable} from 'event-kit';
 import {Observable} from 'rxjs';
@@ -27,6 +29,7 @@ type MessageHandler = (...args: any) => mixed;
 type RpcConnection = {
   onNotification(methodName: string, handler: MessageHandler): void,
   sendNotification(methodName: string, ...args: any): void,
+  sendRequest(methodName: string, ...args: any): Promise<any>,
   // TODO requests
   listen(): void,
   dispose(): void,
@@ -172,5 +175,20 @@ export class FlowIDEConnection {
   // will never emit any items unless observeDiagnostics() is called.
   observeRecheckBookends(): Observable<RecheckBookend> {
     return this._recheckBookends;
+  }
+
+  getAutocompleteSuggestions(
+    filePath: NuclideUri,
+    line: number,
+    column: number,
+    contents: string,
+  ): Promise<FlowAutocompleteOutput> {
+    return this._connection.sendRequest(
+      'autocomplete',
+      filePath,
+      line,
+      column,
+      contents,
+    );
   }
 }
