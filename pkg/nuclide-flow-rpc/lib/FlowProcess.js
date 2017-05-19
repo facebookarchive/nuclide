@@ -15,7 +15,7 @@ import type {FlowExecInfoContainer} from './FlowExecInfoContainer';
 
 import os from 'os';
 import invariant from 'assert';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 import {getLogger} from '../../nuclide-logging';
 const logger = getLogger();
@@ -81,6 +81,10 @@ export class FlowProcess {
 
   _ideConnections: Observable<?FlowIDEConnection>;
 
+  // If someone subscribes to _ideConnections, we will also publish them here. But subscribing to
+  // this does not actually cause a connection to be created or maintained.
+  _optionalIDEConnections: BehaviorSubject<?FlowIDEConnection>;
+
   _isDisposed: BehaviorSubject<boolean>;
   _subscriptions: UniversalDisposable;
 
@@ -91,6 +95,7 @@ export class FlowProcess {
     this._root = root;
     this._isDisposed = new BehaviorSubject(false);
 
+    this._optionalIDEConnections = new BehaviorSubject(null);
     this._ideConnections = this._createIDEConnectionStream();
 
     this._serverStatus.subscribe(status => {
@@ -163,10 +168,15 @@ export class FlowProcess {
     return this._ideConnections;
   }
 
+  // This will not cause an IDE connection to be established or maintained, and the return value is
+  // not safe to store. If there happens to be an IDE connection it will be returned.
+  getCurrentIDEConnection(): ?FlowIDEConnection {
+    return this._optionalIDEConnections.getValue();
+  }
+
   _createIDEConnectionStream(): Observable<?FlowIDEConnection> {
-    const optionalIDEConnections: Subject<?FlowIDEConnection> = new Subject();
     this._subscriptions.add(
-      optionalIDEConnections
+      this._optionalIDEConnections
         .filter(conn => conn != null)
         .switchMap(conn => {
           invariant(conn != null);
@@ -201,14 +211,14 @@ export class FlowProcess {
         // correctness so we only want to do this if somebody is using the IDE connections anyway.
         // Don't pass the Subject as an Observer since then it will complete if a client unsubscribes.
         .do(
-          conn => optionalIDEConnections.next(conn),
+          conn => this._optionalIDEConnections.next(conn),
           () => {
             // If we get an error, set the current ide connection to null
-            optionalIDEConnections.next(null);
+            this._optionalIDEConnections.next(null);
           },
           () => {
             // If we get a completion (happens when the downstream client unsubscribes), set the current ide connection to null.
-            optionalIDEConnections.next(null);
+            this._optionalIDEConnections.next(null);
           },
         )
         // multicast and store the current connection and immediately deliver it to new subscribers
