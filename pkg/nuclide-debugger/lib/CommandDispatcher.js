@@ -36,6 +36,10 @@ export default class CommandDispatcher {
       'nuclide_new_debugger_protocol_channel',
       10 * 1000,
     );
+    if (!this._useNewChannel) {
+      // Do not bother enable the new channel if not enabled.
+      return;
+    }
     return this._bridgeAdapter.start(debuggerInstance);
   }
 
