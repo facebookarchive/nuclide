@@ -13,7 +13,6 @@
 .tree-view {
   flex-grow: 1;
   flex-shrink: 0;
-  min-width: min-content;
   min-height: min-content; // Switched from tree-view's `100%` to fill height of scroller.
   padding-left: @component-icon-padding;
   padding-right: @component-padding;
@@ -25,6 +24,7 @@
   }
 
   .list-tree {
+    min-width: min-content;
     position: static;
   }
 

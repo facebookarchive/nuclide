@@ -10,9 +10,10 @@
  */
 
 import React from 'react';
-import {Button} from 'nuclide-commons-ui/Button';
-import {FileTreeStore} from '../lib/FileTreeStore';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+
+import {FileTreeStore} from '../lib/FileTreeStore';
+import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {};
 
@@ -63,18 +64,16 @@ export class ProjectSelection extends React.Component {
   render(): React.Element<any> {
     return (
       <div className="padded">
-        <Button
+        <TruncatedButton
           onClick={() => this.runCommand('application:add-project-folder')}
           icon="device-desktop"
-          className="btn-block">
-          Add Project Folder
-        </Button>
-        <Button
+          label="Add Project Folder"
+        />
+        <TruncatedButton
           onClick={() => this.runCommand('nuclide-remote-projects:connect')}
           icon="cloud-upload"
-          className="btn-block">
-          Add Remote Project Folder
-        </Button>
+          label="Add Remote Project Folder"
+        />
         {this.state.extraContent}
       </div>
     );
