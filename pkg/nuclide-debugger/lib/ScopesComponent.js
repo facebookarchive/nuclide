@@ -25,6 +25,10 @@ type ScopesComponentProps = {
   watchExpressionStore: WatchExpressionStore,
 };
 
+function isLocalScopeName(scopeName: string): boolean {
+  return ['Local', 'Locals'].indexOf(scopeName) !== -1;
+}
+
 export class ScopesComponent extends React.Component {
   props: ScopesComponentProps;
   _expansionStates: Map<
@@ -80,8 +84,8 @@ export class ScopesComponent extends React.Component {
     scope: ScopeSection,
   ): ?React.Element<any> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
-    const collapsedByDefault = scope.name !== 'Locals';
-    const noLocals = scope.name !== 'Locals' || scope.scopeVariables.length > 0
+    const collapsedByDefault = !isLocalScopeName(scope.name);
+    const noLocals = collapsedByDefault || scope.scopeVariables.length > 0
       ? null
       : <div className="nuclide-debugger-expression-value-row">
           <span className="nuclide-debugger-expression-value-content">

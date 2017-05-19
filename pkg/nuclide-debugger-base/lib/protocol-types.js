@@ -303,7 +303,7 @@ export type SetBreakpointByUrlRequest = {
   lineNumber: number,
 
   /** URL of the resources to set breakpoint on. */
-  url?: string,
+  url: string,
 
   /** Regex pattern for the URLs of the resources to set breakpoints on. Either 'url</code> or <code>urlRegex' must be specified. */
   urlRegex?: string,
