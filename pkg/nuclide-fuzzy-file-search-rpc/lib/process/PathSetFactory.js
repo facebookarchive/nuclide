@@ -162,9 +162,9 @@ async function getFilesFromRepo(
     .filter(s => s.length > 0);
 
   const fileLists = await asyncLimit(subRoots, 20, subRoot => {
-    return getFilesFromGit(
-      nuclideUri.join(localDirectory, subRoot),
-    ).then(files => files.map(file => nuclideUri.join(subRoot, file)));
+    return getFilesFromGit(nuclideUri.join(localDirectory, subRoot))
+      .catch(() => [])
+      .then(files => files.map(file => nuclideUri.join(subRoot, file)));
   });
 
   return [].concat(...fileLists);
