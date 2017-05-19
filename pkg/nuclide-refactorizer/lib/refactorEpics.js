@@ -14,6 +14,7 @@ import type {
   Epic,
 } from '../../commons-node/redux-observable';
 import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+import {getFileForPath} from 'nuclide-commons-atom/projects';
 import type {
   ApplyAction,
   RefactorAction,
@@ -140,24 +141,63 @@ async function executeRefactoring(
   return Actions.confirm(response);
 }
 
-function applyRefactoring(action: ApplyAction): Observable<RefactorAction> {
+const FILE_IO_CONCURRENCY = 4;
+
+export function applyRefactoring(
+  action: ApplyAction,
+): Observable<RefactorAction> {
   return Observable.defer(() => {
     const {response} = action.payload;
+    let editStream = Observable.empty();
     if (response.type === 'edit') {
+      // Regular edits are applied directly to open buffers.
+      // Note that all files must actually be open.
       for (const [path, edits] of response.edits) {
         const editor = existingEditorForUri(path);
         if (editor != null) {
           applyTextEditsToBuffer(editor.getBuffer(), edits);
         } else {
           return Observable.of(
-            Actions.error('execute', Error(`Expected file ${path} to be open.`)),
+            Actions.error(
+              'execute',
+              Error(`Expected file ${path} to be open.`),
+            ),
           );
         }
       }
+    } else {
+      // External edits are applied directly to disk.
+      editStream = Observable.from(response.edits)
+        .mergeMap(async ([path, edits]) => {
+          const file = getFileForPath(path);
+          if (file == null) {
+            throw new Error(`Could not read file ${path}`);
+          }
+          let data = await file.read();
+          edits.sort((a, b) => a.startOffset - b.startOffset);
+          edits.reverse().forEach(edit => {
+            if (edit.oldText != null) {
+              const oldText = data.substring(edit.startOffset, edit.endOffset);
+              if (oldText !== edit.oldText) {
+                throw new Error(
+                  `Cannot apply refactor: file contents of ${path} have changed!`,
+                );
+              }
+            }
+            data =
+              data.slice(0, edit.startOffset) +
+              edit.newText +
+              data.slice(edit.endOffset);
+          });
+          await file.write(data);
+        }, FILE_IO_CONCURRENCY)
+        .ignoreElements();
     }
-    // TODO: handle external-edit responses
-    return Observable.of(Actions.close()).do(() =>
-      track('nuclide-refactorizer:success'),
+    return Observable.concat(
+      editStream,
+      Observable.of(Actions.close()).do(() =>
+        track('nuclide-refactorizer:success'),
+      ),
     );
   });
 }
