@@ -163,6 +163,7 @@ describe('refactorStore', () => {
         waitsForPromise(async () => {
           refactoringsAtPointReturn = Promise.resolve([TEST_FILE_RENAME]);
           refactorReturn = Promise.resolve({
+            type: 'edit',
             edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
           });
 
@@ -236,6 +237,7 @@ describe('refactorStore', () => {
           store.dispatch(Actions.close());
           await waitForClose();
           deferred.resolve({
+            type: 'edit',
             edits: new Map([[TEST_FILE, TEST_FILE_EDITS]]),
           });
           await nextTick();
@@ -313,6 +315,7 @@ describe('refactorStore', () => {
             },
           ];
           refactorReturn = Promise.resolve({
+            type: 'edit',
             edits: new Map([[TEST_FILE, edits]]),
           });
 
@@ -376,6 +379,7 @@ describe('refactorStore', () => {
               },
             ];
             return {
+              type: 'edit',
               edits: new Map([[TEST_FILE, edits]]),
             };
           },

@@ -76,6 +76,7 @@ describe('Refactoring', () => {
           originalPoint: new Point(1, 25),
         });
         invariant(response != null, 'Expected edits');
+        invariant(response.type === 'edit', 'Must be a standard edit');
         expect(Array.from(response.edits)).toEqual([
           [
             TEST_PATH,

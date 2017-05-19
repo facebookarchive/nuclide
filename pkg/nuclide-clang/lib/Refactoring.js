@@ -104,6 +104,7 @@ export default class RefactoringHelpers {
     }));
 
     return {
+      type: 'edit',
       edits: new Map([[path, edits]]),
     };
   }

@@ -143,16 +143,19 @@ async function executeRefactoring(
 function applyRefactoring(action: ApplyAction): Observable<RefactorAction> {
   return Observable.defer(() => {
     const {response} = action.payload;
-    for (const [path, edits] of response.edits) {
-      const editor = existingEditorForUri(path);
-      if (editor != null) {
-        applyTextEditsToBuffer(editor.getBuffer(), edits);
-      } else {
-        return Observable.of(
-          Actions.error('execute', Error(`Expected file ${path} to be open.`)),
-        );
+    if (response.type === 'edit') {
+      for (const [path, edits] of response.edits) {
+        const editor = existingEditorForUri(path);
+        if (editor != null) {
+          applyTextEditsToBuffer(editor.getBuffer(), edits);
+        } else {
+          return Observable.of(
+            Actions.error('execute', Error(`Expected file ${path} to be open.`)),
+          );
+        }
       }
     }
+    // TODO: handle external-edit responses
     return Observable.of(Actions.close()).do(() =>
       track('nuclide-refactorizer:success'),
     );

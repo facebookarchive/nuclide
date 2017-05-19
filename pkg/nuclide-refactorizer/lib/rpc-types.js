@@ -69,6 +69,30 @@ export type FreeformRefactoring = {
 
 export type AvailableRefactoring = RenameRefactoring | FreeformRefactoring;
 
-export type RefactorResponse = {
+// For edits outside of Atom editors, it's easier and more efficient to use
+// absolute character offsets rather than line/column ranges.
+export type ExternalTextEdit = {
+  startOffset: number,
+  endOffset: number,
+  newText: string,
+  // If included, this will be used to verify that the edit still applies cleanly.
+  oldText?: string,
+};
+
+// Regular "edits" are intended for changes inside open files.
+// These will be applied to the buffer and will not be immediately saved.
+// This is appropriate for small-scale changes to a set of files.
+export type EditResponse = {
+  type: 'edit',
   edits: Map<NuclideUri, Array<TextEdit>>,
 };
+
+// "externalEdits" are intended for changes that include unopened files.
+// External edits will be directly written to files on disk, bypassing Atom.
+// They also have a slightly different format for efficiency purposes.
+export type ExternalEditResponse = {
+  type: 'external-edit',
+  edits: Map<NuclideUri, Array<ExternalTextEdit>>,
+};
+
+export type RefactorResponse = EditResponse | ExternalEditResponse;
