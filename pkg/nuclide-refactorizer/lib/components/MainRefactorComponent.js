@@ -16,6 +16,7 @@ import invariant from 'assert';
 
 import {Button} from 'nuclide-commons-ui/Button';
 
+import {ConfirmRefactorComponent} from './ConfirmRefactorComponent';
 import {FreeformRefactorComponent} from './FreeformRefactorComponent';
 import {PickRefactorComponent} from './PickRefactorComponent';
 import {RenameComponent} from './RenameComponent';
@@ -79,8 +80,13 @@ export class MainRefactorComponent extends React.Component {
         );
       case 'execute':
         return <div>Executing refactoring...</div>;
+      case 'confirm':
+        return (
+          <ConfirmRefactorComponent phase={phase} store={this.props.store} />
+        );
       default:
-        throw new Error(`Unknown phase ${phase.type}`);
+        (phase: empty);
+        return <div />;
     }
   }
 }

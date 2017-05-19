@@ -12,6 +12,7 @@
 import type {AvailableRefactoring} from '..';
 
 import type {
+  ConfirmAction,
   ExecuteAction,
   GotRefactoringsAction,
   OpenAction,
@@ -50,6 +51,8 @@ export default function refactorReducers(
       return pickedRefactor(state, action);
     case 'execute':
       return executeRefactor(state, action);
+    case 'confirm':
+      return confirmRefactor(state, action);
     default:
       return state;
   }
@@ -146,6 +149,21 @@ function executeRefactor(
     ui: state.ui,
     phase: {
       type: 'execute',
+    },
+  };
+}
+
+function confirmRefactor(
+  state: RefactorState,
+  action: ConfirmAction,
+): RefactorState {
+  invariant(state.type === 'open');
+  return {
+    type: 'open',
+    ui: state.ui,
+    phase: {
+      type: 'confirm',
+      response: action.payload.response,
     },
   };
 }

@@ -134,7 +134,10 @@ async function executeRefactoring(
     // TODO use an error action here
     return Actions.close();
   }
-  return Actions.apply(response);
+  if (response.edits.size <= 1) {
+    return Actions.apply(response);
+  }
+  return Actions.confirm(response);
 }
 
 function applyRefactoring(action: ApplyAction): Observable<RefactorAction> {

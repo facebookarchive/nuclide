@@ -75,7 +75,7 @@ export class PickRefactorComponent extends React.Component {
         return (
           <div>
             <Button
-              className="nuclide-refactorizer-pick-freeform"
+              className="nuclide-refactorizer-button"
               onClick={() => {
                 this._pickRefactor(refactoring);
               }}

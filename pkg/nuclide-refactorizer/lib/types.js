@@ -83,12 +83,19 @@ export type ExecutePhase = {|
   type: 'execute',
 |};
 
+// For multi-file changes, add a confirmation step.
+export type ConfirmPhase = {|
+  type: 'confirm',
+  response: RefactorResponse,
+|};
+
 export type Phase =
   | GetRefactoringsPhase
   | PickPhase
   | RenamePhase
   | FreeformPhase
-  | ExecutePhase;
+  | ExecutePhase
+  | ConfirmPhase;
 
 export type RefactoringPhase = RenamePhase | FreeformPhase;
 
@@ -138,6 +145,13 @@ export type ExecuteAction = {|
   },
 |};
 
+export type ConfirmAction = {|
+  type: 'confirm',
+  payload: {
+    response: RefactorResponse,
+  },
+|};
+
 export type ApplyAction = {|
   type: 'apply',
   payload: {
@@ -152,4 +166,5 @@ export type RefactorAction =
   | GotRefactoringsAction
   | ErrorAction
   | ExecuteAction
+  | ConfirmAction
   | ApplyAction;

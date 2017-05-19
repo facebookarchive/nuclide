@@ -14,6 +14,7 @@ import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
 import type {
   ApplyAction,
   CloseAction,
+  ConfirmAction,
   ErrorAction,
   ErrorSource,
   ExecuteAction,
@@ -80,6 +81,13 @@ export function execute(
       provider,
       refactoring,
     },
+  };
+}
+
+export function confirm(response: RefactorResponse): ConfirmAction {
+  return {
+    type: 'confirm',
+    payload: {response},
   };
 }
 
