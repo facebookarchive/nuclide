@@ -21,6 +21,8 @@ import type {
   RefactorProvider,
 } from '..';
 
+import type {RefactorResponse} from './rpc-types';
+
 export type Store = {
   // Returns unsubscribe function
   subscribe(fn: () => mixed): () => void,
@@ -136,10 +138,18 @@ export type ExecuteAction = {|
   },
 |};
 
+export type ApplyAction = {|
+  type: 'apply',
+  payload: {
+    response: RefactorResponse,
+  },
+|};
+
 export type RefactorAction =
   | OpenAction
   | CloseAction
   | PickedRefactorAction
   | GotRefactoringsAction
   | ErrorAction
-  | ExecuteAction;
+  | ExecuteAction
+  | ApplyAction;

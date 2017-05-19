@@ -12,6 +12,7 @@
 import type {AvailableRefactoring, RefactorRequest, RefactorProvider} from '..';
 
 import type {
+  ApplyAction,
   CloseAction,
   ErrorAction,
   ErrorSource,
@@ -21,6 +22,8 @@ import type {
   PickedRefactorAction,
   RefactorUI,
 } from './types';
+
+import type {RefactorResponse} from './rpc-types';
 
 export function open(ui: RefactorUI): OpenAction {
   return {
@@ -77,6 +80,13 @@ export function execute(
       provider,
       refactoring,
     },
+  };
+}
+
+export function apply(response: RefactorResponse): ApplyAction {
+  return {
+    type: 'apply',
+    payload: {response},
   };
 }
 

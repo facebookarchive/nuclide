@@ -14,15 +14,21 @@ import type {
   Epic,
 } from '../../commons-node/redux-observable';
 import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import type {RefactorAction, RefactorState, ExecuteAction} from './types';
+import type {
+  ApplyAction,
+  RefactorAction,
+  RefactorState,
+  ExecuteAction,
+} from './types';
 import type {RefactorProvider} from '..';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
+import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {applyTextEdits} from '../../nuclide-textedit';
+import {applyTextEditsToBuffer} from '../../nuclide-textedit';
 
 import * as Actions from './refactorActions';
 
@@ -49,6 +55,15 @@ export function getEpics(
         return Observable.fromPromise(executeRefactoring(action)).takeUntil(
           actions,
         );
+      });
+    },
+
+    function applyRefactoringEpic(
+      actions: ActionsObservable<RefactorAction>,
+    ): Observable<RefactorAction> {
+      return actions.ofType('apply').switchMap(action => {
+        invariant(action.type === 'apply');
+        return applyRefactoring(action).takeUntil(actions.ofType('close'));
       });
     },
 
@@ -119,18 +134,24 @@ async function executeRefactoring(
     // TODO use an error action here
     return Actions.close();
   }
-  const editor = atom.workspace.getActiveTextEditor();
-  // TODO handle it if the editor has gone away
-  invariant(editor != null);
-  const path = editor.getPath();
-  // TODO handle editors with no path
-  invariant(path != null);
-  // TODO also apply edits to other files
-  const fileEdits = response.edits.get(path);
-  invariant(fileEdits != null);
-  // TODO check the return value to see if the edits were applied correctly. if not, display an
-  // appropriate message.
-  applyTextEdits(path, ...fileEdits);
-  track('nuclide-refactorizer:success');
-  return Actions.close();
+  return Actions.apply(response);
+}
+
+function applyRefactoring(action: ApplyAction): Observable<RefactorAction> {
+  return Observable.defer(() => {
+    const {response} = action.payload;
+    for (const [path, edits] of response.edits) {
+      const editor = existingEditorForUri(path);
+      if (editor != null) {
+        applyTextEditsToBuffer(editor.getBuffer(), edits);
+      } else {
+        return Observable.of(
+          Actions.error('execute', Error(`Expected file ${path} to be open.`)),
+        );
+      }
+    }
+    return Observable.of(Actions.close()).do(() =>
+      track('nuclide-refactorizer:success'),
+    );
+  });
 }
