@@ -231,10 +231,17 @@ export class ConsoleContainer extends React.Component {
 
     const {displayableRecords} = this._getFilterInfo();
     const lines = displayableRecords
-      .filter(displayable => displayable.record.kind === 'message')
+      .filter(
+        displayable =>
+          displayable.record.kind === 'message' ||
+          displayable.record.kind === 'request' ||
+          displayable.record.kind === 'response',
+      )
       .map(displayable => {
         const record = displayable.record;
-        const level = record.level.toString().toUpperCase();
+        const level = record.level != null
+          ? record.level.toString().toUpperCase()
+          : 'LOG';
         const timestamp = record.timestamp.toLocaleString();
         return `[${level}][${record.sourceId}][${timestamp}]\t ${record.text}`;
       })
