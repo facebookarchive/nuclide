@@ -168,16 +168,28 @@ export function getEventsFromProcess(
         };
       case 'stderr':
       case 'stdout':
-        return {
-          type: 'log',
-          // Some Buck steps output ansi escape codes regardless of terminal setting.
-          message: stripAnsi(message.data),
-          // Build failure messages typically do not show up in the web socket.
-          // TODO(hansonw): fix this on the Buck side
-          level: message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
-            ? 'log'
-            : 'error',
-        };
+        const match = message.data.trim().match(BUILD_OUTPUT_REGEX);
+        if (match != null && match.length === 4) {
+          return {
+            type: 'build-output',
+            output: {
+              target: match[1],
+              successType: match[2],
+              path: match[3],
+            },
+          };
+        } else {
+          return {
+            type: 'log',
+            // Some Buck steps output ansi escape codes regardless of terminal setting.
+            message: stripAnsi(message.data),
+            // Build failure messages typically do not show up in the web socket.
+            // TODO(hansonw): fix this on the Buck side
+            level: message.data.indexOf(BUILD_FAILED_MESSAGE) === -1
+              ? 'log'
+              : 'error',
+          };
+        }
       default:
         throw new Error('impossible');
     }
