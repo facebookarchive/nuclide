@@ -30,6 +30,12 @@ type Props = {
 export class Selectors extends React.Component {
   props: Props;
 
+  componentDidMount(): void {
+    if (this.props.deviceTypes.length > 0) {
+      this.props.setDeviceType(this.props.deviceTypes[0]);
+    }
+  }
+
   _getHostOptions(): Array<{value: ?string, label: string}> {
     return this.props.hosts
       .map(host => {
