@@ -19,7 +19,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {existingEditorForBuffer} from 'nuclide-commons-atom/text-editor';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
@@ -168,7 +168,7 @@ export class DefinitionPreviewView extends React.Component {
   }
 
   _openCurrentDefinitionInMainEditor(): void {
-    track('nuclide-definition-preview:openInMainEditor');
+    analytics.track('nuclide-definition-preview:openInMainEditor');
     const def = this.props.definition;
     if (def != null) {
       goToLocation(def.path, def.position.row, def.position.column, true);

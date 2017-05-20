@@ -13,8 +13,7 @@ import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
-
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 
 import {DistractionFreeMode} from './DistractionFreeMode';
 import {getBuiltinProviders} from './BuiltinProviders';
@@ -44,7 +43,7 @@ class Activation {
         'atom-workspace',
         'nuclide-distraction-free-mode:toggle',
         () => {
-          track('distraction-free-mode:toggle');
+          analytics.track('distraction-free-mode:toggle');
           this._tunnelVision.toggleDistractionFreeMode();
         },
       ),

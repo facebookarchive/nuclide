@@ -21,7 +21,7 @@ import {
 } from 'nuclide-commons-atom/mouse-to-position';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 import FindReferencesElement from './FindReferencesElement';
 import {getLogger} from '../../nuclide-logging';
 import FindReferencesModel from './FindReferencesModel';
@@ -55,14 +55,14 @@ async function tryCreateView(
     if (data == null) {
       showWarning('Symbol references are not available for this project.');
     } else if (data.type === 'error') {
-      track('find-references:error', {message: data.message});
+      analytics.track('find-references:error', {message: data.message});
       showWarning(data.message);
     } else if (!data.references.length) {
-      track('find-references:success', {resultCount: '0'});
+      analytics.track('find-references:success', {resultCount: '0'});
       showWarning('No references found.');
     } else {
       const {baseUri, referencedSymbolName, references} = data;
-      track('find-references:success', {
+      analytics.track('find-references:success', {
         baseUri,
         referencedSymbolName,
         resultCount: references.length.toString(),
@@ -220,7 +220,7 @@ class Activation {
     const point = event != null
       ? bufferPositionForMouseEvent(event, editor)
       : editor.getCursorBufferPosition();
-    track('find-references:activate', {
+    analytics.track('find-references:activate', {
       path,
       row: point.row.toString(),
       column: point.column.toString(),

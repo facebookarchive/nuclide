@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 
+import analytics from 'nuclide-commons-atom/analytics';
 import DiagnosticsPane from './DiagnosticsPane';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
@@ -20,7 +21,6 @@ import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {track} from '../../nuclide-analytics';
 
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
@@ -154,14 +154,14 @@ export default class DiagnosticsPanel extends React.Component {
   }
 
   _onShowTracesChange(isChecked: boolean) {
-    track('diagnostics-panel-toggle-show-traces', {
+    analytics.track('diagnostics-panel-toggle-show-traces', {
       isChecked: isChecked.toString(),
     });
     this.props.onShowTracesChange.call(null, isChecked);
   }
 
   _onFilterByActiveTextEditorChange(isChecked: boolean) {
-    track('diagnostics-panel-toggle-current-file', {
+    analytics.track('diagnostics-panel-toggle-current-file', {
       isChecked: isChecked.toString(),
     });
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);

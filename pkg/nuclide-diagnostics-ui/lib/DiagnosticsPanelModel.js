@@ -15,13 +15,13 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsPanel from './DiagnosticsPanel';
+import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility
   from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {toggle} from 'nuclide-commons/observable';
-import {track} from '../../nuclide-analytics';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
@@ -72,7 +72,7 @@ export class DiagnosticsPanelModel {
       .distinctUntilChanged()
       .filter(Boolean)
       .subscribe(() => {
-        track('diagnostics-show-table');
+        analytics.track('diagnostics-show-table');
       });
 
     // A stream that contains the props, but is "muted" when the panel's not visible.

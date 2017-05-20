@@ -12,8 +12,8 @@
 import type {TypeHintProvider} from './types';
 import type {Datatip} from '../../nuclide-datatip/lib/types';
 
+import analytics from 'nuclide-commons-atom/analytics';
 import {arrayRemove} from 'nuclide-commons/collection';
-import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 
 const logger = getLogger();
@@ -45,7 +45,7 @@ export default class TypeHintManager {
       name = 'unknown';
       logger.error('Type hint provider has no name', provider);
     }
-    const typeHint = await trackTiming(name + '.typeHint', () =>
+    const typeHint = await analytics.trackTiming(name + '.typeHint', () =>
       provider.typeHint(editor, position),
     );
     if (!typeHint || this._marker) {
@@ -53,7 +53,7 @@ export default class TypeHintManager {
     }
     const {hint, range} = typeHint;
     // We track the timing above, but we still want to know the number of popups that are shown.
-    track('type-hint-popup', {
+    analytics.track('type-hint-popup', {
       scope: scopeName,
       message: hint,
     });

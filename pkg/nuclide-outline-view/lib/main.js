@@ -20,7 +20,7 @@ import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
@@ -108,7 +108,7 @@ class Activation {
 
     this._editorService = new ActiveEditorRegistry(
       (provider, editor) => {
-        track('nuclide-outline-view-getoutline');
+        analytics.track('nuclide-outline-view-getoutline');
         return provider.getOutline(editor);
       },
       {},
@@ -142,7 +142,7 @@ class Activation {
   }
 
   _createOutlineViewPanelState(): OutlineViewPanelState {
-    track('nuclide-outline-view-show');
+    analytics.track('nuclide-outline-view-show');
     return new OutlineViewPanelState(createOutlines(this._editorService));
   }
 

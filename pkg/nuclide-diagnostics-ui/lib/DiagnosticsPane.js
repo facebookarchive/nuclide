@@ -12,10 +12,10 @@
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
 import type {Column} from 'nuclide-commons-ui/Table';
 
+import analytics from 'nuclide-commons-atom/analytics';
 import classnames from 'classnames';
 import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {track} from '../../nuclide-analytics';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
@@ -117,7 +117,7 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
     return;
   }
 
-  track('diagnostics-panel-goto-location');
+  analytics.track('diagnostics-panel-goto-location');
 
   const uri = rowData.filePath;
   // If initialLine is N, Atom will navigate to line N+1.

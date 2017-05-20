@@ -20,6 +20,12 @@ const KNOWN_ATOM_BUILTIN_PACKAGES = new Set([
   'electron',
 ]);
 
+const ATOM_IDE_PACKAGES = new Set([
+  'atom-ide-ui',
+  'nuclide-commons-atom',
+  'nuclide-commons-ui',
+]);
+
 module.exports = function(context) {
   const filename = context.getFilename();
   const dirname = path.dirname(filename);
@@ -36,13 +42,21 @@ module.exports = function(context) {
   // packageType: Atom & testRunner: apm
   // packageType: Node & testRunner: apm
   // packageType: Node & testRunner: npm
+  const isPureNode = ownPackage.nuclide && ownPackage.nuclide.testRunner === 'npm';
 
   function getCrossImportPackage(id) {
     // npm packages can't require Atom builtins.
     if (KNOWN_ATOM_BUILTIN_PACKAGES.has(id)) {
-      if (ownPackage.nuclide &&
-          ownPackage.nuclide.testRunner === 'npm') {
+      if (isPureNode) {
         return {type: 'NO_NPM_TO_ATOM_BUILTIN', name: id};
+      } else {
+        return null;
+      }
+    }
+
+    if (ATOM_IDE_PACKAGES.has(id)) {
+      if (isPureNode) {
+        return {type: 'NO_NPM_TO_ATOM_UI_PACKAGES', name: id};
       } else {
         return null;
       }
@@ -92,6 +106,8 @@ module.exports = function(context) {
         ? 'apm package "{{name}}" is not {{action}} from an npm package.' :
       result.type === 'NO_NPM_TO_ATOM_BUILTIN'
         ? 'Atom builtin package "{{name}}" is not {{action}} from an npm package.' :
+      result.type === 'NO_NPM_TO_ATOM_UI_PACKAGES'
+        ? 'Nuclide/Atom UI package "{{name}}" is not {{action}} from an npm package.' :
       null;
     context.report({
       node,

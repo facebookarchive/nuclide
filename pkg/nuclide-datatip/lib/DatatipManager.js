@@ -22,9 +22,9 @@ import type {
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import analytics from 'nuclide-commons-atom/analytics';
 import debounce from 'nuclide-commons/debounce';
 import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
-import {track, TimingTracker} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
 import {asyncFind} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -127,7 +127,7 @@ async function getTopDatatipAndProvider<T1: AnyDatatipProvider>(
     datatip: Datatip,
   }> => {
     const name = getProviderName(provider);
-    const timingTracker = new TimingTracker(name + '.datatip');
+    const timingTracker = new analytics.TimingTracker(name + '.datatip');
     try {
       const datatip = await invoke(provider);
       if (!datatip) {
@@ -530,7 +530,7 @@ class DatatipManagerForEditor {
     }
 
     const range = datatipsAndProviders[0].datatip.range;
-    track('datatip-popup', {
+    analytics.track('datatip-popup', {
       scope: this._editor.getGrammar().scopeName,
       providerName: getProviderName(datatipsAndProviders[0].provider),
       rangeStartRow: String(range.start.row),
@@ -647,7 +647,7 @@ class DatatipManagerForEditor {
   }
 
   _handlePinClicked = (editor: TextEditor, datatip: Datatip) => {
-    track('datatip-pinned-open');
+    analytics.track('datatip-pinned-open');
     const startTime = performanceNow();
     this._setState(DatatipState.HIDDEN);
     this._pinnedDatatips.add(
@@ -656,7 +656,7 @@ class DatatipManagerForEditor {
         editor,
         /* onDispose */ pinnedDatatip => {
           this._pinnedDatatips.delete(pinnedDatatip);
-          track('datatip-pinned-close', {
+          analytics.track('datatip-pinned-close', {
             duration: performanceNow() - startTime,
           });
         },

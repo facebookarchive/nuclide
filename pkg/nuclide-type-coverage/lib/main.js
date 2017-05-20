@@ -23,8 +23,8 @@ import {Disposable} from 'atom';
 import invariant from 'assert';
 import {Observable, Subject} from 'rxjs';
 
+import analytics from 'nuclide-commons-atom/analytics';
 import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
-import {track} from '../../nuclide-analytics';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {StatusBarTile} from './StatusBarTile';
@@ -73,7 +73,9 @@ class Activation {
     );
 
     this._disposables.add(
-      this._toggleEvents.subscribe(() => track('nuclide-type-coverage:toggle')),
+      this._toggleEvents.subscribe(() =>
+        analytics.track('nuclide-type-coverage:toggle'),
+      ),
     );
   }
 

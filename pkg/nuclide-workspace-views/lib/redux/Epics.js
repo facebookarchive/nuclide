@@ -23,7 +23,7 @@ import {
   LocalStorageJsonTable,
 } from '../../../commons-atom/LocalStorageJsonTable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {trackEvent} from '../../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 import * as Actions from './Actions';
 import getNewLocation from '../getNewLocation';
 import invariant from 'assert';
@@ -119,7 +119,7 @@ export function trackEpic(
       invariant(action.type === Actions.TRACK);
       return action.payload.event;
     })
-    .do(trackEvent)
+    .do(analytics.trackEvent)
     .ignoreElements();
 }
 

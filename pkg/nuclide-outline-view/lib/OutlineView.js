@@ -17,7 +17,7 @@ import React from 'react';
 import invariant from 'assert';
 import classnames from 'classnames';
 
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
 import {getLogger} from '../../nuclide-logging';
 import {
@@ -156,7 +156,7 @@ class OutlineTree extends React.PureComponent {
       if (pane == null) {
         return;
       }
-      track('nuclide-outline-view:go-to-location');
+      analytics.track('nuclide-outline-view:go-to-location');
       pane.activate();
       pane.activateItem(editor);
       goToLocationInEditor(
