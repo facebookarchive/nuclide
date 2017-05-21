@@ -348,7 +348,9 @@ export function filterMultiRootFileChanges(
     const filteredFiles = mapFilter(fileChanges, filePath =>
       filePath.startsWith(root),
     );
-    filteredFileChanges.set(root, filteredFiles);
+    if (filteredFiles.size !== 0) {
+      filteredFileChanges.set(root, filteredFiles);
+    }
   }
 
   return filteredFileChanges;

@@ -77,7 +77,6 @@ type State = {
   openFilesUris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
   activeUri: ?NuclideUri,
-  hasUncommittedChanges: boolean,
   hidden: boolean,
   uncommittedFileChanges: Map<
     NuclideUri,
@@ -113,7 +112,6 @@ export default class FileTreeSidebarComponent extends React.Component {
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,
-      hasUncommittedChanges: false,
       uncommittedFileChanges: new Map(),
       isCalculatingChanges: false,
       areStackChangesEnabled: false,
@@ -280,7 +278,7 @@ export default class FileTreeSidebarComponent extends React.Component {
 
     let uncommittedChangesSection;
     let uncommittedChangesHeadline;
-    if (this.state.showUncommittedChanges && this.state.hasUncommittedChanges) {
+    if (this.state.showUncommittedChanges) {
       const uncommittedChangesList = (
         <div className="nuclide-file-tree-sidebar-uncommitted-changes">
           <MultiRootChangedFilesView
@@ -435,19 +433,11 @@ All the changes across your entire stacked diff.
       this.forceUpdate();
     }
 
-    // Since we maintain the list of active directories for sidebar, the only way
-    // to know if the section is empty or not is by checking each directory entry
-    // and checking if they are empty. If all are empty hide the section.
     const uncommittedFileChanges = this._store.getFileChanges();
-    const hasUncommittedChanges = Array.from(
-      uncommittedFileChanges.values(),
-    ).some(fileChanges => fileChanges.size > 0);
-
     const isCalculatingChanges = this._store.getIsCalculatingChanges();
 
     this.setState({
       uncommittedFileChanges,
-      hasUncommittedChanges,
       isCalculatingChanges,
     });
   }

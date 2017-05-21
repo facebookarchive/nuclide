@@ -27,6 +27,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ChangedFilesList from './ChangedFilesList';
+import {TreeList, TreeItem} from './Tree';
 
 type Props = {
   // Used to identify which surface (e.g. file tree vs SCM side bar) was used to trigger an action.
@@ -346,7 +347,11 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       selectedFile,
     } = this.props;
     if (fileStatusesByRoot.size === 0) {
-      return <div>No changes</div>;
+      return (
+        <TreeList showArrows={true}><TreeItem>No changes</TreeItem></TreeList>
+      );
+      // The 'showArrows' is so CSS styling gives this the same indent as
+      // real changes do (which themselves have showArrows=true).
     }
     const shouldShowFolderName = fileStatusesByRoot.size > 1;
     return (
