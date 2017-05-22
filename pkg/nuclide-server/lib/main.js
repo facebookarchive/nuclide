@@ -9,7 +9,7 @@
  * @format
  */
 
-import fs from 'fs';
+import fsPromise from '../../commons-node/fsPromise';
 import {
   flushLogsAndAbort,
   flushLogsAndExit,
@@ -32,6 +32,23 @@ export type AgentOptions = {
   family?: 4 | 6,
 };
 
+async function getServerCredentials(args) {
+  const {key, cert, ca} = args;
+  if (key && cert && ca) {
+    const [
+      serverKey,
+      serverCertificate,
+      certificateAuthorityCertificate,
+    ] = await Promise.all([
+      fsPromise.readFile(key),
+      fsPromise.readFile(cert),
+      fsPromise.readFile(ca),
+    ]);
+    return {serverKey, serverCertificate, certificateAuthorityCertificate};
+  }
+  return null;
+}
+
 async function main(args) {
   const serverStartTimer = startTracking('nuclide-server:start');
   process.on('SIGHUP', () => {});
@@ -46,18 +63,15 @@ async function main(args) {
         flushLogsAndExit(0);
       }, expirationDays * 24 * 60 * 60 * 1000);
     }
-    let {key, cert, ca} = args;
-    if (key && cert && ca) {
-      key = fs.readFileSync(key);
-      cert = fs.readFileSync(cert);
-      ca = fs.readFileSync(ca);
-    }
+    const [serverCredentials] = await Promise.all([
+      getServerCredentials(args),
+      // Ensure logging is configured.
+      initialUpdateConfig(),
+    ]);
     const server = new NuclideServer(
       {
         port,
-        serverKey: key,
-        serverCertificate: cert,
-        certificateAuthorityCertificate: ca,
+        ...serverCredentials,
         trackEventLoop: true,
       },
       servicesConfig,
@@ -68,7 +82,7 @@ async function main(args) {
     logger.info(`Using node ${process.version}.`);
     logger.info(`Server ready time: ${process.uptime() * 1000}ms`);
   } catch (e) {
-    // Ensure logging is configured.
+    // In case the exception occurred before logging initialization finished.
     await initialUpdateConfig();
     await serverStartTimer.onError(e);
     logger.fatal(e);
