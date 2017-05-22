@@ -1,5 +1,14 @@
 # Nuclide Changelog
 
+## v0.229.0
+
+### GENERAL
+
+* Fixed Nuclide reporting "arc build" succeeding even if it failed
+* Fixed issue where Nuclide would offer a Terminal for unsupported paths on Windows and then generate an error
+* "Create Paste" button above console will now include REPL commands and responses from a debug session
+* toolbar@1.1.0 is now installed by default.
+
 ## v0.228.0
 
 **Hotfix from 0.226.0**
