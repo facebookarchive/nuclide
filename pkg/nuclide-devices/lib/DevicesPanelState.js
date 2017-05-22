@@ -18,7 +18,7 @@ import {RootPanel} from './ui/RootPanel';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
-import {getDeviceListProviders, getDeviceProcessesProviders} from './providers';
+import {getProviders} from './providers';
 import shallowEqual from 'shallowequal';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
@@ -41,7 +41,7 @@ export class DevicesPanelState {
         if (state.deviceType === null) {
           return Observable.empty();
         }
-        for (const fetcher of getDeviceListProviders()) {
+        for (const fetcher of getProviders().deviceList) {
           if (fetcher.getType() === state.deviceType) {
             return fetcher
               .observe(state.host)
@@ -61,7 +61,7 @@ export class DevicesPanelState {
         if (state.device === null) {
           return Observable.empty();
         }
-        const providers = Array.from(getDeviceProcessesProviders()).filter(
+        const providers = Array.from(getProviders().deviceProcesses).filter(
           provider => provider.getType() === state.deviceType,
         );
         if (providers[0] != null) {

@@ -13,11 +13,7 @@ import {Observable} from 'rxjs';
 import * as Actions from './Actions';
 import invariant from 'invariant';
 import {arrayCompact} from 'nuclide-commons/collection';
-import {
-  getDeviceInfoProviders,
-  getDeviceProcessesProviders,
-  getDeviceTaskProviders,
-} from '../providers';
+import {getProviders} from '../providers';
 import {DeviceTask} from '../DeviceTask';
 import {createCache} from '../Cache';
 
@@ -52,7 +48,7 @@ async function getInfoTables(
   if (device == null) {
     return new Map();
   }
-  const sortedProviders = Array.from(getDeviceInfoProviders())
+  const sortedProviders = Array.from(getProviders().deviceInfo)
     .filter(provider => provider.getType() === state.deviceType)
     .sort((a, b) => {
       const pa = a.getPriority === undefined ? -1 : a.getPriority();
@@ -82,7 +78,7 @@ async function getProcessKiller(state: AppState): Promise<?ProcessKiller> {
   if (device == null) {
     return null;
   }
-  const providers = Array.from(getDeviceProcessesProviders()).filter(
+  const providers = Array.from(getProviders().deviceProcesses).filter(
     provider => provider.getType() === state.deviceType,
   );
   if (providers[0] != null) {
@@ -100,7 +96,7 @@ async function getDeviceTasks(state: AppState): Promise<DeviceTask[]> {
     return [];
   }
   const actions = await Promise.all(
-    Array.from(getDeviceTaskProviders())
+    Array.from(getProviders().deviceTask)
       .filter(provider => provider.getType() === state.deviceType)
       .map(async provider => {
         try {

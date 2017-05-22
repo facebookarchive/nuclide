@@ -16,23 +16,20 @@ import {
   DeviceTaskProvider,
 } from './types';
 
-const deviceListProviders: Set<DeviceListProvider> = new Set();
-const deviceInfoProviders: Set<DeviceInfoProvider> = new Set();
-const deviceTaskProviders: Set<DeviceTaskProvider> = new Set();
-const deviceProcessesProviders: Set<DeviceProcessesProvider> = new Set();
+type DeviceProviders = {
+  deviceList: Set<DeviceListProvider>,
+  deviceInfo: Set<DeviceInfoProvider>,
+  deviceTask: Set<DeviceTaskProvider>,
+  deviceProcesses: Set<DeviceProcessesProvider>,
+};
 
-export function getDeviceListProviders(): Set<DeviceListProvider> {
-  return deviceListProviders;
-}
+const providers: DeviceProviders = {
+  deviceList: new Set(),
+  deviceInfo: new Set(),
+  deviceTask: new Set(),
+  deviceProcesses: new Set(),
+};
 
-export function getDeviceInfoProviders(): Set<DeviceInfoProvider> {
-  return deviceInfoProviders;
-}
-
-export function getDeviceTaskProviders(): Set<DeviceTaskProvider> {
-  return deviceTaskProviders;
-}
-
-export function getDeviceProcessesProviders(): Set<DeviceProcessesProvider> {
-  return deviceProcessesProviders;
+export function getProviders(): DeviceProviders {
+  return providers;
 }

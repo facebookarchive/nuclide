@@ -26,12 +26,7 @@ import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
-import {
-  getDeviceInfoProviders,
-  getDeviceProcessesProviders,
-  getDeviceListProviders,
-  getDeviceTaskProviders,
-} from './providers';
+import {getProviders} from './providers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {
@@ -92,7 +87,7 @@ class Activation {
   _refreshDeviceTypes(): void {
     this._store.dispatch(
       Actions.setDeviceTypes(
-        Array.from(getDeviceListProviders()).map(p => p.getType()),
+        Array.from(getProviders().deviceList).map(p => p.getType()),
       ),
     );
   }
@@ -125,17 +120,17 @@ class Activation {
     });
     return {
       registerListProvider: this._createProviderRegistration(
-        getDeviceListProviders(),
+        getProviders().deviceList,
         () => this._refreshDeviceTypes(),
       ),
       registerInfoProvider: this._createProviderRegistration(
-        getDeviceInfoProviders(),
+        getProviders().deviceInfo,
       ),
       registerProcessesProvider: this._createProviderRegistration(
-        getDeviceProcessesProviders(),
+        getProviders().deviceProcesses,
       ),
       registerTaskProvider: this._createProviderRegistration(
-        getDeviceTaskProviders(),
+        getProviders().deviceTask,
       ),
     };
   }
