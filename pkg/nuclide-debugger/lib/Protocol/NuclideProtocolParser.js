@@ -350,7 +350,9 @@ InspectorBackendClass._generateCommands = function(schema) {
  */
 InspectorBackendClass.Connection = function()
 {
-    this._lastMessageId = 1;
+    // Change to a big range to not collide with
+    // chrome channel range.
+    this._lastMessageId = 50000;
     this._pendingResponsesCount = 0;
     this._agents = {};
     this._dispatchers = {};
