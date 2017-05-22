@@ -157,7 +157,9 @@ export function setActiveTaskRunnerEpic(
           Actions.setToolbarVisibility(true, true),
         );
       } else {
-        visibilityAction = Observable.empty();
+        visibilityAction = Observable.of(
+          Actions.setToolbarVisibility(false, false),
+        );
       }
       taskRunner = activeTaskRunner;
     }
@@ -230,13 +232,35 @@ export function toggleToolbarVisibilityEpic(
 ): Observable<Action> {
   return actions
     .ofType(Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY)
-    .map(action => {
+    .flatMap(action => {
       invariant(action.type === Actions.REQUEST_TOGGLE_TOOLBAR_VISIBILITY);
       const state = store.getState();
+      const {activeTaskRunner, projectRoot} = state;
+      const currentlyVisible = state.visible;
       const {visible, taskRunner} = action.payload;
-      return state.activeTaskRunner == null
-        ? Actions.setToolbarVisibility(false, true)
-        : Actions.toggleToolbarVisibility(visible, taskRunner);
+
+      if (visible === true || (visible === null && !currentlyVisible)) {
+        if (projectRoot == null) {
+          atom.notifications.addError(
+            'Add a project to use the task runner toolbar',
+            {
+              dismissable: true,
+            },
+          );
+          return Observable.empty();
+        } else if (activeTaskRunner == null) {
+          atom.notifications.addError(
+            'No task runner available for the current working root selected in file tree',
+            {
+              dismissable: true,
+            },
+          );
+          return Observable.of(Actions.setToolbarVisibility(false, true));
+        }
+      }
+      return Observable.of(
+        Actions.toggleToolbarVisibility(visible, taskRunner),
+      );
     });
 }
 
@@ -253,29 +277,17 @@ export function updatePreferredVisibilityEpic(
       const {projectRoot, activeTaskRunner} = store.getState();
 
       // Only act if responding to an explicit user action
-      if (updateUserPreferences) {
-        if (projectRoot == null) {
-          atom.notifications.addError(
-            'Add a project to use the task runner toolbar',
-            {
-              dismissable: true,
-            },
-          );
-        } else if (activeTaskRunner == null) {
-          atom.notifications.addError(
-            'No task runner available for the current working root selected in file tree',
-            {
-              dismissable: true,
-            },
-          );
-        } else {
-          // The user explicitly changed the visibility, remember this state
-          const {preferencesForWorkingRoots} = options;
-          preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
-            taskRunnerId: activeTaskRunner.id,
-            visible,
-          });
-        }
+      if (
+        updateUserPreferences &&
+        projectRoot != null &&
+        activeTaskRunner != null
+      ) {
+        // The user explicitly changed the visibility, remember this state
+        const {preferencesForWorkingRoots} = options;
+        preferencesForWorkingRoots.setItem(projectRoot.getPath(), {
+          taskRunnerId: activeTaskRunner.id,
+          visible,
+        });
       }
     })
     .ignoreElements();
