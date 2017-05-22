@@ -29,6 +29,9 @@ import type {
 import type {
   ObservableDiagnosticProvider,
 } from '../../nuclide-diagnostics-common';
+import type {
+  NuclideJavaDebuggerProvider,
+} from '../../fb-debugger-java/lib/types';
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -90,6 +93,7 @@ export class BuckBuildSystem {
     taskSettings: TaskSettings,
     isDebug: boolean,
     udid: ?string,
+    javaDebuggerProvider: ?NuclideJavaDebuggerProvider,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run a buck command.
     this._diagnosticInvalidations.next({scope: 'all'});
@@ -171,7 +175,11 @@ export class BuckBuildSystem {
                 ? getDiagnosticEvents(mergedEvents, buckRoot)
                 : Observable.empty(),
               isDebug && subcommand === 'install'
-                ? getDeployInstallEvents(processMessages, buckRoot)
+                ? getDeployInstallEvents(
+                    processMessages,
+                    buckRoot,
+                    javaDebuggerProvider,
+                  )
                 : Observable.empty(),
               isDebug && subcommand === 'build'
                 ? getDeployBuildEvents(

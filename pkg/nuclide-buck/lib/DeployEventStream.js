@@ -14,6 +14,9 @@ import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type RemoteControlService
   from '../../nuclide-debugger/lib/RemoteControlService';
 import type {BuckEvent} from './BuckEventStream';
+import type {
+  NuclideJavaDebuggerProvider,
+} from '../../fb-debugger-java/lib/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -110,7 +113,8 @@ async function debugPidWithLLDB(pid: number, buckRoot: string) {
 
 async function debugAndroidActivity(
   buckProjectPath: string,
-  androidActivity: string,
+  androidPackage: string,
+  javaDebugger: ?NuclideJavaDebuggerProvider,
 ) {
   const service = getServiceByNuclideUri(
     'JavaDebuggerService',
@@ -121,26 +125,19 @@ async function debugAndroidActivity(
   }
 
   const debuggerService = await getDebuggerService();
-  try {
-    track('fb-java-debugger-start', {
-      startType: 'buck-toolbar',
-      target: buckProjectPath,
-      targetType: 'android',
-      targetClass: androidActivity,
-    });
+  track('fb-java-debugger-start', {
+    startType: 'buck-toolbar',
+    target: buckProjectPath,
+    targetType: 'android',
+    targetClass: androidPackage,
+  });
 
-    /* eslint-disable nuclide-internal/no-cross-atom-imports */
-    // $FlowFB
-    const procInfo = require('../../fb-debugger-java/lib/AdbProcessInfo');
-    debuggerService.startDebugging(
-      new procInfo.AdbProcessInfo(buckProjectPath, null, null, androidActivity),
-    );
-    /* eslint-enable nuclide-internal/no-cross-atom-imports */
-  } catch (e) {
-    track('fb-java-debugger-unavailable', {
-      error: e.toString(),
+  if (javaDebugger != null) {
+    const debugInfo = javaDebugger.createAndroidDebugInfo({
+      targetUri: buckProjectPath,
+      packageName: androidPackage,
     });
-    throw new Error('Java debugger service is not available.');
+    debuggerService.startDebugging(debugInfo);
   }
 }
 
@@ -211,6 +208,7 @@ export function getDeployBuildEvents(
 export function getDeployInstallEvents(
   processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
   buckRoot: string,
+  javaDebugger: ?NuclideJavaDebuggerProvider,
 ): Observable<BuckEvent> {
   let targetType = LLDB_TARGET_TYPE;
   return compact(
@@ -246,7 +244,11 @@ export function getDeployInstallEvents(
               });
           } else if (targetInfo.targetType === ANDROID_TARGET_TYPE) {
             return Observable.fromPromise(
-              debugAndroidActivity(buckRoot, targetInfo.targetApp),
+              debugAndroidActivity(
+                buckRoot,
+                targetInfo.targetApp,
+                javaDebugger,
+              ),
             )
               .ignoreElements()
               .startWith({
