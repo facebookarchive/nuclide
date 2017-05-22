@@ -34,18 +34,12 @@ import {
 } from './providers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import type {DeviceTaskProvider} from './types';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
-import type {
-  Store,
-  DeviceListProvider,
-  DeviceInfoProvider,
-  DeviceProcessesProvider,
-  DevicePanelServiceApi,
-} from './types';
+import type {Store, DevicePanelServiceApi} from './types';
 
+let activation = null;
 class Activation {
   _disposables: UniversalDisposable;
   _store: Store;
@@ -103,59 +97,46 @@ class Activation {
     );
   }
 
+  _createProviderRegistration<T>(
+    providers: Set<T>,
+    onDispose?: () => void,
+  ): (provider: T) => Disposable {
+    return (provider: T) => {
+      invariant(
+        activation != null,
+        'Device panel service API used after deactivation',
+      );
+      providers.add(provider);
+      if (onDispose != null) {
+        onDispose();
+      }
+      return new Disposable(() => {
+        if (activation != null) {
+          providers.delete(provider);
+        }
+      });
+    };
+  }
+
   provideDevicePanelServiceApi(): DevicePanelServiceApi {
-    let pkg = this;
+    activation = this;
     this._disposables.add(() => {
-      pkg = null;
+      activation = null;
     });
-    const expiredPackageMessage =
-      'Device panel service API used after deactivation';
     return {
-      registerListProvider: (provider: DeviceListProvider) => {
-        invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceListProviders();
-        providers.add(provider);
-        this._refreshDeviceTypes();
-        return new Disposable(() => {
-          if (pkg != null) {
-            providers.delete(provider);
-            this._refreshDeviceTypes();
-          }
-        });
-      },
-      registerInfoProvider: (provider: DeviceInfoProvider) => {
-        invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceInfoProviders();
-        providers.add(provider);
-        return new Disposable(() => {
-          if (pkg != null) {
-            providers.delete(provider);
-          }
-        });
-      },
-      registerProcessesProvider: (provider: DeviceProcessesProvider) => {
-        invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceProcessesProviders();
-        providers.add(provider);
-        return new Disposable(() => {
-          if (pkg != null) {
-            providers.delete(provider);
-          }
-        });
-      },
-      registerTaskProvider: (provider: DeviceTaskProvider) => {
-        invariant(pkg != null, expiredPackageMessage);
-        const providers = getDeviceTaskProviders();
-        providers.add(provider);
-        return new Disposable(() => {
-          if (pkg != null) {
-            if (typeof provider.dispose === 'function') {
-              provider.dispose();
-            }
-            providers.delete(provider);
-          }
-        });
-      },
+      registerListProvider: this._createProviderRegistration(
+        getDeviceListProviders(),
+        () => this._refreshDeviceTypes(),
+      ),
+      registerInfoProvider: this._createProviderRegistration(
+        getDeviceInfoProviders(),
+      ),
+      registerProcessesProvider: this._createProviderRegistration(
+        getDeviceProcessesProviders(),
+      ),
+      registerTaskProvider: this._createProviderRegistration(
+        getDeviceTaskProviders(),
+      ),
     };
   }
 }
