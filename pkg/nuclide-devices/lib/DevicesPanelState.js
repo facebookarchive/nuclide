@@ -81,7 +81,7 @@ export class DevicesPanelState {
   }
 
   getPreferredWidth(): number {
-    return 300;
+    return 400;
   }
 
   getURI(): string {

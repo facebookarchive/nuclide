@@ -28,10 +28,12 @@ export class InfoTable extends React.Component {
       {
         key: 'property',
         title: 'Property',
+        width: 0.4,
       },
       {
         key: 'value',
         title: 'Value',
+        width: 0.6,
       },
     ];
     const emptyComponent = () => <div className="padded">No information</div>;
