@@ -79,6 +79,8 @@ export class RootPanel extends React.Component {
             deviceTasks={this.props.deviceTasks}
             goToRootPanel={this._goToRootPanel}
             startFetchingProcesses={this.props.startFetchingProcesses}
+            host={this.props.host}
+            device={this.props.device}
           />
         </div>
       );

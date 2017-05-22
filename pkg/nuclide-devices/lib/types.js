@@ -78,6 +78,7 @@ export type Process = {
   name: string,
   cpuUsage: ?number,
   memUsage: ?number,
+  isJava: boolean,
 };
 
 export type ProcessKiller = (id: string) => Promise<void>;

@@ -30,4 +30,5 @@ export type Process = {
   name: string,
   cpuUsage: ?number,
   memUsage: ?number,
+  isJava: boolean,
 };

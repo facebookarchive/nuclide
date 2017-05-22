@@ -9,7 +9,8 @@
  * @format
  */
 
-import type {Process, ProcessKiller} from '../types';
+import type {Device, Process, ProcessKiller} from '../types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import {Subscription} from 'rxjs';
@@ -17,11 +18,16 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import {getServiceByNuclideUri} from '../../../nuclide-remote-connection';
+import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
+import {getJavaDebuggerApi} from '../JavaDebuggerApi';
 
 type Props = {
   startFetchingProcesses: () => Subscription,
   killProcess: ?ProcessKiller,
   processes: Process[],
+  host: NuclideUri,
+  device: ?Device,
 };
 
 type State = {
@@ -87,7 +93,7 @@ export class ProcessTable extends React.Component {
       return processes;
     }
     // compare numerically pid, cpu and mem
-    const compare: any = ['cpuUsage', 'memUsage', 'pid'].includes(
+    const compare: any = ['cpuUsage', 'memUsage', 'pid', 'debug'].includes(
       sortedColumnName,
     )
       ? (a: ?number, b: ?number, isAsc: boolean): number => {
@@ -123,6 +129,7 @@ export class ProcessTable extends React.Component {
         name: item.name,
         cpuUsage: this._formatCpuUsage(item.cpuUsage),
         memUsage: this._formatMemUsage(item.memUsage),
+        debug: this._getDebugButton(item),
       },
     }));
     const columns = [
@@ -134,12 +141,12 @@ export class ProcessTable extends React.Component {
       {
         key: 'name',
         title: 'Name',
-        width: 0.38,
+        width: 0.31,
       },
       {
         key: 'user',
         title: 'User',
-        width: 0.15,
+        width: 0.13,
       },
       {
         key: 'cpuUsage',
@@ -150,6 +157,11 @@ export class ProcessTable extends React.Component {
         key: 'memUsage',
         title: 'Mem',
         width: 0.15,
+      },
+      {
+        key: 'debug',
+        title: 'Debug',
+        width: 0.08,
       },
     ];
     const emptyComponent = () => <div className="padded">No information</div>;
@@ -181,6 +193,50 @@ export class ProcessTable extends React.Component {
     this.setState({
       filterText: text,
     });
+  }
+
+  _getDebugButton(item: Process): ?React.Element<any> {
+    if (item.isJava) {
+      return (
+        <Icon
+          className="nuclide-device-panel-debug-button"
+          icon="nuclicon-debugger"
+          title="Attach Java debugger"
+          onClick={() => this._debugJavaProcess(item.pid)}
+        />
+      );
+    }
+
+    return null;
+  }
+
+  async _debugJavaProcess(pid: number): Promise<void> {
+    const service = getServiceByNuclideUri(
+      'JavaDebuggerService',
+      this.props.host,
+    );
+    if (service == null) {
+      throw new Error('Java debugger service is not available.');
+    }
+
+    const debuggerService = await consumeFirstProvider(
+      'nuclide-debugger.remote',
+    );
+    const deviceName = this.props.device != null ? this.props.device.name : '';
+    const javaDebugger = getJavaDebuggerApi();
+    if (javaDebugger != null) {
+      const debugInfo = javaDebugger.createAndroidDebugInfo({
+        targetUri: this.props.host,
+        packageName: '',
+        device: deviceName,
+        pid,
+      });
+      debuggerService.startDebugging(debugInfo);
+    } else {
+      atom.notifications.addWarning(
+        'The Java debugger service is not available.',
+      );
+    }
   }
 
   _getKillButton(packageName: string): ?React.Element<any> {
