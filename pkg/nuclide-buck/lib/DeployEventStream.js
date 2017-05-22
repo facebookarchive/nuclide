@@ -16,6 +16,7 @@ import type RemoteControlService
 import type {BuckEvent} from './BuckEventStream';
 import type {
   NuclideJavaDebuggerProvider,
+  // $FlowFB
 } from '../../fb-debugger-java/lib/types';
 
 import invariant from 'assert';

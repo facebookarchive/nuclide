@@ -31,6 +31,7 @@ import type {
 } from '../../nuclide-diagnostics-common';
 import type {
   NuclideJavaDebuggerProvider,
+  // $FlowFB
 } from '../../fb-debugger-java/lib/types';
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
