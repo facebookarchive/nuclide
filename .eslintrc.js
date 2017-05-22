@@ -343,6 +343,7 @@ module.exports = {
     'nuclide-internal/consistent-import-name': 1,
     'nuclide-internal/import-type-style': 1,
     'nuclide-internal/license-header': 1,
+    'nuclide-internal/modules-dependencies': 1,
     'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
