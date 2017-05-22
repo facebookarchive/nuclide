@@ -38,6 +38,7 @@ import {track} from '../../nuclide-analytics';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 const ANDROID_ACTIVITY_REGEX = /Starting activity (.*)\/(.*)\.\.\./;
+const ANDROID_DEVICE_REGEX = /Installing apk on ([^ ]+).*/;
 const LLDB_TARGET_TYPE = 'LLDB';
 const ANDROID_TARGET_TYPE = 'android';
 
@@ -114,6 +115,7 @@ async function debugPidWithLLDB(pid: number, buckRoot: string) {
 async function debugAndroidActivity(
   buckProjectPath: string,
   androidPackage: string,
+  deviceName: ?string,
   javaDebugger: ?NuclideJavaDebuggerProvider,
 ) {
   const service = getServiceByNuclideUri(
@@ -136,6 +138,7 @@ async function debugAndroidActivity(
     const debugInfo = javaDebugger.createAndroidDebugInfo({
       targetUri: buckProjectPath,
       packageName: androidPackage,
+      device: deviceName,
     });
     debuggerService.startDebugging(debugInfo);
   }
@@ -211,9 +214,15 @@ export function getDeployInstallEvents(
   javaDebugger: ?NuclideJavaDebuggerProvider,
 ): Observable<BuckEvent> {
   let targetType = LLDB_TARGET_TYPE;
+  let deviceName = null;
   return compact(
     processStream.map(message => {
       if (message.kind === 'stdout' || message.kind === 'stderr') {
+        const deviceMatch = message.data.match(ANDROID_DEVICE_REGEX);
+        if (deviceMatch != null && deviceMatch.length > 0) {
+          deviceName = deviceMatch[1];
+        }
+
         const activity = message.data.match(ANDROID_ACTIVITY_REGEX);
         if (activity != null) {
           targetType = ANDROID_TARGET_TYPE;
@@ -247,6 +256,7 @@ export function getDeployInstallEvents(
               debugAndroidActivity(
                 buckRoot,
                 targetInfo.targetApp,
+                deviceName,
                 javaDebugger,
               ),
             )
