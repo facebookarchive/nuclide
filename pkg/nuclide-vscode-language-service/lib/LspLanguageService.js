@@ -88,6 +88,7 @@ import {
   FileEventKind,
 } from '../../nuclide-open-files-rpc';
 import * as rpc from 'vscode-jsonrpc';
+import url from 'url';
 import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
@@ -296,6 +297,7 @@ export class LspLanguageService {
 
       jsonRpcConnection.listen();
 
+      // TODO: (asiandrummer, ljw) `rootPath` should be a file URI (`file://`).
       const params: InitializeParams = {
         initializationOptions: {},
         processId: process.pid,
@@ -718,6 +720,7 @@ export class LspLanguageService {
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
+    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri: fileEvent.fileVersion.filePath,
@@ -734,6 +737,7 @@ export class LspLanguageService {
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
+    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidCloseTextDocumentParams = {
       textDocument: {
         uri: fileEvent.fileVersion.filePath,
@@ -764,6 +768,7 @@ export class LspLanguageService {
         invariant(false); // unreachable
     }
 
+    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidChangeTextDocumentParams = {
       textDocument: {
         uri: fileEvent.fileVersion.filePath,
@@ -784,6 +789,7 @@ export class LspLanguageService {
     // we reach state 'Running'.
 
     // First some helper functions to map LSP into Nuclide data structures...
+    // TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
     const convertOne = (
       filePath: NuclideUri,
       diagnostic: Diagnostic,
@@ -802,9 +808,10 @@ export class LspLanguageService {
     const convert = (
       params: PublishDiagnosticsParams,
     ): FileDiagnosticUpdate => {
+      const filePath = this._convertLspUriToNuclideUri(params.uri);
       return {
-        filePath: params.uri,
-        messages: params.diagnostics.map(d => convertOne(params.uri, d)),
+        filePath,
+        messages: params.diagnostics.map(d => convertOne(filePath, d)),
       };
     };
 
@@ -1316,6 +1323,39 @@ export class LspLanguageService {
     return Promise.resolve(false);
   }
 
+  // TODO: (asiandrummer) LSP implementations should honor file URI protocol.
+  // For now, check if the URI starts with the scheme, and strip it out
+  // manually.
+  // For cases where the parsed URI does not contain a correct URI protocol
+  // and/or a pathname (e.g: an empty string, or a non-file URI (nuclide:// or
+  // http:// with a webpage URL)), log an error and return the raw URI.
+  _convertLspUriToNuclideUri(uri: string): NuclideUri {
+    const urlObject = url.parse(uri);
+    // LSP should only send URI with `file:` protocol or without any protocol.
+    if (urlObject.protocol !== 'file:' && urlObject.protocol) {
+      this._logger.logError(
+        `Incorrect URI protocol ${urlObject.protocol} - using the raw URI instead.`,
+      );
+      return uri;
+    }
+
+    if (!urlObject.pathname) {
+      this._logger.logError(
+        'URI pathname does not exist - using the raw URI instead.',
+      );
+      return uri;
+    }
+
+    return urlObject.pathname;
+  }
+
+  // TODO: (asiandrummer) This function should use the converted URI from
+  // this._convertLspUriToNuclideUri function, but because the converted URI
+  // is being used to be compared with the URI from fileCache, it's a little
+  // more dangerous to switch to it than others.
+  // Since GraphQL language service is the only one with the different URI
+  // format, and it does not implement the `find references` feature yet,
+  // we can defer dealing with the URI conversion until then.
   locationToFindReference(location: Location): Reference {
     return {
       uri: location.uri,
@@ -1326,7 +1366,7 @@ export class LspLanguageService {
 
   locationToDefinition(location: Location): Definition {
     return {
-      path: location.uri,
+      path: this._convertLspUriToNuclideUri(location.uri),
       position: positionToPoint(location.range.start),
       language: 'Python', // TODO
       projectRoot: this._projectRoot,
@@ -1384,6 +1424,7 @@ class DerivedServerCapabilities {
   }
 }
 
+// TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
 export function toTextDocumentIdentifier(
   filePath: NuclideUri,
 ): TextDocumentIdentifier {
@@ -1431,6 +1472,7 @@ export function convertSeverity(severity?: number): DiagnosticMessageType {
   }
 }
 
+// TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
 export function createTextDocumentPositionParams(
   filePath: string,
   position: atom$Point,
@@ -1564,7 +1606,7 @@ export function convertSearchResult(info: SymbolInformation): SymbolResult {
     }
   }
   return {
-    path: info.location.uri,
+    path: this._convertLspUriToNuclideUri(info.location.uri),
     line: info.location.range.start.line,
     column: info.location.range.start.character,
     name: info.name,

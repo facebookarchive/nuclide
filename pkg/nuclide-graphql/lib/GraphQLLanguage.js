@@ -19,7 +19,10 @@ import type {
 import typeof * as GraphQLService
   from '../../nuclide-graphql-rpc/lib/GraphQLService';
 
-import {AtomLanguageService} from '../../nuclide-language-service';
+import {
+  AtomLanguageService,
+  getHostServices,
+} from '../../nuclide-language-service';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 
@@ -32,54 +35,66 @@ async function connectionToGraphQLService(
     GRAPHQL_SERVICE_NAME,
     connection,
   );
-  const fileNotifier = await getNotifierByConnection(connection);
+  const [fileNotifier, host] = await Promise.all([
+    getNotifierByConnection(connection),
+    getHostServices(),
+  ]);
+  const graphqlCommand = require.resolve(
+    'graphql-language-service/bin/graphql.js',
+  );
 
-  return graphqlService.initialize(fileNotifier);
+  return graphqlService.initializeLsp(
+    graphqlCommand,
+    ['server', '--method', 'stream'],
+    '.graphqlconfig',
+    ['.graphql'],
+    'INFO',
+    fileNotifier,
+    host,
+  );
 }
 
-const diagnosticsConfig = {
-  version: '0.1.0',
-  shouldRunOnTheFly: false,
-  analyticsEventName: 'graphql.run-diagnostics',
-};
+async function createLanguageService(): Promise<
+  AtomLanguageService<LanguageService>,
+> {
+  const diagnosticsConfig = {
+    version: '0.2.0',
+    analyticsEventName: 'graphql.observe-diagnostics',
+  };
 
-const definitionConfig = {
-  version: '0.0.0',
-  priority: 1,
-  definitionEventName: 'graphql.definition',
-  definitionByIdEventName: 'graphql.definition-by-id',
-};
+  const definitionConfig = {
+    version: '0.0.0',
+    priority: 1,
+    definitionEventName: 'graphql.definition',
+    definitionByIdEventName: 'graphql.definition-by-id',
+  };
 
-const outlineViewConfig = {
-  version: '0.0.0',
-  priority: 1,
-  analyticsEventName: 'graphql.outline',
-};
+  const autocompleteConfig = {
+    version: '2.0.0',
+    inclusionPriority: 1,
+    suggestionPriority: 3,
+    excludeLowerPriority: false,
+    analyticsEventName: 'graphql.getAutocompleteSuggestions',
+    disableForSelector: null,
+    autocompleteCacherConfig: null,
+    onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
+  };
 
-const autocompleteConfig = {
-  version: '2.0.0',
-  inclusionPriority: 1,
-  suggestionPriority: 3,
-  excludeLowerPriority: false,
-  analyticsEventName: 'graphql.getAutocompleteSuggestions',
-  disableForSelector: null,
-  autocompleteCacherConfig: null,
-  onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
-};
+  const atomConfig: AtomLanguageServiceConfig = {
+    name: 'GraphQL',
+    grammars: ['source.graphql'],
+    diagnostics: diagnosticsConfig,
+    definition: definitionConfig,
+    autocomplete: autocompleteConfig,
+  };
+  return new AtomLanguageService(connectionToGraphQLService, atomConfig);
+}
 
-const atomConfig: AtomLanguageServiceConfig = {
-  name: 'GraphQL',
-  grammars: ['source.graphql'],
-  diagnostics: diagnosticsConfig,
-  definition: definitionConfig,
-  outline: outlineViewConfig,
-  autocomplete: autocompleteConfig,
-};
-
-export const graphqlLanguageService: AtomLanguageService<
-  LanguageService,
-> = new AtomLanguageService(connectionToGraphQLService, atomConfig);
+export let graphqlLanguageService: Promise<
+  AtomLanguageService<LanguageService>,
+> = createLanguageService();
 
 export function resetGraphQLLanguageService(): void {
-  graphqlLanguageService.dispose();
+  graphqlLanguageService.then(value => value.dispose());
+  graphqlLanguageService = createLanguageService();
 }
