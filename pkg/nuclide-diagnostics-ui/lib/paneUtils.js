@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
-import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
+import type {MessageType} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   if (typeof diagnostic.filePath === 'string') {

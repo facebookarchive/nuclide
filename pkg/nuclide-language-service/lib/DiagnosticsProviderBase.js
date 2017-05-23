@@ -12,11 +12,11 @@
 import type {
   MessageInvalidationCallback,
   MessageUpdateCallback,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {TextEventDispatcher} from 'nuclide-commons-atom/text-event';

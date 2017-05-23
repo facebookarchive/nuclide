@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import DiagnosticsPane from './DiagnosticsPane';

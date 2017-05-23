@@ -9,15 +9,15 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
 import type {
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 import type {
   FileDiagnosticMessage,
   Trace,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';

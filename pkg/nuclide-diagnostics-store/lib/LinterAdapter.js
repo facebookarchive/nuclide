@@ -17,17 +17,17 @@ import type {
   LinterMessageV1,
   LinterMessageV2,
   LinterProvider,
-} from '../../nuclide-diagnostics-common';
+} from '..';
 import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
   FileDiagnosticMessage,
   ProjectDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from './rpc-types';
 
 import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
-import {observeTextEditorEvents} from '../../nuclide-diagnostics-common';
+import {observeTextEditorEvents} from 'nuclide-commons-atom/text-event';
 import {getLogger} from 'log4js';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

@@ -13,7 +13,7 @@ import type {
   FileDiagnosticMessage,
   Trace,
   Fix,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {

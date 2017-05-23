@@ -12,7 +12,7 @@
 import type {
   FileDiagnosticMessage,
   Trace,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';

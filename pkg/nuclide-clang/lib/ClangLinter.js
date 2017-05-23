@@ -10,7 +10,7 @@
  */
 
 import type {ClangCompileResult} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {LinterMessage} from '../../nuclide-diagnostics-common';
+import type {LinterMessage} from '../../nuclide-diagnostics-store';
 
 import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';

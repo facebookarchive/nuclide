@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {MessageType} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -29,7 +29,7 @@ import type {
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   AutocompleteResult,
 } from '../../nuclide-language-service/lib/LanguageService';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import type {LinterProvider} from '..';
 import {LinterAdapter} from './LinterAdapter';
 
 function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {

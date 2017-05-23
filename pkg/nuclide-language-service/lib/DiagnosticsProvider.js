@@ -13,12 +13,12 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 import type {
   FileDiagnosticUpdate,
   DiagnosticProviderUpdate,
   InvalidationMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 import type {CategoryLogger} from '../../nuclide-logging';
 import type {BusySignalProvider} from './AtomLanguageService';

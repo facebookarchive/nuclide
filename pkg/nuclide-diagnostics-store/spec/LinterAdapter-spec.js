@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import type {LinterProvider} from '..';
 
 import {Disposable, Range} from 'atom';
 import invariant from 'assert';

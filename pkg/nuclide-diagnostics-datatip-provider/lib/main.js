@@ -17,10 +17,10 @@ import type {
 import type {
   DiagnosticUpdater,
   FileMessageUpdate,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';

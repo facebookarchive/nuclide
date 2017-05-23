@@ -12,7 +12,7 @@
 import type {
   ObservableDiagnosticUpdater,
   DiagnosticMessage,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';

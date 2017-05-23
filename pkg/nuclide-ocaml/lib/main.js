@@ -10,7 +10,7 @@
  */
 
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import type {LinterProvider} from '../../nuclide-diagnostics-store';
 import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
 import type {
   TypeHintProvider as TypeHintProviderType,

@@ -25,10 +25,10 @@ import type {
 import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   ObservableDiagnosticProvider,
-} from '../../nuclide-diagnostics-common';
+} from '../../nuclide-diagnostics-store';
 import type {
   NuclideJavaDebuggerProvider,
   // $FlowFB

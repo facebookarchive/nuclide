@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {MessageType} from '../../nuclide-diagnostics-common/lib/rpc-types';
+import type {MessageType} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 function classifyCode(code: string): MessageType {
   if (/^(B9|C|E[35]|T400|T49)/.test(code)) {

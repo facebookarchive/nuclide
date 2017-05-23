@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LinterMessage} from '../../nuclide-diagnostics-common';
+import type {LinterMessage} from '../../nuclide-diagnostics-store';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getPythonServiceByNuclideUri} from '../../nuclide-remote-connection';

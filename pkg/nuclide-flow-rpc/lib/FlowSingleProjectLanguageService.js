@@ -21,7 +21,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   Definition,
   DefinitionQueryResult,

@@ -13,7 +13,7 @@ import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
   LinterMessageV2,
-} from '../../nuclide-diagnostics-common';
+} from '..';
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

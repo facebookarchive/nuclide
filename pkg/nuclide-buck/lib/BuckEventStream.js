@@ -13,7 +13,7 @@ import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
 import type {Level} from '../../commons-node/tasks';
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckBuildOutput, BuckSubcommand} from './types';
 

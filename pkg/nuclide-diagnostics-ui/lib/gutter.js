@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {FileMessageUpdate} from '../../nuclide-diagnostics-common';
+import type {FileMessageUpdate} from '../../nuclide-diagnostics-store';
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 

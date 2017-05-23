@@ -37,7 +37,7 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticUpdate,
   MessageType as DiagnosticMessageType,
-} from '../../nuclide-diagnostics-common/lib/rpc-types';
+} from '../../nuclide-diagnostics-store/lib/rpc-types';
 import type {
   AutocompleteResult,
   Completion,

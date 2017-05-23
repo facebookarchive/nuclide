@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-common';
+import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
 import type {Column} from 'nuclide-commons-ui/Table';
 
 import analytics from 'nuclide-commons-atom/analytics';
