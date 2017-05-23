@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Trace} from '../nuclide-diagnostics-store/lib/rpc-types';
+import type {Trace} from '../../nuclide-diagnostics-store/lib/rpc-types';
 
 import React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';

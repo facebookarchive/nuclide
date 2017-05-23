@@ -23,7 +23,6 @@ import {TabExamples} from '../../nuclide-ui/Tabs.example';
 import {RadioGroupExamples} from '../../nuclide-ui/RadioGroup.example';
 import {TextInputExamples} from 'nuclide-commons-ui/TextInputs.example';
 import {ToolbarExamples} from 'nuclide-commons-ui/Toolbar.example';
-import {DiagnosticsExamples} from '../../nuclide-ui/Diagnostics.example';
 import {BadgeExamples} from '../../nuclide-ui/Badge.example';
 import {HighlightExamples} from 'nuclide-commons-ui/Highlight.example';
 import {IconExamples} from 'nuclide-commons-ui/Icon.example';
@@ -57,7 +56,6 @@ const playgroundComponents = [
   RadioGroupExamples,
   TextInputExamples,
   ToolbarExamples,
-  DiagnosticsExamples,
   BadgeExamples,
   HighlightExamples,
   IconExamples,

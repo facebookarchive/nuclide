@@ -20,7 +20,7 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {getProjectRelativePathOfDiagnostic} from './paneUtils';
-import {DiagnosticsMessageNoHeader} from '../../nuclide-ui/DiagnosticsMessage';
+import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 
 // text is always used for sorting.
 // Precedence for rendering is: element, html, text.

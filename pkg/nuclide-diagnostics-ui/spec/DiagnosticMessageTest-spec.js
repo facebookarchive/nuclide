@@ -9,7 +9,7 @@
  * @format
  */
 
-import {separateUrls} from '../DiagnosticsMessageText';
+import {separateUrls} from '../lib/DiagnosticsMessageText';
 
 describe('DiagnosticsMessageText', () => {
   it('should leave text unchanged', () => {

@@ -16,7 +16,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import classnames from 'classnames';
-import {DiagnosticsMessage} from '../../nuclide-ui/DiagnosticsMessage';
+import {DiagnosticsMessage} from './DiagnosticsMessage';
 
 type DiagnosticsPopupProps = {
   messages: Array<FileDiagnosticMessage>,
