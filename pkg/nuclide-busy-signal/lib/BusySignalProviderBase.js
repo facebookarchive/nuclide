@@ -13,7 +13,7 @@ import type {BusySignalMessage} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Observable} from 'rxjs';
 
-import {Disposable, CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {Subject} from 'rxjs';
 import invariant from 'assert';
@@ -41,7 +41,7 @@ export class BusySignalProviderBase {
   displayMessage(
     message: string,
     optionsArg?: MessageDisplayOptions,
-  ): IDisposable {
+  ): UniversalDisposable {
     // Reassign as const so the type refinement holds in the closure below
     const options = optionsArg;
     if (options == null || options.onlyForFile == null) {
@@ -55,7 +55,7 @@ export class BusySignalProviderBase {
         displayedDisposable = null;
       }
     };
-    return new CompositeDisposable(
+    return new UniversalDisposable(
       atom.workspace.observeActivePaneItem(item => {
         if (
           item != null &&
@@ -70,14 +70,14 @@ export class BusySignalProviderBase {
         }
       }),
       // We can't add displayedDisposable directly because its value may change.
-      new Disposable(disposeDisplayed),
+      disposeDisplayed,
     );
   }
 
-  _displayMessage(message: string): IDisposable {
+  _displayMessage(message: string): UniversalDisposable {
     const {busy, done} = this._nextMessagePair(message);
     this._messages.next(busy);
-    return new Disposable(() => {
+    return new UniversalDisposable(() => {
       this._messages.next(done);
     });
   }
