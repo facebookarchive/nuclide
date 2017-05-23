@@ -27,6 +27,11 @@
     "testRunner": "apm"
   },
   "consumedServices": {
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "consumeDatatipService"
+      }
+    },
     "nuclide-diagnostics": {
       "versions": {
         "0.2.0": "consumeDiagnosticUpdates"

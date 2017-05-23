@@ -9,6 +9,11 @@
  * @format
  */
 
+import type {
+  Datatip,
+  DatatipProvider,
+  DatatipService,
+} from '../../nuclide-datatip/lib/types';
 import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
 import type {
   FileMessageUpdate,
@@ -36,6 +41,7 @@ import {
 } from './DiagnosticsPanelModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
+import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {BehaviorSubject, Observable} from 'rxjs';
@@ -57,6 +63,7 @@ class Activation {
   _subscriptions: UniversalDisposable;
   _state: ActivationState;
   _statusBarTile: ?StatusBarTile;
+  _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
 
   constructor(state_: ?Object): void {
     this._diagnosticUpdaters = new BehaviorSubject(null);
@@ -64,6 +71,41 @@ class Activation {
     const state = state_ || {};
     this._state = {
       filterByActiveTextEditor: state.filterByActiveTextEditor === true,
+    };
+    this._fileDiagnostics = new WeakMap();
+  }
+
+  consumeDatatipService(service: DatatipService): IDisposable {
+    const datatipProvider: DatatipProvider = {
+      // show this datatip for every type of file
+      validForScope: (scope: string) => true,
+      providerName: 'nuclide-diagnostics-datatip',
+      inclusionPriority: 1,
+      datatip: this._datatip.bind(this),
+    };
+    const disposable = service.addProvider(datatipProvider);
+    this._subscriptions.add(disposable);
+    return disposable;
+  }
+
+  async _datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
+    const messagesForFile = this._fileDiagnostics.get(editor);
+    if (messagesForFile == null) {
+      return null;
+    }
+    const messagesAtPosition = messagesForFile.filter(
+      message => message.range != null && message.range.containsPoint(position),
+    );
+    if (messagesAtPosition.length === 0) {
+      return null;
+    }
+    const [message] = messagesAtPosition;
+    const {range} = message;
+    invariant(range);
+    return {
+      component: makeDiagnosticsDatatipComponent(message),
+      pinnable: false,
+      range,
     };
   }
 
@@ -80,6 +122,30 @@ class Activation {
     this._diagnosticUpdaters.next(diagnosticUpdater);
     const atomCommandsDisposable = addAtomCommands(diagnosticUpdater);
     this._subscriptions.add(atomCommandsDisposable);
+    this._subscriptions.add(
+      // Track diagnostics for all active editors.
+      observeTextEditors((editor: TextEditor) => {
+        const filePath = editor.getPath();
+        if (!filePath) {
+          return;
+        }
+        this._fileDiagnostics.set(editor, []);
+        // TODO: this is actually inefficient - this filters all file events
+        // by their path, so this is actually O(N^2) in the number of editors.
+        // We should merge the store and UI packages to get direct access.
+        const subscription = diagnosticUpdater
+          .getFileMessageUpdates(filePath)
+          .subscribe(update => {
+            this._fileDiagnostics.set(editor, update.messages);
+          });
+        this._subscriptions.add(subscription);
+        editor.onDidDestroy(() => {
+          subscription.unsubscribe();
+          this._subscriptions.remove(subscription);
+          this._fileDiagnostics.delete(editor);
+        });
+      }),
+    );
     return new UniversalDisposable(atomCommandsDisposable, () => {
       invariant(this._diagnosticUpdaters.getValue() === diagnosticUpdater);
       this._diagnosticUpdaters.next(null);
