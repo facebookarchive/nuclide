@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -36,14 +37,20 @@ export class Selectors extends React.Component {
     }
   }
 
+  _getLabelForHost(host: string): string {
+    if (nuclideUri.isLocal(host)) {
+      return host;
+    }
+    const hostName = nuclideUri.getHostname(host);
+    return hostName.endsWith(FB_HOST_SUFFIX)
+      ? hostName.substring(0, hostName.length - FB_HOST_SUFFIX.length)
+      : hostName;
+  }
+
   _getHostOptions(): Array<{value: ?string, label: string}> {
-    return this.props.hosts
-      .map(host => {
-        return host.endsWith(FB_HOST_SUFFIX)
-          ? host.substring(0, host.length - FB_HOST_SUFFIX.length)
-          : host;
-      })
-      .map(host => ({value: host, label: host}));
+    return this.props.hosts.map(host => {
+      return {value: host, label: this._getLabelForHost(host)};
+    });
   }
 
   _getTypesButtons(): React.Element<any>[] {

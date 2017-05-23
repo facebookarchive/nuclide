@@ -28,7 +28,6 @@ import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {getProviders} from './providers';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {
   WorkspaceViewsService,
@@ -56,9 +55,7 @@ class Activation {
     );
     this._disposables = new UniversalDisposable(
       ServerConnection.observeRemoteConnections().subscribe(conns => {
-        const hosts = conns.map(conn =>
-          nuclideUri.getHostname(conn.getUriOfRemotePath('/')),
-        );
+        const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
         this._store.dispatch(Actions.setHosts(['local'].concat(hosts)));
       }),
     );
