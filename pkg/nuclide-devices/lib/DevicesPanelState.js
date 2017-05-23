@@ -11,7 +11,7 @@
 
 import type {Props} from './ui/RootPanel';
 
-import type {Store, AppState, Device, Process} from './types';
+import type {Store, AppState, Process} from './types';
 import React from 'react';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';
@@ -25,7 +25,7 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
 export class DevicesPanelState {
   _store: Store;
-  _deviceObs: Observable<Device[]>;
+  _deviceObs: Observable<void>;
   _processesObs: Observable<Process[]>;
 
   constructor(store: Store) {
@@ -48,7 +48,8 @@ export class DevicesPanelState {
               .do(devices => this._store.dispatch(Actions.setDevices(devices)));
           }
         }
-      });
+      })
+      .ignoreElements();
     // $FlowFixMe: Teach flow about Symbol.observable
     this._processesObs = Observable.from(this._store)
       .distinctUntilChanged(

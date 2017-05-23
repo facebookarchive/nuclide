@@ -30,7 +30,7 @@ export type DevicePanelServiceApi = {
 };
 
 export interface DeviceListProvider {
-  observe(host: NuclideUri): Observable<Device[]>,
+  observe(host: NuclideUri): Observable<Expected<Device[]>>,
   getType(): string,
 }
 
@@ -67,7 +67,7 @@ export interface DeviceProcessTaskProvider {
 export type AppState = {
   hosts: NuclideUri[],
   host: NuclideUri,
-  devices: Device[],
+  devices: Expected<Device[]>,
   deviceType: ?string,
   deviceTypes: string[],
   device: ?Device,
@@ -108,6 +108,16 @@ export type ProcessTask = {
   run: (proc: Process) => Promise<void>,
 };
 
+export type Expected<T> =
+  | {
+      isError: true,
+      error: Error,
+    }
+  | {
+      isError?: false,
+      value: T,
+    };
+
 //
 // Action types
 //
@@ -115,7 +125,7 @@ export type ProcessTask = {
 export type SetDevicesAction = {
   type: 'SET_DEVICES',
   payload: {
-    devices: Device[],
+    devices: Expected<Device[]>,
   },
 };
 

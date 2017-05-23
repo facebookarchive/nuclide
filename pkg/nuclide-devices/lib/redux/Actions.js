@@ -24,6 +24,7 @@ import type {
   Device,
   Process,
   ProcessTask,
+  Expected,
 } from '../types';
 
 import {DeviceTask} from '../DeviceTask';
@@ -64,7 +65,7 @@ export function setProcessTasks(
   };
 }
 
-export function setDevices(devices: Device[]): SetDevicesAction {
+export function setDevices(devices: Expected<Device[]>): SetDevicesAction {
   return {
     type: SET_DEVICES,
     payload: {devices},

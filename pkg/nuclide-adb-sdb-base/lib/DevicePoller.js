@@ -15,27 +15,43 @@ import {Observable} from 'rxjs';
 
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from '../../nuclide-devices/lib/types';
+import type {Device, Expected} from '../../nuclide-devices/lib/types';
 
 export type DBType = 'sdb' | 'adb';
 
 class DevicePoller {
   _type: DBType;
-  _dbAvailable: Map<NuclideUri, Promise<boolean>> = new Map();
-  _observables: Map<NuclideUri, Observable<Device[]>> = new Map();
+  _observables: Map<NuclideUri, Observable<Expected<Device[]>>> = new Map();
 
   constructor(type: DBType) {
     this._type = type;
   }
 
-  observe(host: NuclideUri): Observable<Device[]> {
+  _getPlatform(): string {
+    return this._type === 'adb' ? 'android' : 'tizen';
+  }
+
+  observe(host: NuclideUri): Observable<Expected<Device[]>> {
     let observable = this._observables.get(host);
     if (observable != null) {
       return observable;
     }
     observable = Observable.interval(3000)
       .startWith(0)
-      .switchMap(() => Observable.fromPromise(this.fetch(host).catch(() => [])))
+      .switchMap(() =>
+        Observable.fromPromise(this.fetch(host))
+          .map(devices => ({
+            value: devices,
+          }))
+          .catch(() =>
+            Observable.of({
+              isError: true,
+              error: new Error(
+                `Can't fetch ${this._getPlatform()} devices. Make sure that ${this._type} is in your $PATH and that it works properly.`,
+              ),
+            }),
+          ),
+      )
       .publishReplay(1)
       .refCount();
     this._observables.set(host, observable);
@@ -47,23 +63,9 @@ class DevicePoller {
       ? getAdbServiceByNuclideUri(host)
       : getSdbServiceByNuclideUri(host);
 
-    let dbAvailable = this._dbAvailable.get(host);
-    if (dbAvailable == null) {
-      dbAvailable = rpc.startServer();
-      this._dbAvailable.set(host, dbAvailable);
-      if (!await dbAvailable) {
-        atom.notifications.addError(
-          `Couldn't start the ${this._type} server. Check if ${this._type} is in your $PATH and that it works properly.`,
-          {dismissable: true},
-        );
-      }
-    }
-    if (await dbAvailable) {
-      return rpc
-        .getDeviceList()
-        .then(devices => devices.map(device => this.parseRawDevice(device)));
-    }
-    return [];
+    return rpc
+      .getDeviceList()
+      .then(devices => devices.map(device => this.parseRawDevice(device)));
   }
 
   parseRawDevice(device: DeviceDescription): Device {
@@ -87,7 +89,10 @@ class DevicePoller {
 
 const pollers: Map<DBType, DevicePoller> = new Map();
 
-function observeDevices(type: DBType, host: NuclideUri): Observable<Device[]> {
+function observeDevices(
+  type: DBType,
+  host: NuclideUri,
+): Observable<Expected<Device[]>> {
   let poller = pollers.get(type);
   if (poller == null) {
     poller = new DevicePoller(type);
@@ -97,9 +102,25 @@ function observeDevices(type: DBType, host: NuclideUri): Observable<Device[]> {
 }
 
 export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
-  return observeDevices('adb', host);
+  return observeDevices('adb', host).map(
+    devices => (devices.isError ? [] : devices.value),
+  );
 }
 
 export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
+  return observeDevices('sdb', host).map(
+    devices => (devices.isError ? [] : devices.value),
+  );
+}
+
+export function observeAndroidDevicesX(
+  host: NuclideUri,
+): Observable<Expected<Device[]>> {
+  return observeDevices('adb', host);
+}
+
+export function observeTizenDevicesX(
+  host: NuclideUri,
+): Observable<Expected<Device[]>> {
   return observeDevices('sdb', host);
 }

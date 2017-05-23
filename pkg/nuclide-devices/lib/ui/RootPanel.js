@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessTask} from '../types';
+import type {Device, Process, ProcessTask, Expected} from '../types';
 
 import {DeviceTask} from '../DeviceTask';
 import React from 'react';
@@ -31,7 +31,7 @@ export type Props = {
   startFetchingProcesses: () => Subscription,
   processTasks: ProcessTask[],
   hosts: NuclideUri[],
-  devices: Device[],
+  devices: Expected<Device[]>,
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,

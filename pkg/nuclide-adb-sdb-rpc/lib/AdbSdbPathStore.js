@@ -36,10 +36,11 @@ class DebugBridgePathStore {
   }
 
   getPaths(): string[] {
-    if (this._lastWorkingPath == null) {
+    const lastWorkingPath = this._lastWorkingPath;
+    if (lastWorkingPath == null) {
       return this._sortedPaths;
     }
-    return arrayUnique([this._lastWorkingPath].concat(...this._sortedPaths));
+    return arrayUnique([lastWorkingPath, ...this._sortedPaths]);
   }
 
   notifyWorkingPath(workingPath: ?string): void {
@@ -76,7 +77,7 @@ function reusePromiseUntilResolved(
   return runningPromise;
 }
 
-export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
+export function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
   return reusePromiseUntilResolved(db, async () => {
     const store = getStore(db);
     const workingPath = await asyncFind(store.getPaths(), async path => {
@@ -87,13 +88,13 @@ export async function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
         return null;
       }
     });
-    store.notifyWorkingPath(workingPath);
-    if (workingPath != null) {
-      return workingPath;
+    if (workingPath == null) {
+      throw new Error(
+        `${db} is unavailable. Add it to your path and restart nuclide or make sure that ` +
+          `'${db} start-server' works.`,
+      );
     }
-    throw new Error(
-      `${db} is unavailable. Add it to your path and restart nuclide or make sure that ` +
-        `'${db} start-server' works.`,
-    );
+    store.notifyWorkingPath(workingPath);
+    return workingPath;
   });
 }

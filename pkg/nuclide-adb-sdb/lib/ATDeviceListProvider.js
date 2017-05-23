@@ -10,15 +10,19 @@
  */
 
 import {
-  observeAndroidDevices,
-  observeTizenDevices,
+  observeAndroidDevicesX,
+  observeTizenDevicesX,
 } from '../../nuclide-adb-sdb-base/lib/DevicePoller';
 import {Observable} from 'rxjs';
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, DeviceListProvider} from '../../nuclide-devices/lib/types';
+import type {
+  Device,
+  DeviceListProvider,
+  Expected,
+} from '../../nuclide-devices/lib/types';
 
 export class ATDeviceListProvider implements DeviceListProvider {
   _type: string;
@@ -38,11 +42,11 @@ export class ATDeviceListProvider implements DeviceListProvider {
     return this._type;
   }
 
-  observe(host: NuclideUri): Observable<Device[]> {
+  observe(host: NuclideUri): Observable<Expected<Device[]>> {
     if (this._type === 'android') {
-      return observeAndroidDevices(host);
+      return observeAndroidDevicesX(host);
     } else {
-      return observeTizenDevices(host);
+      return observeTizenDevicesX(host);
     }
   }
 }

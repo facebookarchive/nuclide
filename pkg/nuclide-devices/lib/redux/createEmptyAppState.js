@@ -15,7 +15,7 @@ export function createEmptyAppState(): AppState {
   return {
     hosts: ['local'],
     host: 'local',
-    devices: [],
+    devices: {value: []},
     deviceType: null,
     deviceTypes: [],
     device: null,

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Device} from '../types';
+import type {Device, Expected} from '../types';
 
 import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
@@ -18,29 +18,30 @@ import {Subscription} from 'rxjs';
 type Props = {
   setDevice: (?Device) => void,
   startFetchingDevices: () => Subscription,
-  devices: Device[],
+  devices: Expected<Device[]>,
   device: ?Device,
-};
-
-type State = {
-  selectedDeviceIndex: ?number,
 };
 
 export class DeviceTable extends React.Component {
   props: Props;
-  state: State;
   _emptyComponent: () => React.Element<any>;
   _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
-    this.state = {selectedDeviceIndex: null};
     (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(
       this,
     );
-    this._emptyComponent = () => (
-      <div className="padded">No devices connected</div>
-    );
+    this._emptyComponent = () => {
+      if (this.props.devices.isError) {
+        return (
+          <div className="padded nuclide-device-panel-device-list-error">
+            {this.props.devices.error.message}
+          </div>
+        );
+      }
+      return <div className="padded">No devices connected</div>;
+    };
   }
 
   componentDidMount(): void {
@@ -53,22 +54,11 @@ export class DeviceTable extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
-    const nextDevice = nextProps.device;
-    let selectedDeviceIndex = null;
-    if (nextDevice != null) {
-      selectedDeviceIndex = nextProps.devices.findIndex(
-        device => device.name === nextDevice.name,
-      );
-    }
-    if (selectedDeviceIndex !== this.state.selectedDeviceIndex) {
-      this.setState({selectedDeviceIndex});
-    }
-  }
-
   render(): React.Element<any> {
-    const rows = this.props.devices.map(device => ({
-      data: {name: device.displayName},
+    const devices = this.props.devices.isError ? [] : this.props.devices.value;
+
+    const rows = devices.map(_device => ({
+      data: {name: _device.displayName},
     }));
     const columns = [
       {
@@ -86,7 +76,6 @@ export class DeviceTable extends React.Component {
         maxBodyHeight="99999px"
         emptyComponent={this._emptyComponent}
         selectable={true}
-        selectedIndex={this.state.selectedDeviceIndex}
         onSelect={this._handleDeviceTableSelection}
         rows={rows}
       />
@@ -94,9 +83,8 @@ export class DeviceTable extends React.Component {
   }
 
   _handleDeviceTableSelection(item: any, selectedDeviceIndex: number): void {
-    this.setState(
-      {selectedDeviceIndex},
-      this.props.setDevice(this.props.devices[selectedDeviceIndex]),
-    );
+    if (!this.props.devices.isError) {
+      this.props.setDevice(this.props.devices.value[selectedDeviceIndex]);
+    }
   }
 }
