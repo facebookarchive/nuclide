@@ -16,7 +16,7 @@ import {
   TextEventDispatcher,
   observeTextEditorEvents,
   __TEST__,
-} from '../lib/TextEventDispatcher';
+} from '../text-event';
 
 const grammar = 'testgrammar';
 

@@ -177,4 +177,4 @@ export type LinterProvider = {
 export {
   TextEventDispatcher,
   observeTextEditorEvents,
-} from './TextEventDispatcher';
+} from 'nuclide-commons-atom/text-event';

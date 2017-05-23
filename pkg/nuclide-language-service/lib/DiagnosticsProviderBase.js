@@ -19,9 +19,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 
 import {CompositeDisposable, Emitter} from 'atom';
-import {
-  TextEventDispatcher,
-} from '../../nuclide-diagnostics-common/lib/TextEventDispatcher';
+import {TextEventDispatcher} from 'nuclide-commons-atom/text-event';
 
 type ProviderBaseOptions = {
   /** The callback by which a provider is notified of text events, such as a file save. */
