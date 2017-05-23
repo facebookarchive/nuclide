@@ -15,6 +15,9 @@ import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
 import Bridge from './Bridge';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
+import passesGK from '../../commons-node/passesGK';
+
+const NUCLIDE_DEBUGGER_DEV_GK = 'nuclide_debugger_dev';
 
 type Props = {
   breakpointStore: BreakpointStore,
@@ -27,11 +30,13 @@ type Props = {
 type State = {
   processSocket: ?string,
   debuggerStoreChangeListener?: IDisposable,
+  passesDevGk: boolean,
 };
 
 function getStateFromStore(store: DebuggerStore): State {
   return {
     processSocket: store.getProcessSocket(),
+    passesDevGk: false,
   };
 }
 
@@ -51,8 +56,10 @@ export default class DebuggerControllerView extends React.Component {
       debuggerStoreChangeListener: this.props.store.onChange(
         this._updateStateFromStore,
       ),
+      passesDevGk: false,
     });
     this._updateStateFromStore();
+    this._updateGkState();
   }
 
   componentWillUnmount() {
@@ -75,8 +82,22 @@ export default class DebuggerControllerView extends React.Component {
     this._updateStateFromStore(nextProps.store);
   }
 
+  async _updateGkState(): Promise<void> {
+    const passesDevGk = await passesGK(NUCLIDE_DEBUGGER_DEV_GK);
+    try {
+      this.setState({
+        passesDevGk,
+      });
+    } catch (e) {
+      // Since fetching the GK is async, it is possible that the component is
+      // unmounted by the time it comes back and tries to call setState. In
+      // this case, we don't care that we can't set state, because the
+      // component is no longer visible anyway.
+    }
+  }
+
   render(): ?React.Element<any> {
-    if (this.state.processSocket) {
+    if (this.state.processSocket && this.state.passesDevGk) {
       return (
         <DebuggerInspector
           breakpointStore={this.props.breakpointStore}
