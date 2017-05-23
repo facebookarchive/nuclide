@@ -10,7 +10,7 @@
  */
 
 import type {LanguageService} from './LanguageService';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import type {BusySignalProvider} from './AtomLanguageService';
 import type {
   CodeFormatProvider as CodeFormatProviderType,
 } from '../../nuclide-code-format/lib/types';
@@ -33,7 +33,7 @@ export class CodeFormatProvider<T: LanguageService> {
   inclusionPriority: number;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
-  _busySignalProvider: BusySignalProviderBase;
+  _busySignalProvider: BusySignalProvider;
 
   constructor(
     name: string,
@@ -41,7 +41,7 @@ export class CodeFormatProvider<T: LanguageService> {
     priority: number,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
+    busySignalProvider: BusySignalProvider,
   ) {
     this.name = name;
     this.selector = selector;
@@ -55,7 +55,7 @@ export class CodeFormatProvider<T: LanguageService> {
     selector: string,
     config: CodeFormatConfig,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
+    busySignalProvider: BusySignalProvider,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
       'nuclide-code-format.provider',
@@ -90,7 +90,7 @@ class RangeFormatProvider<T: LanguageService>
     priority: number,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
+    busySignalProvider: BusySignalProvider,
   ) {
     super(
       name,
@@ -112,7 +112,7 @@ class RangeFormatProvider<T: LanguageService>
         editor.getPath(),
       );
       if (languageService != null && fileVersion != null) {
-        const result = await this._busySignalProvider.reportBusy(
+        const result = await this._busySignalProvider.reportBusyWhile(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
             return (await languageService).formatSource(fileVersion, range);
@@ -137,7 +137,7 @@ class FileFormatProvider<T: LanguageService>
     priority: number,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
+    busySignalProvider: BusySignalProvider,
   ) {
     super(
       name,
@@ -162,7 +162,7 @@ class FileFormatProvider<T: LanguageService>
         editor.getPath(),
       );
       if (languageService != null && fileVersion != null) {
-        const result = await this._busySignalProvider.reportBusy(
+        const result = await this._busySignalProvider.reportBusyWhile(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
             return (await languageService).formatEntireFile(fileVersion, range);

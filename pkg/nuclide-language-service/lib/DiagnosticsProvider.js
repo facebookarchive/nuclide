@@ -21,7 +21,7 @@ import type {
 } from '../../nuclide-diagnostics-common/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 import type {CategoryLogger} from '../../nuclide-logging';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import type {BusySignalProvider} from './AtomLanguageService';
 
 import {Cache} from '../../commons-node/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -60,7 +60,7 @@ export function registerDiagnostics<T: LanguageService>(
   config: DiagnosticsConfig,
   logger: CategoryLogger,
   connectionToLanguageService: ConnectionCache<T>,
-  busySignalProvider: BusySignalProviderBase,
+  busySignalProvider: BusySignalProvider,
 ): IDisposable {
   const result = new UniversalDisposable();
   let provider;
@@ -98,7 +98,7 @@ export function registerDiagnostics<T: LanguageService>(
 
 export class FileDiagnosticsProvider<T: LanguageService> {
   name: string;
-  _busySignalProvider: BusySignalProviderBase;
+  _busySignalProvider: BusySignalProvider;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer<any>;
   _subscriptions: UniversalDisposable;
@@ -117,7 +117,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     shouldRunOnTheFly: boolean,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
-    busySignalProvider: BusySignalProviderBase,
+    busySignalProvider: BusySignalProvider,
     ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
     this.name = name;
@@ -144,7 +144,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
   }
 
   _runDiagnostics(textEditor: atom$TextEditor): void {
-    this._busySignalProvider.reportBusy(
+    this._busySignalProvider.reportBusyWhile(
       `${this.name}: Waiting for diagnostics`,
       () => this._runDiagnosticsImpl(textEditor),
     );

@@ -13,8 +13,6 @@ import typeof * as DiagnosticsProviderFile from '../lib/DiagnosticsProvider';
 import type {FileDiagnosticsProvider} from '../lib/DiagnosticsProvider';
 import type {LanguageService} from '../lib/LanguageService';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
 
 describe('DiagnosticsProvider', () => {
@@ -30,13 +28,18 @@ describe('DiagnosticsProvider', () => {
       require,
       '../lib/DiagnosticsProvider',
     ): any);
+    const busySignalProvider = {
+      reportBusyWhile<T>(message, f: () => Promise<T>): Promise<T> {
+        return f();
+      },
+    };
     diagnosticsProvider = new file.FileDiagnosticsProvider(
       'Hack',
       ['text.html.hack', 'text.html.php'],
       false,
       'hack.diagnostics',
       (null: any), // connectionToLanguageService
-      new BusySignalProviderBase(),
+      busySignalProvider,
       (FakeProviderBase: any),
     );
   });

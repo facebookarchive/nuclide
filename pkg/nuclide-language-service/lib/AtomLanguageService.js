@@ -26,6 +26,7 @@ import type {
 } from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
 import type {CategoryLogger} from '../../nuclide-logging';
+import type {BusySignalService} from '../../nuclide-busy-signal';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -41,8 +42,10 @@ import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
 import {getCategoryLogger} from '../../nuclide-logging';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
+
+export type BusySignalProvider = {
+  reportBusyWhile<T>(message: string, f: () => Promise<T>): Promise<T>,
+};
 
 export type AtomLanguageServiceConfig = {|
   name: string,
@@ -89,12 +92,29 @@ export class AtomLanguageService<T: LanguageService> {
   }
 
   activate(): void {
-    const busySignalProvider = new DedupedBusySignalProviderBase();
+    let busySignalService: ?BusySignalService = null;
+    const busySignalProvider = {
+      reportBusyWhile<U>(message, f: () => Promise<U>): Promise<U> {
+        if (busySignalService != null) {
+          return busySignalService.reportBusyWhile(message, f);
+        } else {
+          return f();
+        }
+      },
+    };
+
     this._subscriptions.add(
-      atom.packages.serviceHub.provide(
-        'nuclide-busy-signal',
-        '0.1.0',
-        busySignalProvider,
+      atom.packages.serviceHub.consume(
+        'atom-ide-busy-signal',
+        '0.2.0',
+        service => {
+          this._subscriptions.add(service);
+          busySignalService = service;
+          return new UniversalDisposable(() => {
+            this._subscriptions.remove(service);
+            busySignalService = null;
+          });
+        },
       ),
     );
 
