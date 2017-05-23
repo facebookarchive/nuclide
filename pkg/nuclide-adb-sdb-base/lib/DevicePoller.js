@@ -12,10 +12,12 @@
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
+import {Expect} from '../../nuclide-expected';
 
+import type {Expected} from '../../nuclide-expected';
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Expected} from '../../nuclide-devices/lib/types';
+import type {Device} from '../../nuclide-devices/lib/types';
 
 export type DBType = 'sdb' | 'adb';
 
@@ -40,16 +42,15 @@ class DevicePoller {
       .startWith(0)
       .switchMap(() =>
         Observable.fromPromise(this.fetch(host))
-          .map(devices => ({
-            value: devices,
-          }))
+          .map(devices => Expect.value(devices))
           .catch(() =>
-            Observable.of({
-              isError: true,
-              error: new Error(
-                `Can't fetch ${this._getPlatform()} devices. Make sure that ${this._type} is in your $PATH and that it works properly.`,
+            Observable.of(
+              Expect.error(
+                new Error(
+                  `Can't fetch ${this._getPlatform()} devices. Make sure that ${this._type} is in your $PATH and that it works properly.`,
+                ),
               ),
-            }),
+            ),
           ),
       )
       .publishReplay(1)
@@ -102,15 +103,11 @@ function observeDevices(
 }
 
 export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
-  return observeDevices('adb', host).map(
-    devices => (devices.isError ? [] : devices.value),
-  );
+  return observeDevices('adb', host).map(devices => devices.getOrDefault([]));
 }
 
 export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
-  return observeDevices('sdb', host).map(
-    devices => (devices.isError ? [] : devices.value),
-  );
+  return observeDevices('sdb', host).map(devices => devices.getOrDefault([]));
 }
 
 export function observeAndroidDevicesX(

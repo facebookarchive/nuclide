@@ -10,7 +10,8 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessTask, Expected} from '../types';
+import type {Device, Process, ProcessTask} from '../types';
+import type {Expected} from '../../../nuclide-expected';
 
 import {DeviceTask} from '../DeviceTask';
 import React from 'react';

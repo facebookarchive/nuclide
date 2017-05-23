@@ -11,11 +11,13 @@
 
 import type {AppState} from '../types';
 
+import {Expect} from '../../../nuclide-expected';
+
 export function createEmptyAppState(): AppState {
   return {
     hosts: ['local'],
     host: 'local',
-    devices: {value: []},
+    devices: Expect.value([]),
     deviceType: null,
     deviceTypes: [],
     device: null,

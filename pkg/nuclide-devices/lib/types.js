@@ -11,6 +11,7 @@
 
 import type {TaskEvent} from '../../commons-node/tasks';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Expected} from '../../nuclide-expected';
 
 import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
@@ -108,16 +109,6 @@ export type ProcessTask = {
   type: ProcessTaskType,
   run: (proc: Process) => Promise<void>,
 };
-
-export type Expected<T> =
-  | {
-      isError: true,
-      error: Error,
-    }
-  | {
-      isError?: false,
-      value: T,
-    };
 
 //
 // Action types

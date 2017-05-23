@@ -9,7 +9,8 @@
  * @format
  */
 
-import type {Device, Expected} from '../types';
+import type {Device} from '../types';
+import type {Expected} from '../../../nuclide-expected';
 
 import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
@@ -42,7 +43,7 @@ export class DeviceTable extends React.Component {
   }
 
   render(): React.Element<any> {
-    const devices = this.props.devices.isError ? [] : this.props.devices.value;
+    const devices = this.props.devices.getOrDefault([]);
 
     const rows = devices.map(_device => ({
       data: {name: _device.displayName},

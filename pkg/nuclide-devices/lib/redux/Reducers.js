@@ -9,9 +9,11 @@
  * @format
  */
 
-import * as Actions from './Actions';
+import type {Action, AppState, Device} from '../types';
+import type {Expected} from '../../../nuclide-expected';
 
-import type {Action, AppState, Device, Expected} from '../types';
+import * as Actions from './Actions';
+import {Expect} from '../../../nuclide-expected';
 
 export function app(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -21,7 +23,7 @@ export function app(state: AppState, action: Action): AppState {
         ...state,
         deviceType: null,
         device: null,
-        devices: {value: []},
+        devices: Expect.value([]),
         infoTables: new Map(),
         processes: [],
         actions: [],
@@ -36,7 +38,7 @@ export function app(state: AppState, action: Action): AppState {
         ...state,
         deviceType,
         device: null,
-        devices: {value: []},
+        devices: Expect.value([]),
         infoTables: new Map(),
         processes: [],
         actions: [],
