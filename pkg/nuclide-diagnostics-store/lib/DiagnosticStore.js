@@ -22,9 +22,9 @@ import type {
 } from './rpc-types';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 
-import {applyTextEdits} from '../../nuclide-textedit';
+import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
 import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {MarkerTracker} from './MarkerTracker';

@@ -24,7 +24,7 @@ import type {
   FileNotifier,
 } from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,

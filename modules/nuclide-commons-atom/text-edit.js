@@ -10,11 +10,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TextEdit} from './rpc-types';
+import type {TextEdit} from './text-edit-rpc-types';
 
 import invariant from 'assert';
 
-import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
+import {existingEditorForUri} from './text-editor';
 
 /**
  * Attempts to apply the given patches to the given file.

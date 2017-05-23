@@ -29,7 +29,7 @@ import {Observable} from 'rxjs';
 import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from '../../nuclide-logging';
-import {applyTextEditsToBuffer} from '../../nuclide-textedit';
+import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 
 import * as Actions from './refactorActions';
 

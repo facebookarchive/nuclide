@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import type {TextEdit} from '../../nuclide-textedit/lib/rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 
 export type InvalidationMessage =
   | {
