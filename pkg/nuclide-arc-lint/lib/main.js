@@ -9,24 +9,32 @@
  * @format
  */
 
-import type {BusySignalProvider} from '../../nuclide-busy-signal/lib/types';
-import type {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import * as ArcanistDiagnosticsProvider from './ArcanistDiagnosticsProvider';
 
 class Activation {
-  _busySignalProvider: BusySignalProviderBase;
+  _disposables: UniversalDisposable;
+  _busySignalService: ?BusySignalService;
 
   constructor() {
-    this._busySignalProvider = new DedupedBusySignalProviderBase();
+    this._disposables = new UniversalDisposable();
   }
 
-  provideBusySignal(): BusySignalProvider {
-    return this._busySignalProvider;
+  dispose() {
+    this._disposables.dispose();
+  }
+
+  consumeBusySignal(service: BusySignalService): IDisposable {
+    this._disposables.add(service);
+    this._busySignalService = service;
+    return new UniversalDisposable(() => {
+      this._disposables.remove(service);
+      this._busySignalService = null;
+    });
   }
 
   provideLinter(): LinterProvider {
@@ -39,7 +47,10 @@ class Activation {
         if (path == null) {
           return null;
         }
-        return this._busySignalProvider.reportBusy(
+        if (this._busySignalService == null) {
+          return ArcanistDiagnosticsProvider.lint(editor);
+        }
+        return this._busySignalService.reportBusyWhile(
           `Waiting for arc lint results for \`${editor.getTitle()}\``,
           () => ArcanistDiagnosticsProvider.lint(editor),
           {onlyForFile: path},

@@ -33,15 +33,17 @@
     "testRunner": "apm"
   },
   "activationCommands": {},
+  "consumedServices": {
+    "atom-ide-busy-signal": {
+      "versions": {
+        "0.2.0": "consumeBusySignal"
+      }
+    }
+  },
   "providedServices": {
     "linter": {
       "versions": {
         "1.0.0": "provideLinter"
-      }
-    },
-    "nuclide-busy-signal": {
-      "versions": {
-        "0.1.0": "provideBusySignal"
       }
     }
   }
