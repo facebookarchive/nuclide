@@ -1,56 +1,49 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type DebuggerModel from './DebuggerModel';
-import type {
-  Callstack,
-  EvalCommand,
-  ScopeSection,
-  NuclideThreadData,
-  ThreadItem,
-  BreakpointUserChangeArgType,
-  IPCBreakpoint,
-  ExpressionResult,
-  GetPropertiesResult,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {DebuggerMode} from './DebuggerStore';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import CommandDispatcher from './CommandDispatcher';
+var _nuclideUri;
 
-export default class Bridge {
-  _debuggerModel: DebuggerModel;
-  _disposables: UniversalDisposable;
-  // Contains disposable items should be disposed by
-  // cleanup() method.
-  _cleanupDisposables: ?UniversalDisposable;
-  _webview: ?WebviewElement;
-  _webviewUrl: ?string;
-  _commandDispatcher: CommandDispatcher;
-  _suppressBreakpointSync: boolean;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-  constructor(debuggerModel: DebuggerModel) {
-    (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Bridge {
+
+  constructor(debuggerModel) {
+    this._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
-    this._commandDispatcher = new CommandDispatcher();
-    this._disposables = new UniversalDisposable(
-      debuggerModel
-        .getBreakpointStore()
-        .onUserChange(this._handleUserBreakpointChange.bind(this)),
-    );
+    this._commandDispatcher = new (_CommandDispatcher || _load_CommandDispatcher()).default();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(debuggerModel.getBreakpointStore().onUserChange(this._handleUserBreakpointChange.bind(this)));
   }
+  // Contains disposable items should be disposed by
+  // cleanup() method.
+
 
   dispose() {
     this.cleanup();
@@ -81,40 +74,31 @@ export default class Bridge {
     this._commandDispatcher.send('StepOut');
   }
 
-  runToLocation(filePath: string, line: number) {
+  runToLocation(filePath, line) {
     this._commandDispatcher.send('RunToLocation', filePath, line);
   }
 
-  triggerAction(actionId: string): void {
+  triggerAction(actionId) {
     this._commandDispatcher.send('triggerDebuggerAction', actionId);
   }
 
-  setSelectedCallFrameIndex(callFrameIndex: number): void {
+  setSelectedCallFrameIndex(callFrameIndex) {
     this._commandDispatcher.send('setSelectedCallFrameIndex', callFrameIndex);
   }
 
-  setPauseOnException(pauseOnExceptionEnabled: boolean): void {
-    this._commandDispatcher.send(
-      'setPauseOnException',
-      pauseOnExceptionEnabled,
-    );
+  setPauseOnException(pauseOnExceptionEnabled) {
+    this._commandDispatcher.send('setPauseOnException', pauseOnExceptionEnabled);
   }
 
-  setPauseOnCaughtException(pauseOnCaughtExceptionEnabled: boolean): void {
-    this._commandDispatcher.send(
-      'setPauseOnCaughtException',
-      pauseOnCaughtExceptionEnabled,
-    );
+  setPauseOnCaughtException(pauseOnCaughtExceptionEnabled) {
+    this._commandDispatcher.send('setPauseOnCaughtException', pauseOnCaughtExceptionEnabled);
   }
 
-  setSingleThreadStepping(singleThreadStepping: boolean): void {
-    this._commandDispatcher.send(
-      'setSingleThreadStepping',
-      singleThreadStepping,
-    );
+  setSingleThreadStepping(singleThreadStepping) {
+    this._commandDispatcher.send('setSingleThreadStepping', singleThreadStepping);
   }
 
-  selectThread(threadId: string): void {
+  selectThread(threadId) {
     this._commandDispatcher.send('selectThread', threadId);
     const threadNo = parseInt(threadId, 10);
     if (!isNaN(threadNo)) {
@@ -122,52 +106,35 @@ export default class Bridge {
     }
   }
 
-  sendEvaluationCommand(
-    command: EvalCommand,
-    evalId: number,
-    ...args: Array<mixed>
-  ): void {
+  sendEvaluationCommand(command, evalId, ...args) {
     this._commandDispatcher.send(command, evalId, ...args);
   }
 
-  _handleExpressionEvaluationResponse(
-    response: ExpressionResult & {id: number},
-  ): void {
-    this._debuggerModel
-      .getActions()
-      .receiveExpressionEvaluationResponse(response.id, response);
+  _handleExpressionEvaluationResponse(response) {
+    this._debuggerModel.getActions().receiveExpressionEvaluationResponse(response.id, response);
   }
 
-  _handleGetPropertiesResponse(
-    response: GetPropertiesResult & {id: number},
-  ): void {
-    this._debuggerModel
-      .getActions()
-      .receiveGetPropertiesResponse(response.id, response);
+  _handleGetPropertiesResponse(response) {
+    this._debuggerModel.getActions().receiveGetPropertiesResponse(response.id, response);
   }
 
-  _handleCallstackUpdate(callstack: Callstack): void {
+  _handleCallstackUpdate(callstack) {
     this._debuggerModel.getActions().updateCallstack(callstack);
   }
 
-  _handleScopesUpdate(scopeSections: Array<ScopeSection>): void {
+  _handleScopesUpdate(scopeSections) {
     this._debuggerModel.getActions().updateScopes(scopeSections);
   }
 
-  _handleIpcMessage(stdEvent: Event): void {
+  _handleIpcMessage(stdEvent) {
     // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
     // the type that is expected here.
-    // $FlowFixMe(jeffreytan)
-    const event: {channel: string, args: any[]} = stdEvent;
+    const event = stdEvent;
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
           case 'ready':
-            if (
-              atom.config.get(
-                'nuclide.nuclide-debugger.openDevToolsOnDebuggerStart',
-              )
-            ) {
+            if (atom.config.get('nuclide.nuclide-debugger.openDevToolsOnDebuggerStart')) {
               this.openDevTools();
             }
             this._updateDebuggerSettings();
@@ -192,10 +159,7 @@ export default class Bridge {
           case 'BreakpointAdded':
             // BreakpointAdded from chrome side is actually
             // binding the breakpoint.
-            this._bindBreakpoint(
-              event.args[1],
-              event.args[1].resolved === true,
-            );
+            this._bindBreakpoint(event.args[1], event.args[1].resolved === true);
             break;
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
@@ -226,31 +190,19 @@ export default class Bridge {
     }
   }
 
-  _updateDebuggerSettings(): void {
-    this._commandDispatcher.send(
-      'UpdateSettings',
-      this._debuggerModel.getStore().getSettings().getSerializedData(),
-    );
+  _updateDebuggerSettings() {
+    this._commandDispatcher.send('UpdateSettings', this._debuggerModel.getStore().getSettings().getSerializedData());
   }
 
-  _syncDebuggerState(): void {
+  _syncDebuggerState() {
     const store = this._debuggerModel.getStore();
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
     this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
   }
 
-  _handleDebuggerPaused(
-    options: ?{
-      stopThreadId: number,
-      threadSwitchNotification: {
-        sourceURL: string,
-        lineNumber: number,
-        message: string,
-      },
-    },
-  ): void {
-    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
+  _handleDebuggerPaused(options) {
+    this._debuggerModel.getActions().setDebuggerMode((_DebuggerStore || _load_DebuggerStore()).DebuggerMode.PAUSED);
     if (options != null) {
       if (options.stopThreadId != null) {
         this._handleStopThreadUpdate(options.stopThreadId);
@@ -259,67 +211,53 @@ export default class Bridge {
     }
   }
 
-  _handleDebuggerResumed(): void {
-    this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.RUNNING);
+  _handleDebuggerResumed() {
+    this._debuggerModel.getActions().setDebuggerMode((_DebuggerStore || _load_DebuggerStore()).DebuggerMode.RUNNING);
   }
 
-  _handleLoaderBreakpointResumed(): void {
+  _handleLoaderBreakpointResumed() {
     this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
-  _handleClearInterface(): void {
+  _handleClearInterface() {
     this._debuggerModel.getActions().clearInterface();
   }
 
-  _setSelectedCallFrameLine(
-    options: ?{sourceURL: string, lineNumber: number},
-  ): void {
+  _setSelectedCallFrameLine(options) {
     this._debuggerModel.getActions().setSelectedCallFrameLine(options);
   }
 
-  _openSourceLocation(options: ?{sourceURL: string, lineNumber: number}): void {
+  _openSourceLocation(options) {
     if (options == null) {
       return;
     }
-    this._debuggerModel
-      .getActions()
-      .openSourceLocation(options.sourceURL, options.lineNumber);
+    this._debuggerModel.getActions().openSourceLocation(options.sourceURL, options.lineNumber);
   }
 
-  _handleStopThreadSwitch(
-    options: ?{sourceURL: string, lineNumber: number, message: string},
-  ) {
+  _handleStopThreadSwitch(options) {
     if (options == null) {
       return;
     }
-    this._debuggerModel
-      .getActions()
-      .notifyThreadSwitch(
-        options.sourceURL,
-        options.lineNumber,
-        options.message,
-      );
+    this._debuggerModel.getActions().notifyThreadSwitch(options.sourceURL, options.lineNumber, options.message);
   }
 
-  _bindBreakpoint(breakpoint: IPCBreakpoint, resolved: boolean) {
-    const {sourceURL, lineNumber, condition, enabled} = breakpoint;
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
+  _bindBreakpoint(breakpoint, resolved) {
+    const { sourceURL, lineNumber, condition, enabled } = breakpoint;
+    const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
         this._suppressBreakpointSync = true;
-        this._debuggerModel
-          .getActions()
-          .bindBreakpointIPC(path, lineNumber, condition, enabled, resolved);
+        this._debuggerModel.getActions().bindBreakpointIPC(path, lineNumber, condition, enabled, resolved);
       } finally {
         this._suppressBreakpointSync = false;
       }
     }
   }
 
-  _removeBreakpoint(breakpoint: IPCBreakpoint) {
-    const {sourceURL, lineNumber} = breakpoint;
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
+  _removeBreakpoint(breakpoint) {
+    const { sourceURL, lineNumber } = breakpoint;
+    const path = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -331,25 +269,25 @@ export default class Bridge {
     }
   }
 
-  _handleUserBreakpointChange(params: BreakpointUserChangeArgType) {
-    const {action, breakpoint} = params;
+  _handleUserBreakpointChange(params) {
+    const { action, breakpoint } = params;
     this._commandDispatcher.send(action, {
-      sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
+      sourceURL: (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(breakpoint.path),
       lineNumber: breakpoint.line,
       condition: breakpoint.condition,
-      enabled: breakpoint.enabled,
+      enabled: breakpoint.enabled
     });
   }
 
-  _handleThreadsUpdate(threadData: NuclideThreadData): void {
+  _handleThreadsUpdate(threadData) {
     this._debuggerModel.getActions().updateThreads(threadData);
   }
 
-  _handleThreadUpdate(thread: ThreadItem): void {
+  _handleThreadUpdate(thread) {
     this._debuggerModel.getActions().updateThread(thread);
   }
 
-  _handleStopThreadUpdate(id: number): void {
+  _handleStopThreadUpdate(id) {
     this._debuggerModel.getActions().updateStopThread(id);
   }
 
@@ -357,28 +295,23 @@ export default class Bridge {
     // Send an array of file/line objects.
     if (!this._suppressBreakpointSync) {
       const results = [];
-      this._debuggerModel
-        .getBreakpointStore()
-        .getAllBreakpoints()
-        .forEach(breakpoint => {
-          results.push({
-            sourceURL: nuclideUri.nuclideUriToUri(breakpoint.path),
-            lineNumber: breakpoint.line,
-            condition: breakpoint.condition,
-            enabled: breakpoint.enabled,
-          });
+      this._debuggerModel.getBreakpointStore().getAllBreakpoints().forEach(breakpoint => {
+        results.push({
+          sourceURL: (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(breakpoint.path),
+          lineNumber: breakpoint.line,
+          condition: breakpoint.condition,
+          enabled: breakpoint.enabled
         });
+      });
       this._commandDispatcher.send('SyncBreakpoints', results);
     }
   }
 
-  renderChromeWebview(url: string): void {
+  renderChromeWebview(url) {
     if (this._webview == null) {
       // Cast from HTMLElement down to WebviewElement without instanceof
       // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement(
-        'webview',
-      ): any): WebviewElement);
+      const webview = document.createElement('webview');
       webview.src = url;
       webview.nodeintegration = true;
       webview.disablewebsecurity = true;
@@ -389,7 +322,11 @@ export default class Bridge {
       // to live in the DOM. We render it into the body to keep it separate from our view, which may
       // be detached. If the webview were a child, it would cause the webview to reload when
       // reattached, and we'd lose our state.
-      invariant(document.body != null);
+
+      if (!(document.body != null)) {
+        throw new Error('Invariant violation: "document.body != null"');
+      }
+
       document.body.appendChild(webview);
 
       this._setWebviewElement(webview);
@@ -400,30 +337,39 @@ export default class Bridge {
   }
 
   // Exposed for tests
-  _setWebviewElement(webview: WebviewElement): void {
+  _setWebviewElement(webview) {
     this._webview = webview;
     this._commandDispatcher.setupChromeChannel(webview);
-    invariant(this._cleanupDisposables == null);
-    this._cleanupDisposables = new UniversalDisposable(
-      Observable.fromEvent(webview, 'ipc-message').subscribe(
-        this._handleIpcMessage,
-      ),
-      () => {
-        webview.remove();
-        this._webview = null;
-        this._webviewUrl = null;
-      },
-    );
+
+    if (!(this._cleanupDisposables == null)) {
+      throw new Error('Invariant violation: "this._cleanupDisposables == null"');
+    }
+
+    this._cleanupDisposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(_rxjsBundlesRxMinJs.Observable.fromEvent(webview, 'ipc-message').subscribe(this._handleIpcMessage), () => {
+      webview.remove();
+      this._webview = null;
+      this._webviewUrl = null;
+    });
   }
 
-  setupNuclideChannel(debuggerInstance: Object): Promise<void> {
+  setupNuclideChannel(debuggerInstance) {
     return this._commandDispatcher.setupNuclideChannel(debuggerInstance);
   }
 
-  openDevTools(): void {
+  openDevTools() {
     if (this._webview == null) {
       return;
     }
     this._webview.openDevTools();
   }
 }
+exports.default = Bridge; /**
+                           * Copyright (c) 2015-present, Facebook, Inc.
+                           * All rights reserved.
+                           *
+                           * This source code is licensed under the license found in the LICENSE file in
+                           * the root directory of this source tree.
+                           *
+                           * 
+                           * @format
+                           */

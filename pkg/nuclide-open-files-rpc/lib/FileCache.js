@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileCache = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = _interopRequireDefault(require('simple-text-buffer'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _FileVersionNotifier;
+
+function _load_FileVersionNotifier() {
+  return _FileVersionNotifier = require('./FileVersionNotifier');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,88 +48,82 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  FileOpenEvent,
-  FileCloseEvent,
-  FileEditEvent,
-  FileEvent,
-  FileVersion,
-  LocalFileEvent,
-} from './rpc-types';
-
-import TextBuffer from 'simple-text-buffer';
-import invariant from 'assert';
-import {BehaviorSubject, Subject, Observable} from 'rxjs';
-import {FileVersionNotifier} from './FileVersionNotifier';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-import {FileEventKind} from './constants';
-
-export class FileCache {
-  _buffers: Map<NuclideUri, simpleTextBuffer$TextBuffer>;
-  _requests: FileVersionNotifier;
-  _fileEvents: Subject<LocalFileEvent>;
+class FileCache {
   // Care! update() is the only way you're allowed to update _buffers or _requests
   // or to fire a _fileEvents.next() event. That's to ensure that the three things
   // stay in sync.
-  _directoryEvents: BehaviorSubject<Set<NuclideUri>>;
-  _resources: UniversalDisposable;
-
   constructor() {
     this._buffers = new Map();
-    this._fileEvents = new Subject();
-    this._directoryEvents = new BehaviorSubject(new Set());
-    this._requests = new FileVersionNotifier();
+    this._fileEvents = new _rxjsBundlesRxMinJs.Subject();
+    this._directoryEvents = new _rxjsBundlesRxMinJs.BehaviorSubject(new Set());
+    this._requests = new (_FileVersionNotifier || _load_FileVersionNotifier()).FileVersionNotifier();
 
-    this._resources = new UniversalDisposable();
+    this._resources = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._resources.add(this._requests);
   }
 
-  update(updateBufferAndMakeEventFunc: () => LocalFileEvent) {
+  update(updateBufferAndMakeEventFunc) {
     const event = updateBufferAndMakeEventFunc();
     this._requests.onEvent(event);
 
     // invariant: because the above two lines have updated both _buffers and _requests,
     // then getBufferAtVersion will necessarily return immediately and succesfully.
     // And getBufferForFileEdit will also succeed.
-    invariant(event.kind !== 'edit' || this.getBufferForFileEdit(event));
+
+    if (!(event.kind !== 'edit' || this.getBufferForFileEdit(event))) {
+      throw new Error('Invariant violation: "event.kind !== \'edit\' || this.getBufferForFileEdit(event)"');
+    }
 
     this._fileEvents.next(event);
   }
 
   // If any out of sync state is detected then an Error is thrown.
   // This will force the client to send a 'sync' event to get back on track.
-  onFileEvent(event: FileEvent): Promise<void> {
+  onFileEvent(event) {
     const filePath = event.fileVersion.filePath;
     const changeCount = event.fileVersion.version;
     const buffer = this._buffers.get(filePath);
     switch (event.kind) {
-      case FileEventKind.OPEN:
-        invariant(buffer == null);
+      case (_constants || _load_constants()).FileEventKind.OPEN:
+        if (!(buffer == null)) {
+          throw new Error('Invariant violation: "buffer == null"');
+        }
+
         this._open(filePath, event.contents, changeCount);
         break;
-      case FileEventKind.CLOSE:
+      case (_constants || _load_constants()).FileEventKind.CLOSE:
         if (buffer != null) {
           this._close(filePath, buffer);
         }
         break;
-      case FileEventKind.EDIT:
-        invariant(buffer != null);
-        invariant(buffer.changeCount === changeCount - 1);
-        invariant(buffer.getTextInRange(event.oldRange) === event.oldText);
+      case (_constants || _load_constants()).FileEventKind.EDIT:
+        if (!(buffer != null)) {
+          throw new Error('Invariant violation: "buffer != null"');
+        }
+
+        if (!(buffer.changeCount === changeCount - 1)) {
+          throw new Error('Invariant violation: "buffer.changeCount === changeCount - 1"');
+        }
+
+        if (!(buffer.getTextInRange(event.oldRange) === event.oldText)) {
+          throw new Error('Invariant violation: "buffer.getTextInRange(event.oldRange) === event.oldText"');
+        }
+
         this.update(() => {
           buffer.setTextInRange(event.oldRange, event.newText);
-          invariant(buffer.changeCount === changeCount);
+
+          if (!(buffer.changeCount === changeCount)) {
+            throw new Error('Invariant violation: "buffer.changeCount === changeCount"');
+          }
+
           return event;
         });
         break;
-      case FileEventKind.SYNC:
+      case (_constants || _load_constants()).FileEventKind.SYNC:
         if (buffer == null) {
           this._open(filePath, event.contents, changeCount);
         } else {
@@ -99,16 +136,15 @@ export class FileCache {
     return Promise.resolve(undefined);
   }
 
-  async onDirectoriesChanged(openDirectories: Set<NuclideUri>): Promise<void> {
-    this._directoryEvents.next(openDirectories);
+  onDirectoriesChanged(openDirectories) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._directoryEvents.next(openDirectories);
+    })();
   }
 
-  _syncEdit(
-    filePath: NuclideUri,
-    buffer: simpleTextBuffer$TextBuffer,
-    contents: string,
-    changeCount: number,
-  ): void {
+  _syncEdit(filePath, buffer, contents, changeCount) {
     // messages are out of order
     if (changeCount < buffer.changeCount) {
       return;
@@ -120,54 +156,46 @@ export class FileCache {
       buffer.setText(contents);
       const newRange = buffer.getRange();
       buffer.changeCount = changeCount;
-      return createEditEvent(
-        this.createFileVersion(filePath, changeCount),
-        oldRange,
-        oldText,
-        newRange,
-        buffer.getText(),
-      );
+      return createEditEvent(this.createFileVersion(filePath, changeCount), oldRange, oldText, newRange, buffer.getText());
     });
   }
 
-  _open(filePath: NuclideUri, contents: string, changeCount: number): void {
+  _open(filePath, contents, changeCount) {
     // We never call setPath on these TextBuffers as that will
     // start the TextBuffer attempting to sync with the file system.
-    const newBuffer = new TextBuffer(contents);
+    const newBuffer = new (_simpleTextBuffer || _load_simpleTextBuffer()).default(contents);
     newBuffer.changeCount = changeCount;
     this.update(() => {
       this._buffers.set(filePath, newBuffer);
-      return createOpenEvent(
-        this.createFileVersion(filePath, changeCount),
-        contents,
-      );
+      return createOpenEvent(this.createFileVersion(filePath, changeCount), contents);
     });
   }
 
-  _close(filePath: NuclideUri, buffer: simpleTextBuffer$TextBuffer): void {
+  _close(filePath, buffer) {
     this.update(() => {
       this._buffers.delete(filePath);
-      return createCloseEvent(
-        this.createFileVersion(filePath, buffer.changeCount),
-      );
+      return createCloseEvent(this.createFileVersion(filePath, buffer.changeCount));
     });
     buffer.destroy();
   }
 
-  dispose(): void {
+  dispose() {
     // The _close routine will delete elements from the _buffers map.
-    // Per ES6 this is safe to do even while iterating.
     for (const [filePath, buffer] of this._buffers.entries()) {
       this._close(filePath, buffer);
     }
-    invariant(this._buffers.size === 0);
+
+    if (!(this._buffers.size === 0)) {
+      throw new Error('Invariant violation: "this._buffers.size === 0"');
+    }
+
     this._resources.dispose();
     this._fileEvents.complete();
     this._directoryEvents.complete();
   }
 
   // getBuffer: returns whatever is the current version of the buffer.
-  getBuffer(filePath: NuclideUri): ?simpleTextBuffer$TextBuffer {
+  getBuffer(filePath) {
     // TODO: change this to return a string, to ensure that no caller will ever mutate
     // the buffer contents (and hence its changeCount). The only modifications allowed
     // are those that come from the editor inside this.onFileEvent.
@@ -179,33 +207,41 @@ export class FileCache {
   // But if for whatever reason the stream of onFileEvent won't hit that precise version
   // then returns null. See comments in _requests.waitForBufferAtVersion for
   // the subtle scenarios where it might return null.
-  async getBufferAtVersion(
-    fileVersion: FileVersion,
-  ): Promise<?simpleTextBuffer$TextBuffer> {
-    // TODO: change this to return a string, like getBuffer() above.
-    if (!await this._requests.waitForBufferAtVersion(fileVersion)) {
-      return null;
-    }
-    const buffer = this.getBuffer(fileVersion.filePath);
-    return buffer != null && buffer.changeCount === fileVersion.version
-      ? buffer
-      : null;
+  getBufferAtVersion(fileVersion) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // TODO: change this to return a string, like getBuffer() above.
+      if (!(yield _this2._requests.waitForBufferAtVersion(fileVersion))) {
+        return null;
+      }
+      const buffer = _this2.getBuffer(fileVersion.filePath);
+      return buffer != null && buffer.changeCount === fileVersion.version ? buffer : null;
+    })();
   }
 
   // getBufferForFileEdit - this function may be called immediately when an edit event
   // happens, before any awaits. At that time the buffer is guaranteed to be
   // available. If called at any other time, the buffer may no longer be available,
   // in which case it may throw.
-  getBufferForFileEdit(fileEvent: FileEditEvent): simpleTextBuffer$TextBuffer {
+  getBufferForFileEdit(fileEvent) {
     // TODO: change this to return a string, like getBuffer() above.
     const fileVersion = fileEvent.fileVersion;
-    invariant(this._requests.isBufferAtVersion(fileVersion));
+
+    if (!this._requests.isBufferAtVersion(fileVersion)) {
+      throw new Error('Invariant violation: "this._requests.isBufferAtVersion(fileVersion)"');
+    }
+
     const buffer = this.getBuffer(fileVersion.filePath);
-    invariant(buffer != null && buffer.changeCount === fileVersion.version);
+
+    if (!(buffer != null && buffer.changeCount === fileVersion.version)) {
+      throw new Error('Invariant violation: "buffer != null && buffer.changeCount === fileVersion.version"');
+    }
+
     return buffer;
   }
 
-  getOpenDirectories(): Set<NuclideUri> {
+  getOpenDirectories() {
     return this._directoryEvents.getValue();
   }
 
@@ -213,75 +249,65 @@ export class FileCache {
   // Remote equivalent of atom.project.relativizePath()[1]
   // TODO: Return the most nested open directory.
   //       Note that Atom doesn't do this, though it should.
-  getContainingDirectory(filePath: NuclideUri): ?NuclideUri {
+  getContainingDirectory(filePath) {
     for (const dir of this.getOpenDirectories()) {
-      if (nuclideUri.contains(dir, filePath)) {
+      if ((_nuclideUri || _load_nuclideUri()).default.contains(dir, filePath)) {
         return dir;
       }
     }
     return null;
   }
 
-  getOpenFiles(): Iterator<NuclideUri> {
+  getOpenFiles() {
     return this._buffers.keys();
   }
 
-  observeFileEvents(): Observable<LocalFileEvent> {
-    return Observable.from(
-      Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
-        invariant(buffer != null);
-        return createOpenEvent(
-          this.createFileVersion(filePath, buffer.changeCount),
-          buffer.getText(),
-        );
-      }),
-    ).concat(this._fileEvents);
+  observeFileEvents() {
+    return _rxjsBundlesRxMinJs.Observable.from(Array.from(this._buffers.entries()).map(([filePath, buffer]) => {
+      if (!(buffer != null)) {
+        throw new Error('Invariant violation: "buffer != null"');
+      }
+
+      return createOpenEvent(this.createFileVersion(filePath, buffer.changeCount), buffer.getText());
+    })).concat(this._fileEvents);
   }
 
-  observeDirectoryEvents(): Observable<Set<NuclideUri>> {
+  observeDirectoryEvents() {
     return this._directoryEvents;
   }
 
-  createFileVersion(filePath: NuclideUri, version: number): FileVersion {
+  createFileVersion(filePath, version) {
     return {
       notifier: this,
       filePath,
-      version,
+      version
     };
   }
 }
 
-function createOpenEvent(
-  fileVersion: FileVersion,
-  contents: string,
-): FileOpenEvent {
+exports.FileCache = FileCache;
+function createOpenEvent(fileVersion, contents) {
   return {
-    kind: FileEventKind.OPEN,
+    kind: (_constants || _load_constants()).FileEventKind.OPEN,
     fileVersion,
-    contents,
+    contents
   };
 }
 
-function createCloseEvent(fileVersion: FileVersion): FileCloseEvent {
+function createCloseEvent(fileVersion) {
   return {
-    kind: FileEventKind.CLOSE,
-    fileVersion,
+    kind: (_constants || _load_constants()).FileEventKind.CLOSE,
+    fileVersion
   };
 }
 
-function createEditEvent(
-  fileVersion: FileVersion,
-  oldRange: atom$Range,
-  oldText: string,
-  newRange: atom$Range,
-  newText: string,
-): FileEditEvent {
+function createEditEvent(fileVersion, oldRange, oldText, newRange, newText) {
   return {
-    kind: FileEventKind.EDIT,
+    kind: (_constants || _load_constants()).FileEventKind.EDIT,
     fileVersion,
     oldRange,
     oldText,
     newRange,
-    newText,
+    newText
   };
 }

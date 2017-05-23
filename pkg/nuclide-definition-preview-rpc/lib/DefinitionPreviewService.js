@@ -1,58 +1,71 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDefinitionPreview = undefined;
 
-import {countOccurrences} from 'nuclide-commons/string';
-import fs from '../../commons-node/fsPromise';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const MAX_PREVIEW_LINES = 10;
+let getDefinitionPreview = exports.getDefinitionPreview = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (definition) {
+    const contents = yield (_fsPromise || _load_fsPromise()).default.readFile(definition.path, 'utf8');
+    const lines = contents.split('\n');
 
-const WHITESPACE_REGEX = /^\s*/;
-function getIndentLevel(line: string) {
-  return WHITESPACE_REGEX.exec(line)[0].length;
+    const start = definition.position.row;
+    const initialIndentLevel = getIndentLevel(lines[start]);
+
+    const buffer = [];
+    for (let i = start, openParenCount = 0, closedParenCount = 0; i < start + MAX_PREVIEW_LINES && i < lines.length; i++) {
+      const line = lines[i];
+      const indentLevel = getIndentLevel(line);
+      openParenCount += (0, (_string || _load_string()).countOccurrences)(line, '(');
+      closedParenCount += (0, (_string || _load_string()).countOccurrences)(line, ')');
+
+      buffer.push(line.substr(Math.min(indentLevel, initialIndentLevel))); // dedent
+
+      // heuristic for the end of a function signature.
+      // we've returned back to the original indentation level
+      // and we have balanced pairs of parens
+      if (indentLevel <= initialIndentLevel && openParenCount === closedParenCount) {
+        break;
+      }
+    }
+
+    return buffer.join('\n');
+  });
+
+  return function getDefinitionPreview(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
 }
 
-export async function getDefinitionPreview(
-  definition: Definition,
-): Promise<string> {
-  const contents = await fs.readFile(definition.path, 'utf8');
-  const lines = contents.split('\n');
+var _fsPromise;
 
-  const start = definition.position.row;
-  const initialIndentLevel = getIndentLevel(lines[start]);
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
 
-  const buffer = [];
-  for (
-    let i = start, openParenCount = 0, closedParenCount = 0;
-    i < start + MAX_PREVIEW_LINES && i < lines.length;
-    i++
-  ) {
-    const line = lines[i];
-    const indentLevel = getIndentLevel(line);
-    openParenCount += countOccurrences(line, '(');
-    closedParenCount += countOccurrences(line, ')');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-    buffer.push(line.substr(Math.min(indentLevel, initialIndentLevel))); // dedent
+const MAX_PREVIEW_LINES = 10; /**
+                               * Copyright (c) 2015-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the license found in the LICENSE file in
+                               * the root directory of this source tree.
+                               *
+                               * 
+                               * @format
+                               */
 
-    // heuristic for the end of a function signature.
-    // we've returned back to the original indentation level
-    // and we have balanced pairs of parens
-    if (
-      indentLevel <= initialIndentLevel &&
-      openParenCount === closedParenCount
-    ) {
-      break;
-    }
-  }
-
-  return buffer.join('\n');
+const WHITESPACE_REGEX = /^\s*/;
+function getIndentLevel(line) {
+  return WHITESPACE_REGEX.exec(line)[0].length;
 }

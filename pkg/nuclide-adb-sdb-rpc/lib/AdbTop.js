@@ -1,50 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * It tries to mimic what the top utility would report, but we have to do it manually because
- * different devices can have different versions of top.
- *
- * Reference for calculations: https://github.com/scaidermern/top-processes
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AdbTop = undefined;
 
-import type {AndroidJavaProcess} from './types';
-import type {Process} from './types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {sleep} from 'nuclide-commons/promise';
-import {Adb} from './Adb';
-import {arrayCompact} from 'nuclide-commons/collection';
+var _promise;
 
-type CPU_MEM = [number, number];
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
 
-export class AdbTop {
-  _adb: Adb;
-  _device: string;
+var _Adb;
 
-  constructor(adb: Adb, device: string) {
+function _load_Adb() {
+  return _Adb = require('./Adb');
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class AdbTop {
+
+  constructor(adb, device) {
     this._adb = adb;
     this._device = device;
   }
 
-  async fetch(): Promise<Process[]> {
-    const [processes, javaProcesses, cpuAndMemUsage] = await Promise.all([
-      this._getProcessList(),
-      this._getJavaProcessList(),
-      this._getProcessAndMemoryUsage(),
-    ]);
-    const javaPids = new Set(
-      javaProcesses.map(javaProc => Number(javaProc.pid)),
-    );
-    return arrayCompact(
-      processes.map(x => {
+  fetch() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const [processes, javaProcesses, cpuAndMemUsage] = yield Promise.all([_this._getProcessList(), _this._getJavaProcessList(), _this._getProcessAndMemoryUsage()]);
+      const javaPids = new Set(javaProcesses.map(function (javaProc) {
+        return Number(javaProc.pid);
+      }));
+      return (0, (_collection || _load_collection()).arrayCompact)(processes.map(function (x) {
         const info = x.trim().split(/\s+/);
         const pid = parseInt(info[1], 10);
         if (!Number.isInteger(pid)) {
@@ -64,94 +62,108 @@ export class AdbTop {
           name: info[info.length - 1],
           cpuUsage: cpu,
           memUsage: mem,
-          isJava,
+          isJava
         };
-      }),
-    );
+      }));
+    })();
   }
 
-  async _getProcessList(): Promise<Array<string>> {
-    return (await this._adb
-      .runShortCommand(this._device, ['shell', 'ps'])
-      .toPromise()).split(/\n/);
+  _getProcessList() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this2._adb.runShortCommand(_this2._device, ['shell', 'ps']).toPromise()).split(/\n/);
+    })();
   }
 
-  async _getJavaProcessList(): Promise<Array<AndroidJavaProcess>> {
-    return this._adb.getJavaProcesses(this._device);
+  _getJavaProcessList() {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this3._adb.getJavaProcesses(_this3._device);
+    })();
   }
 
-  async _getProcessAndMemoryUsage(): Promise<Map<number, CPU_MEM>> {
-    const [procTimePrev, cpuTimePrev] = await Promise.all([
-      this._getProcessesTime(),
-      this._getGlobalCPUTime(),
-    ]);
-    await sleep(500);
-    const [procTime, cpuTime] = await Promise.all([
-      this._getProcessesTime(),
-      this._getGlobalCPUTime(),
-    ]);
+  _getProcessAndMemoryUsage() {
+    var _this4 = this;
 
-    // pid => cpuUsage, memory usage
-    const cpuAndMemUsage = new Map();
-    const deltaCpu = cpuTime - cpuTimePrev;
-    procTime.forEach((p1, pid) => {
-      if (!procTimePrev.has(pid)) {
-        return;
-      }
-      const p0 = procTimePrev.get(pid);
-      if (p0 != null) {
-        const deltaProc = p1[0] - p0[0];
-        const memUsage = p1[1];
-        cpuAndMemUsage.set(pid, [deltaProc / deltaCpu * 100, memUsage]);
-      }
-    });
-    return cpuAndMemUsage;
+    return (0, _asyncToGenerator.default)(function* () {
+      const [procTimePrev, cpuTimePrev] = yield Promise.all([_this4._getProcessesTime(), _this4._getGlobalCPUTime()]);
+      yield (0, (_promise || _load_promise()).sleep)(500);
+      const [procTime, cpuTime] = yield Promise.all([_this4._getProcessesTime(), _this4._getGlobalCPUTime()]);
+
+      // pid => cpuUsage, memory usage
+      const cpuAndMemUsage = new Map();
+      const deltaCpu = cpuTime - cpuTimePrev;
+      procTime.forEach(function (p1, pid) {
+        if (!procTimePrev.has(pid)) {
+          return;
+        }
+        const p0 = procTimePrev.get(pid);
+        if (p0 != null) {
+          const deltaProc = p1[0] - p0[0];
+          const memUsage = p1[1];
+          cpuAndMemUsage.set(pid, [deltaProc / deltaCpu * 100, memUsage]);
+        }
+      });
+      return cpuAndMemUsage;
+    })();
   }
 
   /**
    * Returns a map: pid => utime + stime
    */
-  async _getProcessesTime(): Promise<Map<number, CPU_MEM>> {
-    const validProcessRegex = new RegExp(/\d+\s()/);
-    // We look for the all the /proc/PID/stat files failing silently if the process dies as the
-    // command runs.
-    const procTime = (await this._adb
-      .runShortCommand(this._device, [
-        'shell',
-        'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
-      ])
-      .toPromise())
-      .split(/\n/)
-      .filter(x => validProcessRegex.test(x));
-    return new Map(
-      procTime.map(x => {
+  _getProcessesTime() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const validProcessRegex = new RegExp(/\d+\s()/);
+      // We look for the all the /proc/PID/stat files failing silently if the process dies as the
+      // command runs.
+      const procTime = (yield _this5._adb.runShortCommand(_this5._device, ['shell', 'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done']).toPromise()).split(/\n/).filter(function (x) {
+        return validProcessRegex.test(x);
+      });
+      return new Map(procTime.map(function (x) {
         const info = x.trim().split(/\s/);
-        return [
-          parseInt(info[0], 10),
-          [
-            parseInt(info[12], 10) + parseInt(info[13], 10), // stime + utime
-            parseInt(info[23], 10), // RSS
-          ],
-        ];
-      }),
-    );
+        return [parseInt(info[0], 10), [parseInt(info[12], 10) + parseInt(info[13], 10), // stime + utime
+        parseInt(info[23], 10)]];
+      }));
+    })();
   }
 
-  async _getGlobalCPUTime(): Promise<number> {
-    return (await this._getGlobalProcessStat())
-      .split(/\s+/)
-      .slice(1, -2)
-      .reduce((acc, current) => {
+  _getGlobalCPUTime() {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this6._getGlobalProcessStat()).split(/\s+/).slice(1, -2).reduce(function (acc, current) {
         const val = parseInt(current, 10);
         return acc + val;
       }, 0);
+    })();
   }
 
-  async _getGlobalProcessStat(): Promise<string> {
-    return (await this._adb
-      .runShortCommand(this._device, ['shell', 'cat', '/proc/stat'])
-      .toPromise())
-      .split(/\n/)[0]
-      .trim();
+  _getGlobalProcessStat() {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return (yield _this7._adb.runShortCommand(_this7._device, ['shell', 'cat', '/proc/stat']).toPromise()).split(/\n/)[0].trim();
+    })();
   }
 }
+exports.AdbTop = AdbTop; /**
+                          * Copyright (c) 2015-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the license found in the LICENSE file in
+                          * the root directory of this source tree.
+                          *
+                          * 
+                          * @format
+                          */
+
+/**
+ * It tries to mimic what the top utility would report, but we have to do it manually because
+ * different devices can have different versions of top.
+ *
+ * Reference for calculations: https://github.com/scaidermern/top-processes
+ */

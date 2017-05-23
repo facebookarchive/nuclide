@@ -1,116 +1,133 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessKiller} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RootPanel = undefined;
 
-import {DeviceTask} from '../DeviceTask';
-import React from 'react';
-import {
-  PanelComponentScroller,
-} from 'nuclide-commons-ui/PanelComponentScroller';
-import {Subscription} from 'rxjs';
-import invariant from 'invariant';
-import {Selectors} from './Selectors';
-import {DeviceTable} from './DeviceTable';
-import {DevicePanel} from './DevicePanel';
+var _DeviceTask;
 
-export type Props = {
-  setHost: (host: NuclideUri) => void,
-  setDeviceType: (deviceType: string) => void,
-  setDevice: (device: ?Device) => void,
-  startFetchingDevices: () => Subscription,
-  startFetchingProcesses: () => Subscription,
-  killProcess: ?ProcessKiller,
-  hosts: NuclideUri[],
-  devices: Device[],
-  host: NuclideUri,
-  deviceTypes: string[],
-  deviceType: ?string,
-  deviceTasks: DeviceTask[],
-  device: ?Device,
-  infoTables: Map<string, Map<string, string>>,
-  processes: Process[],
-};
+function _load_DeviceTask() {
+  return _DeviceTask = require('../DeviceTask');
+}
 
-export class RootPanel extends React.Component {
-  props: Props;
+var _react = _interopRequireDefault(require('react'));
 
-  constructor(props: Props) {
+var _PanelComponentScroller;
+
+function _load_PanelComponentScroller() {
+  return _PanelComponentScroller = require('nuclide-commons-ui/PanelComponentScroller');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Selectors;
+
+function _load_Selectors() {
+  return _Selectors = require('./Selectors');
+}
+
+var _DeviceTable;
+
+function _load_DeviceTable() {
+  return _DeviceTable = require('./DeviceTable');
+}
+
+var _DevicePanel;
+
+function _load_DevicePanel() {
+  return _DevicePanel = require('./DevicePanel');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class RootPanel extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    invariant(props.hosts.length > 0);
-    (this: any)._goToRootPanel = this._goToRootPanel.bind(this);
+
+    if (!(props.hosts.length > 0)) {
+      throw new Error('Invariant violation: "props.hosts.length > 0"');
+    }
+
+    this._goToRootPanel = this._goToRootPanel.bind(this);
   }
 
-  _createDeviceTable(): ?React.Element<any> {
+  _createDeviceTable() {
     if (this.props.deviceType === null) {
       return null;
     }
-    return (
-      <DeviceTable
-        devices={this.props.devices}
-        device={this.props.device}
-        setDevice={this.props.setDevice}
-        startFetchingDevices={this.props.startFetchingDevices}
-      />
-    );
+    return _react.default.createElement((_DeviceTable || _load_DeviceTable()).DeviceTable, {
+      devices: this.props.devices,
+      device: this.props.device,
+      setDevice: this.props.setDevice,
+      startFetchingDevices: this.props.startFetchingDevices
+    });
   }
 
-  _goToRootPanel(): void {
+  _goToRootPanel() {
     this.props.setDevice(null);
   }
 
-  _getInnerPanel(): React.Element<any> {
+  _getInnerPanel() {
     if (this.props.device != null) {
-      return (
-        <div className="block">
-          <DevicePanel
-            infoTables={this.props.infoTables}
-            processes={this.props.processes}
-            killProcess={this.props.killProcess}
-            deviceTasks={this.props.deviceTasks}
-            goToRootPanel={this._goToRootPanel}
-            startFetchingProcesses={this.props.startFetchingProcesses}
-            host={this.props.host}
-            device={this.props.device}
-          />
-        </div>
+      return _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement((_DevicePanel || _load_DevicePanel()).DevicePanel, {
+          infoTables: this.props.infoTables,
+          processes: this.props.processes,
+          killProcess: this.props.killProcess,
+          deviceTasks: this.props.deviceTasks,
+          goToRootPanel: this._goToRootPanel,
+          startFetchingProcesses: this.props.startFetchingProcesses,
+          host: this.props.host,
+          device: this.props.device
+        })
       );
     }
-    return (
-      <div>
-        <div className="block">
-          <Selectors
-            deviceType={this.props.deviceType}
-            deviceTypes={this.props.deviceTypes}
-            hosts={this.props.hosts}
-            host={this.props.host}
-            setDeviceType={this.props.setDeviceType}
-            setHost={this.props.setHost}
-          />
-        </div>
-        <div className="block">
-          {this._createDeviceTable()}
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement((_Selectors || _load_Selectors()).Selectors, {
+          deviceType: this.props.deviceType,
+          deviceTypes: this.props.deviceTypes,
+          hosts: this.props.hosts,
+          host: this.props.host,
+          setDeviceType: this.props.setDeviceType,
+          setHost: this.props.setHost
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        this._createDeviceTable()
+      )
     );
   }
 
-  render(): React.Element<any> {
-    return (
-      <PanelComponentScroller>
-        <div className="nuclide-device-panel-container">
-          {this._getInnerPanel()}
-        </div>
-      </PanelComponentScroller>
+  render() {
+    return _react.default.createElement(
+      (_PanelComponentScroller || _load_PanelComponentScroller()).PanelComponentScroller,
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-device-panel-container' },
+        this._getInnerPanel()
+      )
     );
   }
 }
+exports.RootPanel = RootPanel; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                * 
+                                * @format
+                                */

@@ -1,3 +1,33 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _atom = require('atom');
+
+var _hyperclickUtils;
+
+function _load_hyperclickUtils() {
+  return _hyperclickUtils = require('./hyperclick-utils');
+}
+
+var _showTriggerConflictWarning;
+
+function _load_showTriggerConflictWarning() {
+  return _showTriggerConflictWarning = _interopRequireDefault(require('./showTriggerConflictWarning'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,23 +35,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 /* global localStorage */
 
-import type {HyperclickSuggestion} from './types';
-import type Hyperclick from './Hyperclick';
-
-import {CompositeDisposable, Disposable, Point} from 'atom';
-import {getWordTextAndRange} from './hyperclick-utils';
-import showTriggerConflictWarning from './showTriggerConflictWarning';
-import invariant from 'assert';
-
-import {getLogger} from '../../nuclide-logging';
-
-const logger = getLogger();
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
 const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
 
@@ -29,26 +49,9 @@ const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
  * Construct this object to enable Hyperclick in a text editor.
  * Call `dispose` to disable the feature.
  */
-export default class HyperclickForTextEditor {
-  _textEditor: atom$TextEditor;
-  _textEditorView: atom$TextEditorElement;
-  _hyperclick: Hyperclick;
-  _lastMouseEvent: ?MouseEvent;
-  _lastPosition: ?atom$Point;
-  _lastSuggestionAtMousePromise: ?Promise<HyperclickSuggestion>;
-  _lastSuggestionAtMouse: ?HyperclickSuggestion;
-  _navigationMarkers: ?Array<atom$Marker>;
-  _lastWordRange: ?atom$Range;
-  _onMouseMove: (event: Event) => void;
-  _onMouseDown: (event: Event) => void;
-  _onKeyDown: (event: Event) => void;
-  _onKeyUp: (event: Event) => void;
-  _subscriptions: atom$CompositeDisposable;
-  _isDestroyed: boolean;
-  _isLoading: boolean;
-  _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
+class HyperclickForTextEditor {
 
-  constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
+  constructor(textEditor, hyperclick) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(textEditor);
 
@@ -64,7 +67,7 @@ export default class HyperclickForTextEditor {
     this._navigationMarkers = null;
 
     this._lastWordRange = null;
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._onMouseDown = this._onMouseDown.bind(this);
@@ -74,37 +77,30 @@ export default class HyperclickForTextEditor {
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
     this._onKeyUp = this._onKeyUp.bind(this);
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
-    (this: any)._onContextMenu = this._onContextMenu.bind(this);
+    this._onContextMenu = this._onContextMenu.bind(this);
     this._textEditorView.addEventListener('contextmenu', this._onContextMenu);
 
-    this._subscriptions.add(
-      atom.commands.add(this._textEditorView, {
-        'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
-      }),
-    );
+    this._subscriptions.add(atom.commands.add(this._textEditorView, {
+      'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor()
+    }));
 
     this._isDestroyed = false;
     this._isLoading = false;
 
-    this._subscriptions.add(
-      atom.config.observe(
-        process.platform === 'darwin'
-          ? 'nuclide.hyperclick.darwinTriggerKeys'
-          : process.platform === 'win32'
-              ? 'nuclide.hyperclick.win32TriggerKeys'
-              : 'nuclide.hyperclick.linuxTriggerKeys',
-        (newValue: string) => {
-          // For all Flow knows, newValue.split could return any old strings
-          this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
-        },
-      ),
-    );
+    this._subscriptions.add(atom.config.observe(process.platform === 'darwin' ? 'nuclide.hyperclick.darwinTriggerKeys' : process.platform === 'win32' ? 'nuclide.hyperclick.win32TriggerKeys' : 'nuclide.hyperclick.linuxTriggerKeys', newValue => {
+      // For all Flow knows, newValue.split could return any old strings
+      this._triggerKeys = new Set(newValue.split(','));
+    }));
   }
 
-  _setupMouseListeners(): void {
-    const getLinesDomNode = (): HTMLElement => {
-      const {component} = this._textEditorView;
-      invariant(component);
+  _setupMouseListeners() {
+    const getLinesDomNode = () => {
+      const { component } = this._textEditorView;
+
+      if (!component) {
+        throw new Error('Invariant violation: "component"');
+      }
+
       return component.linesComponent.getDomNode();
     };
     const removeMouseListeners = () => {
@@ -118,27 +114,26 @@ export default class HyperclickForTextEditor {
       getLinesDomNode().addEventListener('mousedown', this._onMouseDown);
       getLinesDomNode().addEventListener('mousemove', this._onMouseMove);
     };
-    this._subscriptions.add(new Disposable(removeMouseListeners));
-    this._subscriptions.add(
-      this._textEditorView.onDidDetach(removeMouseListeners),
-    );
-    this._subscriptions.add(
-      this._textEditorView.onDidAttach(addMouseListeners),
-    );
+    this._subscriptions.add(new _atom.Disposable(removeMouseListeners));
+    this._subscriptions.add(this._textEditorView.onDidDetach(removeMouseListeners));
+    this._subscriptions.add(this._textEditorView.onDidAttach(addMouseListeners));
     addMouseListeners();
   }
 
-  _confirmSuggestion(suggestion: HyperclickSuggestion): void {
+  _confirmSuggestion(suggestion) {
     if (Array.isArray(suggestion.callback) && suggestion.callback.length > 0) {
       this._hyperclick.showSuggestionList(this._textEditor, suggestion);
     } else {
-      invariant(typeof suggestion.callback === 'function');
+      if (!(typeof suggestion.callback === 'function')) {
+        throw new Error('Invariant violation: "typeof suggestion.callback === \'function\'"');
+      }
+
       suggestion.callback();
     }
   }
 
-  _onContextMenu(event: Event): void {
-    const mouseEvent: MouseEvent = (event: any);
+  _onContextMenu(event) {
+    const mouseEvent = event;
     // If the key trigger happens to cause the context menu to show up, then
     // cancel it. By this point, it's too late to know if you're at a suggestion
     // position to be more fine grained. So if your trigger keys are "ctrl+cmd",
@@ -148,8 +143,8 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onMouseMove(event: Event): void {
-    const mouseEvent: MouseEvent = (event: any);
+  _onMouseMove(event) {
+    const mouseEvent = event;
     if (this._isLoading) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
@@ -158,10 +153,10 @@ export default class HyperclickForTextEditor {
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
-    this._lastMouseEvent = ({
+    this._lastMouseEvent = {
       clientX: mouseEvent.clientX,
-      clientY: mouseEvent.clientY,
-    }: any);
+      clientY: mouseEvent.clientY
+    };
 
     // Don't fetch suggestions if the mouse is still in the same 'word', where
     // 'word' is a whitespace-delimited group of characters.
@@ -170,16 +165,11 @@ export default class HyperclickForTextEditor {
     // fetch suggestions because the new word might be between those ranges.
     // This should be ok because it will reuse that last suggestion until the
     // mouse moves off of it.
-    const lastSuggestionIsNotMultiRange =
-      !this._lastSuggestionAtMouse ||
-      !Array.isArray(this._lastSuggestionAtMouse.range);
+    const lastSuggestionIsNotMultiRange = !this._lastSuggestionAtMouse || !Array.isArray(this._lastSuggestionAtMouse.range);
     if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
       return;
     }
-    const {range} = getWordTextAndRange(
-      this._textEditor,
-      this._getMousePositionAsBufferPosition(),
-    );
+    const { range } = (0, (_hyperclickUtils || _load_hyperclickUtils()).getWordTextAndRange)(this._textEditor, this._getMousePositionAsBufferPosition());
     this._lastWordRange = range;
 
     if (this._isHyperclickEvent(mouseEvent)) {
@@ -193,8 +183,8 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onMouseDown(event: Event): void {
-    const mouseEvent: MouseEvent = (event: any);
+  _onMouseDown(event) {
+    const mouseEvent = event;
     const isHyperclickEvent = this._isHyperclickEvent(mouseEvent);
 
     // If hyperclick and multicursor are using the same trigger, prevent multicursor.
@@ -202,7 +192,7 @@ export default class HyperclickForTextEditor {
       mouseEvent.stopPropagation();
       if (localStorage.getItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY) !== 'false') {
         localStorage.setItem(WARN_ABOUT_TRIGGER_CONFLICT_KEY, 'false');
-        showTriggerConflictWarning();
+        (0, (_showTriggerConflictWarning || _load_showTriggerConflictWarning()).default)();
       }
     }
 
@@ -224,16 +214,16 @@ export default class HyperclickForTextEditor {
     this._clearSuggestion();
   }
 
-  _onKeyDown(event: Event): void {
-    const mouseEvent: MouseEvent = (event: any);
+  _onKeyDown(event) {
+    const mouseEvent = event;
     // Show the suggestion at the last known mouse position.
     if (this._isHyperclickEvent(mouseEvent)) {
       this._setSuggestionForLastMouseEvent();
     }
   }
 
-  _onKeyUp(event: Event): void {
-    const mouseEvent: MouseEvent = (event: any);
+  _onKeyUp(event) {
+    const mouseEvent = event;
     if (!this._isHyperclickEvent(mouseEvent)) {
       this._clearSuggestion();
     }
@@ -242,73 +232,79 @@ export default class HyperclickForTextEditor {
   /**
    * Returns a `Promise` that's resolved when the latest suggestion's available.
    */
-  getSuggestionAtMouse(): Promise<?HyperclickSuggestion> {
+  getSuggestionAtMouse() {
     return this._lastSuggestionAtMousePromise || Promise.resolve(null);
   }
 
-  async _setSuggestionForLastMouseEvent(): Promise<void> {
-    if (!this._lastMouseEvent) {
-      return;
-    }
+  _setSuggestionForLastMouseEvent() {
+    var _this = this;
 
-    const position = this._getMousePositionAsBufferPosition();
-
-    if (this._lastSuggestionAtMouse != null) {
-      const {range} = this._lastSuggestionAtMouse;
-      invariant(range, 'Hyperclick result must have a valid Range');
-      if (this._isPositionInRange(position, range)) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!_this._lastMouseEvent) {
         return;
       }
-    }
 
-    // if we don't have any prior hyperclick position data, or we don't
-    // have any prior suggestion data, or the cursor has moved since the
-    // last suggestion, then refetch hyperclick suggestions. Otherwise,
-    // we might be able to reuse it below.
-    if (
-      !this._lastPosition ||
-      !this._lastSuggestionAtMouse ||
-      position.compare(this._lastPosition) !== 0
-    ) {
-      this._isLoading = true;
-      this._lastPosition = position;
+      const position = _this._getMousePositionAsBufferPosition();
 
-      try {
-        this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(
-          this._textEditor,
-          position,
-        );
-        this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
-      } catch (e) {
-        logger.error('Error getting Hyperclick suggestion:', e);
-      } finally {
-        this._doneLoading();
+      if (_this._lastSuggestionAtMouse != null) {
+        const { range } = _this._lastSuggestionAtMouse;
+
+        if (!range) {
+          throw new Error('Hyperclick result must have a valid Range');
+        }
+
+        if (_this._isPositionInRange(position, range)) {
+          return;
+        }
       }
-    }
 
-    // it's possible that the text editor buffer (and therefore this hyperclick
-    // provider for the editor) has been closed by the user since we
-    // asynchronously queried for suggestions.
-    if (this._isDestroyed) {
-      return;
-    }
+      // if we don't have any prior hyperclick position data, or we don't
+      // have any prior suggestion data, or the cursor has moved since the
+      // last suggestion, then refetch hyperclick suggestions. Otherwise,
+      // we might be able to reuse it below.
+      if (!_this._lastPosition || !_this._lastSuggestionAtMouse || position.compare(_this._lastPosition) !== 0) {
+        _this._isLoading = true;
+        _this._lastPosition = position;
 
-    if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
-      // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
-      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
-    } else {
-      // Remove all the markers if we've finished loading and there's no suggestion.
-      this._updateNavigationMarkers(null);
-    }
+        try {
+          _this._lastSuggestionAtMousePromise = _this._hyperclick.getSuggestion(_this._textEditor, position);
+          _this._lastSuggestionAtMouse = yield _this._lastSuggestionAtMousePromise;
+        } catch (e) {
+          logger.error('Error getting Hyperclick suggestion:', e);
+        } finally {
+          _this._doneLoading();
+        }
+      }
+
+      // it's possible that the text editor buffer (and therefore this hyperclick
+      // provider for the editor) has been closed by the user since we
+      // asynchronously queried for suggestions.
+      if (_this._isDestroyed) {
+        return;
+      }
+
+      if (_this._lastSuggestionAtMouse && _this._isMouseAtLastSuggestion()) {
+        // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
+        _this._updateNavigationMarkers(_this._lastSuggestionAtMouse.range);
+      } else {
+        // Remove all the markers if we've finished loading and there's no suggestion.
+        _this._updateNavigationMarkers(null);
+      }
+    })();
   }
 
-  _getMousePositionAsBufferPosition(): atom$Point {
-    const {component} = this._textEditorView;
-    invariant(component);
-    invariant(this._lastMouseEvent);
-    const screenPosition = component.screenPositionForMouseEvent(
-      this._lastMouseEvent,
-    );
+  _getMousePositionAsBufferPosition() {
+    const { component } = this._textEditorView;
+
+    if (!component) {
+      throw new Error('Invariant violation: "component"');
+    }
+
+    if (!this._lastMouseEvent) {
+      throw new Error('Invariant violation: "this._lastMouseEvent"');
+    }
+
+    const screenPosition = component.screenPositionForMouseEvent(this._lastMouseEvent);
     try {
       return this._textEditor.bufferPositionForScreenPosition(screenPosition);
     } catch (error) {
@@ -316,67 +312,58 @@ export default class HyperclickForTextEditor {
       // When navigating Atom workspace with `CMD/CTRL` down,
       // it triggers TextEditorElement's `mousemove` with invalid screen position.
       // This falls back to returning the start of the editor.
-      logger.error(
-        'Hyperclick: Error getting buffer position for screen position:',
-        error,
-      );
-      return new Point(0, 0);
+      logger.error('Hyperclick: Error getting buffer position for screen position:', error);
+      return new _atom.Point(0, 0);
     }
   }
 
-  _isMouseAtLastSuggestion(): boolean {
+  _isMouseAtLastSuggestion() {
     if (!this._lastSuggestionAtMouse) {
       return false;
     }
-    const {range} = this._lastSuggestionAtMouse;
-    invariant(range, 'Hyperclick result must have a valid Range');
-    return this._isPositionInRange(
-      this._getMousePositionAsBufferPosition(),
-      range,
-    );
+    const { range } = this._lastSuggestionAtMouse;
+
+    if (!range) {
+      throw new Error('Hyperclick result must have a valid Range');
+    }
+
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), range);
   }
 
-  _isMouseAtLastWordRange(): boolean {
+  _isMouseAtLastWordRange() {
     const lastWordRange = this._lastWordRange;
     if (lastWordRange == null) {
       return false;
     }
-    return this._isPositionInRange(
-      this._getMousePositionAsBufferPosition(),
-      lastWordRange,
-    );
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), lastWordRange);
   }
 
-  _isPositionInRange(
-    position: atom$Point,
-    range: atom$Range | Array<atom$Range>,
-  ): boolean {
-    return Array.isArray(range)
-      ? range.some(r => r.containsPoint(position))
-      : range.containsPoint(position);
+  _isPositionInRange(position, range) {
+    return Array.isArray(range) ? range.some(r => r.containsPoint(position)) : range.containsPoint(position);
   }
 
-  _clearSuggestion(): void {
+  _clearSuggestion() {
     this._doneLoading();
     this._lastSuggestionAtMousePromise = null;
     this._lastSuggestionAtMouse = null;
     this._updateNavigationMarkers(null);
   }
 
-  async _confirmSuggestionAtCursor(): Promise<void> {
-    const suggestion = await this._hyperclick.getSuggestion(
-      this._textEditor,
-      this._textEditor.getCursorBufferPosition(),
-    );
-    if (suggestion) {
-      this._confirmSuggestion(suggestion);
-    }
+  _confirmSuggestionAtCursor() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const suggestion = yield _this2._hyperclick.getSuggestion(_this2._textEditor, _this2._textEditor.getCursorBufferPosition());
+      if (suggestion) {
+        _this2._confirmSuggestion(suggestion);
+      }
+    })();
   }
 
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ?(atom$Range | Array<atom$Range>)): void {
+  _updateNavigationMarkers(range) {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;
@@ -392,11 +379,11 @@ export default class HyperclickForTextEditor {
     const ranges = Array.isArray(range) ? range : [range];
     this._navigationMarkers = ranges.map(markerRange => {
       const marker = this._textEditor.markBufferRange(markerRange, {
-        invalidate: 'never',
+        invalidate: 'never'
       });
       this._textEditor.decorateMarker(marker, {
         type: 'highlight',
-        class: 'hyperclick',
+        class: 'hyperclick'
       });
       return marker;
     });
@@ -405,16 +392,11 @@ export default class HyperclickForTextEditor {
   /**
    * Returns whether an event should be handled by hyperclick or not.
    */
-  _isHyperclickEvent(event: SyntheticKeyboardEvent | MouseEvent): boolean {
-    return (
-      event.shiftKey === this._triggerKeys.has('shiftKey') &&
-      event.ctrlKey === this._triggerKeys.has('ctrlKey') &&
-      event.altKey === this._triggerKeys.has('altKey') &&
-      event.metaKey === this._triggerKeys.has('metaKey')
-    );
+  _isHyperclickEvent(event) {
+    return event.shiftKey === this._triggerKeys.has('shiftKey') && event.ctrlKey === this._triggerKeys.has('ctrlKey') && event.altKey === this._triggerKeys.has('altKey') && event.metaKey === this._triggerKeys.has('metaKey');
   }
 
-  _doneLoading(): void {
+  _doneLoading() {
     this._isLoading = false;
     this._textEditorView.classList.remove('hyperclick-loading');
   }
@@ -424,24 +406,21 @@ export default class HyperclickForTextEditor {
     this._clearSuggestion();
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
-    this._textEditorView.removeEventListener(
-      'contextmenu',
-      this._onContextMenu,
-    );
+    this._textEditorView.removeEventListener('contextmenu', this._onContextMenu);
     this._subscriptions.dispose();
   }
 }
 
-/**
- * Determine whether the specified event will trigger Atom's multiple cursors. This is based on (and
- * must be the same as!) [Atom's
- * logic](https://github.com/atom/atom/blob/v1.14.2/src/text-editor-component.coffee#L527).
- */
-function isMulticursorEvent(event: MouseEvent): boolean {
-  const {platform} = process;
-  const isLeftButton =
-    event.button === 0 || (event.button === 1 && platform === 'linux');
-  const {metaKey, ctrlKey} = event;
+exports.default = HyperclickForTextEditor; /**
+                                            * Determine whether the specified event will trigger Atom's multiple cursors. This is based on (and
+                                            * must be the same as!) [Atom's
+                                            * logic](https://github.com/atom/atom/blob/v1.14.2/src/text-editor-component.coffee#L527).
+                                            */
+
+function isMulticursorEvent(event) {
+  const { platform } = process;
+  const isLeftButton = event.button === 0 || event.button === 1 && platform === 'linux';
+  const { metaKey, ctrlKey } = event;
 
   if (!isLeftButton) {
     return false;
@@ -450,5 +429,5 @@ function isMulticursorEvent(event: MouseEvent): boolean {
     return false;
   }
 
-  return metaKey || (ctrlKey && platform !== 'darwin');
+  return metaKey || ctrlKey && platform !== 'darwin';
 }

@@ -1,3 +1,107 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let getServerCredentials = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (args) {
+    const { key, cert, ca } = args;
+    if (key && cert && ca) {
+      const [serverKey, serverCertificate, certificateAuthorityCertificate] = yield Promise.all([(_fsPromise || _load_fsPromise()).default.readFile(key), (_fsPromise || _load_fsPromise()).default.readFile(cert), (_fsPromise || _load_fsPromise()).default.readFile(ca)]);
+      return { serverKey, serverCertificate, certificateAuthorityCertificate };
+    }
+    return null;
+  });
+
+  return function getServerCredentials(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let main = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (args) {
+    const serverStartTimer = (0, (_nuclideAnalytics || _load_nuclideAnalytics()).startTracking)('nuclide-server:start');
+    process.on('SIGHUP', function () {});
+
+    try {
+      const { port, expirationDays } = args;
+      if (expirationDays) {
+        setTimeout(function () {
+          logger.warn(`NuclideServer exiting - ${expirationDays} day expiration time reached.`);
+          (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndExit)(0);
+        }, expirationDays * 24 * 60 * 60 * 1000);
+      }
+      const [serverCredentials] = yield Promise.all([getServerCredentials(args),
+      // Ensure logging is configured.
+      (0, (_nuclideLogging || _load_nuclideLogging()).initialUpdateConfig)()]);
+      const server = new (_NuclideServer || _load_NuclideServer()).default(Object.assign({
+        port
+      }, serverCredentials, {
+        trackEventLoop: true
+      }), (_servicesConfig || _load_servicesConfig()).default);
+      yield server.connect();
+      serverStartTimer.onSuccess();
+      logger.info(`NuclideServer started on port ${port}.`);
+      logger.info(`Using node ${process.version}.`);
+      logger.info(`Server ready time: ${process.uptime() * 1000}ms`);
+    } catch (e) {
+      // In case the exception occurred before logging initialization finished.
+      yield (0, (_nuclideLogging || _load_nuclideLogging()).initialUpdateConfig)();
+      yield serverStartTimer.onError(e);
+      logger.fatal(e);
+      (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndAbort)();
+    }
+  });
+
+  return function main(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+// This should never happen because the server must be started with stderr redirected to a log file.
+
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('../../commons-node/fsPromise'));
+}
+
+var _nuclideLogging;
+
+function _load_nuclideLogging() {
+  return _nuclideLogging = require('../../nuclide-logging');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _NuclideServer;
+
+function _load_NuclideServer() {
+  return _NuclideServer = _interopRequireDefault(require('./NuclideServer'));
+}
+
+var _servicesConfig;
+
+function _load_servicesConfig() {
+  return _servicesConfig = _interopRequireDefault(require('./servicesConfig'));
+}
+
+var _yargs;
+
+function _load_yargs() {
+  return _yargs = _interopRequireDefault(require('yargs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,92 +109,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import fsPromise from '../../commons-node/fsPromise';
-import {
-  flushLogsAndAbort,
-  flushLogsAndExit,
-  getLogger,
-  initialUpdateConfig,
-} from '../../nuclide-logging';
-import {startTracking} from '../../nuclide-analytics';
-import NuclideServer from './NuclideServer';
-import servicesConfig from './servicesConfig';
-import yargs from 'yargs';
-
 const DEFAULT_PORT = 9090;
 
-const logger = getLogger();
+const logger = (0, (_nuclideLogging || _load_nuclideLogging()).getLogger)();
 
-export type AgentOptions = {
-  ca?: Buffer,
-  key?: Buffer,
-  cert?: Buffer,
-  family?: 4 | 6,
-};
-
-async function getServerCredentials(args) {
-  const {key, cert, ca} = args;
-  if (key && cert && ca) {
-    const [
-      serverKey,
-      serverCertificate,
-      certificateAuthorityCertificate,
-    ] = await Promise.all([
-      fsPromise.readFile(key),
-      fsPromise.readFile(cert),
-      fsPromise.readFile(ca),
-    ]);
-    return {serverKey, serverCertificate, certificateAuthorityCertificate};
-  }
-  return null;
-}
-
-async function main(args) {
-  const serverStartTimer = startTracking('nuclide-server:start');
-  process.on('SIGHUP', () => {});
-
-  try {
-    const {port, expirationDays} = args;
-    if (expirationDays) {
-      setTimeout(() => {
-        logger.warn(
-          `NuclideServer exiting - ${expirationDays} day expiration time reached.`,
-        );
-        flushLogsAndExit(0);
-      }, expirationDays * 24 * 60 * 60 * 1000);
-    }
-    const [serverCredentials] = await Promise.all([
-      getServerCredentials(args),
-      // Ensure logging is configured.
-      initialUpdateConfig(),
-    ]);
-    const server = new NuclideServer(
-      {
-        port,
-        ...serverCredentials,
-        trackEventLoop: true,
-      },
-      servicesConfig,
-    );
-    await server.connect();
-    serverStartTimer.onSuccess();
-    logger.info(`NuclideServer started on port ${port}.`);
-    logger.info(`Using node ${process.version}.`);
-    logger.info(`Server ready time: ${process.uptime() * 1000}ms`);
-  } catch (e) {
-    // In case the exception occurred before logging initialization finished.
-    await initialUpdateConfig();
-    await serverStartTimer.onError(e);
-    logger.fatal(e);
-    flushLogsAndAbort();
-  }
-}
-
-// This should never happen because the server must be started with stderr redirected to a log file.
 process.stderr.on('error', error => {
   throw new Error('Can not write to stderr! :' + error);
 });
@@ -100,7 +126,7 @@ process.on('uncaughtException', err => {
   logger.fatal('uncaughtException:', err);
   // According to the docs, we need to close our server when this happens once we logged or
   // handled it: https://nodejs.org/api/process.html#process_event_uncaughtexception
-  flushLogsAndAbort();
+  (0, (_nuclideLogging || _load_nuclideLogging()).flushLogsAndAbort)();
 });
 
 // This works in io.js as of v2.4.0 (possibly earlier versions, as well). Support for this was
@@ -114,9 +140,8 @@ process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
 });
 
-const argv = yargs.default('port', DEFAULT_PORT).argv;
+const argv = (_yargs || _load_yargs()).default.default('port', DEFAULT_PORT).argv;
 
 main(argv);
 
 // Make it clear that this is not a types module by adding an empty export.
-export {};

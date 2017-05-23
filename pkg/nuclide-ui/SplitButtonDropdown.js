@@ -1,95 +1,106 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Option} from './Dropdown';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ButtonSizes = exports.SplitButtonDropdown = undefined;
 
-import invariant from 'assert';
-import React from 'react';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {Dropdown} from './Dropdown';
-import electron from 'electron';
+var _react = _interopRequireDefault(require('react'));
 
-const {remote} = electron;
-invariant(remote != null);
+var _Button;
 
-type ButtonSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
 
-type Props = {
-  value: any,
-  buttonComponent?: ReactClass<any>,
-  options: Array<Option>,
-  onChange?: (value: any) => mixed,
-  onConfirm: (value: any) => mixed,
-  confirmDisabled?: boolean,
-  changeDisabled?: boolean,
-  size?: ?ButtonSize,
-};
+var _ButtonGroup;
 
-export class SplitButtonDropdown extends React.Component {
-  props: Props;
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
 
-  render(): React.Element<any> {
-    const selectedOption =
-      this._findSelectedOption(this.props.options) || this.props.options[0];
+var _Dropdown;
 
-    invariant(selectedOption.type !== 'separator');
+function _load_Dropdown() {
+  return _Dropdown = require('./Dropdown');
+}
 
-    const ButtonComponent = this.props.buttonComponent || Button;
+var _electron = _interopRequireDefault(require('electron'));
 
-    const dropdownOptions = this.props.options.map(option => ({
-      ...option,
-      selectedLabel: '',
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const { remote } = _electron.default; /**
+                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                       * All rights reserved.
+                                       *
+                                       * This source code is licensed under the license found in the LICENSE file in
+                                       * the root directory of this source tree.
+                                       *
+                                       * 
+                                       * @format
+                                       */
+
+if (!(remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
+}
+
+class SplitButtonDropdown extends _react.default.Component {
+
+  render() {
+    const selectedOption = this._findSelectedOption(this.props.options) || this.props.options[0];
+
+    if (!(selectedOption.type !== 'separator')) {
+      throw new Error('Invariant violation: "selectedOption.type !== \'separator\'"');
+    }
+
+    const ButtonComponent = this.props.buttonComponent || (_Button || _load_Button()).Button;
+
+    const dropdownOptions = this.props.options.map(option => Object.assign({}, option, {
+      selectedLabel: ''
     }));
 
-    return (
-      <ButtonGroup className="nuclide-ui-split-button-dropdown">
-        <ButtonComponent
-          size={this.props.size == null ? undefined : this.props.size}
-          disabled={this.props.confirmDisabled === true}
-          icon={selectedOption.icon || undefined}
-          onClick={this.props.onConfirm}>
-          {selectedOption.selectedLabel || selectedOption.label || ''}
-        </ButtonComponent>
-        <Dropdown
-          size={this._getDropdownSize(this.props.size)}
-          disabled={this.props.changeDisabled === true}
-          options={dropdownOptions}
-          value={this.props.value}
-          onChange={this.props.onChange}
-        />
-      </ButtonGroup>
+    return _react.default.createElement(
+      (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+      { className: 'nuclide-ui-split-button-dropdown' },
+      _react.default.createElement(
+        ButtonComponent,
+        {
+          size: this.props.size == null ? undefined : this.props.size,
+          disabled: this.props.confirmDisabled === true,
+          icon: selectedOption.icon || undefined,
+          onClick: this.props.onConfirm },
+        selectedOption.selectedLabel || selectedOption.label || ''
+      ),
+      _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+        size: this._getDropdownSize(this.props.size),
+        disabled: this.props.changeDisabled === true,
+        options: dropdownOptions,
+        value: this.props.value,
+        onChange: this.props.onChange
+      })
     );
   }
 
-  _getDropdownSize(size: ?ButtonSize): 'sm' | 'xs' | 'lg' {
+  _getDropdownSize(size) {
     switch (size) {
-      case ButtonSizes.EXTRA_SMALL:
+      case (_Button || _load_Button()).ButtonSizes.EXTRA_SMALL:
         return 'xs';
-      case ButtonSizes.SMALL:
+      case (_Button || _load_Button()).ButtonSizes.SMALL:
         return 'sm';
-      case ButtonSizes.LARGE:
+      case (_Button || _load_Button()).ButtonSizes.LARGE:
         return 'lg';
       default:
         return 'sm';
     }
   }
 
-  _findSelectedOption(options: Array<Option>): ?Option {
+  _findSelectedOption(options) {
     let result = null;
     for (const option of options) {
       if (option.type === 'separator') {
         continue;
       } else if (option.type === 'submenu') {
-        const submenu = ((option.submenu: any): Array<Option>);
+        const submenu = option.submenu;
         result = this._findSelectedOption(submenu);
       } else if (option.value === this.props.value) {
         result = option;
@@ -103,4 +114,5 @@ export class SplitButtonDropdown extends React.Component {
   }
 }
 
-export {ButtonSizes};
+exports.SplitButtonDropdown = SplitButtonDropdown;
+exports.ButtonSizes = (_Button || _load_Button()).ButtonSizes;

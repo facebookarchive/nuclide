@@ -1,43 +1,47 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/* global MouseEvent */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StatusBarTile = undefined;
 
-import type {Observable} from 'rxjs';
+var _react = _interopRequireDefault(require('react'));
 
-import type {BusySignalMessageBusy} from './types';
+var _reactDom = _interopRequireDefault(require('react-dom'));
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {StatusBarTileComponent} from './StatusBarTileComponent';
+var _StatusBarTileComponent;
+
+function _load_StatusBarTileComponent() {
+  return _StatusBarTileComponent = require('./StatusBarTileComponent');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a
 // conspicuous gap (or cause jitter) when nothing is busy.
-const STATUS_BAR_PRIORITY = 1000;
+const STATUS_BAR_PRIORITY = 1000; /**
+                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                   * All rights reserved.
+                                   *
+                                   * This source code is licensed under the license found in the LICENSE file in
+                                   * the root directory of this source tree.
+                                   *
+                                   * 
+                                   * @format
+                                   */
 
-export class StatusBarTile {
-  _item: ?HTMLElement;
-  _tile: ?atom$StatusBarTile;
-  _tooltip: ?IDisposable;
-  _isMouseOver: boolean;
-  _messages: Array<string>;
+/* global MouseEvent */
+
+class StatusBarTile {
 
   constructor() {
     this._messages = [];
     this._isMouseOver = false;
   }
 
-  dispose(): void {
+  dispose() {
     if (this._item) {
-      ReactDOM.unmountComponentAtNode(this._item);
+      _reactDom.default.unmountComponentAtNode(this._item);
       this._item = null;
     }
     if (this._tile) {
@@ -51,8 +55,8 @@ export class StatusBarTile {
     this._isMouseOver = false;
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
-    const item = (this._item = document.createElement('div'));
+  consumeStatusBar(statusBar) {
+    const item = this._item = document.createElement('div');
     item.className = 'inline-block';
     item.addEventListener('mouseenter', () => {
       this._isMouseOver = true;
@@ -62,15 +66,13 @@ export class StatusBarTile {
     });
     this._tile = statusBar.addRightTile({
       item,
-      priority: STATUS_BAR_PRIORITY,
+      priority: STATUS_BAR_PRIORITY
     });
 
     this._render();
   }
 
-  consumeMessageStream(
-    messageStream: Observable<Array<BusySignalMessageBusy>>,
-  ): void {
+  consumeMessageStream(messageStream) {
     messageStream.subscribe(messages => {
       this._messages = messages.map(message => {
         return message.message;
@@ -79,29 +81,28 @@ export class StatusBarTile {
     });
   }
 
-  _render(): void {
+  _render() {
     const props = {
-      busy: this._messages.length !== 0,
+      busy: this._messages.length !== 0
     };
 
     const item = this._item;
     if (item) {
-      ReactDOM.render(<StatusBarTileComponent {...props} />, item);
+      _reactDom.default.render(_react.default.createElement((_StatusBarTileComponent || _load_StatusBarTileComponent()).StatusBarTileComponent, props), item);
       if (this._tooltip) {
         this._tooltip.dispose();
       }
       if (this._messages.length > 0) {
         this._tooltip = atom.tooltips.add(item, {
           title: this._messages.join('<br/>'),
-          delay: 0,
+          delay: 0
         });
         if (this._isMouseOver) {
           // If the mouse is currently over the element, we want to trigger the new popup to appear.
-          ['mouseover', 'mouseenter']
-            .map(name => new MouseEvent(name))
-            .forEach(event => item.dispatchEvent(event));
+          ['mouseover', 'mouseenter'].map(name => new MouseEvent(name)).forEach(event => item.dispatchEvent(event));
         }
       }
     }
   }
 }
+exports.StatusBarTile = StatusBarTile;

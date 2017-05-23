@@ -1,93 +1,93 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from '../../nuclide-devices/lib/types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type DBType = 'sdb' | 'adb';
+exports.observeAndroidDevices = observeAndroidDevices;
+exports.observeTizenDevices = observeTizenDevices;
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class DevicePoller {
-  _type: DBType;
-  _dbAvailable: Map<NuclideUri, Promise<boolean>> = new Map();
-  _observables: Map<NuclideUri, Observable<Device[]>> = new Map();
 
-  constructor(type: DBType) {
+  constructor(type) {
+    this._dbAvailable = new Map();
+    this._observables = new Map();
+
     this._type = type;
   }
 
-  observe(host: NuclideUri): Observable<Device[]> {
+  observe(host) {
     let observable = this._observables.get(host);
     if (observable != null) {
       return observable;
     }
-    observable = Observable.interval(3000)
-      .startWith(0)
-      .switchMap(() => Observable.fromPromise(this.fetch(host).catch(() => [])))
-      .publishReplay(1)
-      .refCount();
+    observable = _rxjsBundlesRxMinJs.Observable.interval(3000).startWith(0).switchMap(() => _rxjsBundlesRxMinJs.Observable.fromPromise(this.fetch(host).catch(() => []))).publishReplay(1).refCount();
     this._observables.set(host, observable);
     return observable;
   }
 
-  async fetch(host: NuclideUri): Promise<Device[]> {
-    const rpc = this._type === 'adb'
-      ? getAdbServiceByNuclideUri(host)
-      : getSdbServiceByNuclideUri(host);
+  fetch(host) {
+    var _this = this;
 
-    let dbAvailable = this._dbAvailable.get(host);
-    if (dbAvailable == null) {
-      dbAvailable = rpc.startServer();
-      this._dbAvailable.set(host, dbAvailable);
-      if (!await dbAvailable) {
-        atom.notifications.addError(
-          `Couldn't start the ${this._type} server. Check if ${this._type} is in your $PATH and that it works properly.`,
-          {dismissable: true},
-        );
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpc = _this._type === 'adb' ? (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getAdbServiceByNuclideUri)(host) : (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host);
+
+      let dbAvailable = _this._dbAvailable.get(host);
+      if (dbAvailable == null) {
+        dbAvailable = rpc.startServer();
+        _this._dbAvailable.set(host, dbAvailable);
+        if (!(yield dbAvailable)) {
+          atom.notifications.addError(`Couldn't start the ${_this._type} server. Check if ${_this._type} is in your $PATH and that it works properly.`, { dismissable: true });
+        }
       }
-    }
-    if (await dbAvailable) {
-      return rpc
-        .getDeviceList()
-        .then(devices => devices.map(device => this.parseRawDevice(device)));
-    }
-    return [];
+      if (yield dbAvailable) {
+        return rpc.getDeviceList().then(function (devices) {
+          return devices.map(function (device) {
+            return _this.parseRawDevice(device);
+          });
+        });
+      }
+      return [];
+    })();
   }
 
-  parseRawDevice(device: DeviceDescription): Device {
-    const deviceArchitecture = device.architecture.startsWith('arm64')
-      ? 'arm64'
-      : device.architecture.startsWith('arm') ? 'arm' : device.architecture;
+  parseRawDevice(device) {
+    const deviceArchitecture = device.architecture.startsWith('arm64') ? 'arm64' : device.architecture.startsWith('arm') ? 'arm' : device.architecture;
 
-    const displayName = (device.name.startsWith('emulator')
-      ? device.name
-      : device.model).concat(
-      ` (${deviceArchitecture}, API ${device.apiVersion})`,
-    );
+    const displayName = (device.name.startsWith('emulator') ? device.name : device.model).concat(` (${deviceArchitecture}, API ${device.apiVersion})`);
 
     return {
       name: device.name,
       displayName,
-      architecture: device.architecture,
+      architecture: device.architecture
     };
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-const pollers: Map<DBType, DevicePoller> = new Map();
+const pollers = new Map();
 
-function observeDevices(type: DBType, host: NuclideUri): Observable<Device[]> {
+function observeDevices(type, host) {
   let poller = pollers.get(type);
   if (poller == null) {
     poller = new DevicePoller(type);
@@ -96,10 +96,10 @@ function observeDevices(type: DBType, host: NuclideUri): Observable<Device[]> {
   return poller.observe(host);
 }
 
-export function observeAndroidDevices(host: NuclideUri): Observable<Device[]> {
+function observeAndroidDevices(host) {
   return observeDevices('adb', host);
 }
 
-export function observeTizenDevices(host: NuclideUri): Observable<Device[]> {
+function observeTizenDevices(host) {
   return observeDevices('sdb', host);
 }
