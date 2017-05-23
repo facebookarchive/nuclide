@@ -82,10 +82,10 @@
     "language-javascript-jsx:grammar-used",
     "language-javascript:grammar-used"
   ],
-  "providedServices": {
-    "nuclide-busy-signal": {
+  "consumedServices": {
+    "atom-ide-busy-signal": {
       "versions": {
-        "0.1.0": "provideBusySignal"
+        "0.2.0": "consumeBusySignal"
       }
     }
   }

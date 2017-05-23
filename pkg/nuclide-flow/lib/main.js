@@ -20,10 +20,7 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  BusySignalProvider,
-  BusySignalMessage,
-} from '../../nuclide-busy-signal/lib/types';
+import type {BusySignalService} from '../../nuclide-busy-signal';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
@@ -116,30 +113,22 @@ async function connectionToFlowService(
 // Exported only for testing
 export function serverStatusUpdatesToBusyMessages(
   statusUpdates: Observable<ServerStatusUpdate>,
-): Observable<BusySignalMessage> {
-  let nextMessageId = 0;
-  const getMessageId = () => {
-    const id = nextMessageId;
-    nextMessageId++;
-    return id;
-  };
+  busySignal: BusySignalService,
+): rxjs$Subscription {
   return statusUpdates
     .groupBy(({pathToRoot}) => pathToRoot)
     .mergeMap(messagesForRoot => {
-      return messagesForRoot
-        .scan(
-          ({lastBusyMessage}, nextStatus) => {
-            const messages = [];
-            // Invalidate the previous busy message, if there is one
-            if (lastBusyMessage != null) {
-              messages.push({status: 'done', id: lastBusyMessage.id});
-            }
-            let currentBusyMessage = null;
+      return (
+        messagesForRoot
+          // Append a null sentinel to ensure that completion clears the busy signal.
+          .concat(Observable.of(null))
+          .switchMap(nextStatus => {
             // I would use constants here but the constant is in the flow-rpc package which we can't
             // load directly from this package. Casting to the appropriate type is just as safe.
             if (
-              nextStatus.status === ('init': ServerStatusType) ||
-              nextStatus.status === ('busy': ServerStatusType)
+              nextStatus != null &&
+              (nextStatus.status === ('init': ServerStatusType) ||
+                nextStatus.status === ('busy': ServerStatusType))
             ) {
               const readablePath = nuclideUri.nuclideUriToDisplayString(
                 nextStatus.pathToRoot,
@@ -148,22 +137,23 @@ export function serverStatusUpdatesToBusyMessages(
                 ('init': ServerStatusType)
                 ? 'initializing'
                 : 'busy';
-              currentBusyMessage = {
-                status: 'busy',
-                id: getMessageId(),
-                message: `Flow server is ${readableStatus} (${readablePath})`,
-              };
-              messages.push(currentBusyMessage);
+              // Use an observable to encapsulate clearing the message.
+              // The switchMap above will ensure that messages get cleared.
+              return Observable.create(observer => {
+                const disposable = busySignal.reportBusy(
+                  `Flow server is ${readableStatus} (${readablePath})`,
+                );
+                return () => disposable.dispose();
+              });
             }
-            return {lastBusyMessage: currentBusyMessage, messages};
-          },
-          {lastBusyMessage: null, messages: []},
-        )
-        .concatMap(({messages}) => Observable.from(messages));
-    });
+            return Observable.empty();
+          })
+      );
+    })
+    .subscribe();
 }
 
-export function provideBusySignal(): BusySignalProvider {
+export function consumeBusySignal(service: BusySignalService): IDisposable {
   const serverStatusUpdates = getConnectionCache()
     .observeValues()
     // mergeAll loses type info
@@ -172,9 +162,19 @@ export function provideBusySignal(): BusySignalProvider {
       return ls.getServerStatusUpdates().refCount();
     });
 
-  return {
-    messages: serverStatusUpdatesToBusyMessages(serverStatusUpdates),
-  };
+  if (disposables != null) {
+    disposables.add(service);
+  }
+  const subscription = serverStatusUpdatesToBusyMessages(
+    serverStatusUpdates,
+    service,
+  );
+  return new UniversalDisposable(() => {
+    if (disposables != null) {
+      disposables.remove(service);
+    }
+    subscription.unsubscribe();
+  });
 }
 
 export function deactivate() {
