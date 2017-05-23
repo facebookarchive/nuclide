@@ -37,7 +37,7 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticUpdate,
   MessageType as DiagnosticMessageType,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from 'atom-ide-ui';
 import type {
   AutocompleteResult,
   Completion,

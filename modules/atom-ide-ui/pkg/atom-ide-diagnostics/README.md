@@ -1,10 +1,10 @@
-# nuclide-diagnostics-store
+# atom-ide-diagnostics
 
 ## Overview
 
-`nuclide-diagnostics-store` is responsible for consuming diagnostics from providers and sending
+`atom-ide-diagnostics` is responsible for consuming diagnostics from providers and sending
 updates to a UI provider.
-[`nuclide-diagnostics-ui`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide-diagnostics-ui)
+[`atom-ide-diagnostics-ui`](https://github.com/facebook/nuclide/tree/master/modules/atom-ide-ui/pkg/atom-ide-diagnostics-ui)
 is our UI implementation.
 
 We consume two APIs: Our own provider API, described below, and the
@@ -23,7 +23,7 @@ For simple pull-based use cases (linting on save), we recommend just using the S
 ### API Overview
 
 The Flow types that describe a provider are available in
-[`types.js`](https://github.com/facebook/nuclide/blob/master/pkg/nuclide-diagnostics-common/lib/types.js).
+[`main.js`](https://github.com/facebook/nuclide/blob/master/modules/atom-ide-ui/pkg/atom-ide-diagnostics/lib/main.js).
 A `DiagnosticProvider`, in particular, is simply an object that allows a consumer to register for
 two events:
 
@@ -94,7 +94,7 @@ currently active file need not ever send an invalidation message.
 
 ## Linter API
 
-`nuclide-diagnostics` is compatible with the following APIs for the [`linter`](https://atom.io/packages/linter) package.
+`atom-ide-diagnostics` is compatible with the following APIs for the [`linter`](https://atom.io/packages/linter) package.
 - [Standard Linter v1 API](https://github.com/steelbrain/linter/blob/v1/docs/types/standard-linter-v1.md)
 - [Standard Linter v2 API](https://github.com/steelbrain/linter/blob/master/docs/types/standard-linter-v2.md)
 - [Indie (push-based) Linter v2 API](https://github.com/steelbrain/linter/blob/master/docs/types/indie-linter-v2.md)

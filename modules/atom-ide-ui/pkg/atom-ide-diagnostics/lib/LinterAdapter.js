@@ -245,7 +245,7 @@ export class LinterAdapter {
       }
       return Promise.resolve(lintPromise).catch(error => {
         // Prevent errors from blowing up the entire stream.
-        getLogger('nuclide-diagnostics-store').error(
+        getLogger('atom-ide-diagnostics').error(
           `Error in linter provider ${this._provider.name}:`,
           error,
         );

@@ -1,7 +1,7 @@
-# nuclide-diagnostics-ui
+# atom-ide-diagnostics-ui
 
-Provides a default UI for diagnostics stored in [`nuclide-diagnostics-store`](
-https://atom.io/packages/nuclide-diagnostics-store).
+Provides a default UI for diagnostics stored in [`atom-ide-diagnostics`]
+(https://github.com/facebook/nuclide/tree/master/modules/atom-ide-ui/pkg/atom-ide-diagnostics)
 
 As shown in the screenshot, this feature adds the following UI to Atom:
 

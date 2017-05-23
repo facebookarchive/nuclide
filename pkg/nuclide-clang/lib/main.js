@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
-import type {LinterProvider} from '../../nuclide-diagnostics-store';
+import type {LinterProvider} from 'atom-ide-ui';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';

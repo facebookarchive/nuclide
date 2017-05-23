@@ -10,7 +10,7 @@
  */
 
 import type {MerlinError} from '../../nuclide-ocaml-rpc';
-import type {LinterMessage} from '../../nuclide-diagnostics-store';
+import type {LinterMessage} from 'atom-ide-ui';
 
 import {GRAMMARS} from './constants';
 import {trackTiming} from '../../nuclide-analytics';

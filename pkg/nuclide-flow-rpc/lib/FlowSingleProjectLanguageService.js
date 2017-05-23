@@ -21,7 +21,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
 import type {
   Definition,
   DefinitionQueryResult,

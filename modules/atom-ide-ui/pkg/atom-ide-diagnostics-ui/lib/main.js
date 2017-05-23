@@ -9,27 +9,31 @@
  * @format
  */
 
+// TODO(hansonw): This needs to be moved.
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 import type {
   Datatip,
   DatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip/lib/types';
-import type {DiagnosticMessage} from '../../nuclide-diagnostics-store';
+} from '../../../../../pkg/nuclide-datatip/lib/types';
+import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
 import type {
   FileMessageUpdate,
   ObservableDiagnosticUpdater,
-} from '../../nuclide-diagnostics-store';
+} from '../../atom-ide-diagnostics';
 import type {
   FileDiagnosticMessage,
   Trace,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from '../../atom-ide-diagnostics/lib/rpc-types';
+// TODO(hansonw): This needs to be wrapped.
+// eslint-disable-next-line nuclide-internal/modules-dependencies
 import type {
   WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+} from '../../../../../pkg/nuclide-workspace-views/lib/types';
 
 import invariant from 'assert';
 
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
@@ -263,12 +267,12 @@ function addAtomCommands(
     if (path == null) {
       return;
     }
-    track('diagnostics-autofix-all-in-file');
+    analytics.track('diagnostics-autofix-all-in-file');
     diagnosticUpdater.applyFixesForFile(path);
   };
 
   const openAllFilesWithErrors = () => {
-    track('diagnostics-panel-open-all-files-with-errors');
+    analytics.track('diagnostics-panel-open-all-files-with-errors');
     diagnosticUpdater.allMessageUpdates
       .first()
       .subscribe((messages: Array<DiagnosticMessage>) => {

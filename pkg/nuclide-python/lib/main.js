@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalService} from '../../nuclide-busy-signal';
-import type {LinterProvider} from '../../nuclide-diagnostics-store';
+import type {LinterProvider} from 'atom-ide-ui';
 import typeof * as PythonService
   from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';

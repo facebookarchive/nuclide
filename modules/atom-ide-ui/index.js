@@ -13,3 +13,25 @@ export type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from './pkg/hyperclick/lib/types';
+
+export type {
+  CallbackDiagnosticProvider,
+  DiagnosticMessage,
+  DiagnosticProvider,
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
+  FileDiagnosticUpdate,
+  FileMessageUpdate,
+  InvalidationMessage,
+  LinterMessage,
+  LinterMessageV1,
+  LinterMessageV2,
+  LinterProvider,
+  LinterTrace,
+  MessageInvalidationCallback,
+  MessageType,
+  MessageUpdateCallback,
+  ObservableDiagnosticProvider,
+  ProjectDiagnosticMessage,
+  Trace,
+} from './pkg/atom-ide-diagnostics';

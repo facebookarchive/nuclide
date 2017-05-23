@@ -9,14 +9,12 @@
  * @format
  */
 
-import type {
-  ObservableDiagnosticProvider,
-} from '../../nuclide-diagnostics-store';
+import type {ObservableDiagnosticProvider} from 'atom-ide-ui';
 import type {
   DiagnosticProviderUpdate,
   InvalidationMessage,
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from 'atom-ide-ui';
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 
 import type {CoverageProvider} from '../lib/types';

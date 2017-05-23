@@ -37,7 +37,7 @@ import type {HackReferencesResult} from './FindReferences';
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {
   AutocompleteResult,

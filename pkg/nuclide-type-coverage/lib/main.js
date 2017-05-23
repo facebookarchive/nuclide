@@ -11,9 +11,7 @@
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
-import type {
-  ObservableDiagnosticProvider,
-} from '../../nuclide-diagnostics-store';
+import type {ObservableDiagnosticProvider} from 'atom-ide-ui';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

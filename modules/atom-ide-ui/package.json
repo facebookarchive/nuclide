@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "async-to-generator": "1.0.0",
+    "classnames": "2.2.5",
     "log4js": "1.1.1",
     "nuclide-commons": "0.1.0",
     "nuclide-commons-atom": "0.1.0",
+    "nuclide-commons-ui": "0.1.0",
     "react": "15.3.1",
-    "react-dom": "15.3.1"
+    "react-dom": "15.3.1",
+    "rxjs": "5.3.1"
   },
   "devDependencies": {
   }

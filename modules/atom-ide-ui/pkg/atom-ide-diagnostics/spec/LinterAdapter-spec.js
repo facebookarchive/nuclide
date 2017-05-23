@@ -24,8 +24,6 @@ import {
 
 const grammar = 'testgrammar';
 
-import {arePropertiesEqual} from '../../nuclide-test-helpers';
-
 function makePromise<T>(ret: T, timeout: number): Promise<T> {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -237,8 +235,8 @@ describe('message transformation functions', () => {
         linterMessage,
         providerName,
       );
-      const areEqual = arePropertiesEqual(actual, expected);
-      expect(areEqual).toBe(true);
+      // This filters out any undefined values.
+      expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected));
     }
 
     it('should turn a message with a filePath into a file scope diagnostic', () => {

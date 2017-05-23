@@ -27,14 +27,20 @@ import type {
   InvalidationMessage,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
+  FileDiagnosticUpdate,
+  MessageType,
   ProjectDiagnosticMessage,
+  Trace,
 } from './rpc-types';
 
 export type {
   InvalidationMessage,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
+  FileDiagnosticUpdate,
+  MessageType,
   ProjectDiagnosticMessage,
+  Trace,
 };
 
 export type MessageUpdateCallback = (update: DiagnosticProviderUpdate) => mixed;
@@ -308,12 +314,12 @@ class Activation {
       provider.updates.subscribe(
         update => store.updateMessages(provider, update),
         error => {
-          getLogger('nuclide-diagnostics-store').error(
+          getLogger('atom-ide-diagnostics').error(
             `Error: updates.subscribe ${error}`,
           );
         },
         () => {
-          getLogger('nuclide-diagnostics-store').error(
+          getLogger('atom-ide-diagnostics').error(
             'updates.subscribe completed',
           );
         },
@@ -321,12 +327,12 @@ class Activation {
       provider.invalidations.subscribe(
         invalidation => store.invalidateMessages(provider, invalidation),
         error => {
-          getLogger('nuclide-diagnostics-store').error(
+          getLogger('atom-ide-diagnostics').error(
             `Error: invalidations.subscribe ${error}`,
           );
         },
         () => {
-          getLogger('nuclide-diagnostics-store').error(
+          getLogger('atom-ide-diagnostics').error(
             'invalidations.subscribe completed',
           );
         },

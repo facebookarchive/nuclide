@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from '../../atom-ide-diagnostics/lib/rpc-types';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import React from 'react';

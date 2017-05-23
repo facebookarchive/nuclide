@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticUpdate,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {

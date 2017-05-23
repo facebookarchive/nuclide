@@ -11,7 +11,7 @@
 
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from '../../atom-ide-diagnostics/lib/rpc-types';
 
 import React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';

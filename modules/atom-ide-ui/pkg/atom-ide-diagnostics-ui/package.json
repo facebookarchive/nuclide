@@ -1,10 +1,10 @@
 {
-  "name": "nuclide-diagnostics-ui",
+  "name": "atom-ide-diagnostics-ui",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays diagnostics in context in a TextEditor",
-  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "atomTestRunner": "../../../../lib/test-runner-entry.js",
   "deserializers": {
     "nuclide.DiagnosticsPanelModel": "deserializeDiagnosticsPanelModel"
   },
@@ -32,7 +32,7 @@
         "0.0.0": "consumeDatatipService"
       }
     },
-    "nuclide-diagnostics": {
+    "atom-ide-diagnostics-store": {
       "versions": {
         "0.2.0": "consumeDiagnosticUpdates"
       }

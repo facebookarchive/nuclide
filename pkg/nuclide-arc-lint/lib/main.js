@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalService} from '../../nuclide-busy-signal';
-import type {LinterProvider} from '../../nuclide-diagnostics-common';
+import type {LinterProvider} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';

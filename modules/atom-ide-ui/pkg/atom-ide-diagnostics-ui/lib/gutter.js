@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {FileMessageUpdate} from '../../nuclide-diagnostics-store';
+import type {FileMessageUpdate} from '../../atom-ide-diagnostics';
 import type {
   FileDiagnosticMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+} from '../../atom-ide-diagnostics/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 
@@ -24,7 +24,7 @@ import {
   goToLocation as atomGoToLocation,
 } from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 import {DiagnosticsPopup} from './DiagnosticsPopup';
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
@@ -267,11 +267,11 @@ function showPopupFor(
 
   const trackedFixer = (...args) => {
     fixer(...args);
-    track('diagnostics-gutter-autofix');
+    analytics.track('diagnostics-gutter-autofix');
   };
   const trackedGoToLocation = (filePath: NuclideUri, line: number) => {
     goToLocation(filePath, line);
-    track('diagnostics-gutter-goto-location');
+    analytics.track('diagnostics-gutter-goto-location');
   };
 
   ReactDOM.render(
@@ -309,7 +309,7 @@ function showPopupFor(
     return hostElement;
   } finally {
     messages.forEach(message => {
-      track('diagnostics-gutter-show-popup', {
+      analytics.track('diagnostics-gutter-show-popup', {
         'diagnostics-provider': message.providerName,
         'diagnostics-message': message.text || message.html || '',
       });

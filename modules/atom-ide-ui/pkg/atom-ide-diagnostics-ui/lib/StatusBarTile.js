@@ -12,7 +12,7 @@
 import type {
   ObservableDiagnosticUpdater,
   DiagnosticMessage,
-} from '../../nuclide-diagnostics-store';
+} from '../../atom-ide-diagnostics';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -21,7 +21,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {track} from '../../nuclide-analytics';
+import analytics from 'nuclide-commons-atom/analytics';
 
 type DiagnosticCount = {
   errorCount: number,
@@ -206,6 +206,6 @@ class StatusBarTileComponent extends React.Component {
   _onClick(): void {
     const target = atom.views.getView(atom.workspace);
     atom.commands.dispatch(target, 'nuclide-diagnostics-ui:toggle-table');
-    track('diagnostics-show-table-from-status-bar');
+    analytics.track('diagnostics-show-table-from-status-bar');
   }
 }

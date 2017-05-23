@@ -10,7 +10,7 @@
  */
 
 import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
-import type {LinterMessage} from '../../nuclide-diagnostics-store';
+import type {LinterMessage} from 'atom-ide-ui';
 
 import {Range} from 'atom';
 import {Subject} from 'rxjs';

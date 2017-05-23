@@ -23,12 +23,10 @@ import type {
   TaskSettings,
 } from './types';
 import type {
+  ObservableDiagnosticProvider,
   DiagnosticProviderUpdate,
   InvalidationMessage,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
-import type {
-  ObservableDiagnosticProvider,
-} from '../../nuclide-diagnostics-store';
+} from 'atom-ide-ui';
 import type {
   NuclideJavaDebuggerProvider,
   // $FlowFB

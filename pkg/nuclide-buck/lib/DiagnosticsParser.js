@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  FileDiagnosticMessage,
-  Trace,
-} from '../../nuclide-diagnostics-store/lib/rpc-types';
+import type {FileDiagnosticMessage, Trace} from 'atom-ide-ui';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
