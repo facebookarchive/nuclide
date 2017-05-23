@@ -75,7 +75,7 @@ export class DebuggerHandler extends Handler {
   }
 
   onSessionEnd(callback: () => void): void {
-    logger.log('onSessionEnd');
+    logger.debug('onSessionEnd');
     this._emitter.on(SESSION_END_EVENT, callback);
   }
 
@@ -303,7 +303,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
-    logger.log('Converting frame: ' + JSON.stringify(frame));
+    logger.debug('Converting frame: ' + JSON.stringify(frame));
     const file = this._files.registerFile(fileUrlOfFrame(frame));
     const location = locationOfFrame(frame);
     const hasSource = await file.hasSource();
@@ -329,7 +329,7 @@ export class DebuggerHandler extends Handler {
   }
 
   _sendContinuationCommand(command: string): void {
-    logger.log('Sending continuation command: ' + command);
+    logger.debug('Sending continuation command: ' + command);
     this._connectionMultiplexer.sendContinuationCommand(command);
   }
 
@@ -350,7 +350,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _onStatusChanged(status: string, params: ?Object): Promise<void> {
-    logger.log('Sending status: ' + status);
+    logger.debug('Sending status: ' + status);
     switch (status) {
       case ConnectionMultiplexerStatus.AllConnectionsPaused:
       case ConnectionMultiplexerStatus.SingleConnectionPaused:
@@ -364,7 +364,9 @@ export class DebuggerHandler extends Handler {
         this._endSession();
         break;
       default:
-        logger.logErrorAndThrow('Unexpected status: ' + status);
+        const message = 'Unexpected status: ' + status;
+        logger.error(message);
+        throw new Error(message);
     }
   }
 
@@ -423,7 +425,9 @@ export class DebuggerHandler extends Handler {
         });
         break;
       default:
-        logger.logErrorAndThrow(`Unexpected notification: ${notifyName}`);
+        const message = `Unexpected notification: ${notifyName}`;
+        logger.error(message);
+        throw new Error(message);
     }
   }
 
@@ -477,7 +481,7 @@ export class DebuggerHandler extends Handler {
   }
 
   _endSession(): void {
-    logger.log('DebuggerHandler: Ending session');
+    logger.debug('DebuggerHandler: Ending session');
     this._subscriptions.dispose();
     this._emitter.emit(SESSION_END_EVENT);
   }

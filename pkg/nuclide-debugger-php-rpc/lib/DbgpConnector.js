@@ -74,22 +74,22 @@ export class DbgpConnector {
   }
 
   listen(): void {
-    logger.log('Creating debug server on port ' + this._port);
+    logger.debug('Creating debug server on port ' + this._port);
 
     const server = net.createServer();
 
-    server.on('close', socket => logger.log('Closing port ' + this._port));
+    server.on('close', socket => logger.debug('Closing port ' + this._port));
     server.listen(
       this._port,
       undefined, // Hostname.
       undefined, // Backlog -- the maximum length of the queue of pending connections.
-      () => logger.log('Listening on port ' + this._port),
+      () => logger.debug('Listening on port ' + this._port),
     );
 
     server.on('error', error => this._onServerError(error));
     server.on('connection', socket => this._onSocketConnection(socket));
     server.on('close', () => {
-      logger.log('DBGP Server closed.');
+      logger.debug('DBGP Server closed.');
     });
 
     this._server = server;
@@ -98,7 +98,7 @@ export class DbgpConnector {
   _onSocketConnection(socket: Socket) {
     // Xdebug encodes XML messages as iso-8859-1, which is the same as 'latin1'.
     socket.setEncoding('latin1');
-    logger.log('Connection on port ' + this._port);
+    logger.debug('Connection on port ' + this._port);
     if (!this._checkListening(socket, 'Connection')) {
       return;
     }
@@ -115,7 +115,7 @@ export class DbgpConnector {
       errorMessage = `Unknown debugger socket error: ${error.code}.`;
     }
 
-    logger.logError(errorMessage);
+    logger.error(errorMessage);
     this._emitter.emit(DBGP_ERROR_EVENT, errorMessage);
 
     this.dispose();
@@ -170,7 +170,7 @@ export class DbgpConnector {
    */
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
-      logger.log(
+      logger.debug(
         'Ignoring ' +
           message +
           ' on port ' +

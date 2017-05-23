@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CategoryLogger} from '../../nuclide-logging';
 import type {
   HostServices,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
@@ -23,7 +22,7 @@ import {
 } from '../../nuclide-language-service-rpc';
 
 export function createMultiLspLanguageService(
-  logger: CategoryLogger,
+  logger: log4js$Logger,
   fileCache: FileCache,
   host: HostServices,
   consoleSource: string,

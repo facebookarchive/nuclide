@@ -9,7 +9,7 @@
  * @format
  */
 
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const GRAPHQL_LOGGER_CATEGORY = 'nuclide-graphql';
-export const logger = getCategoryLogger(GRAPHQL_LOGGER_CATEGORY);
+export const logger = getLogger(GRAPHQL_LOGGER_CATEGORY);

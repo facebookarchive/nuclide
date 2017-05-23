@@ -20,7 +20,7 @@ import {getConfig} from './utils';
 import {NodeLaunchAttachProvider} from './NodeLaunchAttachProvider';
 
 export function activate(state: mixed): void {
-  logger.setLogLevel(getConfig().clientLogLevel);
+  logger.setLevel(getConfig().clientLogLevel);
 }
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {

@@ -51,7 +51,7 @@ import {
 } from '../../nuclide-language-service-rpc';
 import {FileCache, getBufferAtVersion} from '../../nuclide-open-files-rpc';
 
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 export type Loc = {
   file: NuclideUri,
@@ -115,7 +115,7 @@ class FlowLanguageService
     ServerLanguageService<FlowSingleProjectLanguageService>,
   > {
   constructor(fileCache: FileCache, host: HostServices, config: FlowSettings) {
-    const logger = getCategoryLogger('Flow');
+    const logger = getLogger('Flow');
     super();
     this.initialize(
       logger,

@@ -10,7 +10,6 @@
  */
 
 import type {ShowNotificationLevel, HostServices} from './rpc-types';
-import type {CategoryLogger} from '../../nuclide-logging';
 
 import invariant from 'assert';
 import {Subject, ConnectableObservable} from 'rxjs';
@@ -21,7 +20,7 @@ import {Subject, ConnectableObservable} from 'rxjs';
 
 export async function forkHostServices(
   host: HostServices,
-  logger: CategoryLogger,
+  logger: log4js$Logger,
 ): Promise<HostServices> {
   const child = new HostServicesAggregator();
   const howChildShouldRelayBackToHost = await host.childRegister(child);
@@ -68,9 +67,9 @@ class HostServicesAggregator {
   _parent: HostServices;
   _childRelays: Map<number, HostServicesRelay> = new Map();
   _counter: number = 0;
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
 
-  initialize(parent: HostServices, logger: CategoryLogger): void {
+  initialize(parent: HostServices, logger: log4js$Logger): void {
     this._parent = parent;
     this._logger = logger;
     const relay = new HostServicesRelay(this, 0, null);

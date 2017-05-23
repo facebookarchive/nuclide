@@ -26,7 +26,7 @@ async function getHackRoot(filePath: string): Promise<?string> {
 
 export async function setRootDirectoryUri(directoryUri: string): Promise<void> {
   const hackRootDirectory = await getHackRoot(directoryUri);
-  logger.log(
+  logger.debug(
     `setRootDirectoryUri: from ${directoryUri} to ${maybeToString(hackRootDirectory)}`,
   );
   // TODO: make xdebug_includes.php path configurable from hhconfig.
@@ -51,7 +51,7 @@ export function isDummyConnection(message: Object): boolean {
 }
 
 export function failConnection(socket: Socket, errorMessage: string): void {
-  logger.log(errorMessage);
+  logger.debug(errorMessage);
   socket.end();
   socket.destroy();
 }
@@ -62,7 +62,7 @@ export function isCorrectConnection(
 ): boolean {
   const {pid, idekeyRegex, attachScriptRegex, launchScriptPath} = getConfig();
   if (!message || !message.init || !message.init.$) {
-    logger.logError('Incorrect init');
+    logger.error('Incorrect init');
     return false;
   }
 
@@ -73,7 +73,7 @@ export function isCorrectConnection(
     !init.engine[0] ||
     init.engine[0]._.toLowerCase() !== 'xdebug'
   ) {
-    logger.logError('Incorrect engine');
+    logger.error('Incorrect engine');
     return false;
   }
 
@@ -83,7 +83,7 @@ export function isCorrectConnection(
     attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug' ||
     attributes.language !== 'PHP'
   ) {
-    logger.logError('Incorrect attributes');
+    logger.error('Incorrect attributes');
     return false;
   }
 

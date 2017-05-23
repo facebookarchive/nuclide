@@ -18,7 +18,6 @@ import type {
   MessageInvalidationCallback,
 } from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
-import type {CategoryLogger} from '../../nuclide-logging';
 import type {BusySignalProvider} from './AtomLanguageService';
 
 import {Cache} from '../../commons-node/cache';
@@ -56,7 +55,7 @@ export function registerDiagnostics<T: LanguageService>(
   name: string,
   grammars: Array<string>,
   config: DiagnosticsConfig,
-  logger: CategoryLogger,
+  logger: log4js$Logger,
   connectionToLanguageService: ConnectionCache<T>,
   busySignalProvider: BusySignalProvider,
 ): IDisposable {
@@ -307,11 +306,11 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _connectionToFiles: Cache<?ServerConnection, Set<NuclideUri>>;
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
 
   constructor(
     analyticsEventName: string,
-    logger: CategoryLogger,
+    logger: log4js$Logger,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this._logger = logger;
@@ -322,24 +321,24 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
       .observeEntries()
       .mergeMap(([connection, languageService]) => {
         const connectionName = ServerConnection.toDebugString(connection);
-        this._logger.log(
+        this._logger.debug(
           `Starting observing diagnostics ${connectionName}, ${this._analyticsEventName}`,
         );
         return Observable.fromPromise(languageService)
           .catch(error => {
-            this._logger.logError(
+            this._logger.error(
               `Error: languageService, ${this._analyticsEventName} ${error}`,
             );
             return Observable.empty();
           })
           .mergeMap((language: LanguageService) => {
-            this._logger.log(
+            this._logger.debug(
               `Observing diagnostics ${connectionName}, ${this._analyticsEventName}`,
             );
             return ensureInvalidations(
               this._logger,
               language.observeDiagnostics().refCount().catch(error => {
-                this._logger.logError(
+                this._logger.error(
                   `Error: observeDiagnostics, ${this._analyticsEventName} ${error}`,
                 );
                 return Observable.empty();
@@ -351,12 +350,12 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             track(this._analyticsEventName);
             const fileCache = this._connectionToFiles.get(connection);
             if (messages.length === 0) {
-              this._logger.log(
+              this._logger.debug(
                 `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`,
               );
               fileCache.delete(filePath);
             } else {
-              this._logger.log(
+              this._logger.debug(
                 `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`,
               );
               fileCache.add(filePath);
@@ -367,7 +366,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
           });
       })
       .catch(error => {
-        this._logger.logError(
+        this._logger.error(
           `Error: observeEntries, ${this._analyticsEventName} ${error}`,
         );
         throw error;
@@ -377,7 +376,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
       ServerConnection.onDidCloseServerConnection,
     )
       .map(connection => {
-        this._logger.log(
+        this._logger.debug(
           `Diagnostics closing ${connection.getRemoteHostname()}, ${this._analyticsEventName}`,
         );
         const files = Array.from(this._connectionToFiles.get(connection));
@@ -388,7 +387,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
         };
       })
       .catch(error => {
-        this._logger.logError(
+        this._logger.error(
           `Error: invalidations, ${this._analyticsEventName} ${error}`,
         );
         throw error;

@@ -119,11 +119,11 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   constructor(config: DebuggerConfig) {
     super('native');
     this._config = config;
-    this.getLogger().setLogLevel(config.logLevel);
+    this.getLogger().setLevel(config.logLevel);
   }
 
   attach(attachInfo: AttachTargetInfo): ConnectableObservable<void> {
-    this.getLogger().log(`attach process: ${JSON.stringify(attachInfo)}`);
+    this.getLogger().debug(`attach process: ${JSON.stringify(attachInfo)}`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
       basepath: attachInfo.basepath
@@ -137,7 +137,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   }
 
   launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
-    this.getLogger().log(`launch process: ${JSON.stringify(launchInfo)}`);
+    this.getLogger().debug(`launch process: ${JSON.stringify(launchInfo)}`);
     const inferiorArguments = {
       executable_path: launchInfo.executablePath,
       launch_arguments: launchInfo.arguments,
@@ -155,7 +155,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   }
 
   bootstrap(bootstrapInfo: BootstrapDebuggerInfo): ConnectableObservable<void> {
-    this.getLogger().log(`bootstrap lldb: ${JSON.stringify(bootstrapInfo)}`);
+    this.getLogger().debug(`bootstrap lldb: ${JSON.stringify(bootstrapInfo)}`);
     const inferiorArguments = {
       lldb_bootstrap_files: bootstrapInfo.lldbBootstrapFiles,
       basepath: bootstrapInfo.basepath
@@ -181,7 +181,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     // Investigate if we can use localhost and match protocol version between client/server.
     const lldbWebSocketAddress = `ws://127.0.0.1:${lldbWebSocketListeningPort}/`;
     await this.connectToWebSocketServer(lldbWebSocketAddress);
-    this.getLogger().log(
+    this.getLogger().debug(
       `Connected with lldb at address: ${lldbWebSocketAddress}`,
     );
   }
@@ -193,13 +193,13 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       splitStream(
         observeStream(ipcStream),
       ).subscribe(this._handleIpcMessage.bind(this, ipcStream), error =>
-        this.getLogger().logError(`ipcStream error: ${JSON.stringify(error)}`),
+        this.getLogger().error(`ipcStream error: ${JSON.stringify(error)}`),
       ),
     );
   }
 
   _handleIpcMessage(ipcStream: Object, message: string): void {
-    this.getLogger().logTrace(`ipc message: ${message}`);
+    this.getLogger().trace(`ipc message: ${message}`);
     const messageJson = JSON.parse(message);
     if (messageJson.type === 'Nuclide.userOutput') {
       // Write response message to ipc for sync message.
@@ -214,7 +214,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         JSON.stringify(messageJson.message),
       );
     } else {
-      this.getLogger().logError(`Unknown message: ${message}`);
+      this.getLogger().error(`Unknown message: ${message}`);
     }
   }
 
@@ -234,7 +234,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
       env: environ,
     };
-    this.getLogger().logInfo(
+    this.getLogger().info(
       `spawn child_process: ${JSON.stringify(python_args)}`,
     );
     const lldbProcess = child_process.spawn(
@@ -260,17 +260,15 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         text => {
           if (text.startsWith('ready')) {
             const args_in_json = JSON.stringify(args);
-            this.getLogger().logInfo(
-              `Sending ${args_in_json} to child_process`,
-            );
+            this.getLogger().info(`Sending ${args_in_json} to child_process`);
             argumentsStream.write(`${args_in_json}\n`);
           } else {
-            this.getLogger().logError(`Get unknown initial data: ${text}.`);
+            this.getLogger().error(`Get unknown initial data: ${text}.`);
             child.kill();
           }
         },
         error =>
-          this.getLogger().logError(
+          this.getLogger().error(
             `argumentsStream error: ${JSON.stringify(error)}`,
           ),
       ),
@@ -278,14 +276,14 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   }
 
   _connectWithLLDB(lldbProcess: child_process$ChildProcess): Promise<string> {
-    this.getLogger().log('connecting with lldb');
+    this.getLogger().debug('connecting with lldb');
     return new Promise((resolve, reject) => {
       // Async handle parsing websocket address from the stdout of the child.
       lldbProcess.stdout.on('data', chunk => {
         // stdout should hopefully be set to line-buffering, in which case the
         // string would come on one line.
         const block: string = chunk.toString();
-        this.getLogger().log(
+        this.getLogger().debug(
           `child process(${lldbProcess.pid}) stdout: ${block}`,
         );
         const result = /Port: (\d+)\n/.exec(block);
@@ -303,7 +301,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
             text: errorMessage,
           }),
         );
-        this.getLogger().logError(
+        this.getLogger().error(
           `child process(${lldbProcess.pid}) stderr: ${errorMessage}`,
         );
       });

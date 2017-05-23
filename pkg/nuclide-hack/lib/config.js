@@ -12,7 +12,7 @@
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 type HackConfig = {
   hhClientPath: string,
@@ -31,11 +31,11 @@ export function getConfig(): HackConfig {
 }
 
 const LOGGER_CATEGORY = 'nuclide-hack';
-export const logger = getCategoryLogger(LOGGER_CATEGORY);
+export const logger = getLogger(LOGGER_CATEGORY);
 
 function initializeLogging(): void {
   const config = getConfig();
-  logger.setLogLevel(config.logLevel);
+  logger.setLevel(config.logLevel);
 }
 
 initializeLogging();

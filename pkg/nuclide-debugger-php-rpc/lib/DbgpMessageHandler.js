@@ -47,7 +47,7 @@ export class DbgpMessageHandler {
      * 2: length<NULL>xml-part1.
      * >=3: Other scenarios.
      */
-    logger.log(`Total components: ${components.length}`);
+    logger.debug(`Total components: ${components.length}`);
 
     // Merge head component with prevIncompletedMessage if needed.
     const results = [];
@@ -64,11 +64,12 @@ export class DbgpMessageHandler {
 
     // Verify that we can't get another message without completing previous one.
     if (prevIncompletedMessage && components.length !== 0) {
-      logger.logErrorAndThrow(
+      const message =
         'Error: got extra messages without completing previous message. ' +
-          `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
-          `Remaining components: ${JSON.stringify(components)}`,
-      );
+        `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
+        `Remaining components: ${JSON.stringify(components)}`;
+      logger.error(message);
+      throw new Error(message);
     }
 
     const isIncompleteResponse = components.length % 2 === 0;
@@ -77,10 +78,11 @@ export class DbgpMessageHandler {
     if (!isIncompleteResponse) {
       const lastComponent = components.pop();
       if (lastComponent.length !== 0) {
-        logger.logErrorAndThrow(
+        const message =
           'The complete response should terminate with' +
-            ` zero character while got: ${lastComponent} `,
-        );
+          ` zero character while got: ${lastComponent} `;
+        logger.error(message);
+        throw new Error(message);
       }
     }
 
@@ -92,10 +94,11 @@ export class DbgpMessageHandler {
       const length = Number(components.pop());
       const lastMessage = {length, content};
       if (!this._isIncompletedMessage(lastMessage)) {
-        logger.logErrorAndThrow(
+        const message =
           'The last message should be a fragment of a full message: ' +
-            JSON.stringify(lastMessage),
-        );
+          JSON.stringify(lastMessage);
+        logger.error(message);
+        throw new Error(message);
       }
       prevIncompletedMessage = lastMessage;
     }
@@ -108,11 +111,12 @@ export class DbgpMessageHandler {
         content: components.shift(),
       };
       if (!this._isCompletedMessage(message)) {
-        logger.logErrorAndThrow(
+        const errorMessage =
           `Got message length(${message.content.length}) ` +
-            `not equal to expected(${message.length}). ` +
-            `Message was: ${JSON.stringify(message)}`,
-        );
+          `not equal to expected(${message.length}). ` +
+          `Message was: ${JSON.stringify(message)}`;
+        logger.error(errorMessage);
+        throw new Error(errorMessage);
       }
       results.push(this._parseXml(message));
     }
@@ -156,7 +160,7 @@ export class DbgpMessageHandler {
         'Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml,
       );
     }
-    logger.log(
+    logger.debug(
       'Translating server message result json: ' + JSON.stringify(resultValue),
     );
     invariant(resultValue != null);

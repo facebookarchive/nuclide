@@ -10,7 +10,6 @@
  */
 
 import type {HostServices} from '../lib/rpc-types';
-import type {CategoryLogger} from '../../nuclide-logging';
 
 import {Observable} from 'rxjs';
 import {forkHostServices} from '../';
@@ -47,13 +46,12 @@ describe('HostServicesAggregator', () => {
     hostRelay = ((hostRelayObj: any): HostServices);
 
     logger = ((jasmine.createSpyObj('logger', [
-      'log',
-      'logTrace',
-      'logInfo',
-      'logError',
-      'logErrorAndThrow',
-      'setLogLevel',
-    ]): any): CategoryLogger);
+      'debug',
+      'trace',
+      'info',
+      'error',
+      'setLevel',
+    ]): any): log4js$Logger);
   });
 
   it('relays to parent', () => {

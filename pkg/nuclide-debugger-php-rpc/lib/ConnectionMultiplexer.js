@@ -295,7 +295,7 @@ export class ConnectionMultiplexer {
           xdebugBreakpoint,
         );
         if (breakpointId == null) {
-          logger.logError(
+          logger.error(
             `Cannot find xdebug breakpoint ${JSON.stringify(xdebugBreakpoint)} in connection.`,
           );
           break;
@@ -305,7 +305,7 @@ export class ConnectionMultiplexer {
         this._emitNotification(BREAKPOINT_RESOLVED_NOTIFICATION, breakpoint);
         break;
       default:
-        logger.logError(`Unknown notify: ${notifyName}`);
+        logger.error(`Unknown notify: ${notifyName}`);
         break;
     }
   }
@@ -322,7 +322,9 @@ export class ConnectionMultiplexer {
     status: string,
     ...args: Array<string>
   ): void {
-    logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
+    logger.debug(
+      `Mux got status: ${status} on connection ${connection.getId()}`,
+    );
 
     this._debuggerStartupDisposable.dispose();
 
@@ -430,7 +432,7 @@ export class ConnectionMultiplexer {
       this._status === ConnectionMultiplexerStatus.SingleConnectionPaused ||
       this._status === ConnectionMultiplexerStatus.AllConnectionsPaused
     ) {
-      logger.log('Mux already in break status');
+      logger.debug('Mux already in break status');
       return;
     }
 
@@ -470,7 +472,7 @@ export class ConnectionMultiplexer {
   }
 
   _enableConnection(connection: Connection): void {
-    logger.log('Mux enabling connection');
+    logger.debug('Mux enabling connection');
     this._enabledConnection = connection;
     this._handlePotentialRequestSwitch(connection);
     this._lastEnabledConnection = connection;
@@ -539,7 +541,7 @@ export class ConnectionMultiplexer {
       type: 'error',
       message: error,
     });
-    logger.logError(`PHP debugger attach error: ${error}`);
+    logger.error(`PHP debugger attach error: ${error}`);
     this._emitStatus(ConnectionMultiplexerStatus.End);
   }
 
@@ -556,7 +558,7 @@ export class ConnectionMultiplexer {
   }
 
   async runtimeEvaluate(expression: string): Promise<Object> {
-    logger.log(`runtimeEvaluate() on dummy connection for: ${expression}`);
+    logger.debug(`runtimeEvaluate() on dummy connection for: ${expression}`);
     if (this._dummyConnection != null) {
       // Global runtime evaluation on dummy connection does not care about
       // which frame it is being evaluated on so choose top frame here.
@@ -685,7 +687,7 @@ export class ConnectionMultiplexer {
     );
 
     if (!exists) {
-      logger.log('Connection hit stale breakpoint. Resuming...');
+      logger.debug('Connection hit stale breakpoint. Resuming...');
     }
 
     return exists;
@@ -777,7 +779,7 @@ export class ConnectionMultiplexer {
   }
 
   _disableConnection(): void {
-    logger.log('Mux disabling connection');
+    logger.debug('Mux disabling connection');
     this._enabledConnection = null;
     this._setStatus(ConnectionMultiplexerStatus.Running);
   }
@@ -841,7 +843,7 @@ export class ConnectionMultiplexer {
   async _setupStdStreams(connection: Connection): Promise<void> {
     const stdoutRequestSucceeded = await connection.sendStdoutRequest();
     if (!stdoutRequestSucceeded) {
-      logger.logError('HHVM returned failure for a stdout request');
+      logger.error('HHVM returned failure for a stdout request');
       this._clientCallback.sendUserMessage('outputWindow', {
         level: 'error',
         text: 'HHVM failed to redirect stdout, so no output will be sent to the output window.',
@@ -856,17 +858,17 @@ export class ConnectionMultiplexer {
     // returning hierarchical data.
     let setFeatureSucceeded = await connection.setFeature('max_depth', '5');
     if (!setFeatureSucceeded) {
-      logger.logError('HHVM returned failure for setting feature max_depth');
+      logger.error('HHVM returned failure for setting feature max_depth');
     }
     // show_hidden allows the client to request data from private class members.
     setFeatureSucceeded = await connection.setFeature('show_hidden', '1');
     if (!setFeatureSucceeded) {
-      logger.logError('HHVM returned failure for setting feature show_hidden');
+      logger.error('HHVM returned failure for setting feature show_hidden');
     }
     // Turn on notifications.
     setFeatureSucceeded = await connection.setFeature('notify_ok', '1');
     if (!setFeatureSucceeded) {
-      logger.logError('HHVM returned failure for setting feature notify_ok');
+      logger.error('HHVM returned failure for setting feature notify_ok');
     }
   }
 

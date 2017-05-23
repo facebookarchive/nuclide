@@ -99,7 +99,7 @@ export class PhpDebuggerService {
   }
 
   async debug(config: PhpDebuggerSessionConfig): Promise<string> {
-    logger.logInfo('Connecting config: ' + JSON.stringify(config));
+    logger.info('Connecting config: ' + JSON.stringify(config));
 
     await this._warnIfHphpdAttached();
     if (!await passesGK(GK_PAUSE_ONE_PAUSE_ALL)) {
@@ -108,7 +108,7 @@ export class PhpDebuggerService {
 
     setConfig(config);
     await setRootDirectoryUri(config.targetUri);
-    logger.setLogLevel(config.logLevel);
+    logger.setLevel(config.logLevel);
     this._setState(CONNECTING);
 
     const translator = new MessageTranslator(this._clientCallback);
@@ -124,7 +124,7 @@ export class PhpDebuggerService {
   }
 
   async sendCommand(message: string): Promise<void> {
-    logger.logInfo('Recieved command: ' + message);
+    logger.info('Recieved command: ' + message);
     if (this._translator) {
       await this._translator.handleCommand(message);
     }
@@ -146,7 +146,7 @@ export class PhpDebuggerService {
   }
 
   _setState(newState: string): void {
-    logger.log('state change from ' + this._state + ' to ' + newState);
+    logger.debug('state change from ' + this._state + ' to ' + newState);
     // TODO: Consider logging socket info: remote ip, etc.
     this._state = newState;
 
@@ -156,7 +156,7 @@ export class PhpDebuggerService {
   }
 
   dispose(): Promise<void> {
-    logger.logInfo('Proxy: Ending session');
+    logger.info('Proxy: Ending session');
     clearConfig();
     this._disposables.dispose();
     return Promise.resolve();

@@ -36,7 +36,6 @@ import type {ConnectableObservable} from 'rxjs';
 import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/rpc-types';
-import type {CategoryLogger} from '../../nuclide-logging';
 
 import invariant from 'assert';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
@@ -310,7 +309,7 @@ export class ServerLanguageService<
 (((null: any): ServerLanguageService<>): LanguageService);
 
 export function ensureInvalidations(
-  logger: CategoryLogger,
+  logger: log4js$Logger,
   diagnostics: Observable<FileDiagnosticUpdate>,
 ): Observable<FileDiagnosticUpdate> {
   const filesWithErrors = new Set();
@@ -319,10 +318,10 @@ export function ensureInvalidations(
   > = diagnostics.do((diagnostic: FileDiagnosticUpdate) => {
     const filePath = diagnostic.filePath;
     if (diagnostic.messages.length === 0) {
-      logger.log(`Removing ${filePath} from files with errors`);
+      logger.debug(`Removing ${filePath} from files with errors`);
       filesWithErrors.delete(filePath);
     } else {
-      logger.log(`Adding ${filePath} to files with errors`);
+      logger.debug(`Adding ${filePath} to files with errors`);
       filesWithErrors.add(filePath);
     }
   });
@@ -330,10 +329,10 @@ export function ensureInvalidations(
   const fileInvalidations: Observable<
     FileDiagnosticUpdate,
   > = Observable.defer(() => {
-    logger.log('Clearing errors after stream closed');
+    logger.debug('Clearing errors after stream closed');
     return Observable.from(
       Array.from(filesWithErrors).map(file => {
-        logger.log(`Clearing errors for ${file} after connection closed`);
+        logger.debug(`Clearing errors for ${file} after connection closed`);
         return {
           filePath: file,
           messages: [],

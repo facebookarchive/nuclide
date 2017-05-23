@@ -13,10 +13,10 @@ import type {PhpDebuggerSessionConfig} from '../../nuclide-debugger-php-rpc';
 
 import invariant from 'assert';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+export default getLogger(DEBUGGER_LOGGER_CATEGORY);
 
 export function getConfig(): PhpDebuggerSessionConfig {
   return (featureConfig.get('nuclide-debugger-php'): any);

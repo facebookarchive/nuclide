@@ -173,7 +173,7 @@ export class DbgpSocket {
   _onError(error: {code: string}): void {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
-    logger.logError('socket error ' + error.code);
+    logger.error('socket error ' + error.code);
     this._emitStatus(ConnectionStatus.Error, error.code);
   }
 
@@ -185,7 +185,7 @@ export class DbgpSocket {
 
   _onData(data: Buffer | string): void {
     const message = data.toString();
-    logger.log('Recieved data: ' + message);
+    logger.debug('Recieved data: ' + message);
     let responses = [];
     try {
       responses = this._messageHandler.parseMessages(message);
@@ -204,7 +204,7 @@ export class DbgpSocket {
       } else if (notify != null) {
         this._handleNotification(notify);
       } else {
-        logger.logError('Unexpected socket message: ' + message);
+        logger.error('Unexpected socket message: ' + message);
       }
     });
   }
@@ -215,7 +215,7 @@ export class DbgpSocket {
     const transactionId = Number(transaction_id);
     const call = this._calls.get(transactionId);
     if (!call) {
-      logger.logError('Missing call for response: ' + message);
+      logger.error('Missing call for response: ' + message);
       return;
     }
     // We handle evaluation commands specially since they can trigger breakpoints.
@@ -298,7 +298,7 @@ export class DbgpSocket {
     const outputType = stream.$.type;
     // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
     const outputText = stream._ != null ? base64Decode(stream._) : '';
-    logger.log(`${outputType} message received: ${outputText}`);
+    logger.debug(`${outputType} message received: ${outputText}`);
     const status = outputType === 'stdout'
       ? ConnectionStatus.Stdout
       : ConnectionStatus.Stderr;
@@ -312,14 +312,14 @@ export class DbgpSocket {
     if (notifyName === 'breakpoint_resolved') {
       const breakpoint = notify.breakpoint[0].$;
       if (breakpoint == null) {
-        logger.logError(
+        logger.error(
           `Fail to get breakpoint from 'breakpoint_resolved' notify: ${JSON.stringify(notify)}`,
         );
         return;
       }
       this._emitNotification(BREAKPOINT_RESOLVED_NOTIFICATION, breakpoint);
     } else {
-      logger.logError(`Unknown notify: ${JSON.stringify(notify)}`);
+      logger.error(`Unknown notify: ${JSON.stringify(notify)}`);
     }
   }
 
@@ -332,7 +332,7 @@ export class DbgpSocket {
   ): void {
     this._calls.delete(transactionId);
     if (call.command !== command) {
-      logger.logError(
+      logger.error(
         'Bad command in response. Found ' +
           command +
           '. expected ' +
@@ -341,12 +341,10 @@ export class DbgpSocket {
       return;
     }
     try {
-      logger.log('Completing call: ' + message);
+      logger.debug('Completing call: ' + message);
       call.complete(response);
     } catch (e) {
-      logger.logError(
-        'Exception: ' + e.toString() + ' handling call: ' + message,
-      );
+      logger.error('Exception: ' + e.toString() + ' handling call: ' + message);
     }
   }
 
@@ -431,7 +429,7 @@ export class DbgpSocket {
         wasThrown: false,
       };
     } else {
-      logger.log(
+      logger.debug(
         `Received non-error evaluateOnCallFrame response with no properties: ${expression}`,
       );
       return {
@@ -511,7 +509,7 @@ export class DbgpSocket {
         wasThrown: false,
       };
     } else {
-      logger.log(
+      logger.debug(
         `Received non-error runtimeEvaluate response with no properties: ${expr}`,
       );
     }
@@ -631,20 +629,20 @@ export class DbgpSocket {
   _sendMessage(message: string): void {
     const socket = this._socket;
     if (socket != null) {
-      logger.log('Sending message: ' + message);
+      logger.debug('Sending message: ' + message);
       socket.write(message + '\x00');
     } else {
-      logger.logError('Attempt to send message after dispose: ' + message);
+      logger.error('Attempt to send message after dispose: ' + message);
     }
   }
 
   _emitStatus(status: string, ...args: Array<string>): void {
-    logger.log('Emitting status: ' + status);
+    logger.debug('Emitting status: ' + status);
     this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status, ...args);
   }
 
   _emitNotification(notifyName: string, notify: Object): void {
-    logger.log(`Emitting notification: ${notifyName}`);
+    logger.debug(`Emitting notification: ${notifyName}`);
     this._emitter.emit(DBGP_SOCKET_NOTIFICATION_EVENT, notifyName, notify);
   }
 

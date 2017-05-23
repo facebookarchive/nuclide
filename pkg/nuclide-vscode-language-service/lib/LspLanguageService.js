@@ -72,7 +72,6 @@ import type {
   SymbolInformation,
   UncoveredRange,
 } from './protocol';
-import type {CategoryLogger} from '../../nuclide-logging';
 import type {JsonRpcConnection} from './jsonrpc';
 
 import invariant from 'assert';
@@ -129,7 +128,7 @@ export class LspLanguageService {
   _command: string;
   _args: Array<string>;
   _fileExtensions: Array<string>;
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
   _host: HostServices;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
 
@@ -151,7 +150,7 @@ export class LspLanguageService {
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
 
   constructor(
-    logger: CategoryLogger,
+    logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
     consoleSource: string,
@@ -194,7 +193,7 @@ export class LspLanguageService {
 
       let childProcess;
       try {
-        this._logger.logInfo(`Spawn: ${this._command} ${this._args.join(' ')}`);
+        this._logger.info(`Spawn: ${this._command} ${this._args.join(' ')}`);
         if (this._command === '') {
           throw new Error('No command provided for launching language server');
           // if we try to spawn an empty command, node itself throws a "bad
@@ -396,7 +395,7 @@ export class LspLanguageService {
       // over jsonrpc, sending the initialize message. If an exception fell
       // through then it's an internal logic error.
       // Don't know how to recover.
-      this._logger.logError(`Lsp.start - unexpected error ${e}`);
+      this._logger.error(`Lsp.start - unexpected error ${e}`);
       throw e;
     } finally {
       this._supportsSymbolSearch.next(
@@ -455,7 +454,7 @@ export class LspLanguageService {
               this._fileEdit(fileEvent);
               break;
             default:
-              this._logger.logError(
+              this._logger.error(
                 'Unrecognized fileEvent ' + JSON.stringify(fileEvent),
               );
           }
@@ -533,7 +532,7 @@ export class LspLanguageService {
       msg += `\n  LSP STACK:\n${String(e.data.stack)}`;
     }
     msg += `\n  NUCLIDE STACK:\n${e.stack}`;
-    this._logger.logError(msg);
+    this._logger.error(msg);
   }
 
   _handleError(data: [Error, ?Object, ?number]): void {
@@ -547,11 +546,11 @@ export class LspLanguageService {
     // Count is how many writes total have failed over this jsonRpcConnection.
     // Message is the JsonRPC object we were trying to write.
     if (message != null && count != null) {
-      this._logger.logError(
+      this._logger.error(
         `Lsp.JsonRpc.${String(error)} - ${count} errors so far - ${JSON.stringify(message)}`,
       );
     } else {
-      this._logger.logError(`Lsp.JsonRpc.${String(error)}`);
+      this._logger.error(`Lsp.JsonRpc.${String(error)}`);
     }
     if (count != null && count <= 3) {
       return;
@@ -570,7 +569,7 @@ export class LspLanguageService {
     // CARE! This method may be called before initialization has finished.
 
     if (this._state === 'Stopping' || this._state === 'Stopped') {
-      this._logger.logInfo('Lsp.Close');
+      this._logger.info('Lsp.Close');
       return;
     }
 
@@ -582,7 +581,7 @@ export class LspLanguageService {
 
     // Should we restart or not? depends...
     if (prevState !== 'Running') {
-      this._logger.logError("Lsp.Close - wasn't running, so won't restart.");
+      this._logger.error("Lsp.Close - wasn't running, so won't restart.");
       return;
     }
     const now = Date.now();
@@ -591,7 +590,7 @@ export class LspLanguageService {
       this._recentRestarts.shift();
     }
     if (this._recentRestarts.length >= 5) {
-      this._logger.logError('Lsp.Close - will not restart.');
+      this._logger.error('Lsp.Close - will not restart.');
       this._host
         .dialogNotification(
           'error',
@@ -600,7 +599,7 @@ export class LspLanguageService {
         .refCount()
         .subscribe(); // fire and forget
     } else {
-      this._logger.logError('Lsp.Close - will attempt to restart');
+      this._logger.error('Lsp.Close - will attempt to restart');
       this._host.consoleNotification(
         this._consoleSource,
         'warning',
@@ -700,7 +699,7 @@ export class LspLanguageService {
       if (buffer != null) {
         // Invariant: LSP is never ahead of our fileCache.
         // Therefore it will eventually catch up.
-        this._logger.logError(
+        this._logger.error(
           'LSP.version - could not catch up to version=' + fileVersion.version,
         );
       }
@@ -780,7 +779,7 @@ export class LspLanguageService {
   }
 
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
-    this._logger.logError('Lsp: should observeDiagnostics, not getDiagnostics');
+    this._logger.error('Lsp: should observeDiagnostics, not getDiagnostics');
     return Promise.resolve(null);
   }
 
@@ -900,7 +899,7 @@ export class LspLanguageService {
   }
 
   getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    this._logger.logError('NYI: getDefinitionById');
+    this._logger.error('NYI: getDefinitionById');
     return Promise.resolve(null);
   }
 
@@ -1062,7 +1061,7 @@ export class LspLanguageService {
     const mapElements = list.map(([symbol, node]) => [symbol.name, node]);
     const map: Map<string, Array<OutlineTree>> = collect(mapElements);
     if (map.has('')) {
-      this._logger.logError(
+      this._logger.error(
         'Outline textDocument/documentSymbol returned an empty symbol name',
       );
     }
@@ -1082,7 +1081,7 @@ export class LspLanguageService {
       const parentName = symbol.containerName || '';
       const parentCandidates = map.get(parentName);
       if (parentCandidates == null) {
-        this._logger.logError(
+        this._logger.error(
           `Outline textDocument/documentSymbol ${symbol.name} is missing container ${parentName}`,
         );
       } else {
@@ -1098,7 +1097,7 @@ export class LspLanguageService {
         } else if (iAfter === 0) {
           // All candidates after item? That's an error! We'll arbitrarily pick first one.
           parentCandidates[0].children.push(node);
-          this._logger.logError(
+          this._logger.error(
             `Outline textDocument/documentSymbol ${symbol.name} comes after its container`,
           );
         } else {
@@ -1208,7 +1207,7 @@ export class LspLanguageService {
       fileVersion,
     );
     if (buffer == null) {
-      this._logger.logError(
+      this._logger.error(
         'LSP.formatSource - buffer changed before we could format',
       );
       return null;
@@ -1249,7 +1248,7 @@ export class LspLanguageService {
         return null;
       }
     } else {
-      this._logger.logError('LSP.formatSource - not supported by server');
+      this._logger.error('LSP.formatSource - not supported by server');
       return null;
     }
 
@@ -1272,7 +1271,7 @@ export class LspLanguageService {
   }> {
     // A language service implements either formatSource or formatEntireFile,
     // and we should pick formatSource in our AtomLanguageServiceConfig.
-    this._logger.logError(
+    this._logger.error(
       'LSP CodeFormat providers should use formatEntireFile: false',
     );
     return Promise.resolve(null);
@@ -1282,7 +1281,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?NuclideEvaluationExpression> {
-    this._logger.logError('NYI: getEvaluationExpression');
+    this._logger.error('NYI: getEvaluationExpression');
     return Promise.resolve(null);
   }
 
@@ -1314,12 +1313,12 @@ export class LspLanguageService {
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
-    this._logger.logError('NYI: getProjectRoot');
+    this._logger.error('NYI: getProjectRoot');
     return Promise.resolve(null);
   }
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    this._logger.logError('NYI: isFileInProject');
+    this._logger.error('NYI: isFileInProject');
     return Promise.resolve(false);
   }
 
@@ -1333,14 +1332,14 @@ export class LspLanguageService {
     const urlObject = url.parse(uri);
     // LSP should only send URI with `file:` protocol or without any protocol.
     if (urlObject.protocol !== 'file:' && urlObject.protocol) {
-      this._logger.logError(
+      this._logger.error(
         `Incorrect URI protocol ${urlObject.protocol} - using the raw URI instead.`,
       );
       return uri;
     }
 
     if (!urlObject.pathname) {
-      this._logger.logError(
+      this._logger.error(
         'URI pathname does not exist - using the raw URI instead.',
       );
       return uri;
@@ -1386,7 +1385,7 @@ class DerivedServerCapabilities {
   serverWantsOpenClose: boolean;
   serverWantsChange: 'full' | 'incremental' | 'none';
 
-  constructor(capabilities: ServerCapabilities, logger: CategoryLogger) {
+  constructor(capabilities: ServerCapabilities, logger: log4js$Logger) {
     let syncKind;
 
     // capabilities.textDocumentSync is either a number (protocol v2)
@@ -1402,7 +1401,7 @@ class DerivedServerCapabilities {
       this.serverWantsOpenClose = false;
       syncKind = TextDocumentSyncKind.None;
       if (sync != null) {
-        logger.logError(
+        logger.error(
           'LSP - invalid capabilities.textDocumentSync from server: ' +
             JSON.stringify(sync),
         );
@@ -1418,7 +1417,7 @@ class DerivedServerCapabilities {
     } else if (syncKind === TextDocumentSyncKind.None) {
       this.serverWantsChange = 'none';
     } else {
-      logger.logError('LSP initialize: invalid TextDocumentSyncKind');
+      logger.error('LSP initialize: invalid TextDocumentSyncKind');
       this.serverWantsChange = 'none';
     }
   }
@@ -1617,37 +1616,37 @@ export function convertSearchResult(info: SymbolInformation): SymbolResult {
 }
 
 class JsonRpcLogger {
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
 
-  constructor(logger: CategoryLogger) {
+  constructor(logger: log4js$Logger) {
     this._logger = logger;
   }
 
   error(message: string): void {
-    this._logger.logError('Lsp.JsonRpc ' + message);
+    this._logger.error('Lsp.JsonRpc ' + message);
   }
 
   warn(message: string): void {
-    this._logger.logInfo('Lsp.JsonRpc ' + message);
+    this._logger.info('Lsp.JsonRpc ' + message);
   }
 
   info(message: string): void {
-    this._logger.logInfo('Lsp.JsonRpc ' + message);
+    this._logger.info('Lsp.JsonRpc ' + message);
   }
 
   log(message: string): void {
-    this._logger.logTrace('Jsp.JsonRpc ' + message);
+    this._logger.trace('Jsp.JsonRpc ' + message);
   }
 }
 
 class JsonRpcTraceLogger {
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
 
-  constructor(logger: CategoryLogger) {
+  constructor(logger: log4js$Logger) {
     this._logger = logger;
   }
 
   log(message: string, data: ?string): void {
-    this._logger.logInfo(`LSP.trace: ${message} ${data || ''}`);
+    this._logger.info(`LSP.trace: ${message} ${data || ''}`);
   }
 }

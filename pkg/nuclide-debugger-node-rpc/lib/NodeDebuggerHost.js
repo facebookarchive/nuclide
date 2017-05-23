@@ -15,8 +15,7 @@ import {
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
 import {Session} from './Session';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import utils from './utils';
-const {log} = utils;
+import logger from './utils';
 
 /**
  * Responsible for bootstrap and host node inspector backend.
@@ -42,7 +41,7 @@ export class NodeDebuggerHost {
     const debugPort = 5858;
     const wsPort = this._generateRandomInteger(2000, 65535);
     this._nodeSocketServer.start(wsPort).then(websocket => {
-      log(`Websocket server created for port: ${wsPort}`);
+      logger.debug(`Websocket server created for port: ${wsPort}`);
       // TODO: do we need to add webSocket into CompositeDisposable?
       const config = {
         debugPort,

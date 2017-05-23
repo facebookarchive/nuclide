@@ -14,8 +14,7 @@ import {ConnectableObservable} from 'rxjs';
 import WS from 'ws';
 import {CompositeDisposable, Disposable} from 'event-kit';
 import {runCommand} from '../../commons-node/process';
-import utils from './utils';
-const {logInfo} = utils;
+import logger from './utils';
 import {ClientCallback} from '../../nuclide-debugger-common';
 import {NodeDebuggerHost} from './NodeDebuggerHost';
 
@@ -105,10 +104,10 @@ export class NodeDebuggerService {
   async sendCommand(message: string): Promise<void> {
     const nodeWebSocket = this._webSocketClientToNode;
     if (nodeWebSocket != null) {
-      logInfo(`forward client message to node debugger: ${message}`);
+      logger.info(`forward client message to node debugger: ${message}`);
       nodeWebSocket.send(message);
     } else {
-      logInfo(
+      logger.info(
         `Nuclide sent message to node debugger after socket closed: ${message}`,
       );
     }
@@ -125,7 +124,7 @@ export class NodeDebuggerService {
   }
 
   async _connectWithDebuggerHost(serverAddress: string): Promise<WS> {
-    logInfo(`Connecting debugger host with address: ${serverAddress}`);
+    logger.info(`Connecting debugger host with address: ${serverAddress}`);
     const ws = new WS(serverAddress);
     this._subscriptions.add(new Disposable(() => ws.close()));
     return new Promise((resolve, reject) => {
@@ -138,7 +137,7 @@ export class NodeDebuggerService {
   }
 
   _handleNodeDebuggerMessage(message: string): void {
-    logInfo(`Node debugger message: ${message}`);
+    logger.info(`Node debugger message: ${message}`);
     this._clientCallback.sendChromeMessage(message);
   }
 

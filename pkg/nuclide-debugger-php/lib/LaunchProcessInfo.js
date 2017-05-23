@@ -21,8 +21,7 @@ import {
 } from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import utils from './utils';
-const {logInfo} = utils;
+import logger from './utils';
 import {getSessionConfig} from './utils';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
@@ -48,10 +47,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     sessionConfig.endDebugWhenNoRequests = true;
     sessionConfig.launchScriptPath = this._launchTarget;
 
-    logInfo(`Connection session config: ${JSON.stringify(sessionConfig)}`);
+    logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 
     const result = await rpcService.debug(sessionConfig);
-    logInfo(`Launch process result: ${result}`);
+    logger.info(`Launch process result: ${result}`);
     return new PhpDebuggerInstance(this, rpcService);
   }
 

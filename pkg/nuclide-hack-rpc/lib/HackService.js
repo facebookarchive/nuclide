@@ -109,7 +109,7 @@ export async function initializeLsp(
   host: HostServices,
 ): Promise<LanguageService> {
   invariant(fileNotifier instanceof FileCache);
-  logger.setLogLevel(logLevel);
+  logger.setLevel(logLevel);
   const cmd = command === '' ? await getHackCommand() : command;
   return createMultiLspLanguageService(
     logger,
@@ -129,7 +129,7 @@ export async function initialize(
   fileNotifier: FileNotifier,
 ): Promise<LanguageService> {
   setHackCommand(hackCommand);
-  logger.setLogLevel(logLevel);
+  logger.setLevel(logLevel);
   await getHackCommand();
   return new HackLanguageServiceImpl(fileNotifier);
 }
@@ -202,7 +202,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   }
 
   dispose(): void {
-    logger.logInfo('Disposing HackLanguageServiceImpl');
+    logger.info('Disposing HackLanguageServiceImpl');
 
     this._resources.dispose();
     super.dispose();
@@ -225,17 +225,17 @@ class HackSingleFileLanguageService {
   }
 
   observeDiagnostics(): Observable<FileDiagnosticUpdate> {
-    logger.log('observeDiagnostics');
+    logger.debug('observeDiagnostics');
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
-        logger.log('notifyDiagnostics');
+        logger.debug('notifyDiagnostics');
         return ensureInvalidations(
           logger,
           connection
             .notifyDiagnostics()
             .refCount()
             .catch(error => {
-              logger.logError(`Error: notifyDiagnostics ${error}`);
+              logger.error(`Error: notifyDiagnostics ${error}`);
               return Observable.empty();
             })
             .filter((hackDiagnostics: HackDiagnosticsMessage) => {
@@ -246,7 +246,7 @@ class HackSingleFileLanguageService {
               return hackDiagnostics.filename !== '';
             })
             .map((hackDiagnostics: HackDiagnosticsMessage) => {
-              logger.log(`Got hack error in ${hackDiagnostics.filename}`);
+              logger.debug(`Got hack error in ${hackDiagnostics.filename}`);
               return {
                 filePath: hackDiagnostics.filename,
                 messages: hackDiagnostics.errors.map(diagnostic =>
@@ -257,7 +257,7 @@ class HackSingleFileLanguageService {
         );
       })
       .catch(error => {
-        logger.logError(`Error: observeDiagnostics ${error}`);
+        logger.error(`Error: observeDiagnostics ${error}`);
         throw error;
       });
   }

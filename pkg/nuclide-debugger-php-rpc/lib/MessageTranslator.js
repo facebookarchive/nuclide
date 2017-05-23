@@ -55,12 +55,12 @@ export class MessageTranslator {
   }
 
   onSessionEnd(callback: () => void): void {
-    logger.log('onSessionEnd');
+    logger.debug('onSessionEnd');
     this._debuggerHandler.onSessionEnd(callback);
   }
 
   async handleCommand(command: string): Promise<void> {
-    logger.log('handleCommand: ' + command);
+    logger.debug('handleCommand: ' + command);
     const {id, method, params} = JSON.parse(command);
 
     if (!method || typeof method !== 'string') {
@@ -84,13 +84,13 @@ export class MessageTranslator {
       invariant(handler != null);
       await handler.handleMethod(id, methodName, params);
     } catch (e) {
-      logger.logError(`Exception handling command ${id}: ${e} ${e.stack}`);
+      logger.error(`Exception handling command ${id}: ${e} ${e.stack}`);
       this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);
     }
   }
 
   _replyWithError(id: number, error: string): void {
-    logger.log(error);
+    logger.debug(error);
     this._clientCallback.replyWithError(id, error);
   }
 

@@ -11,10 +11,10 @@
 
 import {ConfigCache} from '../../commons-node/ConfigCache';
 import {runCommand} from '../../commons-node/process';
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const HACK_LOGGER_CATEGORY = 'nuclide-hack';
-export const logger = getCategoryLogger(HACK_LOGGER_CATEGORY);
+export const logger = getLogger(HACK_LOGGER_CATEGORY);
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';
 const PATH_TO_HH_CLIENT = 'hh_client';

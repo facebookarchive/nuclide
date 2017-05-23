@@ -41,7 +41,7 @@ export async function initializeLsp(
   host: HostServices,
 ): Promise<LanguageService> {
   invariant(fileNotifier instanceof FileCache);
-  logger.setLogLevel(logLevel);
+  logger.setLevel(logLevel);
   return createMultiLspLanguageService(
     logger,
     fileNotifier,

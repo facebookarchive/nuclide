@@ -62,7 +62,7 @@ function getServiceRegistry(): ServiceRegistry {
 }
 
 function logMessage(direction: string, message: string): void {
-  logger.logTrace(`Hack Connection message ${direction}: '${message}'`);
+  logger.trace(`Hack Connection message ${direction}: '${message}'`);
 }
 
 class HackProcess {
@@ -211,7 +211,7 @@ class HackProcess {
     } catch (e) {
       // Failing to send the shutdown is not fatal...
       // ... continue with shutdown.
-      logger.logError('Hack Process died before disconnect() could be sent.');
+      logger.error('Hack Process died before disconnect() could be sent.');
     }
   }
 
@@ -249,7 +249,7 @@ processes.observeKeys().subscribe(fileCache => {
       undefined, // next
       undefined, // error
       () => {
-        logger.logInfo('fileCache shutting down.');
+        logger.info('fileCache shutting down.');
         closeProcesses(fileCache);
       },
     );
@@ -273,15 +273,15 @@ export function ensureProcesses(
   fileCache: FileCache,
   configPaths: Set<NuclideUri>,
 ): void {
-  logger.logInfo(`Hack ensureProcesses. ${Array.from(configPaths).join(', ')}`);
+  logger.info(`Hack ensureProcesses. ${Array.from(configPaths).join(', ')}`);
   processes.get(fileCache).setKeys(configPaths);
 }
 
 // Closes all HackProcesses for the given fileCache.
 export function closeProcesses(fileCache: FileCache): void {
-  logger.logInfo('Hack closeProcesses');
+  logger.info('Hack closeProcesses');
   if (processes.has(fileCache)) {
-    logger.logInfo(
+    logger.info(
       `Shutting down HackProcesses ${Array.from(processes
           .get(fileCache)
           .keys()).join(',')}`,
@@ -302,8 +302,8 @@ async function retryCreateHackProcess(
     try {
       hackProcess = await createHackProcess(fileCache, hackRoot);
     } catch (e) {
-      logger.logError(`Couldn't create HackProcess: ${e.message}`);
-      logger.logError(`Waiting ${waitTimeMs}ms before retrying...`);
+      logger.error(`Couldn't create HackProcess: ${e.message}`);
+      logger.error(`Waiting ${waitTimeMs}ms before retrying...`);
 
       await new Promise(resolve => setTimeout(resolve, waitTimeMs));
       waitTimeMs *= 2;
@@ -314,7 +314,7 @@ async function retryCreateHackProcess(
       // If the HackProcess is no longer needed, or we would be waiting
       // longer than a few seconds, just give up.
       if (!hackProcessNeeded || waitTimeMs > 4000) {
-        logger.logError(`Giving up on creating HackProcess: ${e.message}`);
+        logger.error(`Giving up on creating HackProcess: ${e.message}`);
         // Remove the (soon-to-be) rejected promise from our processes cache so
         // that the next time someone attempts to get this connection, we'll try
         // to create it.
@@ -338,8 +338,8 @@ async function createHackProcess(
     throw new Error("Couldn't find Hack command");
   }
 
-  logger.logInfo(`Creating new hack connection for ${configDir}: ${command}`);
-  logger.logInfo(`Current PATH: ${maybeToString(process.env.PATH)}`);
+  logger.info(`Creating new hack connection for ${configDir}: ${command}`);
+  logger.info(`Current PATH: ${maybeToString(process.env.PATH)}`);
   try {
     await runCommand(command, ['start', configDir], {
       isExitError: ({exitCode}) =>
@@ -372,17 +372,17 @@ async function createHackProcess(
       message != null &&
       message.exitCode === HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE
     ) {
-      logger.logInfo('Not reconnecting Hack process--another client connected');
+      logger.info('Not reconnecting Hack process--another client connected');
       return;
     }
     // If the process exited too quickly (possibly due to a crash), don't get
     // stuck in a loop creating and crashing it.
     const processUptimeMs = Date.now() - startTime;
     if (processUptimeMs < 1000) {
-      logger.logError('Hack process exited in <1s; not reconnecting');
+      logger.error('Hack process exited in <1s; not reconnecting');
       return;
     }
-    logger.logInfo(`Reconnecting with new HackProcess for ${configDir}`);
+    logger.info(`Reconnecting with new HackProcess for ${configDir}`);
     processes.get(fileCache).get(configDir);
   });
 
@@ -403,7 +403,7 @@ function editToHackEdit(editEvent: FileEditEvent): TextEdit {
 export function observeConnections(
   fileCache: FileCache,
 ): Observable<HackConnectionService> {
-  logger.logInfo('observing connections');
+  logger.info('observing connections');
   return processes
     .get(fileCache)
     .observeValues()
@@ -411,7 +411,7 @@ export function observeConnections(
     .filter(process => process != null)
     .switchMap(process => {
       invariant(process != null);
-      logger.logInfo(`Observing process ${process._hhconfigPath}`);
+      logger.info(`Observing process ${process._hhconfigPath}`);
       return process.getConnectionService();
     });
 }

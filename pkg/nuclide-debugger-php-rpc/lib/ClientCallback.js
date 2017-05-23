@@ -80,7 +80,7 @@ export class ClientCallback {
         });
         break;
       default:
-        logger.logError(`Unknown UserMessageType: ${type}`);
+        logger.error(`Unknown UserMessageType: ${type}`);
     }
   }
 

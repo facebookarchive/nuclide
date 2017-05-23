@@ -22,7 +22,7 @@ import {setOutputService} from '../../nuclide-debugger-base';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 
 export function activate(state: mixed): void {
-  logger.setLogLevel(getConfig().clientLogLevel);
+  logger.setLevel(getConfig().clientLogLevel);
 }
 
 export function consumeOutputService(api: OutputService): void {

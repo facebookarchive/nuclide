@@ -63,7 +63,7 @@ export async function callHHClient(
 
       let execResult = null;
 
-      logger.log(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
+      logger.debug(`Calling Hack: ${hackCommand} with ${allArgs.toString()}`);
       execResult = await trackTiming(trackingIdOfHackArgs(args), () => {
         // TODO: Can't we do a better job with error handling here?
         try {
@@ -90,7 +90,7 @@ export async function callHHClient(
       const output = errorStream ? stderr : stdout;
       // keeping this at "Trace" log level, since output for --color contains
       // entire file contents, which fills the logs too quickly
-      logger.logTrace(`Hack output for ${allArgs.toString()}: ${output}`);
+      logger.trace(`Hack output for ${allArgs.toString()}: ${output}`);
       try {
         const result = JSON.parse(output);
         invariant(result.hackRoot === undefined);
@@ -100,7 +100,7 @@ export async function callHHClient(
       } catch (err) {
         const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
-        logger.logError(errorMessage);
+        logger.error(errorMessage);
         throw new Error(errorMessage);
       }
     });

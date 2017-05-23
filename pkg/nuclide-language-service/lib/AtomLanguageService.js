@@ -25,7 +25,6 @@ import type {
   OnDidInsertSuggestionCallback,
 } from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
-import type {CategoryLogger} from '../../nuclide-logging';
 import type {BusySignalService} from '../../nuclide-busy-signal';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -41,7 +40,7 @@ import {FindReferencesProvider} from './FindReferencesProvider';
 import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 export type BusySignalProvider = {
   reportBusyWhile<T>(message: string, f: () => Promise<T>): Promise<T>,
@@ -67,13 +66,13 @@ export class AtomLanguageService<T: LanguageService> {
   _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
   _connectionToLanguageService: ConnectionCache<T>;
   _subscriptions: UniversalDisposable;
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
 
   constructor(
     languageServiceFactory: (connection: ?ServerConnection) => Promise<T>,
     config: AtomLanguageServiceConfig,
     onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    logger: CategoryLogger = getCategoryLogger('nuclide-language-service'),
+    logger: log4js$Logger = getLogger('nuclide-language-service'),
   ) {
     this._config = config;
     this._onDidInsertSuggestion = onDidInsertSuggestion;

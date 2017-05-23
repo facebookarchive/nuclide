@@ -38,7 +38,6 @@ import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
-import type {CategoryLogger} from '../../nuclide-logging';
 
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {Cache} from '../../commons-node/cache';
@@ -54,7 +53,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   _processes: Cache<NuclideUri, Promise<?T>>;
   _resources: UniversalDisposable;
   _configCache: ConfigCache;
-  _logger: CategoryLogger;
+  _logger: log4js$Logger;
   // A promise for when AtomLanguageService has called into this feature
   _observeDiagnosticsPromise: Promise<void>;
   _observeDiagnosticsPromiseResolver: () => void;
@@ -66,7 +65,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   }
 
   initialize(
-    logger: CategoryLogger,
+    logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
     projectFileName: string,
@@ -112,7 +111,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
           undefined, // next
           undefined, // error
           () => {
-            this._logger.logInfo('fileCache shutting down.');
+            this._logger.info('fileCache shutting down.');
             this._closeProcesses();
           },
         ),
@@ -174,7 +173,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   // Closes all LanguageServices not in configPaths, and starts
   // new LanguageServices for any paths in configPaths.
   _ensureProcesses(configPaths: Set<NuclideUri>): void {
-    this._logger.logInfo(
+    this._logger.info(
       `MultiProjectLanguageService ensureProcesses. ${Array.from(configPaths).join(', ')}`,
     );
     this._processes.setKeys(configPaths);
@@ -182,7 +181,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
 
   // Closes all LanguageServices for this fileCache.
   _closeProcesses(): void {
-    this._logger.logInfo(
+    this._logger.info(
       'Shutting down LanguageServices ' +
         `${Array.from(this._processes.keys()).join(',')}`,
     );
@@ -190,7 +189,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   }
 
   observeLanguageServices(): Observable<T> {
-    this._logger.logInfo('observing connections');
+    this._logger.info('observing connections');
     return compact(
       this._processes
         .observeValues()
@@ -220,11 +219,11 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
 
     return this.observeLanguageServices()
       .mergeMap((process: LanguageService) => {
-        this._logger.logTrace('observeDiagnostics');
+        this._logger.trace('observeDiagnostics');
         return ensureInvalidations(
           this._logger,
           process.observeDiagnostics().refCount().catch(error => {
-            this._logger.logError(`Error: observeDiagnostics ${error}`);
+            this._logger.error(`Error: observeDiagnostics ${error}`);
             return Observable.empty();
           }),
         );

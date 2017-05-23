@@ -179,9 +179,9 @@ export class DataCache {
     logger.log(`DataCache.getProperties call on ID: ${remoteId}`);
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
-      logger.logErrorAndThrow(
-        `Got request for stale RemoteObjectId ${remoteId}`,
-      );
+      const message = `Got request for stale RemoteObjectId ${remoteId}`;
+      logger.error(message);
+      throw new Error(message);
     }
 
     // context and single paged ids require getting children from the debuggee and converting

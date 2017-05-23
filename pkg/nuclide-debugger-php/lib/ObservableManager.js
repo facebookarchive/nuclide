@@ -10,8 +10,7 @@
  */
 
 import {registerConsoleLogging} from '../../nuclide-debugger-base';
-import utils from './utils';
-const {log, logError} = utils;
+import logger from './utils';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -82,37 +81,39 @@ export class ObservableManager {
   _handleNotificationMessage(message: NotificationMessage): void {
     switch (message.type) {
       case 'info':
-        log('Notification observerable info: ' + message.message);
+        logger.debug('Notification observerable info: ' + message.message);
         atom.notifications.addInfo(message.message);
         break;
 
       case 'warning':
-        log('Notification observerable warning: ' + message.message);
+        logger.debug('Notification observerable warning: ' + message.message);
         atom.notifications.addWarning(message.message);
         break;
 
       case 'error':
-        logError('Notification observerable error: ' + message.message);
+        logger.error('Notification observerable error: ' + message.message);
         atom.notifications.addError(message.message);
         break;
 
       case 'fatalError':
-        logError('Notification observerable fatal error: ' + message.message);
+        logger.error(
+          'Notification observerable fatal error: ' + message.message,
+        );
         atom.notifications.addFatalError(message.message);
         break;
 
       default:
-        logError('Unknown message: ' + JSON.stringify(message));
+        logger.error('Unknown message: ' + JSON.stringify(message));
         break;
     }
   }
 
   _handleNotificationError(error: string): void {
-    logError('Notification observerable error: ' + error);
+    logger.error('Notification observerable error: ' + error);
   }
 
   _handleNotificationEnd(): void {
-    log('Notification observerable ends.');
+    logger.debug('Notification observerable ends.');
   }
 
   dispose(): void {

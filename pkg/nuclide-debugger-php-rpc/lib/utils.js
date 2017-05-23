@@ -9,11 +9,11 @@
  * @format
  */
 
-import {getCategoryLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-debugger-php';
 
-export default getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+export default getLogger(DEBUGGER_LOGGER_CATEGORY);
 
 export function makeExpressionHphpdCompatible(params: {
   expression: string,

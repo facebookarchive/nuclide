@@ -30,7 +30,6 @@ import {
 import type {AdditionalLogFile} from './config';
 import log4js from 'log4js';
 
-import type {LogLevel} from './rpc-types';
 import type {Logger} from './types';
 
 export {
@@ -135,60 +134,4 @@ export function getLogger(category: ?string): Logger {
   return singleton.get(loggerCategory, () => {
     return createLazyLogger(loggerCategory);
   });
-}
-
-export type CategoryLogger = {
-  log(message: string): void,
-  logTrace(message: string): void,
-  logInfo(message: string): void,
-  logError(message: string): void,
-  logErrorAndThrow(message: string): void,
-  setLogLevel(level: LogLevel): void,
-};
-
-// Utility function that returns a wrapper logger for input category.
-export function getCategoryLogger(category: string): CategoryLogger {
-  function setLogLevel(level: LogLevel): void {
-    getLogger(category).setLevel(level);
-  }
-
-  function logHelper(level: string, message: string): void {
-    const logger = getLogger(category);
-    // isLevelEnabled() is required to reduce the amount of logging to
-    // log4js which greatly improves performance.
-    if (logger.isLevelEnabled(level)) {
-      logger[level](message);
-    }
-  }
-
-  function logTrace(message: string): void {
-    logHelper('trace', message);
-  }
-
-  function log(message: string): void {
-    logHelper('debug', message);
-  }
-
-  function logInfo(message: string): void {
-    logHelper('info', message);
-  }
-
-  function logError(message: string): void {
-    logHelper('error', message);
-  }
-
-  function logErrorAndThrow(message: string): void {
-    logError(message);
-    logError(new Error().stack);
-    throw new Error(message);
-  }
-
-  return {
-    log,
-    logTrace,
-    logInfo,
-    logError,
-    logErrorAndThrow,
-    setLogLevel,
-  };
 }
