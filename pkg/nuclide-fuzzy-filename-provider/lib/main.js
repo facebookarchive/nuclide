@@ -9,12 +9,11 @@
  * @format
  */
 
+import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
 import {
@@ -28,13 +27,16 @@ import {getIgnoredNames} from './utils';
 const logger = getLogger();
 
 class Activation {
-  _busySignalProvider: BusySignalProviderBase;
-  _subscriptions: CompositeDisposable;
-  _subscriptionsByRoot: Map<string, CompositeDisposable>;
+  _busySignalService: ?BusySignalService;
+  _subscriptions: UniversalDisposable;
+  _subscriptionsByRoot: Map<string, UniversalDisposable>;
 
   constructor() {
-    this._busySignalProvider = new BusySignalProviderBase();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable(() => {
+      if (this._busySignalService != null) {
+        this._busySignalService.dispose();
+      }
+    });
     this._subscriptionsByRoot = new Map();
 
     (this: any)._readySearch = this._readySearch.bind(this);
@@ -48,7 +50,7 @@ class Activation {
     // Add new project roots.
     for (const projectPath of projectPaths) {
       if (!this._subscriptionsByRoot.has(projectPath)) {
-        const disposables = new CompositeDisposable(
+        const disposables = new UniversalDisposable(
           // Wait a bit before starting the initial search, since it's a heavy op.
           scheduleIdleCallback(
             () => {
@@ -91,9 +93,11 @@ class Activation {
     const disposables = this._subscriptionsByRoot.get(projectPath);
     invariant(disposables != null);
 
-    const busySignalDisposable = this._busySignalProvider.displayMessage(
-      `File search: indexing ${projectPath}`,
-    );
+    const busySignalDisposable = this._busySignalService == null
+      ? new UniversalDisposable()
+      : this._busySignalService.reportBusy(
+          `File search: indexing ${projectPath}`,
+        );
     disposables.add(busySignalDisposable);
 
     // It doesn't matter what the search term is. Empirically, doing an initial
@@ -131,8 +135,11 @@ class Activation {
     return FuzzyFileNameProvider;
   }
 
-  provideBusySignal(): BusySignalProviderBase {
-    return this._busySignalProvider;
+  consumeBusySignal(service: BusySignalService): IDisposable {
+    this._busySignalService = service;
+    return new UniversalDisposable(() => {
+      this._busySignalService = null;
+    });
   }
 
   dispose(): void {
