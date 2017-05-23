@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import type {OutlineProvider} from '../../nuclide-outline-view';
@@ -23,10 +24,8 @@ import type {
 import type {ClangCompilationDatabaseProvider} from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 
-import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {CompositeDisposable, Disposable} from 'atom';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {BusySignalProviderBase} from '../../nuclide-busy-signal';
 import AutocompleteHelpers from './AutocompleteHelpers';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
@@ -41,7 +40,7 @@ import {
   getRelatedSourceOrHeader,
 } from './libclang';
 
-let busySignalProvider: ?BusySignalProviderBase = null;
+let busySignalService: ?BusySignalService = null;
 let subscriptions: ?CompositeDisposable = null;
 
 export function activate() {
@@ -66,8 +65,6 @@ export function activate() {
       },
     ),
   );
-
-  busySignalProvider = new BusySignalProviderBase();
 }
 
 /** Provider for autocomplete service. */
@@ -110,9 +107,17 @@ export function provideDefinitions(): DefinitionProvider {
   };
 }
 
-export function provideBusySignal(): BusySignalProviderBase {
-  invariant(busySignalProvider);
-  return busySignalProvider;
+export function consumeBusySignal(service: BusySignalService): IDisposable {
+  if (subscriptions != null) {
+    subscriptions.add(service);
+  }
+  busySignalService = service;
+  return new UniversalDisposable(() => {
+    if (subscriptions != null) {
+      subscriptions.remove(service);
+    }
+    busySignalService = null;
+  });
 }
 
 export function provideCodeFormat(): CodeFormatProvider {
@@ -133,8 +138,8 @@ export function provideLinter(): LinterProvider {
     name: 'Clang',
     lint(editor) {
       const getResult = () => ClangLinter.lint(editor);
-      if (busySignalProvider) {
-        return busySignalProvider.reportBusy(
+      if (busySignalService != null) {
+        return busySignalService.reportBusyWhile(
           `Clang: compiling \`${editor.getTitle()}\``,
           getResult,
         );

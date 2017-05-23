@@ -54,6 +54,11 @@
     "language-objective-c:grammar-used"
   ],
   "consumedServices": {
+    "atom-ide-busy-signal": {
+      "versions": {
+        "0.2.0": "consumeBusySignal"
+      }
+    },
     "nuclide.clang.compilation-database": {
       "versions": {
         "0.0.0": "consumeCompilationDatabase"
@@ -89,11 +94,6 @@
     "nuclide-type-hint.provider": {
       "versions": {
         "0.0.0": "createTypeHintProvider"
-      }
-    },
-    "nuclide-busy-signal": {
-      "versions": {
-        "0.1.0": "provideBusySignal"
       }
     },
     "nuclide-outline-view": {
