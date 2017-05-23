@@ -22,7 +22,7 @@ import type {IndieLinterDelegate} from './IndieLinterRegistry';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {DiagnosticStore} from '../../nuclide-diagnostics-common';
 
 import {createAdapters} from './LinterAdapterFactory';
@@ -152,19 +152,27 @@ class Activation {
       provider.updates.subscribe(
         update => store.updateMessages(provider, update),
         error => {
-          getLogger().error(`Error: updates.subscribe ${error}`);
+          getLogger('nuclide-diagnostics-store').error(
+            `Error: updates.subscribe ${error}`,
+          );
         },
         () => {
-          getLogger().error('updates.subscribe completed');
+          getLogger('nuclide-diagnostics-store').error(
+            'updates.subscribe completed',
+          );
         },
       ),
       provider.invalidations.subscribe(
         invalidation => store.invalidateMessages(provider, invalidation),
         error => {
-          getLogger().error(`Error: invalidations.subscribe ${error}`);
+          getLogger('nuclide-diagnostics-store').error(
+            `Error: invalidations.subscribe ${error}`,
+          );
         },
         () => {
-          getLogger().error('invalidations.subscribe completed');
+          getLogger('nuclide-diagnostics-store').error(
+            'invalidations.subscribe completed',
+          );
         },
       ),
     );

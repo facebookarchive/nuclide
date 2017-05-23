@@ -11,6 +11,7 @@
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';
+import {getLogger} from 'log4js';
 import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -266,11 +267,12 @@ describe('BuckService (buck-query-project)', () => {
 
     it('errors with non-existent rule', () => {
       waitsForPromise(async () => {
-        spyOn(console, 'log');
+        const logger = getLogger('nuclide-buck-rpc');
+        spyOn(logger, 'error');
         const file = await BuckService.getBuildFile(buckRoot, '//nonexistent:');
         expect(file).toBe(null);
         // eslint-disable-next-line no-console
-        expect(console.log.argsForCall[0]).toMatch(
+        expect(logger.error.argsForCall[0]).toMatch(
           /No build file for target "\/\/nonexistent:"/,
         );
       });

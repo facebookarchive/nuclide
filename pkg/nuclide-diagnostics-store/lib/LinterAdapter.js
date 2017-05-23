@@ -28,7 +28,7 @@ import type {
 import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
 import {observeTextEditorEvents} from '../../nuclide-diagnostics-common';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -245,7 +245,7 @@ export class LinterAdapter {
       }
       return Promise.resolve(lintPromise).catch(error => {
         // Prevent errors from blowing up the entire stream.
-        getLogger().error(
+        getLogger('nuclide-diagnostics-store').error(
           `Error in linter provider ${this._provider.name}:`,
           error,
         );

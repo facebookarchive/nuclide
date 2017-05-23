@@ -34,7 +34,3 @@ export type LoggingEvent = {
   storageKey?: string,
   runtime?: any,
 };
-
-export type LoggingAppender = {
-  appenders: any,
-};

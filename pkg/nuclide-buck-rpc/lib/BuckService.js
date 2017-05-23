@@ -24,12 +24,12 @@ import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';
-import {getLogger} from '../../nuclide-logging';
 import ini from 'ini';
+import {getLogger} from 'log4js';
 import {quote} from 'shell-quote';
 import * as os from 'os';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-buck-rpc');
 
 // Tag these Buck calls as coming from Nuclide for analytics purposes.
 const CLIENT_ID_ARGS = ['--config', 'client.id=nuclide'];

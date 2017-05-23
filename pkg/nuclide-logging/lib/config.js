@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {LoggingAppender} from './types';
 import ScribeProcess from '../../commons-node/ScribeProcess';
 import {
   isRunningInTest,
@@ -17,6 +16,7 @@ import {
 } from '../../commons-node/system-info';
 import fsPromise from '../../commons-node/fsPromise';
 
+import invariant from 'invariant';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -26,7 +26,6 @@ const LOG_DIRECTORY = nuclideUri.join(
 );
 export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
-let logDirectoryInitialized = false;
 const scribeAppenderPath = nuclideUri.join(
   __dirname,
   '../fb/scribeAppender.js',
@@ -81,44 +80,56 @@ export const FileAppender: Object = {
   },
 };
 
-export async function getDefaultConfig(): Promise<LoggingAppender> {
-  if (!logDirectoryInitialized) {
-    await fsPromise.mkdirp(LOG_DIRECTORY);
-    logDirectoryInitialized = true;
-  }
+const baseConfig: log4js$Config = {
+  appenders: [
+    {
+      type: 'logLevelFilter',
+      level: 'ALL',
+      appender: {
+        type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
+      },
+    },
+    FileAppender,
+  ],
+};
 
-  const config = {
+function getDefaultConfigClient(): log4js$Config {
+  invariant(isRunningInTest() || isRunningInClient());
+  invariant(baseConfig.appenders);
+
+  return {
+    ...baseConfig,
     appenders: [
+      ...baseConfig.appenders,
       {
         type: 'logLevelFilter',
-        level: 'ALL',
+        level: 'WARN',
         appender: {
-          type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
+          type: nuclideUri.join(__dirname, './consoleAppender'),
         },
       },
-      FileAppender,
     ],
   };
+}
+
+export async function getDefaultConfig(): Promise<log4js$Config> {
+  if (isRunningInClient() || isRunningInTest()) {
+    return getDefaultConfigClient();
+  }
 
   // Do not print server logs to stdout/stderr.
   // These are normally just piped to a .nohup.out file, so doing this just causes
   // the log files to be duplicated.
-  if (isRunningInTest() || isRunningInClient()) {
-    config.appenders.push({
-      type: 'logLevelFilter',
-      level: 'WARN',
-      appender: {
-        type: nuclideUri.join(__dirname, './consoleAppender'),
-      },
-    });
-  } else {
-    const serverLogAppenderConfig = await getServerLogAppenderConfig();
-    if (serverLogAppenderConfig) {
-      config.appenders.push(serverLogAppenderConfig);
-    }
+  const serverLogAppenderConfig = await getServerLogAppenderConfig();
+  invariant(baseConfig.appenders);
+  if (serverLogAppenderConfig) {
+    return {
+      ...baseConfig,
+      appenders: [...baseConfig.appenders, serverLogAppenderConfig],
+    };
   }
 
-  return config;
+  return baseConfig;
 }
 
 export function addAdditionalLogFile(title: string, filename: string) {

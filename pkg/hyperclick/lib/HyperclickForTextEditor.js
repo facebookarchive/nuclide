@@ -19,9 +19,9 @@ import {getWordTextAndRange} from './hyperclick-utils';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('hyperclick');
 
 const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
 

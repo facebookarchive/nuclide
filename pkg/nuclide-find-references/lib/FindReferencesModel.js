@@ -19,7 +19,7 @@ type FindReferencesOptions = {
 
 import {getFileForPath} from 'nuclide-commons-atom/projects';
 import {arrayCompact} from 'nuclide-commons/collection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',
@@ -37,7 +37,10 @@ async function readFileContents(uri: string): Promise<?string> {
       return await file.read();
     }
   } catch (e) {
-    getLogger().error(`find-references: could not load file ${uri}`, e);
+    getLogger('nuclide-find-references').error(
+      `find-references: could not load file ${uri}`,
+      e,
+    );
   }
   return null;
 }

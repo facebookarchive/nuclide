@@ -27,7 +27,7 @@ import {
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {nextTick} from 'nuclide-commons/observable';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import * as AppSerialization from './AppSerialization';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -191,7 +191,7 @@ function createPackageStore(rawState: Object): Store {
     combineEpics(...epics)(actions, store)
       // Log errors and continue.
       .catch((err, stream) => {
-        getLogger().error(err);
+        getLogger('nuclide-workspace-views').error(err);
         return stream;
       });
   const store = createStore(

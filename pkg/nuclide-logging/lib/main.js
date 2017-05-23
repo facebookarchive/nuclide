@@ -124,11 +124,13 @@ export function initialUpdateConfig(): Promise<void> {
   });
 }
 
-// Get Logger instance which is singleton per logger category.
-export function getLogger(category: ?string): Logger {
+export function initializeLogging() {
   addPrepareStackTraceHook();
   initialUpdateConfig();
+}
 
+// Get Logger instance which is singleton per logger category.
+export function getLogger(category: ?string): Logger {
   const loggerCategory = getCategory(category);
   return singleton.get(loggerCategory, () => {
     return createLazyLogger(loggerCategory);
