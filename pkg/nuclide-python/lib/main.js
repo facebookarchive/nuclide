@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {LinterProvider} from '../../nuclide-diagnostics-common';
 import typeof * as PythonService
   from '../../nuclide-python-rpc/lib/PythonService';
@@ -20,9 +21,6 @@ import type {
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
 
-import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {DedupedBusySignalProviderBase} from '../../nuclide-busy-signal';
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
 import LintHelpers from './LintHelpers';
@@ -37,7 +35,7 @@ import {
 
 const PYTHON_SERVICE_NAME = 'PythonService';
 
-let busySignalProvider: ?DedupedBusySignalProviderBase = null;
+let busySignalService: ?BusySignalService = null;
 
 async function connectionToPythonService(
   connection: ?ServerConnection,
@@ -95,7 +93,6 @@ const atomConfig: AtomLanguageServiceConfig = {
 let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
 
 export function activate() {
-  busySignalProvider = new DedupedBusySignalProviderBase();
   if (pythonLanguageService == null) {
     pythonLanguageService = new AtomLanguageService(
       connectionToPythonService,
@@ -112,8 +109,10 @@ export function provideLint(): LinterProvider {
     lintOnFly: getLintOnFly(),
     name: 'nuclide-python',
     lint(editor) {
-      invariant(busySignalProvider);
-      return busySignalProvider.reportBusy(
+      if (busySignalService == null) {
+        return LintHelpers.lint(editor);
+      }
+      return busySignalService.reportBusyWhile(
         `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
         () => LintHelpers.lint(editor),
       );
@@ -121,14 +120,21 @@ export function provideLint(): LinterProvider {
   };
 }
 
-export function provideBusySignal(): DedupedBusySignalProviderBase {
-  invariant(busySignalProvider);
-  return busySignalProvider;
+export function consumeBusySignal(service: BusySignalService): IDisposable {
+  busySignalService = service;
+  return {
+    dispose: () => {
+      busySignalService = null;
+    },
+  };
 }
 
 export function deactivate() {
   if (pythonLanguageService != null) {
     pythonLanguageService.dispose();
     pythonLanguageService = null;
+  }
+  if (busySignalService != null) {
+    busySignalService.dispose();
   }
 }
