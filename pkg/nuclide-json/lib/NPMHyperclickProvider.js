@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick/lib/types';
+import type {HyperclickProvider, HyperclickSuggestion} from 'atom-ide-ui';
 
 import semver from 'semver';
 import nuclideUri from 'nuclide-commons/nuclideUri';

@@ -12,7 +12,7 @@
 type Target = {path: NuclideUri, name: string};
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
+import type {HyperclickSuggestion} from 'atom-ide-ui';
 import type {Point} from 'atom';
 
 import {getBuckProjectRoot} from '../../nuclide-buck-base';

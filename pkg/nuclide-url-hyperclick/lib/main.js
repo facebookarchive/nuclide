@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
+import type {HyperclickProvider} from 'atom-ide-ui';
 
 import HyperclickProviderHelpers from './HyperclickProviderHelpers';
 

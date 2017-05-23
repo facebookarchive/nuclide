@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
+import type {HyperclickSuggestion} from 'atom-ide-ui';
 import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';

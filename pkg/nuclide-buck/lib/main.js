@@ -10,7 +10,7 @@
  */
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-import type {HyperclickProvider} from '../../hyperclick/lib/types';
+import type {HyperclickProvider} from 'atom-ide-ui';
 import type {SerializedState} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
 

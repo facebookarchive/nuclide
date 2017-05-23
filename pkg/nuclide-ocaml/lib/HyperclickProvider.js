@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {HyperclickSuggestion} from '../../hyperclick/lib/types';
+import type {HyperclickSuggestion} from 'atom-ide-ui';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {GRAMMARS, EXTENSIONS} from './constants';

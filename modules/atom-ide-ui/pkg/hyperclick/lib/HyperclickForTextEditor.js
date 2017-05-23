@@ -15,13 +15,12 @@ import type {HyperclickSuggestion} from './types';
 import type Hyperclick from './Hyperclick';
 
 import {CompositeDisposable, Disposable, Point} from 'atom';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getWordTextAndRange} from './hyperclick-utils';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
 import {getLogger} from 'log4js';
-
-const logger = getLogger('hyperclick');
 
 const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
 
@@ -87,13 +86,14 @@ export default class HyperclickForTextEditor {
     this._isLoading = false;
 
     this._subscriptions.add(
-      atom.config.observe(
+      featureConfig.observe(
         process.platform === 'darwin'
-          ? 'nuclide.hyperclick.darwinTriggerKeys'
+          ? 'hyperclick.darwinTriggerKeys'
           : process.platform === 'win32'
-              ? 'nuclide.hyperclick.win32TriggerKeys'
-              : 'nuclide.hyperclick.linuxTriggerKeys',
-        (newValue: string) => {
+              ? 'hyperclick.win32TriggerKeys'
+              : 'hyperclick.linuxTriggerKeys',
+        newValue_ => {
+          const newValue = ((newValue_: any): string);
           // For all Flow knows, newValue.split could return any old strings
           this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
         },
@@ -280,7 +280,10 @@ export default class HyperclickForTextEditor {
         );
         this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
       } catch (e) {
-        logger.error('Error getting Hyperclick suggestion:', e);
+        getLogger('hyperclick').error(
+          'Error getting Hyperclick suggestion:',
+          e,
+        );
       } finally {
         this._doneLoading();
       }
@@ -316,7 +319,7 @@ export default class HyperclickForTextEditor {
       // When navigating Atom workspace with `CMD/CTRL` down,
       // it triggers TextEditorElement's `mousemove` with invalid screen position.
       // This falls back to returning the start of the editor.
-      logger.error(
+      getLogger('hyperclick').error(
         'Hyperclick: Error getting buffer position for screen position:',
         error,
       );
