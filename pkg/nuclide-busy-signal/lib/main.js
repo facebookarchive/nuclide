@@ -17,11 +17,8 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {MessageStore} from './MessageStore';
 
-import {BusySignalProviderBase} from './BusySignalProviderBase';
 import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
 import {StatusBarTile} from './StatusBarTile';
-
-export {BusySignalProviderBase, DedupedBusySignalProviderBase};
 
 export type BusySignalService = {
   // Activates the busy signal with the given message and returns the promise
