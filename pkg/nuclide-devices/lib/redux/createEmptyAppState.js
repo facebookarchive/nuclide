@@ -22,6 +22,6 @@ export function createEmptyAppState(): AppState {
     deviceTasks: [],
     infoTables: new Map(),
     processes: [],
-    processKiller: null,
+    processTasks: [],
   };
 }

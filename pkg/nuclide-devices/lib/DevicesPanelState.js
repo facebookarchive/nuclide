@@ -118,12 +118,12 @@ export class DevicesPanelState {
       infoTables: state.infoTables,
       processes: state.processes,
       deviceTasks: state.deviceTasks,
+      processTasks: state.processTasks,
       startFetchingDevices,
       startFetchingProcesses,
       setHost,
       setDeviceType,
       setDevice,
-      killProcess: state.processKiller,
     };
   }
 

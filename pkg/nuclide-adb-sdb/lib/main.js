@@ -15,6 +15,7 @@ import {
   createAndroidDeviceListProvider,
   createAndroidInfoProvider,
   createAndroidProcessesProvider,
+  createAndroidStopPackageProvider,
 } from './android_providers';
 import {
   createTizenDeviceListProvider,
@@ -36,18 +37,17 @@ class Activation {
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
     this._disposables.add(
+      // list
       api.registerListProvider(createAndroidDeviceListProvider()),
-    );
-    this._disposables.add(
       api.registerListProvider(createTizenDeviceListProvider()),
-    );
-    this._disposables.add(
+      // info
       api.registerInfoProvider(createAndroidInfoProvider()),
-    );
-    this._disposables.add(
+      api.registerInfoProvider(createTizenInfoProvider()),
+      // processes
       api.registerProcessesProvider(createAndroidProcessesProvider()),
+      // process tasks
+      api.registerProcessTaskProvider(createAndroidStopPackageProvider()),
     );
-    this._disposables.add(api.registerInfoProvider(createTizenInfoProvider()));
   }
 }
 

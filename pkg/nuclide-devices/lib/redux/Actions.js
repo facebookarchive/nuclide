@@ -20,10 +20,10 @@ import type {
   SetHostAction,
   SetInfoTablesAction,
   SetProcessesAction,
-  SetProcessKillerAction,
+  SetProcessTasksAction,
   Device,
   Process,
-  ProcessKiller,
+  ProcessTask,
 } from '../types';
 
 import {DeviceTask} from '../DeviceTask';
@@ -37,7 +37,7 @@ export const SET_HOSTS = 'SET_HOSTS';
 export const SET_HOST = 'SET_HOST';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
 export const SET_PROCESSES = 'SET_PROCESSES';
-export const SET_PROCESS_KILLER = 'SET_PROCESS_KILLER';
+export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
 
 export function setInfoTables(
   infoTables: Map<string, Map<string, string>>,
@@ -55,12 +55,12 @@ export function setProcesses(processes: Process[]): SetProcessesAction {
   };
 }
 
-export function setProcesKiller(
-  processKiller: ?ProcessKiller,
-): SetProcessKillerAction {
+export function setProcessTasks(
+  processTasks: ProcessTask[],
+): SetProcessTasksAction {
   return {
-    type: SET_PROCESS_KILLER,
-    payload: {processKiller},
+    type: SET_PROCESS_TASKS,
+    payload: {processTasks},
   };
 }
 

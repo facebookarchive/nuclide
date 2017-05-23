@@ -135,6 +135,9 @@ class Activation {
       registerTaskProvider: this._createProviderRegistration(
         getProviders().deviceTask,
       ),
+      registerProcessTaskProvider: this._createProviderRegistration(
+        getProviders().processTask,
+      ),
     };
   }
 }

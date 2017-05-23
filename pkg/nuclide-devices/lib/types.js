@@ -15,17 +15,18 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
 
+//
+// Api
+//
+
 export type DevicePanelServiceApi = {
   registerListProvider: (provider: DeviceListProvider) => IDisposable,
   registerInfoProvider: (provider: DeviceInfoProvider) => IDisposable,
   registerProcessesProvider: (provider: DeviceProcessesProvider) => IDisposable,
   registerTaskProvider: (provider: DeviceTaskProvider) => IDisposable,
-};
-
-export type Device = {
-  name: string,
-  displayName: string,
-  architecture: string,
+  registerProcessTaskProvider: (
+    provider: DeviceProcessTaskProvider,
+  ) => IDisposable,
 };
 
 export interface DeviceListProvider {
@@ -44,7 +45,6 @@ export interface DeviceInfoProvider {
 export interface DeviceProcessesProvider {
   observe(host: NuclideUri, device: string): Observable<Process[]>,
   getType(): string,
-  killProcess(host: NuclideUri, device: string, id: string): Promise<void>,
 }
 
 export interface DeviceTaskProvider {
@@ -53,6 +53,16 @@ export interface DeviceTaskProvider {
   getType(): string,
   isSupported(host: NuclideUri): Promise<boolean>,
 }
+
+export interface DeviceProcessTaskProvider {
+  run(host: NuclideUri, device: string, proc: Process): Promise<void>,
+  getTaskType(): ProcessTaskType,
+  getType(): string,
+}
+
+//
+// Store
+//
 
 export type AppState = {
   hosts: NuclideUri[],
@@ -63,13 +73,23 @@ export type AppState = {
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
-  processKiller: ?ProcessKiller,
+  processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
 };
 
 export type Store = {
   getState(): AppState,
   dispatch(action: Action): void,
+};
+
+//
+// Basic objects
+//
+
+export type Device = {
+  name: string,
+  displayName: string,
+  architecture: string,
 };
 
 export type Process = {
@@ -81,7 +101,12 @@ export type Process = {
   isJava: boolean,
 };
 
-export type ProcessKiller = (id: string) => Promise<void>;
+export type ProcessTaskType = 'STOP_PACKAGE';
+
+export type ProcessTask = {
+  type: ProcessTaskType,
+  run: (proc: Process) => Promise<void>,
+};
 
 //
 // Action types
@@ -143,10 +168,10 @@ export type SetProcessesAction = {
   },
 };
 
-export type SetProcessKillerAction = {
-  type: 'SET_PROCESS_KILLER',
+export type SetProcessTasksAction = {
+  type: 'SET_PROCESS_TASKS',
   payload: {
-    processKiller: ?ProcessKiller,
+    processTasks: ProcessTask[],
   },
 };
 
@@ -165,6 +190,6 @@ export type Action =
   | SetDeviceTypesAction
   | SetInfoTablesAction
   | SetProcessesAction
-  | SetProcessKillerAction
+  | SetProcessTasksAction
   | SetDeviceTasksAction
   | SetDeviceAction;

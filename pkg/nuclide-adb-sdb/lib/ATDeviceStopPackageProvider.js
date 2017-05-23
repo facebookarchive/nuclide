@@ -11,14 +11,13 @@
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {
-  DeviceProcessesProvider,
+  DeviceProcessTaskProvider,
   Process,
+  ProcessTaskType,
 } from '../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {Observable} from 'rxjs';
-
-export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
+export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService;
 
@@ -27,17 +26,15 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
     this._rpcFactory = rpcFactory;
   }
 
-  observe(host: NuclideUri, device: string): Observable<Process[]> {
-    return Observable.interval(3000)
-      .startWith(0)
-      .switchMap(() =>
-        Observable.fromPromise(
-          this._rpcFactory(host).getProcesses(device).catch(() => []),
-        ),
-      );
-  }
-
   getType(): string {
     return this._type;
+  }
+
+  getTaskType(): ProcessTaskType {
+    return 'STOP_PACKAGE';
+  }
+
+  async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
+    return this._rpcFactory(host).killProcess(device, proc.name);
   }
 }

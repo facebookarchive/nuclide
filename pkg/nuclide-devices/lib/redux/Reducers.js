@@ -25,6 +25,7 @@ export function app(state: AppState, action: Action): AppState {
         infoTables: new Map(),
         processes: [],
         actions: [],
+        processTasks: [],
         host,
       };
 
@@ -38,6 +39,7 @@ export function app(state: AppState, action: Action): AppState {
         infoTables: new Map(),
         processes: [],
         actions: [],
+        processTasks: [],
       };
 
     case Actions.SET_DEVICE_TYPES:
@@ -75,11 +77,11 @@ export function app(state: AppState, action: Action): AppState {
         processes,
       };
 
-    case Actions.SET_PROCESS_KILLER:
-      const {processKiller} = action.payload;
+    case Actions.SET_PROCESS_TASKS:
+      const {processTasks} = action.payload;
       return {
         ...state,
-        processKiller,
+        processTasks,
       };
 
     case Actions.SET_HOSTS:

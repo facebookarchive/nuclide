@@ -13,6 +13,7 @@ import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
+import {ATDeviceStopPackageProvider} from './ATDeviceStopPackageProvider';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -30,6 +31,12 @@ export function createAndroidInfoProvider(): ATDeviceInfoProvider {
 
 export function createAndroidProcessesProvider(): ATDeviceProcessesProvider {
   return new ATDeviceProcessesProvider('android', (host: NuclideUri) =>
+    getAdbServiceByNuclideUri(host),
+  );
+}
+
+export function createAndroidStopPackageProvider(): ATDeviceStopPackageProvider {
+  return new ATDeviceStopPackageProvider('android', (host: NuclideUri) =>
     getAdbServiceByNuclideUri(host),
   );
 }

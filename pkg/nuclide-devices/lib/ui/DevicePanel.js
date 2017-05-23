@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Device, Process, ProcessKiller} from '../types';
+import type {Device, Process, ProcessTask} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from '../../../commons-node/tasks';
@@ -28,7 +28,7 @@ type Props = {
   goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
-  killProcess: ?ProcessKiller,
+  processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
   host: NuclideUri,
   device: ?Device,
@@ -52,7 +52,7 @@ export class DevicePanel extends React.Component {
       <div className="block" key="process-table">
         <ProcessTable
           processes={this.props.processes}
-          killProcess={this.props.killProcess}
+          processTasks={this.props.processTasks}
           startFetchingProcesses={this.props.startFetchingProcesses}
           host={this.props.host}
           device={this.props.device}

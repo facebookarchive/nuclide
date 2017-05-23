@@ -18,7 +18,7 @@ import {DeviceTask} from '../DeviceTask';
 import {createCache} from '../Cache';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
-import type {Action, Store, AppState, ProcessKiller} from '../types';
+import type {Action, Store, AppState, ProcessTask, Process} from '../types';
 
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
@@ -31,8 +31,8 @@ export function setDeviceEpic(
       Observable.fromPromise(getInfoTables(state)).switchMap(infoTables =>
         Observable.of(Actions.setInfoTables(infoTables)),
       ),
-      Observable.fromPromise(getProcessKiller(state)).switchMap(processKiller =>
-        Observable.of(Actions.setProcesKiller(processKiller)),
+      Observable.fromPromise(getProcessTasks(state)).switchMap(processTasks =>
+        Observable.of(Actions.setProcessTasks(processTasks)),
       ),
       Observable.fromPromise(getDeviceTasks(state)).switchMap(deviceTasks =>
         Observable.of(Actions.setDeviceTasks(deviceTasks)),
@@ -73,18 +73,19 @@ async function getInfoTables(
   return new Map(arrayCompact(infoTables));
 }
 
-async function getProcessKiller(state: AppState): Promise<?ProcessKiller> {
+async function getProcessTasks(state: AppState): Promise<ProcessTask[]> {
   const device = state.device;
   if (device == null) {
-    return null;
+    return [];
   }
-  const providers = Array.from(getProviders().deviceProcesses).filter(
-    provider => provider.getType() === state.deviceType,
-  );
-  if (providers[0] != null) {
-    return p => providers[0].killProcess(state.host, device.name, p);
-  }
-  return null;
+  return Array.from(getProviders().processTask)
+    .filter(provider => provider.getType() === state.deviceType)
+    .map(provider => {
+      return {
+        type: provider.getTaskType(),
+        run: (proc: Process) => provider.run(state.host, device.name, proc),
+      };
+    });
 }
 
 // The actual device tasks are cached so that if a task is running when the store switches back and

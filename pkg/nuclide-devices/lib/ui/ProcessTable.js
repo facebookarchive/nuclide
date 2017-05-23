@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {Device, Process, ProcessKiller} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Device, Process, ProcessTask, ProcessTaskType} from '../types';
 
 import React from 'react';
 import {Subscription} from 'rxjs';
@@ -24,7 +24,7 @@ import {getJavaDebuggerApi} from '../JavaDebuggerApi';
 
 type Props = {
   startFetchingProcesses: () => Subscription,
-  killProcess: ?ProcessKiller,
+  processTasks: ProcessTask[],
   processes: Process[],
   host: NuclideUri,
   device: ?Device,
@@ -112,6 +112,10 @@ export class ProcessTable extends React.Component {
   }
 
   render(): React.Element<any> {
+    const stopPackageTask = this.props.processTasks.find(
+      task => task.type === ('STOP_PACKAGE': ProcessTaskType),
+    );
+
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const rows = this._sortProcesses(
       this.props.processes.filter(
@@ -124,7 +128,11 @@ export class ProcessTable extends React.Component {
       this.state.sortDescending,
     ).map(item => ({
       data: {
-        pid: <span>{this._getKillButton(item.name)} {item.pid}</span>,
+        pid: (
+          <span>
+            {this._getStopPackageButton(item, stopPackageTask)} {item.pid}
+          </span>
+        ),
         user: item.user,
         name: item.name,
         cpuUsage: this._formatCpuUsage(item.cpuUsage),
@@ -239,17 +247,19 @@ export class ProcessTable extends React.Component {
     }
   }
 
-  _getKillButton(packageName: string): ?React.Element<any> {
-    const killProcess = this.props.killProcess;
-    if (killProcess == null) {
+  _getStopPackageButton(
+    proc: Process,
+    task: ?ProcessTask,
+  ): ?React.Element<any> {
+    if (task == null) {
       return null;
     }
     return (
       <span
         className="nuclide-device-panel-link-with-icon"
-        onClick={() => killProcess(packageName)}
+        onClick={() => task.run(proc)}
         ref={addTooltip({
-          title: 'Kill process',
+          title: 'Stop package',
           delay: 300,
           placement: 'left',
         })}>
