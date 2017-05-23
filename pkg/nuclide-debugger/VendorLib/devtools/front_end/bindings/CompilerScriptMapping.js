@@ -292,12 +292,6 @@ WebInspector.CompilerScriptMapping.prototype = {
             return;
         }
 
-        var sourceMap = this._sourceMapForSourceMapURL[sourceMapURL];
-        if (sourceMap) {
-            callback(sourceMap);
-            return;
-        }
-
         var pendingCallbacks = this._pendingSourceMapLoadingCallbacks[sourceMapURL];
         if (pendingCallbacks) {
             pendingCallbacks.push(callback);
