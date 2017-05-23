@@ -24,6 +24,10 @@ class DebuggerDomainDispatcher {
     this._agent.resume();
   }
 
+  pause(): void {
+    this._agent.pause();
+  }
+
   stepOver(): void {
     this._agent.stepOver();
   }

@@ -56,6 +56,9 @@ export default class CommandDispatcher {
       case 'Continue':
         this._bridgeAdapter.resume();
         break;
+      case 'Pause':
+        this._bridgeAdapter.pause();
+        break;
       case 'StepOver':
         this._bridgeAdapter.stepOver();
         break;

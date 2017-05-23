@@ -35,6 +35,11 @@ export default class BridgeAdapter {
     this._debuggerDispatcher.resume();
   }
 
+  pause(): void {
+    invariant(this._debuggerDispatcher != null);
+    this._debuggerDispatcher.pause();
+  }
+
   stepOver(): void {
     invariant(this._debuggerDispatcher != null);
     this._debuggerDispatcher.stepOver();

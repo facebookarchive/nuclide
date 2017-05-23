@@ -409,12 +409,11 @@ export default class DebuggerActions {
    */
   triggerDebuggerAction(actionId: string): void {
     switch (actionId) {
+      case ChromeActionRegistryActions.RUN:
+        track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
+        break;
       case ChromeActionRegistryActions.PAUSE:
-        if (this._store.getDebuggerMode() === DebuggerMode.RUNNING) {
-          track(AnalyticsEvents.DEBUGGER_STEP_PAUSE);
-        } else {
-          track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
-        }
+        track(AnalyticsEvents.DEBUGGER_STEP_PAUSE);
         break;
       case ChromeActionRegistryActions.STEP_INTO:
         track(AnalyticsEvents.DEBUGGER_STEP_INTO);

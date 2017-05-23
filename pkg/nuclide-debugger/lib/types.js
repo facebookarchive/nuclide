@@ -243,6 +243,7 @@ declare class WebInspector$DebuggerModel {
 
   isPaused(): boolean,
   resume(): void,
+  pause(): void,
   stepOver(): void,
   stepInto(): void,
   stepOut(): void,

@@ -28,6 +28,7 @@ import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import CommandDispatcher from './CommandDispatcher';
+import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 
 export default class Bridge {
   _debuggerModel: DebuggerModel;
@@ -66,27 +67,53 @@ export default class Bridge {
   }
 
   continue() {
+    this._clearInterface();
     this._commandDispatcher.send('Continue');
   }
 
+  pause(): void {
+    this._commandDispatcher.send('Pause');
+  }
+
   stepOver() {
+    this._clearInterface();
     this._commandDispatcher.send('StepOver');
   }
 
   stepInto() {
+    this._clearInterface();
     this._commandDispatcher.send('StepInto');
   }
 
   stepOut() {
+    this._clearInterface();
     this._commandDispatcher.send('StepOut');
   }
 
   runToLocation(filePath: string, line: number) {
+    this._clearInterface();
     this._commandDispatcher.send('RunToLocation', filePath, line);
   }
 
   triggerAction(actionId: string): void {
-    this._commandDispatcher.send('triggerDebuggerAction', actionId);
+    this._clearInterface();
+    switch (actionId) {
+      case ChromeActionRegistryActions.RUN:
+        this.continue();
+        break;
+      case ChromeActionRegistryActions.PAUSE:
+        this.pause();
+        break;
+      case ChromeActionRegistryActions.STEP_INTO:
+        this.stepInto();
+        break;
+      case ChromeActionRegistryActions.STEP_OVER:
+        this.stepOver();
+        break;
+      case ChromeActionRegistryActions.STEP_OUT:
+        this.stepOut();
+        break;
+    }
   }
 
   setSelectedCallFrameIndex(callFrameIndex: number): void {
@@ -180,9 +207,6 @@ export default class Bridge {
           case 'OpenSourceLocation':
             this._openSourceLocation(event.args[1]);
             break;
-          case 'ClearInterface':
-            this._handleClearInterface();
-            break;
           case 'DebuggerResumed':
             this._handleDebuggerResumed();
             break;
@@ -267,8 +291,9 @@ export default class Bridge {
     this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
-  _handleClearInterface(): void {
-    this._debuggerModel.getActions().clearInterface();
+  _clearInterface(): void {
+    // Prevent dispatcher re-entrance error.
+    process.nextTick(() => this._debuggerModel.getActions().clearInterface());
   }
 
   _setSelectedCallFrameLine(

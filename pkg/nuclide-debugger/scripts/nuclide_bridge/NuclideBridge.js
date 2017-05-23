@@ -213,6 +213,9 @@ class NuclideBridge {
       case 'Continue':
         this._continue();
         break;
+      case 'Pause':
+        this._pause();
+        break;
       case 'StepOver':
         this._stepOver();
         break;
@@ -742,6 +745,14 @@ class NuclideBridge {
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:continue');
       target.debuggerModel.resume();
+    }
+  }
+
+  _pause(): void {
+    const target = WebInspector.targetManager.mainTarget();
+    if (target) {
+      beginTimerTracking('nuclide-debugger-atom:pause');
+      target.debuggerModel.pause();
     }
   }
 
