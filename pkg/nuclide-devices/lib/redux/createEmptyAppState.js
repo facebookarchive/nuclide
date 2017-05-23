@@ -23,5 +23,6 @@ export function createEmptyAppState(): AppState {
     infoTables: new Map(),
     processes: [],
     processTasks: [],
+    isDeviceConnected: false,
   };
 }

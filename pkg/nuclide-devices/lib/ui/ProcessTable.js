@@ -256,7 +256,6 @@ export class ProcessTable extends React.Component {
     }
     return (
       <span
-        className="nuclide-device-panel-link-with-icon"
         onClick={() => task.run(proc)}
         ref={addTooltip({
           title: 'Stop package',

@@ -39,15 +39,27 @@ export type Props = {
   device: ?Device,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
+  isDeviceConnected: boolean,
 };
 
 export class RootPanel extends React.Component {
   props: Props;
+  _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
     (this: any)._goToRootPanel = this._goToRootPanel.bind(this);
+  }
+
+  componentDidMount(): void {
+    this._devicesSubscription = this.props.startFetchingDevices();
+  }
+
+  componentWillUnmount(): void {
+    if (this._devicesSubscription != null) {
+      this._devicesSubscription.unsubscribe();
+    }
   }
 
   _createDeviceTable(): ?React.Element<any> {
@@ -81,6 +93,7 @@ export class RootPanel extends React.Component {
             startFetchingProcesses={this.props.startFetchingProcesses}
             host={this.props.host}
             device={this.props.device}
+            isDeviceConnected={this.props.isDeviceConnected}
           />
         </div>
       );

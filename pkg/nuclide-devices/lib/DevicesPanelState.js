@@ -120,6 +120,7 @@ export class DevicesPanelState {
       processes: state.processes,
       deviceTasks: state.deviceTasks,
       processTasks: state.processTasks,
+      isDeviceConnected: state.isDeviceConnected,
       startFetchingDevices,
       startFetchingProcesses,
       setHost,

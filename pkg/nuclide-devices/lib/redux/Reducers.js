@@ -11,7 +11,7 @@
 
 import * as Actions from './Actions';
 
-import type {Action, AppState} from '../types';
+import type {Action, AppState, Device, Expected} from '../types';
 
 export function app(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -26,6 +26,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: [],
         actions: [],
         processTasks: [],
+        isDeviceConnected: false,
         host,
       };
 
@@ -40,6 +41,7 @@ export function app(state: AppState, action: Action): AppState {
         processes: [],
         actions: [],
         processTasks: [],
+        isDeviceConnected: false,
       };
 
     case Actions.SET_DEVICE_TYPES:
@@ -54,6 +56,7 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         device,
+        isDeviceConnected: isDeviceConnected(device, state.devices),
       };
 
     case Actions.SET_DEVICES:
@@ -61,6 +64,7 @@ export function app(state: AppState, action: Action): AppState {
       return {
         ...state,
         devices,
+        isDeviceConnected: isDeviceConnected(state.device, devices),
       };
 
     case Actions.SET_INFO_TABLES:
@@ -101,4 +105,19 @@ export function app(state: AppState, action: Action): AppState {
     default:
       return state;
   }
+}
+
+function isDeviceConnected(
+  device: ?Device,
+  deviceList: Expected<Device[]>,
+): boolean {
+  if (device == null || deviceList.isError) {
+    return false;
+  }
+  for (const _device of deviceList.value) {
+    if (device.name === _device.name) {
+      return true;
+    }
+  }
+  return false;
 }

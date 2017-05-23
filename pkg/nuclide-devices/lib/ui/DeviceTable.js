@@ -13,11 +13,9 @@ import type {Device, Expected} from '../types';
 
 import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
-import {Subscription} from 'rxjs';
 
 type Props = {
   setDevice: (?Device) => void,
-  startFetchingDevices: () => Subscription,
   devices: Expected<Device[]>,
   device: ?Device,
 };
@@ -25,7 +23,6 @@ type Props = {
 export class DeviceTable extends React.Component {
   props: Props;
   _emptyComponent: () => React.Element<any>;
-  _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
@@ -42,16 +39,6 @@ export class DeviceTable extends React.Component {
       }
       return <div className="padded">No devices connected</div>;
     };
-  }
-
-  componentDidMount(): void {
-    this._devicesSubscription = this.props.startFetchingDevices();
-  }
-
-  componentWillUnmount(): void {
-    if (this._devicesSubscription != null) {
-      this._devicesSubscription.unsubscribe();
-    }
   }
 
   render(): React.Element<any> {

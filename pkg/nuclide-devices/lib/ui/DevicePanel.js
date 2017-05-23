@@ -32,6 +32,7 @@ type Props = {
   deviceTasks: DeviceTask[],
   host: NuclideUri,
   device: ?Device,
+  isDeviceConnected: boolean,
 };
 
 export class DevicePanel extends React.Component {
@@ -95,11 +96,28 @@ export class DevicePanel extends React.Component {
   _getBackButton(): React.Element<any> {
     return (
       <div className="block">
-        <span
-          className="nuclide-device-panel-link-with-icon"
-          onClick={() => this.props.goToRootPanel()}>
-          <Icon icon="chevron-left">
-            Choose another device
+        <span>
+          <a
+            className="nuclide-device-panel-text-with-icon"
+            onClick={() => this.props.goToRootPanel()}>
+            <Icon icon="chevron-left">
+              Choose another device
+            </Icon>
+          </a>
+        </span>
+      </div>
+    );
+  }
+  _getStatus(): ?React.Element<any> {
+    if (this.props.isDeviceConnected) {
+      return null;
+    }
+
+    return (
+      <div className="block">
+        <span className="nuclide-device-panel-text-with-icon nuclide-device-panel-disconnected-icon">
+          <Icon icon="primitive-dot">
+            Disconnected
           </Icon>
         </span>
       </div>
@@ -110,6 +128,7 @@ export class DevicePanel extends React.Component {
     return (
       <div>
         {this._getBackButton()}
+        {this._getStatus()}
         {this._getTasks()}
         {this._createInfoTables()}
         {this._createProcessTable()}

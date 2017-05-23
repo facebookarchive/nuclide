@@ -75,6 +75,7 @@ export type AppState = {
   processes: Process[],
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
+  isDeviceConnected: boolean,
 };
 
 export type Store = {
