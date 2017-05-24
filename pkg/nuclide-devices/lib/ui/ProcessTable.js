@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, Process, ProcessTask, ProcessTaskType} from '../types';
+import type {Process, ProcessTask, ProcessTaskType} from '../types';
 
 import React from 'react';
 import {Subscription} from 'rxjs';
@@ -18,17 +17,12 @@ import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';
-import {getServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import consumeFirstProvider from '../../../commons-atom/consumeFirstProvider';
-import {getJavaDebuggerApi} from '../JavaDebuggerApi';
 
-type Props = {
+type Props = {|
   startFetchingProcesses: () => Subscription,
   processTasks: ProcessTask[],
   processes: Process[],
-  host: NuclideUri,
-  device: ?Device,
-};
+|};
 
 type State = {
   filterText: string,
@@ -115,6 +109,9 @@ export class ProcessTable extends React.Component {
     const stopPackageTask = this.props.processTasks.find(
       task => task.type === ('STOP_PACKAGE': ProcessTaskType),
     );
+    const debuggerTasks = this.props.processTasks.filter(
+      task => task.type === ('DEBUG': ProcessTaskType),
+    );
 
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const rows = this._sortProcesses(
@@ -137,7 +134,7 @@ export class ProcessTable extends React.Component {
         name: item.name,
         cpuUsage: this._formatCpuUsage(item.cpuUsage),
         memUsage: this._formatMemUsage(item.memUsage),
-        debug: this._getDebugButton(item),
+        debug: this._getDebugButton(item, debuggerTasks),
       },
     }));
     const columns = [
@@ -203,48 +200,22 @@ export class ProcessTable extends React.Component {
     });
   }
 
-  _getDebugButton(item: Process): ?React.Element<any> {
-    if (item.isJava) {
-      return (
-        <Icon
-          className="nuclide-device-panel-debug-button"
-          icon="nuclicon-debugger"
-          title="Attach Java debugger"
-          onClick={() => this._debugJavaProcess(item.pid)}
-        />
-      );
+  _getDebugButton(item: Process, tasks: ProcessTask[]): ?React.Element<any> {
+    for (const task of tasks) {
+      // TODO(wallace) support multiple debuggers via a dialog
+      if (task.isSupported(item)) {
+        return (
+          <Icon
+            className="nuclide-device-panel-debug-button"
+            icon="nuclicon-debugger"
+            title={task.name}
+            onClick={() => task.run(item)}
+          />
+        );
+      }
     }
 
     return null;
-  }
-
-  async _debugJavaProcess(pid: number): Promise<void> {
-    const service = getServiceByNuclideUri(
-      'JavaDebuggerService',
-      this.props.host,
-    );
-    if (service == null) {
-      throw new Error('Java debugger service is not available.');
-    }
-
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
-    const deviceName = this.props.device != null ? this.props.device.name : '';
-    const javaDebugger = getJavaDebuggerApi();
-    if (javaDebugger != null) {
-      const debugInfo = javaDebugger.createAndroidDebugInfo({
-        targetUri: this.props.host,
-        packageName: '',
-        device: deviceName,
-        pid,
-      });
-      debuggerService.startDebugging(debugInfo);
-    } else {
-      atom.notifications.addWarning(
-        'The Java debugger service is not available.',
-      );
-    }
   }
 
   _getStopPackageButton(

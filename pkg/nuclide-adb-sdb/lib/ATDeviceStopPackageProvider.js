@@ -34,6 +34,14 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
     return 'STOP_PACKAGE';
   }
 
+  getName(): string {
+    return 'Stop package';
+  }
+
+  isSupported(proc: Process): boolean {
+    return true;
+  }
+
   async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
     return this._rpcFactory(host).killProcess(device, proc.name);
   }

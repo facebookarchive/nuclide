@@ -24,7 +24,7 @@ import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
 import {DevicePanel} from './DevicePanel';
 
-export type Props = {
+export type Props = {|
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
@@ -41,7 +41,7 @@ export type Props = {
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
   isDeviceConnected: boolean,
-};
+|};
 
 export class RootPanel extends React.Component {
   props: Props;
@@ -92,8 +92,6 @@ export class RootPanel extends React.Component {
             deviceTasks={this.props.deviceTasks}
             goToRootPanel={this._goToRootPanel}
             startFetchingProcesses={this.props.startFetchingProcesses}
-            host={this.props.host}
-            device={this.props.device}
             isDeviceConnected={this.props.isDeviceConnected}
           />
         </div>

@@ -23,7 +23,6 @@ import {
 } from '../../commons-node/redux-observable';
 import {applyMiddleware, createStore} from 'redux';
 import {createEmptyAppState} from './redux/createEmptyAppState';
-import {setJavaDebuggerApi} from './JavaDebuggerApi';
 import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -33,10 +32,6 @@ import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
 import type {Store, DevicePanelServiceApi} from './types';
-import type {
-  NuclideJavaDebuggerProvider,
-  // $FlowFB
-} from '../../fb-debugger-java/lib/types';
 
 let activation = null;
 
@@ -140,10 +135,6 @@ class Activation {
       ),
     };
   }
-}
-
-export function consumeJavaDebuggerApi(api: NuclideJavaDebuggerProvider): void {
-  setJavaDebuggerApi(api);
 }
 
 createPackage(module.exports, Activation);

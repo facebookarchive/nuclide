@@ -84,6 +84,8 @@ async function getProcessTasks(state: AppState): Promise<ProcessTask[]> {
       return {
         type: provider.getTaskType(),
         run: (proc: Process) => provider.run(state.host, device.name, proc),
+        isSupported: (proc: Process) => provider.isSupported(proc),
+        name: provider.getName(),
       };
     });
 }

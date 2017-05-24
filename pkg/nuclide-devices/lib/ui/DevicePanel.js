@@ -9,9 +9,8 @@
  * @format
  */
 
-import type {Device, Process, ProcessTask} from '../types';
+import type {Process, ProcessTask} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from '../../../commons-node/tasks';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
@@ -23,17 +22,15 @@ import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
 
-type Props = {
+type Props = {|
   startFetchingProcesses: () => Subscription,
   goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
-  host: NuclideUri,
-  device: ?Device,
   isDeviceConnected: boolean,
-};
+|};
 
 export class DevicePanel extends React.Component {
   props: Props;
@@ -55,8 +52,6 @@ export class DevicePanel extends React.Component {
           processes={this.props.processes}
           processTasks={this.props.processTasks}
           startFetchingProcesses={this.props.startFetchingProcesses}
-          host={this.props.host}
-          device={this.props.device}
         />
       </div>
     );

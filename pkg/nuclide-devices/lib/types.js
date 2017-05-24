@@ -59,6 +59,8 @@ export interface DeviceProcessTaskProvider {
   run(host: NuclideUri, device: string, proc: Process): Promise<void>,
   getTaskType(): ProcessTaskType,
   getType(): string,
+  isSupported(proc: Process): boolean,
+  getName(): string,
 }
 
 //
@@ -103,11 +105,13 @@ export type Process = {
   isJava: boolean,
 };
 
-export type ProcessTaskType = 'STOP_PACKAGE';
+export type ProcessTaskType = 'STOP_PACKAGE' | 'DEBUG';
 
 export type ProcessTask = {
   type: ProcessTaskType,
   run: (proc: Process) => Promise<void>,
+  isSupported: (proc: Process) => boolean,
+  name: string,
 };
 
 //
