@@ -233,9 +233,7 @@ export default class CodeFormatManager {
       // Not sure what happened here; why did we get an event in this case? Bail
       // for safety.
       return;
-    } else if (event.newText.length > 1) {
-      // TODO: Reject cases of non-bracket-matching multiple-character text
-      // being inserted.
+    } else if (event.newText.length > 1 && !isBracketPair(event.newText)) {
       return;
     }
 
@@ -316,4 +314,19 @@ export default class CodeFormatManager {
     this._codeFormatProviders = [];
     this._pendingFormats.clear();
   }
+}
+
+/**
+ * We can't tell the difference between a paste and the bracket-matcher package
+ * inserting an extra bracket, so we just assume that any pair of brackets that
+ * bracket-matcher recognizes was a pair matched by the package.
+ */
+function isBracketPair(typedText: string): boolean {
+  if (atom.packages.getActivePackage('bracket-matcher') == null) {
+    return false;
+  }
+  const validBracketPairs: Array<string> = (atom.config.get(
+    'bracket-matcher.autocompleteCharacters',
+  ): any);
+  return validBracketPairs.indexOf(typedText) !== -1;
 }
