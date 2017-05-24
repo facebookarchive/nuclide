@@ -73,6 +73,7 @@ import type {
   UncoveredRange,
 } from './protocol';
 import type {JsonRpcConnection} from './jsonrpc';
+import type {TextEdit as LspTextEditType} from './protocol';
 
 import invariant from 'assert';
 import through from 'through';
@@ -1260,11 +1261,17 @@ export class LspLanguageService {
     // As mentioned, the user might have done further typing during that 'await', but if so then
     // our upstream caller will catch it and report an error: no need to re-verify here.
 
-    const convertRange = lspTextEdit => ({
-      oldRange: rangeToAtomRange(lspTextEdit.range),
-      newText: lspTextEdit.newText,
+    return this._convertFromLspTextEdits(response);
+  }
+
+  _convertFromLspTextEdits(edits: Array<LspTextEditType>): Array<TextEdit> {
+    return edits.map(lspTextEdit => {
+      const oldRange = rangeToAtomRange(lspTextEdit.range);
+      return {
+        oldRange,
+        newText: lspTextEdit.newText,
+      };
     });
-    return response.map(convertRange);
   }
 
   formatEntireFile(
@@ -1287,7 +1294,23 @@ export class LspLanguageService {
     position: atom$Point,
     triggerCharacter: string,
   ): Promise<?Array<TextEdit>> {
-    throw new Error('NYI: formatAtPosition');
+    const triggerCharacters = this._derivedServerCapabilities
+      .onTypeFormattingTriggerCharacters;
+    if (
+      this._state !== 'Running' ||
+      !triggerCharacters.has(triggerCharacter) ||
+      !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
+    ) {
+      return null;
+    }
+
+    const edits = await this._lspConnection.documentOnTypeFormatting({
+      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+      position: pointToPosition(position),
+      ch: triggerCharacter,
+      options: {tabSize: 2, insertSpaces: true},
+    });
+    return this._convertFromLspTextEdits(edits);
   }
 
   getEvaluationExpression(
@@ -1398,6 +1421,8 @@ class DerivedServerCapabilities {
   serverWantsOpenClose: boolean;
   serverWantsChange: 'full' | 'incremental' | 'none';
 
+  onTypeFormattingTriggerCharacters: Set<string>;
+
   constructor(capabilities: ServerCapabilities, logger: log4js$Logger) {
     let syncKind;
 
@@ -1432,6 +1457,21 @@ class DerivedServerCapabilities {
     } else {
       logger.error('LSP initialize: invalid TextDocumentSyncKind');
       this.serverWantsChange = 'none';
+    }
+
+    const onTypeFormattingSettings =
+      capabilities.documentOnTypeFormattingProvider;
+    if (onTypeFormattingSettings == null) {
+      this.onTypeFormattingTriggerCharacters = new Set();
+    } else {
+      const {
+        firstTriggerCharacter,
+        moreTriggerCharacter,
+      } = onTypeFormattingSettings;
+      const triggerCharacters = [firstTriggerCharacter].concat(
+        moreTriggerCharacter || [],
+      );
+      this.onTypeFormattingTriggerCharacters = new Set(triggerCharacters);
     }
   }
 }

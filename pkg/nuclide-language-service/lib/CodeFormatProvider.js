@@ -19,6 +19,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export type CodeFormatConfig = {|
   version: '0.0.0',
@@ -65,19 +66,36 @@ export class CodeFormatProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
     busySignalProvider: BusySignalProvider,
   ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-code-format.provider',
-      config.version,
-      config.canFormatRanges
-        ? new RangeFormatProvider(
-            name,
-            selector,
-            config.priority,
-            config.analyticsEventName,
-            connectionToLanguageService,
-            busySignalProvider,
-          )
-        : new FileFormatProvider(
+    const disposable = new UniversalDisposable(
+      atom.packages.serviceHub.provide(
+        'nuclide-code-format.provider',
+        config.version,
+        config.canFormatRanges
+          ? new RangeFormatProvider(
+              name,
+              selector,
+              config.priority,
+              config.analyticsEventName,
+              connectionToLanguageService,
+              busySignalProvider,
+            )
+          : new FileFormatProvider(
+              name,
+              selector,
+              config.priority,
+              config.analyticsEventName,
+              connectionToLanguageService,
+              busySignalProvider,
+            ),
+      ),
+    );
+
+    if (config.canFormatAtPosition) {
+      disposable.add(
+        atom.packages.serviceHub.provide(
+          'nuclide-code-format.provider',
+          config.version,
+          new PositionFormatProvider(
             name,
             selector,
             config.priority,
@@ -85,7 +103,11 @@ export class CodeFormatProvider<T: LanguageService> {
             connectionToLanguageService,
             busySignalProvider,
           ),
-    );
+        ),
+      );
+    }
+
+    return disposable;
   }
 }
 
@@ -182,6 +204,40 @@ class FileFormatProvider<T: LanguageService>
       }
 
       return {formatted: editor.getText()};
+    });
+  }
+}
+
+class PositionFormatProvider<T: LanguageService>
+  extends CodeFormatProvider<T>
+  implements CodeFormatProviderType {
+  formatAtPosition(
+    editor: atom$TextEditor,
+    position: atom$Point,
+    character: string,
+  ): Promise<Array<TextEdit>> {
+    return trackTiming(this._analyticsEventName, async () => {
+      const fileVersion = await getFileVersionOfEditor(editor);
+      const languageService = this._connectionToLanguageService.getForUri(
+        editor.getPath(),
+      );
+      if (languageService != null && fileVersion != null) {
+        const result = await this._busySignalProvider.reportBusyWhile(
+          `${this.name}: Formatting ${fileVersion.filePath}`,
+          async () => {
+            return (await languageService).formatAtPosition(
+              fileVersion,
+              position,
+              character,
+            );
+          },
+        );
+        if (result != null) {
+          return result;
+        }
+      }
+
+      return [];
     });
   }
 }

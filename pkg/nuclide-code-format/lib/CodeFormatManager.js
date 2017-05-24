@@ -11,18 +11,25 @@
 
 import type {CodeFormatProvider} from './types';
 
-import {CompositeDisposable, Range} from 'atom';
+import invariant from 'assert';
+import {Range} from 'atom';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {nextTick} from 'nuclide-commons/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {getFormatOnSave} from './config';
+import {getLogger} from 'log4js';
+
+const logger = getLogger('CodeFormatManager');
 
 export default class CodeFormatManager {
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: ?UniversalDisposable;
   _codeFormatProviders: Array<CodeFormatProvider>;
   _pendingFormats: Map<atom$TextEditor, boolean>;
 
   constructor() {
-    const subscriptions = (this._subscriptions = new CompositeDisposable());
+    const subscriptions = (this._subscriptions = new UniversalDisposable());
     subscriptions.add(
       atom.commands.add(
         'atom-text-editor',
@@ -37,11 +44,33 @@ export default class CodeFormatManager {
   }
 
   _addEditor(editor: atom$TextEditor): void {
-    if (!this._subscriptions) {
+    const subscriptions = this._subscriptions;
+    if (!subscriptions) {
       return;
     }
 
-    this._subscriptions.add(
+    subscriptions.add(
+      observableFromSubscribeFunction(callback =>
+        editor.getBuffer().onDidChange(callback),
+      )
+        .debounceTime(0) // In case of multiple cursors.
+        .subscribe(async event => {
+          if (this._pendingFormats.get(editor)) {
+            return;
+          }
+
+          this._pendingFormats.set(editor, true);
+          try {
+            await this._formatCodeOnTypeInTextEditor(editor, event);
+          } catch (e) {
+            logger.info('onTypeFormat exception:', e);
+          } finally {
+            this._pendingFormats.delete(editor);
+          }
+        }),
+    );
+
+    subscriptions.add(
       editor.getBuffer().onDidSave(async () => {
         if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
           // Because formatting code is async, we need to resave the file once
@@ -96,7 +125,12 @@ export default class CodeFormatManager {
     displayErrors: boolean = true,
   ): Promise<boolean> {
     const {scopeName} = editor.getGrammar();
-    const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
+    const matchingProviders = this._getMatchingProvidersForScopeName(
+      scopeName,
+    ).filter(
+      provider =>
+        provider.formatCode != null || provider.formatEntireFile != null,
+    );
 
     if (!matchingProviders.length) {
       if (displayErrors) {
@@ -139,8 +173,6 @@ export default class CodeFormatManager {
         const edits = await provider.formatCode(editor, formatRange);
         // Throws if contents have changed since the time of triggering format code.
         this._checkContentsAreSame(contents, editor.getText());
-        // Ensure that edits are in reverse-sorted order.
-        edits.sort((a, b) => b.oldRange.compare(a.oldRange));
         if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
           throw new Error('Could not apply edits to text buffer.');
         }
@@ -172,6 +204,87 @@ export default class CodeFormatManager {
         atom.notifications.addError('Failed to format code: ' + e.message);
       }
       return false;
+    }
+  }
+
+  async _formatCodeOnTypeInTextEditor(
+    editor: atom$TextEditor,
+    event: atom$TextEditEvent,
+  ): Promise<void> {
+    // There's not a direct way to figure out what caused this edit event. There
+    // are three cases that we want to pay attention to:
+    //
+    // 1) The user typed a character.
+    // 2) The user typed a character, and bracket-matching kicked in, causing
+    //    there to be two characters typed.
+    // 3) The user pasted a string.
+    //
+    // We only want to trigger autoformatting in the first two cases. However,
+    // we can only look at what new string was inserted, and not what actually
+    // caused the event, so we just use some heuristics to determine which of
+    // these the event probably was depending on what was typed. This means, for
+    // example, we may issue spurious format requests when the user pastes a
+    // single character, but this is acceptable.
+    if (event.oldText !== '') {
+      // We either just deleted something or replaced a selection. For the time
+      // being, we're not going to issue a reformat in that case.
+      return;
+    } else if (event.oldText === '' && event.newText === '') {
+      // Not sure what happened here; why did we get an event in this case? Bail
+      // for safety.
+      return;
+    } else if (event.newText.length > 1) {
+      // TODO: Reject cases of non-bracket-matching multiple-character text
+      // being inserted.
+      return;
+    }
+
+    // In the case of bracket-matching, we use the last character because that's
+    // the character that will usually cause a reformat (i.e. `}` instead of `{`).
+    const character = event.newText[event.newText.length - 1];
+
+    const {scopeName} = editor.getGrammar();
+    const matchingProviders = this._getMatchingProvidersForScopeName(
+      scopeName,
+    ).filter(provider => provider.formatAtPosition != null);
+    if (!matchingProviders.length) {
+      return;
+    }
+    const provider = matchingProviders[0];
+    invariant(provider.formatAtPosition != null);
+    const formatAtPosition = provider.formatAtPosition.bind(provider);
+
+    const contents = editor.getText();
+
+    // The bracket-matching package basically overwrites
+    //
+    //     editor.insertText('{');
+    //
+    // with
+    //
+    //     editor.insertText('{}');
+    //     cursor.moveLeft();
+    //
+    // We want to wait until the cursor has actually moved before we issue a
+    // format request, so that we format at the right position (and potentially
+    // also let any other event handlers have their go).
+    await nextTick();
+
+    const edits = await formatAtPosition(
+      editor,
+      editor.getCursorBufferPosition().translate([0, -1]),
+      character,
+    );
+    if (edits.length === 0) {
+      return;
+    }
+    this._checkContentsAreSame(contents, editor.getText());
+    // Note that this modification is not in a transaction, so it applies as a
+    // separate editing event than the character typing. This means that you
+    // can undo just the formatting by attempting to undo once, and then undo
+    // your actual code by undoing again.
+    if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+      throw new Error('Could not apply edits to text buffer.');
     }
   }
 
