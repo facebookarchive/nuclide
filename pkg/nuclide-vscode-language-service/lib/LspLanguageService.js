@@ -94,6 +94,7 @@ import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 import {LspConnection} from './LspConnection';
 import {
+  ErrorCodes,
   TextDocumentSyncKind,
   DiagnosticSeverity,
   SymbolKind,
@@ -527,6 +528,10 @@ export class LspLanguageService {
   }
 
   _logLspException(e: Error): void {
+    if (e.code != null && Number(e.code) === ErrorCodes.RequestCancelled) {
+      // RequestCancelled is normal and shouldn't be logged.
+      return;
+    }
     let msg = this._errorString(e);
     if (e.data != null && e.data.stack != null) {
       msg += `\n  LSP STACK:\n${String(e.data.stack)}`;
