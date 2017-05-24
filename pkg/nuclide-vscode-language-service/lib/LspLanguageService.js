@@ -237,8 +237,8 @@ export class LspLanguageService {
       // Our JsonRPC library uses the .pipe() means, so we have to too.
       this._childOut = {stdout: '', stderr: ''};
       const accumulate = (streamName: 'stdout' | 'stderr', data: string) => {
-        if (this._childOut[streamName].length < 300) {
-          const s = (this._childOut[streamName] + data).substr(0, 300);
+        if (this._childOut[streamName].length < 600) {
+          const s = (this._childOut[streamName] + data).substr(0, 600);
           this._childOut[streamName] = s;
         }
       };
@@ -355,11 +355,11 @@ export class LspLanguageService {
         }
 
         // If the process wrote to stderr but succeeded to initialize, we'd
-        // also like to log that.
+        // also like to log that. It was probably informational not error.
         if (this._childOut.stderr !== '') {
           this._host.consoleNotification(
             this._consoleSource,
-            'error',
+            'info',
             this._childOut.stderr,
           );
         }
