@@ -565,6 +565,15 @@ export class FlowSingleProjectLanguageService {
     throw new Error('Not implemented');
   }
 
+  formatAtPosition(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    throw new Error('Not Yet Implemented');
+  }
+
   findReferences(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,

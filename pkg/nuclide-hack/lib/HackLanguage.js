@@ -84,6 +84,7 @@ async function connectionToHackService(
 async function createLanguageService(): Promise<
   AtomLanguageService<LanguageService>,
 > {
+  const usingLsp = await getUseLspConnection();
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'Hack',
     grammars: HACK_GRAMMARS,
@@ -118,7 +119,8 @@ async function createLanguageService(): Promise<
       version: '0.0.0',
       priority: 1,
       analyticsEventName: 'hack.formatCode',
-      formatEntireFile: false,
+      canFormatRanges: true,
+      canFormatAtPosition: usingLsp,
     },
     findReferences: {
       version: '0.0.0',

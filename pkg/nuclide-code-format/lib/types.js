@@ -15,7 +15,8 @@ export interface CodeFormatProvider {
   /**
    * Providers should implement at least one of formatCode / formatEntireFile.
    * If formatCode exists, it'll be used if the editor selection isn't empty, or
-   * if it's empty but formatEntireFile doesn't exist.
+   * if it's empty but formatEntireFile doesn't exist. Providers can also
+   * optionally implement formatAtPosition to support on-type-formatting.
    */
 
   /**
@@ -38,6 +39,17 @@ export interface CodeFormatProvider {
     newCursor?: number,
     formatted: string,
   }>,
+
+  /**
+   * Formats around the given position, and returns a list of text edits to
+   * apply, similar to `formatCode`. The language server determines the exact
+   * range to format based on what's at that position.
+   */
+  +formatAtPosition?: (
+    editor: atom$TextEditor,
+    position: atom$Point,
+    triggerCharacter: string,
+  ) => Promise<Array<TextEdit>>,
 
   selector: string,
   inclusionPriority: number,

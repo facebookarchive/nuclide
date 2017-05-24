@@ -24,7 +24,15 @@ export type CodeFormatConfig = {|
   version: '0.0.0',
   priority: number,
   analyticsEventName: string,
-  formatEntireFile: boolean,
+
+  // If true, support formatting at ranges. Also, use the range formatter to
+  // format the whole document. If false, only support formatting the whole
+  // document, using the document formatter.
+  canFormatRanges: boolean,
+
+  // If true, support formatting at a position (such as for as-you-type
+  // formatting). If false, don't support that.
+  canFormatAtPosition: boolean,
 |};
 
 export class CodeFormatProvider<T: LanguageService> {
@@ -60,8 +68,8 @@ export class CodeFormatProvider<T: LanguageService> {
     return atom.packages.serviceHub.provide(
       'nuclide-code-format.provider',
       config.version,
-      config.formatEntireFile
-        ? new FileFormatProvider(
+      config.canFormatRanges
+        ? new RangeFormatProvider(
             name,
             selector,
             config.priority,
@@ -69,7 +77,7 @@ export class CodeFormatProvider<T: LanguageService> {
             connectionToLanguageService,
             busySignalProvider,
           )
-        : new RangeFormatProvider(
+        : new FileFormatProvider(
             name,
             selector,
             config.priority,

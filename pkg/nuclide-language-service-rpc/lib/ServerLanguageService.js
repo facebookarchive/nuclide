@@ -110,6 +110,13 @@ export type SingleFileLanguageService = {
     formatted: string,
   }>,
 
+  formatAtPosition(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>>,
+
   getEvaluationExpression(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
@@ -264,6 +271,24 @@ export class ServerLanguageService<
       return null;
     }
     return this._service.formatEntireFile(filePath, buffer, range);
+  }
+
+  async formatAtPosition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+    return this._service.formatAtPosition(
+      filePath,
+      buffer,
+      position,
+      triggerCharacter,
+    );
   }
 
   async getEvaluationExpression(

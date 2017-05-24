@@ -229,6 +229,12 @@ export interface FlowLanguageServiceType {
     formatted: string,
   }>,
 
+  formatAtPosition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>>,
+
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,

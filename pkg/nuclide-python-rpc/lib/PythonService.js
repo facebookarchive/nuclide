@@ -326,6 +326,15 @@ class PythonSingleFileLanguageService {
     return {formatted: stdout};
   }
 
+  formatAtPosition(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    throw new Error('Not Yet Implemented');
+  }
+
   getEvaluationExpression(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,

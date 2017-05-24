@@ -323,6 +323,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     )).formatEntireFile(fileVersion, range);
   }
 
+  async formatAtPosition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).formatAtPosition(fileVersion, position, triggerCharacter);
+  }
+
   async getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,

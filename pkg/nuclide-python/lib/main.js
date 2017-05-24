@@ -66,7 +66,8 @@ const atomConfig: AtomLanguageServiceConfig = {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'python.formatCode',
-    formatEntireFile: true,
+    canFormatRanges: false,
+    canFormatAtPosition: false,
   },
   findReferences: {
     version: '0.0.0',

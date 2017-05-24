@@ -1282,6 +1282,14 @@ export class LspLanguageService {
     return Promise.resolve(null);
   }
 
+  async formatAtPosition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    throw new Error('NYI: formatAtPosition');
+  }
+
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,

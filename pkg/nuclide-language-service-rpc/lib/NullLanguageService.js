@@ -111,6 +111,14 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
+  formatAtPosition(
+    fileVersion: FileVersion,
+    position: atom$Point,
+    triggerCharacter: string,
+  ): Promise<?Array<TextEdit>> {
+    return Promise.resolve(null);
+  }
+
   getEvaluationExpression(
     fileVersion: FileVersion,
     position: atom$Point,
