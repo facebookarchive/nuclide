@@ -17,7 +17,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import {MercurialConflictDetector} from './MercurialConflictDetector';
-import passesGK from '../../commons-node/passesGK';
+import {onceGkInitialized, isGkEnabled} from '../../commons-node/passesGK';
 
 let conflictDetector: ?MercurialConflictDetector;
 
@@ -56,8 +56,8 @@ export function deactivate() {
 }
 
 export function consumeMergeConflictsApi(api: ConflictsApi) {
-  passesGK('nuclide_conflict_resolver').then(enabled => {
-    if (!enabled) {
+  onceGkInitialized(() => {
+    if (!isGkEnabled('nuclide_conflict_resolver')) {
       conflictDetector = new MercurialConflictDetector();
       conflictDetector.setConflictsApi(api);
     }
