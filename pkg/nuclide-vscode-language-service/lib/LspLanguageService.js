@@ -170,7 +170,7 @@ export class LspLanguageService {
   }
 
   dispose(): void {
-    this._stop();
+    this._stop().catch(_ => {}).then(_ => this._host.dispose());
   }
 
   async start(): Promise<void> {
