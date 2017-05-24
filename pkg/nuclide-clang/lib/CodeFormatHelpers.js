@@ -10,7 +10,7 @@
  */
 
 import {trackTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 import libclang from './libclang';
 
@@ -26,7 +26,7 @@ export default class CodeFormatHelpers {
       try {
         return await libclang.formatCode(editor, range);
       } catch (e) {
-        getLogger().error('Could not run clang-format:', e);
+        getLogger('nuclide-clang').error('Could not run clang-format:', e);
         throw new Error(
           'Could not run clang-format.<br>Ensure it is installed and in your $PATH.',
         );

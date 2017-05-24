@@ -12,9 +12,9 @@
 import {arrayEqual} from 'nuclide-commons/collection';
 import {dedupeUris} from './uri';
 import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-const logger = getLogger();
+const logger = getLogger('nuclide-working-sets-common');
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

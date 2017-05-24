@@ -13,9 +13,9 @@ import type {BlameForEditor} from '../../nuclide-blame/lib/types';
 
 import {hgRepositoryForEditor} from './common';
 import {trackTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-blame-provider-hg');
 
 function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
   if (editor.isModified()) {

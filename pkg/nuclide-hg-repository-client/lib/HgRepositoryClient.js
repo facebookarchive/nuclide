@@ -43,7 +43,7 @@ import {
   observeBufferOpen,
   observeBufferCloseOrRename,
 } from '../../commons-atom/text-buffer';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
 const REVISION_DEBOUNCE_DELAY = 300;
@@ -301,7 +301,10 @@ export class HgRepositoryClient {
         })
           .retry(2)
           .catch(error => {
-            getLogger().error('failed to fetch bookmarks info:', error);
+            getLogger('nuclide-hg-repository-client').error(
+              'failed to fetch bookmarks info:',
+              error,
+            );
             return Observable.empty();
           }),
       );
@@ -338,7 +341,10 @@ export class HgRepositoryClient {
       triggers
         .switchMap(() =>
           fetchStatuses().refCount().catch(error => {
-            getLogger().error('HgService cannot fetch statuses', error);
+            getLogger('nuclide-hg-repository-client').error(
+              'HgService cannot fetch statuses',
+              error,
+            );
             return Observable.empty();
           }),
         )

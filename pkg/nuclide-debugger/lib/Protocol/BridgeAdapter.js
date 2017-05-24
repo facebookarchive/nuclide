@@ -12,7 +12,7 @@
 import invariant from 'assert';
 
 require('./Object');
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');
 import InspectorBackendClass from './NuclideProtocolParser';
 import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';

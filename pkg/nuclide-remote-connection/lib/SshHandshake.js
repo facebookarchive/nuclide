@@ -20,9 +20,9 @@ import {RemoteConnection} from './RemoteConnection';
 import fsPromise from '../../commons-node/fsPromise';
 import {sleep} from 'nuclide-commons/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-connection');
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 120 * 1000;

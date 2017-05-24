@@ -51,10 +51,10 @@ import invariant from 'assert';
 
 import {fetchActiveBookmark} from './hg-bookmark-helpers';
 import {readArcConfig} from '../../nuclide-arcanist-rpc';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-hg-rpc');
 const DEFAULT_ARC_PROJECT_FORK_BASE = 'remote/master';
 const DEFAULT_FORK_BASE_NAME = 'default';
 
@@ -506,9 +506,12 @@ export class HgService {
           }
         },
       );
-      getLogger().debug('Node watcher created for .hg/store.');
+      getLogger('nuclide-hg-rpc').debug('Node watcher created for .hg/store.');
     } catch (error) {
-      getLogger().error('Error when creating node watcher for hg store', error);
+      getLogger('nuclide-hg-rpc').error(
+        'Error when creating node watcher for hg store',
+        error,
+      );
     }
 
     primarySubscribtion.on('change', this._filesDidChange.bind(this));
@@ -648,7 +651,7 @@ export class HgService {
     try {
       output = await this._hgAsyncExecute(args, options);
     } catch (e) {
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         `Error when running hg diff for paths: ${filePaths.toString()} \n\tError: ${e.stderr}`,
       );
       return null;
@@ -804,7 +807,7 @@ export class HgService {
         {cwd: this._workingDirectory},
       )).stdout.split('\n');
     } catch (e) {
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
       );
       throw e;
@@ -820,7 +823,7 @@ export class HgService {
         {hidden: true, shouldLimit: false},
       ).toPromise();
     } catch (e) {
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`,
       );
       throw e;
@@ -846,7 +849,7 @@ export class HgService {
     try {
       return (await this._hgAsyncExecute(args, execOptions)).stdout.trim();
     } catch (e) {
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         `Failed to fetch Hg config for key ${key}.  Error: ${e.toString()}`,
       );
       return null;
@@ -880,7 +883,7 @@ export class HgService {
       return stdout ? stdout : null;
     } catch (e) {
       // This should not happen: `hg log` does not error even if it does not recognize the template.
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         `Failed when trying to get differential revision for: ${changeSetId}`,
       );
       return null;
@@ -1029,7 +1032,7 @@ export class HgService {
       await this._hgAsyncExecute(cmd, options);
     } catch (e) {
       const errorString = e.stderr || e.message || e.toString();
-      getLogger().error(
+      getLogger('nuclide-hg-rpc').error(
         'hg %s failed with [%s] arguments: %s',
         action,
         args.toString(),
@@ -1197,7 +1200,9 @@ export class HgService {
       const {stdout} = await this._hgAsyncExecute(args, execOptions);
       return stdout;
     } catch (e) {
-      getLogger().error('Failed when trying to get template commit message');
+      getLogger('nuclide-hg-rpc').error(
+        'Failed when trying to get template commit message',
+      );
       return null;
     }
   }
@@ -1221,7 +1226,9 @@ export class HgService {
       return stdout || null;
     } catch (e) {
       // This should not happen: `hg log` does not error even if it does not recognize the template.
-      getLogger().error('Failed when trying to get head commit message');
+      getLogger('nuclide-hg-rpc').error(
+        'Failed when trying to get head commit message',
+      );
       return null;
     }
   }

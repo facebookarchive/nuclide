@@ -19,11 +19,11 @@ import type {
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';
 import {exitEventToMessage, getOutputStream} from '../../commons-node/process';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-rpc');
 
 /**
  * A generic process wrapper around a stdio-based child process, providing a simple

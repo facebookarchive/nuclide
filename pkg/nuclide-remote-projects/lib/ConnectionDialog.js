@@ -36,9 +36,9 @@ import {
   decorateSshConnectionDelegateWithTracking,
 } from '../../nuclide-remote-connection';
 import {validateFormInputs} from './form-validation-utils';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-projects');
 const {remote} = electron;
 invariant(remote != null);
 

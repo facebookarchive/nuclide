@@ -14,7 +14,7 @@ import type {ConflictsApi} from '../';
 
 import {MercurialConflictContext} from './MercurialConflictContext';
 import {CompositeDisposable} from 'atom';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {track} from '../../nuclide-analytics';
 
 export class MercurialConflictDetector {
@@ -82,7 +82,9 @@ export class MercurialConflictDetector {
   _conflictStateChanged(repository: HgRepositoryClient): void {
     const conflictsApi = this._conflictsApi;
     if (conflictsApi == null || conflictsApi.showForContext == null) {
-      getLogger().info('No compatible "merge-conflicts" API found.');
+      getLogger('nuclide-hg-conflict-resolver').info(
+        'No compatible "merge-conflicts" API found.',
+      );
       return;
     }
     if (repository.isInConflict()) {
@@ -105,7 +107,9 @@ export class MercurialConflictDetector {
         this._mercurialConflictContext.clearConflictState();
         conflictsApi.hideForContext(this._mercurialConflictContext);
         atom.notifications.addInfo('Conflicts resolved outside of Nuclide');
-        getLogger().info('Conflicts resolved outside of Nuclide');
+        getLogger('nuclide-hg-conflict-resolver').info(
+          'Conflicts resolved outside of Nuclide',
+        );
       } else {
         track('hg-conflict-detctor.resolved-in-nuclide');
       }

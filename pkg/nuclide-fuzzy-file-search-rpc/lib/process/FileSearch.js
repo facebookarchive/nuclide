@@ -12,13 +12,13 @@
 import type {FileSearchResult} from '../rpc-types';
 
 import fsPromise from '../../../commons-node/fsPromise';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 import {PathSet} from './PathSet';
 import {getPaths} from './PathSetFactory';
 import PathSetUpdater from './PathSetUpdater';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-fuzzy-file-search-rpc');
 
 const fileSearchCache = {};
 

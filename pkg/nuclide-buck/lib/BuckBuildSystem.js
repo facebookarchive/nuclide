@@ -35,7 +35,7 @@ import type {
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {createMessage, taskFromObservable} from '../../commons-node/tasks';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -103,7 +103,7 @@ export class BuckBuildSystem {
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
       .catch(err => {
-        getLogger().warn(
+        getLogger('nuclide-buck').warn(
           `Failed to get httpPort for ${nuclideUri.getPath(buckRoot)}`,
           err,
         );

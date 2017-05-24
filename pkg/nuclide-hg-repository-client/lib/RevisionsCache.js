@@ -13,7 +13,7 @@ import type {HgService, RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
 
 import {arrayEqual} from 'nuclide-commons/collection';
 import {BehaviorSubject, Observable, Subject, TimeoutError} from 'rxjs';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const FETCH_REVISIONS_DEBOUNCE_MS = 100;
 // The request timeout is 60 seconds anyways.
@@ -64,7 +64,10 @@ export default class RevisionsCache {
         Observable.defer(() => this._fetchSmartlogRevisions())
           .retry(FETCH_REVISIONS_RETRY_COUNT)
           .catch(error => {
-            getLogger().error('RevisionsCache Error:', error);
+            getLogger('nuclide-hg-repository-client').error(
+              'RevisionsCache Error:',
+              error,
+            );
             return Observable.empty();
           }),
       )

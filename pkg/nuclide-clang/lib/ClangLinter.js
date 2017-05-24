@@ -16,7 +16,7 @@ import invariant from 'assert';
 import {track, trackTiming} from '../../nuclide-analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {getDiagnostics} from './libclang';
 
 const IDENTIFIER_REGEX = /[a-z0-9_]+/gi;
@@ -77,7 +77,10 @@ export default class ClangLinter {
       });
       return ClangLinter._processDiagnostics(diagnostics, textEditor);
     } catch (error) {
-      getLogger().error(`ClangLinter: error linting ${filePath}`, error);
+      getLogger('nuclide-clang').error(
+        `ClangLinter: error linting ${filePath}`,
+        error,
+      );
       return [];
     }
   }

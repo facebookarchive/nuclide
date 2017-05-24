@@ -33,7 +33,7 @@ import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {filterResultsByPrefix, shouldFilter} from '../../nuclide-flow-common';
 import {
   ConnectionCache,
@@ -277,15 +277,21 @@ async function shouldUsePushDiagnostics(): Promise<boolean> {
     featureConfig.get('nuclide-flow.enablePushDiagnostics'),
   );
 
-  getLogger().info('Checking the Flow persistent connection gk...');
+  getLogger('nuclide-flow').info(
+    'Checking the Flow persistent connection gk...',
+  );
 
   // Wait 15 seconds for the gk check
   const doesPassGK = await passesGK(
     'nuclide_flow_persistent_connection',
     15 * 1000,
   );
-  getLogger().info(`Got Flow persistent connection gk: ${String(doesPassGK)}`);
+  getLogger('nuclide-flow').info(
+    `Got Flow persistent connection gk: ${String(doesPassGK)}`,
+  );
   const result = settingEnabled || doesPassGK;
-  getLogger().info(`Enabling Flow persistent connection: ${String(result)}`);
+  getLogger('nuclide-flow').info(
+    `Enabling Flow persistent connection: ${String(result)}`,
+  );
   return result;
 }

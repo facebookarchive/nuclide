@@ -29,9 +29,9 @@ import {
   getOriginalEnvironment,
 } from '../../commons-node/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-ocaml-rpc');
 
 const ERROR_RESPONSES = new Set(['failure', 'error', 'exception']);
 

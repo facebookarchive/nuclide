@@ -23,7 +23,7 @@ import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import {saveBuffer} from '../../../nuclide-remote-connection';
 import {observableFromTask} from '../../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 import * as Actions from './Actions';
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
@@ -605,7 +605,11 @@ function createTaskObservable(
         taskFailedNotification = null;
       });
       const taskMetaForLogging = {...taskMeta, taskRunner: undefined};
-      getLogger().debug('Error running task:', taskMetaForLogging, error);
+      getLogger('nuclide-task-runner').debug(
+        'Error running task:',
+        taskMetaForLogging,
+        error,
+      );
       return Observable.of({
         type: Actions.TASK_ERRORED,
         payload: {

@@ -16,7 +16,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import debounce from 'nuclide-commons/debounce';
 import {maybeToString} from 'nuclide-commons/string';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const VALID_NUX_POSITIONS = new Set(['top', 'bottom', 'left', 'right', 'auto']);
 // The maximum number of times the NuxView will attempt to attach to the DOM.
@@ -26,7 +26,7 @@ const RESIZE_EVENT_DEBOUNCE_DURATION = 100; // milliseconds
 // The frequency with which to poll the element that the NUX is bound to.
 const POLL_ELEMENT_TIMEOUT = 100; // milliseconds
 
-const logger = getLogger();
+const logger = getLogger('nuclide-nux');
 
 function validatePlacement(position: string): boolean {
   return VALID_NUX_POSITIONS.has(position);

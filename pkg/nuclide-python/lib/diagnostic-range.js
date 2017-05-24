@@ -13,9 +13,9 @@ import type {PythonDiagnostic} from '../../nuclide-python-rpc';
 
 import {Point, Range} from 'atom';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-python');
 
 function tokenizedLineForRow(
   editor: atom$TextEditor,

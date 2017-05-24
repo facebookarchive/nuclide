@@ -21,10 +21,10 @@ import {
   EXIT_CODE_APPLICATION_ERROR,
   EXIT_CODE_INVALID_ARGUMENTS,
 } from './errors';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import yargs from 'yargs';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-atom-rpc');
 
 type FileLocation = {
   filePath: string,

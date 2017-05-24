@@ -23,10 +23,10 @@ import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
 import FindReferencesElement from './FindReferencesElement';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-find-references');
 
 export type FindReferencesProvider = {
   // Return true if your provider supports finding references for the provided TextEditor.

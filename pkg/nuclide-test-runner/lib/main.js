@@ -21,9 +21,9 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-test-runner');
 
 const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
 

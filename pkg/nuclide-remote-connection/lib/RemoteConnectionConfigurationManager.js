@@ -15,12 +15,12 @@ import type {ServerConnectionConfiguration} from './ServerConnection';
 
 import crypto from 'crypto';
 import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import keytarWrapper from './keytarWrapper';
 
 const CONFIG_DIR = 'nuclide-connections';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-connection');
 
 /**
  * Version of ServerConnectionConfiguration that uses string instead of Buffer for fields so it can
@@ -171,7 +171,7 @@ function decryptConfig(
   if (
     !restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----') // nolint
   ) {
-    getLogger().error(
+    getLogger('nuclide-remote-connection').error(
       `decrypted client key did not start with expected header: ${restoredClientKey}`,
     );
   }

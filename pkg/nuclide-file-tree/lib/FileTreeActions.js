@@ -16,7 +16,7 @@ import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {hgConstants} from '../../nuclide-hg-rpc';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Observable} from 'rxjs';
@@ -600,7 +600,9 @@ export default class FileTreeActions {
         } else if (internalGitRepo.isStatusDeleted(gitStatusNumber)) {
           statusCode = StatusCodeNumber.REMOVED;
         } else {
-          getLogger().warn(`Unrecognized git status number ${gitStatusNumber}`);
+          getLogger('nuclide-file-tree').warn(
+            `Unrecognized git status number ${gitStatusNumber}`,
+          );
           statusCode = StatusCodeNumber.MODIFIED;
         }
         relativeCodePaths[relativePath] = statusCode;

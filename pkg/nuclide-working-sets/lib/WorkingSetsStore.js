@@ -13,7 +13,7 @@ import {Emitter} from 'atom';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {arrayEqual} from 'nuclide-commons/collection';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {WorkingSetDefinition} from './types';
@@ -257,7 +257,7 @@ export class WorkingSetsStore {
       // Apparently sometimes Atom supplies an invalid directory, or a directory with an
       // invalid paths. See https://github.com/facebook/nuclide/issues/416
       if (dir == null) {
-        const logger = getLogger();
+        const logger = getLogger('nuclide-working-sets');
 
         logger.warn('Received a null directory from Atom');
         return false;
@@ -266,7 +266,7 @@ export class WorkingSetsStore {
         nuclideUri.parse(dir.getPath());
         return true;
       } catch (e) {
-        const logger = getLogger();
+        const logger = getLogger('nuclide-working-sets');
 
         logger.warn('Failed to parse path supplied by Atom', dir.getPath());
         return false;

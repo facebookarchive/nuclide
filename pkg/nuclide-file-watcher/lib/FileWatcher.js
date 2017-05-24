@@ -15,9 +15,9 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-file-watcher');
 
 export default class FileWatcher {
   _editor: TextEditor;

@@ -14,7 +14,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 
 type TrackingEventNames = {
@@ -95,7 +95,10 @@ export class LogTailer {
         },
       })
       .catch(err => {
-        getLogger().error(`Error with ${this._name} tailer.`, err);
+        getLogger('nuclide-console').error(
+          `Error with ${this._name} tailer.`,
+          err,
+        );
         const wasStarting = this._statuses.getValue() === 'starting';
         this._stop(false);
 

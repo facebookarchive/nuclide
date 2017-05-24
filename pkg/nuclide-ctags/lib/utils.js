@@ -11,7 +11,7 @@
 
 import type {CtagsResult} from '../../nuclide-ctags-rpc';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
@@ -77,7 +77,7 @@ export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
         }
       }
     } catch (e) {
-      getLogger().warn(
+      getLogger('nuclide-ctags').warn(
         `nuclide-ctags: Could not locate pattern in ${tag.file}`,
         e,
       );

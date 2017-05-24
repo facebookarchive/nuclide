@@ -26,10 +26,10 @@ import type {RefactorProvider} from '..';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
-import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
+import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
+import {getLogger} from 'log4js';
+import {track} from '../../nuclide-analytics';
 
 import * as Actions from './refactorActions';
 
@@ -82,7 +82,7 @@ export function getEpics(
         const sourceName = source === 'got-refactorings'
           ? 'getting refactors'
           : 'executing refactor';
-        getLogger().error(`Error ${sourceName}:`, error);
+        getLogger('nuclide-refactorizer').error(`Error ${sourceName}:`, error);
         atom.notifications.addError(`Error ${sourceName}`, {
           description: error.message,
           dismissable: true,

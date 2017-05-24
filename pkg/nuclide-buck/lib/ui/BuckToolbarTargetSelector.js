@@ -19,7 +19,7 @@ import {Combobox} from '../../../nuclide-ui/Combobox';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {concatLatest} from 'nuclide-commons/observable';
 import {getBuckService} from '../../../nuclide-buck-base';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const NO_ACTIVE_PROJECT_ERROR =
   'No active Buck project. Check your Current Working Root.';
@@ -123,7 +123,10 @@ export default class BuckToolbarTargetSelector extends React.Component {
               ),
           )
           .catch(err => {
-            getLogger().error(`Error getting Buck owners for ${path}`, err);
+            getLogger('nuclide-buck').error(
+              `Error getting Buck owners for ${path}`,
+              err,
+            );
             return [];
           });
     this._cachedOwnersPath = path;

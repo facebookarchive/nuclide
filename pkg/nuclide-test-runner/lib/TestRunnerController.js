@@ -24,9 +24,9 @@ import TestSuiteModel from './TestSuiteModel';
 import os from 'os';
 import {track} from '../../nuclide-analytics';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-test-runner');
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/test-runner';
 

@@ -16,10 +16,10 @@ import {
   getHgServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {findHgRepository} from '../../nuclide-source-control-helpers';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-hg-repository');
 
 /**
  * @param directory Either a RemoteDirectory or Directory we are interested in.

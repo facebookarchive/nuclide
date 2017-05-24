@@ -17,7 +17,7 @@ import {shellParse} from 'nuclide-commons/string';
 import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import * as BuckService from '../../nuclide-buck-rpc';
 import {
   isHeaderFile,
@@ -26,7 +26,7 @@ import {
   commonPrefix,
 } from './utils';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-clang-rpc');
 
 const BUCK_TIMEOUT = 10 * 60 * 1000;
 

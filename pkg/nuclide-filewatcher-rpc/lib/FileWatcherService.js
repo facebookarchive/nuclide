@@ -21,7 +21,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {Observable} from 'rxjs';
 import fsPromise from '../../commons-node/fsPromise';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import debounceDeletes from './debounceDeletes';
 
@@ -91,7 +91,7 @@ async function getRealPath(
     throw new Error(`Can't watch a non-existing entity: ${entityPath}`);
   }
   if (stat.isFile() !== isFile) {
-    getLogger().warn(
+    getLogger('nuclide-filewatcher-rpc').warn(
       `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`,
     );
   }

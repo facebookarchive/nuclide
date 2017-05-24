@@ -11,9 +11,9 @@
 
 import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-hg-rpc');
 
 /**
  * @param repoPath The full path to the repository directory (.hg).

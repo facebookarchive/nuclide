@@ -20,7 +20,7 @@ import through from 'through';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 // TODO put these in flow-typed when they are fleshed out better
 
@@ -77,7 +77,10 @@ export class FlowIDEConnection {
     this._ideProcess = process;
     this._ideProcess.stderr.pipe(
       through(msg => {
-        getLogger().info('Flow IDE process stderr: ', msg.toString());
+        getLogger('nuclide-flow-rpc').info(
+          'Flow IDE process stderr: ',
+          msg.toString(),
+        );
       }),
     );
     this._connection = rpc.createMessageConnection(
@@ -152,7 +155,7 @@ export class FlowIDEConnection {
       .take(SUBSCRIBE_RETRIES)
       .takeUntil(this._diagnostics)
       .subscribe(() => {
-        getLogger().error(
+        getLogger('nuclide-flow-rpc').error(
           'Did not receive diagnostics after subscribe request -- retrying...',
         );
         track('nuclide-flow.missing-push-diagnostics');

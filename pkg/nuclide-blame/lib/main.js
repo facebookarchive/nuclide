@@ -18,7 +18,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 import BlameGutter from './BlameGutter';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
@@ -135,7 +135,7 @@ class Activation {
           'Could not open blame: no blame information currently available for this file.',
         );
 
-        getLogger().info(
+        getLogger('nuclide-blame').info(
           'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
             `file: ${String(editor.getPath())}`,
         );

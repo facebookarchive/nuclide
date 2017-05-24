@@ -16,7 +16,7 @@ import type {
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -38,7 +38,7 @@ import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
 import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-projects');
 
 export type RemoteProjectsService = {
   /**

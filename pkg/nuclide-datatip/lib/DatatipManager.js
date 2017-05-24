@@ -25,7 +25,7 @@ import ReactDOM from 'react-dom';
 import analytics from 'nuclide-commons-atom/analytics';
 import debounce from 'nuclide-commons/debounce';
 import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {asyncFind} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -42,7 +42,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import performanceNow from '../../commons-node/performanceNow';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-datatip');
 
 const CUMULATIVE_WHEELX_THRESHOLD = 20;
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;

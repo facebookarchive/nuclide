@@ -17,7 +17,7 @@ import type {BuckBuildOutput, BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import DiagnosticsParser from './DiagnosticsParser';
 import {exitEventToMessage} from '../../commons-node/process';
 
@@ -112,7 +112,7 @@ export function getEventsFromSocket(
       return Observable.empty();
     })
     .catch(err => {
-      getLogger().error('Got Buck websocket error', err);
+      getLogger('nuclide-buck').error('Got Buck websocket error', err);
       // Return to indeterminate progress.
       return Observable.of({
         type: 'progress',

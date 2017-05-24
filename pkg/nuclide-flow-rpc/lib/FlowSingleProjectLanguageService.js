@@ -60,8 +60,8 @@ import {
   getReplacementPrefix,
   JAVASCRIPT_WORD_REGEX,
 } from '../../nuclide-flow-common';
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
+import {getLogger} from 'log4js';
+const logger = getLogger('nuclide-flow-rpc');
 
 import {flowCoordsToAtomCoords} from './FlowHelpers';
 

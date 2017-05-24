@@ -22,13 +22,13 @@ import {
 } from './connection-profile-utils';
 import ConnectionDialog from './ConnectionDialog';
 import CreateConnectionProfileForm from './CreateConnectionProfileForm';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-projects');
 let dialogPromiseQueue: ?PromiseQueue = null;
 
 export type OpenConnectionDialogOptions = {

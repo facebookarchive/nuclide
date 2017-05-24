@@ -43,7 +43,7 @@ import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import passesGK from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 

@@ -33,7 +33,7 @@ import {
 } from '../../commons-node/redux-observable';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
@@ -214,7 +214,7 @@ export class BuckTaskRunner {
         combineEpics(...epics)(actions, store)
           // Log errors and continue.
           .catch((err, stream) => {
-            getLogger().error(err);
+            getLogger('nuclide-buck').error(err);
             return stream;
           });
       this._store = createStore(

@@ -9,15 +9,15 @@
  * @format
  */
 
+import log4js from 'log4js';
+
 import {
   FileAppender,
   getServerLogAppenderConfig,
-  updateConfig,
   initialUpdateConfig,
-  getLogger,
 } from '../../nuclide-logging';
 
-const logger = getLogger();
+const logger = log4js.getLogger('nuclide-remote-atom-rpc');
 
 export const EXIT_CODE_SUCCESS = 0;
 export const EXIT_CODE_UNKNOWN_ERROR = 1;
@@ -55,7 +55,7 @@ export async function setupLogging() {
     config.appenders.push(serverLogAppenderConfig);
   }
 
-  updateConfig(config);
+  log4js.configure(config);
 }
 
 export function reportConnectionErrorAndExit(detailMessage: string): void {

@@ -16,7 +16,7 @@ import LRUCache from 'lru-cache';
 import os from 'os';
 
 import {serializeAsyncCall} from 'nuclide-commons/promise';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 import findClangServerArgs from './find-clang-server-args';
@@ -115,7 +115,10 @@ export default class ClangServerManager {
     const flagsData = await this._flagsManager
       .getFlagsForSrc(src, compilationDBFile)
       .catch(e => {
-        getLogger().error(`Error getting flags for ${src}:`, e);
+        getLogger('nuclide-clang-rpc').error(
+          `Error getting flags for ${src}:`,
+          e,
+        );
         return null;
       });
     if (flagsData != null && flagsData.flags != null) {

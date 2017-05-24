@@ -13,8 +13,8 @@ import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
 import {Subject} from 'rxjs';
-import {getLogger} from '../../nuclide-logging';
-const logger = getLogger();
+import {getLogger} from 'log4js';
+const logger = getLogger('nuclide-server');
 import {Emitter} from 'event-kit';
 
 // An unreliable transport for sending JSON formatted messages

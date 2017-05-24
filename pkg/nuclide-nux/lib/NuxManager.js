@@ -16,7 +16,7 @@ import {arrayCompact} from 'nuclide-commons/collection';
 import {isGkEnabled, onceGkInitialized} from '../../commons-node/passesGK';
 import {maybeToString} from 'nuclide-commons/string';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {track} from '../../nuclide-analytics';
 
 import {NuxStore} from './NuxStore';
@@ -31,7 +31,7 @@ const NUX_PER_SESSION_LIMIT = 3;
 const NEW_TOUR_EVENT = 'nuxTourNew';
 const READY_TOUR_EVENT = 'nuxTourReady';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-nux');
 
 export class NuxManager {
   _nuxStore: NuxStore;

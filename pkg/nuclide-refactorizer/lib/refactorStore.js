@@ -22,7 +22,7 @@ import {
   createEpicMiddleware,
   combineEpics,
 } from '../../commons-node/redux-observable';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 import refactorReducers from './refactorReducers';
 import {getEpics} from './refactorEpics';
@@ -31,7 +31,10 @@ import {getEpics} from './refactorEpics';
 const errors: Subject<mixed> = new Subject();
 
 function handleError(error: mixed): void {
-  getLogger().error('Uncaught exception in refactoring:', error);
+  getLogger('nuclide-refactorizer').error(
+    'Uncaught exception in refactoring:',
+    error,
+  );
   errors.next(error);
 }
 

@@ -14,7 +14,7 @@ import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
 import {runCommandDetailed, scriptifyCommand} from '../../commons-node/process';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import fsPromise from '../../commons-node/fsPromise';
 import {
   getOriginalEnvironment,
@@ -105,7 +105,7 @@ function logAndThrowHgError(
   stdout: string,
   stderr: string,
 ): void {
-  getLogger().error(
+  getLogger('nuclide-hg-rpc').error(
     `Error executing hg command: ${JSON.stringify(args)}\n` +
       `stderr: ${stderr}\nstdout: ${stdout}\n` +
       `options: ${JSON.stringify(options)}`,
@@ -177,7 +177,7 @@ export async function getInteractiveCommitEditorConfig(): Promise<?{
 }> {
   const connectionDetails = await getConnectionDetails();
   if (connectionDetails == null) {
-    getLogger().error('CommandServer not initialized!');
+    getLogger('nuclide-hg-rpc').error('CommandServer not initialized!');
     return null;
   }
   // Atom RPC needs to agree with the Atom process / nuclide server on the address and port.

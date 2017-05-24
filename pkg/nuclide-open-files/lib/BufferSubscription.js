@@ -20,10 +20,10 @@ import type {NotifiersByConnection} from './NotifiersByConnection';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-open-files');
 
 const RESYNC_TIMEOUT_MS = 2000;
 

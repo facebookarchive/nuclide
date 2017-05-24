@@ -12,7 +12,7 @@
 import {FlowIDEConnection} from './FlowIDEConnection';
 
 import {sleep} from 'nuclide-commons/promise';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 
 const defaultIDEConnectionFactory = proc => new FlowIDEConnection(proc);
@@ -77,7 +77,7 @@ export class FlowIDEConnectionWatcher {
   }
 
   async _makeIDEConnection(): Promise<void> {
-    getLogger().info('Attempting to start IDE connection...');
+    getLogger('nuclide-flow-rpc').info('Attempting to start IDE connection...');
     let proc = null;
     const endTimeMS = this._getTimeMS() + IDE_CONNECTION_MAX_WAIT_MS;
     while (true) {
@@ -103,12 +103,14 @@ export class FlowIDEConnectionWatcher {
       if (proc != null || attemptEndTime > endTimeMS) {
         break;
       } else {
-        getLogger().info('Failed to start Flow IDE connection... retrying');
+        getLogger('nuclide-flow-rpc').info(
+          'Failed to start Flow IDE connection... retrying',
+        );
         const attemptWallTime = attemptEndTime - attemptStartTime;
         const additionalWaitTime =
           IDE_CONNECTION_MIN_INTERVAL_MS - attemptWallTime;
         if (additionalWaitTime > 0) {
-          getLogger().info(
+          getLogger('nuclide-flow-rpc').info(
             `Waiting an additional ${additionalWaitTime} ms before retrying`,
           );
           // eslint-disable-next-line no-await-in-loop
@@ -117,7 +119,7 @@ export class FlowIDEConnectionWatcher {
       }
     }
     if (proc == null) {
-      getLogger().error(
+      getLogger('nuclide-flow-rpc').error(
         'Failed to start Flow IDE connection too many times... giving up',
       );
       return;
@@ -133,7 +135,7 @@ export class FlowIDEConnectionWatcher {
         if (
           this._consecutiveUnhealthyConnections >= MAX_UNHEALTHY_CONNECTIONS
         ) {
-          getLogger().error(
+          getLogger('nuclide-flow-rpc').error(
             'Too many consecutive unhealthy Flow IDE connections... giving up',
           );
           return;

@@ -19,7 +19,7 @@ import classnames from 'classnames';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -29,7 +29,7 @@ import {
 } from 'nuclide-commons-ui/PanelComponentScroller';
 import {Message, MessageTypes} from 'nuclide-commons-ui/Message';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-outline-view');
 
 type State = {
   outline: OutlineForUi,

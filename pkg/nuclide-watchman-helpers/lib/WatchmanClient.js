@@ -15,9 +15,9 @@ import {serializeAsyncCall, sleep} from 'nuclide-commons/promise';
 import {maybeToString} from 'nuclide-commons/string';
 import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-watchman-helpers');
 const WATCHMAN_SETTLE_TIME_MS = 2500;
 
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';

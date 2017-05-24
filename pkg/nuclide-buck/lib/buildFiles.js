@@ -18,7 +18,7 @@ import getElementFilePath from '../../commons-atom/getElementFilePath';
 import {
   getFileSystemServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 const DEFAULT_BUILD_FILE_NAME = 'BUCK';
@@ -60,7 +60,7 @@ export function getBuildFileName(buckRoot: string): Promise<string> {
   buildFileName = buckService
     .getBuckConfig(buckRoot, 'buildfile', 'name')
     .catch(error => {
-      getLogger().error(
+      getLogger('nuclide-buck').error(
         `Error trying to find the name of the buildfile in Buck project '${buckRoot}'`,
         error,
       );

@@ -18,10 +18,10 @@ import type {ProxyFactory} from './main';
 import invariant from 'assert';
 import type {ConfigEntry} from './index';
 import type {ObjectRegistry} from './ObjectRegistry';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-rpc');
 
 export type FunctionImplementation = {
   getLocalImplementation: Function,

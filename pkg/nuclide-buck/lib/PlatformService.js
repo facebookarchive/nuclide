@@ -13,7 +13,7 @@ import type {PlatformGroup} from './types';
 
 import {Disposable} from 'atom';
 import {Observable, Subject} from 'rxjs';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 type PlatformProvider = (
   buckRoot: string,
@@ -43,7 +43,7 @@ export class PlatformService {
     return this._providersChanged.startWith(undefined).switchMap(() => {
       const observables = this._registeredProviders.map(provider =>
         provider(buckRoot, ruleType, buildTarget).catch(error => {
-          getLogger().error(
+          getLogger('nuclide-buck').error(
             `Getting buck platform groups from ${provider.name} failed:`,
             error,
           );

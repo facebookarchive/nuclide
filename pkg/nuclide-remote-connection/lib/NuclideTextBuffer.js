@@ -12,7 +12,7 @@
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteFile} from './RemoteFile';
 
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {CompositeDisposable, TextBuffer} from 'atom';
 import {track} from '../../nuclide-analytics';
@@ -119,7 +119,7 @@ export default class NuclideTextBuffer extends TextBuffer {
     } catch (e) {
       // Timeouts occur quite frequently when the network is unstable.
       // Demote these to 'error' level.
-      const logger = getLogger();
+      const logger = getLogger('nuclide-remote-connection');
       const logFunction = e instanceof RpcTimeoutError
         ? logger.error
         : logger.fatal;

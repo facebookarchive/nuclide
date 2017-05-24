@@ -25,7 +25,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Deferred} from 'nuclide-commons/promise';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {normalizeRemoteObjectValue} from './normalizeRemoteObjectValue';
 
 type Expression = string;
@@ -269,7 +269,10 @@ export class WatchExpressionStore {
     try {
       result = await deferred.promise;
     } catch (e) {
-      getLogger().warn(`${command}: Error getting result.`, e);
+      getLogger('nuclide-debugger').warn(
+        `${command}: Error getting result.`,
+        e,
+      );
       if (e.description) {
         errorMsg = e.description;
       }

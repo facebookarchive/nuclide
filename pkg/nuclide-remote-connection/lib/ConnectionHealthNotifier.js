@@ -13,9 +13,9 @@ import invariant from 'assert';
 import {trackEvent} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import {NuclideSocket} from '../../nuclide-server/lib/NuclideSocket';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-connection');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;

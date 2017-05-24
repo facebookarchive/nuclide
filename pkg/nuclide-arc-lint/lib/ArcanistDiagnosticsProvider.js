@@ -20,10 +20,10 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {trackTiming} from '../../nuclide-analytics';
 import {removeCommonSuffix} from 'nuclide-commons/string';
 import {PromisePool} from '../../commons-node/promise-executors';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-arc-lint');
 
 const _runningProcess = new Map();
 const _promisePool = new PromisePool(Math.round(os.cpus().length / 2));

@@ -10,11 +10,11 @@
  */
 
 import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import type {ServiceRegistry} from './ServiceRegistry';
 import type {RpcContext} from './main';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-rpc');
 
 type ObjectRegistration = {
   interface: string,

@@ -14,11 +14,11 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {arrayCompact} from 'nuclide-commons/collection';
 import fs from '../../commons-node/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {asyncFind} from 'nuclide-commons/promise';
 import os from 'os';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-atom-rpc');
 
 export const RPC_PROTOCOL = 'atom_rpc_protocol';
 

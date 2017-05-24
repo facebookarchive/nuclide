@@ -20,9 +20,9 @@ import passesGK from '../../commons-node/passesGK';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-connection');
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
 export class RemoteFile {

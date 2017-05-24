@@ -22,9 +22,9 @@ import {XhrConnectionHeartbeat} from './XhrConnectionHeartbeat';
 import invariant from 'assert';
 import {attachEvent} from 'nuclide-commons/event';
 import {maybeToString} from 'nuclide-commons/string';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-server');
 
 const PING_SEND_INTERVAL = 5000;
 const PING_WAIT_INTERVAL = 5000;

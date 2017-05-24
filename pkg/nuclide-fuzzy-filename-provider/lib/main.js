@@ -20,11 +20,11 @@ import {
   getFuzzyFileSearchServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import {RpcTimeoutError} from '../../nuclide-rpc';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
 import {getIgnoredNames} from './utils';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-fuzzy-filename-provider');
 
 class Activation {
   _busySignalService: ?BusySignalService;

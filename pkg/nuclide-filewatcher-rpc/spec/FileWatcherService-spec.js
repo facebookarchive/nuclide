@@ -13,7 +13,7 @@ import type {WatchResult} from '..';
 import {Emitter} from 'event-kit';
 import fsPromise from '../../commons-node/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
-import * as logging from '../../nuclide-logging';
+import log4js from 'log4js';
 import {
   watchFile,
   watchDirectory,
@@ -245,7 +245,7 @@ describe('FileWatcherService', () => {
 
   it('warns when you try to watch the wrong entity type', () => {
     const warnSpy = jasmine.createSpy('warn');
-    spyOn(logging, 'getLogger').andReturn({warn: warnSpy});
+    spyOn(log4js, 'getLogger').andReturn({warn: warnSpy});
 
     watchFile(TEST_DIR).refCount();
     waitsFor(() => warnSpy.wasCalled);

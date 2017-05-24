@@ -22,7 +22,7 @@ import {ActionType, EMPTY_SHORTHEAD} from './constants';
 import {getRepoPathToEditors} from './utils';
 import invariant from 'assert';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Observable} from 'rxjs';
 
@@ -157,7 +157,10 @@ function restorePaneItemState(
         }
       })
       .catch(error => {
-        getLogger().error('bookshelf failed to close some editors', error);
+        getLogger('nuclide-bookshelf').error(
+          'bookshelf failed to close some editors',
+          error,
+        );
         return Observable.empty();
       })
       .ignoreElements(),
@@ -175,7 +178,10 @@ function restorePaneItemState(
         }
       })
       .catch(error => {
-        getLogger().error('bookshelf failed to reload some editors', error);
+        getLogger('nuclide-bookshelf').error(
+          'bookshelf failed to reload some editors',
+          error,
+        );
         return Observable.empty();
       })
       .ignoreElements(),
@@ -184,7 +190,10 @@ function restorePaneItemState(
         return Observable.fromPromise(goToLocation(fileUri));
       })
       .catch(error => {
-        getLogger().error('bookshelf failed to open some editors', error);
+        getLogger('nuclide-bookshelf').error(
+          'bookshelf failed to open some editors',
+          error,
+        );
         return Observable.empty();
       })
       .ignoreElements(),

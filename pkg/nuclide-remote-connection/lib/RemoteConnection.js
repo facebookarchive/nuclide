@@ -28,9 +28,9 @@ import {ServerConnection} from './ServerConnection';
 import {Emitter} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getConnectionConfig} from './RemoteConnectionConfigurationManager';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-remote-connection');
 
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
 const FILE_SYSTEM_SERVICE = 'FileSystemService';

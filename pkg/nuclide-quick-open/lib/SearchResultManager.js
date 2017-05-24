@@ -42,7 +42,7 @@ type ResultRenderer = (
 
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import React from 'react';
 import {Subject} from 'rxjs';
 import {CompositeDisposable, Emitter} from 'atom';
@@ -191,7 +191,7 @@ export default class SearchResultManager {
           provider
             .isEligibleForDirectory(directory)
             .catch(err => {
-              getLogger().warn(
+              getLogger('nuclide-quick-open').warn(
                 `isEligibleForDirectory failed for directory provider ${provider.name}`,
                 err,
               );
@@ -211,7 +211,7 @@ export default class SearchResultManager {
         provider
           .isEligibleForDirectories(directories)
           .catch(err => {
-            getLogger().warn(
+            getLogger('nuclide-quick-open').warn(
               `isEligibleForDirectories failed for ${provider.name}`,
               err,
             );

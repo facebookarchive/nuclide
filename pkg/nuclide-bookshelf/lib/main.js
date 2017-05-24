@@ -26,7 +26,7 @@ import {
   serializeBookShelfState,
 } from './utils';
 import {getHgRepositoryStream} from '../../nuclide-vcs-base';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -45,7 +45,10 @@ function createStateStream(
   actions
     .scan(accumulateState, initialState)
     .catch(error => {
-      getLogger().fatal('bookshelf middleware got broken', error);
+      getLogger('nuclide-bookshelf').fatal(
+        'bookshelf middleware got broken',
+        error,
+      );
       atom.notifications.addError(
         'Nuclide bookshelf broke, please report a bug to help us fix it!',
       );
@@ -65,7 +68,7 @@ class Activation {
     try {
       initialState = deserializeBookShelfState(state);
     } catch (error) {
-      getLogger().error(
+      getLogger('nuclide-bookshelf').error(
         'failed to deserialize nuclide-bookshelf state',
         state,
         error,
@@ -155,7 +158,10 @@ class Activation {
     try {
       return serializeBookShelfState(this._states.getValue());
     } catch (error) {
-      getLogger().error('failed to serialize nuclide-bookshelf state', error);
+      getLogger('nuclide-bookshelf').error(
+        'failed to serialize nuclide-bookshelf state',
+        error,
+      );
       return null;
     }
   }

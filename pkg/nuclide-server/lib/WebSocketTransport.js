@@ -14,11 +14,11 @@ import type {Observable} from 'rxjs';
 
 import {Subject} from 'rxjs';
 import invariant from 'assert';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {Emitter} from 'event-kit';
 import {compress, decompress} from './compression';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-server');
 // Do not synchronously compress large payloads (risks blocking the event loop)
 const MAX_SYNC_COMPRESS_LENGTH = 100000;
 

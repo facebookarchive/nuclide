@@ -20,14 +20,14 @@ import {
   ConnectionCache,
 } from '../../nuclide-remote-connection';
 import {OPEN_FILES_SERVICE} from '../../nuclide-open-files-rpc';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {FileEventKind} from '../../nuclide-open-files-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {Disposable} from 'atom';
 import {areSetsEqual} from 'nuclide-commons/collection';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-open-files');
 
 const RESYNC_TIMEOUT_MS = 2000;
 

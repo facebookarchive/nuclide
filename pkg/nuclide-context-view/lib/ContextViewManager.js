@@ -27,7 +27,7 @@ import ReactDOM from 'react-dom';
 import {observeTextEditorsPositions} from 'nuclide-commons-atom/debounced';
 import {Observable} from 'rxjs';
 import {track, trackTiming} from '../../nuclide-analytics';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import ContextViewMessage from './ContextViewMessage';
 import {ContextViewPanel} from './ContextViewPanel';
 import {ProviderContainer} from './ProviderContainer';
@@ -41,7 +41,7 @@ type SerializedContextViewPanelState = {
   deserializer: 'nuclide.ContextViewPanelState',
 };
 
-const logger = getLogger();
+const logger = getLogger('nuclide-context-view');
 
 /**
  * Manages registering/unregistering of definition service and context providers,

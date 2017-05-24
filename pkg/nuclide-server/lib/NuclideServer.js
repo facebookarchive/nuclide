@@ -11,24 +11,26 @@
 
 import type {ConfigEntry} from '../../nuclide-rpc';
 
+import invariant from 'assert';
+import WS from 'ws';
+import {attachEvent} from 'nuclide-commons/event';
+import {getLogger} from 'log4js';
+
 import blocked from './blocked';
 import {CLIENTINFO_CHANNEL, HEARTBEAT_CHANNEL} from './config';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
 import {getVersion} from '../../nuclide-version';
-import invariant from 'assert';
-import {getLogger, flushLogsAndExit} from '../../nuclide-logging';
-import WS from 'ws';
+import {flushLogsAndExit} from '../../nuclide-logging';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
 import {QueuedTransport} from './QueuedTransport';
 import {WebSocketTransport} from './WebSocketTransport';
-import {attachEvent} from 'nuclide-commons/event';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 
 const connect: connect$module = require('connect');
 const http: http$fixed = (require('http'): any);
 const https: https$fixed = (require('https'): any);
 
-const logger = getLogger();
+const logger = getLogger('nuclide-server');
 
 type NuclideServerOptions = {
   port: number,

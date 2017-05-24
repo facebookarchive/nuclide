@@ -14,7 +14,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import {hgAsyncExecute, hgRunCommand} from './hg-utils';
 import {HEAD_REVISION_EXPRESSION, SuccessorType} from './hg-constants';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 
@@ -140,7 +140,11 @@ export async function fetchCommonAncestorOfHeadAndRevision(
     );
     return ancestorRevisionNumber;
   } catch (e) {
-    getLogger().warn('Failed to get hg common ancestor: ', e.stderr, e.command);
+    getLogger('nuclide-hg-rpc').warn(
+      'Failed to get hg common ancestor: ',
+      e.stderr,
+      e.command,
+    );
     throw new Error(
       'Could not fetch common ancestor of head and revision: ' + revision,
     );
@@ -177,7 +181,7 @@ export function fetchRevisionsInfo(
   return hgRunCommand(revisionLogArgs, hgOptions)
     .map(stdout => parseRevisionInfoOutput(stdout))
     .catch(e => {
-      getLogger().warn(
+      getLogger('nuclide-hg-rpc').warn(
         'Failed to get revision info for revisions' +
           ` ${revisionExpression}: ${e.stderr || e}, ${e.command}`,
       );

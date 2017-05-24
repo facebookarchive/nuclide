@@ -43,9 +43,9 @@ import {builtinLocation, voidType} from './builtin-types';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {SERVICE_FRAMEWORK3_PROTOCOL} from './config';
 import {shorten} from 'nuclide-commons/string';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-rpc');
 
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 const LARGE_RESPONSE_SIZE = 100000;

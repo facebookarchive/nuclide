@@ -13,17 +13,18 @@ import fsPromise from '../../commons-node/fsPromise';
 import {
   flushLogsAndAbort,
   flushLogsAndExit,
-  getLogger,
   initialUpdateConfig,
 } from '../../nuclide-logging';
 import {startTracking} from '../../nuclide-analytics';
 import NuclideServer from './NuclideServer';
 import servicesConfig from './servicesConfig';
+
 import yargs from 'yargs';
+import {getLogger} from 'log4js';
 
 const DEFAULT_PORT = 9090;
 
-const logger = getLogger();
+const logger = getLogger('nuclide-server');
 
 export type AgentOptions = {
   ca?: Buffer,

@@ -20,7 +20,7 @@ import type {ConnectableObservable} from 'rxjs';
 import formatEnoentNotification
   from '../../../commons-atom/format-enoent-notification';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {executeRequests} from './executeRequests';
 import {runApp} from './runApp';
 import invariant from 'assert';
@@ -102,7 +102,7 @@ export class DebuggerProxyClient {
           atom.notifications.addError(message, meta);
           return Observable.empty();
         }
-        getLogger().error(err);
+        getLogger('nuclide-react-native').error(err);
         return Observable.empty();
       })
       .finally(() => {
@@ -136,7 +136,7 @@ export class DebuggerProxyClient {
         invariant(response.kind === 'error');
         return response.message;
       })
-      .subscribe(getLogger().error);
+      .subscribe(getLogger('nuclide-react-native').error);
   }
 
   connect(): void {

@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import fsPromise from '../../commons-node/fsPromise';
 import {arrayCompact} from 'nuclide-commons/collection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
 const TAGS_FILENAME = 'tags';
 
@@ -52,7 +52,10 @@ export class CtagsService {
     try {
       ctags = require('nuclide-prebuilt-libs/ctags');
     } catch (e) {
-      getLogger().error('Could not load the ctags package:', e);
+      getLogger('nuclide-ctags-rpc').error(
+        'Could not load the ctags package:',
+        e,
+      );
       return Promise.resolve([]);
     }
 

@@ -14,9 +14,9 @@ import type {Datatip} from '../../nuclide-datatip/lib/types';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import {arrayRemove} from 'nuclide-commons/collection';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-type-hint');
 
 export default class TypeHintManager {
   _typeHintProviders: Array<TypeHintProvider>;

@@ -13,11 +13,11 @@ import type {ExecutorResponse, ExecutorRequest} from './types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {fork, getOutputStream} from '../../../commons-node/process';
-import {getLogger} from '../../../nuclide-logging';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
-const logger = getLogger();
+const logger = getLogger('nuclide-react-native');
 
 /**
  * This function models the executor side of the debugging equation: it receives a stream of

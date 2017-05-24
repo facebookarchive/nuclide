@@ -32,7 +32,7 @@ import {
 import {
   LaunchProcessInfo,
 } from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {track} from '../../nuclide-analytics';
@@ -185,7 +185,7 @@ export function getDeployBuildEvents(
           level: 'info',
         }))
         .catch(err => {
-          getLogger().error(
+          getLogger('nuclide-buck').error(
             `Failed to launch debugger for ${buildTarget}`,
             err,
           );

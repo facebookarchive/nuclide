@@ -24,7 +24,7 @@ import {Minimatch} from 'minimatch';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -141,7 +141,7 @@ export class FileTreeStore {
     this._dispatcher = FileTreeDispatcher.getInstance();
     this._emitter = new Emitter();
     this._dispatcher.register(this._onDispatch.bind(this));
-    this._logger = getLogger();
+    this._logger = getLogger('nuclide-file-tree');
     this._fileChanges = new Immutable.Map();
 
     this._usePrefixNav = false;

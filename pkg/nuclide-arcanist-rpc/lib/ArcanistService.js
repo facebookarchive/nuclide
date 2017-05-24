@@ -34,7 +34,7 @@ import {
   expressionForRevisionsBeforeHead,
 } from '../../nuclide-hg-rpc/lib/hg-revision-expression-helpers';
 import {findHgRepository} from '../../nuclide-source-control-helpers';
-import {getLogger} from '../../nuclide-logging';
+import {getLogger} from 'log4js';
 import LRU from 'lru-cache';
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -378,7 +378,10 @@ function execArcLint(
       try {
         json = JSON.parse(stdout);
       } catch (error) {
-        getLogger().warn('Error parsing `arc lint` JSON output', stdout);
+        getLogger('nuclide-arcanist-rpc').warn(
+          'Error parsing `arc lint` JSON output',
+          stdout,
+        );
         return Observable.empty();
       }
       const output = new Map();
