@@ -9,6 +9,10 @@
             {
               "label": "Set from Active File",
               "command": "nuclide-current-working-root:set-from-active-file"
+            },
+            {
+              "label": "Switch to Previous Working Directory",
+              "command": "nuclide-current-working-root:switch-to-previous"
             }
           ]
         }
