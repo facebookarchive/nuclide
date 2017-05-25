@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import type {CodeFormatProvider} from 'atom-ide-ui';
 import type {LinterProvider} from 'atom-ide-ui';
 import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
 import type {

@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BusySignalService} from '../../nuclide-busy-signal';
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import type {CodeFormatProvider} from 'atom-ide-ui';
 import type {LinterProvider} from 'atom-ide-ui';
 import type {OutlineProvider} from '../../nuclide-outline-view';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';

@@ -11,9 +11,7 @@
 
 import type {LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
-import type {
-  CodeFormatProvider as CodeFormatProviderType,
-} from '../../nuclide-code-format/lib/types';
+import type {CodeFormatProvider as CodeFormatProviderType} from 'atom-ide-ui';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';

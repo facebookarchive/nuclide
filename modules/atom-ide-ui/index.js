@@ -35,3 +35,5 @@ export type {
   ProjectDiagnosticMessage,
   Trace,
 } from './pkg/atom-ide-diagnostics';
+
+export type {CodeFormatProvider} from './pkg/atom-ide-code-format/lib/types';

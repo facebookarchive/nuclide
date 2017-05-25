@@ -18,7 +18,7 @@ import {CompositeDisposable} from 'atom';
 import {getOutline} from './JSONOutlineProvider';
 import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
 
-import type {CodeFormatProvider} from '../../nuclide-code-format/lib/types';
+import type {CodeFormatProvider} from 'atom-ide-ui';
 import CodeFormatHelpers from './CodeFormatHelpers';
 
 class Activation {
