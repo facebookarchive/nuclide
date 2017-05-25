@@ -9,7 +9,6 @@
  * @format
  */
 
-import {arrayCompact} from 'nuclide-commons/collection';
 import {observeProcess, runCommand} from '../../commons-node/process';
 import os from 'os';
 import {Observable} from 'rxjs';
@@ -79,20 +78,16 @@ export class AdbSdbBase {
       )
       .toPromise();
 
-    const deviceTable = await Promise.all(
+    return Promise.all(
       devices.map(async name => {
-        try {
-          const architecture = await this.getDeviceArchitecture(name);
-          const apiVersion = await this.getAPIVersion(name);
-          const model = await this.getDeviceModel(name);
-          return {name, architecture, apiVersion, model};
-        } catch (error) {
-          return null;
-        }
+        const architecture = await this.getDeviceArchitecture(name).catch(
+          () => '',
+        );
+        const apiVersion = await this.getAPIVersion(name).catch(() => '');
+        const model = await this.getDeviceModel(name).catch(() => '');
+        return {name, architecture, apiVersion, model};
       }),
     );
-
-    return arrayCompact(deviceTable);
   }
 
   async getFileContentsAtPath(device: string, path: string): Promise<string> {
@@ -100,15 +95,15 @@ export class AdbSdbBase {
   }
 
   getDeviceArchitecture(device: string): Promise<string> {
-    throw new Error('not implemented');
+    return Promise.resolve('');
   }
 
   getDeviceModel(device: string): Promise<string> {
-    throw new Error('not implemented');
+    return Promise.resolve('');
   }
 
   getAPIVersion(device: string): Promise<string> {
-    throw new Error('not implemented');
+    return Promise.resolve('');
   }
 
   installPackage(

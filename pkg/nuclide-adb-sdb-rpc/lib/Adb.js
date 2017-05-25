@@ -66,20 +66,34 @@ export class Adb extends AdbSdbBase {
 
   async getDeviceInfo(device: string): Promise<Map<string, string>> {
     const infoTable = await this.getCommonDeviceInfo(device);
-    const unknownCB = () => null;
+    const unknownCB = () => '';
     infoTable.set(
       'android_version',
-      // $FlowFixMe will resolve to null if an error is caught
       await this.getOSVersion(device).catch(unknownCB),
     );
     infoTable.set(
       'manufacturer',
-      // $FlowFixMe will resolve to null if an error is caught
       await this.getManufacturer(device).catch(unknownCB),
     );
-    // $FlowFixMe will resolve to null if an error is caught
     infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
+    infoTable.set('wifi_ip', await this.getWifiIp(device).catch(unknownCB));
     return infoTable;
+  }
+
+  async getWifiIp(device: string): Promise<string> {
+    const lines = await this.runShortCommand(device, [
+      'shell',
+      'ip',
+      'addr',
+      'show',
+      'wlan0',
+    ]).toPromise();
+    const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
+    if (line == null) {
+      return '';
+    }
+    const rawIp = line.trim().split(/\s+/)[1];
+    return rawIp.substring(0, rawIp.indexOf('/'));
   }
 
   // Can't use kill, the only option is to use the package name

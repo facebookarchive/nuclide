@@ -17,12 +17,12 @@ export type AndroidJavaProcess = {
 
 export type DebugBridgeType = 'adb' | 'sdb';
 
-export type DeviceDescription = {
+export type DeviceDescription = {|
   name: string,
   architecture: string,
   apiVersion: string,
   model: string,
-};
+|};
 
 export type Process = {
   user: string,
