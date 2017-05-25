@@ -18,10 +18,7 @@ import {
   isEvaluationCommand,
 } from './helpers';
 import EventEmitter from 'events';
-import {
-  DbgpMessageHandler,
-  getDbgpMessageHandlerInstance,
-} from './DbgpMessageHandler';
+import {DbgpMessageHandler} from './DbgpMessageHandler';
 import {attachEvent} from 'nuclide-commons/event';
 import invariant from 'assert';
 import type {Socket} from 'net';
@@ -151,7 +148,7 @@ export class DbgpSocket {
     this._calls = new Map();
     this._emitter = new EventEmitter();
     this._isClosed = false;
-    this._messageHandler = getDbgpMessageHandlerInstance();
+    this._messageHandler = new DbgpMessageHandler();
     this._pendingEvalTransactionIds = new Set();
     this._lastContinuationCommandTransactionId = null;
 

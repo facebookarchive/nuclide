@@ -11,10 +11,7 @@
 
 import logger from './utils';
 import invariant from 'assert';
-import singleton from '../../commons-node/singleton';
 import xml2js from 'xml2js';
-
-const GLOBAL_HHVM_DEBUGGER_KEY = '_global_hhvm_debugger_key';
 
 type DbgpMessage = {
   length: number,
@@ -171,10 +168,4 @@ export class DbgpMessageHandler {
   clearIncompletedMessage(): void {
     this._prevIncompletedMessage = null;
   }
-}
-
-export function getDbgpMessageHandlerInstance(): DbgpMessageHandler {
-  return singleton.get(GLOBAL_HHVM_DEBUGGER_KEY, () => {
-    return new DbgpMessageHandler();
-  });
 }

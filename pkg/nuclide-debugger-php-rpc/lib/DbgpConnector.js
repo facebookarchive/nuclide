@@ -12,10 +12,7 @@
 import net from 'net';
 import logger from './utils';
 import {Emitter} from 'event-kit';
-import {
-  DbgpMessageHandler,
-  getDbgpMessageHandlerInstance,
-} from './DbgpMessageHandler';
+import {DbgpMessageHandler} from './DbgpMessageHandler';
 import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
@@ -55,7 +52,7 @@ export class DbgpConnector {
   constructor(port: number) {
     this._server = null;
     this._emitter = new Emitter();
-    this._messageHandler = getDbgpMessageHandlerInstance();
+    this._messageHandler = new DbgpMessageHandler();
     this._port = port;
   }
 

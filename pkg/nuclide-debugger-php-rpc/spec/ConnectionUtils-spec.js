@@ -15,7 +15,7 @@ import {
   setRootDirectoryUri,
 } from '../lib/ConnectionUtils';
 import {makeDbgpMessage} from '../lib/helpers';
-import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
+import {DbgpMessageHandler} from '../lib/DbgpMessageHandler';
 
 const payload1 = `<init
   xmlns="urn:debugger_protocol_v1"
@@ -81,9 +81,7 @@ const dummyPayload = `<init
 </init>`;
 
 function convertMessageIntoJson(payload: string): Object {
-  return getDbgpMessageHandlerInstance().parseMessages(
-    makeDbgpMessage(payload),
-  )[0];
+  return new DbgpMessageHandler().parseMessages(makeDbgpMessage(payload))[0];
 }
 
 const xdebugAttachPort = 1234;

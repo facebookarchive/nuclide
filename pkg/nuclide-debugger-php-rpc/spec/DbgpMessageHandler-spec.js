@@ -10,7 +10,7 @@
  */
 
 import {makeMessage, makeDbgpMessage} from '../lib/helpers';
-import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
+import {DbgpMessageHandler} from '../lib/DbgpMessageHandler';
 
 const payload =
   '<?xml version="1.0" encoding="iso-8859-1"?>' +
@@ -23,16 +23,11 @@ describe('debugger-php-rpc DbgpMessageHandler', () => {
 
   beforeEach(() => {
     spyOn(console, 'log'); // Suppress logger messages.
-    messageHandler = getDbgpMessageHandlerInstance();
+    messageHandler = new DbgpMessageHandler();
   });
 
   afterEach(() => {
     messageHandler.clearIncompletedMessage();
-  });
-
-  it('singleton', () => {
-    const messageHandler2 = getDbgpMessageHandlerInstance();
-    expect(messageHandler).toBe(messageHandler2);
   });
 
   it('single completed message', () => {

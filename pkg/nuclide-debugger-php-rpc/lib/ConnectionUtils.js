@@ -51,7 +51,7 @@ export function isDummyConnection(message: Object): boolean {
 }
 
 export function failConnection(socket: Socket, errorMessage: string): void {
-  logger.debug(errorMessage);
+  logger.error(errorMessage);
   socket.end();
   socket.destroy();
 }
