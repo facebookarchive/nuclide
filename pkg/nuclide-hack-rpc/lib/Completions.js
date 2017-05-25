@@ -116,7 +116,7 @@ function processCompletions(
   });
 }
 
-const FIELD_ACCESSORS = ['->', '::'];
+const FIELD_ACCESSORS = ['->', '::', '\\'];
 const PREFIX_LOOKBACK = Math.max.apply(
   null,
   FIELD_ACCESSORS.map(prefix => prefix.length),
