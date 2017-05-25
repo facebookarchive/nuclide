@@ -14,7 +14,7 @@ import type {ProcessExitMessage} from '../process-rpc-types';
 import {sleep} from 'nuclide-commons/promise';
 import child_process from 'child_process';
 import invariant from 'assert';
-import {Observable, Scheduler} from 'rxjs';
+import {Observable, Scheduler, Subject} from 'rxjs';
 
 import {
   spawn,
@@ -408,6 +408,20 @@ describe('commons-node/process', () => {
           input: 'hello',
         }).toPromise();
         expect(output).toBe('hello');
+      });
+    });
+
+    it('sends a stream of stdin to the process', () => {
+      waitsForPromise(async () => {
+        const input = new Subject();
+        const outputPromise = runCommand('cat', [], {
+          input,
+        }).toPromise();
+        input.next('hello');
+        input.next(' ');
+        input.next('world');
+        input.complete();
+        expect(await outputPromise).toBe('hello world');
       });
     });
 

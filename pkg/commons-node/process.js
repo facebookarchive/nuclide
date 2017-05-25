@@ -73,7 +73,7 @@ import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
  * kill the process. In addition to the options accepted by Node's [`child_process.spawn()`][1]
  * function, `runCommand()` also accepts the following:
  *
- * - `input` {string} Text to write to the new process's stdin.
+ * - `input` {string | Observable<string>} Text to write to the new process's stdin.
  * - `killTreeWhenDone` {boolean} `false` by default. If you pass `true`, unsubscribing from the
  *   observable will kill not only this process but also its descendants.
  * - `isExitError` {function} Determines whether a ProcessExitError should be raised based on the
@@ -542,7 +542,7 @@ type CreateProcessStreamOptions = (
   | child_process$forkOpts) & {
   killTreeWhenDone?: ?boolean,
   timeout?: ?number,
-  input?: ?string,
+  input?: ?(string | Observable<string>),
   dontLogInNuclide?: ?boolean,
 };
 
@@ -743,20 +743,6 @@ function suppressStreamErrors(
   });
 }
 
-function writeToStdin(proc: child_process$ChildProcess, input: ?string): void {
-  if (typeof input === 'string' && proc.stdin != null) {
-    // Note that the Node docs have this scary warning about stdin.end() on
-    // http://nodejs.org/api/child_process.html#child_process_child_stdin:
-    //
-    // "A Writable Stream that represents the child process's stdin. Closing
-    // this stream via end() often causes the child process to terminate."
-    //
-    // In practice, this has not appeared to cause any issues thus far.
-    proc.stdin.write(input);
-    proc.stdin.end();
-  }
-}
-
 /**
  * Creates an observable with the following properties:
  *
@@ -775,6 +761,14 @@ function createProcessStream(
   args?: Array<string> = [],
   options?: CreateProcessStreamOptions = {},
 ): Observable<child_process$ChildProcess> {
+  const inputOption = options.input;
+  let input;
+  if (inputOption != null) {
+    input = typeof inputOption === 'string'
+      ? Observable.of(inputOption)
+      : inputOption;
+  }
+
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)
     .take(1)
     .switchMap(() => {
@@ -859,12 +853,27 @@ function createProcessStream(
           .takeUntil(errors)
           .takeUntil(exitEvents)
           .merge(
-            // Write any input to stdin. This observable is just created for the side-effect and we
-            // merge it here to ensure that it happens after the listeners are added.
-            Observable.create(observer => {
-              writeToStdin(proc, options.input);
-              observer.complete();
-            }),
+            // Write any input to stdin. This is just for the side-effect. We merge it here to
+            // ensure that writing to the stdin stream happens after our event listeners are added.
+            input == null
+              ? Observable.empty()
+              : input
+                  .do({
+                    next: str => {
+                      proc.stdin.write(str);
+                    },
+                    complete: () => {
+                      // Note that the Node docs have this scary warning about stdin.end() on
+                      // http://nodejs.org/api/child_process.html#child_process_child_stdin:
+                      //
+                      // "A Writable Stream that represents the child process's stdin. Closing
+                      // this stream via end() often causes the child process to terminate."
+                      //
+                      // In practice, this has not appeared to cause any issues thus far.
+                      proc.stdin.end();
+                    },
+                  })
+                  .ignoreElements(),
           )
           .do({
             error: () => {
