@@ -328,6 +328,7 @@ export class LspLanguageService {
 
           const offerRetry = e.data != null && Boolean(e.data.retry);
           const msg = `Couldn't initialize server - ${this._errorString(e)}`;
+          this._childOut = {stdout: '', stderr: ''};
           if (!offerRetry) {
             this._host.dialogNotification('error', msg).refCount().subscribe();
           } else {
