@@ -12,13 +12,13 @@
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import React from 'react';
 
-export type Props = {
+export type Props = {|
   name: string,
   start: () => void,
   cancel: () => void,
   progress: ?number,
   isRunning: boolean,
-};
+|};
 
 export class TaskButton extends React.Component {
   props: Props;

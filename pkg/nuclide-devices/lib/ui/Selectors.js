@@ -19,14 +19,14 @@ import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
 
 const FB_HOST_SUFFIX = '.facebook.com';
 
-type Props = {
+type Props = {|
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
   hosts: NuclideUri[],
   host: NuclideUri,
   deviceTypes: string[],
   deviceType: ?string,
-};
+|};
 
 export class Selectors extends React.Component {
   props: Props;

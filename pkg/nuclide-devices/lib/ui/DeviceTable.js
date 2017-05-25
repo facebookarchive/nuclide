@@ -15,11 +15,11 @@ import type {Expected} from '../../../nuclide-expected';
 import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 
-type Props = {
+type Props = {|
   setDevice: (?Device) => void,
   devices: Expected<Device[]>,
   device: ?Device,
-};
+|};
 
 export class DeviceTable extends React.Component {
   props: Props;

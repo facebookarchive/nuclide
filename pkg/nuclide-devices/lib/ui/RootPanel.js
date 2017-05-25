@@ -72,7 +72,6 @@ export class RootPanel extends React.Component {
         devices={this.props.devices}
         device={this.props.device}
         setDevice={this.props.setDevice}
-        startFetchingDevices={this.props.startFetchingDevices}
       />
     );
   }

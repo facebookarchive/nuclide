@@ -12,10 +12,10 @@
 import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 
-type Props = {
+type Props = {|
   table: Map<string, string>,
   title: string,
-};
+|};
 
 export class InfoTable extends React.Component {
   props: Props;
