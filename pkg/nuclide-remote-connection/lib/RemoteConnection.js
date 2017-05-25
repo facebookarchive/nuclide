@@ -129,8 +129,8 @@ export class RemoteConnection {
       return await RemoteConnection.findOrCreate(config);
     } catch (e) {
       const log = e.name === 'VersionMismatchError'
-        ? logger.warn
-        : logger.error;
+        ? logger.warn.bind(logger)
+        : logger.error.bind(logger);
       log(`Failed to reuse connectionConfiguration for ${hostOrIp}`, e);
       return null;
     }
