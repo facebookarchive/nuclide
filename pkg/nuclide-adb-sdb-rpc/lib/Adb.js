@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand, observeProcessRaw} from '../../commons-node/process';
+import {runCommand} from '../../commons-node/process';
 import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
 
@@ -179,13 +179,10 @@ export class Adb extends AdbSdbBase {
       })
       .toPromise();
 
-    const args = (device !== '' ? ['-s', device] : []).concat('jdwp');
-    return observeProcessRaw(this._dbPath, args, {
-      killTreeWhenDone: true,
-      /* TDOO(17353599) */ isExitError: () => false,
-    })
+    return this.runLongCommand(device, ['jdwp'])
       .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
       .take(1)
+      .timeout(1000)
       .map(output => {
         const jdwpPids = new Set();
         if (output.kind === 'stdout') {

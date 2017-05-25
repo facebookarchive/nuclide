@@ -16,7 +16,6 @@
  * Reference for calculations: https://github.com/scaidermern/top-processes
  */
 
-import type {AndroidJavaProcess} from './types';
 import type {Process} from './types';
 
 import {sleep} from 'nuclide-commons/promise';
@@ -36,9 +35,9 @@ export class AdbTop {
 
   async fetch(): Promise<Process[]> {
     const [processes, javaProcesses, cpuAndMemUsage] = await Promise.all([
-      this._getProcessList(),
-      this._getJavaProcessList(),
-      this._getProcessAndMemoryUsage(),
+      this._getProcessList().catch(() => []),
+      this._adb.getJavaProcesses(this._device).catch(() => []),
+      this._getProcessAndMemoryUsage().catch(() => new Map()),
     ]);
     const javaPids = new Set(
       javaProcesses.map(javaProc => Number(javaProc.pid)),
@@ -74,10 +73,6 @@ export class AdbTop {
     return (await this._adb
       .runShortCommand(this._device, ['shell', 'ps'])
       .toPromise()).split(/\n/);
-  }
-
-  async _getJavaProcessList(): Promise<Array<AndroidJavaProcess>> {
-    return this._adb.getJavaProcesses(this._device);
   }
 
   async _getProcessAndMemoryUsage(): Promise<Map<number, CPU_MEM>> {
