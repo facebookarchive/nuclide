@@ -9,7 +9,7 @@
  * @format
  */
 
-import {Range} from 'simple-text-buffer';
+import {Point, Range} from 'simple-text-buffer';
 
 import type {
   Completion,
@@ -151,7 +151,7 @@ export function findHackPrefix(
   // We use custom wordRegex to adopt php variables starting with $.
   const currentRange = wordAtPositionFromBuffer(
     buffer,
-    position,
+    new Point(position.row, Math.max(0, position.column - 1)),
     HACK_WORD_REGEX,
   );
   if (currentRange == null) {

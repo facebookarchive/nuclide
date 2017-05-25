@@ -13,7 +13,8 @@ import type {
   Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 
-import {compareHackCompletions} from '../lib/autocomplete';
+import {default as TextBuffer, Point} from 'simple-text-buffer';
+import {compareHackCompletions, findHackPrefix} from '../lib/autocomplete';
 
 function createCompletion(text: string, prefix: string = ''): Completion {
   return {
@@ -102,6 +103,24 @@ describe('autocomplete', () => {
         createCompletion('_getAbc()'),
         createCompletion('_doOrGetACup()'),
       ]);
+    });
+  });
+
+  describe('findHackPrefix()', () => {
+    it('includes the $ in the prefix', () => {
+      const buffer = new TextBuffer('$test1234');
+      expect(findHackPrefix(buffer, new Point(0, 9))).toBe('$test1234');
+      // Should cut off anything past the cursor.
+      expect(findHackPrefix(buffer, new Point(0, 5))).toBe('$test');
+      expect(findHackPrefix(buffer, new Point(0, 1))).toBe('$');
+    });
+
+    it('should not match invalid identifiers', () => {
+      const buffer = new TextBuffer('C = !@#$%');
+      expect(findHackPrefix(buffer, new Point(0, 9))).toBe('');
+      expect(findHackPrefix(buffer, new Point(0, 1))).toBe('C');
+      expect(findHackPrefix(buffer, new Point(0, 2))).toBe('');
+      expect(findHackPrefix(buffer, new Point(0, 3))).toBe('');
     });
   });
 });
