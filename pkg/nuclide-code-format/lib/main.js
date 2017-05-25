@@ -9,25 +9,25 @@
  * @format
  */
 
-import type CodeFormatManagerType from './CodeFormatManager';
 import type {CodeFormatProvider} from './types';
 
-import invariant from 'assert';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import CodeFormatManager from './CodeFormatManager';
 
-let codeFormatManager: ?CodeFormatManagerType = null;
+class Activation {
+  codeFormatManager: CodeFormatManager;
 
-export function activate(state: ?any): void {
-  codeFormatManager = new CodeFormatManager();
+  constructor() {
+    this.codeFormatManager = new CodeFormatManager();
+  }
+
+  consumeProvider(provider: CodeFormatProvider): IDisposable {
+    return this.codeFormatManager.addProvider(provider);
+  }
+
+  dispose() {
+    this.codeFormatManager.dispose();
+  }
 }
 
-export function consumeProvider(provider: CodeFormatProvider) {
-  invariant(codeFormatManager != null);
-  codeFormatManager.addProvider(provider);
-}
-
-export function deactivate() {
-  invariant(codeFormatManager != null);
-  codeFormatManager.dispose();
-  codeFormatManager = null;
-}
+createPackage(module.exports, Activation);

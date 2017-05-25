@@ -302,8 +302,14 @@ export default class CodeFormatManager {
     });
   }
 
-  addProvider(provider: CodeFormatProvider) {
+  addProvider(provider: CodeFormatProvider): IDisposable {
     this._codeFormatProviders.push(provider);
+    return new UniversalDisposable(() => {
+      const index = this._codeFormatProviders.indexOf(provider);
+      if (index !== -1) {
+        this._codeFormatProviders.splice(index);
+      }
+    });
   }
 
   dispose() {
