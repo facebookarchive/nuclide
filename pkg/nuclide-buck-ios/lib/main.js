@@ -21,6 +21,7 @@ import type {TaskEvent} from '../../commons-node/tasks';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
+import fsPromise from '../../commons-node/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
@@ -53,40 +54,48 @@ function provideIosDevices(
     return Observable.of(null);
   }
 
-  return IosSimulator.getFbsimctlSimulators().map(simulators => {
-    if (!simulators.length) {
-      return null;
-    }
+  return Observable.fromPromise(
+    fsPromise.exists(nuclideUri.join(buckRoot, 'mode', 'oculus-mobile')),
+  ).switchMap(result => {
+    if (result) {
+      return Observable.of(null);
+    } else {
+      return IosSimulator.getFbsimctlSimulators().map(simulators => {
+        if (!simulators.length) {
+          return null;
+        }
 
-    return {
-      name: 'iOS Simulators',
-      platforms: [
-        {
+        return {
           name: 'iOS Simulators',
-          tasksForDevice: device => getTasks(buckRoot, ruleType),
-          runTask: (builder, taskType, target, settings, device) =>
-            _runTask(
-              builder,
-              taskType,
-              ruleType,
-              target,
-              settings,
-              device,
-              buckRoot,
-            ),
-          deviceGroups: [
+          platforms: [
             {
               name: 'iOS Simulators',
-              devices: simulators.map(simulator => ({
-                name: `${simulator.name} (${simulator.os})`,
-                udid: simulator.udid,
-                arch: simulator.arch,
-              })),
+              tasksForDevice: device => getTasks(buckRoot, ruleType),
+              runTask: (builder, taskType, target, settings, device) =>
+                _runTask(
+                  builder,
+                  taskType,
+                  ruleType,
+                  target,
+                  settings,
+                  device,
+                  buckRoot,
+                ),
+              deviceGroups: [
+                {
+                  name: 'iOS Simulators',
+                  devices: simulators.map(simulator => ({
+                    name: `${simulator.name} (${simulator.os})`,
+                    udid: simulator.udid,
+                    arch: simulator.arch,
+                  })),
+                },
+              ],
             },
           ],
-        },
-      ],
-    };
+        };
+      });
+    }
   });
 }
 
