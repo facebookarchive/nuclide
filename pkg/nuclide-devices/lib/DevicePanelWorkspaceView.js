@@ -23,7 +23,7 @@ import shallowEqual from 'shallowequal';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
-export class DevicesPanelState {
+export class DevicePanelWorkspaceView {
   _store: Store;
   _deviceObs: Observable<void>;
   _processesObs: Observable<Process[]>;

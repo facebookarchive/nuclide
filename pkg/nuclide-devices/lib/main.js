@@ -11,7 +11,10 @@
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {DevicesPanelState, WORKSPACE_VIEW_URI} from './DevicesPanelState';
+import {
+  DevicePanelWorkspaceView,
+  WORKSPACE_VIEW_URI,
+} from './DevicePanelWorkspaceView';
 import {Disposable} from 'atom';
 import invariant from 'invariant';
 import {
@@ -64,10 +67,10 @@ class Activation {
     this._disposables.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return new DevicesPanelState(this._store);
+          return new DevicePanelWorkspaceView(this._store);
         }
       }),
-      () => api.destroyWhere(item => item instanceof DevicesPanelState),
+      () => api.destroyWhere(item => item instanceof DevicePanelWorkspaceView),
       atom.commands.add(
         'atom-workspace',
         'nuclide-device-panel:toggle',
@@ -78,8 +81,8 @@ class Activation {
     );
   }
 
-  deserializeDevicePanelState(): DevicesPanelState {
-    return new DevicesPanelState(this._store);
+  deserializeDevicePanelState(): DevicePanelWorkspaceView {
+    return new DevicePanelWorkspaceView(this._store);
   }
 
   _refreshDeviceTypes(): void {
