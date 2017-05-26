@@ -76,6 +76,9 @@ export default class CommandDispatcher {
       case 'triggerDebuggerAction':
         this._triggerDebuggerAction(args[1]);
         break;
+      case 'SyncBreakpoints':
+        this._bridgeAdapter.setInitialBreakpoints(args[1]);
+        break;
       case 'AddBreakpoint':
         this._bridgeAdapter.setFilelineBreakpoint(args[1]);
         break;
@@ -84,6 +87,9 @@ export default class CommandDispatcher {
         break;
       case 'UpdateBreakpoint':
         this._bridgeAdapter.updateBreakpoint(args[1]);
+        break;
+      case 'setSelectedCallFrameIndex':
+        this._bridgeAdapter.setSelectedCallFrameIndex(args[1]);
         break;
       default:
         // Forward any unimplemented commands to chrome channel.

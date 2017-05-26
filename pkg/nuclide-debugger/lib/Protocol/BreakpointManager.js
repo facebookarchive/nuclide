@@ -13,7 +13,6 @@ import type {IPCBreakpoint} from '../types';
 import type {
   BreakpointId,
   Location,
-  DebuggerEvent,
   BreakpointResolvedEvent,
   SetBreakpointByUrlResponse,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
@@ -42,11 +41,13 @@ type BreakpointEngineChangeDisposition =
  */
 export default class BreakpointManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
+  _initBreakpoints: Array<IPCBreakpoint>;
   _breakpointList: Array<UserBreakpoint>;
   _breakpointEvent$: Subject<Array<mixed>>;
   _subscriptions: UniversalDisposable;
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
+    this._initBreakpoints = [];
     this._breakpointList = [];
     this._breakpointEvent$ = new Subject();
     this._subscriptions = new UniversalDisposable();
@@ -55,15 +56,35 @@ export default class BreakpointManager {
       this,
     );
     this._subscriptions.add(
-      debuggerDispatcher
-        .getEventObservable()
-        .filter(evnt => evnt.method === 'Debugger.breakpointResolved')
-        .subscribe(evnt => this._handleBreakpointResolved(evnt)),
+      debuggerDispatcher.getEventObservable().subscribe(event => {
+        switch (event.method) {
+          case 'Debugger.breakpointResolved':
+            const params: BreakpointResolvedEvent = event.params;
+            this._handleBreakpointResolved(params);
+            break;
+          case 'Debugger.loaderBreakpoint':
+            this._handleLoaderBreakpoint();
+            break;
+          default:
+            break;
+        }
+      }),
     );
   }
 
   getEventObservable(): Observable<Array<mixed>> {
     return this._breakpointEvent$.asObservable();
+  }
+
+  sendInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
+    this._initBreakpoints = breakpoints;
+  }
+
+  _syncInitialBreakpointsToEngine(): void {
+    for (const breakpoint of this._initBreakpoints) {
+      this.setFilelineBreakpoint(breakpoint);
+    }
+    this._initBreakpoints = [];
   }
 
   setFilelineBreakpoint(request: IPCBreakpoint): void {
@@ -248,9 +269,12 @@ export default class BreakpointManager {
     return newCopy;
   }
 
-  _handleBreakpointResolved(evnt: DebuggerEvent): void {
-    invariant(evnt.method === 'Debugger.breakpointResolved');
-    const {breakpointId, location} = (evnt.params: BreakpointResolvedEvent);
+  _handleLoaderBreakpoint(): void {
+    this._syncInitialBreakpointsToEngine();
+  }
+
+  _handleBreakpointResolved(params: BreakpointResolvedEvent): void {
+    const {breakpointId, location} = params;
     if (this._getBreakpointFromId(breakpointId) !== null) {
       this._sendBreakpointResolved(breakpointId, location);
     } else {

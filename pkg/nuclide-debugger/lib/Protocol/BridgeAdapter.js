@@ -17,10 +17,12 @@ import invariant from 'assert';
 import InspectorBackendClass from './NuclideProtocolParser';
 import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import BreakpointManager from './BreakpointManager';
+import StackTraceManager from './StackTraceManager';
 
 export default class BridgeAdapter {
   _debuggerDispatcher: ?DebuggerDomainDispatcher;
   _breakpointManager: ?BreakpointManager;
+  _stackTraceManager: ?StackTraceManager;
 
   constructor() {}
 
@@ -29,6 +31,7 @@ export default class BridgeAdapter {
       debuggerInstance,
     );
     this._breakpointManager = new BreakpointManager(this._debuggerDispatcher);
+    this._stackTraceManager = new StackTraceManager(this._debuggerDispatcher);
   }
 
   resume(): void {
@@ -56,6 +59,16 @@ export default class BridgeAdapter {
     this._debuggerDispatcher.stepOut();
   }
 
+  setSelectedCallFrameIndex(index: number): void {
+    invariant(this._stackTraceManager != null);
+    this._stackTraceManager.setSelectedCallFrameIndex(index);
+  }
+
+  setInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
+    invariant(this._breakpointManager != null);
+    this._breakpointManager.sendInitialBreakpoints(breakpoints);
+  }
+
   setFilelineBreakpoint(breakpoint: IPCBreakpoint): void {
     invariant(this._breakpointManager != null);
     this._breakpointManager.setFilelineBreakpoint(breakpoint);
@@ -73,10 +86,16 @@ export default class BridgeAdapter {
 
   getEventObservable(): Observable<IPCEvent> {
     // TODO: hook other debug events when it's ready.
-    invariant(this._breakpointManager != null);
-    return this._breakpointManager.getEventObservable().map(args => {
-      return {channel: 'notification', args};
-    });
+    const breakpointManager = this._breakpointManager;
+    const stackTraceManager = this._stackTraceManager;
+    invariant(breakpointManager != null);
+    invariant(stackTraceManager != null);
+    return breakpointManager
+      .getEventObservable()
+      .merge(stackTraceManager.getEventObservable())
+      .map(args => {
+        return {channel: 'notification', args};
+      });
   }
 
   dispose(): void {

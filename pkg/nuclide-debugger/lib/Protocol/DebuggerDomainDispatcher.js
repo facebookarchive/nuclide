@@ -17,9 +17,18 @@ import type {
   DebuggerEvent,
   BreakpointResolvedEvent,
   ThreadsUpdatedEvent,
+  PausedEvent,
+  ScriptParsedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
+
+type LoaderBreakpointEvent = {
+  method: 'Debugger.loaderBreakpoint',
+  params: PausedEvent,
+};
+
+export type ProtocolDebugEvent = DebuggerEvent | LoaderBreakpointEvent;
 
 /**
  * Responsible for sending and receiving debugger domain protocols from
@@ -28,12 +37,15 @@ import {Subject, Observable} from 'rxjs';
 class DebuggerDomainDispatcher {
   _agent: Object; // debugger agent from chrome protocol.
   _parsedFiles: Map<ScriptId, NuclideUri>;
-  _debugEvent$: Subject<DebuggerEvent>;
+  _debugEvent$: Subject<ProtocolDebugEvent>;
+
+  _pauseCount: number;
 
   constructor(agent: Object) {
     this._agent = agent;
     this._parsedFiles = new Map();
     this._debugEvent$ = new Subject();
+    this._pauseCount = 0;
   }
 
   resume(): void {
@@ -71,8 +83,24 @@ class DebuggerDomainDispatcher {
     this._agent.removeBreakpoint(breakpointId);
   }
 
-  getEventObservable(): Observable<DebuggerEvent> {
+  getEventObservable(): Observable<ProtocolDebugEvent> {
     return this._debugEvent$.asObservable();
+  }
+
+  paused(params: PausedEvent): void {
+    ++this._pauseCount;
+    // Convert the first Debugger.paused to Debugger.loaderBreakpoint.
+    if (this._pauseCount === 1) {
+      this._raiseProtocolEvent({
+        method: 'Debugger.loaderBreakpoint',
+        params,
+      });
+    } else {
+      this._raiseProtocolEvent({
+        method: 'Debugger.paused',
+        params,
+      });
+    }
   }
 
   resumed(): void {
@@ -84,14 +112,23 @@ class DebuggerDomainDispatcher {
   }
 
   breakpointResolved(params: BreakpointResolvedEvent): void {
-    this._debugEvent$.next({
+    this._raiseProtocolEvent({
       method: 'Debugger.breakpointResolved',
       params,
     });
   }
 
-  scriptParsed(scriptId: ScriptId, sourceURL: string): void {
-    this._parsedFiles.set(scriptId, sourceURL);
+  scriptParsed(params: ScriptParsedEvent): void {
+    this._parsedFiles.set(params.scriptId, params.url);
+  }
+
+  getFileUriFromScriptId(scriptId: ScriptId): NuclideUri {
+    // TODO: think about how to better deal with scriptId never parsed before.
+    return this._parsedFiles.get(scriptId) || 'Unknown';
+  }
+
+  _raiseProtocolEvent(event: ProtocolDebugEvent): void {
+    this._debugEvent$.next(event);
   }
 }
 

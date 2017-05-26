@@ -440,6 +440,44 @@ export type PausedEvent = {
   asyncStackTrace?: StackTrace,
 };
 
+export type ScriptParsedEvent = {
+  /** Identifier of the script parsed. */
+  scriptId: ScriptId,
+
+  /** URL or name of the script parsed (if any). */
+  url: string,
+
+  /** Line offset of the script within the resource with given URL (for script tags). */
+  startLine: number,
+
+  /** Column offset of the script within the resource with given URL. */
+  startColumn: number,
+
+  /** Last line of the script. */
+  endLine: number,
+
+  /** Length of the last line of the script. */
+  endColumn: number,
+
+  /** Specifies script creation context. */
+  executionContextId: ExecutionContextId,
+
+  /** Content hash of the script. */
+  hash: string,
+
+  /** Embedder-specific auxiliary data. */
+  executionContextAuxData?: any,
+
+  /** True, if this script is generated as a result of the live edit operation. */
+  isLiveEdit?: boolean,
+
+  /** URL of source map associated with script (if any). */
+  sourceMapURL?: string,
+
+  /** True, if this script has sourceURL. */
+  hasSourceURL?: boolean,
+};
+
 export type ThreadsUpdatedEvent = {
   /** Process unique identifier. */
   owningProcessId: number,
