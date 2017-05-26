@@ -99,6 +99,7 @@ export default class ExecutionManager {
   _handleLoaderBreakpoint(): void {
     this._breakpointManager.syncInitialBreakpointsToEngine();
     this._debuggerDispatcher.resume();
+    this._raiseIPCEvent('LoaderBreakpointResumed');
   }
 
   _handleDebuggerPaused(params: PausedEvent): void {
