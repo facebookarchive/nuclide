@@ -9,8 +9,14 @@
  * @format
  */
 
+import type {IPCEvent} from './types';
+
+import invariant from 'assert';
+import {Observable} from 'rxjs';
 import BridgeAdapter from './Protocol/BridgeAdapter';
-import passesGK from '../../commons-node/passesGK';
+import {
+  isNewProtocolChannelEnabled,
+} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.
@@ -32,14 +38,7 @@ export default class CommandDispatcher {
   }
 
   async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
-    this._useNewChannel = await passesGK(
-      'nuclide_new_debugger_protocol_channel',
-      10 * 1000,
-    );
-    if (!this._useNewChannel) {
-      // Do not bother enable the new channel if not enabled.
-      return;
-    }
+    this._useNewChannel = await isNewProtocolChannelEnabled();
     return this._bridgeAdapter.start(debuggerInstance);
   }
 
@@ -49,6 +48,12 @@ export default class CommandDispatcher {
     } else {
       this._sendViaChromeChannel(...args);
     }
+  }
+
+  getEventObservable(): Observable<IPCEvent> {
+    invariant(this._webview != null);
+    const chromeEvent$ = Observable.fromEvent(this._webview, 'ipc-message');
+    return this._bridgeAdapter.getEventObservable().merge(chromeEvent$);
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
@@ -70,6 +75,9 @@ export default class CommandDispatcher {
         break;
       case 'triggerDebuggerAction':
         this._triggerDebuggerAction(args[1]);
+        break;
+      case 'AddBreakpoint':
+        this._bridgeAdapter.setFilelineBreakpoint(args[1]);
         break;
       default:
         // Forward any unimplemented commands to chrome channel.

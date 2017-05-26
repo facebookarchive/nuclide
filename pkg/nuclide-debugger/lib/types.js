@@ -75,6 +75,11 @@ export type FileLineBreakpoint = {
 };
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 
+export type IPCEvent = {
+  channel: string,
+  args: any[],
+};
+
 // TODO: handle non file line breakpoints.
 export type IPCBreakpoint = {
   sourceURL: string,

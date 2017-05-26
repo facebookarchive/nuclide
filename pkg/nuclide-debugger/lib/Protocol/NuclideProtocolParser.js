@@ -303,7 +303,7 @@ InspectorBackendClass._generateCommands = function(schema) {
         for (var j = 0; j < commands.length; ++j) {
             var command = commands[j];
             var parameters = command["parameters"];
-            var paramsText = [];
+            var params = [];
             for (var k = 0; parameters && k < parameters.length; ++k) {
                 var parameter = parameters[k];
 
@@ -318,18 +318,21 @@ InspectorBackendClass._generateCommands = function(schema) {
                         type = rawTypes[domain.domain + "." + ref];
                 }
 
-                var text = `name: ${parameter.name}, type: ${type}, optional: ${parameter.optional}`;
-                paramsText.push(text);
+                params.push({
+                  name: parameter.name,
+                  type: type,
+                  optional: parameter.optional
+                });
             }
 
             var returnsText = [];
             var returns = command["returns"] || [];
             for (var k = 0; k < returns.length; ++k) {
                 var parameter = returns[k];
-                returnsText.push("\"" + parameter.name + "\"");
+                returnsText.push(parameter.name);
             }
-            var hasErrorData = String(Boolean(command.error));
-            InspectorBackend.registerCommand(domain.domain + "." + command.name, paramsText, returnsText, hasErrorData);
+            var hasErrorData = command.error;
+            InspectorBackend.registerCommand(domain.domain + "." + command.name, params, returnsText, hasErrorData);
         }
 
         for (var j = 0; domain.events && j < domain.events.length; ++j) {
@@ -906,7 +909,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
             console.error(message)
             errorMessage = message;
         }
-        var callback = (args.length && typeof args.peekLast() === "function") ? args.pop() : null;
+        var callback = (args.length && args.length > 0 && typeof args[args.length-1] === "function") ? args.pop() : null;
         var params = this._prepareParameters(method, signature, args, !callback, onError);
         if (errorMessage)
             return;

@@ -36,8 +36,9 @@ export default class DebuggerActionsStore {
       case ActionTypes.SET_PROCESS_SOCKET:
         const {data} = payload;
         if (data == null) {
-          this._bridge.cleanup();
+          this._bridge.leaveDebugMode();
         } else {
+          this._bridge.enterDebugMode();
           const url = `${nuclideUri.join(__dirname, '../scripts/inspector.html')}?${data}`;
           this._bridge.renderChromeWebview(url);
         }

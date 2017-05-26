@@ -14,6 +14,7 @@ import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomNotification} from './types';
 
+import invariant from 'assert';
 import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -25,6 +26,10 @@ import {
   WebSocketServer,
 } from '../../nuclide-debugger-common/lib/WebSocketServer';
 import {stringifyError} from 'nuclide-commons/string';
+import {
+  isNewProtocolChannelEnabled,
+} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
+import NewProtocolMessageChecker from './NewProtocolMessageChecker';
 
 import {getLogger} from 'log4js';
 const SESSION_END_EVENT = 'session-end-event';
@@ -66,6 +71,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   _chromeWebSocket: ?WS;
   _emitter: Emitter;
   _logger: log4js$Logger;
+  _useNewChannel: boolean;
+  _newProtocolMessageChecker: NewProtocolMessageChecker;
 
   constructor(
     processInfo: DebuggerProcessInfo,
@@ -82,6 +89,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this._logger = getLogger(`nuclide-debugger-${this.getProviderName()}`);
     this._chromeWebSocketServer = new WebSocketServer();
     this._chromeWebSocket = null;
+    this._useNewChannel = false;
+    this._newProtocolMessageChecker = new NewProtocolMessageChecker();
     this._emitter = new Emitter();
     this._disposables.add(this._chromeWebSocketServer);
     this._registerServerHandlers();
@@ -118,7 +127,8 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     atom.notifications.add(type, message);
   }
 
-  getWebsocketAddress(): Promise<string> {
+  async getWebsocketAddress(): Promise<string> {
+    this._useNewChannel = await isNewProtocolChannelEnabled();
     return Promise.resolve(this._startChromeWebSocketServer());
   }
 
@@ -196,7 +206,11 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     const webSocket = this._chromeWebSocket;
     if (webSocket) {
       message = this._translateMessageIfNeeded(processedMessage);
-      webSocket.send(message);
+      if (this._useNewChannel) {
+        this.receiveNuclideMessage(message);
+      } else {
+        webSocket.send(message);
+      }
     } else {
       this.getLogger().error("Why isn't chrome websocket available?");
     }
@@ -222,6 +236,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
    * The following three methods are used by new Nuclide channel.
    */
   sendNuclideMessage(message: string): Promise<void> {
+    this._newProtocolMessageChecker.registerSentMessage(message);
     return this._handleChromeSocketMessage(message);
   }
 
@@ -232,7 +247,19 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   receiveNuclideMessage(message: string): void {
-    this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
+    if (
+      this._newProtocolMessageChecker.isSentMessageResponse(
+        message,
+        true, // finishMessage
+      ) ||
+      this._newProtocolMessageChecker.isNewProtocolEventMessage(message)
+    ) {
+      this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
+    } else {
+      // Fallback to chrome channel if new protocol channel did not implement yet.
+      invariant(this._chromeWebSocket != null);
+      this._chromeWebSocket.send(message);
+    }
   }
 
   // Preprocessing hook for client messsages before sending to server.

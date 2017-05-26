@@ -20,22 +20,22 @@ import type {
   IPCBreakpoint,
   ExpressionResult,
   GetPropertiesResult,
+  IPCEvent,
 } from './types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
-import {Observable} from 'rxjs';
 import CommandDispatcher from './CommandDispatcher';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 
 export default class Bridge {
   _debuggerModel: DebuggerModel;
   _disposables: UniversalDisposable;
-  // Contains disposable items should be disposed by
-  // cleanup() method.
-  _cleanupDisposables: ?UniversalDisposable;
+  // Contains disposable items that are only available during
+  // debug mode.
+  _debugModeDisposables: ?UniversalDisposable;
   _webview: ?WebviewElement;
   _webviewUrl: ?string;
   _commandDispatcher: CommandDispatcher;
@@ -54,15 +54,21 @@ export default class Bridge {
   }
 
   dispose() {
-    this.cleanup();
+    this.leaveDebugMode();
     this._disposables.dispose();
   }
 
-  // Clean up any state changed after constructor.
-  cleanup() {
-    if (this._cleanupDisposables != null) {
-      this._cleanupDisposables.dispose();
-      this._cleanupDisposables = null;
+  enterDebugMode(): void {
+    if (this._debugModeDisposables == null) {
+      this._debugModeDisposables = new UniversalDisposable();
+    }
+  }
+
+  // Clean up any debug mode states.
+  leaveDebugMode() {
+    if (this._debugModeDisposables != null) {
+      this._debugModeDisposables.dispose();
+      this._debugModeDisposables = null;
     }
   }
 
@@ -181,11 +187,7 @@ export default class Bridge {
     this._debuggerModel.getActions().updateScopes(scopeSections);
   }
 
-  _handleIpcMessage(stdEvent: Event): void {
-    // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
-    // the type that is expected here.
-    // $FlowFixMe(jeffreytan)
-    const event: {channel: string, args: any[]} = stdEvent;
+  _handleIpcMessage(event: IPCEvent): void {
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
@@ -428,16 +430,21 @@ export default class Bridge {
   _setWebviewElement(webview: WebviewElement): void {
     this._webview = webview;
     this._commandDispatcher.setupChromeChannel(webview);
-    invariant(this._cleanupDisposables == null);
-    this._cleanupDisposables = new UniversalDisposable(
-      Observable.fromEvent(webview, 'ipc-message').subscribe(
-        this._handleIpcMessage,
-      ),
-      () => {
-        webview.remove();
-        this._webview = null;
-        this._webviewUrl = null;
-      },
+    invariant(this._debugModeDisposables != null);
+    this._debugModeDisposables.add(() => {
+      webview.remove();
+      this._webview = null;
+      this._webviewUrl = null;
+    });
+    this.enableEventsListening();
+  }
+
+  enableEventsListening(): void {
+    invariant(this._debugModeDisposables != null);
+    this._debugModeDisposables.add(
+      this._commandDispatcher
+        .getEventObservable()
+        .subscribe(this._handleIpcMessage),
     );
   }
 

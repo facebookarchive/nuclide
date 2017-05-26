@@ -9,20 +9,18 @@
  * @format
  */
 
-import invariant from 'assert';
+import type {Observable} from 'rxjs';
+import type {IPCEvent, IPCBreakpoint} from '../types';
 
 require('./Object');
-import {getLogger} from 'log4js';
-const logger = getLogger('nuclide-debugger');
+import invariant from 'assert';
 import InspectorBackendClass from './NuclideProtocolParser';
 import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 export default class BridgeAdapter {
   _debuggerDispatcher: ?DebuggerDomainDispatcher;
 
-  constructor() {
-    (this: any)._handleServerMessage = this._handleServerMessage.bind(this);
-  }
+  constructor() {}
 
   async start(debuggerInstance: Object): Promise<void> {
     this._debuggerDispatcher = await InspectorBackendClass.bootstrap(
@@ -55,7 +53,15 @@ export default class BridgeAdapter {
     this._debuggerDispatcher.stepOut();
   }
 
-  _handleServerMessage(domain: string, method: string, params: Object): void {
-    logger.info(`domain: ${domain}, method: ${method}`);
+  setFilelineBreakpoint(breakpoint: IPCBreakpoint): void {
+    invariant(this._debuggerDispatcher != null);
+    this._debuggerDispatcher.setFilelineBreakpoint(breakpoint);
+  }
+
+  getEventObservable(): Observable<IPCEvent> {
+    invariant(this._debuggerDispatcher != null);
+    return this._debuggerDispatcher.getEventObservable().map(args => {
+      return {channel: 'notification', args};
+    });
   }
 }
