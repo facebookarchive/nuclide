@@ -9,14 +9,13 @@
  * @format
  */
 
-import type {Process, ProcessTask, ProcessTaskType} from '../types';
+import type {Process, ProcessTask} from '../types';
 
+import {ProcessTaskButton} from './ProcessTaskButton';
 import React from 'react';
 import {Subscription} from 'rxjs';
 import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {|
   startFetchingProcesses: () => Subscription,
@@ -86,7 +85,7 @@ export class ProcessTable extends React.Component {
     if (sortedColumnName == null) {
       return processes;
     }
-    // compare numerically pid, cpu and mem
+    // compare numerically the following fields
     const compare: any = ['cpuUsage', 'memUsage', 'pid', 'debug'].includes(
       sortedColumnName,
     )
@@ -106,13 +105,6 @@ export class ProcessTable extends React.Component {
   }
 
   render(): React.Element<any> {
-    const stopPackageTask = this.props.processTasks.find(
-      task => task.type === ('STOP_PACKAGE': ProcessTaskType),
-    );
-    const debuggerTasks = this.props.processTasks.filter(
-      task => task.type === ('DEBUG': ProcessTaskType),
-    );
-
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const rows = this._sortProcesses(
       this.props.processes.filter(
@@ -126,15 +118,29 @@ export class ProcessTable extends React.Component {
     ).map(item => ({
       data: {
         pid: (
-          <span>
-            {this._getStopPackageButton(item, stopPackageTask)} {item.pid}
-          </span>
+          <ProcessTaskButton
+            icon="x"
+            proc={item}
+            taskType="STOP_PACKAGE"
+            nameIfManyTasks="Stop package"
+            tasks={this.props.processTasks}>
+            {item.pid}
+          </ProcessTaskButton>
         ),
         user: item.user,
         name: item.name,
         cpuUsage: this._formatCpuUsage(item.cpuUsage),
         memUsage: this._formatMemUsage(item.memUsage),
-        debug: this._getDebugButton(item, debuggerTasks),
+        debug: (
+          <ProcessTaskButton
+            icon="nuclicon-debugger"
+            className="nuclide-device-panel-debug-button"
+            proc={item}
+            taskType="DEBUG"
+            nameIfManyTasks="Debug process"
+            tasks={this.props.processTasks}
+          />
+        ),
       },
     }));
     const columns = [
@@ -198,43 +204,5 @@ export class ProcessTable extends React.Component {
     this.setState({
       filterText: text,
     });
-  }
-
-  _getDebugButton(item: Process, tasks: ProcessTask[]): ?React.Element<any> {
-    for (const task of tasks) {
-      // TODO(wallace) support multiple debuggers via a dialog
-      if (task.isSupported(item)) {
-        return (
-          <Icon
-            className="nuclide-device-panel-debug-button"
-            icon="nuclicon-debugger"
-            title={task.name}
-            onClick={() => task.run(item)}
-          />
-        );
-      }
-    }
-
-    return null;
-  }
-
-  _getStopPackageButton(
-    proc: Process,
-    task: ?ProcessTask,
-  ): ?React.Element<any> {
-    if (task == null) {
-      return null;
-    }
-    return (
-      <span
-        onClick={() => task.run(proc)}
-        ref={addTooltip({
-          title: 'Stop package',
-          delay: 300,
-          placement: 'left',
-        })}>
-        <Icon icon="x" />
-      </span>
-    );
   }
 }
