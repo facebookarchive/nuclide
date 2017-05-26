@@ -79,6 +79,12 @@ export default class CommandDispatcher {
       case 'AddBreakpoint':
         this._bridgeAdapter.setFilelineBreakpoint(args[1]);
         break;
+      case 'DeleteBreakpoint':
+        this._bridgeAdapter.removeBreakpoint(args[1]);
+        break;
+      case 'UpdateBreakpoint':
+        this._bridgeAdapter.updateBreakpoint(args[1]);
+        break;
       default:
         // Forward any unimplemented commands to chrome channel.
         this._sendViaChromeChannel(...args);

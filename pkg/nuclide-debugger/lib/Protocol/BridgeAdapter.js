@@ -16,9 +16,11 @@ require('./Object');
 import invariant from 'assert';
 import InspectorBackendClass from './NuclideProtocolParser';
 import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
+import BreakpointManager from './BreakpointManager';
 
 export default class BridgeAdapter {
   _debuggerDispatcher: ?DebuggerDomainDispatcher;
+  _breakpointManager: ?BreakpointManager;
 
   constructor() {}
 
@@ -26,6 +28,7 @@ export default class BridgeAdapter {
     this._debuggerDispatcher = await InspectorBackendClass.bootstrap(
       debuggerInstance,
     );
+    this._breakpointManager = new BreakpointManager(this._debuggerDispatcher);
   }
 
   resume(): void {
@@ -54,14 +57,32 @@ export default class BridgeAdapter {
   }
 
   setFilelineBreakpoint(breakpoint: IPCBreakpoint): void {
-    invariant(this._debuggerDispatcher != null);
-    this._debuggerDispatcher.setFilelineBreakpoint(breakpoint);
+    invariant(this._breakpointManager != null);
+    this._breakpointManager.setFilelineBreakpoint(breakpoint);
+  }
+
+  removeBreakpoint(breakpoint: IPCBreakpoint): void {
+    invariant(this._breakpointManager != null);
+    this._breakpointManager.removeBreakpoint(breakpoint);
+  }
+
+  updateBreakpoint(breakpoint: IPCBreakpoint): void {
+    invariant(this._breakpointManager != null);
+    this._breakpointManager.updateBreakpoint(breakpoint);
   }
 
   getEventObservable(): Observable<IPCEvent> {
-    invariant(this._debuggerDispatcher != null);
-    return this._debuggerDispatcher.getEventObservable().map(args => {
+    // TODO: hook other debug events when it's ready.
+    invariant(this._breakpointManager != null);
+    return this._breakpointManager.getEventObservable().map(args => {
       return {channel: 'notification', args};
     });
+  }
+
+  dispose(): void {
+    if (this._breakpointManager != null) {
+      this._breakpointManager.dispose();
+      this._breakpointManager = null;
+    }
   }
 }
