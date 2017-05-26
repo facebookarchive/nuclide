@@ -9,6 +9,10 @@
  * @format
  */
 
+import type {
+  ContinueToLocationRequest,
+} from '../../nuclide-debugger-base/lib/protocol-types.js';
+
 import invariant from 'assert';
 import {updateSettings} from './settings';
 import {makeExpressionHphpdCompatible} from './utils';
@@ -216,7 +220,10 @@ export class DebuggerHandler extends Handler {
     });
   }
 
-  async _continueToLocation(id: number, params: Object): Promise<void> {
+  async _continueToLocation(
+    id: number,
+    params: ContinueToLocationRequest,
+  ): Promise<void> {
     const enabledConnection = this._connectionMultiplexer.getEnabledConnection();
     const {location: {columnNumber, lineNumber, scriptId}} = params;
     if (enabledConnection == null) {
@@ -231,7 +238,7 @@ export class DebuggerHandler extends Handler {
       this._temporaryBreakpointpointId = null;
     }
 
-    if (!scriptId || columnNumber !== 0) {
+    if (!scriptId || (columnNumber != null && columnNumber !== 0)) {
       this.replyWithError(
         id,
         'Invalid arguments to Debugger.continueToLocation: ' +

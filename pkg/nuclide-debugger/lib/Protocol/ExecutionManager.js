@@ -90,6 +90,7 @@ export default class ExecutionManager {
       this._debuggerDispatcher.continueToLocation({
         scriptId,
         lineNumber: line,
+        columnNumber: 0,
       });
     } else {
       reportError(`Cannot find resolve location for file: ${fileUri}`);
