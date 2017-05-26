@@ -21,6 +21,9 @@ import type {
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {
+  getDocksWorkspaceViewsService,
+} from 'nuclide-commons-atom/workspace-views-compat';
+import {
   combineEpics,
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
@@ -138,47 +141,7 @@ class Activation {
 // API once docks land
 class CompatActivation {
   provideWorkspaceViewsService(): WorkspaceViewsService {
-    return {
-      registerLocation: () => new Disposable(() => {}),
-      addOpener: opener => atom.workspace.addOpener(opener),
-      destroyWhere(predicate: (item: Viewable) => boolean) {
-        atom.workspace.getPanes().forEach(pane => {
-          pane.getItems().forEach(item => {
-            if (predicate(item)) {
-              pane.destroyItem(item);
-            }
-          });
-        });
-      },
-      open(uri: string, options?: Object): void {
-        // eslint-disable-next-line nuclide-internal/atom-apis
-        atom.workspace.open(uri, options);
-      },
-      toggle(uri: string, options?: ?ToggleOptions): void {
-        const visible = options && options.visible;
-        if (visible === true) {
-          // eslint-disable-next-line nuclide-internal/atom-apis
-          atom.workspace.open(uri, {searchAllPanes: true});
-        } else if (visible === false) {
-          // TODO: Add `atom.workspace.hide()` and use that instead.
-          const hasItem = atom.workspace
-            .getPaneItems()
-            .some(
-              item =>
-                typeof item.getURI === 'function' && item.getURI() === uri,
-            );
-          if (hasItem) {
-            // TODO(matthewwithanm): Add this to the Flow defs once docks land
-            // $FlowIgnore
-            atom.workspace.toggle(uri);
-          }
-        } else {
-          // TODO(matthewwithanm): Add this to the Flow defs once docks land
-          // $FlowIgnore
-          atom.workspace.toggle(uri);
-        }
-      },
-    };
+    return getDocksWorkspaceViewsService();
   }
 }
 

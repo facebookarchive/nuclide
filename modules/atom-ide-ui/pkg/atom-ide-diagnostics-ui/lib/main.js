@@ -25,11 +25,9 @@ import type {
   FileDiagnosticMessage,
   Trace,
 } from '../../atom-ide-diagnostics/lib/rpc-types';
-// TODO(hansonw): This needs to be wrapped.
-// eslint-disable-next-line nuclide-internal/modules-dependencies
 import type {
   WorkspaceViewsService,
-} from '../../../../../pkg/nuclide-workspace-views/lib/types';
+} from 'nuclide-commons-atom/workspace-views-compat';
 
 import invariant from 'assert';
 
@@ -48,6 +46,9 @@ import {applyUpdateToEditor} from './gutter';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {
+  consumeWorkspaceViewsCompat,
+} from 'nuclide-commons-atom/workspace-views-compat';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 const LINTER_PACKAGE = 'linter';
@@ -72,6 +73,9 @@ class Activation {
   constructor(state_: ?Object): void {
     this._diagnosticUpdaters = new BehaviorSubject(null);
     this._subscriptions = new UniversalDisposable();
+    this._subscriptions.add(
+      consumeWorkspaceViewsCompat(this.consumeWorkspaceViewsService.bind(this)),
+    );
     const state = state_ || {};
     this._state = {
       filterByActiveTextEditor: state.filterByActiveTextEditor === true,
@@ -202,7 +206,14 @@ class Activation {
     );
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+    const commandDisposable = atom.commands.add(
+      'atom-workspace',
+      'nuclide-diagnostics-ui:toggle-table',
+      event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      },
+    );
     this._subscriptions.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
@@ -210,14 +221,9 @@ class Activation {
         }
       }),
       () => api.destroyWhere(item => item instanceof DiagnosticsPanelModel),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-diagnostics-ui:toggle-table',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
-        },
-      ),
+      commandDisposable,
     );
+    return commandDisposable;
   }
 
   _getStatusBarTile(): StatusBarTile {

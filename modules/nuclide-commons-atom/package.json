@@ -15,7 +15,8 @@
     "log4js": "1.1.1",
     "lodash.memoize": "3.0.4",
     "nuclide-commons": "0.1.0",
-    "rxjs": "5.3.1"
+    "rxjs": "5.3.1",
+    "semver": "5.3.0"
   },
   "devDependencies": {
   }
