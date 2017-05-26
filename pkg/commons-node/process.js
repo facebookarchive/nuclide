@@ -853,13 +853,6 @@ function createProcessStream(
                       proc.stdin.write(str);
                     },
                     complete: () => {
-                      // Note that the Node docs have this scary warning about stdin.end() on
-                      // http://nodejs.org/api/child_process.html#child_process_child_stdin:
-                      //
-                      // "A Writable Stream that represents the child process's stdin. Closing
-                      // this stream via end() often causes the child process to terminate."
-                      //
-                      // In practice, this has not appeared to cause any issues thus far.
                       proc.stdin.end();
                     },
                   })
