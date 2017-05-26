@@ -66,6 +66,15 @@ export default class StackTraceManager {
     this._currentThreadFrames = params.callFrames;
     const callstack = this._parseCallstack();
     this._raiseIPCEvent('CallstackUpdate', callstack);
+    this._selectFirstFrameWithSource();
+  }
+
+  _selectFirstFrameWithSource(): void {
+    const frameWithSourceIndex = this._currentThreadFrames.findIndex(
+      frame => frame.hasSource !== false, // undefined or true.
+    );
+    // Default to first frame if can't find any frame with source.
+    this.setSelectedCallFrameIndex(frameWithSourceIndex || 0);
   }
 
   _parseCallstack(): Callstack {

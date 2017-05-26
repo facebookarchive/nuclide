@@ -104,7 +104,9 @@ class DebuggerDomainDispatcher {
   }
 
   resumed(): void {
-    // TODO:
+    this._raiseProtocolEvent({
+      method: 'Debugger.resumed',
+    });
   }
 
   threadsUpdated(params: ThreadsUpdatedEvent): void {

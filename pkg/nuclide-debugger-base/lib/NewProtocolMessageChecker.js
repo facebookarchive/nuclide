@@ -45,6 +45,12 @@ export default class NewProtocolMessageChecker {
     switch (msgObj.method) {
       case 'Debugger.breakpointResolved':
         return true;
+      case 'Debugger.paused':
+        return true;
+      case 'Debugger.resumed':
+        return true;
+      case 'Debugger.scriptParsed':
+        return true;
       default:
         return false;
     }

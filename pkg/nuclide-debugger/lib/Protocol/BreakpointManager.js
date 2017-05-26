@@ -62,9 +62,6 @@ export default class BreakpointManager {
             const params: BreakpointResolvedEvent = event.params;
             this._handleBreakpointResolved(params);
             break;
-          case 'Debugger.loaderBreakpoint':
-            this._handleLoaderBreakpoint();
-            break;
           default:
             break;
         }
@@ -76,11 +73,11 @@ export default class BreakpointManager {
     return this._breakpointEvent$.asObservable();
   }
 
-  sendInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
+  setInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
     this._initBreakpoints = breakpoints;
   }
 
-  _syncInitialBreakpointsToEngine(): void {
+  syncInitialBreakpointsToEngine(): void {
     for (const breakpoint of this._initBreakpoints) {
       this.setFilelineBreakpoint(breakpoint);
     }
@@ -269,10 +266,6 @@ export default class BreakpointManager {
     newCopy.lineNumber = bpLocation.lineNumber;
     newCopy.resolved = true;
     return newCopy;
-  }
-
-  _handleLoaderBreakpoint(): void {
-    this._syncInitialBreakpointsToEngine();
   }
 
   _handleBreakpointResolved(params: BreakpointResolvedEvent): void {
