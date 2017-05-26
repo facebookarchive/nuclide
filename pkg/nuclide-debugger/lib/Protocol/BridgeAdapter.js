@@ -11,6 +11,7 @@
 
 import type {Observable} from 'rxjs';
 import type {IPCEvent, IPCBreakpoint} from '../types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 require('./Object');
 import invariant from 'assert';
@@ -63,6 +64,11 @@ export default class BridgeAdapter {
   stepOut(): void {
     invariant(this._executionManager != null);
     this._executionManager.stepOut();
+  }
+
+  runToLocation(fileUri: NuclideUri, line: number): void {
+    invariant(this._executionManager != null);
+    this._executionManager.runToLocation(fileUri, line);
   }
 
   setSelectedCallFrameIndex(index: number): void {

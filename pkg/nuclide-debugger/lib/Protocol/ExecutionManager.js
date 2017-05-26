@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type BreakpointManager from './BreakpointManager';
 import type {
@@ -17,6 +18,7 @@ import type {
 
 import {Subject, Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {reportError} from './Utils';
 
 /**
  * Bridge between Nuclide IPC and RPC execution control protocols.
@@ -77,6 +79,21 @@ export default class ExecutionManager {
 
   stepOut(): void {
     this._debuggerDispatcher.stepOut();
+  }
+
+  runToLocation(fileUri: NuclideUri, line: number): void {
+    // Chrome's continueToLocation implementation incorrect
+    // uses source uri instead of scriptId as the location ScriptId
+    // field, we mirrow the same behavior for compatibility reason.
+    const scriptId = this._debuggerDispatcher.getSourceUriFromUri(fileUri);
+    if (scriptId != null) {
+      this._debuggerDispatcher.continueToLocation({
+        scriptId,
+        lineNumber: line,
+      });
+    } else {
+      reportError(`Cannot find resolve location for file: ${fileUri}`);
+    }
   }
 
   _handleLoaderBreakpoint(): void {

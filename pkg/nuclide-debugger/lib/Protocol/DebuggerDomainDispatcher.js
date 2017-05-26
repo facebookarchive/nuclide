@@ -19,9 +19,11 @@ import type {
   ThreadsUpdatedEvent,
   PausedEvent,
   ScriptParsedEvent,
+  Location,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 type LoaderBreakpointEvent = {
   method: 'Debugger.loaderBreakpoint',
@@ -48,6 +50,28 @@ class DebuggerDomainDispatcher {
     this._pauseCount = 0;
   }
 
+  getSourceUriFromUri(fileUri: NuclideUri): ?ScriptId {
+    for (const uri of this._parsedFiles.values()) {
+      // Strip file:// from the uri.
+      const strippedUri = nuclideUri.uriToNuclideUri(uri) || uri;
+      if (strippedUri === fileUri) {
+        return uri;
+      }
+    }
+    return null;
+  }
+
+  getScriptIdFromUri(fileUri: NuclideUri): ?ScriptId {
+    for (const [scriptId, uri] of this._parsedFiles) {
+      // Strip file:// from the uri.
+      const strippedUri = nuclideUri.uriToNuclideUri(uri) || uri;
+      if (strippedUri === fileUri) {
+        return scriptId;
+      }
+    }
+    return null;
+  }
+
   resume(): void {
     this._agent.resume();
   }
@@ -66,6 +90,10 @@ class DebuggerDomainDispatcher {
 
   stepOut(): void {
     this._agent.stepOut();
+  }
+
+  continueToLocation(location: Location): void {
+    this._agent.continueToLocation(location);
   }
 
   setBreakpointByUrl(breakpoint: IPCBreakpoint, callback: Function): void {
