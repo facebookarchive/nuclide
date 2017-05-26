@@ -121,8 +121,8 @@ export class ProcessTable extends React.Component {
           <ProcessTaskButton
             icon="x"
             proc={item}
-            taskType="STOP_PACKAGE"
-            nameIfManyTasks="Stop package"
+            taskType="KILL"
+            nameIfManyTasks="Kill process"
             tasks={this.props.processTasks}>
             {item.pid}
           </ProcessTaskButton>

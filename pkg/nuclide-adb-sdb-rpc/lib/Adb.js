@@ -98,7 +98,7 @@ export class Adb extends AdbSdbBase {
 
   // Can't use kill, the only option is to use the package name
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
-  async killProcess(device: string, packageName: string): Promise<void> {
+  async stopPackage(device: string, packageName: string): Promise<void> {
     await this.runShortCommand(device, [
       'shell',
       'am',

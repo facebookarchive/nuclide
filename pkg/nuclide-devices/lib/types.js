@@ -109,7 +109,7 @@ export type Process = {
   isJava: boolean,
 };
 
-export type ProcessTaskType = 'STOP_PACKAGE' | 'DEBUG';
+export type ProcessTaskType = 'KILL' | 'DEBUG';
 
 export type ProcessTask = {
   type: ProcessTaskType,

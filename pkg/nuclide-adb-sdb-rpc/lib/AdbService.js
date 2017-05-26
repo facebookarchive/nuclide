@@ -40,11 +40,11 @@ export async function getProcesses(device: string): Promise<Array<Process>> {
   return new AdbTop((await getAdb()), device).fetch();
 }
 
-export async function killProcess(
+export async function stopPackage(
   device: string,
   packageName: string,
 ): Promise<void> {
-  return (await getAdb()).killProcess(device, packageName);
+  return (await getAdb()).stopPackage(device, packageName);
 }
 
 export async function getDeviceList(): Promise<Array<DeviceDescription>> {

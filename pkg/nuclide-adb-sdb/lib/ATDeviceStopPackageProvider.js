@@ -31,7 +31,7 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   }
 
   getTaskType(): ProcessTaskType {
-    return 'STOP_PACKAGE';
+    return 'KILL';
   }
 
   getName(): string {
@@ -51,6 +51,6 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   }
 
   async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
-    return this._rpcFactory(host).killProcess(device, proc.name);
+    return this._rpcFactory(host).stopPackage(device, proc.name);
   }
 }
