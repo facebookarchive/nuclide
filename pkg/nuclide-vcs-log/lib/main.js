@@ -13,8 +13,9 @@
 
 import type FileTreeContextMenu
   from '../../nuclide-file-tree/lib/FileTreeContextMenu';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {VcsLogResponse} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  HgRepositoryClient,
+} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
 import {CompositeDisposable, Disposable} from 'atom';
 import VcsLogPaneItem from './VcsLogPaneItem';
@@ -34,11 +35,6 @@ const CONTEXT_MENU_LABEL = 'Show history';
 const MAX_NUM_LOG_RESULTS = 100;
 const VCS_LOG_URI_PREFIX = 'atom://nucide-vcs-log/view';
 const VCS_LOG_URI_PATHS_QUERY_PARAM = 'path';
-
-type VcsService = {
-  getType(): string,
-  log(filePaths: Array<NuclideUri>, limit?: ?number): Promise<VcsLogResponse>,
-};
 
 class Activation {
   _subscriptions: CompositeDisposable;
@@ -144,7 +140,7 @@ class Activation {
   }
 }
 
-function getRepositoryWithLogMethodForPath(path: ?string): ?VcsService {
+function getRepositoryWithLogMethodForPath(path: ?string): ?HgRepositoryClient {
   if (path == null) {
     return null;
   }
@@ -153,7 +149,7 @@ function getRepositoryWithLogMethodForPath(path: ?string): ?VcsService {
   // For now, we only expect HgRepository to work. We should also find a way to
   // make this work for Git.
   if (repository != null && repository.getType() === 'hg') {
-    return ((repository: any): VcsService);
+    return ((repository: any): HgRepositoryClient);
   } else {
     return null;
   }
@@ -212,9 +208,7 @@ function createLogPaneForPath(path: string): ?VcsLogPaneItem {
 
   repository
     .log([path], MAX_NUM_LOG_RESULTS)
-    .then((response: VcsLogResponse) =>
-      pane.updateWithLogEntries(response.entries),
-    );
+    .then(response => pane.updateWithLogEntries(response.entries));
 
   return pane;
 }
