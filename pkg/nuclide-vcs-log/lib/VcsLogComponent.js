@@ -11,22 +11,37 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
+import type {
+  HgRepositoryClient,
+} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
 import React from 'react';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {shell} from 'electron';
 import {shortNameForAuthor} from './util';
+import {ShowDiff} from './ShowDiff';
+import {
+  FlexDirections,
+  ResizableFlexContainer,
+  ResizableFlexItem,
+} from '../../nuclide-ui/ResizableFlexContainer';
 
 type Props = {
   files: Array<NuclideUri>,
   showDifferentialRevision: boolean,
+  repository: HgRepositoryClient,
+  onDiffClick: (oldId: string, newId: string) => void,
+  logEntries: ?Array<VcsLogEntry>,
+  oldContent: ?string,
+  newContent: ?string,
 };
 
 type State = {
-  logEntries: ?Array<VcsLogEntry>,
+  showDiffContainer: boolean,
+  diffIndex: number,
 };
 
-export default class VcsLog extends React.Component {
+export default class VcsLogComponent extends React.Component {
   props: Props;
   state: State;
   _files: Array<string>;
@@ -42,12 +57,13 @@ export default class VcsLog extends React.Component {
     }
 
     this.state = {
-      logEntries: null,
+      showDiffContainer: false,
+      diffIndex: -1,
     };
   }
 
   render(): React.Element<any> {
-    const {logEntries} = this.state;
+    const {logEntries} = this.props;
     if (logEntries != null) {
       // Even if the "Show Differential Revision" preference is enabled, only show the column if
       // there is at least one row with a Differential revision. This way, enabling the preference
@@ -93,6 +109,30 @@ export default class VcsLog extends React.Component {
           differentialCell = null;
         }
 
+        let showDiffCell = null;
+        if (this.props.files.length === 1) {
+          const newContentNode = logEntries[index]
+            ? logEntries[index].node
+            : '';
+          const oldContentNode = logEntries[index + 1]
+            ? logEntries[index + 1].node
+            : '';
+          showDiffCell = (
+            <input
+              className="input-radio"
+              type="radio"
+              checked={index === this.state.diffIndex}
+              onChange={() => {
+                this.setState({
+                  showDiffContainer: true,
+                  diffIndex: index,
+                });
+                this.props.onDiffClick(oldContentNode, newContentNode);
+              }}
+            />
+          );
+        }
+
         return (
           <tr key={logEntry.node}>
             <td className="nuclide-vcs-log-date-cell">
@@ -108,6 +148,9 @@ export default class VcsLog extends React.Component {
             <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
               {parseFirstLine(logEntry.desc)}
             </td>
+            <td className="nuclide-vcs-log-show-diff-cell">
+              {showDiffCell}
+            </td>
           </tr>
         );
       });
@@ -116,7 +159,7 @@ export default class VcsLog extends React.Component {
       // copy/paste text from the pane. This has to be applied on a child element of
       // nuclide-vcs-log-scroll-container, or else the native-key-bindings/tabIndex=-1 will
       // interfere with scrolling.
-      return (
+      const logTable = (
         <div className="nuclide-vcs-log-scroll-container">
           <div className="native-key-bindings" tabIndex="-1">
             <table>
@@ -129,6 +172,7 @@ export default class VcsLog extends React.Component {
                     : null}
                   <th className="nuclide-vcs-log-header-cell">Author</th>
                   <th className="nuclide-vcs-log-header-cell">Summary</th>
+                  <th className="nuclide-vcs-log-header-cell">Show diff</th>
                 </tr>
                 {rows}
               </tbody>
@@ -136,6 +180,28 @@ export default class VcsLog extends React.Component {
           </div>
         </div>
       );
+
+      if (!this.state.showDiffContainer) {
+        return logTable;
+      } else {
+        const filePath = this.props.files[0];
+        const {oldContent, newContent} = this.props;
+        const props = {filePath, oldContent, newContent};
+        return (
+          <ResizableFlexContainer
+            direction={FlexDirections.VERTICAL}
+            className={'nuclide-vcs-log-container'}>
+            <ResizableFlexItem initialFlexScale={3}>
+              <ShowDiff {...props} />
+            </ResizableFlexItem>
+            <ResizableFlexItem
+              initialFlexScale={1}
+              className={'nuclide-vcs-log-entries-container'}>
+              {logTable}
+            </ResizableFlexItem>
+          </ResizableFlexContainer>
+        );
+      }
     } else {
       return (
         <div>
