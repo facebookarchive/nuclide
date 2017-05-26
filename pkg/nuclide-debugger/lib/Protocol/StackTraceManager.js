@@ -10,6 +10,7 @@
  */
 
 import type {
+  CallFrameId,
   CallFrame,
   PausedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
@@ -53,13 +54,22 @@ export default class StackTraceManager {
   setSelectedCallFrameIndex(index: number): void {
     invariant(index < this._currentThreadFrames.length);
     this._currentCallFrameIndex = index;
-    const currentFrame = this._currentThreadFrames[index];
+    const currentFrame = this._getCurrentFrame();
     this._raiseIPCEvent('CallFrameSelected', {
       sourceURL: this._debuggerDispatcher.getFileUriFromScriptId(
         currentFrame.location.scriptId,
       ),
       lineNumber: currentFrame.location.lineNumber,
     });
+  }
+
+  getSelectedFrameId(): CallFrameId {
+    return this._getCurrentFrame().callFrameId;
+  }
+
+  _getCurrentFrame(): CallFrame {
+    invariant(this._currentCallFrameIndex < this._currentThreadFrames.length);
+    return this._currentThreadFrames[this._currentCallFrameIndex];
   }
 
   _handleDebuggerPaused(params: PausedEvent): void {

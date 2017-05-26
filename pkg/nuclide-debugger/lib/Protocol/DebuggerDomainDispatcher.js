@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {IPCBreakpoint} from '../types';
+import type {IPCBreakpoint, ObjectGroup} from '../types';
 import type {
   ScriptId,
   BreakpointId,
@@ -20,6 +20,7 @@ import type {
   PausedEvent,
   ScriptParsedEvent,
   Location,
+  CallFrameId,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
@@ -109,6 +110,24 @@ class DebuggerDomainDispatcher {
 
   removeBreakpoint(breakpointId: BreakpointId): void {
     this._agent.removeBreakpoint(breakpointId);
+  }
+
+  evaluateOnCallFrame(
+    callFrameId: CallFrameId,
+    expression: string,
+    objectGroup: ObjectGroup,
+    callback: Function,
+  ): void {
+    this._agent.evaluateOnCallFrame(
+      callFrameId,
+      expression,
+      objectGroup,
+      undefined, // includeCommandLineAPI
+      undefined, // silent
+      undefined, // returnByValue
+      undefined, // generatePreview
+      callback,
+    );
   }
 
   getEventObservable(): Observable<ProtocolDebugEvent> {

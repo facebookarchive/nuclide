@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {IPCEvent, IPCBreakpoint} from '../types';
+import type {IPCEvent, IPCBreakpoint, ObjectGroup} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 require('./Object');
@@ -21,6 +21,7 @@ import BreakpointManager from './BreakpointManager';
 import StackTraceManager from './StackTraceManager';
 import ExecutionManager from './ExecutionManager';
 import ThreadManager from './ThreadManager';
+import ExpressionEvaluationManager from './ExpressionEvaluationManager';
 
 export default class BridgeAdapter {
   _debuggerDispatcher: ?DebuggerDomainDispatcher;
@@ -28,6 +29,7 @@ export default class BridgeAdapter {
   _stackTraceManager: ?StackTraceManager;
   _executionManager: ?ExecutionManager;
   _threadManager: ?ThreadManager;
+  _expressionEvaluationManager: ?ExpressionEvaluationManager;
 
   constructor() {}
 
@@ -42,6 +44,9 @@ export default class BridgeAdapter {
       this._breakpointManager,
     );
     this._threadManager = new ThreadManager(this._debuggerDispatcher);
+    this._expressionEvaluationManager = new ExpressionEvaluationManager(
+      this._debuggerDispatcher,
+    );
   }
 
   resume(): void {
@@ -99,21 +104,42 @@ export default class BridgeAdapter {
     this._breakpointManager.updateBreakpoint(breakpoint);
   }
 
+  evaluateExpression(
+    transactionId: number,
+    expression: string,
+    objectGroup: ObjectGroup,
+  ): void {
+    // TODO: check pause or run mode and dispatch to corresponding
+    // protocol.
+    invariant(this._stackTraceManager);
+    const callFrameId = this._stackTraceManager.getSelectedFrameId();
+    invariant(this._expressionEvaluationManager);
+    this._expressionEvaluationManager.evaluateOnCallFrame(
+      transactionId,
+      callFrameId,
+      expression,
+      objectGroup,
+    );
+  }
+
   getEventObservable(): Observable<IPCEvent> {
     // TODO: hook other debug events when it's ready.
     const breakpointManager = this._breakpointManager;
     const stackTraceManager = this._stackTraceManager;
     const executionManager = this._executionManager;
     const threadManager = this._threadManager;
+    const expessionEvaluatorManager = this._expressionEvaluationManager;
     invariant(breakpointManager != null);
     invariant(stackTraceManager != null);
     invariant(executionManager != null);
     invariant(threadManager != null);
+    invariant(expessionEvaluatorManager != null);
     return breakpointManager
       .getEventObservable()
       .merge(stackTraceManager.getEventObservable())
       .merge(executionManager.getEventObservable())
       .merge(threadManager.getEventObservable())
+      .merge(expessionEvaluatorManager.getEventObservable())
       .map(args => {
         return {channel: 'notification', args};
       });
@@ -135,6 +161,10 @@ export default class BridgeAdapter {
     if (this._threadManager != null) {
       this._threadManager.dispose();
       this._threadManager = null;
+    }
+    if (this._expressionEvaluationManager != null) {
+      this._expressionEvaluationManager.dispose();
+      this._expressionEvaluationManager = null;
     }
   }
 }

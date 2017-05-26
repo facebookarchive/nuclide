@@ -90,6 +90,7 @@ export default class BreakpointManager {
         reportError(
           `setFilelineBreakpoint failed with ${JSON.stringify(error)}`,
         );
+        return;
       }
       const {breakpointId, locations, resolved} = response;
       this._assignBreakpointId(request, breakpointId);
