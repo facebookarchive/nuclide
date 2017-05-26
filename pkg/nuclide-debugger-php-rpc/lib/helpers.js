@@ -112,7 +112,7 @@ export function launchPhpScriptWithXDebugEnabled(
   const scriptArgs = shellParse(scriptPath);
   const args = [...runtimeArgs, ...scriptArgs];
   const proc = child_process.spawn(phpRuntimePath, args);
-  logger.log(
+  logger.debug(
     dedent`
     child_process(${proc.pid}) spawned with xdebug enabled.
     $ ${phpRuntimePath} ${args.join(' ')}
@@ -124,7 +124,7 @@ export function launchPhpScriptWithXDebugEnabled(
     // string would come on one line.
     const block: string = chunk.toString();
     const output = `child_process(${proc.pid}) stdout: ${block}`;
-    logger.log(output);
+    logger.debug(output);
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(block, 'text');
     }
@@ -132,13 +132,13 @@ export function launchPhpScriptWithXDebugEnabled(
   proc.stderr.on('data', chunk => {
     const block: string = chunk.toString().trim();
     const output = `child_process(${proc.pid}) stderr: ${block}`;
-    logger.log(output);
+    logger.debug(output);
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(block, 'error');
     }
   });
   proc.on('error', err => {
-    logger.log(`child_process(${proc.pid}) error: ${err}`);
+    logger.debug(`child_process(${proc.pid}) error: ${err}`);
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(
         `The process running script: ${scriptPath} encountered an error: ${err}`,
@@ -147,7 +147,7 @@ export function launchPhpScriptWithXDebugEnabled(
     }
   });
   proc.on('exit', code => {
-    logger.log(`child_process(${proc.pid}) exit: ${code}`);
+    logger.debug(`child_process(${proc.pid}) exit: ${code}`);
     if (code != null && sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(
         `Script: ${scriptPath} exited with code: ${code}`,

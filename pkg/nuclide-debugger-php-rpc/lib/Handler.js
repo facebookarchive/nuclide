@@ -33,7 +33,7 @@ export default class Handler {
   unknownMethod(id: number, method: string, params: ?Object): void {
     const message =
       'Unknown chrome dev tools method: ' + this.getDomain() + '.' + method;
-    logger.log(message);
+    logger.debug(message);
     this.replyWithError(id, message);
   }
 

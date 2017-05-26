@@ -30,7 +30,7 @@ export function convertProperties(
   id: ObjectId,
   properties: Array<DbgpProperty>,
 ): Array<PropertyDescriptor> {
-  logger.log('Got properties: ' + JSON.stringify(properties));
+  logger.debug('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));
 }
 
@@ -41,7 +41,9 @@ export function convertProperty(
   contextId: ObjectId,
   dbgpProperty: DbgpProperty,
 ): PropertyDescriptor {
-  logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
+  logger.debug(
+    'Converting to Chrome property: ' + JSON.stringify(dbgpProperty),
+  );
   const result = {
     configurable: false,
     enumerable: true,

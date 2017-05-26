@@ -181,7 +181,7 @@ function getAggregateRemoteObjectId(
   if (pagesize !== 0) {
     pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize) || 0;
   }
-  logger.log(
+  logger.debug(
     `numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`,
   );
   if (pageCount > 1) {

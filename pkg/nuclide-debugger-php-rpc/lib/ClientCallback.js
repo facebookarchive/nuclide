@@ -61,7 +61,7 @@ export class ClientCallback {
   }
 
   sendUserMessage(type: UserMessageType, message: Object): void {
-    logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
+    logger.debug(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     switch (type) {
       case 'notification':
         this._notifications.next({
@@ -91,7 +91,7 @@ export class ClientCallback {
     params: ?Object,
   ): void {
     const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
-    logger.log(message);
+    logger.debug(message);
     this.replyWithError(id, message);
   }
 
@@ -118,7 +118,7 @@ export class ClientCallback {
   }
 
   dispose(): void {
-    logger.log('Called ClientCallback dispose method.');
+    logger.debug('Called ClientCallback dispose method.');
     this._notifications.complete();
     this._serverMessages.complete();
     this._outputWindowMessages.complete();
@@ -127,6 +127,6 @@ export class ClientCallback {
 
 function sendJsonObject(subject: Subject<string>, value: Object): void {
   const message = JSON.stringify(value);
-  logger.log(`Sending JSON: ${message}`);
+  logger.debug(`Sending JSON: ${message}`);
   subject.next(message);
 }

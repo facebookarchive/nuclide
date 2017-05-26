@@ -163,7 +163,7 @@ class HackProcess {
     activatedManually: boolean,
   ): Promise<?AutocompleteResult> {
     const filePath = fileVersion.filePath;
-    logger.log(
+    logger.debug(
       `Attempting Hack Autocomplete: ${filePath}, ${position.toString()}`,
     );
     const buffer = await this.getBufferAtVersion(fileVersion);
@@ -182,7 +182,7 @@ class HackProcess {
     const column = position.column + 1;
     const service = this.getConnectionService();
 
-    logger.log('Got Hack Service');
+    logger.debug('Got Hack Service');
     // TODO: Include version number to ensure agreement on file version.
     const unfilteredItems: ?HackCompletionsResult = await (await service).getCompletions(
       filePath,
@@ -206,7 +206,7 @@ class HackProcess {
   async _disconnect(): Promise<void> {
     // Attempt to send disconnect message before shutting down connection
     try {
-      logger.log('Attempting to disconnect cleanly from HackProcess');
+      logger.debug('Attempting to disconnect cleanly from HackProcess');
       (await this.getConnectionService()).disconnect();
     } catch (e) {
       // Failing to send the shutdown is not fatal...

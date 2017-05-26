@@ -213,7 +213,7 @@ export class BreakpointStore {
       return this._removeBreakpointFromConnections(breakpointId);
     } else {
       // This can happen if users switch between 'none' and 'uncaught' states.
-      logger.log('No exception breakpoint to remove.');
+      logger.debug('No exception breakpoint to remove.');
       return Promise.resolve();
     }
   }

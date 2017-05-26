@@ -176,7 +176,7 @@ export class DataCache {
   async getProperties(
     remoteId: RemoteObjectId,
   ): Promise<Array<PropertyDescriptor>> {
-    logger.log(`DataCache.getProperties call on ID: ${remoteId}`);
+    logger.debug(`DataCache.getProperties call on ID: ${remoteId}`);
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
       const message = `Got request for stale RemoteObjectId ${remoteId}`;
@@ -247,7 +247,7 @@ function contextNameToScopeType(name: string): ScopeType {
       return 'global';
     // TODO: Verify this ...
     default:
-      logger.log(`Unexpected context name: ${name}`);
+      logger.debug(`Unexpected context name: ${name}`);
       return 'closure';
   }
 }
