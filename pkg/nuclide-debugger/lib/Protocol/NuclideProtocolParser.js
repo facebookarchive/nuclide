@@ -997,12 +997,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
         if (this._hasErrorData[methodName])
             argumentsArray[1] = messageObject.error ? messageObject.error.data : null;
 
-        if (messageObject.result) {
-            var paramNames = this._replyArgs[methodName] || [];
-            for (var i = 0; i < paramNames.length; ++i)
-                argumentsArray.push(messageObject.result[paramNames[i]]);
-        }
-
+        argumentsArray.push(messageObject.result);
         callback.apply(null, argumentsArray);
     },
 
@@ -1059,18 +1054,11 @@ InspectorBackendClass.DispatcherPrototype.prototype = {
             return;
         }
 
-        var params = [];
-        if (messageObject.params) {
-            var paramNames = this._eventArgs[messageObject.method];
-            for (var i = 0; i < paramNames.length; ++i)
-                params.push(messageObject.params[paramNames[i]]);
-        }
-
         var processingStartTime;
         if (InspectorBackendClass.Options.dumpInspectorTimeStats)
             processingStartTime = Date.now();
 
-        this._dispatcher[functionName].apply(this._dispatcher, params);
+        this._dispatcher[functionName].apply(this._dispatcher, [messageObject.params]);
 
         if (InspectorBackendClass.Options.dumpInspectorTimeStats)
             console.log("time-stats: " + messageObject.method + " = " + (Date.now() - processingStartTime));

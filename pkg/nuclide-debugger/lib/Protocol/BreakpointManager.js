@@ -15,6 +15,7 @@ import type {
   Location,
   DebuggerEvent,
   BreakpointResolvedEvent,
+  SetBreakpointByUrlResponse,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
@@ -66,17 +67,13 @@ export default class BreakpointManager {
   }
 
   setFilelineBreakpoint(request: IPCBreakpoint): void {
-    function callback(
-      error: Error,
-      breakpointId: BreakpointId,
-      resolved: boolean,
-      locations: Array<Location>,
-    ) {
+    function callback(error: Error, response: SetBreakpointByUrlResponse) {
       if (error != null) {
         reportError(
           `setFilelineBreakpoint failed with ${JSON.stringify(error)}`,
         );
       }
+      const {breakpointId, locations, resolved} = response;
       this._assignBreakpointId(request, breakpointId);
 
       // true or undefined. This is because any legacy engine may

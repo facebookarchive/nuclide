@@ -14,8 +14,9 @@ import type {IPCBreakpoint} from '../types';
 import type {
   ScriptId,
   BreakpointId,
-  BreakpointResolvedEvent,
   DebuggerEvent,
+  BreakpointResolvedEvent,
+  ThreadsUpdatedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
@@ -78,11 +79,7 @@ class DebuggerDomainDispatcher {
     // TODO:
   }
 
-  threadsUpdated(
-    owningProcessId: string,
-    stopThreadId: string,
-    threads_payload: string,
-  ): void {
+  threadsUpdated(params: ThreadsUpdatedEvent): void {
     // TODO
   }
 
