@@ -209,6 +209,13 @@ export function createMessage(
   });
 }
 
+export function createResult(result: mixed): Observable<TaskEvent> {
+  return Observable.of({
+    type: 'result',
+    result,
+  });
+}
+
 export function createStatus(status: string): Observable<TaskEvent> {
   return Observable.of({type: 'status', status});
 }
