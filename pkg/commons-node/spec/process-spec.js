@@ -11,6 +11,7 @@
 
 import type {ProcessExitMessage} from '../process-rpc-types';
 
+import EventEmitter from 'events';
 import {sleep} from 'nuclide-commons/promise';
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -21,9 +22,11 @@ import {
   getOutputStream,
   killProcess,
   killUnixProcessTree,
+  logStreamErrors,
   observeProcess,
   observeProcessRaw,
   parsePsOutput,
+  preventStreamsFromThrowing,
   runCommand,
   runCommandDetailed,
   exitEventToMessage,
@@ -647,6 +650,89 @@ describe('commons-node/process', () => {
       expect(
         exitEventToMessage({kind: 'exit', exitCode: null, signal: 'SIGTERM'}),
       ).toBe('signal SIGTERM');
+    });
+  });
+
+  describe('preventStreamsFromThrowing', () => {
+    let proc: child_process$ChildProcess;
+    beforeEach(() => {
+      proc = ({
+        stdin: new EventEmitter(),
+        stdout: new EventEmitter(),
+        stderr: new EventEmitter(),
+      }: any);
+      spyOn(proc.stdin, 'addListener').andCallThrough();
+      spyOn(proc.stdout, 'addListener').andCallThrough();
+      spyOn(proc.stderr, 'addListener').andCallThrough();
+      spyOn(proc.stdin, 'removeListener').andCallThrough();
+      spyOn(proc.stdout, 'removeListener').andCallThrough();
+      spyOn(proc.stderr, 'removeListener').andCallThrough();
+    });
+
+    it('adds listeners', () => {
+      preventStreamsFromThrowing(proc);
+      expect(proc.stdin.addListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+      expect(proc.stdout.addListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+      expect(proc.stderr.addListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+    });
+
+    it('removes listeners when disposed', () => {
+      const disposable = preventStreamsFromThrowing(proc);
+      disposable.dispose();
+      expect(proc.stdin.removeListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+      expect(proc.stdout.removeListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+      expect(proc.stderr.removeListener).toHaveBeenCalledWith(
+        'error',
+        jasmine.any(Function),
+      );
+    });
+  });
+
+  describe('logStreamErrors', () => {
+    let proc: child_process$ChildProcess;
+    beforeEach(() => {
+      proc = ({
+        stdin: new EventEmitter(),
+        stdout: new EventEmitter(),
+        stderr: new EventEmitter(),
+      }: any);
+
+      // Add a no-op listener so the error events aren't thrown.
+      proc.stdin.on('error', () => {});
+      proc.stdout.on('error', () => {});
+      proc.stderr.on('error', () => {});
+    });
+
+    it('logs errors', () => {
+      logStreamErrors(proc, 'test', [], {});
+      spyOn(console, 'error');
+      proc.stderr.emit('error', new Error('Test error'));
+      // eslint-disable-next-line no-console
+      expect(console.error).toHaveBeenCalled();
+    });
+
+    it("doesn't log when disposed", () => {
+      const disposable = logStreamErrors(proc, 'test', [], {});
+      spyOn(console, 'error');
+      disposable.dispose();
+      proc.stderr.emit('error', new Error('Test error'));
+      // eslint-disable-next-line no-console
+      expect(console.error).not.toHaveBeenCalled();
     });
   });
 });

@@ -58,6 +58,7 @@ import child_process from 'child_process';
 import {MultiMap} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {splitStream, takeWhileInclusive} from 'nuclide-commons/observable';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeStream} from './stream';
 import {Observable, TimeoutError} from 'rxjs';
 import invariant from 'assert';
@@ -533,6 +534,41 @@ export function parsePsOutput(psOutput: string): Array<ProcessInfo> {
   });
 }
 
+/**
+ * Add no-op error handlers to the process's streams so that Node doesn't throw them.
+ */
+export function preventStreamsFromThrowing(
+  proc: child_process$ChildProcess,
+): IDisposable {
+  return new UniversalDisposable(getStreamErrorEvents(proc).subscribe());
+}
+
+/**
+ * Log errors from a process's streams. This function returns an `rxjs$ISubscription` so that it
+ * can easily be used with `Observable.using()`.
+ */
+export function logStreamErrors(
+  proc: child_process$ChildProcess,
+  command: string,
+  args: Array<string>,
+  options?: Object,
+): IDisposable & rxjs$ISubscription {
+  return new UniversalDisposable(
+    getStreamErrorEvents(proc)
+      .do(([err, streamName]) => {
+        logError(
+          `stream error on stream ${streamName} with command:`,
+          command,
+          args,
+          options,
+          'error:',
+          err,
+        );
+      })
+      .subscribe(),
+  );
+}
+
 //
 // Types
 //
@@ -698,52 +734,6 @@ function logError(...args) {
 }
 
 /**
- * Returns an observable that squelches stream errors, logging them so long as the observable is
- * subscribed to.
- */
-function suppressStreamErrors(
-  proc: child_process$ChildProcess,
-  command,
-  args,
-  options,
-): Observable<empty> {
-  const streams = [
-    ['stdin', proc.stdin],
-    ['stdout', proc.stdout],
-    ['stderr', proc.stderr],
-  ];
-  return Observable.create(() => {
-    let subscribed = true;
-    // Add an error listener to each stream. Note that we DON'T want to remove the listener when you
-    // unsubscribe, as that would leave us with no error handler (causing node to throw an unhandled
-    // exception). Instead, when you unsubscribe we just want to stop logging the errors. In the
-    // future, we may want to consider throwing on these errors instead of swallowing them. Either
-    // way, we need to make sure that unsubscribing doesn't remove the "error" event in order to
-    // prevent node from throwing on the next tick.
-    streams.forEach(([name, stream]) => {
-      if (stream == null) {
-        return;
-      }
-      stream.on('error', err => {
-        if (subscribed) {
-          logError(
-            `stream error on stream ${name} with command:`,
-            command,
-            args,
-            options,
-            'error:',
-            err,
-          );
-        }
-      });
-      return () => {
-        subscribed = false;
-      };
-    });
-  });
-}
-
-/**
  * Creates an observable with the following properties:
  *
  * 1. It contains a process that's created using the provided factory when you subscribe.
@@ -789,14 +779,10 @@ function createProcessStream(
         {...options},
       );
 
-      // An observable that emits no elements and is just used for its side-effects: it logs errors
-      // on the stdio streams.
-      const stdioErrorMonitors = suppressStreamErrors(
-        proc,
-        commandOrModulePath,
-        args,
-        options,
-      );
+      // Don't let Node throw stream errors and crash the process. Note that we never dispose of
+      // this because stream errors can still occur after the user unsubscribes from our process
+      // observable. That's okay; when the streams close, the listeners will be removed.
+      preventStreamsFromThrowing(proc);
 
       // If we were to connect the error handler as part of the returned observable, unsubscribing
       // would cause it to be removed. That would leave no attached error handler, so node would
@@ -820,9 +806,8 @@ function createProcessStream(
 
       if (dontLogInNuclide !== true) {
         // Log the completion of the process. Note that we intentionally don't merge this with the
-        // returned observable (like we do with the stdioErrorMonitors) because we don't want to
-        // cancel the side-effect when the user unsubscribes or when the process exits ("close"
-        // events come after "exit" events).
+        // returned observable because we don't want to cancel the side-effect when the user
+        // unsubscribes or when the process exits ("close" events come after "exit" events).
         const now = performanceNow();
         Observable.fromEvent(proc, 'close')
           .do(() => {
@@ -837,18 +822,23 @@ function createProcessStream(
 
       let finished = false;
       return enforceTimeout(
-        Observable.merge(
-          // Node [delays the emission of process errors][1] by a tick in order to give consumers a
-          // chance to subscribe to the error event. This means that our observable would normally
-          // emit the process and then, a tick later, error. However, it's more convenient to never
-          // emit the process if there was an error. Although observables don't require the error to
-          // be delayed at all, the underlying event emitter abstraction does, so we'll just roll
-          // with that and use `pid == null` as a signal that an error is forthcoming.
-          //
-          // [1]: https://github.com/nodejs/node/blob/v7.10.0/lib/internal/child_process.js#L301
-          proc.pid == null ? Observable.empty() : Observable.of(proc),
-          Observable.never(), // Don't complete until we say so!
-          stdioErrorMonitors,
+        Observable.using(
+          // Log stream errors, but only for as long as you're subscribed to the process observable.
+          () => logStreamErrors(proc, commandOrModulePath, args, options),
+          () =>
+            Observable.merge(
+              // Node [delays the emission of process errors][1] by a tick in order to give
+              // consumers a chance to subscribe to the error event. This means that our observable
+              // would normally emit the process and then, a tick later, error. However, it's more
+              // convenient to never emit the process if there was an error. Although observables
+              // don't require the error to be delayed at all, the underlying event emitter
+              // abstraction does, so we'll just roll with that and use `pid == null` as a signal
+              // that an error is forthcoming.
+              //
+              // [1]: https://github.com/nodejs/node/blob/v7.10.0/lib/internal/child_process.js#L301
+              proc.pid == null ? Observable.empty() : Observable.of(proc),
+              Observable.never(), // Don't complete until we say so!
+            ),
         )
           .takeUntil(errors)
           .takeUntil(exitEvents)
@@ -984,5 +974,27 @@ function timeoutWith<T>(
       .catch(
         err => (err instanceof TimeoutError ? other : Observable.throw(err)),
       )
+  );
+}
+
+/**
+ * Get an observable of error events for a process's streams. Note that these are represented as
+ * normal elements, not observable errors.
+ */
+function getStreamErrorEvents(
+  proc: child_process$ChildProcess,
+): Observable<[Error, string]> {
+  const streams = [
+    ['stdin', proc.stdin],
+    ['stdout', proc.stdout],
+    ['stderr', proc.stderr],
+  ];
+  return Observable.merge(
+    ...streams.map(
+      ([name, stream]) =>
+        stream == null
+          ? Observable.empty()
+          : Observable.fromEvent(stream, 'error').map(err => [err, name]),
+    ),
   );
 }
