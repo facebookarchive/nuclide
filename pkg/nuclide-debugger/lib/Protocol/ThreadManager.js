@@ -12,11 +12,13 @@
 import type {
   ThreadsUpdatedEvent,
   ThreadUpdatedEvent,
+  CallFrame,
+  GetThreadStackResponse,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import {Subject, Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {reportError} from './Utils';
 
 /**
  * Bridge between Nuclide IPC and RPC threading protocols.
@@ -24,29 +26,33 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 export default class ThreadManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _threadEvent$: Subject<Array<mixed>>;
-  _subscriptions: UniversalDisposable;
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
     this._debuggerDispatcher = debuggerDispatcher;
     this._threadEvent$ = new Subject();
-    this._subscriptions = new UniversalDisposable(
-      this._debuggerDispatcher.getEventObservable().subscribe(event => {
-        if (event.method === 'Debugger.threadsUpdated') {
-          const params: ThreadsUpdatedEvent = event.params;
-          this._handleThreadsUpdated(params);
-        } else if (event.method === 'Debugger.threadUpdated') {
-          const params: ThreadUpdatedEvent = event.params;
-          this._handleThreadUpdated(params);
-        }
-      }),
-    );
   }
 
-  _handleThreadsUpdated(params: ThreadsUpdatedEvent): void {
+  getThreadStack(threadId: string): Promise<Array<CallFrame>> {
+    return new Promise((resolve, reject) => {
+      function callback(error: Error, response: GetThreadStackResponse) {
+        if (error != null) {
+          reportError(`getThreadStack failed with ${JSON.stringify(error)}`);
+          reject(error);
+        }
+        resolve(response.callFrames);
+      }
+      this._debuggerDispatcher.getThreadStack(
+        Number(threadId),
+        callback.bind(this),
+      );
+    });
+  }
+
+  raiseThreadsUpdated(params: ThreadsUpdatedEvent): void {
     this._raiseIPCEvent('ThreadsUpdate', params);
   }
 
-  _handleThreadUpdated(params: ThreadUpdatedEvent): void {
+  raiseThreadUpdated(params: ThreadUpdatedEvent): void {
     this._raiseIPCEvent('ThreadUpdate', params);
   }
 
@@ -58,9 +64,5 @@ export default class ThreadManager {
   // across bridge boundary.
   _raiseIPCEvent(...args: Array<mixed>): void {
     this._threadEvent$.next(args);
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
   }
 }

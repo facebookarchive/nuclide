@@ -169,6 +169,9 @@ export default class CommandDispatcher {
       case 'evaluateOnSelectedCallFrame':
         this._bridgeAdapter.evaluateExpression(args[1], args[2], args[3]);
         break;
+      case 'selectThread':
+        this._bridgeAdapter.selectThread(args[1]);
+        break;
       default:
         // Forward any unimplemented commands to chrome channel.
         this._sendViaChromeChannel(...args);

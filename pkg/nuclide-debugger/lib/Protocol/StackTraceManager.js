@@ -11,7 +11,6 @@
 
 import type {
   CallFrame,
-  PausedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type {Callstack} from '../types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
@@ -56,8 +55,12 @@ export default class StackTraceManager {
     return this._currentThreadFrames[this._currentCallFrameIndex];
   }
 
-  _handleDebuggerPaused(params: PausedEvent): void {
-    this._currentThreadFrames = params.callFrames;
+  /**
+   * Refresh with new list of stack frames.
+   * Like, user switches to a new thread.
+   */
+  refreshStack(stackFrames: Array<CallFrame>): void {
+    this._currentThreadFrames = stackFrames;
     const callstack = this._parseCallstack();
     this._raiseIPCEvent('CallstackUpdate', callstack);
     this._selectFirstFrameWithSource();

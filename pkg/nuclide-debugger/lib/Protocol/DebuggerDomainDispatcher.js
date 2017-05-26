@@ -130,6 +130,10 @@ class DebuggerDomainDispatcher {
     );
   }
 
+  getThreadStack(threadId: number, callback: Function): void {
+    this._agent.getThreadStack(threadId, callback);
+  }
+
   getEventObservable(): Observable<ProtocolDebugEvent> {
     return this._debugEvent$.asObservable();
   }

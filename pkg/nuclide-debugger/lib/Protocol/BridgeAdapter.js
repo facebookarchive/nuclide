@@ -16,6 +16,8 @@ import type {ProtocolDebugEvent} from './DebuggerDomainDispatcher';
 import type {
   BreakpointResolvedEvent,
   PausedEvent,
+  ThreadsUpdatedEvent,
+  ThreadUpdatedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -122,6 +124,13 @@ export default class BridgeAdapter {
     );
   }
 
+  selectThread(threadId: string): void {
+    this._threadManager.getThreadStack(threadId).then(stackFrames => {
+      this._stackTraceManager.refreshStack(stackFrames);
+      this._updateCurrentScopes();
+    });
+  }
+
   _handleDebugEvent(event: ProtocolDebugEvent): void {
     switch (event.method) {
       case 'Debugger.loaderBreakpoint': {
@@ -140,9 +149,19 @@ export default class BridgeAdapter {
         break;
       case 'Debugger.paused': {
         const params: PausedEvent = event.params;
-        this._stackTraceManager._handleDebuggerPaused(params);
+        this._stackTraceManager.refreshStack(params.callFrames);
         this._executionManager.handleDebuggerPaused(params);
         this._updateCurrentScopes();
+        break;
+      }
+      case 'Debugger.threadsUpdated': {
+        const params: ThreadsUpdatedEvent = event.params;
+        this._threadManager.raiseThreadsUpdated(params);
+        break;
+      }
+      case 'Debugger.threadUpdated': {
+        const params: ThreadUpdatedEvent = event.params;
+        this._threadManager.raiseThreadUpdated(params);
         break;
       }
       default:
