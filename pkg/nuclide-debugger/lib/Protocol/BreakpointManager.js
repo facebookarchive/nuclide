@@ -106,7 +106,9 @@ export default class BreakpointManager {
       }
     }
     this._breakpointList.push({id: UNCONFIRMED_BREAKPOINT_ID, request});
-    this._debuggerDispatcher.setBreakpointByUrl(request, callback.bind(this));
+    if (request.enabled) {
+      this._debuggerDispatcher.setBreakpointByUrl(request, callback.bind(this));
+    }
   }
 
   _assignBreakpointId(
