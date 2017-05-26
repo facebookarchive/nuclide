@@ -11,12 +11,16 @@
 
 import type {IPCEvent} from './types';
 
+require('./Protocol/Object');
+import InspectorBackendClass from './Protocol/NuclideProtocolParser';
+
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import BridgeAdapter from './Protocol/BridgeAdapter';
 import {
   isNewProtocolChannelEnabled,
 } from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.
@@ -24,22 +28,79 @@ import {
   * and allows us to switch between chrome IPC and new non-chrome channel.
   */
 export default class CommandDispatcher {
+  _sessionSubscriptions: ?UniversalDisposable;
   _webview: ?WebviewElement;
-  _bridgeAdapter: BridgeAdapter;
+  _webviewUrl: ?string;
+  _bridgeAdapter: ?BridgeAdapter;
   _useNewChannel: boolean;
 
   constructor() {
-    this._bridgeAdapter = new BridgeAdapter();
     this._useNewChannel = false;
   }
 
-  setupChromeChannel(webview: WebviewElement): void {
-    this._webview = webview;
+  setupChromeChannel(url: string): void {
+    this._ensureSessionCreated();
+    if (this._webview == null) {
+      // Cast from HTMLElement down to WebviewElement without instanceof
+      // checking, as WebviewElement constructor is not exposed.
+      const webview = ((document.createElement(
+        'webview',
+      ): any): WebviewElement);
+      webview.src = url;
+      webview.nodeintegration = true;
+      webview.disablewebsecurity = true;
+      webview.classList.add('native-key-bindings'); // required to pass through certain key events
+      webview.classList.add('nuclide-debugger-webview');
+
+      // The webview is actually only used for its state; it's really more of a model that just has
+      // to live in the DOM. We render it into the body to keep it separate from our view, which may
+      // be detached. If the webview were a child, it would cause the webview to reload when
+      // reattached, and we'd lose our state.
+      invariant(document.body != null);
+      document.body.appendChild(webview);
+
+      this._webview = webview;
+      invariant(this._sessionSubscriptions != null);
+      this._sessionSubscriptions.add(() => {
+        webview.remove();
+        this._webview = null;
+        this._webviewUrl = null;
+      });
+    } else if (url !== this._webviewUrl) {
+      this._webview.src = url;
+    }
+    this._webviewUrl = url;
   }
 
   async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
+    this._ensureSessionCreated();
     this._useNewChannel = await isNewProtocolChannelEnabled();
-    return this._bridgeAdapter.start(debuggerInstance);
+    if (this._useNewChannel) {
+      const debuggerDispatcher = await InspectorBackendClass.bootstrap(
+        debuggerInstance,
+      );
+      this._bridgeAdapter = new BridgeAdapter(debuggerDispatcher);
+      invariant(this._sessionSubscriptions != null);
+      this._sessionSubscriptions.add(() => {
+        if (this._bridgeAdapter != null) {
+          this._bridgeAdapter.dispose();
+          this._bridgeAdapter = null;
+        }
+      });
+    }
+  }
+
+  _ensureSessionCreated(): void {
+    if (this._sessionSubscriptions == null) {
+      this._sessionSubscriptions = new UniversalDisposable();
+    }
+  }
+
+  cleanupSessionState(): void {
+    if (this._sessionSubscriptions != null) {
+      this._sessionSubscriptions.dispose();
+      this._sessionSubscriptions = null;
+    }
   }
 
   send(...args: Array<any>): void {
@@ -50,13 +111,24 @@ export default class CommandDispatcher {
     }
   }
 
+  openDevTools(): void {
+    if (this._webview == null) {
+      return;
+    }
+    this._webview.openDevTools();
+  }
+
   getEventObservable(): Observable<IPCEvent> {
     invariant(this._webview != null);
     const chromeEvent$ = Observable.fromEvent(this._webview, 'ipc-message');
+    if (this._bridgeAdapter == null) {
+      return chromeEvent$;
+    }
     return this._bridgeAdapter.getEventObservable().merge(chromeEvent$);
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
+    invariant(this._bridgeAdapter != null);
     switch (args[0]) {
       case 'Continue':
         this._bridgeAdapter.resume();
@@ -105,6 +177,7 @@ export default class CommandDispatcher {
   }
 
   _triggerDebuggerAction(actionId: string): void {
+    invariant(this._bridgeAdapter != null);
     switch (actionId) {
       case 'debugger.toggle-pause':
         // TODO[jetan]: 'debugger.toggle-pause' needs to implement state management which

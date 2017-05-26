@@ -36,8 +36,6 @@ export default class Bridge {
   // Contains disposable items that are only available during
   // debug mode.
   _debugModeDisposables: ?UniversalDisposable;
-  _webview: ?WebviewElement;
-  _webviewUrl: ?string;
   _commandDispatcher: CommandDispatcher;
   _suppressBreakpointSync: boolean;
 
@@ -399,53 +397,19 @@ export default class Bridge {
     }
   }
 
-  renderChromeWebview(url: string): void {
-    if (this._webview == null) {
-      // Cast from HTMLElement down to WebviewElement without instanceof
-      // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement(
-        'webview',
-      ): any): WebviewElement);
-      webview.src = url;
-      webview.nodeintegration = true;
-      webview.disablewebsecurity = true;
-      webview.classList.add('native-key-bindings'); // required to pass through certain key events
-      webview.classList.add('nuclide-debugger-webview');
-
-      // The webview is actually only used for its state; it's really more of a model that just has
-      // to live in the DOM. We render it into the body to keep it separate from our view, which may
-      // be detached. If the webview were a child, it would cause the webview to reload when
-      // reattached, and we'd lose our state.
-      invariant(document.body != null);
-      document.body.appendChild(webview);
-
-      this._setWebviewElement(webview);
-    } else if (url !== this._webviewUrl) {
-      this._webview.src = url;
-    }
-    this._webviewUrl = url;
-  }
-
-  // Exposed for tests
-  _setWebviewElement(webview: WebviewElement): void {
-    this._webview = webview;
-    this._commandDispatcher.setupChromeChannel(webview);
-    invariant(this._debugModeDisposables != null);
-    this._debugModeDisposables.add(() => {
-      webview.remove();
-      this._webview = null;
-      this._webviewUrl = null;
-    });
-    this.enableEventsListening();
-  }
-
   enableEventsListening(): void {
-    invariant(this._debugModeDisposables != null);
-    this._debugModeDisposables.add(
+    const subscriptions = this._debugModeDisposables;
+    invariant(subscriptions != null);
+    subscriptions.add(
       this._commandDispatcher
         .getEventObservable()
         .subscribe(this._handleIpcMessage),
     );
+    subscriptions.add(() => this._commandDispatcher.cleanupSessionState());
+  }
+
+  setupChromeChannel(url: string): void {
+    this._commandDispatcher.setupChromeChannel(url);
   }
 
   setupNuclideChannel(debuggerInstance: Object): Promise<void> {
@@ -453,9 +417,6 @@ export default class Bridge {
   }
 
   openDevTools(): void {
-    if (this._webview == null) {
-      return;
-    }
-    this._webview.openDevTools();
+    this._commandDispatcher.openDevTools();
   }
 }

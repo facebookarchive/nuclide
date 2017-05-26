@@ -40,7 +40,8 @@ export default class DebuggerActionsStore {
         } else {
           this._bridge.enterDebugMode();
           const url = `${nuclideUri.join(__dirname, '../scripts/inspector.html')}?${data}`;
-          this._bridge.renderChromeWebview(url);
+          this._bridge.setupChromeChannel(url);
+          this._bridge.enableEventsListening();
         }
         break;
       case ActionTypes.TRIGGER_DEBUGGER_ACTION:
