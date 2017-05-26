@@ -21,7 +21,6 @@ import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import invariant from 'assert';
 import {reportError, reportWarning} from './Utils';
 import {Subject, Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const UNCONFIRMED_BREAKPOINT_ID = 'Unassigned';
 
@@ -44,29 +43,12 @@ export default class BreakpointManager {
   _initBreakpoints: Array<IPCBreakpoint>;
   _breakpointList: Array<UserBreakpoint>;
   _breakpointEvent$: Subject<Array<mixed>>;
-  _subscriptions: UniversalDisposable;
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
     this._initBreakpoints = [];
     this._breakpointList = [];
     this._breakpointEvent$ = new Subject();
-    this._subscriptions = new UniversalDisposable();
     this._debuggerDispatcher = debuggerDispatcher;
-    (this: any)._handleBreakpointResolved = this._handleBreakpointResolved.bind(
-      this,
-    );
-    this._subscriptions.add(
-      debuggerDispatcher.getEventObservable().subscribe(event => {
-        switch (event.method) {
-          case 'Debugger.breakpointResolved':
-            const params: BreakpointResolvedEvent = event.params;
-            this._handleBreakpointResolved(params);
-            break;
-          default:
-            break;
-        }
-      }),
-    );
   }
 
   getEventObservable(): Observable<Array<mixed>> {
@@ -269,7 +251,7 @@ export default class BreakpointManager {
     return newCopy;
   }
 
-  _handleBreakpointResolved(params: BreakpointResolvedEvent): void {
+  handleBreakpointResolved(params: BreakpointResolvedEvent): void {
     const {breakpointId, location} = params;
     if (this._getBreakpointFromId(breakpointId) !== null) {
       this._sendBreakpointResolved(breakpointId, location);
@@ -277,9 +259,5 @@ export default class BreakpointManager {
       // User has removed this breakpoint before engine resolves it.
       // This is an expected scenario, just ignore it.
     }
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
   }
 }

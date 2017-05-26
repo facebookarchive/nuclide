@@ -69,6 +69,4 @@ export default class ExpressionEvaluationManager {
   _raiseIPCEvent(...args: Array<mixed>): void {
     this._evalutionEvent$.next(args);
   }
-
-  dispose(): void {}
 }

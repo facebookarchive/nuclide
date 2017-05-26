@@ -12,6 +12,11 @@
 import type {Observable} from 'rxjs';
 import type {IPCEvent, IPCBreakpoint, ObjectGroup} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ProtocolDebugEvent} from './DebuggerDomainDispatcher';
+import type {
+  BreakpointResolvedEvent,
+  PausedEvent,
+} from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
@@ -32,21 +37,18 @@ export default class BridgeAdapter {
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
     this._debuggerDispatcher = debuggerDispatcher;
+    (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
+    this._breakpointManager = new BreakpointManager(this._debuggerDispatcher);
+    this._stackTraceManager = new StackTraceManager(this._debuggerDispatcher);
+    this._executionManager = new ExecutionManager(this._debuggerDispatcher);
+    this._threadManager = new ThreadManager(this._debuggerDispatcher);
+    this._expressionEvaluationManager = new ExpressionEvaluationManager(
+      this._debuggerDispatcher,
+    );
     this._subscriptions = new UniversalDisposable(
-      (this._breakpointManager = new BreakpointManager(
-        this._debuggerDispatcher,
-      )),
-      (this._stackTraceManager = new StackTraceManager(
-        this._debuggerDispatcher,
-      )),
-      (this._executionManager = new ExecutionManager(
-        this._debuggerDispatcher,
-        this._breakpointManager,
-      )),
-      (this._threadManager = new ThreadManager(this._debuggerDispatcher)),
-      (this._expressionEvaluationManager = new ExpressionEvaluationManager(
-        this._debuggerDispatcher,
-      )),
+      this._debuggerDispatcher
+        .getEventObservable()
+        .subscribe(this._handleDebugEvent),
     );
   }
 
@@ -108,6 +110,33 @@ export default class BridgeAdapter {
       expression,
       objectGroup,
     );
+  }
+
+  _handleDebugEvent(event: ProtocolDebugEvent): void {
+    switch (event.method) {
+      case 'Debugger.loaderBreakpoint': {
+        this._breakpointManager.syncInitialBreakpointsToEngine();
+        // This should be the last method called.
+        this._executionManager.continueFromLoaderBreakpoint();
+        break;
+      }
+      case 'Debugger.breakpointResolved': {
+        const params: BreakpointResolvedEvent = event.params;
+        this._breakpointManager.handleBreakpointResolved(params);
+        break;
+      }
+      case 'Debugger.resumed':
+        this._executionManager.handleDebuggeeResumed();
+        break;
+      case 'Debugger.paused': {
+        const params: PausedEvent = event.params;
+        this._stackTraceManager._handleDebuggerPaused(params);
+        this._executionManager.handleDebuggerPaused(params);
+        break;
+      }
+      default:
+        break;
+    }
   }
 
   getEventObservable(): Observable<IPCEvent> {

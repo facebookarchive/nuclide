@@ -19,14 +19,12 @@ import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import invariant from 'assert';
 import {Subject, Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 /**
  * Bridge between Nuclide IPC and RPC stack trace protocols.
  */
 export default class StackTraceManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
-  _subscriptions: UniversalDisposable;
   _stackTraceEvent$: Subject<Array<mixed>>;
   _currentCallFrameIndex: number;
   _currentThreadFrames: Array<CallFrame>;
@@ -36,15 +34,6 @@ export default class StackTraceManager {
     this._currentCallFrameIndex = 0;
     this._currentThreadFrames = [];
     this._debuggerDispatcher = debuggerDispatcher;
-    this._subscriptions = new UniversalDisposable();
-    this._subscriptions.add(
-      this._debuggerDispatcher.getEventObservable().subscribe(event => {
-        if (event.method === 'Debugger.paused') {
-          const params: PausedEvent = event.params;
-          this._handleDebuggerPaused(params);
-        }
-      }),
-    );
   }
 
   getEventObservable(): Observable<Array<mixed>> {
@@ -107,9 +96,5 @@ export default class StackTraceManager {
   // across bridge boundary.
   _raiseIPCEvent(...args: Array<mixed>): void {
     this._stackTraceEvent$.next(args);
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
   }
 }
