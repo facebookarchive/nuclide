@@ -44,12 +44,11 @@ export default class NewProtocolMessageChecker {
     const msgObj = JSON.parse(message);
     switch (msgObj.method) {
       case 'Debugger.breakpointResolved':
-        return true;
       case 'Debugger.paused':
-        return true;
       case 'Debugger.resumed':
-        return true;
       case 'Debugger.scriptParsed':
+      case 'Debugger.threadUpdated':
+      case 'Debugger.threadsUpdated':
         return true;
       default:
         return false;

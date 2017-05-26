@@ -138,7 +138,10 @@ class DebuggerDomainDispatcher {
   }
 
   threadsUpdated(params: ThreadsUpdatedEvent): void {
-    // TODO
+    this._raiseProtocolEvent({
+      method: 'Debugger.threadsUpdated',
+      params,
+    });
   }
 
   breakpointResolved(params: BreakpointResolvedEvent): void {

@@ -20,12 +20,14 @@ import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import BreakpointManager from './BreakpointManager';
 import StackTraceManager from './StackTraceManager';
 import ExecutionManager from './ExecutionManager';
+import ThreadManager from './ThreadManager';
 
 export default class BridgeAdapter {
   _debuggerDispatcher: ?DebuggerDomainDispatcher;
   _breakpointManager: ?BreakpointManager;
   _stackTraceManager: ?StackTraceManager;
   _executionManager: ?ExecutionManager;
+  _threadManager: ?ThreadManager;
 
   constructor() {}
 
@@ -39,6 +41,7 @@ export default class BridgeAdapter {
       this._debuggerDispatcher,
       this._breakpointManager,
     );
+    this._threadManager = new ThreadManager(this._debuggerDispatcher);
   }
 
   resume(): void {
@@ -101,13 +104,16 @@ export default class BridgeAdapter {
     const breakpointManager = this._breakpointManager;
     const stackTraceManager = this._stackTraceManager;
     const executionManager = this._executionManager;
+    const threadManager = this._threadManager;
     invariant(breakpointManager != null);
     invariant(stackTraceManager != null);
     invariant(executionManager != null);
+    invariant(threadManager != null);
     return breakpointManager
       .getEventObservable()
       .merge(stackTraceManager.getEventObservable())
       .merge(executionManager.getEventObservable())
+      .merge(threadManager.getEventObservable())
       .map(args => {
         return {channel: 'notification', args};
       });
@@ -125,6 +131,10 @@ export default class BridgeAdapter {
     if (this._executionManager != null) {
       this._executionManager.dispose();
       this._executionManager = null;
+    }
+    if (this._threadManager != null) {
+      this._threadManager.dispose();
+      this._threadManager = null;
     }
   }
 }
