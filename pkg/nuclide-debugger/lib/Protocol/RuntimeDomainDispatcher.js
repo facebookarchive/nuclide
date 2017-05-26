@@ -9,6 +9,10 @@
  * @format
  */
 
+import type {
+  RemoteObjectId,
+} from '../../../nuclide-debugger-base/lib/protocol-types';
+
 /**
  * Responsible for sending and receiving runtime domain protocols from
  * debug engine.
@@ -18,6 +22,16 @@ class RuntimeDomainDispatcher {
 
   constructor(agent: Object) {
     this._agent = agent;
+  }
+
+  getProperties(objectId: RemoteObjectId, callback: Function): void {
+    this._agent.getProperties(
+      objectId,
+      false, // ownProperties
+      false, // accessorPropertiesOnly
+      false, // generatePreview
+      callback,
+    );
   }
 }
 

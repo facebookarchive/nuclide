@@ -19,7 +19,6 @@ import type {
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import BreakpointManager from './BreakpointManager';
 import StackTraceManager from './StackTraceManager';
 import ExecutionManager from './ExecutionManager';
@@ -28,27 +27,25 @@ import ExpressionEvaluationManager from './ExpressionEvaluationManager';
 
 export default class BridgeAdapter {
   _subscriptions: UniversalDisposable;
-  _debuggerDispatcher: DebuggerDomainDispatcher;
   _breakpointManager: BreakpointManager;
   _stackTraceManager: StackTraceManager;
   _executionManager: ExecutionManager;
   _threadManager: ThreadManager;
   _expressionEvaluationManager: ExpressionEvaluationManager;
 
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
-    this._debuggerDispatcher = debuggerDispatcher;
+  constructor(dispatchers: Object) {
+    const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
     (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
-    this._breakpointManager = new BreakpointManager(this._debuggerDispatcher);
-    this._stackTraceManager = new StackTraceManager(this._debuggerDispatcher);
-    this._executionManager = new ExecutionManager(this._debuggerDispatcher);
-    this._threadManager = new ThreadManager(this._debuggerDispatcher);
+    this._breakpointManager = new BreakpointManager(debuggerDispatcher);
+    this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
+    this._executionManager = new ExecutionManager(debuggerDispatcher);
+    this._threadManager = new ThreadManager(debuggerDispatcher);
     this._expressionEvaluationManager = new ExpressionEvaluationManager(
-      this._debuggerDispatcher,
+      debuggerDispatcher,
+      runtimeDispatcher,
     );
     this._subscriptions = new UniversalDisposable(
-      this._debuggerDispatcher
-        .getEventObservable()
-        .subscribe(this._handleDebugEvent),
+      debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent),
     );
   }
 
@@ -72,12 +69,25 @@ export default class BridgeAdapter {
     this._executionManager.stepOut();
   }
 
+  _clearStates(): void {
+    this._expressionEvaluationManager.clearPauseStates();
+    this._stackTraceManager.clearPauseStates();
+  }
+
   runToLocation(fileUri: NuclideUri, line: number): void {
     this._executionManager.runToLocation(fileUri, line);
   }
 
   setSelectedCallFrameIndex(index: number): void {
     this._stackTraceManager.setSelectedCallFrameIndex(index);
+    this._updateCurrentScopes();
+  }
+
+  _updateCurrentScopes(): void {
+    const currentFrame = this._stackTraceManager.getCurrentFrame();
+    this._expressionEvaluationManager.updateCurrentFrameScope(
+      currentFrame.scopeChain,
+    );
   }
 
   setInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
@@ -103,7 +113,7 @@ export default class BridgeAdapter {
   ): void {
     // TODO: check pause or run mode and dispatch to corresponding
     // protocol.
-    const callFrameId = this._stackTraceManager.getSelectedFrameId();
+    const callFrameId = this._stackTraceManager.getCurrentFrame().callFrameId;
     this._expressionEvaluationManager.evaluateOnCallFrame(
       transactionId,
       callFrameId,
@@ -132,6 +142,7 @@ export default class BridgeAdapter {
         const params: PausedEvent = event.params;
         this._stackTraceManager._handleDebuggerPaused(params);
         this._executionManager.handleDebuggerPaused(params);
+        this._updateCurrentScopes();
         break;
       }
       default:

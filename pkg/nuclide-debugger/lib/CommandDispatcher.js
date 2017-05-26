@@ -76,10 +76,10 @@ export default class CommandDispatcher {
     this._ensureSessionCreated();
     this._useNewChannel = await isNewProtocolChannelEnabled();
     if (this._useNewChannel) {
-      const debuggerDispatcher = await InspectorBackendClass.bootstrap(
+      const dispatchers = await InspectorBackendClass.bootstrap(
         debuggerInstance,
       );
-      this._bridgeAdapter = new BridgeAdapter(debuggerDispatcher);
+      this._bridgeAdapter = new BridgeAdapter(dispatchers);
       invariant(this._sessionSubscriptions != null);
       this._sessionSubscriptions.add(() => {
         if (this._bridgeAdapter != null) {

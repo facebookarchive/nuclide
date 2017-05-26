@@ -33,6 +33,7 @@
 /* eslint-disable */
 
 var DebuggerDomainDispatcher = require('./DebuggerDomainDispatcher');
+var RuntimeDomainDispatcher = require('./RuntimeDomainDispatcher');
 
 /**
  * @constructor
@@ -209,9 +210,12 @@ InspectorBackendClass.prototype = {
               var debuggerAgent = connection.agent('Debugger');
               var debuggerDispatcher = new DebuggerDomainDispatcher(debuggerAgent);
               connection.registerDispatcher('Debugger', debuggerDispatcher);
+              var runtimeAgent = connection.agent('Runtime');
+              var runtimeDispatcher = new RuntimeDomainDispatcher(runtimeAgent);
+              connection.registerDispatcher('Runtime', runtimeDispatcher);
 
               InspectorBackend._initialized = false;
-              resolve(debuggerDispatcher);
+              resolve({debuggerDispatcher, runtimeDispatcher});
           });
         });
         return parseProtocolPromise;

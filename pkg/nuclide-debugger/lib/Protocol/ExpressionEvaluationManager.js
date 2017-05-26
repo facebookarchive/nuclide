@@ -10,14 +10,76 @@
  */
 
 import type {
+  RemoteObjectId,
+  PropertyDescriptor,
+  Scope,
   CallFrameId,
   EvaluateOnCallFrameResponse,
+  GetPropertiesResponse,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
-import type {ObjectGroup} from '../types';
+import type {ObjectGroup, ExpansionResult} from '../types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
+import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
+import invariant from 'assert';
 import {Subject, Observable} from 'rxjs';
 import {reportError} from './Utils';
+
+class RemoteObjectProxy {
+  _objectId: RemoteObjectId;
+  _runtimeDispatcher: RuntimeDomainDispatcher;
+
+  constructor(
+    runtimeDispatcher: RuntimeDomainDispatcher,
+    objectId: RemoteObjectId,
+  ) {
+    this._runtimeDispatcher = runtimeDispatcher;
+    this._objectId = objectId;
+  }
+
+  getProperties(): Promise<GetPropertiesResponse> {
+    return new Promise((resolve, reject) => {
+      function callback(error: Error, response: GetPropertiesResponse) {
+        if (error != null) {
+          reportError(`getProperties failed with ${JSON.stringify(error)}`);
+          reject(error);
+        }
+        resolve(response);
+      }
+      this._runtimeDispatcher.getProperties(
+        this._objectId,
+        callback.bind(this),
+      );
+    });
+  }
+}
+
+class RemoteObjectManager {
+  _runtimeDispatcher: RuntimeDomainDispatcher;
+  _remoteObjects: Map<RemoteObjectId, RemoteObjectProxy>;
+
+  constructor(runtimeDispatcher: RuntimeDomainDispatcher) {
+    this._runtimeDispatcher = runtimeDispatcher;
+    this._remoteObjects = new Map();
+  }
+
+  addObject(objectId: RemoteObjectId): RemoteObjectProxy {
+    const remoteObject = new RemoteObjectProxy(
+      this._runtimeDispatcher,
+      objectId,
+    );
+    this._remoteObjects.set(objectId, remoteObject);
+    return remoteObject;
+  }
+
+  getRemoteObjectFromId(objectId: RemoteObjectId): ?RemoteObjectProxy {
+    return this._remoteObjects.get(objectId);
+  }
+
+  clear(): void {
+    this._remoteObjects.clear();
+  }
+}
 
 /**
  * Bridge between Nuclide IPC and RPC breakpoint protocols.
@@ -25,10 +87,15 @@ import {reportError} from './Utils';
 export default class ExpressionEvaluationManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _evalutionEvent$: Subject<Array<mixed>>;
+  _remoteObjectManager: RemoteObjectManager;
 
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
+  constructor(
+    debuggerDispatcher: DebuggerDomainDispatcher,
+    runtimeDispatcher: RuntimeDomainDispatcher,
+  ) {
     this._debuggerDispatcher = debuggerDispatcher;
     this._evalutionEvent$ = new Subject();
+    this._remoteObjectManager = new RemoteObjectManager(runtimeDispatcher);
   }
 
   evaluateOnCallFrame(
@@ -45,6 +112,9 @@ export default class ExpressionEvaluationManager {
         return;
       }
       const {result, wasThrown, exceptionDetails} = response;
+      if (result.objectId != null) {
+        this._remoteObjectManager.addObject(result.objectId);
+      }
       this._raiseIPCEvent('ExpressionEvaluationResponse', {
         result,
         error: wasThrown ? exceptionDetails : null,
@@ -58,6 +128,75 @@ export default class ExpressionEvaluationManager {
       objectGroup,
       callback.bind(this),
     );
+  }
+
+  getProperties(id: number, objectId: RemoteObjectId): void {
+    const remoteObject = this._remoteObjectManager.getRemoteObjectFromId(
+      objectId,
+    );
+    if (remoteObject == null) {
+      reportError(`Cannot find object id ${objectId} for getProperties()`);
+      return;
+    }
+    remoteObject.getProperties().then(response => {
+      // TODO: exceptionDetails
+      const {result} = response;
+      const expansionResult = this._propertiesToExpansionResult(result);
+      this._raiseIPCEvent('GetPropertiesResponse', {
+        result: expansionResult,
+        // error, TODO
+        objectId,
+        id,
+      });
+    });
+  }
+
+  _propertiesToExpansionResult(
+    properties: Array<PropertyDescriptor>,
+  ): ?ExpansionResult {
+    return properties
+      .filter(({name, value}) => value != null)
+      .map(({name, value}) => {
+        invariant(value != null);
+        const {type, subtype, objectId, value: innerValue, description} = value;
+        return {
+          name,
+          value: {
+            type,
+            subtype,
+            objectId,
+            value: innerValue,
+            description,
+          },
+        };
+      });
+  }
+
+  updateCurrentFrameScope(scopes: Array<Scope>): void {
+    const scopesPromises = scopes.map(async scope => {
+      const scopeObjectId = scope.object.objectId;
+      invariant(
+        scopeObjectId != null,
+        'Engine returns a scope without objectId?',
+      );
+      const remoteObject = this._remoteObjectManager.addObject(scopeObjectId);
+      const response = await remoteObject.getProperties();
+
+      // TODO: deal with response.exceptionDetails.
+      const scopeVariables = this._propertiesToExpansionResult(response.result);
+      return {
+        name: scope.object.description,
+        scopeVariables,
+      };
+    });
+
+    Promise.all(scopesPromises).then(scopesData => {
+      this._raiseIPCEvent('ScopesUpdate', scopesData);
+    });
+  }
+
+  clearPauseStates(): void {
+    this._remoteObjectManager.clear();
   }
 
   getEventObservable(): Observable<Array<mixed>> {
