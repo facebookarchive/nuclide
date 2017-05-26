@@ -12,6 +12,7 @@
 import type {Store} from '../types';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import * as Actions from '../redux/Actions';
 import {Observable} from 'rxjs';
 import {TunnelsPanelTable} from './TunnelsPanelTable';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
@@ -51,7 +52,11 @@ export class TunnelsPanel {
     const states = Observable.from(this._store);
 
     const props = states.map(state => {
-      return {tunnels: Array.from(state.openTunnels.keys())};
+      return {
+        tunnels: Array.from(state.openTunnels.keys()),
+        closeTunnel: tunnel =>
+          this._store.dispatch(Actions.closeTunnel(tunnel)),
+      };
     });
 
     const BoundTable = bindObservableAsProps(props, TunnelsPanelTable);

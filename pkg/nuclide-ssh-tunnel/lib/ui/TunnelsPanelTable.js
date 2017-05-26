@@ -8,14 +8,15 @@
  * @flow
  * @format
  */
-
 import type {Tunnel} from '../types';
 
+import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import React from 'react';
 
 type Props = {
   tunnels: Array<Tunnel>,
+  closeTunnel: (tunnel: Tunnel) => void,
 };
 
 export class TunnelsPanelTable extends React.Component {
@@ -31,12 +32,23 @@ export class TunnelsPanelTable extends React.Component {
         title: 'To',
         key: 'to',
       },
+      {
+        title: '',
+        key: 'close',
+        width: 0,
+      },
     ];
     const rows = this.props.tunnels.map(tunnel => ({
       className: 'nuclide-ssh-tunnels-table-row',
       data: {
         from: `${tunnel.from.host}:${tunnel.from.port}`,
         to: `${tunnel.to.host}:${tunnel.to.port}`,
+        close: (
+          <TunnelCloseButton
+            tunnel={tunnel}
+            closeTunnel={this.props.closeTunnel}
+          />
+        ),
       },
     }));
     return (
