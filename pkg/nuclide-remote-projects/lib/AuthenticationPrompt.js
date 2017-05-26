@@ -11,6 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import React from 'react';
+import {getNotificationService} from './AtomNotifications';
 
 type Props = {
   instructions: string,
@@ -47,6 +48,19 @@ export default class AuthenticationPrompt
     );
 
     this.refs.password.focus();
+
+    const raiseNativeNotification = getNotificationService();
+    if (raiseNativeNotification != null) {
+      const pendingNotification = raiseNativeNotification(
+        'Nuclide Remote Connection',
+        'Nuclide requires additional action to authenticate your remote connection',
+        2000,
+        false,
+      );
+      if (pendingNotification != null) {
+        this._disposables.add(pendingNotification);
+      }
+    }
   }
 
   componentWillUnmount(): void {

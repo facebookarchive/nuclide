@@ -37,6 +37,7 @@ import RemoteDirectoryProvider from './RemoteDirectoryProvider';
 import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
 import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
+import {setNotificationService} from './AtomNotifications';
 
 const logger = getLogger('nuclide-remote-projects');
 
@@ -603,4 +604,15 @@ export function getHomeFragments(): HomeFragments {
 export function provideRemoteProjectsService(): RemoteProjectsService {
   invariant(remoteProjectsService != null);
   return remoteProjectsService;
+}
+
+export function consumeNotifications(
+  raiseNativeNotification: (
+    title: string,
+    body: string,
+    timeout: number,
+    raiseIfAtomHasFocus: boolean,
+  ) => ?IDisposable,
+): void {
+  setNotificationService(raiseNativeNotification);
 }

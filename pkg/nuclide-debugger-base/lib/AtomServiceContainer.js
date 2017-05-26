@@ -12,7 +12,12 @@
 import type {Observable} from 'rxjs';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
-type raiseNativeNotificationFunc = ?(title: string, body: string) => void;
+type raiseNativeNotificationFunc = ?(
+  title: string,
+  body: string,
+  timeout: number,
+  raiseIfAtomHasFocus: boolean,
+) => ?IDisposable;
 
 let _outputServiceApi: ?OutputService = null;
 let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;

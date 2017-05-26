@@ -64,6 +64,11 @@
       "versions": {
         "^1.0.0": "consumeStatusBar"
       }
+    },
+    "nuclide-notifications.provideRaiseNativeNotification": {
+      "versions": {
+        "0.0.0": "consumeNotifications"
+      }
     }
   }
 }

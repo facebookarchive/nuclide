@@ -834,7 +834,12 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
 }
 
 export function consumeNotifications(
-  raiseNativeNotification: (title: string, body: string) => void,
+  raiseNativeNotification: (
+    title: string,
+    body: string,
+    timeout: number,
+    raiseIfAtomHasFocus: boolean,
+  ) => ?IDisposable,
 ): void {
   setNotificationService(raiseNativeNotification);
 }
