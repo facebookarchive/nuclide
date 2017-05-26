@@ -42,6 +42,14 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
     return true;
   }
 
+  getSupportedPIDs(
+    host: NuclideUri,
+    device: string,
+    procs: Process[],
+  ): Promise<Set<number>> {
+    return Promise.resolve(new Set(procs.map(proc => proc.pid)));
+  }
+
   async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
     return this._rpcFactory(host).killProcess(device, proc.name);
   }

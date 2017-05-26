@@ -26,5 +26,6 @@ export function createEmptyAppState(): AppState {
     processes: [],
     processTasks: [],
     isDeviceConnected: false,
+    supportedPidsPerTask: new Map(),
   };
 }

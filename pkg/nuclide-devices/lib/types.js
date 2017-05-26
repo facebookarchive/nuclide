@@ -59,7 +59,11 @@ export interface DeviceProcessTaskProvider {
   run(host: NuclideUri, device: string, proc: Process): Promise<void>,
   getTaskType(): ProcessTaskType,
   getType(): string,
-  isSupported(proc: Process): boolean,
+  getSupportedPIDs(
+    host: NuclideUri,
+    device: string,
+    procs: Process[],
+  ): Promise<Set<number>>,
   getName(): string,
 }
 

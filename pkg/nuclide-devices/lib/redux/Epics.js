@@ -41,6 +41,21 @@ export function setDeviceEpic(
   });
 }
 
+export function setProcessesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_PROCESSES).switchMap(action => {
+    invariant(action.type === Actions.SET_PROCESSES);
+    const state = store.getState();
+    return Observable.fromPromise(
+      getProcessTasks(state),
+    ).switchMap(processTasks =>
+      Observable.of(Actions.setProcessTasks(processTasks)),
+    );
+  });
+}
+
 async function getInfoTables(
   state: AppState,
 ): Promise<Map<string, Map<string, string>>> {
@@ -78,16 +93,23 @@ async function getProcessTasks(state: AppState): Promise<ProcessTask[]> {
   if (device == null) {
     return [];
   }
-  return Array.from(getProviders().processTask)
-    .filter(provider => provider.getType() === state.deviceType)
-    .map(provider => {
-      return {
-        type: provider.getTaskType(),
-        run: (proc: Process) => provider.run(state.host, device.name, proc),
-        isSupported: (proc: Process) => provider.isSupported(proc),
-        name: provider.getName(),
-      };
-    });
+  return Promise.all(
+    Array.from(getProviders().processTask)
+      .filter(provider => provider.getType() === state.deviceType)
+      .map(async provider => {
+        const supportedSet = await provider.getSupportedPIDs(
+          state.host,
+          device.name,
+          state.processes,
+        );
+        return {
+          type: provider.getTaskType(),
+          run: (proc: Process) => provider.run(state.host, device.name, proc),
+          isSupported: (proc: Process) => supportedSet.has(proc.pid),
+          name: provider.getName(),
+        };
+      }),
+  );
 }
 
 // The actual device tasks are cached so that if a task is running when the store switches back and
