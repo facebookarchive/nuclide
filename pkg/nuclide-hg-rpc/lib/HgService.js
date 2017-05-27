@@ -239,6 +239,14 @@ export type CheckoutOptions = {
   clean?: true,
 };
 
+async function logWhenSubscriptionEstablished(
+  sub: Promise<mixed>,
+  subName: string,
+): Promise<void> {
+  await sub;
+  logger.debug(`Watchman subscription ${subName} established.`);
+}
+
 async function getForkBaseName(directoryPath: string): Promise<string> {
   const arcConfig = await readArcConfig(directoryPath);
   if (arcConfig != null) {
@@ -421,7 +429,7 @@ export class HgService {
     );
 
     // Subscribe to changes to files unrelated to source control.
-    const primarySubscribtion = await watchmanClient.watchDirectoryRecursive(
+    const primarySubscriptionPromise = watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_PRIMARY,
       {
@@ -431,12 +439,13 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(
-      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_PRIMARY} established.`,
+    logWhenSubscriptionEstablished(
+      primarySubscriptionPromise,
+      WATCHMAN_SUBSCRIPTION_NAME_PRIMARY,
     );
 
     // Subscribe to changes to files unrelated to source control.
-    const conflictStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
+    const conflictStateSubscriptionPromise = watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS,
       {
@@ -446,12 +455,13 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(
-      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS} established.`,
+    logWhenSubscriptionEstablished(
+      conflictStateSubscriptionPromise,
+      WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS,
     );
 
     // Subscribe to changes to the active Mercurial bookmark.
-    const hgActiveBookmarkSubscription = await watchmanClient.watchDirectoryRecursive(
+    const hgActiveBookmarkSubscriptionPromise = watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
       {
@@ -461,12 +471,13 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(
-      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`,
+    logWhenSubscriptionEstablished(
+      hgActiveBookmarkSubscriptionPromise,
+      WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
     );
 
     // Subscribe to changes in Mercurial bookmarks.
-    const hgBookmarksSubscription = await watchmanClient.watchDirectoryRecursive(
+    const hgBookmarksSubscriptionPromise = watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS,
       {
@@ -476,11 +487,12 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(
-      `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS} established.`,
+    logWhenSubscriptionEstablished(
+      hgBookmarksSubscriptionPromise,
+      WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS,
     );
 
-    const dirStateSubscribtion = await watchmanClient.watchDirectoryRecursive(
+    const dirStateSubscriptionPromise = watchmanClient.watchDirectoryRecursive(
       workingDirectory,
       WATCHMAN_HG_DIR_STATE,
       {
@@ -490,7 +502,10 @@ export class HgService {
         empty_on_fresh_instance: true,
       },
     );
-    logger.debug(`Watchman subscription ${WATCHMAN_HG_DIR_STATE} established.`);
+    logWhenSubscriptionEstablished(
+      dirStateSubscriptionPromise,
+      WATCHMAN_HG_DIR_STATE,
+    );
 
     // Those files' changes indicate a commit-changing action has been applied to the repository,
     // Watchman currently (v4.7) ignores `.hg/store` file updates.
@@ -514,14 +529,28 @@ export class HgService {
       );
     }
 
-    primarySubscribtion.on('change', this._filesDidChange.bind(this));
+    const [
+      primarySubscription,
+      hgActiveBookmarkSubscription,
+      hgBookmarksSubscription,
+      dirStateSubscription,
+      conflictStateSubscription,
+    ] = await Promise.all([
+      primarySubscriptionPromise,
+      hgActiveBookmarkSubscriptionPromise,
+      hgBookmarksSubscriptionPromise,
+      dirStateSubscriptionPromise,
+      conflictStateSubscriptionPromise,
+    ]);
+
+    primarySubscription.on('change', this._filesDidChange.bind(this));
     hgActiveBookmarkSubscription.on(
       'change',
       this._hgActiveBookmarkDidChange.bind(this),
     );
     hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
-    dirStateSubscribtion.on('change', this._emitHgRepoStateChanged.bind(this));
-    conflictStateSubscribtion.on('change', this._debouncedCheckConflictChange);
+    dirStateSubscription.on('change', this._emitHgRepoStateChanged.bind(this));
+    conflictStateSubscription.on('change', this._debouncedCheckConflictChange);
   }
 
   async _cleanUpWatchman(): Promise<void> {
