@@ -60,7 +60,7 @@ type Props = {
 
 function NavStackStatusBarTile(props: Props): React.Element<any> {
   return (
-    <ButtonGroup>
+    <ButtonGroup size="EXTRA_SMALL">
       <Button
         icon="chevron-left"
         onClick={props.onBack}
