@@ -45,7 +45,9 @@ import {findHackPrefix} from '../../nuclide-hack-common/lib/autocomplete';
 // From hphp/hack/src/utils/exit_status.ml
 const HACK_SERVER_ALREADY_EXISTS_EXIT_CODE = 77;
 const HACK_IDE_NEW_CLIENT_CONNECTED_EXIT_CODE = 207;
-const MAX_HACK_AUTOCOMPLETE_ITEMS = 100;
+
+// This isn't truly correct, but this will be deprecated with the LSP anyway.
+const MAX_HACK_AUTOCOMPLETE_ITEMS = 50;
 
 import {logger} from './hack-config';
 
@@ -191,7 +193,7 @@ class HackProcess {
     if (unfilteredItems == null) {
       return null;
     }
-    const isIncomplete = unfilteredItems.length === MAX_HACK_AUTOCOMPLETE_ITEMS;
+    const isIncomplete = unfilteredItems.length >= MAX_HACK_AUTOCOMPLETE_ITEMS;
 
     const items = convertCompletions(
       contents,
