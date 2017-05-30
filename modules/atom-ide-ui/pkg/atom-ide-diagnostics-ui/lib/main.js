@@ -63,7 +63,6 @@ function disableLinter() {
 }
 
 class Activation {
-  _bottomPanel: ?atom$Panel;
   _diagnosticUpdaters: BehaviorSubject<?ObservableDiagnosticUpdater>;
   _subscriptions: UniversalDisposable;
   _state: ActivationState;
