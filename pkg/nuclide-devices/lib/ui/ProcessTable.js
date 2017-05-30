@@ -118,14 +118,16 @@ export class ProcessTable extends React.Component {
     ).map(item => ({
       data: {
         pid: (
-          <ProcessTaskButton
-            icon="x"
-            proc={item}
-            taskType="KILL"
-            nameIfManyTasks="Kill process"
-            tasks={this.props.processTasks}>
+          <div>
+            <ProcessTaskButton
+              icon="x"
+              proc={item}
+              taskType="KILL"
+              nameIfManyTasks="Kill process"
+              tasks={this.props.processTasks}
+            />
             {item.pid}
-          </ProcessTaskButton>
+          </div>
         ),
         user: item.user,
         name: item.name,
@@ -195,6 +197,7 @@ export class ProcessTable extends React.Component {
           onSort={this._handleSort}
           sortedColumn={this.state.sortedColumn}
           sortDescending={this.state.sortDescending}
+          className="nuclide-device-panel-process-table"
         />
       </div>
     );

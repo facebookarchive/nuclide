@@ -21,7 +21,6 @@ type Props = {|
   proc: Process,
   icon: IconName,
   taskType: ProcessTaskType,
-  children?: any,
   className?: string,
   nameIfManyTasks: string,
 |};
@@ -42,18 +41,15 @@ export class ProcessTaskButton extends React.Component {
   render(): React.Element<any> {
     const options = this._getTaskOptions();
     if (options.length === 0) {
-      return <span>{this.props.children}</span>;
+      return <div />;
     } else if (options.length === 1) {
       return (
-        <span
-          onClick={() => options[0].value.run(this.props.proc)}
-          className="nuclide-device-panel-text-with-icon">
+        <span onClick={() => options[0].value.run(this.props.proc)}>
           <Icon
             icon={this.props.icon}
             title={options[0].label}
             className={this.props.className}
           />
-          {this.props.children}
         </span>
       );
     } else {
@@ -61,18 +57,14 @@ export class ProcessTaskButton extends React.Component {
         <Icon icon={this.props.icon} title={this.props.nameIfManyTasks} />
       );
       return (
-        <span>
-          <Dropdown
-            className="nuclide-device-panel-text-with-icon"
-            isFlat={true}
-            options={options}
-            placeholder={placeholder}
-            size="xs"
-            onChange={(task: ProcessTask) =>
-              task != null && task.run(this.props.proc)}
-          />
-          {this.props.children}
-        </span>
+        <Dropdown
+          isFlat={true}
+          options={options}
+          placeholder={placeholder}
+          size="xs"
+          onChange={(task: ProcessTask) =>
+            task != null && task.run(this.props.proc)}
+        />
       );
     }
   }
