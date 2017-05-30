@@ -14,7 +14,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
-import DiagnosticsPanel from './DiagnosticsPanel';
+import DiagnosticsView from './DiagnosticsView';
 import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility
   from 'nuclide-commons-atom/observePaneItemVisibility';
@@ -36,13 +36,13 @@ type PanelProps = {
   +onShowTracesChange: (isChecked: boolean) => void,
 };
 
-type SerializedDiagnosticsPanelModel = {
-  deserializer: 'nuclide.DiagnosticsPanelModel',
+type SerializedDiagnosticsViewModel = {
+  deserializer: 'atom-ide-ui.DiagnosticsViewModel',
 };
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
 
-export class DiagnosticsPanelModel {
+export class DiagnosticsViewModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
   _visibility: BehaviorSubject<boolean>;
@@ -112,9 +112,9 @@ export class DiagnosticsPanelModel {
     return 'bottom';
   }
 
-  serialize(): SerializedDiagnosticsPanelModel {
+  serialize(): SerializedDiagnosticsViewModel {
     return {
-      deserializer: 'nuclide.DiagnosticsPanelModel',
+      deserializer: 'atom-ide-ui.DiagnosticsViewModel',
     };
   }
 
@@ -124,7 +124,7 @@ export class DiagnosticsPanelModel {
 
   getElement(): HTMLElement {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsPanel);
+      const Component = bindObservableAsProps(this._props, DiagnosticsView);
       const element = renderReactRoot(<Component />);
       element.classList.add('nuclide-diagnostics-ui');
       this._element = element;

@@ -37,10 +37,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {
-  DiagnosticsPanelModel,
-  WORKSPACE_VIEW_URI,
-} from './DiagnosticsPanelModel';
+import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
@@ -122,7 +119,7 @@ class Activation {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
-    // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
+    // Currently, the DiagnosticsView is designed to work with only one DiagnosticUpdater.
     if (this._diagnosticUpdaters.getValue() != null) {
       return new UniversalDisposable();
     }
@@ -163,8 +160,8 @@ class Activation {
     this._getStatusBarTile().consumeStatusBar(statusBar);
   }
 
-  deserializeDiagnosticsPanelModel(): DiagnosticsPanelModel {
-    return this._createDiagnosticsPanelModel();
+  deserializeDiagnosticsViewModel(): DiagnosticsViewModel {
+    return this._createDiagnosticsViewModel();
   }
 
   dispose(): void {
@@ -179,8 +176,8 @@ class Activation {
     return this._state;
   }
 
-  _createDiagnosticsPanelModel(): DiagnosticsPanelModel {
-    return new DiagnosticsPanelModel(
+  _createDiagnosticsViewModel(): DiagnosticsViewModel {
+    return new DiagnosticsViewModel(
       this._diagnosticUpdaters.switchMap(
         updater =>
           updater == null ? Observable.of([]) : updater.allMessageUpdates,
@@ -216,10 +213,10 @@ class Activation {
     this._subscriptions.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return this._createDiagnosticsPanelModel();
+          return this._createDiagnosticsViewModel();
         }
       }),
-      () => api.destroyWhere(item => item instanceof DiagnosticsPanelModel),
+      () => api.destroyWhere(item => item instanceof DiagnosticsViewModel),
       commandDisposable,
     );
     return commandDisposable;

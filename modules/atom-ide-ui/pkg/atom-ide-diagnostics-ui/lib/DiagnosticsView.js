@@ -36,7 +36,7 @@ type Props = {
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
-export default class DiagnosticsPanel extends React.Component {
+export default class DiagnosticsView extends React.Component {
   props: Props;
 
   constructor(props: Props) {
