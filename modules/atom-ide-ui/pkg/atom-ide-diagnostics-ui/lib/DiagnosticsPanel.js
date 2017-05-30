@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
 
 import analytics from 'nuclide-commons-atom/analytics';
-import DiagnosticsPane from './DiagnosticsPane';
+import DiagnosticsTable from './DiagnosticsTable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
@@ -144,7 +144,7 @@ export default class DiagnosticsPanel extends React.Component {
             </Button>
           </ToolbarRight>
         </Toolbar>
-        <DiagnosticsPane
+        <DiagnosticsTable
           showFileName={!this.props.filterByActiveTextEditor}
           diagnostics={diagnostics}
           showTraces={showTraces}

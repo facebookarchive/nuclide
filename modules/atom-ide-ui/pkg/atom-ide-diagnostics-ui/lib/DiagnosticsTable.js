@@ -127,20 +127,20 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
   goToLocation(uri, line, column);
 }
 
-type DiagnosticsPaneProps = {
+type DiagnosticsTableProps = {
   diagnostics: Array<DiagnosticMessage>,
   showFileName: ?boolean,
   showTraces: boolean,
 };
 
-export default class DiagnosticsPane extends React.Component {
-  props: DiagnosticsPaneProps;
+export default class DiagnosticsTable extends React.Component {
+  props: DiagnosticsTableProps;
   state: {
     sortDescending: boolean,
     sortedColumn: ?string,
   };
 
-  constructor(props: DiagnosticsPaneProps) {
+  constructor(props: DiagnosticsTableProps) {
     super(props);
     (this: any)._handleSort = this._handleSort.bind(this);
     (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
