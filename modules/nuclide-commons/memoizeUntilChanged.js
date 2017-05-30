@@ -9,7 +9,7 @@
  * @format
  */
 
-import {arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual} from './collection';
 import Hasher from './Hasher';
 
 type CompareFunc = (a: Array<any>, b: Array<any>) => boolean;

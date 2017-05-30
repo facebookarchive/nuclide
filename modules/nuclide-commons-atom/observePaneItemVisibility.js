@@ -10,7 +10,7 @@
  */
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import memoize from 'lodash.memoize';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import {Observable, Scheduler} from 'rxjs';
 
 // TODO(T17495608): Currently, docks don't have a way of observing their visibility so this will
@@ -26,12 +26,15 @@ export default function observePaneItemVisibility(
     return Observable.empty();
   }
 
-  return observeActiveItems()
+  // atom.workspace.reset() (in tests) resets all the panes.
+  // Pass in atom.workspace.getElement() to act as a cache-breaker.
+  // $FlowFixMe: Add atom.workspace.getElement() after 1.17.
+  return observeActiveItems(atom.workspace.getElement())
     .map(activeItems => activeItems.includes(item))
     .distinctUntilChanged();
 }
 
-const observeActiveItems = memoize(() => {
+const observeActiveItems = memoizeUntilChanged(_cacheKey => {
   // An observable that emits `{pane, item}` whenever the active item of a pane changes.
   const itemActivations = Observable.merge(
     // $FlowFixMe: Add `getPaneContainers()` to the type defs once Atom 1.17 lands.

@@ -86,7 +86,7 @@ export function getDocksWorkspaceViewsService() {
       atom.workspace.getPanes().forEach(pane => {
         pane.getItems().forEach(item => {
           if (predicate(item)) {
-            pane.destroyItem(item);
+            pane.destroyItem(item, true);
           }
         });
       });

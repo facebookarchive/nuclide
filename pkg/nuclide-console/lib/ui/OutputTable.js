@@ -17,7 +17,7 @@ import type {
   RecordHeightChangeHandler,
 } from '../types';
 
-import Hasher from '../../../commons-node/Hasher';
+import Hasher from 'nuclide-commons/Hasher';
 import React from 'react';
 import {List} from 'react-virtualized';
 import RecordView from './RecordView';
