@@ -26,5 +26,8 @@
         "0.0.0": "provideSshTunnelService"
       }
     }
-  }
+  },
+  "activationHooks": [
+    "nuclide_ssh_tunnels:gk:nuclide"
+  ]
 }
