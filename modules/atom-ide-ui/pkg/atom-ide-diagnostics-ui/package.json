@@ -14,17 +14,15 @@
         "IDE",
         "Diagnostics"
       ]
-    },
-    "config": {
-      "showDiagnosticTraces": {
-        "title": "Show full diagnostic traces",
-        "type": "boolean",
-        "default": false,
-        "description": "Shows full trace information in diagnostics."
-      }
-    },
-    "packageType": "Atom",
-    "testRunner": "apm"
+    }
+  },
+  "atomConfig": {
+    "showDiagnosticTraces": {
+      "title": "Show full diagnostic traces",
+      "type": "boolean",
+      "default": false,
+      "description": "Shows full trace information in diagnostics."
+    }
   },
   "consumedServices": {
     "nuclide-datatip.provider": {

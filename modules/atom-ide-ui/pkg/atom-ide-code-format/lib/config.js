@@ -13,7 +13,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 
 export function getFormatOnSave(): boolean {
   const formatOnSave = (featureConfig.get(
-    'nuclide-code-format.formatOnSave',
+    'atom-ide-code-format.formatOnSave',
   ): any);
   return formatOnSave == null ? false : formatOnSave;
 }

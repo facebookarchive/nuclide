@@ -187,11 +187,11 @@ class Activation {
           updater == null ? Observable.of([]) : updater.allMessageUpdates,
       ),
       ((featureConfig.observeAsStream(
-        'nuclide-diagnostics-ui.showDiagnosticTraces',
+        'atom-ide-diagnostics-ui.showDiagnosticTraces',
       ): any): Observable<boolean>),
       showTraces => {
         featureConfig.set(
-          'nuclide-diagnostics-ui.showDiagnosticTraces',
+          'atom-ide-diagnostics-ui.showDiagnosticTraces',
           showTraces,
         );
       },
