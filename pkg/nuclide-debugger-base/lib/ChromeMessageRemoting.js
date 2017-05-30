@@ -74,7 +74,7 @@ function translateUriFromServer(hostname: string, uri: string): string {
     invariant(components.pathname);
     const result = nuclideUri.createRemoteUri(
       hostname,
-      decodeURI(components.pathname),
+      decodeURI(components.pathname + (components.hash || '')),
     );
     return result;
   } else {
