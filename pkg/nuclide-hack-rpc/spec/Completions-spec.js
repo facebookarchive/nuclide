@@ -11,8 +11,7 @@
 
 import type {HackCompletionsResult} from '../lib/rpc-types';
 
-import {default as TextBuffer, Point} from 'simple-text-buffer';
-import {convertCompletions, hasPrefix} from '../lib/Completions';
+import {convertCompletions} from '../lib/Completions';
 
 const filePath = '/tmp/project/file.hh';
 const contents2 = `<?hh // strict
@@ -112,18 +111,6 @@ describe('Completions', () => {
           type: 'function',
         },
       ]);
-    });
-  });
-
-  describe('hasPrefix', () => {
-    it('matches only accessors', () => {
-      const buffer = new TextBuffer('a->b C::D NS\\f');
-      expect(hasPrefix(buffer, new Point(0, 2))).toBe(false);
-      expect(hasPrefix(buffer, new Point(0, 3))).toBe(true);
-      expect(hasPrefix(buffer, new Point(0, 4))).toBe(false);
-      expect(hasPrefix(buffer, new Point(0, 7))).toBe(false);
-      expect(hasPrefix(buffer, new Point(0, 8))).toBe(true);
-      expect(hasPrefix(buffer, new Point(0, 13))).toBe(true);
     });
   });
 });
