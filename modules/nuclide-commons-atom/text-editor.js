@@ -188,3 +188,28 @@ export function isValidTextEditor(item: mixed): boolean {
   }
   return false;
 }
+
+export function centerScrollToBufferLine(
+  textEditorElement: atom$TextEditorElement,
+  bufferLineNumber: number,
+): void {
+  const textEditor = textEditorElement.getModel();
+  const pixelPositionTop = textEditorElement.pixelPositionForBufferPosition([
+    bufferLineNumber,
+    0,
+  ]).top;
+  // Manually calculate the scroll location, instead of using
+  // `textEditor.scrollToBufferPosition([lineNumber, 0], {center: true})`
+  // because that API to wouldn't center the line if it was in the visible screen range.
+  const scrollTop =
+    pixelPositionTop +
+    textEditor.getLineHeightInPixels() / 2 -
+    textEditorElement.clientHeight / 2;
+  textEditorElement.setScrollTop(Math.max(scrollTop, 1));
+
+  textEditorElement.focus();
+
+  textEditor.setCursorBufferPosition([bufferLineNumber, 0], {
+    autoscroll: false,
+  });
+}
