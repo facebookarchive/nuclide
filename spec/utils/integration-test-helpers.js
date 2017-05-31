@@ -105,7 +105,6 @@ export async function activateAllPackages(): Promise<Array<string>> {
   await Promise.all(
     packageNames.map(pack => atom.packages.activatePackage(pack)),
   );
-  // $FlowIgnore atom implementation detail
   atom.packages.emitter.emit('did-activate-initial-packages');
   return atom.packages.getActivePackages().map(pack => pack.name);
 }
