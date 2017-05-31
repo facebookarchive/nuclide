@@ -17,3 +17,10 @@ export function getFormatOnSave(): boolean {
   ): any);
   return formatOnSave == null ? false : formatOnSave;
 }
+
+export function getFormatOnType(): boolean {
+  return featureConfig.getWithDefaults(
+    'atom-ide-code-format.formatOnType',
+    false,
+  );
+}

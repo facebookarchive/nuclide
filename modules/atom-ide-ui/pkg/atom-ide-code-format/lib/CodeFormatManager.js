@@ -18,7 +18,7 @@ import {nextTick} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
-import {getFormatOnSave} from './config';
+import {getFormatOnSave, getFormatOnType} from './config';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('CodeFormatManager');
@@ -211,6 +211,10 @@ export default class CodeFormatManager {
     editor: atom$TextEditor,
     event: atom$TextEditEvent,
   ): Promise<void> {
+    if (!getFormatOnType()) {
+      return;
+    }
+
     // There's not a direct way to figure out what caused this edit event. There
     // are three cases that we want to pay attention to:
     //
