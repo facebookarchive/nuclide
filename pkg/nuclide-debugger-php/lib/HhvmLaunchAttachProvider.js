@@ -9,39 +9,40 @@
  * @format
  */
 
+import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import React from 'react';
 import {LaunchUiComponent} from './LaunchUiComponent';
 import {AttachUiComponent} from './AttachUiComponent';
 import invariant from 'assert';
 
-import type EventEmitter from 'events';
-
 export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
   }
 
-  getActions(): Promise<Array<string>> {
-    return Promise.resolve(['Attach', 'Launch']);
+  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   getComponent(
-    action: string,
-    parentEventEmitter: EventEmitter,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
   ): ?React.Element<any> {
-    if (action === 'Launch') {
+    if (action === 'launch') {
       return (
         <LaunchUiComponent
           targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
+          configIsValidChanged={configIsValidChanged}
         />
       );
-    } else if (action === 'Attach') {
+    } else if (action === 'attach') {
       return (
         <AttachUiComponent
           targetUri={this.getTargetUri()}
-          parentEmitter={parentEventEmitter}
+          configIsValidChanged={configIsValidChanged}
         />
       );
     } else {

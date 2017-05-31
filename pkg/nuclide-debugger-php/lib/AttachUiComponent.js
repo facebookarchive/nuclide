@@ -13,19 +13,17 @@ import React from 'react';
 import {AttachProcessInfo} from './AttachProcessInfo';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import type EventEmitter from 'events';
-
 type PropsType = {
   targetUri: NuclideUri,
-  parentEmitter: EventEmitter,
+  configIsValidChanged: (valid: boolean) => void,
 };
 
 type StateType = {
@@ -37,36 +35,47 @@ export class AttachUiComponent
   extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
+  _disposables: UniversalDisposable;
 
   constructor(props: PropsType) {
     super(props);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
-      this,
-    );
     (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(
       this,
     );
     (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
       this,
     );
+    this._disposables = new UniversalDisposable();
     this.state = {
       selectedPathIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
     };
   }
 
-  componentWillMount() {
-    this.props.parentEmitter.on(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachButtonClick,
+  componentDidMount(): void {
+    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+    this._disposables.add(
+      atom.commands.add('atom-workspace', {
+        'core:confirm': () => {
+          if (this._debugButtonShouldEnable()) {
+            this._handleAttachButtonClick();
+          }
+        },
+      }),
     );
   }
 
   componentWillUnmount() {
-    this.props.parentEmitter.removeListener(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleAttachButtonClick,
-    );
+    this._disposables.dispose();
+  }
+
+  setState(newState: Object): void {
+    super.setState(newState);
+    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+  }
+
+  _debugButtonShouldEnable(): boolean {
+    return true;
   }
 
   render(): React.Element<any> {
@@ -80,16 +89,6 @@ export class AttachUiComponent
             onChange={this._handlePathsDropdownChange}
             value={this.state.selectedPathIndex}
           />
-        </div>
-        <div className="nuclide-debugger-launch-attach-actions">
-          <ButtonGroup>
-            <Button onClick={this._handleCancelButtonClick}>Cancel</Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              onClick={this._handleAttachButtonClick}>
-              Attach
-            </Button>
-          </ButtonGroup>
         </div>
       </div>
     );
@@ -125,22 +124,6 @@ export class AttachUiComponent
     );
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),
-    );
-    this._showDebuggerPanel();
-    this._handleCancelButtonClick();
-  }
-
-  _showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
-  }
-
-  _handleCancelButtonClick(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
     );
   }
 }

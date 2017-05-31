@@ -9,14 +9,14 @@
  * @format
  */
 
+import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
+
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import React from 'react';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import {AttachUIComponent} from './AttachUIComponent';
 import {LaunchAttachActions} from './LaunchAttachActions';
-
-import type EventEmitter from 'events';
 
 export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;
@@ -33,21 +33,22 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     this._store = new LaunchAttachStore(this._dispatcher);
   }
 
-  getActions(): Promise<Array<string>> {
-    return Promise.resolve(['Attach']);
+  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    return Promise.resolve(action === 'attach');
   }
 
   getComponent(
-    action: string,
-    parentEventEmitter: EventEmitter,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
   ): ?React.Element<any> {
-    if (action === 'Attach') {
+    if (action === 'attach') {
       this._actions.updateAttachTargetList();
       return (
         <AttachUIComponent
           store={this._store}
           actions={this._actions}
-          parentEmitter={parentEventEmitter}
+          configIsValidChanged={configIsValidChanged}
         />
       );
     } else {

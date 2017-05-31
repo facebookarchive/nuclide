@@ -14,34 +14,27 @@ import {shellParse} from 'nuclide-commons/string';
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 
-import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-
-import type EventEmitter from 'events';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type PropsType = {
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
-  parentEmitter: EventEmitter,
+  configIsValidChanged: (valid: boolean) => void,
 };
 
 export class LaunchUIComponent extends React.Component<void, PropsType, void> {
   props: PropsType;
+  _disposables: UniversalDisposable;
 
   constructor(props: PropsType) {
     super(props);
     (this: any)._handleLaunchClick = this._handleLaunchClick.bind(this);
-    (this: any)._cancelClick = this._cancelClick.bind(this);
-  }
 
-  componentWillMount() {
-    this.props.parentEmitter.on(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchClick,
-    );
+    this._disposables = new UniversalDisposable();
   }
 
   componentDidMount(): void {
@@ -49,13 +42,20 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     if (launchExecutableInput != null) {
       launchExecutableInput.focus();
     }
+
+    this._disposables.add(
+      atom.commands.add('atom-workspace', {
+        'core:confirm': () => {
+          this._handleLaunchClick();
+        },
+      }),
+    );
+
+    this.props.configIsValidChanged(true);
   }
 
   componentWillUnmount() {
-    this.props.parentEmitter.removeListener(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchClick,
-    );
+    this._disposables.dispose();
   }
 
   render(): React.Element<any> {
@@ -94,27 +94,7 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
           tabIndex="15"
           placeholderText="Redirect stdin to this file"
         />
-        <div style={{display: 'flex', flexDirection: 'row-reverse'}}>
-          <ButtonGroup>
-            <Button tabIndex="17" onClick={this._cancelClick}>
-              Cancel
-            </Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              tabIndex="16"
-              onClick={this._handleLaunchClick}>
-              Launch
-            </Button>
-          </ButtonGroup>
-        </div>
       </div>
-    );
-  }
-
-  _cancelClick(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
     );
   }
 
@@ -138,7 +118,5 @@ export class LaunchUIComponent extends React.Component<void, PropsType, void> {
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);
-    this.props.actions.showDebuggerPanel();
-    this.props.actions.toggleLaunchAttachDialog();
   }
 }

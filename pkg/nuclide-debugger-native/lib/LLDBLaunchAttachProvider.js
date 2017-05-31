@@ -12,7 +12,7 @@
 import type {
   DebuggerActionUIProvider,
 } from './actions/DebuggerActionUIProvider';
-import type EventEmitter from 'events';
+import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
 
 import {asyncFilter} from 'nuclide-commons/promise';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
@@ -20,14 +20,15 @@ import React from 'react';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachActions} from './LaunchAttachActions';
-import * as LaunchActionUIProvider from './actions/LaunchActionUIProvider';
-import * as AttachActionUIProvider from './actions/AttachActionUIProvider';
+import * as NativeActionUIProvider from './actions/NativeActionUIProvider';
+import invariant from 'invariant';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;
   _actions: LaunchAttachActions;
   _store: LaunchAttachStore;
   _uiProviderMap: Map<string, DebuggerActionUIProvider>;
+  _enabledProviderNames: Map<string, Array<string>>;
 
   constructor(debuggingTypeName: string, targetUri: string) {
     super(debuggingTypeName, targetUri);
@@ -39,8 +40,8 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     this._store = new LaunchAttachStore(this._dispatcher);
 
     this._uiProviderMap = new Map();
-    this._loadAction(AttachActionUIProvider);
-    this._loadAction(LaunchActionUIProvider);
+    this._enabledProviderNames = new Map();
+    this._loadAction(NativeActionUIProvider);
     try {
       // $FlowFB
       this._loadAction(require('./actions/fb-omActionUIProvider'));
@@ -53,24 +54,43 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     }
   }
 
-  async getActions(): Promise<Array<string>> {
+  async isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    if (this._enabledProviderNames.get(action) == null) {
+      this._enabledProviderNames.set(action, []);
+    }
+
     const providers = await asyncFilter(
       Array.from(this._uiProviderMap.values()),
-      provider => provider.isEnabled(),
+      provider => provider.isEnabled(action),
     );
-    return providers.map(provider => provider.name);
+
+    const list = this._enabledProviderNames.get(action);
+    invariant(list != null);
+
+    for (const provider of providers) {
+      list.push(provider.name);
+    }
+
+    return providers.length > 0;
+  }
+
+  getDebuggerTypeNames(action: DebuggerConfigAction): Array<string> {
+    return this._enabledProviderNames.get(action) || [];
   }
 
   getComponent(
-    actionName: string,
-    parentEventEmitter: EventEmitter,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
   ): ?React.Element<any> {
-    const action = this._uiProviderMap.get(actionName);
-    if (action) {
-      return action.getComponent(
+    const provider = this._uiProviderMap.get(debuggerTypeName);
+    if (provider) {
+      return provider.getComponent(
         this._store,
         this._actions,
-        parentEventEmitter,
+        debuggerTypeName,
+        action,
+        configIsValidChanged,
       );
     }
     return null;

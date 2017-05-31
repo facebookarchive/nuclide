@@ -15,20 +15,19 @@ import React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import type EventEmitter from 'events';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 const MAX_RECENTLY_LAUNCHED = 5;
 
 type PropsType = {
   targetUri: NuclideUri,
-  parentEmitter: EventEmitter,
+  configIsValidChanged: (valid: boolean) => void,
 };
 
 type StateType = {
@@ -42,13 +41,11 @@ export class LaunchUiComponent
   extends React.Component<void, PropsType, StateType> {
   props: PropsType;
   state: StateType;
+  _disposables: UniversalDisposable;
 
   constructor(props: PropsType) {
     super(props);
     (this: any)._getActiveFilePath = this._getActiveFilePath.bind(this);
-    (this: any)._handleCancelButtonClick = this._handleCancelButtonClick.bind(
-      this,
-    );
     (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(
       this,
     );
@@ -58,6 +55,7 @@ export class LaunchUiComponent
     (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(
       this,
     );
+    this._disposables = new UniversalDisposable();
     this.state = {
       pathsDropdownIndex: 0,
       pathMenuItems: this._getPathMenuItems(),
@@ -66,18 +64,30 @@ export class LaunchUiComponent
     };
   }
 
-  componentWillMount() {
-    this.props.parentEmitter.on(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick,
+  componentDidMount(): void {
+    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+    this._disposables.add(
+      atom.commands.add('atom-workspace', {
+        'core:confirm': () => {
+          if (this._debugButtonShouldEnable()) {
+            this._handleLaunchButtonClick();
+          }
+        },
+      }),
     );
   }
 
   componentWillUnmount() {
-    this.props.parentEmitter.removeListener(
-      DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED,
-      this._handleLaunchButtonClick,
-    );
+    this._disposables.dispose();
+  }
+
+  setState(newState: Object): void {
+    super.setState(newState);
+    this.props.configIsValidChanged(this._debugButtonShouldEnable());
+  }
+
+  _debugButtonShouldEnable(): boolean {
+    return this.refs.scriptPath.getText().trim() !== '';
   }
 
   render(): React.Element<any> {
@@ -109,18 +119,8 @@ export class LaunchUiComponent
           placeholderText="/path/to/my/script.php arg1 arg2"
           initialValue={this._getActiveFilePath()}
           value={this.state.recentlyLaunchedScript || ''}
-          sugges
+          onDidChange={value => this.setState({recentlyLaunchedScript: value})}
         />
-        <div className="padded text-right">
-          <Button onClick={this._handleCancelButtonClick}>
-            Cancel
-          </Button>
-          <Button
-            buttonType={ButtonTypes.PRIMARY}
-            onClick={this._handleLaunchButtonClick}>
-            Launch
-          </Button>
-        </div>
       </div>
     );
   }
@@ -206,8 +206,6 @@ export class LaunchUiComponent
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );
-    this._showDebuggerPanel();
-    this._handleCancelButtonClick();
   }
 
   _getActiveFilePath(): string {
@@ -227,19 +225,5 @@ export class LaunchUiComponent
     }
     const scriptPath = nuclideUri.getPath(uri);
     return scriptPath.endsWith('.php') || scriptPath.endsWith('.hh');
-  }
-
-  _showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
-  }
-
-  _handleCancelButtonClick(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
   }
 }

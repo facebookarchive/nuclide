@@ -32,7 +32,7 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
       connection: NuclideUri,
     ): ?DebuggerLaunchAttachProvider {
       if (nuclideUri.isRemote(connection)) {
-        return new HhvmLaunchAttachProvider('PHP / Hack', connection);
+        return new HhvmLaunchAttachProvider('Hack / PHP', connection);
       }
       return null;
     },

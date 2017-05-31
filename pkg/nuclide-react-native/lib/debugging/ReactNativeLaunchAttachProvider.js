@@ -9,28 +9,29 @@
  * @format
  */
 
+import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
+
 import {DebuggerLaunchAttachProvider} from '../../../nuclide-debugger-base';
 import {DebugUiComponent} from './DebugUiComponent';
 import invariant from 'assert';
 import React from 'react';
 
-import type EmitterEvent from 'events';
-
 export class ReactNativeLaunchAttachProvider
   extends DebuggerLaunchAttachProvider {
-  getActions(): Promise<Array<string>> {
-    return Promise.resolve(['Attach']);
+  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    return Promise.resolve(action === 'attach');
   }
 
   getComponent(
-    action: string,
-    parentEventEmitter: EmitterEvent,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
   ): ?React.Element<any> {
-    invariant(action === 'Attach');
+    invariant(action === 'attach');
     return (
       <DebugUiComponent
         targetUri={this.getTargetUri()}
-        parentEmitter={parentEventEmitter}
+        configIsValidChanged={configIsValidChanged}
       />
     );
   }

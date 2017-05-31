@@ -9,18 +9,20 @@
  * @format
  */
 
+import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
+
 import React from 'react';
 import {LaunchAttachActions} from '../LaunchAttachActions';
 import {LaunchAttachStore} from '../LaunchAttachStore';
-
-import type EventEmitter from 'events';
 
 export type DebuggerActionUIProvider = {
   getComponent: (
     store: LaunchAttachStore,
     actions: LaunchAttachActions,
-    parentEventEmitter: EventEmitter,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
   ) => React.Element<any>,
   name: string,
-  isEnabled: () => Promise<boolean>,
+  isEnabled: (action: DebuggerConfigAction) => Promise<boolean>,
 };

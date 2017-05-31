@@ -42,6 +42,10 @@ type PropsType = {
 type StateType = {
   selectedProviderTab: ?string,
   configIsValid: boolean,
+  enabledProviders: Array<{
+    provider: DebuggerLaunchAttachProvider,
+    debuggerName: string,
+  }>,
 };
 
 export class DebuggerLaunchAttachUI
@@ -60,18 +64,7 @@ export class DebuggerLaunchAttachUI
       atom.commands.add('atom-workspace', {
         'core:confirm': () => {
           if (this.state.configIsValid) {
-            // Remember the last tab the user used for this connection when the "launch/attach"
-            // button is clicked.
-            const host = nuclideUri.isRemote(this.props.connection)
-              ? nuclideUri.getHostname(this.props.connection)
-              : 'local';
-            if (this.state.selectedProviderTab != null) {
-              setLastUsedDebugger(
-                host,
-                this.props.dialogMode,
-                this.state.selectedProviderTab || '',
-              );
-            }
+            this._rememberTab();
 
             // Close the dialog, but do it on the next tick so that the child
             // component gets to handle the event first (and start the debugger).
@@ -81,6 +74,7 @@ export class DebuggerLaunchAttachUI
       }),
       atom.commands.add('atom-workspace', {
         'core:cancel': () => {
+          this._rememberTab();
           this.props.dialogCloser();
         },
       }),
@@ -89,7 +83,23 @@ export class DebuggerLaunchAttachUI
     this.state = {
       selectedProviderTab: null,
       configIsValid: false,
+      enabledProviders: [],
     };
+  }
+
+  _rememberTab(): void {
+    // Remember the last tab the user used for this connection when the "launch/attach"
+    // button is clicked.
+    const host = nuclideUri.isRemote(this.props.connection)
+      ? nuclideUri.getHostname(this.props.connection)
+      : 'local';
+    if (this.state.selectedProviderTab != null) {
+      setLastUsedDebugger(
+        host,
+        this.props.dialogMode,
+        this.state.selectedProviderTab || '',
+      );
+    }
   }
 
   componentWillMount() {
@@ -97,6 +107,7 @@ export class DebuggerLaunchAttachUI
       ? nuclideUri.getHostname(this.props.connection)
       : 'local';
 
+    this._filterProviders();
     this.setState({
       selectedProviderTab: getLastUsedDebugger(host, this.props.dialogMode),
     });
@@ -104,6 +115,29 @@ export class DebuggerLaunchAttachUI
 
   componentWillUnmount() {
     this._disposables.dispose();
+  }
+
+  async _filterProviders(): Promise<void> {
+    const enabled = await asyncFilter(this.props.providers, provider =>
+      provider.isEnabled(this.props.dialogMode),
+    );
+
+    const enabledProviders = [].concat(
+      ...enabled.map(provider => {
+        return provider
+          .getDebuggerTypeNames(this.props.dialogMode)
+          .map(debuggerName => {
+            return {
+              provider,
+              debuggerName,
+            };
+          });
+      }),
+    );
+
+    this.setState({
+      enabledProviders,
+    });
   }
 
   _setConfigValid(valid: boolean): void {
@@ -117,22 +151,7 @@ export class DebuggerLaunchAttachUI
       ? nuclideUri.getHostname(this.props.connection)
       : 'localhost';
 
-    const providedDebuggers = [].concat(
-      ...this.props.providers
-        .filter(provider => provider.isEnabled(this.props.dialogMode))
-        .map(provider => {
-          return provider
-            .getDebuggerTypeNames(this.props.dialogMode)
-            .map(debuggerName => {
-              return {
-                provider,
-                debuggerName,
-              };
-            });
-        }),
-    );
-
-    const tabs = providedDebuggers
+    const tabs = this.state.enabledProviders
       .map(debuggerType => ({
         name: debuggerType.debuggerName,
         tabContent: (
@@ -148,7 +167,7 @@ export class DebuggerLaunchAttachUI
       const selectedTab = this.state.selectedProviderTab != null
         ? this.state.selectedProviderTab
         : tabs[0].name;
-      const provider = providedDebuggers.find(
+      const provider = this.state.enabledProviders.find(
         p => p.debuggerName === selectedTab,
       );
       invariant(provider != null);

@@ -29,7 +29,7 @@ export function createDebuggerProvider(): NuclideDebuggerProvider {
     getLaunchAttachProvider(
       connection: NuclideUri,
     ): ?DebuggerLaunchAttachProvider {
-      return new NodeLaunchAttachProvider('NodeJS', connection);
+      return new NodeLaunchAttachProvider('Node JS', connection);
     },
   };
 }
