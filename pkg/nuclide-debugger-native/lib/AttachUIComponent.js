@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {
@@ -19,11 +20,15 @@ import type {Column} from 'nuclide-commons-ui/Table';
 import React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Table} from 'nuclide-commons-ui/Table';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {
+  serializeDebuggerConfig,
+  deserializeDebuggerConfig,
+} from '../../nuclide-debugger-base';
 
 type PropsType = {
+  targetUri: NuclideUri,
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
   configIsValidChanged: (valid: boolean) => void,
@@ -94,6 +99,7 @@ export class AttachUIComponent
   state: StateType;
   _targetListUpdating: boolean;
   _disposables: UniversalDisposable;
+  _deserializedSavedSettings: boolean;
 
   constructor(props: PropsType) {
     super(props);
@@ -110,6 +116,7 @@ export class AttachUIComponent
     (this: any)._handleSort = this._handleSort.bind(this);
     this._disposables = new UniversalDisposable();
     this._targetListUpdating = false;
+    this._deserializedSavedSettings = false;
     this._disposables.add(
       this.props.store.onAttachTargetListChanged(this._updateList),
     );
@@ -121,6 +128,16 @@ export class AttachUIComponent
       sortDescending: false,
       sortedColumn: null,
     };
+  }
+
+  _getSerializationArgs() {
+    return [
+      nuclideUri.isRemote(this.props.targetUri)
+        ? nuclideUri.getHostname(this.props.targetUri)
+        : 'local',
+      'attach',
+      'native',
+    ];
   }
 
   componentDidMount(): void {
@@ -153,13 +170,37 @@ export class AttachUIComponent
   }
 
   _updateList(): void {
-    const newSelectedTarget = this.state.selectedAttachTarget == null
-      ? null
-      : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+    let filterText = null;
+    let newSelectedTarget = null;
+    if (
+      !this._deserializedSavedSettings &&
+      this.state.attachTargetInfos.length > 0
+    ) {
+      // Deserialize the saved settings the first time the process list updates.
+      this._deserializedSavedSettings = true;
+      deserializeDebuggerConfig(
+        ...this._getSerializationArgs(),
+        (transientSettings, savedSettings) => {
+          newSelectedTarget = this.state.attachTargetInfos.find(
+            target =>
+              target.pid === transientSettings.attachPid &&
+              target.name === transientSettings.attachName,
+          );
+          filterText = transientSettings.filterText;
+        },
+      );
+    }
+
+    if (newSelectedTarget == null) {
+      newSelectedTarget = this.state.selectedAttachTarget == null
+        ? null
+        : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+    }
     this._targetListUpdating = false;
     this.setState({
       attachTargetInfos: this.props.store.getAttachTargetInfos(),
       selectedAttachTarget: newSelectedTarget,
+      filterText: filterText || this.state.filterText,
     });
   }
 
@@ -213,9 +254,10 @@ export class AttachUIComponent
       <div className="block">
         <AtomInput
           placeholderText="Search..."
-          initialValue={this.state.filterText}
+          value={this.state.filterText}
           onDidChange={this._handleFilterTextChange}
           size="sm"
+          autofocus={true}
         />
         <Table
           columns={getColumns()}
@@ -269,6 +311,15 @@ export class AttachUIComponent
     if (attachTarget != null) {
       // Fire and forget.
       this.props.actions.attachDebugger(attachTarget);
+      serializeDebuggerConfig(
+        ...this._getSerializationArgs(),
+        {},
+        {
+          attachPid: attachTarget.pid,
+          attachName: attachTarget.name,
+          filterText: this.state.filterText,
+        },
+      );
     }
   }
 }

@@ -11,13 +11,15 @@
 
 import React from 'react';
 import {AttachProcessInfo} from './AttachProcessInfo';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {
+  serializeDebuggerConfig,
+  deserializeDebuggerConfig,
+} from '../../nuclide-debugger-base';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -52,7 +54,31 @@ export class AttachUiComponent
     };
   }
 
+  _getSerializationArgs() {
+    return [
+      nuclideUri.isRemote(this.props.targetUri)
+        ? nuclideUri.getHostname(this.props.targetUri)
+        : 'local',
+      'attach',
+      'php',
+    ];
+  }
+
   componentDidMount(): void {
+    deserializeDebuggerConfig(
+      ...this._getSerializationArgs(),
+      (transientSettings, savedSettings) => {
+        const savedPath = this.state.pathMenuItems.find(
+          item => item.label === savedSettings.selectedPath,
+        );
+        if (savedPath != null) {
+          this.setState({
+            selectedPathIndex: this.state.pathMenuItems.indexOf(savedPath),
+          });
+        }
+      },
+    );
+
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
     this._disposables.add(
       atom.commands.add('atom-workspace', {
@@ -125,5 +151,9 @@ export class AttachUiComponent
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );
+
+    serializeDebuggerConfig(...this._getSerializationArgs(), {
+      selectedPath,
+    });
   }
 }

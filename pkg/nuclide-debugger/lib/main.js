@@ -691,7 +691,18 @@ class Activation {
     parentEl.style.maxWidth = '100em';
 
     // Function callback that closes the dialog and frees all of its resources.
-    const closer = () => {
+    this._renderConfigDialog(pane, false, dialogMode, () =>
+      disposables.dispose(),
+    );
+    this._lauchAttachDialogCloser = () => disposables.dispose();
+    disposables.add(
+      pane.onDidChangeVisible(visible => {
+        if (!visible) {
+          disposables.dispose();
+        }
+      }),
+    );
+    disposables.add(() => {
       this._disposables.remove(disposables);
       this._visibleLaunchAttachDialogMode = null;
       this._lauchAttachDialogCloser = null;
@@ -701,11 +712,7 @@ class Activation {
       });
       ReactDOM.unmountComponentAtNode(hostEl);
       pane.destroy();
-    };
-
-    this._renderConfigDialog(pane, false, dialogMode, closer);
-    this._lauchAttachDialogCloser = closer;
-    disposables.add(() => closer());
+    });
 
     track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {
       visible: true,

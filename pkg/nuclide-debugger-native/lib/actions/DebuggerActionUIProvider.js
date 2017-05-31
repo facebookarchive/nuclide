@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
 
 import React from 'react';
@@ -17,6 +18,7 @@ import {LaunchAttachStore} from '../LaunchAttachStore';
 
 export type DebuggerActionUIProvider = {
   getComponent: (
+    targetUri: NuclideUri,
     store: LaunchAttachStore,
     actions: LaunchAttachActions,
     debuggerTypeName: string,

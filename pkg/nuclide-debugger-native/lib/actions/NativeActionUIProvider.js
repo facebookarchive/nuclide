@@ -10,6 +10,7 @@
  */
 
 import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import {AttachUIComponent} from '../AttachUIComponent';
@@ -19,6 +20,7 @@ import {LaunchUIComponent} from '../LaunchUIComponent';
 import invariant from 'invariant';
 
 export function getComponent(
+  targetUri: NuclideUri,
   store: LaunchAttachStore,
   actions: LaunchAttachActions,
   debuggerTypeName: string,
@@ -32,6 +34,7 @@ export function getComponent(
         store={store}
         actions={actions}
         configIsValidChanged={configIsValidChanged}
+        targetUri={targetUri}
       />
     );
   } else {
@@ -41,6 +44,7 @@ export function getComponent(
         store={store}
         actions={actions}
         configIsValidChanged={configIsValidChanged}
+        targetUri={targetUri}
       />
     );
   }

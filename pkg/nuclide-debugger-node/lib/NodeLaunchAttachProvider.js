@@ -46,6 +46,7 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
       this._actions.updateAttachTargetList();
       return (
         <AttachUIComponent
+          targetUri={this._targetUri}
           store={this._store}
           actions={this._actions}
           configIsValidChanged={configIsValidChanged}

@@ -16,7 +16,6 @@ import type {WatchExpressionListStore} from './WatchExpressionListStore';
 import {CompositeDisposable} from 'atom';
 import React from 'react';
 import {Section} from '../../nuclide-ui/Section';
-import {Button} from 'nuclide-commons-ui/Button';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {
   FlexDirections,

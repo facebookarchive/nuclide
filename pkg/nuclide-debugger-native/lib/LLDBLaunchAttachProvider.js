@@ -86,6 +86,7 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     const provider = this._uiProviderMap.get(debuggerTypeName);
     if (provider) {
       return provider.getComponent(
+        this._targetUri,
         this._store,
         this._actions,
         debuggerTypeName,

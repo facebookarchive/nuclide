@@ -12,6 +12,11 @@
 
 import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
 
+// transientSettings will matinain configuration that should be persisted for the
+// duration of the current Nunclide session (so preserved across the configuration dialog
+// closing and re-opening), but not preserved if Nuclide is restarted.
+const transientSettings = {};
+
 function _getStorageKey(
   host: string,
   action: DebuggerConfigAction,
@@ -24,25 +29,31 @@ export function serializeDebuggerConfig(
   host: string,
   action: DebuggerConfigAction,
   debuggerName: string,
-  settings: Object,
+  persistent: Object,
+  transient?: Object,
 ): void {
   const key = _getStorageKey(host, action, debuggerName);
-  localStorage.setItem(key, JSON.stringify(settings));
+  localStorage.setItem(key, JSON.stringify(persistent));
+
+  if (transient == null) {
+    delete transientSettings[key];
+  } else {
+    transientSettings[key] = transient;
+  }
 }
 
 export function deserializeDebuggerConfig(
   host: string,
   action: DebuggerConfigAction,
   debuggerName: string,
-): Object {
+  callback: (transientSettings: Object, persistentSettings: Object) => void,
+): void {
   const key = _getStorageKey(host, action, debuggerName);
   const val = localStorage.getItem(key);
-  if (val != null) {
-    try {
-      return (JSON.parse(val): any);
-    } catch (err) {}
-  }
-  return {};
+  try {
+    const persistedSettings = val != null ? (JSON.parse(val): any) : {};
+    callback(transientSettings[key] || {}, persistedSettings);
+  } catch (err) {}
 }
 
 export function setLastUsedDebugger(

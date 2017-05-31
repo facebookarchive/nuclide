@@ -16,10 +16,13 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {RemoteConnection} from '../../nuclide-remote-connection';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {
+  serializeDebuggerConfig,
+  deserializeDebuggerConfig,
+} from '../../nuclide-debugger-base';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -31,8 +34,6 @@ type PropsType = {
 };
 
 type StateType = {
-  pathsDropdownIndex: number,
-  pathMenuItems: Array<{label: string, value: number}>,
   recentlyLaunchedScripts: Array<{label: string, value: string}>,
   recentlyLaunchedScript: ?string,
 };
@@ -49,9 +50,6 @@ export class LaunchUiComponent
     (this: any)._handleLaunchButtonClick = this._handleLaunchButtonClick.bind(
       this,
     );
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
-      this,
-    );
     (this: any)._handleRecentSelectionChange = this._handleRecentSelectionChange.bind(
       this,
     );
@@ -64,7 +62,25 @@ export class LaunchUiComponent
     };
   }
 
+  _getSerializationArgs() {
+    return [
+      nuclideUri.isRemote(this.props.targetUri)
+        ? nuclideUri.getHostname(this.props.targetUri)
+        : 'local',
+      'launch',
+      'php',
+    ];
+  }
+
   componentDidMount(): void {
+    deserializeDebuggerConfig(
+      ...this._getSerializationArgs(),
+      (transientSettings, savedSettings) => {
+        this.setState({
+          recentlyLaunchedScript: savedSettings.scriptPath || '',
+        });
+      },
+    );
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
     this._disposables.add(
       atom.commands.add('atom-workspace', {
@@ -87,21 +103,15 @@ export class LaunchUiComponent
   }
 
   _debugButtonShouldEnable(): boolean {
-    return this.refs.scriptPath.getText().trim() !== '';
+    return (
+      this.state.recentlyLaunchedScript != null &&
+      this.state.recentlyLaunchedScript.trim() !== ''
+    );
   }
 
   render(): React.Element<any> {
     return (
       <div className="block">
-        <div className="nuclide-debugger-php-launch-attach-ui-select-project">
-          <label>Selected Project Directory: </label>
-          <Dropdown
-            className="inline-block nuclide-debugger-connection-box"
-            options={this.state.pathMenuItems}
-            onChange={this._handlePathsDropdownChange}
-            value={this.state.pathsDropdownIndex}
-          />
-        </div>
         <label>Recently launched commands: </label>
         <Dropdown
           className="inline-block nuclide-debugger-recently-launched"
@@ -182,13 +192,6 @@ export class LaunchUiComponent
     });
   }
 
-  _handlePathsDropdownChange(newIndex: number): void {
-    this.setState({
-      pathsDropdownIndex: newIndex,
-      pathMenuItems: this._getPathMenuItems(),
-    });
-  }
-
   _handleRecentSelectionChange(newValue: string): void {
     this.setState({
       recentlyLaunchedScript: newValue,
@@ -206,6 +209,10 @@ export class LaunchUiComponent
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );
+
+    serializeDebuggerConfig(...this._getSerializationArgs(), {
+      scriptPath,
+    });
   }
 
   _getActiveFilePath(): string {
