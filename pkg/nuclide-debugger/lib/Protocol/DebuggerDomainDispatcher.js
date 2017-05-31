@@ -17,6 +17,7 @@ import type {
   DebuggerEvent,
   BreakpointResolvedEvent,
   ThreadsUpdatedEvent,
+  ThreadUpdatedEvent,
   PausedEvent,
   ScriptParsedEvent,
   Location,
@@ -130,6 +131,10 @@ class DebuggerDomainDispatcher {
     );
   }
 
+  selectThread(threadId: number): void {
+    this._agent.selectThread(threadId);
+  }
+
   getThreadStack(threadId: number, callback: Function): void {
     this._agent.getThreadStack(threadId, callback);
   }
@@ -163,6 +168,13 @@ class DebuggerDomainDispatcher {
   threadsUpdated(params: ThreadsUpdatedEvent): void {
     this._raiseProtocolEvent({
       method: 'Debugger.threadsUpdated',
+      params,
+    });
+  }
+
+  threadUpdated(params: ThreadUpdatedEvent): void {
+    this._raiseProtocolEvent({
+      method: 'Debugger.threadUpdated',
       params,
     });
   }

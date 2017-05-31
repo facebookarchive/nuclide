@@ -635,116 +635,6 @@ InspectorBackendClass.Connection.prototype = {
  * @constructor
  * @extends {InspectorBackendClass.Connection}
  */
-InspectorBackendClass.MainConnection = function()
-{
-    InspectorBackendClass.Connection.call(this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessage, this._dispatchMessage, this);
-    InspectorFrontendHost.events.addEventListener(InspectorFrontendHostAPI.Events.DispatchMessageChunk, this._dispatchMessageChunk, this);
-}
-
-InspectorBackendClass.MainConnection.prototype = {
-    /**
-     * @override
-     * @param {!Object} messageObject
-     */
-    sendMessage: function(messageObject)
-    {
-        var message = JSON.stringify(messageObject);
-        InspectorFrontendHost.sendMessageToBackend(message);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _dispatchMessage: function(event)
-    {
-        this.dispatch(/** @type {string} */ (event.data));
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _dispatchMessageChunk: function(event)
-    {
-        var messageChunk = /** @type {string} */ (event.data["messageChunk"]);
-        var messageSize = /** @type {number} */ (event.data["messageSize"]);
-        if (messageSize) {
-            this._messageBuffer = "";
-            this._messageSize = messageSize;
-        }
-        this._messageBuffer += messageChunk;
-        if (this._messageBuffer.length === this._messageSize) {
-            this.dispatch(this._messageBuffer);
-            this._messageBuffer = "";
-            this._messageSize = 0;
-        }
-    },
-
-    __proto__: InspectorBackendClass.Connection.prototype
-}
-
-/**
- * @constructor
- * @extends {InspectorBackendClass.Connection}
- * @param {string} url
- * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
- */
-InspectorBackendClass.WebSocketConnection = function(url, onConnectionReady)
-{
-    InspectorBackendClass.Connection.call(this);
-    this._socket = new WebSocket(url);
-    this._socket.onmessage = this._onMessage.bind(this);
-    this._socket.onerror = this._onError.bind(this);
-    this._socket.onopen = onConnectionReady.bind(null, this);
-    this._socket.onclose = this.connectionClosed.bind(this, "websocket_closed");
-}
-
-/**
- * @param {string} url
- * @param {function(!InspectorBackendClass.Connection)} onConnectionReady
- */
-InspectorBackendClass.WebSocketConnection.Create = function(url, onConnectionReady)
-{
-    new InspectorBackendClass.WebSocketConnection(url, onConnectionReady);
-}
-
-InspectorBackendClass.WebSocketConnection.prototype = {
-
-    /**
-     * @param {!MessageEvent} message
-     */
-    _onMessage: function(message)
-    {
-        var data = /** @type {string} */ (message.data);
-        this.dispatch(data);
-    },
-
-    /**
-     * @param {!Event} error
-     */
-    _onError: function(error)
-    {
-        console.error(error);
-    },
-
-    /**
-     * @override
-     * @param {!Object} messageObject
-     */
-    sendMessage: function(messageObject)
-    {
-        var message = JSON.stringify(messageObject);
-        this._socket.send(message);
-    },
-
-    __proto__: InspectorBackendClass.Connection.prototype
-}
-
-
-/**
- * @constructor
- * @extends {InspectorBackendClass.Connection}
- */
 InspectorBackendClass.StubConnection = function(transport)
 {
     InspectorBackendClass.Connection.call(this);
@@ -986,8 +876,7 @@ InspectorBackendClass.AgentPrototype.prototype = {
     dispatchResponse: function(messageObject, methodName, callback)
     {
         if (messageObject.error && messageObject.error.code !== InspectorBackendClass._DevToolsErrorCode && !InspectorBackendClass.Options.suppressRequestErrors && !this._suppressErrorLogging) {
-            var id = InspectorFrontendHost.isUnderTest() ? "##" : messageObject.id;
-            console.error("Request with id = " + id + " failed. " + JSON.stringify(messageObject.error));
+            console.error("Request with id = " + messageObject.id + " failed. " + JSON.stringify(messageObject.error));
         }
 
         if (this._promisified) {

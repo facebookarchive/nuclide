@@ -125,6 +125,7 @@ export default class BridgeAdapter {
   }
 
   selectThread(threadId: string): void {
+    this._threadManager.selectThread(threadId);
     this._threadManager.getThreadStack(threadId).then(stackFrames => {
       this._stackTraceManager.refreshStack(stackFrames);
       this._updateCurrentScopes();

@@ -32,6 +32,10 @@ export default class ThreadManager {
     this._threadEvent$ = new Subject();
   }
 
+  selectThread(threadId: string): void {
+    this._debuggerDispatcher.selectThread(Number(threadId));
+  }
+
   getThreadStack(threadId: string): Promise<Array<CallFrame>> {
     return new Promise((resolve, reject) => {
       function callback(error: Error, response: GetThreadStackResponse) {
@@ -53,7 +57,7 @@ export default class ThreadManager {
   }
 
   raiseThreadUpdated(params: ThreadUpdatedEvent): void {
-    this._raiseIPCEvent('ThreadUpdate', params);
+    this._raiseIPCEvent('ThreadUpdate', params.thread);
   }
 
   getEventObservable(): Observable<Array<mixed>> {
