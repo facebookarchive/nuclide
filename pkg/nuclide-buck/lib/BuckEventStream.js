@@ -82,14 +82,8 @@ export function getEventsFromSocket(
         case 'ConsoleEvent':
           const match = message.message.match(BUILD_OUTPUT_REGEX);
           if (match != null && match.length === 4) {
-            return Observable.of({
-              type: 'build-output',
-              output: {
-                target: match[1],
-                successType: match[2],
-                path: match[3],
-              },
-            });
+            // The result is also printed to stdout and converted into build-output there.
+            return Observable.empty();
           } else {
             return log(message.message, convertJavaLevel(message.level.name));
           }

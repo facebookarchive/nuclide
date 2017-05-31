@@ -34,7 +34,11 @@ import type {
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {createMessage, taskFromObservable} from '../../commons-node/tasks';
+import {
+  createMessage,
+  createResult,
+  taskFromObservable,
+} from '../../commons-node/tasks';
 import {getLogger} from 'log4js';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -232,9 +236,9 @@ export class BuckBuildSystem {
             createMessage(`Target: ${target}`, 'log'),
             createMessage(`Output: ${path}`, 'log'),
             createMessage(`Success type: ${successType}`, 'log'),
-            Observable.of({
-              type: 'result',
-              result: {...event.output, path: nuclideUri.join(buckRoot, path)},
+            createResult({
+              ...event.output,
+              path: nuclideUri.join(buckRoot, path),
             }),
           );
         } else if (event.type === 'diagnostics') {
