@@ -447,7 +447,8 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
   // on Windows, so asking for any case is expected to work.
   const {HOME, UserProfile} = process.env;
 
-  const homePath = os.platform() === 'win32' ? UserProfile : HOME;
+  const isWindows = !isRemote(uri) && os.platform() === 'win32';
+  const homePath = isWindows ? UserProfile : HOME;
   invariant(homePath != null);
 
   if (uri === '~') {
@@ -455,7 +456,7 @@ function expandHomeDir(uri: NuclideUri): NuclideUri {
   }
 
   // Uris like ~abc should not be expanded
-  if (!uri.startsWith('~/')) {
+  if (!uri.startsWith('~/') && (!isWindows || !uri.startsWith('~\\'))) {
     return uri;
   }
 
