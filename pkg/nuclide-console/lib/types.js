@@ -10,7 +10,9 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {Level as TaskLevelType} from '../../commons-node/tasks';
+import type {
+  Level as TaskLevelType,
+} from '../../commons-node/process-rpc-types';
 import type {
   EvaluationResult,
   ExpansionResult,

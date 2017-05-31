@@ -13,6 +13,8 @@
 // interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
 // two.
 
+import type {TaskEvent, Message, Level} from './process-rpc-types';
+
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import invariant from 'assert';
@@ -30,35 +32,6 @@ export type Task = {
   onResult?: (callback: (result: mixed) => mixed) => IDisposable,
   onStatusChange?: (callback: (status: ?string) => mixed) => IDisposable,
 };
-
-export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
-export type Message = {text: string, level: Level};
-
-type MessageEvent = {
-  type: 'message',
-  message: Message,
-};
-
-type ProgressEvent = {
-  type: 'progress',
-  progress: ?number,
-};
-
-type ResultEvent = {
-  type: 'result',
-  result: mixed,
-};
-
-type StatusEvent = {
-  type: 'status',
-  status: ?string,
-};
-
-export type TaskEvent =
-  | MessageEvent
-  | ProgressEvent
-  | ResultEvent
-  | StatusEvent;
 
 /**
  * Subscribe to an observable and transform it into the Task interface. The Task interface allows us

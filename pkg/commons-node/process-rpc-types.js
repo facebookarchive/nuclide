@@ -40,3 +40,32 @@ export type ProcessInfo = {
   pid: number,
   command: string,
 };
+
+export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
+export type Message = {text: string, level: Level};
+
+export type MessageEvent = {
+  type: 'message',
+  message: Message,
+};
+
+export type ProgressEvent = {
+  type: 'progress',
+  progress: ?number,
+};
+
+export type ResultEvent = {
+  type: 'result',
+  result: mixed,
+};
+
+export type StatusEvent = {
+  type: 'status',
+  status: ?string,
+};
+
+export type TaskEvent =
+  | MessageEvent
+  | ProgressEvent
+  | ResultEvent
+  | StatusEvent;

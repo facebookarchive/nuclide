@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from '../tasks';
+import type {Message} from '../process-rpc-types';
 
 import {taskFromObservable, observableFromTask} from '../tasks';
 import invariant from 'assert';

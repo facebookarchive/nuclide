@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TaskEvent} from '../../commons-node/tasks';
+import type {TaskEvent} from '../../commons-node/process-rpc-types';
 
 import {Observable, ReplaySubject, Subscription} from 'rxjs';
 

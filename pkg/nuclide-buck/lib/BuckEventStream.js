@@ -10,7 +10,7 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
-import type {Level} from '../../commons-node/tasks';
+import type {Level} from '../../commons-node/process-rpc-types';
 import type {FileDiagnosticMessage} from 'atom-ide-ui';
 import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
 import type {BuckBuildOutput, BuckSubcommand} from './types';

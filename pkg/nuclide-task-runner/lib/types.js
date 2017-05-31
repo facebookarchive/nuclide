@@ -13,7 +13,8 @@ import type {
   LocalStorageJsonTable,
 } from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {Message, Task} from '../../commons-node/tasks';
+import type {Task} from '../../commons-node/tasks';
+import type {Message} from '../../commons-node/process-rpc-types';
 import type {Directory} from '../../nuclide-remote-connection';
 import type {ConsoleApi, ConsoleService} from '../../nuclide-console/lib/types';
 
