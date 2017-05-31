@@ -1,145 +1,134 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import type {IPCEvent, IPCBreakpoint, ObjectGroup} from '../types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ProtocolDebugEvent} from './DebuggerDomainDispatcher';
-import type {
-  BreakpointResolvedEvent,
-  PausedEvent,
-  ThreadsUpdatedEvent,
-  ThreadUpdatedEvent,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
-import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
-import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import BreakpointManager from './BreakpointManager';
-import StackTraceManager from './StackTraceManager';
-import ExecutionManager from './ExecutionManager';
-import ThreadManager from './ThreadManager';
-import ExpressionEvaluationManager from './ExpressionEvaluationManager';
+var _UniversalDisposable;
 
-export default class BridgeAdapter {
-  _subscriptions: UniversalDisposable;
-  _breakpointManager: BreakpointManager;
-  _stackTraceManager: StackTraceManager;
-  _executionManager: ExecutionManager;
-  _threadManager: ThreadManager;
-  _expressionEvaluationManager: ExpressionEvaluationManager;
-  _debuggerDispatcher: DebuggerDomainDispatcher;
-  _runtimeDispatcher: RuntimeDomainDispatcher;
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-  constructor(dispatchers: Object) {
-    const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
+var _BreakpointManager;
+
+function _load_BreakpointManager() {
+  return _BreakpointManager = _interopRequireDefault(require('./BreakpointManager'));
+}
+
+var _StackTraceManager;
+
+function _load_StackTraceManager() {
+  return _StackTraceManager = _interopRequireDefault(require('./StackTraceManager'));
+}
+
+var _ExecutionManager;
+
+function _load_ExecutionManager() {
+  return _ExecutionManager = _interopRequireDefault(require('./ExecutionManager'));
+}
+
+var _ThreadManager;
+
+function _load_ThreadManager() {
+  return _ThreadManager = _interopRequireDefault(require('./ThreadManager'));
+}
+
+var _ExpressionEvaluationManager;
+
+function _load_ExpressionEvaluationManager() {
+  return _ExpressionEvaluationManager = _interopRequireDefault(require('./ExpressionEvaluationManager'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BridgeAdapter {
+
+  constructor(dispatchers) {
+    const { debuggerDispatcher, runtimeDispatcher } = dispatchers;
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
-    (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
-    this._breakpointManager = new BreakpointManager(debuggerDispatcher);
-    this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
-    this._executionManager = new ExecutionManager(debuggerDispatcher);
-    this._threadManager = new ThreadManager(debuggerDispatcher);
-    this._expressionEvaluationManager = new ExpressionEvaluationManager(
-      debuggerDispatcher,
-      runtimeDispatcher,
-    );
-    this._subscriptions = new UniversalDisposable(
-      debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent),
-    );
+    this._handleDebugEvent = this._handleDebugEvent.bind(this);
+    this._breakpointManager = new (_BreakpointManager || _load_BreakpointManager()).default(debuggerDispatcher);
+    this._stackTraceManager = new (_StackTraceManager || _load_StackTraceManager()).default(debuggerDispatcher);
+    this._executionManager = new (_ExecutionManager || _load_ExecutionManager()).default(debuggerDispatcher);
+    this._threadManager = new (_ThreadManager || _load_ThreadManager()).default(debuggerDispatcher);
+    this._expressionEvaluationManager = new (_ExpressionEvaluationManager || _load_ExpressionEvaluationManager()).default(debuggerDispatcher, runtimeDispatcher);
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent));
   }
 
-  enable(): void {
+  enable() {
     this._debuggerDispatcher.enable();
     this._runtimeDispatcher.enable();
   }
 
-  resume(): void {
+  resume() {
     this._executionManager.resume();
   }
 
-  pause(): void {
+  pause() {
     this._executionManager.pause();
   }
 
-  stepOver(): void {
+  stepOver() {
     this._executionManager.stepOver();
   }
 
-  stepInto(): void {
+  stepInto() {
     this._executionManager.stepInto();
   }
 
-  stepOut(): void {
+  stepOut() {
     this._executionManager.stepOut();
   }
 
-  _clearStates(): void {
+  _clearStates() {
     this._expressionEvaluationManager.clearPauseStates();
     this._stackTraceManager.clearPauseStates();
   }
 
-  runToLocation(fileUri: NuclideUri, line: number): void {
+  runToLocation(fileUri, line) {
     this._executionManager.runToLocation(fileUri, line);
   }
 
-  setSelectedCallFrameIndex(index: number): void {
+  setSelectedCallFrameIndex(index) {
     this._stackTraceManager.setSelectedCallFrameIndex(index);
     this._updateCurrentScopes();
   }
 
-  _updateCurrentScopes(): void {
+  _updateCurrentScopes() {
     const currentFrame = this._stackTraceManager.getCurrentFrame();
-    this._expressionEvaluationManager.updateCurrentFrameScope(
-      currentFrame.scopeChain,
-    );
+    this._expressionEvaluationManager.updateCurrentFrameScope(currentFrame.scopeChain);
   }
 
-  setInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
+  setInitialBreakpoints(breakpoints) {
     this._breakpointManager.setInitialBreakpoints(breakpoints);
   }
 
-  setFilelineBreakpoint(breakpoint: IPCBreakpoint): void {
+  setFilelineBreakpoint(breakpoint) {
     this._breakpointManager.setFilelineBreakpoint(breakpoint);
   }
 
-  removeBreakpoint(breakpoint: IPCBreakpoint): void {
+  removeBreakpoint(breakpoint) {
     this._breakpointManager.removeBreakpoint(breakpoint);
   }
 
-  updateBreakpoint(breakpoint: IPCBreakpoint): void {
+  updateBreakpoint(breakpoint) {
     this._breakpointManager.updateBreakpoint(breakpoint);
   }
 
-  evaluateExpression(
-    transactionId: number,
-    expression: string,
-    objectGroup: ObjectGroup,
-  ): void {
+  evaluateExpression(transactionId, expression, objectGroup) {
     // TODO: check pause or run mode and dispatch to corresponding
     // protocol.
     const callFrameId = this._stackTraceManager.getCurrentFrame().callFrameId;
-    this._expressionEvaluationManager.evaluateOnCallFrame(
-      transactionId,
-      callFrameId,
-      expression,
-      objectGroup,
-    );
+    this._expressionEvaluationManager.evaluateOnCallFrame(transactionId, callFrameId, expression, objectGroup);
   }
 
-  getProperties(id: number, objectId: string): void {
+  getProperties(id, objectId) {
     this._expressionEvaluationManager.getProperties(id, objectId);
   }
 
-  selectThread(threadId: string): void {
+  selectThread(threadId) {
     this._threadManager.selectThread(threadId);
     this._threadManager.getThreadStack(threadId).then(stackFrames => {
       this._stackTraceManager.refreshStack(stackFrames);
@@ -147,63 +136,72 @@ export default class BridgeAdapter {
     });
   }
 
-  _handleDebugEvent(event: ProtocolDebugEvent): void {
+  _handleDebugEvent(event) {
     switch (event.method) {
-      case 'Debugger.loaderBreakpoint': {
-        this._breakpointManager.syncInitialBreakpointsToEngine();
-        // This should be the last method called.
-        this._executionManager.continueFromLoaderBreakpoint();
-        break;
-      }
-      case 'Debugger.breakpointResolved': {
-        const params: BreakpointResolvedEvent = event.params;
-        this._breakpointManager.handleBreakpointResolved(params);
-        break;
-      }
+      case 'Debugger.loaderBreakpoint':
+        {
+          this._breakpointManager.syncInitialBreakpointsToEngine();
+          // This should be the last method called.
+          this._executionManager.continueFromLoaderBreakpoint();
+          break;
+        }
+      case 'Debugger.breakpointResolved':
+        {
+          const params = event.params;
+          this._breakpointManager.handleBreakpointResolved(params);
+          break;
+        }
       case 'Debugger.resumed':
         this._executionManager.handleDebuggeeResumed();
         break;
-      case 'Debugger.paused': {
-        const params: PausedEvent = event.params;
-        this._stackTraceManager.refreshStack(params.callFrames);
-        this._executionManager.handleDebuggerPaused(params);
-        this._updateCurrentScopes();
-        break;
-      }
-      case 'Debugger.threadsUpdated': {
-        const params: ThreadsUpdatedEvent = event.params;
-        this._threadManager.raiseThreadsUpdated(params);
-        break;
-      }
-      case 'Debugger.threadUpdated': {
-        const params: ThreadUpdatedEvent = event.params;
-        this._threadManager.raiseThreadUpdated(params);
-        break;
-      }
+      case 'Debugger.paused':
+        {
+          const params = event.params;
+          this._stackTraceManager.refreshStack(params.callFrames);
+          this._executionManager.handleDebuggerPaused(params);
+          this._updateCurrentScopes();
+          break;
+        }
+      case 'Debugger.threadsUpdated':
+        {
+          const params = event.params;
+          this._threadManager.raiseThreadsUpdated(params);
+          break;
+        }
+      case 'Debugger.threadUpdated':
+        {
+          const params = event.params;
+          this._threadManager.raiseThreadUpdated(params);
+          break;
+        }
       default:
         break;
     }
   }
 
-  getEventObservable(): Observable<IPCEvent> {
+  getEventObservable() {
     // TODO: hook other debug events when it's ready.
     const breakpointManager = this._breakpointManager;
     const stackTraceManager = this._stackTraceManager;
     const executionManager = this._executionManager;
     const threadManager = this._threadManager;
     const expessionEvaluatorManager = this._expressionEvaluationManager;
-    return breakpointManager
-      .getEventObservable()
-      .merge(stackTraceManager.getEventObservable())
-      .merge(executionManager.getEventObservable())
-      .merge(threadManager.getEventObservable())
-      .merge(expessionEvaluatorManager.getEventObservable())
-      .map(args => {
-        return {channel: 'notification', args};
-      });
+    return breakpointManager.getEventObservable().merge(stackTraceManager.getEventObservable()).merge(executionManager.getEventObservable()).merge(threadManager.getEventObservable()).merge(expessionEvaluatorManager.getEventObservable()).map(args => {
+      return { channel: 'notification', args };
+    });
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
+exports.default = BridgeAdapter; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  * @format
+                                  */

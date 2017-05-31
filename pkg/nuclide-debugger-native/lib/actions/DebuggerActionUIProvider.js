@@ -1,30 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
+var _react = _interopRequireDefault(require('react'));
 
-import React from 'react';
-import {LaunchAttachActions} from '../LaunchAttachActions';
-import {LaunchAttachStore} from '../LaunchAttachStore';
+var _LaunchAttachActions;
 
-export type DebuggerActionUIProvider = {
-  getComponent: (
-    targetUri: NuclideUri,
-    store: LaunchAttachStore,
-    actions: LaunchAttachActions,
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ) => React.Element<any>,
-  name: string,
-  isEnabled: (action: DebuggerConfigAction) => Promise<boolean>,
-};
+function _load_LaunchAttachActions() {
+  return _LaunchAttachActions = require('../LaunchAttachActions');
+}
+
+var _LaunchAttachStore;
+
+function _load_LaunchAttachStore() {
+  return _LaunchAttachStore = require('../LaunchAttachStore');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

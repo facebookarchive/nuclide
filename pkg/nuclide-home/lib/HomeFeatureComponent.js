@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +21,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+class HomeFeatureComponent extends _react.default.Component {
 
-type Props = {
-  title: string,
-  icon: string,
-  description: string | React.Element<any>,
-  command: ?(string | (() => void)),
-};
-
-export default class HomeFeatureComponent extends React.Component {
-  props: Props;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._tryIt = this._tryIt.bind(this);
+    this._tryIt = this._tryIt.bind(this);
   }
 
-  _tryIt(): void {
-    const {command} = this.props;
+  _tryIt() {
+    const { command } = this.props;
     if (command == null) {
       return;
     }
@@ -44,26 +49,31 @@ export default class HomeFeatureComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
-    const {title, command} = this.props;
-    return (
-      <details className="nuclide-home-card">
-        <summary
-          className={`nuclide-home-summary icon icon-${this.props.icon}`}>
-          {title}
-          {command
-            ? <Button
-                className="pull-right nuclide-home-tryit"
-                size={ButtonSizes.SMALL}
-                onClick={this._tryIt}>
-                Try it
-              </Button>
-            : null}
-        </summary>
-        <div className="nuclide-home-detail">
-          {this.props.description}
-        </div>
-      </details>
+  render() {
+    const { title, command } = this.props;
+    return _react.default.createElement(
+      'details',
+      { className: 'nuclide-home-card' },
+      _react.default.createElement(
+        'summary',
+        {
+          className: `nuclide-home-summary icon icon-${this.props.icon}` },
+        title,
+        command ? _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: 'pull-right nuclide-home-tryit',
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._tryIt },
+          'Try it'
+        ) : null
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-home-detail' },
+        this.props.description
+      )
     );
   }
 }
+exports.default = HomeFeatureComponent;

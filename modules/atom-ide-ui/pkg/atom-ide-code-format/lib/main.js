@@ -1,33 +1,41 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {CodeFormatProvider} from './types';
+var _createPackage;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import CodeFormatManager from './CodeFormatManager';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _CodeFormatManager;
+
+function _load_CodeFormatManager() {
+  return _CodeFormatManager = _interopRequireDefault(require('./CodeFormatManager'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  codeFormatManager: CodeFormatManager;
 
   constructor() {
-    this.codeFormatManager = new CodeFormatManager();
+    this.codeFormatManager = new (_CodeFormatManager || _load_CodeFormatManager()).default();
   }
 
-  consumeProvider(provider: CodeFormatProvider): IDisposable {
+  consumeProvider(provider) {
     return this.codeFormatManager.addProvider(provider);
   }
 
   dispose() {
     this.codeFormatManager.dispose();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

@@ -1,3 +1,19 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.provideApi = provideApi;
+exports.serialize = serialize;
+
+var _Activation;
+
+function _load_Activation() {
+  return _Activation = require('./Activation');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,34 +21,41 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CwdApi} from './CwdApi';
+let activation = null;
 
-import {Activation} from './Activation';
-import invariant from 'assert';
+function activate(state) {
+  if (!(activation == null)) {
+    throw new Error('Invariant violation: "activation == null"');
+  }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  activation = new Activation(state);
+  activation = new (_Activation || _load_Activation()).Activation(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   activation.dispose();
   activation = null;
 }
 
-export function provideApi(): CwdApi {
-  invariant(activation != null);
+function provideApi() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.provideApi();
 }
 
-export function serialize(): Object {
-  invariant(activation != null);
+function serialize() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.serialize();
 }

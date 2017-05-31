@@ -1,19 +1,14 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {Range} from 'atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.defaultWordRegExpForEditor = defaultWordRegExpForEditor;
+exports.getWordTextAndRange = getWordTextAndRange;
 
-export function defaultWordRegExpForEditor(
-  textEditor: atom$TextEditor,
-): ?RegExp {
+var _atom = require('atom');
+
+function defaultWordRegExpForEditor(textEditor) {
   const lastCursor = textEditor.getLastCursor();
   if (!lastCursor) {
     return null;
@@ -25,15 +20,20 @@ export function defaultWordRegExpForEditor(
  * Returns the text and range for the word that contains the given position.
  */
 
-type WordTextAndRange = {text: string, range: Range};
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
 
-export function getWordTextAndRange(
-  textEditor: TextEditor,
-  position: atom$Point,
-  wordRegExp_?: ?RegExp,
-): WordTextAndRange {
+function getWordTextAndRange(textEditor, position, wordRegExp_) {
   let wordRegExp = wordRegExp_;
-  let textAndRange: ?WordTextAndRange = null;
+  let textAndRange = null;
 
   wordRegExp = wordRegExp || defaultWordRegExpForEditor(textEditor);
 
@@ -43,7 +43,7 @@ export function getWordTextAndRange(
       if (data.range.containsPoint(position)) {
         textAndRange = {
           text: data.matchText,
-          range: data.range,
+          range: data.range
         };
         data.stop();
       } else if (data.range.end.column > position.column) {
@@ -54,7 +54,7 @@ export function getWordTextAndRange(
   }
 
   if (!textAndRange) {
-    textAndRange = {text: '', range: new Range(position, position)};
+    textAndRange = { text: '', range: new _atom.Range(position, position) };
   }
 
   return textAndRange;

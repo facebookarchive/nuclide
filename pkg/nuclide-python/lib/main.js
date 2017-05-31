@@ -1,77 +1,103 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {BusySignalService} from '../../nuclide-busy-signal';
-import type {LinterProvider} from 'atom-ide-ui';
-import typeof * as PythonService
-  from '../../nuclide-python-rpc/lib/PythonService';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {GRAMMARS, GRAMMAR_SET} from './constants';
-import {getLintOnFly} from './config';
-import LintHelpers from './LintHelpers';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {AtomLanguageService} from '../../nuclide-language-service';
-import {
-  getShowGlobalVariables,
-  getAutocompleteArguments,
-  getIncludeOptionalArguments,
-} from './config';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const PYTHON_SERVICE_NAME = 'PythonService';
+let connectionToPythonService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const pythonService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(PYTHON_SERVICE_NAME, connection);
+    const fileNotifier = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection);
+    const languageService = yield pythonService.initialize(fileNotifier, {
+      showGlobalVariables: (0, (_config || _load_config()).getShowGlobalVariables)(),
+      autocompleteArguments: (0, (_config || _load_config()).getAutocompleteArguments)(),
+      includeOptionalArguments: (0, (_config || _load_config()).getIncludeOptionalArguments)()
+    });
 
-let busySignalService: ?BusySignalService = null;
-
-async function connectionToPythonService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const pythonService: PythonService = getServiceByConnection(
-    PYTHON_SERVICE_NAME,
-    connection,
-  );
-  const fileNotifier = await getNotifierByConnection(connection);
-  const languageService = await pythonService.initialize(fileNotifier, {
-    showGlobalVariables: getShowGlobalVariables(),
-    autocompleteArguments: getAutocompleteArguments(),
-    includeOptionalArguments: getIncludeOptionalArguments(),
+    return languageService;
   });
 
-  return languageService;
+  return function connectionToPythonService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+exports.activate = activate;
+exports.provideLint = provideLint;
+exports.consumeBusySignal = consumeBusySignal;
+exports.deactivate = deactivate;
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
 }
 
-const atomConfig: AtomLanguageServiceConfig = {
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _LintHelpers;
+
+function _load_LintHelpers() {
+  return _LintHelpers = _interopRequireDefault(require('./LintHelpers'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const PYTHON_SERVICE_NAME = 'PythonService'; /**
+                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                              * All rights reserved.
+                                              *
+                                              * This source code is licensed under the license found in the LICENSE file in
+                                              * the root directory of this source tree.
+                                              *
+                                              * 
+                                              * @format
+                                              */
+
+let busySignalService = null;
+
+const atomConfig = {
   name: 'Python',
-  grammars: GRAMMARS,
+  grammars: (_constants || _load_constants()).GRAMMARS,
   outline: {
     version: '0.0.0',
     priority: 1,
-    analyticsEventName: 'python.outline',
+    analyticsEventName: 'python.outline'
   },
   codeFormat: {
     version: '0.0.0',
     priority: 1,
     analyticsEventName: 'python.formatCode',
     canFormatRanges: false,
-    canFormatAtPosition: false,
+    canFormatAtPosition: false
   },
   findReferences: {
     version: '0.0.0',
-    analyticsEventName: 'python.get-references',
+    analyticsEventName: 'python.get-references'
   },
   autocomplete: {
     version: '2.0.0',
@@ -81,56 +107,50 @@ const atomConfig: AtomLanguageServiceConfig = {
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
     autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'nuclide-python.autocomplete-chosen',
+    onDidInsertSuggestionAnalyticsEventName: 'nuclide-python.autocomplete-chosen'
   },
   definition: {
     version: '0.0.0',
     priority: 20,
     definitionEventName: 'python.get-definition',
-    definitionByIdEventName: 'python.get-definition-by-id',
-  },
+    definitionByIdEventName: 'python.get-definition-by-id'
+  }
 };
 
-let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
+let pythonLanguageService = null;
 
-export function activate() {
+function activate() {
   if (pythonLanguageService == null) {
-    pythonLanguageService = new AtomLanguageService(
-      connectionToPythonService,
-      atomConfig,
-    );
+    pythonLanguageService = new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectionToPythonService, atomConfig);
     pythonLanguageService.activate();
   }
 }
 
-export function provideLint(): LinterProvider {
+function provideLint() {
   return {
-    grammarScopes: Array.from(GRAMMAR_SET),
+    grammarScopes: Array.from((_constants || _load_constants()).GRAMMAR_SET),
     scope: 'file',
-    lintOnFly: getLintOnFly(),
+    lintOnFly: (0, (_config || _load_config()).getLintOnFly)(),
     name: 'nuclide-python',
     lint(editor) {
       if (busySignalService == null) {
-        return LintHelpers.lint(editor);
+        return (_LintHelpers || _load_LintHelpers()).default.lint(editor);
       }
-      return busySignalService.reportBusyWhile(
-        `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
-        () => LintHelpers.lint(editor),
-      );
-    },
+      return busySignalService.reportBusyWhile(`Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``, () => (_LintHelpers || _load_LintHelpers()).default.lint(editor));
+    }
   };
 }
 
-export function consumeBusySignal(service: BusySignalService): IDisposable {
+function consumeBusySignal(service) {
   busySignalService = service;
   return {
     dispose: () => {
       busySignalService = null;
-    },
+    }
   };
 }
 
-export function deactivate() {
+function deactivate() {
   if (pythonLanguageService != null) {
     pythonLanguageService.dispose();
     pythonLanguageService = null;
