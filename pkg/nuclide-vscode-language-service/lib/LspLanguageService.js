@@ -1121,15 +1121,12 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
   ): Promise<?TypeHint> {
-    if (!this._serverCapabilities.hoverProvider) {
-      return null;
-    }
     if (
+      this._state !== 'Running' ||
+      !this._serverCapabilities.hoverProvider ||
       !await this._lspFileVersionNotifier.waitForBufferAtVersion(fileVersion)
     ) {
       return null;
-      // If the user typed more characters before we ended up being invoked, then there's
-      // no way we can fulfill the request.
     }
     const params = createTextDocumentPositionParams(
       fileVersion.filePath,
