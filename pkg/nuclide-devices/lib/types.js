@@ -94,10 +94,13 @@ export type Store = {
 // Basic objects
 //
 
+export type DeviceArchitecture = 'x86' | 'x86_64' | 'arm' | 'arm64' | '';
+
 export type Device = {
   name: string,
   displayName: string,
-  architecture: string,
+  architecture: DeviceArchitecture,
+  rawArchitecture: string,
 };
 
 export type Process = {

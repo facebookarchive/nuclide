@@ -13,6 +13,7 @@ import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
 import {Expect} from '../../nuclide-expected';
+import {track} from '../../nuclide-analytics';
 
 import type {Expected} from '../../nuclide-expected';
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
@@ -70,20 +71,28 @@ class DevicePoller {
   }
 
   parseRawDevice(device: DeviceDescription): Device {
-    const deviceArchitecture = device.architecture.startsWith('arm64')
-      ? 'arm64'
-      : device.architecture.startsWith('arm') ? 'arm' : device.architecture;
+    let deviceArchitecture = '';
+    for (const arch of ['arm64', 'arm', 'x86']) {
+      if (device.architecture.startsWith(arch)) {
+        deviceArchitecture = arch;
+        break;
+      }
+    }
+    let displayArch = deviceArchitecture;
+    if (deviceArchitecture.length === 0) {
+      track('nuclide-adb-sdb-base.unknown_device_arch', {deviceArchitecture});
+      displayArch = device.architecture;
+    }
 
     const displayName = (device.name.startsWith('emulator')
       ? device.name
-      : device.model).concat(
-      ` (${deviceArchitecture}, API ${device.apiVersion})`,
-    );
+      : device.model).concat(` (${displayArch}, API ${device.apiVersion})`);
 
     return {
       name: device.name,
       displayName,
-      architecture: device.architecture,
+      architecture: deviceArchitecture,
+      rawArchitecture: device.architecture,
     };
   }
 }
