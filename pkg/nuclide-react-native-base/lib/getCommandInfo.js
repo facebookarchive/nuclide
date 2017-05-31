@@ -107,7 +107,7 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
   }
 
   // TODO(matthewwithanm): Move this to BuckUtils?
-  const filePath = nuclideUri.join(projectRoot, '.buckConfig');
+  const filePath = nuclideUri.join(projectRoot, '.buckconfig');
   const content = await fsPromise.readFile(filePath, 'utf8');
   const parsed = ini.parse(`scope = global\n${content}`);
   const section = parsed['react-native'];
