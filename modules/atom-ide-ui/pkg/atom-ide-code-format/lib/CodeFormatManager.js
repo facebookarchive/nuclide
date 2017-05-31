@@ -13,87 +13,169 @@ import type {CodeFormatProvider} from './types';
 
 import invariant from 'assert';
 import {Range} from 'atom';
+import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {nextTick} from 'nuclide-commons/promise';
+import {nextTick} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
+import {
+  observeEditorDestroy,
+  observeTextEditors,
+} from 'nuclide-commons-atom/text-editor';
 import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {getFormatOnSave, getFormatOnType} from './config';
 import {getLogger} from 'log4js';
 
 const logger = getLogger('CodeFormatManager');
 
+// Save events are critical, so don't allow providers to block them.
+const SAVE_TIMEOUT = 2500;
+
+type FormatEvent =
+  | {
+      type: 'command' | 'save',
+      editor: atom$TextEditor,
+    }
+  | {
+      type: 'type',
+      editor: atom$TextEditor,
+      edit: atom$TextEditEvent,
+    };
+
 export default class CodeFormatManager {
-  _subscriptions: ?UniversalDisposable;
+  _subscriptions: UniversalDisposable;
   _codeFormatProviders: Array<CodeFormatProvider>;
-  _pendingFormats: Map<atom$TextEditor, boolean>;
 
   constructor() {
-    const subscriptions = (this._subscriptions = new UniversalDisposable());
-    subscriptions.add(
+    this._subscriptions = new UniversalDisposable(this._subscribeToEvents());
+    this._codeFormatProviders = [];
+  }
+
+  /**
+   * Subscribe to all formatting events (commands, saves, edits) and dispatch
+   * formatters as necessary.
+   * By handling all events in a central location, we ensure that no buffer
+   * runs into race conditions with simultaneous formatters.
+   */
+  _subscribeToEvents(): rxjs$Subscription {
+    // Events from the explicit Atom command.
+    const commandEvents = observableFromSubscribeFunction(callback =>
       atom.commands.add(
         'atom-text-editor',
         'nuclide-code-format:format-code',
-        // Atom doesn't accept in-command modification of the text editor contents.
-        () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this)),
+        callback,
       ),
+    ).switchMap(() => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (!editor) {
+        return Observable.empty();
+      }
+      return Observable.of({type: 'command', editor});
+    });
+
+    // Events from editor actions (saving, typing).
+    const editorEvents = observableFromSubscribeFunction(
+      observeTextEditors,
+    ).mergeMap(editor => this._getEditorEventStream(editor));
+
+    return (
+      Observable.merge(commandEvents, editorEvents)
+        // Group events by buffer to prevent simultaneous formatting operations.
+        .groupBy(
+          event => event.editor.getBuffer(),
+          event => event,
+          grouped =>
+            // $FlowFixMe: add durationSelector to groupBy
+            observableFromSubscribeFunction(callback =>
+              // $FlowFixMe: add key to GroupedObservable
+              grouped.key.onDidDestroy(callback),
+            ),
+        )
+        .mergeMap(events =>
+          // Concatenate a null event to ensure that buffer destruction
+          // interrupts any pending format operations.
+          events.concat(Observable.of(null)).switchMap(event => {
+            if (event == null) {
+              return Observable.empty();
+            }
+            return this._handleEvent(event);
+          }),
+        )
+        .subscribe()
     );
-    subscriptions.add(observeTextEditors(this._addEditor.bind(this)));
-    this._codeFormatProviders = [];
-    this._pendingFormats = new Map();
   }
 
-  _addEditor(editor: atom$TextEditor): void {
-    const subscriptions = this._subscriptions;
-    if (!subscriptions) {
-      return;
-    }
+  /**
+   * Returns a stream of all typing and saving operations from the editor.
+   */
+  _getEditorEventStream(editor: atom$TextEditor): Observable<FormatEvent> {
+    const changeEvents = observableFromSubscribeFunction(callback =>
+      editor.getBuffer().onDidChange(callback),
+    )
+      // Debounce to ensure that multiple cursors only trigger one format.
+      // TODO(hansonw): Use onDidChangeText with 1.17+.
+      .debounceTime(0);
 
-    subscriptions.add(
-      observableFromSubscribeFunction(callback =>
-        editor.getBuffer().onDidChange(callback),
-      )
-        .debounceTime(0) // In case of multiple cursors.
-        .subscribe(async event => {
-          if (this._pendingFormats.get(editor)) {
-            return;
-          }
+    const saveEvents = Observable.create(observer => {
+      if (!getFormatOnSave()) {
+        return () => {};
+      }
 
-          this._pendingFormats.set(editor, true);
-          try {
-            await this._formatCodeOnTypeInTextEditor(editor, event);
-          } catch (e) {
-            logger.info('onTypeFormat exception:', e);
-          } finally {
-            this._pendingFormats.delete(editor);
-          }
-        }),
-    );
-
-    subscriptions.add(
-      editor.getBuffer().onDidSave(async () => {
-        if (getFormatOnSave() && !this._pendingFormats.get(editor)) {
-          // Because formatting code is async, we need to resave the file once
-          // we're done formatting, but prevent resaving from retriggering the
-          // onDidSave callback, which would be an infinite cycle.
-          this._pendingFormats.set(editor, true);
-          try {
-            const didFormat = await this._formatCodeInTextEditor(editor, false);
-            if (didFormat) {
-              // TextEditor.save is synchronous for local files, but our custom
-              // NuclideTextBuffer.saveAs implementation is asynchronous.
-              await editor.save();
-            }
-          } finally {
-            this._pendingFormats.delete(editor);
-          }
-        }
-      }),
-    );
-
-    editor.onDidDestroy(() => {
-      this._pendingFormats.delete(editor);
+      const realSave = editor.save;
+      // HACK: intercept the real TextEditor.save and handle it ourselves.
+      // Atom has no way of injecting content into the buffer asynchronously
+      // before a save operation.
+      // If we try to format after the save, and then save again,
+      // it's a poor user experience (and also races the text buffer's reload).
+      const editor_ = (editor: any);
+      editor_.save = () => {
+        observer.next();
+      };
+      return () => {
+        // Restore the save function when we're done.
+        editor_.save = realSave;
+      };
     });
+
+    return Observable.merge(
+      changeEvents.map(edit => ({type: 'type', editor, edit})),
+      saveEvents.map(() => ({type: 'save', editor})),
+    ).takeUntil(observeEditorDestroy(editor));
+  }
+
+  _handleEvent(event: FormatEvent): Observable<void> {
+    const {editor} = event;
+    switch (event.type) {
+      case 'command':
+        return this._formatCodeInTextEditor(editor).catch(err => {
+          atom.notifications.addError('Failed to format code', {
+            description: err.message,
+          });
+          return Observable.empty();
+        });
+      case 'type':
+        return this._formatCodeOnTypeInTextEditor(
+          editor,
+          event.edit,
+        ).catch(err => {
+          logger.warn('Failed to format code on type:', err);
+          return Observable.empty();
+        });
+      case 'save':
+        return (
+          this._formatCodeOnSaveInTextEditor(editor)
+            .timeout(SAVE_TIMEOUT)
+            .catch(err => {
+              logger.warn('Failed to format code on save:', err);
+              return Observable.empty();
+            })
+            // Fire-and-forget the original save function.
+            // This is actually async for remote files, but we don't use the result.
+            // NOTE: finally is important, as saves should still fire on unsubscribe.
+            .finally(() => editor.getBuffer().save())
+        );
+      default:
+        return Observable.throw(`unknown event type ${event.type}`);
+    }
   }
 
   // Checks whether contents are same in the buffer post-format, throwing if
@@ -106,188 +188,148 @@ export default class CodeFormatManager {
     }
   }
 
-  // Formats code in the active editor, returning whether or not the code
-  // formatted successfully.
-  async _formatCodeInActiveTextEditor(): Promise<boolean> {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (!editor) {
-      atom.notifications.addError('No active text editor to format its code!');
-      return false;
-    }
-
-    return this._formatCodeInTextEditor(editor);
-  }
-
   // Formats code in the editor specified, returning whether or not the code
   // formatted successfully.
-  async _formatCodeInTextEditor(
-    editor: atom$TextEditor,
-    displayErrors: boolean = true,
-  ): Promise<boolean> {
-    const {scopeName} = editor.getGrammar();
-    const matchingProviders = this._getMatchingProvidersForScopeName(
-      scopeName,
-    ).filter(
-      provider =>
-        provider.formatCode != null || provider.formatEntireFile != null,
-    );
+  _formatCodeInTextEditor(editor: atom$TextEditor): Observable<void> {
+    return Observable.defer(() => {
+      const {scopeName} = editor.getGrammar();
+      const matchingProviders = this._getMatchingProvidersForScopeName(
+        scopeName,
+      ).filter(
+        provider =>
+          provider.formatCode != null || provider.formatEntireFile != null,
+      );
 
-    if (!matchingProviders.length) {
-      if (displayErrors) {
-        atom.notifications.addError(
+      if (!matchingProviders.length) {
+        throw Error(
           'No Code-Format providers registered for scope: ' + scopeName,
         );
       }
-      return false;
-    }
 
-    const buffer = editor.getBuffer();
-    const selectionRange = editor.getSelectedBufferRange();
-    const {start: selectionStart, end: selectionEnd} = selectionRange;
-    let formatRange = null;
-    const selectionRangeEmpty = selectionRange.isEmpty();
-    if (selectionRangeEmpty) {
-      // If no selection is done, then, the whole file is wanted to be formatted.
-      formatRange = buffer.getRange();
-    } else {
-      // Format selections should start at the begining of the line,
-      // and include the last selected line end.
-      // (If the user has already selected complete rows, then depending on how they
-      // did it, their caret might be either (1) at the end of their last selected line
-      // or (2) at the first column of the line AFTER their selection. In both cases
-      // we snap the formatRange to end at the first column of the line after their
-      // selection.)
-      formatRange = new Range(
-        [selectionStart.row, 0],
-        selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
-      );
-    }
-    const contents = editor.getText();
-
-    try {
+      const buffer = editor.getBuffer();
+      const selectionRange = editor.getSelectedBufferRange();
+      const {start: selectionStart, end: selectionEnd} = selectionRange;
+      let formatRange = null;
+      const selectionRangeEmpty = selectionRange.isEmpty();
+      if (selectionRangeEmpty) {
+        // If no selection is done, then, the whole file is wanted to be formatted.
+        formatRange = buffer.getRange();
+      } else {
+        // Format selections should start at the begining of the line,
+        // and include the last selected line end.
+        // (If the user has already selected complete rows, then depending on how they
+        // did it, their caret might be either (1) at the end of their last selected line
+        // or (2) at the first column of the line AFTER their selection. In both cases
+        // we snap the formatRange to end at the first column of the line after their
+        // selection.)
+        formatRange = new Range(
+          [selectionStart.row, 0],
+          selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
+        );
+      }
+      const contents = editor.getText();
       const provider = matchingProviders[0];
       if (
         provider.formatCode != null &&
         (!selectionRangeEmpty || provider.formatEntireFile == null)
       ) {
-        const edits = await provider.formatCode(editor, formatRange);
-        // Throws if contents have changed since the time of triggering format code.
-        this._checkContentsAreSame(contents, editor.getText());
-        if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
-          throw new Error('Could not apply edits to text buffer.');
-        }
+        return Observable.fromPromise(
+          provider.formatCode(editor, formatRange),
+        ).map(edits => {
+          // Throws if contents have changed since the time of triggering format code.
+          this._checkContentsAreSame(contents, editor.getText());
+          if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+            throw new Error('Could not apply edits to text buffer.');
+          }
+        });
       } else if (provider.formatEntireFile != null) {
-        const {newCursor, formatted} = await provider.formatEntireFile(
-          editor,
-          formatRange,
-        );
-        // Throws if contents have changed since the time of triggering format code.
-        this._checkContentsAreSame(contents, editor.getText());
+        return Observable.fromPromise(
+          provider.formatEntireFile(editor, formatRange),
+        ).map(({newCursor, formatted}) => {
+          // Throws if contents have changed since the time of triggering format code.
+          this._checkContentsAreSame(contents, editor.getText());
+          buffer.setTextViaDiff(formatted);
 
-        buffer.setTextViaDiff(formatted);
+          const newPosition = newCursor != null
+            ? buffer.positionForCharacterIndex(newCursor)
+            : editor.getCursorBufferPosition();
 
-        const newPosition = newCursor != null
-          ? buffer.positionForCharacterIndex(newCursor)
-          : editor.getCursorBufferPosition();
-
-        // We call setCursorBufferPosition even when there is no newCursor,
-        // because it unselects the text selection.
-        editor.setCursorBufferPosition(newPosition);
+          // We call setCursorBufferPosition even when there is no newCursor,
+          // because it unselects the text selection.
+          editor.setCursorBufferPosition(newPosition);
+        });
       } else {
-        throw new Error(
+        throw Error(
           'code-format providers must implement formatCode or formatEntireFile',
         );
       }
-      return true;
-    } catch (e) {
-      if (displayErrors) {
-        atom.notifications.addError('Failed to format code: ' + e.message);
-      }
-      return false;
-    }
+    });
   }
 
-  async _formatCodeOnTypeInTextEditor(
+  _formatCodeOnTypeInTextEditor(
     editor: atom$TextEditor,
     event: atom$TextEditEvent,
-  ): Promise<void> {
-    if (!getFormatOnType()) {
-      return;
-    }
+  ): Observable<void> {
+    return Observable.defer(() => {
+      // This also ensures the non-emptiness of event.newText for below.
+      if (!shouldFormatOnType(event) || !getFormatOnType()) {
+        return Observable.empty();
+      }
+      // In the case of bracket-matching, we use the last character because that's
+      // the character that will usually cause a reformat (i.e. `}` instead of `{`).
+      const character = event.newText[event.newText.length - 1];
 
-    // There's not a direct way to figure out what caused this edit event. There
-    // are three cases that we want to pay attention to:
-    //
-    // 1) The user typed a character.
-    // 2) The user typed a character, and bracket-matching kicked in, causing
-    //    there to be two characters typed.
-    // 3) The user pasted a string.
-    //
-    // We only want to trigger autoformatting in the first two cases. However,
-    // we can only look at what new string was inserted, and not what actually
-    // caused the event, so we just use some heuristics to determine which of
-    // these the event probably was depending on what was typed. This means, for
-    // example, we may issue spurious format requests when the user pastes a
-    // single character, but this is acceptable.
-    if (event.oldText !== '') {
-      // We either just deleted something or replaced a selection. For the time
-      // being, we're not going to issue a reformat in that case.
-      return;
-    } else if (event.oldText === '' && event.newText === '') {
-      // Not sure what happened here; why did we get an event in this case? Bail
-      // for safety.
-      return;
-    } else if (event.newText.length > 1 && !isBracketPair(event.newText)) {
-      return;
-    }
+      const {scopeName} = editor.getGrammar();
+      const matchingProviders = this._getMatchingProvidersForScopeName(
+        scopeName,
+      ).filter(provider => provider.formatAtPosition != null);
+      if (!matchingProviders.length) {
+        return Observable.empty();
+      }
+      const provider = matchingProviders[0];
+      invariant(provider.formatAtPosition != null);
+      const formatAtPosition = provider.formatAtPosition.bind(provider);
 
-    // In the case of bracket-matching, we use the last character because that's
-    // the character that will usually cause a reformat (i.e. `}` instead of `{`).
-    const character = event.newText[event.newText.length - 1];
+      const contents = editor.getText();
 
-    const {scopeName} = editor.getGrammar();
-    const matchingProviders = this._getMatchingProvidersForScopeName(
-      scopeName,
-    ).filter(provider => provider.formatAtPosition != null);
-    if (!matchingProviders.length) {
-      return;
-    }
-    const provider = matchingProviders[0];
-    invariant(provider.formatAtPosition != null);
-    const formatAtPosition = provider.formatAtPosition.bind(provider);
+      // The bracket-matching package basically overwrites
+      //
+      //     editor.insertText('{');
+      //
+      // with
+      //
+      //     editor.insertText('{}');
+      //     cursor.moveLeft();
+      //
+      // We want to wait until the cursor has actually moved before we issue a
+      // format request, so that we format at the right position (and potentially
+      // also let any other event handlers have their go).
+      return nextTick
+        .switchMap(() =>
+          formatAtPosition(
+            editor,
+            editor.getCursorBufferPosition().translate([0, -1]),
+            character,
+          ),
+        )
+        .map(edits => {
+          if (edits.length === 0) {
+            return;
+          }
+          this._checkContentsAreSame(contents, editor.getText());
+          // Note that this modification is not in a transaction, so it applies as a
+          // separate editing event than the character typing. This means that you
+          // can undo just the formatting by attempting to undo once, and then undo
+          // your actual code by undoing again.
+          if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
+            throw new Error('Could not apply edits to text buffer.');
+          }
+        });
+    });
+  }
 
-    const contents = editor.getText();
-
-    // The bracket-matching package basically overwrites
-    //
-    //     editor.insertText('{');
-    //
-    // with
-    //
-    //     editor.insertText('{}');
-    //     cursor.moveLeft();
-    //
-    // We want to wait until the cursor has actually moved before we issue a
-    // format request, so that we format at the right position (and potentially
-    // also let any other event handlers have their go).
-    await nextTick();
-
-    const edits = await formatAtPosition(
-      editor,
-      editor.getCursorBufferPosition().translate([0, -1]),
-      character,
-    );
-    if (edits.length === 0) {
-      return;
-    }
-    this._checkContentsAreSame(contents, editor.getText());
-    // Note that this modification is not in a transaction, so it applies as a
-    // separate editing event than the character typing. This means that you
-    // can undo just the formatting by attempting to undo once, and then undo
-    // your actual code by undoing again.
-    if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
-      throw new Error('Could not apply edits to text buffer.');
-    }
+  _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
+    return this._formatCodeInTextEditor(editor);
   }
 
   _getMatchingProvidersForScopeName(
@@ -317,13 +359,38 @@ export default class CodeFormatManager {
   }
 
   dispose() {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
-    }
+    this._subscriptions.dispose();
     this._codeFormatProviders = [];
-    this._pendingFormats.clear();
   }
+}
+
+function shouldFormatOnType(event: atom$TextEditEvent): boolean {
+  // There's not a direct way to figure out what caused this edit event. There
+  // are three cases that we want to pay attention to:
+  //
+  // 1) The user typed a character.
+  // 2) The user typed a character, and bracket-matching kicked in, causing
+  //    there to be two characters typed.
+  // 3) The user pasted a string.
+  //
+  // We only want to trigger autoformatting in the first two cases. However,
+  // we can only look at what new string was inserted, and not what actually
+  // caused the event, so we just use some heuristics to determine which of
+  // these the event probably was depending on what was typed. This means, for
+  // example, we may issue spurious format requests when the user pastes a
+  // single character, but this is acceptable.
+  if (event.oldText !== '') {
+    // We either just deleted something or replaced a selection. For the time
+    // being, we're not going to issue a reformat in that case.
+    return false;
+  } else if (event.oldText === '' && event.newText === '') {
+    // Not sure what happened here; why did we get an event in this case? Bail
+    // for safety.
+    return false;
+  } else if (event.newText.length > 1 && !isBracketPair(event.newText)) {
+    return false;
+  }
+  return true;
 }
 
 /**
