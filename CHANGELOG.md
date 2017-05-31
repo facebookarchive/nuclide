@@ -11,6 +11,7 @@
 
 * Fixed php debugger "sometimes can't start successfully" bug.
 * Removed “gear” icon that was taking up vertical space above the debugger controls
+* New separated "Launch" and "Attach" debugger dialogs with simplified configuration options, will now remember your debugger settings
 * [Atom 1.17+ Only] Added support for tearing out the various debugger panes into their own Atom tabs, moving them around the workspace and to other docks, remembering their preferred locations, and hiding individual panes.
 
 ## v0.229.0
