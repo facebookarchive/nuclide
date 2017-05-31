@@ -11,7 +11,7 @@
 
 export type AtomCommands = {
   [target: string]: {
-    [commandName: string]: (event: Event) => mixed,
+    [commandName: string]: (event: atom$CustomEvent) => mixed,
   },
 };
 

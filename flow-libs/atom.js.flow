@@ -75,7 +75,13 @@ declare class atom$Package {
  * Essential Classes
  */
 
-type atom$CommandCallback = (event: Event) => mixed;
+declare class atom$CustomEvent extends Event {
+  constructor(type: string, eventInitDict?: CustomEvent$Init): void;
+  detail: any;
+  originalEvent: ?Event;
+}
+
+type atom$CommandCallback = (event: atom$CustomEvent) => mixed;
 
 declare class atom$CommandRegistry {
   // Methods

@@ -96,7 +96,6 @@ export class PackagerActivation {
             typeof event.detail === 'object'
             ? event.detail
             : undefined;
-          // $FlowFixMe
           this._logTailer.start(detail);
         },
         'nuclide-react-native:stop-packager': () => this._logTailer.stop(),

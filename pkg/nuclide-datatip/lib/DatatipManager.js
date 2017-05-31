@@ -19,28 +19,27 @@ import type {
   ModifierKey,
 } from './types';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 import analytics from 'nuclide-commons-atom/analytics';
 import debounce from 'nuclide-commons/debounce';
-import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
-import {getLogger} from 'log4js';
-import {asyncFind} from 'nuclide-commons/promise';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import idx from 'idx';
 import Immutable from 'immutable';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
+import {asyncFind} from 'nuclide-commons/promise';
+import {getLogger} from 'log4js';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
+import {Observable} from 'rxjs';
 import {
   getModifierKeysFromMouseEvent,
   getModifierKeyFromKeyboardEvent,
 } from './getModifierKeys';
 
+import performanceNow from '../../commons-node/performanceNow';
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
-
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-import performanceNow from '../../commons-node/performanceNow';
 
 const logger = getLogger('nuclide-datatip');
 
@@ -237,6 +236,7 @@ class DatatipManagerForEditor {
   _editorView: atom$TextEditorElement;
   _insideDatatip: boolean;
   _lastHiddenTime: number;
+  _lastFetchedFromCursorPosition: boolean;
   _lastMoveEvent: ?MouseEvent;
   _lastPosition: ?atom$Point;
   _lastDatatipAndProviderPromise: ?Promise<?{
@@ -272,6 +272,7 @@ class DatatipManagerForEditor {
     this._interactedWith = false;
     this._cumulativeWheelX = 0;
     this._lastHiddenTime = 0;
+    this._lastFetchedFromCursorPosition = false;
     this._shouldDropNextMouseMoveAfterFocus = false;
 
     this._subscriptions.add(
@@ -294,6 +295,7 @@ class DatatipManagerForEditor {
         }
       }),
       Observable.fromEvent(this._editorView, 'mousemove').subscribe(e => {
+        this._lastFetchedFromCursorPosition = false;
         if (this._shouldDropNextMouseMoveAfterFocus) {
           this._shouldDropNextMouseMoveAfterFocus = false;
           return;
@@ -326,13 +328,9 @@ class DatatipManagerForEditor {
         const modifierKey = getModifierKeyFromKeyboardEvent(e);
         if (modifierKey) {
           this._heldKeys = this._heldKeys.add(modifierKey);
-          this._startFetching(() =>
-            getBufferPosition(
-              this._editor,
-              this._editorView,
-              this._lastMoveEvent,
-            ),
-          );
+          if (this._datatipState !== DatatipState.HIDDEN) {
+            this._fetchInResponseToKeyPress();
+          }
         } else {
           this._hideOrCancel();
         }
@@ -341,13 +339,9 @@ class DatatipManagerForEditor {
         const modifierKey = getModifierKeyFromKeyboardEvent(e);
         if (modifierKey) {
           this._heldKeys = this._heldKeys.delete(modifierKey);
-          this._startFetching(() =>
-            getBufferPosition(
-              this._editor,
-              this._editorView,
-              this._lastMoveEvent,
-            ),
-          );
+          if (this._datatipState !== DatatipState.HIDDEN) {
+            this._fetchInResponseToKeyPress();
+          }
         }
       }),
       Observable.fromEvent(this._datatipElement, 'wheel').subscribe(e => {
@@ -382,6 +376,16 @@ class DatatipManagerForEditor {
         this._toggleDatatip,
       ),
     );
+  }
+
+  _fetchInResponseToKeyPress() {
+    if (this._lastFetchedFromCursorPosition) {
+      this._startFetching(() => this._editor.getCursorBufferPosition());
+    } else {
+      this._startFetching(() =>
+        getBufferPosition(this._editor, this._editorView, this._lastMoveEvent),
+      );
+    }
   }
 
   _setStartFetchingDebounce(): void {
@@ -667,7 +671,7 @@ class DatatipManagerForEditor {
     );
   };
 
-  _toggleDatatip = () => {
+  _toggleDatatip = (e?: atom$CustomEvent) => {
     if (atom.workspace.getActiveTextEditor() !== this._editor) {
       return;
     }
@@ -675,17 +679,28 @@ class DatatipManagerForEditor {
     // Note that we don't need to hide the tooltip, we already hide it on
     // keydown, which is going to be triggered before the key binding which is
     // evaluated on keyup.
+    const maybeEventType = idx(e, _ => _.originalEvent.type);
+
+    // Unfortunately, when you do keydown of the shortcut, it's going to
+    // hide it, we need to make sure that when we do keyup, it doesn't show
+    // it up right away. We assume that a keypress is done within 100ms
+    // and don't show it again if it was hidden so soon.
+    const forceShow =
+      maybeEventType === 'keydown' &&
+      performance.now() - this._lastHiddenTime > 100;
+    const forceHide = maybeEventType === 'keyup';
+    const forceToggle =
+      maybeEventType !== 'keydown' && maybeEventType !== 'keyup';
 
     if (
-      this._datatipState === DatatipState.HIDDEN &&
-      // Unfortunately, when you do keydown of the shortcut, it's going to
-      // hide it, we need to make sure that when we do keyup, it doesn't show
-      // it up right away. We assume that a keypress is done within 100ms
-      // and don't show it again if it was hidden so soon.
-      performance.now() - this._lastHiddenTime > 100
+      // if we have event information, prefer that for determining show/hide
+      forceShow ||
+      (forceToggle && this._datatipState === DatatipState.HIDDEN)
     ) {
+      this._lastFetchedFromCursorPosition = true;
       this._startFetching(() => this._editor.getCursorScreenPosition());
-      return;
+    } else if (forceHide || forceToggle) {
+      this._hideOrCancel();
     }
   };
 }
