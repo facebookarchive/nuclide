@@ -1,8 +1,21 @@
 # Nuclide Changelog
 
+## v0.230.0
+
+### General
+
+* Added a system toast notification if remote connection 2FA prompt comes up while Nuclide does not have focus.
+* Fixed missing Hack autocomplete results for classnames.
+
+### Debugger
+
+* Fixed php debugger "sometimes can't start successfully" bug.
+* Removed “gear” icon that was taking up vertical space above the debugger controls
+* [Atom 1.17+ Only] Added support for tearing out the various debugger panes into their own Atom tabs, moving them around the workspace and to other docks, remembering their preferred locations, and hiding individual panes.
+
 ## v0.229.0
 
-### GENERAL
+### General
 
 * Fixed Nuclide reporting "arc build" succeeding even if it failed
 * Fixed issue where Nuclide would offer a Terminal for unsupported paths on Windows and then generate an error
