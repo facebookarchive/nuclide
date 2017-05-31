@@ -23,14 +23,18 @@ import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
 import type {EvaluationResult, SerializedBreakpoint} from './types';
-import type {Observable} from 'rxjs';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+import type {
+  DebuggerLaunchAttachProvider,
+  DebuggerConfigAction,
+} from '../../nuclide-debugger-base';
 
 import {AnalyticsEvents} from './constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Subject} from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
 import {Disposable} from 'atom';
@@ -39,7 +43,11 @@ import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
+import {
+  DebuggerLaunchAttachConnectionChooser,
+} from './DebuggerLaunchAttachConnectionChooser';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
@@ -48,7 +56,6 @@ import {DebuggerMode} from './DebuggerStore';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
-import {DebuggerLaunchAttachEventTypes} from '../../nuclide-debugger-base';
 import {DebuggerLayoutManager} from './DebuggerLayoutManager';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
 import os from 'os';
@@ -126,6 +133,7 @@ class DebuggerView extends React.Component {
     super(props);
     this.state = {
       showOldView: false,
+      debuggerConnection: '',
     };
     (this: any)._openDevTools = this._openDevTools.bind(this);
     (this: any)._stopDebugging = this._stopDebugging.bind(this);
@@ -217,13 +225,19 @@ export function createDebuggerView(model: mixed): ?HTMLElement {
 class Activation {
   _disposables: UniversalDisposable;
   _model: DebuggerModel;
-  _launchAttachDialog: ?atom$Panel;
   _tryTriggerNux: ?TriggerNux;
   _layoutManager: DebuggerLayoutManager;
+  _selectedDebugConnection: ?string;
+  _visibleLaunchAttachDialogMode: ?DebuggerConfigAction;
+  _lauchAttachDialogCloser: ?() => void;
+  _connectionProviders: Map<string, Array<DebuggerLaunchAttachProvider>>;
 
   constructor(state: ?SerializedState) {
     this._model = new DebuggerModel(state);
-    this._launchAttachDialog = null;
+    this._selectedDebugConnection = null;
+    this._visibleLaunchAttachDialogMode = null;
+    this._lauchAttachDialogCloser = null;
+    this._connectionProviders = new Map();
     this._layoutManager = new DebuggerLayoutManager(this._model);
     this._disposables = new UniversalDisposable(
       this._model,
@@ -245,9 +259,49 @@ class Activation {
           this._model.getActions().stopDebugging();
         }
       }),
+      this._model.getDebuggerProviderStore().onConnectionsUpdated(() => {
+        const store = this._model.getDebuggerProviderStore();
+        const newConnections = store.getConnections();
+        const keys = Array.from(this._connectionProviders.keys());
+
+        const removedConnections = keys.filter(
+          connection =>
+            newConnections.find(item => item === connection) == null,
+        );
+        const addedConnections = newConnections.filter(
+          connection => keys.find(item => item === connection) == null,
+        );
+
+        for (const key of removedConnections) {
+          for (const provider of this._connectionProviders.get(key) || []) {
+            provider.dispose();
+          }
+
+          this._connectionProviders.delete(key);
+        }
+
+        for (const connection of addedConnections) {
+          const key = nuclideUri.isRemote(connection)
+            ? nuclideUri.getHostname(connection)
+            : 'local';
+          const availableProviders = store.getLaunchAttachProvidersForConnection(
+            connection,
+          );
+          this._connectionProviders.set(key, availableProviders);
+        }
+      }),
       // Commands.
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle': this._toggleLaunchAttachDialog.bind(this),
+        'nuclide-debugger:show-attach-dialog': () => {
+          const boundFn = this._showLaunchAttachDialog.bind(this);
+          boundFn('attach');
+        },
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:show-launch-dialog': () => {
+          const boundFn = this._showLaunchAttachDialog.bind(this);
+          boundFn('launch');
+        },
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:continue-debugging': this._continue.bind(this),
@@ -272,11 +326,6 @@ class Activation {
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle-breakpoint-enabled': this._toggleBreakpointEnabled.bind(
-          this,
-        ),
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-debugger:toggle-launch-attach': this._toggleLaunchAttachDialog.bind(
           this,
         ),
       }),
@@ -391,10 +440,6 @@ class Activation {
         ],
       }),
     );
-    (this: any)._hideLaunchAttachDialog = this._hideLaunchAttachDialog.bind(
-      this,
-    );
-    (this: any)._handleDefaultAction = this._handleDefaultAction.bind(this);
   }
 
   serialize(): SerializedState {
@@ -565,83 +610,109 @@ class Activation {
     actions.deleteAllBreakpoints();
   }
 
-  _toggleLaunchAttachDialog(): void {
-    const dialog = this._getLaunchAttachDialog();
-    if (dialog.isVisible()) {
-      dialog.hide();
-    } else {
-      dialog.show();
+  _renderConfigDialog(
+    panel: atom$Panel,
+    chooseConnection: boolean,
+    dialogMode: DebuggerConfigAction,
+    dialogCloser: () => void,
+  ): void {
+    if (this._selectedDebugConnection == null) {
+      // If no connection is selected yet, default to the local connection.
+      this._selectedDebugConnection = 'local';
     }
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {
-      visible: dialog.isVisible(),
-    });
-    this._emitLaunchAttachVisibilityChangedEvent();
-  }
 
-  _hideLaunchAttachDialog(): void {
-    const dialog = this._getLaunchAttachDialog();
-    if (dialog.isVisible()) {
-      dialog.hide();
-    }
-    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {visible: false});
-    this._emitLaunchAttachVisibilityChangedEvent();
-  }
-
-  _emitLaunchAttachVisibilityChangedEvent() {
-    const dialog = this._getLaunchAttachDialog();
-    this._model
-      .getLaunchAttachActionEventEmitter()
-      .emit(
-        DebuggerLaunchAttachEventTypes.VISIBILITY_CHANGED,
-        dialog.isVisible(),
+    invariant(this._selectedDebugConnection != null);
+    if (chooseConnection) {
+      const options = this._model
+        .getDebuggerProviderStore()
+        .getConnections()
+        .map(connection => {
+          const displayName = nuclideUri.isRemote(connection)
+            ? nuclideUri.getHostname(connection)
+            : 'localhost';
+          return {
+            value: connection,
+            label: displayName,
+          };
+        })
+        .filter(item => item.value != null && item.value !== '')
+        .sort((a, b) => a.label.localeCompare(b.label));
+      ReactDOM.render(
+        <DebuggerLaunchAttachConnectionChooser
+          options={options}
+          selectedConnection={this._selectedDebugConnection || 'local'}
+          connectionChanged={(newValue: ?string) => {
+            this._selectedDebugConnection = newValue;
+            this._renderConfigDialog(panel, false, dialogMode, dialogCloser);
+          }}
+          dialogCloser={dialogCloser}
+        />,
+        panel.getItem(),
       );
-  }
-
-  _handleDefaultAction(): void {
-    const dialog = this._getLaunchAttachDialog();
-    if (dialog.isVisible()) {
-      this._model
-        .getLaunchAttachActionEventEmitter()
-        .emit(DebuggerLaunchAttachEventTypes.ENTER_KEY_PRESSED);
-    }
-  }
-
-  _getLaunchAttachDialog(): atom$Panel {
-    if (!this._launchAttachDialog) {
-      const component = (
+    } else {
+      const connection = this._selectedDebugConnection || 'local';
+      const key = nuclideUri.isRemote(connection)
+        ? nuclideUri.getHostname(connection)
+        : 'local';
+      ReactDOM.render(
         <DebuggerLaunchAttachUI
+          dialogMode={dialogMode}
           store={this._model.getDebuggerProviderStore()}
           debuggerActions={this._model.getActions()}
-          emitter={this._model.getLaunchAttachActionEventEmitter()}
-        />
-      );
-      const host = renderReactRoot(component);
-      this._launchAttachDialog = atom.workspace.addModalPanel({
-        item: host,
-        visible: false, // Hide first so that caller can toggle it visible.
-      });
-
-      this._disposables.add(
-        () => {
-          if (this._launchAttachDialog != null) {
-            this._launchAttachDialog.destroy();
-            this._launchAttachDialog = null;
-          }
-        },
-        atom.commands.add(
-          'atom-workspace',
-          'core:cancel',
-          this._hideLaunchAttachDialog,
-        ),
-        atom.commands.add(
-          'atom-workspace',
-          'core:confirm',
-          this._handleDefaultAction,
-        ),
+          connection={connection}
+          chooseConnection={() =>
+            this._renderConfigDialog(panel, true, dialogMode, dialogCloser)}
+          dialogCloser={dialogCloser}
+          providers={this._connectionProviders.get(key) || []}
+        />,
+        panel.getItem(),
       );
     }
-    invariant(this._launchAttachDialog);
-    return this._launchAttachDialog;
+  }
+
+  _showLaunchAttachDialog(dialogMode: DebuggerConfigAction): void {
+    if (
+      this._visibleLaunchAttachDialogMode != null &&
+      this._visibleLaunchAttachDialogMode !== dialogMode
+    ) {
+      // If the dialog is already visible, but isn't the correct mode, close it before
+      // re-opening the correct mode.
+      invariant(this._lauchAttachDialogCloser != null);
+      this._lauchAttachDialogCloser();
+    }
+
+    const disposables = new UniversalDisposable();
+    const hostEl = document.createElement('div');
+    const pane = atom.workspace.addModalPanel({
+      item: hostEl,
+    });
+
+    const parentEl: HTMLElement = (hostEl.parentElement: any);
+    parentEl.style.maxWidth = '100em';
+
+    // Function callback that closes the dialog and frees all of its resources.
+    const closer = () => {
+      this._disposables.remove(disposables);
+      this._visibleLaunchAttachDialogMode = null;
+      this._lauchAttachDialogCloser = null;
+      track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {
+        visible: false,
+        dialogMode,
+      });
+      ReactDOM.unmountComponentAtNode(hostEl);
+      pane.destroy();
+    };
+
+    this._renderConfigDialog(pane, false, dialogMode, closer);
+    this._lauchAttachDialogCloser = closer;
+    disposables.add(() => closer());
+
+    track(AnalyticsEvents.DEBUGGER_TOGGLE_ATTACH_DIALOG, {
+      visible: true,
+      dialogMode,
+    });
+    this._visibleLaunchAttachDialogMode = dialogMode;
+    this._disposables.add(disposables);
   }
 
   _addToWatch() {
@@ -679,6 +750,23 @@ class Activation {
 
       atom.clipboard.write(callstackText.trim());
     }
+  }
+
+  consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
+    const updateSelectedConnection = directory => {
+      this._selectedDebugConnection = directory != null
+        ? directory.getPath()
+        : null;
+    };
+    const boundUpdateSelectedColumn = updateSelectedConnection.bind(this);
+    const disposable = cwdApi.observeCwd(directory =>
+      boundUpdateSelectedColumn(directory),
+    );
+    this._disposables.add(disposable);
+    return new UniversalDisposable(() => {
+      disposable.dispose();
+      this._disposables.remove(disposable);
+    });
   }
 }
 
@@ -821,8 +909,8 @@ export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
   toolBar.addButton({
     iconset: 'icon-nuclicon',
     icon: 'debugger',
-    callback: 'nuclide-debugger:toggle',
-    tooltip: 'Toggle Debugger',
+    callback: 'nuclide-debugger:show-attach-dialog',
+    tooltip: 'Attach Debugger',
     priority: 500,
   }).element;
   const disposable = new Disposable(() => {
@@ -891,4 +979,9 @@ export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
 export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   invariant(activation);
   activation.consumeWorkspaceViewsService(api);
+}
+
+export function consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
+  invariant(activation);
+  return activation.consumeCurrentWorkingDirectory(cwdApi);
 }

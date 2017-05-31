@@ -28,8 +28,12 @@
               "command": "nuclide-debugger:reset-layout"
             },
             {
-              "label": "Launch/Attach...",
-              "command": "nuclide-debugger:toggle-launch-attach"
+              "label": "Attach debugger...",
+              "command": "nuclide-debugger:show-attach-dialog"
+            },
+            {
+              "label": "Launch debugger...",
+              "command": "nuclide-debugger:show-launch-dialog"
             },
             {
               "label": "Restart debugger",

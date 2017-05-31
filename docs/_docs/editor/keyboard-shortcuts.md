@@ -137,7 +137,8 @@ The [Nuclide Debugger](/docs/features/debugger/) attaches to a running process. 
 | Key (macOS) | Key (Linux) | Command | Description |
 |-----------|-------------|---------|-------------|
 | `Option-Cmd-I` | `Alt-Ctrl-I` | `window:toggle-dev-tools` | Toggle the developer tools UI. |
-| `Shift-Cmd-A` | `Shift-Ctrl-A` | `nuclide-debugger:toggle` | Toggles the process attachment UI where you will choose the process on which you would like to debug (e.g., a Node process, etc.) |
+| `Shift-Cmd-A` | `Shift-Ctrl-A` | `nuclide-debugger:show-attach-dialog` | Shows the process attachment UI where you will choose the process on which you would like to debug (e.g., a Node process, etc.) |
+| `Cmd-F8` | `Ctrl-F8` | `nuclide-debugger:show-launch-dialog` | Shows the process launch UI where you will choose the process on which you would like to debug (e.g., a Node process, etc.) |
 | `Cmd-Alt-J` | `Ctrl-Shift-J` | `nuclide-output:toggle` | Toggle the [Console](/docs/features/debugger/#basics__evaluation) pane. |
 | `F8` | `F8` | `nuclide-debugger:continue-debugging` | After stopping at a breakpoint, and possibly stepping through code, this will enable debugging to continue to the next breakpoint or end of the process. |
 | `Shift-F8` | `Shift-F8` | `nuclide-debugger:run-to-location` | After breaking at a certain position or breakpoint, it will continue to cursor location. |
