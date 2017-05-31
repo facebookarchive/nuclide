@@ -21,6 +21,7 @@ import {
   isNewProtocolChannelEnabled,
 } from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {reportError} from './Protocol/Utils';
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.
@@ -38,8 +39,18 @@ export default class CommandDispatcher {
     this._useNewChannel = false;
   }
 
+  isNewChannel(): boolean {
+    return this._useNewChannel;
+  }
+
   setupChromeChannel(url: string): void {
     this._ensureSessionCreated();
+    // Do not bother setup load if new channel is enabled.
+    if (this._useNewChannel) {
+      invariant(this._bridgeAdapter != null);
+      this._bridgeAdapter.enable();
+      return;
+    }
     if (this._webview == null) {
       // Cast from HTMLElement down to WebviewElement without instanceof
       // checking, as WebviewElement constructor is not exposed.
@@ -119,12 +130,13 @@ export default class CommandDispatcher {
   }
 
   getEventObservable(): Observable<IPCEvent> {
-    invariant(this._webview != null);
-    const chromeEvent$ = Observable.fromEvent(this._webview, 'ipc-message');
-    if (this._bridgeAdapter == null) {
-      return chromeEvent$;
+    if (this._useNewChannel) {
+      invariant(this._bridgeAdapter != null);
+      return this._bridgeAdapter.getEventObservable();
+    } else {
+      invariant(this._webview != null);
+      return Observable.fromEvent(this._webview, 'ipc-message');
     }
-    return this._bridgeAdapter.getEventObservable().merge(chromeEvent$);
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
@@ -169,12 +181,14 @@ export default class CommandDispatcher {
       case 'evaluateOnSelectedCallFrame':
         this._bridgeAdapter.evaluateExpression(args[1], args[2], args[3]);
         break;
+      case 'getProperties':
+        this._bridgeAdapter.getProperties(args[1], args[2]);
+        break;
       case 'selectThread':
         this._bridgeAdapter.selectThread(args[1]);
         break;
       default:
-        // Forward any unimplemented commands to chrome channel.
-        this._sendViaChromeChannel(...args);
+        reportError(`Command ${args[0]} is not implemented yet.`);
         break;
     }
   }

@@ -24,6 +24,10 @@ class RuntimeDomainDispatcher {
     this._agent = agent;
   }
 
+  enable(): void {
+    this._agent.enable();
+  }
+
   getProperties(objectId: RemoteObjectId, callback: Function): void {
     this._agent.getProperties(
       objectId,

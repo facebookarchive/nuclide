@@ -405,7 +405,18 @@ export default class Bridge {
         .getEventObservable()
         .subscribe(this._handleIpcMessage),
     );
+    this._signalNewChannelReadyIfNeeded();
     subscriptions.add(() => this._commandDispatcher.cleanupSessionState());
+  }
+
+  // This will be unnecessary after we remove 'ready' event.
+  _signalNewChannelReadyIfNeeded(): void {
+    if (this._commandDispatcher.isNewChannel()) {
+      this._handleIpcMessage({
+        channel: 'notification',
+        args: ['ready'],
+      });
+    }
   }
 
   setupChromeChannel(url: string): void {

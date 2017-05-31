@@ -19,6 +19,8 @@ import type {
   ThreadsUpdatedEvent,
   ThreadUpdatedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
+import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
+import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import BreakpointManager from './BreakpointManager';
@@ -34,9 +36,13 @@ export default class BridgeAdapter {
   _executionManager: ExecutionManager;
   _threadManager: ThreadManager;
   _expressionEvaluationManager: ExpressionEvaluationManager;
+  _debuggerDispatcher: DebuggerDomainDispatcher;
+  _runtimeDispatcher: RuntimeDomainDispatcher;
 
   constructor(dispatchers: Object) {
     const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
+    this._debuggerDispatcher = debuggerDispatcher;
+    this._runtimeDispatcher = runtimeDispatcher;
     (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
     this._breakpointManager = new BreakpointManager(debuggerDispatcher);
     this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
@@ -49,6 +55,11 @@ export default class BridgeAdapter {
     this._subscriptions = new UniversalDisposable(
       debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent),
     );
+  }
+
+  enable(): void {
+    this._debuggerDispatcher.enable();
+    this._runtimeDispatcher.enable();
   }
 
   resume(): void {
@@ -122,6 +133,10 @@ export default class BridgeAdapter {
       expression,
       objectGroup,
     );
+  }
+
+  getProperties(id: number, objectId: string): void {
+    this._expressionEvaluationManager.getProperties(id, objectId);
   }
 
   selectThread(threadId: string): void {

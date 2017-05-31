@@ -74,6 +74,10 @@ class DebuggerDomainDispatcher {
     return null;
   }
 
+  enable(): void {
+    this._agent.enable();
+  }
+
   resume(): void {
     this._agent.resume();
   }

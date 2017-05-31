@@ -14,7 +14,6 @@ import type DebuggerProcessInfo from './DebuggerProcessInfo';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {AtomNotification} from './types';
 
-import invariant from 'assert';
 import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
@@ -204,15 +203,15 @@ export class DebuggerInstance extends DebuggerInstanceBase {
     this.getLogger().debug('Recieved server message: ' + message);
     const processedMessage = this.preProcessServerMessage(message);
     const webSocket = this._chromeWebSocket;
-    if (webSocket) {
-      message = this._translateMessageIfNeeded(processedMessage);
-      if (this._useNewChannel) {
-        this.receiveNuclideMessage(message);
-      } else {
-        webSocket.send(message);
-      }
+    message = this._translateMessageIfNeeded(processedMessage);
+    if (this._useNewChannel) {
+      this.receiveNuclideMessage(message);
     } else {
-      this.getLogger().error("Why isn't chrome websocket available?");
+      if (webSocket != null) {
+        webSocket.send(message);
+      } else {
+        this.getLogger().error("Why isn't chrome websocket available?");
+      }
     }
   }
 
@@ -247,19 +246,7 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   receiveNuclideMessage(message: string): void {
-    if (
-      this._newProtocolMessageChecker.isSentMessageResponse(
-        message,
-        true, // finishMessage
-      ) ||
-      this._newProtocolMessageChecker.isNewProtocolEventMessage(message)
-    ) {
-      this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
-    } else {
-      // Fallback to chrome channel if new protocol channel did not implement yet.
-      invariant(this._chromeWebSocket != null);
-      this._chromeWebSocket.send(message);
-    }
+    this._emitter.emit(RECEIVED_MESSAGE_EVENT, message);
   }
 
   // Preprocessing hook for client messsages before sending to server.

@@ -159,6 +159,9 @@ export default class ExpressionEvaluationManager {
       .map(({name, value}) => {
         invariant(value != null);
         const {type, subtype, objectId, value: innerValue, description} = value;
+        if (objectId != null) {
+          this._remoteObjectManager.addObject(objectId);
+        }
         return {
           name,
           value: {

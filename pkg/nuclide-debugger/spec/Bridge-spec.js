@@ -69,15 +69,20 @@ describe('Bridge', () => {
       mockDispatcher = ((jasmine.createSpyObj('commandDispatcher', [
         'send',
         'getEventObservable',
+        'isNewChannel',
       ]): any): CommandDispatcherType);
       mockEvent$ = new Subject();
       // $FlowFixMe override instance methods.
       mockDispatcher.getEventObservable = jasmine
-        .createSpy('onAttach')
+        .createSpy('getEventObservable')
         .andReturn(mockEvent$.asObservable());
       spyOn(require('../lib/CommandDispatcher'), 'default').andReturn(
         mockDispatcher,
       );
+      // $FlowFixMe override instance methods.
+      mockDispatcher.isNewChannel = jasmine
+        .createSpy('isNewChannel')
+        .andReturn(false);
 
       debuggerModel = new DebuggerModel();
       bridge = debuggerModel.getBridge();
