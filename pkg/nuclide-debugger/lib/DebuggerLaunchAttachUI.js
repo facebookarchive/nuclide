@@ -119,13 +119,14 @@ export class DebuggerLaunchAttachUI
 
   async _filterProviders(): Promise<void> {
     const enabled = await asyncFilter(this.props.providers, provider =>
-      provider.isEnabled(this.props.dialogMode),
+      provider.getCallbacksForAction(this.props.dialogMode).isEnabled(),
     );
 
     const enabledProviders = [].concat(
       ...enabled.map(provider => {
         return provider
-          .getDebuggerTypeNames(this.props.dialogMode)
+          .getCallbacksForAction(this.props.dialogMode)
+          .getDebuggerTypeNames()
           .map(debuggerName => {
             return {
               provider,
@@ -172,11 +173,9 @@ export class DebuggerLaunchAttachUI
       );
       invariant(provider != null);
 
-      const debuggerConfigPage = provider.provider.getComponent(
-        selectedTab,
-        this.props.dialogMode,
-        valid => this._setConfigValid(valid),
-      );
+      const debuggerConfigPage = provider.provider
+        .getCallbacksForAction(this.props.dialogMode)
+        .getComponent(selectedTab, valid => this._setConfigValid(valid));
 
       providerContent = (
         <div>

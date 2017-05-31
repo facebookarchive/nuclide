@@ -15,6 +15,15 @@ import type {DebuggerConfigAction} from './types';
 
 let uniqueKeySeed = 0;
 
+export type callbacksForAction = {
+  isEnabled: () => Promise<boolean>,
+  getDebuggerTypeNames: () => Array<string>,
+  getComponent: (
+    debuggerTypeName: string,
+    configIsValidChanged: (valid: boolean) => void,
+  ) => ?React.Element<any>,
+};
+
 /**
  * Base class of all launch/attach providers.
  * It allows each concrete provider to provide customized debugging types, actions and UI.
@@ -30,11 +39,32 @@ export default class DebuggerLaunchAttachProvider {
     this._uniqueKey = uniqueKeySeed++;
   }
 
-  /**
-   * Whether this provider is enabled or not.
-   */
-  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-    return Promise.resolve(true);
+  getCallbacksForAction(action: DebuggerConfigAction): callbacksForAction {
+    return {
+      /**
+       * Whether this provider is enabled or not.
+       */
+      isEnabled: () => {
+        return Promise.resolve(true);
+      },
+
+      /**
+       * Returns a list of supported debugger types + environments for the specified action.
+       */
+      getDebuggerTypeNames: () => {
+        return [this._debuggingTypeName];
+      },
+
+      /**
+       * Returns the UI component for configuring the specified debugger type and action.
+       */
+      getComponent: (
+        debuggerTypeName: string,
+        configIsValidChanged: (valid: boolean) => void,
+      ) => {
+        throw new Error('abstract method');
+      },
+    };
   }
 
   /**
@@ -49,24 +79,6 @@ export default class DebuggerLaunchAttachProvider {
    */
   getTargetUri(): NuclideUri {
     return this._targetUri;
-  }
-
-  /**
-   * Returns a list of supported debugger types + environments for the specified action.
-   */
-  getDebuggerTypeNames(action: DebuggerConfigAction): Array<string> {
-    return [this._debuggingTypeName];
-  }
-
-  /**
-   * Returns the UI component for configuring the specified debugger type and action.
-   */
-  getComponent(
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): ?React.Element<any> {
-    throw new Error('abstract method');
   }
 
   /**

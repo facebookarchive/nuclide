@@ -16,7 +16,6 @@ import type {DebuggerConfigAction} from '../../nuclide-debugger-base';
 
 import {asyncFilter} from 'nuclide-commons/promise';
 import {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import React from 'react';
 import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachActions} from './LaunchAttachActions';
@@ -54,47 +53,59 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     }
   }
 
-  async isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-    if (this._enabledProviderNames.get(action) == null) {
-      this._enabledProviderNames.set(action, []);
-    }
+  getCallbacksForAction(action: DebuggerConfigAction) {
+    return {
+      /**
+       * Whether this provider is enabled or not.
+       */
+      isEnabled: async () => {
+        if (this._enabledProviderNames.get(action) == null) {
+          this._enabledProviderNames.set(action, []);
+        }
 
-    const providers = await asyncFilter(
-      Array.from(this._uiProviderMap.values()),
-      provider => provider.isEnabled(action),
-    );
+        const providers = await asyncFilter(
+          Array.from(this._uiProviderMap.values()),
+          provider => provider.isEnabled(action),
+        );
 
-    const list = this._enabledProviderNames.get(action);
-    invariant(list != null);
+        const list = this._enabledProviderNames.get(action);
+        invariant(list != null);
 
-    for (const provider of providers) {
-      list.push(provider.name);
-    }
+        for (const provider of providers) {
+          list.push(provider.name);
+        }
 
-    return providers.length > 0;
-  }
+        return providers.length > 0;
+      },
 
-  getDebuggerTypeNames(action: DebuggerConfigAction): Array<string> {
-    return this._enabledProviderNames.get(action) || [];
-  }
+      /**
+       * Returns a list of supported debugger types + environments for the specified action.
+       */
+      getDebuggerTypeNames: () => {
+        return this._enabledProviderNames.get(action) || [];
+      },
 
-  getComponent(
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): ?React.Element<any> {
-    const provider = this._uiProviderMap.get(debuggerTypeName);
-    if (provider) {
-      return provider.getComponent(
-        this._targetUri,
-        this._store,
-        this._actions,
-        debuggerTypeName,
-        action,
-        configIsValidChanged,
-      );
-    }
-    return null;
+      /**
+       * Returns the UI component for configuring the specified debugger type and action.
+       */
+      getComponent: (
+        debuggerTypeName: string,
+        configIsValidChanged: (valid: boolean) => void,
+      ) => {
+        const provider = this._uiProviderMap.get(debuggerTypeName);
+        if (provider) {
+          return provider.getComponent(
+            this._targetUri,
+            this._store,
+            this._actions,
+            debuggerTypeName,
+            action,
+            configIsValidChanged,
+          );
+        }
+        return null;
+      },
+    };
   }
 
   dispose(): void {

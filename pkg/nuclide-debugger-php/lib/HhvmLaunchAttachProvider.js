@@ -22,32 +22,47 @@ export class HhvmLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     super(debuggingTypeName, targetUri);
   }
 
-  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-    return Promise.resolve(true);
-  }
+  getCallbacksForAction(action: DebuggerConfigAction) {
+    return {
+      /**
+       * Whether this provider is enabled or not.
+       */
+      isEnabled: () => {
+        return Promise.resolve(true);
+      },
 
-  getComponent(
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): ?React.Element<any> {
-    if (action === 'launch') {
-      return (
-        <LaunchUiComponent
-          targetUri={this.getTargetUri()}
-          configIsValidChanged={configIsValidChanged}
-        />
-      );
-    } else if (action === 'attach') {
-      return (
-        <AttachUiComponent
-          targetUri={this.getTargetUri()}
-          configIsValidChanged={configIsValidChanged}
-        />
-      );
-    } else {
-      invariant(false, 'Unrecognized action for component.');
-    }
+      /**
+       * Returns a list of supported debugger types + environments for the specified action.
+       */
+      getDebuggerTypeNames: super.getCallbacksForAction(action)
+        .getDebuggerTypeNames,
+
+      /**
+       * Returns the UI component for configuring the specified debugger type and action.
+       */
+      getComponent: (
+        debuggerTypeName: string,
+        configIsValidChanged: (valid: boolean) => void,
+      ) => {
+        if (action === 'launch') {
+          return (
+            <LaunchUiComponent
+              targetUri={this.getTargetUri()}
+              configIsValidChanged={configIsValidChanged}
+            />
+          );
+        } else if (action === 'attach') {
+          return (
+            <AttachUiComponent
+              targetUri={this.getTargetUri()}
+              configIsValidChanged={configIsValidChanged}
+            />
+          );
+        } else {
+          invariant(false, 'Unrecognized action for component.');
+        }
+      },
+    };
   }
 
   dispose(): void {}

@@ -18,22 +18,37 @@ import React from 'react';
 
 export class ReactNativeLaunchAttachProvider
   extends DebuggerLaunchAttachProvider {
-  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-    return Promise.resolve(action === 'attach');
-  }
+  getCallbacksForAction(action: DebuggerConfigAction) {
+    return {
+      /**
+         * Whether this provider is enabled or not.
+         */
+      isEnabled: () => {
+        return Promise.resolve(action === 'attach');
+      },
 
-  getComponent(
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): ?React.Element<any> {
-    invariant(action === 'attach');
-    return (
-      <DebugUiComponent
-        targetUri={this.getTargetUri()}
-        configIsValidChanged={configIsValidChanged}
-      />
-    );
+      /**
+         * Returns a list of supported debugger types + environments for the specified action.
+         */
+      getDebuggerTypeNames: super.getCallbacksForAction(action)
+        .getDebuggerTypeNames,
+
+      /**
+         * Returns the UI component for configuring the specified debugger type and action.
+         */
+      getComponent: (
+        debuggerTypeName: string,
+        configIsValidChanged: (valid: boolean) => void,
+      ) => {
+        invariant(action === 'attach');
+        return (
+          <DebugUiComponent
+            targetUri={this.getTargetUri()}
+            configIsValidChanged={configIsValidChanged}
+          />
+        );
+      },
+    };
   }
 
   dispose(): void {}

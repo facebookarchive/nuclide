@@ -33,28 +33,43 @@ export class NodeLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     this._store = new LaunchAttachStore(this._dispatcher);
   }
 
-  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-    return Promise.resolve(action === 'attach');
-  }
+  getCallbacksForAction(action: DebuggerConfigAction) {
+    return {
+      /**
+       * Whether this provider is enabled or not.
+       */
+      isEnabled: () => {
+        return Promise.resolve(action === 'attach');
+      },
 
-  getComponent(
-    debuggerTypeName: string,
-    action: DebuggerConfigAction,
-    configIsValidChanged: (valid: boolean) => void,
-  ): ?React.Element<any> {
-    if (action === 'attach') {
-      this._actions.updateAttachTargetList();
-      return (
-        <AttachUIComponent
-          targetUri={this._targetUri}
-          store={this._store}
-          actions={this._actions}
-          configIsValidChanged={configIsValidChanged}
-        />
-      );
-    } else {
-      return null;
-    }
+      /**
+       * Returns a list of supported debugger types + environments for the specified action.
+       */
+      getDebuggerTypeNames: super.getCallbacksForAction(action)
+        .getDebuggerTypeNames,
+
+      /**
+       * Returns the UI component for configuring the specified debugger type and action.
+       */
+      getComponent: (
+        debuggerTypeName: string,
+        configIsValidChanged: (valid: boolean) => void,
+      ) => {
+        if (action === 'attach') {
+          this._actions.updateAttachTargetList();
+          return (
+            <AttachUIComponent
+              targetUri={this._targetUri}
+              store={this._store}
+              actions={this._actions}
+              configIsValidChanged={configIsValidChanged}
+            />
+          );
+        } else {
+          return null;
+        }
+      },
+    };
   }
 
   dispose(): void {
