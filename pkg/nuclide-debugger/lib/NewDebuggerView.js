@@ -32,6 +32,7 @@ import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';
+import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
 type Props = {
   model: DebuggerModel,
@@ -159,15 +160,25 @@ export class NewDebuggerView extends React.PureComponent {
           <ResizableFlexItem initialFlexScale={1}>
             <div className="nuclide-debugger-state-notice">
               <span>The debugger is not attached.</span>
-              <div className="nuclide-debugger-state-notice">
-                <Button
+              <div className="padded">
+                <TruncatedButton
                   onClick={() =>
                     atom.commands.dispatch(
                       atom.views.getView(atom.workspace),
-                      'nuclide-debugger:toggle',
-                    )}>
-                  Start debugging
-                </Button>
+                      'nuclide-debugger:show-attach-dialog',
+                    )}
+                  icon="nuclicon-debugger"
+                  label="Attach debugger..."
+                />
+                <TruncatedButton
+                  onClick={() =>
+                    atom.commands.dispatch(
+                      atom.views.getView(atom.workspace),
+                      'nuclide-debugger:show-launch-dialog',
+                    )}
+                  icon="nuclicon-debugger"
+                  label="Launch debugger..."
+                />
               </div>
             </div>
           </ResizableFlexItem>
