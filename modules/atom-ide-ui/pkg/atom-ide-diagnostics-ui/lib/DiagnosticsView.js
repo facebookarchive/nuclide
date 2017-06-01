@@ -120,13 +120,15 @@ export default class DiagnosticsView extends React.Component {
             </span>
           </ToolbarLeft>
           <ToolbarRight>
-            <span className="inline-block">
-              <Checkbox
-                checked={this.props.showTraces}
-                label="Full description"
-                onChange={this._onShowTracesChange}
-              />
-            </span>
+            {diagnostics.find(d => d.trace)
+              ? <span className="inline-block">
+                  <Checkbox
+                    checked={this.props.showTraces}
+                    label="Full description"
+                    onChange={this._onShowTracesChange}
+                  />
+                </span>
+              : null}
             <span className="inline-block">
               <Checkbox
                 checked={this.props.filterByActiveTextEditor}
