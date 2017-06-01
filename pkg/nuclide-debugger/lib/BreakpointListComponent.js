@@ -114,6 +114,7 @@ export class BreakpointListComponent extends React.Component {
                 this,
                 breakpoint,
               )}
+              onClick={(event: SyntheticEvent) => event.stopPropagation()}
               title={title}
               className={classnames(
                 resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
