@@ -181,6 +181,9 @@ export default class CommandDispatcher {
       case 'evaluateOnSelectedCallFrame':
         this._bridgeAdapter.evaluateExpression(args[1], args[2], args[3]);
         break;
+      case 'runtimeEvaluate':
+        this._bridgeAdapter.evaluateExpression(args[1], args[2], 'console');
+        break;
       case 'getProperties':
         this._bridgeAdapter.getProperties(args[1], args[2]);
         break;

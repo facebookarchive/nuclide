@@ -41,12 +41,14 @@ export default class BridgeAdapter {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _runtimeDispatcher: RuntimeDomainDispatcher;
   _engineCreated: boolean;
+  _pausedMode: boolean;
 
   constructor(dispatchers: Object) {
     const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
     this._engineCreated = false;
+    this._pausedMode = false;
     (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
     this._breakpointManager = new BreakpointManager(debuggerDispatcher);
     this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
@@ -70,31 +72,38 @@ export default class BridgeAdapter {
   }
 
   resume(): void {
+    this._clearStates();
     this._executionManager.resume();
   }
 
   pause(): void {
+    this._clearStates();
     this._executionManager.pause();
   }
 
   stepOver(): void {
+    this._clearStates();
     this._executionManager.stepOver();
   }
 
   stepInto(): void {
+    this._clearStates();
     this._executionManager.stepInto();
   }
 
   stepOut(): void {
+    this._clearStates();
     this._executionManager.stepOut();
   }
 
   _clearStates(): void {
+    this._pausedMode = false;
     this._expressionEvaluationManager.clearPauseStates();
     this._stackTraceManager.clearPauseStates();
   }
 
   runToLocation(fileUri: NuclideUri, line: number): void {
+    this._clearStates();
     this._executionManager.runToLocation(fileUri, line);
   }
 
@@ -131,15 +140,21 @@ export default class BridgeAdapter {
     expression: string,
     objectGroup: ObjectGroup,
   ): void {
-    // TODO: check pause or run mode and dispatch to corresponding
-    // protocol.
-    const callFrameId = this._stackTraceManager.getCurrentFrame().callFrameId;
-    this._expressionEvaluationManager.evaluateOnCallFrame(
-      transactionId,
-      callFrameId,
-      expression,
-      objectGroup,
-    );
+    if (this._pausedMode) {
+      const callFrameId = this._stackTraceManager.getCurrentFrame().callFrameId;
+      this._expressionEvaluationManager.evaluateOnCallFrame(
+        transactionId,
+        callFrameId,
+        expression,
+        objectGroup,
+      );
+    } else {
+      this._expressionEvaluationManager.runtimeEvaluate(
+        transactionId,
+        expression,
+        objectGroup,
+      );
+    }
   }
 
   getProperties(id: number, objectId: string): void {
@@ -198,10 +213,12 @@ export default class BridgeAdapter {
         break;
       }
       case 'Debugger.resumed':
+        this._pausedMode = false;
         this._executionManager.handleDebuggeeResumed();
         break;
       case 'Debugger.paused': {
         const params: PausedEvent = event.params;
+        this._pausedMode = true;
         this._stackTraceManager.refreshStack(params.callFrames);
         this._executionManager.handleDebuggerPaused(params);
         this._updateCurrentScopes();

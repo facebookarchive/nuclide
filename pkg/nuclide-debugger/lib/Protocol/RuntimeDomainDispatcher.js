@@ -12,6 +12,7 @@
 import type {
   RemoteObjectId,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
+import type {ObjectGroup} from '../types';
 
 /**
  * Responsible for sending and receiving runtime domain protocols from
@@ -26,6 +27,23 @@ class RuntimeDomainDispatcher {
 
   enable(): void {
     this._agent.enable();
+  }
+
+  evaluate(
+    expression: string,
+    objectGroup: ObjectGroup,
+    callback: Function,
+  ): void {
+    this._agent.evaluate(
+      expression,
+      objectGroup,
+      undefined, // includeCommandLineAPI
+      undefined, // doNotPauseOnExceptionsAndMuteConsole
+      undefined, // contextId
+      undefined, // returnByValue
+      undefined, // generatePreview
+      callback,
+    );
   }
 
   getProperties(objectId: RemoteObjectId, callback: Function): void {

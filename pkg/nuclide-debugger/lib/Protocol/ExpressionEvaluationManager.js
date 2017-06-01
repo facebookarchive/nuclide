@@ -15,6 +15,7 @@ import type {
   Scope,
   CallFrameId,
   EvaluateOnCallFrameResponse,
+  EvaluateResponse,
   GetPropertiesResponse,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type {ObjectGroup, ExpansionResult} from '../types';
@@ -86,6 +87,7 @@ class RemoteObjectManager {
  */
 export default class ExpressionEvaluationManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
+  _runtimeDispatcher: RuntimeDomainDispatcher;
   _evalutionEvent$: Subject<Array<mixed>>;
   _remoteObjectManager: RemoteObjectManager;
 
@@ -94,6 +96,7 @@ export default class ExpressionEvaluationManager {
     runtimeDispatcher: RuntimeDomainDispatcher,
   ) {
     this._debuggerDispatcher = debuggerDispatcher;
+    this._runtimeDispatcher = runtimeDispatcher;
     this._evalutionEvent$ = new Subject();
     this._remoteObjectManager = new RemoteObjectManager(runtimeDispatcher);
   }
@@ -106,9 +109,7 @@ export default class ExpressionEvaluationManager {
   ): void {
     function callback(error: Error, response: EvaluateOnCallFrameResponse) {
       if (error != null) {
-        reportError(
-          `setFilelineBreakpoint failed with ${JSON.stringify(error)}`,
-        );
+        reportError(`evaluateOnCallFrame failed with ${JSON.stringify(error)}`);
         return;
       }
       const {result, wasThrown, exceptionDetails} = response;
@@ -124,6 +125,34 @@ export default class ExpressionEvaluationManager {
     }
     this._debuggerDispatcher.evaluateOnCallFrame(
       callFrameId,
+      expression,
+      objectGroup,
+      callback.bind(this),
+    );
+  }
+
+  runtimeEvaluate(
+    transactionId: number,
+    expression: string,
+    objectGroup: ObjectGroup,
+  ): void {
+    function callback(error: Error, response: EvaluateResponse) {
+      if (error != null) {
+        reportError(`runtimeEvaluate failed with ${JSON.stringify(error)}`);
+        return;
+      }
+      const {result, wasThrown, exceptionDetails} = response;
+      if (result.objectId != null) {
+        this._remoteObjectManager.addObject(result.objectId);
+      }
+      this._raiseIPCEvent('ExpressionEvaluationResponse', {
+        result,
+        error: wasThrown ? exceptionDetails : null,
+        expression,
+        id: transactionId,
+      });
+    }
+    this._runtimeDispatcher.evaluate(
       expression,
       objectGroup,
       callback.bind(this),
