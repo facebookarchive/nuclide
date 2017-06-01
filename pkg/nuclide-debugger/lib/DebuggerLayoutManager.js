@@ -63,6 +63,9 @@ export type DebuggerPaneConfig = {
 
   // Structure to remember the pane's previous location if the user moved it around.
   previousLocation?: ?DebuggerPaneLocation,
+
+  // Optional callback to be invoked when the pane is being resized (flex scale changed).
+  onPaneResize?: (pane: atom$Pane, newFlexScale: number) => boolean,
 };
 
 export class DebuggerLayoutManager {
@@ -143,6 +146,31 @@ export class DebuggerLayoutManager {
     );
   }
 
+  _overridePaneInitialHeight(
+    dockPane: atom$Pane,
+    newFlexScale: number,
+    desiredHeight: number,
+  ): void {
+    if (newFlexScale === 1) {
+      // newFlexScale === 1 when the pane is added the first time.
+      // $FlowFixMe
+      dockPane.element.style['flex-grow'] = '0';
+      // $FlowFixMe
+      dockPane.element.style['flex-basis'] = 'auto';
+      // $FlowFixMe
+      dockPane.element.style['overflow-y'] = 'scroll';
+      // $FlowFixMe
+      dockPane.element.style['min-height'] = String(desiredHeight) + 'px';
+    } else {
+      // Otherwise, the user must have resized the pane. Remove the override styles
+      // and let it behave normally, the user is in control of the layout now.
+      // $FlowFixMe
+      dockPane.element.style['min-height'] = '0px';
+      // $FlowFixMe
+      dockPane.element.style['flex-basis'] = '';
+    }
+  }
+
   _initializeDebuggerPanes(): void {
     const debuggerUriBase = 'atom://nuclide/debugger-';
 
@@ -156,6 +184,20 @@ export class DebuggerLayoutManager {
         title: () => 'Debugger',
         isEnabled: () => true,
         createView: () => <DebuggerControlsView model={this._model} />,
+        onPaneResize: (dockPane, newFlexScale) => {
+          // If the debugger is stopped, let the controls pane keep its default
+          // layout to make room for the buttons and additional content. Otherwise,
+          // override the layout to shrink the pane and remove extra vertical whitespace.
+          const debuggerMode = this._model.getStore().getDebuggerMode();
+          if (debuggerMode !== DebuggerMode.STOPPED) {
+            this._overridePaneInitialHeight(dockPane, newFlexScale, 130);
+          }
+
+          // If newFlexScale !== 1, that means the user must have resized this pane.
+          // Return true to unhook this callback and let the pane resize per Atom's
+          // default behavior. The user is now responsible for the pane's height.
+          return newFlexScale !== 1;
+        },
       },
       {
         uri: debuggerUriBase + 'callstack',
@@ -193,8 +235,6 @@ export class DebuggerLayoutManager {
             watchExpressionListStore={this._model.getWatchExpressionListStore()}
           />
         ),
-        debuggerModeFilter: (mode: DebuggerModeType) =>
-          mode !== DebuggerMode.STOPPED,
       },
       {
         uri: debuggerUriBase + 'threads',
@@ -299,6 +339,7 @@ export class DebuggerLayoutManager {
   }
 
   _appendItemToDock(
+    paneConfig: DebuggerPaneConfig,
     dock: atom$AbastractPaneContainer,
     item: Object,
     debuggerItemsPerDock: Map<atom$AbastractPaneContainer, number>,
@@ -353,6 +394,21 @@ export class DebuggerLayoutManager {
 
     if (dock.isVisible != null && dock.show != null && !dock.isVisible()) {
       dock.show();
+    }
+
+    // If the debugger pane config has a custom layout callback, hook it up now.
+    if (paneConfig.onPaneResize != null) {
+      const disposables = new UniversalDisposable();
+      disposables.add(dockPane.onWillDestroy(() => disposables.dispose()));
+      disposables.add(
+        dockPane.onDidChangeFlexScale(newFlexScale => {
+          invariant(paneConfig.onPaneResize != null);
+          if (paneConfig.onPaneResize(dockPane, newFlexScale)) {
+            // The callback has requested to be unregistered.
+            disposables.dispose();
+          }
+        }),
+      );
     }
   }
 
@@ -525,6 +581,7 @@ export class DebuggerLayoutManager {
           debuggerPane.debuggerModeFilter(mode)
         ) {
           this._appendItemToDock(
+            debuggerPane,
             targetDock.dock,
             new DebuggerPaneViewModel(
               debuggerPane,

@@ -46,10 +46,6 @@ export class DebuggerPaneViewModel {
     }
   }
 
-  getIconName(): string {
-    return 'nuclicon-debugger';
-  }
-
   getTitle(): string {
     return this._config.title();
   }
