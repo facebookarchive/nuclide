@@ -16,15 +16,30 @@ import React from 'react';
 import {LaunchAttachActions} from '../LaunchAttachActions';
 import {LaunchAttachStore} from '../LaunchAttachStore';
 
-export type DebuggerActionUIProvider = {
-  getComponent: (
-    targetUri: NuclideUri,
+export class DebuggerActionUIProvider {
+  _targetUri: NuclideUri;
+  _name: string;
+
+  constructor(name: string, targetUri: NuclideUri) {
+    this._name = name;
+    this._targetUri = targetUri;
+  }
+
+  getComponent(
     store: LaunchAttachStore,
     actions: LaunchAttachActions,
     debuggerTypeName: string,
     action: DebuggerConfigAction,
     configIsValidChanged: (valid: boolean) => void,
-  ) => React.Element<any>,
-  name: string,
-  isEnabled: (action: DebuggerConfigAction) => Promise<boolean>,
-};
+  ): React.Element<any> {
+    throw new Error('Abstract method.');
+  }
+
+  getName(): string {
+    return this._name;
+  }
+
+  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    throw new Error('Abstract method.');
+  }
+}

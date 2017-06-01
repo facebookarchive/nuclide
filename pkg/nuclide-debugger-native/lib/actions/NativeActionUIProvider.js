@@ -17,41 +17,51 @@ import {AttachUIComponent} from '../AttachUIComponent';
 import {LaunchAttachActions} from '../LaunchAttachActions';
 import {LaunchAttachStore} from '../LaunchAttachStore';
 import {LaunchUIComponent} from '../LaunchUIComponent';
+import {DebuggerActionUIProvider} from './DebuggerActionUIProvider';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'invariant';
 
-export function getComponent(
-  targetUri: NuclideUri,
-  store: LaunchAttachStore,
-  actions: LaunchAttachActions,
-  debuggerTypeName: string,
-  action: DebuggerConfigAction,
-  configIsValidChanged: (valid: boolean) => void,
-): React.Element<any> {
-  actions.updateAttachTargetList();
-  if (action === 'attach') {
-    return (
-      <AttachUIComponent
-        store={store}
-        actions={actions}
-        configIsValidChanged={configIsValidChanged}
-        targetUri={targetUri}
-      />
-    );
-  } else {
-    invariant(action === 'launch');
-    return (
-      <LaunchUIComponent
-        store={store}
-        actions={actions}
-        configIsValidChanged={configIsValidChanged}
-        targetUri={targetUri}
-      />
-    );
+export class NativeActionUIProvider extends DebuggerActionUIProvider {
+  constructor(targetUri: NuclideUri) {
+    super('Native', targetUri);
+  }
+
+  getComponent(
+    store: LaunchAttachStore,
+    actions: LaunchAttachActions,
+    debuggerTypeName: string,
+    action: DebuggerConfigAction,
+    configIsValidChanged: (valid: boolean) => void,
+  ): React.Element<any> {
+    actions.updateAttachTargetList();
+    if (action === 'attach') {
+      return (
+        <AttachUIComponent
+          store={store}
+          actions={actions}
+          configIsValidChanged={configIsValidChanged}
+          targetUri={this._targetUri}
+        />
+      );
+    } else {
+      invariant(action === 'launch');
+      return (
+        <LaunchUIComponent
+          store={store}
+          actions={actions}
+          configIsValidChanged={configIsValidChanged}
+          targetUri={this._targetUri}
+        />
+      );
+    }
+  }
+
+  isEnabled(action: DebuggerConfigAction): Promise<boolean> {
+    if (nuclideUri.isRemote(this._targetUri)) {
+      return Promise.resolve(true);
+    } else {
+      // Local native debugger is not supported on Windows.
+      return Promise.resolve(process.platform !== 'win32');
+    }
   }
 }
-
-export function isEnabled(action: DebuggerConfigAction): Promise<boolean> {
-  return Promise.resolve(true);
-}
-
-export const name = 'Native';
