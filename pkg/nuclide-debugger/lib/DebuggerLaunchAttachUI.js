@@ -27,7 +27,6 @@ import {asyncFilter} from 'nuclide-commons/promise';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import Tabs from '../../nuclide-ui/Tabs';
-import invariant from 'invariant';
 
 type PropsType = {
   dialogMode: DebuggerConfigAction,
@@ -165,13 +164,16 @@ export class DebuggerLaunchAttachUI
 
     let providerContent = null;
     if (tabs.length > 0) {
-      const selectedTab = this.state.selectedProviderTab != null
+      let selectedTab = this.state.selectedProviderTab != null
         ? this.state.selectedProviderTab
-        : tabs[0].name;
-      const provider = this.state.enabledProviders.find(
+        : this.state.enabledProviders[0].debuggerName;
+      let provider = this.state.enabledProviders.find(
         p => p.debuggerName === selectedTab,
       );
-      invariant(provider != null);
+      if (provider == null) {
+        provider = this.state.enabledProviders[0];
+        selectedTab = provider.debuggerName;
+      }
 
       const debuggerConfigPage = provider.provider
         .getCallbacksForAction(this.props.dialogMode)
