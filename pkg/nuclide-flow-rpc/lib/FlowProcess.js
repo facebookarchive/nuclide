@@ -28,7 +28,7 @@ import {niceSafeSpawn} from '../../commons-node/nice';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {getStopFlowOnExit} from './FlowHelpers';
-
+import {getConfig} from './config';
 import {ServerStatus} from './FlowConstants';
 import {FlowIDEConnection} from './FlowIDEConnection';
 import {FlowIDEConnectionWatcher} from './FlowIDEConnectionWatcher';
@@ -346,6 +346,10 @@ export class FlowProcess {
       this._setServerStatus(ServerStatus.NOT_INSTALLED);
       return;
     }
+    const lazy = [];
+    if (getConfig('lazyServer')) {
+      lazy.push('--lazy');
+    }
     // `flow server` will start a server in the foreground. runCommand/runCommandDetailed
     // will not resolve the promise until the process exits, which in this
     // case is never. We need to use spawn directly to get access to the
@@ -355,6 +359,7 @@ export class FlowProcess {
       flowExecInfo.pathToFlow,
       [
         'server',
+        ...lazy,
         '--from',
         'nuclide',
         '--max-workers',

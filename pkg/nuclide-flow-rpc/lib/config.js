@@ -15,6 +15,7 @@ import invariant from 'assert';
 const config: FlowSettings = {
   functionSnippetShouldIncludeArguments: true,
   stopFlowOnExit: true,
+  lazyServer: false,
 };
 
 export function getConfig(key: $Keys<typeof config>): mixed {

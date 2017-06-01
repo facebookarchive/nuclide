@@ -77,6 +77,7 @@ export type ServerStatusUpdate = {
 export type FlowSettings = {
   functionSnippetShouldIncludeArguments: boolean,
   stopFlowOnExit: boolean,
+  lazyServer: boolean,
 };
 
 import {
