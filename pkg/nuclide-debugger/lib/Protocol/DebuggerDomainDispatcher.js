@@ -22,6 +22,8 @@ import type {
   ScriptParsedEvent,
   Location,
   CallFrameId,
+  SetDebuggerSettingsRequest,
+  SetPauseOnExceptionsRequest,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
@@ -42,7 +44,6 @@ class DebuggerDomainDispatcher {
   _agent: Object; // debugger agent from chrome protocol.
   _parsedFiles: Map<ScriptId, NuclideUri>;
   _debugEvent$: Subject<ProtocolDebugEvent>;
-
   _pauseCount: number;
 
   constructor(agent: Object) {
@@ -50,6 +51,10 @@ class DebuggerDomainDispatcher {
     this._parsedFiles = new Map();
     this._debugEvent$ = new Subject();
     this._pauseCount = 0;
+  }
+
+  setDebuggerSettings(settings: SetDebuggerSettingsRequest): void {
+    this._agent.setDebuggerSettings(settings.singleThreadStepping);
   }
 
   getSourceUriFromUri(fileUri: NuclideUri): ?ScriptId {
@@ -100,6 +105,10 @@ class DebuggerDomainDispatcher {
 
   continueToLocation(location: Location): void {
     this._agent.continueToLocation(location);
+  }
+
+  setPauseOnExceptions(request: SetPauseOnExceptionsRequest): void {
+    this._agent.setPauseOnExceptions(request.state);
   }
 
   setBreakpointByUrl(breakpoint: IPCBreakpoint, callback: Function): void {

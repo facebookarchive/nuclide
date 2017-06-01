@@ -28,6 +28,7 @@ import StackTraceManager from './StackTraceManager';
 import ExecutionManager from './ExecutionManager';
 import ThreadManager from './ThreadManager';
 import ExpressionEvaluationManager from './ExpressionEvaluationManager';
+import DebuggerSettingsManager from './DebuggerSettingsManager';
 
 export default class BridgeAdapter {
   _subscriptions: UniversalDisposable;
@@ -36,18 +37,24 @@ export default class BridgeAdapter {
   _executionManager: ExecutionManager;
   _threadManager: ThreadManager;
   _expressionEvaluationManager: ExpressionEvaluationManager;
+  _debuggerSettingsManager: DebuggerSettingsManager;
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _runtimeDispatcher: RuntimeDomainDispatcher;
+  _engineCreated: boolean;
 
   constructor(dispatchers: Object) {
     const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
+    this._engineCreated = false;
     (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
     this._breakpointManager = new BreakpointManager(debuggerDispatcher);
     this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
     this._executionManager = new ExecutionManager(debuggerDispatcher);
     this._threadManager = new ThreadManager(debuggerDispatcher);
+    this._debuggerSettingsManager = new DebuggerSettingsManager(
+      debuggerDispatcher,
+    );
     this._expressionEvaluationManager = new ExpressionEvaluationManager(
       debuggerDispatcher,
       runtimeDispatcher,
@@ -147,10 +154,40 @@ export default class BridgeAdapter {
     });
   }
 
+  setSingleThreadStepping(enable: boolean): void {
+    this._debuggerSettingsManager.setSingleThreadStepping(enable);
+    if (this._engineCreated) {
+      this._debuggerSettingsManager.syncToEngine();
+    }
+  }
+
+  setPauseOnException(enable: boolean): void {
+    this._breakpointManager.setPauseExceptionState({
+      state: enable ? 'uncaught' : 'none',
+    });
+    if (this._engineCreated) {
+      this._breakpointManager.syncPauseExceptionState();
+    }
+  }
+
+  setPauseOnCaughtException(enable: boolean): void {
+    if (enable) {
+      this._breakpointManager.setPauseExceptionState({
+        state: 'all',
+      });
+    }
+    if (this._engineCreated) {
+      this._breakpointManager.syncPauseExceptionState();
+    }
+  }
+
   _handleDebugEvent(event: ProtocolDebugEvent): void {
     switch (event.method) {
       case 'Debugger.loaderBreakpoint': {
+        this._engineCreated = true;
+        this._debuggerSettingsManager.syncToEngine();
         this._breakpointManager.syncInitialBreakpointsToEngine();
+        this._breakpointManager.syncPauseExceptionState();
         // This should be the last method called.
         this._executionManager.continueFromLoaderBreakpoint();
         break;

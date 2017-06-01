@@ -15,6 +15,7 @@ import type {
   Location,
   BreakpointResolvedEvent,
   SetBreakpointByUrlResponse,
+  SetPauseOnExceptionsRequest,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
@@ -42,11 +43,15 @@ export default class BreakpointManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _initBreakpoints: Array<IPCBreakpoint>;
   _breakpointList: Array<UserBreakpoint>;
+  _pauseExceptionRequest: SetPauseOnExceptionsRequest;
   _breakpointEvent$: Subject<Array<mixed>>;
 
   constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
     this._initBreakpoints = [];
     this._breakpointList = [];
+    this._pauseExceptionRequest = {
+      state: 'uncaught', // Debugger should catch unhandled exception by default.
+    };
     this._breakpointEvent$ = new Subject();
     this._debuggerDispatcher = debuggerDispatcher;
   }
@@ -64,6 +69,14 @@ export default class BreakpointManager {
       this.setFilelineBreakpoint(breakpoint);
     }
     this._initBreakpoints = [];
+  }
+
+  setPauseExceptionState(request: SetPauseOnExceptionsRequest): void {
+    this._pauseExceptionRequest = request;
+  }
+
+  syncPauseExceptionState(): void {
+    this._debuggerDispatcher.setPauseOnExceptions(this._pauseExceptionRequest);
   }
 
   setFilelineBreakpoint(request: IPCBreakpoint): void {

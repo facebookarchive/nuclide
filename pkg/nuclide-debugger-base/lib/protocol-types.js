@@ -544,6 +544,10 @@ export type ExecutionContextDescription = {
   name: string,
 };
 
+export type SetDebuggerSettingsRequest = {
+  singleThreadStepping?: boolean,
+};
+
 export type DebuggerCommand =
   | {
       id: number,
@@ -617,6 +621,11 @@ export type DebuggerCommand =
       id: number,
       method: 'Debugger.getThreadStack',
       params: GetThreadStackRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.setDebuggerSettings',
+      params: SetDebuggerSettingsRequest,
     }
   | {
       id: number,

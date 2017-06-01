@@ -187,6 +187,15 @@ export default class CommandDispatcher {
       case 'selectThread':
         this._bridgeAdapter.selectThread(args[1]);
         break;
+      case 'setPauseOnException':
+        this._bridgeAdapter.setPauseOnException(args[1]);
+        break;
+      case 'setPauseOnCaughtException':
+        this._bridgeAdapter.setPauseOnCaughtException(args[1]);
+        break;
+      case 'setSingleThreadStepping':
+        this._bridgeAdapter.setSingleThreadStepping(args[1]);
+        break;
       default:
         reportError(`Command ${args[0]} is not implemented yet.`);
         break;
