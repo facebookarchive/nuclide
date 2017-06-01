@@ -145,10 +145,6 @@ export class FlowIDEConnection {
   observeDiagnostics(): Observable<PushDiagnosticsMessage> {
     const subscribe = () => {
       this._connection.sendNotification(SUBSCRIBE_METHOD_NAME);
-      // This is a temporary hack used to simplify the temporary vscode-jsonrpc implementation in
-      // Flow: D4659335
-      // TODO remove this hack sometime after Flow v0.44 is released (D4798007)
-      this._ideProcess.stdin.write('\r\n');
     };
 
     const retrySubscription = Observable.interval(SUBSCRIBE_RETRY_INTERVAL)
