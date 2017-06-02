@@ -11,6 +11,7 @@
 
 import type {
   RemoteObjectId,
+  ExecutionContextCreatedEvent,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type {ObjectGroup} from '../types';
 
@@ -54,6 +55,11 @@ class RuntimeDomainDispatcher {
       false, // generatePreview
       callback,
     );
+  }
+
+  executionContextCreated(params: ExecutionContextCreatedEvent): void {
+    // Engine may fire ExecutionContextCreatedEvent event because of RuntimeDomain.enable() call.
+    // But we do not need it. Do nothing.
   }
 }
 

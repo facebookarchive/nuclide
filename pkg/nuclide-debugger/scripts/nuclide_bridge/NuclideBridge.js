@@ -31,7 +31,6 @@ const {ipcRenderer} = electron;
 invariant(ipcRenderer != null);
 
 const NUCLIDE_DEBUGGER_CONSOLE_OBJECT_GROUP = 'console';
-const DebuggerSettingsChangedEvent = 'debugger-settings-updated';
 
 type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
 
@@ -41,7 +40,6 @@ class NuclideBridge {
   _emitter: Emitter;
   _debuggerPausedCount: number;
   _suppressBreakpointNotification: boolean;
-  _settings: Object;
   _callframeId: number;
 
   constructor() {
@@ -50,7 +48,6 @@ class NuclideBridge {
     this._emitter = new Emitter();
     this._debuggerPausedCount = 0;
     this._suppressBreakpointNotification = false;
-    this._settings = {};
     this._callframeId = -1;
 
     ipcRenderer.on('command', this._handleIpcCommand.bind(this));
@@ -125,7 +122,6 @@ class NuclideBridge {
       this,
     );
 
-    (this: any)._handleSettingsUpdated = this._handleSettingsUpdated.bind(this);
     this._customizeWebInspector();
     window.runOnWindowLoad(this._handleWindowLoad.bind(this));
   }
@@ -194,9 +190,6 @@ class NuclideBridge {
 
   _handleIpcCommand(event: Object, command: string, ...args: any[]) {
     switch (command) {
-      case 'UpdateSettings':
-        this._handleSettingsUpdated(args[0]);
-        break;
       case 'SyncBreakpoints':
         this._allBreakpoints = args[0];
         this._syncBreakpoints();
@@ -255,19 +248,6 @@ class NuclideBridge {
       case 'setSelectedCallFrameIndex':
         this._handleSetSelectedCallFrameIndex(args[0]);
     }
-  }
-
-  getSettings(): Object {
-    return this._settings;
-  }
-
-  _handleSettingsUpdated(settingsData: string): void {
-    this._settings = JSON.parse(settingsData);
-    this._emitter.emit(DebuggerSettingsChangedEvent, null);
-  }
-
-  onDebuggerSettingsChanged(callback: () => void): IDisposable {
-    return this._emitter.on(DebuggerSettingsChangedEvent, callback);
   }
 
   _handleCallFrameSelected(event: WebInspector.Event) {

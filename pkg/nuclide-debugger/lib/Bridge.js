@@ -197,7 +197,6 @@ export default class Bridge {
             ) {
               this.openDevTools();
             }
-            this._updateDebuggerSettings();
             this._sendAllBreakpoints();
             this._syncDebuggerState();
             break;

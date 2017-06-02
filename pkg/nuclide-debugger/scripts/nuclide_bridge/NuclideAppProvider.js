@@ -9,7 +9,6 @@
  * @format
  */
 
-import NuclideBridge from './NuclideBridge';
 import UnresolvedBreakpointsSidebarPane
   from './UnresolvedBreakpointsSidebarPane';
 import ThreadsWindowPane from './ThreadsWindowPane';
@@ -26,10 +25,6 @@ class NuclideApp extends WebInspector.App {
   _threadsWindow: Object;
 
   presentUI() {
-    NuclideBridge.onDebuggerSettingsChanged(
-      this._handleSettingsUpdated.bind(this),
-    );
-
     const rootView = new WebInspector.RootView();
     WebInspector.inspectorView.show(rootView.element);
     WebInspector.inspectorView
@@ -48,7 +43,6 @@ class NuclideApp extends WebInspector.App {
         sourcesPanel.sidebarPanes.unresolvedBreakpoints = new UnresolvedBreakpointsSidebarPane();
         this._threadsWindow = new ThreadsWindowPane();
         sourcesPanel.sidebarPanes.threads = this._threadsWindow;
-        this._handleSettingsUpdated();
         // Force redraw
         sourcesPanel.sidebarPaneView.detach();
         sourcesPanel.sidebarPaneView = null;
@@ -66,13 +60,6 @@ class NuclideApp extends WebInspector.App {
       this._onBreakpointSettingsChanged,
       this,
     );
-  }
-
-  _handleSettingsUpdated(): void {
-    const settings = NuclideBridge.getSettings();
-    if (this._threadsWindow != null && !settings.SupportThreadsWindow) {
-      this._threadsWindow.setVisible(false);
-    }
   }
 
   _forceOnlySidebar(event: any) {
