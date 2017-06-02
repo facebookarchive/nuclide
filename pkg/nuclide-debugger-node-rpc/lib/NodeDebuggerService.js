@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {ConnectableObservable} from 'rxjs';
 import WS from 'ws';
 import {CompositeDisposable, Disposable} from 'event-kit';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import logger from './utils';
 import {ClientCallback} from '../../nuclide-debugger-common';
 import {NodeDebuggerHost} from './NodeDebuggerHost';

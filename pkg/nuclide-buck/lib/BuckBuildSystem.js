@@ -10,8 +10,10 @@
  */
 
 import type {BuckEvent} from './BuckEventStream';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
-import type {TaskEvent} from '../../commons-node/process-rpc-types';
+import type {
+  LegacyProcessMessage,
+  TaskEvent,
+} from 'nuclide-commons/process-rpc-types';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as BuckService from '../../nuclide-buck-rpc';

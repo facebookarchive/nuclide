@@ -9,8 +9,8 @@
  * @format
  */
 
-import {ConfigCache} from '../../commons-node/ConfigCache';
-import {runCommand} from '../../commons-node/process';
+import {ConfigCache} from 'nuclide-commons/ConfigCache';
+import {runCommand} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 
 const HACK_LOGGER_CATEGORY = 'nuclide-hack';

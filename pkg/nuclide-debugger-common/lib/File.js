@@ -9,7 +9,7 @@
  * @format
  */
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 /**
  * A file in the file cache.

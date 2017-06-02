@@ -9,7 +9,7 @@
  * @format
  */
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
 

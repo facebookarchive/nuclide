@@ -13,8 +13,8 @@ import fs from 'fs';
 import temp from 'temp';
 import {Observable} from 'rxjs';
 import {attachEvent} from 'nuclide-commons/event';
-import fsPromise from '../../commons-node/fsPromise';
-import {observeStream} from '../../commons-node/stream';
+import fsPromise from 'nuclide-commons/fsPromise';
+import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
 
 // Returns the number of replacements made.

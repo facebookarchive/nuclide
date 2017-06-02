@@ -17,11 +17,8 @@ import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 import {Observable, Subject} from 'rxjs';
 import React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import fsPromise from '../../../commons-node/fsPromise';
-import {
-  observeProcess,
-  exitEventToMessage,
-} from '../../../commons-node/process';
+import fsPromise from 'nuclide-commons/fsPromise';
+import {observeProcess, exitEventToMessage} from 'nuclide-commons/process';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {createMessage, taskFromObservable} from '../../../commons-node/tasks';
 import SwiftPMTaskRunnerStore from './SwiftPMTaskRunnerStore';

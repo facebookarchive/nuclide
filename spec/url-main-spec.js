@@ -19,7 +19,7 @@ import {__test__} from '../lib/url-main';
 import * as pkgJson from '../package.json';
 
 import {getWindowLoadSettings} from '../pkg/commons-atom/window-load-settings';
-import fsPromise from '../pkg/commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 const {
   getApplicationState,

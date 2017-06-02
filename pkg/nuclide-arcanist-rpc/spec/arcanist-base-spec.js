@@ -11,7 +11,7 @@
 
 import * as arcanist from '..';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {copyFixture} from '../../nuclide-test-helpers';
 import {Observable} from 'rxjs';
 
@@ -145,7 +145,7 @@ describe('nuclide-arcanist-rpc', () => {
       setResult({});
       execArgs = [];
       spyOn(
-        require('../../commons-node/nice'),
+        require('nuclide-commons/nice'),
         'niceObserveProcess',
       ).andCallFake((command, args, options) => {
         execArgs.push(args);

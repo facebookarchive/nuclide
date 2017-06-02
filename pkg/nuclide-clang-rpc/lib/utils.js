@@ -13,7 +13,7 @@ import escapeStringRegExp from 'escape-string-regexp';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
-import {observeProcess} from '../../commons-node/process';
+import {observeProcess} from 'nuclide-commons/process';
 
 const HEADER_EXTENSIONS = new Set(['.h', '.hh', '.hpp', '.hxx', '.h++']);
 const SOURCE_EXTENSIONS = new Set([

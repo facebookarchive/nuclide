@@ -41,9 +41,9 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 
 import invariant from 'assert';
-import {runCommand, ProcessExitError} from '../../commons-node/process';
+import {runCommand, ProcessExitError} from 'nuclide-commons/process';
 import {maybeToString} from 'nuclide-commons/string';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import JediServerManager from './JediServerManager';
 import {parseFlake8Output} from './flake8';

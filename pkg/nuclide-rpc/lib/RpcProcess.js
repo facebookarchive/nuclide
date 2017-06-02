@@ -14,11 +14,11 @@ import type {ServiceRegistry, MessageLogger} from '..';
 import type {
   ProcessMessage,
   ProcessExitMessage,
-} from '../../commons-node/process-rpc-types';
+} from 'nuclide-commons/process-rpc-types';
 
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';
-import {exitEventToMessage, getOutputStream} from '../../commons-node/process';
+import {exitEventToMessage, getOutputStream} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 import invariant from 'assert';
 import {Subject} from 'rxjs';

@@ -10,7 +10,7 @@
  */
 
 import os from 'os';
-import {runCommand, spawn} from './process';
+import {runCommand, spawn} from 'nuclide-commons/process';
 // $FlowFixMe: Add EmptyError to type defs
 import {EmptyError, Subject} from 'rxjs';
 

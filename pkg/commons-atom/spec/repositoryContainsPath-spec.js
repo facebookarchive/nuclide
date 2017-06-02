@@ -15,7 +15,7 @@ import type {
 
 import {Directory, GitRepository} from 'atom';
 import {repositoryContainsPath} from '../../nuclide-vcs-base';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import nuclideUri from 'nuclide-commons/nuclideUri';

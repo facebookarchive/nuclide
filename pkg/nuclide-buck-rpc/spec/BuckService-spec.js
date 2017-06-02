@@ -15,7 +15,7 @@ import {getLogger} from 'log4js';
 import * as BuckService from '../lib/BuckService';
 import {copyBuildFixture} from '../../nuclide-test-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import * as processJs from '../../commons-node/process';
+import * as processJs from 'nuclide-commons/process';
 
 // Disable buckd so it doesn't linger around after the test.
 process.env.NO_BUCKD = '1';

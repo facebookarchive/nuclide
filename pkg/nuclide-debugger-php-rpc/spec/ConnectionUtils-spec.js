@@ -99,14 +99,14 @@ const config = {
 
 describe('debugger-php-rpc ConnectionUtils', () => {
   beforeEach(() => {
-    spyOn(require('../../commons-node/fsPromise').default, 'exists').andReturn(
+    spyOn(require('nuclide-commons/fsPromise').default, 'exists').andReturn(
       true,
     );
     spyOn(require('../lib/config'), 'getConfig').andReturn(config);
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../../commons-node/fsPromise').default, 'exists');
+    jasmine.unspy(require('nuclide-commons/fsPromise').default, 'exists');
   });
 
   describe('isCorrectConnection', () => {

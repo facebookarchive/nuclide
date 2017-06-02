@@ -9,7 +9,7 @@
  * @format
  */
 
-import {loggedCalls} from '../../../../commons-node/process';
+import {loggedCalls} from 'nuclide-commons/process';
 
 import React from 'react';
 

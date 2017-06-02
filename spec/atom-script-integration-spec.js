@@ -14,7 +14,7 @@
 // in its package.json. As such, any tests for it that need to use Atom's built-in test runner
 // need to live elsewhere, which is why they are in the top-level spec/ directory.
 
-import {runCommand} from '../pkg/commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 
 describe('atom-script', () => {
   describe('echo sample', () => {

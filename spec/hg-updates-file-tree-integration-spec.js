@@ -14,7 +14,7 @@ import type {RevisionInfo} from '../pkg/nuclide-hg-rpc/lib/HgService';
 import type {TestContext} from './utils/remotable-tests';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import fsPromise from '../pkg/commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {hgConstants} from '../pkg/nuclide-hg-rpc';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';

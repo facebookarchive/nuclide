@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ConnectableObservable} from 'rxjs';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {LRUCache} from 'lru-cache';
 
 import invariant from 'assert';
@@ -23,10 +23,10 @@ import {
   observeProcess,
   runCommand,
   scriptifyCommand,
-} from '../../commons-node/process';
+} from 'nuclide-commons/process';
 import {compact} from 'nuclide-commons/observable';
-import {niceObserveProcess} from '../../commons-node/nice';
-import fsPromise from '../../commons-node/fsPromise';
+import {niceObserveProcess} from 'nuclide-commons/nice';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {
   fetchFilesChangedSinceRevision,
 } from '../../nuclide-hg-rpc/lib/hg-revision-state-helpers';

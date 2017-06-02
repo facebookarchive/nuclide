@@ -19,25 +19,25 @@ import type {
   ModifierKey,
 } from './types';
 
-import analytics from 'nuclide-commons-atom/analytics';
-import debounce from 'nuclide-commons/debounce';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import idx from 'idx';
 import Immutable from 'immutable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import analytics from 'nuclide-commons-atom/analytics';
+import debounce from 'nuclide-commons/debounce';
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import idx from 'idx';
+import performanceNow from 'nuclide-commons/performanceNow';
+import {Observable} from 'rxjs';
 import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
 import {asyncFind} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-import {Observable} from 'rxjs';
 import {
   getModifierKeysFromMouseEvent,
   getModifierKeyFromKeyboardEvent,
 } from './getModifierKeys';
 
-import performanceNow from '../../commons-node/performanceNow';
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 

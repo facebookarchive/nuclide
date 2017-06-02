@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 
 describe('scribe_cat test suites', () => {

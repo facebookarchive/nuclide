@@ -53,18 +53,19 @@ import type {
   ProcessInfo,
 } from './process-rpc-types';
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import child_process from 'child_process';
-import {MultiMap} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {splitStream, takeWhileInclusive} from 'nuclide-commons/observable';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeStream} from './stream';
-import {Observable, TimeoutError} from 'rxjs';
-import invariant from 'assert';
-import {quote} from 'shell-quote';
-import performanceNow from './performanceNow';
 import idx from 'idx';
+import invariant from 'assert';
+import {Observable, TimeoutError} from 'rxjs';
+import {quote} from 'shell-quote';
+
+import UniversalDisposable from './UniversalDisposable';
+import nuclideUri from './nuclideUri';
+import performanceNow from './performanceNow';
+import {MultiMap} from './collection';
+import {observableFromSubscribeFunction} from './event';
+import {observeStream} from './stream';
+import {splitStream, takeWhileInclusive} from './observable';
 
 // TODO(T17266325): Replace this in favor of `atom.whenShellEnvironmentLoaded()` when it lands
 import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';

@@ -21,7 +21,7 @@ import {
   method,
   whitespace,
   plain,
-} from '../../commons-node/tokenizedText';
+} from 'nuclide-commons/tokenized-text';
 
 import {atomPointFromHack} from './HackHelpers';
 

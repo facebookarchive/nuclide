@@ -13,7 +13,7 @@ import type {FileSearchResult} from './rpc-types';
 
 import {getLogger} from 'log4js';
 import {arrayEqual} from 'nuclide-commons/collection';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import Task from '../../nuclide-task';
 
 const logger = getLogger('nuclide-fuzzy-file-search-rpc');

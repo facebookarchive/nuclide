@@ -13,7 +13,7 @@
 
 import {
   loadedShellEnvironment,
-} from '../../commons-node/whenShellEnvironmentLoaded';
+} from 'nuclide-commons/whenShellEnvironmentLoaded';
 
 /**
  * The sole purpose of this package is to listen to the

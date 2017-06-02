@@ -9,7 +9,7 @@
  * @format
  */
 
-import {Cache} from '../cache';
+import {Cache} from 'nuclide-commons/cache';
 
 describe('Cache', () => {
   const key1 = 'key1';

@@ -11,7 +11,7 @@
 
 import type {Process, ProcessTask} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
-import type {TaskEvent} from '../../../commons-node/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DeviceTask} from '../DeviceTask';

@@ -13,7 +13,11 @@
 // interface](https://atom.io/docs/api/latest/Task). These are utilities for converting between the
 // two.
 
-import type {TaskEvent, Message, Level} from './process-rpc-types';
+import type {
+  TaskEvent,
+  Message,
+  Level,
+} from 'nuclide-commons/process-rpc-types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';

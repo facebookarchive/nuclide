@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LRUCache} from 'lru-cache';
+import type {NuclideUri} from './nuclideUri';
 
 import LRU from 'lru-cache';
 import fsPromise from './fsPromise';

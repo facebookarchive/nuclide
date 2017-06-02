@@ -22,9 +22,9 @@ import mv from 'mv';
 import fs from 'fs';
 import {arrayCompact} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../../../commons-node/fsPromise';
-import {runCommand} from '../../../commons-node/process';
-import {observeRawStream} from '../../../commons-node/stream';
+import fsPromise from 'nuclide-commons/fsPromise';
+import {runCommand} from 'nuclide-commons/process';
+import {observeRawStream} from 'nuclide-commons/stream';
 import {Observable} from 'rxjs';
 
 export type DirectoryEntry = [string, boolean, boolean];

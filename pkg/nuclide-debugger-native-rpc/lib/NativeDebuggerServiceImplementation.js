@@ -21,9 +21,9 @@ import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
-import {observeStream} from '../../commons-node/stream';
+import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 
 type AttachInfoArgsType = {

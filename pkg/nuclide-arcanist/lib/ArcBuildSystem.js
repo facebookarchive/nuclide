@@ -10,7 +10,7 @@
  */
 
 import type {Task} from '../../commons-node/tasks';
-import type {TaskEvent} from '../../commons-node/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {ArcToolbarModel as ArcToolbarModelType} from './ArcToolbarModel';
 import type {Directory} from '../../nuclide-remote-connection';

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TaskEvent} from '../../commons-node/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from '../../nuclide-expected';
 

@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from './ServerConnection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Cache} from '../../commons-node/cache';
+import {Cache} from 'nuclide-commons/cache';
 
 // A cache of values by ServerConnection.
 // Will lazily create the values when requested for each connection.

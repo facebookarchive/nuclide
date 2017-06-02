@@ -11,7 +11,7 @@
 
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -45,7 +45,7 @@ import {
   hgRunCommand,
   processExitCodeAndThrow,
 } from './hg-utils';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import debounce from 'nuclide-commons/debounce';
 import invariant from 'assert';
 

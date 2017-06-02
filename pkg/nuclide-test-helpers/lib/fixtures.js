@@ -14,10 +14,10 @@ import fse from 'fs-extra';
 import temp from 'temp';
 import invariant from 'assert';
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {asyncLimit} from 'nuclide-commons/promise';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 
 /**
  * Traverses up the parent directories looking for `fixtures/FIXTURE_NAME`.

@@ -9,7 +9,7 @@
  * @format
  */
 
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
 

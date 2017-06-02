@@ -9,7 +9,7 @@
  * @format
  */
 
-import {runCommandDetailed} from '../../../commons-node/process';
+import {runCommandDetailed} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 
 /**

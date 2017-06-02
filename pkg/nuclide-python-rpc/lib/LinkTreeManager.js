@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import * as BuckService from '../../nuclide-buck-rpc';
 
 const BUCK_GEN_PATH = 'buck-out/gen';

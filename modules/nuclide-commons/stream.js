@@ -9,10 +9,11 @@
  * @format
  */
 
-import {Observable} from 'rxjs';
-import {attachEvent} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Stream from 'stream';
+import {Observable} from 'rxjs';
+
+import UniversalDisposable from './UniversalDisposable';
+import {attachEvent} from './event';
 
 /**
  * Observe a stream like stdout or stderr.

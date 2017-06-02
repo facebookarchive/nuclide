@@ -13,7 +13,7 @@ import typeof * as DummyService from './fixtures/dummy-service/DummyService';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
-import {spawn} from '../../commons-node/process';
+import {spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../lib/RpcProcess';
 import {ServiceRegistry} from '../../nuclide-rpc';
 import {Scheduler} from 'rxjs';

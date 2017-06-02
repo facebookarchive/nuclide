@@ -12,7 +12,7 @@
 import logger from './utils';
 import {getConfig} from './config';
 import {launchScriptForDummyConnection, uriToPath, getMode} from './helpers';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {maybeToString} from 'nuclide-commons/string';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';

@@ -19,7 +19,7 @@ import {
   whitespace,
   string,
   plain,
-} from '../../commons-node/tokenizedText';
+} from 'nuclide-commons/tokenized-text';
 import {outlineFromClangOutline} from '../lib/OutlineViewHelpers';
 
 describe('outlineFromClangOutline', () => {

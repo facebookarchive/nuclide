@@ -17,11 +17,11 @@ import type {
   TaskSettings,
   TaskType,
 } from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from '../../commons-node/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Disposable} from 'atom';
 import {Observable} from 'rxjs';

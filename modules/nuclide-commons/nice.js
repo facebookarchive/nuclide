@@ -10,16 +10,14 @@
  */
 
 import type {LRUCache} from 'lru-cache';
+import type {ObserveProcessOptions} from './process';
 import type {ProcessMessage} from './process-rpc-types';
 
-import type {ObserveProcessOptions} from './process';
-
 import LRU from 'lru-cache';
-
-import {spawn, observeProcess} from './process';
+import {Observable} from 'rxjs';
 
 import which from './which';
-import {Observable} from 'rxjs';
+import {spawn, observeProcess} from './process';
 
 const NICE_COMMAND = 'nice';
 const IONICE_COMMAND = 'ionice';

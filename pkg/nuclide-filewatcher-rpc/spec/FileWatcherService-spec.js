@@ -11,7 +11,7 @@
 
 import type {WatchResult} from '..';
 import {Emitter} from 'event-kit';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
 import log4js from 'log4js';
 import {

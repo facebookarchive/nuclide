@@ -10,17 +10,17 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ObserveProcessOptions} from '../../commons-node/process';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {ObserveProcessOptions} from 'nuclide-commons/process';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
 import {
   runCommand,
   observeProcess,
   getOriginalEnvironment,
-} from '../../commons-node/process';
+} from 'nuclide-commons/process';
 import {PromisePool} from '../../commons-node/promise-executors';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import createBuckWebSocket from './createBuckWebSocket';

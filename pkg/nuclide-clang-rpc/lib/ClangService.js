@@ -23,7 +23,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import {keyMirror} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
 
 const serverManager = new ClangServerManager();

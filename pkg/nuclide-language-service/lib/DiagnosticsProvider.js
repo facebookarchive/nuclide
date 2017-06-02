@@ -20,7 +20,7 @@ import type {
 import type {LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
 
-import {Cache} from '../../commons-node/cache';
+import {Cache} from 'nuclide-commons/cache';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track, trackTiming} from '../../nuclide-analytics';

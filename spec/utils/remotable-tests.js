@@ -22,7 +22,7 @@ import {
 } from './integration-test-helpers';
 import {setLocalProject} from '../../pkg/commons-atom/testHelpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../../pkg/commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import invariant from 'assert';
 
 export type TestContext = {

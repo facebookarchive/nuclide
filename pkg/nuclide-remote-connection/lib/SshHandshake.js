@@ -17,7 +17,7 @@ import fs from 'fs-plus';
 import net from 'net';
 import invariant from 'assert';
 import {RemoteConnection} from './RemoteConnection';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {sleep} from 'nuclide-commons/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from 'log4js';

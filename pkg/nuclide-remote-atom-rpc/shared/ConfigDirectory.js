@@ -12,7 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {arrayCompact} from 'nuclide-commons/collection';
-import fs from '../../commons-node/fsPromise';
+import fs from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
 import {asyncFind} from 'nuclide-commons/promise';

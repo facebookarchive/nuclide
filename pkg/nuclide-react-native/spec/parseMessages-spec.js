@@ -10,7 +10,7 @@
  */
 
 import {parseMessages} from '../lib/packager/parseMessages';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 

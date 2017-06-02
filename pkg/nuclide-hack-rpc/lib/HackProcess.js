@@ -20,7 +20,7 @@ import type {
 } from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand, spawn} from '../../commons-node/process';
+import {runCommand, spawn} from 'nuclide-commons/process';
 import {maybeToString} from 'nuclide-commons/string';
 import {RpcProcess} from '../../nuclide-rpc';
 import {
@@ -36,7 +36,7 @@ import {
   FileVersionNotifier,
   FileEventKind,
 } from '../../nuclide-open-files-rpc';
-import {Cache, DISPOSE_VALUE} from '../../commons-node/cache';
+import {Cache, DISPOSE_VALUE} from 'nuclide-commons/cache';
 import {Observable} from 'rxjs';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {hasPrefix, convertCompletions} from './Completions';

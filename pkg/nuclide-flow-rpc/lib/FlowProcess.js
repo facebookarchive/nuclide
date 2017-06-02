@@ -22,9 +22,9 @@ const logger = getLogger('nuclide-flow-rpc');
 
 import {track} from '../../nuclide-analytics';
 
-import {runCommandDetailed, spawn} from '../../commons-node/process';
+import {runCommandDetailed, spawn} from 'nuclide-commons/process';
 import {sleep} from 'nuclide-commons/promise';
-import {niceSafeSpawn} from '../../commons-node/nice';
+import {niceSafeSpawn} from 'nuclide-commons/nice';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {getStopFlowOnExit} from './FlowHelpers';

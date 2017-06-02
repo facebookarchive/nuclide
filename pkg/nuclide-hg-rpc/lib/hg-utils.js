@@ -9,18 +9,18 @@
  * @format
  */
 
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';
-import {runCommandDetailed, scriptifyCommand} from '../../commons-node/process';
+import {runCommandDetailed, scriptifyCommand} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {
   getOriginalEnvironment,
   observeProcess,
   runCommand,
-} from '../../commons-node/process';
+} from 'nuclide-commons/process';
 import {getConnectionDetails} from '../../nuclide-remote-atom-rpc';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 

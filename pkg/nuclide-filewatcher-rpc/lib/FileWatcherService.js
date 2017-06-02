@@ -20,7 +20,7 @@ import type {ConnectableObservable} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {Observable} from 'rxjs';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import debounceDeletes from './debounceDeletes';

@@ -13,7 +13,7 @@ import type {HackRange} from './rpc-types';
 import type {HackSpan} from './OutlineView';
 
 import invariant from 'assert';
-import {runCommandDetailed} from '../../commons-node/process';
+import {runCommandDetailed} from 'nuclide-commons/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getHackExecOptions} from './hack-config';
 import {Point, Range} from 'simple-text-buffer';

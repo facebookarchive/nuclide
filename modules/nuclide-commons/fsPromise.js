@@ -13,9 +13,10 @@ import fs from 'fs';
 import fsPlus from 'fs-plus';
 import globLib from 'glob';
 import mkdirpLib from 'mkdirp';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import rimraf from 'rimraf';
 import temp from 'temp';
+
+import nuclideUri from './nuclideUri';
 import {runCommand} from './process';
 
 /**

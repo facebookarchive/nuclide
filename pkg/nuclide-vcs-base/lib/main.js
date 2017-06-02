@@ -17,7 +17,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {arrayCompact, mapFilter} from 'nuclide-commons/collection';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import {diffSets} from 'nuclide-commons/observable';
 import {Directory} from 'atom';
 import {

@@ -9,8 +9,9 @@
  * @format
  */
 
-import {runCommand} from './process';
 import os from 'os';
+
+import {runCommand} from './process';
 
 /**
  * Provides a cross-platform way to check whether a binary is available.

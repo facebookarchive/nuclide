@@ -10,16 +10,16 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
-import type {Level} from '../../commons-node/process-rpc-types';
+import type {Level} from 'nuclide-commons/process-rpc-types';
 import type {FileDiagnosticMessage} from 'atom-ide-ui';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {BuckBuildOutput, BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';
 import stripAnsi from 'strip-ansi';
 import {getLogger} from 'log4js';
 import DiagnosticsParser from './DiagnosticsParser';
-import {exitEventToMessage} from '../../commons-node/process';
+import {exitEventToMessage} from 'nuclide-commons/process';
 
 const PROGRESS_OUTPUT_INTERVAL = 5 * 1000;
 const BUILD_FAILED_MESSAGE = 'BUILD FAILED:';

@@ -13,7 +13,7 @@ import typeof * as JediService from './JediService';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {spawn} from '../../commons-node/process';
+import {spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {localNuclideUriMarshalers} from '../../nuclide-marshalers-common';

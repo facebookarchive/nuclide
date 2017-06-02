@@ -26,7 +26,7 @@ import type {
   Outline,
   OutlineTree,
 } from '../../nuclide-outline-view/lib/rpc-types';
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
+import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   FindReferencesReturn,
@@ -77,7 +77,7 @@ import type {TextEdit as LspTextEditType} from './protocol';
 
 import invariant from 'assert';
 import through from 'through';
-import {spawn} from '../../commons-node/process';
+import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
@@ -107,7 +107,7 @@ import {
   constructor,
   string,
   plain,
-} from '../../commons-node/tokenizedText';
+} from 'nuclide-commons/tokenized-text';
 
 type State =
   | 'Initial'

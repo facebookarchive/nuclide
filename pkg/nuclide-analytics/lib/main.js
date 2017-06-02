@@ -13,7 +13,7 @@ import type {Observable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {isPromise} from 'nuclide-commons/promise';
-import performanceNow from '../../commons-node/performanceNow';
+import performanceNow from 'nuclide-commons/performanceNow';
 import {track as rawTrack} from './track';
 
 export {HistogramTracker} from './HistogramTracker';

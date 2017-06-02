@@ -14,13 +14,13 @@ import typeof * as ClangProcessService from './ClangProcessService';
 import type {ClangCompileResult} from './rpc-types';
 import type {ClangServerArgs} from './find-clang-server-args';
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-import {runCommand, spawn} from '../../commons-node/process';
+import {runCommand, spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchFile} from '../../nuclide-filewatcher-rpc';

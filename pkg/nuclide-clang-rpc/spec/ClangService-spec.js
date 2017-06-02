@@ -16,7 +16,7 @@ describe('ClangService.formatCode', () => {
   it('uses clang-format correctly', () => {
     waitsForPromise(async () => {
       const spy = spyOn(
-        require('../../commons-node/process'),
+        require('nuclide-commons/process'),
         'runCommand',
       ).andReturn(Observable.of('{ "Cursor": 4, "Incomplete": false }\ntest2'));
       const result = await formatCode('test.cpp', 'test', 1, 2, 3);

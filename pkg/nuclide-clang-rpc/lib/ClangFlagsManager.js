@@ -16,7 +16,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
 import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import * as BuckService from '../../nuclide-buck-rpc';
 import {mapPathsInFlags} from './clang-flags-parser';

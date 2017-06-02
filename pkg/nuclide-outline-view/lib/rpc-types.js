@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
+import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 
 export type OutlineTree = {
   icon?: string, // from atom$Octicon (that type's not allowed over rpc so we use string)

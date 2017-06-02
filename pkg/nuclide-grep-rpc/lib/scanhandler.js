@@ -13,8 +13,8 @@ import type {search$FileResult, search$Match} from '..';
 
 import {Observable} from 'rxjs';
 
-import {observeProcess} from '../../commons-node/process';
-import fsPromise from '../../commons-node/fsPromise';
+import {observeProcess} from 'nuclide-commons/process';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {Minimatch} from 'minimatch';

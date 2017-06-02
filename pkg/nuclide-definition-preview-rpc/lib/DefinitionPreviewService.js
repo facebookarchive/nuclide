@@ -12,7 +12,7 @@
 import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 
 import {countOccurrences} from 'nuclide-commons/string';
-import fs from '../../commons-node/fsPromise';
+import fs from 'nuclide-commons/fsPromise';
 
 const MAX_PREVIEW_LINES = 10;
 

@@ -11,12 +11,12 @@
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
 
 import type {AndroidJavaProcess} from './types';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class Adb extends AdbSdbBase {

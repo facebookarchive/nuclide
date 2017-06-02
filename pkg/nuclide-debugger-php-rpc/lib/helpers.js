@@ -17,7 +17,7 @@ import child_process from 'child_process';
 import logger from './utils';
 import {getConfig} from './config';
 import {shellParse} from 'nuclide-commons/string';
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 
 import {pathToUri, uriToPath} from '../../nuclide-debugger-common/lib/helpers';
 export {pathToUri, uriToPath};

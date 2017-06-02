@@ -11,7 +11,7 @@
 
 import type {FileSearchResult} from '../rpc-types';
 
-import fsPromise from '../../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 
 import {PathSet} from './PathSet';

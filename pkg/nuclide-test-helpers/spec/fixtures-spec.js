@@ -12,7 +12,7 @@
 import fs from 'fs';
 import glob from 'glob';
 import {copyFixture, copyBuildFixture, generateFixture} from '../lib/fixtures';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('copyFixture', () => {

@@ -45,7 +45,7 @@ describe('FlowProcess', () => {
   beforeEach(() => {
     resetModules();
 
-    const processModule = require('../../commons-node/process');
+    const processModule = require('nuclide-commons/process');
     const runCommand = processModule.runCommand;
 
     spyOn(processModule, 'runCommand').andCallFake((command, args, options) => {
@@ -67,7 +67,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    const niceModule = require('../../commons-node/nice');
+    const niceModule = require('nuclide-commons/nice');
     niceSpy = spyOn(niceModule, 'niceSafeSpawn').andCallFake(() => {
       return childSpy;
     });

@@ -21,7 +21,7 @@ import {
   plain,
   type,
   whitespace,
-} from '../../commons-node/tokenizedText';
+} from 'nuclide-commons/tokenized-text';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 function makeTokens(data) {

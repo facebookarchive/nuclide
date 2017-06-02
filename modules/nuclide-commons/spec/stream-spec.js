@@ -9,8 +9,12 @@
  * @format
  */
 
-import {observeStream, observeRawStream, writeToStream} from '../stream';
-import fsPromise from '../fsPromise';
+import {
+  observeStream,
+  observeRawStream,
+  writeToStream,
+} from 'nuclide-commons/stream';
+import fsPromise from 'nuclide-commons/fsPromise';
 import Stream from 'stream';
 import fs from 'fs';
 

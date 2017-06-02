@@ -12,7 +12,7 @@
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observeProjectPaths} from 'nuclide-commons-atom/projects';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 class Activation {

@@ -9,12 +9,12 @@
  * @format
  */
 
-import {observeProcess, runCommand} from '../../commons-node/process';
+import {observeProcess, runCommand} from 'nuclide-commons/process';
 import os from 'os';
 import {Observable} from 'rxjs';
 
 import type {DeviceDescription} from './types';
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class AdbSdbBase {

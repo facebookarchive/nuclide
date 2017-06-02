@@ -22,12 +22,12 @@ import type {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import readline from 'readline';
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import {
   runCommand,
   spawn,
   getOriginalEnvironment,
-} from '../../commons-node/process';
+} from 'nuclide-commons/process';
 import {PromiseQueue} from '../../commons-node/promise-executors';
 import {getLogger} from 'log4js';
 

@@ -11,7 +11,7 @@
 
 import yaml from 'js-yaml';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 /**
  * Reads an llbuild YAML file and returns a mapping, with source files as keys,

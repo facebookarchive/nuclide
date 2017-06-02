@@ -9,7 +9,7 @@
  * @format
  */
 
-import {observeProcess} from '../../commons-node/process';
+import {observeProcess} from 'nuclide-commons/process';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 import os from 'os';

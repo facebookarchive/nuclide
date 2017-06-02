@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import fs from 'fs';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import http from 'http';
 import xfetch from '../../commons-node/xfetch';
 

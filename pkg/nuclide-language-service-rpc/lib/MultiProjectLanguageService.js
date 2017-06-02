@@ -40,12 +40,12 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
-import {Cache} from '../../commons-node/cache';
+import {Cache} from 'nuclide-commons/cache';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {compact} from 'nuclide-commons/observable';
 import {arrayCompact, arrayFlatten, collect} from 'nuclide-commons/collection';
-import {ConfigCache} from '../../commons-node/ConfigCache';
+import {ConfigCache} from 'nuclide-commons/ConfigCache';
 import {ensureInvalidations, NullLanguageService} from '..';
 
 export class MultiProjectLanguageService<T: LanguageService = LanguageService> {

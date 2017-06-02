@@ -11,7 +11,7 @@
 
 import type {CommandInfo} from './types';
 
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import ini from 'ini';

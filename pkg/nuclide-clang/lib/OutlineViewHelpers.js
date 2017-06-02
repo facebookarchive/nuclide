@@ -14,7 +14,7 @@ import type {
   OutlineTree,
 } from '../../nuclide-outline-view/lib/rpc-types';
 import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {TokenizedText} from '../../commons-node/tokenizedText-rpc-types';
+import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 
 import {trackTiming} from '../../nuclide-analytics';
 import {sleep} from 'nuclide-commons/promise';
@@ -27,7 +27,7 @@ import {
   whitespace,
   string,
   plain,
-} from '../../commons-node/tokenizedText';
+} from 'nuclide-commons/tokenized-text';
 import {getOutline} from './libclang';
 
 // Display friendly names for all class-like types.

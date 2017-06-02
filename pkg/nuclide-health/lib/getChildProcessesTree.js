@@ -11,7 +11,7 @@
 
 import type {ChildProcessInfo, IOBytesStats} from './types';
 
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import os from 'os';
 

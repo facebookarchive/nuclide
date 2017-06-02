@@ -10,8 +10,8 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from '../fsPromise';
-import {generateFixture} from '../../nuclide-test-helpers';
+import fsPromise from 'nuclide-commons/fsPromise';
+import {generateFixture} from '../../../pkg/nuclide-test-helpers';
 
 describe('fsPromise test suite', () => {
   describe('findNearestFile()', () => {

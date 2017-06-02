@@ -9,14 +9,14 @@
  * @format
  */
 
-import type {LegacyProcessMessage} from '../../commons-node/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
 import type {Message} from './PanelView';
 
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
 import {splitOnce} from 'nuclide-commons/string';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {spawn, getOutputStream} from '../../commons-node/process';
+import {spawn, getOutputStream} from 'nuclide-commons/process';
 import {SimpleModel} from '../../commons-node/SimpleModel';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';

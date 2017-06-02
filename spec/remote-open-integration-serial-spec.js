@@ -13,7 +13,7 @@ import type {TestContext} from './utils/remotable-tests';
 
 import {copyBuildFixture} from '../pkg/nuclide-test-helpers';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observeProcess} from '../pkg/commons-node/process';
+import {observeProcess} from 'nuclide-commons/process';
 import {existingEditorForUri} from 'nuclide-commons-atom/text-editor';
 import {describeRemote} from './utils/remotable-tests';
 

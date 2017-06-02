@@ -11,7 +11,7 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-import {runCommand} from '../../commons-node/process';
+import {runCommand} from 'nuclide-commons/process';
 
 let fbFindClangServerArgs: ?(src: ?string) => {[string]: ?string};
 

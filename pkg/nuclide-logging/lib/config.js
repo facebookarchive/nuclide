@@ -14,7 +14,7 @@ import {
   isRunningInTest,
   isRunningInClient,
 } from '../../commons-node/system-info';
-import fsPromise from '../../commons-node/fsPromise';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 import invariant from 'invariant';
 import os from 'os';

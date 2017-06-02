@@ -11,7 +11,7 @@
 
 import type {refmtResult} from './ReasonService';
 
-import {runCommand, getOriginalEnvironment} from '../../commons-node/process';
+import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 
 export async function refmt(
   content: string,

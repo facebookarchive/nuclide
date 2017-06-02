@@ -12,7 +12,7 @@
 import type {ExecutorResponse, ExecutorRequest} from './types';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {fork, getOutputStream} from '../../../commons-node/process';
+import {fork, getOutputStream} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
