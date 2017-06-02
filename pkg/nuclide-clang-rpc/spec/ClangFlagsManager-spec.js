@@ -95,6 +95,8 @@ describe('ClangFlagsManager', () => {
       '-isystem',
       '/absolute/path',
 
+      '-fmodules-cache-path=local/path',
+
       '-o',
       'buck-out/local/path/EXExample.o',
       'local/path/EXExample.m',
@@ -154,6 +156,8 @@ describe('ClangFlagsManager', () => {
       buckProjectRoot + 'local/path',
       '-isystem',
       '/absolute/path',
+
+      `-fmodules-cache-path=${buckProjectRoot}local/path`,
     ];
     expect(sanitizedCommandArgs).toEqual(expectedArgs);
   });

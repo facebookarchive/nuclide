@@ -19,6 +19,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from '../../commons-node/fsPromise';
 import {getLogger} from 'log4js';
 import * as BuckService from '../../nuclide-buck-rpc';
+import {mapPathsInFlags} from './clang-flags-parser';
 import {
   isHeaderFile,
   isSourceFile,
@@ -39,16 +40,6 @@ const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
  */
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
 
-const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
-  '-F',
-  '-I',
-  '-include',
-  '-include-pch',
-  '-iquote',
-  '-isysroot',
-  '-isystem',
-]);
-
 const TARGET_KIND_REGEX = [
   'apple_binary',
   'apple_library',
@@ -57,10 +48,6 @@ const TARGET_KIND_REGEX = [
   'cxx_library',
   'cxx_test',
 ].join('|');
-
-const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
-  Array.from(CLANG_FLAGS_THAT_TAKE_PATHS).filter(item => item.length === 2),
-);
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
 
@@ -610,23 +597,12 @@ export default class ClangFlagsManager {
     );
 
     // Resolve relative path arguments against the Buck project root.
-    args.forEach((arg, argIndex) => {
-      if (CLANG_FLAGS_THAT_TAKE_PATHS.has(arg)) {
-        const nextIndex = argIndex + 1;
-        let filePath = overrideIncludePath(args[nextIndex]);
-        if (!nuclideUri.isAbsolute(filePath)) {
-          filePath = nuclideUri.join(basePath, filePath);
-        }
-        args[nextIndex] = filePath;
-      } else if (
-        SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))
-      ) {
-        let filePath = overrideIncludePath(arg.substring(2));
-        if (!nuclideUri.isAbsolute(filePath)) {
-          filePath = nuclideUri.join(basePath, filePath);
-        }
-        args[argIndex] = arg.substring(0, 2) + filePath;
+    args = mapPathsInFlags(args, path_ => {
+      let path = overrideIncludePath(path_);
+      if (!nuclideUri.isAbsolute(path)) {
+        path = nuclideUri.join(basePath, path);
       }
+      return path;
     });
 
     // If an output file is specified, remove that argument.
