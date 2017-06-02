@@ -11,7 +11,11 @@
 
 import type {LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
-import type {CodeFormatProvider as CodeFormatProviderType} from 'atom-ide-ui';
+import type {
+  RangeCodeFormatProvider,
+  FileCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+} from 'atom-ide-ui';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -76,7 +80,7 @@ export class CodeFormatProvider<T: LanguageService> {
               config.analyticsEventName,
               connectionToLanguageService,
               busySignalProvider,
-            )
+            ).provide()
           : new FileFormatProvider(
               name,
               selector,
@@ -84,7 +88,7 @@ export class CodeFormatProvider<T: LanguageService> {
               config.analyticsEventName,
               connectionToLanguageService,
               busySignalProvider,
-            ),
+            ).provide(),
       ),
     );
 
@@ -100,7 +104,7 @@ export class CodeFormatProvider<T: LanguageService> {
             config.analyticsEventName,
             connectionToLanguageService,
             busySignalProvider,
-          ),
+          ).provide(),
         ),
       );
     }
@@ -109,9 +113,7 @@ export class CodeFormatProvider<T: LanguageService> {
   }
 }
 
-class RangeFormatProvider<T: LanguageService>
-  extends CodeFormatProvider<T>
-  implements CodeFormatProviderType {
+class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   constructor(
     name: string,
     selector: string,
@@ -154,11 +156,17 @@ class RangeFormatProvider<T: LanguageService>
       return [];
     });
   }
+
+  provide(): RangeCodeFormatProvider {
+    return {
+      formatCode: this.formatCode.bind(this),
+      selector: this.selector,
+      inclusionPriority: this.inclusionPriority,
+    };
+  }
 }
 
-class FileFormatProvider<T: LanguageService>
-  extends CodeFormatProvider<T>
-  implements CodeFormatProviderType {
+class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   constructor(
     name: string,
     selector: string,
@@ -204,11 +212,17 @@ class FileFormatProvider<T: LanguageService>
       return {formatted: editor.getText()};
     });
   }
+
+  provide(): FileCodeFormatProvider {
+    return {
+      formatEntireFile: this.formatEntireFile.bind(this),
+      selector: this.selector,
+      inclusionPriority: this.inclusionPriority,
+    };
+  }
 }
 
-class PositionFormatProvider<T: LanguageService>
-  extends CodeFormatProvider<T>
-  implements CodeFormatProviderType {
+class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
   formatAtPosition(
     editor: atom$TextEditor,
     position: atom$Point,
@@ -237,5 +251,13 @@ class PositionFormatProvider<T: LanguageService>
 
       return [];
     });
+  }
+
+  provide(): OnTypeCodeFormatProvider {
+    return {
+      formatAtPosition: this.formatAtPosition.bind(this),
+      selector: this.selector,
+      inclusionPriority: this.inclusionPriority,
+    };
   }
 }

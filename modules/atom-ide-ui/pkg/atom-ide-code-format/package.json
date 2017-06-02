@@ -30,7 +30,27 @@
   "consumedServices": {
     "nuclide-code-format.provider": {
       "versions": {
-        "0.0.0": "consumeProvider"
+        "0.0.0": "consumeLegacyProvider"
+      }
+    },
+    "atom-ide-code-format.range": {
+      "versions": {
+        "0.1.0": "consumeRangeProvider"
+      }
+    },
+    "atom-ide-code-format.file": {
+      "versions": {
+        "0.1.0": "consumeFileProvider"
+      }
+    },
+    "atom-ide-code-format.onType": {
+      "versions": {
+        "0.1.0": "consumeOnTypeProvider"
+      }
+    },
+    "atom-ide-code-format.onSave": {
+      "versions": {
+        "0.1.0": "consumeOnSaveProvider"
       }
     }
   }

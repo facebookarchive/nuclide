@@ -27,7 +27,7 @@ describe('CodeFormatManager', () => {
   it('formats an editor on request', () => {
     waitsForPromise(async () => {
       const manager = new CodeFormatManager();
-      manager.addProvider({
+      manager.addRangeProvider({
         selector: 'text.plain.null-grammar',
         inclusionPriority: 1,
         formatCode: () =>
@@ -52,7 +52,7 @@ describe('CodeFormatManager', () => {
   it('format an editor using formatEntireFile', () => {
     waitsForPromise(async () => {
       const manager = new CodeFormatManager();
-      manager.addProvider({
+      manager.addFileProvider({
         selector: 'text.plain.null-grammar',
         inclusionPriority: 1,
         formatEntireFile: () => Promise.resolve({formatted: 'ghi'}),
@@ -83,7 +83,7 @@ describe('CodeFormatManager', () => {
           ]),
       };
       const spy = spyOn(provider, 'formatAtPosition').andCallThrough();
-      manager.addProvider(provider);
+      manager.addOnTypeProvider(provider);
 
       textEditor.setText('a');
       textEditor.setCursorBufferPosition([0, 1]);
@@ -102,10 +102,10 @@ describe('CodeFormatManager', () => {
     waitsForPromise(async () => {
       spyOn(config, 'getFormatOnSave').andReturn(true);
       const manager = new CodeFormatManager();
-      manager.addProvider({
+      manager.addOnSaveProvider({
         selector: 'text.plain.null-grammar',
         inclusionPriority: 1,
-        formatCode: () =>
+        formatOnSave: () =>
           Promise.resolve([
             {
               oldRange: new Range([0, 0], [0, 3]),
@@ -126,7 +126,7 @@ describe('CodeFormatManager', () => {
       jasmine.Clock.useMock();
       spyOn(config, 'getFormatOnSave').andReturn(true);
       const manager = new CodeFormatManager();
-      manager.addProvider({
+      manager.addRangeProvider({
         selector: 'text.plain.null-grammar',
         inclusionPriority: 1,
         formatCode: () => new Promise(() => {}),

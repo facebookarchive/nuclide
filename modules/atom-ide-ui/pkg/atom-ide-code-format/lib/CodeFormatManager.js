@@ -9,9 +9,14 @@
  * @format
  */
 
-import type {CodeFormatProvider} from './types';
+import type {
+  CodeFormatProvider,
+  RangeCodeFormatProvider,
+  FileCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+  OnSaveCodeFormatProvider,
+} from './types';
 
-import invariant from 'assert';
 import {Range} from 'atom';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -25,7 +30,7 @@ import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {getFormatOnSave, getFormatOnType} from './config';
 import {getLogger} from 'log4js';
 
-const logger = getLogger('CodeFormatManager');
+const logger = getLogger('atom-ide-code-format');
 
 // Save events are critical, so don't allow providers to block them.
 const SAVE_TIMEOUT = 2500;
@@ -43,11 +48,13 @@ type FormatEvent =
 
 export default class CodeFormatManager {
   _subscriptions: UniversalDisposable;
-  _codeFormatProviders: Array<CodeFormatProvider>;
+  _rangeProviders: Array<RangeCodeFormatProvider> = [];
+  _fileProviders: Array<FileCodeFormatProvider> = [];
+  _onTypeProviders: Array<OnTypeCodeFormatProvider> = [];
+  _onSaveProviders: Array<OnSaveCodeFormatProvider> = [];
 
   constructor() {
     this._subscriptions = new UniversalDisposable(this._subscribeToEvents());
-    this._codeFormatProviders = [];
   }
 
   /**
@@ -116,10 +123,6 @@ export default class CodeFormatManager {
       .debounceTime(0);
 
     const saveEvents = Observable.create(observer => {
-      if (!getFormatOnSave()) {
-        return () => {};
-      }
-
       const realSave = editor.save;
       // HACK: intercept the real TextEditor.save and handle it ourselves.
       // Atom has no way of injecting content into the buffer asynchronously
@@ -146,12 +149,18 @@ export default class CodeFormatManager {
     const {editor} = event;
     switch (event.type) {
       case 'command':
-        return this._formatCodeInTextEditor(editor).catch(err => {
-          atom.notifications.addError('Failed to format code', {
-            description: err.message,
+        return this._formatCodeInTextEditor(editor)
+          .map(result => {
+            if (!result) {
+              throw new Error('No code formatting providers found!');
+            }
+          })
+          .catch(err => {
+            atom.notifications.addError('Failed to format code', {
+              description: err.message,
+            });
+            return Observable.empty();
           });
-          return Observable.empty();
-        });
       case 'type':
         return this._formatCodeOnTypeInTextEditor(
           editor,
@@ -188,30 +197,18 @@ export default class CodeFormatManager {
     }
   }
 
-  // Formats code in the editor specified, returning whether or not the code
-  // formatted successfully.
-  _formatCodeInTextEditor(editor: atom$TextEditor): Observable<void> {
+  // Formats code in the editor specified, returning whether or not a
+  // code formatter completed successfully.
+  _formatCodeInTextEditor(
+    editor: atom$TextEditor,
+    range?: atom$Range,
+  ): Observable<boolean> {
     return Observable.defer(() => {
-      const {scopeName} = editor.getGrammar();
-      const matchingProviders = this._getMatchingProvidersForScopeName(
-        scopeName,
-      ).filter(
-        provider =>
-          provider.formatCode != null || provider.formatEntireFile != null,
-      );
-
-      if (!matchingProviders.length) {
-        throw Error(
-          'No Code-Format providers registered for scope: ' + scopeName,
-        );
-      }
-
       const buffer = editor.getBuffer();
-      const selectionRange = editor.getSelectedBufferRange();
+      const selectionRange = range || editor.getSelectedBufferRange();
       const {start: selectionStart, end: selectionEnd} = selectionRange;
       let formatRange = null;
-      const selectionRangeEmpty = selectionRange.isEmpty();
-      if (selectionRangeEmpty) {
+      if (selectionRange.isEmpty()) {
         // If no selection is done, then, the whole file is wanted to be formatted.
         formatRange = buffer.getRange();
       } else {
@@ -227,24 +224,34 @@ export default class CodeFormatManager {
           selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
         );
       }
+      const {scopeName} = editor.getGrammar();
+      const rangeProvider = this._getMatchingProviderForScopeName(
+        this._rangeProviders,
+        scopeName,
+      );
+      const fileProvider = this._getMatchingProviderForScopeName(
+        this._fileProviders,
+        scopeName,
+      );
       const contents = editor.getText();
-      const provider = matchingProviders[0];
       if (
-        provider.formatCode != null &&
-        (!selectionRangeEmpty || provider.formatEntireFile == null)
+        rangeProvider != null &&
+        // When formatting the entire file, prefer file-based providers.
+        (!formatRange.isEqual(buffer.getRange()) || fileProvider == null)
       ) {
         return Observable.fromPromise(
-          provider.formatCode(editor, formatRange),
+          rangeProvider.formatCode(editor, formatRange),
         ).map(edits => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
           if (!applyTextEditsToBuffer(editor.getBuffer(), edits)) {
             throw new Error('Could not apply edits to text buffer.');
           }
+          return true;
         });
-      } else if (provider.formatEntireFile != null) {
+      } else if (fileProvider != null) {
         return Observable.fromPromise(
-          provider.formatEntireFile(editor, formatRange),
+          fileProvider.formatEntireFile(editor, formatRange),
         ).map(({newCursor, formatted}) => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
@@ -257,11 +264,10 @@ export default class CodeFormatManager {
           // We call setCursorBufferPosition even when there is no newCursor,
           // because it unselects the text selection.
           editor.setCursorBufferPosition(newPosition);
+          return true;
         });
       } else {
-        throw Error(
-          'code-format providers must implement formatCode or formatEntireFile',
-        );
+        return Observable.of(false);
       }
     });
   }
@@ -280,15 +286,13 @@ export default class CodeFormatManager {
       const character = event.newText[event.newText.length - 1];
 
       const {scopeName} = editor.getGrammar();
-      const matchingProviders = this._getMatchingProvidersForScopeName(
+      const provider = this._getMatchingProviderForScopeName(
+        this._onTypeProviders,
         scopeName,
-      ).filter(provider => provider.formatAtPosition != null);
-      if (!matchingProviders.length) {
+      );
+      if (provider == null) {
         return Observable.empty();
       }
-      const provider = matchingProviders[0];
-      invariant(provider.formatAtPosition != null);
-      const formatAtPosition = provider.formatAtPosition.bind(provider);
 
       const contents = editor.getText();
 
@@ -306,7 +310,7 @@ export default class CodeFormatManager {
       // also let any other event handlers have their go).
       return nextTick
         .switchMap(() =>
-          formatAtPosition(
+          provider.formatAtPosition(
             editor,
             editor.getCursorBufferPosition().translate([0, -1]),
             character,
@@ -329,38 +333,72 @@ export default class CodeFormatManager {
   }
 
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
-    return this._formatCodeInTextEditor(editor);
+    const {scopeName} = editor.getGrammar();
+    const saveProvider = this._getMatchingProviderForScopeName(
+      this._onSaveProviders,
+      scopeName,
+    );
+
+    if (saveProvider != null) {
+      return Observable.fromPromise(
+        saveProvider.formatOnSave(editor),
+      ).map(edits => {
+        applyTextEditsToBuffer(editor.getBuffer(), edits);
+      });
+    } else if (getFormatOnSave()) {
+      return this._formatCodeInTextEditor(
+        editor,
+        editor.getBuffer().getRange(),
+      ).ignoreElements();
+    }
+    return Observable.empty();
   }
 
-  _getMatchingProvidersForScopeName(
+  _getMatchingProviderForScopeName<T: CodeFormatProvider>(
+    providers: Array<T>,
     scopeName: string,
-  ): Array<CodeFormatProvider> {
-    const matchingProviders = this._codeFormatProviders.filter(provider => {
+  ): ?T {
+    return providers.find(provider => {
       const providerGrammars = provider.selector.split(/, ?/);
       return (
         provider.inclusionPriority > 0 &&
         providerGrammars.indexOf(scopeName) !== -1
       );
     });
-    return matchingProviders.sort((providerA, providerB) => {
-      // $FlowFixMe a comparator function should return a number
-      return providerA.inclusionPriority < providerB.inclusionPriority;
-    });
   }
 
-  addProvider(provider: CodeFormatProvider): IDisposable {
-    this._codeFormatProviders.push(provider);
+  addRangeProvider(provider: RangeCodeFormatProvider): IDisposable {
+    return this._addProvider(this._rangeProviders, provider);
+  }
+
+  addFileProvider(provider: FileCodeFormatProvider): IDisposable {
+    return this._addProvider(this._fileProviders, provider);
+  }
+
+  addOnTypeProvider(provider: OnTypeCodeFormatProvider): IDisposable {
+    return this._addProvider(this._onTypeProviders, provider);
+  }
+
+  addOnSaveProvider(provider: OnSaveCodeFormatProvider): IDisposable {
+    return this._addProvider(this._onSaveProviders, provider);
+  }
+
+  _addProvider<T: CodeFormatProvider>(
+    providers: Array<T>,
+    provider: T,
+  ): IDisposable {
+    providers.push(provider);
+    providers.sort((a, b) => b.inclusionPriority - a.inclusionPriority);
     return new UniversalDisposable(() => {
-      const index = this._codeFormatProviders.indexOf(provider);
+      const index = providers.indexOf(provider);
       if (index !== -1) {
-        this._codeFormatProviders.splice(index);
+        providers.splice(index);
       }
     });
   }
 
   dispose() {
     this._subscriptions.dispose();
-    this._codeFormatProviders = [];
   }
 }
 

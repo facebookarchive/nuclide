@@ -36,4 +36,10 @@ export type {
   Trace,
 } from './pkg/atom-ide-diagnostics';
 
-export type {CodeFormatProvider} from './pkg/atom-ide-code-format/lib/types';
+export type {
+  CodeFormatProvider,
+  RangeCodeFormatProvider,
+  FileCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+  OnSaveCodeFormatProvider,
+} from './pkg/atom-ide-code-format/lib/types';

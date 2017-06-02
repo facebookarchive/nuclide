@@ -9,7 +9,13 @@
  * @format
  */
 
-import type {CodeFormatProvider} from './types';
+import type {
+  CodeFormatProvider,
+  RangeCodeFormatProvider,
+  FileCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+  OnSaveCodeFormatProvider,
+} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import CodeFormatManager from './CodeFormatManager';
@@ -21,8 +27,33 @@ class Activation {
     this.codeFormatManager = new CodeFormatManager();
   }
 
-  consumeProvider(provider: CodeFormatProvider): IDisposable {
-    return this.codeFormatManager.addProvider(provider);
+  consumeLegacyProvider(provider: CodeFormatProvider): IDisposable {
+    if (provider.formatCode) {
+      return this.consumeRangeProvider(provider);
+    } else if (provider.formatEntireFile) {
+      return this.consumeFileProvider(provider);
+    } else if (provider.formatOnType) {
+      return this.consumeOnTypeProvider(provider);
+    } else if (provider.formatOnSave) {
+      return this.consumeOnSaveProvider(provider);
+    }
+    throw new Error('Invalid code format provider');
+  }
+
+  consumeRangeProvider(provider: RangeCodeFormatProvider): IDisposable {
+    return this.codeFormatManager.addRangeProvider(provider);
+  }
+
+  consumeFileProvider(provider: FileCodeFormatProvider): IDisposable {
+    return this.codeFormatManager.addFileProvider(provider);
+  }
+
+  consumeOnTypeProvider(provider: OnTypeCodeFormatProvider): IDisposable {
+    return this.codeFormatManager.addOnTypeProvider(provider);
+  }
+
+  consumeOnSaveProvider(provider: OnSaveCodeFormatProvider): IDisposable {
+    return this.codeFormatManager.addOnSaveProvider(provider);
   }
 
   dispose() {
