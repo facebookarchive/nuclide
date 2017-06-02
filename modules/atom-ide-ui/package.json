@@ -3,11 +3,15 @@
   "version": "0.0.1",
   "description": "A suite of language service UIs for Atom.",
   "license": "SEE LICENSE IN LICENSE",
+  "main": "./index-entry.js",
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "prepublishOnly": "../../scripts/release-transpile.js --overwrite .",
     "test": "scripts/test.js"
+  },
+  "engines": {
+    "atom": ">= 1.17.0"
   },
   "dependencies": {
     "async-to-generator": "1.0.0",

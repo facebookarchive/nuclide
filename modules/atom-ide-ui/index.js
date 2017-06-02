@@ -9,37 +9,47 @@
  * @format
  */
 
-export type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from './pkg/hyperclick/lib/types';
+import fs from 'fs';
+// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+import path from 'path';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import FeatureLoader from 'nuclide-commons-atom/FeatureLoader';
 
-export type {
-  CallbackDiagnosticProvider,
-  DiagnosticMessage,
-  DiagnosticProvider,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  FileDiagnosticUpdate,
-  FileMessageUpdate,
-  InvalidationMessage,
-  LinterMessage,
-  LinterMessageV1,
-  LinterMessageV2,
-  LinterProvider,
-  LinterTrace,
-  MessageInvalidationCallback,
-  MessageType,
-  MessageUpdateCallback,
-  ObservableDiagnosticProvider,
-  ProjectDiagnosticMessage,
-  Trace,
-} from './pkg/atom-ide-diagnostics';
-
-export type {
-  CodeFormatProvider,
-  RangeCodeFormatProvider,
-  FileCodeFormatProvider,
-  OnTypeCodeFormatProvider,
-  OnSaveCodeFormatProvider,
-} from './pkg/atom-ide-code-format/lib/types';
+if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
+  atom.notifications.addWarning('Duplicate package: `atom-ide-ui`', {
+    description: '`atom-ide-ui` is already included as part of `nuclide`.<br>' +
+      'Please uninstall `atom-ide-ui` to avoid conflicts.',
+    dismissable: true,
+  });
+} else {
+  const featureDir = path.join(__dirname, 'pkg');
+  const features = fs.readdirSync(featureDir).map(item => {
+    const dirname = path.join(featureDir, item);
+    const pkgJson = fs.readFileSync(path.join(dirname, 'package.json'), 'utf8');
+    return {
+      dirname,
+      pkg: JSON.parse(pkgJson),
+    };
+  });
+  const disposables = new UniversalDisposable();
+  const featureLoader = new FeatureLoader({
+    pkgName: 'atom-ide-ui',
+    config: {},
+    features,
+  });
+  featureLoader.load();
+  module.exports = {
+    config: featureLoader.getConfig(),
+    activate() {
+      disposables.add(require('nuclide-commons-ui'));
+      featureLoader.activate();
+    },
+    deactivate() {
+      featureLoader.deactivate();
+      disposables.dispose();
+    },
+    serialize() {
+      featureLoader.serialize();
+    },
+  };
+}
