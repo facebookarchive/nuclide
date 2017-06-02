@@ -9,12 +9,28 @@
  * @format
  */
 
+/**
+ * A wrapper over Atom's config functions for use with FeatureLoader.
+ * Each individual loaded package's config is a subconfig of the root package.
+ */
+
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
+// Default to "nuclide", but only for unit tests.
+let packageName = atom.inSpecMode() ? 'nuclide' : null;
+
+/**
+ * Sets the root package name.
+ * This gets automatically called from FeatureLoader.
+ */
+function setPackageName(name: string): void {
+  packageName = name;
+}
 
 function formatKeyPath(keyPath: string): string {
-  return `${NUCLIDE_CONFIG_SCOPE}${keyPath}`;
+  invariant(packageName, 'feature-config must be used with FeatureLoader.');
+  return `${packageName}.${keyPath}`;
 }
 
 /*
@@ -152,16 +168,18 @@ function unset(
 
 /**
  * Returns `true` if the feature with the given name is disabled either directly or because the
- *   'nuclide' package itself is disabled.
+ * container package itself is disabled.
  */
 function isFeatureDisabled(name: string): boolean {
+  invariant(packageName, 'feature-config must be used with FeatureLoader.');
   return (
-    atom.packages.isPackageDisabled('nuclide') ||
-    !atom.config.get(`nuclide.use.${name}`)
+    atom.packages.isPackageDisabled(packageName) ||
+    !atom.config.get(`${packageName}.use.${name}`)
   );
 }
 
 export default {
+  setPackageName,
   get,
   getWithDefaults,
   getSchema,

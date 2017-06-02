@@ -13,6 +13,7 @@
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import featureConfig from './feature-config';
 
 type FeaturePkg = {
   atomConfig?: Object,
@@ -129,6 +130,7 @@ export default class FeatureLoader {
         });
       }
     });
+    featureConfig.setPackageName(this._pkgName);
 
     // Nesting loads within loads leads to reverse activation order- that is, if
     // the root package loads feature packages, then the feature package activations will
