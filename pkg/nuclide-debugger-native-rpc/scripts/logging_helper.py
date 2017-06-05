@@ -14,4 +14,4 @@ def log_debug(output):
 
 def log_error(output):
     print(output.encode('utf-8'), file=sys.stderr)
-    sys.stdout.flush()
+    sys.stderr.flush()
