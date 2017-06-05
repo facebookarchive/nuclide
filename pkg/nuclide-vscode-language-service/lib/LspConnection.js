@@ -244,6 +244,13 @@ export class LspConnection {
     );
   }
 
+  onTelemetryNotification(callback: any => void): void {
+    this._jsonRpcConnection.onNotification(
+      {method: 'telemetry/event'},
+      callback,
+    );
+  }
+
   onLogMessageNotification(callback: p.LogMessageParams => void): void {
     this._jsonRpcConnection.onNotification(
       {method: 'window/logMessage'},

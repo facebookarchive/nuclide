@@ -276,6 +276,9 @@ export class LspLanguageService {
       );
       jsonRpcConnection.onError(this._handleError.bind(this));
       jsonRpcConnection.onClose(this._handleClose.bind(this));
+      this._lspConnection.onTelemetryNotification(
+        this._handleTelemetryNotification.bind(this),
+      );
       this._lspConnection.onLogMessageNotification(
         this._handleLogMessageNotification.bind(this),
       );
@@ -698,6 +701,35 @@ export class LspLanguageService {
       );
       this._state = 'Initial';
       this.start();
+    }
+  }
+
+  _handleTelemetryNotification(params: any): void {
+    // CARE! This method may be called before initialization has finished.
+
+    // LSP doesn't specify the format of params. What we'll do is this:
+    // if the params look like LogMessageParams then we'll log the message it
+    // contains, otherwise we'll just log the entire params structure.
+    if (
+      typeof params.type === 'number' &&
+      params.type >= 1 &&
+      params.type <= 4 &&
+      typeof params.message === 'string'
+    ) {
+      switch (params.type) {
+        case LspMessageType.Log:
+        case LspMessageType.Info:
+          this._logger.info(`Lsp.telemetry: ${params.message}`);
+          break;
+        case LspMessageType.Warning:
+          this._logger.warn(`Lsp.telemetry: ${params.message}`);
+          break;
+        case LspMessageType.Error:
+        default:
+          this._logger.error(`Lsp.telemetry: ${params.message}`);
+      }
+    } else {
+      this._logger.info(`Lsp.telemetry: ${JSON.stringify(params)}`);
     }
   }
 
@@ -1742,6 +1774,7 @@ export function convertSearchResult(info: SymbolInformation): SymbolResult {
       hoverText = key;
     }
   }
+  // TODO: this method uses 'this' and so must be an instance method!
   return {
     path: this._convertLspUriToNuclideUri(info.location.uri),
     line: info.location.range.start.line,
