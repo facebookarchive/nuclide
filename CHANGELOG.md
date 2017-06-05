@@ -1,5 +1,15 @@
 # Nuclide Changelog
 
+## v0.231.0
+
+### General
+
+* The "Full description" checkbox in Diagnostics is now hidden when traces are unavailable.
+
+### Debugger
+
+* Enable/Disable breakpoint in breakpoint window will not navigate to source location anymore.
+
 ## v0.230.0
 
 ### General
