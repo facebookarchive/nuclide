@@ -45,7 +45,8 @@ export class DebuggerProviderStore {
     this._debuggerActions = debuggerActions;
     this._emitter = new Emitter();
     this._debuggerProviders = new Set();
-    this._connections = [];
+    // There is always a local connection.
+    this._connections = ['local'];
   }
 
   _registerDispatcherEvents(): IDisposable {
