@@ -9,9 +9,11 @@
  * @format
  */
 
-import type {CodeFormatProvider} from 'atom-ide-ui';
-import type {LinterProvider} from 'atom-ide-ui';
-import type {OutlineProvider} from '../../nuclide-outline-view/lib/main';
+import type {
+  CodeFormatProvider,
+  LinterProvider,
+  OutlineProvider,
+} from 'atom-ide-ui';
 import type {
   TypeHintProvider as TypeHintProviderType,
 } from '../../nuclide-type-hint/lib/types';

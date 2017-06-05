@@ -12,7 +12,7 @@
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 import type {
   WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+} from 'nuclide-commons-atom/workspace-views-compat';
 
 import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
 import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
@@ -20,6 +20,9 @@ import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
+import {
+  consumeWorkspaceViewsCompat,
+} from 'nuclide-commons-atom/workspace-views-compat';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
@@ -104,6 +107,11 @@ class Activation {
 
   constructor() {
     this._disposables = new UniversalDisposable();
+    this._disposables.add(
+      consumeWorkspaceViewsCompat(service =>
+        this.consumeWorkspaceViewsService(service),
+      ),
+    );
 
     this._editorService = new ActiveEditorRegistry(
       (provider, editor) => {
@@ -145,7 +153,14 @@ class Activation {
     return new OutlineViewPanelState(createOutlines(this._editorService));
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+    const commandDisposable = atom.commands.add(
+      'atom-workspace',
+      'nuclide-outline-view:toggle',
+      event => {
+        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      },
+    );
     this._disposables.add(
       api.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
@@ -153,14 +168,9 @@ class Activation {
         }
       }),
       () => api.destroyWhere(item => item instanceof OutlineViewPanelState),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-outline-view:toggle',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
-        },
-      ),
+      commandDisposable,
     );
+    return commandDisposable;
   }
 
   deserializeOutlineViewPanelState(): OutlineViewPanelState {

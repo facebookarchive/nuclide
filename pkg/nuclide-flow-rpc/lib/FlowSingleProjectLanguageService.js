@@ -11,7 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   AutocompleteResult,

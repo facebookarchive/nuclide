@@ -9,7 +9,9 @@
  * @format
  */
 
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 
 import {parseJSON, babelPosToPoint} from './parsing';
 

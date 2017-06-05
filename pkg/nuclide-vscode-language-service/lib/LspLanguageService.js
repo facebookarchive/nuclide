@@ -25,7 +25,7 @@ import type {
 import type {
   Outline,
   OutlineTree,
-} from '../../nuclide-outline-view/lib/rpc-types';
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {

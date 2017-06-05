@@ -26,7 +26,9 @@ import type {
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {HackDefinition} from './Definitions';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';

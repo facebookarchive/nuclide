@@ -94,7 +94,7 @@ async function createLanguageService(): Promise<
       analyticsEventName: 'hack.codehighlight',
     },
     outline: {
-      version: '0.0.0',
+      version: '0.1.0',
       priority: 1,
       analyticsEventName: 'hack.outline',
     },

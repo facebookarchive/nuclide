@@ -9,7 +9,9 @@
  * @format
  */
 
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  Outline,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -17,7 +19,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {trackTiming} from '../../nuclide-analytics';
 
 export type OutlineViewConfig = {|
-  version: '0.0.0',
+  version: '0.1.0',
   priority: number,
   analyticsEventName: string,
 |};
@@ -50,7 +52,7 @@ export class OutlineViewProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'nuclide-outline-view',
+      'atom-ide-outline-view',
       config.version,
       new OutlineViewProvider(
         name,

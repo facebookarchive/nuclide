@@ -21,6 +21,10 @@ const PKG_PATH = path.join(__dirname, '..', 'pkg');
 
 fs.readdirSync(PKG_PATH).forEach(pkgName => {
   const pkgPath = path.join(PKG_PATH, pkgName);
+  if (!fs.existsSync(path.join(pkgPath, 'spec'))) {
+    return;
+  }
+  console.log('Running tests for ' + pkgName);
   try {
     child_process.execFileSync('apm', ['test'], {
       cwd: pkgPath,

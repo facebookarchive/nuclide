@@ -10,8 +10,10 @@
  */
 
 import type {HyperclickProvider} from 'atom-ide-ui';
-import type {Outline} from '../../nuclide-outline-view/lib/rpc-types';
-import type {OutlineProvider} from '../../nuclide-outline-view';
+import type {
+  Outline,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
+import type {OutlineProvider} from 'atom-ide-ui';
 
 import {CompositeDisposable} from 'atom';
 

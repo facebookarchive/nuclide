@@ -9,7 +9,9 @@
  * @format
  */
 
-import type {OutlineTree} from '../../nuclide-outline-view/lib/rpc-types';
+import type {
+  OutlineTree,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 
 import {Point} from 'simple-text-buffer';
 

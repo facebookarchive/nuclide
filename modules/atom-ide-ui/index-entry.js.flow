@@ -11,7 +11,7 @@
 
 export type {
   HyperclickProvider,
-  HyperclickSuggestion
+  HyperclickSuggestion,
 } from './pkg/hyperclick/lib/types';
 
 export type {
@@ -33,7 +33,7 @@ export type {
   MessageUpdateCallback,
   ObservableDiagnosticProvider,
   ProjectDiagnosticMessage,
-  Trace
+  Trace,
 } from './pkg/atom-ide-diagnostics';
 
 export type {
@@ -41,5 +41,10 @@ export type {
   RangeCodeFormatProvider,
   FileCodeFormatProvider,
   OnTypeCodeFormatProvider,
-  OnSaveCodeFormatProvider
+  OnSaveCodeFormatProvider,
 } from './pkg/atom-ide-code-format/lib/types';
+
+export type {
+  OutlineProvider,
+  ResultsStreamProvider,
+} from './pkg/atom-ide-outline-view';

@@ -58,7 +58,7 @@ const atomConfig: AtomLanguageServiceConfig = {
   name: 'Python',
   grammars: GRAMMARS,
   outline: {
-    version: '0.0.0',
+    version: '0.1.0',
     priority: 1,
     analyticsEventName: 'python.outline',
   },

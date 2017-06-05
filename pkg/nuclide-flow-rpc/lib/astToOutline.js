@@ -12,7 +12,7 @@
 import type {
   Outline,
   OutlineTree,
-} from '../../nuclide-outline-view/lib/rpc-types';
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 
 import {Point} from 'simple-text-buffer';
 
