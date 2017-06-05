@@ -6,29 +6,27 @@
  * the root directory of this source tree.
  *
  * @flow
- * @format
  */
 
-import type {Disposable} from 'atom';
-export type GetToolBar = (group: string) => ToolBarManager;
-
-type ToolBarManager = {
+type toolbar$ToolbarManager = {
   addButton(options: {
     priority?: number,
     tooltip?: string,
     iconset?: string,
     icon?: string,
     callback?: string | (() => void),
-  }): ToolBarButtonView,
+  }): toolbar$ToolbarButtonView,
   addSpacer(options: {
     priority?: number,
-  }): ToolBarButtonView,
+  }): toolbar$ToolbarButtonView,
   removeItems(): void,
-  onDidDestroy(callback: () => void): Disposable,
+  onDidDestroy(callback: () => void): IDisposable,
 };
 
-type ToolBarButtonView = {
+type toolbar$ToolbarButtonView = {
   setEnabled(enabled: boolean): void,
   destroy(): void,
   element: HTMLElement,
 };
+
+type toolbar$GetToolbar = (group: string) => toolbar$ToolbarManager;

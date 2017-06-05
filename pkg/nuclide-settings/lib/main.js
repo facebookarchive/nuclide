@@ -12,7 +12,6 @@
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 
 import {
   viewableFromReactElement,
@@ -46,7 +45,7 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
   );
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
     priority: -501,

@@ -17,7 +17,6 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
 import type {
   WorkspaceViewsService,
@@ -927,7 +926,7 @@ export function consumeEvaluationExpressionProvider(
   });
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   const toolBar = getToolBar('nuclide-debugger');
   toolBar.addButton({
     iconset: 'icon-nuclicon',

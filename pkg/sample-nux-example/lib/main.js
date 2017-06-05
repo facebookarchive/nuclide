@@ -13,7 +13,6 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 
 const SAMPLE_NUX_ID = 0;
@@ -30,7 +29,7 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nux-example-toolbar');
     const {element} = toolBar.addButton({
       icon: 'mortar-board',
@@ -65,7 +64,7 @@ export function deactivate() {
   }
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   invariant(activation != null);
   return activation.consumeToolBar(getToolBar);
 }

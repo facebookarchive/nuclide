@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 import type {
   WorkspaceViewsService,
@@ -124,7 +123,7 @@ class Activation {
     return this._editorService.consumeProvider(provider);
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-outline-view');
     const {element} = toolBar.addButton({
       icon: 'list-unordered',

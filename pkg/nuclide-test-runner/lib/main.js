@@ -12,7 +12,6 @@
 import type FileTreeContextMenu
   from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {TestRunner} from './types';
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
@@ -170,7 +169,7 @@ class Activation {
     });
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-test-runner');
     toolBar.addButton({
       icon: 'checklist',

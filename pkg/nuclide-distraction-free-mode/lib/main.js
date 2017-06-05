@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
-
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -73,7 +71,7 @@ class Activation {
     );
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-distraction-free-mode');
     toolBar.addSpacer({
       priority: 900,
@@ -122,7 +120,7 @@ export function consumeDistractionFreeModeProvider(
   return activation.consumeDistractionFreeModeProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: GetToolBar): IDisposable {
+export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   invariant(activation != null);
   return activation.consumeToolBar(getToolBar);
 }

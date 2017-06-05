@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   Viewable,
   WorkspaceViewsService,
@@ -110,7 +109,7 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeToolBar(getToolBar: GetToolBar): void {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): void {
     const toolBar = getToolBar('nuclide-console');
     toolBar.addButton({
       icon: 'terminal',

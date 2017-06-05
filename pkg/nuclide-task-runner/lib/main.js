@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   AppState,
   BoundActionCreators,
@@ -237,7 +236,7 @@ class Activation {
     );
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-task-runner');
     toolBar.addSpacer({
       priority: 400,

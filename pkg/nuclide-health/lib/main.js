@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {GetToolBar} from '../../commons-atom/suda-tool-bar';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
@@ -107,7 +106,7 @@ class Activation {
     this._subscriptions.dispose();
   }
 
-  consumeToolBar(getToolBar: GetToolBar): IDisposable {
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nuclide-health');
     this._healthButton = toolBar.addButton({
       icon: 'dashboard',
