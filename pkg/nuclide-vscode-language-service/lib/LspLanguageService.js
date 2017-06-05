@@ -221,6 +221,8 @@ export class LspLanguageService {
         }
         // if spawn failed to launch it, this await will throw.
       } catch (e) {
+        this._logLspException(e);
+
         this._state = 'StartFailed';
 
         this._host
@@ -297,6 +299,7 @@ export class LspLanguageService {
       // CARE! to avoid a different race, we await for the next tick only after
       // signing up all our handlers.
 
+      this._logger.info('Establishing JsonRPC connection...');
       jsonRpcConnection.listen();
 
       const capabilities: ClientCapabilities = {
@@ -389,6 +392,7 @@ export class LspLanguageService {
       while (true) {
         let initializeResponse;
         try {
+          this._logger.info('Lsp.Initialize');
           // eslint-disable-next-line no-await-in-loop
           initializeResponse = await this._lspConnection.initialize(params);
           // We might receive an onError or onClose event at this time too.
@@ -456,6 +460,7 @@ export class LspLanguageService {
           this._derivedServerCapabilities = ((null: any): DerivedServerCapabilities);
         });
 
+        this._logger.info('Lsp state=Running!');
         this._state = 'Running';
         // At this point we're good to call into LSP.
 
@@ -605,11 +610,15 @@ export class LspLanguageService {
   }
 
   _logLspException(e: Error): void {
-    if (e.code != null && Number(e.code) === ErrorCodes.RequestCancelled) {
+    if (
+      e.code != null &&
+      Number(e.code) === ErrorCodes.RequestCancelled &&
+      this._state === 'Running'
+    ) {
       // RequestCancelled is normal and shouldn't be logged.
       return;
     }
-    let msg = this._errorString(e);
+    let msg = `${this._errorString(e)}\nSTATE=${this._state}`;
     if (e.data != null && e.data.stack != null) {
       msg += `\n  LSP STACK:\n${String(e.data.stack)}`;
     }
@@ -797,7 +806,8 @@ export class LspLanguageService {
   }
 
   _fileOpen(fileEvent: FileOpenEvent): void {
-    invariant(this._state === 'Running' && this._lspConnection != null);
+    invariant(this._state === 'Running');
+    invariant(this._lspConnection != null);
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
@@ -814,7 +824,8 @@ export class LspLanguageService {
   }
 
   _fileClose(fileEvent: FileCloseEvent): void {
-    invariant(this._state === 'Running' && this._lspConnection != null);
+    invariant(this._state === 'Running');
+    invariant(this._lspConnection != null);
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
@@ -828,7 +839,8 @@ export class LspLanguageService {
   }
 
   _fileEdit(fileEvent: FileEditEvent): void {
-    invariant(this._state === 'Running' && this._lspConnection != null);
+    invariant(this._state === 'Running');
+    invariant(this._lspConnection != null);
     let contentChange: TextDocumentContentChangeEvent;
     switch (this._derivedServerCapabilities.serverWantsChange) {
       case 'incremental':
