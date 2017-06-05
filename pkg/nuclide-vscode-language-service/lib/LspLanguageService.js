@@ -82,6 +82,7 @@ import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
+import {track} from '../../nuclide-analytics';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {
   FileCache,
@@ -180,6 +181,9 @@ export class LspLanguageService {
     invariant(this._state === 'Initial');
     this._state = 'Starting';
 
+    const startTimeMs = Date.now();
+    const spawnCommandForLogs = `${this._command} ${this._args.join(' ')}`;
+
     try {
       const perConnectionDisposables = new UniversalDisposable();
       // The various resources+subscriptions associated with a LspConnection
@@ -196,7 +200,7 @@ export class LspLanguageService {
 
       let childProcess;
       try {
-        this._logger.info(`Spawn: ${this._command} ${this._args.join(' ')}`);
+        this._logger.info(`Spawn: ${spawnCommandForLogs}`);
         if (this._command === '') {
           throw new Error('No command provided for launching language server');
           // if we try to spawn an empty command, node itself throws a "bad
@@ -222,6 +226,13 @@ export class LspLanguageService {
         // if spawn failed to launch it, this await will throw.
       } catch (e) {
         this._logLspException(e);
+        track('lsp-start', {
+          status: 'spawn failed',
+          spawn: spawnCommandForLogs,
+          message: e.message,
+          stack: e.stack,
+          timeTakenMs: Date.now() - startTimeMs,
+        });
 
         this._state = 'StartFailed';
 
@@ -392,12 +403,17 @@ export class LspLanguageService {
       // or the user says to stop retrying. This while loop will be potentially
       // long-running since in the case of failure it awaits for the user to
       // click a dialog button.
+      let userRetryCount = 0;
+      let initializeTimeTakenMs = 0;
       while (true) {
         let initializeResponse;
         try {
           this._logger.info('Lsp.Initialize');
+          userRetryCount++;
+          const initializeStartTimeMs = Date.now();
           // eslint-disable-next-line no-await-in-loop
           initializeResponse = await this._lspConnection.initialize(params);
+          initializeTimeTakenMs = Date.now() - initializeStartTimeMs;
           // We might receive an onError or onClose event at this time too.
           // Those are handled by _handleError and _handleClose methods.
           // If those happen, then the response to initialize will never arrive,
@@ -405,6 +421,15 @@ export class LspLanguageService {
           // connection.
         } catch (e) {
           this._logLspException(e);
+          track('lsp-start', {
+            status: 'initialize failed',
+            spawn: spawnCommandForLogs,
+            message: e.message,
+            stack: e.stack,
+            timeTakenMs: Date.now() - startTimeMs,
+            userRetryCount,
+          });
+
           // CARE! Inside any exception handler of an rpc request,
           // the lspConnection might already have been torn down.
 
@@ -473,6 +498,14 @@ export class LspLanguageService {
         perConnectionDisposables.add(this._subscribeToFileEvents(), () => {
           this._lspFileVersionNotifier = ((null: any): FileVersionNotifier);
         });
+
+        track('lsp-start', {
+          status: 'ok',
+          spawn: spawnCommandForLogs,
+          timeTakenMs: Date.now() - startTimeMs,
+          initializeTimeTakenMs,
+        });
+
         return;
       }
     } catch (e) {
@@ -482,6 +515,13 @@ export class LspLanguageService {
       // through then it's an internal logic error.
       // Don't know how to recover.
       this._logger.error(`Lsp.start - unexpected error ${e}`);
+      track('lsp-start', {
+        status: 'start failed',
+        spawn: spawnCommandForLogs,
+        message: e.message,
+        stack: e.stack,
+        timeTakenMs: Date.now() - startTimeMs,
+      });
       throw e;
     } finally {
       this._supportsSymbolSearch.next(
@@ -613,6 +653,14 @@ export class LspLanguageService {
   }
 
   _logLspException(e: Error): void {
+    track('lsp-exception', {
+      message: e.message,
+      stack: e.stack,
+      remoteStack: e.data != null && e.data.stack != null ? e.data.stack : null,
+      state: this._state,
+      code: typeof e.code === 'number' ? e.code : null,
+    });
+
     if (
       e.code != null &&
       Number(e.code) === ErrorCodes.RequestCancelled &&
@@ -683,6 +731,7 @@ export class LspLanguageService {
     while (this._recentRestarts[0] < now - 3 * 60 * 1000) {
       this._recentRestarts.shift();
     }
+    track('lsp-handle-close', {recentRestarts: this._recentRestarts.length});
     if (this._recentRestarts.length >= 5) {
       this._logger.error('Lsp.Close - will not restart.');
       this._host
