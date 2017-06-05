@@ -21,13 +21,12 @@ import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
 import {sortDiagnostics} from './DiagnosticsSorter';
 import {getProjectRelativePathOfDiagnostic} from './paneUtils';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
+import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
-// text is always used for sorting.
-// Precedence for rendering is: element, html, text.
+// text is always used for sorting, while we render the element.
 type DescriptionField = {
   text: string,
-  html: ?string,
-  element: ?React.Element<any>,
+  element: React.Element<any>,
 };
 
 export type DisplayDiagnostic = {
@@ -86,16 +85,19 @@ function getMessageContent(
       throw new Error('Neither text nor html property defined on message');
     }
   }
+  text = text.trim();
   return {
-    text: text.trim(),
-    html: isPlainText ? null : text.trim(),
+    text,
     element: showTraces && diagnostic.scope === 'file'
       ? DiagnosticsMessageNoHeader({
           message: diagnostic,
           goToLocation,
           fixer: () => {},
         })
-      : null,
+      : DiagnosticsMessageText({
+          preserveNewlines: showTraces,
+          message: {text, html: isPlainText ? undefined : text},
+        }),
   };
 }
 

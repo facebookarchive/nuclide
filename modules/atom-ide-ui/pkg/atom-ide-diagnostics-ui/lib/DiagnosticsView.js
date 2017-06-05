@@ -76,6 +76,10 @@ export default class DiagnosticsView extends React.Component {
         ++warningCount;
       }
     });
+    const isExpandable = diagnostics.find(
+      diagnostic =>
+        diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
+    );
 
     let linterWarning = null;
     if (this.props.warnAboutLinter) {
@@ -120,7 +124,7 @@ export default class DiagnosticsView extends React.Component {
             </span>
           </ToolbarLeft>
           <ToolbarRight>
-            {diagnostics.find(d => d.trace)
+            {isExpandable
               ? <span className="inline-block">
                   <Checkbox
                     checked={this.props.showTraces}

@@ -14,6 +14,7 @@ import React from 'react';
 import {shell} from 'electron';
 
 type DiagnosticsMessageTextProps = {
+  preserveNewlines?: boolean, // defaults to true
   message: {
     html?: string,
     text?: string,
@@ -89,7 +90,10 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
   } else if (message.text != null) {
-    return <span>{message.text.split('\n').map(renderRowWithLinks)}</span>;
+    const rows = props.preserveNewlines !== false
+      ? message.text.split('\n')
+      : [message.text];
+    return <span>{rows.map(renderRowWithLinks)}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
   }
