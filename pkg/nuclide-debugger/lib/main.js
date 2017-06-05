@@ -31,6 +31,8 @@ import type {
   DebuggerLaunchAttachProvider,
   DebuggerConfigAction,
 } from '../../nuclide-debugger-base';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {DebuggerProviderStore} from './DebuggerProviderStore';
 
 import {AnalyticsEvents} from './constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -281,13 +283,14 @@ class Activation {
         }
 
         for (const connection of addedConnections) {
-          const key = nuclideUri.isRemote(connection)
-            ? nuclideUri.getHostname(connection)
-            : 'local';
-          const availableProviders = store.getLaunchAttachProvidersForConnection(
-            connection,
-          );
-          this._connectionProviders.set(key, availableProviders);
+          this._setProvidersForConnection(store, connection);
+        }
+      }),
+      this._model.getDebuggerProviderStore().onProvidersUpdated(() => {
+        const store = this._model.getDebuggerProviderStore();
+        const connections = store.getConnections();
+        for (const connection of connections) {
+          this._setProvidersForConnection(store, connection);
         }
       }),
       // Commands.
@@ -440,6 +443,19 @@ class Activation {
         ],
       }),
     );
+  }
+
+  _setProvidersForConnection(
+    store: DebuggerProviderStore,
+    connection: NuclideUri,
+  ): void {
+    const key = nuclideUri.isRemote(connection)
+      ? nuclideUri.getHostname(connection)
+      : 'local';
+    const availableProviders = store.getLaunchAttachProvidersForConnection(
+      connection,
+    );
+    this._connectionProviders.set(key, availableProviders);
   }
 
   serialize(): SerializedState {

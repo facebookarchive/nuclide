@@ -20,6 +20,7 @@ import {CompositeDisposable, Disposable, Emitter} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 
 const CONNECTIONS_UPDATED_EVENT = 'CONNECTIONS_UPDATED_EVENT';
+const PROVIDERS_UPDATED_EVENT = 'PROVIDERS_UPDATED_EVENT';
 
 /**
  * Flux style store holding all data related to debugger provider.
@@ -71,6 +72,10 @@ export class DebuggerProviderStore {
     return this._emitter.on(CONNECTIONS_UPDATED_EVENT, callback);
   }
 
+  onProvidersUpdated(callback: () => void): IDisposable {
+    return this._emitter.on(PROVIDERS_UPDATED_EVENT, callback);
+  }
+
   getConnections(): Array<string> {
     return this._connections;
   }
@@ -99,6 +104,7 @@ export class DebuggerProviderStore {
           return;
         }
         this._debuggerProviders.add(payload.data);
+        this._emitter.emit(PROVIDERS_UPDATED_EVENT);
         break;
       case ActionTypes.REMOVE_DEBUGGER_PROVIDER:
         if (!this._debuggerProviders.has(payload.data)) {
