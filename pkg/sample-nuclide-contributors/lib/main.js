@@ -109,9 +109,19 @@ class Activation {
           delete require.cache[p];
         });
 
+      // For Atom 1.17+
+      if (global.snapshotResult && global.snapshotResult.customRequire) {
+        Object.keys(global.snapshotResult.customRequire.cache)
+          .filter(p => p.indexOf(pack.path + path.sep) !== -1)
+          .forEach(p => {
+            delete global.snapshotResult.customRequire.cache[p];
+          });
+      }
+
       const pkg = atom.packages.loadPackage(pack.path);
       invariant(pkg != null);
-      pkg.activate();
+      pkg.activateResources();
+      pkg.activateNow();
     };
   }
 
