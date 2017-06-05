@@ -136,15 +136,138 @@ export type InitializeParams = {
   processId?: number,
   //  The rootPath of the workspace. Is null if no folder is open.
   rootPath?: string,
+  //  The rootUri of the workspace. Is null if no folder is open. If both
+  //  `rootPath` and `rootUri` are set rootUri` wins.
+  rootUri?: string, // TODO: this should be DocumentUri
   //  User provided initialization options.
   initializationOptions?: any,
   //  The capabilities provided by the client (editor)
   capabilities: ClientCapabilities,
+  //  The initial trace setting. If omitted trace is disabled ('off')
+  trace?: 'off' | 'messages' | 'verbose',
 };
 
-export type ClientCapabilities = {
-  // TODO:
-};
+//  Workspace specific client capabilities.
+export type WorkspaceClientCapabilities = {|
+  //  The client supports applying batch edits to the workspace by supporting
+  //  the request 'workspace/applyEdit'
+  applyEdit?: boolean,
+  //  Capabilities specific to `WorkspaceEdit`s
+  workspaceEdit?: {|
+    //  The client supports versioned document changes in `WorkspaceEdit`s
+    documentChanges?: boolean,
+  |},
+  //  Capabilities specific to `workspace/didChangeConfiguration` notification.
+  didChangeConfiguration?: {|
+    //  Did change configuration notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to `workspace/didChangeWatchedFiles` notification.
+  didChangeWatchedFiles?: {|
+    //  Did change watched files notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `workspace/symbol` request.
+  symbol?: {|
+    //  Symbol request supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `workspace/executeCommand` request.
+  executeCommand?: {|
+    //  Execute command supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+|};
+
+//  Text document specific client capabilities.
+export type TextDocumentClientCapabilities = {|
+  synchronization?: {|
+    //  Whether text document synchronization supports dynamic registration.
+    dynamicRegistration?: boolean,
+    //  The client supports sending will save notifications.
+    willSave?: boolean,
+    //  The client supports sending a will save request and
+    //  waits for a response providing text edits which will
+    //  be applied to the document before it is saved.
+    willSaveWaitUntil?: boolean,
+    //  The client supports did save notifications.
+    didSave?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/completion`
+  completion?: {|
+    dynamicRegistration?: boolean,
+    //  The client supports the following `CompletionItem` specific capabilities
+    completionItem?: {|
+      //  Client supports snippets as insert text.
+      //  A snippet can define tab stops and placeholders with `$1`, `$2`
+      //  and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+      //  the end of the snippet. Placeholders with equal identifiers are linked
+      //  that is typing in one will update others too.
+      snippetSupport?: boolean,
+    |},
+  |},
+  //  Capabilities specific to the `textDocument/hover`
+  hover?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/signatureHelp`
+  signatureHelp?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/references`
+  references?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/documentHighlight`
+  documentHighlight?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/documentSymbol`
+  documentSymbol?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/formatting`
+  formatting?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/rangeFormatting`
+  rangeFormatting?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/onTypeFormatting`
+  onTypeFormatting?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/definition`
+  definition?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/codeAction`
+  codeAction?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/codeLens`
+  codeLens?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/documentLink`
+  documentLink?: {|
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `textDocument/rename`
+  rename?: {|
+    dynamicRegistration?: boolean,
+  |},
+|};
+
+export type ClientCapabilities = {|
+  //  Workspace specific client capabilities.
+  workspace?: WorkspaceClientCapabilities,
+  //  Text document specific client capabilities.
+  textDocument?: TextDocumentClientCapabilities,
+  //  Experimental client capabilities.
+  experimental?: mixed,
+|};
 
 export type InitializeResult = {
   //  The capabilities the language server provides.

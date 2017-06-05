@@ -53,6 +53,7 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {
   InitializeParams,
+  ClientCapabilities,
   ServerCapabilities,
   TextDocumentIdentifier,
   Position,
@@ -298,14 +299,88 @@ export class LspLanguageService {
 
       jsonRpcConnection.listen();
 
-      // TODO: (asiandrummer, ljw) `rootPath` should be a file URI (`file://`).
+      const capabilities: ClientCapabilities = {
+        workspace: {
+          applyEdit: false,
+          workspaceEdit: {
+            documentChanges: false,
+          },
+          didChangeConfiguration: {
+            dynamicRegistration: false,
+          },
+          didChangeWatchedFiles: {
+            dynamicRegistration: false,
+          },
+          symbol: {
+            dynamicRegistration: false,
+          },
+          executeCommand: {
+            dynamicRegistration: false,
+          },
+        },
+        textDocument: {
+          synchronization: {
+            dynamicRegistration: false,
+            willSave: false,
+            willSaveWaitUntil: false,
+            didSave: false,
+          },
+          completion: {
+            dynamicRegistration: false,
+            completionItem: {
+              snippetSupport: false,
+            },
+          },
+          hover: {
+            dynamicRegistration: false,
+          },
+          signatureHelp: {
+            dynamicRegistration: false,
+          },
+          references: {
+            dynamicRegistration: false,
+          },
+          documentHighlight: {
+            dynamicRegistration: false,
+          },
+          documentSymbol: {
+            dynamicRegistration: false,
+          },
+          formatting: {
+            dynamicRegistration: false,
+          },
+          rangeFormatting: {
+            dynamicRegistration: false,
+          },
+          onTypeFormatting: {
+            dynamicRegistration: false,
+          },
+          definition: {
+            dynamicRegistration: false,
+          },
+          codeAction: {
+            dynamicRegistration: false,
+          },
+          codeLens: {
+            dynamicRegistration: false,
+          },
+          documentLink: {
+            dynamicRegistration: false,
+          },
+          rename: {
+            dynamicRegistration: false,
+          },
+        },
+      };
+
       const params: InitializeParams = {
-        initializationOptions: {},
         processId: process.pid,
         rootPath: this._projectRoot,
-        capabilities: {},
+        // TODO: rootUri: should be a file URI (`file://`)
+        capabilities,
+        initializationOptions: {},
+        trace: 'verbose',
       };
-      // TODO: flesh out the InitializeParams
 
       // We'll keep sending initialize requests until it either succeeds
       // or the user says to stop retrying. This while loop will be potentially
