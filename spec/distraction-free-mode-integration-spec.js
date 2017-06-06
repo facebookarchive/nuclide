@@ -25,25 +25,33 @@ describe('nuclide-distraction-free-mode', () => {
 
       const commandTarget = atom.views.getView(atom.workspace);
 
-      atom.commands.dispatch(commandTarget, 'nuclide-outline-view:toggle', {
-        visible: true,
+      runs(() => {
+        atom.commands.dispatch(commandTarget, 'nuclide-outline-view:toggle', {
+          visible: true,
+        });
       });
-      expect(isOutlineViewVisible()).toBeTruthy();
+      waitsFor('outline view to appear for the first time', () => {
+        return isOutlineViewVisible();
+      });
 
-      atom.commands.dispatch(
-        commandTarget,
-        'nuclide-distraction-free-mode:toggle',
-      );
-      expect(isOutlineViewVisible()).toBeFalsy();
+      runs(() => {
+        expect(isOutlineViewVisible()).toBeTruthy();
 
-      atom.commands.dispatch(
-        commandTarget,
-        'nuclide-distraction-free-mode:toggle',
-      );
-      expect(isOutlineViewVisible()).toBeTruthy();
+        atom.commands.dispatch(
+          commandTarget,
+          'nuclide-distraction-free-mode:toggle',
+        );
+        expect(isOutlineViewVisible()).toBeFalsy();
 
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
+        atom.commands.dispatch(
+          commandTarget,
+          'nuclide-distraction-free-mode:toggle',
+        );
+        expect(isOutlineViewVisible()).toBeTruthy();
+
+        // Deactivate nuclide packages.
+        deactivateAllPackages();
+      });
     });
   });
 });
