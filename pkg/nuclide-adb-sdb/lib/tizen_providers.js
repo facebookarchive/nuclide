@@ -1,28 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {ATDeviceListProvider} from './ATDeviceListProvider';
-import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createTizenDeviceListProvider = createTizenDeviceListProvider;
+exports.createTizenInfoProvider = createTizenInfoProvider;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _nuclideRemoteConnection;
 
-export function createTizenDeviceListProvider(): ATDeviceListProvider {
-  return new ATDeviceListProvider('tizen', (host: NuclideUri) =>
-    getSdbServiceByNuclideUri(host),
-  );
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
 }
 
-export function createTizenInfoProvider(): ATDeviceInfoProvider {
-  return new ATDeviceInfoProvider('tizen', (host: NuclideUri) =>
-    getSdbServiceByNuclideUri(host),
-  );
+var _ATDeviceListProvider;
+
+function _load_ATDeviceListProvider() {
+  return _ATDeviceListProvider = require('./ATDeviceListProvider');
+}
+
+var _ATDeviceInfoProvider;
+
+function _load_ATDeviceInfoProvider() {
+  return _ATDeviceInfoProvider = require('./ATDeviceInfoProvider');
+}
+
+function createTizenDeviceListProvider() {
+  return new (_ATDeviceListProvider || _load_ATDeviceListProvider()).ATDeviceListProvider('tizen', host => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function createTizenInfoProvider() {
+  return new (_ATDeviceInfoProvider || _load_ATDeviceInfoProvider()).ATDeviceInfoProvider('tizen', host => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host));
 }

@@ -1,33 +1,33 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Message} from '../../../nuclide-console/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.parseRegularLine = parseRegularLine;
 
-const TIMESTAMP_FORMATS = [
-  '\\d{1,2}:\\d{2}:\\d{2} (?:A|P)M',
-  '\\d{1,2}/\\d{1,2}/\\d{4}, \\d{1,2}:\\d{2}:\\d{2} (?:A|P)M',
-  '\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}',
-  '\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d+',
-];
+
+const TIMESTAMP_FORMATS = ['\\d{1,2}:\\d{2}:\\d{2} (?:A|P)M', '\\d{1,2}/\\d{1,2}/\\d{4}, \\d{1,2}:\\d{2}:\\d{2} (?:A|P)M', '\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}:\\d{2}', '\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2}\\.\\d+']; /**
+                                                                                                                                                                                                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                                                                                                                                * All rights reserved.
+                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                                                                                                                                * the root directory of this source tree.
+                                                                                                                                                                                                                                *
+                                                                                                                                                                                                                                * 
+                                                                                                                                                                                                                                * @format
+                                                                                                                                                                                                                                */
+
 const TIMESTAMP = TIMESTAMP_FORMATS.map(str => `(?:\\[?${str}\\]?)`).join('|');
 const NORMAL_LINE = new RegExp(`^\\s*(?:${TIMESTAMP})\\s*(.*?)\\s*$`);
 const ERROR_LINE = /^\s*ERROR\s*(.*?)\s*$/;
 
-export function parseRegularLine(line: string): Message {
+function parseRegularLine(line) {
   const normalMatch = line.match(NORMAL_LINE);
   if (normalMatch != null) {
     // TODO (matthewwithanm): Add support for showing timestamps and include that in the message.
     return {
       level: 'log',
-      text: normalMatch[1],
+      text: normalMatch[1]
     };
   }
 
@@ -35,7 +35,7 @@ export function parseRegularLine(line: string): Message {
   if (errorMatch != null) {
     return {
       level: 'error',
-      text: errorMatch[1],
+      text: errorMatch[1]
     };
   }
 
@@ -44,6 +44,6 @@ export function parseRegularLine(line: string): Message {
   // /hot", "React packager ready.").
   return {
     level: 'log',
-    text: line,
+    text: line
   };
 }

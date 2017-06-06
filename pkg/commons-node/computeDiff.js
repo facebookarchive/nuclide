@@ -1,53 +1,20 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {diffLines} from 'diff';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.computeDiff = computeDiff;
 
-export type LineMapper = Array<number>;
+var _diff;
 
-export type LineMapping = {
-  newToOld: LineMapper,
-  oldToNew: LineMapper,
-};
+function _load_diff() {
+  return _diff = require('diff');
+}
 
-export type TextDiff = LineMapping & {
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  oldLineOffsets: Array<[number, number]>,
-  newLineOffsets: Array<[number, number]>,
-};
-
-type ChunkPiece = {
-  added: number,
-  removed: number,
-  value: string,
-  count: number,
-  offset: number,
-};
-
-type DiffChunk = {
-  addedLines: Array<number>,
-  removedLines: Array<number>,
-  chunks: Array<ChunkPiece>,
-};
-
-export type OffsetMap = Map<number, number>;
-
-export function computeDiff(oldText: string, newText: string): TextDiff {
-  const {addedLines, removedLines, chunks} = _computeDiffChunks(
-    oldText,
-    newText,
-  );
-  const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
-  const {oldToNew, newToOld} = _computeLineDiffMapping(chunks);
+function computeDiff(oldText, newText) {
+  const { addedLines, removedLines, chunks } = _computeDiffChunks(oldText, newText);
+  const { oldLineOffsets, newLineOffsets } = _computeOffsets(chunks);
+  const { oldToNew, newToOld } = _computeLineDiffMapping(chunks);
 
   return {
     addedLines,
@@ -55,25 +22,31 @@ export function computeDiff(oldText: string, newText: string): TextDiff {
     oldLineOffsets: Array.from(oldLineOffsets), // serialize for JSON.
     newLineOffsets: Array.from(newLineOffsets), // serialize for JSON.
     oldToNew,
-    newToOld,
+    newToOld
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
+function _computeDiffChunks(oldText_, newText_) {
   let oldText = oldText_;
   let newText = newText_;
 
   // If the last line has changes, JsDiff doesn't return that.
   // Generally, content with new line ending are easier to calculate offsets for.
-  if (
-    oldText[oldText.length - 1] !== '\n' ||
-    newText[newText.length - 1] !== '\n'
-  ) {
+  if (oldText[oldText.length - 1] !== '\n' || newText[newText.length - 1] !== '\n') {
     oldText += '\n';
     newText += '\n';
   }
 
-  const lineDiff = diffLines(oldText, newText);
+  const lineDiff = (0, (_diff || _load_diff()).diffLines)(oldText, newText);
   const chunks = [];
 
   let addedCount = 0;
@@ -84,7 +57,7 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
   const addedLines = [];
   const removedLines = [];
   lineDiff.forEach(part => {
-    const {added, removed, value} = part;
+    const { added, removed, value } = part;
     const count = value.split('\n').length - 1;
     if (!added && !removed) {
       addedCount += count;
@@ -104,7 +77,7 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
       removedCount += count;
       nextOffset -= count;
     }
-    chunks.push({added, removed, value, count, offset});
+    chunks.push({ added, removed, value, count, offset });
     offset = 0;
   });
   if (nextOffset !== 0) {
@@ -114,15 +87,13 @@ function _computeDiffChunks(oldText_: string, newText_: string): DiffChunk {
       removed: 0,
       value: '',
       count: 0,
-      offset: nextOffset,
+      offset: nextOffset
     });
   }
-  return {addedLines, removedLines, chunks};
+  return { addedLines, removedLines, chunks };
 }
 
-function _computeOffsets(
-  diffChunks: Array<ChunkPiece>,
-): {oldLineOffsets: OffsetMap, newLineOffsets: OffsetMap} {
+function _computeOffsets(diffChunks) {
   const newLineOffsets = new Map();
   const oldLineOffsets = new Map();
 
@@ -130,7 +101,7 @@ function _computeOffsets(
   let newLineCount = 0;
 
   for (const chunk of diffChunks) {
-    const {added, removed, offset, count} = chunk;
+    const { added, removed, offset, count } = chunk;
     if (added) {
       newLineCount += count;
     } else if (removed) {
@@ -153,11 +124,11 @@ function _computeOffsets(
 
   return {
     oldLineOffsets,
-    newLineOffsets,
+    newLineOffsets
   };
 }
 
-function _computeLineDiffMapping(diffChunks: Array<ChunkPiece>): LineMapping {
+function _computeLineDiffMapping(diffChunks) {
   const newToOld = [];
   const oldToNew = [];
 
@@ -169,7 +140,7 @@ function _computeLineDiffMapping(diffChunks: Array<ChunkPiece>): LineMapping {
   let removedCount = 0;
 
   for (const chunk of diffChunks) {
-    const {added, removed, offset, count} = chunk;
+    const { added, removed, offset, count } = chunk;
     if (added) {
       addedCount = count;
     } else if (removed) {
@@ -214,6 +185,6 @@ function _computeLineDiffMapping(diffChunks: Array<ChunkPiece>): LineMapping {
 
   return {
     newToOld,
-    oldToNew,
+    oldToNew
   };
 }

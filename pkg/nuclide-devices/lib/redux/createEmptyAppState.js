@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createEmptyAppState = createEmptyAppState;
+
+var _nuclideExpected;
+
+function _load_nuclideExpected() {
+  return _nuclideExpected = require('../../../nuclide-expected');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,19 +18,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AppState} from '../types';
-
-import {Expect} from '../../../nuclide-expected';
-
-export function createEmptyAppState(): AppState {
+function createEmptyAppState() {
   return {
     hosts: ['local'],
     host: 'local',
-    devices: Expect.value([]),
+    devices: (_nuclideExpected || _load_nuclideExpected()).Expect.value([]),
     deviceType: null,
     deviceTypes: [],
     device: null,
@@ -26,6 +35,6 @@ export function createEmptyAppState(): AppState {
     processes: [],
     processTasks: [],
     isDeviceConnected: false,
-    supportedPidsPerTask: new Map(),
+    supportedPidsPerTask: new Map()
   };
 }

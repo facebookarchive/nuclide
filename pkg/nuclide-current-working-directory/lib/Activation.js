@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Activation = undefined;
+
+var _CwdApi;
+
+function _load_CwdApi() {
+  return _CwdApi = require('./CwdApi');
+}
+
+var _atom = require('atom');
+
+var _projects;
+
+function _load_projects() {
+  return _projects = require('nuclide-commons-atom/projects');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,74 +26,51 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Directory} from '../../nuclide-remote-connection';
+class Activation {
 
-import {CwdApi} from './CwdApi';
-import {CompositeDisposable} from 'atom';
-import {getAtomProjectRootPath} from 'nuclide-commons-atom/projects';
-
-export class Activation {
-  _cwdApi: CwdApi;
-  _disposables: CompositeDisposable;
-  _lastWorkingRootPath: ?string;
-  _currentWorkingRootDirectory: ?Directory;
-
-  constructor(rawState: ?Object) {
+  constructor(rawState) {
     const state = rawState || {};
-    const {initialCwdPath} = state;
-    this._cwdApi = new CwdApi(initialCwdPath);
+    const { initialCwdPath } = state;
+    this._cwdApi = new (_CwdApi || _load_CwdApi()).CwdApi(initialCwdPath);
     this._currentWorkingRootDirectory = this._cwdApi.getCwd();
-    this._disposables = new CompositeDisposable(
-      this._cwdApi,
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-current-working-root:set-from-active-file',
-        this._setFromActiveFile.bind(this),
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-current-working-root:switch-to-previous',
-        this._switchToLastWorkingRoot.bind(this),
-      ),
-      this._cwdApi.observeCwd(newCwd => {
-        if (this._currentWorkingRootDirectory != null) {
-          const oldCwd = this._currentWorkingRootDirectory.getPath();
-          if (newCwd === oldCwd) {
-            return;
-          }
-          this._lastWorkingRootPath = oldCwd;
+    this._disposables = new _atom.CompositeDisposable(this._cwdApi, atom.commands.add('atom-workspace', 'nuclide-current-working-root:set-from-active-file', this._setFromActiveFile.bind(this)), atom.commands.add('atom-workspace', 'nuclide-current-working-root:switch-to-previous', this._switchToLastWorkingRoot.bind(this)), this._cwdApi.observeCwd(newCwd => {
+      if (this._currentWorkingRootDirectory != null) {
+        const oldCwd = this._currentWorkingRootDirectory.getPath();
+        if (newCwd === oldCwd) {
+          return;
         }
-        this._currentWorkingRootDirectory = newCwd;
-      }),
-    );
+        this._lastWorkingRootPath = oldCwd;
+      }
+      this._currentWorkingRootDirectory = newCwd;
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  provideApi(): CwdApi {
+  provideApi() {
     return this._cwdApi;
   }
 
-  serialize(): Object {
+  serialize() {
     const cwd = this._cwdApi.getCwd();
     return {
-      initialCwdPath: cwd == null ? null : cwd.getPath(),
+      initialCwdPath: cwd == null ? null : cwd.getPath()
     };
   }
 
-  _switchToLastWorkingRoot(): void {
+  _switchToLastWorkingRoot() {
     if (this._lastWorkingRootPath != null) {
       this._cwdApi.setCwd(this._lastWorkingRootPath);
     }
   }
 
-  _setFromActiveFile(): void {
+  _setFromActiveFile() {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
       atom.notifications.addError('No file is currently active.');
@@ -85,7 +83,7 @@ export class Activation {
       return;
     }
 
-    const projectRoot = getAtomProjectRootPath(path);
+    const projectRoot = (0, (_projects || _load_projects()).getAtomProjectRootPath)(path);
     if (projectRoot == null) {
       atom.notifications.addError('Active file does not belong to a project.');
       return;
@@ -94,3 +92,4 @@ export class Activation {
     this._cwdApi.setCwd(projectRoot);
   }
 }
+exports.Activation = Activation;

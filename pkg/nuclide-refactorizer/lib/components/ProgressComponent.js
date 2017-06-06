@@ -1,36 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ProgressPhase} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ProgressComponent = undefined;
 
-import React from 'react';
+var _react = _interopRequireDefault(require('react'));
 
-import {ProgressBar} from 'nuclide-commons-ui/ProgressBar';
+var _ProgressBar;
 
-type Props = {
-  phase: ProgressPhase,
-};
+function _load_ProgressBar() {
+  return _ProgressBar = require('nuclide-commons-ui/ProgressBar');
+}
 
-export class ProgressComponent extends React.Component {
-  props: Props;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  render(): React.Element<any> {
-    const {message, value, max} = this.props.phase;
-    return (
-      <div>
-        {message} ({value} / {max})
-        <div className="nuclide-refactorizer-progress">
-          <ProgressBar value={value} max={max} />
-        </div>
-      </div>
+class ProgressComponent extends _react.default.Component {
+
+  render() {
+    const { message, value, max } = this.props.phase;
+    return _react.default.createElement(
+      'div',
+      null,
+      message,
+      ' (',
+      value,
+      ' / ',
+      max,
+      ')',
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-refactorizer-progress' },
+        _react.default.createElement((_ProgressBar || _load_ProgressBar()).ProgressBar, { value: value, max: max })
+      )
     );
   }
 }
+exports.ProgressComponent = ProgressComponent; /**
+                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the license found in the LICENSE file in
+                                                * the root directory of this source tree.
+                                                *
+                                                * 
+                                                * @format
+                                                */

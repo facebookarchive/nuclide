@@ -1,3 +1,36 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.serialize = serialize;
+exports.consumeDistractionFreeModeProvider = consumeDistractionFreeModeProvider;
+exports.consumeToolBar = consumeToolBar;
+
+var _atom = require('atom');
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _DistractionFreeMode;
+
+function _load_DistractionFreeMode() {
+  return _DistractionFreeMode = require('./DistractionFreeMode');
+}
+
+var _BuiltinProviders;
+
+function _load_BuiltinProviders() {
+  return _BuiltinProviders = require('./BuiltinProviders');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,84 +38,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
-import analytics from 'nuclide-commons-atom/analytics';
-
-import {DistractionFreeMode} from './DistractionFreeMode';
-import {getBuiltinProviders} from './BuiltinProviders';
-
-export type DistractionFreeModeProvider = {
-  // Should be the unique to all providers. Recommended to be the package name. This string is not
-  // user-facing.
-  name: string,
-  isVisible(): boolean,
-  toggle(): void,
-};
-
-export type DistractionFreeModeState = {
-  // Serialize the restore state via an array of provider names.
-  restoreState: ?Array<string>,
-};
-
 class Activation {
-  _disposables: CompositeDisposable;
-  _tunnelVision: DistractionFreeMode;
 
-  constructor(state: ?DistractionFreeModeState) {
-    this._disposables = new CompositeDisposable();
-    this._tunnelVision = new DistractionFreeMode(state);
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-distraction-free-mode:toggle',
-        () => {
-          analytics.track('distraction-free-mode:toggle');
-          this._tunnelVision.toggleDistractionFreeMode();
-        },
-      ),
-    );
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
+    this._tunnelVision = new (_DistractionFreeMode || _load_DistractionFreeMode()).DistractionFreeMode(state);
+    this._disposables.add(atom.commands.add('atom-workspace', 'nuclide-distraction-free-mode:toggle', () => {
+      (_analytics || _load_analytics()).default.track('distraction-free-mode:toggle');
+      this._tunnelVision.toggleDistractionFreeMode();
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  serialize(): DistractionFreeModeState {
+  serialize() {
     return this._tunnelVision.serialize();
   }
 
-  consumeDistractionFreeModeProvider(
-    providerOrList:
-      | DistractionFreeModeProvider
-      | Array<DistractionFreeModeProvider>,
-  ): IDisposable {
-    const providers = Array.isArray(providerOrList)
-      ? providerOrList
-      : [providerOrList];
-    return new CompositeDisposable(
-      ...providers.map(provider =>
-        this._tunnelVision.consumeDistractionFreeModeProvider(provider),
-      ),
-    );
+  consumeDistractionFreeModeProvider(providerOrList) {
+    const providers = Array.isArray(providerOrList) ? providerOrList : [providerOrList];
+    return new _atom.CompositeDisposable(...providers.map(provider => this._tunnelVision.consumeDistractionFreeModeProvider(provider)));
   }
 
-  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+  consumeToolBar(getToolBar) {
     const toolBar = getToolBar('nuclide-distraction-free-mode');
     toolBar.addSpacer({
-      priority: 900,
+      priority: 900
     });
     toolBar.addButton({
       icon: 'eye',
       callback: 'nuclide-distraction-free-mode:toggle',
       tooltip: 'Toggle Distraction-Free Mode',
-      priority: 901,
+      priority: 901
     });
-    const disposable = new Disposable(() => {
+    const disposable = new _atom.Disposable(() => {
       toolBar.removeItems();
     });
     this._disposables.add(disposable);
@@ -90,37 +85,44 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?DistractionFreeModeState) {
+function activate(state) {
   if (activation == null) {
     activation = new Activation(state);
-    for (const provider of getBuiltinProviders()) {
+    for (const provider of (0, (_BuiltinProviders || _load_BuiltinProviders()).getBuiltinProviders)()) {
       activation.consumeDistractionFreeModeProvider(provider);
     }
   }
 }
 
-export function deactivate() {
+function deactivate() {
   if (activation != null) {
     activation.dispose();
     activation = null;
   }
 }
 
-export function serialize(): DistractionFreeModeState {
-  invariant(activation != null);
+function serialize() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.serialize();
 }
 
-export function consumeDistractionFreeModeProvider(
-  provider: DistractionFreeModeProvider | Array<DistractionFreeModeProvider>,
-): IDisposable {
-  invariant(activation != null);
+function consumeDistractionFreeModeProvider(provider) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeDistractionFreeModeProvider(provider);
 }
 
-export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
-  invariant(activation != null);
+function consumeToolBar(getToolBar) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeToolBar(getToolBar);
 }

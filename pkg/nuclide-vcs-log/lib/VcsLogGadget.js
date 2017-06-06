@@ -1,35 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  title: string,
-  iconName: string,
-  component: ReactClass<any>,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export default class VcsLogGadget extends React.Component {
-  props: Props;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  getTitle(): string {
+class VcsLogGadget extends _react.default.Component {
+
+  getTitle() {
     return this.props.title;
   }
 
-  getIconName(): string {
+  getIconName() {
     return this.props.iconName;
   }
 
-  render(): React.Element<any> {
-    const {component: Component} = this.props;
-    return <Component />;
+  render() {
+    const { component: Component } = this.props;
+    return _react.default.createElement(Component, null);
   }
 }
+exports.default = VcsLogGadget; /**
+                                 * Copyright (c) 2015-present, Facebook, Inc.
+                                 * All rights reserved.
+                                 *
+                                 * This source code is licensed under the license found in the LICENSE file in
+                                 * the root directory of this source tree.
+                                 *
+                                 * 
+                                 * @format
+                                 */
