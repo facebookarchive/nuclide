@@ -27,6 +27,7 @@ import {
   observeProcessRaw,
   parsePsOutput,
   preventStreamsFromThrowing,
+  ProcessSystemError,
   runCommand,
   runCommandDetailed,
   exitEventToMessage,
@@ -733,6 +734,24 @@ describe('commons-node/process', () => {
       proc.stderr.emit('error', new Error('Test error'));
       // eslint-disable-next-line no-console
       expect(console.error).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ProcessSystemError', () => {
+    it('contains the correct properties', () => {
+      const proc = (({}: any): child_process$ChildProcess);
+      const originalError = {
+        errno: 2,
+        code: 'ETEST',
+        path: 'path value',
+        syscall: 'syscall value',
+      };
+      const err = new ProcessSystemError(originalError, proc);
+      expect(err.errno).toBe(2);
+      expect(err.code).toBe('ETEST');
+      expect(err.path).toBe('path value');
+      expect(err.syscall).toBe('syscall value');
+      expect(err.process).toBe(proc);
     });
   });
 });
