@@ -69,6 +69,7 @@ function provideIosDevices(
           name: 'iOS Simulators',
           platforms: [
             {
+              isMobile: true,
               name: 'iOS Simulators',
               tasksForDevice: device => getTasks(buckRoot, ruleType),
               runTask: (builder, taskType, target, settings, device) =>

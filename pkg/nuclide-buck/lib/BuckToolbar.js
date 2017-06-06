@@ -28,6 +28,7 @@ import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
+import invariant from 'assert';
 
 type Props = {
   appState: AppState,
@@ -44,6 +45,12 @@ type DropdownGroup = {
   header: Option,
   selectableOptions: Array<Option>,
 };
+
+function hasMobilePlatform(platformGroups: Array<PlatformGroup>): boolean {
+  return platformGroups.some(platformGroup =>
+    platformGroup.platforms.some(platform => platform.isMobile),
+  );
+}
 
 export default class BuckToolbar extends React.Component {
   props: Props;
@@ -124,7 +131,7 @@ export default class BuckToolbar extends React.Component {
           {status}
         </div>,
       );
-    } else if (platformGroups.length) {
+    } else if (hasMobilePlatform(platformGroups)) {
       const options = this._optionsFromPlatformGroups(platformGroups);
 
       widgets.push(
@@ -214,6 +221,8 @@ export default class BuckToolbar extends React.Component {
 
     let selectableOptions;
 
+    invariant(platform.isMobile);
+
     if (platform.deviceGroups.length === 0) {
       selectableOptions = [
         {
@@ -245,7 +254,7 @@ export default class BuckToolbar extends React.Component {
     const selectableOptions = [];
 
     for (const platform of platformGroup.platforms) {
-      if (platform.deviceGroups.length) {
+      if (platform.isMobile && platform.deviceGroups.length) {
         const submenu = [];
 
         for (const deviceGroup of platform.deviceGroups) {

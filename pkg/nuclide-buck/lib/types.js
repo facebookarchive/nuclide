@@ -83,7 +83,8 @@ export type PlatformGroup = {
   platforms: Array<Platform>,
 };
 
-export type Platform = {
+export type MobilePlatform = {
+  isMobile: true,
   name: string,
   tasksForDevice: (device: ?Device) => Set<TaskType>,
   runTask: (
@@ -96,6 +97,21 @@ export type Platform = {
   deviceGroups: Array<DeviceGroup>,
   extraUiWhenSelected?: (device: ?Device) => ?PlatformProviderUi,
 };
+
+export type DesktopPlatform = {
+  isMobile: false,
+  name: string,
+  tasksForBuildRuleType: (ruleType: ResolvedRuleType) => Set<TaskType>,
+  runTask: (
+    builder: BuckBuildSystem,
+    type: TaskType,
+    buildTarget: ResolvedBuildTarget,
+    taskSettings: TaskSettings,
+    device: ?Device,
+  ) => Observable<TaskEvent>,
+};
+
+export type Platform = MobilePlatform | DesktopPlatform;
 
 export type DeviceGroup = {
   name: ?string,

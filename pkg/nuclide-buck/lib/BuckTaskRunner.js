@@ -73,12 +73,13 @@ const TASKS = [
 
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
+    case 'build':
+    case 'test':
+      return true;
     case 'run':
       return ruleType.endsWith('binary');
-    case 'debug':
-      return ruleType.endsWith('binary') || ruleType.endsWith('test');
     default:
-      return true;
+      return false;
   }
 }
 
@@ -156,24 +157,37 @@ export class BuckTaskRunner {
 
     const tasksObservable = storeReady
       .map(state => {
-        const {buildRuleType, selectedDeploymentTarget} = state;
-        const tasksFromPlatform = selectedDeploymentTarget
-          ? selectedDeploymentTarget.platform.tasksForDevice(
-              selectedDeploymentTarget.device,
-            )
-          : null;
+        const {buildRuleType, platformGroups, selectedDeploymentTarget} = state;
+
+        const tasksFromPlatform = new Set();
+        if (
+          selectedDeploymentTarget != null &&
+          selectedDeploymentTarget.platform.isMobile
+        ) {
+          selectedDeploymentTarget.platform
+            .tasksForDevice(selectedDeploymentTarget.device)
+            .forEach(taskType => tasksFromPlatform.add(taskType));
+        } else if (buildRuleType != null) {
+          const ruleType = buildRuleType;
+          platformGroups.forEach(platformGroup => {
+            platformGroup.platforms.forEach(platform => {
+              if (!platform.isMobile) {
+                platform
+                  .tasksForBuildRuleType(ruleType)
+                  .forEach(taskType => tasksFromPlatform.add(taskType));
+              }
+            });
+          });
+        }
         return TASKS.map(task => {
-          let disabled = state.isLoadingPlatforms || buildRuleType == null;
-          if (!disabled) {
-            if (tasksFromPlatform) {
-              disabled = !tasksFromPlatform.has(task.type);
-            } else {
-              invariant(buildRuleType);
-              // No platform provider selected, fall back to default logic
-              disabled = !shouldEnableTask(task.type, buildRuleType.type);
-            }
-          }
-          return {...task, disabled};
+          const enabled =
+            !state.isLoadingPlatforms &&
+            buildRuleType != null &&
+            (tasksFromPlatform.size > 0
+              ? tasksFromPlatform.has(task.type)
+              : shouldEnableTask(task.type, buildRuleType.type));
+
+          return {...task, disabled: !enabled};
         });
       })
       .distinctUntilChanged((a, b) => arrayEqual(a, b, shallowequal));

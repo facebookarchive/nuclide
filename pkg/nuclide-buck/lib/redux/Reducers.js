@@ -127,7 +127,7 @@ function selectValidDeploymentTarget(
   if (preferredPlatformName) {
     for (const platformGroup of platformGroups) {
       for (const platform of platformGroup.platforms) {
-        if (platform.name === preferredPlatformName) {
+        if (platform.isMobile && platform.name === preferredPlatformName) {
           existingPlatform = platform;
           if (preferredDeviceName) {
             for (const deviceGroup of platform.deviceGroups) {
@@ -159,6 +159,7 @@ function selectValidDeploymentTarget(
 
   if (
     !existingDevice &&
+    existingPlatform.isMobile &&
     existingPlatform.deviceGroups.length &&
     existingPlatform.deviceGroups[0].devices.length
   ) {
@@ -173,6 +174,7 @@ function getPlatformProviderUiForDeploymentTarget(
 ): ?PlatformProviderUi {
   if (
     deploymentTarget == null ||
+    !deploymentTarget.platform.isMobile ||
     deploymentTarget.platform.extraUiWhenSelected == null
   ) {
     return null;
