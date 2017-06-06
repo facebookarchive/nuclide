@@ -661,7 +661,7 @@ export class ProcessSystemError extends Error {
   constructor(err: any, proc: child_process$ChildProcess) {
     super(err.message);
     this.name = 'ProcessSystemError';
-    this.errno = err.errono;
+    this.errno = err.errno;
     this.code = err.code;
     this.path = err.path;
     this.syscall = err.syscall;
