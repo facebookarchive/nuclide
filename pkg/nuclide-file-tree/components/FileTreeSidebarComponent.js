@@ -108,7 +108,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       scrollerScrollTop: 0,
       showOpenFiles: true,
       showUncommittedChanges: true,
-      showUncommittedChangesKind: 'Head changes',
+      showUncommittedChangesKind: 'Uncommitted changes',
       openFilesUris: [],
       modifiedUris: [],
       activeUri: null,

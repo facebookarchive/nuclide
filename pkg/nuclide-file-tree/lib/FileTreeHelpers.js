@@ -174,12 +174,12 @@ function observeUncommittedChangesKindConfigKey(): Observable<
         // We need to map the unsanitized feature-setting string
         // into a properly typed value:
         switch (setting) {
-          case ShowUncommittedChangesKind.UNCOMMITTED:
-            return ShowUncommittedChangesKind.UNCOMMITTED;
+          case ShowUncommittedChangesKind.HEAD:
+            return ShowUncommittedChangesKind.HEAD;
           case ShowUncommittedChangesKind.STACK:
             return ShowUncommittedChangesKind.STACK;
           default:
-            return ShowUncommittedChangesKind.HEAD;
+            return ShowUncommittedChangesKind.UNCOMMITTED;
         }
       })
       .distinctUntilChanged(),

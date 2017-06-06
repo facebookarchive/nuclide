@@ -83,7 +83,7 @@
       "showUncommittedChangesKind": {
         "title": "What kind of changes to show",
         "type": "string",
-        "default": "Head changes",
+        "default": "Uncommitted changes",
         "description": "Show changes from which part of your current stack",
         "enum": [
           "Uncommitted changes",
