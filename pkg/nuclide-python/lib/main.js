@@ -27,15 +27,15 @@ import LintHelpers from './LintHelpers';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {AtomLanguageService} from '../../nuclide-language-service';
+import createPackage from 'nuclide-commons-atom/createPackage';
 import {
   getShowGlobalVariables,
   getAutocompleteArguments,
   getIncludeOptionalArguments,
 } from './config';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const PYTHON_SERVICE_NAME = 'PythonService';
-
-let busySignalService: ?BusySignalService = null;
 
 async function connectionToPythonService(
   connection: ?ServerConnection,
@@ -91,51 +91,49 @@ const atomConfig: AtomLanguageServiceConfig = {
   },
 };
 
-let pythonLanguageService: ?AtomLanguageService<LanguageService> = null;
+class Activation {
+  _busySignalService: ?BusySignalService = null;
+  _pythonLanguageService: AtomLanguageService<LanguageService>;
+  _subscriptions: UniversalDisposable;
 
-export function activate() {
-  if (pythonLanguageService == null) {
-    pythonLanguageService = new AtomLanguageService(
+  constructor(rawState: ?Object) {
+    this._pythonLanguageService = new AtomLanguageService(
       connectionToPythonService,
       atomConfig,
     );
-    pythonLanguageService.activate();
+    this._pythonLanguageService.activate();
+    this._subscriptions = new UniversalDisposable(this._pythonLanguageService);
+  }
+
+  consumeBusySignal(service: BusySignalService): IDisposable {
+    this._subscriptions.add(service);
+    this._busySignalService = service;
+    return new UniversalDisposable(() => {
+      this._busySignalService = null;
+    });
+  }
+
+  provideLint(): LinterProvider {
+    return {
+      grammarScopes: Array.from(GRAMMAR_SET),
+      scope: 'file',
+      lintOnFly: getLintOnFly(),
+      name: 'nuclide-python',
+      lint(editor) {
+        if (this._busySignalService == null) {
+          return LintHelpers.lint(editor);
+        }
+        return this._busySignalService.reportBusyWhile(
+          `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
+          () => LintHelpers.lint(editor),
+        );
+      },
+    };
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 }
 
-export function provideLint(): LinterProvider {
-  return {
-    grammarScopes: Array.from(GRAMMAR_SET),
-    scope: 'file',
-    lintOnFly: getLintOnFly(),
-    name: 'nuclide-python',
-    lint(editor) {
-      if (busySignalService == null) {
-        return LintHelpers.lint(editor);
-      }
-      return busySignalService.reportBusyWhile(
-        `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
-        () => LintHelpers.lint(editor),
-      );
-    },
-  };
-}
-
-export function consumeBusySignal(service: BusySignalService): IDisposable {
-  busySignalService = service;
-  return {
-    dispose: () => {
-      busySignalService = null;
-    },
-  };
-}
-
-export function deactivate() {
-  if (pythonLanguageService != null) {
-    pythonLanguageService.dispose();
-    pythonLanguageService = null;
-  }
-  if (busySignalService != null) {
-    busySignalService.dispose();
-  }
-}
+createPackage(module.exports, Activation);
