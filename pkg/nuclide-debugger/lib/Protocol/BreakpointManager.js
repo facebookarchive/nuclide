@@ -240,12 +240,18 @@ export default class BreakpointManager {
       this._breakpointEvent$.next(['BreakpointRemoved', breakpoint.request]);
       this._breakpointEvent$.next([
         'BreakpointAdded',
-        this._createIPCBreakpointFromLocation(breakpoint.request, location),
+        this._createResolvedBreakpointFromLocation(
+          location,
+          breakpoint.request.condition,
+        ),
       ]);
     } else {
-      reportError(
-        `Got breakpoint resolved for non-existing breakpoint: ${breakpointId}, ${JSON.stringify(location)};`,
-      );
+      // Some engine(C++) may fire breakpointResolved before setBreakpointByUrl
+      // is resolved.
+      this._breakpointEvent$.next([
+        'BreakpointAdded',
+        this._createResolvedBreakpointFromLocation(location, ''),
+      ]);
     }
   }
 
@@ -253,15 +259,19 @@ export default class BreakpointManager {
     return this._breakpointList.find(bp => bp.id === breakpointId);
   }
 
-  _createIPCBreakpointFromLocation(
-    originalRequest: IPCBreakpoint,
+  _createResolvedBreakpointFromLocation(
     bpLocation: Location,
+    condition: string,
   ): IPCBreakpoint {
-    const newCopy = {...originalRequest};
-    // TODO: also get the new source URL from ScriptId in Location.
-    newCopy.lineNumber = bpLocation.lineNumber;
-    newCopy.resolved = true;
-    return newCopy;
+    const {scriptId, lineNumber} = bpLocation;
+    const sourceURL = this._debuggerDispatcher.getFileUriFromScriptId(scriptId);
+    return {
+      sourceURL,
+      lineNumber,
+      condition,
+      enabled: true,
+      resolved: true,
+    };
   }
 
   handleBreakpointResolved(params: BreakpointResolvedEvent): void {
