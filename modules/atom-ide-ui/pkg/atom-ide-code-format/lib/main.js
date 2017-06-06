@@ -32,7 +32,7 @@ class Activation {
       return this.consumeRangeProvider(provider);
     } else if (provider.formatEntireFile) {
       return this.consumeFileProvider(provider);
-    } else if (provider.formatOnType) {
+    } else if (provider.formatAtPosition) {
       return this.consumeOnTypeProvider(provider);
     } else if (provider.formatOnSave) {
       return this.consumeOnSaveProvider(provider);
