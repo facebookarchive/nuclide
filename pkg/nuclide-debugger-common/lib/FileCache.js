@@ -9,9 +9,10 @@
  * @format
  */
 
+import fsPromise from 'nuclide-commons/fsPromise';
 import invariant from 'assert';
 
-import {uriToPath} from './helpers';
+import {uriToPath, pathToUri} from './helpers';
 import File from './File';
 
 /**
@@ -20,19 +21,27 @@ import File from './File';
 export default class FileCache {
   _sendServerMethod: (method: string, params: ?Object) => mixed;
   _files: Map<string, File>;
+  _realpathCache: Object;
 
   constructor(sendServerMethod: (method: string, params: ?Object) => mixed) {
     this._sendServerMethod = sendServerMethod;
     this._files = new Map();
+    this._realpathCache = {};
   }
 
-  registerFile(fileUrl: string): File {
+  async registerFile(fileUrl: string): Promise<File> {
     const filepath = uriToPath(fileUrl);
+    let realFilepath;
+    try {
+      realFilepath = await fsPromise.realpath(filepath, this._realpathCache);
+    } catch (error) {
+      realFilepath = filepath;
+    }
     if (!this._files.has(filepath)) {
       this._files.set(filepath, new File(filepath));
       this._sendServerMethod('Debugger.scriptParsed', {
         scriptId: filepath,
-        url: fileUrl,
+        url: pathToUri(realFilepath),
         startLine: 0,
         startColumn: 0,
         endLine: 0,
@@ -44,7 +53,8 @@ export default class FileCache {
     return result;
   }
 
-  getFileSource(filepath: string): Promise<string> {
-    return this.registerFile(filepath).getSource();
+  async getFileSource(filepath: string): Promise<string> {
+    const file = await this.registerFile(filepath);
+    return file.getSource();
   }
 }

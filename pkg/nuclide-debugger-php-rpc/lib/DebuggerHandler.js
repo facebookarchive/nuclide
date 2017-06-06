@@ -200,7 +200,7 @@ export class DebuggerHandler extends Handler {
       );
       return;
     }
-    this._files.registerFile(url);
+    await this._files.registerFile(url);
 
     const path = uriToPath(url);
     const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
@@ -249,7 +249,7 @@ export class DebuggerHandler extends Handler {
 
     const filePath = nuclideUri.getPath(scriptId);
     const url = pathToUri(filePath);
-    this._files.registerFile(url);
+    await this._files.registerFile(url);
 
     // Chrome lineNumber is 0-based while xdebug lineno is 1-based.
     this._temporaryBreakpointpointId = await breakpointStore.setFileLineBreakpointForConnection(
@@ -311,7 +311,7 @@ export class DebuggerHandler extends Handler {
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     logger.debug('Converting frame: ' + JSON.stringify(frame));
-    const file = this._files.registerFile(fileUrlOfFrame(frame));
+    const file = await this._files.registerFile(fileUrlOfFrame(frame));
     const location = locationOfFrame(frame);
     const hasSource = await file.hasSource();
     if (!hasSource) {
