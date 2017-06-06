@@ -20,7 +20,7 @@ import type {
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import invariant from 'assert';
-import {reportError, reportWarning} from './Utils';
+import {reportError, reportWarning} from './EventReporter';
 import {Subject, Observable} from 'rxjs';
 
 const UNCONFIRMED_BREAKPOINT_ID = 'Unassigned';

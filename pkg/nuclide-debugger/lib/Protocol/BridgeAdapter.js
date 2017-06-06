@@ -29,6 +29,7 @@ import ExecutionManager from './ExecutionManager';
 import ThreadManager from './ThreadManager';
 import ExpressionEvaluationManager from './ExpressionEvaluationManager';
 import DebuggerSettingsManager from './DebuggerSettingsManager';
+import * as EventReporter from './EventReporter';
 
 export default class BridgeAdapter {
   _subscriptions: UniversalDisposable;
@@ -252,6 +253,7 @@ export default class BridgeAdapter {
       .merge(executionManager.getEventObservable())
       .merge(threadManager.getEventObservable())
       .merge(expessionEvaluatorManager.getEventObservable())
+      .merge(EventReporter.getEventObservable())
       .map(args => {
         return {channel: 'notification', args};
       });

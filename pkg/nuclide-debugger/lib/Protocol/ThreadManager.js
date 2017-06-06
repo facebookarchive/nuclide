@@ -18,7 +18,7 @@ import type {
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 
 import {Subject, Observable} from 'rxjs';
-import {reportError} from './Utils';
+import {reportError} from './EventReporter';
 
 /**
  * Bridge between Nuclide IPC and RPC threading protocols.

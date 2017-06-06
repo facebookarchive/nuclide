@@ -21,7 +21,7 @@ import {
   isNewProtocolChannelEnabled,
 } from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {reportError} from './Protocol/Utils';
+import {reportError} from './Protocol/EventReporter';
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.

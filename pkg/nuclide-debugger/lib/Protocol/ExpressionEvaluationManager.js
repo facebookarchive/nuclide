@@ -24,7 +24,7 @@ import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
 import invariant from 'assert';
 import {Subject, Observable} from 'rxjs';
-import {reportError} from './Utils';
+import {reportError} from './EventReporter';
 
 class RemoteObjectProxy {
   _objectId: RemoteObjectId;

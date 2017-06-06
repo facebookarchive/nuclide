@@ -23,12 +23,16 @@ import type {
   IPCEvent,
 } from './types';
 
+import {Subject} from 'rxjs';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import CommandDispatcher from './CommandDispatcher';
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
+import {registerConsoleLogging} from '../../nuclide-debugger-base';
+import {getLogger} from 'log4js';
+const logger = getLogger('nuclide-debugger');
 
 export default class Bridge {
   _debuggerModel: DebuggerModel;
@@ -38,17 +42,26 @@ export default class Bridge {
   _debugModeDisposables: ?UniversalDisposable;
   _commandDispatcher: CommandDispatcher;
   _suppressBreakpointSync: boolean;
+  _consoleEvent$: Subject<string>;
 
   constructor(debuggerModel: DebuggerModel) {
     (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
     this._commandDispatcher = new CommandDispatcher();
+    this._consoleEvent$ = new Subject();
     this._disposables = new UniversalDisposable(
       debuggerModel
         .getBreakpointStore()
         .onUserChange(this._handleUserBreakpointChange.bind(this)),
     );
+    const subscription = registerConsoleLogging(
+      'Debugger',
+      this._consoleEvent$,
+    );
+    if (subscription != null) {
+      this._disposables.add(subscription);
+    }
   }
 
   dispose() {
@@ -244,9 +257,38 @@ export default class Bridge {
           case 'ThreadUpdate':
             this._handleThreadUpdate(event.args[1]);
             break;
+          case 'ReportError':
+            this._reportEngineError(event.args[1]);
+            break;
+          case 'ReportWarning':
+            this._reportEngineWarning(event.args[1]);
+            break;
         }
         break;
     }
+  }
+
+  _sendConsoleMessage(level: string, text: string): void {
+    this._consoleEvent$.next(
+      JSON.stringify({
+        level,
+        text,
+      }),
+    );
+  }
+
+  _reportEngineError(message: string): void {
+    const outputMessage = `Debugger engine reports error: ${message}`;
+    logger.error(outputMessage);
+    this._sendConsoleMessage('error', outputMessage);
+    atom.notifications.addError(outputMessage);
+  }
+
+  _reportEngineWarning(message: string): void {
+    const outputMessage = `Debugger engine reports warning: ${message}`;
+    logger.warn(outputMessage);
+    this._sendConsoleMessage('warning', outputMessage);
+    atom.notifications.addWarning(outputMessage);
   }
 
   _updateDebuggerSettings(): void {

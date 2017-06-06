@@ -17,7 +17,10 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
-import type {RegisterExecutorFunction} from '../../nuclide-console/lib/types';
+import type {
+  RegisterExecutorFunction,
+  OutputService,
+} from '../../nuclide-console/lib/types';
 import type {
   WorkspaceViewsService,
 } from '../../nuclide-workspace-views/lib/types';
@@ -52,7 +55,10 @@ import {
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import {setNotificationService} from '../../nuclide-debugger-base';
+import {
+  setNotificationService,
+  setOutputService,
+} from '../../nuclide-debugger-base';
 import {DebuggerMode} from './DebuggerStore';
 import {NewDebuggerView} from './NewDebuggerView';
 import DebuggerControllerView from './DebuggerControllerView';
@@ -835,6 +841,10 @@ export function deactivate() {
     activation.dispose();
     activation = null;
   }
+}
+
+export function consumeOutputService(api: OutputService): void {
+  setOutputService(api);
 }
 
 function registerConsoleExecutor(

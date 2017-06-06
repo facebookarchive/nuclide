@@ -9,14 +9,18 @@
  * @format
  */
 
+import {Subject, Observable} from 'rxjs';
+
+const customEvent$ = new Subject();
+
+export function getEventObservable(): Observable<Array<mixed>> {
+  return customEvent$.asObservable();
+}
+
 export function reportError(message: string): void {
-  // TODO: setup a new event channel to report error message.
-  // eslint-disable-next-line no-console
-  console.error(message);
+  customEvent$.next(['ReportError', message]);
 }
 
 export function reportWarning(message: string): void {
-  // TODO: setup a new event channel to report warning message.
-  // eslint-disable-next-line no-console
-  console.warn(message);
+  customEvent$.next(['ReportWarning', message]);
 }

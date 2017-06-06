@@ -13,17 +13,11 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
   NuclideDebuggerProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {OutputService} from '../../nuclide-console/lib/types';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {setOutputService} from '../../nuclide-debugger-base';
 import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
-}
 
 export function createDebuggerProvider(): NuclideDebuggerProvider {
   return {
