@@ -9,6 +9,8 @@
  * @format
  */
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+
 export type Provider = {
   priority: number,
   grammarScopes: Array<string>,
@@ -21,8 +23,11 @@ export default class ProviderRegistry<T: Provider> {
     this._providers = new Set();
   }
 
-  addProvider(provider: T): void {
+  addProvider(provider: T): IDisposable {
     this._providers.add(provider);
+    return new UniversalDisposable(() => {
+      this._providers.delete(provider);
+    });
   }
 
   removeProvider(provider: T): void {

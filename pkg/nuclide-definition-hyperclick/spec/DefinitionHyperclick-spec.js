@@ -9,58 +9,70 @@
  * @format
  */
 
-import type {HyperclickProvider} from 'atom-ide-ui';
-import type {DefinitionService} from '../../nuclide-definition-service';
-import type {HyperclickSuggestion} from 'atom-ide-ui';
+import type {HyperclickSuggestion, HyperclickProvider} from 'atom-ide-ui';
+import type {DefinitionProvider} from '../../nuclide-definition-service';
 
-import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
-import {Point, Range} from 'atom';
+import {Point, Range, TextEditor} from 'atom';
 import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 describe('DefinitionHyperclick', () => {
-  let provider: HyperclickProvider = (null: any);
-  const editor: atom$TextEditor = ({}: any);
-  const position: atom$Point = ({}: any);
-  let service: DefinitionService = (null: any);
-  let consumeDefinitionService;
+  let provider: ?HyperclickProvider;
+  const definitionProvider: DefinitionProvider = {
+    priority: 20,
+    name: '',
+    grammarScopes: ['text.plain.null-grammar'],
+    getDefinition: () => Promise.resolve(null),
+  };
+  let editor: TextEditor;
+  const position = new Point(0, 0);
   let goToLocation;
+  let disposables;
 
   beforeEach(() => {
-    service = (jasmine.createSpyObj('DefinitionService', [
-      'getDefinition',
-    ]): any);
+    atom.packages.activatePackage('nuclide-definition-hyperclick');
+    editor = new TextEditor();
+
     goToLocation = spyOn(
       require('nuclide-commons-atom/go-to-location'),
       'goToLocation',
     );
-    const main = (uncachedRequire(require, '../lib/main'): any);
-    consumeDefinitionService = main.consumeDefinitionService;
-    provider = main.getHyperclickProvider();
+
+    disposables = new UniversalDisposable(
+      atom.packages.serviceHub.provide(
+        'nuclide-definition-provider',
+        '0.0.0',
+        definitionProvider,
+      ),
+      atom.packages.serviceHub.consume('hyperclick.provider', '0.0.0', x => {
+        provider = x;
+      }),
+    );
   });
 
   afterEach(() => {
-    clearRequireCache(require, '../lib/main');
+    disposables.dispose();
   });
 
   it('no definition service', () => {
     waitsForPromise(async () => {
+      spyOn(editor, 'getGrammar').andReturn({scopeName: 'blah'});
+      invariant(provider != null);
       invariant(provider.getSuggestion != null);
       const result = await provider.getSuggestion(editor, position);
-
       expect(result).toBe(null);
     });
   });
 
   it('no definition', () => {
     waitsForPromise(async () => {
-      service.getDefinition.andReturn(Promise.resolve(null));
-      consumeDefinitionService(service);
-
+      const spy = spyOn(definitionProvider, 'getDefinition').andReturn(null);
+      invariant(provider != null);
       invariant(provider.getSuggestion != null);
       const result = await provider.getSuggestion(editor, position);
 
       expect(result).toBe(null);
-      expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position);
     });
   });
 
@@ -79,18 +91,17 @@ describe('DefinitionHyperclick', () => {
           },
         ],
       };
-      service.getDefinition.andReturn(Promise.resolve(definition));
-      consumeDefinitionService(service);
-
-      invariant(provider.getSuggestion != null);
-      const result: ?HyperclickSuggestion = await provider.getSuggestion(
-        editor,
-        position,
+      const spy = spyOn(definitionProvider, 'getDefinition').andReturn(
+        Promise.resolve(definition),
       );
+
+      invariant(provider != null);
+      invariant(provider.getSuggestion != null);
+      const result = await provider.getSuggestion(editor, position);
 
       invariant(result != null);
       expect(result.range).toEqual(definition.queryRange);
-      expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position);
       expect(goToLocation).not.toHaveBeenCalled();
 
       invariant(result != null);
@@ -124,9 +135,11 @@ describe('DefinitionHyperclick', () => {
           },
         ],
       };
-      service.getDefinition.andReturn(Promise.resolve(defs));
-      consumeDefinitionService(service);
+      const spy = spyOn(definitionProvider, 'getDefinition').andReturn(
+        Promise.resolve(defs),
+      );
 
+      invariant(provider != null);
       invariant(provider.getSuggestion != null);
       const result: ?HyperclickSuggestion = await provider.getSuggestion(
         editor,
@@ -135,7 +148,7 @@ describe('DefinitionHyperclick', () => {
 
       invariant(result != null);
       expect(result.range).toEqual(defs.queryRange);
-      expect(service.getDefinition).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position);
       expect(goToLocation).not.toHaveBeenCalled();
       const callbacks: Array<{
         title: string,

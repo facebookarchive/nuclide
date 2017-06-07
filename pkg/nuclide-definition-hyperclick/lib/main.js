@@ -13,87 +13,95 @@
 // DefinitionProvider.
 
 import type {HyperclickProvider, HyperclickSuggestion} from 'atom-ide-ui';
-import type {DefinitionService} from '../../nuclide-definition-service';
+import type {DefinitionProvider} from '../../nuclide-definition-service';
 
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {Disposable} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import createPackage from 'nuclide-commons-atom/createPackage';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 
-let currentService: ?DefinitionService = null;
+class Activation {
+  _providers: ProviderRegistry<DefinitionProvider>;
+  _disposables: UniversalDisposable;
 
-async function getSuggestion(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): Promise<?HyperclickSuggestion> {
-  if (currentService == null) {
-    return null;
+  constructor() {
+    this._providers = new ProviderRegistry();
+    this._disposables = new UniversalDisposable();
   }
-  const result = await currentService.getDefinition(editor, position);
-  if (result == null) {
-    return null;
-  }
-  const {definitions} = result;
-  invariant(definitions.length > 0);
 
-  function createCallback(definition) {
-    return () => {
-      goToLocation(
-        definition.path,
-        definition.position.row,
-        definition.position.column,
+  dispose() {
+    this._disposables.dispose();
+  }
+
+  async getSuggestion(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Promise<?HyperclickSuggestion> {
+    const provider = this._providers.getProviderForEditor(editor);
+    if (provider == null) {
+      return null;
+    }
+    const result = await provider.getDefinition(editor, position);
+    if (result == null) {
+      return null;
+    }
+    const {definitions} = result;
+    invariant(definitions.length > 0);
+
+    function createCallback(definition) {
+      return () => {
+        goToLocation(
+          definition.path,
+          definition.position.row,
+          definition.position.column,
+        );
+      };
+    }
+
+    function createTitle(definition) {
+      invariant(
+        definition.name != null,
+        'must include name when returning multiple definitions',
       );
-    };
+      const filePath = definition.projectRoot == null
+        ? definition.path
+        : nuclideUri.relative(definition.projectRoot, definition.path);
+      return `${definition.name} (${filePath})`;
+    }
+
+    if (definitions.length === 1) {
+      return {
+        range: result.queryRange,
+        callback: createCallback(definitions[0]),
+      };
+    } else {
+      return {
+        range: result.queryRange,
+        callback: definitions.map(definition => {
+          return {
+            title: createTitle(definition),
+            callback: createCallback(definition),
+          };
+        }),
+      };
+    }
   }
 
-  function createTitle(definition) {
-    invariant(
-      definition.name != null,
-      'must include name when returning multiple definitions',
-    );
-    const filePath = definition.projectRoot == null
-      ? definition.path
-      : nuclideUri.relative(definition.projectRoot, definition.path);
-    return `${definition.name} (${filePath})`;
+  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+    const disposable = this._providers.addProvider(provider);
+    this._disposables.add(disposable);
+    return disposable;
   }
 
-  if (definitions.length === 1) {
+  getHyperclickProvider(): HyperclickProvider {
     return {
-      range: result.queryRange,
-      callback: createCallback(definitions[0]),
-    };
-  } else {
-    return {
-      range: result.queryRange,
-      callback: definitions.map(definition => {
-        return {
-          title: createTitle(definition),
-          callback: createCallback(definition),
-        };
-      }),
+      priority: 20,
+      providerName: 'nuclide-definition-hyperclick',
+      getSuggestion: (editor, position) => this.getSuggestion(editor, position),
     };
   }
 }
 
-export function consumeDefinitionService(
-  service: DefinitionService,
-): IDisposable {
-  invariant(currentService == null);
-  currentService = service;
-  return new Disposable(() => {
-    invariant(currentService === service);
-    currentService = null;
-  });
-}
-
-export function getHyperclickProvider(): HyperclickProvider {
-  return {
-    priority: 20,
-    providerName: 'nuclide-definition-hyperclick',
-    getSuggestion,
-  };
-}
-
-export function activate(state: Object | void) {}
-
-export function deactivate() {}
+createPackage(module.exports, Activation);

@@ -10,9 +10,9 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "nuclide-definition-service": {
+    "nuclide-definition-provider": {
       "versions": {
-        "0.0.0": "consumeDefinitionService"
+        "0.0.0": "consumeDefinitionProvider"
       }
     }
   },
