@@ -40,7 +40,9 @@ export type SelectionIndex = {
 import {Observable, Scheduler} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button} from 'nuclide-commons-ui/Button';
+import {Icon} from 'nuclide-commons-ui/Icon';
 import Tabs from '../../nuclide-ui/Tabs';
+import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
@@ -743,6 +745,8 @@ export default class QuickSelectionComponent extends React.Component {
       let numResultsForService = 0;
       const directories = this.state.resultsByService[serviceName].results;
       const serviceTitle = this.state.resultsByService[serviceName].title;
+      const totalResults = this.state.resultsByService[serviceName]
+        .totalResults;
       const directoryNames = Object.keys(directories);
       const directoriesForService = directoryNames.map(dirName => {
         const resultsForDirectory = directories[dirName];
@@ -834,8 +838,18 @@ export default class QuickSelectionComponent extends React.Component {
       let serviceLabel = null;
       if (isOmniSearchActive && numResultsForService > 0) {
         serviceLabel = (
-          <div className="list-item">
-            <span className="icon icon-gear">{serviceTitle}</span>
+          <div
+            className="quick-open-provider-item list-item"
+            onClick={() =>
+              this.props.quickSelectionActions.changeActiveProvider(
+                serviceName,
+              )}>
+            <Icon icon="gear" children={serviceTitle} />
+            <Badge
+              size={BadgeSizes.small}
+              className="quick-open-provider-count-badge"
+              value={totalResults}
+            />
           </div>
         );
         return (

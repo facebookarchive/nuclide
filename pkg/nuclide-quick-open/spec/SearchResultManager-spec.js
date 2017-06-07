@@ -114,6 +114,7 @@ function constructSingleProviderResult(
     results: {
       global: {...result},
     },
+    totalResults: 0,
   };
   return {[provider.name]: groupResult};
 }
@@ -270,16 +271,19 @@ describe('SearchResultManager', () => {
         title: 'FirstProvider',
         priority: 1,
         results: {global: {results: [], loading: false, error: null}},
+        totalResults: 0,
       },
       SecondProvider: {
         title: 'SecondProvider',
         priority: 2,
         results: {global: {results: [], loading: false, error: null}},
+        totalResults: 0,
       },
       ThirdProvider: {
         title: 'ThirdProvider',
         priority: 3,
         results: {global: {results: [], loading: false, error: null}},
+        totalResults: 0,
       },
     };
 
