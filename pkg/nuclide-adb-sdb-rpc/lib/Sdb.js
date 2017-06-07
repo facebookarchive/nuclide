@@ -14,7 +14,7 @@ import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class Sdb extends AdbSdbBase {

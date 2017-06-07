@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {Message} from './PanelView';
 
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';

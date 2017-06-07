@@ -11,10 +11,7 @@
 
 import type {Subscription, Observable} from 'rxjs';
 import type {ServiceRegistry, MessageLogger} from '..';
-import type {
-  ProcessMessage,
-  ProcessExitMessage,
-} from 'nuclide-commons/process-rpc-types';
+import type {ProcessMessage, ProcessExitMessage} from 'nuclide-commons/process';
 
 import {StreamTransport} from './StreamTransport';
 import {RpcConnection} from './RpcConnection';

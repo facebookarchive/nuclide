@@ -10,8 +10,7 @@
  */
 
 import type {LRUCache} from 'lru-cache';
-import type {ObserveProcessOptions} from './process';
-import type {ProcessMessage} from './process-rpc-types';
+import type {ObserveProcessOptions, ProcessMessage} from './process';
 
 import LRU from 'lru-cache';
 import {Observable} from 'rxjs';

@@ -25,7 +25,7 @@ import type {
   StatusCodeIdValue,
   VcsLogResponse,
 } from '../../nuclide-hg-rpc/lib/HgService';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 

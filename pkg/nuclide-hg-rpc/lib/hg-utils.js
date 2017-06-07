@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {HgExecOptions} from './hg-exec-types';
 
 import {Observable} from 'rxjs';

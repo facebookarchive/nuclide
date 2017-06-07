@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ProcessExitMessage} from 'nuclide-commons/process-rpc-types';
+import type {ProcessExitMessage} from 'nuclide-commons/process';
 
 import EventEmitter from 'events';
 import {sleep} from 'nuclide-commons/promise';

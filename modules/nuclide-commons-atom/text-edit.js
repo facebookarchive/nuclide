@@ -10,11 +10,17 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TextEdit} from './text-edit-rpc-types';
 
 import invariant from 'assert';
 
 import {existingEditorForUri} from './text-editor';
+
+export type TextEdit = {
+  oldRange: atom$Range,
+  newText: string,
+  // If included, this will be used to verify that the edit still applies cleanly.
+  oldText?: string,
+};
 
 /**
  * Attempts to apply the given patches to the given file.

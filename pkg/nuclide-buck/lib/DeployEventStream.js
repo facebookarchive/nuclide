@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import type RemoteControlService
   from '../../nuclide-debugger/lib/RemoteControlService';

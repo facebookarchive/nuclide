@@ -10,7 +10,7 @@
  */
 
 import type {Message} from '../../nuclide-console/lib/types';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 
 import {Subject} from 'rxjs';
 

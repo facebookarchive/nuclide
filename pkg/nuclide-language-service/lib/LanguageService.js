@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
   Definition,

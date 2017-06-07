@@ -16,7 +16,7 @@ import type {
   FileCodeFormatProvider,
   OnTypeCodeFormatProvider,
 } from 'atom-ide-ui';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming} from '../../nuclide-analytics';

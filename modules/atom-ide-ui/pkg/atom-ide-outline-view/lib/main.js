@@ -28,7 +28,7 @@ import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
 import {Observable} from 'rxjs';
 
-import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
+import type {TokenizedText} from 'nuclide-commons/tokenized-text';
 import type {Outline, OutlineTree, OutlineTreeKind} from './rpc-types';
 
 export type {Outline, OutlineTree, OutlineTreeKind};

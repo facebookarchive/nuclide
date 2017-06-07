@@ -47,12 +47,6 @@
 //
 // [RxJS]: http://reactivex.io/rxjs/
 
-import type {
-  ProcessExitMessage,
-  ProcessMessage,
-  ProcessInfo,
-} from './process-rpc-types';
-
 import child_process from 'child_process';
 import idx from 'idx';
 import invariant from 'assert';
@@ -573,6 +567,66 @@ export function logStreamErrors(
 //
 // Types
 //
+
+// Exactly one of exitCode and signal will be non-null.
+// Killing a process will result in a null exitCode but a non-null signal.
+export type ProcessExitMessage = {
+  kind: 'exit',
+  exitCode: ?number,
+  signal: ?string,
+};
+
+export type ProcessMessage =
+  | {
+      kind: 'stdout',
+      data: string,
+    }
+  | {
+      kind: 'stderr',
+      data: string,
+    }
+  | ProcessExitMessage;
+
+// In older versions of process.js, errors were emitted as messages instead of errors. This type
+// exists to support the transition, but no new usages should be added.
+export type LegacyProcessMessage =
+  | ProcessMessage
+  | {kind: 'error', error: Object};
+
+export type ProcessInfo = {
+  parentPid: number,
+  pid: number,
+  command: string,
+};
+
+export type Level = 'info' | 'log' | 'warning' | 'error' | 'debug' | 'success';
+export type Message = {text: string, level: Level};
+
+export type MessageEvent = {
+  type: 'message',
+  message: Message,
+};
+
+export type ProgressEvent = {
+  type: 'progress',
+  progress: ?number,
+};
+
+export type ResultEvent = {
+  type: 'result',
+  result: mixed,
+};
+
+export type StatusEvent = {
+  type: 'status',
+  status: ?string,
+};
+
+export type TaskEvent =
+  | MessageEvent
+  | ProgressEvent
+  | ResultEvent
+  | StatusEvent;
 
 type CreateProcessStreamOptions = (
   | child_process$spawnOpts

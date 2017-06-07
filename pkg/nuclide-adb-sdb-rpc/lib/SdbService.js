@@ -14,7 +14,7 @@ import {ConnectableObservable, Observable} from 'rxjs';
 import {Sdb} from './Sdb';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {DeviceDescription} from './types';
 
 export async function registerSdbPath(

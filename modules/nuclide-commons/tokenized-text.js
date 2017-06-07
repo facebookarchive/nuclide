@@ -9,7 +9,23 @@
  * @format
  */
 
-import type {TokenKind, TextToken} from './tokenized-text-rpc-types';
+export type TokenKind =
+  | 'keyword'
+  | 'class-name'
+  | 'constructor'
+  | 'method'
+  | 'param'
+  | 'string'
+  | 'whitespace'
+  | 'plain'
+  | 'type';
+
+export type TextToken = {
+  kind: TokenKind,
+  value: string,
+};
+
+export type TokenizedText = Array<TextToken>;
 
 export function keyword(value: string): TextToken {
   return _buildToken('keyword', value);

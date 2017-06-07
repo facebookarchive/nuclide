@@ -10,7 +10,7 @@
  */
 
 import type {OutlineTree} from 'atom-ide-ui';
-import type {TextToken} from 'nuclide-commons/tokenized-text-rpc-types';
+import type {TextToken} from 'nuclide-commons/tokenized-text';
 import type {
   PythonOutlineItem,
   PythonClassItem,

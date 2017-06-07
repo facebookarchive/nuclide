@@ -10,9 +10,9 @@
  */
 
 import type {BuckWebSocketMessage} from '../../nuclide-buck-rpc';
-import type {Level} from 'nuclide-commons/process-rpc-types';
+import type {Level} from 'nuclide-commons/process';
 import type {FileDiagnosticMessage} from 'atom-ide-ui';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckBuildOutput, BuckSubcommand} from './types';
 
 import {Observable} from 'rxjs';

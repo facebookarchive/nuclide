@@ -10,7 +10,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {Level as TaskLevelType} from 'nuclide-commons/process-rpc-types';
+import type {Level as TaskLevelType} from 'nuclide-commons/process';
 import type {
   EvaluationResult,
   ExpansionResult,

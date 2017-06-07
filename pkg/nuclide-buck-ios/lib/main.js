@@ -17,7 +17,7 @@ import type {
   TaskSettings,
   TaskType,
 } from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
 

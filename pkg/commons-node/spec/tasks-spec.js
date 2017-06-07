@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Message} from 'nuclide-commons/process-rpc-types';
+import type {Message} from 'nuclide-commons/process';
 
 import {taskFromObservable, observableFromTask} from '../tasks';
 import invariant from 'assert';

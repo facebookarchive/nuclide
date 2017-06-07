@@ -15,7 +15,7 @@ import {Adb} from './Adb';
 import {AdbTop} from './AdbTop';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
 
 async function getAdb(): Promise<Adb> {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process';
 import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Observable} from 'rxjs';
 

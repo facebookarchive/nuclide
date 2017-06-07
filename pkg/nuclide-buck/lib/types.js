@@ -14,7 +14,7 @@ import type {Task} from '../../commons-node/tasks';
 import type {Action} from './redux/Actions';
 import type {PlatformService} from './PlatformService';
 import type {Observable} from 'rxjs';
-import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process';
 import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
   ResolvedBuildTarget,

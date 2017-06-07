@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export type RenameRefactoring = {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TextEdit} from 'nuclide-commons-atom/text-edit-rpc-types';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 /**
  * A brief overview of the different code formatting providers:

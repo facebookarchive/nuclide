@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {TaskEvent} from 'nuclide-commons/process-rpc-types';
+import type {TaskEvent} from 'nuclide-commons/process';
 
 import {Observable, ReplaySubject, Subscription} from 'rxjs';
 

@@ -16,7 +16,7 @@ import {AdbSdbBase} from './AdbSdbBase';
 import {Observable} from 'rxjs';
 
 import type {AndroidJavaProcess} from './types';
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class Adb extends AdbSdbBase {
