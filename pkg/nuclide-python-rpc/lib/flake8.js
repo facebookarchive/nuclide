@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  MessageType,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+import type {MessageType} from 'atom-ide-ui';
 
 function classifyCode(code: string): MessageType {
   if (/^(B9|C|E[35]|T400|T49)/.test(code)) {

@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
+import type {Outline} from 'atom-ide-ui';
 import type {MerlinProcess} from '../../nuclide-ocaml-rpc/lib/MerlinProcess';
 
 import {Point} from 'atom';

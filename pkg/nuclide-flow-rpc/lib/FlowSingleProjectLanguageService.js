@@ -11,9 +11,6 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-import type {
-  Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   AutocompleteResult,
@@ -23,7 +20,8 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   FileDiagnosticMessage,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+  Outline,
+} from 'atom-ide-ui';
 import type {
   Definition,
   DefinitionQueryResult,

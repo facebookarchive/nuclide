@@ -17,9 +17,6 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {
-  Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   FindReferencesReturn,
@@ -27,7 +24,8 @@ import type {
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+  Outline,
+} from 'atom-ide-ui';
 import type {
   AutocompleteResult,
   SymbolResult,

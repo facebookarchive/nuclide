@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  FileDiagnosticMessage,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticMessage} from 'atom-ide-ui';
 import type {SingleHackMessage, HackDiagnostic} from './rpc-types';
 
 import {Range} from 'simple-text-buffer';

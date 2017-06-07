@@ -11,10 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HackRange} from './rpc-types';
-import type {
-  Outline,
-  OutlineTree,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
+import type {Outline, OutlineTree} from 'atom-ide-ui';
 import {
   className,
   keyword,

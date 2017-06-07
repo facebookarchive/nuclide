@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
+import type {Outline} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';

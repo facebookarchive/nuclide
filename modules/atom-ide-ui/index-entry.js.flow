@@ -22,6 +22,7 @@ export type {
   FileDiagnosticMessage,
   FileDiagnosticUpdate,
   FileMessageUpdate,
+  Fix,
   InvalidationMessage,
   LinterMessage,
   LinterMessageV1,
@@ -45,6 +46,8 @@ export type {
 } from './pkg/atom-ide-code-format/lib/types';
 
 export type {
+  Outline,
   OutlineProvider,
+  OutlineTree,
   ResultsStreamProvider,
 } from './pkg/atom-ide-outline-view';

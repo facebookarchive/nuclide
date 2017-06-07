@@ -11,9 +11,6 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
-  MessageType,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
-import type {
   LanguageService,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
@@ -23,9 +20,6 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {
-  Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   FindReferencesReturn,
@@ -33,7 +27,9 @@ import type {
 import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+  MessageType,
+  Outline,
+} from 'atom-ide-ui';
 import type {
   AutocompleteResult,
 } from '../../nuclide-language-service/lib/LanguageService';

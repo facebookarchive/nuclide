@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  Outline,
-  OutlineTree,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
+import type {Outline, OutlineTree} from 'atom-ide-ui';
 import type {ClangOutlineTree} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 

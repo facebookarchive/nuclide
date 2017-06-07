@@ -9,18 +9,18 @@
  * @format
  */
 
-import type {HyperclickProvider} from 'atom-ide-ui';
 import type {
+  CodeFormatProvider,
+  HyperclickProvider,
   Outline,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
-import type {OutlineProvider} from 'atom-ide-ui';
+  OutlineProvider,
+} from 'atom-ide-ui';
 
 import {CompositeDisposable} from 'atom';
 
 import {getOutline} from './JSONOutlineProvider';
 import {getNPMHyperclickProvider} from './NPMHyperclickProvider';
 
-import type {CodeFormatProvider} from 'atom-ide-ui';
 import CodeFormatHelpers from './CodeFormatHelpers';
 
 class Activation {

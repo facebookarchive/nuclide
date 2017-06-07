@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  FileDiagnosticUpdate,
-} from 'atom-ide-ui/pkg/atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticUpdate} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {

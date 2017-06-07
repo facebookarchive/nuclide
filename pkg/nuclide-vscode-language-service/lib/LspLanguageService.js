@@ -22,10 +22,6 @@ import type {
   Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {
-  Outline,
-  OutlineTree,
-} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text-rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
@@ -37,6 +33,8 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticUpdate,
   MessageType as DiagnosticMessageType,
+  Outline,
+  OutlineTree,
 } from 'atom-ide-ui';
 import type {
   AutocompleteResult,
