@@ -11,13 +11,17 @@
 
 import fs from 'fs';
 import {addMatchers} from '../../nuclide-test-helpers';
-import {parseServiceDefinition} from '../lib/service-parser';
+import {parseServiceDefinition, _clearFileParsers} from '../lib/service-parser';
 import {stripLocationsFileName} from '../lib/location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('Nuclide service parser test suite.', () => {
   beforeEach(function() {
     addMatchers(this);
+  });
+
+  afterEach(() => {
+    _clearFileParsers();
   });
 
   for (const file of fs.readdirSync(nuclideUri.join(__dirname, 'fixtures'))) {

@@ -126,6 +126,36 @@ Object.defineProperty(module.exports, "defs", {
         type: "builtin"
       }
     },
+    ValueTypeB: {
+      kind: "alias",
+      location: {
+        type: "source",
+        fileName: "ValueTypes.def",
+        line: 10
+      },
+      name: "ValueTypeB",
+      definition: {
+        kind: "object",
+        fields: [{
+          name: "valueA",
+          type: {
+            kind: "tuple",
+            types: [{
+              kind: "number"
+            }, {
+              kind: "string"
+            }]
+          },
+          optional: false
+        }, {
+          name: "valueC",
+          type: {
+            kind: "string"
+          },
+          optional: false
+        }]
+      }
+    },
     ValueTypeA: {
       kind: "alias",
       location: {
@@ -175,36 +205,6 @@ Object.defineProperty(module.exports, "defs", {
           type: {
             kind: "named",
             name: "Object"
-          },
-          optional: false
-        }]
-      }
-    },
-    ValueTypeB: {
-      kind: "alias",
-      location: {
-        type: "source",
-        fileName: "ValueTypes.def",
-        line: 10
-      },
-      name: "ValueTypeB",
-      definition: {
-        kind: "object",
-        fields: [{
-          name: "valueA",
-          type: {
-            kind: "tuple",
-            types: [{
-              kind: "number"
-            }, {
-              kind: "string"
-            }]
-          },
-          optional: false
-        }, {
-          name: "valueC",
-          type: {
-            kind: "string"
           },
           optional: false
         }]

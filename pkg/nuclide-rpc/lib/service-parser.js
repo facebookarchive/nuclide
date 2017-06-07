@@ -54,13 +54,12 @@ export function parseServiceDefinition(
 
 class ServiceParser {
   _defs: Map<string, Definition>;
-  _filesTodo: Array<string>;
-  _filesSeen: Set<string>;
+  // Set of exported AST nodes. Ensures we don't process the same export twice.
+  _visitedExports: WeakSet<Object>;
 
   constructor(predefinedTypes: Array<string>) {
-    this._filesTodo = [];
-    this._filesSeen = new Set();
     this._defs = new Map();
+    this._visitedExports = new WeakSet();
 
     // Add all builtin types
     const defineBuiltinType = name => {
@@ -76,16 +75,8 @@ class ServiceParser {
   }
 
   parseService(fileName: string, source: string): Definitions {
-    this._filesSeen.add(fileName);
-
-    this._parseFile(fileName, 'service', source);
-
-    while (this._filesTodo.length > 0) {
-      const file = this._filesTodo.pop();
-      const contents = fs.readFileSync(file, 'utf8');
-      this._parseFile(file, 'import', contents);
-    }
-
+    const fileParser = getFileParser(fileName, source);
+    fileParser.getExports().forEach(node => fileParser.parseExport(this, node));
     const objDefs = objectFromMap(this._defs);
     validateDefinitions(objDefs);
     return objDefs;
@@ -108,42 +99,57 @@ class ServiceParser {
     return definition;
   }
 
-  _parseFile(fileName: string, fileType: FileType, source: string): void {
-    const parser = new FileParser(fileName, fileType);
-    const imports = parser.parse(this, source);
-    for (const imp of imports) {
-      const resolvedFrom = resolveFrom(nuclideUri.dirname(fileName), imp);
-
-      if (!this._filesSeen.has(resolvedFrom)) {
-        this._filesSeen.add(resolvedFrom);
-        this._filesTodo.push(resolvedFrom);
-      }
+  /**
+   * Returns false if the export node has already been visited.
+   * This prevents duplicate exports from being added.
+   */
+  visitExport(node: Object): boolean {
+    if (this._visitedExports.has(node)) {
+      return false;
     }
+    this._visitedExports.add(node);
+    return true;
   }
 }
 
 type Import = {
   imported: string,
   file: string,
-  added: boolean,
-  location: Location,
 };
 
-type FileType = 'import' | 'service';
+const fileParsers: Map<string, FileParser> = new Map();
+
+function getFileParser(fileName: string, source: ?string): FileParser {
+  let parser = fileParsers.get(fileName);
+  if (parser != null) {
+    return parser;
+  }
+  parser = new FileParser(fileName);
+  parser.parse(source || fs.readFileSync(fileName, 'utf8'));
+  fileParsers.set(fileName, parser);
+  return parser;
+}
+
+// Exported for testing.
+export function _clearFileParsers(): void {
+  fileParsers.clear();
+}
 
 class FileParser {
-  _fileType: FileType;
   _fileName: string;
-  // Maps type names to the imported name and file that they are imported from.
-  _imports: {[name: string]: Import};
-  // Set of files required by imports
-  _importsUsed: Set<string>;
+  // Map of exported identifiers to their nodes.
+  _exports: Map<string, Object>;
+  // Map of imported identifiers to their source file/identifier.
+  _imports: Map<string, Import>;
 
-  constructor(fileName: string, fileType: FileType) {
-    this._fileType = fileType;
+  constructor(fileName: string) {
     this._fileName = fileName;
-    this._imports = {};
-    this._importsUsed = new Set();
+    this._exports = new Map();
+    this._imports = new Map();
+  }
+
+  getExports(): Map<string, Object> {
+    return this._exports;
   }
 
   _locationOfNode(node: any): SourceLocation {
@@ -168,11 +174,11 @@ class FileParser {
     }
   }
 
-  // Returns set of imported files required.
-  // The file names returned are relative to the file being parsed.
-  parse(serviceParser: ServiceParser, source: string): Set<string> {
-    this._imports = {};
-
+  /**
+   * Performs a quick pass to index the file's exports and imports.
+   * This doesn't actually visit any of the type definitions.
+   */
+  parse(source: string): void {
     const ast = babylon.parse(source, {
       sourceType: 'module',
       plugins: ['*', 'jsx', 'flow'],
@@ -185,10 +191,12 @@ class FileParser {
 
     // Iterate through each node in the program body.
     for (const node of program.body) {
-      // We're specifically looking for exports.
       switch (node.type) {
         case 'ExportNamedDeclaration':
-          this._parseExport(serviceParser, node);
+          // Mark exports for easy lookup later.
+          if (node.declaration.id != null) {
+            this._exports.set(node.declaration.id.name, node);
+          }
           break;
 
         case 'ImportDeclaration':
@@ -201,11 +209,16 @@ class FileParser {
           break;
       }
     }
-
-    return this._importsUsed;
   }
 
-  _parseExport(serviceParser: ServiceParser, node: Object): void {
+  /**
+   * Dive into the specified export node and visit all its dependencies as
+   * necessary. This may also visit other files (if they're imported).
+   */
+  parseExport(serviceParser: ServiceParser, node: Object): void {
+    if (!serviceParser.visitExport(node)) {
+      return;
+    }
     invariant(node.type === 'ExportNamedDeclaration');
     const declaration = node.declaration;
     switch (declaration.type) {
@@ -249,12 +262,10 @@ class FileParser {
       if (specifier.type === 'ImportSpecifier') {
         const imported = specifier.imported.name;
         const local = specifier.local.name;
-        this._imports[local] = {
+        this._imports.set(local, {
           imported,
           file: from,
-          added: false,
-          location: this._locationOfNode(specifier),
-        };
+        });
       }
     }
   }
@@ -786,16 +797,34 @@ class FileParser {
           `Unknown generic type ${id}.`,
         );
 
-        const imp = this._imports.hasOwnProperty(id) ? this._imports[id] : null;
-        if (!serviceParser.hasDefinition(id) && imp != null && !imp.added) {
-          imp.added = true;
-          this._importsUsed.add(imp.file);
-          if (id !== imp.imported) {
-            return {kind: 'named', name: imp.imported};
+        if (!serviceParser.hasDefinition(id)) {
+          const imp = this._imports.get(id);
+          if (imp != null) {
+            const importedFile = getFileParser(
+              resolveFrom(nuclideUri.dirname(this._fileName), imp.file),
+            );
+            const exportNode = importedFile.getExports().get(imp.imported);
+            invariant(
+              exportNode != null,
+              `Could not find export for ${imp.imported}`,
+            );
+            importedFile.parseExport(serviceParser, exportNode);
+            if (id !== imp.imported) {
+              return {kind: 'named', name: imp.imported};
+            }
+          } else {
+            const exportNode = this._exports.get(id);
+            if (exportNode == null) {
+              throw errorLocations(
+                [this._locationOfNode(typeAnnotation)],
+                `Type ${id} should be exported from ${this._fileName}.`,
+              );
+            }
+            this.parseExport(serviceParser, exportNode);
           }
         }
-        return {kind: 'named', name: id};
     }
+    return {kind: 'named', name: id};
   }
 
   _parseGenericTypeParameterOfKnownType(
