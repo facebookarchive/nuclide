@@ -1073,11 +1073,6 @@ export class LspLanguageService {
     };
   }
 
-  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    this._logger.error('NYI: getDefinitionById');
-    return Promise.resolve(null);
-  }
-
   async findReferences(
     fileVersion: FileVersion,
     position: atom$Point,

@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Definition,
   DefinitionQueryResult,
@@ -81,15 +80,5 @@ export default class DefinitionHelpers {
       queryRange: wholeRange,
       definitions: [definition],
     };
-  }
-
-  static getDefinitionById(
-    filePath: NuclideUri,
-    id: string,
-  ): Promise<?Definition> {
-    return trackTiming('clang.get-definition-by-id', async () => {
-      // TODO:
-      return null;
-    });
   }
 }

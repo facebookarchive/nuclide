@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
@@ -84,19 +82,6 @@ export class DefinitionProvider<T: LanguageService> {
         return null;
       }
       return (await languageService).getDefinition(fileVersion, position);
-    });
-  }
-
-  getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
-    return trackTiming(this._definitionByIdEventName, async () => {
-      const languageService = this._connectionToLanguageService.getForUri(
-        filePath,
-      );
-      if (languageService == null) {
-        return null;
-      }
-
-      return (await languageService).getDefinitionById(filePath, id);
     });
   }
 }

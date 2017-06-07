@@ -22,11 +22,10 @@ import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {HackDefinition} from './Definitions';
-import type {HackIdeOutline, HackIdeOutlineItem} from './OutlineView';
+import type {HackIdeOutline} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
@@ -70,7 +69,7 @@ import {
   closeProcesses,
 } from './HackProcess';
 import {convertDefinitions} from './Definitions';
-import {hackRangeToAtomRange, atomPointOfHackRangeStart} from './HackHelpers';
+import {hackRangeToAtomRange} from './HackHelpers';
 import {outlineFromHackIdeOutline} from './OutlineView';
 import {convertCoverage} from './TypedRegions';
 import {convertReferences} from './FindReferences';
@@ -294,35 +293,6 @@ class HackSingleFileLanguageService {
 
     const hackDefinitions = Array.isArray(result) ? result : [result];
     return convertDefinitions(hackDefinitions, filePath, projectRoot);
-  }
-
-  async getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    const definition: ?HackIdeOutlineItem = (await callHHClient(
-      /* args */ ['--get-definition-by-id', id],
-      /* errorStream */ false,
-      /* processInput */ null,
-      /* cwd */ file,
-    ): any);
-    if (definition == null) {
-      return null;
-    }
-
-    const result = {
-      path: definition.position.filename,
-      position: atomPointOfHackRangeStart(definition.position),
-      name: definition.name,
-      language: 'php',
-      // TODO: range
-      projectRoot: (definition: any).hackRoot,
-    };
-    if (typeof definition.id === 'string') {
-      return {
-        ...result,
-        id: definition.id,
-      };
-    } else {
-      return result;
-    }
   }
 
   async findReferences(

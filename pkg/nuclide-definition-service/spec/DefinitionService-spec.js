@@ -38,7 +38,6 @@ describe('DefinitionService', () => {
       priority: 12,
       grammarScopes: ['grammar-1'],
       getDefinition: jasmine.createSpy('getDefinition'),
-      getDefinitionById: jasmine.createSpy('getDefinitionById'),
     };
 
     subscription = service.consumeDefinitionProvider(provider);

@@ -23,7 +23,6 @@ import type {
   Outline,
 } from 'atom-ide-ui';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {
@@ -170,10 +169,6 @@ export class FlowSingleProjectLanguageService {
     } catch (e) {
       return null;
     }
-  }
-
-  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    throw new Error('Not Yet Implemented');
   }
 
   async highlight(

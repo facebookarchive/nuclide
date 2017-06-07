@@ -18,7 +18,6 @@ import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
 import type {DefinitionProvider} from '../../nuclide-definition-service';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {ClangCompilationDatabaseProvider} from './types';
@@ -100,9 +99,6 @@ export function provideDefinitions(): DefinitionProvider {
       position: atom$Point,
     ): Promise<?DefinitionQueryResult> {
       return DefinitionHelpers.getDefinition(editor, position);
-    },
-    getDefinitionById(filePath: NuclideUri, id: string): Promise<?Definition> {
-      return DefinitionHelpers.getDefinitionById(filePath, id);
     },
   };
 }

@@ -14,7 +14,6 @@ import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
@@ -254,13 +253,6 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).getDefinition(fileVersion, position);
-  }
-
-  async getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    return (await this._getLanguageServiceForFile(file)).getDefinitionById(
-      file,
-      id,
-    );
   }
 
   async findReferences(

@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Definition, DefinitionQueryResult} from './rpc-types';
+import type {DefinitionQueryResult} from './rpc-types';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
@@ -27,8 +26,6 @@ export type DefinitionProvider = {
     editor: TextEditor,
     position: atom$Point,
   ) => Promise<?DefinitionQueryResult>,
-  // filename is any file/path in the project containing id.
-  getDefinitionById: (filename: NuclideUri, id: string) => Promise<?Definition>,
 };
 
 export type DefinitionService = {

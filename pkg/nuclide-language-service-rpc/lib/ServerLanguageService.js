@@ -14,7 +14,6 @@ import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
@@ -67,8 +66,6 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?DefinitionQueryResult>,
-
-  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition>,
 
   findReferences(
     filePath: NuclideUri,
@@ -191,10 +188,6 @@ export class ServerLanguageService<
       return null;
     }
     return this._service.getDefinition(filePath, buffer, position);
-  }
-
-  getDefinitionById(file: NuclideUri, id: string): Promise<?Definition> {
-    return this._service.getDefinitionById(file, id);
   }
 
   async findReferences(
