@@ -187,7 +187,7 @@ class FlowLanguageService
 export interface FlowLanguageServiceType {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>>,
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,

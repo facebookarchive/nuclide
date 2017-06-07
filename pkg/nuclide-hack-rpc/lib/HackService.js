@@ -226,7 +226,7 @@ class HackSingleFileLanguageService {
     throw new Error('replaced by observeDiagnstics');
   }
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
+  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>> {
     logger.debug('observeDiagnostics');
     return observeConnections(this._fileCache)
       .mergeMap(connection => {
@@ -249,12 +249,14 @@ class HackSingleFileLanguageService {
             })
             .map((hackDiagnostics: HackDiagnosticsMessage) => {
               logger.debug(`Got hack error in ${hackDiagnostics.filename}`);
-              return {
-                filePath: hackDiagnostics.filename,
-                messages: hackDiagnostics.errors.map(diagnostic =>
-                  hackMessageToDiagnosticMessage(diagnostic.message),
-                ),
-              };
+              return [
+                {
+                  filePath: hackDiagnostics.filename,
+                  messages: hackDiagnostics.errors.map(diagnostic =>
+                    hackMessageToDiagnosticMessage(diagnostic.message),
+                  ),
+                },
+              ];
             }),
         );
       })

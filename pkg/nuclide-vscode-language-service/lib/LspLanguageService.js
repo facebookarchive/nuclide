@@ -958,7 +958,7 @@ export class LspLanguageService {
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
     // Note: this function can (and should!) be called even before
     // we reach state 'Running'.
 
@@ -981,12 +981,14 @@ export class LspLanguageService {
 
     const convert = (
       params: PublishDiagnosticsParams,
-    ): FileDiagnosticUpdate => {
+    ): Array<FileDiagnosticUpdate> => {
       const filePath = this._convertLspUriToNuclideUri(params.uri);
-      return {
-        filePath,
-        messages: params.diagnostics.map(d => convertOne(filePath, d)),
-      };
+      return [
+        {
+          filePath,
+          messages: params.diagnostics.map(d => convertOne(filePath, d)),
+        },
+      ];
     };
 
     return this._diagnosticUpdates

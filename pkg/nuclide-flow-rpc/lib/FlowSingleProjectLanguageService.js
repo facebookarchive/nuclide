@@ -286,7 +286,7 @@ export class FlowSingleProjectLanguageService {
     };
   }
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate> {
+  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>> {
     const ideConnections = this._process.getIDEConnections();
     return ideConnections
       .switchMap(ideConnection => {
@@ -824,7 +824,7 @@ export function updateDiagnostics(
 // Exported only for testing
 export function getDiagnosticUpdates(
   state: DiagnosticsState,
-): Observable<FileDiagnosticUpdate> {
+): Observable<Array<FileDiagnosticUpdate>> {
   const updates = [];
   for (const file of state.filesToUpdate) {
     const messages = [
@@ -833,7 +833,7 @@ export function getDiagnosticUpdates(
     ];
     updates.push({filePath: file, messages});
   }
-  return Observable.from(updates);
+  return Observable.of(updates);
 }
 
 function collateDiagnostics(

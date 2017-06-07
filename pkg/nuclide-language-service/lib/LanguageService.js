@@ -73,7 +73,7 @@ export type SymbolResult = {
 export interface LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>>,
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,

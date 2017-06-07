@@ -167,7 +167,7 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
     throw new Error('Not Yet Implemented');
   }
 

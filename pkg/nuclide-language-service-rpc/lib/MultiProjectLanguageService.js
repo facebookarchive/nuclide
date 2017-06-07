@@ -216,7 +216,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return this._observeDiagnosticsPromise;
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
     this._observeDiagnosticsPromiseResolver();
 
     return this.observeLanguageServices()
@@ -225,7 +225,7 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
         return ensureInvalidations(
           this._logger,
           process.observeDiagnostics().refCount().catch(error => {
-            this._logger.error(`Error: observeDiagnostics ${error}`);
+            this._logger.error('Error: observeDiagnostics', error);
             return Observable.empty();
           }),
         );

@@ -46,7 +46,7 @@ export class NullLanguageService {
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
     return Observable.empty().publish();
   }
 

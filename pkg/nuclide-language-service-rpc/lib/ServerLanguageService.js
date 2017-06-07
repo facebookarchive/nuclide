@@ -54,7 +54,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): Observable<FileDiagnosticUpdate>,
+  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>>,
 
   getAutocompleteSuggestions(
     filePath: NuclideUri,
@@ -159,7 +159,7 @@ export class ServerLanguageService<
     return this._service.getDiagnostics(filePath, buffer);
   }
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
     return this._service.observeDiagnostics().publish();
   }
 
@@ -337,27 +337,29 @@ export class ServerLanguageService<
 
 export function ensureInvalidations(
   logger: log4js$Logger,
-  diagnostics: Observable<FileDiagnosticUpdate>,
-): Observable<FileDiagnosticUpdate> {
+  diagnostics: Observable<Array<FileDiagnosticUpdate>>,
+): Observable<Array<FileDiagnosticUpdate>> {
   const filesWithErrors = new Set();
   const trackedDiagnostics: Observable<
-    FileDiagnosticUpdate,
-  > = diagnostics.do((diagnostic: FileDiagnosticUpdate) => {
-    const filePath = diagnostic.filePath;
-    if (diagnostic.messages.length === 0) {
-      logger.debug(`Removing ${filePath} from files with errors`);
-      filesWithErrors.delete(filePath);
-    } else {
-      logger.debug(`Adding ${filePath} to files with errors`);
-      filesWithErrors.add(filePath);
+    Array<FileDiagnosticUpdate>,
+  > = diagnostics.do((diagnosticArray: Array<FileDiagnosticUpdate>) => {
+    for (const diagnostic of diagnosticArray) {
+      const filePath = diagnostic.filePath;
+      if (diagnostic.messages.length === 0) {
+        logger.debug(`Removing ${filePath} from files with errors`);
+        filesWithErrors.delete(filePath);
+      } else {
+        logger.debug(`Adding ${filePath} to files with errors`);
+        filesWithErrors.add(filePath);
+      }
     }
   });
 
   const fileInvalidations: Observable<
-    FileDiagnosticUpdate,
+    Array<FileDiagnosticUpdate>,
   > = Observable.defer(() => {
     logger.debug('Clearing errors after stream closed');
-    return Observable.from(
+    return Observable.of(
       Array.from(filesWithErrors).map(file => {
         logger.debug(`Clearing errors for ${file} after connection closed`);
         return {

@@ -42,7 +42,7 @@ import type {
 export interface HackLanguageService extends LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): ConnectableObservable<FileDiagnosticUpdate>,
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>>,
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,

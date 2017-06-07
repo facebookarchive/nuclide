@@ -339,12 +339,14 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
               this._logger,
               language.observeDiagnostics().refCount().catch(error => {
                 this._logger.error(
-                  `Error: observeDiagnostics, ${this._analyticsEventName} ${error}`,
+                  `Error: observeDiagnostics, ${this._analyticsEventName}`,
+                  error,
                 );
                 return Observable.empty();
               }),
             );
           })
+          .mergeMap(x => Observable.from(x))
           .map((update: FileDiagnosticUpdate) => {
             const {filePath, messages} = update;
             track(this._analyticsEventName);
@@ -367,7 +369,8 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
       })
       .catch(error => {
         this._logger.error(
-          `Error: observeEntries, ${this._analyticsEventName} ${error}`,
+          `Error: observeEntries, ${this._analyticsEventName}`,
+          error,
         );
         throw error;
       });

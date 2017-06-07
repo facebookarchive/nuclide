@@ -499,11 +499,12 @@ async function getAbbreviatedResults(
 ): Promise<Array<Array<AbbreviatedResult>>> {
   const results: Array<Array<FileDiagnosticUpdate>> = [];
   let state: DiagnosticsState = emptyDiagnosticsState();
-  results.push(await getDiagnosticUpdates(state).toArray().toPromise());
+  results.push(await getDiagnosticUpdates(state).toPromise());
   for (const message of messages) {
     state = updateDiagnostics(state, message);
-    // eslint-disable-next-line no-await-in-loop
-    results.push(await getDiagnosticUpdates(state).toArray().toPromise());
+    results.push(
+      await getDiagnosticUpdates(state).toPromise(), // eslint-disable-line no-await-in-loop
+    );
   }
   return results.map(inner => {
     return inner.map(result => {
