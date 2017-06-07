@@ -194,8 +194,27 @@ class FileParser {
       switch (node.type) {
         case 'ExportNamedDeclaration':
           // Mark exports for easy lookup later.
-          if (node.declaration.id != null) {
+          if (node.declaration != null && node.declaration.id != null) {
             this._exports.set(node.declaration.id.name, node);
+          }
+          // Only support export type {...} for now.
+          if (node.specifiers != null && node.exportKind === 'type') {
+            node.specifiers.forEach(specifier => {
+              const {exported, local} = specifier;
+              this._exports.set(exported.name, specifier);
+              // export type {X as Y} from 'xyz' is equivalent to:
+              //   import type {X} from 'xyz';
+              //   export type {X as Y};
+              if (
+                node.source != null &&
+                typeof node.source.value === 'string'
+              ) {
+                this._imports.set(local.name, {
+                  imported: local.name,
+                  file: node.source.value,
+                });
+              }
+            });
           }
           break;
 
@@ -217,6 +236,29 @@ class FileParser {
    */
   parseExport(serviceParser: ServiceParser, node: Object): void {
     if (!serviceParser.visitExport(node)) {
+      return;
+    }
+    if (node.type === 'ExportSpecifier') {
+      const {exported, local} = node;
+      const imp = this._imports.get(local.name);
+      // It's difficult to resolve types that are defined elsewhere,
+      // but in the same file. An easy workaround is to just export them
+      // where they're defined, anyway.
+      invariant(imp != null, 'export type {...} only supports imported types.');
+      if (exported.name !== imp.imported) {
+        //   import type {A as B} from ...;
+        //   export type {B as C};
+        // will be treated as:
+        //   import type {A} from ...;
+        //   export type C = A;
+        serviceParser.addDefinition({
+          kind: 'alias',
+          name: exported.name,
+          location: this._locationOfNode(node),
+          definition: {kind: 'named', name: imp.imported},
+        });
+      }
+      this._visitImport(serviceParser, imp);
       return;
     }
     invariant(node.type === 'ExportNamedDeclaration');
@@ -251,6 +293,21 @@ class FileParser {
           `Unknown declaration type ${declaration.type} in definition body.`,
         );
     }
+  }
+
+  _visitImport(serviceParser: ServiceParser, imp: Import): void {
+    let resolved = resolveFrom(nuclideUri.dirname(this._fileName), imp.file);
+    // Prioritize .flow files.
+    if (fs.existsSync(resolved + '.flow')) {
+      resolved += '.flow';
+    }
+    const importedFile = getFileParser(resolved);
+    const exportNode = importedFile.getExports().get(imp.imported);
+    invariant(
+      exportNode != null,
+      `Could not find export for ${imp.imported} in ${resolved}`,
+    );
+    importedFile.parseExport(serviceParser, exportNode);
   }
 
   _parseImport(node: Object): void {
@@ -800,15 +857,7 @@ class FileParser {
         if (!serviceParser.hasDefinition(id)) {
           const imp = this._imports.get(id);
           if (imp != null) {
-            const importedFile = getFileParser(
-              resolveFrom(nuclideUri.dirname(this._fileName), imp.file),
-            );
-            const exportNode = importedFile.getExports().get(imp.imported);
-            invariant(
-              exportNode != null,
-              `Could not find export for ${imp.imported}`,
-            );
-            importedFile.parseExport(serviceParser, exportNode);
+            this._visitImport(serviceParser, imp);
             if (id !== imp.imported) {
               return {kind: 'named', name: imp.imported};
             }

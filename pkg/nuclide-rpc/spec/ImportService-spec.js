@@ -57,6 +57,16 @@ describe('ImportService', () => {
     });
   });
 
+  it('ImportService - type import of export specifiers', () => {
+    waitsForPromise(async () => {
+      invariant(service);
+      const result = await service.f2('msg');
+      expect(result).toBe('msg');
+      const result2 = await service.f3('msg');
+      expect(result2).toBe('msg');
+    });
+  });
+
   afterEach(() => {
     invariant(testHelper);
     return testHelper.stop();

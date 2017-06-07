@@ -17,6 +17,10 @@ export type AnotherImportedType = {
   field: AliasImportedType,
 };
 
+export type {AliasImportedType};
+
+export type {ImportedType as AliasImportedType2} from './Types';
+
 // Non-RPC compatible types are fine, as long as they're not used.
 export type NonRpcType = () => string;
 export function f(x: string | number): void {}
