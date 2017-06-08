@@ -12,6 +12,7 @@
 import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
+  ConsolePersistedState,
   DisplayableRecord,
   Executor,
   OutputProvider,
@@ -317,7 +318,6 @@ export class ConsoleContainer extends React.Component {
       ? this._createPaste
       : null;
 
-    // TODO(matthewwithanm): serialize and restore `initialSelectedSourceId`
     return (
       <Console
         invalidFilterInput={!isValid}
@@ -347,9 +347,13 @@ export class ConsoleContainer extends React.Component {
     );
   }
 
-  serialize(): mixed {
+  serialize(): ConsolePersistedState {
+    const {filterText, enableRegExpFilter, unselectedSourceIds} = this.state;
     return {
       deserializer: 'nuclide.ConsoleContainer',
+      filterText,
+      enableRegExpFilter,
+      unselectedSourceIds,
     };
   }
 

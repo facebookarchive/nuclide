@@ -145,6 +145,13 @@ export type ConsoleApi = {
   info(object: string, _: void): void,
 };
 
+export type ConsolePersistedState = {
+  deserializer: 'nuclide.ConsoleContainer',
+  filterText?: string,
+  enableRegExpFilter?: boolean,
+  unselectedSourceIds?: Array<string>,
+};
+
 export type Executor = {
   id: string,
   name: string,

@@ -15,6 +15,7 @@ import type {
 } from '../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
+  ConsolePersistedState,
   ConsoleService,
   SourceInfo,
   Message,
@@ -145,11 +146,14 @@ class Activation {
     );
   }
 
-  deserializeConsoleContainer(): Viewable {
+  deserializeConsoleContainer(state: ConsolePersistedState): Viewable {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this._getStore()}
         createPasteFunction={this._createPasteFunction}
+        initialFilterText={state.filterText}
+        initialEnableRegExpFilter={state.enableRegExpFilter}
+        initialUnselectedSourceIds={state.unselectedSourceIds}
       />,
     );
   }
