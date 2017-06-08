@@ -65,7 +65,7 @@ async function connectionToHackService(
     const host = await getHostServices();
     return hackService.initializeLsp(
       config.hhClientPath, // command
-      ['lsp'], // arguments
+      ['lsp', '--from', 'nuclide'], // arguments
       '.hhconfig', // project file
       ['.php'], // which file-notifications should be sent to LSP
       config.logLevel,
