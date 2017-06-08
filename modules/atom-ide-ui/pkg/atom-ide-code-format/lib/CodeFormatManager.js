@@ -129,6 +129,7 @@ export default class CodeFormatManager {
       // before a save operation.
       // If we try to format after the save, and then save again,
       // it's a poor user experience (and also races the text buffer's reload).
+      // TODO(hansonw): Revisit this with the new 1.19 editors.
       const editor_ = (editor: any);
       editor_.save = () => {
         observer.next();
@@ -139,10 +140,19 @@ export default class CodeFormatManager {
       };
     });
 
+    // We need to capture when editors are about to be destroyed in order to
+    // interrupt any pending formatting operations. (Otherwise, we may end up
+    // attempting to save a destroyed editor!)
+    const willDestroyEvents = observableFromSubscribeFunction(cb =>
+      atom.workspace.onWillDestroyPaneItem(cb),
+    ).filter(event => event.item === editor);
+
     return Observable.merge(
       changeEvents.map(edit => ({type: 'type', editor, edit})),
       saveEvents.map(() => ({type: 'save', editor})),
-    ).takeUntil(observeEditorDestroy(editor));
+    ).takeUntil(
+      Observable.merge(observeEditorDestroy(editor), willDestroyEvents),
+    );
   }
 
   _handleEvent(event: FormatEvent): Observable<void> {
