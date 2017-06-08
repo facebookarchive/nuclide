@@ -19,6 +19,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
+import fs from 'fs';
 import {Observable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
@@ -52,6 +53,21 @@ export function watchFile(
   filePath: NuclideUri,
 ): ConnectableObservable<WatchResult> {
   return watchEntity(filePath, true).publish();
+}
+
+export function watchFileWithNode(
+  filePath: NuclideUri,
+): ConnectableObservable<WatchResult> {
+  return Observable.create(observer => {
+    const watcher = fs.watch(filePath, {persistent: false}, eventType => {
+      if (eventType === 'rename') {
+        observer.next({path: filePath, type: 'delete'});
+      } else {
+        observer.next({path: filePath, type: 'change'});
+      }
+    });
+    return () => watcher.close();
+  }).publish();
 }
 
 export function watchDirectory(
