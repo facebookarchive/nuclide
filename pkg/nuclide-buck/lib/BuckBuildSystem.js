@@ -55,6 +55,8 @@ import {
 
 const SOCKET_TIMEOUT = 30000;
 
+export type {BuckSubcommand} from './types';
+
 export class BuckBuildSystem {
   _diagnosticUpdates: Subject<DiagnosticProviderUpdate> = new Subject();
   _diagnosticInvalidations: Subject<InvalidationMessage> = new Subject();
