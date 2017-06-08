@@ -1,83 +1,85 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {AdbSdbBase} from './AdbSdbBase';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Sdb = undefined;
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process-rpc-types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export class Sdb extends AdbSdbBase {
-  getTizenModelConfigKey(device: string, key: string): Promise<string> {
+var _AdbSdbBase;
+
+function _load_AdbSdbBase() {
+  return _AdbSdbBase = require('./AdbSdbBase');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Sdb extends (_AdbSdbBase || _load_AdbSdbBase()).AdbSdbBase {
+  getTizenModelConfigKey(device, key) {
     const modelConfigPath = '/etc/config/model-config.xml';
 
-    return this.runShortCommand(device, ['shell', 'cat', modelConfigPath])
-      .map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0])
-      .map(s => {
-        const regex = /.*<.*>(.*)<.*>/g;
-        return regex.exec(s)[1];
-      })
-      .toPromise();
+    return this.runShortCommand(device, ['shell', 'cat', modelConfigPath]).map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0]).map(s => {
+      const regex = /.*<.*>(.*)<.*>/g;
+      return regex.exec(s)[1];
+    }).toPromise();
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
-    return this.runShortCommand(device, ['shell', 'uname', '-m'])
-      .map(s => s.trim())
-      .toPromise();
+  getDeviceArchitecture(device) {
+    return this.runShortCommand(device, ['shell', 'uname', '-m']).map(s => s.trim()).toPromise();
   }
 
-  getDeviceModel(device: string): Promise<string> {
+  getDeviceModel(device) {
     return this.getTizenModelConfigKey(device, 'tizen.org/system/model_name');
   }
 
-  async getAPIVersion(device: string): Promise<string> {
-    let version;
-    try {
-      version = await this.getTizenModelConfigKey(
-        device,
-        'tizen.org/feature/platform.core.api.version',
-      );
-    } catch (e) {
-      version = await this.getTizenModelConfigKey(
-        device,
-        'tizen.org/feature/platform.native.api.version',
-      );
-    }
-    return version;
+  getAPIVersion(device) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      let version;
+      try {
+        version = yield _this.getTizenModelConfigKey(device, 'tizen.org/feature/platform.core.api.version');
+      } catch (e) {
+        version = yield _this.getTizenModelConfigKey(device, 'tizen.org/feature/platform.native.api.version');
+      }
+      return version;
+    })();
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> {
+  installPackage(device, packagePath) {
     // TODO(T17463635)
-    invariant(!nuclideUri.isRemote(packagePath));
+    if (!!(_nuclideUri || _load_nuclideUri()).default.isRemote(packagePath)) {
+      throw new Error('Invariant violation: "!nuclideUri.isRemote(packagePath)"');
+    }
+
     return this.runLongCommand(device, ['install', packagePath]);
   }
 
-  launchApp(device: string, identifier: string): Promise<string> {
-    return this.runShortCommand(device, [
-      'shell',
-      'launch_app',
-      identifier,
-    ]).toPromise();
+  launchApp(device, identifier) {
+    return this.runShortCommand(device, ['shell', 'launch_app', identifier]).toPromise();
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<LegacyProcessMessage> {
+  uninstallPackage(device, packageName) {
     // TODO(T17463635)
     return this.runLongCommand(device, ['uninstall', packageName]);
   }
 }
+exports.Sdb = Sdb; /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    * @format
+                    */

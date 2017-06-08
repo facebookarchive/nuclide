@@ -1,56 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import type {
-  DeviceProcessTaskProvider,
-  Process,
-  ProcessTaskType,
-} from '../../nuclide-devices/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ATDeviceStopPackageProvider = undefined;
 
-export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
-  _type: string;
-  _rpcFactory: (host: NuclideUri) => AdbService;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-  constructor(type: string, rpcFactory: (host: NuclideUri) => AdbService) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ATDeviceStopPackageProvider {
+
+  constructor(type, rpcFactory) {
     this._type = type;
     this._rpcFactory = rpcFactory;
   }
 
-  getType(): string {
+  getType() {
     return this._type;
   }
 
-  getTaskType(): ProcessTaskType {
+  getTaskType() {
     return 'KILL';
   }
 
-  getName(): string {
+  getName() {
     return 'Stop package';
   }
 
-  isSupported(proc: Process): boolean {
+  isSupported(proc) {
     return true;
   }
 
-  getSupportedPIDs(
-    host: NuclideUri,
-    device: string,
-    procs: Process[],
-  ): Promise<Set<number>> {
+  getSupportedPIDs(host, device, procs) {
     return Promise.resolve(new Set(procs.map(proc => proc.pid)));
   }
 
-  async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
-    return this._rpcFactory(host).stopPackage(device, proc.name);
+  run(host, device, proc) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this._rpcFactory(host).stopPackage(device, proc.name);
+    })();
   }
 }
+exports.ATDeviceStopPackageProvider = ATDeviceStopPackageProvider; /**
+                                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                                    * All rights reserved.
+                                                                    *
+                                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                                    * the root directory of this source tree.
+                                                                    *
+                                                                    * 
+                                                                    * @format
+                                                                    */

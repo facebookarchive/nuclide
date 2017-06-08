@@ -1,3 +1,37 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _ArcToolbarModel;
+
+function _load_ArcToolbarModel() {
+  return _ArcToolbarModel = require('./ArcToolbarModel');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,108 +39,95 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Option} from '../../nuclide-ui/Dropdown';
+class ArcToolbarSection extends _react.default.Component {
 
-import React from 'react';
-import {ArcToolbarModel} from './ArcToolbarModel';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import invariant from 'assert';
-
-type Props = {
-  model: ArcToolbarModel,
-};
-
-export default class ArcToolbarSection extends React.Component {
-  props: Props;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._arcBuild = this._arcBuild.bind(this);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(
-      this,
-    );
-    (this: any)._reloadBuildTargets = this._reloadBuildTargets.bind(this);
+    this._arcBuild = this._arcBuild.bind(this);
+    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._reloadBuildTargets = this._reloadBuildTargets.bind(this);
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this.props.model.viewActivated();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this.props.model.viewDeactivated();
   }
 
-  getOptions(): Array<Option> {
-    const {model} = this.props;
-    invariant(model.isArcSupported());
+  getOptions() {
+    const { model } = this.props;
+
+    if (!model.isArcSupported()) {
+      throw new Error('Invariant violation: "model.isArcSupported()"');
+    }
+
     const error = model.getBuildTargetsError();
     if (error != null) {
-      return [
-        {value: null, disabled: true, label: 'Error loading build steps!'},
-      ];
+      return [{ value: null, disabled: true, label: 'Error loading build steps!' }];
     }
     const targets = model.getBuildTargets();
     if (targets == null) {
-      return [{value: null, disabled: true, label: 'Loading build steps...'}];
+      return [{ value: null, disabled: true, label: 'Loading build steps...' }];
     }
-    return targets.map(target => ({value: target, label: target}));
+    return targets.map(target => ({ value: target, label: target }));
   }
 
-  _renderReloadTargetsButton(): ?React.Element<any> {
+  _renderReloadTargetsButton() {
     const error = this.props.model.getBuildTargetsError();
     if (error == null) {
       return null;
     }
-    return (
-      <Button
-        icon="sync"
-        size={ButtonSizes.SMALL}
-        onClick={this._reloadBuildTargets}
-        tooltip={{
-          title: 'Reload build steps',
-          delay: {show: 500, hide: 0},
-          placement: 'bottom',
-        }}
-      />
-    );
+    return _react.default.createElement((_Button || _load_Button()).Button, {
+      icon: 'sync',
+      size: (_Button || _load_Button()).ButtonSizes.SMALL,
+      onClick: this._reloadBuildTargets,
+      tooltip: {
+        title: 'Reload build steps',
+        delay: { show: 500, hide: 0 },
+        placement: 'bottom'
+      }
+    });
   }
 
-  render(): ?React.Element<any> {
-    const {model} = this.props;
+  render() {
+    const { model } = this.props;
     if (!model.isArcSupported()) {
       return null;
     }
-    return (
-      <div className="inline-block">
-        <ButtonGroup>
-          <Dropdown
-            className="nuclide-arcanist-toolbar-targets-dropdown"
-            size="sm"
-            value={model.getActiveBuildTarget()}
-            options={this.getOptions()}
-            onChange={this._handleBuildTargetChange}
-          />
-          {this._renderReloadTargetsButton()}
-        </ButtonGroup>
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'inline-block' },
+      _react.default.createElement(
+        (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+        null,
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'nuclide-arcanist-toolbar-targets-dropdown',
+          size: 'sm',
+          value: model.getActiveBuildTarget(),
+          options: this.getOptions(),
+          onChange: this._handleBuildTargetChange
+        }),
+        this._renderReloadTargetsButton()
+      )
     );
   }
 
-  _reloadBuildTargets(): void {
+  _reloadBuildTargets() {
     this.props.model.updateBuildTargets();
   }
 
-  _handleBuildTargetChange(value: string): void {
+  _handleBuildTargetChange(value) {
     this.props.model.setActiveBuildTarget(value);
   }
 
-  _arcBuild(): void {
+  _arcBuild() {
     this.props.model.arcBuild();
   }
 }
+exports.default = ArcToolbarSection;

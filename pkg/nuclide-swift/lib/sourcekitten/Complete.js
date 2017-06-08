@@ -1,43 +1,26 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * `sourcekitten complete` returns an array of these structs as JSON.
- */
-export type SourceKittenCompletion = {
-  name: string,
-  descriptionKey: string,
-  sourcetext: string,
-  kind: string,
-  typeName: string,
-  moduleName: string,
-  associatedUSRs: string,
-  context: string,
-  docBrief: string,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = sourceKittenCompletionToAtomSuggestion;
+exports.sourceKittenSourcetextToAtomSnippet = sourceKittenSourcetextToAtomSnippet;
+exports.sourceKittenKindToAtomType = sourceKittenKindToAtomType;
+exports.sourceKittenKindToAtomRightLabel = sourceKittenKindToAtomRightLabel;
+
 
 /**
  * Transforms a `sourcekitten complete` struct into a suggestion that can be
  * consumed by Atom's autocomplete suggestion API.
  */
-export default function sourceKittenCompletionToAtomSuggestion(
-  completion: SourceKittenCompletion,
-): atom$AutocompleteSuggestion {
+function sourceKittenCompletionToAtomSuggestion(completion) {
   return {
     text: completion.descriptionKey,
     snippet: sourceKittenSourcetextToAtomSnippet(completion.sourcetext),
     type: sourceKittenKindToAtomType(completion.kind),
     leftLabel: completion.typeName,
     rightLabel: sourceKittenKindToAtomRightLabel(completion.kind),
-    description: completion.docBrief,
+    description: completion.docBrief
   };
 }
 
@@ -55,21 +38,30 @@ export default function sourceKittenCompletionToAtomSuggestion(
  *
  *   foobar(${1:x: Int}, y: ${2:String}, baz: ${3:[String]})
  */
-export function sourceKittenSourcetextToAtomSnippet(
-  sourcetext: string,
-): string {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+/**
+ * `sourcekitten complete` returns an array of these structs as JSON.
+ */
+function sourceKittenSourcetextToAtomSnippet(sourcetext) {
   // Atom expects numbered snippet location, beginning with 1.
   let index = 1;
   // Match on each instance of <#T##...#>, capturing the text in between.
   // We then specify replacement text via a function.
-  const replacedParameters = sourcetext.replace(
-    /<#T##(.+?)#>/g,
-    (_, groupOne) => {
-      // The index is incremented after each match. We split the match group
-      // on ##, to handle the strange case mentioned in this function's docblock.
-      return `\${${index++}:${groupOne.split('##')[0]}}`;
-    },
-  );
+  const replacedParameters = sourcetext.replace(/<#T##(.+?)#>/g, (_, groupOne) => {
+    // The index is incremented after each match. We split the match group
+    // on ##, to handle the strange case mentioned in this function's docblock.
+    return `\${${index++}:${groupOne.split('##')[0]}}`;
+  });
 
   // When overriding instance methods, SourceKitten uses the string <#code#>
   // as a marker for the body of the method. Replace this with an empty Atom
@@ -77,7 +69,7 @@ export function sourceKittenSourcetextToAtomSnippet(
   return replacedParameters.replace('<#code#>', `\${${index++}}`);
 }
 
-export function sourceKittenKindToAtomType(kind: string): string {
+function sourceKittenKindToAtomType(kind) {
   // TODO(bgesiak): Some of the kinds don't have predefined Atom styles that
   //        suit them. These should use custom HTML.
   switch (kind) {
@@ -130,7 +122,7 @@ export function sourceKittenKindToAtomType(kind: string): string {
   return 'variable';
 }
 
-export function sourceKittenKindToAtomRightLabel(kind: string): string {
+function sourceKittenKindToAtomRightLabel(kind) {
   switch (kind) {
     case 'source.lang.swift.keyword':
       return 'Keyword';

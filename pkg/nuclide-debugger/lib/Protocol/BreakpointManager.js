@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Utils;
+
+function _load_Utils() {
+  return _Utils = require('./Utils');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,89 +19,56 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IPCBreakpoint} from '../types';
-import type {
-  BreakpointId,
-  Location,
-  BreakpointResolvedEvent,
-  SetBreakpointByUrlResponse,
-  SetPauseOnExceptionsRequest,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
-import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
-
-import invariant from 'assert';
-import {reportError, reportWarning} from './Utils';
-import {Subject, Observable} from 'rxjs';
-
 const UNCONFIRMED_BREAKPOINT_ID = 'Unassigned';
-
-type UserBreakpoint = {
-  id: BreakpointId,
-  request: IPCBreakpoint,
-};
-
-type BreakpointEngineChangeDisposition =
-  | 'NoAction'
-  | 'AddBreakpoint'
-  | 'RemoveBreakpoint'
-  | 'ReplaceBreakpoint';
 
 /**
  * Bridge between Nuclide IPC and RPC breakpoint protocols.
  */
-export default class BreakpointManager {
-  _debuggerDispatcher: DebuggerDomainDispatcher;
-  _initBreakpoints: Array<IPCBreakpoint>;
-  _breakpointList: Array<UserBreakpoint>;
-  _pauseExceptionRequest: SetPauseOnExceptionsRequest;
-  _breakpointEvent$: Subject<Array<mixed>>;
+class BreakpointManager {
 
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
+  constructor(debuggerDispatcher) {
     this._initBreakpoints = [];
     this._breakpointList = [];
     this._pauseExceptionRequest = {
-      state: 'uncaught', // Debugger should catch unhandled exception by default.
-    };
-    this._breakpointEvent$ = new Subject();
+      state: 'uncaught' };
+    this._breakpointEvent$ = new _rxjsBundlesRxMinJs.Subject();
     this._debuggerDispatcher = debuggerDispatcher;
   }
 
-  getEventObservable(): Observable<Array<mixed>> {
+  getEventObservable() {
     return this._breakpointEvent$.asObservable();
   }
 
-  setInitialBreakpoints(breakpoints: Array<IPCBreakpoint>): void {
+  setInitialBreakpoints(breakpoints) {
     this._initBreakpoints = breakpoints;
   }
 
-  syncInitialBreakpointsToEngine(): void {
+  syncInitialBreakpointsToEngine() {
     for (const breakpoint of this._initBreakpoints) {
       this.setFilelineBreakpoint(breakpoint);
     }
     this._initBreakpoints = [];
   }
 
-  setPauseExceptionState(request: SetPauseOnExceptionsRequest): void {
+  setPauseExceptionState(request) {
     this._pauseExceptionRequest = request;
   }
 
-  syncPauseExceptionState(): void {
+  syncPauseExceptionState() {
     this._debuggerDispatcher.setPauseOnExceptions(this._pauseExceptionRequest);
   }
 
-  setFilelineBreakpoint(request: IPCBreakpoint): void {
-    function callback(error: Error, response: SetBreakpointByUrlResponse) {
+  setFilelineBreakpoint(request) {
+    function callback(error, response) {
       if (error != null) {
-        reportError(
-          `setFilelineBreakpoint failed with ${JSON.stringify(error)}`,
-        );
+        (0, (_Utils || _load_Utils()).reportError)(`setFilelineBreakpoint failed with ${JSON.stringify(error)}`);
         return;
       }
-      const {breakpointId, locations, resolved} = response;
+      const { breakpointId, locations, resolved } = response;
       this._assignBreakpointId(request, breakpointId);
 
       // true or undefined. This is because any legacy engine may
@@ -98,32 +79,23 @@ export default class BreakpointManager {
         }
       }
     }
-    this._breakpointList.push({id: UNCONFIRMED_BREAKPOINT_ID, request});
+    this._breakpointList.push({ id: UNCONFIRMED_BREAKPOINT_ID, request });
     if (request.enabled) {
       this._debuggerDispatcher.setBreakpointByUrl(request, callback.bind(this));
     }
   }
 
-  _assignBreakpointId(
-    request: IPCBreakpoint,
-    breakpointId: BreakpointId,
-  ): void {
-    const breakpoint = this._findBreakpointOnFileLine(
-      request.sourceURL,
-      request.lineNumber,
-    );
+  _assignBreakpointId(request, breakpointId) {
+    const breakpoint = this._findBreakpointOnFileLine(request.sourceURL, request.lineNumber);
     if (breakpoint == null) {
-      reportError('Why are we assigning id to a non-exist breakpoint?');
+      (0, (_Utils || _load_Utils()).reportError)('Why are we assigning id to a non-exist breakpoint?');
       return;
     }
     breakpoint.id = breakpointId;
   }
 
-  updateBreakpoint(request: IPCBreakpoint): void {
-    const breakpoint = this._findBreakpointOnFileLine(
-      request.sourceURL,
-      request.lineNumber,
-    );
+  updateBreakpoint(request) {
+    const breakpoint = this._findBreakpointOnFileLine(request.sourceURL, request.lineNumber);
     if (breakpoint != null) {
       this._updateEngineForChanges(breakpoint.request, request);
       breakpoint.request = request;
@@ -131,18 +103,12 @@ export default class BreakpointManager {
       // In current design, there is a UI race between user sets breakpoint
       // while engine haven't created it yet so this may be expected.
       // Issue an warning instead of error.
-      reportWarning('Do you try to update a breakpoint not exist?');
+      (0, (_Utils || _load_Utils()).reportWarning)('Do you try to update a breakpoint not exist?');
     }
   }
 
-  _updateEngineForChanges(
-    oldRequest: IPCBreakpoint,
-    newRequest: IPCBreakpoint,
-  ): void {
-    const disposition = this._getRequestChangeDisposition(
-      oldRequest,
-      newRequest,
-    );
+  _updateEngineForChanges(oldRequest, newRequest) {
+    const disposition = this._getRequestChangeDisposition(oldRequest, newRequest);
     switch (disposition) {
       case 'AddBreakpoint':
         this.setFilelineBreakpoint(newRequest);
@@ -155,34 +121,28 @@ export default class BreakpointManager {
         this.setFilelineBreakpoint(newRequest);
         break;
       default:
-        invariant(disposition === 'NoAction');
+        if (!(disposition === 'NoAction')) {
+          throw new Error('Invariant violation: "disposition === \'NoAction\'"');
+        }
+
         break;
     }
   }
 
-  _getRequestChangeDisposition(
-    oldRequest: IPCBreakpoint,
-    newRequest: IPCBreakpoint,
-  ): BreakpointEngineChangeDisposition {
+  _getRequestChangeDisposition(oldRequest, newRequest) {
     if (!oldRequest.enabled && newRequest.enabled) {
       return 'AddBreakpoint';
     } else if (oldRequest.enabled && !newRequest.enabled) {
       return 'RemoveBreakpoint';
-    } else if (
-      newRequest.enabled &&
-      newRequest.condition !== oldRequest.condition
-    ) {
+    } else if (newRequest.enabled && newRequest.condition !== oldRequest.condition) {
       return 'ReplaceBreakpoint';
     } else {
       return 'NoAction';
     }
   }
 
-  removeBreakpoint(request: IPCBreakpoint): void {
-    const breakpoint = this._findBreakpointOnFileLine(
-      request.sourceURL,
-      request.lineNumber,
-    );
+  removeBreakpoint(request) {
+    const breakpoint = this._findBreakpointOnFileLine(request.sourceURL, request.lineNumber);
     if (breakpoint != null) {
       // Remove from engine.
       if (this._isConfirmedBreakpoint(breakpoint)) {
@@ -194,24 +154,25 @@ export default class BreakpointManager {
       // In current design, there is a UI race between user remove breakpoint
       // while engine haven't created it yet so this may be expected.
       // Issue an warning instead of error.
-      reportWarning('Do you try to remove a breakpoint not exist?');
+      (0, (_Utils || _load_Utils()).reportWarning)('Do you try to remove a breakpoint not exist?');
     }
   }
 
-  _removeBreakpointFromList(request: IPCBreakpoint): void {
-    const index = this._findBreakpointIndexOnFileLine(
-      request.sourceURL,
-      request.lineNumber,
-    );
-    invariant(index !== -1);
+  _removeBreakpointFromList(request) {
+    const index = this._findBreakpointIndexOnFileLine(request.sourceURL, request.lineNumber);
+
+    if (!(index !== -1)) {
+      throw new Error('Invariant violation: "index !== -1"');
+    }
+
     this._breakpointList.splice(index, 1);
   }
 
-  _isConfirmedBreakpoint(breakpoint: UserBreakpoint): boolean {
+  _isConfirmedBreakpoint(breakpoint) {
     return breakpoint.id !== UNCONFIRMED_BREAKPOINT_ID;
   }
 
-  _findBreakpointOnFileLine(sourceUrl: string, line: number): ?UserBreakpoint {
+  _findBreakpointOnFileLine(sourceUrl, line) {
     const index = this._findBreakpointIndexOnFileLine(sourceUrl, line);
     if (index !== -1) {
       return this._breakpointList[index];
@@ -219,53 +180,39 @@ export default class BreakpointManager {
     return null;
   }
 
-  _findBreakpointIndexOnFileLine(sourceUrl: string, line: number): number {
+  _findBreakpointIndexOnFileLine(sourceUrl, line) {
     for (const [index, breakpoint] of this._breakpointList.entries()) {
-      if (
-        breakpoint.request.sourceURL === sourceUrl &&
-        breakpoint.request.lineNumber === line
-      ) {
+      if (breakpoint.request.sourceURL === sourceUrl && breakpoint.request.lineNumber === line) {
         return index;
       }
     }
     return -1;
   }
 
-  _sendBreakpointResolved(
-    breakpointId: BreakpointId,
-    location: Location,
-  ): void {
+  _sendBreakpointResolved(breakpointId, location) {
     const breakpoint = this._getBreakpointFromId(breakpointId);
     if (breakpoint != null) {
       this._breakpointEvent$.next(['BreakpointRemoved', breakpoint.request]);
-      this._breakpointEvent$.next([
-        'BreakpointAdded',
-        this._createIPCBreakpointFromLocation(breakpoint.request, location),
-      ]);
+      this._breakpointEvent$.next(['BreakpointAdded', this._createIPCBreakpointFromLocation(breakpoint.request, location)]);
     } else {
-      reportError(
-        `Got breakpoint resolved for non-existing breakpoint: ${breakpointId}, ${JSON.stringify(location)};`,
-      );
+      (0, (_Utils || _load_Utils()).reportError)(`Got breakpoint resolved for non-existing breakpoint: ${breakpointId}, ${JSON.stringify(location)};`);
     }
   }
 
-  _getBreakpointFromId(breakpointId: BreakpointId): ?UserBreakpoint {
+  _getBreakpointFromId(breakpointId) {
     return this._breakpointList.find(bp => bp.id === breakpointId);
   }
 
-  _createIPCBreakpointFromLocation(
-    originalRequest: IPCBreakpoint,
-    bpLocation: Location,
-  ): IPCBreakpoint {
-    const newCopy = {...originalRequest};
+  _createIPCBreakpointFromLocation(originalRequest, bpLocation) {
+    const newCopy = Object.assign({}, originalRequest);
     // TODO: also get the new source URL from ScriptId in Location.
     newCopy.lineNumber = bpLocation.lineNumber;
     newCopy.resolved = true;
     return newCopy;
   }
 
-  handleBreakpointResolved(params: BreakpointResolvedEvent): void {
-    const {breakpointId, location} = params;
+  handleBreakpointResolved(params) {
+    const { breakpointId, location } = params;
     if (this._getBreakpointFromId(breakpointId) !== null) {
       this._sendBreakpointResolved(breakpointId, location);
     } else {
@@ -274,3 +221,4 @@ export default class BreakpointManager {
     }
   }
 }
+exports.default = BreakpointManager;

@@ -1,64 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  CheckoutSideName,
-  MergeConflict,
-} from '../../nuclide-hg-rpc/lib/HgService';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {RemoteDirectory} from '../../nuclide-remote-connection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeMergeConflictsApi = consumeMergeConflictsApi;
 
-import {MercurialConflictDetector} from './MercurialConflictDetector';
-import {onceGkInitialized, isGkEnabled} from '../../commons-node/passesGK';
+var _MercurialConflictDetector;
 
-let conflictDetector: ?MercurialConflictDetector;
+function _load_MercurialConflictDetector() {
+  return _MercurialConflictDetector = require('./MercurialConflictDetector');
+}
 
-export type RepositoryContext = {
-  workingDirectory: atom$Directory | RemoteDirectory,
-  priority: number,
-  resolveText: string,
+var _passesGK;
 
-  readConflicts(): Promise<Array<MergeConflict>>,
-  isResolvedFile(filePath: NuclideUri): Promise<boolean>,
-  checkoutSide(sideName: CheckoutSideName, filePath: NuclideUri): Promise<void>,
-  resolveFile(filePath: NuclideUri): Promise<void>,
-  isRebasing(): boolean,
-  complete(wasRebasing: boolean): void,
-  quit(wasRebasing: boolean): void,
-  joinPath(relativePath: string): NuclideUri,
-};
+function _load_passesGK() {
+  return _passesGK = require('../../commons-node/passesGK');
+}
 
-export type ConflictsContextApi = {
-  getContext(): Promise<?RepositoryContext>,
-};
+let conflictDetector; /**
+                       * Copyright (c) 2015-present, Facebook, Inc.
+                       * All rights reserved.
+                       *
+                       * This source code is licensed under the license found in the LICENSE file in
+                       * the root directory of this source tree.
+                       *
+                       * 
+                       * @format
+                       */
 
-export type ConflictsApi = {
-  registerContextApi(contextApi: ConflictsContextApi): void,
-  showForContext(repositoryContext: RepositoryContext): void,
-  hideForContext(repositoryContext: RepositoryContext): void,
-};
+function activate() {}
 
-export function activate() {}
-
-export function deactivate() {
+function deactivate() {
   if (conflictDetector != null) {
     conflictDetector.dispose();
     conflictDetector = null;
   }
 }
 
-export function consumeMergeConflictsApi(api: ConflictsApi) {
-  onceGkInitialized(() => {
-    if (!isGkEnabled('nuclide_conflict_resolver')) {
-      conflictDetector = new MercurialConflictDetector();
+function consumeMergeConflictsApi(api) {
+  (0, (_passesGK || _load_passesGK()).onceGkInitialized)(() => {
+    if (!(0, (_passesGK || _load_passesGK()).isGkEnabled)('nuclide_conflict_resolver')) {
+      conflictDetector = new (_MercurialConflictDetector || _load_MercurialConflictDetector()).MercurialConflictDetector();
       conflictDetector.setConflictsApi(api);
     }
   });
