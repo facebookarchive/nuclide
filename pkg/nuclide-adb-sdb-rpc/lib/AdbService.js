@@ -141,3 +141,9 @@ export async function removeFile(
 ): Promise<string> {
   return (await getAdb()).removeFile(device, path);
 }
+
+export async function getInstalledPackages(
+  device: string,
+): Promise<Array<string>> {
+  return (await getAdb()).getInstalledPackages(device);
+}
