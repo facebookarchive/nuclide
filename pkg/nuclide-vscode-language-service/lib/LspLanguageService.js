@@ -81,6 +81,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
 import {track} from '../../nuclide-analytics';
+import passesGK from '../../commons-node/passesGK';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {
   FileCache,
@@ -245,6 +246,8 @@ export class LspLanguageService {
         return;
       }
 
+      const isVerbose = await passesGK('nuclide_lsp_verbose');
+
       // The JsonRPC layer doesn't report what happened on stderr/stdout in
       // case of an error, so we'll pick it up directly. CARE! Node has
       // three means of consuming a stream, and it will crash if you mix them.
@@ -264,10 +267,12 @@ export class LspLanguageService {
         new rpc.StreamMessageWriter(childProcess.stdin),
         new JsonRpcLogger(this._logger),
       );
-      jsonRpcConnection.trace(
-        JsonRpcTrace.Verbose,
-        new JsonRpcTraceLogger(this._logger),
-      );
+      if (isVerbose) {
+        jsonRpcConnection.trace(
+          JsonRpcTrace.Verbose,
+          new JsonRpcTraceLogger(this._logger),
+        );
+      }
 
       // We assign _lspConnection and wire up the handlers before calling
       // initialize, because any of these events might fire before initialize
@@ -398,7 +403,7 @@ export class LspLanguageService {
         // TODO: rootUri: should be a file URI (`file://`)
         capabilities,
         initializationOptions: {},
-        trace: 'verbose',
+        trace: isVerbose ? 'verbose' : 'off',
       };
 
       // We'll keep sending initialize requests until it either succeeds
@@ -1866,6 +1871,8 @@ class JsonRpcTraceLogger {
   }
 
   log(message: string, data: ?string): void {
-    this._logger.info(`LSP.trace: ${message} ${data || ''}`);
+    this._logger.info(
+      `LSP.trace: ${message} ${(data || '').substring(0, 800)}`,
+    );
   }
 }
