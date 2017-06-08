@@ -12,7 +12,7 @@
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {NuclideUri} from 'nuclide-commons/NuclideUri';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   HyperclickProvider,
   HyperclickSuggestion,
