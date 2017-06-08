@@ -93,6 +93,7 @@ import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
+import {JsonRpcTrace} from './jsonrpc';
 import {LspConnection} from './LspConnection';
 import {
   ErrorCodes,
@@ -263,7 +264,10 @@ export class LspLanguageService {
         new rpc.StreamMessageWriter(childProcess.stdin),
         new JsonRpcLogger(this._logger),
       );
-      jsonRpcConnection.trace('verbose', new JsonRpcTraceLogger(this._logger));
+      jsonRpcConnection.trace(
+        JsonRpcTrace.Verbose,
+        new JsonRpcTraceLogger(this._logger),
+      );
 
       // We assign _lspConnection and wire up the handlers before calling
       // initialize, because any of these events might fire before initialize
