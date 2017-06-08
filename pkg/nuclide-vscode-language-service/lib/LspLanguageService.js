@@ -19,31 +19,23 @@ import type {
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {
-  Definition,
   DefinitionQueryResult,
 } from '../../nuclide-definition-service/lib/rpc-types';
-import type {TokenizedText} from 'nuclide-commons/tokenized-text';
+import type {
+  Outline,
+  OutlineTree,
+} from 'atom-ide-ui/pkg/atom-ide-outline-view/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   FindReferencesReturn,
-  Reference,
 } from '../../nuclide-find-references/lib/rpc-types';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  FileDiagnosticUpdate,
-  MessageType as DiagnosticMessageType,
-  Outline,
-  OutlineTree,
-} from 'atom-ide-ui';
+import type {DiagnosticProviderUpdate, FileDiagnosticUpdate} from 'atom-ide-ui';
 import type {
   AutocompleteResult,
-  Completion,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   HostServices,
-  ShowNotificationLevel,
 } from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
   NuclideEvaluationExpression,
@@ -53,10 +45,6 @@ import type {
   InitializeParams,
   ClientCapabilities,
   ServerCapabilities,
-  TextDocumentIdentifier,
-  Position,
-  Range,
-  Location,
   PublishDiagnosticsParams,
   LogMessageParams,
   ShowMessageParams,
@@ -65,14 +53,10 @@ import type {
   DidCloseTextDocumentParams,
   DidChangeTextDocumentParams,
   TextDocumentContentChangeEvent,
-  Diagnostic,
-  CompletionItem,
-  TextDocumentPositionParams,
   SymbolInformation,
   UncoveredRange,
 } from './protocol';
 import type {JsonRpcConnection} from './jsonrpc';
-import type {TextEdit as LspTextEditType} from './protocol';
 
 import invariant from 'assert';
 import through from 'through';
@@ -89,7 +73,7 @@ import {
   FileEventKind,
 } from '../../nuclide-open-files-rpc';
 import * as rpc from 'vscode-jsonrpc';
-import url from 'url';
+import * as convert from './convert';
 import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
@@ -99,17 +83,8 @@ import {LspConnection} from './LspConnection';
 import {
   ErrorCodes,
   TextDocumentSyncKind,
-  DiagnosticSeverity,
-  SymbolKind,
   MessageType as LspMessageType,
 } from './protocol';
-import {
-  className,
-  method,
-  constructor,
-  string,
-  plain,
-} from 'nuclide-commons/tokenized-text';
 
 type State =
   | 'Initial'
@@ -783,7 +758,7 @@ export class LspLanguageService {
     // CARE! This method may be called before initialization has finished.
     this._host.consoleNotification(
       this._consoleSource,
-      messageTypeToAtomLevel(params.type),
+      convert.lspMessageType_atomShowNotificationLevel(params.type),
       params.message,
     );
   }
@@ -791,7 +766,10 @@ export class LspLanguageService {
   _handleShowMessageNotification(params: ShowMessageParams): void {
     // CARE! This method may be called before initialization has finished.
     this._host
-      .dialogNotification(messageTypeToAtomLevel(params.type), params.message)
+      .dialogNotification(
+        convert.lspMessageType_atomShowNotificationLevel(params.type),
+        params.message,
+      )
       .refCount()
       .subscribe(); // fire and forget
   }
@@ -831,7 +809,7 @@ export class LspLanguageService {
 
     const response = await this._host
       .dialogRequest(
-        messageTypeToAtomLevel(params.type),
+        convert.lspMessageType_atomShowNotificationLevel(params.type),
         params.message,
         titles,
         closeTitle,
@@ -889,10 +867,9 @@ export class LspLanguageService {
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
-    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidOpenTextDocumentParams = {
       textDocument: {
-        uri: fileEvent.fileVersion.filePath,
+        uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
         languageId: 'python', // TODO
         version: fileEvent.fileVersion.version,
         text: fileEvent.contents,
@@ -907,10 +884,9 @@ export class LspLanguageService {
     if (!this._derivedServerCapabilities.serverWantsOpenClose) {
       return;
     }
-    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidCloseTextDocumentParams = {
       textDocument: {
-        uri: fileEvent.fileVersion.filePath,
+        uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
       },
     };
     this._lspConnection.didCloseTextDocument(params);
@@ -923,7 +899,7 @@ export class LspLanguageService {
     switch (this._derivedServerCapabilities.serverWantsChange) {
       case 'incremental':
         contentChange = {
-          range: atomRangeToRange(fileEvent.oldRange),
+          range: convert.atomRange_lspRange(fileEvent.oldRange),
           text: fileEvent.newText,
         };
         break;
@@ -939,10 +915,9 @@ export class LspLanguageService {
         invariant(false); // unreachable
     }
 
-    // TODO: (asiandrummer, ljw) `uri` should be a file URI (`file://`).
     const params: DidChangeTextDocumentParams = {
       textDocument: {
-        uri: fileEvent.fileVersion.filePath,
+        uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
         version: fileEvent.fileVersion.version,
       },
       contentChanges: [contentChange],
@@ -959,38 +934,12 @@ export class LspLanguageService {
     // Note: this function can (and should!) be called even before
     // we reach state 'Running'.
 
-    // First some helper functions to map LSP into Nuclide data structures...
-    // TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
-    const convertOne = (
-      filePath: NuclideUri,
-      diagnostic: Diagnostic,
-    ): FileDiagnosticMessage => {
-      return {
-        // TODO: diagnostic.code
-        scope: 'file',
-        providerName: diagnostic.source || 'TODO: VSCode LSP',
-        type: convertSeverity(diagnostic.severity),
-        filePath,
-        text: diagnostic.message,
-        range: rangeToAtomRange(diagnostic.range),
-      };
-    };
-
-    const convert = (
-      params: PublishDiagnosticsParams,
-    ): Array<FileDiagnosticUpdate> => {
-      const filePath = this._convertLspUriToNuclideUri(params.uri);
-      return [
-        {
-          filePath,
-          messages: params.diagnostics.map(d => convertOne(filePath, d)),
-        },
-      ];
-    };
-
     return this._diagnosticUpdates
       .mergeMap(perConnectionUpdates =>
-        ensureInvalidations(this._logger, perConnectionUpdates.map(convert)),
+        ensureInvalidations(
+          this._logger,
+          perConnectionUpdates.map(convert.lspDiagnostics_atomDiagnostics),
+        ),
       )
       .publish();
   }
@@ -1009,7 +958,7 @@ export class LspLanguageService {
       return null;
     }
 
-    const params = createTextDocumentPositionParams(
+    const params = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
     );
@@ -1022,17 +971,15 @@ export class LspLanguageService {
       return null;
     }
 
-    if (Array.isArray(response)) {
-      return {
-        isIncomplete: false,
-        items: response.map(convertCompletion),
-      };
-    } else {
-      return {
-        isIncomplete: response.isIncomplete,
-        items: response.items.map(convertCompletion),
-      };
-    }
+    const isIncomplete = Array.isArray(response)
+      ? false
+      : response.isIncomplete;
+    const responseArray = Array.isArray(response) ? response : response.items;
+
+    return {
+      isIncomplete,
+      items: responseArray.map(convert.lspCompletionItem_atomCompletion),
+    };
   }
 
   async getDefinition(
@@ -1046,7 +993,7 @@ export class LspLanguageService {
     ) {
       return null;
     }
-    const params = createTextDocumentPositionParams(
+    const params = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
     );
@@ -1065,10 +1012,15 @@ export class LspLanguageService {
     ) {
       return null;
     }
+
+    const responseArray = Array.isArray(response) ? response : [response];
+
     return {
       // TODO: use wordAtPos to determine queryrange
       queryRange: [new atom$Range(position, position)],
-      definitions: this.locationsDefinitions(response),
+      definitions: responseArray.map(d =>
+        convert.lspLocation_atomDefinition(d, this._projectRoot),
+      ),
     };
   }
 
@@ -1086,7 +1038,7 @@ export class LspLanguageService {
     const buffer = await this._fileCache.getBufferAtVersion(fileVersion);
     // buffer may still be null despite the above check. We do handle that!
 
-    const positionParams = createTextDocumentPositionParams(
+    const positionParams = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
     );
@@ -1101,7 +1053,9 @@ export class LspLanguageService {
       return null;
     }
 
-    const references = response.map(this.locationToFindReference);
+    const references = response.map(convert.lspLocation_atomFoundReference);
+    // This returns an array of Reference objects. Confusingly, each one has
+    // property named 'uri', but it's really a local filePath.
 
     // We want to know the name of the symbol. The best we can do is reconstruct
     // this from the range of one (any) of the references we got back. We're only
@@ -1161,7 +1115,9 @@ export class LspLanguageService {
     ) {
       return null;
     }
-    const params = {textDocument: toTextDocumentIdentifier(filePath)};
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(filePath),
+    };
 
     let response;
     try {
@@ -1172,7 +1128,7 @@ export class LspLanguageService {
     }
 
     const convertUncovered = (uncovered: UncoveredRange) => ({
-      range: rangeToAtomRange(uncovered.range),
+      range: convert.lspRange_atomRange(uncovered.range),
       message: uncovered.message,
     });
     return {
@@ -1190,7 +1146,9 @@ export class LspLanguageService {
       return null;
     }
     const params = {
-      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
     };
 
     let response;
@@ -1214,9 +1172,11 @@ export class LspLanguageService {
     > = response.map(symbol => [
       symbol,
       {
-        icon: symbolKindToAtomIcon(symbol.kind),
-        tokenizedText: symbolToTokenizedText(symbol),
-        startPosition: positionToPoint(symbol.location.range.start),
+        icon: convert.lspSymbolKind_atomIcon(symbol.kind),
+        tokenizedText: convert.lspSymbolInformation_atomTokenizedText(symbol),
+        startPosition: convert.lspPosition_atomPoint(
+          symbol.location.range.start,
+        ),
         children: [],
       },
     ]);
@@ -1256,7 +1216,9 @@ export class LspLanguageService {
       } else {
         invariant(parentCandidates.length > 0);
         // Find the first candidate that's lexically *after* our symbol.
-        const symbolPos = positionToPoint(symbol.location.range.start);
+        const symbolPos = convert.lspPosition_atomPoint(
+          symbol.location.range.start,
+        );
         const iAfter = parentCandidates.findIndex(
           p => p.startPosition.compare(symbolPos) > 0,
         );
@@ -1290,7 +1252,7 @@ export class LspLanguageService {
     ) {
       return null;
     }
-    const params = createTextDocumentPositionParams(
+    const params = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
     );
@@ -1317,7 +1279,7 @@ export class LspLanguageService {
 
     let range = new atom$Range(position, position);
     if (response.range) {
-      range = rangeToAtomRange(response.range);
+      range = convert.lspRange_atomRange(response.range);
     }
 
     return hint ? {hint, range} : null;
@@ -1334,7 +1296,7 @@ export class LspLanguageService {
     ) {
       return null;
     }
-    const params = createTextDocumentPositionParams(
+    const params = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
     );
@@ -1347,7 +1309,8 @@ export class LspLanguageService {
       return null;
     }
 
-    const convertHighlight = highlight => rangeToAtomRange(highlight.range);
+    const convertHighlight = highlight =>
+      convert.lspRange_atomRange(highlight.range);
     return response.map(convertHighlight);
   }
 
@@ -1381,7 +1344,9 @@ export class LspLanguageService {
     const options = {tabSize: 2, insertSpaces: true};
     // TODO: from where should we pick up these options? Can we omit them?
     const params = {
-      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
       options,
     };
     let response;
@@ -1405,7 +1370,7 @@ export class LspLanguageService {
       // Range is exclusive, and Nuclide snaps it to entire rows. So range.start
       // is character 0 of the start line, and range.end is character 0 of the
       // first line AFTER the selection.
-      const range = atomRangeToRange(atomRange);
+      const range = convert.atomRange_lspRange(atomRange);
       const params2 = {...params, range};
       try {
         response = await this._lspConnection.documentRangeFormatting(params2);
@@ -1421,17 +1386,7 @@ export class LspLanguageService {
     // As mentioned, the user might have done further typing during that 'await', but if so then
     // our upstream caller will catch it and report an error: no need to re-verify here.
 
-    return this._convertFromLspTextEdits(response);
-  }
-
-  _convertFromLspTextEdits(edits: Array<LspTextEditType>): Array<TextEdit> {
-    return edits.map(lspTextEdit => {
-      const oldRange = rangeToAtomRange(lspTextEdit.range);
-      return {
-        oldRange,
-        newText: lspTextEdit.newText,
-      };
-    });
+    return convert.lspTextEdits_atomTextEdits(response);
   }
 
   formatEntireFile(
@@ -1451,7 +1406,7 @@ export class LspLanguageService {
 
   async formatAtPosition(
     fileVersion: FileVersion,
-    position: atom$Point,
+    point: atom$Point,
     triggerCharacter: string,
   ): Promise<?Array<TextEdit>> {
     const triggerCharacters = this._derivedServerCapabilities
@@ -1465,12 +1420,14 @@ export class LspLanguageService {
     }
 
     const edits = await this._lspConnection.documentOnTypeFormatting({
-      textDocument: toTextDocumentIdentifier(fileVersion.filePath),
-      position: pointToPosition(position),
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      position: convert.atomPoint_lspPosition(point),
       ch: triggerCharacter,
       options: {tabSize: 2, insertSpaces: true},
     });
-    return this._convertFromLspTextEdits(edits);
+    return convert.lspTextEdits_atomTextEdits(edits);
   }
 
   getEvaluationExpression(
@@ -1505,7 +1462,7 @@ export class LspLanguageService {
       return null;
     }
 
-    return response.map(convertSearchResult);
+    return response.map(convert.lspSymbolInformation_atomSymbolResult);
   }
 
   getProjectRoot(fileUri: NuclideUri): Promise<?NuclideUri> {
@@ -1516,64 +1473,6 @@ export class LspLanguageService {
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     this._logger.error('NYI: isFileInProject');
     return Promise.resolve(false);
-  }
-
-  // TODO: (asiandrummer) LSP implementations should honor file URI protocol.
-  // For now, check if the URI starts with the scheme, and strip it out
-  // manually.
-  // For cases where the parsed URI does not contain a correct URI protocol
-  // and/or a pathname (e.g: an empty string, or a non-file URI (nuclide:// or
-  // http:// with a webpage URL)), log an error and return the raw URI.
-  _convertLspUriToNuclideUri(uri: string): NuclideUri {
-    const urlObject = url.parse(uri);
-    // LSP should only send URI with `file:` protocol or without any protocol.
-    if (urlObject.protocol !== 'file:' && urlObject.protocol) {
-      this._logger.error(
-        `Incorrect URI protocol ${urlObject.protocol} - using the raw URI instead.`,
-      );
-      return uri;
-    }
-
-    if (!urlObject.pathname) {
-      this._logger.error(
-        'URI pathname does not exist - using the raw URI instead.',
-      );
-      return uri;
-    }
-
-    return urlObject.pathname;
-  }
-
-  // TODO: (asiandrummer) This function should use the converted URI from
-  // this._convertLspUriToNuclideUri function, but because the converted URI
-  // is being used to be compared with the URI from fileCache, it's a little
-  // more dangerous to switch to it than others.
-  // Since GraphQL language service is the only one with the different URI
-  // format, and it does not implement the `find references` feature yet,
-  // we can defer dealing with the URI conversion until then.
-  locationToFindReference(location: Location): Reference {
-    return {
-      uri: location.uri,
-      name: null,
-      range: rangeToAtomRange(location.range),
-    };
-  }
-
-  locationToDefinition(location: Location): Definition {
-    return {
-      path: this._convertLspUriToNuclideUri(location.uri),
-      position: positionToPoint(location.range.start),
-      language: 'Python', // TODO
-      projectRoot: this._projectRoot,
-    };
-  }
-
-  locationsDefinitions(locations: Location | Location[]): Array<Definition> {
-    if (Array.isArray(locations)) {
-      return locations.map(this.locationToDefinition.bind(this));
-    } else {
-      return [this.locationToDefinition(locations)];
-    }
   }
 }
 
@@ -1634,199 +1533,6 @@ class DerivedServerCapabilities {
       this.onTypeFormattingTriggerCharacters = new Set(triggerCharacters);
     }
   }
-}
-
-// TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
-export function toTextDocumentIdentifier(
-  filePath: NuclideUri,
-): TextDocumentIdentifier {
-  return {
-    uri: filePath,
-  };
-}
-
-export function pointToPosition(position: atom$Point): Position {
-  return {
-    line: position.row,
-    character: position.column,
-  };
-}
-
-export function positionToPoint(position: Position): atom$Point {
-  return new Point(position.line, position.character);
-}
-
-export function rangeToAtomRange(range: Range): atom$Range {
-  return new atom$Range(
-    positionToPoint(range.start),
-    positionToPoint(range.end),
-  );
-}
-
-export function atomRangeToRange(range: atom$Range): Range {
-  return {
-    start: pointToPosition(range.start),
-    end: pointToPosition(range.end),
-  };
-}
-
-export function convertSeverity(severity?: number): DiagnosticMessageType {
-  switch (severity) {
-    case null:
-    case undefined:
-    case DiagnosticSeverity.Error:
-    default:
-      return 'Error';
-    case DiagnosticSeverity.Warning:
-    case DiagnosticSeverity.Information:
-    case DiagnosticSeverity.Hint:
-      return 'Warning';
-  }
-}
-
-// TODO: (asiandrummer, ljw) `filePath` should be a file URI (`file://`).
-export function createTextDocumentPositionParams(
-  filePath: string,
-  position: atom$Point,
-): TextDocumentPositionParams {
-  return {
-    textDocument: toTextDocumentIdentifier(filePath),
-    position: pointToPosition(position),
-  };
-}
-
-export function convertCompletion(item: CompletionItem): Completion {
-  return {
-    text: item.insertText || item.label,
-    displayText: item.label,
-    type: item.detail,
-    description: item.documentation,
-  };
-}
-
-function messageTypeToAtomLevel(type: number): ShowNotificationLevel {
-  switch (type) {
-    case LspMessageType.Info:
-      return 'info';
-    case LspMessageType.Warning:
-      return 'warning';
-    case LspMessageType.Log:
-      return 'log';
-    case LspMessageType.Error:
-      return 'error';
-    default:
-      return 'error';
-  }
-}
-
-// Converts an LSP SymbolInformation.kind number into an Atom icon
-// from https://github.com/atom/atom/blob/master/static/octicons.less -
-// you can see the pictures at https://octicons.github.com/
-function symbolKindToAtomIcon(kind: number): string {
-  // for reference, vscode: https://github.com/Microsoft/vscode/blob/be08f9f3a1010354ae2d8b84af017ed1043570e7/src/vs/editor/contrib/suggest/browser/media/suggest.css#L135
-  // for reference, hack: https://github.com/facebook/nuclide/blob/20cf17dca439e02a64f4365f3a52b0f26cf53726/pkg/nuclide-hack-rpc/lib/SymbolSearch.js#L120
-  switch (kind) {
-    case SymbolKind.File:
-      return 'file';
-    case SymbolKind.Module:
-      return 'file-submodule';
-    case SymbolKind.Namespace:
-      return 'file-submodule';
-    case SymbolKind.Package:
-      return 'package';
-    case SymbolKind.Class:
-      return 'code';
-    case SymbolKind.Method:
-      return 'zap';
-    case SymbolKind.Property:
-      return 'key';
-    case SymbolKind.Field:
-      return 'key';
-    case SymbolKind.Constructor:
-      return 'zap';
-    case SymbolKind.Enum:
-      return 'file-binary';
-    case SymbolKind.Interface:
-      return 'puzzle';
-    case SymbolKind.Function:
-      return 'zap';
-    case SymbolKind.Variable:
-      return 'pencil';
-    case SymbolKind.Constant:
-      return 'quote';
-    case SymbolKind.String:
-      return 'quote';
-    case SymbolKind.Number:
-      return 'quote';
-    case SymbolKind.Boolean:
-      return 'quote';
-    case SymbolKind.Array:
-      return 'list-ordered';
-    default:
-      return 'question';
-  }
-}
-
-// Converts an LSP SymbolInformation into TokenizedText
-function symbolToTokenizedText(symbol: SymbolInformation): TokenizedText {
-  const tokens = [];
-
-  // The TokenizedText ontology is deliberately small, much smaller than
-  // SymbolInformation.kind, because it's used for colorization and you don't
-  // want your colorized text looking like a fruit salad.
-  switch (symbol.kind) {
-    case SymbolKind.File:
-    case SymbolKind.Module:
-    case SymbolKind.Package:
-    case SymbolKind.Namespace:
-      tokens.push(plain(symbol.name));
-      break;
-    case SymbolKind.Class:
-    case SymbolKind.Interface:
-      tokens.push(className(symbol.name));
-      break;
-    case SymbolKind.Constructor:
-      tokens.push(constructor(symbol.name));
-      break;
-    case SymbolKind.Method:
-    case SymbolKind.Property:
-    case SymbolKind.Field:
-    case SymbolKind.Enum:
-    case SymbolKind.Function:
-    case SymbolKind.Constant:
-    case SymbolKind.Variable:
-    case SymbolKind.Array:
-      tokens.push(method(symbol.name));
-      break;
-    case SymbolKind.String:
-    case SymbolKind.Number:
-    case SymbolKind.Boolean:
-      tokens.push(string(symbol.name));
-      break;
-    default:
-      tokens.push(plain(symbol.name));
-  }
-
-  return tokens;
-}
-
-export function convertSearchResult(info: SymbolInformation): SymbolResult {
-  let hoverText = 'unknown';
-  for (const key in SymbolKind) {
-    if (info.kind === SymbolKind[key]) {
-      hoverText = key;
-    }
-  }
-  // TODO: this method uses 'this' and so must be an instance method!
-  return {
-    path: this._convertLspUriToNuclideUri(info.location.uri),
-    line: info.location.range.start.line,
-    column: info.location.range.start.character,
-    name: info.name,
-    containerName: info.containerName,
-    icon: symbolKindToAtomIcon(info.kind),
-    hoverText,
-  };
 }
 
 class JsonRpcLogger {
