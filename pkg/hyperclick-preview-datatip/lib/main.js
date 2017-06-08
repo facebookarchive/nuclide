@@ -14,7 +14,7 @@ import type {
   ModifierDatatipProvider,
   DatatipService,
 } from '../../nuclide-datatip/lib/types';
-import type {DefinitionService} from '../../nuclide-definition-service';
+import type {DefinitionProvider} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -31,8 +31,8 @@ class Activation {
     this._disposables.add(this.hyperclickPreviewManager);
   }
 
-  consumeDefinitionService(service: DefinitionService): IDisposable {
-    return this.hyperclickPreviewManager.setDefinitionService(service);
+  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+    return this.hyperclickPreviewManager.consumeDefinitionProvider(provider);
   }
 
   consumeDatatipService(service: DatatipService): IDisposable {

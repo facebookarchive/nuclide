@@ -10,12 +10,12 @@
  */
 
 import type {Datatip, ModifierKey} from '../../nuclide-datatip/lib/types';
-import type {DefinitionService} from '../../nuclide-definition-service';
+import type {DefinitionProvider} from 'atom-ide-ui';
 
 import Immutable from 'immutable';
-import {Disposable} from 'atom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {
   getDefinitionPreviewServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
@@ -31,7 +31,9 @@ function getPlatformKeys(platform) {
 }
 
 export default class HyperclickPreviewManager {
-  _definitionService: ?DefinitionService;
+  _definitionProviders: ProviderRegistry<
+    DefinitionProvider,
+  > = new ProviderRegistry();
   _disposables: UniversalDisposable = new UniversalDisposable();
   _triggerKeys: Set<ModifierKey> = new Set();
 
@@ -64,13 +66,13 @@ export default class HyperclickPreviewManager {
     }
 
     const grammar = editor.getGrammar();
-    if (this._definitionService == null) {
+    const definitionProvider = this._definitionProviders.getProviderForEditor(
+      editor,
+    );
+    if (definitionProvider == null) {
       return null;
     }
-    const result = await this._definitionService.getDefinition(
-      editor,
-      position,
-    );
+    const result = await definitionProvider.getDefinition(editor, position);
     if (result == null) {
       return null;
     }
@@ -120,11 +122,9 @@ export default class HyperclickPreviewManager {
     };
   }
 
-  setDefinitionService(service: DefinitionService): IDisposable {
-    this._definitionService = service;
-
-    return new Disposable(() => {
-      this._definitionService = null;
-    });
+  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+    const disposable = this._definitionProviders.addProvider(provider);
+    this._disposables.add(disposable);
+    return disposable;
   }
 }
