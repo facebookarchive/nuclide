@@ -213,16 +213,6 @@ export class LspLanguageService {
         const processPromise = childProcessStream.take(1).toPromise();
         perConnectionDisposables.add(childProcessStream.connect());
         childProcess = await processPromise;
-
-        // spawn mostly throws errors. But in some cases like ENOENT it
-        // immediately returns a childProcess with pid=undefined, and we
-        // have to subsequently pick up the error message ourselves...
-        if (childProcess.pid == null) {
-          const errorPromise = new Promise(resolve =>
-            childProcess.on('error', resolve),
-          );
-          throw new Error((await errorPromise));
-        }
         // if spawn failed to launch it, this await will throw.
       } catch (e) {
         this._logLspException(e);
