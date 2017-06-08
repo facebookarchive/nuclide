@@ -44,7 +44,7 @@ export function runTest(context: TestContext) {
 
       expect(doGutterDiagnosticsExist()).toBeFalsy();
 
-      dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
+      save();
     });
 
     waitsForGutterDiagnostics();
@@ -98,7 +98,7 @@ export function runTest(context: TestContext) {
     runs(() => {
       // Change `baz` back to `bar`
       textEditor.setTextInBufferRange(new Range([3, 12], [3, 13]), 'r');
-      dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
+      save();
     });
 
     waitsFor(() => {
@@ -106,4 +106,15 @@ export function runTest(context: TestContext) {
       return panelElement.innerHTML.indexOf('No diagnostic messages') !== -1;
     });
   });
+}
+
+function save(): void {
+  // In Atom 1.17, using cmd + S while a dock item is focused will atempt to save that dock item.
+  // (This behavior was changed in 1.18.) To make sure we're compatible with that version, forcibly
+  // activate the workspace center. This `activate()` call can be removed after we upgrade to 1.18.
+  const center = atom.workspace.getCenter ? atom.workspace.getCenter() : null;
+  if (center != null) {
+    center.activate();
+  }
+  dispatchKeyboardEvent('s', document.activeElement, {cmd: true});
 }
