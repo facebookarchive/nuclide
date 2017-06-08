@@ -107,7 +107,7 @@ export default class NuclideTextBuffer extends TextBuffer {
       this._pendingSaveContents = toSaveContents;
       await loadingNotification(
         file.write(toSaveContents),
-        `Saving ${nuclideUri.nuclideUriToDisplayString(filePath)}...`,
+        `Saving \`${nuclideUri.nuclideUriToDisplayString(filePath)}\`...`,
         1000 /* delay */,
       );
       this.cachedDiskContents = toSaveContents;
