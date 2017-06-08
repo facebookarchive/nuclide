@@ -346,24 +346,27 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
               }),
             );
           })
-          .mergeMap(x => Observable.from(x))
-          .map((update: FileDiagnosticUpdate) => {
-            const {filePath, messages} = update;
-            track(this._analyticsEventName);
-            const fileCache = this._connectionToFiles.get(connection);
-            if (messages.length === 0) {
-              this._logger.debug(
-                `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`,
-              );
-              fileCache.delete(filePath);
-            } else {
-              this._logger.debug(
-                `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`,
-              );
-              fileCache.add(filePath);
-            }
+          .map((updates: Array<FileDiagnosticUpdate>) => {
+            const filePathToMessages = new Map();
+            updates.forEach(update => {
+              const {filePath, messages} = update;
+              track(this._analyticsEventName);
+              const fileCache = this._connectionToFiles.get(connection);
+              if (messages.length === 0) {
+                this._logger.debug(
+                  `Observing diagnostics: removing ${filePath}, ${this._analyticsEventName}`,
+                );
+                fileCache.delete(filePath);
+              } else {
+                this._logger.debug(
+                  `Observing diagnostics: adding ${filePath}, ${this._analyticsEventName}`,
+                );
+                fileCache.add(filePath);
+              }
+              filePathToMessages.set(filePath, messages);
+            });
             return {
-              filePathToMessages: new Map([[filePath, messages]]),
+              filePathToMessages,
             };
           });
       })

@@ -31,6 +31,8 @@ type DiagnosticCount = {
 // Stick this to the left of remote-projects (-99)
 const STATUS_BAR_PRIORITY = -99.5;
 
+const RENDER_DEBOUNCE_TIME = 100;
+
 export default class StatusBarTile {
   _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
@@ -60,11 +62,13 @@ export default class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      diagnosticUpdater.allMessageUpdates.subscribe(
-        this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
-        null,
-        this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater, []),
-      ),
+      diagnosticUpdater.allMessageUpdates
+        .debounceTime(RENDER_DEBOUNCE_TIME)
+        .subscribe(
+          this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
+          null,
+          this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater, []),
+        ),
     );
   }
 

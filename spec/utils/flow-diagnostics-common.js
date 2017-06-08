@@ -53,20 +53,32 @@ export function runTest(context: TestContext) {
       // This may need to be updated if Flow changes error text
       const expectedGutterText = 'property `baz`\nProperty not found in\nFoo';
       expectGutterDiagnosticToContain(expectedGutterText);
+    });
 
-      // The text is rendered slightly differently in the gutter and the panel
-      const expectedPanelText = 'property `baz` Property not found in Foo';
+    // The text is rendered slightly differently in the gutter and the panel
+    const expectedPanelText = 'property `baz` Property not found in Foo';
+    let diagnosticDescriptionElements;
 
+    waitsFor(() => {
       const [diagnosticRowElement] = getPanelDiagnosticElements();
-      const diagnosticDescriptionElements = diagnosticRowElement.querySelectorAll(
+      diagnosticDescriptionElements = diagnosticRowElement.querySelectorAll(
         '.nuclide-ui-table-row:last-child .nuclide-ui-table-body-cell:last-child',
       );
-      expect(diagnosticDescriptionElements.length).toBe(1);
-      const diagnosticElement = diagnosticDescriptionElements[0];
-      expect(diagnosticElement.innerText).toContain(expectedPanelText);
+      return (
+        diagnosticDescriptionElements.length === 1 &&
+        diagnosticDescriptionElements[0].innerText &&
+        diagnosticDescriptionElements[0].innerText.includes(expectedPanelText)
+      );
+    }, 'Diagnostic renders correct text');
 
+    runs(() => {
       textEditor.setCursorBufferPosition([0, 0]);
-      diagnosticElement.click();
+      if (
+        diagnosticDescriptionElements &&
+        diagnosticDescriptionElements.length > 0
+      ) {
+        diagnosticDescriptionElements[0].click();
+      }
     });
 
     waitsFor(() => {

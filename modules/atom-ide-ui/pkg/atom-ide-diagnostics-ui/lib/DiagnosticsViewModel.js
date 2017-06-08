@@ -42,6 +42,8 @@ type SerializedDiagnosticsViewModel = {
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
 
+const RENDER_DEBOUNCE_TIME = 100;
+
 export class DiagnosticsViewModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
@@ -155,9 +157,9 @@ function getPropsStream(
 
   const sortedDiagnostics = Observable.concat(
     Observable.of([]),
-    diagnosticsStream.map(diagnostics =>
-      diagnostics.slice().sort(compareMessagesByFile),
-    ),
+    diagnosticsStream
+      .debounceTime(RENDER_DEBOUNCE_TIME)
+      .map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
     // If the diagnostics stream ever terminates, clear all messages.
     Observable.of([]),
   );
