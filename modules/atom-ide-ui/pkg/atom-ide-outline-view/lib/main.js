@@ -95,7 +95,7 @@ export type OutlineProvider = {
 };
 
 export type SerializedOutlineViewPanelState = {
-  deserializer: 'nuclide.OutlineViewPanelState',
+  deserializer: 'atom-ide-ui.OutlineViewPanelState',
 };
 
 export type ResultsStreamProvider = {

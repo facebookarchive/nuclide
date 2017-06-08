@@ -74,7 +74,7 @@ export class OutlineViewPanelState {
 
   serialize(): SerializedOutlineViewPanelState {
     return {
-      deserializer: 'nuclide.OutlineViewPanelState',
+      deserializer: 'atom-ide-ui.OutlineViewPanelState',
     };
   }
 }
