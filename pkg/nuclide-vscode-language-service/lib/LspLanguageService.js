@@ -120,7 +120,7 @@ export class LspLanguageService {
   _supportsSymbolSearch: BehaviorSubject<?boolean> = new BehaviorSubject(null);
   // Fields which become live inside start(), when we spawn the LSP process.
   // Disposing of the _lspConnection will dispose of all of them.
-  _childOut: {stdout: string, stderr: string} = {stdout: '', stderr: ''};
+  _childOut: {stdout: ?string, stderr: string} = {stdout: '', stderr: ''};
   _lspConnection: LspConnection; // is really "?LspConnection"
   // Fields which become live after we receive an initializeResponse:
   _serverCapabilities: ServerCapabilities;
@@ -216,9 +216,14 @@ export class LspLanguageService {
       // case of an error, so we'll pick it up directly. CARE! Node has
       // three means of consuming a stream, and it will crash if you mix them.
       // Our JsonRPC library uses the .pipe() means, so we have to too.
+      // Semantics: a null value for stdout means "don't collect further output
+      // because we've established that the connection is JsonRPC".
       this._childOut = {stdout: '', stderr: ''};
       const accumulate = (streamName: 'stdout' | 'stderr', data: string) => {
-        if (this._childOut[streamName].length < 600) {
+        if (
+          this._childOut[streamName] != null &&
+          this._childOut[streamName].length < 600
+        ) {
           const s = (this._childOut[streamName] + data).substr(0, 600);
           this._childOut[streamName] = s;
         }
@@ -258,19 +263,27 @@ export class LspLanguageService {
       );
       jsonRpcConnection.onError(this._handleError.bind(this));
       jsonRpcConnection.onClose(this._handleClose.bind(this));
-      this._lspConnection.onTelemetryNotification(
-        this._handleTelemetryNotification.bind(this),
-      );
-      this._lspConnection.onLogMessageNotification(
-        this._handleLogMessageNotification.bind(this),
-      );
-      this._lspConnection.onShowMessageNotification(
-        this._handleShowMessageNotification.bind(this),
-      );
-      this._lspConnection.onShowMessageRequest(
-        this._handleShowMessageRequest.bind(this),
-      );
+      // Following handlers all set _childOut.stdout to null, to indicate
+      // that we've established that the output is JsonRPC, and so any raw
+      // text content in stdout should NOT be used directly in error messages.
+      this._lspConnection.onTelemetryNotification(params => {
+        this._childOut.stdout = null;
+        this._handleTelemetryNotification(params);
+      });
+      this._lspConnection.onLogMessageNotification(params => {
+        this._childOut.stdout = null;
+        this._handleLogMessageNotification(params);
+      });
+      this._lspConnection.onShowMessageNotification(params => {
+        this._childOut.stdout = null;
+        this._handleShowMessageNotification(params);
+      });
+      this._lspConnection.onShowMessageRequest(async (params, cancel) => {
+        this._childOut.stdout = null;
+        return this._handleShowMessageRequest(params, cancel);
+      });
       this._lspConnection.onDiagnosticsNotification(params => {
+        this._childOut.stdout = null;
         perConnectionUpdates.next(params);
       });
 
@@ -444,10 +457,12 @@ export class LspLanguageService {
           );
         }
 
-        // Up until now, _handleError might have been called e.g. while
-        // awaiting initialize. If it was called, it would have printed childOut.
-        // But from now on that would be inappropriate, so we'll reset it.
-        this._childOut = {stdout: '', stderr: ''};
+        // We'll reset _childOut now: stdout will become null because we've
+        // established that the process speaks JsonRPC, and so will deliver
+        // everything in JsonRPC messages, and so we never want to report
+        // errors with the raw text of stdout; stderr will become empty because
+        // we've already reported everything so far.
+        this._childOut = {stdout: null, stderr: ''};
 
         this._serverCapabilities = initializeResponse.capabilities;
         this._derivedServerCapabilities = new DerivedServerCapabilities(
@@ -611,7 +626,11 @@ export class LspLanguageService {
     // If the error was a well-formed JsonRPC error, then there's no reason to
     // include stdout: all the contents of stdout are presumably already in
     // the ResponseError object. Otherwise we should include stdout.
-    if (!(error instanceof rpc.ResponseError) && this._childOut.stdout !== '') {
+    if (
+      !(error instanceof rpc.ResponseError) &&
+      this._childOut.stdout != null &&
+      this._childOut.stdout !== ''
+    ) {
       msg = `${msg} - ${this._childOut.stdout}`;
     }
 
