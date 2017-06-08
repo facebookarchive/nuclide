@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.232.0
+
+### Hotfix Release
+
+* Fixed format-on-save throwing exceptions when saving while closing files.
+
 ## v0.231.0
 
 ### General
