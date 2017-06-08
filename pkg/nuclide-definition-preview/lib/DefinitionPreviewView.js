@@ -10,7 +10,7 @@
  */
 
 import type {ContextElementProps} from '../../nuclide-context-view/lib/types';
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition} from 'atom-ide-ui';
 
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Block} from 'nuclide-commons-ui/Block';

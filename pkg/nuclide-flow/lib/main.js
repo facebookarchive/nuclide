@@ -227,7 +227,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       icon: 'nuclicon-flow',
     },
     definition: {
-      version: '0.0.0',
+      version: '0.1.0',
       priority: 20,
       definitionEventName: 'flow.get-definition',
       definitionByIdEventName: 'flow.get-definition-by-id',

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition} from 'atom-ide-ui';
 
 /**
  * Returns true if the 2 definitions are considered equal. They are considered equal if:

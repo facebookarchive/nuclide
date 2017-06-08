@@ -10,7 +10,7 @@
  */
 
 import type React from 'react';
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition} from 'atom-ide-ui';
 import typeof ContextViewMessage from './ContextViewMessage';
 
 export type ContextElementProps = {

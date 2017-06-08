@@ -12,10 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {HackRange} from './rpc-types';
 import type {HackSpan} from './OutlineView';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition, DefinitionQueryResult} from 'atom-ide-ui';
 
 import invariant from 'assert';
 import {

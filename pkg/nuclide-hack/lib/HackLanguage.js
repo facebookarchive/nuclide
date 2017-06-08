@@ -105,7 +105,7 @@ async function createLanguageService(): Promise<
       icon: 'nuclicon-hack',
     },
     definition: {
-      version: '0.0.0',
+      version: '0.1.0',
       priority: 20,
       definitionEventName: 'hack.get-definition',
       definitionByIdEventName: 'hack.get-definition-by-id',

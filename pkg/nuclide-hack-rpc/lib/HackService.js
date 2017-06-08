@@ -21,9 +21,6 @@ import type {
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
 import type {HackDefinition} from './Definitions';
 import type {HackIdeOutline} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
@@ -33,6 +30,7 @@ import type {
 } from '../../nuclide-find-references/lib/rpc-types';
 import type {HackReferencesResult} from './FindReferences';
 import type {
+  DefinitionQueryResult,
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   Outline,

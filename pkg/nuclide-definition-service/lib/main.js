@@ -9,24 +9,11 @@
  * @format
  */
 
-import type {DefinitionQueryResult} from './rpc-types';
+import type {DefinitionProvider, DefinitionQueryResult} from 'atom-ide-ui';
 
 import {Disposable} from 'atom';
 import invariant from 'assert';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-
-// Provides definitions for a set of language grammars.
-export type DefinitionProvider = {
-  name: string,
-  // If there are multiple providers for a given grammar, the one with the highest priority will be
-  // used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getDefinition: (
-    editor: TextEditor,
-    position: atom$Point,
-  ) => Promise<?DefinitionQueryResult>,
-};
 
 export type DefinitionService = {
   getDefinition(

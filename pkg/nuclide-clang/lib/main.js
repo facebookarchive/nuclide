@@ -11,15 +11,15 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {BusySignalService} from '../../nuclide-busy-signal';
-import type {CodeFormatProvider} from 'atom-ide-ui';
-import type {LinterProvider} from 'atom-ide-ui';
-import type {OutlineProvider} from 'atom-ide-ui';
+import type {
+  CodeFormatProvider,
+  DefinitionProvider,
+  DefinitionQueryResult,
+  LinterProvider,
+  OutlineProvider,
+} from 'atom-ide-ui';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
-import type {
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
 import type {ClangCompilationDatabaseProvider} from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 

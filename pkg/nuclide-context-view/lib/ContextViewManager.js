@@ -10,10 +10,7 @@
  */
 
 import type {DefinitionService} from '../../nuclide-definition-service';
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition, DefinitionQueryResult} from 'atom-ide-ui';
 import type {EditorPosition} from 'nuclide-commons-atom/debounced';
 import type {ContextProvider} from './types';
 

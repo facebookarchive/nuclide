@@ -81,9 +81,9 @@
         "0.0.0": "provideCodeFormat"
       }
     },
-    "nuclide-definition-provider": {
+    "atom-ide-definitions": {
       "versions": {
-        "0.0.0": "provideDefinitions"
+        "0.1.0": "provideDefinitions"
       }
     },
     "linter": {

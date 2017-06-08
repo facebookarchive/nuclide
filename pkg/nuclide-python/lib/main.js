@@ -84,7 +84,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     onDidInsertSuggestionAnalyticsEventName: 'nuclide-python.autocomplete-chosen',
   },
   definition: {
-    version: '0.0.0',
+    version: '0.1.0',
     priority: 20,
     definitionEventName: 'python.get-definition',
     definitionByIdEventName: 'python.get-definition-by-id',

@@ -51,3 +51,9 @@ export type {
   OutlineTree,
   ResultsStreamProvider,
 } from './pkg/atom-ide-outline-view';
+
+export type {
+  Definition,
+  DefinitionProvider,
+  DefinitionQueryResult,
+} from './pkg/atom-ide-definitions';

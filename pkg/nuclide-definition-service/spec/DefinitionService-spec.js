@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DefinitionProvider} from '..';
+import type {DefinitionProvider} from 'atom-ide-ui';
 import {Service} from '../lib/main';
 import {Point, Range} from 'atom';
 

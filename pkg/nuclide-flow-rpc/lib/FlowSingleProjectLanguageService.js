@@ -17,14 +17,12 @@ import type {
   Completion,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
+  DefinitionQueryResult,
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   FileDiagnosticMessage,
   Outline,
 } from 'atom-ide-ui';
-import type {
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
 import type {
   SingleFileLanguageService,
 } from '../../nuclide-language-service-rpc';

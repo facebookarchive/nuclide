@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+import type {DefinitionQueryResult} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -19,7 +17,7 @@ import {trackTiming} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type DefinitionConfig = {|
-  version: '0.0.0',
+  version: '0.1.0',
   priority: number,
   definitionEventName: string,
   definitionByIdEventName: string,
@@ -56,7 +54,7 @@ export class DefinitionProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'nuclide-definition-provider',
+      'atom-ide-definitions',
       config.version,
       new DefinitionProvider(
         name,

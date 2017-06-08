@@ -9,8 +9,11 @@
  * @format
  */
 
-import type {HyperclickSuggestion, HyperclickProvider} from 'atom-ide-ui';
-import type {DefinitionProvider} from '../../nuclide-definition-service';
+import type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from '../../hyperclick/lib/types';
+import type {DefinitionProvider} from '..';
 
 import {Point, Range, TextEditor} from 'atom';
 import invariant from 'assert';
@@ -30,7 +33,7 @@ describe('DefinitionHyperclick', () => {
   let disposables;
 
   beforeEach(() => {
-    atom.packages.activatePackage('nuclide-definition-hyperclick');
+    atom.packages.activatePackage('atom-ide-definitions');
     editor = new TextEditor();
 
     goToLocation = spyOn(
@@ -40,8 +43,8 @@ describe('DefinitionHyperclick', () => {
 
     disposables = new UniversalDisposable(
       atom.packages.serviceHub.provide(
-        'nuclide-definition-provider',
-        '0.0.0',
+        'atom-ide-definitions',
+        '0.1.0',
         definitionProvider,
       ),
       atom.packages.serviceHub.consume('hyperclick.provider', '0.0.0', x => {

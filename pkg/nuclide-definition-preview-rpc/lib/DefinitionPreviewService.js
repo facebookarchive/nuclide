@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition} from 'atom-ide-ui';
 
 import {countOccurrences} from 'nuclide-commons/string';
 import fs from 'nuclide-commons/fsPromise';

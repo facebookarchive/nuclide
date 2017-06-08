@@ -11,10 +11,10 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {Definition} from '../../nuclide-definition-service/lib/rpc-types';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text';
 import type {Reference} from '../../nuclide-find-references/lib/rpc-types';
 import type {
+  Definition,
   MessageType as DiagnosticMessageType,
   FileDiagnosticMessage,
   FileDiagnosticUpdate,

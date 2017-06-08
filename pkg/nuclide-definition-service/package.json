@@ -11,9 +11,9 @@
   },
   "activationCommands": {},
   "consumedServices": {
-    "nuclide-definition-provider": {
+    "atom-ide-definitions": {
       "versions": {
-        "0.0.0": "consumeDefinitionProvider"
+        "0.1.0": "consumeDefinitionProvider"
       }
     }
   },

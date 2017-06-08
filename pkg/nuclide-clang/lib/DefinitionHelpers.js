@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  Definition,
-  DefinitionQueryResult,
-} from '../../nuclide-definition-service/lib/rpc-types';
+import type {Definition, DefinitionQueryResult} from 'atom-ide-ui';
 
 import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
