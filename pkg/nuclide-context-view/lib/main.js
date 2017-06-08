@@ -10,7 +10,7 @@
  */
 
 import type {ContextProvider, NuclideContextView} from './types';
-import type {DefinitionService} from '../../nuclide-definition-service';
+import type {DefinitionProvider} from 'atom-ide-ui';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {
   WorkspaceViewsService,
@@ -20,7 +20,6 @@ import {ContextViewManager, WORKSPACE_VIEW_URI} from './ContextViewManager';
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-let currentService: ?DefinitionService = null;
 let manager: ?ContextViewManager = null;
 let disposables: CompositeDisposable;
 
@@ -29,10 +28,8 @@ export function activate(): void {
 }
 
 export function deactivate(): void {
-  currentService = null;
   disposables.dispose();
   if (manager != null) {
-    manager.consumeDefinitionService(null);
     manager.dispose();
     manager = null;
   }
@@ -63,19 +60,10 @@ const Service: NuclideContextView = {
   },
 };
 
-export function consumeDefinitionService(
-  service: DefinitionService,
+export function consumeDefinitionProvider(
+  provider: DefinitionProvider,
 ): IDisposable {
-  if (service !== currentService) {
-    currentService = service;
-    getContextViewManager().consumeDefinitionService(currentService);
-  }
-  return new Disposable(() => {
-    currentService = null;
-    if (manager != null) {
-      manager.consumeDefinitionService(null);
-    }
-  });
+  return getContextViewManager().consumeDefinitionProvider(provider);
 }
 
 export function provideNuclideContextView(): NuclideContextView {

@@ -9,8 +9,11 @@
  * @format
  */
 
-import type {DefinitionService} from '../../nuclide-definition-service';
-import type {Definition, DefinitionQueryResult} from 'atom-ide-ui';
+import type {
+  Definition,
+  DefinitionProvider,
+  DefinitionQueryResult,
+} from 'atom-ide-ui';
 import type {EditorPosition} from 'nuclide-commons-atom/debounced';
 import type {ContextProvider} from './types';
 
@@ -19,10 +22,11 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility
   from 'nuclide-commons-atom/observePaneItemVisibility';
 import {arrayCompact} from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {observeTextEditorsPositions} from 'nuclide-commons-atom/debounced';
-import {Observable} from 'rxjs';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import ContextViewMessage from './ContextViewMessage';
@@ -52,19 +56,19 @@ export class ContextViewManager {
   //    Key: ID of the context provider
   //    Value: Disposable for the change event subscription on its priority setting
   _settingDisposables: Map<string, IDisposable>;
-  _definitionService: ?DefinitionService;
+  _definitionProviders: ProviderRegistry<DefinitionProvider>;
   _isVisible: boolean;
   // Whether Context View should keep displaying the current content even after the cursor moves
   _locked: boolean;
   _panelDOMElement: HTMLElement;
   currentDefinition: ?Definition;
-  _visibilitySubscription: rxjs$ISubscription;
+  _disposables: UniversalDisposable;
 
   constructor() {
     this._contextProviders = [];
     this._defServiceSubscription = null;
     this._settingDisposables = new Map();
-    this._definitionService = null;
+    this._definitionProviders = new ProviderRegistry();
     this._isVisible = false;
     this._locked = false; // Should be unlocked by default
     this.currentDefinition = null;
@@ -75,12 +79,11 @@ export class ContextViewManager {
     this._panelDOMElement = document.createElement('div');
     this._panelDOMElement.style.display = 'flex';
 
-    this._visibilitySubscription = observePaneItemVisibility(
-      this,
-    ).subscribe(visible => {
-      this.didChangeVisibility(visible);
-    });
-
+    this._disposables = new UniversalDisposable(
+      observePaneItemVisibility(this).subscribe(visible => {
+        this.didChangeVisibility(visible);
+      }),
+    );
     this._render();
   }
 
@@ -89,7 +92,7 @@ export class ContextViewManager {
     this._settingDisposables.forEach(disposable => {
       disposable.dispose();
     });
-    this._visibilitySubscription.unsubscribe();
+    this._disposables.dispose();
   }
 
   hide(): void {
@@ -151,39 +154,45 @@ export class ContextViewManager {
    * to the definition service to an Observable<Definition>, and
    * re-renders if necessary.
    */
-  consumeDefinitionService(service: ?DefinitionService): void {
-    this._definitionService = service;
+  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+    const disposable = this._definitionProviders.addProvider(provider);
+    this._disposables.add(disposable);
     this.updateSubscription();
     this._render();
+    return disposable;
   }
 
   /**
    * Subscribes or unsubscribes to definition service based on the current state.
    */
   updateSubscription(): void {
+    if (this._defServiceSubscription != null) {
+      this._defServiceSubscription.unsubscribe();
+      this._defServiceSubscription = null;
+    }
     // Only subscribe if panel showing && there's something to subscribe to && not locked
-    if (this._isVisible && this._definitionService != null && !this._locked) {
+    if (this._isVisible && !this._locked) {
       this._defServiceSubscription = observeTextEditorsPositions(
         EDITOR_DEBOUNCE_INTERVAL,
         POSITION_DEBOUNCE_INTERVAL,
       )
         .filter((editorPos: ?EditorPosition) => editorPos != null)
-        .map((editorPos: ?EditorPosition) => {
+        .switchMap((editorPos: ?EditorPosition) => {
           return trackTiming('nuclide-context-view:getDefinition', () => {
             invariant(editorPos != null);
-            invariant(this._definitionService != null);
-            return this._definitionService
+            const definitionProvider = this._definitionProviders.getProviderForEditor(
+              editorPos.editor,
+            );
+            if (definitionProvider == null) {
+              return Promise.resolve(null);
+            }
+            return definitionProvider
               .getDefinition(editorPos.editor, editorPos.position)
               .catch(error => {
                 logger.error('Error querying definition service: ', error);
                 return null;
               });
           });
-        })
-        .switchMap((queryResult: Promise<?DefinitionQueryResult>) => {
-          return queryResult != null
-            ? Observable.fromPromise(queryResult)
-            : Observable.empty();
         })
         .map((queryResult: ?DefinitionQueryResult) => {
           if (queryResult != null) {
@@ -198,11 +207,6 @@ export class ContextViewManager {
         })
         .subscribe((def: ?Definition) => this.updateCurrentDefinition(def));
       return;
-    }
-    // Otherwise, unsubscribe if there is a subscription
-    if (this._defServiceSubscription != null) {
-      this._defServiceSubscription.unsubscribe();
-      this._defServiceSubscription = null;
     }
   }
 
