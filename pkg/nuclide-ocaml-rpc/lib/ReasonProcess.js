@@ -9,15 +9,19 @@
  * @format
  */
 
-import type {refmtResult} from './ReasonService';
+import type {formatResult} from './ReasonService';
 
 import {runCommand, getOriginalEnvironment} from 'nuclide-commons/process';
 
-export async function refmt(
+export async function formatImpl(
   content: string,
-  flags: Array<string>,
-): Promise<refmtResult> {
-  const refmtPath = getPathToRefmt();
+  language: 're' | 'ml',
+  refmtFlags: Array<string>,
+): Promise<formatResult> {
+  // refmt is designed for reason->reason and ocaml->reason formatting
+  // ocp-indent is designed for ocaml->ocaml formatting
+  const path = language === 're' ? getPathToRefmt() : 'ocp-indent';
+  const flags = language === 're' ? refmtFlags : [];
   const options = {
     // Starts the process with the user's bashrc, which might contain a
     // different refmt. See `MerlinProcess` for the same consistent
@@ -28,14 +32,14 @@ export async function refmt(
     input: content,
   };
   try {
-    const stdout = await runCommand(refmtPath, flags, options).toPromise();
+    const stdout = await runCommand(path, flags, options).toPromise();
     return {type: 'result', formattedResult: stdout};
   } catch (err) {
     // Unsuccessfully exited. Two cases: syntax error and refmt nonexistent.
     if (err.errno === 'ENOENT') {
       return {
         type: 'error',
-        error: 'refmt is not found. Is it available in the path?',
+        error: `${path} is not found. Is it available in the path?`,
       };
     }
     return {type: 'error', error: err.stderr};

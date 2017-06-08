@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {refmtResult} from '../../nuclide-ocaml-rpc/lib/ReasonService';
+import type {formatResult} from '../../nuclide-ocaml-rpc/lib/ReasonService';
 
 import {getReasonServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -29,28 +29,28 @@ function getRefmtFlags(): Array<string> {
 async function formatImpl(
   editor: atom$TextEditor,
   subText: string,
-): Promise<?refmtResult> {
+): Promise<?formatResult> {
   const path = editor.getPath();
   if (path == null) {
     return null;
   }
   const instance = getReasonServiceByNuclideUri(path);
 
-  const syntaxArg = editor.getGrammar().name === 'Reason' ? 're' : 'ml';
+  const language = editor.getGrammar().name === 'Reason' ? 're' : 'ml';
   // Pass the flags here rather than in the service, so that we pick no the
   // extra flags in the (client side) refmtFlags
   // We pipe the current editor buffer into refmt rather than passing the path
   // because the editor buffer might not have been saved to disk.
-  const flags = [
+  const refmtFlags = [
     '--parse',
-    syntaxArg,
+    language,
     '--print',
-    syntaxArg,
+    language,
     '--interface',
     isInterfaceF(path) ? 'true' : 'false',
     ...getRefmtFlags(),
   ];
-  return instance.format(editor.getText(), flags);
+  return instance.format(editor.getText(), language, refmtFlags);
 }
 
 export async function getEntireFormatting(
@@ -59,7 +59,7 @@ export async function getEntireFormatting(
 ): Promise<{newCursor?: number, formatted: string}> {
   const buffer = editor.getBuffer();
   const wholeText = buffer.getText();
-  const result: ?refmtResult = await formatImpl(editor, wholeText);
+  const result: ?formatResult = await formatImpl(editor, wholeText);
 
   if (result == null) {
     return {formatted: wholeText};
