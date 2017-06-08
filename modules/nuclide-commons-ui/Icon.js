@@ -18,6 +18,7 @@ export type Nuclicon =
   | 'nuclicon-buck'
   | 'nuclicon-hhvm'
   | 'nuclicon-hack'
+  | 'nuclicon-relay'
   | 'nuclicon-swift'
   | 'nuclicon-file-directory'
   | 'nuclicon-file-directory-starred'

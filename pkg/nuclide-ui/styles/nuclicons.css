@@ -92,3 +92,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-react-devtools::before {
   content: "\f113";
 }
+.icon-nuclicon-relay::before {
+  content: "\f114";
+}
