@@ -33,10 +33,10 @@ const sdbObs = Observable.defer(() =>
   pathForDebugBridge('sdb'),
 ).switchMap(sdbPath => Observable.of(new Sdb(sdbPath)));
 
-export async function getDeviceInfo(
+export function getDeviceInfo(
   name: string,
-): Promise<Map<string, string>> {
-  return (await getSdb()).getCommonDeviceInfo(name);
+): ConnectableObservable<Map<string, string>> {
+  return sdbObs.switchMap(sdb => sdb.getCommonDeviceInfo(name)).publish();
 }
 
 export function getDeviceList(): ConnectableObservable<

@@ -36,7 +36,7 @@ export interface DeviceListProvider {
 }
 
 export interface DeviceInfoProvider {
-  fetch(host: NuclideUri, device: string): Promise<Map<string, string>>,
+  fetch(host: NuclideUri, device: string): Observable<Map<string, string>>,
   getType(): string,
   getTitle(): string,
   getPriority(): number,

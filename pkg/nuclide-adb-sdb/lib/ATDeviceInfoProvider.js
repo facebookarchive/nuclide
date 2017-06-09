@@ -9,11 +9,12 @@
  * @format
  */
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
-
 import type {DeviceInfoProvider} from '../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
+import {Observable} from 'rxjs';
 
 export class ATDeviceInfoProvider implements DeviceInfoProvider {
   _type: string;
@@ -27,18 +28,21 @@ export class ATDeviceInfoProvider implements DeviceInfoProvider {
     this._rpcFactory = rpcFactory;
   }
 
-  async fetch(host: NuclideUri, device: string): Promise<Map<string, string>> {
-    const infoMap = new Map();
-    for (const [key, value] of await this._rpcFactory(host).getDeviceInfo(
-      device,
-    )) {
-      const beautifulKey = key.toLowerCase().replace('_', ' ');
-      infoMap.set(
-        beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1),
-        value,
-      );
-    }
-    return infoMap;
+  fetch(host: NuclideUri, device: string): Observable<Map<string, string>> {
+    return this._rpcFactory(host)
+      .getDeviceInfo(device)
+      .refCount()
+      .map(props => {
+        const infoMap = new Map();
+        for (const [key, value] of props) {
+          const beautifulKey = key.toLowerCase().replace('_', ' ');
+          infoMap.set(
+            beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1),
+            value,
+          );
+        }
+        return infoMap;
+      });
   }
 
   getTitle(): string {

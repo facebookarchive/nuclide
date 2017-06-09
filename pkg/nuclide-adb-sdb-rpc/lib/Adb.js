@@ -60,30 +60,28 @@ export class Adb extends AdbSdbBase {
     return this.getAndroidProp(device, 'ro.product.brand');
   }
 
-  getManufacturer(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.product.manufacturer').toPromise();
+  getManufacturer(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.product.manufacturer');
   }
 
-  async getDeviceInfo(device: string): Promise<Map<string, string>> {
-    const infoTable = await this.getCommonDeviceInfo(device);
-    const unknownCB = () => '';
-    infoTable.set(
-      'android_version',
-      await this.getOSVersion(device).catch(unknownCB),
-    );
-    infoTable.set(
-      'manufacturer',
-      await this.getManufacturer(device).catch(unknownCB),
-    );
-    infoTable.set(
-      'brand',
-      await this.getBrand(device).toPromise().catch(unknownCB),
-    );
-    infoTable.set(
-      'wifi_ip',
-      await this.getWifiIp(device).toPromise().catch(unknownCB),
-    );
-    return infoTable;
+  getDeviceInfo(device: string): Observable<Map<string, string>> {
+    return this.getCommonDeviceInfo(device).switchMap(infoTable => {
+      const unknownCB = () => Observable.of('');
+      return Observable.forkJoin(
+        this.getOSVersion(device)
+          .catch(unknownCB)
+          .do(x => infoTable.set('android_version', x)),
+        this.getManufacturer(device)
+          .catch(unknownCB)
+          .do(x => infoTable.set('manufacturer', x)),
+        this.getBrand(device)
+          .catch(unknownCB)
+          .do(x => infoTable.set('brand', x)),
+        this.getWifiIp(device)
+          .catch(unknownCB)
+          .do(x => infoTable.set('wifi_ip', x)),
+      ).map(() => infoTable);
+    });
   }
 
   getWifiIp(device: string): Observable<string> {
@@ -114,8 +112,8 @@ export class Adb extends AdbSdbBase {
     ]).toPromise();
   }
 
-  getOSVersion(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.build.version.release').toPromise();
+  getOSVersion(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.build.version.release');
   }
 
   installPackage(

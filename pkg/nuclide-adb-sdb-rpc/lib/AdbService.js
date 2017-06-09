@@ -34,10 +34,10 @@ export async function registerAdbPath(
   getStore('adb').registerPath(id, {path, priority});
 }
 
-export async function getDeviceInfo(
+export function getDeviceInfo(
   device: string,
-): Promise<Map<string, string>> {
-  return (await getAdb()).getDeviceInfo(device);
+): ConnectableObservable<Map<string, string>> {
+  return adbObs.switchMap(adb => adb.getDeviceInfo(device)).publish();
 }
 
 export function getProcesses(

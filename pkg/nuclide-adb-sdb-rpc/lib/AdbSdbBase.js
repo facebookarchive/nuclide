@@ -47,26 +47,20 @@ export class AdbSdbBase {
       .then(() => true, () => false);
   }
 
-  async getCommonDeviceInfo(device: string): Promise<Map<string, string>> {
-    const unknownCB = () => null;
-    const architecture = await this.getDeviceArchitecture(device)
-      .toPromise()
-      .catch(unknownCB);
-    const apiVersion = await this.getAPIVersion(device)
-      .toPromise()
-      .catch(unknownCB);
-    const model = await this.getDeviceModel(device)
-      .toPromise()
-      .catch(unknownCB);
-    return new Map([
-      ['name', device],
-      // $FlowFixMe architecture could resolve to null if the promise throws
-      ['architecture', architecture],
-      // $FlowFixMe apiVersion could resolve to null if the promise throws
-      ['api_version', apiVersion],
-      // $FlowFixMe model could resolve to null if the promise throws
-      ['model', model],
-    ]);
+  getCommonDeviceInfo(device: string): Observable<Map<string, string>> {
+    const unknownCB = () => Observable.of('');
+    return Observable.forkJoin(
+      this.getDeviceArchitecture(device).catch(unknownCB),
+      this.getAPIVersion(device).catch(unknownCB),
+      this.getDeviceModel(device).catch(unknownCB),
+    ).map(([architecture, apiVersion, model]) => {
+      return new Map([
+        ['name', device],
+        ['architecture', architecture],
+        ['api_version', apiVersion],
+        ['model', model],
+      ]);
+    });
   }
 
   async getDeviceList(): Promise<Array<DeviceDescription>> {

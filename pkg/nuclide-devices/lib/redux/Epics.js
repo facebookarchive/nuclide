@@ -78,7 +78,7 @@ async function getInfoTables(
         }
         return [
           provider.getTitle(),
-          await provider.fetch(state.host, device.name),
+          await provider.fetch(state.host, device.name).toPromise(),
         ];
       } catch (e) {
         return null;
