@@ -57,7 +57,7 @@ export class ATDeviceInfoProvider implements DeviceInfoProvider {
     return 100;
   }
 
-  isSupported(): Promise<boolean> {
-    return Promise.resolve(true);
+  isSupported(): Observable<boolean> {
+    return Observable.of(true);
   }
 }

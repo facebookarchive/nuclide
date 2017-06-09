@@ -17,6 +17,8 @@ import type {
 } from '../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import {Observable} from 'rxjs';
+
 export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService;
@@ -46,8 +48,8 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
     host: NuclideUri,
     device: string,
     procs: Process[],
-  ): Promise<Set<number>> {
-    return Promise.resolve(new Set(procs.map(proc => proc.pid)));
+  ): Observable<Set<number>> {
+    return Observable.of(new Set(procs.map(proc => proc.pid)));
   }
 
   async run(host: NuclideUri, device: string, proc: Process): Promise<void> {

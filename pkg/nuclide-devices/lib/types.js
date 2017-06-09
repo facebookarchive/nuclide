@@ -40,7 +40,7 @@ export interface DeviceInfoProvider {
   getType(): string,
   getTitle(): string,
   getPriority(): number,
-  isSupported(host: NuclideUri): Promise<boolean>,
+  isSupported(host: NuclideUri): Observable<boolean>,
 }
 
 export interface DeviceProcessesProvider {
@@ -52,7 +52,7 @@ export interface DeviceTaskProvider {
   getTask(host: NuclideUri, device: string): Observable<TaskEvent>,
   getName(): string,
   getType(): string,
-  isSupported(host: NuclideUri): Promise<boolean>,
+  isSupported(host: NuclideUri): Observable<boolean>,
 }
 
 export interface DeviceProcessTaskProvider {
@@ -63,7 +63,7 @@ export interface DeviceProcessTaskProvider {
     host: NuclideUri,
     device: string,
     procs: Process[],
-  ): Promise<Set<number>>,
+  ): Observable<Set<number>>,
   getName(): string,
 }
 
