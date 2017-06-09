@@ -1055,7 +1055,9 @@ export class HgRepositoryClient {
     return this._service
       .commit(message, filePaths)
       .refCount()
-      .do(processMessage => this._clearOnSuccessExit(processMessage));
+      .do(processMessage =>
+        this._clearOnSuccessExit(processMessage, filePaths),
+      );
   }
 
   amend(
@@ -1067,7 +1069,9 @@ export class HgRepositoryClient {
     return this._service
       .amend(message, amendMode, filePaths)
       .refCount()
-      .do(processMessage => this._clearOnSuccessExit(processMessage));
+      .do(processMessage =>
+        this._clearOnSuccessExit(processMessage, filePaths),
+      );
   }
 
   splitRevision(): Observable<LegacyProcessMessage> {
@@ -1079,9 +1083,12 @@ export class HgRepositoryClient {
       .finally(this._updateInteractiveMode.bind(this, false));
   }
 
-  _clearOnSuccessExit(message: LegacyProcessMessage) {
+  _clearOnSuccessExit(
+    message: LegacyProcessMessage,
+    filePaths: Array<NuclideUri>,
+  ) {
     if (message.kind === 'exit' && message.exitCode === 0) {
-      this._clearClientCache();
+      this._clearClientCache(filePaths);
     }
   }
 
@@ -1118,9 +1125,18 @@ export class HgRepositoryClient {
     return this._service.pull(options).refCount();
   }
 
-  _clearClientCache(): void {
-    this._hgDiffCache = new Map();
-    this._hgStatusCache = new Map();
+  _clearClientCache(filePaths: Array<NuclideUri>): void {
+    if (filePaths.length === 0) {
+      this._hgDiffCache = new Map();
+      this._hgStatusCache = new Map();
+    } else {
+      this._hgDiffCache = new Map(this._hgDiffCache);
+      this._hgStatusCache = new Map(this._hgStatusCache);
+      filePaths.forEach(filePath => {
+        this._hgDiffCache.delete(filePath);
+        this._hgStatusCache.delete(filePath);
+      });
+    }
     this._emitter.emit('did-change-statuses');
   }
 }
