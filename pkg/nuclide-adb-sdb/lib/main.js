@@ -14,8 +14,6 @@ import type {Store} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {AndroidProviders} from './device_panel/AndroidProviders';
-import {TizenProviders} from './device_panel/TizenProviders';
 import {createEmptyAppState, deserialize} from './redux/AppState';
 import * as Reducers from './redux/Reducers';
 import {applyMiddleware, createStore} from 'redux';
@@ -23,6 +21,7 @@ import {
   combineEpics,
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
+import {registerDevicePanelProviders} from './device-panel/Registration';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -47,31 +46,7 @@ class Activation {
   }
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(
-      // list
-      api.registerListProvider(
-        AndroidProviders.createAndroidDeviceListProvider(),
-      ),
-      api.registerListProvider(TizenProviders.createTizenDeviceListProvider()),
-      // info
-      api.registerInfoProvider(AndroidProviders.createAndroidInfoProvider()),
-      api.registerInfoProvider(TizenProviders.createTizenInfoProvider()),
-      // processes
-      api.registerProcessesProvider(
-        AndroidProviders.createAndroidProcessesProvider(),
-      ),
-      // process tasks
-      api.registerProcessTaskProvider(
-        AndroidProviders.createAndroidStopPackageProvider(),
-      ),
-      // device type tasks
-      api.registerDeviceTypeTaskProvider(
-        AndroidProviders.createAndroidConfigurePathTaskProvider(),
-      ),
-      api.registerDeviceTypeTaskProvider(
-        TizenProviders.createTizenConfigurePathTaskProvider(),
-      ),
-    );
+    this._disposables.add(registerDevicePanelProviders(api));
   }
 }
 
