@@ -99,7 +99,7 @@ export class DevicePanelWorkspaceView {
 
   serialize(): {deserializer: string} {
     return {
-      deserializer: 'nuclide.DevicePanelState',
+      deserializer: 'nuclide.DevicePanelWorkspaceView',
     };
   }
 }
