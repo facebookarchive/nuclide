@@ -9,18 +9,37 @@
  * @format
  */
 
+import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
+import type {Store} from './types';
+
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AndroidProviders} from './device_panel/AndroidProviders';
 import {TizenProviders} from './device_panel/TizenProviders';
-
-import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
+import {createEmptyAppState, deserialize} from './redux/AppState';
+import * as Reducers from './redux/Reducers';
+import {applyMiddleware, createStore} from 'redux';
+import {
+  combineEpics,
+  createEpicMiddleware,
+} from '../../commons-node/redux-observable';
 
 class Activation {
   _disposables: UniversalDisposable;
+  _store: Store;
 
-  constructor(state: ?mixed) {
+  constructor(rawState: ?Object) {
     this._disposables = new UniversalDisposable();
+    const initialState = {
+      ...createEmptyAppState(),
+      ...deserialize(rawState),
+    };
+
+    this._store = createStore(
+      Reducers.app,
+      initialState,
+      applyMiddleware(createEpicMiddleware(combineEpics())),
+    );
   }
 
   dispose(): void {
