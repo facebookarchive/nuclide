@@ -13,12 +13,6 @@
       ]
     },
     "config": {
-      "confirmServerActionOnLastProject": {
-        "title": "Confirm Server Action On Last Project",
-        "type": "boolean",
-        "description": "Confirm whether to Shutdown or Keep the server after all remote projects are disconnected",
-        "default": true
-      },
       "connectionProfiles": {
         "title": "Connection Profiles",
         "type": "array",
