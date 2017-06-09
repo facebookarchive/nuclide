@@ -337,7 +337,7 @@ export function asyncFind<T, U>(
 
       const item = items[index];
       const result = await test.call(thisArg, item);
-      if (result !== null) {
+      if (result != null) {
         resolve(result);
       } else {
         next(index + 1);

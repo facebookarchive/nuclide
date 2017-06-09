@@ -13,7 +13,7 @@ import type {HyperclickProvider} from '../lib/types';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
 import {Point, Range} from 'atom';
-import {provideHyperclickView} from '../lib/main';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import Hyperclick from '../lib/Hyperclick';
 import showTriggerConflictWarning from '../lib/showTriggerConflictWarning';
 import invariant from 'assert';
@@ -25,9 +25,11 @@ describe('Hyperclick', () => {
   let hyperclickForTextEditor: HyperclickForTextEditor = (null: any);
 
   async function setup() {
-    atom.views.addViewProvider(provideHyperclickView);
+    atom.packages.activatePackage('hyperclick');
 
-    textEditor = await atom.workspace.open('hyperclick.txt');
+    textEditor = await atom.workspace.open(
+      nuclideUri.join(__dirname, 'fixtures', 'hyperclick.txt'),
+    );
     textEditorView = atom.views.getView(textEditor);
 
     // We need the view attached to the DOM for the mouse events to work.

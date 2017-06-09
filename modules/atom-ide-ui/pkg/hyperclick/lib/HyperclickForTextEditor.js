@@ -16,7 +16,7 @@ import type Hyperclick from './Hyperclick';
 
 import {CompositeDisposable, Disposable, Point} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {getWordTextAndRange} from './hyperclick-utils';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
@@ -34,7 +34,7 @@ export default class HyperclickForTextEditor {
   _hyperclick: Hyperclick;
   _lastMouseEvent: ?MouseEvent;
   _lastPosition: ?atom$Point;
-  _lastSuggestionAtMousePromise: ?Promise<HyperclickSuggestion>;
+  _lastSuggestionAtMousePromise: ?Promise<?HyperclickSuggestion>;
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
   _lastWordRange: ?atom$Range;
@@ -178,7 +178,7 @@ export default class HyperclickForTextEditor {
     }: any);
 
     // Don't fetch suggestions if the mouse is still in the same 'word', where
-    // 'word' is a whitespace-delimited group of characters.
+    // 'word' is defined by the wordRegExp at the current position.
     //
     // If the last suggestion had multiple ranges, we have no choice but to
     // fetch suggestions because the new word might be between those ranges.
@@ -190,11 +190,11 @@ export default class HyperclickForTextEditor {
     if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
       return;
     }
-    const {range} = getWordTextAndRange(
+    const match = wordAtPosition(
       this._textEditor,
       this._getMousePositionAsBufferPosition(),
     );
-    this._lastWordRange = range;
+    this._lastWordRange = match != null ? match.range : null;
 
     if (this._isHyperclickEvent(mouseEvent)) {
       // Clear the suggestion if the mouse moved out of the range.

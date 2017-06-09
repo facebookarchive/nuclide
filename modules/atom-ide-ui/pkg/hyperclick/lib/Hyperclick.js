@@ -13,27 +13,12 @@ import type {HyperclickSuggestion, HyperclickProvider} from './types';
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
-import {
-  defaultWordRegExpForEditor,
-  getWordTextAndRange,
-} from './hyperclick-utils';
 
+import invariant from 'assert';
+import {asyncFind} from 'nuclide-commons/promise';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-
-/**
- * Calls the given functions and returns the first non-null return value.
- */
-async function findTruthyReturnValue(
-  fns: Array<void | (() => Promise<any>)>,
-): Promise<any> {
-  for (const fn of fns) {
-    // eslint-disable-next-line no-await-in-loop
-    const result = typeof fn === 'function' ? await fn() : null;
-    if (result) {
-      return result;
-    }
-  }
-}
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 
 /**
  * Construct this object to enable Hyperclick in the Atom workspace.
@@ -55,16 +40,20 @@ export default class Hyperclick {
     );
   }
 
-  observeTextEditor(textEditor: TextEditor) {
+  observeTextEditor(textEditor: TextEditor): IDisposable {
     const hyperclickForTextEditor = new HyperclickForTextEditor(
       textEditor,
       this,
     );
     this._hyperclickForTextEditors.add(hyperclickForTextEditor);
-    textEditor.onDidDestroy(() => {
+    const disposable = new UniversalDisposable(() => {
       hyperclickForTextEditor.dispose();
       this._hyperclickForTextEditors.delete(hyperclickForTextEditor);
     });
+    return new UniversalDisposable(
+      textEditor.onDidDestroy(() => disposable.dispose()),
+      disposable,
+    );
   }
 
   dispose() {
@@ -130,34 +119,33 @@ export default class Hyperclick {
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  getSuggestion(textEditor: TextEditor, position: atom$Point): Promise<any> {
-    // Get the default word RegExp for this editor.
-    const defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
-
-    return findTruthyReturnValue(
-      this._consumedProviders.map((provider: HyperclickProvider) => {
+  getSuggestion(
+    textEditor: TextEditor,
+    position: atom$Point,
+  ): Promise<?HyperclickSuggestion> {
+    return asyncFind(
+      this._consumedProviders,
+      (provider: HyperclickProvider) => {
         if (provider.getSuggestion) {
-          const getSuggestion = provider.getSuggestion.bind(provider);
-          return () => getSuggestion(textEditor, position);
+          return provider.getSuggestion(textEditor, position);
         } else if (provider.getSuggestionForWord) {
-          const getSuggestionForWord = provider.getSuggestionForWord.bind(
-            provider,
+          const match = wordAtPosition(
+            textEditor,
+            position,
+            provider.wordRegExp,
           );
-          return () => {
-            const wordRegExp = provider.wordRegExp || defaultWordRegExp;
-            const {text, range} = getWordTextAndRange(
-              textEditor,
-              position,
-              wordRegExp,
-            );
-            return getSuggestionForWord(textEditor, text, range);
-          };
+          if (match == null) {
+            return null;
+          }
+          const {wordMatch, range} = match;
+          invariant(provider.getSuggestionForWord);
+          return provider.getSuggestionForWord(textEditor, wordMatch[0], range);
         }
 
         throw new Error(
           'Hyperclick must have either `getSuggestion` or `getSuggestionForWord`',
         );
-      }),
+      },
     );
   }
 
