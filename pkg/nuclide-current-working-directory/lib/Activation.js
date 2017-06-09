@@ -14,6 +14,7 @@ import type {Directory} from '../../nuclide-remote-connection';
 import {CwdApi} from './CwdApi';
 import {CompositeDisposable} from 'atom';
 import {getAtomProjectRootPath} from 'nuclide-commons-atom/projects';
+import getElementFilePath from '../../commons-atom/getElementFilePath';
 
 export class Activation {
   _cwdApi: CwdApi;
@@ -72,17 +73,20 @@ export class Activation {
     }
   }
 
-  _setFromActiveFile(): void {
-    const editor = atom.workspace.getActiveTextEditor();
-    if (editor == null) {
-      atom.notifications.addError('No file is currently active.');
-      return;
-    }
-
-    const path = editor.getPath();
+  _setFromActiveFile(event: Event): void {
+    let path = getElementFilePath(((event.target: any): HTMLElement));
     if (path == null) {
-      atom.notifications.addError('Active file does not have a path.');
-      return;
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor == null) {
+        atom.notifications.addError('No file is currently active.');
+        return;
+      }
+
+      path = editor.getPath();
+      if (path == null) {
+        atom.notifications.addError('Active file does not have a path.');
+        return;
+      }
     }
 
     const projectRoot = getAtomProjectRootPath(path);
