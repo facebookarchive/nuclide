@@ -110,6 +110,32 @@ export class ATCustomDBPathModal extends React.Component {
     );
   }
 
+  _getInfoBox(): React.Element<any> {
+    return (
+      <p>
+        <small>
+          A custom
+          {' '}
+          {this.props.type}
+          {' '}
+          path takes priority over any other path that nuclide knows.
+          {' '}
+          This is specially useful if you also use
+          {' '}
+          {this.props.type}
+          {' '}
+          from the command line along with nuclide.
+          <br />
+          Keep in mind that using two different versions of
+          {' '}
+          {this.props.type}
+          {' '}
+          simultaneously might break both tools.
+        </small>
+      </p>
+    );
+  }
+
   render(): React.Element<any> {
     return (
       <div>
@@ -118,6 +144,9 @@ export class ATCustomDBPathModal extends React.Component {
         </div>
         <div className="block">
           {this._getPathSelector()}
+        </div>
+        <div className="block">
+          {this._getInfoBox()}
         </div>
         <div className="block">
           {this._getFooter()}
