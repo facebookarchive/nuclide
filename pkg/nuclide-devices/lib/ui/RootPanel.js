@@ -28,7 +28,7 @@ export type Props = {|
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
-  startFetchingDevices: () => Subscription,
+  toggleDevicePolling: (isActive: boolean) => void,
   startFetchingProcesses: () => Subscription,
   processTasks: ProcessTask[],
   hosts: NuclideUri[],
@@ -45,7 +45,6 @@ export type Props = {|
 
 export class RootPanel extends React.Component {
   props: Props;
-  _devicesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
@@ -54,13 +53,11 @@ export class RootPanel extends React.Component {
   }
 
   componentDidMount(): void {
-    this._devicesSubscription = this.props.startFetchingDevices();
+    this.props.toggleDevicePolling(true);
   }
 
   componentWillUnmount(): void {
-    if (this._devicesSubscription != null) {
-      this._devicesSubscription.unsubscribe();
-    }
+    this.props.toggleDevicePolling(false);
   }
 
   _createDeviceTable(): ?React.Element<any> {

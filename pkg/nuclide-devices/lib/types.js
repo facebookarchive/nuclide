@@ -195,7 +195,15 @@ export type SetDeviceTasksAction = {
   },
 };
 
+export type ToggleDevicePollingAction = {
+  type: 'TOGGLE_DEVICE_POLLING',
+  payload: {
+    isActive: boolean,
+  },
+};
+
 export type Action =
+  | ToggleDevicePollingAction
   | SetHostAction
   | SetHostsAction
   | SetDevicesAction

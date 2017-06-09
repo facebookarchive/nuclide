@@ -31,26 +31,6 @@ export class DevicePanelWorkspaceView {
   constructor(store: Store) {
     this._store = store;
     // $FlowFixMe: Teach flow about Symbol.observable
-    this._deviceObs = Observable.from(this._store)
-      .distinctUntilChanged(
-        (stateA, stateB) =>
-          stateA.deviceType === stateB.deviceType &&
-          stateA.host === stateB.host,
-      )
-      .switchMap(state => {
-        if (state.deviceType === null) {
-          return Observable.empty();
-        }
-        for (const fetcher of getProviders().deviceList) {
-          if (fetcher.getType() === state.deviceType) {
-            return fetcher
-              .observe(state.host)
-              .do(devices => this._store.dispatch(Actions.setDevices(devices)));
-          }
-        }
-      })
-      .ignoreElements();
-    // $FlowFixMe: Teach flow about Symbol.observable
     this._processesObs = Observable.from(this._store)
       .distinctUntilChanged(
         (stateA, stateB) =>
@@ -94,8 +74,8 @@ export class DevicePanelWorkspaceView {
   }
 
   _appStateToProps(state: AppState): Props {
-    const startFetchingDevices = () => {
-      return this._deviceObs.subscribe();
+    const toggleDevicePolling = (isActive: boolean) => {
+      this._store.dispatch(Actions.toggleDevicePolling(isActive));
     };
     const startFetchingProcesses = () => {
       return this._processesObs.subscribe();
@@ -121,7 +101,7 @@ export class DevicePanelWorkspaceView {
       deviceTasks: state.deviceTasks,
       processTasks: state.processTasks,
       isDeviceConnected: state.isDeviceConnected,
-      startFetchingDevices,
+      toggleDevicePolling,
       startFetchingProcesses,
       setHost,
       setDeviceType,

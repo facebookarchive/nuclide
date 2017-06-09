@@ -19,6 +19,38 @@ import {createCache} from '../Cache';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {Action, Store, AppState, ProcessTask, Process} from '../types';
 
+export function pollDevicesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.TOGGLE_DEVICE_POLLING)
+    .switchMap(action => {
+      invariant(action.type === Actions.TOGGLE_DEVICE_POLLING);
+      const {isActive} = action.payload;
+      return Observable.of([store.getState(), isActive]);
+    })
+    .distinctUntilChanged(
+      ([stateA, isActiveA], [stateB, isActiveB]) =>
+        stateA.deviceType === stateB.deviceType &&
+        stateA.host === stateB.host &&
+        isActiveA === isActiveB,
+    )
+    .switchMap(([state, isActive]) => {
+      if (state.deviceType === null || !isActive) {
+        return Observable.empty();
+      }
+      for (const fetcher of getProviders().deviceList) {
+        if (fetcher.getType() === state.deviceType) {
+          return fetcher
+            .observe(state.host)
+            .map(devices => Actions.setDevices(devices));
+        }
+      }
+      return Observable.empty();
+    });
+}
+
 export function setDeviceEpic(
   actions: ActionsObservable<Action>,
   store: Store,

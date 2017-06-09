@@ -21,6 +21,7 @@ import type {
   SetInfoTablesAction,
   SetProcessesAction,
   SetProcessTasksAction,
+  ToggleDevicePollingAction,
   Device,
   Process,
   ProcessTask,
@@ -39,6 +40,16 @@ export const SET_HOST = 'SET_HOST';
 export const SET_INFO_TABLES = 'SET_INFO_TABLES';
 export const SET_PROCESSES = 'SET_PROCESSES';
 export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
+export const TOGGLE_DEVICE_POLLING = 'TOGGLE_DEVICE_POLLING';
+
+export function toggleDevicePolling(
+  isActive: boolean,
+): ToggleDevicePollingAction {
+  return {
+    type: TOGGLE_DEVICE_POLLING,
+    payload: {isActive},
+  };
+}
 
 export function setInfoTables(
   infoTables: Map<string, Map<string, string>>,
