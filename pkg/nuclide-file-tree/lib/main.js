@@ -25,6 +25,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import disablePackage from '../../commons-atom/disablePackage';
 import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
@@ -68,24 +69,8 @@ class Activation {
       state = {};
     }
 
-    // Disable Atom's bundled 'tree-view' package. If this activation is happening during the
-    // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
-    // 'tree-view' because it will have been loaded during startup.
-    disableTreeViewPackage();
-
-    // Disabling and unloading Atom's bundled 'tree-view' must happen after activation because this
-    // package's `activate` is called during an traversal of all initial packages to activate.
-    // Disabling a package during the traversal has no effect if this is a startup load because
-    // `PackageManager` does not re-load the list of packages to activate after each iteration.
-    this._didActivateDisposable = atom.packages.onDidActivateInitialPackages(
-      () => {
-        disableTreeViewPackage();
-        this._didActivateDisposable.dispose();
-      },
-    );
-
     this._disposables = new UniversalDisposable(
-      this._didActivateDisposable,
+      disablePackage('tree-view'),
       () => {
         this._fileTreeController.destroy();
       },
@@ -191,15 +176,6 @@ class Activation {
   }
 
   dispose() {
-    // Re-enable Atom's bundled 'tree-view' when this package is disabled to leave the user's
-    // environment the way this package found it.
-    if (
-      featureConfig.isFeatureDisabled('nuclide-file-tree') &&
-      atom.packages.isPackageDisabled('tree-view')
-    ) {
-      atom.packages.enablePackage('tree-view');
-    }
-
     this._disposables.dispose();
   }
 
@@ -363,24 +339,6 @@ class Activation {
 
   deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {
     return this._createView();
-  }
-}
-
-function disableTreeViewPackage() {
-  if (!atom.packages.isPackageDisabled('tree-view')) {
-    // Calling `disablePackage` on a package first *loads* the package. This step must come
-    // before calling `unloadPackage`.
-    atom.packages.disablePackage('tree-view');
-  }
-
-  if (atom.packages.isPackageActive('tree-view')) {
-    // Only *inactive* packages can be unloaded. Attempting to unload an active package is
-    // considered an exception. Deactivating must come before unloading.
-    atom.packages.deactivatePackage('tree-view');
-  }
-
-  if (atom.packages.isPackageLoaded('tree-view')) {
-    atom.packages.unloadPackage('tree-view');
   }
 }
 
