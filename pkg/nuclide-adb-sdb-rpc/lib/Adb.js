@@ -68,19 +68,17 @@ export class Adb extends AdbSdbBase {
     return this.getCommonDeviceInfo(device).switchMap(infoTable => {
       const unknownCB = () => Observable.of('');
       return Observable.forkJoin(
-        this.getOSVersion(device)
-          .catch(unknownCB)
-          .do(x => infoTable.set('android_version', x)),
-        this.getManufacturer(device)
-          .catch(unknownCB)
-          .do(x => infoTable.set('manufacturer', x)),
-        this.getBrand(device)
-          .catch(unknownCB)
-          .do(x => infoTable.set('brand', x)),
-        this.getWifiIp(device)
-          .catch(unknownCB)
-          .do(x => infoTable.set('wifi_ip', x)),
-      ).map(() => infoTable);
+        this.getOSVersion(device).catch(unknownCB),
+        this.getManufacturer(device).catch(unknownCB),
+        this.getBrand(device).catch(unknownCB),
+        this.getWifiIp(device).catch(unknownCB),
+      ).map(([android_version, manufacturer, brand, wifi_ip]) => {
+        infoTable.set('android_version', android_version);
+        infoTable.set('manufacturer', manufacturer);
+        infoTable.set('brand', brand);
+        infoTable.set('wifi_ip', wifi_ip);
+        return infoTable;
+      });
     });
   }
 

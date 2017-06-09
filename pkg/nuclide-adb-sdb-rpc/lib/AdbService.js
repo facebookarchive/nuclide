@@ -120,10 +120,10 @@ export async function activityExists(
   return (await getAdb()).activityExists(device, packageName, activity);
 }
 
-export async function getJavaProcesses(
+export function getJavaProcesses(
   device: string,
-): Promise<Array<AndroidJavaProcess>> {
-  return (await getAdb()).getJavaProcesses(device).toPromise();
+): ConnectableObservable<Array<AndroidJavaProcess>> {
+  return adbObs.switchMap(adb => adb.getJavaProcesses(device)).publish();
 }
 
 export async function dumpsysPackage(

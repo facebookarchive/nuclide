@@ -41,12 +41,6 @@ export class AdbSdbBase {
     }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   }
 
-  startServer(): Promise<boolean> {
-    return runCommand(this._dbPath, ['start-server'])
-      .toPromise()
-      .then(() => true, () => false);
-  }
-
   getCommonDeviceInfo(device: string): Observable<Map<string, string>> {
     const unknownCB = () => Observable.of('');
     return Observable.forkJoin(
@@ -63,8 +57,8 @@ export class AdbSdbBase {
     });
   }
 
-  async getDeviceList(): Promise<Array<DeviceDescription>> {
-    const devices = await runCommand(this._dbPath, ['devices'])
+  getDeviceList(): Observable<Array<DeviceDescription>> {
+    return runCommand(this._dbPath, ['devices'])
       .map(stdout =>
         stdout
           .split(/\n+/g)
@@ -74,24 +68,22 @@ export class AdbSdbBase {
           .filter(a => a[0] !== '')
           .map(a => a[0]),
       )
-      .toPromise();
-
-    return Promise.all(
-      devices.map(name => {
-        return Observable.forkJoin(
-          this.getDeviceArchitecture(name).catch(() => Observable.of('')),
-          this.getAPIVersion(name).catch(() => Observable.of('')),
-          this.getDeviceModel(name).catch(() => Observable.of('')),
-        )
-          .map(([architecture, apiVersion, model]) => ({
-            name,
-            architecture,
-            apiVersion,
-            model,
-          }))
-          .toPromise();
-      }),
-    );
+      .switchMap(devices => {
+        return Observable.concat(
+          ...devices.map(name => {
+            return Observable.forkJoin(
+              this.getDeviceArchitecture(name).catch(() => Observable.of('')),
+              this.getAPIVersion(name).catch(() => Observable.of('')),
+              this.getDeviceModel(name).catch(() => Observable.of('')),
+            ).map(([architecture, apiVersion, model]) => ({
+              name,
+              architecture,
+              apiVersion,
+              model,
+            }));
+          }),
+        ).toArray();
+      });
   }
 
   async getFileContentsAtPath(device: string, path: string): Promise<string> {
