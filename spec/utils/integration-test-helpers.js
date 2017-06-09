@@ -15,6 +15,7 @@ import invariant from 'assert';
 import child_process from 'child_process';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
   RemoteConnection,
   getServiceByNuclideUri,
@@ -57,6 +58,9 @@ export function jasmineIntegrationTestSetup(): void {
   // We'd like to have Atom start with a clean slate.
   // https://github.com/atom/atom/blob/v1.7.3/spec/spec-helper.coffee#L66
   atom.project.setPaths([]);
+
+  // Make sure configs are consistent (before and after FeatureLoader starts).
+  featureConfig.setPackageName('nuclide');
 }
 
 /**

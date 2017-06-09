@@ -18,6 +18,7 @@ import {HgRepositoryClient} from '../lib/HgRepositoryClient';
 import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 import temp from 'temp';
 
 temp.track();
@@ -251,7 +252,7 @@ describe('HgRepositoryClient', () => {
       // to it. Thus, the path returned from editor.getPath() (which is what is
       // used in HgRepository) would fail a real 'contains' method. So we override
       // this to the expected path.
-      atom.config.set('nuclide.nuclide-hg-repository.enableDiffStats', true);
+      featureConfig.set('nuclide-hg-repository.enableDiffStats', true);
       const workingDirectoryClone = new Directory(tempDir);
       spyOn(workingDirectory, 'contains').andCallFake(filePath => {
         const prefix = '/private';

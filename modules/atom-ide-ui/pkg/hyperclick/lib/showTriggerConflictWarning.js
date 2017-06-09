@@ -10,14 +10,14 @@
  */
 
 import invariant from 'assert';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 export default function showTriggerConflictWarning(): atom$Notification {
-  const pkg = atom.config.get('nuclide.hyperclick') == null
-    ? 'hyperclick'
-    : 'nuclide.hyperclick';
-  const triggerKeys = atom.config.get(`${pkg}.${process.platform}TriggerKeys`);
+  const triggerKeys = featureConfig.get(
+    `hyperclick.${process.platform}TriggerKeys`,
+  );
   invariant(typeof triggerKeys === 'string');
-  const triggerKeyDescription = getTriggerDescription(pkg, triggerKeys);
+  const triggerKeyDescription = getTriggerDescription(triggerKeys);
   const {platform} = process;
   const commandOrMeta = platform === 'darwin' ? 'command' : 'meta';
   const optionOrAlt = platform === 'darwin' ? 'option' : 'alt';
@@ -35,8 +35,10 @@ export default function showTriggerConflictWarning(): atom$Notification {
   );
 }
 
-function getTriggerDescription(pkg: string, trigger: string): string {
-  const schema = atom.config.getSchema(`${pkg}.${process.platform}TriggerKeys`);
+function getTriggerDescription(trigger: string): string {
+  const schema = featureConfig.getSchema(
+    `hyperclick.${process.platform}TriggerKeys`,
+  );
   invariant(schema != null && schema.enum != null);
   const match = schema.enum.find(option => {
     invariant(option != null && typeof option.value === 'string');

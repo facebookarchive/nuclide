@@ -14,11 +14,9 @@
  * Each individual loaded package's config is a subconfig of the root package.
  */
 
-import invariant from 'assert';
 import {Observable} from 'rxjs';
 
-// Default to "nuclide", but only for unit tests.
-let packageName = atom.inSpecMode() ? 'nuclide' : null;
+let packageName = null;
 
 /**
  * Sets the root package name.
@@ -29,7 +27,9 @@ function setPackageName(name: string): void {
 }
 
 function formatKeyPath(keyPath: string): string {
-  invariant(packageName, 'feature-config must be used with FeatureLoader.');
+  if (packageName == null) {
+    return keyPath;
+  }
   return `${packageName}.${keyPath}`;
 }
 
@@ -171,7 +171,9 @@ function unset(
  * container package itself is disabled.
  */
 function isFeatureDisabled(name: string): boolean {
-  invariant(packageName, 'feature-config must be used with FeatureLoader.');
+  if (packageName == null) {
+    return atom.packages.isPackageDisabled(name);
+  }
   return (
     atom.packages.isPackageDisabled(packageName) ||
     !atom.config.get(`${packageName}.use.${name}`)
