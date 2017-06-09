@@ -272,9 +272,13 @@ export default class FileChanges extends React.Component {
 
     const diffDetails = (
       <span>
-        {annotationComponent}<br />
-        {additions} {pluralize('addition', additions)},{' '}
-        {deletions} {pluralize('deletion', deletions)}
+        {annotationComponent}
+        {' '}
+        (
+        {additions + deletions}
+        {' '}
+        {pluralize('line', additions + deletions)}
+        )
       </span>
     );
 
