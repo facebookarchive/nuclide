@@ -16,10 +16,12 @@ import {
   createAndroidInfoProvider,
   createAndroidProcessesProvider,
   createAndroidStopPackageProvider,
+  createAndroidConfigurePathTaskProvider,
 } from './android_providers';
 import {
   createTizenDeviceListProvider,
   createTizenInfoProvider,
+  createTizenConfigurePathTaskProvider,
 } from './tizen_providers';
 
 import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
@@ -47,6 +49,13 @@ class Activation {
       api.registerProcessesProvider(createAndroidProcessesProvider()),
       // process tasks
       api.registerProcessTaskProvider(createAndroidStopPackageProvider()),
+      // device type tasks
+      api.registerDeviceTypeTaskProvider(
+        createAndroidConfigurePathTaskProvider(),
+      ),
+      api.registerDeviceTypeTaskProvider(
+        createTizenConfigurePathTaskProvider(),
+      ),
     );
   }
 }

@@ -9,20 +9,19 @@
  * @format
  */
 
-export type Cache<T> = {
-  getOrCreate(key: string, callback: () => T): T,
-};
+export class Cache<T> {
+  store: Map<string, T> = new Map();
+
+  getOrCreate(key: string, callback: () => T): T {
+    let cached = this.store.get(key);
+    if (cached === undefined) {
+      cached = callback();
+      this.store.set(key, cached);
+    }
+    return cached;
+  }
+}
 
 export function createCache<T>(): Cache<T> {
-  const store: Map<string, T> = new Map();
-  return {
-    getOrCreate(key: string, callback: () => T): T {
-      let cached = store.get(key);
-      if (cached === undefined) {
-        cached = callback();
-        store.set(key, cached);
-      }
-      return cached;
-    },
-  };
+  return new Cache();
 }

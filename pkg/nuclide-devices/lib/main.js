@@ -119,22 +119,26 @@ class Activation {
     this._disposables.add(() => {
       activation = null;
     });
+    const providers = getProviders();
     return {
       registerListProvider: this._createProviderRegistration(
-        getProviders().deviceList,
+        providers.deviceList,
         () => this._refreshDeviceTypes(),
       ),
       registerInfoProvider: this._createProviderRegistration(
-        getProviders().deviceInfo,
+        providers.deviceInfo,
       ),
       registerProcessesProvider: this._createProviderRegistration(
-        getProviders().deviceProcesses,
+        providers.deviceProcesses,
       ),
       registerTaskProvider: this._createProviderRegistration(
-        getProviders().deviceTask,
+        providers.deviceTask,
       ),
       registerProcessTaskProvider: this._createProviderRegistration(
-        getProviders().processTask,
+        providers.processTask,
+      ),
+      registerDeviceTypeTaskProvider: this._createProviderRegistration(
+        providers.deviceTypeTask,
       ),
     };
   }

@@ -15,6 +15,7 @@ import {
   DeviceProcessesProvider,
   DeviceTaskProvider,
   DeviceProcessTaskProvider,
+  DeviceTypeTaskProvider,
 } from './types';
 
 type DeviceProviders = {
@@ -23,6 +24,7 @@ type DeviceProviders = {
   deviceTask: Set<DeviceTaskProvider>,
   deviceProcesses: Set<DeviceProcessesProvider>,
   processTask: Set<DeviceProcessTaskProvider>,
+  deviceTypeTask: Set<DeviceTypeTaskProvider>,
 };
 
 const providers: DeviceProviders = {
@@ -31,6 +33,7 @@ const providers: DeviceProviders = {
   deviceTask: new Set(),
   deviceProcesses: new Set(),
   processTask: new Set(),
+  deviceTypeTask: new Set(),
 };
 
 export function getProviders(): DeviceProviders {

@@ -12,7 +12,11 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device, Process, ProcessTask} from '../types';
 import type {Expected} from '../../../nuclide-expected';
+import type {TaskEvent} from 'nuclide-commons/process';
+import type {Props as TaskButtonPropsType} from './TaskButton';
 
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {TaskButton} from './TaskButton';
 import {DeviceTask} from '../DeviceTask';
 import React from 'react';
 import {
@@ -40,6 +44,7 @@ export type Props = {|
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
   isDeviceConnected: boolean,
+  deviceTypeTasks: DeviceTask[],
 |};
 
 export class RootPanel extends React.Component {
@@ -69,6 +74,37 @@ export class RootPanel extends React.Component {
         device={this.props.device}
         setDevice={this.props.setDevice}
       />
+    );
+  }
+
+  _taskEventsToProps(
+    task: DeviceTask,
+    taskEvent: ?TaskEvent,
+  ): TaskButtonPropsType {
+    return {
+      name: task.getName(),
+      start: () => task.start(),
+      cancel: () => task.cancel(),
+      isRunning: taskEvent != null,
+      progress: null,
+    };
+  }
+
+  _getTasks(): React.Element<any> {
+    const tasks = Array.from(this.props.deviceTypeTasks).map(task => {
+      const StreamedTaskButton = bindObservableAsProps(
+        task
+          .getTaskEvents()
+          .distinctUntilChanged()
+          .map(taskEvent => this._taskEventsToProps(task, taskEvent)),
+        TaskButton,
+      );
+      return <StreamedTaskButton key={task.getName()} />;
+    });
+    return (
+      <div className="block nuclide-device-panel-tasks-container">
+        {tasks}
+      </div>
     );
   }
 
@@ -107,6 +143,7 @@ export class RootPanel extends React.Component {
         <div className="block">
           {this._createDeviceTable()}
         </div>
+        {this._getTasks()}
       </div>
     );
   }

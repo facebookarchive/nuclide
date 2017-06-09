@@ -104,6 +104,13 @@ export function app(state: AppState, action: Action): AppState {
         deviceTasks,
       };
 
+    case Actions.SET_DEVICE_TYPE_TASKS:
+      const {deviceTypeTasks} = action.payload;
+      return {
+        ...state,
+        deviceTypeTasks,
+      };
+
     default:
       return state;
   }

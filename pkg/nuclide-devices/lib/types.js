@@ -28,6 +28,9 @@ export type DevicePanelServiceApi = {
   registerProcessTaskProvider: (
     provider: DeviceProcessTaskProvider,
   ) => IDisposable,
+  registerDeviceTypeTaskProvider: (
+    provider: DeviceTypeTaskProvider,
+  ) => IDisposable,
 };
 
 export interface DeviceListProvider {
@@ -53,6 +56,12 @@ export interface DeviceTaskProvider {
   getName(): string,
   getType(): string,
   isSupported(host: NuclideUri): Observable<boolean>,
+}
+
+export interface DeviceTypeTaskProvider {
+  getTask(host: NuclideUri): Observable<TaskEvent>,
+  getName(): string,
+  getType(): string,
 }
 
 export interface DeviceProcessTaskProvider {
@@ -83,6 +92,7 @@ export type AppState = {
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
   isDeviceConnected: boolean,
+  deviceTypeTasks: DeviceTask[],
 };
 
 export type Store = {
@@ -209,6 +219,13 @@ export type ToggleProcessPollingAction = {
   },
 };
 
+export type SetDeviceTypeTasksAction = {
+  type: 'SET_DEVICE_TYPE_TASKS',
+  payload: {
+    deviceTypeTasks: DeviceTask[],
+  },
+};
+
 export type Action =
   | ToggleDevicePollingAction
   | ToggleProcessPollingAction
@@ -221,4 +238,5 @@ export type Action =
   | SetProcessesAction
   | SetProcessTasksAction
   | SetDeviceTasksAction
+  | SetDeviceTypeTasksAction
   | SetDeviceAction;

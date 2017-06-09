@@ -106,6 +106,30 @@ export function setDeviceEpic(
   });
 }
 
+const deviceTypeTaskCache = createCache();
+export function setDeviceTypeEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_DEVICE_TYPE).switchMap(action => {
+    const state = store.getState();
+    return Observable.of(
+      Array.from(getProviders().deviceTypeTask)
+        .filter(provider => provider.getType() === state.deviceType)
+        .map(provider =>
+          deviceTypeTaskCache.getOrCreate(
+            `${state.host}-${state.deviceType || ''}-${provider.getName()}`,
+            () =>
+              new DeviceTask(
+                () => provider.getTask(state.host),
+                provider.getName(),
+              ),
+          ),
+        ),
+    ).map(tasks => Actions.setDeviceTypeTasks(tasks));
+  });
+}
+
 export function setProcessesEpic(
   actions: ActionsObservable<Action>,
   store: Store,

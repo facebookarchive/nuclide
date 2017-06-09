@@ -14,6 +14,7 @@ import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
 import {ATDeviceStopPackageProvider} from './ATDeviceStopPackageProvider';
+import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -37,6 +38,12 @@ export function createAndroidProcessesProvider(): ATDeviceProcessesProvider {
 
 export function createAndroidStopPackageProvider(): ATDeviceStopPackageProvider {
   return new ATDeviceStopPackageProvider('android', (host: NuclideUri) =>
+    getAdbServiceByNuclideUri(host),
+  );
+}
+
+export function createAndroidConfigurePathTaskProvider(): ATConfigurePathTaskProvider {
+  return new ATConfigurePathTaskProvider('android', (host: NuclideUri) =>
     getAdbServiceByNuclideUri(host),
   );
 }

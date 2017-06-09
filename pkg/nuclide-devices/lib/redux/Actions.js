@@ -21,6 +21,7 @@ import type {
   SetInfoTablesAction,
   SetProcessesAction,
   SetProcessTasksAction,
+  SetDeviceTypeTasksAction,
   ToggleDevicePollingAction,
   ToggleProcessPollingAction,
   Device,
@@ -43,6 +44,7 @@ export const SET_PROCESSES = 'SET_PROCESSES';
 export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
 export const TOGGLE_DEVICE_POLLING = 'TOGGLE_DEVICE_POLLING';
 export const TOGGLE_PROCESS_POLLING = 'TOGGLE_PROCESS_POLLING';
+export const SET_DEVICE_TYPE_TASKS = 'SET_DEVICE_TYPE_TASKS';
 
 export function toggleDevicePolling(
   isActive: boolean,
@@ -135,5 +137,14 @@ export function setDeviceTasks(
   return {
     type: SET_DEVICE_TASKS,
     payload: {deviceTasks},
+  };
+}
+
+export function setDeviceTypeTasks(
+  deviceTypeTasks: DeviceTask[],
+): SetDeviceTypeTasksAction {
+  return {
+    type: SET_DEVICE_TYPE_TASKS,
+    payload: {deviceTypeTasks},
   };
 }

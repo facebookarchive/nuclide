@@ -12,6 +12,7 @@
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
+import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -23,6 +24,12 @@ export function createTizenDeviceListProvider(): ATDeviceListProvider {
 
 export function createTizenInfoProvider(): ATDeviceInfoProvider {
   return new ATDeviceInfoProvider('tizen', (host: NuclideUri) =>
+    getSdbServiceByNuclideUri(host),
+  );
+}
+
+export function createTizenConfigurePathTaskProvider(): ATConfigurePathTaskProvider {
+  return new ATConfigurePathTaskProvider('tizen', (host: NuclideUri) =>
     getSdbServiceByNuclideUri(host),
   );
 }
