@@ -46,6 +46,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
   const textEditor: atom$TextEditor = atom.workspace.buildTextEditor(
     textEditorParams,
   );
+  disposables.add(() => textEditor.destroy());
 
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);

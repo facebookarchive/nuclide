@@ -18,7 +18,6 @@ import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
-import {existingEditorForBuffer} from 'nuclide-commons-atom/text-editor';
 import analytics from 'nuclide-commons-atom/analytics';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
@@ -29,7 +28,6 @@ const EDITOR_HEIGHT_DELTA = 10;
 
 type State = {
   buffer: atom$TextBuffer,
-  oldBuffer: ?atom$TextBuffer,
   editorHeight: number, // Height in ems to render the AtomTextEditor.
 };
 
@@ -55,7 +53,6 @@ export class DefinitionPreviewView extends React.Component {
     }
     this.state = {
       buffer,
-      oldBuffer: null,
       editorHeight: height,
     };
     this._settingsChangeDisposable = featureConfig.observe(
@@ -77,16 +74,12 @@ export class DefinitionPreviewView extends React.Component {
       // the correct path if the new definition prop has a different path than the
       // currently loaded buffer.
       if (definition.path !== this.state.buffer.getPath()) {
-        this.setState({
-          buffer: bufferForUri(definition.path),
-          oldBuffer: this.state.buffer,
-        });
+        this.setState({buffer: bufferForUri(definition.path)});
       }
     } else {
       // A null definition has no associated file path, so make a new TextBuffer()
       // that doesn't have an associated file path.
-      const oldBuffer = this.state.buffer;
-      this.setState({buffer: new TextBuffer(), oldBuffer});
+      this.setState({buffer: new TextBuffer()});
     }
   }
 
@@ -104,10 +97,6 @@ export class DefinitionPreviewView extends React.Component {
   }
 
   componentWillUnmount(): void {
-    this.state.buffer.destroy();
-    if (this.state.oldBuffer != null) {
-      this.state.oldBuffer.destroy();
-    }
     this._settingsChangeDisposable.dispose();
   }
 
@@ -123,14 +112,6 @@ export class DefinitionPreviewView extends React.Component {
       type: 'line',
       class: 'nuclide-current-line-highlight',
     });
-    if (this.state.oldBuffer != null) {
-      // Only destroy oldBuffer if it's not already open in a tab - otherwise it'll
-      // close the tab using oldBuffer
-      if (existingEditorForBuffer(this.state.oldBuffer) == null) {
-        invariant(this.state.oldBuffer != null);
-        this.state.oldBuffer.destroy();
-      }
-    }
   }
 
   render(): React.Element<any> {
