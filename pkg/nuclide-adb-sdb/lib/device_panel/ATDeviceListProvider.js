@@ -12,14 +12,19 @@
 import {
   observeAndroidDevicesX,
   observeTizenDevicesX,
-} from '../../nuclide-adb-sdb-base/lib/DevicePoller';
+} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
 import {Observable} from 'rxjs';
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
+import typeof * as AdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device, DeviceListProvider} from '../../nuclide-devices/lib/types';
-import type {Expected} from '../../nuclide-expected';
+import type {
+  Device,
+  DeviceListProvider,
+} from '../../../nuclide-devices/lib/types';
+import type {Expected} from '../../../nuclide-expected';
 
 export class ATDeviceListProvider implements DeviceListProvider {
   _type: string;

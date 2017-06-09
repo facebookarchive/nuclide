@@ -9,11 +9,12 @@
  * @format
  */
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as AdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {
   DeviceProcessesProvider,
   Process,
-} from '../../nuclide-devices/lib/types';
+} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {Observable} from 'rxjs';

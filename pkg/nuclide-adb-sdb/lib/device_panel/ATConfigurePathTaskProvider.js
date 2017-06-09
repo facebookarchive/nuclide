@@ -9,9 +9,11 @@
  * @format
  */
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
-import type {DeviceTypeTaskProvider} from '../../nuclide-devices/lib/types';
+import typeof * as AdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
+import type {DeviceTypeTaskProvider} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
 

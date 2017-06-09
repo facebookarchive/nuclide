@@ -11,18 +11,8 @@
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  createAndroidDeviceListProvider,
-  createAndroidInfoProvider,
-  createAndroidProcessesProvider,
-  createAndroidStopPackageProvider,
-  createAndroidConfigurePathTaskProvider,
-} from './android_providers';
-import {
-  createTizenDeviceListProvider,
-  createTizenInfoProvider,
-  createTizenConfigurePathTaskProvider,
-} from './tizen_providers';
+import {AndroidProviders} from './device_panel/AndroidProviders';
+import {TizenProviders} from './device_panel/TizenProviders';
 
 import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
 
@@ -40,21 +30,27 @@ class Activation {
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
     this._disposables.add(
       // list
-      api.registerListProvider(createAndroidDeviceListProvider()),
-      api.registerListProvider(createTizenDeviceListProvider()),
+      api.registerListProvider(
+        AndroidProviders.createAndroidDeviceListProvider(),
+      ),
+      api.registerListProvider(TizenProviders.createTizenDeviceListProvider()),
       // info
-      api.registerInfoProvider(createAndroidInfoProvider()),
-      api.registerInfoProvider(createTizenInfoProvider()),
+      api.registerInfoProvider(AndroidProviders.createAndroidInfoProvider()),
+      api.registerInfoProvider(TizenProviders.createTizenInfoProvider()),
       // processes
-      api.registerProcessesProvider(createAndroidProcessesProvider()),
+      api.registerProcessesProvider(
+        AndroidProviders.createAndroidProcessesProvider(),
+      ),
       // process tasks
-      api.registerProcessTaskProvider(createAndroidStopPackageProvider()),
+      api.registerProcessTaskProvider(
+        AndroidProviders.createAndroidStopPackageProvider(),
+      ),
       // device type tasks
       api.registerDeviceTypeTaskProvider(
-        createAndroidConfigurePathTaskProvider(),
+        AndroidProviders.createAndroidConfigurePathTaskProvider(),
       ),
       api.registerDeviceTypeTaskProvider(
-        createTizenConfigurePathTaskProvider(),
+        TizenProviders.createTizenConfigurePathTaskProvider(),
       ),
     );
   }

@@ -9,11 +9,13 @@
  * @format
  */
 
-import type {DeviceInfoProvider} from '../../nuclide-devices/lib/types';
+import type {DeviceInfoProvider} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
+import typeof * as AdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as SdbService
+  from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import {Observable} from 'rxjs';
 
 export class ATDeviceInfoProvider implements DeviceInfoProvider {
