@@ -16,6 +16,7 @@ import typeof * as SdbService
 import type {DeviceTypeTaskProvider} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
+import type {DBPathsInfo} from '../../../nuclide-adb-sdb-rpc/lib/types';
 
 import showModal from '../../../nuclide-ui/showModal';
 import {ATCustomDBPathModal} from './ui/ATCustomDBPathModal';
@@ -44,28 +45,36 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
     return `Set custom ${this._dbType} path`;
   }
 
+  _getPathsInfo(host: NuclideUri): Promise<DBPathsInfo> {
+    return this._rpcFactory(host).getCurrentPathsInfo();
+  }
+
   getTask(host: NuclideUri): Observable<TaskEvent> {
-    return Observable.create(observer => {
-      const disposable = showModal(
-        dismiss => (
-          <ATCustomDBPathModal
-            dismiss={dismiss}
-            currentActivePath="test"
-            currentCustomPath={null}
-            registeredPaths={['uno', 'dos', 'tres']}
-            setCustomPath={() => {}}
-            type={this._dbType}
-          />
-        ),
-        {
-          className: 'nuclide-adb-sdb-custom-path-modal',
-          onDismiss: () => {
-            disposable.dispose();
-            observer.complete();
+    return Observable.defer(() =>
+      this._getPathsInfo(host),
+    ).switchMap(pathsInfo => {
+      return Observable.create(observer => {
+        const disposable = showModal(
+          dismiss => (
+            <ATCustomDBPathModal
+              dismiss={dismiss}
+              currentActivePath={pathsInfo.working}
+              currentCustomPath={null}
+              registeredPaths={pathsInfo.all}
+              setCustomPath={() => {}}
+              type={this._dbType}
+            />
+          ),
+          {
+            className: 'nuclide-adb-sdb-custom-path-modal',
+            onDismiss: () => {
+              disposable.dispose();
+              observer.complete();
+            },
+            disableDismissOnClickOutsideModal: true,
           },
-          disableDismissOnClickOutsideModal: true,
-        },
-      );
+        );
+      });
     });
   }
 }

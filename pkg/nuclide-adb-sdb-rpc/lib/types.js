@@ -32,3 +32,5 @@ export type Process = {
   memUsage: ?number,
   isJava: boolean,
 };
+
+export type DBPathsInfo = {working: ?string, all: Array<string>};

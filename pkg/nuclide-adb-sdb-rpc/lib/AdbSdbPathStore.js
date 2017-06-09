@@ -13,7 +13,7 @@ import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';
 
-import type {DebugBridgeType} from './types';
+import type {DebugBridgeType, DBPathsInfo} from './types';
 
 export type DBPath = {path: string, priority: number};
 
@@ -45,6 +45,13 @@ class DebugBridgePathStore {
 
   notifyWorkingPath(workingPath: ?string): void {
     this._lastWorkingPath = workingPath;
+  }
+
+  getCurrentPathsInfo(): DBPathsInfo {
+    return {
+      working: this._lastWorkingPath,
+      all: this._sortedPaths,
+    };
   }
 }
 

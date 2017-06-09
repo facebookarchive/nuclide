@@ -9,14 +9,19 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {
+  DeviceDescription,
+  AndroidJavaProcess,
+  Process,
+  DBPathsInfo,
+} from './types';
+
 import {pathForDebugBridge, getStore} from './AdbSdbPathStore';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {Adb} from './Adb';
 import {AdbTop} from './AdbTop';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription, AndroidJavaProcess, Process} from './types';
 
 async function getAdb(): Promise<Adb> {
   return new Adb((await pathForDebugBridge('adb')));
@@ -32,6 +37,10 @@ export async function registerAdbPath(
   priority: number = -1,
 ): Promise<void> {
   getStore('adb').registerPath(id, {path, priority});
+}
+
+export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
+  return getStore('adb').getCurrentPathsInfo();
 }
 
 export function getDeviceInfo(

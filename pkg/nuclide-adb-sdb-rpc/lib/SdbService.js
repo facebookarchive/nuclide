@@ -15,7 +15,7 @@ import {Sdb} from './Sdb';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription} from './types';
+import type {DeviceDescription, DBPathsInfo} from './types';
 
 export async function registerSdbPath(
   id: string,
@@ -23,6 +23,10 @@ export async function registerSdbPath(
   priority: number = -1,
 ): Promise<void> {
   getStore('sdb').registerPath(id, {path, priority});
+}
+
+export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
+  return getStore('sdb').getCurrentPathsInfo();
 }
 
 async function getSdb(): Promise<Sdb> {

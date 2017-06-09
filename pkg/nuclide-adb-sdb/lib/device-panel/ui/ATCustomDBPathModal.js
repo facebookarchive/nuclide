@@ -19,7 +19,7 @@ type Props = {|
   type: 'adb' | 'sdb',
   setCustomPath: (path: string) => void,
   dismiss: () => mixed,
-  currentActivePath: string,
+  currentActivePath: ?string,
   currentCustomPath: ?string,
   registeredPaths: string[],
 |};
