@@ -35,40 +35,41 @@ export class AdbTop {
     this._device = device;
   }
 
-  async fetch(): Promise<Process[]> {
-    const [processes, javaProcesses, cpuAndMemUsage] = await Promise.all([
-      this._getProcessList().toPromise().catch(() => []),
-      this._adb.getJavaProcesses(this._device).toPromise().catch(() => []),
-      this._getProcessAndMemoryUsage().toPromise().catch(() => new Map()),
-    ]);
-    const javaPids = new Set(
-      javaProcesses.map(javaProc => Number(javaProc.pid)),
-    );
-    return arrayCompact(
-      processes.map(x => {
-        const info = x.trim().split(/\s+/);
-        const pid = parseInt(info[1], 10);
-        if (!Number.isInteger(pid)) {
-          return null;
-        }
-        const cpuAndMem = cpuAndMemUsage.get(pid);
-        let cpu = null;
-        let mem = null;
-        if (cpuAndMem != null) {
-          cpu = parseFloat(cpuAndMem[0]);
-          mem = parseFloat(cpuAndMem[1]);
-        }
-        const isJava = javaPids.has(pid);
-        return {
-          user: info[0],
-          pid,
-          name: info[info.length - 1],
-          cpuUsage: cpu,
-          memUsage: mem,
-          isJava,
-        };
-      }),
-    );
+  fetch(): Observable<Process[]> {
+    return Observable.forkJoin(
+      this._getProcessList().catch(() => Observable.of([])),
+      this._adb.getJavaProcesses(this._device).catch(() => Observable.of([])),
+      this._getProcessAndMemoryUsage().catch(() => Observable.of(new Map())),
+    ).map(([processes, javaProcesses, cpuAndMemUsage]) => {
+      const javaPids = new Set(
+        javaProcesses.map(javaProc => Number(javaProc.pid)),
+      );
+      return arrayCompact(
+        processes.map(x => {
+          const info = x.trim().split(/\s+/);
+          const pid = parseInt(info[1], 10);
+          if (!Number.isInteger(pid)) {
+            return null;
+          }
+          const cpuAndMem = cpuAndMemUsage.get(pid);
+          let cpu = null;
+          let mem = null;
+          if (cpuAndMem != null) {
+            cpu = parseFloat(cpuAndMem[0]);
+            mem = parseFloat(cpuAndMem[1]);
+          }
+          const isJava = javaPids.has(pid);
+          return {
+            user: info[0],
+            pid,
+            name: info[info.length - 1],
+            cpuUsage: cpu,
+            memUsage: mem,
+            isJava,
+          };
+        }),
+      );
+    });
   }
 
   _getProcessList(): Observable<Array<string>> {

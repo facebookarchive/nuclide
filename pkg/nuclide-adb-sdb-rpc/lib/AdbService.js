@@ -36,8 +36,14 @@ export async function getDeviceInfo(
   return (await getAdb()).getDeviceInfo(device);
 }
 
-export async function getProcesses(device: string): Promise<Array<Process>> {
-  return new AdbTop((await getAdb()), device).fetch();
+export function getProcesses(
+  device: string,
+): ConnectableObservable<Array<Process>> {
+  return Observable.defer(() => getAdb())
+    .switchMap(adb => {
+      return new AdbTop(adb, device).fetch();
+    })
+    .publish();
 }
 
 export async function stopPackage(
