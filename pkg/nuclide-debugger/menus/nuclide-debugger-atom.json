@@ -60,6 +60,14 @@
               "command": "nuclide-debugger:toggle-breakpoint-enabled"
             },
             {
+              "label": "Enable All Breakpoints",
+              "command": "nuclide-debugger:enable-all-breakpoints"
+            },
+            {
+              "label": "Disable All Breakpoints",
+              "command": "nuclide-debugger:disable-all-breakpoints"
+            },
+            {
               "label": "Remove Breakpoint",
               "command": "nuclide-debugger:remove-breakpoint"
             },

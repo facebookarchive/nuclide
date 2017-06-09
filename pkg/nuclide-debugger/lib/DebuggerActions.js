@@ -524,6 +524,20 @@ export default class DebuggerActions {
     });
   }
 
+  enableAllBreakpoints(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.ENABLE_ALL_BREAKPOINTS,
+      data: {},
+    });
+  }
+
+  disableAllBreakpoints(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.DISABLE_ALL_BREAKPOINTS,
+      data: {},
+    });
+  }
+
   toggleBreakpoint(path: string, line: number): void {
     track(AnalyticsEvents.DEBUGGER_BREAKPOINT_TOGGLE);
     this._dispatcher.dispatch({

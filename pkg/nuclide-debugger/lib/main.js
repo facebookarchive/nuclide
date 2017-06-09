@@ -343,6 +343,16 @@ class Activation {
         ),
       }),
       atom.commands.add('atom-workspace', {
+        'nuclide-debugger:enable-all-breakpoints': this._enableAllBreakpoints.bind(
+          this,
+        ),
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:disable-all-breakpoints': this._disableAllBreakpoints.bind(
+          this,
+        ),
+      }),
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:remove-breakpoint': this._deleteBreakpoint.bind(this),
       }),
       atom.commands.add('atom-workspace', {
@@ -364,6 +374,14 @@ class Activation {
       // Context Menu Items.
       atom.contextMenu.add({
         '.nuclide-debugger-breakpoint': [
+          {
+            label: 'Enable All Breakpoints',
+            command: 'nuclide-debugger:enable-all-breakpoints',
+          },
+          {
+            label: 'Disable All Breakpoints',
+            command: 'nuclide-debugger:disable-all-breakpoints',
+          },
           {
             label: 'Remove Breakpoint',
             command: 'nuclide-debugger:remove-breakpoint',
@@ -629,6 +647,16 @@ class Activation {
   _deleteAllBreakpoints(): void {
     const actions = this._model.getActions();
     actions.deleteAllBreakpoints();
+  }
+
+  _enableAllBreakpoints(): void {
+    const actions = this._model.getActions();
+    actions.enableAllBreakpoints();
+  }
+
+  _disableAllBreakpoints(): void {
+    const actions = this._model.getActions();
+    actions.disableAllBreakpoints();
   }
 
   _renderConfigDialog(

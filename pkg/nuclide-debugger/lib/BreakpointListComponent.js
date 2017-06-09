@@ -103,9 +103,17 @@ export class BreakpointListComponent extends React.Component {
       .map((breakpoint, i) => {
         const {basename, line, enabled, resolved, path} = breakpoint;
         const label = `${basename}:${line + 1}`;
-        const title = resolved ? null : 'Unresolved Breakpoint';
+        const title = !enabled
+          ? 'Disabled breakpoint'
+          : !resolved
+              ? 'Unresolved Breakpoint'
+              : `Breakpoint at ${label} (resolved)`;
         const content = (
-          <div className="nuclide-debugger-breakpoint" key={i}>
+          <div
+            className={classnames('nuclide-debugger-breakpoint', {
+              'nuclide-debugger-breakpoint-disabled': !enabled,
+            })}
+            key={i}>
             <Checkbox
               checked={enabled}
               indeterminate={!resolved}

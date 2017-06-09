@@ -91,6 +91,12 @@ export default class BreakpointStore {
       case ActionTypes.DELETE_ALL_BREAKPOINTS:
         this._deleteAllBreakpoints();
         break;
+      case ActionTypes.ENABLE_ALL_BREAKPOINTS:
+        this._enableAllBreakpoints();
+        break;
+      case ActionTypes.DISABLE_ALL_BREAKPOINTS:
+        this._disableAllBreakpoints();
+        break;
       case ActionTypes.TOGGLE_BREAKPOINT:
         this._toggleBreakpoint(payload.data.path, payload.data.line);
         break;
@@ -173,14 +179,36 @@ export default class BreakpointStore {
     });
   }
 
-  _deleteAllBreakpoints(): void {
+  _forEachBreakpoint(
+    callback: (path: string, line: number, breakpointId: number) => void,
+  ) {
     for (const path of this._breakpoints.keys()) {
       const lineMap = this._breakpoints.get(path);
       invariant(lineMap != null);
       for (const line of lineMap.keys()) {
-        this._deleteBreakpoint(path, line);
+        const bp = lineMap.get(line);
+        invariant(bp != null);
+        callback(path, line, bp.id);
       }
     }
+  }
+
+  _deleteAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._deleteBreakpoint(path, line),
+    );
+  }
+
+  _enableAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._updateBreakpointEnabled(breakpointId, true),
+    );
+  }
+
+  _disableAllBreakpoints(): void {
+    this._forEachBreakpoint((path, line, breakpointId) =>
+      this._updateBreakpointEnabled(breakpointId, false),
+    );
   }
 
   _deleteBreakpoint(
