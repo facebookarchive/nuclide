@@ -183,30 +183,28 @@ export class Adb extends AdbSdbBase {
     return runCommand(this._dbPath, command).toPromise();
   }
 
-  async getJavaProcesses(device: string): Promise<Array<AndroidJavaProcess>> {
-    const allProcesses = await this.runShortCommand(device, ['shell', 'ps'])
+  getJavaProcesses(device: string): Observable<Array<AndroidJavaProcess>> {
+    return this.runShortCommand(device, ['shell', 'ps'])
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
       })
-      .toPromise();
-
-    return this.runLongCommand(device, ['jdwp'])
-      .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-      .take(1)
-      .timeout(1000)
-      .map(output => {
-        const jdwpPids = new Set();
-        if (output.kind === 'stdout') {
-          const block: string = output.data;
-          block.split(/\s+/).forEach(pid => {
-            jdwpPids.add(pid.trim());
+      .switchMap(allProcesses => {
+        return this.runLongCommand(device, ['jdwp'])
+          .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
+          .take(1)
+          .timeout(1000)
+          .map(output => {
+            const jdwpPids = new Set();
+            if (output.kind === 'stdout') {
+              const block: string = output.data;
+              block.split(/\s+/).forEach(pid => {
+                jdwpPids.add(pid.trim());
+              });
+            }
+            return allProcesses.filter(row => jdwpPids.has(row.pid));
           });
-        }
-
-        return allProcesses.filter(row => jdwpPids.has(row.pid));
-      })
-      .toPromise();
+      });
   }
 
   async dumpsysPackage(device: string, pkg: string): Promise<?string> {

@@ -38,7 +38,7 @@ export class AdbTop {
   async fetch(): Promise<Process[]> {
     const [processes, javaProcesses, cpuAndMemUsage] = await Promise.all([
       this._getProcessList().toPromise().catch(() => []),
-      this._adb.getJavaProcesses(this._device).catch(() => []),
+      this._adb.getJavaProcesses(this._device).toPromise().catch(() => []),
       this._getProcessAndMemoryUsage().toPromise().catch(() => new Map()),
     ]);
     const javaPids = new Set(

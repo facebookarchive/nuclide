@@ -121,7 +121,7 @@ export async function activityExists(
 export async function getJavaProcesses(
   device: string,
 ): Promise<Array<AndroidJavaProcess>> {
-  return (await getAdb()).getJavaProcesses(device);
+  return (await getAdb()).getJavaProcesses(device).toPromise();
 }
 
 export async function dumpsysPackage(
