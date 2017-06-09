@@ -200,30 +200,25 @@ export class HunkDiff extends React.Component {
 
   render(): React.Element<any> {
     const {hunk, grammar} = this.props;
-    const {content, changes} = hunk;
+    const {changes} = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
     const text = changes.map(change => change.content.slice(1)).join('\n');
     const textBuffer = new TextBuffer();
     textBuffer.setText(text);
 
     return (
-      <Section
-        collapsable={this.props.collapsable}
-        headline={content}
-        size="medium">
-        <AtomTextEditor
-          autoGrow={true}
-          className="nuclide-ui-hunk-diff-text-editor"
-          correctContainerWidth={false}
-          grammar={grammar}
-          gutterHidden={true}
-          readOnly={true}
-          ref={editorRef => {
-            this.editor = editorRef && editorRef.getModel();
-          }}
-          textBuffer={textBuffer}
-        />
-      </Section>
+      <AtomTextEditor
+        autoGrow={true}
+        className="nuclide-ui-hunk-diff-text-editor"
+        correctContainerWidth={false}
+        grammar={grammar}
+        gutterHidden={true}
+        readOnly={true}
+        ref={editorRef => {
+          this.editor = editorRef && editorRef.getModel();
+        }}
+        textBuffer={textBuffer}
+      />
     );
   }
 }
