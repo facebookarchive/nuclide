@@ -15,6 +15,14 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import Hyperclick from './Hyperclick';
 
+// Legacy providers have a default priority of 0.
+function fixLegacyProvider(provider: HyperclickProvider) {
+  if (provider.priority == null) {
+    provider.priority = 0;
+  }
+  return provider;
+}
+
 class Activation {
   _hyperclick: Hyperclick;
   _disposables: UniversalDisposable;
@@ -28,13 +36,21 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeProvider(
+  // Legacy providers have a default priority of 0.
+  addLegacyProvider(
     provider: HyperclickProvider | Array<HyperclickProvider>,
   ): IDisposable {
-    this._hyperclick.consumeProvider(provider);
-    const disposable = new UniversalDisposable(() => {
-      this._hyperclick.removeProvider(provider);
-    });
+    return this.addProvider(
+      Array.isArray(provider)
+        ? provider.map(fixLegacyProvider)
+        : fixLegacyProvider(provider),
+    );
+  }
+
+  addProvider(
+    provider: HyperclickProvider | Array<HyperclickProvider>,
+  ): IDisposable {
+    const disposable = this._hyperclick.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }

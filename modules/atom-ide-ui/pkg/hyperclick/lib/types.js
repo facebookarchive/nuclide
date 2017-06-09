@@ -27,11 +27,14 @@ export type HyperclickProvider = {
     position: atom$Point,
   ) => Promise<?HyperclickSuggestion>,
 
-  // The higher this is, the more precedence the provider gets. Defaults to 0.
-  priority?: number,
-
   // Must be unique. Used for analytics.
   providerName?: string,
+
+  // The higher this is, the more precedence the provider gets.
+  priority: number,
+
+  // Optionally, limit the set of grammar scopes the provider should apply to.
+  grammarScopes?: Array<string>,
 };
 
 export type HyperclickSuggestion = {

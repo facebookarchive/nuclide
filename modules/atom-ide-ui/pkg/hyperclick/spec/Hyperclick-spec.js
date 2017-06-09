@@ -108,15 +108,17 @@ describe('Hyperclick', () => {
       let provider: HyperclickProvider = (null: any);
       const position = new Point(0, 1);
 
+      let disposable;
       beforeEach(() => {
         provider = {
           providerName: 'test',
           async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: () => {}};
           },
+          priority: 0,
         };
         spyOn(provider, 'getSuggestionForWord').andCallThrough();
-        hyperclick.consumeProvider(provider);
+        disposable = hyperclick.addProvider(provider);
       });
       it('should call the provider', () => {
         waitsForPromise(async () => {
@@ -126,7 +128,7 @@ describe('Hyperclick', () => {
       });
       it('should not call a removed provider', () => {
         waitsForPromise(async () => {
-          hyperclick.removeProvider(provider);
+          disposable.dispose();
           await hyperclick.getSuggestion(textEditor, position);
           expect(provider.getSuggestionForWord).not.toHaveBeenCalled();
         });
@@ -142,9 +144,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           const expectedText = 'word1';
@@ -172,9 +175,10 @@ describe('Hyperclick', () => {
               return {range, callback};
             },
             wordRegExp: /word/g,
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 8);
           const expectedText = 'word';
@@ -211,9 +215,10 @@ describe('Hyperclick', () => {
               ];
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestion').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 8);
 
@@ -236,6 +241,7 @@ describe('Hyperclick', () => {
             providerName: 'test',
             // Do not return a suggestion, so we can fall through to provider2.
             async getSuggestionForWord(sourceTextEditor, text, range) {},
+            priority: 0,
           };
           spyOn(provider1, 'getSuggestionForWord').andCallThrough();
 
@@ -245,11 +251,12 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback: callback2};
             },
+            priority: 0,
           };
           spyOn(provider2, 'getSuggestionForWord').andCallThrough();
 
-          hyperclick.consumeProvider(provider1);
-          hyperclick.consumeProvider(provider2);
+          hyperclick.addProvider(provider1);
+          hyperclick.addProvider(provider2);
 
           const position = new Point(0, 1);
           const expectedText = 'word1';
@@ -276,6 +283,7 @@ describe('Hyperclick', () => {
             providerName: 'test',
             // Do not return a suggestion, so we can fall through to provider2.
             async getSuggestionForWord(sourceTextEditor, text, range) {},
+            priority: 0,
           };
           spyOn(provider1, 'getSuggestionForWord').andCallThrough();
 
@@ -285,10 +293,11 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback: callback2};
             },
+            priority: 0,
           };
           spyOn(provider2, 'getSuggestionForWord').andCallThrough();
 
-          hyperclick.consumeProvider([provider1, provider2]);
+          hyperclick.addProvider([provider1, provider2]);
 
           const position = new Point(0, 1);
           const expectedText = 'word1';
@@ -318,9 +327,10 @@ describe('Hyperclick', () => {
               // Never resolve this, so we know that no suggestion is set.
               return new Promise(() => {});
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
@@ -343,9 +353,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           const expectedText = 'word1';
@@ -379,9 +390,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position1 = new Point(0, 1);
           const expectedText1 = 'word1';
@@ -425,9 +437,10 @@ describe('Hyperclick', () => {
             async getSuggestion(sourceTextEditor, sourcePosition) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestion').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
 
@@ -456,9 +469,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const inRangePosition = new Point(0, 1);
           const outOfRangePosition = new Point(1, 0);
@@ -490,10 +504,11 @@ describe('Hyperclick', () => {
         async getSuggestionForWord(sourceTextEditor, text, range) {
           return {range, callback() {}};
         },
+        priority: 0,
       };
 
       beforeEach(() => {
-        hyperclick.consumeProvider(provider);
+        hyperclick.addProvider(provider);
       });
 
       it('adds on <meta-mousemove>, removes on <meta-mousedown>', () => {
@@ -538,9 +553,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const mousePosition = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
@@ -569,7 +585,7 @@ describe('Hyperclick', () => {
             },
             priority: 5,
           };
-          hyperclick.consumeProvider(provider1);
+          hyperclick.addProvider(provider1);
 
           const callback2 = jasmine.createSpy('callback');
           const provider2 = {
@@ -579,7 +595,7 @@ describe('Hyperclick', () => {
             },
             priority: 3,
           };
-          hyperclick.consumeProvider(provider2);
+          hyperclick.addProvider(provider2);
 
           const mousePosition = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
@@ -601,7 +617,7 @@ describe('Hyperclick', () => {
             },
             priority: 3,
           };
-          hyperclick.consumeProvider(provider1);
+          hyperclick.addProvider(provider1);
 
           const callback2 = jasmine.createSpy('callback');
           const provider2 = {
@@ -611,69 +627,7 @@ describe('Hyperclick', () => {
             },
             priority: 5,
           };
-          hyperclick.consumeProvider(provider2);
-
-          const mousePosition = new Point(0, 1);
-          dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
-          await hyperclickForTextEditor.getSuggestionAtMouse();
-          dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
-
-          expect(callback1.callCount).toBe(0);
-          expect(callback2.callCount).toBe(1);
-        });
-      });
-
-      it('confirms >0 priority before default priority', () => {
-        waitsForPromise(async () => {
-          const callback1 = jasmine.createSpy('callback');
-          const provider1 = {
-            providerName: 'test',
-            async getSuggestionForWord(sourceTextEditor, text, range) {
-              return {range, callback: callback1};
-            },
-          };
-          hyperclick.consumeProvider(provider1);
-
-          const callback2 = jasmine.createSpy('callback');
-          const provider2 = {
-            providerName: 'test',
-            async getSuggestionForWord(sourceTextEditor, text, range) {
-              return {range, callback: callback2};
-            },
-            priority: 1,
-          };
-          hyperclick.consumeProvider(provider2);
-
-          const mousePosition = new Point(0, 1);
-          dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
-          await hyperclickForTextEditor.getSuggestionAtMouse();
-          dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
-
-          expect(callback1.callCount).toBe(0);
-          expect(callback2.callCount).toBe(1);
-        });
-      });
-
-      it('confirms <0 priority after default priority', () => {
-        waitsForPromise(async () => {
-          const callback1 = jasmine.createSpy('callback');
-          const provider1 = {
-            providerName: 'test',
-            async getSuggestionForWord(sourceTextEditor, text, range) {
-              return {range, callback: callback1};
-            },
-            priority: -1,
-          };
-          hyperclick.consumeProvider(provider1);
-
-          const callback2 = jasmine.createSpy('callback');
-          const provider2 = {
-            providerName: 'test',
-            async getSuggestionForWord(sourceTextEditor, text, range) {
-              return {range, callback: callback2};
-            },
-          };
-          hyperclick.consumeProvider(provider2);
+          hyperclick.addProvider(provider2);
 
           const mousePosition = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
@@ -693,8 +647,9 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback: callback1};
             },
+            priority: 0,
           };
-          hyperclick.consumeProvider(provider1);
+          hyperclick.addProvider(provider1);
 
           const callback2 = jasmine.createSpy('callback');
           const provider2 = {
@@ -702,8 +657,9 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback: callback2};
             },
+            priority: 0,
           };
-          hyperclick.consumeProvider(provider2);
+          hyperclick.addProvider(provider2);
 
           const mousePosition = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
@@ -734,7 +690,7 @@ describe('Hyperclick', () => {
             priority: 2,
           };
 
-          hyperclick.consumeProvider([provider1, provider2]);
+          hyperclick.addProvider([provider1, provider2]);
 
           const mousePosition = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
@@ -765,8 +721,9 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
@@ -805,8 +762,9 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
@@ -846,8 +804,9 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(0, 1);
           dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
@@ -894,9 +853,10 @@ describe('Hyperclick', () => {
             async getSuggestionForWord(sourceTextEditor, text, range) {
               return {range, callback};
             },
+            priority: 0,
           };
           spyOn(provider, 'getSuggestionForWord').andCallThrough();
-          hyperclick.consumeProvider(provider);
+          hyperclick.addProvider(provider);
 
           const position = new Point(8, 0);
           const expectedText = 'word9';

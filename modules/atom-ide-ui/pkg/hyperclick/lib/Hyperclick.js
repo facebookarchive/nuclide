@@ -15,8 +15,8 @@ import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
 
 import invariant from 'assert';
-import {asyncFind} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 
@@ -25,13 +25,13 @@ import {wordAtPosition} from 'nuclide-commons-atom/range';
  * Call `dispose` to disable the feature.
  */
 export default class Hyperclick {
-  _consumedProviders: Array<HyperclickProvider>;
+  _providers: ProviderRegistry<HyperclickProvider>;
   _suggestionList: SuggestionList;
   _hyperclickForTextEditors: Set<HyperclickForTextEditor>;
   _textEditorSubscription: IDisposable;
 
   constructor() {
-    this._consumedProviders = [];
+    this._providers = new ProviderRegistry();
 
     this._suggestionList = new SuggestionList();
     this._hyperclickForTextEditors = new Set();
@@ -58,95 +58,58 @@ export default class Hyperclick {
 
   dispose() {
     this._suggestionList.hide();
-    if (this._textEditorSubscription) {
-      this._textEditorSubscription.dispose();
-    }
+    this._textEditorSubscription.dispose();
     this._hyperclickForTextEditors.forEach(hyperclick => hyperclick.dispose());
     this._hyperclickForTextEditors.clear();
   }
 
-  _applyToAll<T>(item: Array<T> | T, f: (x: T) => void): void {
-    if (Array.isArray(item)) {
-      item.forEach(x => f(x));
-    } else {
-      f(item);
-    }
-  }
-
-  consumeProvider(
+  addProvider(
     provider: HyperclickProvider | Array<HyperclickProvider>,
-  ): void {
-    this._applyToAll(provider, singleProvider =>
-      this._consumeSingleProvider(singleProvider),
-    );
-  }
-
-  removeProvider(
-    provider: HyperclickProvider | Array<HyperclickProvider>,
-  ): void {
-    this._applyToAll(provider, singleProvider =>
-      this._removeSingleProvider(singleProvider),
-    );
-  }
-
-  _consumeSingleProvider(provider: HyperclickProvider): void {
-    const priority = provider.priority || 0;
-    for (let i = 0, len = this._consumedProviders.length; i < len; i++) {
-      const item = this._consumedProviders[i];
-      if (provider === item) {
-        return;
-      }
-
-      const itemPriority = item.priority || 0;
-      if (priority > itemPriority) {
-        this._consumedProviders.splice(i, 0, provider);
-        return;
-      }
+  ): IDisposable {
+    if (Array.isArray(provider)) {
+      return new UniversalDisposable(
+        ...provider.map(p => this._providers.addProvider(p)),
+      );
     }
-
-    // If we made it all the way through the loop, provider must be lower
-    // priority than all of the existing providers, so add it to the end.
-    this._consumedProviders.push(provider);
-  }
-
-  _removeSingleProvider(provider: HyperclickProvider): void {
-    const index = this._consumedProviders.indexOf(provider);
-    if (index >= 0) {
-      this._consumedProviders.splice(index, 1);
-    }
+    return this._providers.addProvider(provider);
   }
 
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  getSuggestion(
+  async getSuggestion(
     textEditor: TextEditor,
     position: atom$Point,
   ): Promise<?HyperclickSuggestion> {
-    return asyncFind(
-      this._consumedProviders,
-      (provider: HyperclickProvider) => {
-        if (provider.getSuggestion) {
-          return provider.getSuggestion(textEditor, position);
-        } else if (provider.getSuggestionForWord) {
-          const match = wordAtPosition(
-            textEditor,
-            position,
-            provider.wordRegExp,
-          );
-          if (match == null) {
-            return null;
-          }
-          const {wordMatch, range} = match;
-          invariant(provider.getSuggestionForWord);
-          return provider.getSuggestionForWord(textEditor, wordMatch[0], range);
+    for (const provider of this._providers.getAllProvidersForEditor(
+      textEditor,
+    )) {
+      let result;
+      if (provider.getSuggestion) {
+        // eslint-disable-next-line no-await-in-loop
+        result = await provider.getSuggestion(textEditor, position);
+      } else if (provider.getSuggestionForWord) {
+        const match = wordAtPosition(textEditor, position, provider.wordRegExp);
+        if (match == null) {
+          continue;
         }
-
+        const {wordMatch, range} = match;
+        invariant(provider.getSuggestionForWord);
+        // eslint-disable-next-line no-await-in-loop
+        result = await provider.getSuggestionForWord(
+          textEditor,
+          wordMatch[0],
+          range,
+        );
+      } else {
         throw new Error(
           'Hyperclick must have either `getSuggestion` or `getSuggestionForWord`',
         );
-      },
-    );
+      }
+      if (result != null) {
+        return result;
+      }
+    }
   }
 
   showSuggestionList(
