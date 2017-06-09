@@ -76,6 +76,7 @@ export class DebuggerLayoutManager {
   _debuggerWorkspaceEnabled: boolean;
   _previousDebuggerMode: DebuggerModeType;
   _paneHiddenWarningShown: boolean;
+  _dockWatcherDisposable: UniversalDisposable;
 
   constructor(model: DebuggerModel) {
     this._disposables = new UniversalDisposable();
@@ -84,10 +85,12 @@ export class DebuggerLayoutManager {
     this._previousDebuggerMode = DebuggerMode.STOPPED;
     this._paneHiddenWarningShown = false;
     this._initializeDebuggerPanes();
+    this._dockWatcherDisposable = new UniversalDisposable();
   }
 
   dispose(): void {
     this._disposables.dispose();
+    this._dockWatcherDisposable.dispose();
   }
 
   consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
@@ -548,6 +551,8 @@ export class DebuggerLayoutManager {
     const defaultDock = this._getWorkspaceDocks().find(d => d.name === 'right');
     invariant(defaultDock != null);
 
+    const docksWithItemWatchers = new Set();
+
     // Lay out the remaining debugger panes according to their configurations.
     // Sort the debugger panes by the index at which they appeared the last
     // time they were positioned, so we maintain the relative ordering of
@@ -581,6 +586,32 @@ export class DebuggerLayoutManager {
           if (previousDock != null) {
             targetDock = previousDock;
           }
+        }
+
+        if (!docksWithItemWatchers.has(targetDock.dock)) {
+          docksWithItemWatchers.add(targetDock.dock);
+          this._dockWatcherDisposable.add(
+            targetDock.dock.onDidAddPaneItem(added => {
+              if (added.item instanceof DebuggerPaneViewModel) {
+                // It's one of ours.
+                return;
+              }
+
+              const currentMode = this._model.getStore().getDebuggerMode();
+              if (
+                currentMode === DebuggerMode.RUNNING ||
+                currentMode === DebuggerMode.PAUSED
+              ) {
+                // If the debugger is currently in use, call showDebuggerViews which
+                // will actually hide the debugger (without killing it) and re-layout
+                // all the debugger panes with the new item in place in the dock.
+                this.showDebuggerViews(api);
+              } else {
+                // Otherwise just hide the debugger and let the new pane have the dock.
+                this.hideDebuggerViews(api, false);
+              }
+            }),
+          );
         }
 
         if (
@@ -696,5 +727,8 @@ export class DebuggerLayoutManager {
           }
         });
     }
+
+    this._dockWatcherDisposable.dispose();
+    this._dockWatcherDisposable = new UniversalDisposable();
   }
 }

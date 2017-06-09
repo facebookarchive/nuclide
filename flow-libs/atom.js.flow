@@ -1195,6 +1195,7 @@ declare class atom$AbastractPaneContainer {
   hide(): void,
   getActivePane(): atom$Pane,
   getPanes(): Array<atom$Pane>,
+  onDidAddPaneItem((item: {item: Object}) => void): IDisposable,
 }
 
 declare class atom$Dock extends atom$AbastractPaneContainer {
