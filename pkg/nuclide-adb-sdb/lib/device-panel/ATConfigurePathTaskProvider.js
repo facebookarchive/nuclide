@@ -17,7 +17,9 @@ import type {DeviceTypeTaskProvider} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {DBPathsInfo} from '../../../nuclide-adb-sdb-rpc/lib/types';
+import type {Store} from '../types';
 
+import * as Actions from '../redux/Actions';
 import showModal from '../../../nuclide-ui/showModal';
 import {ATCustomDBPathModal} from './ui/ATCustomDBPathModal';
 import {Observable} from 'rxjs';
@@ -27,14 +29,17 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
   _type: string;
   _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
   _dbType: 'adb' | 'sdb';
+  _store: Store;
 
   constructor(
     type: string,
     rpcFactory: (host: NuclideUri) => AdbService | SdbService,
+    store: Store,
   ) {
     this._type = type;
     this._rpcFactory = rpcFactory;
     this._dbType = this._type === 'android' ? 'adb' : 'sdb';
+    this._store = store;
   }
 
   getType(): string {
@@ -49,6 +54,21 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
     return this._rpcFactory(host).getCurrentPathsInfo();
   }
 
+  _getCurrentCustomPath(host: NuclideUri): ?string {
+    const state = this._store.getState();
+    return this._dbType === 'adb'
+      ? state.customAdbPaths.get(host)
+      : state.customSdbPaths.get(host);
+  }
+
+  _setCustomPath(host: NuclideUri, path: string): void {
+    this._store.dispatch(
+      this._dbType === 'adb'
+        ? Actions.setCustomAdbPath(host, path)
+        : Actions.setCustomSdbPath(host, path),
+    );
+  }
+
   getTask(host: NuclideUri): Observable<TaskEvent> {
     return Observable.defer(() =>
       this._getPathsInfo(host),
@@ -58,10 +78,11 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
           dismiss => (
             <ATCustomDBPathModal
               dismiss={dismiss}
-              currentActivePath={pathsInfo.working}
-              currentCustomPath={null}
+              currentActivePath={pathsInfo.active}
+              currentCustomPath={this._getCurrentCustomPath(host)}
               registeredPaths={pathsInfo.all}
-              setCustomPath={() => {}}
+              setCustomPath={customPath =>
+                this._setCustomPath(host, customPath)}
               type={this._dbType}
             />
           ),

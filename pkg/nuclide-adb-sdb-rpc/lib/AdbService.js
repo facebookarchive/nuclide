@@ -43,6 +43,10 @@ export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
   return getStore('adb').getCurrentPathsInfo();
 }
 
+export async function registerCustomPath(path: ?string): Promise<void> {
+  getStore('adb').registerCustomPath(path);
+}
+
 export function getDeviceInfo(
   device: string,
 ): ConnectableObservable<Map<string, string>> {

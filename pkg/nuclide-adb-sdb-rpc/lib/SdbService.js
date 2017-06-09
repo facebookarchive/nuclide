@@ -29,6 +29,10 @@ export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
   return getStore('sdb').getCurrentPathsInfo();
 }
 
+export async function registerCustomPath(path: ?string): Promise<void> {
+  getStore('adb').registerCustomPath(path);
+}
+
 async function getSdb(): Promise<Sdb> {
   return new Sdb((await pathForDebugBridge('sdb')));
 }

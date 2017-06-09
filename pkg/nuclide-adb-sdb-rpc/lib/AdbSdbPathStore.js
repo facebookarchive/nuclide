@@ -18,15 +18,10 @@ import type {DebugBridgeType, DBPathsInfo} from './types';
 export type DBPath = {path: string, priority: number};
 
 class DebugBridgePathStore {
-  _registeredPaths: Map<string, DBPath>;
-  _sortedPaths: string[];
-  _lastWorkingPath: ?string;
-
-  constructor() {
-    this._registeredPaths = new Map();
-    this._sortedPaths = [];
-    this._lastWorkingPath = null;
-  }
+  _registeredPaths: Map<string, DBPath> = new Map();
+  _sortedPaths: string[] = [];
+  _lastWorkingPath: ?string = null;
+  _customPath: ?string = null;
 
   registerPath(id: string, dbPath: DBPath): void {
     this._registeredPaths.set(id, dbPath);
@@ -38,7 +33,7 @@ class DebugBridgePathStore {
   getPaths(): string[] {
     const lastWorkingPath = this._lastWorkingPath;
     if (lastWorkingPath == null) {
-      return this._sortedPaths;
+      return arrayUnique(this._sortedPaths);
     }
     return arrayUnique([lastWorkingPath, ...this._sortedPaths]);
   }
@@ -49,9 +44,20 @@ class DebugBridgePathStore {
 
   getCurrentPathsInfo(): DBPathsInfo {
     return {
-      working: this._lastWorkingPath,
-      all: this._sortedPaths,
+      active: this._customPath || this._lastWorkingPath,
+      all: this.getPaths(),
     };
+  }
+
+  registerCustomPath(path: ?string): void {
+    if (path != null) {
+      this.registerPath('custom', {path, priority: -1});
+    }
+    this._customPath = path;
+  }
+
+  getCustomPath(): ?string {
+    return this._customPath;
   }
 }
 
@@ -85,8 +91,14 @@ function reusePromiseUntilResolved(
 }
 
 export function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
+  const store = getStore(db);
+  // give priority to custom paths
+  const customPath = store.getCustomPath();
+  if (customPath != null) {
+    return Promise.resolve(customPath);
+  }
+
   return reusePromiseUntilResolved(db, async () => {
-    const store = getStore(db);
     const workingPath = await asyncFind(store.getPaths(), async path => {
       try {
         await runCommand(path, ['start-server']).toPromise();

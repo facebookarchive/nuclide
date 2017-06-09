@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DevicePanelServiceApi} from '../../../nuclide-devices/lib/types';
+import type {Store} from '../types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
@@ -23,6 +24,7 @@ import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
 export function registerDevicePanelProviders(
   api: DevicePanelServiceApi,
+  store: Store,
 ): IDisposable {
   const TIZEN = 'tizen';
   const ANDROID = 'android';
@@ -52,10 +54,10 @@ export function registerDevicePanelProviders(
     ),
     // device type tasks
     api.registerDeviceTypeTaskProvider(
-      new ATConfigurePathTaskProvider(ANDROID, androidSdkFactory),
+      new ATConfigurePathTaskProvider(ANDROID, androidSdkFactory, store),
     ),
     api.registerDeviceTypeTaskProvider(
-      new ATConfigurePathTaskProvider(TIZEN, tizenSdkFactory),
+      new ATConfigurePathTaskProvider(TIZEN, tizenSdkFactory, store),
     ),
   );
 }

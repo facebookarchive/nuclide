@@ -33,4 +33,4 @@ export type Process = {
   isJava: boolean,
 };
 
-export type DBPathsInfo = {working: ?string, all: Array<string>};
+export type DBPathsInfo = {active: ?string, all: Array<string>};
