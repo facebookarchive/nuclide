@@ -22,7 +22,7 @@ import {countOccurrences} from 'nuclide-commons/string';
 import loadingNotification from '../../commons-atom/loading-notification';
 
 // Diffing is O(lines^2), so don't bother for files with too many lines.
-const DIFF_LINE_LIMIT = 10000;
+const DIFF_LINE_LIMIT = 5000;
 
 export default class NuclideTextBuffer extends TextBuffer {
   _connection: ServerConnection;
