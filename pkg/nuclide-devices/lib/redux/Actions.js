@@ -22,6 +22,7 @@ import type {
   SetProcessesAction,
   SetProcessTasksAction,
   ToggleDevicePollingAction,
+  ToggleProcessPollingAction,
   Device,
   Process,
   ProcessTask,
@@ -41,12 +42,22 @@ export const SET_INFO_TABLES = 'SET_INFO_TABLES';
 export const SET_PROCESSES = 'SET_PROCESSES';
 export const SET_PROCESS_TASKS = 'SET_PROCESS_TASKS';
 export const TOGGLE_DEVICE_POLLING = 'TOGGLE_DEVICE_POLLING';
+export const TOGGLE_PROCESS_POLLING = 'TOGGLE_PROCESS_POLLING';
 
 export function toggleDevicePolling(
   isActive: boolean,
 ): ToggleDevicePollingAction {
   return {
     type: TOGGLE_DEVICE_POLLING,
+    payload: {isActive},
+  };
+}
+
+export function toggleProcessPolling(
+  isActive: boolean,
+): ToggleProcessPollingAction {
+  return {
+    type: TOGGLE_PROCESS_POLLING,
     payload: {isActive},
   };
 }

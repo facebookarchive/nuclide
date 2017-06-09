@@ -15,6 +15,7 @@ import invariant from 'invariant';
 import {getProviders} from '../providers';
 import {DeviceTask} from '../DeviceTask';
 import {createCache} from '../Cache';
+import shallowEqual from 'shallowequal';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {Action, Store, AppState, ProcessTask, Process} from '../types';
@@ -27,8 +28,7 @@ export function pollDevicesEpic(
     .ofType(Actions.TOGGLE_DEVICE_POLLING)
     .switchMap(action => {
       invariant(action.type === Actions.TOGGLE_DEVICE_POLLING);
-      const {isActive} = action.payload;
-      return Observable.of([store.getState(), isActive]);
+      return Observable.of([store.getState(), action.payload.isActive]);
     })
     .distinctUntilChanged(
       ([stateA, isActiveA], [stateB, isActiveB]) =>
@@ -46,6 +46,40 @@ export function pollDevicesEpic(
             .observe(state.host)
             .map(devices => Actions.setDevices(devices));
         }
+      }
+      return Observable.empty();
+    });
+}
+
+export function pollProcessesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.TOGGLE_PROCESS_POLLING)
+    .switchMap(action => {
+      invariant(action.type === Actions.TOGGLE_PROCESS_POLLING);
+      return Observable.of([store.getState(), action.payload.isActive]);
+    })
+    .distinctUntilChanged(
+      ([stateA, isActiveA], [stateB, isActiveB]) =>
+        stateA.deviceType === stateB.deviceType &&
+        stateA.host === stateB.host &&
+        shallowEqual(stateA.device, stateB.device) &&
+        isActiveA === isActiveB,
+    )
+    .switchMap(([state, isActive]) => {
+      const device = state.device;
+      if (device == null || !isActive) {
+        return Observable.empty();
+      }
+      const providers = Array.from(getProviders().deviceProcesses).filter(
+        provider => provider.getType() === state.deviceType,
+      );
+      if (providers[0] != null) {
+        return providers[0]
+          .observe(state.host, device.name)
+          .map(processes => Actions.setProcesses(processes));
       }
       return Observable.empty();
     });

@@ -18,7 +18,6 @@ import React from 'react';
 import {
   PanelComponentScroller,
 } from 'nuclide-commons-ui/PanelComponentScroller';
-import {Subscription} from 'rxjs';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';
@@ -29,7 +28,7 @@ export type Props = {|
   setDeviceType: (deviceType: string) => void,
   setDevice: (device: ?Device) => void,
   toggleDevicePolling: (isActive: boolean) => void,
-  startFetchingProcesses: () => Subscription,
+  toggleProcessPolling: (isActive: boolean) => void,
   processTasks: ProcessTask[],
   hosts: NuclideUri[],
   devices: Expected<Device[]>,
@@ -87,7 +86,7 @@ export class RootPanel extends React.Component {
             processTasks={this.props.processTasks}
             deviceTasks={this.props.deviceTasks}
             goToRootPanel={this._goToRootPanel}
-            startFetchingProcesses={this.props.startFetchingProcesses}
+            toggleProcessPolling={this.props.toggleProcessPolling}
             isDeviceConnected={this.props.isDeviceConnected}
           />
         </div>

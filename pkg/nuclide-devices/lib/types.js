@@ -202,8 +202,16 @@ export type ToggleDevicePollingAction = {
   },
 };
 
+export type ToggleProcessPollingAction = {
+  type: 'TOGGLE_PROCESS_POLLING',
+  payload: {
+    isActive: boolean,
+  },
+};
+
 export type Action =
   | ToggleDevicePollingAction
+  | ToggleProcessPollingAction
   | SetHostAction
   | SetHostsAction
   | SetDevicesAction

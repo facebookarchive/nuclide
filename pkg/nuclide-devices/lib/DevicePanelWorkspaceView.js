@@ -11,46 +11,21 @@
 
 import type {Props} from './ui/RootPanel';
 
-import type {Store, AppState, Process} from './types';
+import type {Store, AppState} from './types';
 import React from 'react';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {RootPanel} from './ui/RootPanel';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as Actions from './redux/Actions';
-import {getProviders} from './providers';
-import shallowEqual from 'shallowequal';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/devices';
 
 export class DevicePanelWorkspaceView {
   _store: Store;
-  _deviceObs: Observable<void>;
-  _processesObs: Observable<Process[]>;
 
   constructor(store: Store) {
     this._store = store;
-    // $FlowFixMe: Teach flow about Symbol.observable
-    this._processesObs = Observable.from(this._store)
-      .distinctUntilChanged(
-        (stateA, stateB) =>
-          stateA.deviceType === stateB.deviceType &&
-          stateA.host === stateB.host &&
-          shallowEqual(stateA.device, stateB.device),
-      )
-      .switchMap(state => {
-        if (state.device === null) {
-          return Observable.empty();
-        }
-        const providers = Array.from(getProviders().deviceProcesses).filter(
-          provider => provider.getType() === state.deviceType,
-        );
-        if (providers[0] != null) {
-          return providers[0].observe(state.host, state.device.name);
-        }
-        return Observable.empty();
-      })
-      .do(processes => this._store.dispatch(Actions.setProcesses(processes)));
   }
 
   getTitle() {
@@ -77,8 +52,8 @@ export class DevicePanelWorkspaceView {
     const toggleDevicePolling = (isActive: boolean) => {
       this._store.dispatch(Actions.toggleDevicePolling(isActive));
     };
-    const startFetchingProcesses = () => {
-      return this._processesObs.subscribe();
+    const toggleProcessPolling = (isActive: boolean) => {
+      this._store.dispatch(Actions.toggleProcessPolling(isActive));
     };
     const setHost = host => {
       this._store.dispatch(Actions.setHost(host));
@@ -102,7 +77,7 @@ export class DevicePanelWorkspaceView {
       processTasks: state.processTasks,
       isDeviceConnected: state.isDeviceConnected,
       toggleDevicePolling,
-      startFetchingProcesses,
+      toggleProcessPolling,
       setHost,
       setDeviceType,
       setDevice,

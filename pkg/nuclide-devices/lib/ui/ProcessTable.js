@@ -13,12 +13,11 @@ import type {Process, ProcessTask} from '../types';
 
 import {ProcessTaskButton} from './ProcessTaskButton';
 import React from 'react';
-import {Subscription} from 'rxjs';
 import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 
 type Props = {|
-  startFetchingProcesses: () => Subscription,
+  toggleProcessPolling: (isActive: boolean) => void,
   processTasks: ProcessTask[],
   processes: Process[],
 |};
@@ -32,7 +31,6 @@ type State = {
 export class ProcessTable extends React.Component {
   props: Props;
   state: State;
-  _processesSubscription: ?Subscription = null;
 
   constructor(props: Props) {
     super(props);
@@ -50,13 +48,11 @@ export class ProcessTable extends React.Component {
   }
 
   componentDidMount(): void {
-    this._processesSubscription = this.props.startFetchingProcesses();
+    this.props.toggleProcessPolling(true);
   }
 
   componentWillUnmount(): void {
-    if (this._processesSubscription != null) {
-      this._processesSubscription.unsubscribe();
-    }
+    this.props.toggleProcessPolling(false);
   }
 
   _formatCpuUsage(cpu: ?number): string {

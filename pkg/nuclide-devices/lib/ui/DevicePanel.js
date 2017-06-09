@@ -15,7 +15,6 @@ import type {TaskEvent} from 'nuclide-commons/process';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DeviceTask} from '../DeviceTask';
-import {Subscription} from 'rxjs';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import React from 'react';
 import {InfoTable} from './InfoTable';
@@ -23,7 +22,7 @@ import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
 
 type Props = {|
-  startFetchingProcesses: () => Subscription,
+  toggleProcessPolling: (isActive: boolean) => void,
   goToRootPanel: () => void,
   infoTables: Map<string, Map<string, string>>,
   processes: Process[],
@@ -51,7 +50,7 @@ export class DevicePanel extends React.Component {
         <ProcessTable
           processes={this.props.processes}
           processTasks={this.props.processTasks}
-          startFetchingProcesses={this.props.startFetchingProcesses}
+          toggleProcessPolling={this.props.toggleProcessPolling}
         />
       </div>
     );
