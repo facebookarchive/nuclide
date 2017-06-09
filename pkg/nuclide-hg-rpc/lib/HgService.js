@@ -1090,7 +1090,6 @@ export class HgService {
       cwd: this._workingDirectory,
     };
     return hgObserveExecution(args, executionOptions)
-      .timeout(300000)
       .switchMap(processExitCodeAndThrow)
       .publish();
   }
