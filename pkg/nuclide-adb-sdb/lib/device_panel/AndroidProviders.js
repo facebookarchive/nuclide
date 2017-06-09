@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
@@ -16,36 +18,28 @@ import {ATDeviceProcessesProvider} from './ATDeviceProcessesProvider';
 import {ATDeviceStopPackageProvider} from './ATDeviceStopPackageProvider';
 import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+const PLATFORM = 'android';
+
+const sdkFactory = (host: NuclideUri) => getAdbServiceByNuclideUri(host);
 
 export class AndroidProviders {
   static createAndroidDeviceListProvider(): ATDeviceListProvider {
-    return new ATDeviceListProvider('android', (host: NuclideUri) =>
-      getAdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceListProvider(PLATFORM, sdkFactory);
   }
 
   static createAndroidInfoProvider(): ATDeviceInfoProvider {
-    return new ATDeviceInfoProvider('android', (host: NuclideUri) =>
-      getAdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceInfoProvider(PLATFORM, sdkFactory);
   }
 
   static createAndroidProcessesProvider(): ATDeviceProcessesProvider {
-    return new ATDeviceProcessesProvider('android', (host: NuclideUri) =>
-      getAdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceProcessesProvider(PLATFORM, sdkFactory);
   }
 
   static createAndroidStopPackageProvider(): ATDeviceStopPackageProvider {
-    return new ATDeviceStopPackageProvider('android', (host: NuclideUri) =>
-      getAdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceStopPackageProvider(PLATFORM, sdkFactory);
   }
 
   static createAndroidConfigurePathTaskProvider(): ATConfigurePathTaskProvider {
-    return new ATConfigurePathTaskProvider('android', (host: NuclideUri) =>
-      getAdbServiceByNuclideUri(host),
-    );
+    return new ATConfigurePathTaskProvider(PLATFORM, sdkFactory);
   }
 }

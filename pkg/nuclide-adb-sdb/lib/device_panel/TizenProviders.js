@@ -9,29 +9,27 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 import {ATDeviceListProvider} from './ATDeviceListProvider';
 import {ATDeviceInfoProvider} from './ATDeviceInfoProvider';
 import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+const PLATFORM = 'tizen';
+
+const sdkFactory = (host: NuclideUri) => getSdbServiceByNuclideUri(host);
 
 export class TizenProviders {
   static createTizenDeviceListProvider(): ATDeviceListProvider {
-    return new ATDeviceListProvider('tizen', (host: NuclideUri) =>
-      getSdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceListProvider(PLATFORM, sdkFactory);
   }
 
   static createTizenInfoProvider(): ATDeviceInfoProvider {
-    return new ATDeviceInfoProvider('tizen', (host: NuclideUri) =>
-      getSdbServiceByNuclideUri(host),
-    );
+    return new ATDeviceInfoProvider(PLATFORM, sdkFactory);
   }
 
   static createTizenConfigurePathTaskProvider(): ATConfigurePathTaskProvider {
-    return new ATConfigurePathTaskProvider('tizen', (host: NuclideUri) =>
-      getSdbServiceByNuclideUri(host),
-    );
+    return new ATConfigurePathTaskProvider(PLATFORM, sdkFactory);
   }
 }
