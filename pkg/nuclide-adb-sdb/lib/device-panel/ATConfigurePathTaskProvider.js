@@ -47,7 +47,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
   }
 
   getName(): string {
-    return `Set custom ${this._dbType} path`;
+    return `Configure ${this._dbType}`;
   }
 
   _getPathsInfo(host: NuclideUri): Promise<DBPathsInfo> {
