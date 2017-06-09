@@ -14,8 +14,6 @@ import type {HyperclickProvider} from './types';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import Hyperclick from './Hyperclick';
-import SuggestionList from './SuggestionList';
-import SuggestionListElement from './SuggestionListElement';
 
 class Activation {
   _hyperclick: Hyperclick;
@@ -49,13 +47,6 @@ class Activation {
   observeTextEditor(): (textEditor: atom$TextEditor) => IDisposable {
     return (textEditor: atom$TextEditor) =>
       this._hyperclick.observeTextEditor(textEditor);
-  }
-
-  provideHyperclickView(model: mixed): ?SuggestionListElement {
-    if (!(model instanceof SuggestionList)) {
-      return;
-    }
-    return new SuggestionListElement().initialize(model);
   }
 }
 

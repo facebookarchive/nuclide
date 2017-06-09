@@ -12,12 +12,21 @@
 import type {HyperclickSuggestion} from './types';
 
 import invariant from 'assert';
+import SuggestionListElement from './SuggestionListElement';
 
 export default class SuggestionList {
+  _element: ?SuggestionListElement;
   _textEditor: atom$TextEditor;
   _suggestion: HyperclickSuggestion;
   _suggestionMarker: ?atom$Marker;
   _overlayDecoration: ?atom$Decoration;
+
+  getElement(): SuggestionListElement {
+    if (this._element == null) {
+      this._element = new SuggestionListElement().initialize(this);
+    }
+    return this._element;
+  }
 
   show(textEditor: atom$TextEditor, suggestion: HyperclickSuggestion): void {
     if (!textEditor || !suggestion) {

@@ -213,8 +213,5 @@
       }
     }
   },
-  "viewProviders" : [
-    "provideHyperclickView"
-  ],
   "private": true
 }
