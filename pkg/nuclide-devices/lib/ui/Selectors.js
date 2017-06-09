@@ -38,8 +38,8 @@ export class Selectors extends React.Component {
   }
 
   _getLabelForHost(host: string): string {
-    if (nuclideUri.isLocal(host)) {
-      return host;
+    if (host === '') {
+      return 'local';
     }
     const hostName = nuclideUri.getHostname(host);
     return hostName.endsWith(FB_HOST_SUFFIX)

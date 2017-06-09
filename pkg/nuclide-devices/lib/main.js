@@ -54,7 +54,7 @@ class Activation {
     this._disposables = new UniversalDisposable(
       ServerConnection.observeRemoteConnections().subscribe(conns => {
         const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
-        this._store.dispatch(Actions.setHosts(['local'].concat(hosts)));
+        this._store.dispatch(Actions.setHosts([''].concat(hosts)));
       }),
     );
   }

@@ -15,8 +15,8 @@ import {Expect} from '../../../nuclide-expected';
 
 export function createEmptyAppState(): AppState {
   return {
-    hosts: ['local'],
-    host: 'local',
+    hosts: [''],
+    host: '',
     devices: Expect.value([]),
     deviceType: null,
     deviceTypes: [],
