@@ -21,15 +21,16 @@ import {ATDeviceStopPackageProvider} from './ATDeviceStopPackageProvider';
 import {ATConfigurePathTaskProvider} from './ATConfigurePathTaskProvider';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
 
-const TIZEN = 'tizen';
-const ANDROID = 'android';
-
-const tizenSdkFactory = (host: NuclideUri) => getSdbServiceByNuclideUri(host);
-const androidSdkFactory = (host: NuclideUri) => getAdbServiceByNuclideUri(host);
-
 export function registerDevicePanelProviders(
   api: DevicePanelServiceApi,
 ): IDisposable {
+  const TIZEN = 'tizen';
+  const ANDROID = 'android';
+
+  const tizenSdkFactory = (host: NuclideUri) => getSdbServiceByNuclideUri(host);
+  const androidSdkFactory = (host: NuclideUri) =>
+    getAdbServiceByNuclideUri(host);
+
   return new UniversalDisposable(
     // list
     api.registerListProvider(
