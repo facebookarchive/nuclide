@@ -29,6 +29,10 @@ async function getSdb(): Promise<Sdb> {
   return new Sdb((await pathForDebugBridge('sdb')));
 }
 
+const sdbObs = Observable.defer(() =>
+  pathForDebugBridge('sdb'),
+).switchMap(sdbPath => Observable.of(new Sdb(sdbPath)));
+
 export async function getDeviceInfo(
   name: string,
 ): Promise<Map<string, string>> {
@@ -43,8 +47,10 @@ export async function startServer(): Promise<boolean> {
   }
 }
 
-export async function getDeviceList(): Promise<Array<DeviceDescription>> {
-  return (await getSdb()).getDeviceList();
+export function getDeviceList(): ConnectableObservable<
+  Array<DeviceDescription>,
+> {
+  return sdbObs.switchMap(sdb => sdb.getDeviceList()).publish();
 }
 
 export async function getPidFromPackageName(

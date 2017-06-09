@@ -42,7 +42,7 @@ class DevicePoller {
     observable = Observable.interval(3000)
       .startWith(0)
       .switchMap(() =>
-        Observable.fromPromise(this.fetch(host))
+        this.fetch(host)
           .map(devices => Expect.value(devices))
           .catch(() =>
             Observable.of(
@@ -60,14 +60,15 @@ class DevicePoller {
     return observable;
   }
 
-  async fetch(host: NuclideUri): Promise<Device[]> {
+  fetch(host: NuclideUri): Observable<Device[]> {
     const rpc = this._type === 'adb'
       ? getAdbServiceByNuclideUri(host)
       : getSdbServiceByNuclideUri(host);
 
     return rpc
       .getDeviceList()
-      .then(devices => devices.map(device => this.parseRawDevice(device)));
+      .refCount()
+      .map(devices => devices.map(device => this.parseRawDevice(device)));
   }
 
   parseRawDevice(device: DeviceDescription): Device {

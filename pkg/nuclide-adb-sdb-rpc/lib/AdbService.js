@@ -22,6 +22,10 @@ async function getAdb(): Promise<Adb> {
   return new Adb((await pathForDebugBridge('adb')));
 }
 
+const adbObs = Observable.defer(() =>
+  pathForDebugBridge('adb'),
+).switchMap(adbPath => Observable.of(new Adb(adbPath)));
+
 export async function registerAdbPath(
   id: string,
   path: NuclideUri,
@@ -39,7 +43,7 @@ export async function getDeviceInfo(
 export function getProcesses(
   device: string,
 ): ConnectableObservable<Array<Process>> {
-  return Observable.defer(() => getAdb())
+  return adbObs
     .switchMap(adb => {
       return new AdbTop(adb, device).fetch();
     })
@@ -53,8 +57,10 @@ export async function stopPackage(
   return (await getAdb()).stopPackage(device, packageName);
 }
 
-export async function getDeviceList(): Promise<Array<DeviceDescription>> {
-  return (await getAdb()).getDeviceList();
+export function getDeviceList(): ConnectableObservable<
+  Array<DeviceDescription>,
+> {
+  return adbObs.switchMap(adb => adb.getDeviceList()).publish();
 }
 
 export async function startServer(): Promise<boolean> {
