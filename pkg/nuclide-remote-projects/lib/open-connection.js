@@ -248,15 +248,13 @@ export function openConnectionDialog(
 
           basePanel = atom.workspace.addModalPanel({item: hostEl});
 
-          // Center the parent in both Atom v1.6 and in Atom v1.8.
-          // TODO(ssorallen): Remove all but `maxWidth` once Nuclide is Atom v1.8+
           // $FlowFixMe
-          const parentEl: HTMLElement = hostEl.parentElement;
+          const parentEl: ?HTMLElement = hostEl.parentElement;
           if (parentEl != null) {
-            parentEl.style.left = '50%';
-            parentEl.style.margin = '0 0 0 -40em';
+            // Atom sets the width of all modals, but the connection dialog
+            // is best with more width, so reach out to the parent (an atom-panel.modal)
+            // and override the maxWidth.
             parentEl.style.maxWidth = '80em';
-            parentEl.style.width = '80em';
           }
 
           const initialDialogProps = {
