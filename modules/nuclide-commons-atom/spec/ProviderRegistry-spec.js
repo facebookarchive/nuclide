@@ -15,8 +15,8 @@ import ProviderRegistry from '../ProviderRegistry';
 
 describe('ProviderRegistry', () => {
   let providerRegistry: ProviderRegistry<Provider> = (null: any);
-  let provider1: Provider = (null: any);
-  let provider2: Provider = (null: any);
+  let provider1: Provider;
+  let provider2: Provider;
 
   beforeEach(() => {
     providerRegistry = new ProviderRegistry();
@@ -47,6 +47,27 @@ describe('ProviderRegistry', () => {
       },
     };
     expect(providerRegistry.getProviderForEditor(editor)).toBe(provider1);
+  });
+
+  it('should treat null grammarScopes as all-inclusive', () => {
+    const provider3 = {
+      priority: 0,
+    };
+    providerRegistry.addProvider(provider3);
+    expect(providerRegistry.findProvider('asdf')).toBe(provider3);
+  });
+
+  it('can return all providers for an editor', () => {
+    const editor: any = {
+      getGrammar() {
+        return {
+          scopeName: 'bar',
+        };
+      },
+    };
+    expect(
+      Array.from(providerRegistry.getAllProvidersForEditor(editor)),
+    ).toEqual([provider1, provider2]);
   });
 
   it('should return null if there is no provider', () => {
