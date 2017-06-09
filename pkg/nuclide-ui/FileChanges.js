@@ -27,6 +27,8 @@ type Props = {
   extraData?: mixed,
   hunkComponentClass?: ReactClass<HunkProps>,
   fullPath?: NuclideUri,
+  collapsable?: boolean,
+  collapsedByDefault?: boolean,
 };
 
 type DefaultProps = {
@@ -232,7 +234,7 @@ export default class FileChanges extends React.Component {
   };
 
   render(): ?React.Element<any> {
-    const {diff, fullPath} = this.props;
+    const {diff, fullPath, collapsable, collapsedByDefault} = this.props;
     const {additions, annotation, chunks, deletions, to: fileName} = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
     const hunks = [];
@@ -245,7 +247,6 @@ export default class FileChanges extends React.Component {
       }
       hunks.push(
         <this.props.hunkComponentClass
-          collapsable={this.props.collapsable}
           extraData={this.props.extraData}
           key={chunk.oldStart}
           grammar={grammar}
@@ -292,7 +293,10 @@ export default class FileChanges extends React.Component {
     );
 
     return (
-      <Section collapsable={this.props.collapsable} headline={headline}>
+      <Section
+        collapsable={collapsable}
+        collapsedByDefault={collapsedByDefault}
+        headline={headline}>
         {hunks}
       </Section>
     );
