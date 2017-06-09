@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import nullthrows from 'nullthrows';
 import {pluralize} from 'nuclide-commons/string';
@@ -17,12 +19,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {Section} from './Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 type Props = {
   collapsable?: boolean,
   diff: diffparser$FileDiff,
   extraData?: mixed,
   hunkComponentClass?: ReactClass<HunkProps>,
+  fullPath?: NuclideUri,
 };
 
 type DefaultProps = {
@@ -233,7 +237,7 @@ export default class FileChanges extends React.Component {
   };
 
   render(): ?React.Element<any> {
-    const {diff} = this.props;
+    const {diff, fullPath} = this.props;
     const {additions, annotation, chunks, deletions, to: fileName} = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
     const hunks = [];
@@ -274,7 +278,19 @@ export default class FileChanges extends React.Component {
       </span>
     );
 
-    const headline = <span>{fileName}<br />{diffDetails}</span>;
+    const renderedFilename = fullPath != null
+      ? <a onClick={() => goToLocation(fullPath)}>
+          {fileName}
+        </a>
+      : fileName;
+
+    const headline = (
+      <span>
+        {renderedFilename}
+        {' '}
+        {diffDetails}
+      </span>
+    );
 
     return (
       <Section collapsable={this.props.collapsable} headline={headline}>
