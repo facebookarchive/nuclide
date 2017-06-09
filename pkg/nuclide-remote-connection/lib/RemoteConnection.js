@@ -239,6 +239,7 @@ export class RemoteConnection {
       },
       async error => {
         let warningMessageToUser = '';
+        let detail;
         const fileSystemService: FileSystemServiceType = this.getService(
           FILE_SYSTEM_SERVICE,
         );
@@ -254,22 +255,26 @@ export class RemoteConnection {
             'You just connected to a remote project ' +
             `\`${rootDirectoryPath}\` without Watchman support, which means that ` +
             'crucial features such as synced remote file editing, file search, ' +
-            'and Mercurial-related updates will not work.<br/><br/>' +
-            'A possible workaround is to create an empty `.watchmanconfig` file ' +
-            'in the remote folder, which will enable Watchman if you have it installed.<br/><br/>';
+            'and Mercurial-related updates will not work.';
 
-          const loggedErrorMessage = error.message || error;
+          const watchmanConfig = await fileSystemService
+            .findNearestAncestorNamed('.watchmanconfig', rootDirectoryUri)
+            .catch(() => null);
+          if (watchmanConfig == null) {
+            warningMessageToUser +=
+              '<br/><br/>A possible workaround is to create an empty `.watchmanconfig` file ' +
+              'in the remote folder, which will enable Watchman if you have it installed.';
+          }
+          detail = error.message || error;
           logger.error(
-            `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`,
+            'Watchman failed to start - watcher features disabled!',
+            error,
           );
-
-          warningMessageToUser +=
-            '<b><a href="https://facebook.github.io/watchman/">Watchman</a> Error:</b>' +
-            loggedErrorMessage;
         }
         // Add a persistent warning message to make sure the user sees it before dismissing.
         atom.notifications.addWarning(warningMessageToUser, {
           dismissable: true,
+          detail,
         });
       },
       () => {
