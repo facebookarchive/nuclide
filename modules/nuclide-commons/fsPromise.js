@@ -287,6 +287,18 @@ function chmod(path: string, mode: number | string): Promise<void> {
   });
 }
 
+function chown(path: string, uid: number, gid: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.chown(path, uid, gid, (err, result) => {
+      if (err == null) {
+        resolve(result);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 function lstat(path: string): Promise<fs.Stats> {
   return new Promise((resolve, reject) => {
     fs.lstat(path, (err, result) => {
@@ -435,6 +447,7 @@ export default {
   writeFile,
 
   chmod,
+  chown,
   lstat,
   mkdir,
   readFile,

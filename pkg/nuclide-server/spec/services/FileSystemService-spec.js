@@ -80,6 +80,19 @@ describe('FileSystemService', () => {
     });
   });
 
+  it('preserves permissions on files', () => {
+    fs.writeFileSync(pathToWriteFile, 'test');
+    fs.chmodSync(pathToWriteFile, 0o700);
+
+    waitsForPromise(async () => {
+      await service.writeFile(pathToWriteFile, 'test2');
+      expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('test2');
+      const stat = fs.statSync(pathToWriteFile);
+      // eslint-disable-next-line no-bitwise
+      expect(stat.mode & 0o777).toEqual(0o700);
+    });
+  });
+
   it('returns 500 if file cannot be written', () => {
     waitsForPromise(async () => {
       let err;

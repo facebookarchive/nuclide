@@ -317,19 +317,25 @@ async function copyFilePermissions(
   sourcePath: string,
   destinationPath: string,
 ): Promise<void> {
-  let permissions;
   try {
-    permissions = (await fsPromise.stat(sourcePath)).mode;
+    const {mode, uid, gid} = await fsPromise.stat(sourcePath);
+    await Promise.all([
+      // The user may not have permissions to use the uid/gid.
+      fsPromise.chown(destinationPath, uid, gid).catch(() => {}),
+      fsPromise.chmod(destinationPath, mode),
+    ]);
   } catch (e) {
     // If the file does not exist, then ENOENT will be thrown.
     if (e.code !== 'ENOENT') {
       throw e;
     }
     // For new files, use the default process file creation mask.
-    // $FlowIssue: umask argument is optional
-    permissions = 0o666 & ~process.umask(); // eslint-disable-line no-bitwise
+    await fsPromise.chmod(
+      destinationPath,
+      // $FlowIssue: umask argument is optional
+      0o666 & ~process.umask(), // eslint-disable-line no-bitwise
+    );
   }
-  await fsPromise.chmod(destinationPath, permissions);
 }
 
 /**
