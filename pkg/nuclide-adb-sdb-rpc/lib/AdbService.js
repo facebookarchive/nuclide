@@ -63,14 +63,6 @@ export function getDeviceList(): ConnectableObservable<
   return adbObs.switchMap(adb => adb.getDeviceList()).publish();
 }
 
-export async function startServer(): Promise<boolean> {
-  try {
-    return (await getAdb()).startServer();
-  } catch (e) {
-    return false;
-  }
-}
-
 export async function getPidFromPackageName(
   device: string,
   packageName: string,
@@ -83,9 +75,7 @@ export function installPackage(
   packagePath: NuclideUri,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return Observable.defer(() => getAdb())
-    .switchMap(d => d.installPackage(device, packagePath))
-    .publish();
+  return adbObs.switchMap(d => d.installPackage(device, packagePath)).publish();
 }
 
 export function uninstallPackage(
@@ -93,7 +83,7 @@ export function uninstallPackage(
   packageName: string,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return Observable.defer(() => getAdb())
+  return adbObs
     .switchMap(d => d.uninstallPackage(device, packageName))
     .publish();
 }

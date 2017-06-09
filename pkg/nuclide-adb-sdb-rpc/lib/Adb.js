@@ -26,8 +26,8 @@ export class Adb extends AdbSdbBase {
     );
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.product.cpu.abi').toPromise();
+  getDeviceArchitecture(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.product.cpu.abi');
   }
 
   async getInstalledPackages(device: string): Promise<Array<string>> {
@@ -46,18 +46,18 @@ export class Adb extends AdbSdbBase {
     return packages.includes(pkg);
   }
 
-  getDeviceModel(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.product.model')
-      .map(s => (s === 'sdk' ? 'emulator' : s))
-      .toPromise();
+  getDeviceModel(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.product.model').map(
+      s => (s === 'sdk' ? 'emulator' : s),
+    );
   }
 
-  getAPIVersion(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.build.version.sdk').toPromise();
+  getAPIVersion(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.build.version.sdk');
   }
 
-  getBrand(device: string): Promise<string> {
-    return this.getAndroidProp(device, 'ro.product.brand').toPromise();
+  getBrand(device: string): Observable<string> {
+    return this.getAndroidProp(device, 'ro.product.brand');
   }
 
   getManufacturer(device: string): Promise<string> {
@@ -75,25 +75,32 @@ export class Adb extends AdbSdbBase {
       'manufacturer',
       await this.getManufacturer(device).catch(unknownCB),
     );
-    infoTable.set('brand', await this.getBrand(device).catch(unknownCB));
-    infoTable.set('wifi_ip', await this.getWifiIp(device).catch(unknownCB));
+    infoTable.set(
+      'brand',
+      await this.getBrand(device).toPromise().catch(unknownCB),
+    );
+    infoTable.set(
+      'wifi_ip',
+      await this.getWifiIp(device).toPromise().catch(unknownCB),
+    );
     return infoTable;
   }
 
-  async getWifiIp(device: string): Promise<string> {
-    const lines = await this.runShortCommand(device, [
+  getWifiIp(device: string): Observable<string> {
+    return this.runShortCommand(device, [
       'shell',
       'ip',
       'addr',
       'show',
       'wlan0',
-    ]).toPromise();
-    const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
-    if (line == null) {
-      return '';
-    }
-    const rawIp = line.trim().split(/\s+/)[1];
-    return rawIp.substring(0, rawIp.indexOf('/'));
+    ]).map(lines => {
+      const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
+      if (line == null) {
+        return '';
+      }
+      const rawIp = line.trim().split(/\s+/)[1];
+      return rawIp.substring(0, rawIp.indexOf('/'));
+    });
   }
 
   // Can't use kill, the only option is to use the package name

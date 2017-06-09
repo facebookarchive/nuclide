@@ -49,11 +49,15 @@ export class AdbSdbBase {
 
   async getCommonDeviceInfo(device: string): Promise<Map<string, string>> {
     const unknownCB = () => null;
-    const architecture = await this.getDeviceArchitecture(device).catch(
-      unknownCB,
-    );
-    const apiVersion = await this.getAPIVersion(device).catch(unknownCB);
-    const model = await this.getDeviceModel(device).catch(unknownCB);
+    const architecture = await this.getDeviceArchitecture(device)
+      .toPromise()
+      .catch(unknownCB);
+    const apiVersion = await this.getAPIVersion(device)
+      .toPromise()
+      .catch(unknownCB);
+    const model = await this.getDeviceModel(device)
+      .toPromise()
+      .catch(unknownCB);
     return new Map([
       ['name', device],
       // $FlowFixMe architecture could resolve to null if the promise throws
@@ -79,13 +83,19 @@ export class AdbSdbBase {
       .toPromise();
 
     return Promise.all(
-      devices.map(async name => {
-        const architecture = await this.getDeviceArchitecture(name).catch(
-          () => '',
-        );
-        const apiVersion = await this.getAPIVersion(name).catch(() => '');
-        const model = await this.getDeviceModel(name).catch(() => '');
-        return {name, architecture, apiVersion, model};
+      devices.map(name => {
+        return Observable.forkJoin(
+          this.getDeviceArchitecture(name).catch(() => Observable.of('')),
+          this.getAPIVersion(name).catch(() => Observable.of('')),
+          this.getDeviceModel(name).catch(() => Observable.of('')),
+        )
+          .map(([architecture, apiVersion, model]) => ({
+            name,
+            architecture,
+            apiVersion,
+            model,
+          }))
+          .toPromise();
       }),
     );
   }
@@ -94,16 +104,16 @@ export class AdbSdbBase {
     return this.runShortCommand(device, ['shell', 'cat', path]).toPromise();
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
-    return Promise.resolve('');
+  getDeviceArchitecture(device: string): Observable<string> {
+    return Observable.of('');
   }
 
-  getDeviceModel(device: string): Promise<string> {
-    return Promise.resolve('');
+  getDeviceModel(device: string): Observable<string> {
+    return Observable.of('');
   }
 
-  getAPIVersion(device: string): Promise<string> {
-    return Promise.resolve('');
+  getAPIVersion(device: string): Observable<string> {
+    return Observable.of('');
   }
 
   installPackage(

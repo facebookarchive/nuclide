@@ -18,7 +18,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 export class Sdb extends AdbSdbBase {
-  getTizenModelConfigKey(device: string, key: string): Promise<string> {
+  getTizenModelConfigKey(device: string, key: string): Observable<string> {
     const modelConfigPath = '/etc/config/model-config.xml';
 
     return this.runShortCommand(device, ['shell', 'cat', modelConfigPath])
@@ -26,34 +26,29 @@ export class Sdb extends AdbSdbBase {
       .map(s => {
         const regex = /.*<.*>(.*)<.*>/g;
         return regex.exec(s)[1];
-      })
-      .toPromise();
+      });
   }
 
-  getDeviceArchitecture(device: string): Promise<string> {
-    return this.runShortCommand(device, ['shell', 'uname', '-m'])
-      .map(s => s.trim())
-      .toPromise();
+  getDeviceArchitecture(device: string): Observable<string> {
+    return this.runShortCommand(device, ['shell', 'uname', '-m']).map(s =>
+      s.trim(),
+    );
   }
 
-  getDeviceModel(device: string): Promise<string> {
+  getDeviceModel(device: string): Observable<string> {
     return this.getTizenModelConfigKey(device, 'tizen.org/system/model_name');
   }
 
-  async getAPIVersion(device: string): Promise<string> {
-    let version;
-    try {
-      version = await this.getTizenModelConfigKey(
-        device,
-        'tizen.org/feature/platform.core.api.version',
-      );
-    } catch (e) {
-      version = await this.getTizenModelConfigKey(
+  getAPIVersion(device: string): Observable<string> {
+    return this.getTizenModelConfigKey(
+      device,
+      'tizen.org/feature/platform.core.api.version',
+    ).catch(() =>
+      this.getTizenModelConfigKey(
         device,
         'tizen.org/feature/platform.native.api.version',
-      );
-    }
-    return version;
+      ),
+    );
   }
 
   installPackage(

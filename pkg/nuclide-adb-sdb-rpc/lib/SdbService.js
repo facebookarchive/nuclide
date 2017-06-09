@@ -39,14 +39,6 @@ export async function getDeviceInfo(
   return (await getSdb()).getCommonDeviceInfo(name);
 }
 
-export async function startServer(): Promise<boolean> {
-  try {
-    return (await getSdb()).startServer();
-  } catch (e) {
-    return false;
-  }
-}
-
 export function getDeviceList(): ConnectableObservable<
   Array<DeviceDescription>,
 > {
