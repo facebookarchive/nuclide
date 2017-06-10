@@ -28,6 +28,7 @@ import {
   PanelComponentScroller,
 } from 'nuclide-commons-ui/PanelComponentScroller';
 import {Message, MessageTypes} from 'nuclide-commons-ui/Message';
+import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 
 const logger = getLogger('nuclide-outline-view');
 
@@ -101,15 +102,15 @@ class OutlineViewComponent extends React.Component {
 
   render(): ?React.Element<any> {
     const outline = this.props.outline;
-    const noOutlineAvailableMessage = (
-      <Message>
-        No outline available.
-      </Message>
-    );
     switch (outline.kind) {
       case 'empty':
       case 'not-text-editor':
-        return noOutlineAvailableMessage;
+        return (
+          <EmptyState
+            title="No outline available"
+            message="You need to open a file to use outline view."
+          />
+        );
       case 'loading':
         return (
           <div className="nuclide-outline-view-loading">
@@ -121,12 +122,25 @@ class OutlineViewComponent extends React.Component {
         );
       case 'no-provider':
         return outline.grammar === 'Null Grammar'
-          ? noOutlineAvailableMessage
-          : <Message type={MessageTypes.warning}>
-              Outline view does not currently support {outline.grammar}.
-            </Message>;
+          ? <EmptyState
+              title="No outline available"
+              message="The current file doesn't have an associated grammar. You may want to save it."
+            />
+          : <EmptyState
+              title="No outline available"
+              message={
+                'Outline view does not currently support ' +
+                  outline.grammar +
+                  '.'
+              }
+            />;
       case 'provider-no-outline':
-        return noOutlineAvailableMessage;
+        return (
+          <EmptyState
+            title="No outline available"
+            message="There are no outline providers registered."
+          />
+        );
       case 'outline':
         return renderTrees(outline.editor, outline.outlineTrees);
       default:
