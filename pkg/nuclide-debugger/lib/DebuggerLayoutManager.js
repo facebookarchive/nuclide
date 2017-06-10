@@ -299,7 +299,7 @@ export class DebuggerLayoutManager {
 
   _getWorkspaceDocks(): Array<{
     name: string,
-    dock: atom$AbastractPaneContainer,
+    dock: atom$AbstractPaneContainer,
     orientation: string,
   }> {
     invariant(this._debuggerWorkspaceEnabled);
@@ -336,7 +336,7 @@ export class DebuggerLayoutManager {
     return docks;
   }
 
-  _isDockEmpty(dock: atom$AbastractPaneContainer): boolean {
+  _isDockEmpty(dock: atom$AbstractPaneContainer): boolean {
     const panes = dock.getPanes();
 
     // A dock is empty for our purposes if it has nothing visible in it. If a dock
@@ -350,9 +350,9 @@ export class DebuggerLayoutManager {
 
   _appendItemToDock(
     paneConfig: DebuggerPaneConfig,
-    dock: atom$AbastractPaneContainer,
+    dock: atom$AbstractPaneContainer,
     item: Object,
-    debuggerItemsPerDock: Map<atom$AbastractPaneContainer, number>,
+    debuggerItemsPerDock: Map<atom$AbstractPaneContainer, number>,
   ): void {
     const panes = dock.getPanes();
     invariant(panes.length >= 1);

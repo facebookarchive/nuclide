@@ -1189,7 +1189,7 @@ declare class atom$Workspace {
   destroyActivePaneItem(): void,
 }
 
-declare class atom$AbastractPaneContainer {
+declare class atom$AbstractPaneContainer {
   isVisible(): boolean,
   show(): void,
   hide(): void,
@@ -1198,13 +1198,13 @@ declare class atom$AbastractPaneContainer {
   onDidAddPaneItem((item: {item: Object}) => void): IDisposable,
 }
 
-declare class atom$Dock extends atom$AbastractPaneContainer {
+declare class atom$Dock extends atom$AbstractPaneContainer {
   // This is a woefully incomplete list, items can be added as needed from
   // https://github.com/atom/atom/blob/master/src/dock.js
   toggle(): void,
 }
 
-declare class atom$WorkspaceCenter extends atom$AbastractPaneContainer {
+declare class atom$WorkspaceCenter extends atom$AbstractPaneContainer {
   activate(): void;
 
   observeActivePaneItem(callback: atom$PaneItem => mixed): IDisposable;
