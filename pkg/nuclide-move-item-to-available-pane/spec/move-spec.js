@@ -84,7 +84,12 @@ describe('nuclide-move-item-to-available-pane', () => {
  * indicates that it should be the active pane item.
  */
 function assertWorkspaceState(...descriptors: Array<Array<string>>) {
-  expect(createDescriptorForWorkspaceState()).toEqual(descriptors);
+  const workspaceDescriptors = createDescriptorForWorkspaceState()
+    .map(descriptor => {
+      return descriptor.filter(paneItem => paneItem.length > 0);
+    })
+    .filter(descriptor => descriptor.length > 0);
+  expect(workspaceDescriptors).toEqual(descriptors);
 }
 
 function createDescriptorForWorkspaceState(): Array<Array<string>> {
