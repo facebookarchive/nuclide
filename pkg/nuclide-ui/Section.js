@@ -27,6 +27,7 @@ type Props = {
   onChange?: (isCollapsed: boolean) => mixed,
 
   size?: SectionSize,
+  title?: string,
 };
 
 type State = {
@@ -87,6 +88,10 @@ export class Section extends React.Component {
       conditionalProps.title = collapsed
         ? 'Click to expand'
         : 'Click to collapse';
+    }
+    // Any custom title prop should override the default title.
+    if (this.props.title != null) {
+      conditionalProps.title = this.props.title;
     }
     const HeadlineComponent = getHeadlineComponent(this.props.size);
     return (
