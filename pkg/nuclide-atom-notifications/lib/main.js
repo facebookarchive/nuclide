@@ -9,11 +9,10 @@
  * @format
  */
 
-import type {Level, OutputService} from '../../nuclide-console/lib/types';
+import type {Level, ConsoleService} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -22,17 +21,21 @@ class Activation {
     this._disposables = new CompositeDisposable();
   }
 
-  consumeOutputService(api: OutputService): void {
-    const messages = observableFromSubscribeFunction(
-      atom.notifications.onDidAddNotification.bind(atom.notifications),
-    ).map(notification => ({
-      // TODO (matthewwithanm): Add timestamp once nuclide-console supports it.
-      // TODO (matthewwithanm): Show notification description/details.
-      text: notification.getMessage(),
-      level: getLevel(notification.getType()),
-    }));
-
-    this._disposables.add(api.registerOutputProvider({id: 'Atom', messages}));
+  consumeConsoleService(createConsole: ConsoleService): IDisposable {
+    const consoleApi = createConsole({
+      id: 'Atom',
+      name: 'Atom',
+    });
+    const notificationDisposable = atom.notifications.onDidAddNotification(
+      notification => {
+        consoleApi.append({
+          text: notification.getMessage(),
+          level: getLevel(notification.getType()),
+        });
+      },
+    );
+    this._disposables.add(consoleApi, notificationDisposable);
+    return notificationDisposable;
   }
 
   dispose() {
