@@ -17,7 +17,7 @@ import React from 'react';
 
 type Props = {|
   type: 'adb' | 'sdb',
-  setCustomPath: (path: string) => void,
+  setCustomPath: (path: ?string) => void,
   dismiss: () => mixed,
   currentActivePath: ?string,
   currentCustomPath: ?string,
@@ -25,7 +25,7 @@ type Props = {|
 |};
 
 type State = {|
-  customPath: string,
+  customPath: ?string,
 |};
 
 export class ATCustomDBPathModal extends React.Component {
@@ -34,7 +34,7 @@ export class ATCustomDBPathModal extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    this.state = {customPath: this.props.currentCustomPath || ''};
+    this.state = {customPath: this.props.currentCustomPath};
 
     (this: any)._handleConfirm = this._handleConfirm.bind(this);
     (this: any)._handleCancel = this._handleCancel.bind(this);
@@ -53,7 +53,7 @@ export class ATCustomDBPathModal extends React.Component {
   }
 
   _handleCustomPathChange(customPath: string): void {
-    this.setState({customPath});
+    this.setState({customPath: customPath.length === 0 ? null : customPath});
   }
 
   _getCurrentActivePath(): React.Element<any> {
@@ -85,7 +85,7 @@ export class ATCustomDBPathModal extends React.Component {
         <div className="nuclide-adb-sdb-custom-path-input">
           <AtomInput
             size="sm"
-            value={this.state.customPath}
+            value={this.state.customPath || ''}
             placeholderText="... or from a custom path"
             onDidChange={this._handleCustomPathChange}
           />
@@ -98,10 +98,7 @@ export class ATCustomDBPathModal extends React.Component {
     return (
       <div className="nuclide-adb-sdb-custom-path-footer">
         <ButtonGroup>
-          <Button
-            onClick={this._handleConfirm}
-            buttonType="PRIMARY"
-            disabled={this.state.customPath.length === 0}>
+          <Button onClick={this._handleConfirm} buttonType="PRIMARY">
             Confirm
           </Button>
           <Button onClick={this._handleCancel}>Cancel</Button>

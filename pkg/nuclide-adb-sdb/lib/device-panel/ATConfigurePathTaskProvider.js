@@ -61,7 +61,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
       : state.customSdbPaths.get(host);
   }
 
-  _setCustomPath(host: NuclideUri, path: string): void {
+  _setCustomPath(host: NuclideUri, path: ?string): void {
     this._store.dispatch(
       this._dbType === 'adb'
         ? Actions.setCustomAdbPath(host, path)
