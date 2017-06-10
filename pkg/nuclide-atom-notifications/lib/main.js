@@ -12,6 +12,7 @@
 import type {Level, ConsoleService} from '../../nuclide-console/lib/types';
 
 import {CompositeDisposable} from 'atom';
+import marked from 'marked';
 import createPackage from 'nuclide-commons-atom/createPackage';
 
 class Activation {
@@ -29,7 +30,7 @@ class Activation {
     const notificationDisposable = atom.notifications.onDidAddNotification(
       notification => {
         consoleApi.append({
-          text: notification.getMessage(),
+          text: stripFormatting(notification.getMessage()),
           level: getLevel(notification.getType()),
         });
       },
@@ -57,6 +58,21 @@ function getLevel(atomNotificationType: string): Level {
     default:
       return 'log';
   }
+}
+
+let formattingDiv;
+/**
+ * Markdown and HTML can be used with Atom notifications, but not in the console. In order to strip
+ * all of the formatting, we'll first compile the markdown, then use a DOM element to convert that
+ * to raw text. This isn't the most performant way to strip the HTML, but it does handle `<br />`s
+ * and stuff really easily and only happens once per notification so it's okay.
+ */
+function stripFormatting(raw: string): string {
+  const div = formattingDiv == null
+    ? (formattingDiv = document.createElement('div'))
+    : formattingDiv;
+  div.innerHTML = marked(raw);
+  return div.innerText || '';
 }
 
 createPackage(module.exports, Activation);
