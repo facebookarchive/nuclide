@@ -1074,6 +1074,13 @@ export class HgRepositoryClient {
       );
   }
 
+  editCommitMessage(
+    revision: string,
+    message: string,
+  ): Observable<LegacyProcessMessage> {
+    return this._service.editCommitMessage(revision, message).refCount();
+  }
+
   splitRevision(): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     this._updateInteractiveMode(true);

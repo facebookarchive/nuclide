@@ -988,6 +988,23 @@ export class HgService {
     return this._commitCode(message, ['commit', ...filePaths]).publish();
   }
 
+  /*
+   * Edit commit message associated with a revision
+   * @param revision Hash of the revision to be updated
+   * @param message New commit message
+   * @return Process update message while running metaedit
+   */
+  editCommitMessage(
+    revision: string,
+    message: string,
+  ): ConnectableObservable<LegacyProcessMessage> {
+    const args = ['metaedit', '-r', revision, '-m', message];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(args, execOptions).publish();
+  }
+
   /**
    * Amend code changes to the latest commit.
    * @param message Commit message.  Message will remain unchaged if not provided.
