@@ -9,13 +9,15 @@
  * @format
  */
 
-import {pathForDebugBridge, getStore} from './AdbSdbPathStore';
-import {ConnectableObservable, Observable} from 'rxjs';
+import {getStore} from './AdbSdbPathStore';
+import {ConnectableObservable} from 'rxjs';
 import {Sdb} from './Sdb';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {DeviceDescription, DBPathsInfo} from './types';
+
+const sdb = new Sdb();
 
 export async function registerSdbPath(
   id: string,
@@ -33,38 +35,30 @@ export async function registerCustomPath(path: ?string): Promise<void> {
   getStore('adb').registerCustomPath(path);
 }
 
-async function getSdb(): Promise<Sdb> {
-  return new Sdb((await pathForDebugBridge('sdb')));
-}
-
-const sdbObs = Observable.defer(() =>
-  pathForDebugBridge('sdb'),
-).switchMap(sdbPath => Observable.of(new Sdb(sdbPath)));
-
 export function getDeviceInfo(
   name: string,
 ): ConnectableObservable<Map<string, string>> {
-  return sdbObs.switchMap(sdb => sdb.getCommonDeviceInfo(name)).publish();
+  return sdb.getDeviceInfo(name).publish();
 }
 
 export function getDeviceList(): ConnectableObservable<
   Array<DeviceDescription>,
 > {
-  return sdbObs.switchMap(sdb => sdb.getDeviceList()).publish();
+  return sdb.getDeviceList().publish();
 }
 
 export async function getPidFromPackageName(
   device: string,
   packageName: string,
 ): Promise<number> {
-  return (await getSdb()).getPidFromPackageName(device, packageName);
+  return sdb.getPidFromPackageName(device, packageName);
 }
 
 export async function getFileContentsAtPath(
   device: string,
   path: string,
 ): Promise<string> {
-  return (await getSdb()).getFileContentsAtPath(device, path);
+  return sdb.getFileContentsAtPath(device, path);
 }
 
 export function installPackage(
@@ -72,16 +66,14 @@ export function installPackage(
   packagePath: NuclideUri,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return Observable.defer(() => getSdb())
-    .switchMap(d => d.installPackage(device, packagePath))
-    .publish();
+  return sdb.installPackage(device, packagePath).publish();
 }
 
 export async function launchApp(
   device: string,
   identifier: string,
 ): Promise<string> {
-  return (await getSdb()).launchApp(device, identifier);
+  return sdb.launchApp(device, identifier);
 }
 
 export function uninstallPackage(
@@ -89,7 +81,5 @@ export function uninstallPackage(
   packageName: string,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return Observable.defer(() => getSdb())
-    .switchMap(d => d.uninstallPackage(device, packageName))
-    .publish();
+  return sdb.uninstallPackage(device, packageName).publish();
 }

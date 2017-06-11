@@ -9,21 +9,45 @@
  * @format
  */
 
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {runCommand} from 'nuclide-commons/process';
-import {AdbSdbBase} from './AdbSdbBase';
-import {Observable} from 'rxjs';
-
-import type {AndroidJavaProcess} from './types';
+import type {DeviceDescription, AndroidJavaProcess} from './types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-export class Adb extends AdbSdbBase {
+import os from 'os';
+import invariant from 'assert';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {Observable} from 'rxjs';
+import {DebugBridge} from './DebugBridge';
+import {createConfigObs} from './AdbSdbPathStore';
+
+const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
+
+export class Adb {
+  _bridge: DebugBridge = new DebugBridge(createConfigObs('adb'));
+
+  getDeviceList(): Observable<Array<DeviceDescription>> {
+    return this._bridge.getDevices().switchMap(devices => {
+      return Observable.concat(
+        ...devices.map(name => {
+          return Observable.forkJoin(
+            this.getDeviceArchitecture(name).catch(() => Observable.of('')),
+            this.getAPIVersion(name).catch(() => Observable.of('')),
+            this.getDeviceModel(name).catch(() => Observable.of('')),
+          ).map(([architecture, apiVersion, model]) => ({
+            name,
+            architecture,
+            apiVersion,
+            model,
+          }));
+        }),
+      ).toArray();
+    });
+  }
+
   getAndroidProp(device: string, key: string): Observable<string> {
-    return this.runShortCommand(device, ['shell', 'getprop', key]).map(s =>
-      s.trim(),
-    );
+    return this._bridge
+      .runShortCommand(device, ['shell', 'getprop', key])
+      .map(s => s.trim());
   }
 
   getDeviceArchitecture(device: string): Observable<string> {
@@ -32,12 +56,9 @@ export class Adb extends AdbSdbBase {
 
   async getInstalledPackages(device: string): Promise<Array<string>> {
     const prefix = 'package:';
-    const stdout = await this.runShortCommand(device, [
-      'shell',
-      'pm',
-      'list',
-      'packages',
-    ]).toPromise();
+    const stdout = await this._bridge
+      .runShortCommand(device, ['shell', 'pm', 'list', 'packages'])
+      .toPromise();
     return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
   }
 
@@ -64,6 +85,22 @@ export class Adb extends AdbSdbBase {
     return this.getAndroidProp(device, 'ro.product.manufacturer');
   }
 
+  getCommonDeviceInfo(device: string): Observable<Map<string, string>> {
+    const unknownCB = () => Observable.of('');
+    return Observable.forkJoin(
+      this.getDeviceArchitecture(device).catch(unknownCB),
+      this.getAPIVersion(device).catch(unknownCB),
+      this.getDeviceModel(device).catch(unknownCB),
+    ).map(([architecture, apiVersion, model]) => {
+      return new Map([
+        ['name', device],
+        ['architecture', architecture],
+        ['api_version', apiVersion],
+        ['model', model],
+      ]);
+    });
+  }
+
   getDeviceInfo(device: string): Observable<Map<string, string>> {
     return this.getCommonDeviceInfo(device).switchMap(infoTable => {
       const unknownCB = () => Observable.of('');
@@ -83,31 +120,24 @@ export class Adb extends AdbSdbBase {
   }
 
   getWifiIp(device: string): Observable<string> {
-    return this.runShortCommand(device, [
-      'shell',
-      'ip',
-      'addr',
-      'show',
-      'wlan0',
-    ]).map(lines => {
-      const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
-      if (line == null) {
-        return '';
-      }
-      const rawIp = line.trim().split(/\s+/)[1];
-      return rawIp.substring(0, rawIp.indexOf('/'));
-    });
+    return this._bridge
+      .runShortCommand(device, ['shell', 'ip', 'addr', 'show', 'wlan0'])
+      .map(lines => {
+        const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
+        if (line == null) {
+          return '';
+        }
+        const rawIp = line.trim().split(/\s+/)[1];
+        return rawIp.substring(0, rawIp.indexOf('/'));
+      });
   }
 
   // Can't use kill, the only option is to use the package name
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
   async stopPackage(device: string, packageName: string): Promise<void> {
-    await this.runShortCommand(device, [
-      'shell',
-      'am',
-      'force-stop',
-      packageName,
-    ]).toPromise();
+    await this._bridge
+      .runShortCommand(device, ['shell', 'am', 'force-stop', packageName])
+      .toPromise();
   }
 
   getOSVersion(device: string): Observable<string> {
@@ -120,7 +150,7 @@ export class Adb extends AdbSdbBase {
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this.runLongCommand(device, ['install', '-r', packagePath]);
+    return this._bridge.runLongCommand(device, ['install', '-r', packagePath]);
   }
 
   uninstallPackage(
@@ -128,7 +158,7 @@ export class Adb extends AdbSdbBase {
     packageName: string,
   ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this.runLongCommand(device, ['uninstall', packageName]);
+    return this._bridge.runLongCommand(device, ['uninstall', packageName]);
   }
 
   forwardJdwpPortToPid(
@@ -136,11 +166,9 @@ export class Adb extends AdbSdbBase {
     tcpPort: number,
     pid: number,
   ): Promise<string> {
-    return this.runShortCommand(device, [
-      'forward',
-      `tcp:${tcpPort}`,
-      `jdwp:${pid}`,
-    ]).toPromise();
+    return this._bridge
+      .runShortCommand(device, ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`])
+      .toPromise();
   }
 
   launchActivity(
@@ -158,7 +186,7 @@ export class Adb extends AdbSdbBase {
       args.push('-N', '-D');
     }
     args.push(`${packageName}/${activity}`);
-    return this.runShortCommand(device, args).toPromise();
+    return this._bridge.runShortCommand(device, args).toPromise();
   }
 
   activityExists(
@@ -167,33 +195,59 @@ export class Adb extends AdbSdbBase {
     activity: string,
   ): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
-    const deviceArg = device !== '' ? ['-s', device] : [];
-    const command = deviceArg.concat(['shell', 'dumpsys', 'package']);
-    return runCommand(this._dbPath, command)
+    return this._bridge
+      .runShortCommand(device, ['shell', 'dumpsys', 'package'])
       .map(stdout => stdout.includes(packageActivityString))
       .toPromise();
   }
 
   touchFile(device: string, path: string): Promise<string> {
-    const deviceArg = device !== '' ? ['-s', device] : [];
-    const command = deviceArg.concat(['shell', 'touch', path]);
-    return runCommand(this._dbPath, command).toPromise();
+    return this._bridge
+      .runShortCommand(device, ['shell', 'touch', path])
+      .toPromise();
   }
 
   removeFile(device: string, path: string): Promise<string> {
-    const deviceArg = device !== '' ? ['-s', device] : [];
-    const command = deviceArg.concat(['shell', 'rm', path]);
-    return runCommand(this._dbPath, command).toPromise();
+    return this._bridge
+      .runShortCommand(device, ['shell', 'rm', path])
+      .toPromise();
+  }
+
+  getProcesses(device: string): Observable<Array<string>> {
+    return this._bridge
+      .runShortCommand(device, ['shell', 'ps'])
+      .map(stdout => stdout.split(/\n/));
+  }
+
+  getGlobalProcessStat(device: string): Observable<string> {
+    return this._bridge
+      .runShortCommand(device, ['shell', 'cat', '/proc/stat'])
+      .map(stdout => stdout.split(/\n/)[0].trim());
+  }
+
+  getProcStats(device: string): Observable<Array<string>> {
+    return this._bridge
+      .runShortCommand(device, [
+        'shell',
+        'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
+      ])
+      .map(stdout => {
+        return stdout
+          .split(/\n/)
+          .filter(line => VALID_PROCESS_REGEX.test(line));
+      });
   }
 
   getJavaProcesses(device: string): Observable<Array<AndroidJavaProcess>> {
-    return this.runShortCommand(device, ['shell', 'ps'])
+    return this._bridge
+      .runShortCommand(device, ['shell', 'ps'])
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
       })
       .switchMap(allProcesses => {
-        return this.runLongCommand(device, ['jdwp'])
+        return this._bridge
+          .runLongCommand(device, ['jdwp'])
           .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
           .take(1)
           .timeout(1000)
@@ -214,12 +268,25 @@ export class Adb extends AdbSdbBase {
     if (!await this.isPackageInstalled(device, pkg)) {
       return null;
     }
-    return this.runShortCommand(device, [
-      'shell',
-      'dumpsys',
-      'package',
-      pkg,
-    ]).toPromise();
+    return this._bridge
+      .runShortCommand(device, ['shell', 'dumpsys', 'package', pkg])
+      .toPromise();
+  }
+
+  async getPidFromPackageName(
+    device: string,
+    packageName: string,
+  ): Promise<number> {
+    const pidLine = (await this._bridge
+      .runShortCommand(device, ['shell', 'ps', '|', 'grep', '-i', packageName])
+      .toPromise()).split(os.EOL)[0];
+    if (pidLine == null) {
+      throw new Error(
+        `Can not find a running process with package name: ${packageName}`,
+      );
+    }
+    // First column is 'USER', second is 'PID'.
+    return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */ 10);
   }
 }
 

@@ -24,8 +24,6 @@ import {Observable} from 'rxjs';
 
 type CPU_MEM = [number, number];
 
-const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
-
 export class AdbTop {
   _adb: Adb;
   _device: string;
@@ -37,7 +35,7 @@ export class AdbTop {
 
   fetch(): Observable<Process[]> {
     return Observable.forkJoin(
-      this._getProcessList().catch(() => Observable.of([])),
+      this._adb.getProcesses(this._device).catch(() => Observable.of([])),
       this._adb.getJavaProcesses(this._device).catch(() => Observable.of([])),
       this._getProcessAndMemoryUsage().catch(() => Observable.of(new Map())),
     ).map(([processes, javaProcesses, cpuAndMemUsage]) => {
@@ -70,12 +68,6 @@ export class AdbTop {
         }),
       );
     });
-  }
-
-  _getProcessList(): Observable<Array<string>> {
-    return this._adb
-      .runShortCommand(this._device, ['shell', 'ps'])
-      .map(stdout => stdout.split(/\n/));
   }
 
   _getProcessAndMemoryUsage(): Observable<Map<number, CPU_MEM>> {
@@ -116,41 +108,27 @@ export class AdbTop {
   _getProcessesTime(): Observable<Map<number, CPU_MEM>> {
     // We look for the all the /proc/PID/stat files failing silently if the process dies as the
     // command runs.
-    return this._adb
-      .runShortCommand(this._device, [
-        'shell',
-        'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
-      ])
-      .map(stdout => {
-        const lines = stdout
-          .split(/\n/)
-          .filter(line => VALID_PROCESS_REGEX.test(line));
-        return new Map(
-          lines.map(line => {
-            const info = line.trim().split(/\s/);
-            return [
-              parseInt(info[0], 10),
-              [
-                parseInt(info[12], 10) + parseInt(info[13], 10), // stime + utime
-                parseInt(info[23], 10), // RSS
-              ],
-            ];
-          }),
-        );
-      });
+    return this._adb.getProcStats(this._device).map(lines => {
+      return new Map(
+        lines.map(line => {
+          const info = line.trim().split(/\s/);
+          return [
+            parseInt(info[0], 10),
+            [
+              parseInt(info[12], 10) + parseInt(info[13], 10), // stime + utime
+              parseInt(info[23], 10), // RSS
+            ],
+          ];
+        }),
+      );
+    });
   }
 
   _getGlobalCPUTime(): Observable<number> {
-    return this._getGlobalProcessStat().map(stdout => {
+    return this._adb.getGlobalProcessStat(this._device).map(stdout => {
       return stdout.split(/\s+/).slice(1, -2).reduce((acc, current) => {
         return acc + parseInt(current, 10);
       }, 0);
     });
-  }
-
-  _getGlobalProcessStat(): Observable<string> {
-    return this._adb
-      .runShortCommand(this._device, ['shell', 'cat', '/proc/stat'])
-      .map(stdout => stdout.split(/\n/)[0].trim());
   }
 }

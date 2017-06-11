@@ -9,11 +9,12 @@
  * @format
  */
 
+import type {DebugBridgeType, DBPathsInfo, DebugBridgeConfig} from './types';
+
 import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';
-
-import type {DebugBridgeType, DBPathsInfo} from './types';
+import {Observable} from 'rxjs';
 
 export type DBPath = {path: string, priority: number};
 
@@ -116,4 +117,10 @@ export function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
     store.notifyWorkingPath(workingPath);
     return workingPath;
   });
+}
+
+export function createConfigObs(
+  db: DebugBridgeType,
+): Observable<DebugBridgeConfig> {
+  return Observable.defer(() => pathForDebugBridge(db)).map(path => ({path}));
 }
