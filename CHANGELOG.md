@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## v0.233.0
+
+### General
+
+* Fixed an issue where running code format on a large file could end up hanging Nuclide and Atom
+* Added a "Set Current Working Root Here" context menu to file tabs.
+* The owner and group of remote files are now preserved.
+
+### Debugger
+
+* Updated Debugger documentation to reflect many changes to the launch/attach workflow, debugger panes and updated screenshots to match latest UI.
+* Added work around to fix an issue in Atom 1.17+ where opening a new pane like the Outline View or Commit Form while the debugger is open causes an odd and difficult to use pane layout
+* Added “Enable All” and “Disable All” commands to the Breakpoint pane context menu
+
 ## v0.232.0
 
 ### Hotfix Release
