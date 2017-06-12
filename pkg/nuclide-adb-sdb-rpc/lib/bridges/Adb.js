@@ -20,22 +20,8 @@ import {DebugBridge} from '../common/DebugBridge';
 import {createConfigObs} from '../common/Store';
 import {parsePsTableOutput} from '../common/ps';
 
-export class Adb {
-  static bridge = new DebugBridge(createConfigObs('adb'));
-
-  _device: string;
-
-  constructor(device: string) {
-    this._device = device;
-  }
-
-  runShortCommand(...command: string[]): Observable<string> {
-    return Adb.bridge.runShortCommand(this._device, command);
-  }
-
-  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
-    return Adb.bridge.runLongCommand(this._device, command);
-  }
+export class Adb extends DebugBridge {
+  static configObs = createConfigObs('adb');
 
   getAndroidProp(key: string): Observable<string> {
     return this.runShortCommand('shell', 'getprop', key).map(s => s.trim());

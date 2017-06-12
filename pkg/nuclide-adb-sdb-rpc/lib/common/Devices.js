@@ -25,7 +25,7 @@ export class Devices {
   }
 
   getDeviceList(): Observable<Array<DeviceDescription>> {
-    return this._db.bridge.getDevices().switchMap(devices => {
+    return this._db.getDevices().switchMap(devices => {
       return Observable.concat(
         ...devices.map(name => {
           const db = new this._db(name);

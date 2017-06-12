@@ -9,44 +9,47 @@
  * @format
  */
 
-import type {DebugBridgeConfig} from '../types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {DebugBridgeConfig} from '../types';
 
-import {observeProcess, runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
+import {observeProcess, runCommand} from 'nuclide-commons/process';
 
 export class DebugBridge {
-  _configObs: Observable<DebugBridgeConfig>;
+  static configObs: Observable<DebugBridgeConfig>;
 
-  constructor(configObs: Observable<DebugBridgeConfig>) {
-    this._configObs = configObs;
+  _device: string;
+
+  constructor(device: string) {
+    this._device = device;
+  }
+
+  runShortCommand(...command: string[]): Observable<string> {
+    return this.constructor.configObs.switchMap(config =>
+      runCommand(config.path, this._getDeviceArg(this._device).concat(command)),
+    );
+  }
+
+  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
+    // TODO(T17463635)
+    return this.constructor.configObs.switchMap(config =>
+      observeProcess(
+        config.path,
+        this._getDeviceArg(this._device).concat(command),
+        {
+          killTreeWhenDone: true,
+          /* TODO(T17353599) */ isExitError: () => false,
+        },
+      ).catch(error => Observable.of({kind: 'error', error})),
+    ); // TODO(T17463635)
   }
 
   _getDeviceArg(device: string): string[] {
     return device !== '' ? ['-s', device] : [];
   }
 
-  runShortCommand(device: string, command: Array<string>): Observable<string> {
-    return this._configObs.switchMap(config =>
-      runCommand(config.path, this._getDeviceArg(device).concat(command)),
-    );
-  }
-
-  runLongCommand(
-    device: string,
-    command: string[],
-  ): Observable<LegacyProcessMessage> {
-    // TODO(T17463635)
-    return this._configObs.switchMap(config =>
-      observeProcess(config.path, this._getDeviceArg(device).concat(command), {
-        killTreeWhenDone: true,
-        /* TODO(T17353599) */ isExitError: () => false,
-      }).catch(error => Observable.of({kind: 'error', error})),
-    ); // TODO(T17463635)
-  }
-
-  getDevices(): Observable<Array<string>> {
-    return this._configObs.switchMap(config =>
+  static getDevices(): Observable<Array<string>> {
+    return this.configObs.switchMap(config =>
       runCommand(config.path, ['devices']).map(stdout =>
         stdout
           .split(/\n+/g)

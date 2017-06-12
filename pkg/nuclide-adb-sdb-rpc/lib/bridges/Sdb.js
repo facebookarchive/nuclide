@@ -19,22 +19,8 @@ import {Observable} from 'rxjs';
 import {DebugBridge} from '../common/DebugBridge';
 import {createConfigObs} from '../common/Store';
 
-export class Sdb {
-  static bridge = new DebugBridge(createConfigObs('sdb'));
-
-  _device: string;
-
-  constructor(device: string) {
-    this._device = device;
-  }
-
-  runShortCommand(...command: string[]): Observable<string> {
-    return Sdb.bridge.runShortCommand(this._device, command);
-  }
-
-  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
-    return Sdb.bridge.runLongCommand(this._device, command);
-  }
+export class Sdb extends DebugBridge {
+  static configObs = createConfigObs('sdb');
 
   async getFileContentsAtPath(path: string): Promise<string> {
     return this.runShortCommand('shell', 'cat', path).toPromise();
