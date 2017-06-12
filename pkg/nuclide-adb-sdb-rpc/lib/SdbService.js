@@ -17,6 +17,7 @@ import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
 import {Sdb} from './bridges/Sdb';
 import {Processes} from './common/Processes';
+import {Devices} from './common/Devices';
 
 const SDB = 'sdb';
 
@@ -45,7 +46,7 @@ export function getDeviceInfo(
 export function getDeviceList(): ConnectableObservable<
   Array<DeviceDescription>,
 > {
-  return Sdb.getDeviceList().publish();
+  return new Devices(Sdb).getDeviceList().publish();
 }
 
 export async function getPidFromPackageName(

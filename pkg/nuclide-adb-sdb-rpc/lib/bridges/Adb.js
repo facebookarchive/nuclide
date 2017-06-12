@@ -9,11 +9,7 @@
  * @format
  */
 
-import type {
-  DeviceDescription,
-  AndroidJavaProcess,
-  SimpleProcess,
-} from '../types';
+import type {AndroidJavaProcess, SimpleProcess} from '../types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -24,9 +20,9 @@ import {DebugBridge} from '../common/DebugBridge';
 import {createConfigObs} from '../common/Store';
 import {parsePsTableOutput} from '../common/ps';
 
-const bridge = new DebugBridge(createConfigObs('adb'));
-
 export class Adb {
+  static bridge = new DebugBridge(createConfigObs('adb'));
+
   _device: string;
 
   constructor(device: string) {
@@ -34,31 +30,11 @@ export class Adb {
   }
 
   runShortCommand(...command: string[]): Observable<string> {
-    return bridge.runShortCommand(this._device, command);
+    return Adb.bridge.runShortCommand(this._device, command);
   }
 
   runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
-    return bridge.runLongCommand(this._device, command);
-  }
-
-  static getDeviceList(): Observable<Array<DeviceDescription>> {
-    return bridge.getDevices().switchMap(devices => {
-      return Observable.concat(
-        ...devices.map(name => {
-          const adb = new Adb(name);
-          return Observable.forkJoin(
-            adb.getDeviceArchitecture().catch(() => Observable.of('')),
-            adb.getAPIVersion().catch(() => Observable.of('')),
-            adb.getDeviceModel().catch(() => Observable.of('')),
-          ).map(([architecture, apiVersion, model]) => ({
-            name,
-            architecture,
-            apiVersion,
-            model,
-          }));
-        }),
-      ).toArray();
-    });
+    return Adb.bridge.runLongCommand(this._device, command);
   }
 
   getAndroidProp(key: string): Observable<string> {

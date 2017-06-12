@@ -22,6 +22,7 @@ import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
 import {Adb} from './bridges/Adb';
 import {Processes} from './common/Processes';
+import {Devices} from './common/Devices';
 
 const ADB = 'adb';
 
@@ -63,7 +64,7 @@ export async function stopPackage(
 export function getDeviceList(): ConnectableObservable<
   Array<DeviceDescription>,
 > {
-  return Adb.getDeviceList().publish();
+  return new Devices(Adb).getDeviceList().publish();
 }
 
 export async function getPidFromPackageName(

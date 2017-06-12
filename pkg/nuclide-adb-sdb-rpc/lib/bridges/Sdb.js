@@ -11,7 +11,7 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeviceDescription, SimpleProcess} from '../types';
+import type {SimpleProcess} from '../types';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -19,9 +19,9 @@ import {Observable} from 'rxjs';
 import {DebugBridge} from '../common/DebugBridge';
 import {createConfigObs} from '../common/Store';
 
-const bridge = new DebugBridge(createConfigObs('sdb'));
-
 export class Sdb {
+  static bridge = new DebugBridge(createConfigObs('sdb'));
+
   _device: string;
 
   constructor(device: string) {
@@ -29,31 +29,11 @@ export class Sdb {
   }
 
   runShortCommand(...command: string[]): Observable<string> {
-    return bridge.runShortCommand(this._device, command);
+    return Sdb.bridge.runShortCommand(this._device, command);
   }
 
   runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
-    return bridge.runLongCommand(this._device, command);
-  }
-
-  static getDeviceList(): Observable<Array<DeviceDescription>> {
-    return bridge.getDevices().switchMap(devices => {
-      return Observable.concat(
-        ...devices.map(name => {
-          const sdb = new Sdb(name);
-          return Observable.forkJoin(
-            sdb.getDeviceArchitecture().catch(() => Observable.of('')),
-            sdb.getAPIVersion().catch(() => Observable.of('')),
-            sdb.getDeviceModel().catch(() => Observable.of('')),
-          ).map(([architecture, apiVersion, model]) => ({
-            name,
-            architecture,
-            apiVersion,
-            model,
-          }));
-        }),
-      ).toArray();
-    });
+    return Sdb.bridge.runLongCommand(this._device, command);
   }
 
   async getFileContentsAtPath(path: string): Promise<string> {
