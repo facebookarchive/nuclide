@@ -18,10 +18,10 @@ import type {
   DebugBridgePathsInfo,
 } from './types';
 
-import {getStore} from './Store';
+import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
-import {Adb} from './Adb';
-import {AdbTop} from './AdbTop';
+import {Adb} from './adb/Adb';
+import {AdbTop} from './adb/AdbTop';
 
 const ADB = 'adb';
 

@@ -11,14 +11,14 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeviceDescription} from './types';
+import type {DeviceDescription} from '../types';
 
 import os from 'os';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
-import {DebugBridge} from './DebugBridge';
-import {createConfigObs} from './Store';
+import {DebugBridge} from '../common/DebugBridge';
+import {createConfigObs} from '../common/Store';
 
 const bridge = new DebugBridge(createConfigObs('sdb'));
 

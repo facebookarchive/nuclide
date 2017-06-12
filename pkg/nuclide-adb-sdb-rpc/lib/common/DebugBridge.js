@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DebugBridgeConfig} from './types';
+import type {DebugBridgeConfig} from '../types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 
 import {observeProcess, runCommand} from 'nuclide-commons/process';

@@ -16,7 +16,7 @@
  * Reference for calculations: https://github.com/scaidermern/top-processes
  */
 
-import type {Process} from './types';
+import type {Process} from '../types';
 
 import {Adb} from './Adb';
 import {arrayCompact} from 'nuclide-commons/collection';

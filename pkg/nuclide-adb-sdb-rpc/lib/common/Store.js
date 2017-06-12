@@ -13,7 +13,7 @@ import type {
   DebugBridgeType,
   DebugBridgePathsInfo,
   DebugBridgeConfig,
-} from './types';
+} from '../types';
 
 import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';

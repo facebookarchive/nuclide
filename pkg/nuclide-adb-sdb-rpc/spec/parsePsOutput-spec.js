@@ -9,7 +9,7 @@
  * @format
  */
 
-import {parsePsTableOutput} from '../lib/Adb';
+import {parsePsTableOutput} from '../lib/adb/Adb';
 
 describe('parsePsOutput', () => {
   it('splits the output by message', () => {

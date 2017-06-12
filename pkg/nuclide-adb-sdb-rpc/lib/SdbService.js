@@ -13,9 +13,9 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {DeviceDescription, DebugBridgePathsInfo} from './types';
 
-import {getStore} from './Store';
+import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
-import {Sdb} from './Sdb';
+import {Sdb} from './sdb/Sdb';
 
 const SDB = 'sdb';
 
