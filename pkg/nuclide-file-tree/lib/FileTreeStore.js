@@ -677,6 +677,10 @@ export class FileTreeStore {
     return this.roots.toArray().map(root => root.uri);
   }
 
+  getCwdKey(): ?string {
+    return this._cwdKey;
+  }
+
   /**
    * Returns true if the store has no data, i.e. no roots, no children.
    */

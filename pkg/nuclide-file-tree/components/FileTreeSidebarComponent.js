@@ -13,6 +13,7 @@ import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
+import {Emitter} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import observePaneItemVisibility
@@ -62,6 +63,7 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Section} from '../../nuclide-ui/Section';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
@@ -84,11 +86,14 @@ type State = {
   >,
   isCalculatingChanges: boolean,
   areStackChangesEnabled: boolean,
+  path: string,
+  title: string,
 };
 
 export default class FileTreeSidebarComponent extends React.Component {
   _actions: FileTreeActions;
   _store: FileTreeStore;
+  _emitter: Emitter;
   _disposables: UniversalDisposable;
   _showOpenConfigValues: Observable<boolean>;
   _showUncommittedConfigValue: Observable<boolean>;
@@ -101,6 +106,7 @@ export default class FileTreeSidebarComponent extends React.Component {
 
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
+    this._emitter = new Emitter();
     this.state = {
       hidden: false,
       shouldRenderToolbar: false,
@@ -115,6 +121,8 @@ export default class FileTreeSidebarComponent extends React.Component {
       uncommittedFileChanges: new Map(),
       isCalculatingChanges: false,
       areStackChangesEnabled: false,
+      path: 'No Current Working Directory',
+      title: 'File Tree',
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
@@ -128,7 +136,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     );
     this._showUncommittedKindConfigValue = FileTreeHelpers.observeUncommittedChangesKindConfigKey();
 
-    this._disposables = new UniversalDisposable();
+    this._disposables = new UniversalDisposable(this._emitter);
     this._scrollWasTriggeredProgrammatically = false;
     (this: any)._handleFocus = this._handleFocus.bind(this);
     (this: any)._getScrollerHeight = this._getScrollerHeight.bind(this);
@@ -440,6 +448,17 @@ All the changes across your entire stacked diff.
       uncommittedFileChanges,
       isCalculatingChanges,
     });
+
+    const title = this.getTitle();
+    const path = this.getPath();
+    if (title !== this.state.title || path !== this.state.path) {
+      this.setState({
+        title,
+        path,
+      });
+      this._emitter.emit('did-change-title', this.getTitle());
+      this._emitter.emit('did-change-path', this.getPath());
+    }
   }
 
   _onFileChosen(filePath: NuclideUri): void {
@@ -601,7 +620,30 @@ All the changes across your entire stacked diff.
   }
 
   getTitle(): string {
-    return 'File Tree';
+    const cwdKey = this._store.getCwdKey();
+    if (cwdKey == null) {
+      return 'File Tree';
+    }
+
+    return nuclideUri.basename(cwdKey);
+  }
+
+  // This is unfortunate, but Atom uses getTitle() to get the text in the tab and getPath() to get
+  // the text in the tool-tip.
+  getPath(): string {
+    const cwdKey = this._store.getCwdKey();
+    if (cwdKey == null) {
+      return 'No Current Working Directory';
+    }
+
+    const trimmed = nuclideUri.trimTrailingSeparator(cwdKey);
+    const directory = nuclideUri.getPath(trimmed);
+    const host = nuclideUri.getHostnameOpt(trimmed);
+    if (host == null) {
+      return `Current Working Directory: ${directory}`;
+    }
+
+    return `Current Working Directory: '${directory}' on '${host}'`;
   }
 
   getDefaultLocation(): string {
@@ -633,6 +675,14 @@ All the changes across your entire stacked diff.
 
   isPermanentDockItem(): boolean {
     return true;
+  }
+
+  onDidChangeTitle(callback: (v: string) => mixed): IDisposable {
+    return this._emitter.on('did-change-title', callback);
+  }
+
+  onDidChangePath(callback: (v: ?string) => mixed): IDisposable {
+    return this._emitter.on('did-change-path', callback);
   }
 }
 
