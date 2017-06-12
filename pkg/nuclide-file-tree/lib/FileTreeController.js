@@ -392,6 +392,10 @@ export default class FileTreeController {
     this._actions.setUsePrefixNav(usePrefixNav);
   }
 
+  setAutoExpandSingleChild(autoExpandSingleChild: boolean): void {
+    this._store._setAutoExpandSingleChild(autoExpandSingleChild);
+  }
+
   updateWorkingSet(workingSet: WorkingSet): void {
     this._actions.updateWorkingSet(workingSet);
   }

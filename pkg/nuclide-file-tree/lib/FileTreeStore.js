@@ -104,6 +104,7 @@ export class FileTreeStore {
   _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
   _workingSetsStore: ?WorkingSetsStore;
   _usePrefixNav: boolean;
+  _autoExpandSingleChild: boolean;
   _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>;
   _repositories: Immutable.Set<atom$Repository>;
   _fileChanges: Immutable.Map<
@@ -145,6 +146,7 @@ export class FileTreeStore {
     this._fileChanges = new Immutable.Map();
 
     this._usePrefixNav = false;
+    this._autoExpandSingleChild = true;
     this._isLoadingMap = new Immutable.Map();
     this._repositories = new Immutable.Set();
 
@@ -362,6 +364,9 @@ export class FileTreeStore {
         break;
       case ActionTypes.SET_USE_PREFIX_NAV:
         this._setUsePrefixNav(payload.usePrefixNav);
+        break;
+      case ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD:
+        this._setAutoExpandSingleChild(payload.autoExpandSingleChild);
         break;
       case ActionTypes.COLLAPSE_NODE_DEEP:
         this._collapseNodeDeep(payload.rootKey, payload.nodeKey);
@@ -820,6 +825,10 @@ export class FileTreeStore {
     return this._usePrefixNav;
   }
 
+  _setAutoExpandSingleChild(autoExpandSingleChild: boolean) {
+    this._autoExpandSingleChild = autoExpandSingleChild;
+  }
+
   /**
    * The node child keys may either be available immediately (cached), or
    * require an async fetch. If all of the children are needed it's easier to
@@ -959,6 +968,8 @@ export class FileTreeStore {
   _setFetchedKeys(nodeKey: NuclideUri, childrenKeys: Array<string> = []): void {
     const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
 
+    const nodesToAutoExpand: Array<FileTreeNode> = [];
+
     // The node with URI === nodeKey might be present at several roots - update them all
     this._updateNodeAtAllRoots(nodeKey, node => {
       // Maintain the order fetched from the FS
@@ -978,6 +989,14 @@ export class FileTreeStore {
           this._conf,
         );
       });
+
+      if (
+        this._autoExpandSingleChild &&
+        childrenNodes.length === 1 &&
+        childrenNodes[0].isContainer
+      ) {
+        nodesToAutoExpand.push(childrenNodes[0]);
+      }
 
       const children = FileTreeNode.childrenFromArray(childrenNodes);
       const subscription =
@@ -1005,6 +1024,9 @@ export class FileTreeStore {
     });
 
     this._clearLoading(nodeKey);
+    nodesToAutoExpand.forEach(node => {
+      this._expandNode(node.rootUri, node.uri);
+    });
   }
 
   _makeSubscription(nodeKey: NuclideUri, directory: ?Directory): ?IDisposable {
@@ -1207,9 +1229,23 @@ export class FileTreeStore {
   }
 
   _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node => {
+    const recursivelyExpandNode = (node: FileTreeNode) => {
       return node.setIsExpanded(true).setRecursive(
-        n => (!n.isContainer || !n.isExpanded ? n : null),
+        n => {
+          if (!n.isContainer) {
+            return n;
+          }
+
+          if (this._autoExpandSingleChild && n.children.size === 1) {
+            if (!n.isExpanded) {
+              return recursivelyExpandNode(n);
+            }
+
+            return null;
+          }
+
+          return !n.isExpanded ? n : null;
+        },
         n => {
           if (n.isContainer && n.isExpanded) {
             this._fetchChildKeys(n.uri);
@@ -1219,7 +1255,9 @@ export class FileTreeStore {
           return n;
         },
       );
-    });
+    };
+
+    this._updateNodeAtRoot(rootKey, nodeKey, recursivelyExpandNode);
   }
 
   /**

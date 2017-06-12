@@ -90,6 +90,12 @@
           "Head changes",
           "Stack changes"
         ]
+      },
+      "autoExpandSingleChild": {
+        "title": "Auto expand single child",
+        "type": "boolean",
+        "default": true,
+        "description": "Automatically expand single child directory when parent is expanded"
       }
     },
     "packageType": "Atom",

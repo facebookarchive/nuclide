@@ -90,6 +90,10 @@ export type FileTreeAction =
       usePrefixNav: boolean,
     }
   | {
+      actionType: 'SET_AUTO_EXPAND_SINGLE_CHILD',
+      autoExpandSingleChild: boolean,
+    }
+  | {
       actionType: 'SET_VCS_STATUSES', // VCS = version control system
       rootKey: NuclideUri,
       vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
@@ -227,6 +231,7 @@ export const ActionTypes = Object.freeze({
   SET_DROP_TARGET_NODE: 'SET_DROP_TARGET_NODE',
   SET_USE_PREVIEW_TABS: 'SET_USE_PREVIEW_TABS',
   SET_USE_PREFIX_NAV: 'SET_USE_PREFIX_NAV',
+  SET_AUTO_EXPAND_SINGLE_CHILD: 'SET_AUTO_EXPAND_SINGLE_CHILD',
   SET_VCS_STATUSES: 'SET_VCS_STATUSES',
   SET_REPOSITORIES: 'SET_REPOSITORIES',
   SET_WORKING_SET: 'SET_WORKING_SET',

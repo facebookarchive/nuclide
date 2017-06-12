@@ -208,6 +208,13 @@ export default class FileTreeActions {
     });
   }
 
+  setAutoExpandSingleChild(autoExpandSingleChild: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD,
+      autoExpandSingleChild,
+    });
+  }
+
   confirmNode(
     rootKey: string,
     nodeKey: string,

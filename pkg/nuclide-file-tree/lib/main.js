@@ -87,6 +87,7 @@ class Activation {
     const prefixKeyNavSetting =
       'nuclide-file-tree.allowKeyboardPrefixNavigation';
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
+    const autoExpandSingleChild = 'nuclide-file-tree.autoExpandSingleChild';
 
     this._disposables.add(
       this._fixContextMenuHighlight(),
@@ -109,6 +110,10 @@ class Activation {
       atom.config.observe(
         allowPendingPaneItems,
         this._setUsePreviewTabs.bind(this),
+      ),
+      featureConfig.observe(
+        autoExpandSingleChild,
+        this._setAutoExpandSingleChild.bind(this),
       ),
       atom.commands.add(
         'atom-workspace',
@@ -300,6 +305,12 @@ class Activation {
       return;
     }
     this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
+  }
+
+  _setAutoExpandSingleChild(autoExpandSingleChild: mixed): void {
+    this._fileTreeController.setAutoExpandSingleChild(
+      autoExpandSingleChild === true,
+    );
   }
 
   getContextMenuForFileTree(): FileTreeContextMenu {
