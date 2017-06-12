@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Device,
   DeviceListProvider,
-} from '../../../nuclide-devices/lib/types';
+} from '../../../nuclide-device-panel/lib/types';
 import type {Expected} from '../../../nuclide-expected';
 import type {Bridge} from '../types';
 

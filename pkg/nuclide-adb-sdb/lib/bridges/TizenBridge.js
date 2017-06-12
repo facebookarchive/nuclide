@@ -17,7 +17,7 @@ import type {
   DebugBridgePathsInfo,
 } from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Expected} from '../../../nuclide-expected';
-import type {Device} from '../../../nuclide-devices/lib/types';
+import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import * as Actions from '../redux/Actions';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';

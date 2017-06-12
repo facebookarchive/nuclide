@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DeviceInfoProvider} from '../../../nuclide-devices/lib/types';
+import type {DeviceInfoProvider} from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Bridge} from '../types';
 

@@ -12,7 +12,7 @@
 import type {
   DeviceProcessesProvider,
   Process,
-} from '../../../nuclide-devices/lib/types';
+} from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import {AndroidBridge} from '../bridges/AndroidBridge';

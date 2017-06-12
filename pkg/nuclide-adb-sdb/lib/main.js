@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DevicePanelServiceApi} from '../../nuclide-devices/lib/types';
+import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
 import type {Store} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

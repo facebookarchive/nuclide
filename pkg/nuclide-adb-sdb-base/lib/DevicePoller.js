@@ -18,7 +18,7 @@ import {track} from '../../nuclide-analytics';
 import type {Expected} from '../../nuclide-expected';
 import type {DeviceDescription} from '../../nuclide-adb-sdb-rpc/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Device} from '../../nuclide-devices/lib/types';
+import type {Device} from '../../nuclide-device-panel/lib/types';
 
 export type DBType = 'sdb' | 'adb';
 
