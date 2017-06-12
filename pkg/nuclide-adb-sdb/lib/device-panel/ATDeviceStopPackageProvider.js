@@ -9,8 +9,6 @@
  * @format
  */
 
-import typeof * as AdbService
-  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {
   DeviceProcessTaskProvider,
   Process,
@@ -18,19 +16,18 @@ import type {
 } from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import {AndroidBridge} from '../bridges/AndroidBridge';
 import {Observable} from 'rxjs';
 
 export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
-  _type: string;
-  _rpcFactory: (host: NuclideUri) => AdbService;
+  _bridge: AndroidBridge;
 
-  constructor(type: string, rpcFactory: (host: NuclideUri) => AdbService) {
-    this._type = type;
-    this._rpcFactory = rpcFactory;
+  constructor(bridge: AndroidBridge) {
+    this._bridge = bridge;
   }
 
   getType(): string {
-    return this._type;
+    return this._bridge.name;
   }
 
   getTaskType(): ProcessTaskType {
@@ -54,6 +51,6 @@ export class ATDeviceStopPackageProvider implements DeviceProcessTaskProvider {
   }
 
   async run(host: NuclideUri, device: string, proc: Process): Promise<void> {
-    return this._rpcFactory(host).stopPackage(device, proc.name);
+    return this._bridge.getService(host).stopPackage(device, proc.name);
   }
 }

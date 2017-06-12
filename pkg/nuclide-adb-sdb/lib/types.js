@@ -10,6 +10,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import {AndroidBridge} from './bridges/AndroidBridge';
+import {TizenBridge} from './bridges/TizenBridge';
+
+export type Bridge = AndroidBridge | TizenBridge;
 
 export type AppState = {
   customAdbPaths: Map<NuclideUri, ?string>,

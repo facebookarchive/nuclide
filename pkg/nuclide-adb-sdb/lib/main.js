@@ -29,6 +29,8 @@ import {
   createEpicMiddleware,
 } from '../../commons-node/redux-observable';
 import {registerDevicePanelProviders} from './device-panel/Registration';
+import {AndroidBridge} from './bridges/AndroidBridge';
+import {TizenBridge} from './bridges/TizenBridge';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -83,7 +85,13 @@ class Activation {
   }
 
   consumeDevicePanelServiceApi(api: DevicePanelServiceApi): void {
-    this._disposables.add(registerDevicePanelProviders(api, this._store));
+    this._disposables.add(
+      registerDevicePanelProviders(
+        api,
+        new AndroidBridge(this._store),
+        new TizenBridge(this._store),
+      ),
+    );
   }
 }
 
