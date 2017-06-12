@@ -22,17 +22,24 @@ import {createConfigObs} from './AdbSdbPathStore';
 
 const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
 
-export class Adb {
-  _bridge: DebugBridge = new DebugBridge(createConfigObs('adb'));
+const bridge = new DebugBridge(createConfigObs('adb'));
 
-  getDeviceList(): Observable<Array<DeviceDescription>> {
-    return this._bridge.getDevices().switchMap(devices => {
+export class Adb {
+  _device: string;
+
+  constructor(device: string) {
+    this._device = device;
+  }
+
+  static getDeviceList(): Observable<Array<DeviceDescription>> {
+    return bridge.getDevices().switchMap(devices => {
       return Observable.concat(
         ...devices.map(name => {
+          const adb = new Adb(name);
           return Observable.forkJoin(
-            this.getDeviceArchitecture(name).catch(() => Observable.of('')),
-            this.getAPIVersion(name).catch(() => Observable.of('')),
-            this.getDeviceModel(name).catch(() => Observable.of('')),
+            adb.getDeviceArchitecture().catch(() => Observable.of('')),
+            adb.getAPIVersion().catch(() => Observable.of('')),
+            adb.getDeviceModel().catch(() => Observable.of('')),
           ).map(([architecture, apiVersion, model]) => ({
             name,
             architecture,
@@ -44,56 +51,56 @@ export class Adb {
     });
   }
 
-  getAndroidProp(device: string, key: string): Observable<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'getprop', key])
+  getAndroidProp(key: string): Observable<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'getprop', key])
       .map(s => s.trim());
   }
 
-  getDeviceArchitecture(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.product.cpu.abi');
+  getDeviceArchitecture(): Observable<string> {
+    return this.getAndroidProp('ro.product.cpu.abi');
   }
 
-  async getInstalledPackages(device: string): Promise<Array<string>> {
+  async getInstalledPackages(): Promise<Array<string>> {
     const prefix = 'package:';
-    const stdout = await this._bridge
-      .runShortCommand(device, ['shell', 'pm', 'list', 'packages'])
+    const stdout = await bridge
+      .runShortCommand(this._device, ['shell', 'pm', 'list', 'packages'])
       .toPromise();
     return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
   }
 
-  async isPackageInstalled(device: string, pkg: string): Promise<boolean> {
-    const packages = await this.getInstalledPackages(device);
+  async isPackageInstalled(pkg: string): Promise<boolean> {
+    const packages = await this.getInstalledPackages();
     return packages.includes(pkg);
   }
 
-  getDeviceModel(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.product.model').map(
+  getDeviceModel(): Observable<string> {
+    return this.getAndroidProp('ro.product.model').map(
       s => (s === 'sdk' ? 'emulator' : s),
     );
   }
 
-  getAPIVersion(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.build.version.sdk');
+  getAPIVersion(): Observable<string> {
+    return this.getAndroidProp('ro.build.version.sdk');
   }
 
-  getBrand(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.product.brand');
+  getBrand(): Observable<string> {
+    return this.getAndroidProp('ro.product.brand');
   }
 
-  getManufacturer(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.product.manufacturer');
+  getManufacturer(): Observable<string> {
+    return this.getAndroidProp('ro.product.manufacturer');
   }
 
-  getCommonDeviceInfo(device: string): Observable<Map<string, string>> {
+  getCommonDeviceInfo(): Observable<Map<string, string>> {
     const unknownCB = () => Observable.of('');
     return Observable.forkJoin(
-      this.getDeviceArchitecture(device).catch(unknownCB),
-      this.getAPIVersion(device).catch(unknownCB),
-      this.getDeviceModel(device).catch(unknownCB),
+      this.getDeviceArchitecture().catch(unknownCB),
+      this.getAPIVersion().catch(unknownCB),
+      this.getDeviceModel().catch(unknownCB),
     ).map(([architecture, apiVersion, model]) => {
       return new Map([
-        ['name', device],
+        ['name', this._device],
         ['architecture', architecture],
         ['api_version', apiVersion],
         ['model', model],
@@ -101,14 +108,14 @@ export class Adb {
     });
   }
 
-  getDeviceInfo(device: string): Observable<Map<string, string>> {
-    return this.getCommonDeviceInfo(device).switchMap(infoTable => {
+  getDeviceInfo(): Observable<Map<string, string>> {
+    return this.getCommonDeviceInfo().switchMap(infoTable => {
       const unknownCB = () => Observable.of('');
       return Observable.forkJoin(
-        this.getOSVersion(device).catch(unknownCB),
-        this.getManufacturer(device).catch(unknownCB),
-        this.getBrand(device).catch(unknownCB),
-        this.getWifiIp(device).catch(unknownCB),
+        this.getOSVersion().catch(unknownCB),
+        this.getManufacturer().catch(unknownCB),
+        this.getBrand().catch(unknownCB),
+        this.getWifiIp().catch(unknownCB),
       ).map(([android_version, manufacturer, brand, wifi_ip]) => {
         infoTable.set('android_version', android_version);
         infoTable.set('manufacturer', manufacturer);
@@ -119,9 +126,9 @@ export class Adb {
     });
   }
 
-  getWifiIp(device: string): Observable<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'ip', 'addr', 'show', 'wlan0'])
+  getWifiIp(): Observable<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'ip', 'addr', 'show', 'wlan0'])
       .map(lines => {
         const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
         if (line == null) {
@@ -134,45 +141,38 @@ export class Adb {
 
   // Can't use kill, the only option is to use the package name
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
-  async stopPackage(device: string, packageName: string): Promise<void> {
-    await this._bridge
-      .runShortCommand(device, ['shell', 'am', 'force-stop', packageName])
+  async stopPackage(packageName: string): Promise<void> {
+    await bridge
+      .runShortCommand(this._device, ['shell', 'am', 'force-stop', packageName])
       .toPromise();
   }
 
-  getOSVersion(device: string): Observable<string> {
-    return this.getAndroidProp(device, 'ro.build.version.release');
+  getOSVersion(): Observable<string> {
+    return this.getAndroidProp('ro.build.version.release');
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> {
+  installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this._bridge.runLongCommand(device, ['install', '-r', packagePath]);
+    return bridge.runLongCommand(this._device, ['install', '-r', packagePath]);
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<LegacyProcessMessage> {
+  uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._bridge.runLongCommand(device, ['uninstall', packageName]);
+    return bridge.runLongCommand(this._device, ['uninstall', packageName]);
   }
 
-  forwardJdwpPortToPid(
-    device: string,
-    tcpPort: number,
-    pid: number,
-  ): Promise<string> {
-    return this._bridge
-      .runShortCommand(device, ['forward', `tcp:${tcpPort}`, `jdwp:${pid}`])
+  forwardJdwpPortToPid(tcpPort: number, pid: number): Promise<string> {
+    return bridge
+      .runShortCommand(this._device, [
+        'forward',
+        `tcp:${tcpPort}`,
+        `jdwp:${pid}`,
+      ])
       .toPromise();
   }
 
   launchActivity(
-    device: string,
     packageName: string,
     activity: string,
     debug: boolean,
@@ -186,48 +186,44 @@ export class Adb {
       args.push('-N', '-D');
     }
     args.push(`${packageName}/${activity}`);
-    return this._bridge.runShortCommand(device, args).toPromise();
+    return bridge.runShortCommand(this._device, args).toPromise();
   }
 
-  activityExists(
-    device: string,
-    packageName: string,
-    activity: string,
-  ): Promise<boolean> {
+  activityExists(packageName: string, activity: string): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
-    return this._bridge
-      .runShortCommand(device, ['shell', 'dumpsys', 'package'])
+    return bridge
+      .runShortCommand(this._device, ['shell', 'dumpsys', 'package'])
       .map(stdout => stdout.includes(packageActivityString))
       .toPromise();
   }
 
-  touchFile(device: string, path: string): Promise<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'touch', path])
+  touchFile(path: string): Promise<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'touch', path])
       .toPromise();
   }
 
-  removeFile(device: string, path: string): Promise<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'rm', path])
+  removeFile(path: string): Promise<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'rm', path])
       .toPromise();
   }
 
-  getProcesses(device: string): Observable<Array<string>> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'ps'])
+  getProcesses(): Observable<Array<string>> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'ps'])
       .map(stdout => stdout.split(/\n/));
   }
 
-  getGlobalProcessStat(device: string): Observable<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'cat', '/proc/stat'])
+  getGlobalProcessStat(): Observable<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'cat', '/proc/stat'])
       .map(stdout => stdout.split(/\n/)[0].trim());
   }
 
-  getProcStats(device: string): Observable<Array<string>> {
-    return this._bridge
-      .runShortCommand(device, [
+  getProcStats(): Observable<Array<string>> {
+    return bridge
+      .runShortCommand(this._device, [
         'shell',
         'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
       ])
@@ -238,16 +234,16 @@ export class Adb {
       });
   }
 
-  getJavaProcesses(device: string): Observable<Array<AndroidJavaProcess>> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'ps'])
+  getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'ps'])
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
       })
       .switchMap(allProcesses => {
-        return this._bridge
-          .runLongCommand(device, ['jdwp'])
+        return bridge
+          .runLongCommand(this._device, ['jdwp'])
           .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
           .take(1)
           .timeout(1000)
@@ -264,21 +260,25 @@ export class Adb {
       });
   }
 
-  async dumpsysPackage(device: string, pkg: string): Promise<?string> {
-    if (!await this.isPackageInstalled(device, pkg)) {
+  async dumpsysPackage(pkg: string): Promise<?string> {
+    if (!await this.isPackageInstalled(pkg)) {
       return null;
     }
-    return this._bridge
-      .runShortCommand(device, ['shell', 'dumpsys', 'package', pkg])
+    return bridge
+      .runShortCommand(this._device, ['shell', 'dumpsys', 'package', pkg])
       .toPromise();
   }
 
-  async getPidFromPackageName(
-    device: string,
-    packageName: string,
-  ): Promise<number> {
-    const pidLine = (await this._bridge
-      .runShortCommand(device, ['shell', 'ps', '|', 'grep', '-i', packageName])
+  async getPidFromPackageName(packageName: string): Promise<number> {
+    const pidLine = (await bridge
+      .runShortCommand(this._device, [
+        'shell',
+        'ps',
+        '|',
+        'grep',
+        '-i',
+        packageName,
+      ])
       .toPromise()).split(os.EOL)[0];
     if (pidLine == null) {
       throw new Error(

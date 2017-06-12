@@ -26,17 +26,15 @@ type CPU_MEM = [number, number];
 
 export class AdbTop {
   _adb: Adb;
-  _device: string;
 
-  constructor(adb: Adb, device: string) {
+  constructor(adb: Adb) {
     this._adb = adb;
-    this._device = device;
   }
 
   fetch(): Observable<Process[]> {
     return Observable.forkJoin(
-      this._adb.getProcesses(this._device).catch(() => Observable.of([])),
-      this._adb.getJavaProcesses(this._device).catch(() => Observable.of([])),
+      this._adb.getProcesses().catch(() => Observable.of([])),
+      this._adb.getJavaProcesses().catch(() => Observable.of([])),
       this._getProcessAndMemoryUsage().catch(() => Observable.of(new Map())),
     ).map(([processes, javaProcesses, cpuAndMemUsage]) => {
       const javaPids = new Set(
@@ -108,7 +106,7 @@ export class AdbTop {
   _getProcessesTime(): Observable<Map<number, CPU_MEM>> {
     // We look for the all the /proc/PID/stat files failing silently if the process dies as the
     // command runs.
-    return this._adb.getProcStats(this._device).map(lines => {
+    return this._adb.getProcStats().map(lines => {
       return new Map(
         lines.map(line => {
           const info = line.trim().split(/\s/);
@@ -125,7 +123,7 @@ export class AdbTop {
   }
 
   _getGlobalCPUTime(): Observable<number> {
-    return this._adb.getGlobalProcessStat(this._device).map(stdout => {
+    return this._adb.getGlobalProcessStat().map(stdout => {
       return stdout.split(/\s+/).slice(1, -2).reduce((acc, current) => {
         return acc + parseInt(current, 10);
       }, 0);
