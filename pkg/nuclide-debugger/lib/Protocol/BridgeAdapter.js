@@ -226,7 +226,11 @@ export default class BridgeAdapter {
         const params: PausedEvent = event.params;
         this._pausedMode = true;
         this._stackTraceManager.refreshStack(params.callFrames);
-        this._executionManager.handleDebuggerPaused(params);
+        const currentFrame = this._stackTraceManager.getCurrentFrame();
+        this._executionManager.raiseDebuggerPause(
+          params,
+          currentFrame ? currentFrame.location : null,
+        );
         this._updateCurrentScopes();
         break;
       }

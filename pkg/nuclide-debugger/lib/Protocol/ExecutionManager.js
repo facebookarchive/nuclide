@@ -13,7 +13,9 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type {
   PausedEvent,
+  Location,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
+import type {ThreadSwitchMessageData} from '../types';
 
 import {Subject, Observable} from 'rxjs';
 import {reportError} from './EventReporter';
@@ -75,11 +77,37 @@ export default class ExecutionManager {
     this._raiseIPCEvent('LoaderBreakpointResumed');
   }
 
-  handleDebuggerPaused(params: PausedEvent): void {
+  raiseDebuggerPause(
+    params: PausedEvent,
+    threadSwitchLocation: ?Location,
+  ): void {
+    const threadSwitchData = this._generateThreadSwitchNotification(
+      params.threadSwitchMessage,
+      threadSwitchLocation,
+    );
     this._raiseIPCEvent('NonLoaderDebuggerPaused', {
       stopThreadId: params.stopThreadId,
-      threadSwitchNotification: null, // TODO
+      threadSwitchNotification: threadSwitchData,
     });
+  }
+
+  _generateThreadSwitchNotification(
+    message: ?string,
+    location: ?Location,
+  ): ?ThreadSwitchMessageData {
+    if (message != null && location != null) {
+      const {scriptId, lineNumber} = location;
+      const sourceURL = this._debuggerDispatcher.getFileUriFromScriptId(
+        scriptId,
+      );
+      return {
+        sourceURL,
+        lineNumber,
+        message,
+      };
+    } else {
+      return null;
+    }
   }
 
   handleDebuggeeResumed(): void {

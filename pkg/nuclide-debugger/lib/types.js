@@ -134,6 +134,12 @@ export type NuclideThreadData = {
   selectedThreadId: number,
 };
 
+export type ThreadSwitchMessageData = {
+  sourceURL: string,
+  lineNumber: number,
+  message: string,
+};
+
 /* Debugger mode */
 export type DebuggerModeType =
   | 'starting'

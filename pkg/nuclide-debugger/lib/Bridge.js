@@ -21,6 +21,7 @@ import type {
   ExpressionResult,
   GetPropertiesResult,
   IPCEvent,
+  ThreadSwitchMessageData,
 } from './types';
 
 import {Subject} from 'rxjs';
@@ -308,11 +309,7 @@ export default class Bridge {
   _handleDebuggerPaused(
     options: ?{
       stopThreadId: number,
-      threadSwitchNotification: {
-        sourceURL: string,
-        lineNumber: number,
-        message: string,
-      },
+      threadSwitchNotification: ThreadSwitchMessageData,
     },
   ): void {
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.PAUSED);
