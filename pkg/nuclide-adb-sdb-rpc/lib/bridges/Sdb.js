@@ -11,9 +11,8 @@
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DeviceDescription} from '../types';
+import type {DeviceDescription, SimpleProcess} from '../types';
 
-import os from 'os';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
@@ -96,6 +95,10 @@ export class Sdb {
     return this.getTizenModelConfigKey('tizen.org/system/model_name');
   }
 
+  getDebuggableProcesses(): Observable<Array<SimpleProcess>> {
+    throw new Error('not implemented');
+  }
+
   getAPIVersion(): Observable<string> {
     return this.getTizenModelConfigKey(
       'tizen.org/feature/platform.core.api.version',
@@ -119,23 +122,5 @@ export class Sdb {
   uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     return this.runLongCommand('uninstall', packageName);
-  }
-
-  async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await this.runShortCommand(
-      'shell',
-      'ps',
-      '|',
-      'grep',
-      '-i',
-      packageName,
-    ).toPromise()).split(os.EOL)[0];
-    if (pidLine == null) {
-      throw new Error(
-        `Can not find a running process with package name: ${packageName}`,
-      );
-    }
-    // First column is 'USER', second is 'PID'.
-    return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */ 10);
   }
 }

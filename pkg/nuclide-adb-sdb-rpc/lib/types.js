@@ -9,11 +9,13 @@
  * @format
  */
 
-export type AndroidJavaProcess = {
+export type SimpleProcess = {
   user: string,
   pid: string,
   name: string,
 };
+
+export type AndroidJavaProcess = SimpleProcess;
 
 export type DebugBridgeType = 'adb' | 'sdb';
 

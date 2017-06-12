@@ -15,7 +15,8 @@ import type {DeviceDescription, DebugBridgePathsInfo} from './types';
 
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
-import {Sdb} from './sdb/Sdb';
+import {Sdb} from './bridges/Sdb';
+import {Processes} from './common/Processes';
 
 const SDB = 'sdb';
 
@@ -51,7 +52,7 @@ export async function getPidFromPackageName(
   device: string,
   packageName: string,
 ): Promise<number> {
-  return new Sdb(device).getPidFromPackageName(packageName);
+  return new Processes(new Sdb(device)).getPidFromPackageName(packageName);
 }
 
 export async function getFileContentsAtPath(

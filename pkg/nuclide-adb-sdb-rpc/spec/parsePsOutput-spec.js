@@ -9,7 +9,7 @@
  * @format
  */
 
-import {parsePsTableOutput} from '../lib/common/Processes';
+import {parsePsTableOutput} from '../lib/common/ps';
 
 describe('parsePsOutput', () => {
   it('splits the output by message', () => {

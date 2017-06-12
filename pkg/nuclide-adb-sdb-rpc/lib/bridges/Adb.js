@@ -9,19 +9,20 @@
  * @format
  */
 
-import type {DeviceDescription, AndroidJavaProcess} from '../types';
+import type {
+  DeviceDescription,
+  AndroidJavaProcess,
+  SimpleProcess,
+} from '../types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import os from 'os';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {DebugBridge} from '../common/DebugBridge';
 import {createConfigObs} from '../common/Store';
-import {parsePsTableOutput} from '../common/Processes';
-
-const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
+import {parsePsTableOutput} from '../common/ps';
 
 const bridge = new DebugBridge(createConfigObs('adb'));
 
@@ -221,25 +222,8 @@ export class Adb {
     return this.runShortCommand('shell', 'rm', path).toPromise();
   }
 
-  getProcesses(): Observable<Array<string>> {
-    return this.runShortCommand('shell', 'ps').map(stdout =>
-      stdout.split(/\n/),
-    );
-  }
-
-  getGlobalProcessStat(): Observable<string> {
-    return this.runShortCommand('shell', 'cat', '/proc/stat').map(stdout =>
-      stdout.split(/\n/)[0].trim(),
-    );
-  }
-
-  getProcStats(): Observable<Array<string>> {
-    return this.runShortCommand(
-      'shell',
-      'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
-    ).map(stdout => {
-      return stdout.split(/\n/).filter(line => VALID_PROCESS_REGEX.test(line));
-    });
+  getDebuggableProcesses(): Observable<Array<SimpleProcess>> {
+    return this.getJavaProcesses();
   }
 
   getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
@@ -271,23 +255,5 @@ export class Adb {
       return null;
     }
     return this.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();
-  }
-
-  async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await this.runShortCommand(
-      'shell',
-      'ps',
-      '|',
-      'grep',
-      '-i',
-      packageName,
-    ).toPromise()).split(os.EOL)[0];
-    if (pidLine == null) {
-      throw new Error(
-        `Can not find a running process with package name: ${packageName}`,
-      );
-    }
-    // First column is 'USER', second is 'PID'.
-    return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */ 10);
   }
 }

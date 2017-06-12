@@ -20,8 +20,8 @@ import type {
 
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
-import {Adb} from './adb/Adb';
-import {AdbTop} from './adb/AdbTop';
+import {Adb} from './bridges/Adb';
+import {Processes} from './common/Processes';
 
 const ADB = 'adb';
 
@@ -50,7 +50,7 @@ export function getDeviceInfo(
 export function getProcesses(
   device: string,
 ): ConnectableObservable<Array<Process>> {
-  return new AdbTop(new Adb(device)).fetch().publish();
+  return new Processes(new Adb(device)).fetch().publish();
 }
 
 export async function stopPackage(
@@ -70,7 +70,7 @@ export async function getPidFromPackageName(
   device: string,
   packageName: string,
 ): Promise<number> {
-  return new Adb(device).getPidFromPackageName(packageName);
+  return new Processes(new Adb(device)).getPidFromPackageName(packageName);
 }
 
 export function installPackage(
