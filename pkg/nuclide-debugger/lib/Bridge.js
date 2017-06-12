@@ -322,6 +322,7 @@ export default class Bridge {
   }
 
   _handleDebuggerResumed(): void {
+    this._clearInterface();
     this._debuggerModel.getActions().setDebuggerMode(DebuggerMode.RUNNING);
   }
 
