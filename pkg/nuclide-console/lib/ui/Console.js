@@ -28,6 +28,7 @@ import PromptButton from './PromptButton';
 import NewMessagesNotification from './NewMessagesNotification';
 import invariant from 'assert';
 import shallowEqual from 'shallowequal';
+import recordsChanged from '../recordsChanged';
 
 type Props = {
   displayableRecords: Array<DisplayableRecord>,
@@ -99,7 +100,10 @@ export default class Console extends React.Component {
     // automatically scroll.
     if (
       this._isScrolledNearBottom &&
-      this.props.displayableRecords.length > prevProps.displayableRecords.length
+      recordsChanged(
+        prevProps.displayableRecords,
+        this.props.displayableRecords,
+      )
     ) {
       this._scrollToBottom();
     }
@@ -131,18 +135,19 @@ export default class Console extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Props): void {
-    if (
-      nextProps.displayableRecords.length > this.props.displayableRecords.length
-    ) {
-      // If we receive new messages after we've scrolled away from the bottom, show the
-      // "new messages" notification.
-      if (!this._isScrolledNearBottom) {
-        this.setState({unseenMessages: true});
-      }
-    }
-
+    // If the messages were cleared, hide the notification.
     if (nextProps.displayableRecords.length === 0) {
       this.setState({unseenMessages: false});
+    } else if (
+      // If we receive new messages after we've scrolled away from the bottom, show the "new
+      // messages" notification.
+      !this._isScrolledNearBottom &&
+      recordsChanged(
+        this.props.displayableRecords,
+        nextProps.displayableRecords,
+      )
+    ) {
+      this.setState({unseenMessages: true});
     }
   }
 

@@ -21,6 +21,7 @@ import Hasher from 'nuclide-commons/Hasher';
 import React from 'react';
 import {List} from 'react-virtualized';
 import RecordView from './RecordView';
+import recordsChanged from '../recordsChanged';
 import {
   ResizeSensitiveContainer,
 } from '../../../nuclide-ui/ResizeSensitiveContainer';
@@ -97,8 +98,10 @@ export default class OutputTable extends React.Component {
   componentDidUpdate(prevProps: Props, prevState: State): void {
     if (
       this._list != null &&
-      prevProps.displayableRecords.length !==
-        this.props.displayableRecords.length
+      recordsChanged(
+        prevProps.displayableRecords,
+        this.props.displayableRecords,
+      )
     ) {
       // $FlowIgnore Untyped react-virtualized List method
       this._list.recomputeRowHeights();
