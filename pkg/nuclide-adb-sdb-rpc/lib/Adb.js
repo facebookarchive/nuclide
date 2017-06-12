@@ -31,6 +31,14 @@ export class Adb {
     this._device = device;
   }
 
+  runShortCommand(...command: string[]): Observable<string> {
+    return bridge.runShortCommand(this._device, command);
+  }
+
+  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
+    return bridge.runLongCommand(this._device, command);
+  }
+
   static getDeviceList(): Observable<Array<DeviceDescription>> {
     return bridge.getDevices().switchMap(devices => {
       return Observable.concat(
@@ -52,9 +60,7 @@ export class Adb {
   }
 
   getAndroidProp(key: string): Observable<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'getprop', key])
-      .map(s => s.trim());
+    return this.runShortCommand('shell', 'getprop', key).map(s => s.trim());
   }
 
   getDeviceArchitecture(): Observable<string> {
@@ -63,9 +69,12 @@ export class Adb {
 
   async getInstalledPackages(): Promise<Array<string>> {
     const prefix = 'package:';
-    const stdout = await bridge
-      .runShortCommand(this._device, ['shell', 'pm', 'list', 'packages'])
-      .toPromise();
+    const stdout = await this.runShortCommand(
+      'shell',
+      'pm',
+      'list',
+      'packages',
+    ).toPromise();
     return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
   }
 
@@ -127,24 +136,31 @@ export class Adb {
   }
 
   getWifiIp(): Observable<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'ip', 'addr', 'show', 'wlan0'])
-      .map(lines => {
-        const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
-        if (line == null) {
-          return '';
-        }
-        const rawIp = line.trim().split(/\s+/)[1];
-        return rawIp.substring(0, rawIp.indexOf('/'));
-      });
+    return this.runShortCommand(
+      'shell',
+      'ip',
+      'addr',
+      'show',
+      'wlan0',
+    ).map(lines => {
+      const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
+      if (line == null) {
+        return '';
+      }
+      const rawIp = line.trim().split(/\s+/)[1];
+      return rawIp.substring(0, rawIp.indexOf('/'));
+    });
   }
 
   // Can't use kill, the only option is to use the package name
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
   async stopPackage(packageName: string): Promise<void> {
-    await bridge
-      .runShortCommand(this._device, ['shell', 'am', 'force-stop', packageName])
-      .toPromise();
+    await this.runShortCommand(
+      'shell',
+      'am',
+      'force-stop',
+      packageName,
+    ).toPromise();
   }
 
   getOSVersion(): Observable<string> {
@@ -154,22 +170,20 @@ export class Adb {
   installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return bridge.runLongCommand(this._device, ['install', '-r', packagePath]);
+    return this.runLongCommand('install', '-r', packagePath);
   }
 
   uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return bridge.runLongCommand(this._device, ['uninstall', packageName]);
+    return this.runLongCommand('uninstall', packageName);
   }
 
   forwardJdwpPortToPid(tcpPort: number, pid: number): Promise<string> {
-    return bridge
-      .runShortCommand(this._device, [
-        'forward',
-        `tcp:${tcpPort}`,
-        `jdwp:${pid}`,
-      ])
-      .toPromise();
+    return this.runShortCommand(
+      'forward',
+      `tcp:${tcpPort}`,
+      `jdwp:${pid}`,
+    ).toPromise();
   }
 
   launchActivity(
@@ -186,64 +200,53 @@ export class Adb {
       args.push('-N', '-D');
     }
     args.push(`${packageName}/${activity}`);
-    return bridge.runShortCommand(this._device, args).toPromise();
+    return this.runShortCommand(...args).toPromise();
   }
 
   activityExists(packageName: string, activity: string): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
-    return bridge
-      .runShortCommand(this._device, ['shell', 'dumpsys', 'package'])
+    return this.runShortCommand('shell', 'dumpsys', 'package')
       .map(stdout => stdout.includes(packageActivityString))
       .toPromise();
   }
 
   touchFile(path: string): Promise<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'touch', path])
-      .toPromise();
+    return this.runShortCommand('shell', 'touch', path).toPromise();
   }
 
   removeFile(path: string): Promise<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'rm', path])
-      .toPromise();
+    return this.runShortCommand('shell', 'rm', path).toPromise();
   }
 
   getProcesses(): Observable<Array<string>> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'ps'])
-      .map(stdout => stdout.split(/\n/));
+    return this.runShortCommand('shell', 'ps').map(stdout =>
+      stdout.split(/\n/),
+    );
   }
 
   getGlobalProcessStat(): Observable<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'cat', '/proc/stat'])
-      .map(stdout => stdout.split(/\n/)[0].trim());
+    return this.runShortCommand('shell', 'cat', '/proc/stat').map(stdout =>
+      stdout.split(/\n/)[0].trim(),
+    );
   }
 
   getProcStats(): Observable<Array<string>> {
-    return bridge
-      .runShortCommand(this._device, [
-        'shell',
-        'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
-      ])
-      .map(stdout => {
-        return stdout
-          .split(/\n/)
-          .filter(line => VALID_PROCESS_REGEX.test(line));
-      });
+    return this.runShortCommand(
+      'shell',
+      'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
+    ).map(stdout => {
+      return stdout.split(/\n/).filter(line => VALID_PROCESS_REGEX.test(line));
+    });
   }
 
   getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'ps'])
+    return this.runShortCommand('shell', 'ps')
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
       })
       .switchMap(allProcesses => {
-        return bridge
-          .runLongCommand(this._device, ['jdwp'])
+        return this.runLongCommand('jdwp')
           .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
           .take(1)
           .timeout(1000)
@@ -264,22 +267,18 @@ export class Adb {
     if (!await this.isPackageInstalled(pkg)) {
       return null;
     }
-    return bridge
-      .runShortCommand(this._device, ['shell', 'dumpsys', 'package', pkg])
-      .toPromise();
+    return this.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();
   }
 
   async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await bridge
-      .runShortCommand(this._device, [
-        'shell',
-        'ps',
-        '|',
-        'grep',
-        '-i',
-        packageName,
-      ])
-      .toPromise()).split(os.EOL)[0];
+    const pidLine = (await this.runShortCommand(
+      'shell',
+      'ps',
+      '|',
+      'grep',
+      '-i',
+      packageName,
+    ).toPromise()).split(os.EOL)[0];
     if (pidLine == null) {
       throw new Error(
         `Can not find a running process with package name: ${packageName}`,

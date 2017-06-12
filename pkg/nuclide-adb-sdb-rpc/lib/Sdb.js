@@ -29,6 +29,14 @@ export class Sdb {
     this._device = device;
   }
 
+  runShortCommand(...command: string[]): Observable<string> {
+    return bridge.runShortCommand(this._device, command);
+  }
+
+  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
+    return bridge.runLongCommand(this._device, command);
+  }
+
   static getDeviceList(): Observable<Array<DeviceDescription>> {
     return bridge.getDevices().switchMap(devices => {
       return Observable.concat(
@@ -50,9 +58,7 @@ export class Sdb {
   }
 
   async getFileContentsAtPath(path: string): Promise<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'cat', path])
-      .toPromise();
+    return this.runShortCommand('shell', 'cat', path).toPromise();
   }
 
   getDeviceInfo(): Observable<Map<string, string>> {
@@ -74,8 +80,7 @@ export class Sdb {
   getTizenModelConfigKey(key: string): Observable<string> {
     const modelConfigPath = '/etc/config/model-config.xml';
 
-    return bridge
-      .runShortCommand(this._device, ['shell', 'cat', modelConfigPath])
+    return this.runShortCommand('shell', 'cat', modelConfigPath)
       .map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0])
       .map(s => {
         const regex = /.*<.*>(.*)<.*>/g;
@@ -84,9 +89,7 @@ export class Sdb {
   }
 
   getDeviceArchitecture(): Observable<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'uname', '-m'])
-      .map(s => s.trim());
+    return this.runShortCommand('shell', 'uname', '-m').map(s => s.trim());
   }
 
   getDeviceModel(): Observable<string> {
@@ -106,31 +109,27 @@ export class Sdb {
   installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return bridge.runLongCommand(this._device, ['install', packagePath]);
+    return this.runLongCommand('install', packagePath);
   }
 
   launchApp(identifier: string): Promise<string> {
-    return bridge
-      .runShortCommand(this._device, ['shell', 'launch_app', identifier])
-      .toPromise();
+    return this.runShortCommand('shell', 'launch_app', identifier).toPromise();
   }
 
   uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return bridge.runLongCommand(this._device, ['uninstall', packageName]);
+    return this.runLongCommand('uninstall', packageName);
   }
 
   async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await bridge
-      .runShortCommand(this._device, [
-        'shell',
-        'ps',
-        '|',
-        'grep',
-        '-i',
-        packageName,
-      ])
-      .toPromise()).split(os.EOL)[0];
+    const pidLine = (await this.runShortCommand(
+      'shell',
+      'ps',
+      '|',
+      'grep',
+      '-i',
+      packageName,
+    ).toPromise()).split(os.EOL)[0];
     if (pidLine == null) {
       throw new Error(
         `Can not find a running process with package name: ${packageName}`,

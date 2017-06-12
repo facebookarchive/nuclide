@@ -23,20 +23,22 @@ import {ConnectableObservable} from 'rxjs';
 import {Adb} from './Adb';
 import {AdbTop} from './AdbTop';
 
+const ADB = 'adb';
+
 export async function registerAdbPath(
   id: string,
   path: NuclideUri,
   priority: number = -1,
 ): Promise<void> {
-  getStore('adb').registerPath(id, {path, priority});
+  getStore(ADB).registerPath(id, {path, priority});
 }
 
 export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
-  return getStore('adb').getCurrentPathsInfo();
+  return getStore(ADB).getCurrentPathsInfo();
 }
 
 export async function registerCustomPath(path: ?string): Promise<void> {
-  getStore('adb').registerCustomPath(path);
+  getStore(ADB).registerCustomPath(path);
 }
 
 export function getDeviceInfo(
