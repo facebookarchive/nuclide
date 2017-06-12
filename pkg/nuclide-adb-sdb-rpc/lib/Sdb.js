@@ -18,7 +18,7 @@ import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
 import {DebugBridge} from './DebugBridge';
-import {createConfigObs} from './AdbSdbPathStore';
+import {createConfigObs} from './Store';
 
 const bridge = new DebugBridge(createConfigObs('sdb'));
 

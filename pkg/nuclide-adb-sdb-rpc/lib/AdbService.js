@@ -15,10 +15,10 @@ import type {
   DeviceDescription,
   AndroidJavaProcess,
   Process,
-  DBPathsInfo,
+  DebugBridgePathsInfo,
 } from './types';
 
-import {getStore} from './AdbSdbPathStore';
+import {getStore} from './Store';
 import {ConnectableObservable} from 'rxjs';
 import {Adb} from './Adb';
 import {AdbTop} from './AdbTop';
@@ -33,7 +33,7 @@ export async function registerAdbPath(
   getStore(ADB).registerPath(id, {path, priority});
 }
 
-export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
+export async function getCurrentPathsInfo(): Promise<DebugBridgePathsInfo> {
   return getStore(ADB).getCurrentPathsInfo();
 }
 

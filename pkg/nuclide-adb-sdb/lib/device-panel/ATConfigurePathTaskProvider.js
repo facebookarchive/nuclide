@@ -16,7 +16,9 @@ import typeof * as SdbService
 import type {DeviceTypeTaskProvider} from '../../../nuclide-devices/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
-import type {DBPathsInfo} from '../../../nuclide-adb-sdb-rpc/lib/types';
+import type {
+  DebugBridgePathsInfo,
+} from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Store} from '../types';
 
 import * as Actions from '../redux/Actions';
@@ -50,7 +52,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
     return `Configure ${this._dbType}`;
   }
 
-  _getPathsInfo(host: NuclideUri): Promise<DBPathsInfo> {
+  _getPathsInfo(host: NuclideUri): Promise<DebugBridgePathsInfo> {
     return this._rpcFactory(host).getCurrentPathsInfo();
   }
 

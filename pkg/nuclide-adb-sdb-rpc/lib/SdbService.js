@@ -9,13 +9,13 @@
  * @format
  */
 
-import {getStore} from './AdbSdbPathStore';
-import {ConnectableObservable} from 'rxjs';
-import {Sdb} from './Sdb';
-
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription, DBPathsInfo} from './types';
+import type {DeviceDescription, DebugBridgePathsInfo} from './types';
+
+import {getStore} from './Store';
+import {ConnectableObservable} from 'rxjs';
+import {Sdb} from './Sdb';
 
 const SDB = 'sdb';
 
@@ -27,7 +27,7 @@ export async function registerSdbPath(
   getStore(SDB).registerPath(id, {path, priority});
 }
 
-export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
+export async function getCurrentPathsInfo(): Promise<DebugBridgePathsInfo> {
   return getStore(SDB).getCurrentPathsInfo();
 }
 

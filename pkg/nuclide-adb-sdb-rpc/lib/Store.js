@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {DebugBridgeType, DBPathsInfo, DebugBridgeConfig} from './types';
+import type {
+  DebugBridgeType,
+  DebugBridgePathsInfo,
+  DebugBridgeConfig,
+} from './types';
 
 import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
@@ -43,7 +47,7 @@ class DebugBridgePathStore {
     this._lastWorkingPath = workingPath;
   }
 
-  getCurrentPathsInfo(): DBPathsInfo {
+  getCurrentPathsInfo(): DebugBridgePathsInfo {
     return {
       active: this._customPath || this._lastWorkingPath,
       all: this.getPaths(),
@@ -60,18 +64,6 @@ class DebugBridgePathStore {
   getCustomPath(): ?string {
     return this._customPath;
   }
-}
-
-const pathStore = new Map();
-
-export function getStore(db: DebugBridgeType): DebugBridgePathStore {
-  let cached = pathStore.get(db);
-  if (cached == null) {
-    cached = new DebugBridgePathStore();
-    cached.registerPath('default', {path: db, priority: -1});
-    pathStore.set(db, cached);
-  }
-  return cached;
 }
 
 const runningPromises: Map<string, Promise<string>> = new Map();
@@ -91,7 +83,7 @@ function reusePromiseUntilResolved(
   return runningPromise;
 }
 
-export function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
+function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
   const store = getStore(db);
   // give priority to custom paths
   const customPath = store.getCustomPath();
@@ -123,4 +115,16 @@ export function createConfigObs(
   db: DebugBridgeType,
 ): Observable<DebugBridgeConfig> {
   return Observable.defer(() => pathForDebugBridge(db)).map(path => ({path}));
+}
+
+const pathStore = new Map();
+
+export function getStore(db: DebugBridgeType): DebugBridgePathStore {
+  let cached = pathStore.get(db);
+  if (cached == null) {
+    cached = new DebugBridgePathStore();
+    cached.registerPath('default', {path: db, priority: -1});
+    pathStore.set(db, cached);
+  }
+  return cached;
 }
