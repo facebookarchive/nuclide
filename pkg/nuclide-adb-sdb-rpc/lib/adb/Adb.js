@@ -102,38 +102,40 @@ export class Adb {
     return this.getAndroidProp('ro.product.manufacturer');
   }
 
-  getCommonDeviceInfo(): Observable<Map<string, string>> {
+  getDeviceInfo(): Observable<Map<string, string>> {
     const unknownCB = () => Observable.of('');
     return Observable.forkJoin(
       this.getDeviceArchitecture().catch(unknownCB),
       this.getAPIVersion().catch(unknownCB),
       this.getDeviceModel().catch(unknownCB),
-    ).map(([architecture, apiVersion, model]) => {
-      return new Map([
-        ['name', this._device],
-        ['architecture', architecture],
-        ['api_version', apiVersion],
-        ['model', model],
-      ]);
-    });
-  }
-
-  getDeviceInfo(): Observable<Map<string, string>> {
-    return this.getCommonDeviceInfo().switchMap(infoTable => {
-      const unknownCB = () => Observable.of('');
-      return Observable.forkJoin(
-        this.getOSVersion().catch(unknownCB),
-        this.getManufacturer().catch(unknownCB),
-        this.getBrand().catch(unknownCB),
-        this.getWifiIp().catch(unknownCB),
-      ).map(([android_version, manufacturer, brand, wifi_ip]) => {
-        infoTable.set('android_version', android_version);
-        infoTable.set('manufacturer', manufacturer);
-        infoTable.set('brand', brand);
-        infoTable.set('wifi_ip', wifi_ip);
-        return infoTable;
-      });
-    });
+      this.getOSVersion().catch(unknownCB),
+      this.getManufacturer().catch(unknownCB),
+      this.getBrand().catch(unknownCB),
+      this.getWifiIp().catch(unknownCB),
+    ).map(
+      (
+        [
+          architecture,
+          apiVersion,
+          model,
+          android_version,
+          manufacturer,
+          brand,
+          wifi_ip,
+        ],
+      ) => {
+        return new Map([
+          ['name', this._device],
+          ['architecture', architecture],
+          ['api_version', apiVersion],
+          ['model', model],
+          ['android_version', android_version],
+          ['manufacturer', manufacturer],
+          ['brand', brand],
+          ['wifi_ip', wifi_ip],
+        ]);
+      },
+    );
   }
 
   getWifiIp(): Observable<string> {
