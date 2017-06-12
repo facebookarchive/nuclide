@@ -17,8 +17,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {DeviceDescription, DBPathsInfo} from './types';
 
-const sdb = new Sdb();
-
 export async function registerSdbPath(
   id: string,
   path: NuclideUri,
@@ -32,33 +30,33 @@ export async function getCurrentPathsInfo(): Promise<DBPathsInfo> {
 }
 
 export async function registerCustomPath(path: ?string): Promise<void> {
-  getStore('adb').registerCustomPath(path);
+  getStore('sdb').registerCustomPath(path);
 }
 
 export function getDeviceInfo(
-  name: string,
+  device: string,
 ): ConnectableObservable<Map<string, string>> {
-  return sdb.getDeviceInfo(name).publish();
+  return new Sdb(device).getDeviceInfo().publish();
 }
 
 export function getDeviceList(): ConnectableObservable<
   Array<DeviceDescription>,
 > {
-  return sdb.getDeviceList().publish();
+  return Sdb.getDeviceList().publish();
 }
 
 export async function getPidFromPackageName(
   device: string,
   packageName: string,
 ): Promise<number> {
-  return sdb.getPidFromPackageName(device, packageName);
+  return new Sdb(device).getPidFromPackageName(packageName);
 }
 
 export async function getFileContentsAtPath(
   device: string,
   path: string,
 ): Promise<string> {
-  return sdb.getFileContentsAtPath(device, path);
+  return new Sdb(device).getFileContentsAtPath(path);
 }
 
 export function installPackage(
@@ -66,14 +64,14 @@ export function installPackage(
   packagePath: NuclideUri,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return sdb.installPackage(device, packagePath).publish();
+  return new Sdb(device).installPackage(packagePath).publish();
 }
 
 export async function launchApp(
   device: string,
   identifier: string,
 ): Promise<string> {
-  return sdb.launchApp(device, identifier);
+  return new Sdb(device).launchApp(identifier);
 }
 
 export function uninstallPackage(
@@ -81,5 +79,5 @@ export function uninstallPackage(
   packageName: string,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
-  return sdb.uninstallPackage(device, packageName).publish();
+  return new Sdb(device).uninstallPackage(packageName).publish();
 }

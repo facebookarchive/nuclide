@@ -20,17 +20,24 @@ import {Observable} from 'rxjs';
 import {DebugBridge} from './DebugBridge';
 import {createConfigObs} from './AdbSdbPathStore';
 
-export class Sdb {
-  _bridge: DebugBridge = new DebugBridge(createConfigObs('sdb'));
+const bridge = new DebugBridge(createConfigObs('sdb'));
 
-  getDeviceList(): Observable<Array<DeviceDescription>> {
-    return this._bridge.getDevices().switchMap(devices => {
+export class Sdb {
+  _device: string;
+
+  constructor(device: string) {
+    this._device = device;
+  }
+
+  static getDeviceList(): Observable<Array<DeviceDescription>> {
+    return bridge.getDevices().switchMap(devices => {
       return Observable.concat(
         ...devices.map(name => {
+          const sdb = new Sdb(name);
           return Observable.forkJoin(
-            this.getDeviceArchitecture(name).catch(() => Observable.of('')),
-            this.getAPIVersion(name).catch(() => Observable.of('')),
-            this.getDeviceModel(name).catch(() => Observable.of('')),
+            sdb.getDeviceArchitecture().catch(() => Observable.of('')),
+            sdb.getAPIVersion().catch(() => Observable.of('')),
+            sdb.getDeviceModel().catch(() => Observable.of('')),
           ).map(([architecture, apiVersion, model]) => ({
             name,
             architecture,
@@ -42,21 +49,21 @@ export class Sdb {
     });
   }
 
-  async getFileContentsAtPath(device: string, path: string): Promise<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'cat', path])
+  async getFileContentsAtPath(path: string): Promise<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'cat', path])
       .toPromise();
   }
 
-  getDeviceInfo(device: string): Observable<Map<string, string>> {
+  getDeviceInfo(): Observable<Map<string, string>> {
     const unknownCB = () => Observable.of('');
     return Observable.forkJoin(
-      this.getDeviceArchitecture(device).catch(unknownCB),
-      this.getAPIVersion(device).catch(unknownCB),
-      this.getDeviceModel(device).catch(unknownCB),
+      this.getDeviceArchitecture().catch(unknownCB),
+      this.getAPIVersion().catch(unknownCB),
+      this.getDeviceModel().catch(unknownCB),
     ).map(([architecture, apiVersion, model]) => {
       return new Map([
-        ['name', device],
+        ['name', this._device],
         ['architecture', architecture],
         ['api_version', apiVersion],
         ['model', model],
@@ -64,11 +71,11 @@ export class Sdb {
     });
   }
 
-  getTizenModelConfigKey(device: string, key: string): Observable<string> {
+  getTizenModelConfigKey(key: string): Observable<string> {
     const modelConfigPath = '/etc/config/model-config.xml';
 
-    return this._bridge
-      .runShortCommand(device, ['shell', 'cat', modelConfigPath])
+    return bridge
+      .runShortCommand(this._device, ['shell', 'cat', modelConfigPath])
       .map(stdout => stdout.split(/\n+/g).filter(s => s.indexOf(key) !== -1)[0])
       .map(s => {
         const regex = /.*<.*>(.*)<.*>/g;
@@ -76,57 +83,53 @@ export class Sdb {
       });
   }
 
-  getDeviceArchitecture(device: string): Observable<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'uname', '-m'])
+  getDeviceArchitecture(): Observable<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'uname', '-m'])
       .map(s => s.trim());
   }
 
-  getDeviceModel(device: string): Observable<string> {
-    return this.getTizenModelConfigKey(device, 'tizen.org/system/model_name');
+  getDeviceModel(): Observable<string> {
+    return this.getTizenModelConfigKey('tizen.org/system/model_name');
   }
 
-  getAPIVersion(device: string): Observable<string> {
+  getAPIVersion(): Observable<string> {
     return this.getTizenModelConfigKey(
-      device,
       'tizen.org/feature/platform.core.api.version',
     ).catch(() =>
       this.getTizenModelConfigKey(
-        device,
         'tizen.org/feature/platform.native.api.version',
       ),
     );
   }
 
-  installPackage(
-    device: string,
-    packagePath: NuclideUri,
-  ): Observable<LegacyProcessMessage> {
+  installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
     invariant(!nuclideUri.isRemote(packagePath));
-    return this._bridge.runLongCommand(device, ['install', packagePath]);
+    return bridge.runLongCommand(this._device, ['install', packagePath]);
   }
 
-  launchApp(device: string, identifier: string): Promise<string> {
-    return this._bridge
-      .runShortCommand(device, ['shell', 'launch_app', identifier])
+  launchApp(identifier: string): Promise<string> {
+    return bridge
+      .runShortCommand(this._device, ['shell', 'launch_app', identifier])
       .toPromise();
   }
 
-  uninstallPackage(
-    device: string,
-    packageName: string,
-  ): Observable<LegacyProcessMessage> {
+  uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._bridge.runLongCommand(device, ['uninstall', packageName]);
+    return bridge.runLongCommand(this._device, ['uninstall', packageName]);
   }
 
-  async getPidFromPackageName(
-    device: string,
-    packageName: string,
-  ): Promise<number> {
-    const pidLine = (await this._bridge
-      .runShortCommand(device, ['shell', 'ps', '|', 'grep', '-i', packageName])
+  async getPidFromPackageName(packageName: string): Promise<number> {
+    const pidLine = (await bridge
+      .runShortCommand(this._device, [
+        'shell',
+        'ps',
+        '|',
+        'grep',
+        '-i',
+        packageName,
+      ])
       .toPromise()).split(os.EOL)[0];
     if (pidLine == null) {
       throw new Error(
