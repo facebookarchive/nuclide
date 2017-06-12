@@ -47,7 +47,7 @@ async function connectionToGraphQLService(
     graphqlCommand,
     ['server', '--method', 'stream'],
     '.graphqlconfig',
-    ['.graphql'],
+    ['.js', '.graphql'],
     'INFO',
     fileNotifier,
     host,
@@ -82,7 +82,7 @@ async function createLanguageService(): Promise<
 
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'GraphQL',
-    grammars: ['source.graphql'],
+    grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
     diagnostics: diagnosticsConfig,
     definition: definitionConfig,
     autocomplete: autocompleteConfig,
