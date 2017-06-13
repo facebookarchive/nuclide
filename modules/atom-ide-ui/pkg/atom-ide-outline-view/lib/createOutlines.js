@@ -47,10 +47,10 @@ function uiOutlinesForResult(
         grammar: result.grammar.name,
       });
     case 'pane-change':
-      // Render a blank outline when we change panes.
+      // Originally, we displayed a empty pane immediately, but this caused an undesireable
+      // flickering effect so we prefer stale information for the first LOADING_DELAY_MS.
       // If we haven't received anything after LOADING_DELAY_MS, display a loading indicator.
       return Observable.concat(
-        Observable.of({kind: 'empty'}),
         Observable.of({kind: 'loading'}).delay(LOADING_DELAY_MS),
       );
     case 'result':
