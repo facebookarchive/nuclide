@@ -189,26 +189,37 @@ export class Adb extends DebugBridge {
   }
 
   getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
+    const jdwpProcesses = new Set();
     return this.runShortCommand('shell', 'ps')
       .map(stdout => {
         const psOutput = stdout.trim();
         return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
       })
       .switchMap(allProcesses => {
+        const map = new Map();
+        allProcesses
+          .filter(row => row != null)
+          .forEach(proc => map.set(proc.pid, proc));
+        return Promise.resolve(map);
+      })
+      .switchMap(allProcessesMap => {
         return this.runLongCommand('jdwp')
-          .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-          .take(1)
           .timeout(1000)
           .map(output => {
-            const jdwpPids = new Set();
             if (output.kind === 'stdout') {
               const block: string = output.data;
               block.split(/\s+/).forEach(pid => {
-                jdwpPids.add(pid.trim());
+                const proc = allProcessesMap.get(pid);
+                if (proc != null) {
+                  jdwpProcesses.add(proc);
+                }
               });
             }
-            return allProcesses.filter(row => jdwpPids.has(row.pid));
-          });
+          })
+          .catch(error => Observable.empty());
+      })
+      .switchMap(() => {
+        return Promise.resolve(Array.from(jdwpProcesses));
       });
   }
 

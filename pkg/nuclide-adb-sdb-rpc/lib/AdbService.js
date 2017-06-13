@@ -145,3 +145,11 @@ export async function getInstalledPackages(
 ): Promise<Array<string>> {
   return new Adb(device).getInstalledPackages();
 }
+
+export function setAdbPort(port: ?number): void {
+  getStore('adb').setPort(port);
+}
+
+export function getAdbPort(): Promise<?number> {
+  return Promise.resolve(getStore('adb').getPort());
+}

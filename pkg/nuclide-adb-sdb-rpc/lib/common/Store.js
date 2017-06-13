@@ -27,6 +27,7 @@ class DebugBridgePathStore {
   _sortedPaths: string[] = [];
   _lastWorkingPath: ?string = null;
   _customPath: ?string = null;
+  _port: ?number = null;
 
   registerPath(id: string, dbPath: DBPath): void {
     this._registeredPaths.set(id, dbPath);
@@ -63,6 +64,14 @@ class DebugBridgePathStore {
 
   getCustomPath(): ?string {
     return this._customPath;
+  }
+
+  setPort(port: ?number) {
+    this._port = port;
+  }
+
+  getPort(): ?number {
+    return this._port;
   }
 }
 
@@ -114,7 +123,10 @@ function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
 export function createConfigObs(
   db: DebugBridgeType,
 ): Observable<DebugBridgeConfig> {
-  return Observable.defer(() => pathForDebugBridge(db)).map(path => ({path}));
+  return Observable.defer(() => pathForDebugBridge(db)).map(path => ({
+    path,
+    port: portForDebugBridge(db),
+  }));
 }
 
 const pathStore = new Map();
@@ -127,4 +139,9 @@ export function getStore(db: DebugBridgeType): DebugBridgePathStore {
     pathStore.set(db, cached);
   }
   return cached;
+}
+
+export function portForDebugBridge(db: DebugBridgeType): ?number {
+  const store = getStore(db);
+  return store.getPort();
 }

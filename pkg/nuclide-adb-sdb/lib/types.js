@@ -18,6 +18,7 @@ export type Bridge = AndroidBridge | TizenBridge;
 export type AppState = {
   customAdbPaths: Map<NuclideUri, ?string>,
   customSdbPaths: Map<NuclideUri, ?string>,
+  adbPorts: Map<NuclideUri, ?string>,
 };
 
 export type Store = {
@@ -38,6 +39,14 @@ export type SetCustomSdbPathAction = {
   payload: {
     host: NuclideUri,
     path: ?string,
+  },
+};
+
+export type SetAdbPortAction = {
+  type: 'SET_ADB_PORT',
+  payload: {
+    host: NuclideUri,
+    port: ?string,
   },
 };
 

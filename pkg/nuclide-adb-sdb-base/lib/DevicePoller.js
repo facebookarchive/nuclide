@@ -39,7 +39,7 @@ class DevicePoller {
     if (observable != null) {
       return observable;
     }
-    observable = Observable.interval(3000)
+    observable = Observable.interval(2000)
       .startWith(0)
       .switchMap(() =>
         this.fetch(host)

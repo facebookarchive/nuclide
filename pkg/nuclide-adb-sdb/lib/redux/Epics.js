@@ -47,3 +47,18 @@ export function setCustomSdbPathEpic(
     })
     .ignoreElements();
 }
+
+export function setAdbPortEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions
+    .ofType(Actions.SET_ADB_PORT)
+    .map(action => {
+      invariant(action.type === Actions.SET_ADB_PORT);
+      getAdbServiceByNuclideUri(action.payload.host).setAdbPort(
+        action.payload.port,
+      );
+    })
+    .ignoreElements();
+}

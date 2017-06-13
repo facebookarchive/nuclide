@@ -35,6 +35,6 @@ export type Process = {
   isJava: boolean,
 };
 
-export type DebugBridgeConfig = {path: string};
+export type DebugBridgeConfig = {path: string, port: ?number};
 
 export type DebugBridgePathsInfo = {active: ?string, all: Array<string>};
