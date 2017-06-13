@@ -102,7 +102,7 @@ export class LspLanguageService {
   _host: HostServices;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
-  _consoleSource: string;
+  _languageId: string;
   _command: string;
   _args: Array<string>;
   _fileExtensions: Array<string>;
@@ -132,7 +132,7 @@ export class LspLanguageService {
     logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
-    consoleSource: string,
+    languageId: string,
     command: string,
     args: Array<string>,
     projectRoot: string,
@@ -143,7 +143,7 @@ export class LspLanguageService {
     this._fileCache = fileCache;
     this._host = host;
     this._projectRoot = projectRoot;
-    this._consoleSource = consoleSource;
+    this._languageId = languageId;
     this._command = command;
     this._args = args;
     this._fileExtensions = fileExtensions;
@@ -433,7 +433,7 @@ export class LspLanguageService {
               .toPromise();
             if (button === 'Retry') {
               this._host.consoleNotification(
-                this._consoleSource,
+                this._languageId,
                 'info',
                 `Retrying ${this._command}`,
               );
@@ -454,7 +454,7 @@ export class LspLanguageService {
         // also like to log that. It was probably informational not error.
         if (this._childOut.stderr !== '') {
           this._host.consoleNotification(
-            this._consoleSource,
+            this._languageId,
             'info',
             this._childOut.stderr,
           );
@@ -737,7 +737,7 @@ export class LspLanguageService {
     } else {
       this._logger.error('Lsp.Close - will attempt to restart');
       this._host.consoleNotification(
-        this._consoleSource,
+        this._languageId,
         'warning',
         'Automatically restarting language service.',
       );
@@ -778,7 +778,7 @@ export class LspLanguageService {
   _handleLogMessageNotification(params: LogMessageParams): void {
     // CARE! This method may be called before initialization has finished.
     this._host.consoleNotification(
-      this._consoleSource,
+      this._languageId,
       convert.lspMessageType_atomShowNotificationLevel(params.type),
       params.message,
     );
@@ -891,7 +891,7 @@ export class LspLanguageService {
     const params: DidOpenTextDocumentParams = {
       textDocument: {
         uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
-        languageId: 'python', // TODO
+        languageId: this._languageId,
         version: fileEvent.fileVersion.version,
         text: fileEvent.contents,
       },

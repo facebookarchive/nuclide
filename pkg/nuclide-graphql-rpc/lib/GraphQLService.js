@@ -46,7 +46,7 @@ export async function initializeLsp(
     logger,
     fileNotifier,
     host,
-    'GraphQL',
+    'graphql',
     command,
     args,
     projectFileName,
