@@ -15,6 +15,10 @@ import type {DebugBridgeConfig} from '../types';
 import {Observable} from 'rxjs';
 import {observeProcess, runCommand} from 'nuclide-commons/process';
 
+function getPortArg(port: ?number): Array<string> {
+  return port != null ? ['-P', String(port)] : [];
+}
+
 export class DebugBridge {
   static configObs: Observable<DebugBridgeConfig>;
 
@@ -26,7 +30,12 @@ export class DebugBridge {
 
   runShortCommand(...command: string[]): Observable<string> {
     return this.constructor.configObs.switchMap(config =>
-      runCommand(config.path, this._getDeviceArg(this._device).concat(command)),
+      runCommand(
+        config.path,
+        this._getDeviceArg(this._device)
+          .concat(getPortArg(config.port))
+          .concat(command),
+      ),
     );
   }
 
@@ -35,7 +44,9 @@ export class DebugBridge {
     return this.constructor.configObs.switchMap(config =>
       observeProcess(
         config.path,
-        this._getDeviceArg(this._device).concat(command),
+        this._getDeviceArg(this._device)
+          .concat(getPortArg(config.port))
+          .concat(command),
         {
           killTreeWhenDone: true,
           /* TODO(T17353599) */ isExitError: () => false,
@@ -50,7 +61,10 @@ export class DebugBridge {
 
   static getDevices(): Observable<Array<string>> {
     return this.configObs.switchMap(config =>
-      runCommand(config.path, ['devices']).map(stdout =>
+      runCommand(
+        config.path,
+        getPortArg(config.port).concat(['devices']),
+      ).map(stdout =>
         stdout
           .split(/\n+/g)
           .slice(1)
