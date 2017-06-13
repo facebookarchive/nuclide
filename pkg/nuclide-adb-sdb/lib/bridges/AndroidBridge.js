@@ -16,7 +16,7 @@ import type {Store} from '../types';
 import type {
   DebugBridgePathsInfo,
 } from '../../../nuclide-adb-sdb-rpc/lib/types';
-import type {Expected} from '../../../nuclide-expected';
+import type {Expected} from '../../../commons-node/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import * as Actions from '../redux/Actions';

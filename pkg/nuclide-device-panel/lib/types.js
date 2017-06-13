@@ -11,7 +11,7 @@
 
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Expected} from '../../nuclide-expected';
+import type {Expected} from '../../commons-node/expected';
 
 import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';

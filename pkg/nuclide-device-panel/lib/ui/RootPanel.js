@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Device, Process, ProcessTask} from '../types';
-import type {Expected} from '../../../nuclide-expected';
+import type {Expected} from '../../../commons-node/expected';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Props as TaskButtonPropsType} from './TaskButton';
 

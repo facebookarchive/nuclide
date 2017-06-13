@@ -14,7 +14,7 @@ import type {
   Device,
   DeviceListProvider,
 } from '../../../nuclide-device-panel/lib/types';
-import type {Expected} from '../../../nuclide-expected';
+import type {Expected} from '../../../commons-node/expected';
 import type {Bridge} from '../types';
 
 import {Observable} from 'rxjs';

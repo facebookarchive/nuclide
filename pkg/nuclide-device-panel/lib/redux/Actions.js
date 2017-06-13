@@ -28,7 +28,7 @@ import type {
   Process,
   ProcessTask,
 } from '../types';
-import type {Expected} from '../../../nuclide-expected';
+import type {Expected} from '../../../commons-node/expected';
 
 import {DeviceTask} from '../DeviceTask';
 

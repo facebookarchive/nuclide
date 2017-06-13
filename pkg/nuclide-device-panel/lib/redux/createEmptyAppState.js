@@ -11,7 +11,7 @@
 
 import type {AppState} from '../types';
 
-import {Expect} from '../../../nuclide-expected';
+import {Expect} from '../../../commons-node/expected';
 
 export function createEmptyAppState(): AppState {
   return {

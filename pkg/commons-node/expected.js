@@ -9,6 +9,12 @@
  * @format
  */
 
+/**
+ * Expected<T> tries to mimic llvm's Expected class.
+ * This is specially useful for Observables that can return a stream of errors instead of closing
+ * the subscription.
+ */
+
 type ExpectedError<T> = {
   isError: true,
   error: Error,

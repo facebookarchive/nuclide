@@ -9,6 +9,11 @@
  * @format
  */
 
+/**
+ * Tiny class that is useful to cache simple values.
+ * It's quite useful for promises with a Cache<Promise<T>> which allows reusing the same promise.
+ */
+
 export class Cache<T> {
   store: Map<string, T> = new Map();
 
