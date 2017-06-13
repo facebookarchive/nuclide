@@ -14,7 +14,7 @@ import * as Actions from './Actions';
 import invariant from 'invariant';
 import {getProviders} from '../providers';
 import {DeviceTask} from '../DeviceTask';
-import {createCache} from '../Cache';
+import {Cache} from '../../../commons-node/cache';
 import shallowEqual from 'shallowequal';
 
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
@@ -106,7 +106,7 @@ export function setDeviceEpic(
   });
 }
 
-const deviceTypeTaskCache = createCache();
+const deviceTypeTaskCache = new Cache();
 export function setDeviceTypeEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -206,7 +206,7 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
 
 // The actual device tasks are cached so that if a task is running when the store switches back and
 // forth from the device associated with that task, the same running task is used
-const deviceTaskCache = createCache();
+const deviceTaskCache = new Cache();
 function getDeviceTasks(state: AppState): Observable<DeviceTask[]> {
   const device = state.device;
   if (device == null) {

@@ -12,16 +12,15 @@
 export class Cache<T> {
   store: Map<string, T> = new Map();
 
-  getOrCreate(key: string, callback: () => T): T {
-    let cached = this.store.get(key);
-    if (cached === undefined) {
-      cached = callback();
-      this.store.set(key, cached);
-    }
-    return cached;
-  }
-}
+  constructor() {}
 
-export function createCache<T>(): Cache<T> {
-  return new Cache();
+  getOrCreate(key: string, callback: () => T): T {
+    if (this.store.has(key)) {
+      // We need this cast because of undefined
+      return ((this.store.get(key): any): T);
+    }
+    const value = callback();
+    this.store.set(key, value);
+    return value;
+  }
 }
