@@ -78,6 +78,9 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
       return true;
     case 'run':
       return ruleType.endsWith('binary');
+    case 'debug':
+      // TODO: Ericblue fix this
+      return ruleType.endsWith('binary') || ruleType.endsWith('test');
     default:
       return false;
   }
