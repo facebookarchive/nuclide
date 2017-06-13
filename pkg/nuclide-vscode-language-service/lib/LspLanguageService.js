@@ -805,42 +805,26 @@ export class LspLanguageService {
       token.onCancellationRequested.bind(token),
     )();
     const actions = params.actions || [];
-    const titles = actions.map(action => action.title);
-    // LSP gives us just a list of titles e.g. ['Open', 'Close']
-    // But Nuclide prefers to display the dismiss icon separately as an X,
-    // not as a button. We'll use heuristics to bridge the two...
-    // * If amongst the LSP titles there is exactly one named Cancel/Close/
-    //   Ok, then use it for the X, and show the other titles as buttons.
-    // * If there are two more more, pick one of them (prefer Cancel over
-    //   Close over Ok) as the X, but show all of them as buttons.
-    // * If there were none, then synthesize a 'Close' action for the X,
-    //   and display all the LSP titles as buttons.
-    let closeTitle;
-    const heuristic = ['Cancel', 'cancel', 'Close', 'close', 'OK', 'Ok', 'ok'];
-    const candidates = titles.filter(title => heuristic.includes(title));
-    if (candidates.length === 0) {
-      closeTitle = 'Close';
-      actions.push({title: 'Close'});
-    } else if (candidates.length === 1) {
-      closeTitle = candidates[0];
-      titles.splice(titles.indexOf(closeTitle), 1);
-    } else {
-      closeTitle = candidates[0];
-    }
 
+    // LSP gives us just a list of titles e.g. ['Open', 'Retry']
+    // Nuclide will display an 'X' close icon in addition to those whichever
+    // will deliver the result 'null'. (similar to how VSCode works).
     const response = await this._host
       .dialogRequest(
         convert.lspMessageType_atomShowNotificationLevel(params.type),
         params.message,
-        titles,
-        closeTitle,
+        actions.map(action => action.title),
+        '@@X@@', // a sentinel response forwhen user clicks "X"
       )
       .refCount()
       .takeUntil(cancelIsRequested)
       .toPromise();
 
     if (response === undefined) {
-      // cancellation was requested  (that's how takeUntil/toPromise works)
+      // cancellation was requested (that's how takeUntil/toPromise works)
+      return null;
+    } else if (response === '@@X@@') {
+      // user clicked the X icon
       return null;
     } else {
       // return whichever MessageActionItem corresponded to the click,
