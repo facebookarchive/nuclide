@@ -55,7 +55,7 @@ import type {
   SymbolInformation,
   UncoveredRange,
 } from './protocol';
-import type {JsonRpcConnection} from './jsonrpc';
+import type {JsonRpcConnection, CancellationToken} from './jsonrpc';
 
 import invariant from 'assert';
 import through from 'through';
@@ -797,13 +797,13 @@ export class LspLanguageService {
 
   async _handleShowMessageRequest(
     params: ShowMessageRequestParams,
-    cancellationToken: Object,
+    token: CancellationToken,
   ): Promise<any> {
-    // NOT YET IMPLEMENTED: that cancellationToken will be fired if the LSP
-    // server sends a cancel notification for this ShowMessageRequest. We should
-    // respect it.
-
     // CARE! This method may be called before initialization has finished.
+
+    const cancelIsRequested = Observable.bindCallback(
+      token.onCancellationRequested.bind(token),
+    )();
     const actions = params.actions || [];
     const titles = actions.map(action => action.title);
     // LSP gives us just a list of titles e.g. ['Open', 'Close']
@@ -836,11 +836,18 @@ export class LspLanguageService {
         closeTitle,
       )
       .refCount()
+      .takeUntil(cancelIsRequested)
       .toPromise();
 
-    const chosenAction = actions.find(action => action.title === response);
-    invariant(chosenAction != null);
-    return chosenAction;
+    if (response === undefined) {
+      // cancellation was requested  (that's how takeUntil/toPromise works)
+      return null;
+    } else {
+      // return whichever MessageActionItem corresponded to the click,
+      const chosenAction = actions.find(action => action.title === response);
+      invariant(chosenAction != null);
+      return chosenAction;
+    }
   }
 
   getRoot(): string {

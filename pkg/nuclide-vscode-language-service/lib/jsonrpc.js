@@ -17,7 +17,7 @@ export type JsonRpcConnection = {
   onNotification(type: {method: string}, callback: (Object) => void): void,
   onRequest(
     type: {method: string},
-    callback: (Object, Object) => Promise<any>,
+    callback: (Object, CancellationToken) => Promise<any>,
   ): void,
   dispose(): void,
   trace(level: 0 | 1 | 2, logger: JsonRpcTraceLogger): void,
@@ -35,4 +35,9 @@ export const JsonRpcTrace = {
 
 export type JsonRpcTraceLogger = {
   log(message: string, data: ?string): void,
+};
+
+export type CancellationToken = {
+  +isCancellationRequested: boolean,
+  onCancellationRequested(callback: () => any): void,
 };
