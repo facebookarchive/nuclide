@@ -109,6 +109,7 @@ export class LspLanguageService {
   _logger: log4js$Logger;
   _host: HostServices;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
+  _initializationOptions: Object;
 
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
@@ -136,6 +137,7 @@ export class LspLanguageService {
     args: Array<string>,
     projectRoot: string,
     fileExtensions: Array<string>,
+    initializationOptions: Object,
   ) {
     this._logger = logger;
     this._fileCache = fileCache;
@@ -145,6 +147,7 @@ export class LspLanguageService {
     this._command = command;
     this._args = args;
     this._fileExtensions = fileExtensions;
+    this._initializationOptions = initializationOptions;
   }
 
   dispose(): void {
@@ -379,7 +382,7 @@ export class LspLanguageService {
         rootPath: this._projectRoot,
         // TODO: rootUri: should be a file URI (`file://`)
         capabilities,
-        initializationOptions: {},
+        initializationOptions: this._initializationOptions,
         trace: isVerbose ? 'verbose' : 'off',
       };
 

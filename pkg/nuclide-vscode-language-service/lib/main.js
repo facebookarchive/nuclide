@@ -30,6 +30,7 @@ export function createMultiLspLanguageService(
   args: Array<string>,
   projectFileName: string,
   fileExtensions: Array<NuclideUri>,
+  initializationOptions: Object,
 ): MultiProjectLanguageService<LspLanguageService> {
   const result = new MultiProjectLanguageService();
 
@@ -59,6 +60,7 @@ export function createMultiLspLanguageService(
       args,
       projectDir,
       fileExtensions,
+      initializationOptions,
     );
 
     lsp.start(); // Kick off 'Initializing'...

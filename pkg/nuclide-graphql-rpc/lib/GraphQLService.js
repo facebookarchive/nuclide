@@ -51,5 +51,6 @@ export async function initializeLsp(
     args,
     projectFileName,
     fileExtensions,
+    {},
   );
 }
