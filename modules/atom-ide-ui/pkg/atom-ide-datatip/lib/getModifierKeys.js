@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {ModifierKey} from './types';
-import {ModifierKeys} from './types';
+import type {ModifierKey} from '..';
+import {ModifierKeys} from '..';
 
 import Immutable from 'immutable';
 

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {MarkedString} from './types';
+import type {MarkedString} from '..';
 
 import marked from 'marked';
 import React from 'react';

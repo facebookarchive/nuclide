@@ -11,6 +11,9 @@
 
 import type Immutable from 'immutable';
 
+import createPackage from 'nuclide-commons-atom/createPackage';
+import {DatatipManager} from './DatatipManager';
+
 // Borrowed from the LSP API.
 export type MarkedString =
   | {
@@ -78,3 +81,21 @@ export type DatatipService = {
   addModifierProvider(provider: ModifierDatatipProvider): IDisposable,
   createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip,
 };
+
+class Activation {
+  _datatipManager: DatatipManager;
+
+  constructor() {
+    this._datatipManager = new DatatipManager();
+  }
+
+  provideDatatipService(): DatatipService {
+    return this._datatipManager;
+  }
+
+  dispose() {
+    this._datatipManager.dispose();
+  }
+}
+
+createPackage(module.exports, Activation);

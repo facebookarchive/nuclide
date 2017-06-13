@@ -10,10 +10,7 @@
  */
 
 import type {ThreadItem, NuclideThreadData, DebuggerModeType} from './types';
-import type {
-  PinnedDatatip,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+import type {PinnedDatatip, DatatipService} from 'atom-ide-ui';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import {Disposable, CompositeDisposable, Emitter} from 'atom';
 import React from 'react';

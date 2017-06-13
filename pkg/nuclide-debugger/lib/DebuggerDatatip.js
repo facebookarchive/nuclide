@@ -12,7 +12,7 @@
 import type {
   NuclideEvaluationExpression,
 } from '../../nuclide-debugger-interfaces/rpc-types';
-import type {Datatip} from '../../nuclide-datatip/lib/types';
+import type {Datatip} from 'atom-ide-ui';
 import type DebuggerModel from './DebuggerModel';
 import type {EvaluationResult} from './types';
 

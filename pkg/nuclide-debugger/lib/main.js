@@ -13,10 +13,7 @@ import type {
   NuclideDebuggerProvider,
   NuclideEvaluationExpressionProvider,
 } from '../../nuclide-debugger-interfaces/service';
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type {
   RegisterExecutorFunction,
   OutputService,

@@ -10,7 +10,7 @@
  */
 
 import type {TypeHintProvider} from './types';
-import type {Datatip} from '../../nuclide-datatip/lib/types';
+import type {Datatip} from 'atom-ide-ui';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import {arrayRemove} from 'nuclide-commons/collection';

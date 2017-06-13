@@ -11,10 +11,10 @@
 
 import type {
   ModifierKey,
-  ModifierDatatipProvider,
   DatatipService,
-} from '../../nuclide-datatip/lib/types';
-import type {DefinitionProvider} from 'atom-ide-ui';
+  DefinitionProvider,
+  ModifierDatatipProvider,
+} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {Datatip} from './types';
+import type {Datatip} from '..';
 
 import React from 'react';
 

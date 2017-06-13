@@ -9,13 +9,11 @@
  * @format
  */
 
-// TODO(hansonw): This needs to be moved.
-// eslint-disable-next-line nuclide-internal/modules-dependencies
 import type {
   Datatip,
   DatatipProvider,
   DatatipService,
-} from '../../../../../pkg/nuclide-datatip/lib/types';
+} from '../../atom-ide-datatip';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
 import type {
   FileMessageUpdate,

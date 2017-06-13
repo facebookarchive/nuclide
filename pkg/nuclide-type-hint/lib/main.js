@@ -10,10 +10,7 @@
  */
 
 import type {TypeHintProvider} from './types';
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 import type TypeHintManagerType from './TypeHintManager';
 
 import invariant from 'assert';

@@ -15,6 +15,16 @@ export type {
 } from './pkg/hyperclick/lib/types';
 
 export type {
+  Datatip,
+  DatatipProvider,
+  DatatipService,
+  MarkedString,
+  ModifierDatatipProvider,
+  ModifierKey,
+  PinnedDatatip,
+} from './pkg/atom-ide-datatip';
+
+export type {
   CallbackDiagnosticProvider,
   DiagnosticMessage,
   DiagnosticProvider,

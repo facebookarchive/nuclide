@@ -17,7 +17,7 @@ import type {
   DatatipProvider,
   ModifierDatatipProvider,
   ModifierKey,
-} from './types';
+} from '..';
 
 import Immutable from 'immutable';
 import React from 'react';

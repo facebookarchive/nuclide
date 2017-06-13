@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  DatatipProvider,
-  DatatipService,
-} from '../../nuclide-datatip/lib/types';
+import type {DatatipProvider, DatatipService} from 'atom-ide-ui';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';

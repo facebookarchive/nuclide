@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {Datatip, ModifierKey} from '../../nuclide-datatip/lib/types';
-import type {DefinitionProvider} from 'atom-ide-ui';
+import type {Datatip, ModifierKey, DefinitionProvider} from 'atom-ide-ui';
 
 import Immutable from 'immutable';
 
