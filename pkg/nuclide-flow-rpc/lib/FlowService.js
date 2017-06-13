@@ -77,6 +77,8 @@ export type FlowSettings = {
   lazyServer: boolean,
 };
 
+export type {FlowLocNoSource} from './flowOutputTypes';
+
 import {
   FlowSingleProjectLanguageService,
 } from './FlowSingleProjectLanguageService';

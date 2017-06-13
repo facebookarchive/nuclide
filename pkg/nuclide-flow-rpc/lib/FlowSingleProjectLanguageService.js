@@ -60,7 +60,7 @@ import {
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-flow-rpc');
 
-import {flowCoordsToAtomCoords} from './FlowHelpers';
+import {flowCoordsToAtomCoords} from '../../nuclide-flow-common';
 
 import {FlowProcess} from './FlowProcess';
 import {FlowVersion} from './FlowVersion';
