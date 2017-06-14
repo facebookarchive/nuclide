@@ -9,8 +9,6 @@
  * @format
  */
 
-import type Immutable from 'immutable';
-
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {DatatipManager} from './DatatipManager';
 
@@ -70,7 +68,7 @@ export type ModifierDatatipProvider = {
   modifierDatatip(
     editor: atom$TextEditor,
     bufferPosition: atom$Point,
-    heldKeys: Immutable.Set<ModifierKey>,
+    heldKeys: Set<ModifierKey>,
   ): Promise<?Datatip>,
 };
 

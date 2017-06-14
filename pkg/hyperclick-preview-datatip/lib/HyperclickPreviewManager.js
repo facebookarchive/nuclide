@@ -11,8 +11,6 @@
 
 import type {Datatip, ModifierKey, DefinitionProvider} from 'atom-ide-ui';
 
-import Immutable from 'immutable';
-
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {
@@ -54,12 +52,12 @@ export default class HyperclickPreviewManager {
   async modifierDatatip(
     editor: TextEditor,
     position: atom$Point,
-    heldKeys: Immutable.Set<ModifierKey>,
+    heldKeys: Set<ModifierKey>,
   ): Promise<?Datatip> {
     if (
       !this._triggerKeys ||
       // are the required keys held down?
-      heldKeys.intersect(this._triggerKeys).size !== this._triggerKeys.size
+      !Array.from(this._triggerKeys).every(key => heldKeys.has(key))
     ) {
       return;
     }

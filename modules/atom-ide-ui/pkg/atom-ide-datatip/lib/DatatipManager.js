@@ -19,7 +19,6 @@ import type {
   ModifierKey,
 } from '..';
 
-import Immutable from 'immutable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -243,7 +242,7 @@ class DatatipManagerForEditor {
     datatip: Datatip,
     provider: DatatipProvider,
   }>;
-  _heldKeys: Immutable.Set<ModifierKey>;
+  _heldKeys: Set<ModifierKey>;
   _marker: ?atom$Marker;
   _pinnedDatatips: Set<PinnedDatatip>;
   _range: ?atom$Range;
@@ -268,7 +267,7 @@ class DatatipManagerForEditor {
     this._datatipElement = document.createElement('div');
     this._datatipElement.className = 'nuclide-datatip-overlay';
     this._datatipState = DatatipState.HIDDEN;
-    this._heldKeys = new Immutable.Set();
+    this._heldKeys = new Set();
     this._interactedWith = false;
     this._cumulativeWheelX = 0;
     this._lastHiddenTime = 0;
@@ -327,7 +326,7 @@ class DatatipManagerForEditor {
       Observable.fromEvent(this._editorView, 'keydown').subscribe(e => {
         const modifierKey = getModifierKeyFromKeyboardEvent(e);
         if (modifierKey) {
-          this._heldKeys = this._heldKeys.add(modifierKey);
+          this._heldKeys.add(modifierKey);
           if (this._datatipState !== DatatipState.HIDDEN) {
             this._fetchInResponseToKeyPress();
           }
@@ -338,7 +337,7 @@ class DatatipManagerForEditor {
       Observable.fromEvent(this._editorView, 'keyup').subscribe(e => {
         const modifierKey = getModifierKeyFromKeyboardEvent(e);
         if (modifierKey) {
-          this._heldKeys = this._heldKeys.delete(modifierKey);
+          this._heldKeys.delete(modifierKey);
           if (this._datatipState !== DatatipState.HIDDEN) {
             this._fetchInResponseToKeyPress();
           }

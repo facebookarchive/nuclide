@@ -12,8 +12,6 @@
 import type {ModifierKey} from '..';
 import {ModifierKeys} from '..';
 
-import Immutable from 'immutable';
-
 const KEYNAME_TO_PROPERTY = {
   Meta: ModifierKeys.META,
   Shift: ModifierKeys.SHIFT,
@@ -21,21 +19,19 @@ const KEYNAME_TO_PROPERTY = {
   Control: ModifierKeys.CTRL,
 };
 
-export function getModifierKeysFromMouseEvent(
-  e: MouseEvent,
-): Immutable.Set<ModifierKey> {
-  let keys: Immutable.Set<ModifierKey> = new Immutable.Set();
+export function getModifierKeysFromMouseEvent(e: MouseEvent): Set<ModifierKey> {
+  const keys: Set<ModifierKey> = new Set();
   if (e.metaKey) {
-    keys = keys.add(ModifierKeys.META);
+    keys.add(ModifierKeys.META);
   }
   if (e.shiftKey) {
-    keys = keys.add(ModifierKeys.SHIFT);
+    keys.add(ModifierKeys.SHIFT);
   }
   if (e.altKey) {
-    keys = keys.add(ModifierKeys.ALT);
+    keys.add(ModifierKeys.ALT);
   }
   if (e.ctrlKey) {
-    keys = keys.add(ModifierKeys.CTRL);
+    keys.add(ModifierKeys.CTRL);
   }
 
   return keys;
