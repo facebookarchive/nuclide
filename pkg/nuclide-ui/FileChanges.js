@@ -299,7 +299,7 @@ export default class FileChanges extends React.Component {
       : fileName;
 
     const headline = (
-      <span>
+      <span className="nuclide-ui-file-changes-item">
         {renderedFilename}
         {' '}
         {diffDetails}
