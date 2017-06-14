@@ -272,7 +272,7 @@ export async function getOwners(
   filePath: NuclideUri,
   kindFilter?: string,
 ): Promise<Array<string>> {
-  let queryString = `owner(${quote([filePath])})`;
+  let queryString = `owner("${quote([filePath])}")`;
   if (kindFilter != null) {
     queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
   }
