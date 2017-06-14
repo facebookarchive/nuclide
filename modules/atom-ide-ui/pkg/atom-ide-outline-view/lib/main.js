@@ -91,7 +91,7 @@ export type OutlineProvider = {
   priority: number,
   grammarScopes: Array<string>,
   updateOnEdit?: boolean,
-  getOutline: (editor: TextEditor) => Promise<?Outline>,
+  getOutline(editor: TextEditor): Promise<?Outline>,
 };
 
 export type SerializedOutlineViewPanelState = {
