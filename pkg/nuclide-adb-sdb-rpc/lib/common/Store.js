@@ -11,7 +11,7 @@
 
 import type {
   DebugBridgeType,
-  DebugBridgePathsInfo,
+  DebugBridgeFullConfig,
   DebugBridgeConfig,
 } from '../types';
 
@@ -48,10 +48,11 @@ class DebugBridgePathStore {
     this._lastWorkingPath = workingPath;
   }
 
-  getCurrentPathsInfo(): DebugBridgePathsInfo {
+  getFullConfig(): DebugBridgeFullConfig {
     return {
       active: this._customPath || this._lastWorkingPath,
       all: this.getPaths(),
+      port: this.getPort(),
     };
   }
 

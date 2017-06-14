@@ -37,4 +37,8 @@ export type Process = {
 
 export type DebugBridgeConfig = {path: string, port: ?number};
 
-export type DebugBridgePathsInfo = {active: ?string, all: Array<string>};
+export type DebugBridgeFullConfig = {
+  active: ?string,
+  all: Array<string>,
+  port: ?number,
+};

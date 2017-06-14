@@ -38,16 +38,17 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
 
   getTask(host: NuclideUri): Observable<TaskEvent> {
     return Observable.defer(() =>
-      this._bridge.getDebugBridgePaths(host),
-    ).switchMap(pathsInfo => {
+      this._bridge.getFullConfig(host),
+    ).switchMap(fullConfig => {
       return Observable.create(observer => {
         const disposable = showModal(
           dismiss => (
             <ATCustomDBPathModal
               dismiss={dismiss}
-              currentActivePath={pathsInfo.active}
+              activePath={fullConfig.active}
+              activePort={fullConfig.port}
               currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}
-              registeredPaths={pathsInfo.all}
+              registeredPaths={fullConfig.all}
               setCustomPath={customPath =>
                 this._bridge.setCustomDebugBridgePath(host, customPath)}
               type={this._bridge.debugBridge}

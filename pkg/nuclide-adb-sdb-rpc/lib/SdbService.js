@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription, DebugBridgePathsInfo} from './types';
+import type {DeviceDescription, DebugBridgeFullConfig} from './types';
 
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
@@ -29,8 +29,8 @@ export async function registerSdbPath(
   getStore(SDB).registerPath(id, {path, priority});
 }
 
-export async function getCurrentPathsInfo(): Promise<DebugBridgePathsInfo> {
-  return getStore(SDB).getCurrentPathsInfo();
+export async function getFullConfig(): Promise<DebugBridgeFullConfig> {
+  return getStore(SDB).getFullConfig();
 }
 
 export async function registerCustomPath(path: ?string): Promise<void> {

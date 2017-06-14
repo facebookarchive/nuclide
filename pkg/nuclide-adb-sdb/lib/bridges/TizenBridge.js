@@ -14,7 +14,7 @@ import typeof * as SdbService
   from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {Store} from '../types';
 import type {
-  DebugBridgePathsInfo,
+  DebugBridgeFullConfig,
 } from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Expected} from '../../../commons-node/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
@@ -48,8 +48,8 @@ export class TizenBridge {
     this._store.dispatch(Actions.setCustomSdbPath(host, path));
   }
 
-  getDebugBridgePaths(host: NuclideUri): Promise<DebugBridgePathsInfo> {
-    return this.getService(host).getCurrentPathsInfo();
+  getFullConfig(host: NuclideUri): Promise<DebugBridgeFullConfig> {
+    return this.getService(host).getFullConfig();
   }
 
   observeDevicesX(host: NuclideUri): Observable<Expected<Device[]>> {

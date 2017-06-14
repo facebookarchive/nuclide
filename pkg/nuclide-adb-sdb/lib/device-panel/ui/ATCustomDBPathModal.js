@@ -19,7 +19,8 @@ type Props = {|
   type: 'adb' | 'sdb',
   setCustomPath: (path: ?string) => void,
   dismiss: () => mixed,
-  currentActivePath: ?string,
+  activePath: ?string,
+  activePort: ?number,
   currentCustomPath: ?string,
   registeredPaths: string[],
 |};
@@ -56,17 +57,28 @@ export class ATCustomDBPathModal extends React.Component {
     this.setState({customPath: customPath.length === 0 ? null : customPath});
   }
 
-  _getCurrentActivePath(): React.Element<any> {
+  _getActiveConfig(): React.Element<any> {
     return (
-      <label>
-        Active
-        {' '}
-        {this.props.type}
-        {' '}
-        path:
-        {' '}
-        <i><strong>{this.props.currentActivePath}</strong></i>
-      </label>
+      <div>
+        <label>
+          Active
+          {' '}
+          {this.props.type}
+          {' '}
+          path:
+          {' '}
+          <i><strong>{this.props.activePath}</strong></i>
+        </label>
+        <label>
+          Active
+          {' '}
+          {this.props.type}
+          {' '}
+          port:
+          {' '}
+          <i><strong>{this.props.activePort || 'default'}</strong></i>
+        </label>
+      </div>
     );
   }
 
@@ -137,7 +149,7 @@ export class ATCustomDBPathModal extends React.Component {
     return (
       <div>
         <div className="block">
-          {this._getCurrentActivePath()}
+          {this._getActiveConfig()}
         </div>
         <div className="block">
           {this._getPathSelector()}

@@ -15,7 +15,7 @@ import type {
   DeviceDescription,
   AndroidJavaProcess,
   Process,
-  DebugBridgePathsInfo,
+  DebugBridgeFullConfig,
 } from './types';
 
 import {getStore} from './common/Store';
@@ -34,8 +34,8 @@ export async function registerAdbPath(
   getStore(ADB).registerPath(id, {path, priority});
 }
 
-export async function getCurrentPathsInfo(): Promise<DebugBridgePathsInfo> {
-  return getStore(ADB).getCurrentPathsInfo();
+export async function getFullConfig(): Promise<DebugBridgeFullConfig> {
+  return getStore(ADB).getFullConfig();
 }
 
 export async function registerCustomPath(path: ?string): Promise<void> {
