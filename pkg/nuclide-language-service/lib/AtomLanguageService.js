@@ -122,7 +122,7 @@ export class AtomLanguageService<T: LanguageService> {
       this._subscriptions.add(
         CodeHighlightProvider.register(
           this._config.name,
-          this._selector(),
+          this._config.grammars,
           highlightConfig,
           this._connectionToLanguageService,
         ),

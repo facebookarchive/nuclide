@@ -17,8 +17,8 @@ export type CodeHighlightProvider = {
     editor: atom$TextEditor,
     bufferPosition: atom$Point,
   ): Promise<?Array<atom$Range>>,
-  inclusionPriority: number,
-  selector: string,
+  priority: number,
+  grammarScopes: Array<string>,
 };
 
 class Activation {

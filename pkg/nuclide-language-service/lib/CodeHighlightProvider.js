@@ -9,6 +9,9 @@
  * @format
  */
 
+import type {
+  CodeHighlightProvider as CodeHighlightProviderType,
+} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {trackTiming} from '../../nuclide-analytics';
@@ -24,21 +27,21 @@ export type CodeHighlightConfig = {|
 
 export class CodeHighlightProvider<T: LanguageService> {
   name: string;
-  selector: string;
-  inclusionPriority: number;
+  grammarScopes: Array<string>;
+  priority: number;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
 
   constructor(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     priority: number,
     analyticsEventName: string,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
     this.name = name;
-    this.selector = selector;
-    this.inclusionPriority = priority;
+    this.grammarScopes = grammarScopes;
+    this.priority = priority;
     this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
   }
@@ -70,7 +73,7 @@ export class CodeHighlightProvider<T: LanguageService> {
 
   static register(
     name: string,
-    selector: string,
+    grammarScopes: Array<string>,
     config: CodeHighlightConfig,
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
@@ -79,7 +82,7 @@ export class CodeHighlightProvider<T: LanguageService> {
       config.version,
       new CodeHighlightProvider(
         name,
-        selector,
+        grammarScopes,
         config.priority,
         config.analyticsEventName,
         connectionToLanguageService,
@@ -87,3 +90,7 @@ export class CodeHighlightProvider<T: LanguageService> {
     );
   }
 }
+
+(((null: any): CodeHighlightProvider<
+  LanguageService,
+>): CodeHighlightProviderType);
