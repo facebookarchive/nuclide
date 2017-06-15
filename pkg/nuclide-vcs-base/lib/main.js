@@ -265,14 +265,16 @@ export function getHgRepositories(): Set<HgRepositoryClient> {
   );
 }
 
-export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
-  const currentRepositories = observableFromSubscribeFunction(
+export function getHgRepositoriesStream(): Observable<Set<HgRepositoryClient>> {
+  return observableFromSubscribeFunction(
     atom.project.onDidChangePaths.bind(atom.project),
   )
     .startWith(null)
     .map(() => getHgRepositories());
+}
 
-  return diffSets(currentRepositories).flatMap(repoDiff =>
+export function getHgRepositoryStream(): Observable<HgRepositoryClient> {
+  return diffSets(getHgRepositoriesStream()).flatMap(repoDiff =>
     Observable.from(repoDiff.added),
   );
 }
