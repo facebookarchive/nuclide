@@ -1,68 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-export type TokenKind =
-  | 'keyword'
-  | 'class-name'
-  | 'constructor'
-  | 'method'
-  | 'param'
-  | 'string'
-  | 'whitespace'
-  | 'plain'
-  | 'type';
-
-export type TextToken = {
-  kind: TokenKind,
-  value: string,
-};
-
-export type TokenizedText = Array<TextToken>;
-
-export function keyword(value: string): TextToken {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.keyword = keyword;
+exports.className = className;
+exports.constructor = constructor;
+exports.method = method;
+exports.param = param;
+exports.string = string;
+exports.whitespace = whitespace;
+exports.plain = plain;
+exports.type = type;
+function keyword(value) {
   return _buildToken('keyword', value);
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function className(value: string): TextToken {
+function className(value) {
   return _buildToken('class-name', value);
 }
 
-export function constructor(value: string): TextToken {
+function constructor(value) {
   return _buildToken('constructor', value);
 }
 
-export function method(value: string): TextToken {
+function method(value) {
   return _buildToken('method', value);
 }
 
-export function param(value: string): TextToken {
+function param(value) {
   return _buildToken('param', value);
 }
 
-export function string(value: string): TextToken {
+function string(value) {
   return _buildToken('string', value);
 }
 
-export function whitespace(value: string): TextToken {
+function whitespace(value) {
   return _buildToken('whitespace', value);
 }
 
-export function plain(value: string): TextToken {
+function plain(value) {
   return _buildToken('plain', value);
 }
 
-export function type(value: string): TextToken {
+function type(value) {
   return _buildToken('type', value);
 }
 
-function _buildToken(kind: TokenKind, value: string): TextToken {
-  return {kind, value};
+function _buildToken(kind, value) {
+  return { kind, value };
 }

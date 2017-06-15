@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./EventReporter');
+}
+
+/**
+ * Bridge between Nuclide IPC and RPC threading protocols.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,68 +22,50 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  ThreadsUpdatedEvent,
-  ThreadUpdatedEvent,
-  CallFrame,
-  GetThreadStackResponse,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
-import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
+class ThreadManager {
 
-import {Subject, Observable} from 'rxjs';
-import {reportError} from './EventReporter';
-
-/**
- * Bridge between Nuclide IPC and RPC threading protocols.
- */
-export default class ThreadManager {
-  _debuggerDispatcher: DebuggerDomainDispatcher;
-  _threadEvent$: Subject<Array<mixed>>;
-
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
+  constructor(debuggerDispatcher) {
     this._debuggerDispatcher = debuggerDispatcher;
-    this._threadEvent$ = new Subject();
+    this._threadEvent$ = new _rxjsBundlesRxMinJs.Subject();
   }
 
-  selectThread(threadId: string): void {
+  selectThread(threadId) {
     this._debuggerDispatcher.selectThread(Number(threadId));
   }
 
-  getThreadStack(threadId: string): Promise<Array<CallFrame>> {
+  getThreadStack(threadId) {
     return new Promise((resolve, reject) => {
-      function callback(error: Error, response: GetThreadStackResponse) {
+      function callback(error, response) {
         if (error != null) {
-          reportError(`getThreadStack failed with ${JSON.stringify(error)}`);
+          (0, (_EventReporter || _load_EventReporter()).reportError)(`getThreadStack failed with ${JSON.stringify(error)}`);
           reject(error);
         }
         resolve(response.callFrames);
       }
-      this._debuggerDispatcher.getThreadStack(
-        Number(threadId),
-        callback.bind(this),
-      );
+      this._debuggerDispatcher.getThreadStack(Number(threadId), callback.bind(this));
     });
   }
 
-  raiseThreadsUpdated(params: ThreadsUpdatedEvent): void {
+  raiseThreadsUpdated(params) {
     this._raiseIPCEvent('ThreadsUpdate', params);
   }
 
-  raiseThreadUpdated(params: ThreadUpdatedEvent): void {
+  raiseThreadUpdated(params) {
     this._raiseIPCEvent('ThreadUpdate', params.thread);
   }
 
-  getEventObservable(): Observable<Array<mixed>> {
+  getEventObservable() {
     return this._threadEvent$.asObservable();
   }
 
   // Not a real IPC event, but simulate the chrome IPC events/responses
   // across bridge boundary.
-  _raiseIPCEvent(...args: Array<mixed>): void {
+  _raiseIPCEvent(...args) {
     this._threadEvent$.next(args);
   }
 }
+exports.default = ThreadManager;

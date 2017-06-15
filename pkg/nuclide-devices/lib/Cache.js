@@ -1,3 +1,9 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createCache = createCache;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,14 +11,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-export class Cache<T> {
-  store: Map<string, T> = new Map();
+class Cache {
+  constructor() {
+    this.store = new Map();
+  }
 
-  getOrCreate(key: string, callback: () => T): T {
+  getOrCreate(key, callback) {
     let cached = this.store.get(key);
     if (cached === undefined) {
       cached = callback();
@@ -22,6 +30,7 @@ export class Cache<T> {
   }
 }
 
-export function createCache<T>(): Cache<T> {
+exports.Cache = Cache;
+function createCache() {
   return new Cache();
 }

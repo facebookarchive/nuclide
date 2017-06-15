@@ -1,3 +1,38 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Adb = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.parsePsTableOutput = parsePsTableOutput;
+
+var _os = _interopRequireDefault(require('os'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _DebugBridge;
+
+function _load_DebugBridge() {
+  return _DebugBridge = require('./DebugBridge');
+}
+
+var _Store;
+
+function _load_Store() {
+  return _Store = require('./Store');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,127 +40,98 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DeviceDescription, AndroidJavaProcess} from './types';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import os from 'os';
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Observable} from 'rxjs';
-import {DebugBridge} from './DebugBridge';
-import {createConfigObs} from './Store';
-
 const VALID_PROCESS_REGEX = new RegExp(/\d+\s()/);
 
-const bridge = new DebugBridge(createConfigObs('adb'));
+const bridge = new (_DebugBridge || _load_DebugBridge()).DebugBridge((0, (_Store || _load_Store()).createConfigObs)('adb'));
 
-export class Adb {
-  _device: string;
+class Adb {
 
-  constructor(device: string) {
+  constructor(device) {
     this._device = device;
   }
 
-  runShortCommand(...command: string[]): Observable<string> {
+  runShortCommand(...command) {
     return bridge.runShortCommand(this._device, command);
   }
 
-  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
+  runLongCommand(...command) {
     return bridge.runLongCommand(this._device, command);
   }
 
-  static getDeviceList(): Observable<Array<DeviceDescription>> {
+  static getDeviceList() {
     return bridge.getDevices().switchMap(devices => {
-      return Observable.concat(
-        ...devices.map(name => {
-          const adb = new Adb(name);
-          return Observable.forkJoin(
-            adb.getDeviceArchitecture().catch(() => Observable.of('')),
-            adb.getAPIVersion().catch(() => Observable.of('')),
-            adb.getDeviceModel().catch(() => Observable.of('')),
-          ).map(([architecture, apiVersion, model]) => ({
-            name,
-            architecture,
-            apiVersion,
-            model,
-          }));
-        }),
-      ).toArray();
+      return _rxjsBundlesRxMinJs.Observable.concat(...devices.map(name => {
+        const adb = new Adb(name);
+        return _rxjsBundlesRxMinJs.Observable.forkJoin(adb.getDeviceArchitecture().catch(() => _rxjsBundlesRxMinJs.Observable.of('')), adb.getAPIVersion().catch(() => _rxjsBundlesRxMinJs.Observable.of('')), adb.getDeviceModel().catch(() => _rxjsBundlesRxMinJs.Observable.of(''))).map(([architecture, apiVersion, model]) => ({
+          name,
+          architecture,
+          apiVersion,
+          model
+        }));
+      })).toArray();
     });
   }
 
-  getAndroidProp(key: string): Observable<string> {
+  getAndroidProp(key) {
     return this.runShortCommand('shell', 'getprop', key).map(s => s.trim());
   }
 
-  getDeviceArchitecture(): Observable<string> {
+  getDeviceArchitecture() {
     return this.getAndroidProp('ro.product.cpu.abi');
   }
 
-  async getInstalledPackages(): Promise<Array<string>> {
-    const prefix = 'package:';
-    const stdout = await this.runShortCommand(
-      'shell',
-      'pm',
-      'list',
-      'packages',
-    ).toPromise();
-    return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
+  getInstalledPackages() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const prefix = 'package:';
+      const stdout = yield _this.runShortCommand('shell', 'pm', 'list', 'packages').toPromise();
+      return stdout.trim().split(/\s+/).map(function (s) {
+        return s.substring(prefix.length);
+      });
+    })();
   }
 
-  async isPackageInstalled(pkg: string): Promise<boolean> {
-    const packages = await this.getInstalledPackages();
-    return packages.includes(pkg);
+  isPackageInstalled(pkg) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const packages = yield _this2.getInstalledPackages();
+      return packages.includes(pkg);
+    })();
   }
 
-  getDeviceModel(): Observable<string> {
-    return this.getAndroidProp('ro.product.model').map(
-      s => (s === 'sdk' ? 'emulator' : s),
-    );
+  getDeviceModel() {
+    return this.getAndroidProp('ro.product.model').map(s => s === 'sdk' ? 'emulator' : s);
   }
 
-  getAPIVersion(): Observable<string> {
+  getAPIVersion() {
     return this.getAndroidProp('ro.build.version.sdk');
   }
 
-  getBrand(): Observable<string> {
+  getBrand() {
     return this.getAndroidProp('ro.product.brand');
   }
 
-  getManufacturer(): Observable<string> {
+  getManufacturer() {
     return this.getAndroidProp('ro.product.manufacturer');
   }
 
-  getCommonDeviceInfo(): Observable<Map<string, string>> {
-    const unknownCB = () => Observable.of('');
-    return Observable.forkJoin(
-      this.getDeviceArchitecture().catch(unknownCB),
-      this.getAPIVersion().catch(unknownCB),
-      this.getDeviceModel().catch(unknownCB),
-    ).map(([architecture, apiVersion, model]) => {
-      return new Map([
-        ['name', this._device],
-        ['architecture', architecture],
-        ['api_version', apiVersion],
-        ['model', model],
-      ]);
+  getCommonDeviceInfo() {
+    const unknownCB = () => _rxjsBundlesRxMinJs.Observable.of('');
+    return _rxjsBundlesRxMinJs.Observable.forkJoin(this.getDeviceArchitecture().catch(unknownCB), this.getAPIVersion().catch(unknownCB), this.getDeviceModel().catch(unknownCB)).map(([architecture, apiVersion, model]) => {
+      return new Map([['name', this._device], ['architecture', architecture], ['api_version', apiVersion], ['model', model]]);
     });
   }
 
-  getDeviceInfo(): Observable<Map<string, string>> {
+  getDeviceInfo() {
     return this.getCommonDeviceInfo().switchMap(infoTable => {
-      const unknownCB = () => Observable.of('');
-      return Observable.forkJoin(
-        this.getOSVersion().catch(unknownCB),
-        this.getManufacturer().catch(unknownCB),
-        this.getBrand().catch(unknownCB),
-        this.getWifiIp().catch(unknownCB),
-      ).map(([android_version, manufacturer, brand, wifi_ip]) => {
+      const unknownCB = () => _rxjsBundlesRxMinJs.Observable.of('');
+      return _rxjsBundlesRxMinJs.Observable.forkJoin(this.getOSVersion().catch(unknownCB), this.getManufacturer().catch(unknownCB), this.getBrand().catch(unknownCB), this.getWifiIp().catch(unknownCB)).map(([android_version, manufacturer, brand, wifi_ip]) => {
         infoTable.set('android_version', android_version);
         infoTable.set('manufacturer', manufacturer);
         infoTable.set('brand', brand);
@@ -135,14 +141,8 @@ export class Adb {
     });
   }
 
-  getWifiIp(): Observable<string> {
-    return this.runShortCommand(
-      'shell',
-      'ip',
-      'addr',
-      'show',
-      'wlan0',
-    ).map(lines => {
+  getWifiIp() {
+    return this.runShortCommand('shell', 'ip', 'addr', 'show', 'wlan0').map(lines => {
       const line = lines.split(/\n/).filter(l => l.includes('inet'))[0];
       if (line == null) {
         return '';
@@ -154,44 +154,37 @@ export class Adb {
 
   // Can't use kill, the only option is to use the package name
   // http://stackoverflow.com/questions/17154961/adb-shell-operation-not-permitted
-  async stopPackage(packageName: string): Promise<void> {
-    await this.runShortCommand(
-      'shell',
-      'am',
-      'force-stop',
-      packageName,
-    ).toPromise();
+  stopPackage(packageName) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this3.runShortCommand('shell', 'am', 'force-stop', packageName).toPromise();
+    })();
   }
 
-  getOSVersion(): Observable<string> {
+  getOSVersion() {
     return this.getAndroidProp('ro.build.version.release');
   }
 
-  installPackage(packagePath: NuclideUri): Observable<LegacyProcessMessage> {
+  installPackage(packagePath) {
     // TODO(T17463635)
-    invariant(!nuclideUri.isRemote(packagePath));
+    if (!!(_nuclideUri || _load_nuclideUri()).default.isRemote(packagePath)) {
+      throw new Error('Invariant violation: "!nuclideUri.isRemote(packagePath)"');
+    }
+
     return this.runLongCommand('install', '-r', packagePath);
   }
 
-  uninstallPackage(packageName: string): Observable<LegacyProcessMessage> {
+  uninstallPackage(packageName) {
     // TODO(T17463635)
     return this.runLongCommand('uninstall', packageName);
   }
 
-  forwardJdwpPortToPid(tcpPort: number, pid: number): Promise<string> {
-    return this.runShortCommand(
-      'forward',
-      `tcp:${tcpPort}`,
-      `jdwp:${pid}`,
-    ).toPromise();
+  forwardJdwpPortToPid(tcpPort, pid) {
+    return this.runShortCommand('forward', `tcp:${tcpPort}`, `jdwp:${pid}`).toPromise();
   }
 
-  launchActivity(
-    packageName: string,
-    activity: string,
-    debug: boolean,
-    action: ?string,
-  ): Promise<string> {
+  launchActivity(packageName, activity, debug, action) {
     const args = ['shell', 'am', 'start', '-W', '-n'];
     if (action != null) {
       args.push('-a', action);
@@ -203,96 +196,79 @@ export class Adb {
     return this.runShortCommand(...args).toPromise();
   }
 
-  activityExists(packageName: string, activity: string): Promise<boolean> {
+  activityExists(packageName, activity) {
     const packageActivityString = `${packageName}/${activity}`;
-    return this.runShortCommand('shell', 'dumpsys', 'package')
-      .map(stdout => stdout.includes(packageActivityString))
-      .toPromise();
+    return this.runShortCommand('shell', 'dumpsys', 'package').map(stdout => stdout.includes(packageActivityString)).toPromise();
   }
 
-  touchFile(path: string): Promise<string> {
+  touchFile(path) {
     return this.runShortCommand('shell', 'touch', path).toPromise();
   }
 
-  removeFile(path: string): Promise<string> {
+  removeFile(path) {
     return this.runShortCommand('shell', 'rm', path).toPromise();
   }
 
-  getProcesses(): Observable<Array<string>> {
-    return this.runShortCommand('shell', 'ps').map(stdout =>
-      stdout.split(/\n/),
-    );
+  getProcesses() {
+    return this.runShortCommand('shell', 'ps').map(stdout => stdout.split(/\n/));
   }
 
-  getGlobalProcessStat(): Observable<string> {
-    return this.runShortCommand('shell', 'cat', '/proc/stat').map(stdout =>
-      stdout.split(/\n/)[0].trim(),
-    );
+  getGlobalProcessStat() {
+    return this.runShortCommand('shell', 'cat', '/proc/stat').map(stdout => stdout.split(/\n/)[0].trim());
   }
 
-  getProcStats(): Observable<Array<string>> {
-    return this.runShortCommand(
-      'shell',
-      'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
-    ).map(stdout => {
+  getProcStats() {
+    return this.runShortCommand('shell', 'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done').map(stdout => {
       return stdout.split(/\n/).filter(line => VALID_PROCESS_REGEX.test(line));
     });
   }
 
-  getJavaProcesses(): Observable<Array<AndroidJavaProcess>> {
-    return this.runShortCommand('shell', 'ps')
-      .map(stdout => {
-        const psOutput = stdout.trim();
-        return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
-      })
-      .switchMap(allProcesses => {
-        return this.runLongCommand('jdwp')
-          .catch(error => Observable.of({kind: 'error', error})) // TODO(T17463635)
-          .take(1)
-          .timeout(1000)
-          .map(output => {
-            const jdwpPids = new Set();
-            if (output.kind === 'stdout') {
-              const block: string = output.data;
-              block.split(/\s+/).forEach(pid => {
-                jdwpPids.add(pid.trim());
-              });
-            }
-            return allProcesses.filter(row => jdwpPids.has(row.pid));
+  getJavaProcesses() {
+    return this.runShortCommand('shell', 'ps').map(stdout => {
+      const psOutput = stdout.trim();
+      return parsePsTableOutput(psOutput, ['user', 'pid', 'name']);
+    }).switchMap(allProcesses => {
+      return this.runLongCommand('jdwp').catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error })) // TODO(T17463635)
+      .take(1).timeout(1000).map(output => {
+        const jdwpPids = new Set();
+        if (output.kind === 'stdout') {
+          const block = output.data;
+          block.split(/\s+/).forEach(pid => {
+            jdwpPids.add(pid.trim());
           });
+        }
+        return allProcesses.filter(row => jdwpPids.has(row.pid));
       });
+    });
   }
 
-  async dumpsysPackage(pkg: string): Promise<?string> {
-    if (!await this.isPackageInstalled(pkg)) {
-      return null;
-    }
-    return this.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();
+  dumpsysPackage(pkg) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(yield _this4.isPackageInstalled(pkg))) {
+        return null;
+      }
+      return _this4.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();
+    })();
   }
 
-  async getPidFromPackageName(packageName: string): Promise<number> {
-    const pidLine = (await this.runShortCommand(
-      'shell',
-      'ps',
-      '|',
-      'grep',
-      '-i',
-      packageName,
-    ).toPromise()).split(os.EOL)[0];
-    if (pidLine == null) {
-      throw new Error(
-        `Can not find a running process with package name: ${packageName}`,
-      );
-    }
-    // First column is 'USER', second is 'PID'.
-    return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */ 10);
+  getPidFromPackageName(packageName) {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const pidLine = (yield _this5.runShortCommand('shell', 'ps', '|', 'grep', '-i', packageName).toPromise()).split(_os.default.EOL)[0];
+      if (pidLine == null) {
+        throw new Error(`Can not find a running process with package name: ${packageName}`);
+      }
+      // First column is 'USER', second is 'PID'.
+      return parseInt(pidLine.trim().split(/\s+/)[1], /* radix */10);
+    })();
   }
 }
 
-export function parsePsTableOutput(
-  output: string,
-  desiredFields: Array<string>,
-): Array<Object> {
+exports.Adb = Adb;
+function parsePsTableOutput(output, desiredFields) {
   const lines = output.split(/\n/);
   const header = lines[0];
   const cols = header.split(/\s+/);

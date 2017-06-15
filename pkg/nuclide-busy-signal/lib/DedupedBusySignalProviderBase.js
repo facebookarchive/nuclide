@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DedupedBusySignalProviderBase = undefined;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _BusySignalProviderBase;
+
+function _load_BusySignalProviderBase() {
+  return _BusySignalProviderBase = require('./BusySignalProviderBase');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,51 +26,33 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {MessageDisplayOptions} from './BusySignalProviderBase';
-
-import invariant from 'assert';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-import {BusySignalProviderBase} from './BusySignalProviderBase';
-
-type MessageRecord = {
-  // The disposable to call to remove the message
-  disposable: IDisposable,
-  // The number of messages outstanding
-  count: number,
-};
-
-export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
-  // Invariant: All contained MessageRecords must have a count greater than or equal to one.
-  _messageRecords: Map<string, MessageRecord>;
+class DedupedBusySignalProviderBase extends (_BusySignalProviderBase || _load_BusySignalProviderBase()).BusySignalProviderBase {
 
   constructor() {
     super();
     this._messageRecords = new Map();
   }
+  // Invariant: All contained MessageRecords must have a count greater than or equal to one.
 
-  displayMessage(
-    message: string,
-    options?: MessageDisplayOptions,
-  ): UniversalDisposable {
+
+  displayMessage(message, options) {
     this._incrementCount(message, options);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._decrementCount(message, options);
     });
   }
 
-  _incrementCount(message: string, options?: MessageDisplayOptions): void {
+  _incrementCount(message, options) {
     const key = this._getKey(message, options);
     let record = this._messageRecords.get(key);
     if (record == null) {
       record = {
         disposable: super.displayMessage(message, options),
-        count: 1,
+        count: 1
       };
       this._messageRecords.set(key, record);
     } else {
@@ -57,11 +60,18 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     }
   }
 
-  _decrementCount(message: string, options?: MessageDisplayOptions): void {
+  _decrementCount(message, options) {
     const key = this._getKey(message, options);
     const record = this._messageRecords.get(key);
-    invariant(record != null);
-    invariant(record.count > 0);
+
+    if (!(record != null)) {
+      throw new Error('Invariant violation: "record != null"');
+    }
+
+    if (!(record.count > 0)) {
+      throw new Error('Invariant violation: "record.count > 0"');
+    }
+
     if (record.count === 1) {
       record.disposable.dispose();
       this._messageRecords.delete(key);
@@ -70,10 +80,11 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     }
   }
 
-  _getKey(message: string, options?: MessageDisplayOptions): string {
+  _getKey(message, options) {
     return JSON.stringify({
       message,
-      options,
+      options
     });
   }
 }
+exports.DedupedBusySignalProviderBase = DedupedBusySignalProviderBase;

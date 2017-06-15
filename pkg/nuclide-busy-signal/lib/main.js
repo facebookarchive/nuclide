@@ -1,3 +1,37 @@
+'use strict';
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _MessageStore;
+
+function _load_MessageStore() {
+  return _MessageStore = require('./MessageStore');
+}
+
+var _DedupedBusySignalProviderBase;
+
+function _load_DedupedBusySignalProviderBase() {
+  return _DedupedBusySignalProviderBase = require('./DedupedBusySignalProviderBase');
+}
+
+var _StatusBarTile;
+
+function _load_StatusBarTile() {
+  return _StatusBarTile = require('./StatusBarTile');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,62 +39,25 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {BusySignalProvider} from './types';
-import type {StatusBarTile as StatusBarTileType} from './StatusBarTile';
-import type {MessageDisplayOptions} from './BusySignalProviderBase';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {MessageStore} from './MessageStore';
-
-import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
-import {StatusBarTile} from './StatusBarTile';
-
-export type BusySignalService = {
-  // Activates the busy signal with the given message and returns the promise
-  // from the provided callback.
-  // The busy signal automatically deactivates when the returned promise
-  // either resolves or rejects.
-  reportBusyWhile<T>(
-    message: string,
-    f: () => Promise<T>,
-    options?: MessageDisplayOptions,
-  ): Promise<T>,
-
-  // Activates the busy signal with the given message.
-  // The returned disposable/subscription can be dispose()d or unsubscribe()d
-  // to deactivate the given busy message.
-  reportBusy(
-    message: string,
-    options?: MessageDisplayOptions,
-  ): IDisposable & rxjs$ISubscription,
-
-  // Call this when you're done to ensure that all busy signals are removed.
-  dispose(): void,
-};
-
 class Activation {
-  _statusBarTile: ?StatusBarTileType;
-  _disposables: UniversalDisposable;
-  _messageStore: MessageStore;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
-    this._messageStore = new MessageStore();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._messageStore = new (_MessageStore || _load_MessageStore()).MessageStore();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const statusBarTile = (this._statusBarTile = new StatusBarTile());
+  consumeStatusBar(statusBar) {
+    const statusBarTile = this._statusBarTile = new (_StatusBarTile || _load_StatusBarTile()).StatusBarTile();
     statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
-    const disposable = new UniversalDisposable(() => {
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       if (this._statusBarTile) {
         this._statusBarTile.dispose();
         this._statusBarTile = null;
@@ -71,19 +68,19 @@ class Activation {
     return disposable;
   }
 
-  consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
+  consumeBusySignalProvider(provider) {
     const disposable = this._messageStore.consumeProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 
-  provideBusySignal(): BusySignalService {
-    const busySignal = new DedupedBusySignalProviderBase();
+  provideBusySignal() {
+    const busySignal = new (_DedupedBusySignalProviderBase || _load_DedupedBusySignalProviderBase()).DedupedBusySignalProviderBase();
     const disposable = this._messageStore.consumeProvider(busySignal);
     this._disposables.add(disposable);
     return {
       // TODO: clean up the backing provider to be more consistent.
-      reportBusyWhile<T>(message, f: () => Promise<T>, options): Promise<T> {
+      reportBusyWhile(message, f, options) {
         return busySignal.reportBusy(message, f, options);
       },
       reportBusy(message, options) {
@@ -92,9 +89,9 @@ class Activation {
       dispose: () => {
         disposable.dispose();
         this._disposables.remove(disposable);
-      },
+      }
     };
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

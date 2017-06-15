@@ -1,15 +1,19 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {uriToPath} from './helpers';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.idOfFrame = idOfFrame;
+exports.functionOfFrame = functionOfFrame;
+exports.fileOfFrame = fileOfFrame;
+exports.fileUrlOfFrame = fileUrlOfFrame;
+exports.locationOfFrame = locationOfFrame;
+
+var _helpers;
+
+function _load_helpers() {
+  return _helpers = require('./helpers');
+}
 
 /**
  * A dbgp Frame after it is converted from XML to JSON:
@@ -23,43 +27,37 @@ import {uriToPath} from './helpers';
  *   }
  * }
  */
-type DbgpStackFrame = {
-  $: {
-    where: string,
-    level: string,
-    type: string,
-    filename: string,
-    lineno: string,
-  },
-};
-
-type FrameLocation = {
-  lineNumber: number,
-  scriptId: string,
-};
-
-export function idOfFrame(frame: DbgpStackFrame): string {
+function idOfFrame(frame) {
   // TODO: Mangle in the transactionId of the most recent pause/status.
   return frame.$.level;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function functionOfFrame(frame: DbgpStackFrame): string {
+function functionOfFrame(frame) {
   return frame.$.where;
 }
 
 // Returns an absolute path
-export function fileOfFrame(frame: DbgpStackFrame): string {
-  return uriToPath(fileUrlOfFrame(frame));
+function fileOfFrame(frame) {
+  return (0, (_helpers || _load_helpers()).uriToPath)(fileUrlOfFrame(frame));
 }
 
-export function fileUrlOfFrame(frame: DbgpStackFrame): string {
+function fileUrlOfFrame(frame) {
   return frame.$.filename;
 }
 
-export function locationOfFrame(frame: DbgpStackFrame): FrameLocation {
+function locationOfFrame(frame) {
   return {
     // TODO: columnNumber: from cmdbegin/end
     lineNumber: Number(frame.$.lineno) - 1,
-    scriptId: fileOfFrame(frame),
+    scriptId: fileOfFrame(frame)
   };
 }

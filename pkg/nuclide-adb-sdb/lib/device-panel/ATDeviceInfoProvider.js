@@ -1,65 +1,53 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DeviceInfoProvider} from '../../../nuclide-devices/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ATDeviceInfoProvider = undefined;
 
-import typeof * as AdbService
-  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as SdbService
-  from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
-import {Observable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export class ATDeviceInfoProvider implements DeviceInfoProvider {
-  _type: string;
-  _rpcFactory: (host: NuclideUri) => AdbService | SdbService;
+class ATDeviceInfoProvider {
 
-  constructor(
-    type: string,
-    rpcFactory: (host: NuclideUri) => AdbService | SdbService,
-  ) {
+  constructor(type, rpcFactory) {
     this._type = type;
     this._rpcFactory = rpcFactory;
   }
 
-  fetch(host: NuclideUri, device: string): Observable<Map<string, string>> {
-    return this._rpcFactory(host)
-      .getDeviceInfo(device)
-      .refCount()
-      .map(props => {
-        const infoMap = new Map();
-        for (const [key, value] of props) {
-          const beautifulKey = key.toLowerCase().replace('_', ' ');
-          infoMap.set(
-            beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1),
-            value,
-          );
-        }
-        return infoMap;
-      });
+  fetch(host, device) {
+    return this._rpcFactory(host).getDeviceInfo(device).refCount().map(props => {
+      const infoMap = new Map();
+      for (const [key, value] of props) {
+        const beautifulKey = key.toLowerCase().replace('_', ' ');
+        infoMap.set(beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1), value);
+      }
+      return infoMap;
+    });
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Device information';
   }
 
-  getType(): string {
+  getType() {
     return this._type;
   }
 
-  getPriority(): number {
+  getPriority() {
     return 100;
   }
 
-  isSupported(): Observable<boolean> {
-    return Observable.of(true);
+  isSupported() {
+    return _rxjsBundlesRxMinJs.Observable.of(true);
   }
 }
+exports.ATDeviceInfoProvider = ATDeviceInfoProvider; /**
+                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                      * All rights reserved.
+                                                      *
+                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                      * the root directory of this source tree.
+                                                      *
+                                                      * 
+                                                      * @format
+                                                      */

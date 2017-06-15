@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TypeCoverageProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Provides Diagnostics for un-typed regions of Hack code.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +29,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {LanguageService} from './LanguageService';
+class TypeCoverageProvider {
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming} from '../../nuclide-analytics';
-
-export type TypeCoverageConfig = {|
-  version: '0.0.0',
-  priority: number,
-  analyticsEventName: string,
-  icon?: IconName,
-|};
-
-// Provides Diagnostics for un-typed regions of Hack code.
-export class TypeCoverageProvider<T: LanguageService> {
-  displayName: string;
-  priority: number;
-  grammarScopes: string;
-  icon: IconName | void;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-
-  constructor(
-    name: string,
-    selector: string,
-    priority: number,
-    analyticsEventName: string,
-    icon: IconName | void,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  constructor(name, selector, priority, analyticsEventName, icon, connectionToLanguageService) {
     this.displayName = name;
     this.priority = priority;
     this.grammarScopes = selector;
@@ -49,34 +44,23 @@ export class TypeCoverageProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    selector: string,
-    config: TypeCoverageConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'nuclide-type-coverage',
-      config.version,
-      new TypeCoverageProvider(
-        name,
-        selector,
-        config.priority,
-        config.analyticsEventName,
-        config.icon,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, selector, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('nuclide-type-coverage', config.version, new TypeCoverageProvider(name, selector, config.priority, config.analyticsEventName, config.icon, connectionToLanguageService));
   }
 
-  async getCoverage(path: NuclideUri): Promise<?CoverageResult> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const languageService = this._connectionToLanguageService.getForUri(path);
-      if (languageService == null) {
-        return null;
-      }
+  getCoverage(path) {
+    var _this = this;
 
-      return (await languageService).getCoverage(path);
-    });
+    return (0, _asyncToGenerator.default)(function* () {
+      return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(_this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+        const languageService = _this._connectionToLanguageService.getForUri(path);
+        if (languageService == null) {
+          return null;
+        }
+
+        return (yield languageService).getCoverage(path);
+      }));
+    })();
   }
 }
+exports.TypeCoverageProvider = TypeCoverageProvider;

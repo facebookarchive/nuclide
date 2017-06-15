@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
+exports.proxyFilename = proxyFilename;
+exports.createProxyFactory = createProxyFactory;
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _module = _interopRequireDefault(require('module'));
+
+var _proxyGenerator;
+
+function _load_proxyGenerator() {
+  return _proxyGenerator = require('./proxy-generator');
+}
+
+var _serviceParser;
+
+function _load_serviceParser() {
+  return _serviceParser = require('./service-parser');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/** Cache for remote proxies. */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,110 +41,58 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import fs from 'fs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'assert';
-import Module from 'module';
-
-import {generateProxy} from './proxy-generator';
-import {parseServiceDefinition} from './service-parser';
+const proxiesCache = new Map();
 
 // Proxy dependencies
-import {Observable} from 'rxjs';
+function proxyFilename(definitionPath) {
+  if (!(_nuclideUri || _load_nuclideUri()).default.isAbsolute(definitionPath)) {
+    throw new Error(`"${definitionPath}" definition path must be absolute.`);
+  }
 
-import type {ReturnKind, Type, Parameter} from './types';
-
-export type RpcContext = {
-  callRemoteFunction(
-    functionName: string,
-    returnType: ReturnKind,
-    args: Object,
-  ): any,
-  callRemoteMethod(
-    objectId: number,
-    methodName: string,
-    returnType: ReturnKind,
-    args: Object,
-  ): any,
-  createRemoteObject(
-    interfaceName: string,
-    thisArg: Object,
-    unmarshalledArgs: Array<any>,
-    argTypes: Array<Parameter>,
-  ): void,
-  disposeRemoteObject(object: Object): Promise<void>,
-  marshal(value: any, type: Type): any,
-  unmarshal(value: any, type: Type): any,
-  marshalArguments(
-    args: Array<any>,
-    argTypes: Array<Parameter>,
-  ): Promise<Object>,
-  unmarshalArguments(
-    args: Object,
-    argTypes: Array<Parameter>,
-  ): Promise<Array<any>>,
-};
-
-export type ProxyFactory = (context: RpcContext) => Object;
-
-/** Cache for remote proxies. */
-const proxiesCache: Map<string, ProxyFactory> = new Map();
-
-export function proxyFilename(definitionPath: string): string {
-  invariant(
-    nuclideUri.isAbsolute(definitionPath),
-    `"${definitionPath}" definition path must be absolute.`,
-  );
-  const dir = nuclideUri.dirname(definitionPath);
-  const name = nuclideUri.basename(
-    definitionPath,
-    nuclideUri.extname(definitionPath),
-  );
-  const filename = nuclideUri.join(dir, name + 'Proxy.js');
+  const dir = (_nuclideUri || _load_nuclideUri()).default.dirname(definitionPath);
+  const name = (_nuclideUri || _load_nuclideUri()).default.basename(definitionPath, (_nuclideUri || _load_nuclideUri()).default.extname(definitionPath));
+  const filename = (_nuclideUri || _load_nuclideUri()).default.join(dir, name + 'Proxy.js');
   return filename;
 }
 
-export function createProxyFactory(
-  serviceName: string,
-  preserveFunctionNames: boolean,
-  definitionPath: string,
-  predefinedTypes: Array<string>,
-): ProxyFactory {
+function createProxyFactory(serviceName, preserveFunctionNames, definitionPath, predefinedTypes) {
   if (!proxiesCache.has(definitionPath)) {
     const filename = proxyFilename(definitionPath);
 
     let code;
-    if (fs.existsSync(filename)) {
-      code = fs.readFileSync(filename, 'utf8');
+    if (_fs.default.existsSync(filename)) {
+      code = _fs.default.readFileSync(filename, 'utf8');
     } else {
-      const definitionSource = fs.readFileSync(definitionPath, 'utf8');
-      const defs = parseServiceDefinition(
-        definitionPath,
-        definitionSource,
-        predefinedTypes,
-      );
-      code = generateProxy(serviceName, preserveFunctionNames, defs);
+      const definitionSource = _fs.default.readFileSync(definitionPath, 'utf8');
+      const defs = (0, (_serviceParser || _load_serviceParser()).parseServiceDefinition)(definitionPath, definitionSource, predefinedTypes);
+      code = (0, (_proxyGenerator || _load_proxyGenerator()).generateProxy)(serviceName, preserveFunctionNames, defs);
     }
 
     const m = loadCodeAsModule(code, filename);
-    m.exports.inject(Observable);
+    m.exports.inject(_rxjsBundlesRxMinJs.Observable);
 
     proxiesCache.set(definitionPath, m.exports);
   }
 
   const factory = proxiesCache.get(definitionPath);
-  invariant(factory != null);
+
+  if (!(factory != null)) {
+    throw new Error('Invariant violation: "factory != null"');
+  }
 
   return factory;
 }
 
-function loadCodeAsModule(code: string, filename: string): Module {
-  invariant(code.length > 0, 'Code must not be empty.');
-  const m = new Module(filename);
+function loadCodeAsModule(code, filename) {
+  if (!(code.length > 0)) {
+    throw new Error('Code must not be empty.');
+  }
+
+  const m = new _module.default(filename);
   m.filename = filename;
   m.paths = []; // Disallow require resolving by removing lookup paths.
   m._compile(code, filename);
@@ -118,6 +102,6 @@ function loadCodeAsModule(code: string, filename: string): Module {
 }
 
 // Export caches for testing.
-export const __test__ = {
-  proxiesCache,
+const __test__ = exports.__test__ = {
+  proxiesCache
 };

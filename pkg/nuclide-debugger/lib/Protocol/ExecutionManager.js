@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./EventReporter');
+}
+
+/**
+ * Bridge between Nuclide IPC and RPC execution control protocols.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,58 +22,42 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
-import type {
-  PausedEvent,
-  Location,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
-import type {ThreadSwitchMessageData} from '../types';
+class ExecutionManager {
 
-import {Subject, Observable} from 'rxjs';
-import {reportError} from './EventReporter';
-
-/**
- * Bridge between Nuclide IPC and RPC execution control protocols.
- */
-export default class ExecutionManager {
-  _debuggerDispatcher: DebuggerDomainDispatcher;
-  _executionEvent$: Subject<Array<mixed>>;
-
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
-    this._executionEvent$ = new Subject();
+  constructor(debuggerDispatcher) {
+    this._executionEvent$ = new _rxjsBundlesRxMinJs.Subject();
     this._debuggerDispatcher = debuggerDispatcher;
   }
 
-  getEventObservable(): Observable<Array<mixed>> {
+  getEventObservable() {
     return this._executionEvent$.asObservable();
   }
 
-  resume(): void {
+  resume() {
     this._debuggerDispatcher.resume();
   }
 
-  pause(): void {
+  pause() {
     this._debuggerDispatcher.pause();
   }
 
-  stepOver(): void {
+  stepOver() {
     this._debuggerDispatcher.stepOver();
   }
 
-  stepInto(): void {
+  stepInto() {
     this._debuggerDispatcher.stepInto();
   }
 
-  stepOut(): void {
+  stepOut() {
     this._debuggerDispatcher.stepOut();
   }
 
-  runToLocation(fileUri: NuclideUri, line: number): void {
+  runToLocation(fileUri, line) {
     // Chrome's continueToLocation implementation incorrect
     // uses source uri instead of scriptId as the location ScriptId
     // field, we mirrow the same behavior for compatibility reason.
@@ -65,58 +66,48 @@ export default class ExecutionManager {
       this._debuggerDispatcher.continueToLocation({
         scriptId,
         lineNumber: line,
-        columnNumber: 0,
+        columnNumber: 0
       });
     } else {
-      reportError(`Cannot find resolve location for file: ${fileUri}`);
+      (0, (_EventReporter || _load_EventReporter()).reportError)(`Cannot find resolve location for file: ${fileUri}`);
     }
   }
 
-  continueFromLoaderBreakpoint(): void {
+  continueFromLoaderBreakpoint() {
     this._debuggerDispatcher.resume();
     this._raiseIPCEvent('LoaderBreakpointResumed');
   }
 
-  raiseDebuggerPause(
-    params: PausedEvent,
-    threadSwitchLocation: ?Location,
-  ): void {
-    const threadSwitchData = this._generateThreadSwitchNotification(
-      params.threadSwitchMessage,
-      threadSwitchLocation,
-    );
+  raiseDebuggerPause(params, threadSwitchLocation) {
+    const threadSwitchData = this._generateThreadSwitchNotification(params.threadSwitchMessage, threadSwitchLocation);
     this._raiseIPCEvent('NonLoaderDebuggerPaused', {
       stopThreadId: params.stopThreadId,
-      threadSwitchNotification: threadSwitchData,
+      threadSwitchNotification: threadSwitchData
     });
   }
 
-  _generateThreadSwitchNotification(
-    message: ?string,
-    location: ?Location,
-  ): ?ThreadSwitchMessageData {
+  _generateThreadSwitchNotification(message, location) {
     if (message != null && location != null) {
-      const {scriptId, lineNumber} = location;
-      const sourceURL = this._debuggerDispatcher.getFileUriFromScriptId(
-        scriptId,
-      );
+      const { scriptId, lineNumber } = location;
+      const sourceURL = this._debuggerDispatcher.getFileUriFromScriptId(scriptId);
       return {
         sourceURL,
         lineNumber,
-        message,
+        message
       };
     } else {
       return null;
     }
   }
 
-  handleDebuggeeResumed(): void {
+  handleDebuggeeResumed() {
     this._raiseIPCEvent('DebuggerResumed');
   }
 
   // Not a real IPC event, but simulate the chrome IPC events/responses
   // across bridge boundary.
-  _raiseIPCEvent(...args: Array<mixed>): void {
+  _raiseIPCEvent(...args) {
     this._executionEvent$.next(args);
   }
 }
+exports.default = ExecutionManager;
