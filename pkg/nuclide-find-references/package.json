@@ -7,7 +7,21 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "config": {
+      "defaultLocationForPane": {
+        "title": "Where to open the find references pane",
+        "type": "string",
+        "default": "bottom",
+        "description": "By default, where the find references pane should open.",
+        "enum": [
+          "bottom",
+          "left",
+          "right",
+          "center"
+        ]
+      }
+    }
   },
   "consumedServices": {
     "nuclide-find-references.provider": {

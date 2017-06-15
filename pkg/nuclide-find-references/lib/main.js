@@ -13,16 +13,21 @@
 
 import type {FindReferencesReturn} from './rpc-types';
 
-import crypto from 'crypto';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
+import type {
+  WorkspaceViewsService,
+} from 'nuclide-commons-atom/workspace-views-compat';
+import {
+  consumeWorkspaceViewsCompat,
+} from 'nuclide-commons-atom/workspace-views-compat';
 import {
   bufferPositionForMouseEvent,
 } from 'nuclide-commons-atom/mouse-to-position';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
-import FindReferencesElement from './FindReferencesElement';
+import {FindReferencesViewModel} from './FindReferencesViewModel';
 import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
 
@@ -40,8 +45,6 @@ export type FindReferencesProvider = {
   ): Promise<?FindReferencesReturn>,
 };
 
-const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
-
 function showWarning(message: string): void {
   atom.notifications.addWarning('nuclide-find-references: ' + message, {
     dismissable: true,
@@ -50,7 +53,7 @@ function showWarning(message: string): void {
 
 async function tryCreateView(
   data: ?FindReferencesReturn,
-): Promise<?HTMLElement> {
+): Promise<?FindReferencesViewModel> {
   try {
     if (data == null) {
       showWarning('Symbol references are not available for this project.');
@@ -72,8 +75,7 @@ async function tryCreateView(
         referencedSymbolName,
         references,
       );
-
-      return new FindReferencesElement().initialize(model);
+      return new FindReferencesViewModel(model);
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
@@ -103,9 +105,46 @@ class Activation {
   > = new Map();
 
   constructor(state: ?any): void {
-    let lastMouseEvent;
-
     this._subscriptions = new UniversalDisposable(
+      consumeWorkspaceViewsCompat(service =>
+        this.consumeWorkspaceViewsService(service),
+      ),
+    );
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
+  }
+
+  consumeProvider(provider: FindReferencesProvider): IDisposable {
+    this._providers.push(provider);
+    // Editors are often open before providers load, so update existing ones too.
+    atom.workspace.getTextEditors().forEach(async editor => {
+      if (await provider.isEditorSupported(editor)) {
+        if (this._addSupportedProvider(editor, provider)) {
+          enableForEditor(editor);
+        }
+      }
+    });
+
+    return new UniversalDisposable(() => {
+      this._providers = this._providers.filter(p => p !== provider);
+
+      this._supportedProviders.forEach((supported, editor) => {
+        const providerIdx = supported.indexOf(provider);
+        if (providerIdx !== -1) {
+          supported.splice(providerIdx, 1);
+          if (supported.length === 0) {
+            disableForEditor(editor);
+          }
+        }
+      });
+    });
+  }
+
+  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+    let lastMouseEvent;
+    return new UniversalDisposable(
       atom.commands.add(
         'atom-text-editor',
         'nuclide-find-references:activate',
@@ -116,17 +155,14 @@ class Activation {
             ),
           );
           if (view != null) {
-            // Generate a unique identifier.
-            const id = (crypto.randomBytes(8) || '').toString('hex');
-            const uri = FIND_REFERENCES_URI + id;
-            const disposable = atom.workspace.addOpener(newUri => {
-              if (uri === newUri) {
+            const disposable = api.addOpener(newUri => {
+              if (view.getURI() === newUri) {
                 return view;
               }
             });
             // not a file URI
             // eslint-disable-next-line nuclide-internal/atom-apis
-            atom.workspace.open(uri);
+            api.open(view.getURI());
             // The new tab opens instantly, so this is no longer needed.
             disposable.dispose();
           }
@@ -176,36 +212,6 @@ class Activation {
         ],
       }),
     );
-  }
-
-  dispose(): void {
-    this._subscriptions.dispose();
-  }
-
-  consumeProvider(provider: FindReferencesProvider): IDisposable {
-    this._providers.push(provider);
-    // Editors are often open before providers load, so update existing ones too.
-    atom.workspace.getTextEditors().forEach(async editor => {
-      if (await provider.isEditorSupported(editor)) {
-        if (this._addSupportedProvider(editor, provider)) {
-          enableForEditor(editor);
-        }
-      }
-    });
-
-    return new UniversalDisposable(() => {
-      this._providers = this._providers.filter(p => p !== provider);
-
-      this._supportedProviders.forEach((supported, editor) => {
-        const providerIdx = supported.indexOf(provider);
-        if (providerIdx !== -1) {
-          supported.splice(providerIdx, 1);
-          if (supported.length === 0) {
-            disableForEditor(editor);
-          }
-        }
-      });
-    });
   }
 
   async _getProviderData(event: ?MouseEvent): Promise<?FindReferencesReturn> {
