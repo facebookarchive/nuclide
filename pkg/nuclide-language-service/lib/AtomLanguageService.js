@@ -268,6 +268,17 @@ export class AtomLanguageService<T: LanguageService> {
       });
   }
 
+  observeConnectionLanguageEntries(): Observable<[?ServerConnection, T]> {
+    return this._connectionToLanguageService
+      .observeEntries()
+      .switchMap(([connection, servicePromise]) => {
+        return Observable.fromPromise(servicePromise).map(languageService => [
+          connection,
+          languageService,
+        ]);
+      });
+  }
+
   dispose(): void {
     this._subscriptions.dispose();
   }
