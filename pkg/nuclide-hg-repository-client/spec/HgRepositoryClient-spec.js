@@ -19,6 +19,7 @@ import MockHgService from '../../nuclide-hg-rpc/spec/MockHgService';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import {Observable} from 'rxjs';
 import temp from 'temp';
 
 temp.track();
@@ -272,6 +273,8 @@ describe('HgRepositoryClient', () => {
         }
         return projectDirectoryClone.contains(filePath);
       });
+
+      spyOn(repo, '_updateDiffInfo').andReturn(Observable.of('fake'));
     });
 
     // eslint-disable-next-line jasmine/no-disabled-tests
@@ -279,7 +282,6 @@ describe('HgRepositoryClient', () => {
       'is updated when the active pane item changes to an editor, if the editor file is in the' +
         ' project.',
       () => {
-        spyOn(repo, '_updateDiffInfo');
         const file = temp.openSync({dir: projectDirectory.getPath()});
         waitsForPromise(async () => {
           const editor = await atom.workspace.open(file.path);
@@ -293,7 +295,6 @@ describe('HgRepositoryClient', () => {
       'is not updated when the active pane item changes to an editor whose file is not in the' +
         ' repo.',
       () => {
-        spyOn(repo, '_updateDiffInfo');
         const file = temp.openSync();
         waitsForPromise(async () => {
           await atom.workspace.open(file.path);
@@ -306,7 +307,6 @@ describe('HgRepositoryClient', () => {
       'marks a file to be removed from the cache after its editor is closed, if the file is in the' +
         ' project.',
       () => {
-        spyOn(repo, '_updateDiffInfo');
         const file = temp.openSync({dir: projectDirectory.getPath()});
         waitsForPromise(async () => {
           const editor = await atom.workspace.open(file.path);
@@ -334,12 +334,21 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._service, 'fetchDiffInfo').andCallFake(filePaths => {
-        const mockFetchedPathToDiffInfo = new Map();
-        for (const filePath of filePaths) {
-          mockFetchedPathToDiffInfo.set(filePath, mockDiffInfo);
+      spyOn(repo._service, 'getHeadId').andCallFake(() => {
+        return Observable.of('test').publish();
+      });
+      spyOn(
+        repo._service,
+        'fetchFileContentAtRevision',
+      ).andCallFake(filePath => {
+        return new Observable.of('test').publish();
+      });
+      spyOn(repo, '_getFileDiffs').andCallFake(pathsToFetch => {
+        const diffs = [];
+        for (const filePath of pathsToFetch) {
+          diffs.push([filePath, mockDiffInfo]);
         }
-        return Promise.resolve(mockFetchedPathToDiffInfo);
+        return Observable.of(diffs);
       });
       spyOn(workingDirectory, 'contains').andCallFake(() => {
         return true;
@@ -349,17 +358,9 @@ describe('HgRepositoryClient', () => {
     it('updates the cache when the path to update is not already being updated.', () => {
       waitsForPromise(async () => {
         expect(repo._hgDiffCache.get(PATH_1)).toBeUndefined();
-        await repo._updateDiffInfo([PATH_1]);
+        await repo._updateDiffInfo([PATH_1]).toPromise();
         expect(repo._hgDiffCache.get(PATH_1)).toEqual(mockDiffInfo);
       });
-    });
-
-    it('does not update the cache when the path to update is already being updated.', () => {
-      repo._updateDiffInfo([PATH_1]);
-      // This second call should not kick off a second `hg diff` call, because
-      // the first one should be still running.
-      repo._updateDiffInfo([PATH_1]);
-      expect(repo._service.fetchDiffInfo.calls.length).toBe(1);
     });
 
     it('removes paths that are marked for removal from the cache.', () => {
@@ -376,7 +377,7 @@ describe('HgRepositoryClient', () => {
       repo._hgDiffCacheFilesToClear.add(testPathToRemove2);
 
       waitsForPromise(async () => {
-        await repo._updateDiffInfo([testPathToRemove2]);
+        await repo._updateDiffInfo([testPathToRemove2]).toPromise();
         expect(repo._hgDiffCache.get(testPathToRemove1)).not.toBeDefined();
         expect(repo._hgDiffCache.get(testPathToRemove2)).not.toBeDefined();
       });

@@ -29,9 +29,13 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
+import {
+  parseHgDiffUnifiedOutput,
+} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
+import {gitDiffContentAgainstFile} from './utils';
 import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
@@ -151,6 +155,8 @@ export class HgRepositoryClient {
   _revisionStatusCache: RevisionStatusCache;
   _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
+  _fileContentsAtHead: LRUCache<NuclideUri, string>;
+  _currentHeadId: ?string;
 
   _bookmarks: BehaviorSubject<{
     isLoading: boolean,
@@ -178,6 +184,7 @@ export class HgRepositoryClient {
     );
     this._revisionIdToFileChanges = new LRU({max: 100});
     this._fileContentsAtRevisionIds = new LRU({max: 20});
+    this._fileContentsAtHead = new LRU({max: 30});
 
     this._emitter = new Emitter();
     this._subscriptions = new UniversalDisposable(this._emitter, this._service);
@@ -229,7 +236,7 @@ export class HgRepositoryClient {
               );
           });
       })
-      .subscribe(filePath => this._updateDiffInfo([filePath]));
+      .subscribe(filePath => this._updateDiffInfo([filePath]).toPromise());
 
     this._subscriptions.add(diffStatsSubscription);
 
@@ -750,9 +757,9 @@ export class HgRepositoryClient {
    *   A file path will not appear in the returned Map if it is not in the repo,
    *   if it has no changes, or if there is a pending `hg diff` call for it already.
    */
-  async _updateDiffInfo(
+  _updateDiffInfo(
     filePaths: Array<NuclideUri>,
-  ): Promise<?Map<NuclideUri, DiffInfo>> {
+  ): Observable<?Map<NuclideUri, DiffInfo>> {
     const pathsToFetch = filePaths.filter(aPath => {
       // Don't try to fetch information for this path if it's not in the repo.
       if (!this.isPathRelevant(aPath)) {
@@ -768,33 +775,88 @@ export class HgRepositoryClient {
     });
 
     if (pathsToFetch.length === 0) {
-      return new Map();
+      return Observable.of(new Map());
     }
 
-    // Call the HgService and update our cache with the results.
-    const pathsToDiffInfo = await this._service.fetchDiffInfo(pathsToFetch);
-    if (pathsToDiffInfo) {
-      for (const [filePath, diffInfo] of pathsToDiffInfo) {
-        this._hgDiffCache.set(filePath, diffInfo);
-      }
-    }
+    return this._getCurrentHeadId().switchMap(currentHeadId => {
+      return this._getFileDiffs(
+        pathsToFetch,
+        currentHeadId,
+      ).do(pathsToDiffInfo => {
+        if (pathsToDiffInfo) {
+          for (const [filePath, diffInfo] of pathsToDiffInfo) {
+            this._hgDiffCache.set(filePath, diffInfo);
+          }
+        }
 
-    // Remove files marked for deletion.
-    this._hgDiffCacheFilesToClear.forEach(fileToClear => {
-      this._hgDiffCache.delete(fileToClear);
+        // Remove files marked for deletion.
+        this._hgDiffCacheFilesToClear.forEach(fileToClear => {
+          this._hgDiffCache.delete(fileToClear);
+        });
+        this._hgDiffCacheFilesToClear.clear();
+
+        // The fetched files can now be updated again.
+        for (const pathToFetch of pathsToFetch) {
+          this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+        }
+
+        // TODO (t9113913) Ideally, we could send more targeted events that better
+        // describe what change has occurred. Right now, GitRepository dictates either
+        // 'did-change-status' or 'did-change-statuses'.
+        this._emitter.emit('did-change-statuses');
+      });
     });
-    this._hgDiffCacheFilesToClear.clear();
+  }
 
-    // The fetched files can now be updated again.
-    for (const pathToFetch of pathsToFetch) {
-      this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+  _getFileDiffs(
+    pathsToFetch: Array<NuclideUri>,
+    revision: string,
+  ): Observable<Map<NuclideUri, DiffInfo>> {
+    const fileContents = pathsToFetch.map(filePath => {
+      const cachedContent = this._fileContentsAtHead.get(filePath);
+      let contentObservable;
+      if (cachedContent == null) {
+        contentObservable = this._service
+          .fetchFileContentAtRevision(filePath, revision)
+          .refCount()
+          .map(contents => {
+            this._fileContentsAtHead.set(filePath, contents);
+            return contents;
+          });
+      } else {
+        contentObservable = Observable.of(cachedContent);
+      }
+      return contentObservable
+        .switchMap(content => {
+          return gitDiffContentAgainstFile(content, filePath);
+        })
+        .map(diff => ({
+          filePath,
+          diff,
+        }));
+    });
+    const diffs = Observable.merge(...fileContents)
+      .map(({filePath, diff}) => {
+        // This is to differentiate between diff delimiter and the source
+        // eslint-disable-next-line no-useless-escape
+        const toParse = diff.split('\-\-\- ');
+        const lineDiff = parseHgDiffUnifiedOutput(toParse[1]);
+        return [filePath, lineDiff];
+      })
+      .toArray()
+      .map(contents => new Map(contents));
+    return diffs;
+  }
+
+  _getCurrentHeadId(): Observable<string> {
+    if (this._currentHeadId != null) {
+      return Observable.of(this._currentHeadId);
     }
 
-    // TODO (t9113913) Ideally, we could send more targeted events that better
-    // describe what change has occurred. Right now, GitRepository dictates either
-    // 'did-change-status' or 'did-change-statuses'.
-    this._emitter.emit('did-change-statuses');
-    return pathsToDiffInfo;
+    return this._service
+      .getHeadId()
+      .refCount()
+      .do(headId => (this._currentHeadId = headId));
   }
 
   _updateInteractiveMode(isInteractiveMode: boolean) {
@@ -1136,6 +1198,8 @@ export class HgRepositoryClient {
     if (filePaths.length === 0) {
       this._hgDiffCache = new Map();
       this._hgStatusCache = new Map();
+      this._fileContentsAtHead.reset();
+      this._currentHeadId = null;
     } else {
       this._hgDiffCache = new Map(this._hgDiffCache);
       this._hgStatusCache = new Map(this._hgStatusCache);
