@@ -39,6 +39,19 @@ const replacePasswordScriptSync = `
   });
 `;
 
+// KeyTar<=3.x APM<1.18
+const deletePasswordScriptSync = `
+  var readline = require('readline');
+  var keytar = require('keytar');
+  var rl = readline.createInterface({input: process.stdin});
+  rl.on('line', function(input) {
+    var data = JSON.parse(input);
+    var result = keytar.deletePassword(data.service, data.account);
+    console.log(JSON.stringify(result));
+    rl.close();
+  });
+`;
+
 // KeyTar>=4.x APM>=1.18
 const getPasswordScriptAsync = `
   var readline = require('readline');
@@ -61,6 +74,22 @@ const replacePasswordScriptAsync = `
     var data = JSON.parse(input);
     keytar.setPassword(data.service, data.account, data.password).then(function() {
       console.log(JSON.stringify(true));
+    }, function() {
+      console.log(JSON.stringify(false));
+    })
+    .then(rl.close.bind(rl), rl.close.bind(rl))
+  });
+`;
+
+// KeyTar>=4.x APM>=1.18
+const deletePasswordScriptAsync = `
+  var readline = require('readline');
+  var keytar = require('keytar');
+  var rl = readline.createInterface({input: process.stdin});
+  rl.on('line', function(input) {
+    var data = JSON.parse(input);
+    keytar.deletePassword(data.service, data.account).then(function(result) {
+      console.log(JSON.stringify(result));
     }, function() {
       console.log(JSON.stringify(false));
     })
@@ -125,6 +154,16 @@ export default {
         service,
         account,
         password,
+      ),
+    );
+  },
+
+  deletePassword(service: string, account: string): ?boolean {
+    return JSON.parse(
+      runScriptInApmNode(
+        isAsyncKeytar() ? deletePasswordScriptAsync : deletePasswordScriptSync,
+        service,
+        account,
       ),
     );
   },
