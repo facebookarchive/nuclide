@@ -245,6 +245,8 @@ export default class BreakpointManager {
           breakpoint.request.condition,
         ),
       ]);
+      // Update original request's location to the new bound one.
+      breakpoint.request.lineNumber = location.lineNumber;
     } else {
       // Some engine(C++) may fire breakpointResolved before setBreakpointByUrl
       // is resolved.
