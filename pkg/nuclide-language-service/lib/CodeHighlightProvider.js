@@ -17,7 +17,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Range} from 'atom';
 
 export type CodeHighlightConfig = {|
-  version: '0.0.0',
+  version: '0.1.0',
   priority: number,
   analyticsEventName: string,
 |};
@@ -75,7 +75,7 @@ export class CodeHighlightProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'nuclide-code-highlight.provider',
+      'atom-ide-code-highlight',
       config.version,
       new CodeHighlightProvider(
         name,

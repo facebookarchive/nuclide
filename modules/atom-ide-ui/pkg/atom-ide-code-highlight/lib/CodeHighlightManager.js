@@ -9,8 +9,8 @@
  * @format
  */
 
-import type {CodeHighlightProvider} from './types';
 import {CompositeDisposable} from 'atom';
+import type {CodeHighlightProvider} from '..';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import debounce from 'nuclide-commons/debounce';
 
@@ -87,7 +87,7 @@ export default class CodeHighlightManager {
     this._markers.forEach(marker => {
       editor.decorateMarker(marker, {
         type: 'highlight',
-        class: 'nuclide-code-highlight-marker',
+        class: 'atom-ide-code-highlight-marker',
       });
     });
   }
@@ -141,8 +141,16 @@ export default class CodeHighlightManager {
     this._markers.splice(0).forEach(marker => marker.destroy());
   }
 
-  addProvider(provider: CodeHighlightProvider) {
+  addProvider(provider: CodeHighlightProvider): IDisposable {
     this._providers.push(provider);
+    return {
+      dispose: () => {
+        const index = this._providers.indexOf(provider);
+        if (index >= 0) {
+          this._providers.splice(index, 0);
+        }
+      },
+    };
   }
 
   dispose() {

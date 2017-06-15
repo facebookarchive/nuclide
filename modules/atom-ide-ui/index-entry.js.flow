@@ -55,6 +55,8 @@ export type {
   OnSaveCodeFormatProvider,
 } from './pkg/atom-ide-code-format/lib/types';
 
+export type {CodeHighlightProvider} from './pkg/atom-ide-code-highlight';
+
 export type {
   Outline,
   OutlineProvider,

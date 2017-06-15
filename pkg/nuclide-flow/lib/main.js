@@ -210,7 +210,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
     grammars: JS_GRAMMARS,
     highlight: enableHighlight
       ? {
-          version: '0.0.0',
+          version: '0.1.0',
           priority: 1,
           analyticsEventName: 'flow.codehighlight',
         }
