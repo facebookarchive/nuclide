@@ -17,6 +17,7 @@
     "async-to-generator": "1.0.0",
     "classnames": "2.2.5",
     "idx": "1.2.0",
+    "fuzzaldrin-plus": "0.4.1",
     "log4js": "1.1.1",
     "marked": "0.3.6",
     "nuclide-commons": "0.1.5",

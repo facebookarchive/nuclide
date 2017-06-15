@@ -12,6 +12,7 @@
 import type {Observable} from 'rxjs';
 import type {OutlineForUi, OutlineTreeForUi} from './main';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import React from 'react';
 import invariant from 'assert';
@@ -30,10 +31,16 @@ import {
 import {Message, MessageTypes} from 'nuclide-commons-ui/Message';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 
-const logger = getLogger('nuclide-outline-view');
+import featureConfig from 'nuclide-commons-atom/feature-config';
+import type {SearchResult} from './OutlineViewSearch';
+import {OutlineViewSearchComponent} from './OutlineViewSearch';
+
+const logger = getLogger('atom-ide-outline-view');
+const SEARCH_ENABLED_DEFAULT = true;
 
 type State = {
   outline: OutlineForUi,
+  searchEnabled: boolean,
 };
 
 type Props = {
@@ -56,7 +63,7 @@ export class OutlineView extends React.Component {
   state: State;
   props: Props;
 
-  subscription: ?rxjs$ISubscription;
+  subscription: ?UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
@@ -64,14 +71,29 @@ export class OutlineView extends React.Component {
       outline: {
         kind: 'empty',
       },
+      searchEnabled: featureConfig.getWithDefaults(
+        'atom-ide-outline-view.searchEnabled',
+        SEARCH_ENABLED_DEFAULT,
+      ),
     };
   }
 
   componentDidMount(): void {
     invariant(this.subscription == null);
-    this.subscription = this.props.outlines.subscribe(outline => {
-      this.setState({outline});
-    });
+    this.subscription = new UniversalDisposable(
+      this.props.outlines.subscribe(outline => {
+        this.setState({outline});
+      }),
+      featureConfig
+        .observeAsStream('atom-ide-outline-view.searchEnabled')
+        .subscribe((searchEnabled: mixed) => {
+          if (typeof searchEnabled === 'boolean') {
+            this.setState({searchEnabled});
+          } else {
+            this.setState({searchEnabled: SEARCH_ENABLED_DEFAULT});
+          }
+        }),
+    );
   }
 
   componentWillUnmount(): void {
@@ -85,7 +107,10 @@ export class OutlineView extends React.Component {
       <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
         <PanelComponentScroller>
           <div className="nuclide-outline-view">
-            <OutlineViewComponent outline={this.state.outline} />
+            <OutlineViewComponent
+              outline={this.state.outline}
+              searchEnabled={this.state.searchEnabled}
+            />
           </div>
         </PanelComponentScroller>
       </div>
@@ -95,10 +120,19 @@ export class OutlineView extends React.Component {
 
 type OutlineViewComponentProps = {
   outline: OutlineForUi,
+  searchEnabled: boolean,
 };
 
 class OutlineViewComponent extends React.Component {
   props: OutlineViewComponentProps;
+  state: {
+    searchResults: Map<OutlineTreeForUi, SearchResult>,
+  };
+
+  constructor(props: OutlineViewComponentProps) {
+    super(props);
+    this.state = {searchResults: new Map()};
+  }
 
   render(): ?React.Element<any> {
     const outline = this.props.outline;
@@ -142,7 +176,24 @@ class OutlineViewComponent extends React.Component {
           />
         );
       case 'outline':
-        return renderTrees(outline.editor, outline.outlineTrees);
+        return (
+          <div>
+            {this.props.searchEnabled
+              ? <OutlineViewSearchComponent
+                  outlineTrees={outline.outlineTrees}
+                  editor={outline.editor}
+                  updateSearchResults={searchResults => {
+                    this.setState({searchResults});
+                  }}
+                />
+              : null}
+            {renderTrees(
+              outline.editor,
+              outline.outlineTrees,
+              this.state.searchResults,
+            )}
+          </div>
+        );
       default:
         const errorText = `Encountered unexpected outline kind ${outline.kind}`;
         logger.error(errorText);
@@ -160,17 +211,18 @@ class OutlineTree extends React.PureComponent {
   props: {
     editor: atom$TextEditor,
     outline: OutlineTreeForUi,
+    searchResults: Map<OutlineTreeForUi, SearchResult>,
   };
 
   render(): React.Element<any> {
-    const {editor, outline} = this.props;
+    const {editor, outline, searchResults} = this.props;
 
     const onClick = () => {
       const pane = atom.workspace.paneForItem(editor);
       if (pane == null) {
         return;
       }
-      analytics.track('nuclide-outline-view:go-to-location');
+      analytics.track('atom-ide-outline-view:go-to-location');
       pane.activate();
       pane.activateItem(editor);
       goToLocationInEditor(
@@ -204,7 +256,7 @@ class OutlineTree extends React.PureComponent {
           onDoubleClick={onDoubleClick}>
           {renderItem(outline)}
         </div>
-        {renderTrees(editor, outline.children)}
+        {renderTrees(editor, outline.children, searchResults)}
       </li>
     );
   }
@@ -227,7 +279,6 @@ function renderItem(
   } else {
     r.push('Missing text');
   }
-
   return r;
 }
 
@@ -239,6 +290,7 @@ function renderTextToken(token: TextToken, index: number): React.Element<any> {
 function renderTrees(
   editor: atom$TextEditor,
   outlines: Array<OutlineTreeForUi>,
+  searchResults: Map<OutlineTreeForUi, SearchResult>,
 ): ?React.Element<any> {
   if (outlines.length === 0) {
     return null;
@@ -248,9 +300,17 @@ function renderTrees(
     // tree rather than to its container.
     (
       <ul className="list-tree" style={{position: 'relative'}}>
-        {outlines.map((outline, index) => (
-          <OutlineTree editor={editor} outline={outline} key={index} />
-        ))}
+        {outlines.map((outline, index) => {
+          const result = searchResults.get(outline);
+          return !result || result.visible
+            ? <OutlineTree
+                editor={editor}
+                outline={outline}
+                key={index}
+                searchResults={searchResults}
+              />
+            : null;
+        })}
       </ul>
     )
   );
