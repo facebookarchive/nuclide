@@ -76,6 +76,9 @@ export function statesForTaskRunners(
       return new Map();
     case Actions.SET_STATES_FOR_TASK_RUNNERS:
       return action.payload.statesForTaskRunners;
+    case Actions.SET_STATE_FOR_TASK_RUNNER:
+      const {taskRunner, taskRunnerState} = action.payload;
+      return new Map(state.entries()).set(taskRunner, taskRunnerState);
     default:
       return state;
   }

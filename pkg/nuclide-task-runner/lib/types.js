@@ -126,6 +126,14 @@ export type SelectTaskRunnerAction = {
   },
 };
 
+export type SetStateForTaskRunnerAction = {
+  type: 'SET_STATE_FOR_TASK_RUNNER',
+  payload: {
+    taskRunner: TaskRunner,
+    taskRunnerState: TaskRunnerState,
+  },
+};
+
 export type SetStatesForTaskRunnersAction = {
   type: 'SET_STATES_FOR_TASK_RUNNERS',
   payload: {
@@ -271,6 +279,7 @@ export type Action =
   | RunTaskAction
   | SelectTaskRunnerAction
   | SetStatesForTaskRunnersAction
+  | SetStateForTaskRunnerAction
   | SetProjectRootAction
   | SetConsoleServiceAction
   | SetConsolesForTaskRunnersAction
