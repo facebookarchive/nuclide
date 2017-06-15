@@ -127,7 +127,9 @@ export class DebuggerInstance extends DebuggerInstanceBase {
   }
 
   async getWebsocketAddress(): Promise<string> {
-    this._useNewChannel = await isNewProtocolChannelEnabled();
+    this._useNewChannel = await isNewProtocolChannelEnabled(
+      this.getProviderName(),
+    );
     return Promise.resolve(this._startChromeWebSocketServer());
   }
 

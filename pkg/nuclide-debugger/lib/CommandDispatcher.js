@@ -85,7 +85,9 @@ export default class CommandDispatcher {
 
   async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
     this._ensureSessionCreated();
-    this._useNewChannel = await isNewProtocolChannelEnabled();
+    this._useNewChannel = await isNewProtocolChannelEnabled(
+      debuggerInstance.getProviderName(),
+    );
     if (this._useNewChannel) {
       const dispatchers = await InspectorBackendClass.bootstrap(
         debuggerInstance,
