@@ -38,7 +38,7 @@ import type {
 } from './protocol';
 import type {TextEdit as LspTextEditType} from './protocol';
 
-import url from 'url';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {
   DiagnosticSeverity,
@@ -55,28 +55,22 @@ import {
 
 export function localPath_lspUri(filepath: NuclideUri): string {
   // NuclideUris are either a local file path, or nuclide://<host><path>.
-  const urlObject = url.parse(filepath);
-  if (urlObject.protocol != null) {
-    // This function only deals with local paths.
-    throw new Error(`unrecognized localPath - ${filepath}`);
+  // LSP URIs are always file://
+  if (!nuclideUri.isLocal(filepath)) {
+    throw new Error(`Expected a local filepath, not ${filepath}`);
+  } else {
+    return nuclideUri.nuclideUriToUri(filepath);
   }
-  // TODO: implement this! we should only pass file:// uris to LSP.
-  return filepath;
 }
 
 function lspUri_localPath(uri: string): NuclideUri {
-  // We can deal with file:// URIs, and plain pathnames, but nothing else
-  const urlObject = url.parse(uri);
-  if (uri === '') {
-    throw new Error('LSP returned an empty URI');
-  } else if (urlObject.protocol == null) {
-    return uri; // LSP returned a plain pathname
-  } else if (urlObject.protocol !== 'file:') {
-    throw new Error(`LSP returned a non-file uri: ${uri}`);
-  } else if (urlObject.pathname == null) {
-    throw new Error(`LSP return a bad uri: ${uri}`);
+  // We accept LSP file:// URIs, and also plain paths for back-compat
+  // We return a local path.
+  const path = nuclideUri.uriToNuclideUri(uri);
+  if (path == null || !nuclideUri.isLocal(path)) {
+    throw new Error(`LSP returned an invalid URI ${uri}`);
   } else {
-    return urlObject.pathname; // LSP returned a file:// uri
+    return path;
   }
 }
 

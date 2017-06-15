@@ -380,7 +380,7 @@ export class LspLanguageService {
       const params: InitializeParams = {
         processId: process.pid,
         rootPath: this._projectRoot,
-        // TODO: rootUri: should be a file URI (`file://`)
+        rootUri: convert.localPath_lspUri(this._projectRoot),
         capabilities,
         initializationOptions: this._initializationOptions,
         trace: isVerbose ? 'verbose' : 'off',
