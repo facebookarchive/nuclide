@@ -43,6 +43,8 @@ import os from 'os';
 import {maybeToString} from './string';
 
 const REMOTE_PATH_URI_PREFIX = 'nuclide://';
+// TODO(ljw): following regex is incorrect. A URI scheme must start with
+// [A-Za-z] not [0-9_-]. Also, not all schemes require // after them.
 const URI_PREFIX_REGEX = /^[A-Za-z0-9_-]+:\/\/.*/;
 
 function isRemote(uri: NuclideUri): boolean {
@@ -258,6 +260,9 @@ function _getWindowsPathFromWindowsFileUri(uri: string): ?string {
  * Returns null if not a valid file: URI.
  */
 function uriToNuclideUri(uri: string): ?string {
+  // TODO(ljw): the following check is incorrect. It's designed to support
+  // two-slash file URLs of the form "file://c:\path". But those are invalid
+  // file URLs, and indeed it fails to %-escape "file://c:\My%20Documents".
   const windowsPathFromUri = _getWindowsPathFromWindowsFileUri(uri);
   if (windowsPathFromUri) {
     // If the specified URI is a local file:// URI to a Windows path,
