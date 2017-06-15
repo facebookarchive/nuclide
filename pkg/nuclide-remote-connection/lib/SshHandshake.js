@@ -207,6 +207,7 @@ export class SshHandshake {
             username: config.username,
             password,
             tryKeyboard: true,
+            readyTimeout: READY_TIMEOUT_MS,
           });
         },
       );
@@ -295,6 +296,7 @@ export class SshHandshake {
         username: config.username,
         password: config.password,
         tryKeyboard: true,
+        readyTimeout: READY_TIMEOUT_MS,
       });
     } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
       // We use fs-plus's normalize() function because it will expand the ~, if present.
