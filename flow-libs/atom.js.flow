@@ -1207,6 +1207,12 @@ declare class atom$Dock extends atom$AbstractPaneContainer {
 declare class atom$WorkspaceCenter extends atom$AbstractPaneContainer {
   activate(): void;
 
+  // Pane Items
+  getPaneItems(): Array<atom$PaneItem>,
+  getActivePaneItem(): ?atom$PaneItem,
+  getTextEditors(): Array<atom$TextEditor>,
+  getActiveTextEditor(): ?atom$TextEditor,
+
   observeActivePaneItem(callback: atom$PaneItem => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
   // This should be removed soon anyway, it's currently deprecated.
