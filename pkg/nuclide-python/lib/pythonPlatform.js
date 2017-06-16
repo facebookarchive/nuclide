@@ -20,6 +20,7 @@ export function providePythonPlatformGroup(
   buildTarget: string,
 ): Observable<?PlatformGroup> {
   try {
+    // $FlowFB
     const fbPythonPlatform = require('./fb-pythonPlatform');
     return fbPythonPlatform.providePythonPlatformGroup(
       buckRoot,
