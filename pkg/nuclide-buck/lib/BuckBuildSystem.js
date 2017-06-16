@@ -90,8 +90,13 @@ export class BuckBuildSystem {
     buckService: BuckService,
     buckRoot: string,
     buildTarget: string,
+    buildArguments: Array<string>,
   ): Promise<string> {
-    const output = await buckService.showOutput(buckRoot, buildTarget);
+    const output = await buckService.showOutput(
+      buckRoot,
+      buildTarget,
+      buildArguments,
+    );
     if (output.length === 1) {
       return output[0]['buck.type'] || '';
     }
@@ -114,7 +119,12 @@ export class BuckBuildSystem {
     const runArguments = taskSettings.runArguments || [];
     const targetString = getCommandStringForResolvedBuildTarget(buildTarget);
     return Observable.fromPromise(
-      this._getBuckTargetType(buckService, buckRoot, targetString),
+      this._getBuckTargetType(
+        buckService,
+        buckRoot,
+        targetString,
+        buildArguments,
+      ),
     ).flatMap(targetType => {
       return Observable.fromPromise(buckService.getHTTPServerPort(buckRoot))
         .catch(err => {
