@@ -157,14 +157,21 @@ export class Adb extends DebugBridge {
     activity: string,
     debug: boolean,
     action: ?string,
+    parameters: ?Map<string, string>,
   ): Promise<string> {
-    const args = ['shell', 'am', 'start', '-W', '-n'];
+    const args = ['shell', 'am', 'start'];
     if (action != null) {
       args.push('-a', action);
+    }
+    if (parameters != null) {
+      for (const [key, parameter] of parameters) {
+        args.push('-e', key, parameter);
+      }
     }
     if (debug) {
       args.push('-N', '-D');
     }
+    args.push('-W', '-n');
     args.push(`${packageName}/${activity}`);
     return this.runShortCommand(...args).toPromise();
   }
