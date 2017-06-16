@@ -9,16 +9,13 @@
  * @format
  */
 
-import type {BusySignalProvider} from './types';
-import type {StatusBarTile as StatusBarTileType} from './StatusBarTile';
-import type {MessageDisplayOptions} from './BusySignalProviderBase';
+import type {MessageDisplayOptions} from './BusySignalInstance';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {MessageStore} from './MessageStore';
-
-import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
-import {StatusBarTile} from './StatusBarTile';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import BusySignalInstance from './BusySignalInstance';
+import MessageStore from './MessageStore';
+import StatusBarTile from './StatusBarTile';
 
 export type BusySignalService = {
   // Activates the busy signal with the given message and returns the promise
@@ -44,7 +41,7 @@ export type BusySignalService = {
 };
 
 class Activation {
-  _statusBarTile: ?StatusBarTileType;
+  _statusBarTile: ?StatusBarTile;
   _disposables: UniversalDisposable;
   _messageStore: MessageStore;
 
@@ -71,29 +68,8 @@ class Activation {
     return disposable;
   }
 
-  consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
-    const disposable = this._messageStore.consumeProvider(provider);
-    this._disposables.add(disposable);
-    return disposable;
-  }
-
   provideBusySignal(): BusySignalService {
-    const busySignal = new DedupedBusySignalProviderBase();
-    const disposable = this._messageStore.consumeProvider(busySignal);
-    this._disposables.add(disposable);
-    return {
-      // TODO: clean up the backing provider to be more consistent.
-      reportBusyWhile<T>(message, f: () => Promise<T>, options): Promise<T> {
-        return busySignal.reportBusy(message, f, options);
-      },
-      reportBusy(message, options) {
-        return busySignal.displayMessage(message, options);
-      },
-      dispose: () => {
-        disposable.dispose();
-        this._disposables.remove(disposable);
-      },
-    };
+    return new BusySignalInstance(this._messageStore);
   }
 }
 

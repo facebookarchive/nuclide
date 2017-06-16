@@ -9,23 +9,26 @@
  * @format
  */
 
-import type {BusySignalMessage} from '../lib/types';
+import MessageStore from '../lib/MessageStore';
+import BusySignalInstance from '../lib/BusySignalInstance';
 
-import {BusySignalProviderBase} from '../lib/BusySignalProviderBase';
-
-describe('BusySignalProviderBase', () => {
-  let providerBase: BusySignalProviderBase = (null: any);
-  let messages: Array<BusySignalMessage> = (null: any);
+describe('BusySignalInstance', () => {
+  let messageStore: MessageStore;
+  let instance: BusySignalInstance;
+  let messages: Array<Array<string>>;
 
   beforeEach(() => {
-    providerBase = new BusySignalProviderBase();
+    messageStore = new MessageStore();
+    instance = new BusySignalInstance(messageStore);
     messages = [];
-    providerBase.messages.subscribe(message => messages.push(message));
+    messageStore.getMessageStream().skip(1).subscribe(m => {
+      messages.push(m);
+    });
   });
 
   it('should record messages before and after a call', () => {
     expect(messages.length).toBe(0);
-    providerBase.reportBusy('foo', () => Promise.resolve(5));
+    instance.reportBusyWhile('foo', () => Promise.resolve(5));
     expect(messages.length).toBe(1);
     waitsFor(
       () => messages.length === 2,
@@ -36,19 +39,37 @@ describe('BusySignalProviderBase', () => {
 
   it('should throw if the function does not return a promise', () => {
     // We have to cast here because the test case purposely subverts the type system.
-    const f = () => providerBase.reportBusy('foo', (() => 5: any));
+    const f = () => instance.reportBusyWhile('foo', (() => 5: any));
     expect(f).toThrow();
     expect(messages.length).toBe(2);
   });
 
   it("should send the 'done' message even if the promise rejects", () => {
-    providerBase.reportBusy('foo', () => Promise.reject(new Error()));
+    instance.reportBusyWhile('foo', () => Promise.reject(new Error()));
     expect(messages.length).toBe(1);
     waitsFor(
       () => messages.length === 2,
       'It should publish a second message',
       100,
     );
+  });
+
+  it('should properly display and dispose of a duplicate message', () => {
+    const dispose1 = instance.reportBusy('foo');
+    expect(messages.length).toBe(1);
+    const dispose2 = instance.reportBusy('foo');
+
+    expect(messages.length).toBe(1);
+    expect(messages[0]).toEqual(['foo']);
+
+    dispose2.dispose();
+    expect(messages.length).toBe(1);
+    expect(messages[0]).toEqual(['foo']);
+
+    dispose1.dispose();
+
+    expect(messages.length).toBe(2);
+    expect(messages[1]).toEqual([]);
   });
 
   describe('when onlyForFile is provided', () => {
@@ -71,26 +92,26 @@ describe('BusySignalProviderBase', () => {
     it('should only display for the proper text editor', () => {
       atom.workspace.getActivePane().activateItem(editor1);
 
-      const disposable = providerBase.displayMessage('foo', {
+      const disposable = instance.reportBusy('foo', {
         onlyForFile: '/file2.txt',
       });
       expect(messages).toEqual([]);
 
       atom.workspace.getActivePane().activateItem(editor2);
       expect(messages.length).toBe(1);
-      expect(messages[0]).toEqual({status: 'busy', id: 0, message: 'foo'});
+      expect(messages[0]).toEqual(['foo']);
 
       atom.workspace.getActivePane().activateItem(editor3);
       expect(messages.length).toBe(2);
-      expect(messages[1]).toEqual({status: 'done', id: 0});
+      expect(messages[1]).toEqual([]);
 
       atom.workspace.getActivePane().activateItem(editor2);
       expect(messages.length).toBe(3);
-      expect(messages[2]).toEqual({status: 'busy', id: 1, message: 'foo'});
+      expect(messages[2]).toEqual(['foo']);
 
       disposable.dispose();
       expect(messages.length).toBe(4);
-      expect(messages[3]).toEqual({status: 'done', id: 1});
+      expect(messages[3]).toEqual([]);
     });
   });
 });

@@ -13,8 +13,6 @@
 
 import type {Observable} from 'rxjs';
 
-import type {BusySignalMessageBusy} from './types';
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {StatusBarTileComponent} from './StatusBarTileComponent';
@@ -23,7 +21,7 @@ import {StatusBarTileComponent} from './StatusBarTileComponent';
 // conspicuous gap (or cause jitter) when nothing is busy.
 const STATUS_BAR_PRIORITY = 1000;
 
-export class StatusBarTile {
+export default class StatusBarTile {
   _item: ?HTMLElement;
   _tile: ?atom$StatusBarTile;
   _tooltip: ?IDisposable;
@@ -68,13 +66,9 @@ export class StatusBarTile {
     this._render();
   }
 
-  consumeMessageStream(
-    messageStream: Observable<Array<BusySignalMessageBusy>>,
-  ): void {
+  consumeMessageStream(messageStream: Observable<Array<string>>): void {
     messageStream.subscribe(messages => {
-      this._messages = messages.map(message => {
-        return message.message;
-      });
+      this._messages = messages;
       this._render();
     });
   }
