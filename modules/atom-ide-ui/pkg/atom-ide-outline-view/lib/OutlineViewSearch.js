@@ -130,6 +130,10 @@ export class OutlineViewSearchComponent extends React.Component {
     this.setState({currentQuery: query});
   }, this.DEBOUNCE_TIME);
 
+  _onDidClear = () => {
+    this.setState({currentQuery: ''});
+  };
+
   render(): React.Element<any> {
     return (
       <div className="atom-ide-outline-view-search-bar">
@@ -140,6 +144,12 @@ export class OutlineViewSearchComponent extends React.Component {
           onDidChange={this._onDidChange}
           placeholderText={this.state.currentQuery || this.SEARCH_PLACEHOLDER}
           value={this.state.currentQuery}
+          size="sm"
+        />
+        <Icon
+          icon="x"
+          className="atom-ide-outline-view-search-clear"
+          onClick={this._onDidClear}
         />
       </div>
     );
