@@ -6,12 +6,19 @@
 
 from __future__ import print_function
 import sys
+import six
 
+
+def assert_string(output):
+    if not isinstance(output, six.string_types):
+        raise Exception('non string types are not allowed in the logs')
 
 def log_debug(output):
-    print(output.encode('utf-8', errors='ignore'))
+    assert_string(output)
+    print(output)
     sys.stdout.flush()
 
 def log_error(output):
-    print(output.encode('utf-8', errors='ignore'), file=sys.stderr)
+    assert_string(output)
+    print(output, stream=sys.stderr)
     sys.stderr.flush()
