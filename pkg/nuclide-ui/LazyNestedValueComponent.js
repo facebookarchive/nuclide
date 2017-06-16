@@ -353,7 +353,7 @@ const expansionStates: WeakMap<Object, Map<string, NodeData>> = new WeakMap();
  * is necessary to preserve the expansion state while the values are temporarily unavailable, such
  * as after stepping in the debugger, which triggers a recursive re-fetch.
  */
-class TopLevelLazyNestedValueComponent extends React.Component {
+class TopLevelLazyNestedValueComponent extends React.PureComponent {
   props: TopLevelValueComponentProps;
   shouldCacheChildren: boolean;
 
