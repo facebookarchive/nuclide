@@ -13,44 +13,54 @@
 
 import type {Observable} from 'rxjs';
 
+import classnames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {StatusBarTileComponent} from './StatusBarTileComponent';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a
 // conspicuous gap (or cause jitter) when nothing is busy.
 const STATUS_BAR_PRIORITY = 1000;
 
-export default class StatusBarTile {
-  _item: ?HTMLElement;
-  _tile: ?atom$StatusBarTile;
-  _tooltip: ?IDisposable;
-  _isMouseOver: boolean;
-  _messages: Array<string>;
+function StatusBarTileComponent(props: {busy: boolean}) {
+  const classes = classnames('nuclide-busy-signal-status-bar', {
+    'loading-spinner-tiny': props.busy,
+  });
+  return <div className={classes} />;
+}
 
-  constructor() {
-    this._messages = [];
+export default class StatusBarTile {
+  _item: HTMLElement;
+  _tile: atom$StatusBarTile;
+  _tooltip: ?IDisposable;
+  _disposables: UniversalDisposable;
+  _isMouseOver: boolean;
+
+  constructor(
+    statusBar: atom$StatusBar,
+    messageStream: Observable<Array<string>>,
+  ) {
+    this._item = document.createElement('div');
+    this._tile = this._consumeStatusBar(statusBar);
     this._isMouseOver = false;
+    this._disposables = new UniversalDisposable(
+      messageStream.subscribe(messages => this._render(messages)),
+      () => {
+        ReactDOM.unmountComponentAtNode(this._item);
+        this._tile.destroy();
+        if (this._tooltip != null) {
+          this._tooltip.dispose();
+        }
+      },
+    );
   }
 
   dispose(): void {
-    if (this._item) {
-      ReactDOM.unmountComponentAtNode(this._item);
-      this._item = null;
-    }
-    if (this._tile) {
-      this._tile.destroy();
-      this._tile = null;
-    }
-    if (this._tooltip) {
-      this._tooltip.dispose();
-      this._tooltip = null;
-    }
-    this._isMouseOver = false;
+    this._disposables.dispose();
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
-    const item = (this._item = document.createElement('div'));
+  _consumeStatusBar(statusBar: atom$StatusBar): atom$StatusBarTile {
+    const item = this._item;
     item.className = 'inline-block';
     item.addEventListener('mouseenter', () => {
       this._isMouseOver = true;
@@ -58,43 +68,32 @@ export default class StatusBarTile {
     item.addEventListener('mouseleave', () => {
       this._isMouseOver = false;
     });
-    this._tile = statusBar.addRightTile({
+    const tile = statusBar.addRightTile({
       item,
       priority: STATUS_BAR_PRIORITY,
     });
-
-    this._render();
+    return tile;
   }
 
-  consumeMessageStream(messageStream: Observable<Array<string>>): void {
-    messageStream.subscribe(messages => {
-      this._messages = messages;
-      this._render();
-    });
-  }
-
-  _render(): void {
-    const props = {
-      busy: this._messages.length !== 0,
-    };
-
-    const item = this._item;
-    if (item) {
-      ReactDOM.render(<StatusBarTileComponent {...props} />, item);
-      if (this._tooltip) {
-        this._tooltip.dispose();
-      }
-      if (this._messages.length > 0) {
-        this._tooltip = atom.tooltips.add(item, {
-          title: this._messages.join('<br/>'),
-          delay: 0,
-        });
-        if (this._isMouseOver) {
-          // If the mouse is currently over the element, we want to trigger the new popup to appear.
-          ['mouseover', 'mouseenter']
-            .map(name => new MouseEvent(name))
-            .forEach(event => item.dispatchEvent(event));
-        }
+  _render(messages: Array<string>): void {
+    ReactDOM.render(
+      <StatusBarTileComponent busy={messages.length !== 0} />,
+      this._item,
+    );
+    if (this._tooltip) {
+      this._tooltip.dispose();
+      this._tooltip = null;
+    }
+    if (messages.length > 0) {
+      this._tooltip = atom.tooltips.add(this._item, {
+        title: messages.join('<br/>'),
+        delay: 0,
+      });
+      if (this._isMouseOver) {
+        // If the mouse is currently over the element, we want to trigger the new popup to appear.
+        ['mouseover', 'mouseenter']
+          .map(name => new MouseEvent(name))
+          .forEach(event => this._item.dispatchEvent(event));
       }
     }
   }

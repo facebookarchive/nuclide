@@ -55,15 +55,10 @@ class Activation {
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
-    const statusBarTile = (this._statusBarTile = new StatusBarTile());
-    statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
-    const disposable = new UniversalDisposable(() => {
-      if (this._statusBarTile) {
-        this._statusBarTile.dispose();
-        this._statusBarTile = null;
-      }
-    });
-    statusBarTile.consumeStatusBar(statusBar);
+    // Avoid retaining StatusBarTile by wrapping it.
+    const disposable = new UniversalDisposable(
+      new StatusBarTile(statusBar, this._messageStore.getMessageStream()),
+    );
     this._disposables.add(disposable);
     return disposable;
   }
