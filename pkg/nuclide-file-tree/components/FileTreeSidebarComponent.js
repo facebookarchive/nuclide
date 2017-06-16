@@ -43,6 +43,7 @@ import {Icon} from 'nuclide-commons-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
 import {OpenFilesListComponent} from './OpenFilesListComponent';
+import {LockableHeight} from './LockableHeightComponent';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {
@@ -88,6 +89,7 @@ type State = {
   areStackChangesEnabled: boolean,
   path: string,
   title: string,
+  isFileTreeHovered: boolean,
 };
 
 export default class FileTreeSidebarComponent extends React.Component {
@@ -123,6 +125,7 @@ export default class FileTreeSidebarComponent extends React.Component {
       areStackChangesEnabled: false,
       path: 'No Current Working Directory',
       title: 'File Tree',
+      isFileTreeHovered: false,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
@@ -156,6 +159,7 @@ export default class FileTreeSidebarComponent extends React.Component {
 
   componentDidMount(): void {
     this._processExternalUpdate();
+    const fileTreeNode = ReactDOM.findDOMNode(this.refs.fileTree);
 
     const remeasureEvents = Observable.merge(
       Observable.of(null),
@@ -228,6 +232,12 @@ export default class FileTreeSidebarComponent extends React.Component {
         .subscribe(),
       observePaneItemVisibility(this).subscribe(visible => {
         this.didChangeVisibility(visible);
+      }),
+      Observable.fromEvent(fileTreeNode, 'mouseenter').subscribe(() => {
+        this.setState({isFileTreeHovered: true});
+      }),
+      Observable.fromEvent(fileTreeNode, 'mouseleave').subscribe(() => {
+        this.setState({isFileTreeHovered: false});
       }),
     );
   }
@@ -382,15 +392,17 @@ All the changes across your entire stacked diff.
         );
       }
       openFilesSection = (
-        <Section
-          className="nuclide-file-tree-section-caption"
-          collapsable={true}
-          collapsed={!this._store.openFilesExpanded}
-          headline="OPEN FILES"
-          onChange={this._handleOpenFilesExpandedChange}
-          size="small">
-          {openFilesList}
-        </Section>
+        <LockableHeight isLocked={this.state.isFileTreeHovered}>
+          <Section
+            className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
+            collapsable={true}
+            collapsed={!this._store.openFilesExpanded}
+            headline="OPEN FILES"
+            onChange={this._handleOpenFilesExpandedChange}
+            size="small">
+            {openFilesList}
+          </Section>
+        </LockableHeight>
       );
     }
 

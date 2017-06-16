@@ -99,7 +99,9 @@ export class Section extends React.Component {
         <HeadlineComponent className={iconClass} {...conditionalProps}>
           {this.props.headline}
         </HeadlineComponent>
-        <div style={collapsed ? {display: 'none'} : {}}>
+        <div
+          style={collapsed ? {display: 'none'} : {}}
+          className="nuclide-ui-section-body">
           {this.props.children}
         </div>
       </div>

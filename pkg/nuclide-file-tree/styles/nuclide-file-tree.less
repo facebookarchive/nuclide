@@ -117,6 +117,13 @@
 }
 
 
+.nuclide-file-tree-locked-height {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+}
+
 .nuclide-file-tree-working-set-name-missing {
   visibility: hidden;
 }
@@ -124,6 +131,17 @@
 // matches the margin in .inline-block-tight
 .nuclide-file-tree-connection-title {
   margin-left: @component-padding/2;
+}
+
+.nuclide-file-tree-open-files-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.nuclide-file-tree-open-files-section > .nuclide-ui-section-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .nuclide-file-tree-open-files {
