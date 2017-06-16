@@ -10,6 +10,7 @@
  */
 
 import type {BusySignalService, LinterProvider} from 'atom-ide-ui';
+import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import typeof * as PythonService
   from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -32,6 +33,7 @@ import {
   getAutocompleteArguments,
   getIncludeOptionalArguments,
 } from './config';
+import {providePythonPlatformGroup} from './pythonPlatform';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const PYTHON_SERVICE_NAME = 'PythonService';
@@ -128,6 +130,10 @@ class Activation {
         );
       },
     };
+  }
+
+  consumePlatformService(service: PlatformService): void {
+    this._subscriptions.add(service.register(providePythonPlatformGroup));
   }
 
   dispose(): void {
