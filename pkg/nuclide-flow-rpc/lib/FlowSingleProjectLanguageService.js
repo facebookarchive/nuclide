@@ -21,6 +21,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
   FileDiagnosticMessage,
+  FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
 import type {
@@ -31,9 +32,6 @@ import type {
 } from '../../nuclide-debugger-interfaces/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
-import type {
-  FindReferencesReturn,
-} from '../../nuclide-find-references/lib/rpc-types';
 
 import type {PushDiagnosticsMessage} from './FlowIDEConnection';
 

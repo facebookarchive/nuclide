@@ -20,7 +20,7 @@ import crypto from 'crypto';
 
 const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
 const DEFAULT_LOCATION_SETTING =
-  'nuclide-find-references.defaultLocationForPane';
+  'atom-ide-find-references.defaultLocationForPane';
 const DEFAULT_PANE_LOCATION: PaneLocation = 'bottom';
 
 type PaneLocation = 'bottom' | 'center' | 'left' | 'right';

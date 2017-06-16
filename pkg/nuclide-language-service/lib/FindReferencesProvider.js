@@ -11,7 +11,8 @@
 
 import type {
   FindReferencesReturn,
-} from '../../nuclide-find-references/lib/rpc-types';
+  FindReferencesProvider as FindReferencesProviderType,
+} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -87,3 +88,7 @@ export class FindReferencesProvider<T: LanguageService> {
     });
   }
 }
+
+(((null: any): FindReferencesProvider<
+  LanguageService,
+>): FindReferencesProviderType);

@@ -11,7 +11,6 @@
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {generateFixture} from '../../nuclide-test-helpers';
 import FindReferencesModel from '../lib/FindReferencesModel';
 
 // convenience location creator
@@ -31,17 +30,9 @@ describe('FindReferencesModel', () => {
 
   beforeEach(() => {
     waitsForPromise(async () => {
-      let contents = '';
-      for (let i = 1; i <= 9; i++) {
-        contents += i + '\n';
-      }
-      const tempFolder = await generateFixture(
-        'find-refs',
-        new Map([['test1', contents], ['test2', contents]]),
-      );
-
-      TEST1 = nuclideUri.join(tempFolder, 'test1');
-      TEST2 = nuclideUri.join(tempFolder, 'test2');
+      const fixtureDir = nuclideUri.join(__dirname, 'fixtures');
+      TEST1 = nuclideUri.join(fixtureDir, 'test1');
+      TEST2 = nuclideUri.join(fixtureDir, 'test2');
     });
   });
 

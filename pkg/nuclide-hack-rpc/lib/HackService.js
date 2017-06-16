@@ -25,14 +25,12 @@ import type {HackDefinition} from './Definitions';
 import type {HackIdeOutline} from './OutlineView';
 import type {HackTypedRegion} from './TypedRegions';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
-import type {
-  FindReferencesReturn,
-} from '../../nuclide-find-references/lib/rpc-types';
 import type {HackReferencesResult} from './FindReferences';
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
+  FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';

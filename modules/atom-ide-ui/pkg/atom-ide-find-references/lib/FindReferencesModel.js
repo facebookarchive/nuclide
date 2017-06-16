@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {FileReferences, ReferenceGroup} from './types';
-import type {Reference} from './rpc-types';
+import type {FileReferences, Reference, ReferenceGroup} from './types';
 
 type FindReferencesOptions = {
   // Lines of context to show around each preview block. Defaults to 1.
@@ -37,7 +36,7 @@ async function readFileContents(uri: string): Promise<?string> {
       return await file.read();
     }
   } catch (e) {
-    getLogger('nuclide-find-references').error(
+    getLogger('atom-ide-find-references').error(
       `find-references: could not load file ${uri}`,
       e,
     );

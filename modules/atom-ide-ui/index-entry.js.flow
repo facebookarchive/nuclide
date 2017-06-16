@@ -60,6 +60,12 @@ export type {
 export type {CodeHighlightProvider} from './pkg/atom-ide-code-highlight';
 
 export type {
+  FindReferencesProvider,
+  FindReferencesReturn,
+  Reference,
+} from './pkg/atom-ide-find-references';
+
+export type {
   Outline,
   OutlineProvider,
   OutlineTree,

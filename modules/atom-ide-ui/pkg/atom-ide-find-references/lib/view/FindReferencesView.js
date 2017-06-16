@@ -103,14 +103,14 @@ export default class FindReferencesView extends React.Component {
       children.push(
         <div
           key="loading"
-          className="nuclide-find-references-loading loading-spinner-medium"
+          className="atom-ide-find-references-loading loading-spinner-medium"
         />,
       );
     }
 
     return (
-      <div className="nuclide-find-references">
-        <div className="nuclide-find-references-count panel-heading">
+      <div className="atom-ide-find-references">
+        <div className="atom-ide-find-references-count panel-heading">
           {refCount} {pluralize('reference', refCount)}{' '}
           found in {fileCount} {pluralize('file', fileCount)} for{' '}
           <span className="highlight-info">
@@ -118,7 +118,7 @@ export default class FindReferencesView extends React.Component {
           </span>
         </div>
         <ul
-          className="nuclide-find-references-files list-tree has-collapsable-children"
+          className="atom-ide-find-references-files list-tree has-collapsable-children"
           onScroll={this._onScroll}
           ref="root"
           tabIndex="0">

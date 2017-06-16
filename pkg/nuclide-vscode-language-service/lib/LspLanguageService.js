@@ -20,12 +20,10 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
-  FindReferencesReturn,
-} from '../../nuclide-find-references/lib/rpc-types';
-import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
   FileDiagnosticUpdate,
+  FindReferencesReturn,
   Outline,
   OutlineTree,
 } from 'atom-ide-ui';

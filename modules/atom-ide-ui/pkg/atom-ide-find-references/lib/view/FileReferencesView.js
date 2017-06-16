@@ -9,8 +9,7 @@
  * @format
  */
 
-import type {ReferenceGroup} from '../types';
-import type {Reference} from '../rpc-types';
+import type {Reference, ReferenceGroup} from '../types';
 
 import React from 'react';
 import classnames from 'classnames';
@@ -74,9 +73,9 @@ export default class FileReferencesView extends React.Component {
       const startRange = firstRef.range.start;
       const endRange = lastRef.range.end;
       return (
-        <li key={group.startLine} className="nuclide-find-references-ref">
+        <li key={group.startLine} className="atom-ide-find-references-ref">
           <div
-            className="nuclide-find-references-ref-name"
+            className="atom-ide-find-references-ref-name"
             onClick={evt => this._onRefClick(evt, firstRef)}>
             {'Line '}
             {startRange.row + 1}
@@ -103,7 +102,7 @@ export default class FileReferencesView extends React.Component {
       );
     });
     const outerClassName = classnames(
-      'nuclide-find-references-file list-nested-item',
+      'atom-ide-find-references-file list-nested-item',
       {
         collapsed: !this.state.isExpanded,
         expanded: this.state.isExpanded,
@@ -114,17 +113,17 @@ export default class FileReferencesView extends React.Component {
     return (
       <li className={`${outerClassName}`}>
         <div
-          className="nuclide-find-references-filename list-item"
+          className="atom-ide-find-references-filename list-item"
           onClick={this._onFileClick}>
           <span className="icon-file-text icon" />
           <a onClick={this._onFileNameClick}>
             {nuclideUri.relative(this.props.basePath, this.props.uri)}
           </a>
-          <span className="nuclide-find-references-ref-count badge badge-small">
+          <span className="atom-ide-find-references-ref-count badge badge-small">
             {groups.length}
           </span>
         </div>
-        <ul className="nuclide-find-references-refs list-tree">
+        <ul className="atom-ide-find-references-refs list-tree">
           {groups}
         </ul>
       </li>

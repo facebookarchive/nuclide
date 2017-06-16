@@ -11,7 +11,7 @@
 
 /* global getSelection */
 
-import type {FindReferencesReturn} from './rpc-types';
+import type {FindReferencesReturn, Reference} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
@@ -31,7 +31,9 @@ import {FindReferencesViewModel} from './FindReferencesViewModel';
 import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
 
-const logger = getLogger('nuclide-find-references');
+const logger = getLogger('atom-ide-find-references');
+
+export type {FindReferencesReturn, Reference};
 
 export type FindReferencesProvider = {
   // Return true if your provider supports finding references for the provided TextEditor.
@@ -46,7 +48,7 @@ export type FindReferencesProvider = {
 };
 
 function showWarning(message: string): void {
-  atom.notifications.addWarning('nuclide-find-references: ' + message, {
+  atom.notifications.addWarning('Find References: ' + message, {
     dismissable: true,
   });
 }
@@ -79,8 +81,8 @@ async function tryCreateView(
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
-    logger.error('Exception in nuclide-find-references', e);
-    atom.notifications.addError(`nuclide-find-references: ${e}`, {
+    logger.error('Exception in atom-ide-find-references', e);
+    atom.notifications.addError(`Find References: ${e}`, {
       dismissable: true,
     });
   }
@@ -88,12 +90,12 @@ async function tryCreateView(
 
 function enableForEditor(editor: TextEditor): void {
   const elem = atom.views.getView(editor);
-  elem.classList.add('enable-nuclide-find-references');
+  elem.classList.add('enable-atom-ide-find-references');
 }
 
 function disableForEditor(editor: TextEditor): void {
   const elem = atom.views.getView(editor);
-  elem.classList.remove('enable-nuclide-find-references');
+  elem.classList.remove('enable-atom-ide-find-references');
 }
 
 class Activation {
@@ -192,7 +194,7 @@ class Activation {
         this._subscriptions.add(disposable);
       }),
       // Enable text copy from the symbol reference
-      atom.commands.add('nuclide-find-references-view', 'core:copy', () => {
+      atom.commands.add('atom-ide-find-references-view', 'core:copy', () => {
         const selection = getSelection();
         if (selection != null) {
           const selectedText = selection.toString();
@@ -201,7 +203,7 @@ class Activation {
       }),
       // Add the context menu programmatically so we can capture the mouse event.
       atom.contextMenu.add({
-        'atom-text-editor:not(.mini).enable-nuclide-find-references': [
+        'atom-text-editor:not(.mini).enable-atom-ide-find-references': [
           {
             label: 'Find References',
             command: 'nuclide-find-references:activate',
