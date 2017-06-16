@@ -182,10 +182,10 @@ export class WorkingSetSelectionComponent extends React.Component {
   _checkFocus(event: SyntheticFocusEvent): void {
     const node = ReactDOM.findDOMNode(this);
     // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
-    // the modal.  In the case of a canceled _deleteWorkingSet, relatedTarget is null so checked
-    // target as well.
+    // the modal.  In the case of a canceled _deleteWorkingSet, relatedTarget is null
+    // and we don't want to close the modal
     // $FlowFixMe
-    if (!node.contains(event.relatedTarget) && !node.contains(event.target)) {
+    if (event.relatedTarget != null && !node.contains(event.relatedTarget)) {
       this.props.onClose();
     }
   }
