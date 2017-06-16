@@ -20,7 +20,7 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {
   AtomLanguageServiceConfig,
 } from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {BusySignalService} from '../../nuclide-busy-signal';
+import type {BusySignalService} from 'atom-ide-ui';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';

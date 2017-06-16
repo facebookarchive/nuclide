@@ -14,6 +14,8 @@ export type {
   HyperclickSuggestion,
 } from './pkg/hyperclick/lib/types';
 
+export type {BusySignalService} from './pkg/atom-ide-busy-signal';
+
 export type {
   Datatip,
   DatatipProvider,

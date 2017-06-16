@@ -10,8 +10,8 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {BusySignalService} from '../../nuclide-busy-signal';
 import type {
+  BusySignalService,
   CodeFormatProvider,
   DefinitionProvider,
   DefinitionQueryResult,

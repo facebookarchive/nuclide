@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {BusySignalService} from '../../nuclide-busy-signal';
+import type {BusySignalService} from 'atom-ide-ui';
 import type {Provider} from '../../nuclide-quick-open/lib/types';
 
 import invariant from 'assert';

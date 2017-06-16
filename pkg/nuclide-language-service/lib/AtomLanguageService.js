@@ -25,7 +25,7 @@ import type {
   OnDidInsertSuggestionCallback,
 } from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
-import type {BusySignalService} from '../../nuclide-busy-signal';
+import type {BusySignalService} from 'atom-ide-ui';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
@@ -105,7 +105,7 @@ export class AtomLanguageService<T: LanguageService> {
     this._subscriptions.add(
       atom.packages.serviceHub.consume(
         'atom-ide-busy-signal',
-        '0.2.0',
+        '0.1.0',
         service => {
           this._subscriptions.add(service);
           busySignalService = service;

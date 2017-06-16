@@ -14,7 +14,7 @@ import invariant from 'assert';
 function getElement(): HTMLElement {
   const element = atom.views
     .getView(atom.workspace)
-    .querySelector('.nuclide-busy-signal-status-bar');
+    .querySelector('.atom-ide-busy-signal-status-bar');
   invariant(element != null);
   return element;
 }

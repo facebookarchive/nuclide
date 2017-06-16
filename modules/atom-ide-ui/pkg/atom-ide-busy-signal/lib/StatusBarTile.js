@@ -23,7 +23,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 const STATUS_BAR_PRIORITY = 1000;
 
 function StatusBarTileComponent(props: {busy: boolean}) {
-  const classes = classnames('nuclide-busy-signal-status-bar', {
+  const classes = classnames('atom-ide-busy-signal-status-bar', {
     'loading-spinner-tiny': props.busy,
   });
   return <div className={classes} />;
