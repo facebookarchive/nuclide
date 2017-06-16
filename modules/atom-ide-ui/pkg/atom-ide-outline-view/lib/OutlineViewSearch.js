@@ -22,6 +22,7 @@ import type {OutlineTreeForUi} from './main';
 export type SearchResult = {
   matches: boolean,
   visible: boolean,
+  matchingCharacters?: Array<number>,
 };
 
 type Props = {
@@ -184,5 +185,14 @@ export function updateSearchSet(
         return !childResult || childResult.visible;
       }),
     );
-  map.set(root, {matches, visible});
+  let matchingCharacters;
+  if (matches) {
+    matchingCharacters = fuzzaldrinPlus.match(
+      root.tokenizedText
+        ? root.tokenizedText.map(e => e.value).join('')
+        : root.plainText || '',
+      query,
+    );
+  }
+  map.set(root, {matches, visible, matchingCharacters});
 }

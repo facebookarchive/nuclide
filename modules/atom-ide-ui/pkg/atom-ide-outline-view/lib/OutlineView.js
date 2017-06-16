@@ -34,6 +34,7 @@ import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import type {SearchResult} from './OutlineViewSearch';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
+import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';
 
 const logger = getLogger('atom-ide-outline-view');
 const SEARCH_ENABLED_DEFAULT = true;
@@ -254,7 +255,7 @@ class OutlineTree extends React.PureComponent {
           className="list-item nuclide-outline-view-item"
           onClick={onClick}
           onDoubleClick={onDoubleClick}>
-          {renderItem(outline)}
+          {renderItem(outline, searchResults.get(outline))}
         </div>
         {renderTrees(editor, outline.children, searchResults)}
       </li>
@@ -264,6 +265,7 @@ class OutlineTree extends React.PureComponent {
 
 function renderItem(
   outline: OutlineTreeForUi,
+  searchResult: ?SearchResult,
 ): Array<React.Element<any> | string> {
   const r = [];
 
@@ -273,18 +275,72 @@ function renderItem(
   }
 
   if (outline.tokenizedText != null) {
-    r.push(...outline.tokenizedText.map(renderTextToken));
+    let offset = 0;
+    r.push(
+      ...outline.tokenizedText.map((token, i) => {
+        const toReturn = renderTextToken(token, i, searchResult, offset);
+        offset += token.value.length;
+        return toReturn;
+      }),
+    );
   } else if (outline.plainText != null) {
-    r.push(outline.plainText);
+    const textWithMatching = searchResult && searchResult.matchingCharacters
+      ? groupMatchIndexes(
+          outline.plainText,
+          searchResult.matchingCharacters,
+          renderMatchedSubsequence,
+          renderUnmatchedSubsequence,
+        )
+      : outline.plainText;
+    r.push(...textWithMatching);
   } else {
     r.push('Missing text');
   }
   return r;
 }
 
-function renderTextToken(token: TextToken, index: number): React.Element<any> {
+function renderTextToken(
+  token: TextToken,
+  index: number,
+  searchResult: ?SearchResult,
+  offset: number,
+): React.Element<any> {
   const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
-  return <span className={className} key={index}>{token.value}</span>;
+  return (
+    <span className={className} key={index}>
+      {searchResult && searchResult.matchingCharacters
+        ? groupMatchIndexes(
+            token.value,
+            searchResult.matchingCharacters
+              .map(el => el - offset)
+              .filter(el => el >= 0 && el < token.value.length),
+            renderMatchedSubsequence,
+            renderUnmatchedSubsequence,
+          )
+        : token.value}
+    </span>
+  );
+}
+
+function renderSubsequence(seq: string, props: Object): React.Element<any> {
+  return <span {...props}>{seq}</span>;
+}
+
+function renderUnmatchedSubsequence(
+  seq: string,
+  key: number | string,
+): React.Element<any> {
+  return renderSubsequence(seq, {key});
+}
+
+function renderMatchedSubsequence(
+  seq: string,
+  key: number | string,
+): React.Element<any> {
+  return renderSubsequence(seq, {
+    key,
+    className: 'atom-ide-outline-view-match',
+  });
 }
 
 function renderTrees(
