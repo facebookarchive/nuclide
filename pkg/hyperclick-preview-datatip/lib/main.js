@@ -37,9 +37,8 @@ class Activation {
 
   consumeDatatipService(service: DatatipService): IDisposable {
     const datatipProvider: ModifierDatatipProvider = {
-      validForScope: () => true,
       providerName: PACKAGE_NAME,
-      inclusionPriority: 1,
+      priority: 1,
       modifierDatatip: (
         editor: atom$TextEditor,
         bufferPosition: atom$Point,

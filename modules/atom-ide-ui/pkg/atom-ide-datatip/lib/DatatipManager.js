@@ -28,9 +28,10 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import idx from 'idx';
 import performanceNow from 'nuclide-commons/performanceNow';
 import {Observable} from 'rxjs';
-import {arrayCompact, arrayRemove} from 'nuclide-commons/collection';
+import {arrayCompact} from 'nuclide-commons/collection';
 import {asyncFind} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {
   getModifierKeysFromMouseEvent,
@@ -59,21 +60,6 @@ function getProviderName(provider: AnyDatatipProvider): string {
     return 'unknown';
   }
   return provider.providerName;
-}
-
-function filterProvidersByScopeName<T: AnyDatatipProvider>(
-  providers: Array<T>,
-  scopeName: string,
-): Array<T> {
-  return providers
-    .filter(
-      provider =>
-        provider.inclusionPriority > 0 && provider.validForScope(scopeName),
-    )
-    .sort(
-      (providerA, providerB) =>
-        providerB.inclusionPriority - providerA.inclusionPriority,
-    );
 }
 
 function getBufferPosition(
@@ -111,21 +97,19 @@ function getBufferPosition(
 }
 
 async function getTopDatatipAndProvider<TProvider: AnyDatatipProvider>(
-  providers: Array<TProvider>,
+  providers: ProviderRegistry<TProvider>,
   editor: atom$TextEditor,
   position: atom$Point,
   invoke: TProvider => Promise<?Datatip>,
 ): Promise<?DataTipResult> {
-  const {scopeName} = editor.getGrammar();
-  const filteredDatatipProviders = filterProvidersByScopeName(
-    providers,
-    scopeName,
+  const filteredDatatipProviders = Array.from(
+    providers.getAllProvidersForEditor(editor),
   );
   if (filteredDatatipProviders.length === 0) {
     return null;
   }
 
-  const datatipPromises = providers.map(
+  const datatipPromises = filteredDatatipProviders.map(
     async (provider: TProvider): Promise<?DataTipResult> => {
       const name = getProviderName(provider);
       const timingTracker = new analytics.TimingTracker(name + '.datatip');
@@ -233,8 +217,8 @@ function ensurePositiveNumber(value: any, defaultValue: number): number {
 class DatatipManagerForEditor {
   _blacklistedPosition: ?atom$Point;
   _datatipElement: HTMLElement;
-  _datatipProviders: Array<DatatipProvider>;
-  _modifierDatatipProviders: Array<ModifierDatatipProvider>;
+  _datatipProviders: ProviderRegistry<DatatipProvider>;
+  _modifierDatatipProviders: ProviderRegistry<ModifierDatatipProvider>;
   _datatipState: State;
   _editor: atom$TextEditor;
   _editorView: atom$TextEditorElement;
@@ -257,8 +241,8 @@ class DatatipManagerForEditor {
 
   constructor(
     editor: atom$TextEditor,
-    datatipProviders: Array<DatatipProvider>,
-    modifierDatatipProviders: Array<ModifierDatatipProvider>,
+    datatipProviders: ProviderRegistry<DatatipProvider>,
+    modifierDatatipProviders: ProviderRegistry<ModifierDatatipProvider>,
   ) {
     this._editor = editor;
     this._editorView = atom.views.getView(editor);
@@ -754,16 +738,16 @@ class DatatipManagerForEditor {
 }
 
 export class DatatipManager {
-  _datatipProviders: Array<DatatipProvider>;
-  _modifierDatatipProviders: Array<ModifierDatatipProvider>;
+  _datatipProviders: ProviderRegistry<DatatipProvider>;
+  _modifierDatatipProviders: ProviderRegistry<ModifierDatatipProvider>;
   _editorManagers: Map<atom$TextEditor, DatatipManagerForEditor>;
   _subscriptions: UniversalDisposable;
 
   constructor() {
     this._subscriptions = new UniversalDisposable();
     this._editorManagers = new Map();
-    this._datatipProviders = [];
-    this._modifierDatatipProviders = [];
+    this._datatipProviders = new ProviderRegistry();
+    this._modifierDatatipProviders = new ProviderRegistry();
 
     this._subscriptions.add(
       observeTextEditors(editor => {
@@ -784,17 +768,11 @@ export class DatatipManager {
   }
 
   addProvider(provider: DatatipProvider): IDisposable {
-    this._datatipProviders.push(provider);
-    return new UniversalDisposable(() => {
-      arrayRemove(this._datatipProviders, provider);
-    });
+    return this._datatipProviders.addProvider(provider);
   }
 
   addModifierProvider(provider: ModifierDatatipProvider): IDisposable {
-    this._modifierDatatipProviders.push(provider);
-    return new UniversalDisposable(() => {
-      arrayRemove(this._modifierDatatipProviders, provider);
-    });
+    return this._modifierDatatipProviders.addProvider(provider);
   }
 
   createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip {

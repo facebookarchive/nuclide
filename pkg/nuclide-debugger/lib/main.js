@@ -827,9 +827,8 @@ function createDatatipProvider(): DatatipProvider {
   if (datatipProvider == null) {
     datatipProvider = {
       // Eligibility is determined online, based on registered EvaluationExpression providers.
-      validForScope: (scope: string) => true,
       providerName: DATATIP_PACKAGE_NAME,
-      inclusionPriority: 1,
+      priority: 1,
       datatip: (editor: TextEditor, position: atom$Point) => {
         if (activation == null) {
           return Promise.resolve(null);

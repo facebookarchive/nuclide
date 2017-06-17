@@ -29,9 +29,8 @@ export default class UnicodeDatatipManager {
   consumeDatatipService(service: DatatipService): IDisposable {
     const datatipProvider: DatatipProvider = {
       datatip: (editor, position) => unescapedUnicodeDatatip(editor, position),
-      validForScope: (scope: string) => true,
       providerName: 'nuclide-unicode-escapes',
-      inclusionPriority: 1,
+      priority: 1,
     };
 
     const disposable = service.addProvider(datatipProvider);

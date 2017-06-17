@@ -44,9 +44,8 @@ class Activation {
     invariant(this.typeHintManager);
     const datatip = this.typeHintManager.datatip.bind(this.typeHintManager);
     const datatipProvider: DatatipProvider = {
-      validForScope: () => true,
       providerName: PACKAGE_NAME,
-      inclusionPriority: 1,
+      priority: 1,
       datatip,
     };
     const disposable = service.addProvider(datatipProvider);

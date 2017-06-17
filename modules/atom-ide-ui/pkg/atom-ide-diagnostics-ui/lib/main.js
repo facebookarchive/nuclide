@@ -80,9 +80,8 @@ class Activation {
   consumeDatatipService(service: DatatipService): IDisposable {
     const datatipProvider: DatatipProvider = {
       // show this datatip for every type of file
-      validForScope: (scope: string) => true,
       providerName: 'nuclide-diagnostics-datatip',
-      inclusionPriority: 1,
+      priority: 1,
       datatip: this._datatip.bind(this),
     };
     const disposable = service.addProvider(datatipProvider);

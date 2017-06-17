@@ -50,8 +50,8 @@ export type PinnedDatatip = {
 };
 
 export type DatatipProvider = {
-  inclusionPriority: number,
-  validForScope(scopeName: string): boolean,
+  priority: number,
+  grammarScopes?: Array<string>,
   // A unique name for the provider to be used for analytics.
   // It is recommended that it be the name of the provider's package.
   providerName: string,
@@ -62,8 +62,8 @@ export type DatatipProvider = {
 };
 
 export type ModifierDatatipProvider = {
-  inclusionPriority: number,
-  validForScope(scopeName: string): boolean,
+  priority: number,
+  grammarScopes?: Array<string>,
   providerName: string,
   modifierDatatip(
     editor: atom$TextEditor,

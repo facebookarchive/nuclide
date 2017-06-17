@@ -19,9 +19,8 @@ const PACKAGE_NAME = 'sample-datatip';
 
 const datatipProvider: DatatipProvider = {
   // show the sample datatip for every type of file
-  validForScope: (scope: string) => true,
   providerName: PACKAGE_NAME,
-  inclusionPriority: 1,
+  priority: 1,
   datatip,
 };
 
