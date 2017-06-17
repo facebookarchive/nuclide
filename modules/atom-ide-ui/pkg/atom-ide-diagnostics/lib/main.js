@@ -178,6 +178,7 @@ export type LinterMessageV2 = {
   >,
   // TODO: the callback version is not supported.
   description?: string | (() => Promise<string> | string),
+  linterName?: string,
 };
 
 export type LinterMessage = LinterMessageV1 | LinterMessageV2;

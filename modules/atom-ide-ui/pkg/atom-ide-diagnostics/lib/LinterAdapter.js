@@ -124,7 +124,7 @@ export function linterMessageV2ToDiagnosticMessage(
   }
   return {
     scope: 'file',
-    providerName,
+    providerName: msg.linterName || providerName,
     type: LinterSeverityMap[msg.severity],
     filePath: msg.location.file,
     text,
