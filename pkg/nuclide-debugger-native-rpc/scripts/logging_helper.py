@@ -20,5 +20,5 @@ def log_debug(output):
 
 def log_error(output):
     assert_string(output)
-    print(output, stream=sys.stderr)
+    print(output, file=sys.stderr)
     sys.stderr.flush()
