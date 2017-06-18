@@ -29,25 +29,8 @@ import {
 
 const logger = getLogger('nuclide-clang-rpc');
 
-const BUCK_TIMEOUT = 10 * 60 * 1000;
-
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
-
-/**
- * Facebook puts all headers in a <target>:__default_headers__ build target by default.
- * This target will never produce compilation flags, so make sure to ignore it.
- */
-const DEFAULT_HEADERS_TARGET = '__default_headers__';
-
-const TARGET_KIND_REGEX = [
-  'apple_binary',
-  'apple_library',
-  'apple_test',
-  'cxx_binary',
-  'cxx_library',
-  'cxx_test',
-].join('|');
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
 
@@ -89,19 +72,7 @@ function overrideIncludePath(src: string): string {
   return src;
 }
 
-function customizeBuckTarget(
-  root: string,
-  target: string,
-): Promise<Array<string>> {
-  const customFlags = getCustomFlags();
-  if (customFlags != null) {
-    return customFlags.customizeBuckTarget(root, target);
-  }
-  return Promise.resolve([target]);
-}
-
 export default class ClangFlagsManager {
-  _cachedBuckFlags: Map<string, Promise<Map<string, ClangFlags>>>;
   _compilationDatabases: Map<string, Map<string, ClangFlags>>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
@@ -109,7 +80,6 @@ export default class ClangFlagsManager {
 
   constructor() {
     this._pathToFlags = new Map();
-    this._cachedBuckFlags = new Map();
     this._compilationDatabases = new Map();
     this._realpathCache = {};
     this._clangProjectFlags = new Map();
@@ -117,7 +87,6 @@ export default class ClangFlagsManager {
 
   reset() {
     this._pathToFlags.clear();
-    this._cachedBuckFlags.clear();
     this._compilationDatabases.clear();
     this._realpathCache = {};
     this._clangProjectFlags.clear();
@@ -324,23 +293,6 @@ export default class ClangFlagsManager {
     return null;
   }
 
-  async _getFlagsForSrcImplFromBuck(src: string): Promise<?ClangFlags> {
-    const buckFlags = await this._loadFlagsFromBuck(src).catch(err => {
-      logger.error('Error getting flags from Buck', err);
-      return new Map();
-    });
-    if (isHeaderFile(src)) {
-      // Accept flags from any source file in the target.
-      if (buckFlags.size > 0) {
-        return buckFlags.values().next().value;
-      }
-    }
-    const flags = buckFlags.get(src);
-    if (flags != null) {
-      return flags;
-    }
-  }
-
   async getRelatedSrcFileForHeader(
     src: string,
     compilationDB: ?ClangCompilationDatabase,
@@ -376,11 +328,6 @@ export default class ClangFlagsManager {
       if (sourceFile != null) {
         return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDB);
       }
-    }
-
-    const flagsFromBuck = await this._getFlagsForSrcImplFromBuck(src);
-    if (flagsFromBuck != null) {
-      return flagsFromBuck;
     }
 
     // Even if we can't get flags, try to watch the build file in case they get added.
@@ -484,90 +431,6 @@ export default class ClangFlagsManager {
     } catch (e) {
       logger.error(`Error reading compilation flags from ${db.file}`, e);
     }
-    return flags;
-  }
-
-  async _loadFlagsFromBuck(src: string): Promise<Map<string, ClangFlags>> {
-    const buckRoot = await BuckService.getRootForPath(src);
-    if (buckRoot == null) {
-      return new Map();
-    }
-
-    const target = (await BuckService.getOwners(
-      buckRoot,
-      src,
-      TARGET_KIND_REGEX,
-    )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
-
-    if (target == null) {
-      return new Map();
-    }
-
-    const key = buckRoot + ':' + target;
-    let cached = this._cachedBuckFlags.get(key);
-    if (cached != null) {
-      return cached;
-    }
-    cached = this._loadFlagsForBuckTarget(buckRoot, target);
-    this._cachedBuckFlags.set(key, cached);
-    return cached;
-  }
-
-  async _loadFlagsForBuckTarget(
-    buckProjectRoot: string,
-    target: string,
-  ): Promise<Map<string, ClangFlags>> {
-    // TODO(t12973165): Allow configuring a custom flavor.
-    // For now, this seems to use cxx.default_platform, which tends to be correct.
-    const buildTarget = target + '#compilation-database';
-    const buildReport = await BuckService.build(
-      buckProjectRoot,
-      [
-        // Small builds, like those used for a compilation database, can degrade overall
-        // `buck build` performance by unnecessarily invalidating the Action Graph cache.
-        // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
-        // for details on the importance of using skip-action-graph-cache=true.
-        '--config',
-        'client.skip-action-graph-cache=true',
-
-        ...(await customizeBuckTarget(buckProjectRoot, buildTarget)),
-        // TODO(hansonw): Any alternative to doing this?
-        // '-L',
-        // String(os.cpus().length / 2),
-      ],
-      {commandOptions: {timeout: BUCK_TIMEOUT}},
-    );
-    if (!buildReport.success) {
-      const error = `Failed to build ${buildTarget}`;
-      logger.error(error);
-      throw error;
-    }
-    const firstResult = Object.keys(buildReport.results)[0];
-    let pathToCompilationDatabase = buildReport.results[firstResult].output;
-    pathToCompilationDatabase = nuclideUri.join(
-      buckProjectRoot,
-      pathToCompilationDatabase,
-    );
-
-    const compilationDatabase = JSON.parse(
-      await fsPromise.readFile(pathToCompilationDatabase, 'utf8'),
-    );
-
-    const flags = new Map();
-    const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
-    compilationDatabase.forEach(item => {
-      const {file} = item;
-      const result = {
-        rawData: {
-          flags: item.arguments,
-          file,
-          directory: buckProjectRoot,
-        },
-        flagsFile: buildFile,
-      };
-      flags.set(file, result);
-      this._pathToFlags.set(file, Promise.resolve(result));
-    });
     return flags;
   }
 
