@@ -160,18 +160,30 @@ export default class ClangFlagsManager {
     dbFlags: Map<string, ClangFlags>,
   ): ?string {
     const basename = ClangFlagsManager._getFileBasename(header);
-    const inferredSrcs = Array.from(dbFlags.keys())
-      .filter(
-        path =>
-          ClangFlagsManager._getFileBasename(path) === basename &&
-          isSourceFile(path),
-      )
-      .map(path => {
-        return {score: commonPrefix(path, header), path};
-      })
-      .sort((a, b) => b.score - a.score); // prefer bigger matches
-    if (inferredSrcs.length > 0) {
-      return inferredSrcs[0].path;
+    const srcWithSameBasename = [];
+    const otherSrcs = [];
+    for (const path of dbFlags.keys()) {
+      if (
+        ClangFlagsManager._getFileBasename(path) === basename &&
+        isSourceFile(path)
+      ) {
+        srcWithSameBasename.push({
+          score: commonPrefix(path, header),
+          path,
+        });
+      } else {
+        otherSrcs.push({
+          score: commonPrefix(path, header),
+          path,
+        });
+      }
+    }
+    const sortSrcs = srcs => srcs.sort((a, b) => b.score - a.score); // prefer bigger matches
+    if (srcWithSameBasename.length > 0) {
+      return sortSrcs(srcWithSameBasename)[0].path;
+    }
+    if (otherSrcs.length > 0) {
+      return sortSrcs(otherSrcs)[0].path;
     }
     return null;
   }
