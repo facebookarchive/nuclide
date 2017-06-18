@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ClangCompilationDatabase} from './rpc-types';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -130,9 +130,9 @@ export default class ClangFlagsManager {
    */
   async getFlagsForSrc(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(src, compilationDBFile);
+    const data = await this._getFlagsForSrcCached(src, compilationDB);
     if (data == null) {
       return null;
     }
@@ -156,14 +156,22 @@ export default class ClangFlagsManager {
     return data;
   }
 
+  _cacheKeyForCompilationDatabase(
+    compilationDB: ?ClangCompilationDatabase,
+  ): string {
+    return compilationDB == null
+      ? ''
+      : `${compilationDB.file}-${compilationDB.flagsFile || ''}`;
+  }
+
   _getFlagsForSrcCached(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
-    const cacheKey = `${src}-${compilationDBFile || ''}`;
+    const cacheKey = `${src}-${this._cacheKeyForCompilationDatabase(compilationDB)}`;
     let cached = this._pathToFlags.get(cacheKey);
     if (cached == null) {
-      cached = this._getFlagsForSrcImpl(src, compilationDBFile);
+      cached = this._getFlagsForSrcImpl(src, compilationDB);
       this._pathToFlags.set(cacheKey, cached);
     }
     return cached;
@@ -171,10 +179,10 @@ export default class ClangFlagsManager {
 
   _getFlagsForSrcImpl(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
     return trackTiming('nuclide-clang.get-flags', () =>
-      this.__getFlagsForSrcImpl(src, compilationDBFile),
+      this.__getFlagsForSrcImpl(src, compilationDB),
     );
   }
 
@@ -214,12 +222,9 @@ export default class ClangFlagsManager {
 
   async _getFlagsFromSourceFileForHeader(
     sourceFile: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(
-      sourceFile,
-      compilationDBFile,
-    );
+    const data = await this._getFlagsForSrcCached(sourceFile, compilationDB);
     if (data != null) {
       const {rawData} = data;
       if (rawData != null) {
@@ -268,17 +273,17 @@ export default class ClangFlagsManager {
 
   async _getDBFlagsAndDirForSrc(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<{
     dbFlags: ?Map<string, ClangFlags>,
     dbDir: ?string,
   }> {
     let dbFlags = null;
     let dbDir = null;
-    if (compilationDBFile != null) {
+    if (compilationDB != null) {
       // Look for a compilation database provided by the client.
-      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDBFile);
-      dbDir = nuclideUri.dirname(compilationDBFile);
+      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDB);
+      dbDir = nuclideUri.dirname(compilationDB.file);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -287,7 +292,10 @@ export default class ClangFlagsManager {
       );
       if (dbDir != null) {
         const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-        dbFlags = await this._loadFlagsFromCompilationDatabase(dbFile);
+        dbFlags = await this._loadFlagsFromCompilationDatabase({
+          file: dbFile,
+          flagsFile: null,
+        });
       }
     }
     return {dbFlags, dbDir};
@@ -335,22 +343,22 @@ export default class ClangFlagsManager {
 
   async getRelatedSrcFileForHeader(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?string> {
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
-      compilationDBFile,
+      compilationDB,
     );
     return this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
   }
 
   async __getFlagsForSrcImpl(
     src: string,
-    compilationDBFile: ?NuclideUri,
+    compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
-      compilationDBFile,
+      compilationDB,
     );
     if (dbFlags != null) {
       const flags = dbFlags.get(src);
@@ -366,10 +374,7 @@ export default class ClangFlagsManager {
         dbDir,
       );
       if (sourceFile != null) {
-        return this._getFlagsFromSourceFileForHeader(
-          sourceFile,
-          compilationDBFile,
-        );
+        return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDB);
       }
     }
 
@@ -428,19 +433,20 @@ export default class ClangFlagsManager {
   }
 
   async _loadFlagsFromCompilationDatabase(
-    dbFile: string,
+    db: ClangCompilationDatabase,
   ): Promise<Map<string, ClangFlags>> {
-    const cache = this._compilationDatabases.get(dbFile);
+    const key = this._cacheKeyForCompilationDatabase(db);
+    const cache = this._compilationDatabases.get(key);
     if (cache != null) {
       return cache;
     }
 
     const flags = new Map();
     try {
-      const contents = await fsPromise.readFile(dbFile, 'utf8');
+      const contents = await fsPromise.readFile(db.file, 'utf8');
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
-      const dbDir = nuclideUri.dirname(dbFile);
+      const dbDir = nuclideUri.dirname(db.file);
       await Promise.all(
         data.map(async entry => {
           const {command, file} = entry;
@@ -462,16 +468,16 @@ export default class ClangFlagsManager {
                 file,
                 directory,
               },
-              flagsFile: dbFile,
+              flagsFile: db.flagsFile || db.file,
             };
             flags.set(realpath, result);
             this._pathToFlags.set(realpath, Promise.resolve(result));
           }
         }),
       );
-      this._compilationDatabases.set(dbFile, flags);
+      this._compilationDatabases.set(key, flags);
     } catch (e) {
-      logger.error(`Error reading compilation flags from ${dbFile}`, e);
+      logger.error(`Error reading compilation flags from ${db.file}`, e);
     }
     return flags;
   }

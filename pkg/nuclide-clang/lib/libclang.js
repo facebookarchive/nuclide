@@ -16,6 +16,7 @@ import type {
   ClangDeclaration,
   ClangLocalReferences,
   ClangOutlineTree,
+  ClangCompilationDatabase,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangCompilationDatabaseProvider} from './types';
@@ -44,10 +45,12 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
-async function getCompilationDatabaseFile(src: string): Promise<?string> {
+async function getCompilationDatabase(
+  src: string,
+): Promise<?ClangCompilationDatabase> {
   const compilationDatabases = await Promise.all(
     Array.from(compilationDatabaseProviders.values()).map(provider =>
-      provider.getCompilationDatabaseFile(src),
+      provider.getCompilationDatabase(src),
     ),
   );
   for (const compilationDatabase of compilationDatabases) {
@@ -70,8 +73,8 @@ module.exports = {
 
   getRelatedSourceOrHeader(src: string): Promise<?string> {
     const service = getClangServiceByNuclideUri(src);
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
-      service.getRelatedSourceOrHeader(src, compilationDBFile),
+    return getCompilationDatabase(src).then(compilationDb =>
+      service.getRelatedSourceOrHeader(src, compilationDb),
     );
   },
 
@@ -93,12 +96,7 @@ module.exports = {
     }
 
     return service
-      .compile(
-        src,
-        contents,
-        await getCompilationDatabaseFile(src),
-        defaultFlags,
-      )
+      .compile(src, contents, await getCompilationDatabase(src), defaultFlags)
       .refCount()
       .toPromise();
   },
@@ -120,7 +118,7 @@ module.exports = {
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
 
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
+    return getCompilationDatabase(src).then(compilationDB =>
       service.getCompletions(
         src,
         editor.getText(),
@@ -128,7 +126,7 @@ module.exports = {
         column,
         tokenStartColumn,
         prefix,
-        compilationDBFile,
+        compilationDB,
         defaultFlags,
       ),
     );
@@ -149,7 +147,7 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
+    return getCompilationDatabase(src).then(compilationDBFile =>
       service.getDeclaration(
         src,
         editor.getText(),
@@ -177,13 +175,13 @@ module.exports = {
       return Promise.resolve(null);
     }
 
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
+    return getCompilationDatabase(src).then(compilationDB =>
       service.getDeclarationInfo(
         src,
         editor.getText(),
         line,
         column,
-        compilationDBFile,
+        compilationDB,
         defaultFlags,
       ),
     );
@@ -196,13 +194,8 @@ module.exports = {
     }
     const defaultFlags = getDefaultFlags();
     const service = getClangServiceByNuclideUri(src);
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
-      service.getOutline(
-        src,
-        editor.getText(),
-        compilationDBFile,
-        defaultFlags,
-      ),
+    return getCompilationDatabase(src).then(compilationDB =>
+      service.getOutline(src, editor.getText(), compilationDB, defaultFlags),
     );
   },
 
@@ -222,13 +215,13 @@ module.exports = {
       return Promise.resolve(null);
     }
 
-    return getCompilationDatabaseFile(src).then(compilationDBFile =>
+    return getCompilationDatabase(src).then(compilationDB =>
       service.getLocalReferences(
         src,
         editor.getText(),
         line,
         column,
-        compilationDBFile,
+        compilationDB,
         defaultFlags,
       ),
     );

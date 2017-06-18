@@ -110,3 +110,8 @@ export type ClangLocalReferences = {
   cursor_kind: string,
   references: Array<atom$Range>,
 };
+
+export type ClangCompilationDatabase = {
+  file: string,
+  flagsFile: ?string,
+};
