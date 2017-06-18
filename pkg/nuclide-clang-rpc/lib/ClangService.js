@@ -278,10 +278,16 @@ export async function formatCode(
 /**
  * Kill the Clang server for a particular source file,
  * as well as all the cached compilation flags.
- * If no file is provided, all servers are reset.
  */
-export function reset(src?: NuclideUri): void {
+export function reset(src: NuclideUri): void {
   serverManager.reset(src);
+}
+
+/**
+ * Reset all servers
+ */
+export function fullReset(): void {
+  serverManager.reset();
 }
 
 export function dispose(): void {

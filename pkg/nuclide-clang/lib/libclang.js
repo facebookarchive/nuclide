@@ -92,7 +92,7 @@ module.exports = {
     // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
     if (!clangServices.has(service)) {
       clangServices.add(service);
-      await service.reset();
+      await service.fullReset();
     }
 
     return service
@@ -265,5 +265,10 @@ module.exports = {
       const service = getClangServiceByNuclideUri(src);
       return service.reset(src);
     }
+  },
+
+  async fullServiceReset(src: string): Promise<void> {
+    compilationDatabaseProviders.forEach(provider => provider.fullReset(src));
+    await getClangServiceByNuclideUri(src).fullReset();
   },
 };

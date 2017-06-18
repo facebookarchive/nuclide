@@ -35,8 +35,12 @@ const TARGET_KIND_REGEX = [
   'cxx_test',
 ].join('|');
 
-const buckCompilationDBTargetCache = new Cache();
-const buckCompilationDBSourceCache = new Cache();
+const buckCompilationDBTargetCache: Cache<
+  Cache<Promise<ClangCompilationDatabase>>,
+> = new Cache();
+const buckCompilationDBSourceCache: Cache<
+  Cache<Promise<?ClangCompilationDatabase>>,
+> = new Cache();
 
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
@@ -53,12 +57,35 @@ export class BuckClangCompilationDatabaseProvider {
     this._src = src;
   }
 
+  _getHost(): string {
+    return nuclideUri.getHostnameOpt(this._src) || '';
+  }
+
+  _getTargetCache(): Cache<Promise<ClangCompilationDatabase>> {
+    return buckCompilationDBTargetCache.getOrCreate(
+      this._getHost(),
+      () => new Cache(),
+    );
+  }
+
+  _getSourceCache(): Cache<Promise<?ClangCompilationDatabase>> {
+    return buckCompilationDBSourceCache.getOrCreate(
+      this._getHost(),
+      () => new Cache(),
+    );
+  }
+
   reset(): void {
     buckCompilationDBSourceCache.delete(this._src);
   }
 
+  fullReset(): void {
+    this._getTargetCache().clear();
+    this._getSourceCache().clear();
+  }
+
   async getCompilationDatabase(): Promise<?ClangCompilationDatabase> {
-    return buckCompilationDBSourceCache.getOrCreate(this._src, () =>
+    return this._getSourceCache().getOrCreate(this._src, () =>
       this._loadCompilationDatabaseFromBuck().catch(err => {
         logger.error('Error getting flags from Buck', err);
         return null;
@@ -94,9 +121,8 @@ export class BuckClangCompilationDatabaseProvider {
       return null;
     }
 
-    return buckCompilationDBTargetCache.getOrCreate(
-      buckRoot + ':' + target,
-      () => this._loadCompilationDatabaseForBuckTarget(buckRoot, target),
+    return this._getTargetCache().getOrCreate(buckRoot + ':' + target, () =>
+      this._loadCompilationDatabaseForBuckTarget(buckRoot, target),
     );
   }
 

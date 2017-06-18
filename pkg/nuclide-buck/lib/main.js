@@ -122,5 +122,8 @@ export function provideClangCompilationDatabase(): ClangCompilationDatabaseProvi
     reset(src: string): void {
       new BuckClangCompilationDatabaseProvider(src).reset();
     },
+    fullReset(src: string): void {
+      new BuckClangCompilationDatabaseProvider(src).fullReset();
+    },
   };
 }
