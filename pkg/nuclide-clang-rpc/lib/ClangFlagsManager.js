@@ -404,7 +404,6 @@ export default class ClangFlagsManager {
     try {
       const contents = await fsPromise.readFile(db.file, 'utf8');
       const data = JSON.parse(contents);
-      invariant(data instanceof Array);
       const dbDir = nuclideUri.dirname(db.file);
       await Promise.all(
         data.map(async entry => {

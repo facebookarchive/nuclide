@@ -21,7 +21,6 @@ import type {
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangCompilationDatabaseProvider} from './types';
 
-import {Observable} from 'rxjs';
 import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -46,18 +45,20 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
-function getCompilationDatabase(
+async function getCompilationDatabase(
   src: string,
 ): Promise<?ClangCompilationDatabase> {
-  return Observable.merge(
-    ...Array.from(compilationDatabaseProviders.values()).map(provider =>
+  const compilationDatabases = await Promise.all(
+    Array.from(compilationDatabaseProviders.values()).map(provider =>
       provider.getCompilationDatabase(src),
     ),
-  )
-    .filter(db => db != null)
-    .toArray()
-    .map(dbs => dbs[0] || null)
-    .toPromise(); // converting to promise because no cancellation is required
+  );
+  for (const compilationDatabase of compilationDatabases) {
+    if (compilationDatabase != null) {
+      return compilationDatabase;
+    }
+  }
+  return null;
 }
 
 const clangServices = new WeakSet();

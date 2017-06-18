@@ -9,16 +9,12 @@
  * @format
  */
 
-import {Observable} from 'rxjs';
-
 import type {
   ClangCompilationDatabase,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 
 export type ClangCompilationDatabaseProvider = {
-  getCompilationDatabase: (
-    path: string,
-  ) => Observable<?ClangCompilationDatabase>,
+  getCompilationDatabase: (path: string) => Promise<?ClangCompilationDatabase>,
   reset: (host: string) => void,
   resetForSource: (src: string) => void,
 };
