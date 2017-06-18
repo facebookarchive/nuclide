@@ -119,5 +119,8 @@ export function provideClangCompilationDatabase(): ClangCompilationDatabaseProvi
         src,
       ).getCompilationDatabase();
     },
+    reset(src: string): void {
+      new BuckClangCompilationDatabaseProvider(src).reset();
+    },
   };
 }

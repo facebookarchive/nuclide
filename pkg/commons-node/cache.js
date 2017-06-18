@@ -28,4 +28,8 @@ export class Cache<T> {
     this.store.set(key, value);
     return value;
   }
+
+  delete(key: string): void {
+    this.store.delete(key);
+  }
 }

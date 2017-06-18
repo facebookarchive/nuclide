@@ -15,4 +15,5 @@ import type {
 
 export type ClangCompilationDatabaseProvider = {
   getCompilationDatabase: (path: string) => Promise<?ClangCompilationDatabase>,
+  reset: (src: string) => void,
 };

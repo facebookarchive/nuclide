@@ -53,6 +53,10 @@ export class BuckClangCompilationDatabaseProvider {
     this._src = src;
   }
 
+  reset(): void {
+    buckCompilationDBSourceCache.delete(this._src);
+  }
+
   async getCompilationDatabase(): Promise<?ClangCompilationDatabase> {
     return buckCompilationDBSourceCache.getOrCreate(this._src, () =>
       this._loadCompilationDatabaseFromBuck().catch(err => {

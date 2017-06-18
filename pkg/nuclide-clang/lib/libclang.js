@@ -261,6 +261,7 @@ module.exports = {
   reset(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
+      compilationDatabaseProviders.forEach(provider => provider.reset(src));
       const service = getClangServiceByNuclideUri(src);
       return service.reset(src);
     }
