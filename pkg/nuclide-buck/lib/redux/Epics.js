@@ -12,7 +12,7 @@
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 import type {PlatformGroup, Store} from '../types';
 import type {Action} from './Actions';
-import type {ResolvedRuleType} from '../../../nuclide-buck-rpc';
+import type {ResolvedRuleType} from '../../../nuclide-buck-rpc/lib/types';
 
 import invariant from 'assert';
 import {Observable} from 'rxjs';

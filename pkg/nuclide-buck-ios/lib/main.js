@@ -19,7 +19,7 @@ import type {
 } from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/BuckService';
+import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';

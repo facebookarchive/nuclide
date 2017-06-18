@@ -19,7 +19,7 @@ import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
 import type {
   ResolvedBuildTarget,
   ResolvedRuleType,
-} from '../../nuclide-buck-rpc/lib/BuckService';
+} from '../../nuclide-buck-rpc/lib/types';
 
 import React from 'react';
 

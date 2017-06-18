@@ -21,9 +21,6 @@ import type {
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {
-  BuckClangCompilationDatabaseProvider,
-} from './BuckClangCompilationDatabaseProvider';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable} from 'atom';
 import {openNearestBuildFile} from './buildFiles';
@@ -31,6 +28,8 @@ import {getSuggestion} from './HyperclickProvider';
 import {track} from '../../nuclide-analytics';
 import {BuckTaskRunner} from './BuckTaskRunner';
 import {PlatformService} from './PlatformService';
+import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {Observable} from 'rxjs';
 
 const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 
@@ -95,16 +94,18 @@ class Activation {
 
   provideClangCompilationDatabase(): ClangCompilationDatabaseProvider {
     return {
-      getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
-        return new BuckClangCompilationDatabaseProvider(
-          src,
-        ).getCompilationDatabase();
+      getCompilationDatabase(
+        src: string,
+      ): Observable<?ClangCompilationDatabase> {
+        return getBuckServiceByNuclideUri(src)
+          .getCompilationDatabase(src)
+          .refCount();
       },
-      reset(src: string): void {
-        new BuckClangCompilationDatabaseProvider(src).reset();
+      resetForSource(src: string): void {
+        getBuckServiceByNuclideUri(src).resetCompilationDatabaseForSource(src);
       },
-      fullReset(src: string): void {
-        new BuckClangCompilationDatabaseProvider(src).fullReset();
+      reset(host: string): void {
+        getBuckServiceByNuclideUri(host).resetCompilationDatabase();
       },
     };
   }

@@ -21,6 +21,7 @@ import type {
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangCompilationDatabaseProvider} from './types';
 
+import {Observable} from 'rxjs';
 import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -45,20 +46,18 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
-async function getCompilationDatabase(
+function getCompilationDatabase(
   src: string,
 ): Promise<?ClangCompilationDatabase> {
-  const compilationDatabases = await Promise.all(
-    Array.from(compilationDatabaseProviders.values()).map(provider =>
+  return Observable.merge(
+    ...Array.from(compilationDatabaseProviders.values()).map(provider =>
       provider.getCompilationDatabase(src),
     ),
-  );
-  for (const compilationDatabase of compilationDatabases) {
-    if (compilationDatabase != null) {
-      return compilationDatabase;
-    }
-  }
-  return null;
+  )
+    .filter(db => db != null)
+    .toArray()
+    .map(dbs => dbs[0] || null)
+    .toPromise(); // converting to promise because no cancellation is required
 }
 
 const clangServices = new WeakSet();
@@ -92,7 +91,7 @@ module.exports = {
     // This is so the user can easily refresh the Clang + Buck state by reloading Atom.
     if (!clangServices.has(service)) {
       clangServices.add(service);
-      await service.fullReset();
+      await service.reset();
     }
 
     return service
@@ -258,17 +257,19 @@ module.exports = {
     };
   },
 
-  reset(editor: atom$TextEditor) {
+  resetForSource(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
-      compilationDatabaseProviders.forEach(provider => provider.reset(src));
+      compilationDatabaseProviders.forEach(provider =>
+        provider.resetForSource(src),
+      );
       const service = getClangServiceByNuclideUri(src);
-      return service.reset(src);
+      return service.resetForSource(src);
     }
   },
 
-  async fullServiceReset(src: string): Promise<void> {
-    compilationDatabaseProviders.forEach(provider => provider.fullReset(src));
-    await getClangServiceByNuclideUri(src).fullReset();
+  async reset(host: string): Promise<void> {
+    compilationDatabaseProviders.forEach(provider => provider.reset(host));
+    await getClangServiceByNuclideUri(host).reset();
   },
 };

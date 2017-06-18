@@ -34,7 +34,7 @@ import Refactoring from './Refactoring';
 import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {
-  reset,
+  resetForSource,
   registerCompilationDatabaseProvider,
   getRelatedSourceOrHeader,
 } from './libclang';
@@ -60,7 +60,7 @@ export function activate() {
         if (path == null) {
           return;
         }
-        await reset(editor);
+        await resetForSource(editor);
       },
     ),
   );
