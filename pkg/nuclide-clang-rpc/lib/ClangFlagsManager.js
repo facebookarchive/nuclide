@@ -462,9 +462,14 @@ export default class ClangFlagsManager {
               filename,
               this._realpathCache,
             );
+            // Buck sends the flags in the arguments section. We use it if it was correctly parsed
+            // by JSON.parse. The command section emitted by buck is not a valid json expression nor
+            // can be parsed by shellParse.
             const result = {
               rawData: {
-                flags: command,
+                flags: Array.isArray(entry.arguments)
+                  ? entry.arguments
+                  : command,
                 file,
                 directory,
               },

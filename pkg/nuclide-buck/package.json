@@ -61,6 +61,11 @@
       "versions": {
         "0.0.0": "providePlatformService"
       }
+    },
+    "nuclide.clang.compilation-database": {
+      "versions": {
+        "0.0.0": "provideClangCompilationDatabase"
+      }
     }
   },
   "activationCommands": {}

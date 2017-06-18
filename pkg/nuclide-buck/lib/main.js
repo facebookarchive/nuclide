@@ -13,7 +13,16 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {HyperclickProvider} from 'atom-ide-ui';
 import type {SerializedState} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
+import type {
+  ClangCompilationDatabaseProvider,
+} from '../../nuclide-clang/lib/types';
+import type {
+  ClangCompilationDatabase,
+} from '../../nuclide-clang-rpc/lib/rpc-types';
 
+import {
+  BuckClangCompilationDatabaseProvider,
+} from './BuckClangCompilationDatabaseProvider';
 import registerGrammar from '../../commons-atom/register-grammar';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -101,4 +110,14 @@ export function provideBuckBuilder(): BuckBuildSystem {
 
 export function providePlatformService(): PlatformService {
   return getTaskRunner().getPlatformService();
+}
+
+export function provideClangCompilationDatabase(): ClangCompilationDatabaseProvider {
+  return {
+    getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+      return new BuckClangCompilationDatabaseProvider(
+        src,
+      ).getCompilationDatabase();
+    },
+  };
 }
