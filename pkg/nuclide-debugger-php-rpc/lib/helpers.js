@@ -125,14 +125,16 @@ export function launchPhpScriptWithXDebugEnabled(
     const block: string = chunk.toString();
     const output = `child_process(${proc.pid}) stdout: ${block}`;
     logger.debug(output);
-    if (sendToOutputWindowAndResolve != null) {
-      sendToOutputWindowAndResolve(block, 'text');
-    }
+    // No need to forward stdout to the client here. Stdout is also sent
+    // over the XDebug protocol channel and is forwarded to the client
+    // by DbgpSocket.
   });
   proc.stderr.on('data', chunk => {
     const block: string = chunk.toString().trim();
     const output = `child_process(${proc.pid}) stderr: ${block}`;
     logger.debug(output);
+    // TODO: Remove this when XDebug forwards stderr streams over
+    // DbgpSocket.
     if (sendToOutputWindowAndResolve != null) {
       sendToOutputWindowAndResolve(block, 'error');
     }
