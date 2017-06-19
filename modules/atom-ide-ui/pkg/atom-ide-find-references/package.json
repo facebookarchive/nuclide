@@ -19,6 +19,14 @@
       ]
     }
   },
+  "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Find References"
+      ]
+    }
+  },
   "consumedServices": {
     "nuclide-find-references.provider": {
       "versions": {

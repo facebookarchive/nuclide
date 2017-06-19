@@ -19,6 +19,14 @@
       "description": "Display a search bar to search the contents of the outline view."
     }
   },
+  "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Outline View"
+      ]
+    }
+  },
   "deserializers": {
     "nuclide.OutlineViewPanelState": "deserializeOutlineViewPanelState",
     "atom-ide-ui.OutlineViewPanelState": "deserializeOutlineViewPanelState"
