@@ -34,6 +34,7 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import HealthPaneItem, {WORKSPACE_VIEW_URI} from './HealthPaneItem';
 import getChildProcessesTree from './getChildProcessesTree';
 import getStats from './getStats';
+import trackStalls from './trackStalls';
 
 class Activation {
   _paneItemStates: Observable<PaneItemState>;
@@ -99,6 +100,7 @@ class Activation {
       statsStream
         .buffer(analyticsTimeouts.switchMap(Observable.interval))
         .subscribe(this._updateAnalytics),
+      trackStalls(),
     );
   }
 
