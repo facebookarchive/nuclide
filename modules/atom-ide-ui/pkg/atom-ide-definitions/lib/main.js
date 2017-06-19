@@ -65,6 +65,10 @@ export type DefinitionProvider = {
   ) => Promise<?DefinitionQueryResult>,
 };
 
+export type DefinitionPreviewProvider = {
+  getDefinitionPreview(definition: Definition): Promise<string>,
+};
+
 class Activation {
   _providers: ProviderRegistry<DefinitionProvider>;
   _disposables: UniversalDisposable;

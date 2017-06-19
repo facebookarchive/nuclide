@@ -9,28 +9,37 @@
  * @format
  */
 
-import type {Datatip, ModifierKey, DefinitionProvider} from 'atom-ide-ui';
+import type {Datatip, ModifierKey} from '../../atom-ide-datatip';
+
+import type {
+  Definition,
+  DefinitionProvider,
+  DefinitionPreviewProvider,
+} from '../../atom-ide-definitions';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+import analytics from 'nuclide-commons-atom/analytics';
+
 import {
-  getDefinitionPreviewServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
-import {track, trackTiming} from '../../nuclide-analytics';
+  getDefinitionPreview as getLocalFileDefinitionPreview,
+} from 'nuclide-commons/symbol-definition-preview';
 
 function getPlatformKeys(platform) {
+  const rootPkg = atom.config.get('nuclide') ? 'nuclide' : 'atom-ide-ui';
   if (platform === 'darwin') {
-    return 'nuclide.hyperclick.darwinTriggerKeys';
+    return `${rootPkg}.hyperclick.darwinTriggerKeys`;
   } else if (platform === 'win32') {
-    return 'nuclide.hyperclick.win32TriggerKeys';
+    return `${rootPkg}.hyperclick.win32TriggerKeys`;
   }
-  return 'nuclide.hyperclick.linuxTriggerKeys';
+  return `${rootPkg}.hyperclick.linuxTriggerKeys`;
 }
 
 export default class HyperclickPreviewManager {
   _definitionProviders: ProviderRegistry<
     DefinitionProvider,
   > = new ProviderRegistry();
+  _definitionPreviewProvider: ?DefinitionPreviewProvider;
   _disposables: UniversalDisposable = new UniversalDisposable();
   _triggerKeys: Set<ModifierKey> = new Set();
 
@@ -69,13 +78,14 @@ export default class HyperclickPreviewManager {
     if (definitionProvider == null) {
       return null;
     }
+
     const result = await definitionProvider.getDefinition(editor, position);
     if (result == null) {
       return null;
     }
 
     const {queryRange, definitions} = result;
-    track('hyperclick-preview-popup', {
+    analytics.track('hyperclick-preview-popup', {
       grammar: grammar.name,
       definitionCount: definitions.length,
     });
@@ -87,14 +97,7 @@ export default class HyperclickPreviewManager {
         return null;
       }
 
-      const {getDefinitionPreview} = getDefinitionPreviewServiceByNuclideUri(
-        definition.path,
-      );
-
-      const definitionPreview = await trackTiming(
-        'hyperclickPreview.getDefinitionPreview',
-        () => getDefinitionPreview(definition),
-      );
+      const definitionPreview = await this.getDefinitionPreview(definition);
       return {
         markedStrings: [
           {
@@ -123,5 +126,24 @@ export default class HyperclickPreviewManager {
     const disposable = this._definitionProviders.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
+  }
+
+  consumeDefinitionPreviewProvider(provider: DefinitionPreviewProvider) {
+    this._definitionPreviewProvider = provider;
+  }
+
+  async getDefinitionPreview(definition: Definition) {
+    let getDefinitionPreviewFn;
+    if (this._definitionPreviewProvider) {
+      getDefinitionPreviewFn = this._definitionPreviewProvider.getDefinitionPreview.bind(
+        this._definitionPreviewProvider,
+      );
+    } else {
+      getDefinitionPreviewFn = getLocalFileDefinitionPreview;
+    }
+
+    return analytics.trackTiming('hyperclickPreview.getDefinitionPreview', () =>
+      getDefinitionPreviewFn(definition),
+    );
   }
 }

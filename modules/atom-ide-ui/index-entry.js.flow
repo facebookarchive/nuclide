@@ -75,5 +75,6 @@ export type {
 export type {
   Definition,
   DefinitionProvider,
+  DefinitionPreviewProvider,
   DefinitionQueryResult,
 } from './pkg/atom-ide-definitions';

@@ -12,17 +12,21 @@
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import dedent from 'dedent';
 import {Point} from 'simple-text-buffer';
-import {getDefinitionPreview} from '../lib/DefinitionPreviewService';
+import {getDefinitionPreview} from '../symbol-definition-preview';
 
 function fixtureDefinitionWithPoint(point: Point) {
   return {
-    path: nuclideUri.join(__dirname, 'fixtures', 'fixture.js'),
+    path: nuclideUri.join(
+      __dirname,
+      'fixtures',
+      'symbol-definition-preview-sample.js',
+    ),
     language: 'javascript',
     position: point,
   };
 }
 
-describe('DefinitionPreviewService', () => {
+describe('getDefinitionPreview', () => {
   describe('Constant symbols', () => {
     it('returns the only line of a one-line symbol', () => {
       waitsForPromise(async () => {
