@@ -88,12 +88,17 @@ function renderRowWithLinks(
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
   const {message} = props;
   if (message.html != null) {
-    return <span dangerouslySetInnerHTML={{__html: message.html}} />;
+    return (
+      <span
+        title={message.text}
+        dangerouslySetInnerHTML={{__html: message.html}}
+      />
+    );
   } else if (message.text != null) {
     const rows = props.preserveNewlines !== false
       ? message.text.split('\n')
       : [message.text];
-    return <span>{rows.map(renderRowWithLinks)}</span>;
+    return <span title={message.text}>{rows.map(renderRowWithLinks)}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
   }
