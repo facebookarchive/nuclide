@@ -828,7 +828,7 @@ export class HgService {
           'blame',
           '-c', // Query the hash
           '-T',
-          '{node|short}\n', // Just display the hash per line
+          '{lines % "{node|short}\n"}', // Just display the hash per line
           '-r',
           'wdir()', // Blank out uncommitted changes
           filePath,
