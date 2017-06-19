@@ -1,5 +1,31 @@
 # Nuclide Changelog
 
+## v0.234.0
+
+### Highlights
+* The Outline View now has a search box to filter results.
+
+## General
+
+* Nuclide now requires Atom ≥ 1.17.2.
+* File Tree now shows your current working directory name in the title, and hovering over the title shows the full path including remote machine name.
+* File Tree: When opening a file, the Open Files section will no longer resize until  the mouse leaves the File Tree.
+* File Tree's Open Files listing now supports the file-icons package.
+* Main menu: Items in the “Nuclide” menu are now sorted alphabetically.
+* Working Sets: Fixed a bug preventing people from being able to close the Working Set selection modal.
+* “Find References” now defaults to opening in the bottom pane.
+    * This is configurable in Nuclide Settings (“where to open the find references pane”).
+* Console: Fix autoscroll when large messages are added.
+
+## Languages
+
+* Faster autocompletion in Flow (when using v48+) thanks to using the persistent connection.
+
+## Debugger
+
+* Fix error when remote root folder is removed (ie. disconnected) after debugging.
+
+
 ## v0.233.0
 
 ### General
