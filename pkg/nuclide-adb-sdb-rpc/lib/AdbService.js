@@ -115,6 +115,15 @@ export async function launchActivity(
   );
 }
 
+export async function launchMainActivity(
+  device: string,
+  packageName: string,
+  debug: boolean,
+  parameters: ?Map<string, string>,
+): Promise<string> {
+  return new Adb(device).launchMainActivity(packageName, debug, parameters);
+}
+
 export async function activityExists(
   device: string,
   packageName: string,

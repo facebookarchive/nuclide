@@ -176,6 +176,27 @@ export class Adb extends DebugBridge {
     return this.runShortCommand(...args).toPromise();
   }
 
+  launchMainActivity(
+    packageName: string,
+    debug: boolean,
+    parameters: ?Map<string, string>,
+  ): Promise<string> {
+    const args = ['shell', 'am', 'start'];
+    args.push('-W', '-n');
+    if (parameters != null) {
+      for (const [key, parameter] of parameters) {
+        args.push('-e', key, parameter);
+      }
+    }
+    if (debug) {
+      args.push('-N', '-D');
+    }
+    args.push('-a', 'android.intent.action.MAIN');
+    args.push('-c', 'android.intent.category.LAUNCHER');
+    args.push(`${packageName}`);
+    return this.runShortCommand(...args).toPromise();
+  }
+
   activityExists(packageName: string, activity: string): Promise<boolean> {
     const packageActivityString = `${packageName}/${activity}`;
     return this.runShortCommand('shell', 'dumpsys', 'package')
