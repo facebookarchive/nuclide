@@ -22,6 +22,7 @@ const {
 const SHEBANG = '#!/usr/bin/env node';
 const LINE = '';
 const CODE = 'module.exports = {};';
+const DOCBLOCK = '/* docblock */';
 const USE_BABEL = "'use babel';";
 
 const LICENSE_ERROR = 'Expected a license header';
@@ -60,10 +61,27 @@ ruleTester.run('license-header', rule, {
     {
       code: [SHEBANG, LINE].join('\n'),
       errors: [LICENSE_ERROR],
+      output: [SHEBANG, LINE].join('\n'),
     },
     {
       code: [CODE, LINE].join('\n'),
       errors: [LICENSE_ERROR],
+      output: FLOW_FORMAT_AND_TRANSPILE + CODE + '\n',
+    },
+    {
+      code: ['/* @flow */', CODE, LINE].join('\n'),
+      errors: [LICENSE_ERROR],
+      output: [FLOW_FORMAT_AND_TRANSPILE.trim(), CODE, LINE].join('\n'),
+    },
+    {
+      code: ['/* @noflow */', CODE, LINE].join('\n'),
+      errors: [LICENSE_ERROR],
+      output: [NO_FLOW_AND_NO_TRANSPILE.trim(), CODE, LINE].join('\n'),
+    },
+    {
+      code: [DOCBLOCK, CODE, LINE].join('\n'),
+      errors: [LICENSE_ERROR],
+      output: [FLOW_FORMAT_AND_TRANSPILE.trim(), DOCBLOCK, CODE, LINE].join('\n'),
     },
   ],
 });
