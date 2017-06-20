@@ -17,25 +17,36 @@ type TreeItemProps = {
   className?: string,
   selected?: boolean,
 };
-export const TreeItem = (props: TreeItemProps) => {
-  const {className, selected, children, ...remainingProps} = props;
-  return (
-    <li
-      className={classnames(
-        className,
-        {
-          selected,
-        },
-        'list-item',
-      )}
-      {...remainingProps}>
-      {selected && typeof children === 'string'
-        ? // String children must be wrapped to receive correct styles when selected.
-          <span>{children}</span>
-        : children}
-    </li>
-  );
-};
+
+export class TreeItem extends React.Component {
+  props: TreeItemProps;
+  _liNode: ?Element;
+
+  scrollIntoView() {
+    this._liNode && this._liNode.scrollIntoView();
+  }
+
+  render() {
+    const {className, selected, children, ...remainingProps} = this.props;
+    return (
+      <li
+        className={classnames(
+          className,
+          {
+            selected,
+          },
+          'list-item',
+        )}
+        {...remainingProps}
+        ref={liNode => (this._liNode = liNode)}>
+        {selected && typeof children === 'string'
+          ? // String children must be wrapped to receive correct styles when selected.
+            <span>{children}</span>
+          : children}
+      </li>
+    );
+  }
+}
 
 type NestedTreeItemProps = {
   title?: ?React.Element<any>,
