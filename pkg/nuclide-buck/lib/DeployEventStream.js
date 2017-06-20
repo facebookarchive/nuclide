@@ -53,7 +53,6 @@ async function debugBuckTarget(
   buckRoot: string,
   buildTarget: string,
   runArguments: Array<string>,
-  targetType: string,
 ): Promise<string> {
   const output = await buckService.showOutput(buckRoot, buildTarget);
   if (output.length === 0) {
@@ -192,7 +191,6 @@ export function getDeployBuildEvents(
   buckRoot: string,
   buildTarget: string,
   runArguments: Array<string>,
-  targetType: string,
 ): Observable<BuckEvent> {
   const argString = runArguments.length === 0
     ? ''
@@ -201,13 +199,7 @@ export function getDeployBuildEvents(
     .filter(message => message.kind === 'exit' && message.exitCode === 0)
     .switchMap(() => {
       return Observable.fromPromise(
-        debugBuckTarget(
-          buckService,
-          buckRoot,
-          buildTarget,
-          runArguments,
-          targetType,
-        ),
+        debugBuckTarget(buckService, buckRoot, buildTarget, runArguments),
       )
         .map(path => ({
           type: 'log',
@@ -300,37 +292,39 @@ export function getDeployInstallEvents(
 
 export function getDeployTestEvents(
   processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
+  buckService: BuckService,
   buckRoot: string,
-  targetType: string,
+  buildTarget: string,
 ): Observable<BuckEvent> {
-  let attachArgRegex;
-  switch (targetType) {
-    case 'java_test':
-      attachArgRegex = JDWP_PROCESS_PORT_REGEX;
-      break;
-    default:
-      attachArgRegex = LLDB_PROCESS_ID_REGEX;
-      break;
-  }
-
-  return processStream
-    .flatMap(message => {
+  return Observable.fromPromise(
+    _getBuckTargetType(buckService, buckRoot, buildTarget),
+  )
+    .map(targetType => {
+      switch (targetType) {
+        case 'java_test':
+          return JDWP_PROCESS_PORT_REGEX;
+        default:
+          return LLDB_PROCESS_ID_REGEX;
+      }
+    })
+    .combineLatest(processStream)
+    .flatMap(([attachArgRegex, message]) => {
       if (message.kind !== 'stderr') {
         return Observable.empty();
       }
 
       const regMatch = message.data.match(attachArgRegex);
       if (regMatch != null) {
-        return Observable.of(regMatch[1]);
+        return Observable.of([attachArgRegex, regMatch[1]]);
       }
 
       return Observable.empty();
     })
-    .switchMap(attachArg => {
+    .switchMap(([regex, attachArg]) => {
       let debugMsg;
       let debugObservable;
-      switch (targetType) {
-        case 'java_test':
+      switch (regex) {
+        case JDWP_PROCESS_PORT_REGEX:
           debugMsg = `Attaching Java debugger to port ${attachArg}...`;
           debugObservable = Observable.fromPromise(
             debugJavaTest(parseInt(attachArg, 10), buckRoot),
@@ -350,4 +344,17 @@ export function getDeployTestEvents(
         level: 'info',
       });
     });
+}
+
+async function _getBuckTargetType(
+  buckService: BuckService,
+  buckRoot: string,
+  buildTarget: string,
+): Promise<string> {
+  const output = await buckService.showOutput(buckRoot, buildTarget);
+  if (output.length === 1) {
+    return output[0]['buck.type'] || '';
+  }
+
+  return '';
 }
