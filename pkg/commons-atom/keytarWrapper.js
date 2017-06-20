@@ -61,7 +61,11 @@ const getPasswordScriptAsync = `
     var data = JSON.parse(input);
     keytar.getPassword(data.service, data.account).then(function(password) {
       console.log(JSON.stringify(password));
-    }).then(rl.close.bind(rl), rl.close.bind(rl)));
+      rl.close();
+    }, function() {
+      console.log(null);
+      rl.close();
+    });
   });
 `;
 
