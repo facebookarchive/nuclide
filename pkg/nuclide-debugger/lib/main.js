@@ -62,6 +62,7 @@ import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {DebuggerLayoutManager} from './DebuggerLayoutManager';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
+import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import os from 'os';
 import nullthrows from 'nullthrows';
 
@@ -213,7 +214,10 @@ export function createDebuggerView(model: mixed): ?HTMLElement {
   let view = null;
   if (model instanceof DebuggerModel) {
     view = <DebuggerView model={model} />;
-  } else if (model instanceof DebuggerPaneViewModel) {
+  } else if (
+    model instanceof DebuggerPaneViewModel ||
+    model instanceof DebuggerPaneContainerViewModel
+  ) {
     view = model.createView();
   }
 
