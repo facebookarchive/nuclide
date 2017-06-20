@@ -30,7 +30,7 @@ import {
   viewableFromReactElement,
 } from '../../commons-atom/viewableFromReactElement';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
+import {macrotask, nextAnimationFrame} from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeController from './FileTreeController';
@@ -69,31 +69,30 @@ class Activation {
       state = {};
     }
 
-    let timerId;
     this._disposables = new UniversalDisposable(
       disablePackage('tree-view'),
       // This is a horrible hack to work around the fact that the tree view doesn't properly clean
       // up after its views when disabled as soon as it's activated. See atom/tree-view#1136
-      atom.workspace.observePaneItems(item => {
-        if (
-          item != null &&
-          typeof item.getURI === 'function' &&
-          item.getURI() === 'atom://tree-view'
-        ) {
-          timerId = setImmediate(() => {
-            if (
-              atom.packages.isPackageDisabled('tree-view') &&
-              atom.workspace.paneForItem(item) && // Make sure it's still in the workspace.
-              typeof item.destroy === 'function'
-            ) {
-              item.destroy();
-            }
-          });
-        }
-      }),
+      observableFromSubscribeFunction(
+        atom.workspace.observePaneItems.bind(atom.workspace),
+      )
+        // Wait for any post-addition work to be done by tree-view.
+        // $FlowFixMe: Add `delayWhen` to RxJS defs
+        .delayWhen(() => macrotask)
+        .subscribe(item => {
+          if (
+            item != null &&
+            typeof item.getURI === 'function' &&
+            item.getURI() === 'atom://tree-view' &&
+            atom.packages.isPackageDisabled('tree-view') &&
+            atom.workspace.paneForItem(item) && // Make sure it's still in the workspace.
+            typeof item.destroy === 'function'
+          ) {
+            item.destroy();
+          }
+        }),
       () => {
         this._fileTreeController.destroy();
-        clearImmediate(timerId);
       },
     );
 
