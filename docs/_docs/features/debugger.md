@@ -194,7 +194,6 @@ language specific debugging workflows that require discussion and illustration.
 
 ## Platform Specific Debugging
 
-- [React Native](/docs/platforms/react-native/#debugging)
 - [iOS](/docs/platforms/ios/#debugging)
 - [Android](/docs/platforms/android/#debugging)
 
