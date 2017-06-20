@@ -75,8 +75,8 @@ export function createTypeHintProvider(): TypeHintProviderType {
 
 export function createCodeFormatProvider(): CodeFormatProvider {
   return {
-    selector: Array.from(GRAMMARS).join(', '),
-    inclusionPriority: 1,
+    grammarScopes: Array.from(GRAMMARS),
+    priority: 1,
     formatEntireFile: (editor, range) => getEntireFormatting(editor, range),
   };
 }

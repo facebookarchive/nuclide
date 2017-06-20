@@ -10,7 +10,6 @@
  */
 
 import type {
-  CodeFormatProvider,
   RangeCodeFormatProvider,
   FileCodeFormatProvider,
   OnTypeCodeFormatProvider,
@@ -22,6 +21,7 @@ import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {
   observeEditorDestroy,
   observeTextEditors,
@@ -48,13 +48,17 @@ type FormatEvent =
 
 export default class CodeFormatManager {
   _subscriptions: UniversalDisposable;
-  _rangeProviders: Array<RangeCodeFormatProvider> = [];
-  _fileProviders: Array<FileCodeFormatProvider> = [];
-  _onTypeProviders: Array<OnTypeCodeFormatProvider> = [];
-  _onSaveProviders: Array<OnSaveCodeFormatProvider> = [];
+  _rangeProviders: ProviderRegistry<RangeCodeFormatProvider>;
+  _fileProviders: ProviderRegistry<FileCodeFormatProvider>;
+  _onTypeProviders: ProviderRegistry<OnTypeCodeFormatProvider>;
+  _onSaveProviders: ProviderRegistry<OnSaveCodeFormatProvider>;
 
   constructor() {
     this._subscriptions = new UniversalDisposable(this._subscribeToEvents());
+    this._rangeProviders = new ProviderRegistry();
+    this._fileProviders = new ProviderRegistry();
+    this._onTypeProviders = new ProviderRegistry();
+    this._onSaveProviders = new ProviderRegistry();
   }
 
   /**
@@ -234,15 +238,8 @@ export default class CodeFormatManager {
           selectionEnd.column === 0 ? selectionEnd : [selectionEnd.row + 1, 0],
         );
       }
-      const {scopeName} = editor.getGrammar();
-      const rangeProvider = this._getMatchingProviderForScopeName(
-        this._rangeProviders,
-        scopeName,
-      );
-      const fileProvider = this._getMatchingProviderForScopeName(
-        this._fileProviders,
-        scopeName,
-      );
+      const rangeProvider = this._rangeProviders.getProviderForEditor(editor);
+      const fileProvider = this._fileProviders.getProviderForEditor(editor);
       const contents = editor.getText();
       if (
         rangeProvider != null &&
@@ -295,11 +292,7 @@ export default class CodeFormatManager {
       // the character that will usually cause a reformat (i.e. `}` instead of `{`).
       const character = event.newText[event.newText.length - 1];
 
-      const {scopeName} = editor.getGrammar();
-      const provider = this._getMatchingProviderForScopeName(
-        this._onTypeProviders,
-        scopeName,
-      );
+      const provider = this._onTypeProviders.getProviderForEditor(editor);
       if (provider == null) {
         return Observable.empty();
       }
@@ -343,12 +336,7 @@ export default class CodeFormatManager {
   }
 
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
-    const {scopeName} = editor.getGrammar();
-    const saveProvider = this._getMatchingProviderForScopeName(
-      this._onSaveProviders,
-      scopeName,
-    );
-
+    const saveProvider = this._onSaveProviders.getProviderForEditor(editor);
     if (saveProvider != null) {
       return Observable.fromPromise(
         saveProvider.formatOnSave(editor),
@@ -364,47 +352,20 @@ export default class CodeFormatManager {
     return Observable.empty();
   }
 
-  _getMatchingProviderForScopeName<T: CodeFormatProvider>(
-    providers: Array<T>,
-    scopeName: string,
-  ): ?T {
-    return providers.find(provider => {
-      const providerGrammars = provider.selector.split(/, ?/);
-      return (
-        provider.inclusionPriority > 0 &&
-        providerGrammars.indexOf(scopeName) !== -1
-      );
-    });
-  }
-
   addRangeProvider(provider: RangeCodeFormatProvider): IDisposable {
-    return this._addProvider(this._rangeProviders, provider);
+    return this._rangeProviders.addProvider(provider);
   }
 
   addFileProvider(provider: FileCodeFormatProvider): IDisposable {
-    return this._addProvider(this._fileProviders, provider);
+    return this._fileProviders.addProvider(provider);
   }
 
   addOnTypeProvider(provider: OnTypeCodeFormatProvider): IDisposable {
-    return this._addProvider(this._onTypeProviders, provider);
+    return this._onTypeProviders.addProvider(provider);
   }
 
   addOnSaveProvider(provider: OnSaveCodeFormatProvider): IDisposable {
-    return this._addProvider(this._onSaveProviders, provider);
-  }
-
-  _addProvider<T: CodeFormatProvider>(
-    providers: Array<T>,
-    provider: T,
-  ): IDisposable {
-    providers.push(provider);
-    providers.sort((a, b) => b.inclusionPriority - a.inclusionPriority);
-    return new UniversalDisposable(() => {
-      const index = providers.indexOf(provider);
-      if (index !== -1) {
-        providers.splice(index);
-      }
-    });
+    return this._onSaveProviders.addProvider(provider);
   }
 
   dispose() {

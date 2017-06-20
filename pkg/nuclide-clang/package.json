@@ -76,9 +76,9 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
-    "nuclide-code-format.provider": {
+    "atom-ide-code-format.file": {
       "versions": {
-        "0.0.0": "provideCodeFormat"
+        "0.1.0": "provideCodeFormat"
       }
     },
     "atom-ide-definitions": {

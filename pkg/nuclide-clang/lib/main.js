@@ -118,8 +118,8 @@ export function consumeBusySignal(service: BusySignalService): IDisposable {
 
 export function provideCodeFormat(): CodeFormatProvider {
   return {
-    selector: Array.from(GRAMMAR_SET).join(', '),
-    inclusionPriority: 1,
+    grammarScopes: Array.from(GRAMMAR_SET),
+    priority: 1,
     formatEntireFile(editor, range) {
       return CodeFormatHelpers.formatEntireFile(editor, range);
     },

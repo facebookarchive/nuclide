@@ -116,7 +116,7 @@ async function createLanguageService(): Promise<
       analyticsEventName: 'hack.typeHint',
     },
     codeFormat: {
-      version: '0.0.0',
+      version: '0.1.0',
       priority: 1,
       analyticsEventName: 'hack.formatCode',
       canFormatRanges: true,

@@ -28,8 +28,8 @@ describe('CodeFormatManager', () => {
     waitsForPromise(async () => {
       const manager = new CodeFormatManager();
       manager.addRangeProvider({
-        selector: 'text.plain.null-grammar',
-        inclusionPriority: 1,
+        grammarScopes: ['text.plain.null-grammar'],
+        priority: 1,
         formatCode: () =>
           Promise.resolve([
             {
@@ -53,8 +53,8 @@ describe('CodeFormatManager', () => {
     waitsForPromise(async () => {
       const manager = new CodeFormatManager();
       manager.addFileProvider({
-        selector: 'text.plain.null-grammar',
-        inclusionPriority: 1,
+        grammarScopes: ['text.plain.null-grammar'],
+        priority: 1,
         formatEntireFile: () => Promise.resolve({formatted: 'ghi'}),
       });
 
@@ -71,8 +71,8 @@ describe('CodeFormatManager', () => {
     waitsForPromise(async () => {
       const manager = new CodeFormatManager();
       const provider = {
-        selector: 'text.plain.null-grammar',
-        inclusionPriority: 1,
+        grammarScopes: ['text.plain.null-grammar'],
+        priority: 1,
         formatAtPosition: () =>
           Promise.resolve([
             {
@@ -103,8 +103,8 @@ describe('CodeFormatManager', () => {
       spyOn(config, 'getFormatOnSave').andReturn(true);
       const manager = new CodeFormatManager();
       manager.addOnSaveProvider({
-        selector: 'text.plain.null-grammar',
-        inclusionPriority: 1,
+        grammarScopes: ['text.plain.null-grammar'],
+        priority: 1,
         formatOnSave: () =>
           Promise.resolve([
             {
@@ -127,8 +127,8 @@ describe('CodeFormatManager', () => {
       spyOn(config, 'getFormatOnSave').andReturn(true);
       const manager = new CodeFormatManager();
       manager.addRangeProvider({
-        selector: 'text.plain.null-grammar',
-        inclusionPriority: 1,
+        grammarScopes: ['text.plain.null-grammar'],
+        priority: 1,
         formatCode: () => new Promise(() => {}),
       });
 
