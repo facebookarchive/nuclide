@@ -49,6 +49,13 @@ export type Diagnostic = {
   source?: string,
   // The diagnostic's message.
   message: string,
+  // Any related locations.
+  relatedLocations?: RelatedLocation[],
+};
+
+export type RelatedLocation = {
+  location: Location,
+  message: string,
 };
 
 export const DiagnosticSeverity = {

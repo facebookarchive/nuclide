@@ -16,10 +16,15 @@ import type {
   Definition,
   MessageType as DiagnosticMessageType,
   FileDiagnosticMessage,
+  Trace,
   FileDiagnosticUpdate,
   Reference,
 } from 'atom-ide-ui';
-import type {Diagnostic, PublishDiagnosticsParams} from './protocol';
+import type {
+  Diagnostic,
+  PublishDiagnosticsParams,
+  RelatedLocation,
+} from './protocol';
 import type {
   Completion,
   SymbolResult,
@@ -306,6 +311,15 @@ function lspSeverity_atomDiagnosticMessageType(
   }
 }
 
+function lspRelatedLocation_atomTrace(related: RelatedLocation): Trace {
+  return {
+    type: 'Trace',
+    text: related.message,
+    filePath: lspUri_localPath(related.location.uri),
+    range: lspRange_atomRange(related.location.range),
+  };
+}
+
 function lspDiagnostic_atomDiagnostic(
   diagnostic: Diagnostic,
   filePath: NuclideUri, // has already been converted for us
@@ -318,6 +332,8 @@ function lspDiagnostic_atomDiagnostic(
     filePath,
     text: diagnostic.message,
     range: lspRange_atomRange(diagnostic.range),
+    trace: (diagnostic.relatedLocations || [])
+      .map(lspRelatedLocation_atomTrace),
   };
 }
 
