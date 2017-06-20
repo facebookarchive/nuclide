@@ -54,7 +54,7 @@ export class OpenFilesListComponent extends React.PureComponent {
   componentDidUpdate(prevProps: Props): void {
     const selectedRow = this.refs.selectedRow;
     if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
-      selectedRow.scrollIntoViewIfNeeded();
+      selectedRow.scrollIntoView();
     }
   }
 
