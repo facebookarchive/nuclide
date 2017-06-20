@@ -29,7 +29,7 @@ import {
 } from '../../commons-node/redux-observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {nextTick} from 'nuclide-commons/observable';
+import {microtask} from 'nuclide-commons/observable';
 import {getLogger} from 'log4js';
 import * as AppSerialization from './AppSerialization';
 import * as Actions from './redux/Actions';
@@ -55,7 +55,7 @@ class Activation {
       observableFromSubscribeFunction(cb =>
         atom.packages.onDidActivatePackage(cb),
       )
-        .race(nextTick)
+        .race(microtask)
         .first()
         .subscribe(() => {
           this._needToDispatchActivatedAction = true;

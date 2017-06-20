@@ -46,7 +46,7 @@ import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
-import {throttle, nextTick} from 'nuclide-commons/observable';
+import {throttle, microtask} from 'nuclide-commons/observable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -264,7 +264,7 @@ export default class QuickSelectionComponent extends React.Component {
         observableFromSubscribeFunction(cb =>
           this._getTextEditor().onDidChange(cb),
         ),
-        nextTick,
+        microtask,
         {leading: false},
       ).subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(cb =>

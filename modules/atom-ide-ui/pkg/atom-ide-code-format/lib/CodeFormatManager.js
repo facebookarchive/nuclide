@@ -20,7 +20,7 @@ import type {
 import {Range} from 'atom';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {nextTick} from 'nuclide-commons/observable';
+import {microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   observeEditorDestroy,
@@ -318,7 +318,7 @@ export default class CodeFormatManager {
       // We want to wait until the cursor has actually moved before we issue a
       // format request, so that we format at the right position (and potentially
       // also let any other event handlers have their go).
-      return nextTick
+      return microtask
         .switchMap(() =>
           provider.formatAtPosition(
             editor,
