@@ -60,7 +60,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
               disposable.dispose();
               observer.complete();
             },
-            disableDismissOnClickOutsideModal: true,
+            shouldDismissOnClickOutsideModal: () => false,
           },
         );
       });
