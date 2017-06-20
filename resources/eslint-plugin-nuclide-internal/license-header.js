@@ -91,7 +91,7 @@ module.exports = function(context) {
       const source = sourceCode.text;
 
       const isInModules = context.getFilename().startsWith(
-        path.join(__dirname, '..', '..', 'TODO/') // To be enabled
+        path.join(__dirname, '..', '..', 'modules/')
       );
       const flowHeader = isInModules ?
         MODULES_FLOW_FORMAT_AND_TRANSPILE :

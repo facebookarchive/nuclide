@@ -7,6 +7,8 @@ Unlike code inside `pkg/`, `modules/` code cannot depend on other parts of
 Nuclide (besides other `modules/`) and must explicitly declare their
 dependencies.
 
+In addition, `modules/` code is BSD-licensed with an additional patent grant.
+
 ## Usage
 
 For ease of internal use, `modules/` is added to the `NODE_PATH` at runtime
