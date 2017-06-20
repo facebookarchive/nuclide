@@ -37,13 +37,14 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new AttachProcessInfo(this._targetUri);
   }
 
-  async preAttachActions(): Promise<void> {
+  preAttachActions(): Promise<void> {
     try {
-      // TODO(t18124539) @nmote This should require FlowFB but when used flow
-      // complains that it is an unused supression.
+      // $FlowFB
       const services = require('./fb/services');
-      services.startSlog();
-    } catch (_) {}
+      return services.startSlog();
+    } catch (_) {
+      return Promise.resolve();
+    }
   }
 
   async debug(): Promise<PhpDebuggerInstance> {

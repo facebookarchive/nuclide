@@ -15,6 +15,7 @@ module.exports = {
   rules: {
     'atom-apis': require('./atom-apis'),
     'consistent-import-name': require('./consistent-import-name'),
+    'flow-fb-oss': require('./flow-fb-oss'),
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
     'modules-dependencies': require('./modules-dependencies'),
@@ -26,6 +27,7 @@ module.exports = {
   rulesConfig: {
     'atom-apis': 0,
     'consistent-import-name': 0,
+    'flow-fb-oss': 0,
     'import-type-style': 0,
     'license-header': 0,
     'modules-dependencies': 0,
