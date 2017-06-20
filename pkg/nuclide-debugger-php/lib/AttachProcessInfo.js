@@ -39,7 +39,9 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   preAttachActions(): Promise<void> {
     try {
-      // $FlowFB
+      // TODO(t18124539) @nmote This should require FlowFB but when used flow
+      // complains that it is an unused supression.
+      // eslint-disable-next-line nuclide-internal/flow-fb-oss
       const services = require('./fb/services');
       return services.startSlog();
     } catch (_) {
