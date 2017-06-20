@@ -71,7 +71,7 @@ const atomConfig: AtomLanguageServiceConfig = {
     canFormatAtPosition: false,
   },
   findReferences: {
-    version: '0.0.0',
+    version: '0.1.0',
     analyticsEventName: 'python.get-references',
   },
   autocomplete: {

@@ -18,9 +18,9 @@
         "0.1.0": "provideOutlines"
       }
     },
-    "hyperclick.provider": {
+    "hyperclick": {
       "versions": {
-        "0.0.0": "getHyperclickProvider"
+        "0.1.0": "getHyperclickProvider"
       }
     },
     "atom-ide-code-format.file": {

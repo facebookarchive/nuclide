@@ -47,7 +47,7 @@ describe('DefinitionHyperclick', () => {
         '0.1.0',
         definitionProvider,
       ),
-      atom.packages.serviceHub.consume('hyperclick.provider', '0.0.0', x => {
+      atom.packages.serviceHub.consume('hyperclick', '0.1.0', x => {
         provider = x;
       }),
     );

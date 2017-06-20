@@ -123,7 +123,7 @@ async function createLanguageService(): Promise<
       canFormatAtPosition: usingLsp,
     },
     findReferences: {
-      version: '0.0.0',
+      version: '0.1.0',
       analyticsEventName: 'hack:findReferences',
     },
     evaluationExpression: {

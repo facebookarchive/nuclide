@@ -30,9 +30,9 @@ Declare the provider callback in the `package.json` (e.g. `getProvider`).
 
 ```js
 "providedServices": {
-  "hyperclick.provider": {
+  "hyperclick": {
     "versions": {
-      "0.0.0": "getProvider"
+      "0.1.0": "getProvider"
     }
   }
 }

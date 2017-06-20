@@ -54,7 +54,7 @@ describe('FeatureLoader', () => {
       expect(
         idx(loader.getConfig(), _ => _.use.properties[featureName].description),
       ).toEqual(
-        'Hyperclick UI<br/>**Provides:** _hyperclick.observeTextEditor_<br/>**Consumes:** _hyperclick.provider_',
+        'Hyperclick UI<br/>**Provides:** _hyperclick.observeTextEditor_<br/>**Consumes:** _hyperclick_',
       );
     });
 

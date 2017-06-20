@@ -26,9 +26,9 @@
     }
   },
   "consumedServices": {
-    "nuclide-datatip.provider": {
+    "atom-ide-datatip": {
       "versions": {
-        "0.0.0": "consumeDatatipService"
+        "0.1.0": "consumeDatatipService"
       }
     },
     "atom-ide-diagnostics-store": {

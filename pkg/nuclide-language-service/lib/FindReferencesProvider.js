@@ -21,7 +21,7 @@ import loadingNotification from '../../commons-atom/loading-notification';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
 
 export type FindReferencesConfig = {|
-  version: '0.0.0',
+  version: '0.1.0',
   analyticsEventName: string,
 |};
 
@@ -50,7 +50,7 @@ export class FindReferencesProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'nuclide-find-references.provider',
+      'atom-ide-find-references',
       config.version,
       new FindReferencesProvider(
         name,
