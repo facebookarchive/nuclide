@@ -16,15 +16,20 @@ function disablePackage(name) {
     atom.packages.disablePackage(name);
   }
 
-  if (atom.packages.isPackageActive(name)) {
-    // Only *inactive* packages can be unloaded. Attempting to unload an active package is
-    // considered an exception. Deactivating must come before unloading.
-    atom.packages.deactivatePackage(name);
-  }
-
   if (atom.packages.isPackageLoaded(name)) {
+    if (atom.packages.isPackageActive(name)) {
+      // Only *inactive* packages can be unloaded. Attempting to unload an active package is
+      // considered an exception. Deactivating must come before unloading.
+      atom.packages.deactivatePackage(name);
+    }
+
     atom.packages.unloadPackage(name);
   }
+
+  // This is a horrible hack to work around the fact that preloaded packages can sometimes be loaded
+  // twice. See also atom/atom#14837
+  // $FlowIgnore
+  delete atom.packages.preloadedPackages[name];
 }
 
 module.exports = function(name: string) {

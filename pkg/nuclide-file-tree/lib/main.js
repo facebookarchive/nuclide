@@ -69,10 +69,31 @@ class Activation {
       state = {};
     }
 
+    let timerId;
     this._disposables = new UniversalDisposable(
       disablePackage('tree-view'),
+      // This is a horrible hack to work around the fact that the tree view doesn't properly clean
+      // up after its views when disabled as soon as it's activated. See atom/tree-view#1136
+      atom.workspace.observePaneItems(item => {
+        if (
+          item != null &&
+          typeof item.getURI === 'function' &&
+          item.getURI() === 'atom://tree-view'
+        ) {
+          timerId = setImmediate(() => {
+            if (
+              atom.packages.isPackageDisabled('tree-view') &&
+              atom.workspace.paneForItem(item) && // Make sure it's still in the workspace.
+              typeof item.destroy === 'function'
+            ) {
+              item.destroy();
+            }
+          });
+        }
+      }),
       () => {
         this._fileTreeController.destroy();
+        clearImmediate(timerId);
       },
     );
 
