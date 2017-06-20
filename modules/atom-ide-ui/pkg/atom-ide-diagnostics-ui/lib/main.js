@@ -57,6 +57,23 @@ function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
+function getEditorDiagnosticUpdates(
+  editor: atom$TextEditor,
+  diagnosticUpdater: ObservableDiagnosticUpdater,
+): Observable<FileMessageUpdate> {
+  return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
+    .startWith(editor.getPath())
+    .takeUntil(
+      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
+    )
+    .switchMap(
+      filePath =>
+        filePath != null
+          ? diagnosticUpdater.getFileMessageUpdates(filePath)
+          : Observable.empty(),
+    );
+}
+
 class Activation {
   _diagnosticUpdaters: BehaviorSubject<?ObservableDiagnosticUpdater>;
   _subscriptions: UniversalDisposable;
@@ -126,25 +143,22 @@ class Activation {
     this._subscriptions.add(
       // Track diagnostics for all active editors.
       observeTextEditors((editor: TextEditor) => {
-        const filePath = editor.getPath();
-        if (!filePath) {
-          return;
-        }
         this._fileDiagnostics.set(editor, []);
         // TODO: this is actually inefficient - this filters all file events
         // by their path, so this is actually O(N^2) in the number of editors.
         // We should merge the store and UI packages to get direct access.
-        const subscription = diagnosticUpdater
-          .getFileMessageUpdates(filePath)
+        const subscription = getEditorDiagnosticUpdates(
+          editor,
+          diagnosticUpdater,
+        )
+          .finally(() => {
+            this._subscriptions.remove(subscription);
+            this._fileDiagnostics.delete(editor);
+          })
           .subscribe(update => {
             this._fileDiagnostics.set(editor, update.messages);
           });
         this._subscriptions.add(subscription);
-        editor.onDidDestroy(() => {
-          subscription.unsubscribe();
-          this._subscriptions.remove(subscription);
-          this._fileDiagnostics.delete(editor);
-        });
       }),
     );
     return new UniversalDisposable(atomCommandsDisposable, () => {
@@ -231,27 +245,25 @@ function gutterConsumeDiagnosticUpdates(
   diagnosticUpdater: ObservableDiagnosticUpdater,
 ): IDisposable {
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
-  return observeTextEditors((editor: TextEditor) => {
-    const filePath = editor.getPath();
-    if (!filePath) {
-      return; // The file is likely untitled.
-    }
-
-    const callback = (update: FileMessageUpdate) => {
-      // Although the subscription below should be cleaned up on editor destroy,
-      // the very act of destroying the editor can trigger diagnostic updates.
-      // Thus this callback can still be triggered after the editor is destroyed.
-      if (!editor.isDestroyed()) {
-        applyUpdateToEditor(editor, update, fixer);
-      }
-    };
-    const disposable = new UniversalDisposable(
-      diagnosticUpdater.getFileMessageUpdates(filePath).subscribe(callback),
-    );
-
-    // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
-    editor.onDidDestroy(() => disposable.dispose());
-  });
+  const subscriptions = new UniversalDisposable();
+  subscriptions.add(
+    observeTextEditors((editor: TextEditor) => {
+      const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater)
+        .finally(() => {
+          subscriptions.remove(subscription);
+        })
+        .subscribe(update => {
+          // Although the subscription should be cleaned up on editor destroy,
+          // the very act of destroying the editor can trigger diagnostic updates.
+          // Thus this callback can still be triggered after the editor is destroyed.
+          if (!editor.isDestroyed()) {
+            applyUpdateToEditor(editor, update, fixer);
+          }
+        });
+      subscriptions.add(subscription);
+    }),
+  );
+  return subscriptions;
 }
 
 function addAtomCommands(
