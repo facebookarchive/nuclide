@@ -320,6 +320,16 @@ export const microtask = Observable.create(observer => {
   });
 });
 
+export const macrotask = Observable.create(observer => {
+  const timerId = setImmediate(() => {
+    observer.next();
+    observer.complete();
+  });
+  return () => {
+    clearImmediate(timerId);
+  };
+});
+
 export const nextAnimationFrame = Observable.create(observer => {
   if (typeof requestAnimationFrame === 'undefined') {
     throw new Error('This util can only be used in Atom');
