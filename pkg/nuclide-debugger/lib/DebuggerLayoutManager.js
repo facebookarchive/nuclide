@@ -15,7 +15,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {DebuggerModeType} from './types';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
 import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
-import DebuggerModel, {WORKSPACE_VIEW_URI} from './DebuggerModel';
+import DebuggerModel from './DebuggerModel';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
 import type {
@@ -75,7 +75,6 @@ export class DebuggerLayoutManager {
   _disposables: UniversalDisposable;
   _model: DebuggerModel;
   _debuggerPanes: Array<DebuggerPaneConfig>;
-  _debuggerWorkspaceEnabled: boolean;
   _previousDebuggerMode: DebuggerModeType;
   _paneHiddenWarningShown: boolean;
   _leftPaneContainerModel: ?DebuggerPaneContainerViewModel;
@@ -84,7 +83,6 @@ export class DebuggerLayoutManager {
   constructor(model: DebuggerModel) {
     this._disposables = new UniversalDisposable();
     this._model = model;
-    this._debuggerWorkspaceEnabled = this._shouldEnableDebuggerWorkspace();
     this._previousDebuggerMode = DebuggerMode.STOPPED;
     this._paneHiddenWarningShown = false;
     this._leftPaneContainerModel = null;
@@ -148,17 +146,6 @@ export class DebuggerLayoutManager {
         }),
       );
     });
-  }
-
-  _shouldEnableDebuggerWorkspace(): boolean {
-    // Enable workspace view layout only if the following required Atom APIs are available.
-    // Expected in Atom >= 1.17 only.
-    return (
-      atom.workspace.getLeftDock != null &&
-      atom.workspace.getBottomDock != null &&
-      atom.workspace.getCenter != null &&
-      atom.workspace.getRightDock != null
-    );
   }
 
   _overridePaneInitialHeight(
@@ -291,20 +278,14 @@ export class DebuggerLayoutManager {
   }
 
   getModelForDebuggerUri(uri: string): any {
-    if (!this._debuggerWorkspaceEnabled) {
-      if (uri === WORKSPACE_VIEW_URI) {
-        return this._model;
-      }
-    } else {
-      const config = this._debuggerPanes.find(pane => pane.uri === uri);
-      if (config != null) {
-        return new DebuggerPaneViewModel(
-          config,
-          this._model,
-          config.isLifetimeView,
-          pane => this._paneDestroyed(pane),
-        );
-      }
+    const config = this._debuggerPanes.find(pane => pane.uri === uri);
+    if (config != null) {
+      return new DebuggerPaneViewModel(
+        config,
+        this._model,
+        config.isLifetimeView,
+        pane => this._paneDestroyed(pane),
+      );
     }
 
     return null;
@@ -315,7 +296,6 @@ export class DebuggerLayoutManager {
     dock: atom$AbstractPaneContainer,
     orientation: string,
   }> {
-    invariant(this._debuggerWorkspaceEnabled);
     const docks = new Array(4);
 
     invariant(atom.workspace.getLeftDock != null);
@@ -543,10 +523,6 @@ export class DebuggerLayoutManager {
   }
 
   debuggerModeChanged(api: WorkspaceViewsService): void {
-    if (!this._debuggerWorkspaceEnabled) {
-      return;
-    }
-
     const mode = this._model.getStore().getDebuggerMode();
 
     // Most panes disappear when the debugger is stopped, only keep
@@ -576,11 +552,6 @@ export class DebuggerLayoutManager {
   }
 
   showDebuggerViews(api: WorkspaceViewsService): void {
-    if (!this._debuggerWorkspaceEnabled) {
-      api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
-      return;
-    }
-
     // Hide any debugger panes other than the controls so we have a known
     // starting point for preparing the layout.
     this.hideDebuggerViews(api, true);
@@ -757,12 +728,6 @@ export class DebuggerLayoutManager {
     api: ?WorkspaceViewsService,
     performingLayout: boolean,
   ): void {
-    if (!this._debuggerWorkspaceEnabled) {
-      invariant(api != null);
-      api.destroyWhere(item => item instanceof DebuggerModel);
-      return;
-    }
-
     // Docks do not toggle closed automatically when we remove all their items.
     // They can contain things other than the debugger items though, and could
     // have been left open and empty by the user. Toggle closed any docks that

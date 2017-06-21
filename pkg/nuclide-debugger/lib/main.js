@@ -37,7 +37,6 @@ import {AnalyticsEvents} from './constants';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Subject, Observable} from 'rxjs';
 import invariant from 'assert';
-import classnames from 'classnames';
 import {Disposable} from 'atom';
 import {track} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
@@ -57,8 +56,6 @@ import {
   setOutputService,
 } from '../../nuclide-debugger-base';
 import {DebuggerMode} from './DebuggerStore';
-import {NewDebuggerView} from './NewDebuggerView';
-import DebuggerControllerView from './DebuggerControllerView';
 import {wordAtPosition, trimRange} from 'nuclide-commons-atom/range';
 import {DebuggerLayoutManager} from './DebuggerLayoutManager';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
@@ -122,99 +119,9 @@ function getLineForEvent(editor: atom$TextEditor, event: any): number {
   );
 }
 
-type Props = {
-  model: DebuggerModel,
-};
-type State = {
-  showOldView: boolean,
-};
-
-class DebuggerView extends React.Component {
-  props: Props;
-  state: State;
-  _nuxTimeout: ?number;
-
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      showOldView: false,
-      debuggerConnection: '',
-    };
-    (this: any)._openDevTools = this._openDevTools.bind(this);
-    (this: any)._stopDebugging = this._stopDebugging.bind(this);
-  }
-
-  _getUiTypeForAnalytics(): string {
-    return this.state.showOldView ? 'chrome-devtools' : 'nuclide';
-  }
-
-  componentDidMount(): void {
-    track(AnalyticsEvents.DEBUGGER_UI_MOUNTED, {
-      frontend: this._getUiTypeForAnalytics(),
-    });
-    // Wait for UI to initialize and "calm down"
-    this._nuxTimeout = setTimeout(() => {
-      if (activation != null && !this.state.showOldView) {
-        activation.tryTriggerNux(NUX_NEW_DEBUGGER_UI_ID);
-      }
-    }, 2000);
-  }
-
-  componentDidUpdate(prevProps: Props, prevState: State): void {
-    if (prevState.showOldView !== this.state.showOldView) {
-      track(AnalyticsEvents.DEBUGGER_UI_TOGGLED, {
-        frontend: this._getUiTypeForAnalytics(),
-      });
-    }
-  }
-
-  componentWillUnmount(): void {
-    if (this._nuxTimeout) {
-      clearTimeout(this._nuxTimeout);
-    }
-  }
-
-  _openDevTools(): void {
-    this.props.model.getActions().openDevTools();
-  }
-
-  _stopDebugging(): void {
-    this.props.model.getActions().stopDebugging();
-  }
-
-  render(): React.Element<any> {
-    const {model} = this.props;
-    const {showOldView} = this.state;
-    return (
-      <div className="nuclide-debugger-root">
-        <div
-          className={classnames({
-            'nuclide-debugger-container-old-enabled': showOldView,
-          })}>
-          <DebuggerControllerView
-            store={model.getStore()}
-            bridge={model.getBridge()}
-            breakpointStore={model.getBreakpointStore()}
-            openDevTools={this._openDevTools}
-            stopDebugging={this._stopDebugging}
-          />
-        </div>
-        {!showOldView
-          ? <NewDebuggerView
-              model={model}
-              watchExpressionListStore={model.getWatchExpressionListStore()}
-            />
-          : null}
-      </div>
-    );
-  }
-}
-
 export function createDebuggerView(model: mixed): ?HTMLElement {
   let view = null;
-  if (model instanceof DebuggerModel) {
-    view = <DebuggerView model={model} />;
-  } else if (
+  if (
     model instanceof DebuggerPaneViewModel ||
     model instanceof DebuggerPaneContainerViewModel
   ) {
