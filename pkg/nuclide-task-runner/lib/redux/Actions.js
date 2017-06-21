@@ -107,6 +107,7 @@ export function setStateForTaskRunner(
   };
 }
 
+// Only sets the states for task runners that have keys in the map
 export function setStatesForTaskRunners(
   statesForTaskRunners: Map<TaskRunner, TaskRunnerState>,
 ): SetStatesForTaskRunnersAction {

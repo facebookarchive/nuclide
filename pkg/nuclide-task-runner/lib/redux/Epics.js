@@ -228,13 +228,15 @@ export function combineTaskRunnerStatesEpic(
         .map(tuples => {
           const statesForTaskRunners = new Map();
           tuples.forEach(result => {
-            statesForTaskRunners.set(result.taskRunner, result.taskRunnerState);
+            if (store.getState().taskRunners.includes(result.taskRunner)) {
+              statesForTaskRunners.set(
+                result.taskRunner,
+                result.taskRunnerState,
+              );
+            }
           });
-          return statesForTaskRunners;
+          return Actions.setStatesForTaskRunners(statesForTaskRunners);
         })
-        .map(statesForTaskRunners =>
-          Actions.setStatesForTaskRunners(statesForTaskRunners),
-        )
     );
   });
 }
