@@ -1,0 +1,10 @@
+{
+  "name": "big-dig-samples",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "big-dig": "0.0.1",
+    "log4js": "1.1.1",
+    "yargs": "3.32.0"
+  }
+}
