@@ -26,14 +26,24 @@ import {getSessionConfig} from './utils';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTarget: string;
+  _launchWrapperCommand: ?string;
 
-  constructor(targetUri: NuclideUri, launchTarget: string) {
+  constructor(
+    targetUri: NuclideUri,
+    launchTarget: string,
+    launchWrapperCommand: ?string,
+  ) {
     super('hhvm', targetUri);
     this._launchTarget = launchTarget;
+    this._launchWrapperCommand = launchWrapperCommand;
   }
 
   clone(): LaunchProcessInfo {
-    return new LaunchProcessInfo(this._targetUri, this._launchTarget);
+    return new LaunchProcessInfo(
+      this._targetUri,
+      this._launchTarget,
+      this._launchWrapperCommand,
+    );
   }
 
   async debug(): Promise<PhpDebuggerInstance> {
@@ -46,6 +56,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     // Set config related to script launching.
     sessionConfig.endDebugWhenNoRequests = true;
     sessionConfig.launchScriptPath = this._launchTarget;
+
+    if (this._launchWrapperCommand != null) {
+      sessionConfig.launchWrapperCommand = this._launchWrapperCommand;
+    }
 
     logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 

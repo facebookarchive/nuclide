@@ -30,10 +30,24 @@ export async function debug(
 ): Promise<void> {
   let processInfo = null;
   invariant(activeProjectRoot != null, 'Active project is null');
-  if (debugMode === 'script') {
-    processInfo = new LaunchProcessInfo(activeProjectRoot, target);
-  } else {
-    processInfo = new AttachProcessInfo(activeProjectRoot);
+
+  // See if this is a custom debug mode type.
+  try {
+    // $FlowFB
+    const helper = require('./fb-hhvm');
+    processInfo = helper.getCustomLaunchInfo(
+      debugMode,
+      activeProjectRoot,
+      target,
+    );
+  } catch (e) {}
+
+  if (processInfo == null) {
+    if (debugMode === 'script') {
+      processInfo = new LaunchProcessInfo(activeProjectRoot, target);
+    } else {
+      processInfo = new AttachProcessInfo(activeProjectRoot);
+    }
   }
 
   // Use commands here to trigger package activation.
