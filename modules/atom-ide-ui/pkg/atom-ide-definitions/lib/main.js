@@ -20,6 +20,7 @@ import type {
 } from '../../hyperclick/lib/types';
 
 import invariant from 'assert';
+import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -83,18 +84,36 @@ class Activation {
     this._disposables.dispose();
   }
 
+  async _getDefinition(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Promise<?DefinitionQueryResult> {
+    for (const provider of this._providers.getAllProvidersForEditor(editor)) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const result = await provider.getDefinition(editor, position);
+        if (result != null) {
+          return result;
+        }
+      } catch (err) {
+        getLogger('atom-ide-definitions').error(
+          `Error getting definition for ${String(editor.getPath())}`,
+          err,
+        );
+      }
+    }
+    return null;
+  }
+
   async getSuggestion(
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?HyperclickSuggestion> {
-    const provider = this._providers.getProviderForEditor(editor);
-    if (provider == null) {
-      return null;
-    }
-    const result = await provider.getDefinition(editor, position);
+    const result = await this._getDefinition(editor, position);
     if (result == null) {
       return null;
     }
+
     const {definitions} = result;
     invariant(definitions.length > 0);
 

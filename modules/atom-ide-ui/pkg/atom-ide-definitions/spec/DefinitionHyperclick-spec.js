@@ -169,4 +169,39 @@ describe('DefinitionHyperclick', () => {
       expect(goToLocation).toHaveBeenCalledWith('/a/b/path2', 3, 4);
     });
   });
+
+  it('falls back to lower-priority providers', () => {
+    waitsForPromise(async () => {
+      const def = {
+        queryRange: [new Range(new Point(1, 1), new Point(1, 5))],
+        definitions: [
+          {
+            path: 'path1',
+            position: new Point(1, 2),
+            range: null,
+            id: 'symbol-name',
+            name: null,
+            projectRoot: null,
+          },
+        ],
+      };
+      const newProvider = {
+        priority: 10,
+        name: '',
+        grammarScopes: ['text.plain.null-grammar'],
+        getDefinition: () => Promise.resolve(def),
+      };
+      atom.packages.serviceHub.provide(
+        'atom-ide-definitions',
+        '0.1.0',
+        newProvider,
+      );
+      invariant(provider != null);
+      invariant(provider.getSuggestion != null);
+      const result = await provider.getSuggestion(editor, position);
+      expect(result).not.toBe(null);
+      invariant(result != null);
+      expect(result.range).toEqual(def.queryRange);
+    });
+  });
 });
