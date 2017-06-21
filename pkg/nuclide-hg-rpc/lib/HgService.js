@@ -18,11 +18,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
-import {
-  AmendMode,
-  MergeConflictFileStatus,
-  MergeConflictStatus,
-} from './hg-constants';
+import {AmendMode, MergeConflictStatus} from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
@@ -195,13 +191,6 @@ export type VcsLogEntry = {
 
 export type VcsLogResponse = {
   entries: Array<VcsLogEntry>,
-};
-
-export type MergeConflict = {
-  path: string,
-  status: MergeConflictStatusValue,
-  mergeConflictsCount?: number,
-  resolvedConflictsCount?: number,
 };
 
 // Information about file for local, base and other commit that caused the conflict
@@ -596,12 +585,16 @@ export class HgService {
       return;
     } else if (mergeDirectoryExists) {
       // Detect if the repository is in a conflict state.
-      const mergeConflicts = await this.fetchMergeConflicts();
-      if (mergeConflicts.length > 0) {
+      const mergeConflicts = await this._fetchMergeConflictsWithDetails();
+      if (mergeConflicts != null) {
         this._isInConflict = true;
         this._hgConflictStateDidChangeObserver.next(true);
       }
     }
+  }
+
+  async _fetchMergeConflictsWithDetails(): Promise<?MergeConflictsEnriched> {
+    return this.fetchMergeConflictsWithDetails().refCount().toPromise();
   }
 
   _emitHgRepoStateChanged(): void {
@@ -1335,81 +1328,6 @@ export class HgService {
         .catch(() => Observable.of(null))
         .publish()
     );
-  }
-
-  /*
-   * Setting fetchResolved will return all resolved and unresolved conflicts,
-   * the default would only fetch the current unresolved conflicts.
-   */
-  async fetchMergeConflicts(
-    fetchResolved: ?boolean,
-  ): Promise<Array<MergeConflict>> {
-    const {stdout} = await this._hgAsyncExecute(
-      ['resolve', '--list', '-Tjson'],
-      {
-        cwd: this._workingDirectory,
-      },
-    );
-    const fileListStatuses = JSON.parse(stdout);
-    const resolvedFiles = fetchResolved
-      ? fileListStatuses
-          .filter(
-            fileStatus =>
-              fileStatus.status === MergeConflictFileStatus.RESOLVED,
-          )
-          .map(fileStatus => ({
-            path: fileStatus.path,
-            status: MergeConflictStatus.RESOLVED,
-          }))
-      : [];
-    const conflictedFiles = fileListStatuses.filter(fileStatus => {
-      return fileStatus.status === MergeConflictFileStatus.UNRESOLVED;
-    });
-    const origBackupPath = await this._getOrigBackupPath();
-    const conflicts = await Promise.all(
-      conflictedFiles.map(async conflictedFile => {
-        let status;
-        // Heuristic: If the `.orig` file doesn't exist, then it's deleted by the rebasing commit.
-        if (await this._checkOrigFile(origBackupPath, conflictedFile.path)) {
-          status = MergeConflictStatus.BOTH_CHANGED;
-        } else {
-          status = MergeConflictStatus.DELETED_IN_THEIRS;
-        }
-        return {
-          path: conflictedFile.path,
-          status,
-        };
-      }),
-    );
-    return [...conflicts, ...resolvedFiles];
-  }
-
-  async _getOrigBackupPath(): Promise<string> {
-    if (this._origBackupPath == null) {
-      const relativeBackupPath = await this.getConfigValueAsync(
-        'ui.origbackuppath',
-      );
-      if (relativeBackupPath == null) {
-        this._origBackupPath = this._workingDirectory;
-      } else {
-        this._origBackupPath = nuclideUri.join(
-          this._workingDirectory,
-          relativeBackupPath,
-        );
-      }
-    }
-    return this._origBackupPath;
-  }
-
-  async _checkOrigFile(
-    origBackupPath: string,
-    filePath: string,
-  ): Promise<boolean> {
-    const origFilePath = nuclideUri.join(origBackupPath, `${filePath}.orig`);
-    logger.info('origBackupPath:', origBackupPath);
-    logger.info('filePath:', filePath);
-    logger.info('origFilePath:', origFilePath);
-    return fsPromise.exists(origFilePath);
   }
 
   markConflictedFile(

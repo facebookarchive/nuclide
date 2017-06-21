@@ -18,7 +18,6 @@ import type {
   LineDiff,
   RevisionInfo,
   RevisionShowInfo,
-  MergeConflict,
   MergeConflictsEnriched,
   RevisionFileChanges,
   StatusCodeNumberValue,
@@ -865,14 +864,6 @@ export class HgRepositoryClient {
 
   fetchMergeConflictsWithDetails(): Observable<?MergeConflictsEnriched> {
     return this._service.fetchMergeConflictsWithDetails().refCount();
-  }
-
-  /*
-   * Setting fetchResolved will return all resolved and unresolved conflicts,
-   * the default would only fetch the current unresolved conflicts.
-   */
-  fetchMergeConflicts(fetchResolved?: boolean): Promise<Array<MergeConflict>> {
-    return this._service.fetchMergeConflicts(fetchResolved);
   }
 
   markConflictedFile(
