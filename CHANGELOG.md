@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.235.0
+
+### Hotfix Release
+* Removed an improper watchman version check.
+
+
 ## v0.234.0
 
 ### Highlights
