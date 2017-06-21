@@ -60,7 +60,13 @@ export function isCorrectConnection(
   isAttachConnection: boolean,
   message: Object,
 ): boolean {
-  const {pid, idekeyRegex, attachScriptRegex, launchScriptPath} = getConfig();
+  const {
+    pid,
+    idekeyRegex,
+    attachScriptRegex,
+    launchScriptPath,
+    launchWrapperCommand,
+  } = getConfig();
   if (!message || !message.init || !message.init.$) {
     logger.error('Incorrect init');
     return false;
@@ -100,6 +106,11 @@ export function isCorrectConnection(
   if (getMode() === 'launch') {
     // TODO: Pass arguments separately from script path so this check can be simpler.
     invariant(launchScriptPath != null, 'Null launchScriptPath in launch mode');
+
+    if (launchWrapperCommand != null) {
+      return nuclideUri.basename(requestScriptPath) === launchWrapperCommand;
+    }
+
     return shellParse(launchScriptPath)[0] === requestScriptPath;
   }
 

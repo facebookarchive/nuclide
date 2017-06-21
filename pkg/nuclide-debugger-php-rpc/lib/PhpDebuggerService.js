@@ -33,6 +33,7 @@ export type PhpDebuggerSessionConfig = {
   phpRuntimeArgs: string,
   dummyRequestFilePath: string,
   stopOneStopAll: boolean,
+  launchWrapperCommand?: string,
 };
 
 export type NotificationMessage = {
