@@ -1,45 +1,51 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
-import type {RegisterNux} from '../../nuclide-nux/lib/main';
+var _createPackage;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
 
-const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux';
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const NUX_OUTLINE_VIEW_TOUR = 'nuclide_outline_view_nux'; /**
+                                                           * Copyright (c) 2015-present, Facebook, Inc.
+                                                           * All rights reserved.
+                                                           *
+                                                           * This source code is licensed under the license found in the LICENSE file in
+                                                           * the root directory of this source tree.
+                                                           *
+                                                           * 
+                                                           * @format
+                                                           */
+
 const NUX_OUTLINE_VIEW_ID = 4342;
 const GK_NUX_OUTLINE_VIEW = 'mp_nuclide_outline_view_nux';
 
 class Activation {
-  _disposables: UniversalDisposable;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  _createOutlineViewNuxTourModel(): NuxTourModel {
+  _createOutlineViewNuxTourModel() {
     const outlineViewToolbarIconNux = {
       content: 'Check out the new Outline View!',
       selector: '.nuclide-outline-view-toolbar-button',
       position: 'auto',
-      completionPredicate: () =>
-        document.querySelector('div.nuclide-outline-view') != null,
+      completionPredicate: () => document.querySelector('div.nuclide-outline-view') != null
     };
 
     const outlineViewPanelNux = {
       content: 'Click on a symbol to jump to its definition.',
       selector: 'div.pane-item.nuclide-outline-view',
-      position: 'left',
+      position: 'left'
     };
 
     const isValidFileTypeForNux = editor => {
@@ -53,14 +59,12 @@ class Activation {
       return path.endsWith('.js') || path.endsWith('.php');
     };
 
-    const isOutlineViewClosed = () =>
-      document.querySelector('.nuclide-outline-view') == null;
-    const triggerCallback = editor =>
-      isOutlineViewClosed() && isValidFileTypeForNux(editor);
+    const isOutlineViewClosed = () => document.querySelector('.nuclide-outline-view') == null;
+    const triggerCallback = editor => isOutlineViewClosed() && isValidFileTypeForNux(editor);
 
     const nuxTriggerModel = {
       triggerType: 'editor',
-      triggerCallback,
+      triggerCallback
     };
 
     const outlineViewNuxTour = {
@@ -68,35 +72,30 @@ class Activation {
       name: NUX_OUTLINE_VIEW_TOUR,
       nuxList: [outlineViewToolbarIconNux, outlineViewPanelNux],
       trigger: nuxTriggerModel,
-      gatekeeperID: GK_NUX_OUTLINE_VIEW,
+      gatekeeperID: GK_NUX_OUTLINE_VIEW
     };
 
     return outlineViewNuxTour;
   }
 
-  consumeRegisterNuxService(addNewNux: RegisterNux): IDisposable {
+  consumeRegisterNuxService(addNewNux) {
     const disposable = addNewNux(this._createOutlineViewNuxTourModel());
     this._disposables.add(disposable);
     return disposable;
   }
 
-  getHomeFragments(): HomeFragments {
+  getHomeFragments() {
     return {
       feature: {
         title: 'Outline View',
         icon: 'list-unordered',
         description: 'Displays major components of the current file (classes, methods, etc.)',
         command: () => {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-outline-view:toggle',
-            {visible: true},
-          );
-        },
+          atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-outline-view:toggle', { visible: true });
+        }
       },
-      priority: 2.5, // Between diff view and test runner
-    };
+      priority: 2.5 };
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

@@ -1,22 +1,36 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Datatip, ModifierKey, DefinitionProvider} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {
-  getDefinitionPreviewServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
-import {track, trackTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function getPlatformKeys(platform) {
   if (platform === 'darwin') {
@@ -25,103 +39,98 @@ function getPlatformKeys(platform) {
     return 'nuclide.hyperclick.win32TriggerKeys';
   }
   return 'nuclide.hyperclick.linuxTriggerKeys';
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export default class HyperclickPreviewManager {
-  _definitionProviders: ProviderRegistry<
-    DefinitionProvider,
-  > = new ProviderRegistry();
-  _disposables: UniversalDisposable = new UniversalDisposable();
-  _triggerKeys: Set<ModifierKey> = new Set();
+class HyperclickPreviewManager {
 
   constructor() {
-    this._disposables.add(
-      atom.config.observe(
-        getPlatformKeys(process.platform),
-        (newValue: string) => {
-          this._triggerKeys = (new Set(newValue.split(',')): Set<any>);
-        },
-      ),
-    );
+    this._definitionProviders = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._triggerKeys = new Set();
+
+    this._disposables.add(atom.config.observe(getPlatformKeys(process.platform), newValue => {
+      this._triggerKeys = new Set(newValue.split(','));
+    }));
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  async modifierDatatip(
-    editor: TextEditor,
-    position: atom$Point,
-    heldKeys: Set<ModifierKey>,
-  ): Promise<?Datatip> {
-    if (
-      !this._triggerKeys ||
+  modifierDatatip(editor, position, heldKeys) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!_this._triggerKeys ||
       // are the required keys held down?
-      !Array.from(this._triggerKeys).every(key => heldKeys.has(key))
-    ) {
-      return;
-    }
+      !Array.from(_this._triggerKeys).every(function (key) {
+        return heldKeys.has(key);
+      })) {
+        return;
+      }
 
-    const grammar = editor.getGrammar();
-    const definitionProvider = this._definitionProviders.getProviderForEditor(
-      editor,
-    );
-    if (definitionProvider == null) {
-      return null;
-    }
-    const result = await definitionProvider.getDefinition(editor, position);
-    if (result == null) {
-      return null;
-    }
-
-    const {queryRange, definitions} = result;
-    track('hyperclick-preview-popup', {
-      grammar: grammar.name,
-      definitionCount: definitions.length,
-    });
-
-    if (definitions.length === 1) {
-      const definition = definitions.pop();
-      // Some providers (e.g. Flow) return negative positions.
-      if (definition.position.row < 0) {
+      const grammar = editor.getGrammar();
+      const definitionProvider = _this._definitionProviders.getProviderForEditor(editor);
+      if (definitionProvider == null) {
+        return null;
+      }
+      const result = yield definitionProvider.getDefinition(editor, position);
+      if (result == null) {
         return null;
       }
 
-      const {getDefinitionPreview} = getDefinitionPreviewServiceByNuclideUri(
-        definition.path,
-      );
+      const { queryRange, definitions } = result;
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('hyperclick-preview-popup', {
+        grammar: grammar.name,
+        definitionCount: definitions.length
+      });
 
-      const definitionPreview = await trackTiming(
-        'hyperclickPreview.getDefinitionPreview',
-        () => getDefinitionPreview(definition),
-      );
-      return {
-        markedStrings: [
-          {
+      if (definitions.length === 1) {
+        const definition = definitions.pop();
+        // Some providers (e.g. Flow) return negative positions.
+        if (definition.position.row < 0) {
+          return null;
+        }
+
+        const { getDefinitionPreview } = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getDefinitionPreviewServiceByNuclideUri)(definition.path);
+
+        const definitionPreview = yield (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('hyperclickPreview.getDefinitionPreview', function () {
+          return getDefinitionPreview(definition);
+        });
+        return {
+          markedStrings: [{
             type: 'snippet',
             value: definitionPreview,
-            grammar,
-          },
-        ],
-        range: queryRange[0],
-      };
-    }
+            grammar
+          }],
+          range: queryRange[0]
+        };
+      }
 
-    return {
-      markedStrings: [
-        {
+      return {
+        markedStrings: [{
           type: 'markdown',
           value: `${definitions.length} definitions found. Click to jump.`,
-          grammar,
-        },
-      ],
-      range: queryRange[0],
-    };
+          grammar
+        }],
+        range: queryRange[0]
+      };
+    })();
   }
 
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+  consumeDefinitionProvider(provider) {
     const disposable = this._definitionProviders.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 }
+exports.default = HyperclickPreviewManager;

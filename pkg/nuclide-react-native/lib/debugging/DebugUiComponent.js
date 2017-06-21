@@ -1,3 +1,28 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebugUiComponent = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TODO: All this needs to be serialized by the package, so we're going to need to hoist it and use
+//   actions.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,106 +30,87 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+class DebugUiComponent extends _react.default.Component {
 
-import React from 'react';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-type Props = {
-  targetUri: NuclideUri,
-  configIsValidChanged: (valid: boolean) => void,
-};
-
-// TODO: All this needs to be serialized by the package, so we're going to need to hoist it and use
-//   actions.
-type State = {
-  startPackager: boolean,
-  tailIosLogs: boolean,
-  tailAdbLogs: boolean,
-};
-
-export class DebugUiComponent extends React.Component {
-  props: Props;
-  state: State;
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._handleDebugButtonClick = this._handleDebugButtonClick.bind(
-      this,
-    );
+    this._handleDebugButtonClick = this._handleDebugButtonClick.bind(this);
 
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       startPackager: false,
       tailIosLogs: false,
-      tailAdbLogs: false,
+      tailAdbLogs: false
     };
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleDebugButtonClick();
-          }
-        },
-      }),
-    );
+  componentDidMount() {
+    this._disposables.add(atom.commands.add('atom-workspace', {
+      'core:confirm': () => {
+        if (this._debugButtonShouldEnable()) {
+          this._handleDebugButtonClick();
+        }
+      }
+    }));
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  setState(newState: Object): void {
+  setState(newState) {
     super.setState(newState);
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
   }
 
-  _debugButtonShouldEnable(): boolean {
+  _debugButtonShouldEnable() {
     return true;
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="block">
-        <div className="block">
-          <Checkbox
-            checked={this.state.startPackager}
-            label="Start Packager"
-            onChange={startPackager => this.setState({startPackager})}
-          />
-        </div>
-        <div className="block">
-          <Checkbox
-            checked={this.state.tailIosLogs}
-            label="Tail iOS Simulator Logs"
-            onChange={tailIosLogs => this.setState({tailIosLogs})}
-          />
-        </div>
-        <div className="block">
-          <Checkbox
-            checked={this.state.tailAdbLogs}
-            label="Tail adb Logcat Logs"
-            onChange={tailAdbLogs => this.setState({tailAdbLogs})}
-          />
-        </div>
-        <div className="text-left text-smaller text-subtle">
-          After starting the debugger, enable JS debugging from the developer menu of your React
-          Native app
-        </div>
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'block' },
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.startPackager,
+          label: 'Start Packager',
+          onChange: startPackager => this.setState({ startPackager })
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.tailIosLogs,
+          label: 'Tail iOS Simulator Logs',
+          onChange: tailIosLogs => this.setState({ tailIosLogs })
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'block' },
+        _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+          checked: this.state.tailAdbLogs,
+          label: 'Tail adb Logcat Logs',
+          onChange: tailAdbLogs => this.setState({ tailAdbLogs })
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'text-left text-smaller text-subtle' },
+        'After starting the debugger, enable JS debugging from the developer menu of your React Native app'
+      )
     );
   }
 
-  _handleDebugButtonClick(): void {
+  _handleDebugButtonClick() {
     if (this.state.startPackager) {
       callWorkspaceCommand('nuclide-react-native:start-packager');
     }
@@ -118,6 +124,7 @@ export class DebugUiComponent extends React.Component {
   }
 }
 
-function callWorkspaceCommand(command: string): void {
+exports.DebugUiComponent = DebugUiComponent;
+function callWorkspaceCommand(command) {
   atom.commands.dispatch(atom.views.getView(atom.workspace), command);
 }

@@ -1,3 +1,8 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +10,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -14,26 +19,28 @@
  * It's quite useful for promises with a Cache<Promise<T>> which allows reusing the same promise.
  */
 
-export class Cache<T> {
-  store: Map<string, T> = new Map();
+class Cache {
 
-  constructor() {}
+  constructor() {
+    this.store = new Map();
+  }
 
-  getOrCreate(key: string, callback: () => T): T {
+  getOrCreate(key, callback) {
     if (this.store.has(key)) {
       // We need this cast because of undefined
-      return ((this.store.get(key): any): T);
+      return this.store.get(key);
     }
     const value = callback();
     this.store.set(key, value);
     return value;
   }
 
-  delete(key: string): void {
+  delete(key) {
     this.store.delete(key);
   }
 
-  clear(): void {
+  clear() {
     this.store.clear();
   }
 }
+exports.Cache = Cache;

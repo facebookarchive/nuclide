@@ -1,26 +1,33 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {Subject, Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getEventObservable = getEventObservable;
+exports.reportError = reportError;
+exports.reportWarning = reportWarning;
 
-const customEvent$ = new Subject();
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export function getEventObservable(): Observable<Array<mixed>> {
+const customEvent$ = new _rxjsBundlesRxMinJs.Subject(); /**
+                                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                                         * All rights reserved.
+                                                         *
+                                                         * This source code is licensed under the license found in the LICENSE file in
+                                                         * the root directory of this source tree.
+                                                         *
+                                                         * 
+                                                         * @format
+                                                         */
+
+function getEventObservable() {
   return customEvent$.asObservable();
 }
 
-export function reportError(message: string): void {
+function reportError(message) {
   customEvent$.next(['ReportError', message]);
 }
 
-export function reportWarning(message: string): void {
+function reportWarning(message) {
   customEvent$.next(['ReportWarning', message]);
 }

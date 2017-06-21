@@ -1,29 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-// This package provides Hyperclick results for any language which provides a
-// DefinitionProvider.
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick/lib/types';
+var _nuclideUri;
 
-import invariant from 'assert';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // position is the first char of the definition's identifier, while range
 // includes the entire definition. For example in:
@@ -35,116 +44,102 @@ import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 // name is a string suitable for display to humans.
 // projectRoot is the root directory of the project containing this definition.
 // name is required, and projectRoot is encouraged, when returning multiple results.
-export type Definition = {
-  path: NuclideUri,
-  position: atom$Point,
-  range?: atom$Range,
-  id?: string,
-  name?: string,
-  language: string,
-  projectRoot?: NuclideUri,
-};
+
 
 // Definition queries supply a point.
 // The returned queryRange is the range within which the returned definition is valid.
 // Typically queryRange spans the containing identifier around the query point.
-export type DefinitionQueryResult = {
-  queryRange: Array<atom$Range>,
-  definitions: Array<Definition>,
-};
+
 
 // Provides definitions for a set of language grammars.
-export type DefinitionProvider = {
-  // If there are multiple providers for a given grammar,
-  // the one with the highest priority will be used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getDefinition: (
-    editor: TextEditor,
-    position: atom$Point,
-  ) => Promise<?DefinitionQueryResult>,
-};
-
 class Activation {
-  _providers: ProviderRegistry<DefinitionProvider>;
-  _disposables: UniversalDisposable;
 
   constructor() {
-    this._providers = new ProviderRegistry();
-    this._disposables = new UniversalDisposable();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  async getSuggestion(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?HyperclickSuggestion> {
-    const provider = this._providers.getProviderForEditor(editor);
-    if (provider == null) {
-      return null;
-    }
-    const result = await provider.getDefinition(editor, position);
-    if (result == null) {
-      return null;
-    }
-    const {definitions} = result;
-    invariant(definitions.length > 0);
+  getSuggestion(editor, position) {
+    var _this = this;
 
-    function createCallback(definition) {
-      return () => {
-        goToLocation(
-          definition.path,
-          definition.position.row,
-          definition.position.column,
-        );
-      };
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const provider = _this._providers.getProviderForEditor(editor);
+      if (provider == null) {
+        return null;
+      }
+      const result = yield provider.getDefinition(editor, position);
+      if (result == null) {
+        return null;
+      }
+      const { definitions } = result;
 
-    function createTitle(definition) {
-      invariant(
-        definition.name != null,
-        'must include name when returning multiple definitions',
-      );
-      const filePath = definition.projectRoot == null
-        ? definition.path
-        : nuclideUri.relative(definition.projectRoot, definition.path);
-      return `${definition.name} (${filePath})`;
-    }
+      if (!(definitions.length > 0)) {
+        throw new Error('Invariant violation: "definitions.length > 0"');
+      }
 
-    if (definitions.length === 1) {
-      return {
-        range: result.queryRange,
-        callback: createCallback(definitions[0]),
-      };
-    } else {
-      return {
-        range: result.queryRange,
-        callback: definitions.map(definition => {
-          return {
-            title: createTitle(definition),
-            callback: createCallback(definition),
-          };
-        }),
-      };
-    }
+      function createCallback(definition) {
+        return () => {
+          (0, (_goToLocation || _load_goToLocation()).goToLocation)(definition.path, definition.position.row, definition.position.column);
+        };
+      }
+
+      function createTitle(definition) {
+        if (!(definition.name != null)) {
+          throw new Error('must include name when returning multiple definitions');
+        }
+
+        const filePath = definition.projectRoot == null ? definition.path : (_nuclideUri || _load_nuclideUri()).default.relative(definition.projectRoot, definition.path);
+        return `${definition.name} (${filePath})`;
+      }
+
+      if (definitions.length === 1) {
+        return {
+          range: result.queryRange,
+          callback: createCallback(definitions[0])
+        };
+      } else {
+        return {
+          range: result.queryRange,
+          callback: definitions.map(function (definition) {
+            return {
+              title: createTitle(definition),
+              callback: createCallback(definition)
+            };
+          })
+        };
+      }
+    })();
   }
 
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+  consumeDefinitionProvider(provider) {
     const disposable = this._providers.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 
-  getHyperclickProvider(): HyperclickProvider {
+  getHyperclickProvider() {
     return {
       priority: 20,
       providerName: 'atom-ide-definitions',
-      getSuggestion: (editor, position) => this.getSuggestion(editor, position),
+      getSuggestion: (editor, position) => this.getSuggestion(editor, position)
     };
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+// This package provides Hyperclick results for any language which provides a
+// DefinitionProvider.
+
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

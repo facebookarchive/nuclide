@@ -1,179 +1,161 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {BuckBuildSystem} from '../../nuclide-buck/lib/BuckBuildSystem';
-import type {
-  Device,
-  PlatformGroup,
-  TaskSettings,
-  TaskType,
-} from '../../nuclide-buck/lib/types';
-import type {TaskEvent} from 'nuclide-commons/process';
-import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deactivate = deactivate;
+exports.consumePlatformService = consumePlatformService;
 
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Disposable} from 'atom';
-import {Observable} from 'rxjs';
-import * as IosSimulator from '../../nuclide-ios-common';
-import invariant from 'assert';
+var _fsPromise;
 
-let disposable: ?Disposable = null;
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideIosCommon;
+
+function _load_nuclideIosCommon() {
+  return _nuclideIosCommon = _interopRequireWildcard(require('../../nuclide-ios-common'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let disposable = null; /**
+                        * Copyright (c) 2015-present, Facebook, Inc.
+                        * All rights reserved.
+                        *
+                        * This source code is licensed under the license found in the LICENSE file in
+                        * the root directory of this source tree.
+                        *
+                        * 
+                        * @format
+                        */
 
 const RUNNABLE_RULE_TYPES = new Set(['apple_bundle']);
 
 const SUPPORTED_RULE_TYPES = new Set([...RUNNABLE_RULE_TYPES, 'apple_test']);
 
-export function deactivate(): void {
+function deactivate() {
   if (disposable != null) {
     disposable.dispose();
     disposable = null;
   }
 }
 
-export function consumePlatformService(service: PlatformService): void {
+function consumePlatformService(service) {
   disposable = service.register(provideIosDevices);
 }
 
-function provideIosDevices(
-  buckRoot: NuclideUri,
-  ruleType: string,
-  buildTarget: string,
-): Observable<?PlatformGroup> {
+function provideIosDevices(buckRoot, ruleType, buildTarget) {
   if (!SUPPORTED_RULE_TYPES.has(ruleType)) {
-    return Observable.of(null);
+    return _rxjsBundlesRxMinJs.Observable.of(null);
   }
 
-  return Observable.fromPromise(
-    fsPromise.exists(nuclideUri.join(buckRoot, 'mode', 'oculus-mobile')),
-  ).switchMap(result => {
+  return _rxjsBundlesRxMinJs.Observable.fromPromise((_fsPromise || _load_fsPromise()).default.exists((_nuclideUri || _load_nuclideUri()).default.join(buckRoot, 'mode', 'oculus-mobile'))).switchMap(result => {
     if (result) {
-      return Observable.of(null);
+      return _rxjsBundlesRxMinJs.Observable.of(null);
     } else {
-      return IosSimulator.getFbsimctlSimulators().map(simulators => {
+      return (_nuclideIosCommon || _load_nuclideIosCommon()).getFbsimctlSimulators().map(simulators => {
         if (!simulators.length) {
           return null;
         }
 
         return {
           name: 'iOS Simulators',
-          platforms: [
-            {
-              isMobile: true,
+          platforms: [{
+            isMobile: true,
+            name: 'iOS Simulators',
+            tasksForDevice: device => getTasks(buckRoot, ruleType),
+            runTask: (builder, taskType, target, settings, device) => _runTask(builder, taskType, ruleType, target, settings, device, buckRoot),
+            deviceGroups: [{
               name: 'iOS Simulators',
-              tasksForDevice: device => getTasks(buckRoot, ruleType),
-              runTask: (builder, taskType, target, settings, device) =>
-                _runTask(
-                  builder,
-                  taskType,
-                  ruleType,
-                  target,
-                  settings,
-                  device,
-                  buckRoot,
-                ),
-              deviceGroups: [
-                {
-                  name: 'iOS Simulators',
-                  devices: simulators.map(simulator => ({
-                    name: `${simulator.name} (${simulator.os})`,
-                    udid: simulator.udid,
-                    arch: simulator.arch,
-                  })),
-                },
-              ],
-            },
-          ],
+              devices: simulators.map(simulator => ({
+                name: `${simulator.name} (${simulator.os})`,
+                udid: simulator.udid,
+                arch: simulator.arch
+              }))
+            }]
+          }]
         };
       });
     }
   });
 }
 
-function getTasks(buckRoot: NuclideUri, ruleType: string): Set<TaskType> {
+function getTasks(buckRoot, ruleType) {
   const tasks = new Set(['build']);
   if (RUNNABLE_RULE_TYPES.has(ruleType)) {
     tasks.add('run');
   }
-  if (!nuclideUri.isRemote(buckRoot)) {
+  if (!(_nuclideUri || _load_nuclideUri()).default.isRemote(buckRoot)) {
     tasks.add('test');
     tasks.add('debug');
   }
   return tasks;
 }
 
-function _runTask(
-  builder: BuckBuildSystem,
-  taskType: TaskType,
-  ruleType: string,
-  buildTarget: ResolvedBuildTarget,
-  settings: TaskSettings,
-  device: ?Device,
-  buckRoot: NuclideUri,
-): Observable<TaskEvent> {
-  invariant(device);
-  invariant(device.arch);
-  invariant(device.udid);
+function _runTask(builder, taskType, ruleType, buildTarget, settings, device, buckRoot) {
+  if (!device) {
+    throw new Error('Invariant violation: "device"');
+  }
+
+  if (!device.arch) {
+    throw new Error('Invariant violation: "device.arch"');
+  }
+
+  if (!device.udid) {
+    throw new Error('Invariant violation: "device.udid"');
+  }
+
   const udid = device.udid;
   const arch = device.arch;
-  invariant(typeof arch === 'string');
-  invariant(typeof udid === 'string');
+
+  if (!(typeof arch === 'string')) {
+    throw new Error('Invariant violation: "typeof arch === \'string\'"');
+  }
+
+  if (!(typeof udid === 'string')) {
+    throw new Error('Invariant violation: "typeof udid === \'string\'"');
+  }
 
   const flavor = `iphonesimulator-${arch}`;
-  const newTarget = {
-    ...buildTarget,
-    flavors: buildTarget.flavors.concat([flavor]),
-  };
+  const newTarget = Object.assign({}, buildTarget, {
+    flavors: buildTarget.flavors.concat([flavor])
+  });
 
-  if (nuclideUri.isRemote(buckRoot)) {
+  if ((_nuclideUri || _load_nuclideUri()).default.isRemote(buckRoot)) {
     let runRemoteTask;
     try {
       // $FlowFB
       const remoteWorkflow = require('./fb-RemoteWorkflow');
       runRemoteTask = () => {
-        return remoteWorkflow.runRemoteTask(
-          buckRoot,
-          builder,
-          taskType,
-          ruleType,
-          buildTarget,
-          settings,
-          udid,
-          flavor,
-        );
+        return remoteWorkflow.runRemoteTask(buckRoot, builder, taskType, ruleType, buildTarget, settings, udid, flavor);
       };
     } catch (_) {
       runRemoteTask = () => {
-        throw new Error(
-          'Remote workflow currently unsupported for this target.',
-        );
+        throw new Error('Remote workflow currently unsupported for this target.');
       };
     }
 
     return runRemoteTask();
   } else {
-    return builder.runSubcommand(
-      buckRoot,
-      _getLocalSubcommand(taskType, ruleType),
-      newTarget,
-      settings,
-      taskType === 'debug',
-      udid,
-    );
+    return builder.runSubcommand(buckRoot, _getLocalSubcommand(taskType, ruleType), newTarget, settings, taskType === 'debug', udid);
   }
 }
 
-function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
+function _getLocalSubcommand(taskType, ruleType) {
   if (taskType !== 'run' && taskType !== 'debug') {
     return taskType;
   }

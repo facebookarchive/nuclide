@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RemoteFile = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _crypto = _interopRequireDefault(require('crypto'));
+
+var _atom = require('atom');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-remote-connection');
+
+/* Mostly implements https://atom.io/docs/api/latest/File */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,47 +41,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ServerConnection} from './ServerConnection';
-import type {RemoteDirectory} from './RemoteDirectory';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as FileSystemService
-  from '../../nuclide-server/lib/services/FileSystemService';
+class RemoteFile {
 
-import invariant from 'assert';
-import passesGK from '../../commons-node/passesGK';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import crypto from 'crypto';
-import {Disposable, Emitter} from 'atom';
-import {getLogger} from 'log4js';
-
-const logger = getLogger('nuclide-remote-connection');
-
-/* Mostly implements https://atom.io/docs/api/latest/File */
-export class RemoteFile {
-  _deleted: boolean;
-  _emitter: Emitter;
-  _encoding: ?string;
-  _localPath: string;
-  _path: NuclideUri;
-  _realpath: ?string;
-  _server: ServerConnection;
-  _subscriptionCount: number;
-  _watchSubscription: ?rxjs$ISubscription;
-  _digest: ?string;
-  _symlink: boolean;
-
-  constructor(
-    server: ServerConnection,
-    remotePath: NuclideUri,
-    symlink: boolean = false,
-  ) {
+  constructor(server, remotePath, symlink = false) {
     this._server = server;
     this.setPath(remotePath);
-    this._emitter = new Emitter();
+    this._emitter = new _atom.Emitter();
     this._subscriptionCount = 0;
     this._deleted = false;
     this._symlink = symlink;
@@ -56,89 +61,82 @@ export class RemoteFile {
     this._unsubscribeFromNativeChangeEvents();
   }
 
-  onDidChange(callback: () => mixed): IDisposable {
+  onDidChange(callback) {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
 
-  onDidRename(callback: () => mixed): IDisposable {
+  onDidRename(callback) {
     // TODO: this is not supported by the Watchman API.
-    return new Disposable();
+    return new _atom.Disposable();
   }
 
-  onDidDelete(callback: () => mixed): IDisposable {
+  onDidDelete(callback) {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
 
-  _willAddSubscription(): void {
+  _willAddSubscription() {
     this._subscriptionCount++;
     this._subscribeToNativeChangeEvents();
   }
 
-  _subscribeToNativeChangeEvents(): void {
+  _subscribeToNativeChangeEvents() {
     if (this._watchSubscription) {
       return;
     }
 
     const watchStream = this._server.getFileWatch(this._path);
-    this._watchSubscription = watchStream.subscribe(
-      watchUpdate => {
-        // This only happens after a `setPath` and subsequent file rename.
-        // Getting this message signifies that the new file should be ready for watching.
-        if (watchUpdate.path !== this._path) {
-          logger.debug('watchFile renamed:', this._path);
-          this._unsubscribeFromNativeChangeEvents();
-          this._subscribeToNativeChangeEvents();
-          return;
-        }
-        logger.debug('watchFile update:', watchUpdate);
-        switch (watchUpdate.type) {
-          case 'change':
-            return this._handleNativeChangeEvent();
-          case 'delete':
-            return this._handleNativeDeleteEvent();
-        }
-      },
-      error => {
-        logger.error('Failed to subscribe RemoteFile:', this._path, error);
-        this._watchSubscription = null;
-      },
-      () => {
-        // Nothing needs to be done if the root directory watch has ended.
-        logger.debug(`watchFile ended: ${this._path}`);
-        this._watchSubscription = null;
-      },
-    );
+    this._watchSubscription = watchStream.subscribe(watchUpdate => {
+      // This only happens after a `setPath` and subsequent file rename.
+      // Getting this message signifies that the new file should be ready for watching.
+      if (watchUpdate.path !== this._path) {
+        logger.debug('watchFile renamed:', this._path);
+        this._unsubscribeFromNativeChangeEvents();
+        this._subscribeToNativeChangeEvents();
+        return;
+      }
+      logger.debug('watchFile update:', watchUpdate);
+      switch (watchUpdate.type) {
+        case 'change':
+          return this._handleNativeChangeEvent();
+        case 'delete':
+          return this._handleNativeDeleteEvent();
+      }
+    }, error => {
+      logger.error('Failed to subscribe RemoteFile:', this._path, error);
+      this._watchSubscription = null;
+    }, () => {
+      // Nothing needs to be done if the root directory watch has ended.
+      logger.debug(`watchFile ended: ${this._path}`);
+      this._watchSubscription = null;
+    });
 
     // No need to wait for that async check.
     this._checkWatchOutOfOpenDirectories();
   }
 
-  async _checkWatchOutOfOpenDirectories(): Promise<void> {
-    const isPathInOpenDirectories = atom.project.contains(this._path);
-    if (
-      !isPathInOpenDirectories &&
-      (await passesGK('nuclide_watch_warn_unmanaged_file'))
-    ) {
-      atom.notifications.addWarning(
-        `Couldn't watch remote file \`${nuclideUri.basename(this._path)}\` for changes!`,
-        {
-          detail: "Updates to the file outside Nuclide won't reload automatically\n" +
-            "Please add the file's project directory to Nuclide\n",
-          dismissable: true,
-        },
-      );
-    }
+  _checkWatchOutOfOpenDirectories() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const isPathInOpenDirectories = atom.project.contains(_this._path);
+      if (!isPathInOpenDirectories && (yield (0, (_passesGK || _load_passesGK()).default)('nuclide_watch_warn_unmanaged_file'))) {
+        atom.notifications.addWarning(`Couldn't watch remote file \`${(_nuclideUri || _load_nuclideUri()).default.basename(_this._path)}\` for changes!`, {
+          detail: "Updates to the file outside Nuclide won't reload automatically\n" + "Please add the file's project directory to Nuclide\n",
+          dismissable: true
+        });
+      }
+    })();
   }
 
-  _handleNativeChangeEvent(): Promise<void> {
+  _handleNativeChangeEvent() {
     // Don't bother checking the file - this can be very expensive.
     this._emitter.emit('did-change');
     return Promise.resolve();
   }
 
-  _handleNativeDeleteEvent(): void {
+  _handleNativeDeleteEvent() {
     this._unsubscribeFromNativeChangeEvents();
     if (!this._deleted) {
       this._deleted = true;
@@ -150,178 +148,216 @@ export class RemoteFile {
    * Return a new Disposable that upon dispose, will remove the bound watch subscription.
    * When the number of subscriptions reach 0, the file is unwatched.
    */
-  _trackUnsubscription(subscription: IDisposable): IDisposable {
-    return new Disposable(() => {
+  _trackUnsubscription(subscription) {
+    return new _atom.Disposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
     });
   }
 
-  _didRemoveSubscription(): void {
+  _didRemoveSubscription() {
     this._subscriptionCount--;
     if (this._subscriptionCount === 0) {
       this._unsubscribeFromNativeChangeEvents();
     }
   }
 
-  _unsubscribeFromNativeChangeEvents(): void {
+  _unsubscribeFromNativeChangeEvents() {
     if (this._watchSubscription) {
       this._watchSubscription.unsubscribe();
       this._watchSubscription = null;
     }
   }
 
-  onWillThrowWatchError(
-    callback: (watchError: {error: Error, handle: () => void}) => mixed,
-  ): IDisposable {
+  onWillThrowWatchError(callback) {
     return this._emitter.on('will-throw-watch-error', callback);
   }
 
-  isFile(): boolean {
+  isFile() {
     return true;
   }
 
-  isDirectory(): boolean {
+  isDirectory() {
     return false;
   }
 
-  exists(): Promise<boolean> {
+  exists() {
     return this._getFileSystemService().exists(this._path);
   }
 
-  existsSync(): boolean {
+  existsSync() {
     return true;
   }
 
-  getDigestSync(): string {
+  getDigestSync() {
     if (!this._digest) {
       // File's `getDigestSync()` calls `readSync()`, which we don't implement.
       // However, we mimic it's behavior for when a file does not exist.
       this._setDigest('');
     }
-    invariant(this._digest);
-    return this._digest;
-  }
 
-  async getDigest(): Promise<string> {
-    if (this._digest) {
-      return this._digest;
+    if (!this._digest) {
+      throw new Error('Invariant violation: "this._digest"');
     }
-    await this.read();
-    invariant(this._digest);
+
     return this._digest;
   }
 
-  _setDigest(contents: string) {
-    const hash = crypto.createHash('sha1').update(contents || '');
-    invariant(hash);
+  getDigest() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this2._digest) {
+        return _this2._digest;
+      }
+      yield _this2.read();
+
+      if (!_this2._digest) {
+        throw new Error('Invariant violation: "this._digest"');
+      }
+
+      return _this2._digest;
+    })();
+  }
+
+  _setDigest(contents) {
+    const hash = _crypto.default.createHash('sha1').update(contents || '');
+
+    if (!hash) {
+      throw new Error('Invariant violation: "hash"');
+    }
+
     this._digest = hash.digest('hex');
   }
 
-  setEncoding(encoding: string) {
+  setEncoding(encoding) {
     this._encoding = encoding;
   }
 
-  getEncoding(): ?string {
+  getEncoding() {
     return this._encoding;
   }
 
-  setPath(remotePath: NuclideUri): void {
-    const {path: localPath} = nuclideUri.parse(remotePath);
+  setPath(remotePath) {
+    const { path: localPath } = (_nuclideUri || _load_nuclideUri()).default.parse(remotePath);
     this._localPath = localPath;
     this._path = remotePath;
   }
 
-  getPath(): string {
+  getPath() {
     return this._path;
   }
 
-  getLocalPath(): string {
+  getLocalPath() {
     return this._localPath;
   }
 
-  getRealPathSync(): string {
+  getRealPathSync() {
     return this._realpath || this._path;
   }
 
-  async getRealPath(): Promise<string> {
-    if (this._realpath == null) {
-      this._realpath = await this._getFileSystemService().realpath(this._path);
-    }
-    invariant(this._realpath);
-    return this._realpath;
-  }
+  getRealPath() {
+    var _this3 = this;
 
-  getBaseName(): string {
-    return nuclideUri.basename(this._path);
-  }
-
-  async create(): Promise<boolean> {
-    const wasCreated = await this._getFileSystemService().newFile(this._path);
-    if (this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
-    return wasCreated;
-  }
-
-  async delete(): Promise<any> {
-    try {
-      await this._getFileSystemService().unlink(this._path);
-      this._handleNativeDeleteEvent();
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this3._realpath == null) {
+        _this3._realpath = yield _this3._getFileSystemService().realpath(_this3._path);
       }
-    }
+
+      if (!_this3._realpath) {
+        throw new Error('Invariant violation: "this._realpath"');
+      }
+
+      return _this3._realpath;
+    })();
   }
 
-  async copy(newPath: NuclideUri): Promise<boolean> {
-    const wasCopied = await this._getFileSystemService().copy(
-      this._path,
-      newPath,
-    );
-    this._subscribeToNativeChangeEvents();
-    return wasCopied;
+  getBaseName() {
+    return (_nuclideUri || _load_nuclideUri()).default.basename(this._path);
   }
 
-  async read(flushCache?: boolean): Promise<string> {
-    const data = await this._getFileSystemService().readFile(this._path);
-    const contents = data.toString();
-    this._setDigest(contents);
-    // TODO: respect encoding
-    return contents;
+  create() {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const wasCreated = yield _this4._getFileSystemService().newFile(_this4._path);
+      if (_this4._subscriptionCount > 0) {
+        _this4._subscribeToNativeChangeEvents();
+      }
+      return wasCreated;
+    })();
   }
 
-  readSync(flushcache: boolean): Promise<string> {
+  delete() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        yield _this5._getFileSystemService().unlink(_this5._path);
+        _this5._handleNativeDeleteEvent();
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+    })();
+  }
+
+  copy(newPath) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const wasCopied = yield _this6._getFileSystemService().copy(_this6._path, newPath);
+      _this6._subscribeToNativeChangeEvents();
+      return wasCopied;
+    })();
+  }
+
+  read(flushCache) {
+    var _this7 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const data = yield _this7._getFileSystemService().readFile(_this7._path);
+      const contents = data.toString();
+      _this7._setDigest(contents);
+      // TODO: respect encoding
+      return contents;
+    })();
+  }
+
+  readSync(flushcache) {
     throw new Error('readSync is not supported in RemoteFile');
   }
 
-  async write(text: string): Promise<void> {
-    const previouslyExisted = await this.exists();
-    await this._getFileSystemService().writeFile(this._path, text);
-    if (!previouslyExisted && this._subscriptionCount > 0) {
-      this._subscribeToNativeChangeEvents();
-    }
+  write(text) {
+    var _this8 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const previouslyExisted = yield _this8.exists();
+      yield _this8._getFileSystemService().writeFile(_this8._path, text);
+      if (!previouslyExisted && _this8._subscriptionCount > 0) {
+        _this8._subscribeToNativeChangeEvents();
+      }
+    })();
   }
 
-  getParent(): RemoteDirectory {
-    const directoryPath = nuclideUri.dirname(this._path);
+  getParent() {
+    const directoryPath = (_nuclideUri || _load_nuclideUri()).default.dirname(this._path);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
-    const hgRepositoryDescription = remoteConnection != null
-      ? remoteConnection.getHgRepositoryDescription()
-      : null;
+    const hgRepositoryDescription = remoteConnection != null ? remoteConnection.getHgRepositoryDescription() : null;
     return this._server.createDirectory(directoryPath, hgRepositoryDescription);
   }
 
-  isSymbolicLink(): boolean {
+  isSymbolicLink() {
     return this._symlink;
   }
 
-  _getFileSystemService(): FileSystemService {
+  _getFileSystemService() {
     return this._getService('FileSystemService');
   }
 
-  _getService(serviceName: string): any {
+  _getService(serviceName) {
     return this._server.getService(serviceName);
   }
 }
+exports.RemoteFile = RemoteFile;

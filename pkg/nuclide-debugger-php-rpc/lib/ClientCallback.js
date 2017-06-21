@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ClientCallback = undefined;
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,20 +22,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import logger from './utils';
-import {Observable, Subject, ReplaySubject} from 'rxjs';
-
-import type {NotificationMessage} from './PhpDebuggerService';
-
-export type UserMessageType = 'notification' | 'console' | 'outputWindow';
-export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
-
-function createMessage(method: string, params: ?Object): Object {
-  const result: Object = {method};
+function createMessage(method, params) {
+  const result = { method };
   if (params) {
     result.params = params;
   }
@@ -33,98 +42,94 @@ function createMessage(method: string, params: ?Object): Object {
  * 3. Chrome console user messages.
  * 4. Output window messages.
  */
-export class ClientCallback {
-  _serverMessages: Subject<string>; // For server messages.
-  _notifications: ReplaySubject<NotificationMessage>; // For atom UI notifications.
-  _outputWindowMessages: Subject<string>; // For output window messages.
+class ClientCallback {
+  // For output window messages.
 
+  // For server messages.
   constructor() {
-    this._serverMessages = new Subject();
-    this._outputWindowMessages = new Subject();
+    this._serverMessages = new _rxjsBundlesRxMinJs.Subject();
+    this._outputWindowMessages = new _rxjsBundlesRxMinJs.Subject();
     // We use a `ReplaySubject` here because we want to allow notifications to be emitted possibly
     // before the client subscribes.  This is justified because:
     // 1. we only ever expect one subscriber on the client, and
     // 2. we expect the number of notifications to be small, so storage in memory is not an issue.
-    this._notifications = new ReplaySubject();
-  }
+    this._notifications = new _rxjsBundlesRxMinJs.ReplaySubject();
+  } // For atom UI notifications.
 
-  getNotificationObservable(): Observable<NotificationMessage> {
+
+  getNotificationObservable() {
     return this._notifications.asObservable();
   }
 
-  getServerMessageObservable(): Observable<string> {
+  getServerMessageObservable() {
     return this._serverMessages.asObservable();
   }
 
-  getOutputWindowObservable(): Observable<string> {
+  getOutputWindowObservable() {
     return this._outputWindowMessages.asObservable();
   }
 
-  sendUserMessage(type: UserMessageType, message: Object): void {
-    logger.debug(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
+  sendUserMessage(type, message) {
+    (_utils || _load_utils()).default.debug(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     switch (type) {
       case 'notification':
         this._notifications.next({
           type: message.type,
-          message: message.message,
+          message: message.message
         });
         break;
       case 'console':
         this.sendServerMethod('Console.messageAdded', {
-          message,
+          message
         });
         break;
       case 'outputWindow':
         this.sendOutputWindowMethod('Console.messageAdded', {
-          message,
+          message
         });
         break;
       default:
-        logger.error(`Unknown UserMessageType: ${type}`);
+        (_utils || _load_utils()).default.error(`Unknown UserMessageType: ${type}`);
     }
   }
 
-  unknownMethod(
-    id: number,
-    domain: string,
-    method: string,
-    params: ?Object,
-  ): void {
+  unknownMethod(id, domain, method, params) {
     const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
-    logger.debug(message);
+    (_utils || _load_utils()).default.debug(message);
     this.replyWithError(id, message);
   }
 
-  replyWithError(id: number, error: string): void {
+  replyWithError(id, error) {
     this.replyToCommand(id, {}, error);
   }
 
-  replyToCommand(id: number, result: Object, error: ?string): void {
-    const value: Object = {id, result};
+  replyToCommand(id, result, error) {
+    const value = { id, result };
     if (error != null) {
       value.error = error;
     }
     sendJsonObject(this._serverMessages, value);
   }
 
-  sendServerMethod(method: string, params: ?Object) {
+  sendServerMethod(method, params) {
     sendJsonObject(this._serverMessages, createMessage(method, params));
   }
 
-  sendOutputWindowMethod(method: string, params: ?Object) {
+  sendOutputWindowMethod(method, params) {
     sendJsonObject(this._outputWindowMessages, createMessage(method, params));
   }
 
-  dispose(): void {
-    logger.debug('Called ClientCallback dispose method.');
+  dispose() {
+    (_utils || _load_utils()).default.debug('Called ClientCallback dispose method.');
     this._notifications.complete();
     this._serverMessages.complete();
     this._outputWindowMessages.complete();
   }
 }
 
-function sendJsonObject(subject: Subject<string>, value: Object): void {
+exports.ClientCallback = ClientCallback;
+function sendJsonObject(subject, value) {
   const message = JSON.stringify(value);
-  logger.debug(`Sending JSON: ${message}`);
+  (_utils || _load_utils()).default.debug(`Sending JSON: ${message}`);
   subject.next(message);
 }

@@ -1,3 +1,16 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ArcToolbarModel = exports.TASKS = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _atom = require('atom');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,80 +18,76 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {TaskEvent} from 'nuclide-commons/process';
-import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
-import type {Observable} from 'rxjs';
-
-import {Disposable} from 'atom';
-
-export const TASKS: Array<TaskMetadata> = [];
+const TASKS = exports.TASKS = [];
 
 /*
  * This will provide the toolbar functionality for the open-source-supported HHVM targets.
  * e.g. HHVM Debugger
  */
-export class ArcToolbarModel {
-  _projectPath: ?string;
+class ArcToolbarModel {
 
   constructor() {}
 
-  setProjectPath(projectPath: ?string) {
+  setProjectPath(projectPath) {
     this._projectPath = projectPath;
   }
 
-  getActiveProjectPath(): ?string {
+  getActiveProjectPath() {
     return this._projectPath;
   }
 
-  onChange(callback: () => mixed): IDisposable {
-    return new Disposable(() => {});
+  onChange(callback) {
+    return new _atom.Disposable(() => {});
   }
 
-  setActiveBuildTarget(value: string): void {
+  setActiveBuildTarget(value) {
     throw new Error('arc build targets not supported');
   }
 
-  isArcSupported(): ?boolean {
+  isArcSupported() {
     return false;
   }
 
-  getActiveBuildTarget(): string {
+  getActiveBuildTarget() {
     return '';
   }
 
-  getName(): string {
+  getName() {
     return 'Arcanist';
   }
 
-  getTaskList(): Array<TaskMetadata> {
+  getTaskList() {
     return TASKS;
   }
 
-  async arcBuild(): Observable<TaskEvent> {
+  arcBuild() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('arc build not supported');
+    })();
+  }
+
+  getBuildTargets() {
     throw new Error('arc build not supported');
   }
 
-  getBuildTargets(): ?Array<string> {
+  updateBuildTargets() {
     throw new Error('arc build not supported');
   }
 
-  updateBuildTargets(): void {
+  getBuildTargetsError() {
     throw new Error('arc build not supported');
   }
 
-  getBuildTargetsError(): ?Error {
+  viewActivated() {
     throw new Error('arc build not supported');
   }
 
-  viewActivated(): void {
-    throw new Error('arc build not supported');
-  }
-
-  viewDeactivated(): void {
+  viewDeactivated() {
     throw new Error('arc build not supported');
   }
 }
+exports.ArcToolbarModel = ArcToolbarModel;

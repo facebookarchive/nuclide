@@ -1,86 +1,86 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import type {ThreadItem} from './types';
-import type Bridge from './Bridge';
-import type ThreadStore from './ThreadStore';
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {Table} from 'nuclide-commons-ui/Table';
-import type {Row} from 'nuclide-commons-ui/Table';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  LoadingSpinner,
-  LoadingSpinnerSizes,
-} from 'nuclide-commons-ui/LoadingSpinner';
-import debounce from 'nuclide-commons/debounce';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerThreadsComponent = undefined;
 
-type DebuggerThreadsComponentProps = {
-  bridge: Bridge,
-  threadStore: ThreadStore,
-  customThreadColumns: Array<ThreadColumn>,
-  threadName: string,
-};
+var _react = _interopRequireDefault(require('react'));
 
-type DebuggerThreadsComponentState = {
-  threadList: Array<ThreadItem>,
-  selectedThreadId: number,
-  sortedColumn: ?string,
-  sortDescending: boolean,
-  threadsLoading: boolean,
-};
+var _reactDom = _interopRequireDefault(require('react-dom'));
 
-const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
-  <div className="nuclide-debugger-thread-list-item-current-indicator">
-    {props.cellData
-      ? <Icon icon="arrow-right" title="Selected Thread" />
-      : null}
-  </div>
-);
+var _Icon;
 
-export class DebuggerThreadsComponent extends React.Component {
-  props: DebuggerThreadsComponentProps;
-  state: DebuggerThreadsComponentState;
-  _disposables: UniversalDisposable;
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
 
-  constructor(props: DebuggerThreadsComponentProps) {
+var _Table;
+
+function _load_Table() {
+  return _Table = require('nuclide-commons-ui/Table');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('nuclide-commons/debounce'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const activeThreadIndicatorComponent = props => _react.default.createElement(
+  'div',
+  { className: 'nuclide-debugger-thread-list-item-current-indicator' },
+  props.cellData ? _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: 'arrow-right', title: 'Selected Thread' }) : null
+); /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
+
+class DebuggerThreadsComponent extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
-    (this: any)._handleSort = this._handleSort.bind(this);
-    (this: any)._sortRows = this._sortRows.bind(this);
-    (this: any)._handleThreadStoreChanged = debounce(
-      this._handleThreadStoreChanged,
-      150,
-    );
+    this._handleSelectThread = this._handleSelectThread.bind(this);
+    this._handleSort = this._handleSort.bind(this);
+    this._sortRows = this._sortRows.bind(this);
+    this._handleThreadStoreChanged = (0, (_debounce || _load_debounce()).default)(this._handleThreadStoreChanged, 150);
 
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       threadList: props.threadStore.getThreadList(),
       selectedThreadId: props.threadStore.getSelectedThreadId(),
       sortedColumn: null,
       sortDescending: false,
-      threadsLoading: false,
+      threadsLoading: false
     };
   }
 
-  componentDidMount(): void {
-    const {threadStore} = this.props;
-    this._disposables.add(
-      threadStore.onChange(() => this._handleThreadStoreChanged()),
-    );
+  componentDidMount() {
+    const { threadStore } = this.props;
+    this._disposables.add(threadStore.onChange(() => this._handleThreadStoreChanged()));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
@@ -89,14 +89,12 @@ export class DebuggerThreadsComponent extends React.Component {
     this._scrollSelectedThreadIntoView();
   }
 
-  _scrollSelectedThreadIntoView(): void {
-    const listNode = ReactDOM.findDOMNode(this.refs.threadTable);
+  _scrollSelectedThreadIntoView() {
+    const listNode = _reactDom.default.findDOMNode(this.refs.threadTable);
     if (listNode) {
       const selectedRows =
-        // $FlowFixMe
-        listNode.getElementsByClassName(
-          'nuclide-debugger-thread-list-item-selected',
-        );
+      // $FlowFixMe
+      listNode.getElementsByClassName('nuclide-debugger-thread-list-item-selected');
 
       if (selectedRows && selectedRows.length > 0) {
         // $FlowFixMe
@@ -105,41 +103,35 @@ export class DebuggerThreadsComponent extends React.Component {
     }
   }
 
-  _handleThreadStoreChanged(): void {
+  _handleThreadStoreChanged() {
     this.setState({
       threadList: this.props.threadStore.getThreadList(),
       selectedThreadId: this.props.threadStore.getSelectedThreadId(),
-      threadsLoading: this.props.threadStore.getThreadsReloading(),
+      threadsLoading: this.props.threadStore.getThreadsReloading()
     });
   }
 
-  _handleSelectThread(data: ThreadItem): void {
+  _handleSelectThread(data) {
     this.props.bridge.selectThread(data.id);
   }
 
-  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
-    this.setState({sortedColumn, sortDescending});
+  _handleSort(sortedColumn, sortDescending) {
+    this.setState({ sortedColumn, sortDescending });
   }
 
-  _sortRows(
-    threads: Array<Row>,
-    sortedColumnName: ?string,
-    sortDescending: boolean,
-  ): Array<Row> {
+  _sortRows(threads, sortedColumnName, sortDescending) {
     if (sortedColumnName == null) {
       return threads;
     }
 
     // Use a numerical comparison for the ID column, string compare for all the others.
-    const compare: any = sortedColumnName.toLowerCase() === 'id'
-      ? (a: ?number, b: ?number, isAsc: boolean): number => {
-          const cmp = (a || 0) - (b || 0);
-          return isAsc ? cmp : -cmp;
-        }
-      : (a: string, b: string, isAsc: boolean): number => {
-          const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
-          return isAsc ? cmp : -cmp;
-        };
+    const compare = sortedColumnName.toLowerCase() === 'id' ? (a, b, isAsc) => {
+      const cmp = (a || 0) - (b || 0);
+      return isAsc ? cmp : -cmp;
+    } : (a, b, isAsc) => {
+      const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+      return isAsc ? cmp : -cmp;
+    };
 
     const getter = row => row.data[sortedColumnName];
     return [...threads].sort((a, b) => {
@@ -147,90 +139,73 @@ export class DebuggerThreadsComponent extends React.Component {
     });
   }
 
-  render(): ?React.Element<any> {
-    const {threadList, selectedThreadId} = this.state;
+  render() {
+    const { threadList, selectedThreadId } = this.state;
     const activeThreadCol = {
       component: activeThreadIndicatorComponent,
       title: '',
       key: 'isSelected',
-      width: 0.05,
+      width: 0.05
     };
 
-    const defaultColumns = [
-      activeThreadCol,
-      {
-        title: 'ID',
-        key: 'id',
-        width: 0.15,
-      },
-      {
-        title: 'Address',
-        key: 'address',
-        width: 0.55,
-      },
-      {
-        title: 'Stop Reason',
-        key: 'stopReason',
-        width: 0.25,
-      },
-    ];
+    const defaultColumns = [activeThreadCol, {
+      title: 'ID',
+      key: 'id',
+      width: 0.15
+    }, {
+      title: 'Address',
+      key: 'address',
+      width: 0.55
+    }, {
+      title: 'Stop Reason',
+      key: 'stopReason',
+      width: 0.25
+    }];
 
     // Individual debuggers can override the displayed columns.
-    const columns = this.props.customThreadColumns.length === 0
-      ? defaultColumns
-      : [activeThreadCol, ...this.props.customThreadColumns];
+    const columns = this.props.customThreadColumns.length === 0 ? defaultColumns : [activeThreadCol, ...this.props.customThreadColumns];
     const threadName = this.props.threadName.toLowerCase();
-    const emptyComponent = () => (
-      <div className="nuclide-debugger-thread-list-empty">
-        {threadList == null
-          ? `(${threadName} unavailable)`
-          : `no ${threadName} to display`}
-      </div>
+    const emptyComponent = () => _react.default.createElement(
+      'div',
+      { className: 'nuclide-debugger-thread-list-empty' },
+      threadList == null ? `(${threadName} unavailable)` : `no ${threadName} to display`
     );
-    const rows = threadList == null
-      ? []
-      : threadList.map((threadItem, i) => {
-          const cellData = {
-            data: {
-              ...threadItem,
-              isSelected: Number(threadItem.id) === selectedThreadId,
-            },
-          };
-          if (Number(threadItem.id) === selectedThreadId) {
-            // $FlowIssue className is an optional property of a table row
-            cellData.className = 'nuclide-debugger-thread-list-item-selected';
-          }
-          return cellData;
-        });
+    const rows = threadList == null ? [] : threadList.map((threadItem, i) => {
+      const cellData = {
+        data: Object.assign({}, threadItem, {
+          isSelected: Number(threadItem.id) === selectedThreadId
+        })
+      };
+      if (Number(threadItem.id) === selectedThreadId) {
+        // $FlowIssue className is an optional property of a table row
+        cellData.className = 'nuclide-debugger-thread-list-item-selected';
+      }
+      return cellData;
+    });
 
     if (this.state.threadsLoading) {
-      return (
-        <div
-          className="nuclide-debugger-thread-loading"
-          title="Loading threads...">
-          <LoadingSpinner size={LoadingSpinnerSizes.MEDIUM} />
-        </div>
+      return _react.default.createElement(
+        'div',
+        {
+          className: 'nuclide-debugger-thread-loading',
+          title: 'Loading threads...' },
+        _react.default.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, { size: (_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinnerSizes.MEDIUM })
       );
     }
 
-    return (
-      <Table
-        columns={columns}
-        emptyComponent={emptyComponent}
-        rows={this._sortRows(
-          rows,
-          this.state.sortedColumn,
-          this.state.sortDescending,
-        )}
-        selectable={true}
-        resizable={true}
-        onSelect={this._handleSelectThread}
-        sortable={true}
-        onSort={this._handleSort}
-        sortedColumn={this.state.sortedColumn}
-        sortDescending={this.state.sortDescending}
-        ref="threadTable"
-      />
-    );
+    return _react.default.createElement((_Table || _load_Table()).Table, {
+      columns: columns,
+      emptyComponent: emptyComponent,
+      rows: this._sortRows(rows, this.state.sortedColumn, this.state.sortDescending),
+      selectable: true,
+      resizable: true,
+      onSelect: this._handleSelectThread,
+      sortable: true,
+      onSort: this._handleSort,
+      sortedColumn: this.state.sortedColumn,
+      sortDescending: this.state.sortDescending,
+      ref: 'threadTable'
+    });
   }
 }
+exports.DebuggerThreadsComponent = DebuggerThreadsComponent;

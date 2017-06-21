@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +7,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -32,7 +34,7 @@ function disablePackage(name) {
   delete atom.packages.preloadedPackages[name];
 }
 
-module.exports = function(name: string) {
+module.exports = function (name) {
   // Disable Atom's bundled package. If this activation is happening during the
   // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the
   // package because it will have been loaded during startup.
