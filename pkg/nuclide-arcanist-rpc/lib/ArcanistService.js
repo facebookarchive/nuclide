@@ -327,7 +327,7 @@ export function execArcPatch(
   // TODO(T17463635)
   const args = ['patch'];
   if (differentialRevision.match(/^[0-9]+$/)) {
-    args.push('--diff');
+    args.push('--nocommit', '--diff');
   }
   args.push(differentialRevision);
   return Observable.fromPromise(getArcExecOptions(cwd))
