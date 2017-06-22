@@ -9,15 +9,15 @@
  * @format
  */
 
-import type {Definition} from 'atom-ide-ui';
+import type {Definition, DefinitionPreviewProvider} from 'atom-ide-ui';
 
 import {
   getDefinitionPreviewServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 
-export function provideDefinitionPreview() {
+export function provideDefinitionPreview(): DefinitionPreviewProvider {
   return {
-    async getDefinitionPreview(definition: Definition): Promise<?string> {
+    async getDefinitionPreview(definition: Definition): Promise<string> {
       const service = await getDefinitionPreviewServiceByNuclideUri(
         definition.path,
       );

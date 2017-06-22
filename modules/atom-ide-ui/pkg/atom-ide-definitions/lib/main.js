@@ -13,71 +13,66 @@
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from '../../hyperclick/lib/types';
 
+import type {
+  Datatip,
+  DatatipService,
+  ModifierDatatipProvider,
+  ModifierKey,
+} from '../../atom-ide-datatip';
+
+import type {
+  Definition,
+  DefinitionQueryResult,
+  DefinitionProvider,
+  DefinitionPreviewProvider,
+} from './types';
+
 import invariant from 'assert';
 import {getLogger} from 'log4js';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+
+import analytics from 'nuclide-commons-atom/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import FeatureConfig from 'nuclide-commons-atom/feature-config';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
-// position is the first char of the definition's identifier, while range
-// includes the entire definition. For example in:
-//   class Foo { }
-// position should be the 'F' in Foo, while range should span the 'c' in class
-// to the '}'
-// id is a string which uniquely identifies this symbol in a project. It is not suitable
-// for display to humans.
-// name is a string suitable for display to humans.
-// projectRoot is the root directory of the project containing this definition.
-// name is required, and projectRoot is encouraged, when returning multiple results.
-export type Definition = {
-  path: NuclideUri,
-  position: atom$Point,
-  range?: atom$Range,
-  id?: string,
-  name?: string,
-  language: string,
-  projectRoot?: NuclideUri,
-};
+import getPreviewDatatipFromDefinitionResult
+  from './getPreviewDatatipFromDefinitionResult';
 
-// Definition queries supply a point.
-// The returned queryRange is the range within which the returned definition is valid.
-// Typically queryRange spans the containing identifier around the query point.
-export type DefinitionQueryResult = {
-  queryRange: Array<atom$Range>,
-  definitions: Array<Definition>,
-};
-
-// Provides definitions for a set of language grammars.
-export type DefinitionProvider = {
-  // If there are multiple providers for a given grammar,
-  // the one with the highest priority will be used.
-  priority: number,
-  grammarScopes: Array<string>,
-  getDefinition: (
-    editor: TextEditor,
-    position: atom$Point,
-  ) => Promise<?DefinitionQueryResult>,
-};
-
-export type DefinitionPreviewProvider = {
-  getDefinitionPreview(definition: Definition): Promise<string>,
+export type {
+  Definition,
+  DefinitionQueryResult,
+  DefinitionProvider,
+  DefinitionPreviewProvider,
 };
 
 class Activation {
   _providers: ProviderRegistry<DefinitionProvider>;
+  _definitionPreviewProvider: ?DefinitionPreviewProvider;
   _disposables: UniversalDisposable;
+  _triggerKeys: Set<ModifierKey>;
 
   constructor() {
     this._providers = new ProviderRegistry();
-    this._disposables = new UniversalDisposable();
+    this._triggerKeys = new Set();
+
+    this._disposables = new UniversalDisposable(
+      FeatureConfig.observe(
+        getPlatformKeys(process.platform),
+        (newValue: ?string) => {
+          this._triggerKeys = (new Set(
+            newValue ? newValue.split(',') : null,
+          ): Set<any>);
+        },
+      ),
+    );
   }
 
   dispose() {
@@ -110,6 +105,7 @@ class Activation {
     position: atom$Point,
   ): Promise<?HyperclickSuggestion> {
     const result = await this._getDefinition(editor, position);
+
     if (result == null) {
       return null;
     }
@@ -156,8 +152,63 @@ class Activation {
     }
   }
 
+  async getPreview(
+    editor: atom$TextEditor,
+    position: atom$Point,
+    heldKeys: Set<ModifierKey>,
+  ): Promise<?Datatip> {
+    if (
+      !this._triggerKeys ||
+      // are the required keys held down?
+      !Array.from(this._triggerKeys).every(key => heldKeys.has(key))
+    ) {
+      return;
+    }
+
+    const result = await this._getDefinition(editor, position);
+    if (result == null) {
+      return null;
+    }
+
+    const grammar = editor.getGrammar();
+    const previewDatatip = getPreviewDatatipFromDefinitionResult(
+      result,
+      this._definitionPreviewProvider,
+      grammar,
+    );
+
+    if (previewDatatip != null && previewDatatip.markedStrings) {
+      analytics.track('hyperclick-preview-popup', {
+        grammar: grammar.name,
+        definitionCount: result.definitions.length,
+      });
+    }
+
+    return previewDatatip;
+  }
+
   consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
     const disposable = this._providers.addProvider(provider);
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
+  consumeDefinitionPreviewProvider(provider: DefinitionPreviewProvider) {
+    this._definitionPreviewProvider = provider;
+  }
+
+  consumeDatatipService(service: DatatipService): IDisposable {
+    const datatipProvider: ModifierDatatipProvider = {
+      providerName: 'hyperclick-preview',
+      priority: 1,
+      modifierDatatip: (
+        editor: atom$TextEditor,
+        bufferPosition: atom$Point,
+        heldKeys: Set<ModifierKey>,
+      ) => this.getPreview(editor, bufferPosition, heldKeys),
+    };
+
+    const disposable = service.addModifierProvider(datatipProvider);
     this._disposables.add(disposable);
     return disposable;
   }
@@ -169,6 +220,15 @@ class Activation {
       getSuggestion: (editor, position) => this.getSuggestion(editor, position),
     };
   }
+}
+
+function getPlatformKeys(platform) {
+  if (platform === 'darwin') {
+    return 'hyperclick.darwinTriggerKeys';
+  } else if (platform === 'win32') {
+    return 'hyperclick.win32TriggerKeys';
+  }
+  return 'hyperclick.linuxTriggerKeys';
 }
 
 createPackage(module.exports, Activation);
