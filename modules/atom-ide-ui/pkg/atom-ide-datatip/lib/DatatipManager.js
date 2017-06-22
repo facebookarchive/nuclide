@@ -42,7 +42,7 @@ import {
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-const logger = getLogger('nuclide-datatip');
+const logger = getLogger('atom-ide-datatip');
 
 const CUMULATIVE_WHEELX_THRESHOLD = 20;
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
@@ -262,11 +262,11 @@ class DatatipManagerForEditor {
     this._shouldDropNextMouseMoveAfterFocus = false;
 
     this._subscriptions.add(
-      featureConfig.observe('nuclide-datatip.datatipDebounceDelay', () =>
+      featureConfig.observe('atom-ide-datatip.datatipDebounceDelay', () =>
         this._setStartFetchingDebounce(),
       ),
       featureConfig.observe(
-        'nuclide-datatip.datatipInteractedWithDebounceDelay',
+        'atom-ide-datatip.datatipInteractedWithDebounceDelay',
         () => this._setHideIfOutsideDebounce(),
       ),
       Observable.fromEvent(this._editorView, 'focus').subscribe(e => {
@@ -391,7 +391,7 @@ class DatatipManagerForEditor {
         );
       },
       ensurePositiveNumber(
-        (featureConfig.get('nuclide-datatip.datatipDebounceDelay'): any),
+        (featureConfig.get('atom-ide-datatip.datatipDebounceDelay'): any),
         DEFAULT_DATATIP_DEBOUNCE_DELAY,
       ),
       /* immediate */ false,
@@ -405,7 +405,7 @@ class DatatipManagerForEditor {
       },
       ensurePositiveNumber(
         (featureConfig.get(
-          'nuclide-datatip.datatipInteractedWithDebounceDelay',
+          'atom-ide-datatip.datatipInteractedWithDebounceDelay',
         ): any),
         DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY,
       ),
