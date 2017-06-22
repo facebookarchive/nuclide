@@ -1,6 +1,6 @@
 {
   "name": "big-dig",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Secure, re-connectable channel for bidirectional communication with a remote host.",
   "license": "BSD-3-Clause",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/big-dig",
