@@ -204,7 +204,7 @@ export class LspLanguageService {
         this._host
           .dialogNotification(
             'error',
-            `Couldn't start server - ${this._errorString(e, this._command)}`,
+            `Couldn't start ${this._languageId} server - ${this._errorString(e, this._command)}`,
           )
           .refCount()
           .subscribe(); // fire-and-forget
@@ -419,7 +419,7 @@ export class LspLanguageService {
           // the lspConnection might already have been torn down.
 
           const offerRetry = e.data != null && Boolean(e.data.retry);
-          const msg = `Couldn't initialize server - ${this._errorString(e)}`;
+          const msg = `Couldn't initialize ${this._languageId} server - ${this._errorString(e)}`;
           this._childOut = {stdout: '', stderr: ''};
           if (!offerRetry) {
             this._host.dialogNotification('error', msg).refCount().subscribe();
@@ -691,7 +691,7 @@ export class LspLanguageService {
     this._host
       .dialogNotification(
         'error',
-        `Connection to the language server is erroring; shutting it down - ${this._errorString(error)}`,
+        `Connection to the ${this._languageId} language server is erroring; shutting it down - ${this._errorString(error)}`,
       )
       .refCount()
       .subscribe(); // fire and forget
@@ -728,7 +728,7 @@ export class LspLanguageService {
       this._host
         .dialogNotification(
           'error',
-          'Language server has crashed 5 times in the last 3 minutes. It will not be restarted.',
+          `Language server '${this._languageId}' has crashed 5 times in the last 3 minutes. It will not be restarted.`,
         )
         .refCount()
         .subscribe(); // fire and forget
