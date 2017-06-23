@@ -34,6 +34,9 @@ const TARGET_KIND_REGEX = [
 const targetCache = new Cache();
 const sourceCache = new Cache();
 
+// Ensure that we can clear targetCache for a given file.
+const sourceToTargetKey = new Map();
+
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
  * This target will never produce compilation flags, so make sure to ignore it.
@@ -42,11 +45,17 @@ const DEFAULT_HEADERS_TARGET = '__default_headers__';
 
 export function resetForSource(src: string): void {
   sourceCache.delete(src);
+  const targetKey = sourceToTargetKey.get(src);
+  if (targetKey != null) {
+    targetCache.delete(targetKey);
+    sourceToTargetKey.delete(src);
+  }
 }
 
 export function reset(): void {
   sourceCache.clear();
   targetCache.clear();
+  sourceToTargetKey.clear();
 }
 
 export async function getCompilationDatabase(
@@ -90,7 +99,10 @@ async function loadCompilationDatabaseFromBuck(
     return null;
   }
 
-  return targetCache.getOrCreate(buckRoot + ':' + target, () =>
+  const targetKey = buckRoot + ':' + target;
+  sourceToTargetKey.set(src, targetKey);
+
+  return targetCache.getOrCreate(targetKey, () =>
     loadCompilationDatabaseForBuckTarget(buckRoot, target),
   );
 }
