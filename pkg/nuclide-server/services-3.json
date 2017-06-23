@@ -69,10 +69,6 @@
     "name": "NativeDebuggerService"
   },
   {
-    "implementation": "../nuclide-debugger-node-rpc/lib/NodeDebuggerService.js",
-    "name": "NodeDebuggerService"
-  },
-  {
     "implementation": "../nuclide-open-files-rpc/lib/OpenFilesService.js",
     "name": "OpenFilesService"
   },
