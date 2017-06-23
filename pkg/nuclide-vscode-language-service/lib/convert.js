@@ -46,6 +46,7 @@ import type {TextEdit as LspTextEditType} from './protocol';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {
+  CompletionItemKind,
   DiagnosticSeverity,
   SymbolKind,
   MessageType as LspMessageType,
@@ -155,14 +156,57 @@ export function atom_lspPositionParams(
   };
 }
 
+function lspCompletionItemKind_atomCompletionType(kind: ?number): ?string {
+  switch (kind) {
+    case CompletionItemKind.Text:
+      return '';
+    case CompletionItemKind.Method:
+      return 'method';
+    case CompletionItemKind.Function:
+      return 'function';
+    case CompletionItemKind.Constructor:
+      return 'function'; // Not an exact match, but the best we can do
+    case CompletionItemKind.Field:
+      return 'property';
+    case CompletionItemKind.Variable:
+      return 'variable';
+    case CompletionItemKind.Class:
+      return 'class';
+    case CompletionItemKind.Interface:
+      return 'type';
+    case CompletionItemKind.Module: // see .Module, .File, .Unit, .Reference
+      return 'import';
+    case CompletionItemKind.Property:
+      return 'property';
+    case CompletionItemKind.Unit:
+      return 'require';
+    case CompletionItemKind.Value:
+      return 'value';
+    case CompletionItemKind.Enum:
+      return 'constant'; // closest we can do. Alternative is 'tag'
+    case CompletionItemKind.Keyword:
+      return 'keyword';
+    case CompletionItemKind.Snippet:
+      return 'snippet';
+    case CompletionItemKind.Color:
+      return 'constant'; // closest we can do.
+    case CompletionItemKind.File:
+      return 'require';
+    case CompletionItemKind.Reference:
+      return 'require';
+    default:
+      return null;
+  }
+}
+
 export function lspCompletionItem_atomCompletion(
   item: CompletionItem,
 ): Completion {
   return {
     text: item.insertText || item.label,
     displayText: item.label,
-    type: item.detail,
-    description: item.documentation,
+    type: lspCompletionItemKind_atomCompletionType(item.kind),
+    description: item.detail, // LSP 'item.detail' is the thing's signature
   };
 }
 
