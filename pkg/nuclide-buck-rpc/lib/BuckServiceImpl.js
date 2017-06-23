@@ -220,10 +220,10 @@ export async function runBuckCommandFromProjectRoot(
   } = await _getBuckCommandAndOptions(rootPath, commandOptions);
 
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
-  logger.debug('Buck command:', pathToBuck, newArgs, options);
-  return getPool(rootPath, readOnly).submit(() =>
-    runCommand(pathToBuck, newArgs, options).toPromise(),
-  );
+  return getPool(rootPath, readOnly).submit(() => {
+    logger.debug(`Running \`${pathToBuck} ${quote(args)}\``);
+    return runCommand(pathToBuck, newArgs, options).toPromise();
+  });
 }
 
 /** Runs `buck query --json` with the specified query. */
