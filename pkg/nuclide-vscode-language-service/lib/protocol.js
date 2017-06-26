@@ -408,6 +408,18 @@ export type CompletionItem = {
   // A human-readable string with additional information
   // about this item, like type or symbol information.
   detail?: string,
+  // (Nuclide-specific) A human-readable string that should be displayed along
+  // with the label. This is typically a subset of what's present in detail
+  // and/or documentation fields; those fields, however, are typically
+  // only shown when the user selects a label. If absent, then it won't be
+  // displayed alongside the label.
+  inlineDetail?: string,
+  // (Nuclide-specific) The type of the item, if applicable. The editor may
+  // chose to also display this along with the label. The type is typically
+  // a subset of what's present in detail and/or documentation fields; by
+  // putting the information here as well, the editor has more flexibility.
+  // If absent, then the type of the item won't be displayed.
+  itemType?: string,
   // A human-readable string that represents a doc-comment.
   documentation?: string,
   //  A string that shoud be used when comparing this item

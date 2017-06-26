@@ -203,10 +203,24 @@ export function lspCompletionItem_atomCompletion(
   item: CompletionItem,
 ): Completion {
   return {
-    text: item.insertText || item.label,
+    // LSP: label is what should be displayed in the autocomplete list
+    // Atom: displayText is what's displayed
     displayText: item.label,
+    // LSP: if item.insertText is present, insert that, else fall back to label
+    // Atom: insert field 'text'
+    text: item.insertText || item.label,
+    // LSP: [nuclide-specific] itemType is return type of function
+    // Atom: it's convention to display return types in the left column
+    leftLabel: item.itemType,
+    // LSP: [nuclide-specific] inlineDetail is to be displayed next to label
+    // Atom: it's convention to display details like parameters to the right
+    rightLabel: item.inlineDetail,
+    // LSP: kind indicates what icon should be used
+    // ATOM: type is to indicate icon and its background color
     type: lspCompletionItemKind_atomCompletionType(item.kind),
-    description: item.detail, // LSP 'item.detail' is the thing's signature
+    // LSP detail is the thing's signature
+    // Atom: description is displayed in the footer of the autocomplete tab
+    description: item.detail,
   };
 }
 
