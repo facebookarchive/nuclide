@@ -1029,6 +1029,14 @@ export class HgService {
     return this._commitCode(message, args).publish();
   }
 
+  restack(): ConnectableObservable<LegacyProcessMessage> {
+    const args = ['rebase', '--restack'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(args, execOptions).publish();
+  }
+
   splitRevision(): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
     let editMergeConfigs;

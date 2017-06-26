@@ -1127,6 +1127,10 @@ export class HgRepositoryClient {
       );
   }
 
+  restack(): Observable<LegacyProcessMessage> {
+    return this._service.restack().refCount();
+  }
+
   editCommitMessage(
     revision: string,
     message: string,
