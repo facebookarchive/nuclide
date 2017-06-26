@@ -42,12 +42,13 @@ export async function initializeLsp(
 ): Promise<LanguageService> {
   invariant(fileNotifier instanceof FileCache);
   logger.setLevel(logLevel);
+
   return createMultiLspLanguageService(
     logger,
     fileNotifier,
     host,
     'graphql',
-    command,
+    require.resolve(command),
     args,
     projectFileName,
     fileExtensions,

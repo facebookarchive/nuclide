@@ -39,9 +39,7 @@ async function connectionToGraphQLService(
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
-  const graphqlCommand = require.resolve(
-    'graphql-language-service/bin/graphql.js',
-  );
+  const graphqlCommand = 'graphql-language-service/bin/graphql.js';
 
   return graphqlService.initializeLsp(
     graphqlCommand,
