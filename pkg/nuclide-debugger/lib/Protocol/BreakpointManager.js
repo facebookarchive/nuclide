@@ -237,23 +237,23 @@ export default class BreakpointManager {
   ): void {
     const breakpoint = this._getBreakpointFromId(breakpointId);
     if (breakpoint != null) {
-      this._breakpointEvent$.next(['BreakpointRemoved', breakpoint.request]);
-      this._breakpointEvent$.next([
+      this._raiseIPCEvent('BreakpointRemoved', breakpoint.request);
+      this._raiseIPCEvent(
         'BreakpointAdded',
         this._createResolvedBreakpointFromLocation(
           location,
           breakpoint.request.condition,
         ),
-      ]);
+      );
       // Update original request's location to the new bound one.
       breakpoint.request.lineNumber = location.lineNumber;
     } else {
       // Some engine(C++) may fire breakpointResolved before setBreakpointByUrl
       // is resolved.
-      this._breakpointEvent$.next([
+      this._raiseIPCEvent(
         'BreakpointAdded',
         this._createResolvedBreakpointFromLocation(location, ''),
-      ]);
+      );
     }
   }
 
@@ -284,5 +284,11 @@ export default class BreakpointManager {
       // User has removed this breakpoint before engine resolves it.
       // This is an expected scenario, just ignore it.
     }
+  }
+
+  // Not a real IPC event, but simulate the chrome IPC events/responses
+  // across bridge boundary.
+  _raiseIPCEvent(...args: Array<mixed>): void {
+    this._breakpointEvent$.next(args);
   }
 }
