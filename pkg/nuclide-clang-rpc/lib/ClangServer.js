@@ -23,7 +23,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {runCommand, spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
-import {watchFile} from '../../nuclide-filewatcher-rpc';
+import {watchFileWithNode} from '../../nuclide-filewatcher-rpc';
 
 export type ClangServerStatus =
   | 'finding_flags'
@@ -162,7 +162,7 @@ export default class ClangServer {
       })
       .switchMap(flagsData => {
         if (flagsData != null && flagsData.flagsFile != null) {
-          return watchFile(flagsData.flagsFile).refCount().take(1);
+          return watchFileWithNode(flagsData.flagsFile).refCount().take(1);
         }
         return Observable.empty();
       })

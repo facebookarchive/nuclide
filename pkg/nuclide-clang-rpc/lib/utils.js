@@ -12,6 +12,7 @@
 import escapeStringRegExp from 'escape-string-regexp';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Observable} from 'rxjs';
+import fsPromise from 'nuclide-commons/fsPromise';
 
 import {observeProcess} from 'nuclide-commons/process';
 
@@ -120,4 +121,23 @@ export function findIncludingSourceFile(
       }
     })
     .take(1);
+}
+
+// The file may be new. Look for a nearby BUCK or TARGETS file.
+export async function guessBuildFile(file: string): Promise<?string> {
+  const dir = nuclideUri.dirname(file);
+  let bestMatch = null;
+  await Promise.all(
+    ['BUCK', 'TARGETS', 'compile_commands.json'].map(async name => {
+      const nearestDir = await fsPromise.findNearestFile(name, dir);
+      if (nearestDir != null) {
+        const match = nuclideUri.join(nearestDir, name);
+        // Return the closest (most specific) match.
+        if (bestMatch == null || match.length > bestMatch.length) {
+          bestMatch = match;
+        }
+      }
+    }),
+  );
+  return bestMatch;
 }

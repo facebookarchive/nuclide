@@ -19,6 +19,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Cache} from '../../commons-node/cache';
+import {guessBuildFile} from '../../nuclide-clang-rpc/lib/utils';
 
 const logger = getLogger('nuclide-buck');
 const BUCK_TIMEOUT = 10 * 60 * 1000;
@@ -67,18 +68,6 @@ export async function getCompilationDatabase(
       return null;
     }),
   );
-  // TODO(wallace): implement something like this in buck-rpc if needed.
-  // This logic seems incorrect anyway.
-  // I have already added some header handling logic similar to this in the rpc so let's see if
-  // this is needed at all.
-  /*
-    if (isHeaderFile(this._src)) {
-      // Accept flags from any source file in the target.
-      if (buckFlags.size > 0) {
-        return buckFlags.values().next().value;
-      }
-    }
-    */
 }
 
 async function loadCompilationDatabaseFromBuck(
@@ -89,15 +78,26 @@ async function loadCompilationDatabaseFromBuck(
     return null;
   }
 
-  const target = (await BuckService.getOwners(
-    buckRoot,
-    src,
-    TARGET_KIND_REGEX,
-  )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+  let queryTarget = null;
+  try {
+    queryTarget = (await BuckService.getOwners(
+      buckRoot,
+      src,
+      TARGET_KIND_REGEX,
+    )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+  } catch (err) {
+    logger.error('Failed getting the target from buck', err);
+  }
 
-  if (target == null) {
+  if (queryTarget == null) {
+    // Even if we can't get flags, return a flagsFile to watch
+    const buildFile = await guessBuildFile(src);
+    if (buildFile != null) {
+      return {flagsFile: buildFile, file: null};
+    }
     return null;
   }
+  const target = queryTarget;
 
   const targetKey = buckRoot + ':' + target;
   sourceToTargetKey.set(src, targetKey);

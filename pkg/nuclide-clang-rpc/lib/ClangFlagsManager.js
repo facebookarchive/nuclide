@@ -25,6 +25,7 @@ import {
   isSourceFile,
   findIncludingSourceFile,
   commonPrefix,
+  guessBuildFile,
 } from './utils';
 
 const logger = getLogger('nuclide-clang-rpc');
@@ -130,7 +131,7 @@ export default class ClangFlagsManager {
   ): string {
     return compilationDB == null
       ? ''
-      : `${compilationDB.file}-${compilationDB.flagsFile || ''}`;
+      : `${compilationDB.file || ''}-${compilationDB.flagsFile || ''}`;
   }
 
   _getFlagsForSrcCached(
@@ -261,10 +262,10 @@ export default class ClangFlagsManager {
   }> {
     let dbFlags = null;
     let dbDir = null;
-    if (compilationDB != null) {
+    if (compilationDB != null && compilationDB.file != null) {
       // Look for a compilation database provided by the client.
-      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDB);
       dbDir = nuclideUri.dirname(compilationDB.file);
+      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDB);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -343,7 +344,9 @@ export default class ClangFlagsManager {
     }
 
     // Even if we can't get flags, try to watch the build file in case they get added.
-    const buildFile = await ClangFlagsManager._guessBuildFile(src);
+    const buildFile = compilationDB != null && compilationDB.flagsFile != null
+      ? compilationDB.flagsFile
+      : await guessBuildFile(src);
     if (buildFile != null) {
       return {
         rawData: null,
@@ -394,6 +397,10 @@ export default class ClangFlagsManager {
   async _loadFlagsFromCompilationDatabase(
     db: ClangCompilationDatabase,
   ): Promise<Map<string, ClangFlags>> {
+    if (db.file == null) {
+      return new Map();
+    }
+    const dbFile = db.file;
     const key = this._cacheKeyForCompilationDatabase(db);
     const cache = this._compilationDatabases.get(key);
     if (cache != null) {
@@ -402,9 +409,9 @@ export default class ClangFlagsManager {
 
     const flags = new Map();
     try {
-      const contents = await fsPromise.readFile(db.file, 'utf8');
+      const contents = await fsPromise.readFile(dbFile, 'utf8');
       const data = JSON.parse(contents);
-      const dbDir = nuclideUri.dirname(db.file);
+      const dbDir = nuclideUri.dirname(dbFile);
       await Promise.all(
         data.map(async entry => {
           const {command, file} = entry;
@@ -440,28 +447,9 @@ export default class ClangFlagsManager {
       );
       this._compilationDatabases.set(key, flags);
     } catch (e) {
-      logger.error(`Error reading compilation flags from ${db.file}`, e);
+      logger.error(`Error reading compilation flags from ${dbFile}`, e);
     }
     return flags;
-  }
-
-  // The file may be new. Look for a nearby BUCK or TARGETS file.
-  static async _guessBuildFile(file: string): Promise<?string> {
-    const dir = nuclideUri.dirname(file);
-    let bestMatch = null;
-    await Promise.all(
-      ['BUCK', 'TARGETS', 'compile_commands.json'].map(async name => {
-        const nearestDir = await fsPromise.findNearestFile(name, dir);
-        if (nearestDir != null) {
-          const match = nuclideUri.join(nearestDir, name);
-          // Return the closest (most specific) match.
-          if (bestMatch == null || match.length > bestMatch.length) {
-            bestMatch = match;
-          }
-        }
-      }),
-    );
-    return bestMatch;
   }
 
   static sanitizeCommand(

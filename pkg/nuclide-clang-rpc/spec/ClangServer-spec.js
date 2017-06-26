@@ -270,7 +270,9 @@ describe('ClangServer', () => {
   it('listens to flag changes', () => {
     waitsForPromise(async () => {
       const subject = new Subject();
-      spyOn(FileWatcherService, 'watchFile').andReturn(subject.publish());
+      spyOn(FileWatcherService, 'watchFileWithNode').andReturn(
+        subject.publish(),
+      );
 
       const serverArgs = findClangServerArgs();
       const server = new ClangServer(
