@@ -1,5 +1,23 @@
 # Nuclide Changelog
 
+## v0.236.0
+
+### Highlights
+
+* Add a key binding hint to the status bar which shows available key bindings for the most recently taken action.
+
+### General
+
+* Fixed stale diagnostics after file renames.
+* Fixed some issues with keyboard navigation shortcuts in the file tree on Windows.
+* Fixed remote connection restoration with Atom 1.18.
+* Dropping node and react native support from Nuclide based on low internal usage and feedback outside Facebook -- that'd enable us to improve Nuclide's debugger quality first and later, add proper debugging support.
+
+### Debugger
+
+* PHP/Hack Debugger: Fixed bug causing output to stdout to be echo'ed twice in the Nuclide console.
+* Added support for nested debugger tabs so that the debugger panes share docks nicely with other components (such as Outline View or the Commit Form) while retaining the ability to individually close, stack or move debugger panes around the workspace.
+
 ## v0.235.0
 
 ### Hotfix Release
