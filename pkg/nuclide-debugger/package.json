@@ -45,7 +45,7 @@
         "0.0.0": "consumeRegisterExecutor"
       }
     },
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "consumeDatatipService"
       }

@@ -11,17 +11,17 @@
         "0.0.0": "consumeDefinitionProvider"
       }
     },
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "consumeDatatipService"
       }
     },
-    "atom-ide-definitions": {
+    "definitions": {
       "versions": {
         "0.1.0": "consumeDefinitionProvider"
       }
     },
-    "atom-ide-definition-preview": {
+    "definition-preview": {
       "versions": {
         "0.1.0": "consumeDefinitionPreviewProvider"
       }

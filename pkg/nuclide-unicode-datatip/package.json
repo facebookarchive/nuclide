@@ -10,7 +10,7 @@
     "testRunner": "apm"
   },
   "consumedServices": {
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "consumeDatatipService"
       }

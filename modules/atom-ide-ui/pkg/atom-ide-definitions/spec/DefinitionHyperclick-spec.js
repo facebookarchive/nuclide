@@ -44,7 +44,7 @@ describe('DefinitionHyperclick', () => {
 
     disposables = new UniversalDisposable(
       atom.packages.serviceHub.provide(
-        'atom-ide-definitions',
+        'definitions',
         '0.1.0',
         definitionProvider,
       ),
@@ -191,11 +191,7 @@ describe('DefinitionHyperclick', () => {
         grammarScopes: ['text.plain.null-grammar'],
         getDefinition: () => Promise.resolve(def),
       };
-      atom.packages.serviceHub.provide(
-        'atom-ide-definitions',
-        '0.1.0',
-        newProvider,
-      );
+      atom.packages.serviceHub.provide('definitions', '0.1.0', newProvider);
       invariant(provider != null);
       invariant(provider.getSuggestion != null);
       const result = await provider.getSuggestion(editor, position);

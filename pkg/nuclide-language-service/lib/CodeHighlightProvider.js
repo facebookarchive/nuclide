@@ -78,7 +78,7 @@ export class CodeHighlightProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'atom-ide-code-highlight',
+      'code-highlight',
       config.version,
       new CodeHighlightProvider(
         name,

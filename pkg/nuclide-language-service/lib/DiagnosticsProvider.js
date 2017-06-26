@@ -49,8 +49,6 @@ export type ObservableDiagnosticsConfig = {|
   analyticsEventName: string,
 |};
 
-const diagnosticService = 'atom-ide-diagnostics';
-
 export function registerDiagnostics<T: LanguageService>(
   name: string,
   grammars: Array<string>,
@@ -84,11 +82,7 @@ export function registerDiagnostics<T: LanguageService>(
       throw new Error('Unexpected diagnostics version');
   }
   result.add(
-    atom.packages.serviceHub.provide(
-      diagnosticService,
-      config.version,
-      provider,
-    ),
+    atom.packages.serviceHub.provide('diagnostics', config.version, provider),
   );
   return result;
 }

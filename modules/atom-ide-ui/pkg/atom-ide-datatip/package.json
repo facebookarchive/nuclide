@@ -35,7 +35,7 @@
         "0.0.0": "provideDatatipService"
       }
     },
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "provideDatatipService"
       }

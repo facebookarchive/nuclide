@@ -37,7 +37,7 @@
         "0.0.0": "consumeOutlineProvider"
       }
     },
-    "atom-ide-outline-view": {
+    "outline-view": {
       "versions": {
         "0.1.0": "consumeOutlineProvider"
       }
@@ -49,7 +49,7 @@
     }
   },
   "providedServices": {
-    "atom-ide-outline-view-results-stream": {
+    "outline-view-results-stream": {
       "versions": {
         "0.0.0": "getOutlineViewResultsStream"
       }

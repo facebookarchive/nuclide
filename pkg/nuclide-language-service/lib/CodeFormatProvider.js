@@ -71,7 +71,7 @@ export class CodeFormatProvider<T: LanguageService> {
     const disposable = new UniversalDisposable(
       config.canFormatRanges
         ? atom.packages.serviceHub.provide(
-            'atom-ide-code-format.range',
+            'code-format.range',
             config.version,
             new RangeFormatProvider(
               name,
@@ -83,7 +83,7 @@ export class CodeFormatProvider<T: LanguageService> {
             ).provide(),
           )
         : atom.packages.serviceHub.provide(
-            'atom-ide-code-format.file',
+            'code-format.file',
             config.version,
             new FileFormatProvider(
               name,
@@ -99,7 +99,7 @@ export class CodeFormatProvider<T: LanguageService> {
     if (config.canFormatAtPosition) {
       disposable.add(
         atom.packages.serviceHub.provide(
-          'atom-ide-code-format.onType',
+          'code-format.onType',
           config.version,
           new PositionFormatProvider(
             name,

@@ -6,7 +6,7 @@
   "description": "Provides a code-highlighting provider API",
   "atomTestRunner": "../../../../lib/test-runner-entry.js",
   "consumedServices": {
-    "atom-ide-code-highlight": {
+    "code-highlight": {
       "versions": {
         "0.1.0": "addProvider"
       }

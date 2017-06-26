@@ -50,7 +50,7 @@ export class FindReferencesProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'atom-ide-find-references',
+      'find-references',
       config.version,
       new FindReferencesProvider(
         name,

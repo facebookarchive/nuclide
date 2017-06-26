@@ -59,12 +59,12 @@
         "1.0.0": "provideLinter"
       }
     },
-    "atom-ide-code-format.file": {
+    "code-format.file": {
       "versions": {
         "0.1.0": "createCodeFormatProvider"
       }
     },
-    "atom-ide-outline-view": {
+    "outline-view": {
       "versions": {
         "0.1.0": "provideOutlines"
       }

@@ -10,7 +10,7 @@
     "testRunner": "apm"
   },
   "providedServices": {
-    "atom-ide-definition-preview": {
+    "definition-preview": {
       "versions": {
         "0.1.0": "provideDefinitionPreview"
       }

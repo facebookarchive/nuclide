@@ -50,7 +50,7 @@ export class OutlineViewProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'atom-ide-outline-view',
+      'outline-view',
       config.version,
       new OutlineViewProvider(
         name,

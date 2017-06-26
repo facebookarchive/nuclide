@@ -26,12 +26,12 @@
     }
   },
   "consumedServices": {
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "consumeDatatipService"
       }
     },
-    "atom-ide-diagnostics-store": {
+    "diagnostics-store": {
       "versions": {
         "0.2.0": "consumeDiagnosticUpdates"
       }

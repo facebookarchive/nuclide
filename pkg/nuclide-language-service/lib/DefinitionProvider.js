@@ -54,7 +54,7 @@ export class DefinitionProvider<T: LanguageService> {
     connectionToLanguageService: ConnectionCache<T>,
   ): IDisposable {
     return atom.packages.serviceHub.provide(
-      'atom-ide-definitions',
+      'definitions',
       config.version,
       new DefinitionProvider(
         name,
