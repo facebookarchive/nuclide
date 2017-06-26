@@ -253,8 +253,13 @@ export function openConnectionDialog(
           if (parentEl != null) {
             // Atom sets the width of all modals, but the connection dialog
             // is best with more width, so reach out to the parent (an atom-panel.modal)
-            // and override the maxWidth.
-            parentEl.style.maxWidth = '80em';
+            // and increase the fixed width
+            parentEl.style.width = '650px';
+
+            // responsive behavior for this dialog. Aim for 650px as above,
+            // but not larger than the width of the window.
+            parentEl.style.maxWidth = '100%';
+            parentEl.style.minWidth = '550px';
           }
 
           const initialDialogProps = {
