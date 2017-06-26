@@ -112,6 +112,6 @@ export type ClangLocalReferences = {
 };
 
 export type ClangCompilationDatabase = {
-  file: string,
+  file: ?string,
   flagsFile: ?string,
 };

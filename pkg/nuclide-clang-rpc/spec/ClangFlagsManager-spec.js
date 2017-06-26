@@ -14,6 +14,7 @@ import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 import {copyFixture} from '../../../pkg/nuclide-test-helpers';
+import {guessBuildFile} from '../lib/utils';
 
 describe('ClangFlagsManager', () => {
   let flagsManager: ClangFlagsManager;
@@ -271,7 +272,7 @@ describe('ClangFlagsManager', () => {
 
   it('can guess locations of build files', () => {
     waitsForPromise(async () => {
-      const file = await ClangFlagsManager._guessBuildFile(
+      const file = await guessBuildFile(
         nuclideUri.join(__dirname, 'fixtures', 'a.cpp'),
       );
       expect(file).toBe(
