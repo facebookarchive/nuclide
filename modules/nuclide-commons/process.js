@@ -388,9 +388,20 @@ export function scriptifyCommand<T>(
     // On OS X, script takes the program to run and its arguments as varargs at the end.
     return ['script', ['-q', '/dev/null', command].concat(args), options];
   } else {
-    // On Linux, script takes the command to run as the -c parameter.
-    const allArgs = [command].concat(args);
-    return ['script', ['-q', '/dev/null', '-c', quote(allArgs)], options];
+    // On Linux, script takes the command to run as the -c parameter so we have to combine all of
+    // the arguments into a single string. Apparently, because of how `script` works, however, we
+    // wind up with double escapes. So we just strip one level of them.
+    const joined = quote([command, ...args]).replace(/\\\\/g, '\\');
+    const opts = options || {};
+    const env = opts.env || {};
+    return [
+      'script',
+      ['-q', '/dev/null', '-c', joined],
+      // `script` will use `SHELL`, but shells have different behaviors with regard to escaping. To
+      // make sure that out escaping is correct, we need to force a particular shell.
+      // $FlowIssue: Adding SHELL here makes it no longer really T
+      {...opts, env: {...env, SHELL: '/bin/bash'}},
+    ];
   }
 }
 

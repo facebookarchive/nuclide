@@ -31,6 +31,7 @@ import {
   ProcessSystemError,
   runCommand,
   runCommandDetailed,
+  scriptifyCommand,
   exitEventToMessage,
 } from 'nuclide-commons/process';
 
@@ -754,6 +755,24 @@ describe('commons-node/process', () => {
       expect(err.syscall).toBe('syscall value');
       expect(err.process).toBe(proc);
     });
+  });
+
+  describe('scriptifyCommand', () => {
+    if (process.platform === 'linux') {
+      it('escapes correctly on linux', () => {
+        waitsForPromise(async () => {
+          const output = await runCommand(
+            ...scriptifyCommand('echo', [
+              'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\'',
+              'one   two',
+            ]),
+          ).toPromise();
+          expect(output).toBe(
+            'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
+          );
+        });
+      });
+    }
   });
 });
 
