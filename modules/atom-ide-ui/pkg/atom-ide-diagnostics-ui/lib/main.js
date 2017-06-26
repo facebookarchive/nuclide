@@ -64,14 +64,14 @@ function getEditorDiagnosticUpdates(
 ): Observable<FileMessageUpdate> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
-    .takeUntil(
-      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-    )
     .switchMap(
       filePath =>
         filePath != null
           ? diagnosticUpdater.getFileMessageUpdates(filePath)
           : Observable.empty(),
+    )
+    .takeUntil(
+      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
     );
 }
 
