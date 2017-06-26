@@ -73,7 +73,7 @@ export default class CodeFormatManager {
     const commandEvents = observableFromSubscribeFunction(callback =>
       atom.commands.add(
         'atom-text-editor',
-        'nuclide-code-format:format-code',
+        'code-format:format-code',
         callback,
       ),
     ).switchMap(() => {

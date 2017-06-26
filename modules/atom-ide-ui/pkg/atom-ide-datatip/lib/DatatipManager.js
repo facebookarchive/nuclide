@@ -358,12 +358,12 @@ class DatatipManagerForEditor {
       }),
       atom.commands.add(
         'atom-text-editor',
-        'nuclide-datatip:toggle',
+        'datatip:toggle',
         this._toggleDatatip,
       ),
       atom.commands.add(
         'atom-text-editor',
-        'nuclide-datatip:copy-to-clipboard',
+        'datatip:copy-to-clipboard',
         this._copyDatatipToClipboard,
       ),
     );

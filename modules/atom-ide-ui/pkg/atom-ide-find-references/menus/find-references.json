@@ -1,11 +1,11 @@
 {
   "menu": [
     {
-      "label": "Nuclide",
+      "label": "Find",
       "submenu": [
         {
           "label": "Find References",
-          "command": "nuclide-find-references:activate"
+          "command": "find-references:activate"
         }
       ]
     }

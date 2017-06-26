@@ -150,7 +150,7 @@ class Activation {
     return new UniversalDisposable(
       atom.commands.add(
         'atom-text-editor',
-        'nuclide-find-references:activate',
+        'find-references:activate',
         async event => {
           const view = await tryCreateView(
             await this._getProviderData(

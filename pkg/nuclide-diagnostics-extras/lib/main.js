@@ -20,7 +20,7 @@ export function getHomeFragments(): HomeFragments {
       command: () => {
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),
-          'nuclide-diagnostics-ui:toggle-table',
+          'diagnostics:toggle-table',
           {visible: true},
         );
       },

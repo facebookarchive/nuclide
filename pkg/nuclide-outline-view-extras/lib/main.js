@@ -89,7 +89,7 @@ class Activation {
         command: () => {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),
-            'nuclide-outline-view:toggle',
+            'outline-view:toggle',
             {visible: true},
           );
         },

@@ -150,7 +150,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
 
       // Trigger a datatip on t
       textEditor.setCursorBufferPosition([12, 17]);
-      atom.commands.dispatch(textEditorView, 'nuclide-datatip:toggle');
+      atom.commands.dispatch(textEditorView, 'datatip:toggle');
     });
 
     let datatip;

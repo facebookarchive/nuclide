@@ -217,7 +217,7 @@ class Activation {
   consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
     const commandDisposable = atom.commands.add(
       'atom-workspace',
-      'nuclide-diagnostics-ui:toggle-table',
+      'diagnostics:toggle-table',
       event => {
         api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
       },
@@ -305,12 +305,12 @@ function addAtomCommands(
   return new UniversalDisposable(
     atom.commands.add(
       'atom-workspace',
-      'nuclide-diagnostics-ui:fix-all-in-current-file',
+      'diagnostics:fix-all-in-current-file',
       fixAllInCurrentFile,
     ),
     atom.commands.add(
       'atom-workspace',
-      'nuclide-diagnostics-ui:open-all-files-with-errors',
+      'diagnostics:open-all-files-with-errors',
       openAllFilesWithErrors,
     ),
     new KeyboardShortcuts(diagnosticUpdater),
@@ -367,38 +367,38 @@ class KeyboardShortcuts {
       }),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-first-diagnostic',
+        'diagnostics:go-to-first-diagnostic',
         first,
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-last-diagnostic',
+        'diagnostics:go-to-last-diagnostic',
         last,
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-next-diagnostic',
+        'diagnostics:go-to-next-diagnostic',
         () => {
           this._index == null ? first() : this.setIndex(this._index + 1);
         },
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-previous-diagnostic',
+        'diagnostics:go-to-previous-diagnostic',
         () => {
           this._index == null ? last() : this.setIndex(this._index - 1);
         },
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-next-diagnostic-trace',
+        'diagnostics:go-to-next-diagnostic-trace',
         () => {
           this.nextTrace();
         },
       ),
       atom.commands.add(
         'atom-workspace',
-        'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace',
+        'diagnostics:go-to-previous-diagnostic-trace',
         () => {
           this.previousTrace();
         },

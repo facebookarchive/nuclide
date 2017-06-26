@@ -177,7 +177,7 @@ export default class DiagnosticsView extends React.Component {
   _openAllFilesWithErrors() {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
-      'nuclide-diagnostics-ui:open-all-files-with-errors',
+      'diagnostics:open-all-files-with-errors',
     );
   }
 }

@@ -44,7 +44,7 @@ describe('CodeFormatManager', () => {
       textEditor.setText('abc');
       atom.commands.dispatch(
         atom.views.getView(textEditor),
-        'nuclide-code-format:format-code',
+        'code-format:format-code',
       );
       waitsFor(() => textEditor.getText() === 'def');
     });
@@ -62,7 +62,7 @@ describe('CodeFormatManager', () => {
       textEditor.setText('abc');
       atom.commands.dispatch(
         atom.views.getView(textEditor),
-        'nuclide-code-format:format-code',
+        'code-format:format-code',
       );
       waitsFor(() => textEditor.getText() === 'ghi');
     });

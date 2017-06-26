@@ -159,7 +159,7 @@ class Activation {
   consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
     const commandDisposable = atom.commands.add(
       'atom-workspace',
-      'nuclide-outline-view:toggle',
+      'outline-view:toggle',
       event => {
         api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
       },
