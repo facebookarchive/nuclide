@@ -85,7 +85,7 @@ export default class Bridge {
   }
 
   continue() {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     this._commandDispatcher.send('Continue');
   }
 
@@ -94,27 +94,27 @@ export default class Bridge {
   }
 
   stepOver() {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     this._commandDispatcher.send('StepOver');
   }
 
   stepInto() {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     this._commandDispatcher.send('StepInto');
   }
 
   stepOut() {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     this._commandDispatcher.send('StepOut');
   }
 
   runToLocation(filePath: string, line: number) {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     this._commandDispatcher.send('RunToLocation', filePath, line);
   }
 
   triggerAction(actionId: string): void {
-    this._clearInterface();
+    this._clearInterfaceDelayed();
     switch (actionId) {
       case ChromeActionRegistryActions.RUN:
         this.continue();
@@ -330,9 +330,13 @@ export default class Bridge {
     this._debuggerModel.getStore().loaderBreakpointResumed();
   }
 
-  _clearInterface(): void {
+  _clearInterfaceDelayed(): void {
     // Prevent dispatcher re-entrance error.
-    process.nextTick(() => this._debuggerModel.getActions().clearInterface());
+    process.nextTick(this._clearInterface.bind(this));
+  }
+
+  _clearInterface(): void {
+    this._debuggerModel.getActions().clearInterface();
   }
 
   _setSelectedCallFrameLine(
