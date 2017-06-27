@@ -49,6 +49,8 @@ type atom$Octicon = 'alert' | 'alignment-align' | 'alignment-aligned-to' | 'alig
   'trashcan' | 'triangle-down' | 'triangle-left' | 'triangle-right' | 'triangle-up' | 'unfold' |
   'unmute' | 'unverified' | 'verified' | 'versions' | 'watch' | 'x' | 'zap';
 
+type atom$ItemLocation = 'left' | 'right' | 'bottom' | 'center';
+
 declare class atom$Model {
   destroy(): void,
   isDestroyed(): boolean,
