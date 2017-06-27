@@ -113,11 +113,8 @@ const observePaneContainerVisibilities = memoizeUntilChanged(_cacheKey => {
   const initialVisibilities = {
     // The center is always visible.
     center: true,
-    // $FlowFixMe: This definition will be updated once we migrate to 1.17
     left: atom.workspace.getLeftDock().isVisible(),
-    // $FlowFixMe: This definition will be updated once we migrate to 1.17
     right: atom.workspace.getRightDock().isVisible(),
-    // $FlowFixMe: This definition will be updated once we migrate to 1.17
     bottom: atom.workspace.getBottomDock().isVisible(),
   };
 

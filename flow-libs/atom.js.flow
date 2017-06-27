@@ -1177,13 +1177,10 @@ declare class atom$Workspace {
   getModalPanels(): Array<atom$Panel>,
   addModalPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
 
-  // Docks. These became available in Atom 1.17.0, so uses should currently be guarded by a null
-  // check. Once we no longer want to support versions less than Atom 1.17 these typedefs can be
-  // changed to non-optional.
-  getLeftDock?: () => atom$Dock,
-  getRightDock?: () => atom$Dock,
-  getBottomDock?: () => atom$Dock,
-  getCenter?: () => atom$WorkspaceCenter,
+  getLeftDock(): atom$Dock,
+  getRightDock(): atom$Dock,
+  getBottomDock(): atom$Dock,
+  getCenter(): atom$WorkspaceCenter,
 
   // Searching and Replacing
 
