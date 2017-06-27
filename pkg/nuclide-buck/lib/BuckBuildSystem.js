@@ -93,6 +93,9 @@ export class BuckBuildSystem {
     taskSettings: TaskSettings,
     isDebug: boolean,
     udid: ?string,
+    processEventCallback: ?(
+      processStream: Observable<LegacyProcessMessage>,
+    ) => Observable<BuckEvent>,
   ): Observable<TaskEvent> {
     // Clear Buck diagnostics every time we run a buck command.
     this._diagnosticInvalidations.next({scope: 'all'});
@@ -172,6 +175,10 @@ export class BuckBuildSystem {
               featureConfig.get('nuclide-buck.compileErrorDiagnostics')
                 ? getDiagnosticEvents(mergedEvents, buckRoot)
                 : Observable.empty(),
+              processEventCallback != null
+                ? processEventCallback(processMessages)
+                : Observable.empty(),
+              // TODO: Remove deploy event stream
               isDebug && subcommand === 'install'
                 ? getDeployInstallEvents(processMessages, buckRoot)
                 : Observable.empty(),

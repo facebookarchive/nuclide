@@ -31,14 +31,9 @@ import {
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {track} from '../../nuclide-analytics';
 
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-const JDWP_PROCESS_PORT_REGEX = /.*Connect a JDWP debugger to port ([0-9]+).*/;
-const ANDROID_ACTIVITY_REGEX = /Starting activity (.*)\/(.*)\.\.\./;
-const ANDROID_DEVICE_REGEX = /Installing apk on ([^ ]+).*/;
 const LLDB_TARGET_TYPE = 'LLDB';
-const ANDROID_TARGET_TYPE = 'android';
 
 async function getDebuggerService(): Promise<RemoteControlService> {
   atom.commands.dispatch(
@@ -110,63 +105,6 @@ async function debugPidWithLLDB(pid: number, buckRoot: string) {
   debuggerService.startDebugging(attachInfo);
 }
 
-async function debugJavaTest(attachPort: number, buckRoot: string) {
-  const javaDebuggerProvider = await consumeFirstProvider(
-    'nuclide-java-debugger',
-  );
-
-  if (javaDebuggerProvider == null) {
-    throw new Error(
-      'Could not debug java_test: the Java debugger is not available.',
-    );
-  }
-
-  // Buck is going to invoke the test twice - once with --dry-run to determine
-  // what tests are being run, and once to actually run the test. We need to
-  // attach the debugger and resume the first instance, and then wait for the
-  // second instance and re-attach.
-
-  const debuggerService = await getDebuggerService();
-  invariant(debuggerService != null);
-
-  debuggerService.startDebugging(
-    javaDebuggerProvider.createJavaTestAttachInfo(buckRoot, attachPort),
-  );
-}
-
-async function debugAndroidActivity(
-  buckProjectPath: string,
-  androidPackage: string,
-  deviceName: ?string,
-) {
-  const service = getServiceByNuclideUri(
-    'JavaDebuggerService',
-    buckProjectPath,
-  );
-  if (service == null) {
-    throw new Error('Java debugger service is not available.');
-  }
-
-  const debuggerService = await getDebuggerService();
-  track('fb-java-debugger-start', {
-    startType: 'buck-toolbar',
-    target: buckProjectPath,
-    targetType: 'android',
-    targetClass: androidPackage,
-  });
-
-  const javaDebugger = await consumeFirstProvider('nuclide-java-debugger');
-
-  if (javaDebugger != null) {
-    const debugInfo = javaDebugger.createAndroidDebugInfo({
-      targetUri: buckProjectPath,
-      packageName: androidPackage,
-      device: deviceName,
-    });
-    debuggerService.startDebugging(debugInfo);
-  }
-}
-
 async function _getAttachProcessInfoFromPid(
   pid: number,
   buckProjectPath: string,
@@ -235,25 +173,12 @@ export function getDeployInstallEvents(
   processStream: Observable<LegacyProcessMessage>, // TODO(T17463635)
   buckRoot: string,
 ): Observable<BuckEvent> {
-  let targetType = LLDB_TARGET_TYPE;
-  let deviceName = null;
   return compact(
     processStream.map(message => {
       if (message.kind === 'stdout' || message.kind === 'stderr') {
-        const deviceMatch = message.data.match(ANDROID_DEVICE_REGEX);
-        if (deviceMatch != null && deviceMatch.length > 0) {
-          deviceName = deviceMatch[1];
-        }
-
-        const activity = message.data.match(ANDROID_ACTIVITY_REGEX);
-        if (activity != null) {
-          targetType = ANDROID_TARGET_TYPE;
-          return {targetType, targetApp: activity[1]};
-        }
-
         const pidMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
         if (pidMatch != null) {
-          return {targetType, targetApp: pidMatch[1]};
+          return {LLDB_TARGET_TYPE, targetApp: pidMatch[1]};
         }
       }
     }),
@@ -273,16 +198,6 @@ export function getDeployInstallEvents(
                 message: `Attaching LLDB debugger to pid ${targetInfo.targetApp}...`,
                 level: 'info',
               });
-          } else if (targetInfo.targetType === ANDROID_TARGET_TYPE) {
-            return Observable.fromPromise(
-              debugAndroidActivity(buckRoot, targetInfo.targetApp, deviceName),
-            )
-              .ignoreElements()
-              .startWith({
-                type: 'log',
-                message: `Attaching Java debugger to pid ${targetInfo.targetApp}...`,
-                level: 'info',
-              });
           }
 
           return Observable.throw(new Error('Unexpected target type'));
@@ -296,26 +211,15 @@ export function getDeployTestEvents(
   buckRoot: string,
   buildTarget: string,
 ): Observable<BuckEvent> {
-  return Observable.fromPromise(
-    _getBuckTargetType(buckService, buckRoot, buildTarget),
-  )
-    .map(targetType => {
-      switch (targetType) {
-        case 'java_test':
-          return JDWP_PROCESS_PORT_REGEX;
-        default:
-          return LLDB_PROCESS_ID_REGEX;
-      }
-    })
-    .combineLatest(processStream)
-    .flatMap(([attachArgRegex, message]) => {
+  return processStream
+    .flatMap(message => {
       if (message.kind !== 'stderr') {
         return Observable.empty();
       }
 
-      const regMatch = message.data.match(attachArgRegex);
+      const regMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
       if (regMatch != null) {
-        return Observable.of([attachArgRegex, regMatch[1]]);
+        return Observable.of([LLDB_PROCESS_ID_REGEX, regMatch[1]]);
       }
 
       return Observable.empty();
@@ -324,12 +228,6 @@ export function getDeployTestEvents(
       let debugMsg;
       let debugObservable;
       switch (regex) {
-        case JDWP_PROCESS_PORT_REGEX:
-          debugMsg = `Attaching Java debugger to port ${attachArg}...`;
-          debugObservable = Observable.fromPromise(
-            debugJavaTest(parseInt(attachArg, 10), buckRoot),
-          );
-          break;
         default:
           debugMsg = `Attaching LLDB debugger to pid ${attachArg}...`;
           debugObservable = Observable.fromPromise(
@@ -344,17 +242,4 @@ export function getDeployTestEvents(
         level: 'info',
       });
     });
-}
-
-async function _getBuckTargetType(
-  buckService: BuckService,
-  buckRoot: string,
-  buildTarget: string,
-): Promise<string> {
-  const output = await buckService.showOutput(buckRoot, buildTarget);
-  if (output.length === 1) {
-    return output[0]['buck.type'] || '';
-  }
-
-  return '';
 }
