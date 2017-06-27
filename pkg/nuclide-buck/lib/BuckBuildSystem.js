@@ -43,11 +43,6 @@ import {
   getEventsFromSocket,
   getEventsFromProcess,
 } from './BuckEventStream';
-import {
-  getDeployBuildEvents,
-  getDeployInstallEvents,
-  getDeployTestEvents,
-} from './DeployEventStream';
 
 const SOCKET_TIMEOUT = 30000;
 
@@ -177,27 +172,6 @@ export class BuckBuildSystem {
                 : Observable.empty(),
               processEventCallback != null
                 ? processEventCallback(processMessages)
-                : Observable.empty(),
-              // TODO: Remove deploy event stream
-              isDebug && subcommand === 'install'
-                ? getDeployInstallEvents(processMessages, buckRoot)
-                : Observable.empty(),
-              isDebug && subcommand === 'build'
-                ? getDeployBuildEvents(
-                    processMessages,
-                    buckService,
-                    buckRoot,
-                    targetString,
-                    runArguments,
-                  )
-                : Observable.empty(),
-              isDebug && subcommand === 'test'
-                ? getDeployTestEvents(
-                    processMessages,
-                    buckService,
-                    buckRoot,
-                    targetString,
-                  )
                 : Observable.empty(),
             ),
             buckRoot,
