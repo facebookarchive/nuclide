@@ -106,7 +106,10 @@ export function setDeviceEpic(
   });
 }
 
-const deviceTypeTaskCache = new Cache();
+const deviceTypeTaskCache = new Cache({
+  keyFactory: ([state: AppState, providerName: string]) =>
+    JSON.stringify([state.host, state.deviceType, providerName]),
+});
 export function setDeviceTypeEpic(
   actions: ActionsObservable<Action>,
   store: Store,
@@ -118,7 +121,7 @@ export function setDeviceTypeEpic(
         .filter(provider => provider.getType() === state.deviceType)
         .map(provider =>
           deviceTypeTaskCache.getOrCreate(
-            `${state.host}-${state.deviceType || ''}-${provider.getName()}`,
+            [state, provider.getName()],
             () =>
               new DeviceTask(
                 () => provider.getTask(state.host),
@@ -206,7 +209,10 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
 
 // The actual device tasks are cached so that if a task is running when the store switches back and
 // forth from the device associated with that task, the same running task is used
-const deviceTaskCache = new Cache();
+const deviceTaskCache = new Cache({
+  keyFactory: ([state: AppState, providerName: string]) =>
+    JSON.stringify([state.host, state.deviceType, providerName]),
+});
 function getDeviceTasks(state: AppState): Observable<DeviceTask[]> {
   const device = state.device;
   if (device == null) {
@@ -224,7 +230,7 @@ function getDeviceTasks(state: AppState): Observable<DeviceTask[]> {
             }
             return Observable.of(
               deviceTaskCache.getOrCreate(
-                `${state.host}-${device.name}-${provider.getName()}`,
+                [state, provider.getName()],
                 () =>
                   new DeviceTask(
                     () => provider.getTask(state.host, device.name),

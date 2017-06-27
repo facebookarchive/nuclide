@@ -15,33 +15,45 @@
  */
 
 type DisposeCallback<T> = (value: T) => void;
+type KeyFactory<KeyArgs> = (args: KeyArgs) => mixed;
 
-export class Cache<T> {
-  store: Map<string, T> = new Map();
+type CacheConfig<KeyArgs, T> = {
+  keyFactory?: KeyFactory<KeyArgs>,
+  dispose?: DisposeCallback<T>,
+};
+
+export class Cache<KeyArgs, T> {
+  store: Map<mixed, T> = new Map();
   _dispose: ?DisposeCallback<T>;
+  _keyFactory: KeyFactory<KeyArgs>;
 
-  constructor(dispose?: DisposeCallback<T>) {
-    if (dispose != null) {
-      this._dispose = dispose;
+  constructor(config: CacheConfig<KeyArgs, T> = {}) {
+    if (config.dispose != null) {
+      this._dispose = config.dispose;
     }
+    this._keyFactory = config.keyFactory != null
+      ? config.keyFactory
+      : (keyArgs: KeyArgs) => keyArgs;
   }
 
-  _getWhenExists(key: string): T {
+  _getUnsafe(key: mixed): T {
     return ((this.store.get(key): any): T);
   }
 
-  getOrCreate(key: string, factory: () => T): T {
+  getOrCreate(keyArgs: KeyArgs, factory: () => T): T {
+    const key = this._keyFactory(keyArgs);
     if (this.store.has(key)) {
-      return this._getWhenExists(key);
+      return this._getUnsafe(key);
     }
     const value = factory();
     this.store.set(key, value);
     return value;
   }
 
-  delete(key: string): void {
+  delete(keyArgs: KeyArgs): void {
+    const key = this._keyFactory(keyArgs);
     if (this._dispose != null) {
-      this.ifHas(key, this._dispose);
+      this._ifHas(key, this._dispose);
     }
     this.store.delete(key);
   }
@@ -53,17 +65,25 @@ export class Cache<T> {
     this.store.clear();
   }
 
-  get(key: string): ?T {
-    return this.store.get(key);
+  get(keyArgs: KeyArgs): ?T {
+    return this.store.get(this._keyFactory(keyArgs));
   }
 
-  set(key: string, value: T): void {
-    this.store.set(key, value);
+  set(keyArgs: KeyArgs, value: T): void {
+    this.store.set(this._keyFactory(keyArgs), value);
   }
 
-  ifHas(key: string, callback: (value: T) => void) {
+  ifHas(keyArgs: KeyArgs, callback: (value: T) => void) {
+    this._ifHas(this._keyFactory(keyArgs), callback);
+  }
+
+  _ifHas(key: mixed, callback: (value: T) => void) {
     if (this.store.has(key)) {
-      callback(this._getWhenExists(key));
+      callback(this._getUnsafe(key));
     }
+  }
+
+  keyForArgs(keyArgs: KeyArgs): mixed {
+    return this._keyFactory(keyArgs);
   }
 }

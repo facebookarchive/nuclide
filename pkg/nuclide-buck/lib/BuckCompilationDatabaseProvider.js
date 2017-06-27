@@ -27,11 +27,14 @@ import {
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 
 class Provider {
-  _compilationDBCache: Cache<Promise<?ClangCompilationDatabase>> = new Cache();
-  _buildFileForSourceCache: Cache<string> = new Cache();
-  _watchedFilesCache: Cache<Subscription> = new Cache(subscription =>
-    subscription.unsubscribe(),
-  );
+  _compilationDBCache: Cache<
+    string,
+    Promise<?ClangCompilationDatabase>,
+  > = new Cache();
+  _buildFileForSourceCache: Cache<string, string> = new Cache();
+  _watchedFilesCache: Cache<string, Subscription> = new Cache({
+    dispose: subscription => subscription.unsubscribe(),
+  });
   _watchedFilesObservablesCache: SharedObservableCache<string, *>;
   _host: NuclideUri;
 
@@ -95,17 +98,13 @@ class Provider {
   }
 }
 
-const providersCache = new Cache(provider => provider.reset());
-
-function cacheKeyForProvider(host: NuclideUri): string {
-  return nuclideUri.getHostnameOpt(host) || '';
-}
+const providersCache = new Cache({
+  keyFactory: host => nuclideUri.getHostnameOpt(host) || '',
+  dispose: provider => provider.reset(),
+});
 
 function getProvider(host: NuclideUri): Provider {
-  return providersCache.getOrCreate(
-    cacheKeyForProvider(host),
-    () => new Provider(host),
-  );
+  return providersCache.getOrCreate(host, () => new Provider(host));
 }
 
 export function getClangCompilationDatabaseProvider(): ClangCompilationDatabaseProvider {
@@ -117,7 +116,7 @@ export function getClangCompilationDatabaseProvider(): ClangCompilationDatabaseP
       getProvider(src).resetForSource(src);
     },
     reset(host: string): void {
-      providersCache.delete(cacheKeyForProvider(host));
+      providersCache.delete(host);
     },
   };
 }

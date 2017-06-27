@@ -26,7 +26,7 @@ export type DBType = 'sdb' | 'adb';
 
 class DevicePoller {
   _type: DBType;
-  _observables: Cache<Observable<Expected<Device[]>>> = new Cache();
+  _observables: Cache<string, Observable<Expected<Device[]>>> = new Cache();
 
   constructor(type: DBType) {
     this._type = type;

@@ -99,10 +99,9 @@ async function loadCompilationDatabaseFromBuck(
   }
   const target = queryTarget;
 
-  const targetKey = buckRoot + ':' + target;
-  sourceToTargetKey.set(src, targetKey);
+  sourceToTargetKey.set(src, targetCache.keyForArgs([buckRoot, target]));
 
-  return targetCache.getOrCreate(targetKey, () =>
+  return targetCache.getOrCreate([buckRoot, target], () =>
     loadCompilationDatabaseForBuckTarget(buckRoot, target),
   );
 }
