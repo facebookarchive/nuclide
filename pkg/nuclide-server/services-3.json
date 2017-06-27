@@ -44,10 +44,6 @@
     "name": "GraphQLService"
   },
   {
-    "implementation": "../fb-js-imports-client-rpc/lib/JsImportsService.js",
-    "name": "JSAutoImportsService"
-  },
-  {
     "implementation": "../nuclide-grep-rpc/lib/GrepService.js",
     "name": "GrepService"
   },
