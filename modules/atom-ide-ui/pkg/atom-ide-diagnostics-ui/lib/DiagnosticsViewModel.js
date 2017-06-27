@@ -145,14 +145,22 @@ function getPropsStream(
   initialfilterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
 ): Observable<PanelProps> {
+  const center = atom.workspace.getCenter();
   const activeTextEditorPaths = observableFromSubscribeFunction(
-    atom.workspace.observeActivePaneItem.bind(atom.workspace),
+    center.observeActivePaneItem.bind(center),
   )
-    .map(paneItem => {
-      if (isValidTextEditor(paneItem)) {
-        const textEditor: atom$TextEditor = (paneItem: any);
-        return textEditor ? textEditor.getPath() : null;
-      }
+    .filter(paneItem => isValidTextEditor(paneItem))
+    .switchMap(textEditor_ => {
+      const textEditor: atom$TextEditor = (textEditor_: any);
+      // An observable that emits the editor path and then, when the editor's destroyed, null.
+      return Observable.concat(
+        Observable.of(textEditor.getPath()),
+        observableFromSubscribeFunction(
+          textEditor.onDidDestroy.bind(textEditor),
+        )
+          .take(1)
+          .mapTo(null),
+      );
     })
     .distinctUntilChanged();
 
