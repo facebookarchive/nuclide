@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DbgpMessageHandler = undefined;
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _xml2js;
+
+function _load_xml2js() {
+  return _xml2js = _interopRequireDefault(require('xml2js'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,21 +26,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import logger from './utils';
-import invariant from 'assert';
-import xml2js from 'xml2js';
-
-type DbgpMessage = {
-  length: number,
-  content: string,
-};
-
-export class DbgpMessageHandler {
-  _prevIncompletedMessage: ?DbgpMessage;
+class DbgpMessageHandler {
 
   constructor() {}
 
@@ -36,7 +47,7 @@ export class DbgpMessageHandler {
    *
    * Throws if the message is malformatted.
    */
-  parseMessages(data: string): Array<Object> {
+  parseMessages(data) {
     const components = data.split('\x00');
     /**
      * components.length can be 1, 2 or more than 3:
@@ -44,7 +55,7 @@ export class DbgpMessageHandler {
      * 2: length<NULL>xml-part1.
      * >=3: Other scenarios.
      */
-    logger.debug(`Total components: ${components.length}`);
+    (_utils || _load_utils()).default.debug(`Total components: ${components.length}`);
 
     // Merge head component with prevIncompletedMessage if needed.
     const results = [];
@@ -61,11 +72,8 @@ export class DbgpMessageHandler {
 
     // Verify that we can't get another message without completing previous one.
     if (prevIncompletedMessage && components.length !== 0) {
-      const message =
-        'Error: got extra messages without completing previous message. ' +
-        `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` +
-        `Remaining components: ${JSON.stringify(components)}`;
-      logger.error(message);
+      const message = 'Error: got extra messages without completing previous message. ' + `Previous message was: ${JSON.stringify(prevIncompletedMessage)}. ` + `Remaining components: ${JSON.stringify(components)}`;
+      (_utils || _load_utils()).default.error(message);
       throw new Error(message);
     }
 
@@ -75,44 +83,45 @@ export class DbgpMessageHandler {
     if (!isIncompleteResponse) {
       const lastComponent = components.pop();
       if (lastComponent.length !== 0) {
-        const message =
-          'The complete response should terminate with' +
-          ` zero character while got: ${lastComponent} `;
-        logger.error(message);
+        const message = 'The complete response should terminate with' + ` zero character while got: ${lastComponent} `;
+        (_utils || _load_utils()).default.error(message);
         throw new Error(message);
       }
     }
 
     // Process two tail components into prevIncompletedMessage for incompleted response.
     if (isIncompleteResponse && components.length > 0) {
-      invariant(components.length >= 2);
+      if (!(components.length >= 2)) {
+        throw new Error('Invariant violation: "components.length >= 2"');
+      }
       // content comes after length.
+
+
       const content = components.pop();
       const length = Number(components.pop());
-      const lastMessage = {length, content};
+      const lastMessage = { length, content };
       if (!this._isIncompletedMessage(lastMessage)) {
-        const message =
-          'The last message should be a fragment of a full message: ' +
-          JSON.stringify(lastMessage);
-        logger.error(message);
+        const message = 'The last message should be a fragment of a full message: ' + JSON.stringify(lastMessage);
+        (_utils || _load_utils()).default.error(message);
         throw new Error(message);
       }
       prevIncompletedMessage = lastMessage;
     }
 
     // The remaining middle components should all be completed messages.
-    invariant(components.length % 2 === 0);
+
+    if (!(components.length % 2 === 0)) {
+      throw new Error('Invariant violation: "components.length % 2 === 0"');
+    }
+
     while (components.length >= 2) {
       const message = {
         length: Number(components.shift()),
-        content: components.shift(),
+        content: components.shift()
       };
       if (!this._isCompletedMessage(message)) {
-        const errorMessage =
-          `Got message length(${message.content.length}) ` +
-          `not equal to expected(${message.length}). ` +
-          `Message was: ${JSON.stringify(message)}`;
-        logger.error(errorMessage);
+        const errorMessage = `Got message length(${message.content.length}) ` + `not equal to expected(${message.length}). ` + `Message was: ${JSON.stringify(message)}`;
+        (_utils || _load_utils()).default.error(errorMessage);
         throw new Error(errorMessage);
       }
       results.push(this._parseXml(message));
@@ -121,11 +130,11 @@ export class DbgpMessageHandler {
     return results;
   }
 
-  _isCompletedMessage(message: DbgpMessage): boolean {
+  _isCompletedMessage(message) {
     return message.length === message.content.length;
   }
 
-  _isIncompletedMessage(message: DbgpMessage): boolean {
+  _isIncompletedMessage(message) {
     return message.length > message.content.length;
   }
 
@@ -144,28 +153,29 @@ export class DbgpMessageHandler {
    *
    * Throws if the input is not valid xml.
    */
-  _parseXml(message: DbgpMessage): Object {
+  _parseXml(message) {
     const xml = message.content;
     let errorValue;
     let resultValue;
-    xml2js.parseString(xml, (error, result) => {
+    (_xml2js || _load_xml2js()).default.parseString(xml, (error, result) => {
       errorValue = error;
       resultValue = result;
     });
     if (errorValue !== null) {
-      throw new Error(
-        'Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml,
-      );
+      throw new Error('Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml);
     }
-    logger.debug(
-      'Translating server message result json: ' + JSON.stringify(resultValue),
-    );
-    invariant(resultValue != null);
+    (_utils || _load_utils()).default.debug('Translating server message result json: ' + JSON.stringify(resultValue));
+
+    if (!(resultValue != null)) {
+      throw new Error('Invariant violation: "resultValue != null"');
+    }
+
     return resultValue;
   }
 
   // For testing purpose.
-  clearIncompletedMessage(): void {
+  clearIncompletedMessage() {
     this._prevIncompletedMessage = null;
   }
 }
+exports.DbgpMessageHandler = DbgpMessageHandler;

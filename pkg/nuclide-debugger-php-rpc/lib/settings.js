@@ -1,34 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";
 
-export type HhvmDebuggerSettings = {
-  singleThreadStepping: boolean,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getSettings = getSettings;
+exports.updateSettings = updateSettings;
+exports.clearSettings = clearSettings;
 
-const defaultSettings: HhvmDebuggerSettings = {
-  singleThreadStepping: false,
-};
 
-let settings: HhvmDebuggerSettings = defaultSettings;
+const defaultSettings = {
+  singleThreadStepping: false
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
-export function getSettings(): HhvmDebuggerSettings {
+let settings = defaultSettings;
+
+function getSettings() {
   return settings;
 }
 
-export function updateSettings(newSettings: Object): void {
+function updateSettings(newSettings) {
   for (const key in newSettings) {
     settings[key] = newSettings[key];
   }
 }
 
-export function clearSettings(): void {
+function clearSettings() {
   settings = defaultSettings;
 }

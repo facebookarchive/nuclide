@@ -1,3 +1,38 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getClangCompilationDatabaseProvider = getClangCompilationDatabaseProvider;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../../commons-node/cache');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _SharedObservableCache;
+
+function _load_SharedObservableCache() {
+  return _SharedObservableCache = _interopRequireDefault(require('../../commons-node/SharedObservableCache'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,76 +40,34 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  ClangCompilationDatabase,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {
-  ClangCompilationDatabaseProvider,
-} from '../../nuclide-clang/lib/types';
-
-import {Subscription} from 'rxjs';
-import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {Cache} from '../../commons-node/cache';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  getFileWatcherServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
-import SharedObservableCache from '../../commons-node/SharedObservableCache';
-
-const compilationDBCache = new Cache();
-function getCompilationDBCache(
-  host: string,
-): Cache<Promise<?ClangCompilationDatabase>> {
-  return compilationDBCache.getOrCreate(
-    nuclideUri.getHostnameOpt(host) || '',
-    () => new Cache(),
-  );
+const compilationDBCache = new (_cache || _load_cache()).Cache();
+function getCompilationDBCache(host) {
+  return compilationDBCache.getOrCreate((_nuclideUri || _load_nuclideUri()).default.getHostnameOpt(host) || '', () => new (_cache || _load_cache()).Cache());
 }
 
-const _buildFileForSource = new Cache();
-const _watchedFiles = new Cache();
-const _watchedFilesObservables = new Cache();
+const _buildFileForSource = new (_cache || _load_cache()).Cache();
+const _watchedFiles = new (_cache || _load_cache()).Cache();
+const _watchedFilesObservables = new (_cache || _load_cache()).Cache();
 
-function getWatchedFilesObservablesCache(
-  host: string,
-): SharedObservableCache<string, *> {
-  return _watchedFilesObservables.getOrCreate(
-    host,
-    () =>
-      new SharedObservableCache(buildFile =>
-        getFileWatcherServiceByNuclideUri(host)
-          .watchFileWithNode(buildFile)
-          .refCount()
-          .share()
-          .take(1),
-      ),
-  );
+function getWatchedFilesObservablesCache(host) {
+  return _watchedFilesObservables.getOrCreate(host, () => new (_SharedObservableCache || _load_SharedObservableCache()).default(buildFile => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getFileWatcherServiceByNuclideUri)(host).watchFileWithNode(buildFile).refCount().share().take(1)));
 }
 
-function getBuildFilesForSourceCache(host: string): Cache<string> {
-  return _buildFileForSource.getOrCreate(
-    nuclideUri.getHostnameOpt(host) || '',
-    () =>
-      new Cache(buildFile =>
-        getWatchedFilesForSourceCache(host).delete(buildFile),
-      ),
-  );
+function getBuildFilesForSourceCache(host) {
+  return _buildFileForSource.getOrCreate((_nuclideUri || _load_nuclideUri()).default.getHostnameOpt(host) || '', () => new (_cache || _load_cache()).Cache(buildFile => getWatchedFilesForSourceCache(host).delete(buildFile)));
 }
 
-function getWatchedFilesForSourceCache(host: string): Cache<Subscription> {
-  return _watchedFiles.getOrCreate(
-    nuclideUri.getHostnameOpt(host) || '',
-    () => new Cache(subscription => subscription.unsubscribe()),
-  );
+function getWatchedFilesForSourceCache(host) {
+  return _watchedFiles.getOrCreate((_nuclideUri || _load_nuclideUri()).default.getHostnameOpt(host) || '', () => new (_cache || _load_cache()).Cache(subscription => subscription.unsubscribe()));
 }
 
-export function getClangCompilationDatabaseProvider(): ClangCompilationDatabaseProvider {
+function getClangCompilationDatabaseProvider() {
   return {
-    watchBuildFile(buildFile: string, src: string): void {
+    watchBuildFile(buildFile, src) {
       const host = src;
       const buildFilesCache = getBuildFilesForSourceCache(host);
       const watchedFile = buildFilesCache.get(src);
@@ -82,39 +75,32 @@ export function getClangCompilationDatabaseProvider(): ClangCompilationDatabaseP
         return;
       }
       buildFilesCache.set(src, buildFile);
-      getWatchedFilesForSourceCache(host).set(
-        buildFile,
-        getWatchedFilesObservablesCache(host).get(buildFile).subscribe(() => {
-          try {
-            this.resetForSource(src);
-          } catch (_) {}
-        }),
-      );
+      getWatchedFilesForSourceCache(host).set(buildFile, getWatchedFilesObservablesCache(host).get(buildFile).subscribe(() => {
+        try {
+          this.resetForSource(src);
+        } catch (_) {}
+      }));
     },
-    getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+    getCompilationDatabase(src) {
       return getCompilationDBCache(src).getOrCreate(src, () => {
-        return getBuckServiceByNuclideUri(src)
-          .getCompilationDatabase(src)
-          .refCount()
-          .do(db => {
-            if (db != null && db.flagsFile != null) {
-              this.watchBuildFile(db.flagsFile, src);
-            }
-          })
-          .toPromise();
+        return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(src).getCompilationDatabase(src).refCount().do(db => {
+          if (db != null && db.flagsFile != null) {
+            this.watchBuildFile(db.flagsFile, src);
+          }
+        }).toPromise();
       });
     },
-    resetForSource(src: string): void {
+    resetForSource(src) {
       const host = src;
       getCompilationDBCache(host).delete(src);
-      getBuckServiceByNuclideUri(host).resetCompilationDatabaseForSource(src);
+      (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(host).resetCompilationDatabaseForSource(src);
       getBuildFilesForSourceCache(host).delete(src);
     },
-    reset(host: string): void {
+    reset(host) {
       getCompilationDBCache(host).clear();
-      getBuckServiceByNuclideUri(host).resetCompilationDatabase();
+      (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(host).resetCompilationDatabase();
       getBuildFilesForSourceCache(host).clear();
       getWatchedFilesForSourceCache(host).clear();
-    },
+    }
   };
 }

@@ -1,28 +1,23 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Trace} from '../../atom-ide-diagnostics/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsTraceItem = undefined;
 
-import React from 'react';
-import {DiagnosticsMessageText} from './DiagnosticsMessageText';
+var _react = _interopRequireDefault(require('react'));
 
-type DiagnosticsTraceItemProps = {
-  trace: Trace,
-  goToLocation: (path: string, line: number) => mixed,
-};
+var _DiagnosticsMessageText;
+
+function _load_DiagnosticsMessageText() {
+  return _DiagnosticsMessageText = require('./DiagnosticsMessageText');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
-  const {trace, goToLocation} = props;
+const DiagnosticsTraceItem = exports.DiagnosticsTraceItem = props => {
+  const { trace, goToLocation } = props;
   let locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
   const path = trace.filePath;
@@ -32,16 +27,35 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
-    const onClick = (event: SyntheticMouseEvent) => {
+    const onClick = event => {
       event.stopPropagation();
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
-    locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
+    locSpan = _react.default.createElement(
+      'span',
+      null,
+      ': ',
+      _react.default.createElement(
+        'a',
+        { href: '#', onClick: onClick },
+        locString
+      )
+    );
   }
-  return (
-    <div>
-      <DiagnosticsMessageText message={trace} />
-      {locSpan}
-    </div>
+  return _react.default.createElement(
+    'div',
+    null,
+    _react.default.createElement((_DiagnosticsMessageText || _load_DiagnosticsMessageText()).DiagnosticsMessageText, { message: trace }),
+    locSpan
   );
-};
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    * 
+    * @format
+    */

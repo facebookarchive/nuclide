@@ -1,3 +1,56 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AttachUiComponent = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _AttachProcessInfo;
+
+function _load_AttachProcessInfo() {
+  return _AttachProcessInfo = require('./AttachProcessInfo');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,155 +58,110 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import {AttachProcessInfo} from './AttachProcessInfo';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  serializeDebuggerConfig,
-  deserializeDebuggerConfig,
-} from '../../nuclide-debugger-base';
+class AttachUiComponent extends _react.default.Component {
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-type PropsType = {
-  targetUri: NuclideUri,
-  configIsValidChanged: (valid: boolean) => void,
-};
-
-type StateType = {
-  selectedPathIndex: number,
-  pathMenuItems: Array<{label: string, value: number}>,
-};
-
-export class AttachUiComponent
-  extends React.Component<void, PropsType, StateType> {
-  props: PropsType;
-  state: StateType;
-  _disposables: UniversalDisposable;
-
-  constructor(props: PropsType) {
+  constructor(props) {
     super(props);
-    (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(
-      this,
-    );
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
-      this,
-    );
-    this._disposables = new UniversalDisposable();
+    this._handleAttachButtonClick = this._handleAttachButtonClick.bind(this);
+    this._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(this);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
       selectedPathIndex: 0,
-      pathMenuItems: this._getPathMenuItems(),
+      pathMenuItems: this._getPathMenuItems()
     };
   }
 
   _getSerializationArgs() {
-    return [
-      nuclideUri.isRemote(this.props.targetUri)
-        ? nuclideUri.getHostname(this.props.targetUri)
-        : 'local',
-      'attach',
-      'php',
-    ];
+    return [(_nuclideUri || _load_nuclideUri()).default.isRemote(this.props.targetUri) ? (_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri) : 'local', 'attach', 'php'];
   }
 
-  componentDidMount(): void {
-    deserializeDebuggerConfig(
-      ...this._getSerializationArgs(),
-      (transientSettings, savedSettings) => {
-        const savedPath = this.state.pathMenuItems.find(
-          item => item.label === savedSettings.selectedPath,
-        );
-        if (savedPath != null) {
-          this.setState({
-            selectedPathIndex: this.state.pathMenuItems.indexOf(savedPath),
-          });
-        }
-      },
-    );
+  componentDidMount() {
+    (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).deserializeDebuggerConfig)(...this._getSerializationArgs(), (transientSettings, savedSettings) => {
+      const savedPath = this.state.pathMenuItems.find(item => item.label === savedSettings.selectedPath);
+      if (savedPath != null) {
+        this.setState({
+          selectedPathIndex: this.state.pathMenuItems.indexOf(savedPath)
+        });
+      }
+    });
 
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'core:confirm': () => {
-          if (this._debugButtonShouldEnable()) {
-            this._handleAttachButtonClick();
-          }
-        },
-      }),
-    );
+    this._disposables.add(atom.commands.add('atom-workspace', {
+      'core:confirm': () => {
+        if (this._debugButtonShouldEnable()) {
+          this._handleAttachButtonClick();
+        }
+      }
+    }));
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  setState(newState: Object): void {
+  setState(newState) {
     super.setState(newState);
     this.props.configIsValidChanged(this._debugButtonShouldEnable());
   }
 
-  _debugButtonShouldEnable(): boolean {
+  _debugButtonShouldEnable() {
     return true;
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="block">
-        <div className="nuclide-debugger-php-launch-attach-ui-select-project">
-          <label>Selected Project Directory: </label>
-          <Dropdown
-            className="inline-block nuclide-debugger-connection-box"
-            options={this.state.pathMenuItems}
-            onChange={this._handlePathsDropdownChange}
-            value={this.state.selectedPathIndex}
-          />
-        </div>
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'block' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-php-launch-attach-ui-select-project' },
+        _react.default.createElement(
+          'label',
+          null,
+          'Selected Project Directory: '
+        ),
+        _react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+          className: 'inline-block nuclide-debugger-connection-box',
+          options: this.state.pathMenuItems,
+          onChange: this._handlePathsDropdownChange,
+          value: this.state.selectedPathIndex
+        })
+      )
     );
   }
 
-  _getPathMenuItems(): Array<{label: string, value: number}> {
-    const connections = RemoteConnection.getByHostname(
-      nuclideUri.getHostname(this.props.targetUri),
-    );
+  _getPathMenuItems() {
+    const connections = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getByHostname((_nuclideUri || _load_nuclideUri()).default.getHostname(this.props.targetUri));
     return connections.map((connection, index) => {
       const pathToProject = connection.getPathForInitialWorkingDirectory();
       return {
         label: pathToProject,
-        value: index,
+        value: index
       };
     });
   }
 
-  _handlePathsDropdownChange(newIndex: number): void {
+  _handlePathsDropdownChange(newIndex) {
     this.setState({
       selectedPathIndex: newIndex,
-      pathMenuItems: this._getPathMenuItems(),
+      pathMenuItems: this._getPathMenuItems()
     });
   }
 
-  _handleAttachButtonClick(): void {
+  _handleAttachButtonClick() {
     // Start a debug session with the user-supplied information.
-    const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
-    const selectedPath = this.state.pathMenuItems[this.state.selectedPathIndex]
-      .label;
-    const processInfo = new AttachProcessInfo(
-      nuclideUri.createRemoteUri(hostname, selectedPath),
-    );
-    consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
-      debuggerService.startDebugging(processInfo),
-    );
+    const { hostname } = (_nuclideUri || _load_nuclideUri()).default.parseRemoteUri(this.props.targetUri);
+    const selectedPath = this.state.pathMenuItems[this.state.selectedPathIndex].label;
+    const processInfo = new (_AttachProcessInfo || _load_AttachProcessInfo()).AttachProcessInfo((_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, selectedPath));
+    (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote').then(debuggerService => debuggerService.startDebugging(processInfo));
 
-    serializeDebuggerConfig(...this._getSerializationArgs(), {
-      selectedPath,
+    (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).serializeDebuggerConfig)(...this._getSerializationArgs(), {
+      selectedPath
     });
   }
 }
+exports.AttachUiComponent = AttachUiComponent;

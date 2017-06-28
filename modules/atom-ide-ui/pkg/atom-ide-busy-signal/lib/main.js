@@ -1,3 +1,37 @@
+'use strict';
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _BusySignalInstance;
+
+function _load_BusySignalInstance() {
+  return _BusySignalInstance = _interopRequireDefault(require('./BusySignalInstance'));
+}
+
+var _MessageStore;
+
+function _load_MessageStore() {
+  return _MessageStore = _interopRequireDefault(require('./MessageStore'));
+}
+
+var _StatusBarTile;
+
+function _load_StatusBarTile() {
+  return _StatusBarTile = _interopRequireDefault(require('./StatusBarTile'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,67 +40,31 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {MessageDisplayOptions} from './BusySignalInstance';
-
-import createPackage from 'nuclide-commons-atom/createPackage';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import BusySignalInstance from './BusySignalInstance';
-import MessageStore from './MessageStore';
-import StatusBarTile from './StatusBarTile';
-
-export type BusySignalService = {
-  // Activates the busy signal with the given message and returns the promise
-  // from the provided callback.
-  // The busy signal automatically deactivates when the returned promise
-  // either resolves or rejects.
-  reportBusyWhile<T>(
-    message: string,
-    f: () => Promise<T>,
-    options?: MessageDisplayOptions,
-  ): Promise<T>,
-
-  // Activates the busy signal with the given message.
-  // The returned disposable/subscription can be dispose()d or unsubscribe()d
-  // to deactivate the given busy message.
-  reportBusy(
-    message: string,
-    options?: MessageDisplayOptions,
-  ): IDisposable & rxjs$ISubscription,
-
-  // Call this when you're done to ensure that all busy signals are removed.
-  dispose(): void,
-};
-
 class Activation {
-  _statusBarTile: ?StatusBarTile;
-  _disposables: UniversalDisposable;
-  _messageStore: MessageStore;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
-    this._messageStore = new MessageStore();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._messageStore = new (_MessageStore || _load_MessageStore()).default();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
+  consumeStatusBar(statusBar) {
     // Avoid retaining StatusBarTile by wrapping it.
-    const disposable = new UniversalDisposable(
-      new StatusBarTile(statusBar, this._messageStore.getMessageStream()),
-    );
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(new (_StatusBarTile || _load_StatusBarTile()).default(statusBar, this._messageStore.getMessageStream()));
     this._disposables.add(disposable);
     return disposable;
   }
 
-  provideBusySignal(): BusySignalService {
-    return new BusySignalInstance(this._messageStore);
+  provideBusySignal() {
+    return new (_BusySignalInstance || _load_BusySignalInstance()).default(this._messageStore);
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

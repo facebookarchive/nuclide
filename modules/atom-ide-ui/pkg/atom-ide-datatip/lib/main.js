@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ModifierKeys = undefined;
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _DatatipManager;
+
+function _load_DatatipManager() {
+  return _DatatipManager = require('./DatatipManager');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Borrowed from the LSP API.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,89 +28,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {DatatipManager} from './DatatipManager';
-
-// Borrowed from the LSP API.
-export type MarkedString =
-  | {
-      type: 'markdown',
-      value: string,
-    }
-  | {
-      type: 'snippet',
-      grammar: atom$Grammar,
-      value: string,
-    };
-
-export type Datatip =
-  | {|
-      component: ReactClass<any>,
-      range: atom$Range,
-      pinnable?: boolean,
-    |}
-  | {|
-      markedStrings: Array<MarkedString>,
-      range: atom$Range,
-      pinnable?: boolean,
-    |};
-
-export const ModifierKeys = Object.freeze({
+const ModifierKeys = exports.ModifierKeys = Object.freeze({
   META: 'metaKey',
   SHIFT: 'shiftKey',
   ALT: 'altKey',
-  CTRL: 'ctrlKey',
+  CTRL: 'ctrlKey'
 });
 
-export type ModifierKey = 'metaKey' | 'shiftKey' | 'altKey' | 'ctrlKey';
-
-export type PinnedDatatip = {
-  dispose(): void,
-};
-
-export type DatatipProvider = {
-  priority: number,
-  grammarScopes?: Array<string>,
-  // A unique name for the provider to be used for analytics.
-  // It is recommended that it be the name of the provider's package.
-  providerName: string,
-  datatip(
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-  ): Promise<?Datatip>,
-};
-
-export type ModifierDatatipProvider = {
-  priority: number,
-  grammarScopes?: Array<string>,
-  providerName: string,
-  modifierDatatip(
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-    heldKeys: Set<ModifierKey>,
-  ): Promise<?Datatip>,
-};
-
-export type AnyDatatipProvider = DatatipProvider | ModifierDatatipProvider;
-
-export type DatatipService = {
-  addProvider(provider: DatatipProvider): IDisposable,
-  addModifierProvider(provider: ModifierDatatipProvider): IDisposable,
-  createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip,
-};
-
 class Activation {
-  _datatipManager: DatatipManager;
 
   constructor() {
-    this._datatipManager = new DatatipManager();
+    this._datatipManager = new (_DatatipManager || _load_DatatipManager()).DatatipManager();
   }
 
-  provideDatatipService(): DatatipService {
+  provideDatatipService() {
     return this._datatipManager;
   }
 
@@ -97,4 +54,4 @@ class Activation {
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

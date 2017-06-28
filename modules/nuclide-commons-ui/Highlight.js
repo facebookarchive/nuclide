@@ -1,37 +1,38 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classnames from 'classnames';
-import React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Highlight = exports.HighlightColors = undefined;
 
-export type HighlightColor =
-  | 'default'
-  | 'info'
-  | 'success'
-  | 'warning'
-  | 'error';
+var _classnames;
 
-type Props = {
-  className?: string,
-  color?: HighlightColor,
-  children?: ?React.Element<any>,
-};
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-export const HighlightColors = Object.freeze({
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
+
+const HighlightColors = exports.HighlightColors = Object.freeze({
   default: 'default',
   info: 'info',
   success: 'success',
   warning: 'warning',
-  error: 'error',
+  error: 'error'
 });
 
 const HighlightColorClassNames = Object.freeze({
@@ -39,13 +40,18 @@ const HighlightColorClassNames = Object.freeze({
   info: 'highlight-info',
   success: 'highlight-success',
   warning: 'highlight-warning',
-  error: 'highlight-error',
+  error: 'highlight-error'
 });
 
-export const Highlight = (props: Props) => {
-  const {className, color, children, ...remainingProps} = props;
-  const colorClassName =
-    HighlightColorClassNames[color == null ? 'default' : color];
-  const newClassName = classnames(colorClassName, className);
-  return <span className={newClassName} {...remainingProps}>{children}</span>;
+const Highlight = props => {
+  const { className, color, children } = props,
+        remainingProps = _objectWithoutProperties(props, ['className', 'color', 'children']);
+  const colorClassName = HighlightColorClassNames[color == null ? 'default' : color];
+  const newClassName = (0, (_classnames || _load_classnames()).default)(colorClassName, className);
+  return _react.default.createElement(
+    'span',
+    Object.assign({ className: newClassName }, remainingProps),
+    children
+  );
 };
+exports.Highlight = Highlight;

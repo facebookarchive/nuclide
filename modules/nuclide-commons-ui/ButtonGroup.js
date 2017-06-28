@@ -1,3 +1,20 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ButtonGroup = exports.ButtonGroupSizes = undefined;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,49 +23,34 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import classnames from 'classnames';
-import React from 'react';
-
-type ButtonGroupSize = 'EXTRA_SMALL' | 'SMALL' | 'LARGE';
-
-type Props = {
-  /** The size of the buttons within the group. Overrides any `size` props on child buttons. */
-  size?: ButtonGroupSize,
-  /** The contents of the ButtonGroup; Generally, an instance of `Button`. */
-  children?: mixed,
-  className?: string,
-};
-
-export const ButtonGroupSizes = Object.freeze({
+const ButtonGroupSizes = exports.ButtonGroupSizes = Object.freeze({
   EXTRA_SMALL: 'EXTRA_SMALL',
   SMALL: 'SMALL',
-  LARGE: 'LARGE',
+  LARGE: 'LARGE'
 });
 
 const ButtonGroupSizeClassnames = Object.freeze({
   EXTRA_SMALL: 'btn-group-xs',
   SMALL: 'btn-group-sm',
-  LARGE: 'btn-group-lg',
+  LARGE: 'btn-group-lg'
 });
 
 /**
  * Visually groups Buttons passed in as children.
  */
-export const ButtonGroup = (props: Props) => {
-  const {size, children, className} = props;
-  const sizeClassName = size == null
-    ? ''
-    : ButtonGroupSizeClassnames[size] || '';
-  const newClassName = classnames(className, 'btn-group', 'nuclide-btn-group', {
-    [sizeClassName]: size != null,
+const ButtonGroup = exports.ButtonGroup = props => {
+  const { size, children, className } = props;
+  const sizeClassName = size == null ? '' : ButtonGroupSizeClassnames[size] || '';
+  const newClassName = (0, (_classnames || _load_classnames()).default)(className, 'btn-group', 'nuclide-btn-group', {
+    [sizeClassName]: size != null
   });
-  return (
-    <div className={newClassName}>
-      {children}
-    </div>
+  return _react.default.createElement(
+    'div',
+    { className: newClassName },
+    children
   );
 };

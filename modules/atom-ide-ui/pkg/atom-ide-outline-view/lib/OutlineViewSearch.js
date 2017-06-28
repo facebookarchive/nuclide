@@ -1,63 +1,92 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
-import debounce from 'nuclide-commons/debounce';
-import analytics from 'nuclide-commons-atom/analytics';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OutlineViewSearchComponent = undefined;
+exports.updateSearchSet = updateSearchSet;
 
-import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import type {OutlineTreeForUi} from './main';
+var _react = _interopRequireDefault(require('react'));
 
-export type SearchResult = {
-  matches: boolean,
-  visible: boolean,
-  matchingCharacters?: Array<number>,
-};
+var _AtomInput;
 
-type Props = {
-  editor: atom$TextEditor,
-  outlineTrees: Array<OutlineTreeForUi>,
-  updateSearchResults: (
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  ) => void,
-};
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
 
-type State = {
-  currentQuery: string,
-};
+var _Icon;
 
-export class OutlineViewSearchComponent extends React.Component {
-  searchResults: Map<OutlineTreeForUi, SearchResult>;
-  props: Props;
-  state: State;
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
 
-  constructor(props: Props) {
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('nuclide-commons/debounce'));
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _fuzzaldrinPlus;
+
+function _load_fuzzaldrinPlus() {
+  return _fuzzaldrinPlus = _interopRequireDefault(require('fuzzaldrin-plus'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class OutlineViewSearchComponent extends _react.default.Component {
+
+  constructor(props) {
     super(props);
     // An element is considered visible if it is not in the Map or if it has a
     // Search result that has the visible property set to true. Therefore, all
     // elements are visible when the Map is empty.
+    this.SEARCH_PLACEHOLDER = 'Search Outline View';
+    this.DEBOUNCE_TIME = 100;
+
+    this._onConfirm = () => {
+      const firstElement = this._findFirstResult(this.searchResults, this.props.outlineTrees);
+      if (firstElement == null) {
+        return;
+      }
+      const pane = atom.workspace.paneForItem(this.props.editor);
+      if (pane == null) {
+        return;
+      }
+      (_analytics || _load_analytics()).default.track('atom-ide-outline-view:search-enter');
+      pane.activate();
+      pane.activateItem(this.props.editor);
+      (0, (_goToLocation || _load_goToLocation()).goToLocationInEditor)(this.props.editor, firstElement.startPosition.row, firstElement.startPosition.column);
+      this.setState({ currentQuery: '' });
+    };
+
+    this._onDidChange = (0, (_debounce || _load_debounce()).default)(query => {
+      this.setState({ currentQuery: query });
+    }, this.DEBOUNCE_TIME);
+
+    this._onDidClear = () => {
+      this.setState({ currentQuery: '' });
+    };
+
     this.searchResults = new Map();
     this.state = {
-      currentQuery: '',
+      currentQuery: ''
     };
   }
 
-  SEARCH_PLACEHOLDER = 'Search Outline View';
-  DEBOUNCE_TIME = 100;
-
-  componentDidUpdate(prevProps: Props, prevState: State) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevState.currentQuery === '' && this.state.currentQuery === '') {
       return;
     }
@@ -66,32 +95,18 @@ export class OutlineViewSearchComponent extends React.Component {
       return;
     }
     if (prevProps.editor !== this.props.editor) {
-      this.setState({currentQuery: ''});
+      this.setState({ currentQuery: '' });
       return;
     }
-    if (
-      prevState.currentQuery !== this.state.currentQuery ||
-      prevProps.outlineTrees !== this.props.outlineTrees
-    ) {
+    if (prevState.currentQuery !== this.state.currentQuery || prevProps.outlineTrees !== this.props.outlineTrees) {
       const newMap = new Map();
-      this.props.outlineTrees.forEach(root =>
-        updateSearchSet(
-          this.state.currentQuery,
-          root,
-          newMap,
-          this.searchResults,
-          prevState.currentQuery,
-        ),
-      );
+      this.props.outlineTrees.forEach(root => updateSearchSet(this.state.currentQuery, root, newMap, this.searchResults, prevState.currentQuery));
       this.searchResults = newMap;
       this.props.updateSearchResults(this.searchResults);
     }
   }
 
-  _findFirstResult(
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-    tree: Array<OutlineTreeForUi>,
-  ): ?OutlineTreeForUi {
+  _findFirstResult(searchResults, tree) {
     for (let i = 0; i < tree.length; i++) {
       const result = searchResults.get(tree[i]);
       if (result && result.matches) {
@@ -104,106 +119,59 @@ export class OutlineViewSearchComponent extends React.Component {
     }
   }
 
-  _onConfirm = () => {
-    const firstElement = this._findFirstResult(
-      this.searchResults,
-      this.props.outlineTrees,
-    );
-    if (firstElement == null) {
-      return;
-    }
-    const pane = atom.workspace.paneForItem(this.props.editor);
-    if (pane == null) {
-      return;
-    }
-    analytics.track('atom-ide-outline-view:search-enter');
-    pane.activate();
-    pane.activateItem(this.props.editor);
-    goToLocationInEditor(
-      this.props.editor,
-      firstElement.startPosition.row,
-      firstElement.startPosition.column,
-    );
-    this.setState({currentQuery: ''});
-  };
-
-  _onDidChange = debounce(query => {
-    this.setState({currentQuery: query});
-  }, this.DEBOUNCE_TIME);
-
-  _onDidClear = () => {
-    this.setState({currentQuery: ''});
-  };
-
-  render(): React.Element<any> {
-    return (
-      <div className="atom-ide-outline-view-search-bar">
-        <Icon icon="search" className="atom-ide-outline-view-search-icon" />
-        <AtomInput
-          className="atom-ide-outline-view-search-pane"
-          onConfirm={this._onConfirm}
-          onDidChange={this._onDidChange}
-          placeholderText={this.state.currentQuery || this.SEARCH_PLACEHOLDER}
-          value={this.state.currentQuery}
-          size="sm"
-        />
-        <Icon
-          icon="x"
-          className="atom-ide-outline-view-search-clear"
-          onClick={this._onDidClear}
-        />
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'atom-ide-outline-view-search-bar' },
+      _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: 'search', className: 'atom-ide-outline-view-search-icon' }),
+      _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+        className: 'atom-ide-outline-view-search-pane',
+        onConfirm: this._onConfirm,
+        onDidChange: this._onDidChange,
+        placeholderText: this.state.currentQuery || this.SEARCH_PLACEHOLDER,
+        value: this.state.currentQuery,
+        size: 'sm'
+      }),
+      _react.default.createElement((_Icon || _load_Icon()).Icon, {
+        icon: 'x',
+        className: 'atom-ide-outline-view-search-clear',
+        onClick: this._onDidClear
+      })
     );
   }
 }
 
-/* Exported for testing */
-export function updateSearchSet(
-  query: string,
-  root: OutlineTreeForUi,
-  map: Map<OutlineTreeForUi, SearchResult>,
-  prevMap: Map<OutlineTreeForUi, SearchResult>,
-  prevQuery: ?string,
-): void {
-  root.children.forEach(child =>
-    updateSearchSet(query, child, map, prevMap, prevQuery),
-  );
+exports.OutlineViewSearchComponent = OutlineViewSearchComponent; /* Exported for testing */
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+function updateSearchSet(query, root, map, prevMap, prevQuery) {
+  root.children.forEach(child => updateSearchSet(query, child, map, prevMap, prevQuery));
   // Optimization using results from previous query.
   if (prevQuery) {
     const previousResult = prevMap.get(root);
-    if (
-      previousResult &&
-      (query === prevQuery ||
-        (query.startsWith(prevQuery) && !previousResult.visible))
-    ) {
+    if (previousResult && (query === prevQuery || query.startsWith(prevQuery) && !previousResult.visible)) {
       map.set(root, previousResult);
       return;
     }
   }
-  const matches =
-    query === '' ||
-    fuzzaldrinPlus.score(
-      root.tokenizedText
-        ? root.tokenizedText.map(e => e.value).join('')
-        : root.plainText || '',
-      query,
-    ) > 0;
-  const visible =
-    matches ||
-    Boolean(
-      root.children.find(child => {
-        const childResult = map.get(child);
-        return !childResult || childResult.visible;
-      }),
-    );
+  const matches = query === '' || (_fuzzaldrinPlus || _load_fuzzaldrinPlus()).default.score(root.tokenizedText ? root.tokenizedText.map(e => e.value).join('') : root.plainText || '', query) > 0;
+  const visible = matches || Boolean(root.children.find(child => {
+    const childResult = map.get(child);
+    return !childResult || childResult.visible;
+  }));
   let matchingCharacters;
   if (matches) {
-    matchingCharacters = fuzzaldrinPlus.match(
-      root.tokenizedText
-        ? root.tokenizedText.map(e => e.value).join('')
-        : root.plainText || '',
-      query,
-    );
+    matchingCharacters = (_fuzzaldrinPlus || _load_fuzzaldrinPlus()).default.match(root.tokenizedText ? root.tokenizedText.map(e => e.value).join('') : root.plainText || '', query);
   }
-  map.set(root, {matches, visible, matchingCharacters});
+  map.set(root, { matches, visible, matchingCharacters });
 }

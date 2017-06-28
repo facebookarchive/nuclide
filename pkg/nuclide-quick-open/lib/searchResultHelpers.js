@@ -1,45 +1,19 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileResult} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.filterEmptyResults = filterEmptyResults;
+exports.flattenResults = flattenResults;
+exports.getOuterResults = getOuterResults;
 
-export type ProviderResult = {
-  error: ?Object,
-  loading: boolean,
-  results: Array<FileResult>,
-};
+var _collection;
 
-export type OuterResults = {
-  serviceName: string,
-  directoryName: NuclideUri,
-  results: Array<FileResult>,
-};
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
 
-export type GroupedResult = {
-  priority: number,
-  results: {[key: NuclideUri]: ProviderResult},
-  title: string,
-  totalResults: number,
-};
-
-export type GroupedResults = {
-  [key: string]: GroupedResult,
-};
-
-import {isEmpty} from 'nuclide-commons/collection';
-
-export function filterEmptyResults(
-  resultsGroupedByService: GroupedResults,
-): GroupedResults {
+function filterEmptyResults(resultsGroupedByService) {
   const filteredTree = {};
   for (const serviceName in resultsGroupedByService) {
     const directories = resultsGroupedByService[serviceName].results;
@@ -49,16 +23,23 @@ export function filterEmptyResults(
         nonEmptyDirectories[dirName] = directories[dirName];
       }
     }
-    if (!isEmpty(nonEmptyDirectories)) {
-      filteredTree[serviceName] = {results: nonEmptyDirectories};
+    if (!(0, (_collection || _load_collection()).isEmpty)(nonEmptyDirectories)) {
+      filteredTree[serviceName] = { results: nonEmptyDirectories };
     }
   }
   return filteredTree;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-export function flattenResults(
-  resultsGroupedByService: GroupedResults,
-): Array<FileResult> {
+function flattenResults(resultsGroupedByService) {
   const items = [];
   for (const serviceName in resultsGroupedByService) {
     for (const dirName in resultsGroupedByService[serviceName].results) {
@@ -68,26 +49,19 @@ export function flattenResults(
   return Array.prototype.concat.apply([], items);
 }
 
-export function getOuterResults(
-  location: 'top' | 'bottom',
-  resultsByService: GroupedResults,
-): ?OuterResults {
+function getOuterResults(location, resultsByService) {
   const nonEmptyResults = filterEmptyResults(resultsByService);
   const serviceNames = Object.keys(nonEmptyResults);
-  const serviceName = location === 'top'
-    ? serviceNames[0]
-    : serviceNames[serviceNames.length - 1];
+  const serviceName = location === 'top' ? serviceNames[0] : serviceNames[serviceNames.length - 1];
   if (serviceName == null) {
     return null;
   }
   const directoryNames = Object.keys(nonEmptyResults[serviceName].results);
-  const directoryName = location === 'top'
-    ? directoryNames[0]
-    : directoryNames[directoryNames.length - 1];
+  const directoryName = location === 'top' ? directoryNames[0] : directoryNames[directoryNames.length - 1];
   const results = nonEmptyResults[serviceName].results[directoryName].results;
   return {
     serviceName,
     directoryName,
-    results,
+    results
   };
 }

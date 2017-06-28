@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TreeExamples = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('nuclide-commons-ui/Block');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
+
+var _Tree;
+
+function _load_Tree() {
+  return _Tree = require('./Tree');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,73 +34,159 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import {TreeList, TreeItem, NestedTreeItem} from './Tree';
-
-const BasicTreeExample = (): React.Element<any> => (
-  <div>
-    Trees
-    <Block>
-      <TreeList>
-        <TreeItem>TreeItem 1</TreeItem>
-        <TreeItem>TreeItem 2</TreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 1</span>} selected={true}>
-          <TreeItem>TreeItem 3</TreeItem>
-          <TreeItem>TreeItem 4</TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem
-          title={<span>NestedTreeItem 2</span>}
-          collapsed={true}
-        />
-      </TreeList>
-    </Block>
-  </div>
+const BasicTreeExample = () => _react.default.createElement(
+  'div',
+  null,
+  'Trees',
+  _react.default.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _react.default.createElement(
+      (_Tree || _load_Tree()).TreeList,
+      null,
+      _react.default.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        'TreeItem 1'
+      ),
+      _react.default.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        'TreeItem 2'
+      ),
+      _react.default.createElement(
+        (_Tree || _load_Tree()).NestedTreeItem,
+        { title: _react.default.createElement(
+            'span',
+            null,
+            'NestedTreeItem 1'
+          ), selected: true },
+        _react.default.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          'TreeItem 3'
+        ),
+        _react.default.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          'TreeItem 4'
+        )
+      ),
+      _react.default.createElement((_Tree || _load_Tree()).NestedTreeItem, {
+        title: _react.default.createElement(
+          'span',
+          null,
+          'NestedTreeItem 2'
+        ),
+        collapsed: true
+      })
+    )
+  )
 );
 
-const AtomStyleguideTreeExample = (): React.Element<any> => (
-  <Block>
-    <TreeList showArrows={true}>
-      <NestedTreeItem title={<Icon icon="file-directory">A Directory</Icon>}>
-        <NestedTreeItem
-          collapsed={false}
-          title={<Icon icon="file-directory">Nested Directory</Icon>}>
-          <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-        </NestedTreeItem>
-        <NestedTreeItem
-          collapsed={true}
-          title={<Icon icon="file-directory">Collapsed Nested Directory</Icon>}>
-          <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-        </NestedTreeItem>
-        <TreeItem><Icon icon="file-text">File one</Icon></TreeItem>
-        <TreeItem selected={true}>
-          <Icon icon="file-text">File three .selected!</Icon>
-        </TreeItem>
-      </NestedTreeItem>
-      <TreeItem><Icon icon="file-text">.icon-file-text</Icon></TreeItem>
-      <TreeItem>
-        <Icon icon="file-symlink-file">.icon-file-symlink-file</Icon>
-      </TreeItem>
-    </TreeList>
-  </Block>
+const AtomStyleguideTreeExample = () => _react.default.createElement(
+  (_Block || _load_Block()).Block,
+  null,
+  _react.default.createElement(
+    (_Tree || _load_Tree()).TreeList,
+    { showArrows: true },
+    _react.default.createElement(
+      (_Tree || _load_Tree()).NestedTreeItem,
+      { title: _react.default.createElement(
+          (_Icon || _load_Icon()).Icon,
+          { icon: 'file-directory' },
+          'A Directory'
+        ) },
+      _react.default.createElement(
+        (_Tree || _load_Tree()).NestedTreeItem,
+        {
+          collapsed: false,
+          title: _react.default.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-directory' },
+            'Nested Directory'
+          ) },
+        _react.default.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          _react.default.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-text' },
+            'File one'
+          )
+        )
+      ),
+      _react.default.createElement(
+        (_Tree || _load_Tree()).NestedTreeItem,
+        {
+          collapsed: true,
+          title: _react.default.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-directory' },
+            'Collapsed Nested Directory'
+          ) },
+        _react.default.createElement(
+          (_Tree || _load_Tree()).TreeItem,
+          null,
+          _react.default.createElement(
+            (_Icon || _load_Icon()).Icon,
+            { icon: 'file-text' },
+            'File one'
+          )
+        )
+      ),
+      _react.default.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        null,
+        _react.default.createElement(
+          (_Icon || _load_Icon()).Icon,
+          { icon: 'file-text' },
+          'File one'
+        )
+      ),
+      _react.default.createElement(
+        (_Tree || _load_Tree()).TreeItem,
+        { selected: true },
+        _react.default.createElement(
+          (_Icon || _load_Icon()).Icon,
+          { icon: 'file-text' },
+          'File three .selected!'
+        )
+      )
+    ),
+    _react.default.createElement(
+      (_Tree || _load_Tree()).TreeItem,
+      null,
+      _react.default.createElement(
+        (_Icon || _load_Icon()).Icon,
+        { icon: 'file-text' },
+        '.icon-file-text'
+      )
+    ),
+    _react.default.createElement(
+      (_Tree || _load_Tree()).TreeItem,
+      null,
+      _react.default.createElement(
+        (_Icon || _load_Icon()).Icon,
+        { icon: 'file-symlink-file' },
+        '.icon-file-symlink-file'
+      )
+    )
+  )
 );
 
-export const TreeExamples = {
+const TreeExamples = exports.TreeExamples = {
   sectionName: 'Trees',
   description: 'Expandable, hierarchical lists.',
-  examples: [
-    {
-      title: 'Basic Tree',
-      component: BasicTreeExample,
-    },
-    {
-      title: 'Reproducing the Atom style guide example:',
-      component: AtomStyleguideTreeExample,
-    },
-  ],
+  examples: [{
+    title: 'Basic Tree',
+    component: BasicTreeExample
+  }, {
+    title: 'Reproducing the Atom style guide example:',
+    component: AtomStyleguideTreeExample
+  }]
 };

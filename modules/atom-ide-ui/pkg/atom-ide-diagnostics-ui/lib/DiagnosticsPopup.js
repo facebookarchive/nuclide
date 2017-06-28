@@ -1,71 +1,71 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  FileDiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/rpc-types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsPopup = undefined;
 
-import React from 'react';
-import classnames from 'classnames';
-import {DiagnosticsMessage} from './DiagnosticsMessage';
+var _react = _interopRequireDefault(require('react'));
 
-type DiagnosticsPopupProps = {
-  messages: Array<FileDiagnosticMessage>,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  fixer: (message: FileDiagnosticMessage) => void,
-  left: number,
-  top: number,
-};
+var _classnames;
 
-function renderMessage(
-  fixer: (message: FileDiagnosticMessage) => void,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  message: FileDiagnosticMessage,
-  index: number,
-): React.Element<any> {
-  const className = classnames(
-    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
-    'native-key-bindings',
-    'nuclide-diagnostics-gutter-ui-popup-diagnostic',
-    {
-      'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
-      'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error',
-    },
-  );
-  return (
-    <div className={className} key={index} tabIndex={-1}>
-      <DiagnosticsMessage
-        fixer={fixer}
-        goToLocation={goToLocation}
-        key={index}
-        message={message}
-      />
-    </div>
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _DiagnosticsMessage;
+
+function _load_DiagnosticsMessage() {
+  return _DiagnosticsMessage = require('./DiagnosticsMessage');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
+
+function renderMessage(fixer, goToLocation, message, index) {
+  const className = (0, (_classnames || _load_classnames()).default)(
+  // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
+  'native-key-bindings', 'nuclide-diagnostics-gutter-ui-popup-diagnostic', {
+    'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
+    'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error'
+  });
+  return _react.default.createElement(
+    'div',
+    { className: className, key: index, tabIndex: -1 },
+    _react.default.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+      fixer: fixer,
+      goToLocation: goToLocation,
+      key: index,
+      message: message
+    })
   );
 }
 
 // TODO move LESS styles to nuclide-ui
-export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {fixer, goToLocation, left, messages, top, ...rest} = props;
-  return (
-    <div
-      className="nuclide-diagnostics-gutter-ui-popup"
-      style={{
+const DiagnosticsPopup = props => {
+  const { fixer, goToLocation, left, messages, top } = props,
+        rest = _objectWithoutProperties(props, ['fixer', 'goToLocation', 'left', 'messages', 'top']);
+  return _react.default.createElement(
+    'div',
+    Object.assign({
+      className: 'nuclide-diagnostics-gutter-ui-popup',
+      style: {
         left,
-        top,
-      }}
-      {...rest}>
-      {messages.map(renderMessage.bind(null, fixer, goToLocation))}
-    </div>
+        top
+      }
+    }, rest),
+    messages.map(renderMessage.bind(null, fixer, goToLocation))
   );
 };
+exports.DiagnosticsPopup = DiagnosticsPopup;

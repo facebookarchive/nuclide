@@ -1,42 +1,23 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
-/* global Node */
-/* global HTMLElement */
+'use strict';
 
-import invariant from 'assert';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = showModal;
 
-/**
- * Given a function to dismiss the modal, return a React element for the content.
- * Call the function when e.g. the user clicks a Cancel or Submit button.
- */
-type ContentFactory = (dismiss: () => void) => React$Element<any>;
+var _react = _interopRequireDefault(require('react'));
 
-/** Wrap options in an object so we can add new ones later without an explosion of params */
-type Options = {|
-  /** Called when the modal is dismissed (just before it is destroyed). */
-  onDismiss?: () => void,
-  /**
-   * Called when the user clicks outside the modal, return false to prevent dismissal.
-   * If unspecified the modal will be dismissed if the user clicks outside the modal.
-   */
-  shouldDismissOnClickOutsideModal?: () => boolean,
-  /** Passed to atom's underlying addModalPanel function. */
-  priority?: number,
-  /** Passed to atom's underlying addModalPanel function. */
-  className?: string,
-|};
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Shows a modal dialog that renders a React element as its content.
@@ -45,80 +26,98 @@ type Options = {|
  * you may not hide the panel and then re-show it later.
  * Returns a disposable that you may use to hide and destroy the modal.
  */
-export default function showModal(
-  contentFactory: ContentFactory,
-  options: Options = defaults,
-): IDisposable {
+
+
+/**
+ * Given a function to dismiss the modal, return a React element for the content.
+ * Call the function when e.g. the user clicks a Cancel or Submit button.
+ */
+
+
+/** Wrap options in an object so we can add new ones later without an explosion of params */
+function showModal(contentFactory, options = defaults) {
   const hostElement = document.createElement('div');
   const atomPanel = atom.workspace.addModalPanel({
     item: hostElement,
     priority: options.priority,
-    className: options.className,
+    className: options.className
   });
-  const shouldDismissOnClickOutsideModal =
-    options.shouldDismissOnClickOutsideModal || (() => true);
-  const disposable = new UniversalDisposable(
-    Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
-      if (!shouldDismissOnClickOutsideModal()) {
-        return;
-      }
-      invariant(target instanceof Node);
-      if (!atomPanel.getItem().contains(target)) {
-        atomPanel.hide();
-      }
-    }),
-    atomPanel.onDidChangeVisible(visible => {
-      if (!visible) {
-        disposable.dispose();
-      }
-    }),
-    atom.commands.add('atom-workspace', 'core:cancel', () =>
-      disposable.dispose(),
-    ),
-    () => {
-      // Call onDismiss before unmounting the component and destroying the panel:
-      if (options.onDismiss) {
-        options.onDismiss();
-      }
-      ReactDOM.unmountComponentAtNode(hostElement);
-      atomPanel.destroy();
-    },
-  );
+  const shouldDismissOnClickOutsideModal = options.shouldDismissOnClickOutsideModal || (() => true);
+  const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(_rxjsBundlesRxMinJs.Observable.fromEvent(document, 'mousedown').subscribe(({ target }) => {
+    if (!shouldDismissOnClickOutsideModal()) {
+      return;
+    }
 
-  ReactDOM.render(
-    <ModalContainer>
-      {contentFactory(disposable.dispose.bind(disposable))}
-    </ModalContainer>,
-    hostElement,
-  );
+    if (!(target instanceof Node)) {
+      throw new Error('Invariant violation: "target instanceof Node"');
+    }
+
+    if (!atomPanel.getItem().contains(target)) {
+      atomPanel.hide();
+    }
+  }), atomPanel.onDidChangeVisible(visible => {
+    if (!visible) {
+      disposable.dispose();
+    }
+  }), atom.commands.add('atom-workspace', 'core:cancel', () => disposable.dispose()), () => {
+    // Call onDismiss before unmounting the component and destroying the panel:
+    if (options.onDismiss) {
+      options.onDismiss();
+    }
+    _reactDom.default.unmountComponentAtNode(hostElement);
+    atomPanel.destroy();
+  });
+
+  _reactDom.default.render(_react.default.createElement(
+    ModalContainer,
+    null,
+    contentFactory(disposable.dispose.bind(disposable))
+  ), hostElement);
   return disposable;
 }
 
 /** Flow makes {} an unsealed object (eyeroll) */
-const defaults: Options = Object.freeze({});
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+/* global Node */
+/* global HTMLElement */
 
-type Props = {
-  children?: any,
-};
+const defaults = Object.freeze({});
 
 /**
  * Just exists to provide a div that we can focus on mount. This ensures we steal focus from any
  * editors or other panes while the modal is present.
  */
-class ModalContainer extends React.Component {
-  props: Props;
+class ModalContainer extends _react.default.Component {
 
-  render(): React.Element<any> {
-    return <div tabIndex="-1">{this.props.children}</div>;
+  render() {
+    return _react.default.createElement(
+      'div',
+      { tabIndex: '-1' },
+      this.props.children
+    );
   }
 
-  componentDidMount(): void {
-    const node = ReactDOM.findDOMNode(this);
-    invariant(node instanceof HTMLElement);
+  componentDidMount() {
+    const node = _reactDom.default.findDOMNode(this);
+
+    if (!(node instanceof HTMLElement)) {
+      throw new Error('Invariant violation: "node instanceof HTMLElement"');
+    }
     // Steal the focus away from any active editor or pane, setting it on the modal;
     // but don't steal focus away from a descendant. This can happen if a React element focuses
     // during its componentDidMount. For example, <AtomInput> does this since the underlying
     // <atom-text-editor> does not support the autofocus attribute.
+
+
     if (!node.contains(document.activeElement)) {
       node.focus();
     }

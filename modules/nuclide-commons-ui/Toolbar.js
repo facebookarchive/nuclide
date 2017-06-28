@@ -1,38 +1,44 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classnames from 'classnames';
-import React from 'react';
-import {maybeToString} from 'nuclide-commons/string';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Toolbar = undefined;
 
-type Props = {
-  children?: mixed,
-  className?: string,
-  location?: 'top' | 'bottom',
-};
+var _classnames;
 
-export const Toolbar = (props: Props) => {
-  const className = classnames(
-    'nuclide-ui-toolbar',
-    {
-      [`nuclide-ui-toolbar--${maybeToString(props.location)}`]: props.location !=
-        null,
-    },
-    props.className,
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const Toolbar = exports.Toolbar = props => {
+  const className = (0, (_classnames || _load_classnames()).default)('nuclide-ui-toolbar', {
+    [`nuclide-ui-toolbar--${(0, (_string || _load_string()).maybeToString)(props.location)}`]: props.location != null
+  }, props.className);
+
+  return _react.default.createElement(
+    'div',
+    { className: className },
+    props.children
   );
-
-  return (
-    <div className={className}>
-      {props.children}
-    </div>
-  );
-};
+}; /**
+    * Copyright (c) 2017-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the BSD-style license found in the
+    * LICENSE file in the root directory of this source tree. An additional grant
+    * of patent rights can be found in the PATENTS file in the same directory.
+    *
+    * 
+    * @format
+    */

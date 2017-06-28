@@ -1,21 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import singleton from '../../commons-node/singleton';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__test__ = undefined;
+exports.default = addPrepareStackTraceHook;
 
-type PrepareStackTraceFunction = (error: Error, frames: Array<CallSite>) => any;
+var _singleton;
 
-const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
+function _load_singleton() {
+  return _singleton = _interopRequireDefault(require('../../commons-node/singleton'));
+}
 
-let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked'; /**
+                                                                             * Copyright (c) 2015-present, Facebook, Inc.
+                                                                             * All rights reserved.
+                                                                             *
+                                                                             * This source code is licensed under the license found in the LICENSE file in
+                                                                             * the root directory of this source tree.
+                                                                             *
+                                                                             * 
+                                                                             * @format
+                                                                             */
+
+let hookedPrepareStackTrace;
 
 /**
  * v8 provided a way to customize Error stacktrace generation by overwriting
@@ -28,11 +38,9 @@ let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
  * This is required as Atom's builtin coffeescript package need to show coffeescript stacktrace by
  * customize Error.prepareStackTrace.
  */
-export default function addPrepareStackTraceHook(): void {
-  singleton.get(PREPARE_STACK_TRACE_HOOKED_KEY, () => {
-    hookedPrepareStackTrace = createHookedPrepareStackTrace(
-      Error.prepareStackTrace || defaultPrepareStackTrace,
-    );
+function addPrepareStackTraceHook() {
+  (_singleton || _load_singleton()).default.get(PREPARE_STACK_TRACE_HOOKED_KEY, () => {
+    hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace || defaultPrepareStackTrace);
 
     // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
     // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that
@@ -43,12 +51,10 @@ export default function addPrepareStackTraceHook(): void {
         return hookedPrepareStackTrace;
       },
       set(newValue) {
-        hookedPrepareStackTrace = createHookedPrepareStackTrace(
-          newValue || defaultPrepareStackTrace,
-        );
+        hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue || defaultPrepareStackTrace);
       },
       enumerable: false,
-      configurable: true,
+      configurable: true
     });
 
     // TODO (chenshen) t8789330.
@@ -67,18 +73,13 @@ export default function addPrepareStackTraceHook(): void {
  * Create a wrapper that calls to structuredStackTraceHook first, then return the result of
  * prepareStackTrace.
  */
-function createHookedPrepareStackTrace(
-  prepareStackTrace: PrepareStackTraceFunction,
-): PrepareStackTraceFunction {
+function createHookedPrepareStackTrace(prepareStackTrace) {
   // If the prepareStackTrace is already been hooked, just return it.
   if (prepareStackTrace.name === 'nuclideHookedPrepareStackTrace') {
     return prepareStackTrace;
   }
 
-  const hookedFunction = function nuclideHookedPrepareStackTrace(
-    error: Error,
-    frames: Array<CallSite>,
-  ): any {
+  const hookedFunction = function nuclideHookedPrepareStackTrace(error, frames) {
     structuredStackTraceHook(error, frames);
     return prepareStackTrace(error, frames);
   };
@@ -86,7 +87,7 @@ function createHookedPrepareStackTrace(
   return hookedFunction;
 }
 
-function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
+function structuredStackTraceHook(error, frames) {
   // $FlowFixMe
   error.stackTrace = frames.map(frame => {
     const scriptNameOrUrl = frame.getScriptNameOrSourceURL();
@@ -101,18 +102,13 @@ function structuredStackTraceHook(error: Error, frames: Array<CallSite>): void {
       isTopLevel: frame.isToplevel(),
       isEval: frame.isEval(),
       isNative: frame.isNative(),
-      isConstructor: frame.isConstructor(),
+      isConstructor: frame.isConstructor()
     };
   });
 }
 
-function defaultPrepareStackTrace(
-  error: Error,
-  frames: Array<CallSite>,
-): string {
-  let formattedStackTrace = error.message
-    ? `${error.name}: ${error.message}`
-    : `${error.name}`;
+function defaultPrepareStackTrace(error, frames) {
+  let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
   frames.forEach(frame => {
     // Do not use `maybeToString` here since lazily loading it (inline-imports) may
     // result in a circular load of `babel-core` via `nuclide-node-transpiler`.
@@ -122,9 +118,9 @@ function defaultPrepareStackTrace(
   return formattedStackTrace;
 }
 
-export const __test__ = {
+const __test__ = exports.__test__ = {
   createHookedPrepareStackTrace,
   resetPrepareStackTraceHooked() {
-    singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
-  },
+    (_singleton || _load_singleton()).default.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
+  }
 };

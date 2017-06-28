@@ -1,33 +1,28 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type MessageStore from './MessageStore';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import invariant from 'assert';
-import {isPromise} from 'nuclide-commons/promise';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+var _promise;
 
-export type MessageDisplayOptions = {
-  onlyForFile: NuclideUri,
-};
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
 
-export default class BusySignalInstance {
-  _messageStore: MessageStore;
-  _disposables: UniversalDisposable;
+var _UniversalDisposable;
 
-  constructor(messageStore: MessageStore) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BusySignalInstance {
+
+  constructor(messageStore) {
     this._messageStore = messageStore;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   dispose() {
@@ -37,14 +32,11 @@ export default class BusySignalInstance {
   /**
    * Displays the message until the returned disposable is disposed
    */
-  reportBusy(
-    message: string,
-    options?: MessageDisplayOptions,
-  ): UniversalDisposable {
+  reportBusy(message, options) {
     if (options == null || options.onlyForFile == null) {
       const disposable = this._messageStore.displayMessage(message);
       this._disposables.add(disposable);
-      return new UniversalDisposable(disposable, () => {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(disposable, () => {
         this._disposables.remove(disposable);
       });
     }
@@ -57,24 +49,17 @@ export default class BusySignalInstance {
       }
     };
     this._disposables.add(disposeDisplayed);
-    return new UniversalDisposable(
-      atom.workspace.observeActivePaneItem(item => {
-        if (
-          item != null &&
-          typeof item.getPath === 'function' &&
-          item.getPath() === options.onlyForFile
-        ) {
-          if (displayedDisposable == null) {
-            displayedDisposable = this._messageStore.displayMessage(message);
-          }
-        } else {
-          disposeDisplayed();
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.workspace.observeActivePaneItem(item => {
+      if (item != null && typeof item.getPath === 'function' && item.getPath() === options.onlyForFile) {
+        if (displayedDisposable == null) {
+          displayedDisposable = this._messageStore.displayMessage(message);
         }
-      }),
-      // We can't add displayedDisposable directly because its value may change.
-      disposeDisplayed,
-      () => this._disposables.remove(disposeDisplayed),
-    );
+      } else {
+        disposeDisplayed();
+      }
+    }),
+    // We can't add displayedDisposable directly because its value may change.
+    disposeDisplayed, () => this._disposables.remove(disposeDisplayed));
   }
 
   /**
@@ -84,16 +69,16 @@ export default class BusySignalInstance {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  reportBusyWhile<T>(
-    message: string,
-    f: () => Promise<T>,
-    options?: MessageDisplayOptions,
-  ): Promise<T> {
+  reportBusyWhile(message, f, options) {
     const messageRemover = this.reportBusy(message, options);
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
-      invariant(isPromise(returnValue));
+
+      if (!(0, (_promise || _load_promise()).isPromise)(returnValue)) {
+        throw new Error('Invariant violation: "isPromise(returnValue)"');
+      }
+
       returnValue.then(removeMessage, removeMessage);
       return returnValue;
     } catch (e) {
@@ -102,3 +87,14 @@ export default class BusySignalInstance {
     }
   }
 }
+exports.default = BusySignalInstance; /**
+                                       * Copyright (c) 2017-present, Facebook, Inc.
+                                       * All rights reserved.
+                                       *
+                                       * This source code is licensed under the BSD-style license found in the
+                                       * LICENSE file in the root directory of this source tree. An additional grant
+                                       * of patent rights can be found in the PATENTS file in the same directory.
+                                       *
+                                       * 
+                                       * @format
+                                       */

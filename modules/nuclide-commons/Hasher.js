@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +11,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -29,32 +34,29 @@
  *      }
  *    }
  */
-export default class Hasher<K> {
-  _hashes: WeakMap<K, string>;
-  _objectCount: number;
+class Hasher {
 
   constructor() {
     this._hashes = new WeakMap();
     this._objectCount = 0;
   }
 
-  getHash(item: K): string | number {
+  getHash(item) {
     if (item === null) {
       return 'null';
     }
     const type = typeof item;
     switch (typeof item) {
-      case 'object': {
-        let hash = this._hashes.get(item);
-        if (hash == null) {
-          hash = `${type}:${this._objectCount}`;
-          this._hashes.set(item, hash);
-          this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER
-            ? Number.MIN_SAFE_INTEGER
-            : this._objectCount + 1;
+      case 'object':
+        {
+          let hash = this._hashes.get(item);
+          if (hash == null) {
+            hash = `${type}:${this._objectCount}`;
+            this._hashes.set(item, hash);
+            this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER ? Number.MIN_SAFE_INTEGER : this._objectCount + 1;
+          }
+          return hash;
         }
-        return hash;
-      }
       case 'undefined':
         return 'undefined';
       case 'string':
@@ -67,3 +69,4 @@ export default class Hasher<K> {
     }
   }
 }
+exports.default = Hasher;

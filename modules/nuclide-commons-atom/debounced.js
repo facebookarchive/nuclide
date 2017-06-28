@@ -1,14 +1,39 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeActivePaneItemDebounced = observeActivePaneItemDebounced;
+exports.observeActiveEditorsDebounced = observeActiveEditorsDebounced;
+exports.editorChangesDebounced = editorChangesDebounced;
+exports.editorScrollTopDebounced = editorScrollTopDebounced;
+exports.observeTextEditorsPositions = observeTextEditorsPositions;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('./text-editor');
+}
+
+const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100; /**
+                                                * Copyright (c) 2017-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the BSD-style license found in the
+                                                * LICENSE file in the root directory of this source tree. An additional grant
+                                                * of patent rights can be found in the PATENTS file in the same directory.
+                                                *
+                                                * 
+                                                * @format
+                                                */
 
 /**
  * Often, we may want to respond to Atom events, but only after a buffer period
@@ -19,20 +44,11 @@
  * This file provides methods to do this.
  */
 
-import {Observable} from 'rxjs';
-
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {getCursorPositions, isValidTextEditor} from './text-editor';
-import invariant from 'assert';
-
-const DEFAULT_PANE_DEBOUNCE_INTERVAL_MS = 100;
 const DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS = 300;
 const DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS = 300;
 
-export function observeActivePaneItemDebounced(
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
-): Observable<mixed> {
-  return observableFromSubscribeFunction(callback => {
+function observeActivePaneItemDebounced(debounceInterval = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => {
     if (atom.workspace.getCenter != null) {
       return atom.workspace.getCenter().observeActivePaneItem(callback);
     }
@@ -40,61 +56,38 @@ export function observeActivePaneItemDebounced(
   }).debounceTime(debounceInterval);
 }
 
-export function observeActiveEditorsDebounced(
-  debounceInterval: number = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS,
-): Observable<?atom$TextEditor> {
+function observeActiveEditorsDebounced(debounceInterval = DEFAULT_PANE_DEBOUNCE_INTERVAL_MS) {
   return observeActivePaneItemDebounced(debounceInterval).map(paneItem => {
-    if (isValidTextEditor(paneItem)) {
+    if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(paneItem)) {
       // Flow cannot understand the type refinement provided by the isValidTextEditor function,
       // so we have to cast.
-      return ((paneItem: any): atom$TextEditor);
+      return paneItem;
     }
     return null;
   });
 }
 
-export function editorChangesDebounced(
-  editor: atom$TextEditor,
-  debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
-): Observable<void> {
-  return (
-    observableFromSubscribeFunction(callback => editor.onDidChange(callback))
-      // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
-      // configurable.
-      .debounceTime(debounceInterval)
-  );
+function editorChangesDebounced(editor, debounceInterval = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => editor.onDidChange(callback))
+  // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
+  // configurable.
+  .debounceTime(debounceInterval);
 }
 
-export function editorScrollTopDebounced(
-  editor: atom$TextEditor,
-  debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
-): Observable<number> {
-  return observableFromSubscribeFunction(callback =>
-    atom.views.getView(editor).onDidChangeScrollTop(callback),
-  ).debounceTime(debounceInterval);
+function editorScrollTopDebounced(editor, debounceInterval = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(callback => atom.views.getView(editor).onDidChangeScrollTop(callback)).debounceTime(debounceInterval);
 }
-
-export type EditorPosition = {
-  editor: atom$TextEditor,
-  position: atom$Point,
-};
 
 // Yields null when the current pane is not an editor,
 // otherwise yields events on each move of the primary cursor within any Editor.
-export function observeTextEditorsPositions(
-  editorDebounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
-  positionDebounceInterval: number = DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS,
-): Observable<?EditorPosition> {
-  return observeActiveEditorsDebounced(
-    editorDebounceInterval,
-  ).switchMap(editor => {
-    return editor == null
-      ? Observable.of(null)
-      : getCursorPositions(editor)
-          .debounceTime(positionDebounceInterval)
-          .map(position => {
-            invariant(editor != null);
-            return {editor, position};
-          });
+function observeTextEditorsPositions(editorDebounceInterval = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS, positionDebounceInterval = DEFAULT_POSITION_DEBOUNCE_INTERVAL_MS) {
+  return observeActiveEditorsDebounced(editorDebounceInterval).switchMap(editor => {
+    return editor == null ? _rxjsBundlesRxMinJs.Observable.of(null) : (0, (_textEditor || _load_textEditor()).getCursorPositions)(editor).debounceTime(positionDebounceInterval).map(position => {
+      if (!(editor != null)) {
+        throw new Error('Invariant violation: "editor != null"');
+      }
+
+      return { editor, position };
+    });
   });
 }

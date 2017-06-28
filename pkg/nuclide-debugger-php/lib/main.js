@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createDebuggerProvider = createDebuggerProvider;
+exports.getHomeFragments = getHomeFragments;
+
+var _HhvmLaunchAttachProvider;
+
+function _load_HhvmLaunchAttachProvider() {
+  return _HhvmLaunchAttachProvider = require('./HhvmLaunchAttachProvider');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,42 +27,30 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
-import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {HhvmLaunchAttachProvider} from './HhvmLaunchAttachProvider';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-export function createDebuggerProvider(): NuclideDebuggerProvider {
+function createDebuggerProvider() {
   return {
     name: 'hhvm',
-    getLaunchAttachProvider(
-      connection: NuclideUri,
-    ): ?DebuggerLaunchAttachProvider {
-      if (nuclideUri.isRemote(connection)) {
-        return new HhvmLaunchAttachProvider('Hack / PHP', connection);
+    getLaunchAttachProvider(connection) {
+      if ((_nuclideUri || _load_nuclideUri()).default.isRemote(connection)) {
+        return new (_HhvmLaunchAttachProvider || _load_HhvmLaunchAttachProvider()).HhvmLaunchAttachProvider('Hack / PHP', connection);
       }
       return null;
-    },
+    }
   };
 }
 
-export function getHomeFragments(): HomeFragments {
+function getHomeFragments() {
   return {
     feature: {
       title: 'PHP Debugger',
       icon: 'nuclicon-debugger',
       description: 'Connect to a PHP server process and debug Hack code from within Nuclide.',
-      command: 'nuclide-debugger:show-attach-dialog',
+      command: 'nuclide-debugger:show-attach-dialog'
     },
-    priority: 6,
+    priority: 6
   };
 }

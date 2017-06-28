@@ -1,33 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FindReferencesReturn} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.convertReferences = convertReferences;
 
-import {hackRangeToAtomRange} from './HackHelpers';
+var _HackHelpers;
 
-export type HackReferencesResult = Array<HackReference>;
+function _load_HackHelpers() {
+  return _HackHelpers = require('./HackHelpers');
+}
 
-export type HackReference = {
-  name: string,
-  filename: NuclideUri,
-  line: number,
-  char_start: number,
-  char_end: number,
-};
-
-export function convertReferences(
-  hackResult: HackReferencesResult,
-  projectRoot: NuclideUri,
-): FindReferencesReturn {
+function convertReferences(hackResult, projectRoot) {
   let symbolName = hackResult[0].name;
   // Strip off the global namespace indicator.
   if (symbolName.startsWith('\\')) {
@@ -39,7 +23,7 @@ export function convertReferences(
     return {
       uri: ref.filename,
       name: null, // TODO(hansonw): Get the caller when it's available
-      range: hackRangeToAtomRange(ref),
+      range: (0, (_HackHelpers || _load_HackHelpers()).hackRangeToAtomRange)(ref)
     };
   });
 
@@ -47,6 +31,15 @@ export function convertReferences(
     type: 'data',
     baseUri: projectRoot,
     referencedSymbolName: symbolName,
-    references,
+    references
   };
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
