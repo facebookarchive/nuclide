@@ -261,7 +261,7 @@ export default class FileTreeActions {
     orientation: atom$PaneSplitOrientation,
     side: atom$PaneSplitSide,
   ): void {
-    const pane = atom.workspace.getActivePane();
+    const pane = atom.workspace.getCenter().getActivePane();
     atom.workspace.openURIInPane(
       FileTreeHelpers.keyToPath(nodeKey),
       pane.split(orientation, side),
