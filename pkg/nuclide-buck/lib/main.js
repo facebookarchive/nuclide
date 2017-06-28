@@ -91,7 +91,7 @@ class Activation {
   }
 
   provideClangCompilationDatabase(): ClangCompilationDatabaseProvider {
-    return getClangCompilationDatabaseProvider();
+    return getClangCompilationDatabaseProvider(this._taskRunner);
   }
 }
 

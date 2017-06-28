@@ -16,6 +16,7 @@ import type {
   ClangCompilationDatabaseProvider,
 } from '../../nuclide-clang/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {CompilationDatabaseParams} from './types';
 
 import {Subscription} from 'rxjs';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -25,6 +26,7 @@ import {
   getFileWatcherServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
+import {BuckTaskRunner} from './BuckTaskRunner';
 
 class Provider {
   _compilationDBCache: Cache<
@@ -37,10 +39,12 @@ class Provider {
   });
   _watchedFilesObservablesCache: SharedObservableCache<string, *>;
   _host: NuclideUri;
+  _params: CompilationDatabaseParams;
 
-  constructor(host: NuclideUri) {
+  constructor(host: NuclideUri, params: CompilationDatabaseParams) {
     this._host = host;
     this._watchedFilesObservablesCache = this._createWatchedFilesObservablesCache();
+    this._params = params;
   }
 
   _createWatchedFilesObservablesCache(): SharedObservableCache<string, *> {
@@ -72,7 +76,7 @@ class Provider {
   getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
     return this._compilationDBCache.getOrCreate(src, () => {
       return getBuckServiceByNuclideUri(this._host)
-        .getCompilationDatabase(src)
+        .getCompilationDatabase(src, this._params)
         .refCount()
         .do(db => {
           if (db != null && db.flagsFile != null) {
@@ -82,41 +86,58 @@ class Provider {
         .toPromise();
     });
   }
+
   resetForSource(src: string): void {
     this._compilationDBCache.delete(src);
     getBuckServiceByNuclideUri(this._host).resetCompilationDatabaseForSource(
       src,
+      this._params,
     );
     this._buildFileForSourceCache.delete(src);
     this._watchedFilesCache.delete(src);
   }
+
   reset(): void {
     this._compilationDBCache.clear();
-    getBuckServiceByNuclideUri(this._host).resetCompilationDatabase();
+    getBuckServiceByNuclideUri(this._host).resetCompilationDatabase(
+      this._params,
+    );
     this._buildFileForSourceCache.clear();
     this._watchedFilesCache.clear();
   }
 }
 
 const providersCache = new Cache({
-  keyFactory: host => nuclideUri.getHostnameOpt(host) || '',
+  keyFactory: ([host, params: CompilationDatabaseParams]) =>
+    JSON.stringify([nuclideUri.getHostnameOpt(host) || '', params]),
   dispose: provider => provider.reset(),
 });
 
-function getProvider(host: NuclideUri): Provider {
-  return providersCache.getOrCreate(host, () => new Provider(host));
+function getProvider(
+  host: NuclideUri,
+  params: CompilationDatabaseParams,
+): Provider {
+  return providersCache.getOrCreate(
+    [host, params],
+    () => new Provider(host, params),
+  );
 }
 
-export function getClangCompilationDatabaseProvider(): ClangCompilationDatabaseProvider {
+export function getClangCompilationDatabaseProvider(
+  taskRunner: BuckTaskRunner,
+): ClangCompilationDatabaseProvider {
   return {
     getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
-      return getProvider(src).getCompilationDatabase(src);
+      const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
+      return getProvider(src, params).getCompilationDatabase(src);
     },
     resetForSource(src: string): void {
-      getProvider(src).resetForSource(src);
+      const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
+      getProvider(src, params).resetForSource(src);
     },
     reset(host: string): void {
-      providersCache.delete(host);
+      const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
+      providersCache.delete([host, params]);
     },
   };
 }

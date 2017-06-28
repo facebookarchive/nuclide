@@ -18,6 +18,7 @@ import type {
   SerializedState,
   Store,
   TaskType,
+  CompilationDatabaseParams,
 } from './types';
 import {PlatformService} from './PlatformService';
 
@@ -239,6 +240,19 @@ export class BuckTaskRunner {
       this._disposables.add(observeBuildCommands(this._store));
     }
     return this._store;
+  }
+
+  getCompilationDatabaseParamsForCurrentContext(): CompilationDatabaseParams {
+    const {selectedDeploymentTarget} = this._getStore().getState();
+    const empty = {flavorsForTarget: [], args: []};
+    if (selectedDeploymentTarget == null) {
+      return empty;
+    }
+    const {platform} = selectedDeploymentTarget;
+    if (typeof platform.getCompilationDatabaseParams === 'function') {
+      return platform.getCompilationDatabaseParams();
+    }
+    return empty;
   }
 
   runTask(taskType: string): Task {

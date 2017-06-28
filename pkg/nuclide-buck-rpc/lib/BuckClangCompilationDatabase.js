@@ -13,6 +13,7 @@ import type {
   ClangCompilationDatabase,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
+import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
 import * as BuckService from './BuckServiceImpl';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -32,151 +33,177 @@ const TARGET_KIND_REGEX = [
   'cxx_test',
 ].join('|');
 
-const targetCache = new Cache();
-const sourceCache = new Cache();
-
-// Ensure that we can clear targetCache for a given file.
-const sourceToTargetKey = new Map();
-
 /**
  * Facebook puts all headers in a <target>:__default_headers__ build target by default.
  * This target will never produce compilation flags, so make sure to ignore it.
  */
 const DEFAULT_HEADERS_TARGET = '__default_headers__';
 
-export function resetForSource(src: string): void {
-  sourceCache.delete(src);
-  const targetKey = sourceToTargetKey.get(src);
-  if (targetKey != null) {
-    targetCache.delete(targetKey);
-    sourceToTargetKey.delete(src);
-  }
-}
+class BuckClangCompilationDatabaseHandler {
+  _targetCache = new Cache();
+  _sourceCache = new Cache();
+  // Ensure that we can clear targetCache for a given file.
+  _sourceToTargetKey = new Map();
+  _params: CompilationDatabaseParams;
 
-export function reset(): void {
-  sourceCache.clear();
-  targetCache.clear();
-  sourceToTargetKey.clear();
-}
-
-export async function getCompilationDatabase(
-  src: string,
-): Promise<?ClangCompilationDatabase> {
-  return sourceCache.getOrCreate(src, () =>
-    loadCompilationDatabaseFromBuck(src).catch(err => {
-      logger.error('Error getting flags from Buck', err);
-      return null;
-    }),
-  );
-}
-
-async function loadCompilationDatabaseFromBuck(
-  src: string,
-): Promise<?ClangCompilationDatabase> {
-  const buckRoot = await BuckService.getRootForPath(src);
-  if (buckRoot == null) {
-    return null;
+  constructor(params: CompilationDatabaseParams) {
+    this._params = params;
   }
 
-  let queryTarget = null;
-  try {
-    queryTarget = (await BuckService.getOwners(
-      buckRoot,
-      src,
-      TARGET_KIND_REGEX,
-    )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
-  } catch (err) {
-    logger.error('Failed getting the target from buck', err);
-  }
-
-  if (queryTarget == null) {
-    // Even if we can't get flags, return a flagsFile to watch
-    const buildFile = await guessBuildFile(src);
-    if (buildFile != null) {
-      return {flagsFile: buildFile, file: null};
+  resetForSource(src: string): void {
+    this._sourceCache.delete(src);
+    const targetKey = this._sourceToTargetKey.get(src);
+    if (targetKey != null) {
+      this._targetCache.delete(targetKey);
+      this._sourceToTargetKey.delete(src);
     }
-    return null;
   }
-  const target = queryTarget;
 
-  sourceToTargetKey.set(src, targetCache.keyForArgs([buckRoot, target]));
-
-  return targetCache.getOrCreate([buckRoot, target], () =>
-    loadCompilationDatabaseForBuckTarget(buckRoot, target),
-  );
-}
-
-async function addMode(
-  root: string,
-  mode: string,
-  args: Array<string>,
-): Promise<Array<string>> {
-  if (await fsPromise.exists(nuclideUri.join(root, mode))) {
-    return args.concat(['@' + mode]);
+  reset(): void {
+    this._sourceCache.clear();
+    this._targetCache.clear();
+    this._sourceToTargetKey.clear();
   }
-  return args;
-}
 
-// Many Android/iOS targets require custom flags to build with Buck.
-// TODO: Share this code with the client-side Buck modifiers!
-async function customizeBuckTarget(
-  root: string,
-  target: string,
-): Promise<Array<string>> {
-  let args = [target];
-  const projectId = await findArcProjectIdOfPath(root);
-  switch (projectId) {
-    case 'fbobjc':
-      if (process.platform === 'linux') {
-        // TODO: this should probably look up the right flavor somehow.
-        args = await addMode(root, 'mode/iphonesimulator', args);
+  getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+    return this._sourceCache.getOrCreate(src, () =>
+      this._loadCompilationDatabaseFromBuck(src).catch(err => {
+        logger.error('Error getting flags from Buck', err);
+        return null;
+      }),
+    );
+  }
+
+  async _loadCompilationDatabaseFromBuck(
+    src: string,
+  ): Promise<?ClangCompilationDatabase> {
+    const buckRoot = await BuckService.getRootForPath(src);
+    if (buckRoot == null) {
+      return null;
+    }
+
+    let queryTarget = null;
+    try {
+      queryTarget = (await BuckService.getOwners(
+        buckRoot,
+        src,
+        TARGET_KIND_REGEX,
+      )).find(x => x.indexOf(DEFAULT_HEADERS_TARGET) === -1);
+    } catch (err) {
+      logger.error('Failed getting the target from buck', err);
+    }
+
+    if (queryTarget == null) {
+      // Even if we can't get flags, return a flagsFile to watch
+      const buildFile = await guessBuildFile(src);
+      if (buildFile != null) {
+        return {flagsFile: buildFile, file: null};
       }
-      break;
-    case 'facebook-fbandroid':
-      if (process.platform === 'linux') {
-        args = await addMode(root, 'mode/server', args);
-      }
-      break;
+      return null;
+    }
+    const target = queryTarget;
+
+    this._sourceToTargetKey.set(
+      src,
+      this._targetCache.keyForArgs([buckRoot, target]),
+    );
+
+    return this._targetCache.getOrCreate([buckRoot, target], () =>
+      this._loadCompilationDatabaseForBuckTarget(buckRoot, target),
+    );
   }
-  return args;
+
+  async _addMode(
+    root: string,
+    mode: string,
+    args: Array<string>,
+  ): Promise<Array<string>> {
+    if (await fsPromise.exists(nuclideUri.join(root, mode))) {
+      return args.concat(['@' + mode]);
+    }
+    return args;
+  }
+
+  // Many Android/iOS targets require custom flags to build with Buck.
+  // TODO: Share this code with the client-side Buck modifiers!
+  async _getFallbackArgs(root: string): Promise<Array<string>> {
+    const projectId = await findArcProjectIdOfPath(root);
+    let customMode = null;
+    if (projectId === 'fbobjc' && process.platform === 'linux') {
+      customMode = 'mode/iphonesimulator';
+    } else if (
+      projectId === 'facebook-fbandroid' &&
+      process.platform === 'linux'
+    ) {
+      customMode = 'mode/server';
+    }
+    if (customMode == null) {
+      return [];
+    }
+    if (await fsPromise.exists(nuclideUri.join(root, customMode))) {
+      return ['@' + customMode];
+    }
+    return [];
+  }
+
+  async _loadCompilationDatabaseForBuckTarget(
+    buckProjectRoot: string,
+    target: string,
+  ): Promise<ClangCompilationDatabase> {
+    // TODO(t12973165): Allow configuring a custom flavor.
+    // For now, this seems to use cxx.default_platform, which tends to be correct.
+    const allFlavors = [
+      'compilation-database',
+      ...this._params.flavorsForTarget,
+    ];
+    const allArgs = this._params.args.length === 0
+      ? await this._getFallbackArgs(buckProjectRoot)
+      : this._params.args;
+    const buildTarget = target + '#' + allFlavors.join(',');
+    const buildReport = await BuckService.build(
+      buckProjectRoot,
+      [
+        // Small builds, like those used for a compilation database, can degrade overall
+        // `buck build` performance by unnecessarily invalidating the Action Graph cache.
+        // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
+        // for details on the importance of using skip-action-graph-cache=true.
+        '--config',
+        'client.skip-action-graph-cache=true',
+
+        buildTarget,
+        ...allArgs,
+        // TODO(hansonw): Any alternative to doing this?
+        // '-L',
+        // String(os.cpus().length / 2),
+      ],
+      {commandOptions: {timeout: BUCK_TIMEOUT}},
+    );
+    if (!buildReport.success) {
+      const error = `Failed to build ${buildTarget}`;
+      logger.error(error);
+      throw error;
+    }
+    const firstResult = Object.keys(buildReport.results)[0];
+    let pathToCompilationDatabase = buildReport.results[firstResult].output;
+    pathToCompilationDatabase = nuclideUri.join(
+      buckProjectRoot,
+      pathToCompilationDatabase,
+    );
+
+    const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
+    return {file: pathToCompilationDatabase, flagsFile: buildFile};
+  }
 }
 
-async function loadCompilationDatabaseForBuckTarget(
-  buckProjectRoot: string,
-  target: string,
-): Promise<ClangCompilationDatabase> {
-  // TODO(t12973165): Allow configuring a custom flavor.
-  // For now, this seems to use cxx.default_platform, which tends to be correct.
-  const buildTarget = target + '#compilation-database';
-  const buildReport = await BuckService.build(
-    buckProjectRoot,
-    [
-      // Small builds, like those used for a compilation database, can degrade overall
-      // `buck build` performance by unnecessarily invalidating the Action Graph cache.
-      // See https://buckbuild.com/concept/buckconfig.html#client.skip-action-graph-cache
-      // for details on the importance of using skip-action-graph-cache=true.
-      '--config',
-      'client.skip-action-graph-cache=true',
+const compilationDatabaseHandlerCache = new Cache({
+  keyFactory: (params: CompilationDatabaseParams) => JSON.stringify(params),
+});
 
-      ...(await customizeBuckTarget(buckProjectRoot, buildTarget)),
-      // TODO(hansonw): Any alternative to doing this?
-      // '-L',
-      // String(os.cpus().length / 2),
-    ],
-    {commandOptions: {timeout: BUCK_TIMEOUT}},
+export function getCompilationDatabaseHandler(
+  params: CompilationDatabaseParams,
+): BuckClangCompilationDatabaseHandler {
+  return compilationDatabaseHandlerCache.getOrCreate(
+    params,
+    () => new BuckClangCompilationDatabaseHandler(params),
   );
-  if (!buildReport.success) {
-    const error = `Failed to build ${buildTarget}`;
-    logger.error(error);
-    throw error;
-  }
-  const firstResult = Object.keys(buildReport.results)[0];
-  let pathToCompilationDatabase = buildReport.results[firstResult].output;
-  pathToCompilationDatabase = nuclideUri.join(
-    buckProjectRoot,
-    pathToCompilationDatabase,
-  );
-
-  const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
-  return {file: pathToCompilationDatabase, flagsFile: buildFile};
 }

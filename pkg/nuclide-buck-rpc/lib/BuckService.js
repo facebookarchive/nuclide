@@ -20,6 +20,7 @@ import type {
   ResolvedRuleType,
   CommandInfo,
 } from './types';
+import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
 import {Observable} from 'rxjs';
 import {runCommand, observeProcess} from 'nuclide-commons/process';
@@ -27,7 +28,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import createBuckWebSocket from './createBuckWebSocket';
 import ini from 'ini';
-import * as BuckClangCompilationDatabase from './BuckClangCompilationDatabase';
+import {getCompilationDatabaseHandler} from './BuckClangCompilationDatabase';
 import * as BuckServiceImpl from './BuckServiceImpl';
 
 export const MULTIPLE_TARGET_RULE_TYPE = 'multiple_targets';
@@ -628,18 +629,22 @@ export async function getLastCommandInfo(
 
 export async function resetCompilationDatabaseForSource(
   src: NuclideUri,
+  params: CompilationDatabaseParams,
 ): Promise<void> {
-  BuckClangCompilationDatabase.resetForSource(src);
+  getCompilationDatabaseHandler(params).resetForSource(src);
 }
 
-export async function resetCompilationDatabase(): Promise<void> {
-  BuckClangCompilationDatabase.reset();
+export async function resetCompilationDatabase(
+  params: CompilationDatabaseParams,
+): Promise<void> {
+  getCompilationDatabaseHandler(params).reset();
 }
 
 export function getCompilationDatabase(
   src: NuclideUri,
+  params: CompilationDatabaseParams,
 ): ConnectableObservable<?ClangCompilationDatabase> {
   return Observable.fromPromise(
-    BuckClangCompilationDatabase.getCompilationDatabase(src),
+    getCompilationDatabaseHandler(params).getCompilationDatabase(src),
   ).publish();
 }

@@ -96,6 +96,12 @@ export type MobilePlatform = {
   ) => Observable<TaskEvent>,
   deviceGroups: Array<DeviceGroup>,
   extraUiWhenSelected?: (device: ?Device) => ?PlatformProviderUi,
+  getCompilationDatabaseParams?: () => CompilationDatabaseParams,
+};
+
+export type CompilationDatabaseParams = {
+  flavorsForTarget: Array<string>,
+  args: Array<string>,
 };
 
 export type DesktopPlatform = {
