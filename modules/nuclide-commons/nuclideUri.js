@@ -126,7 +126,7 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
     parsedUri.hostname,
     `Remote Nuclide URIs must contain hostnames, '${maybeToString(
       parsedUri.hostname,
-    )}' found ` + `while parsing '${remoteUri}'`,
+    )}' found while parsing '${remoteUri}'`,
   );
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
