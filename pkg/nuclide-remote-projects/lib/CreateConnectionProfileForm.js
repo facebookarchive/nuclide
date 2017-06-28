@@ -49,8 +49,11 @@ const emptyFunction = () => {};
 /**
  * A form that is used to create a new connection profile.
  */
-export default class CreateConnectionProfileForm
-  extends React.Component<void, Props, void> {
+export default class CreateConnectionProfileForm extends React.Component<
+  void,
+  Props,
+  void,
+> {
   props: Props;
 
   disposables: CompositeDisposable;
@@ -90,7 +93,9 @@ export default class CreateConnectionProfileForm
     return (
       <div>
         <div className="form-group">
-          <label>{PROFILE_NAME_LABEL}:</label>
+          <label>
+            {PROFILE_NAME_LABEL}:
+          </label>
           <AtomInput initialValue="" ref="profile-name" unstyled={true} />
         </div>
         <ConnectionDetailsForm
@@ -99,7 +104,7 @@ export default class CreateConnectionProfileForm
           initialCwd={initialFields.cwd}
           initialRemoteServerCommand={
             initialFields.remoteServerCommand ||
-              DEFAULT_SERVER_COMMAND_PLACEHOLDER
+            DEFAULT_SERVER_COMMAND_PLACEHOLDER
           }
           initialSshPort={initialFields.sshPort}
           initialPathToPrivateKey={initialFields.pathToPrivateKey}
@@ -113,9 +118,7 @@ export default class CreateConnectionProfileForm
         />
         <div style={{display: 'flex', justifyContent: 'flex-end'}}>
           <ButtonGroup>
-            <Button onClick={this._clickCancel}>
-              Cancel
-            </Button>
+            <Button onClick={this._clickCancel}>Cancel</Button>
             <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
               Save
             </Button>

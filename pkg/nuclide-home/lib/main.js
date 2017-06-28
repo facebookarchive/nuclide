@@ -11,9 +11,7 @@
 
 /* global localStorage */
 
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
@@ -23,9 +21,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {getRuntimeInformation} from '../../commons-node/runtime-info';
 import {getAtomNuclideDir} from '../../commons-node/system-info';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {
-  viewableFromReactElement,
-} from '../../commons-atom/viewableFromReactElement';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
 import Immutable from 'immutable';
 import React from 'react';

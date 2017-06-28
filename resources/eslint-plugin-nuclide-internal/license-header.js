@@ -90,19 +90,19 @@ module.exports = function(context) {
       const sourceCode = context.getSourceCode();
       const source = sourceCode.text;
 
-      const isInModules = context.getFilename().startsWith(
-        path.join(__dirname, '..', '..', 'modules/')
-      );
-      const flowHeader = isInModules ?
-        MODULES_FLOW_FORMAT_AND_TRANSPILE :
-        FLOW_FORMAT_AND_TRANSPILE;
+      const isInModules = context
+        .getFilename()
+        .startsWith(path.join(__dirname, '..', '..', 'modules/'));
+      const flowHeader = isInModules
+        ? MODULES_FLOW_FORMAT_AND_TRANSPILE
+        : FLOW_FORMAT_AND_TRANSPILE;
       if (source.startsWith(flowHeader)) {
         return;
       }
 
-      const noFlowHeader = isInModules ?
-        MODULES_NO_FLOW_AND_NO_TRANSPILE :
-        NO_FLOW_AND_NO_TRANSPILE;
+      const noFlowHeader = isInModules
+        ? MODULES_NO_FLOW_AND_NO_TRANSPILE
+        : NO_FLOW_AND_NO_TRANSPILE;
       if (source.replace(SHEBANG_RE, '').startsWith(noFlowHeader)) {
         return;
       }

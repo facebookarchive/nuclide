@@ -16,15 +16,9 @@ import type {FindReferencesReturn, Reference} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
-import type {
-  WorkspaceViewsService,
-} from 'nuclide-commons-atom/workspace-views-compat';
-import {
-  consumeWorkspaceViewsCompat,
-} from 'nuclide-commons-atom/workspace-views-compat';
-import {
-  bufferPositionForMouseEvent,
-} from 'nuclide-commons-atom/mouse-to-position';
+import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
+import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
+import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -226,9 +220,10 @@ class Activation {
     if (!path) {
       return null;
     }
-    const point = event != null
-      ? bufferPositionForMouseEvent(event, editor)
-      : editor.getCursorBufferPosition();
+    const point =
+      event != null
+        ? bufferPositionForMouseEvent(event, editor)
+        : editor.getCursorBufferPosition();
     analytics.track('find-references:activate', {
       path,
       row: point.row.toString(),

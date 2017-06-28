@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -45,9 +43,10 @@ class Activation {
   deserializeLspTester(serialized: ?mixed): LspTester {
     const data = (serialized && serialized.data) || null;
     return new LspTester({
-      lastCommand: data != null && typeof data.lastCommand === 'string'
-        ? data.lastCommand || null
-        : null,
+      lastCommand:
+        data != null && typeof data.lastCommand === 'string'
+          ? data.lastCommand || null
+          : null,
     });
   }
 }

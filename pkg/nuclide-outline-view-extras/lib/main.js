@@ -85,7 +85,8 @@ class Activation {
       feature: {
         title: 'Outline View',
         icon: 'list-unordered',
-        description: 'Displays major components of the current file (classes, methods, etc.)',
+        description:
+          'Displays major components of the current file (classes, methods, etc.)',
         command: () => {
           atom.commands.dispatch(
             atom.views.getView(atom.workspace),

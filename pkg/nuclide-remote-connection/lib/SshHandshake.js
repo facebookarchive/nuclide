@@ -363,9 +363,10 @@ export class SshHandshake {
   _updateServerInfo(serverInfo: {}) {
     invariant(typeof serverInfo.port === 'number');
     this._remotePort = serverInfo.port;
-    this._remoteHost = typeof serverInfo.hostname === 'string'
-      ? serverInfo.hostname
-      : this._config.host;
+    this._remoteHost =
+      typeof serverInfo.hostname === 'string'
+        ? serverInfo.hostname
+        : this._config.host;
 
     // Because the value for the Initial Directory that the user supplied may have
     // been a symlink that was resolved by the server, overwrite the original `cwd`
@@ -406,7 +407,8 @@ export class SshHandshake {
       // TODO: the timeout value shall be configurable using .json file too (t6904691).
       const cmd =
         `${this._config.remoteServerCommand} --workspace=${this._config.cwd}` +
-        ` --common-name=${this._config.host} --json-output-file=${remoteTempFile} -t 60`;
+        ` --common-name=${this._config
+          .host} --json-output-file=${remoteTempFile} -t 60`;
 
       this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
         if (err) {

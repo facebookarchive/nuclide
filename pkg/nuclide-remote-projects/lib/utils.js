@@ -10,9 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  RemoteConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/RemoteConnection';
+import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';

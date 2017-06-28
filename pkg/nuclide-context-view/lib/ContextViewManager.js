@@ -19,8 +19,7 @@ import type {ContextProvider} from './types';
 
 import invariant from 'assert';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import observePaneItemVisibility
-  from 'nuclide-commons-atom/observePaneItemVisibility';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {arrayCompact} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';

@@ -24,12 +24,8 @@ import type {
   FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
-import type {
-  SingleFileLanguageService,
-} from '../../nuclide-language-service-rpc';
-import type {
-  NuclideEvaluationExpression,
-} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 
@@ -619,9 +615,10 @@ export function processAutocompleteItem(
   flowItem: FlowAutocompleteItem,
 ): Completion {
   // Truncate long types for readability
-  const description = flowItem.type.length < 80
-    ? flowItem.type
-    : flowItem.type.substring(0, 80) + ' ...';
+  const description =
+    flowItem.type.length < 80
+      ? flowItem.type
+      : flowItem.type.substring(0, 80) + ' ...';
   let result = {
     description,
     displayText: flowItem.name,
@@ -633,7 +630,9 @@ export function processAutocompleteItem(
     const rightParamStrings = funcDetails.params.map(
       param => `${param.name}: ${param.type}`,
     );
-    let snippetArgs = `(${getSnippetString(funcDetails.params.map(param => param.name))})`;
+    let snippetArgs = `(${getSnippetString(
+      funcDetails.params.map(param => param.name),
+    )})`;
     let leftLabel = funcDetails.return_type;
     let rightLabel = `(${rightParamStrings.join(', ')})`;
     if (!getConfig('functionSnippetShouldIncludeArguments')) {

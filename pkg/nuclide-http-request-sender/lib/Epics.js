@@ -29,9 +29,10 @@ export function sendHttpRequest(
         invariant(action.type === Actions.SEND_REQUEST);
         const credentials = 'include'; // We always want to send cookies.
         const {uri, method, headers, body} = store.getState();
-        const options = method === 'POST'
-          ? {method, credentials, headers, body}
-          : {method, credentials, headers};
+        const options =
+          method === 'POST'
+            ? {method, credentials, headers, body}
+            : {method, credentials, headers};
         track('nuclide-http-request-sender:http-request', {uri, options});
         xfetch(uri, options);
       })

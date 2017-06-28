@@ -9,12 +9,9 @@
  * @format
  */
 
-import type FileTreeContextMenu
-  from '../../nuclide-file-tree/lib/FileTreeContextMenu';
+import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {TestRunner} from './types';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
@@ -36,7 +33,9 @@ const FILE_TREE_CONTEXT_MENU_PRIORITY = 200;
 function limitString(str: string, length?: number = 20): string {
   const strLength = str.length;
   return strLength > length
-    ? `${str.substring(0, length / 2)}…${str.substring(str.length - length / 2)}`
+    ? `${str.substring(0, length / 2)}…${str.substring(
+        str.length - length / 2,
+      )}`
     : str;
 }
 

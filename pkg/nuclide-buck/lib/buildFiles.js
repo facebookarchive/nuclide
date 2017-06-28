@@ -15,9 +15,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 

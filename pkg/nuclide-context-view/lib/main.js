@@ -12,9 +12,7 @@
 import type {ContextProvider, NuclideContextView} from './types';
 import type {DefinitionProvider} from 'atom-ide-ui';
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
 import {ContextViewManager, WORKSPACE_VIEW_URI} from './ContextViewManager';
 import {Disposable, CompositeDisposable} from 'atom';
@@ -75,7 +73,8 @@ export function getHomeFragments(): HomeFragments {
     feature: {
       title: 'Context View',
       icon: 'info',
-      description: 'Easily navigate between symbols and their definitions in your code',
+      description:
+        'Easily navigate between symbols and their definitions in your code',
       command: () => {
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),

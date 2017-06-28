@@ -15,9 +15,7 @@ import type {TextEdit} from './HackConnectionService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HackCompletionsResult} from './rpc-types';
-import type {
-  AutocompleteResult,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {runCommand, spawn} from 'nuclide-commons/process';
@@ -284,9 +282,9 @@ export function closeProcesses(fileCache: FileCache): void {
   logger.info('Hack closeProcesses');
   if (processes.has(fileCache)) {
     logger.info(
-      `Shutting down HackProcesses ${Array.from(processes
-          .get(fileCache)
-          .keys()).join(',')}`,
+      `Shutting down HackProcesses ${Array.from(
+        processes.get(fileCache).keys(),
+      ).join(',')}`,
     );
     processes.delete(fileCache);
   }

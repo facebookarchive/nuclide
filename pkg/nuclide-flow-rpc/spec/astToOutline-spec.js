@@ -25,10 +25,8 @@ import toplevelASTOld from './fixtures/toplevel-ast-old.json';
 import toplevelAST34 from './fixtures/toplevel-ast-v0.34.json';
 import exportsASTOld from './fixtures/exports-ast-old.json';
 import exportsAST34 from './fixtures/exports-ast-v0.34.json';
-import exportDefaultArrowFuncAST34
-  from './fixtures/export-default-arrow-func-v0.34.json';
-import exportDefaultAnonymousFuncAST34
-  from './fixtures/export-default-anonymous-func-v0.34.json';
+import exportDefaultArrowFuncAST34 from './fixtures/export-default-arrow-func-v0.34.json';
+import exportDefaultAnonymousFuncAST34 from './fixtures/export-default-anonymous-func-v0.34.json';
 import typesASTOld from './fixtures/types-ast-old.json';
 import typesAST34 from './fixtures/types-ast-v0.34.json';
 

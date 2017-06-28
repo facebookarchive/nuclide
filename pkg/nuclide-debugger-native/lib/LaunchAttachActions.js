@@ -16,8 +16,7 @@ import type {
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {AttachProcessInfo} from './AttachProcessInfo';

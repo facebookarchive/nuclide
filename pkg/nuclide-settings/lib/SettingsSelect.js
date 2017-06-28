@@ -43,15 +43,23 @@ export default class SettingsSelect extends React.Component {
     const optionElements = [];
     if (options.enum) {
       options.enum.forEach((option, i) => {
-        optionElements.push(<option value={option} key={i}>{option}</option>);
+        optionElements.push(
+          <option value={option} key={i}>
+            {option}
+          </option>,
+        );
       });
     }
 
     return (
       <div>
         <label className="control-label">
-          <div className="setting-title">{title}</div>
-          <div className="setting-description">{description}</div>
+          <div className="setting-title">
+            {title}
+          </div>
+          <div className="setting-description">
+            {description}
+          </div>
         </label>
         <select
           className="form-control"

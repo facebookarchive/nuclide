@@ -83,16 +83,17 @@ export default class BuckToolbarTargetSelector extends React.Component {
     let cachedAliases = this._projectAliasesCache.get(buckRoot);
     if (cachedAliases == null) {
       const buckService = getBuckService(buckRoot);
-      cachedAliases = buckService == null
-        ? Promise.resolve([])
-        : buckService
-            .listAliases(buckRoot)
-            // Sort in alphabetical order.
-            .then(aliases =>
-              aliases.sort((a, b) =>
-                a.toLowerCase().localeCompare(b.toLowerCase()),
-              ),
-            );
+      cachedAliases =
+        buckService == null
+          ? Promise.resolve([])
+          : buckService
+              .listAliases(buckRoot)
+              // Sort in alphabetical order.
+              .then(aliases =>
+                aliases.sort((a, b) =>
+                  a.toLowerCase().localeCompare(b.toLowerCase()),
+                ),
+              );
       this._projectAliasesCache.set(buckRoot, cachedAliases);
     }
     return cachedAliases;
@@ -111,24 +112,26 @@ export default class BuckToolbarTargetSelector extends React.Component {
       return this._cachedOwners;
     }
     const buckService = getBuckService(buckRoot);
-    this._cachedOwners = buckService == null
-      ? Promise.resolve([])
-      : buckService
-          .getOwners(buckRoot, path)
-          .then(
-            // Strip off the optional leading "//" to match typical user input.
-            owners =>
-              owners.map(
-                owner => (owner.startsWith('//') ? owner.substring(2) : owner),
-              ),
-          )
-          .catch(err => {
-            getLogger('nuclide-buck').error(
-              `Error getting Buck owners for ${path}`,
-              err,
-            );
-            return [];
-          });
+    this._cachedOwners =
+      buckService == null
+        ? Promise.resolve([])
+        : buckService
+            .getOwners(buckRoot, path)
+            .then(
+              // Strip off the optional leading "//" to match typical user input.
+              owners =>
+                owners.map(
+                  owner =>
+                    owner.startsWith('//') ? owner.substring(2) : owner,
+                ),
+            )
+            .catch(err => {
+              getLogger('nuclide-buck').error(
+                `Error getting Buck owners for ${path}`,
+                err,
+              );
+              return [];
+            });
     this._cachedOwnersPath = path;
     return this._cachedOwners;
   }

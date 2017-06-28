@@ -41,7 +41,9 @@ export class TreeItem extends React.Component {
         ref={liNode => (this._liNode = liNode)}>
         {selected && typeof children === 'string'
           ? // String children must be wrapped to receive correct styles when selected.
-            <span>{children}</span>
+            <span>
+              {children}
+            </span>
           : children}
       </li>
     );
@@ -96,7 +98,7 @@ type TreeListProps = {
   showArrows?: boolean,
   hasFlatChildren?: boolean,
 };
-export const TreeList = (props: TreeListProps) => (
+export const TreeList = (props: TreeListProps) =>
   <ul
     className={classnames(
       props.className,
@@ -107,5 +109,4 @@ export const TreeList = (props: TreeListProps) => (
       'list-tree',
     )}>
     {props.children}
-  </ul>
-);
+  </ul>;

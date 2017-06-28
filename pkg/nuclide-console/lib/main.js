@@ -28,9 +28,7 @@ import type {
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {
-  viewableFromReactElement,
-} from '../../commons-atom/viewableFromReactElement';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   combineEpics,
   createEpicMiddleware,
@@ -294,9 +292,10 @@ function deserializeAppState(rawState: ?Object): AppState {
   return {
     executors: new Map(),
     currentExecutorId: null,
-    records: rawState && rawState.records
-      ? rawState.records.map(deserializeRecord)
-      : [],
+    records:
+      rawState && rawState.records
+        ? rawState.records.map(deserializeRecord)
+        : [],
     history: [],
     providers: new Map(),
     providerStatuses: new Map(),

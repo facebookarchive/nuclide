@@ -10,14 +10,9 @@
  */
 
 import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as GraphQLService
-  from '../../nuclide-graphql-rpc/lib/GraphQLService';
+import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
 
 import {
   AtomLanguageService,

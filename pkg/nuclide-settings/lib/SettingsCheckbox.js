@@ -47,9 +47,13 @@ export default class SettingsCheckbox extends React.Component {
             onChange={this._handleChange}
             type="checkbox"
           />
-          <div className="setting-title">{title}</div>
+          <div className="setting-title">
+            {title}
+          </div>
         </label>
-        <div className="setting-description">{description}</div>
+        <div className="setting-description">
+          {description}
+        </div>
       </div>
     );
   }

@@ -12,12 +12,8 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
-import type {
-  HostServices,
-} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -38,18 +34,14 @@ import type {
   AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {
-  NuclideEvaluationExpression,
-} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {HackDiagnosticsMessage} from './HackConnectionService';
 
 import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import invariant from 'assert';
-import {
-  createMultiLspLanguageService,
-} from '../../nuclide-vscode-language-service';
+import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service';
 import {callHHClient} from './HackHelpers';
 import {
   findHackConfigDir,

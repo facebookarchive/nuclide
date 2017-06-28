@@ -43,8 +43,7 @@ import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
-import getPreviewDatatipFromDefinitionResult
-  from './getPreviewDatatipFromDefinitionResult';
+import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
 
 export type {
   Definition,
@@ -128,9 +127,10 @@ class Activation {
         definition.name != null,
         'must include name when returning multiple definitions',
       );
-      const filePath = definition.projectRoot == null
-        ? definition.path
-        : nuclideUri.relative(definition.projectRoot, definition.path);
+      const filePath =
+        definition.projectRoot == null
+          ? definition.path
+          : nuclideUri.relative(definition.projectRoot, definition.path);
       return `${definition.name} (${filePath})`;
     }
 

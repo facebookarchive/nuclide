@@ -85,7 +85,8 @@ describe('ClangServer', () => {
                   file: nuclideUri.join(__dirname, 'fixtures/test.cpp'),
                 },
                 ranges: [],
-                spelling: 'candidate function not viable: requires 0 arguments, but 1 was provided',
+                spelling:
+                  'candidate function not viable: requires 0 arguments, but 1 was provided',
               },
             ],
           },

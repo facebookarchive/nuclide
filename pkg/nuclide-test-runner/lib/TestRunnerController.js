@@ -105,7 +105,8 @@ export class TestRunnerController {
     const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
     if (!selectedTestRunner) {
       logger.warn(
-        `No test runner selected. Active test runners: ${this._testRunners.size}`,
+        `No test runner selected. Active test runners: ${this._testRunners
+          .size}`,
       );
       return;
     }

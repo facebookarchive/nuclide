@@ -57,7 +57,8 @@ function BasicExample(): React.Element<any> {
 
 export const MultiRootChangedFilesViewExample = {
   sectionName: 'MultiRootChangedFilesView',
-  description: 'Renders a list of changed files, across one or more directories.',
+  description:
+    'Renders a list of changed files, across one or more directories.',
   examples: [
     {
       title: 'Basic example',

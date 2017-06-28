@@ -50,8 +50,8 @@ const STEP_OVER_ICON = (
     <path
       d={
         'M83.8,54.7c-6.5-16.6-20.7-28.1-37.2-28.1c-19.4,0-35.6,16-39.9,' +
-          '37.3l11.6,2.9c3-16.2,14.5-28.2,28.2-28.2 c11,0,20.7,7.8,25.6,' +
-          '19.3l-9.6,2.7l20.8,14.7L93.7,52L83.8,54.7z'
+        '37.3l11.6,2.9c3-16.2,14.5-28.2,28.2-28.2 c11,0,20.7,7.8,25.6,' +
+        '19.3l-9.6,2.7l20.8,14.7L93.7,52L83.8,54.7z'
       }
     />
   </svg>
@@ -159,9 +159,10 @@ export class DebuggerSteppingComponent extends React.Component {
     }
 
     // ChromeActionRegistryActions.PAUSE actually toggles paused state.
-    const actionId = this.state.debuggerMode === DebuggerMode.RUNNING
-      ? ChromeActionRegistryActions.PAUSE
-      : ChromeActionRegistryActions.RUN;
+    const actionId =
+      this.state.debuggerMode === DebuggerMode.RUNNING
+        ? ChromeActionRegistryActions.PAUSE
+        : ChromeActionRegistryActions.RUN;
     this.props.actions.triggerDebuggerAction(actionId);
   }
 
@@ -211,7 +212,8 @@ export class DebuggerSteppingComponent extends React.Component {
           disabled={isStopped}
           tooltip={{
             ...defaultTooltipOptions,
-            title: 'Restart the debugger using the same settings as the current debug session',
+            title:
+              'Restart the debugger using the same settings as the current debug session',
             keyBindingCommand: 'nuclide-debugger:restart-debugging',
           }}
           onClick={() => actions.restartDebugger()}
@@ -290,9 +292,9 @@ export class DebuggerSteppingComponent extends React.Component {
           {setSourcePathsButton}
         </ButtonGroup>
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
-          {customControlButtons.map((specification, i) => (
-            <Button {...specification} key={i} />
-          ))}
+          {customControlButtons.map((specification, i) =>
+            <Button {...specification} key={i} />,
+          )}
         </ButtonGroup>
         <Checkbox
           className="nuclide-debugger-exception-checkbox"

@@ -13,9 +13,7 @@ import type {DevicePanelServiceApi} from '../../nuclide-device-panel/lib/types';
 import type {Store} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {
-  ServerConnection,
-} from '../../nuclide-remote-connection/lib/ServerConnection';
+import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 import {getAdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getSdbServiceByNuclideUri} from '../../nuclide-remote-connection';
 import createPackage from 'nuclide-commons-atom/createPackage';

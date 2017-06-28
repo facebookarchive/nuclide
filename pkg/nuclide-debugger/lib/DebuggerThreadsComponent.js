@@ -40,13 +40,12 @@ type DebuggerThreadsComponentState = {
   threadsLoading: boolean,
 };
 
-const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
+const activeThreadIndicatorComponent = (props: {cellData: boolean}) =>
   <div className="nuclide-debugger-thread-list-item-current-indicator">
     {props.cellData
       ? <Icon icon="arrow-right" title="Selected Thread" />
       : null}
-  </div>
-);
+  </div>;
 
 export class DebuggerThreadsComponent extends React.Component {
   props: DebuggerThreadsComponentProps;
@@ -131,15 +130,16 @@ export class DebuggerThreadsComponent extends React.Component {
     }
 
     // Use a numerical comparison for the ID column, string compare for all the others.
-    const compare: any = sortedColumnName.toLowerCase() === 'id'
-      ? (a: ?number, b: ?number, isAsc: boolean): number => {
-          const cmp = (a || 0) - (b || 0);
-          return isAsc ? cmp : -cmp;
-        }
-      : (a: string, b: string, isAsc: boolean): number => {
-          const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
-          return isAsc ? cmp : -cmp;
-        };
+    const compare: any =
+      sortedColumnName.toLowerCase() === 'id'
+        ? (a: ?number, b: ?number, isAsc: boolean): number => {
+            const cmp = (a || 0) - (b || 0);
+            return isAsc ? cmp : -cmp;
+          }
+        : (a: string, b: string, isAsc: boolean): number => {
+            const cmp = a.toLowerCase().localeCompare(b.toLowerCase());
+            return isAsc ? cmp : -cmp;
+          };
 
     const getter = row => row.data[sortedColumnName];
     return [...threads].sort((a, b) => {
@@ -176,32 +176,33 @@ export class DebuggerThreadsComponent extends React.Component {
     ];
 
     // Individual debuggers can override the displayed columns.
-    const columns = this.props.customThreadColumns.length === 0
-      ? defaultColumns
-      : [activeThreadCol, ...this.props.customThreadColumns];
+    const columns =
+      this.props.customThreadColumns.length === 0
+        ? defaultColumns
+        : [activeThreadCol, ...this.props.customThreadColumns];
     const threadName = this.props.threadName.toLowerCase();
-    const emptyComponent = () => (
+    const emptyComponent = () =>
       <div className="nuclide-debugger-thread-list-empty">
         {threadList == null
           ? `(${threadName} unavailable)`
           : `no ${threadName} to display`}
-      </div>
-    );
-    const rows = threadList == null
-      ? []
-      : threadList.map((threadItem, i) => {
-          const cellData = {
-            data: {
-              ...threadItem,
-              isSelected: Number(threadItem.id) === selectedThreadId,
-            },
-          };
-          if (Number(threadItem.id) === selectedThreadId) {
-            // $FlowIssue className is an optional property of a table row
-            cellData.className = 'nuclide-debugger-thread-list-item-selected';
-          }
-          return cellData;
-        });
+      </div>;
+    const rows =
+      threadList == null
+        ? []
+        : threadList.map((threadItem, i) => {
+            const cellData = {
+              data: {
+                ...threadItem,
+                isSelected: Number(threadItem.id) === selectedThreadId,
+              },
+            };
+            if (Number(threadItem.id) === selectedThreadId) {
+              // $FlowIssue className is an optional property of a table row
+              cellData.className = 'nuclide-debugger-thread-list-item-selected';
+            }
+            return cellData;
+          });
 
     if (this.state.threadsLoading) {
       return (

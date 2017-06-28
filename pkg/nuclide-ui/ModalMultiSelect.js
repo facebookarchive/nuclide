@@ -144,9 +144,7 @@ export class ModalMultiSelect extends React.Component {
             <Button onClick={this._resetSelection}>Reset</Button>
           </ButtonGroup>
           <ButtonGroup>
-            <Button onClick={this._dismissModal}>
-              Cancel
-            </Button>
+            <Button onClick={this._dismissModal}>Cancel</Button>
             <Button
               buttonType={ButtonTypes.PRIMARY}
               onClick={this._confirmValues}>

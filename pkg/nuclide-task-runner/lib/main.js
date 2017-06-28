@@ -19,9 +19,7 @@ import type {
   ToolbarStatePreference,
 } from './types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {
-  DistractionFreeModeProvider,
-} from '../../nuclide-distraction-free-mode';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
 import type {ConsoleService} from '../../nuclide-console/lib/types';
 
 import syncAtomCommands from '../../commons-atom/sync-atom-commands';

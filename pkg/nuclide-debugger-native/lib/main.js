@@ -10,9 +10,7 @@
  */
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {
-  NuclideDebuggerProvider,
-} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideDebuggerProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DebuggerLaunchAttachProvider} from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
@@ -34,17 +32,12 @@ import {getConfig} from './utils';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'invariant';
-import type RemoteControlService
-  from '../../nuclide-debugger/lib/RemoteControlService';
+import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {
-  AttachProcessInfo,
-} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
+import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {
-  LaunchProcessInfo,
-} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
+import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -156,11 +149,14 @@ class Activation {
 
             const {qualifiedName, flavors} = buildTarget;
             const separator = flavors.length > 0 ? '#' : '';
-            const targetString = `${qualifiedName}${separator}${flavors.join(',')}`;
+            const targetString = `${qualifiedName}${separator}${flavors.join(
+              ',',
+            )}`;
             const runArguments = settings.runArguments || [];
-            const argString = runArguments.length === 0
-              ? ''
-              : ` with arguments "${runArguments.join(' ')}"`;
+            const argString =
+              runArguments.length === 0
+                ? ''
+                : ` with arguments "${runArguments.join(' ')}"`;
             return Observable.concat(
               processStream.ignoreElements(),
               Observable.fromPromise(

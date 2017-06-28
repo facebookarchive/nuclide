@@ -38,9 +38,10 @@ export class DefinitionPreviewView extends React.Component {
 
   constructor(props: ContextElementProps) {
     super(props);
-    const buffer = props.definition != null
-      ? bufferForUri(props.definition.path)
-      : new TextBuffer();
+    const buffer =
+      props.definition != null
+        ? bufferForUri(props.definition.path)
+        : new TextBuffer();
     const heightSetting = (featureConfig.get(
       'nuclide-definition-preview.editorHeight',
     ): any);

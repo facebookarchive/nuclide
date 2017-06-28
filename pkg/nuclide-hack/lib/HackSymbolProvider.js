@@ -104,8 +104,14 @@ export const HackSymbolProvider: GlobalProviderType = {
       : 'file icon no-icon';
     return (
       <div title={item.hoverText || ''}>
-        <span className={symbolClasses}><code>{name}</code></span>
-        <span className="omnisearch-symbol-result-filename">{filename}</span>
+        <span className={symbolClasses}>
+          <code>
+            {name}
+          </code>
+        </span>
+        <span className="omnisearch-symbol-result-filename">
+          {filename}
+        </span>
       </div>
     );
   },

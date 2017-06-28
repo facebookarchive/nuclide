@@ -79,9 +79,10 @@ export function getEpics(
       return actions.ofType('error').map(action => {
         invariant(action.type === 'error');
         const {source, error} = action.payload;
-        const sourceName = source === 'got-refactorings'
-          ? 'getting refactors'
-          : 'executing refactor';
+        const sourceName =
+          source === 'got-refactorings'
+            ? 'getting refactors'
+            : 'executing refactor';
         getLogger('nuclide-refactorizer').error(`Error ${sourceName}:`, error);
         atom.notifications.addError(`Error ${sourceName}`, {
           description: error.message,

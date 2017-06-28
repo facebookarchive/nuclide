@@ -27,10 +27,15 @@ export class TaskButton extends React.Component {
     if (!this.props.isRunning) {
       return this.props.name;
     }
-    const progress = this.props.progress != null
-      ? `${this.props.progress.toFixed(2)}%`
-      : 'running';
-    return <i>{this.props.name} ({progress}). Click to cancel</i>;
+    const progress =
+      this.props.progress != null
+        ? `${this.props.progress.toFixed(2)}%`
+        : 'running';
+    return (
+      <i>
+        {this.props.name} ({progress}). Click to cancel
+      </i>
+    );
   }
 
   render(): React.Element<any> {

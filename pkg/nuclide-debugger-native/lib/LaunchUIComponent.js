@@ -39,8 +39,11 @@ type StateType = {
   stdinFilePath: string,
 };
 
-export class LaunchUIComponent
-  extends React.Component<void, PropsType, StateType> {
+export class LaunchUIComponent extends React.Component<
+  void,
+  PropsType,
+  StateType,
+> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;

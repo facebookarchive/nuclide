@@ -120,9 +120,10 @@ export default class AutocompleteCacher<T> {
     currentRequest: atom$AutocompleteRequest,
   ): boolean {
     const {lastRequest} = session;
-    const shouldFilter = this._config.shouldFilter != null
-      ? this._config.shouldFilter
-      : defaultShouldFilter;
+    const shouldFilter =
+      this._config.shouldFilter != null
+        ? this._config.shouldFilter
+        : defaultShouldFilter;
     const charsSinceLastRequest =
       currentRequest.bufferPosition.column - lastRequest.bufferPosition.column;
     return (

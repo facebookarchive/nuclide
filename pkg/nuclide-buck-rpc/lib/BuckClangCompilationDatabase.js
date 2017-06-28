@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  ClangCompilationDatabase,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
@@ -156,9 +154,10 @@ class BuckClangCompilationDatabaseHandler {
       'compilation-database',
       ...this._params.flavorsForTarget,
     ];
-    const allArgs = this._params.args.length === 0
-      ? await this._getFallbackArgs(buckProjectRoot)
-      : this._params.args;
+    const allArgs =
+      this._params.args.length === 0
+        ? await this._getFallbackArgs(buckProjectRoot)
+        : this._params.args;
     const buildTarget = target + '#' + allFlavors.join(',');
     const buildReport = await BuckService.build(
       buckProjectRoot,

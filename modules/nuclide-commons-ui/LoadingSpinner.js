@@ -76,9 +76,10 @@ export class LoadingSpinner extends React.Component {
     }
 
     const ref = tooltip ? addTooltip(tooltip) : null;
-    const safeSize = size != null && LoadingSpinnerSizes.hasOwnProperty(size)
-      ? size
-      : LoadingSpinnerSizes.MEDIUM;
+    const safeSize =
+      size != null && LoadingSpinnerSizes.hasOwnProperty(size)
+        ? size
+        : LoadingSpinnerSizes.MEDIUM;
     const sizeClassname = LoadingSpinnerClassnames[safeSize];
     const newClassName = classnames(className, 'loading', sizeClassname);
     return <div className={newClassName} ref={ref} />;

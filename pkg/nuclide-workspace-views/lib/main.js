@@ -20,9 +20,7 @@ import type {
 } from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
-import {
-  getDocksWorkspaceViewsService,
-} from 'nuclide-commons-atom/workspace-views-compat';
+import {getDocksWorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
 import {
   combineEpics,
   createEpicMiddleware,

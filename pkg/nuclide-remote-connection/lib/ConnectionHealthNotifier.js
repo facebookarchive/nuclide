@@ -50,8 +50,8 @@ export class ConnectionHealthNotifier {
       dismissable: boolean,
       askToReload: boolean,
     ) => {
-      const {code, notification: existingNotification} = this
-        ._lastHeartbeatNotification || {};
+      const {code, notification: existingNotification} =
+        this._lastHeartbeatNotification || {};
       if (code && code === errorCode && dismissable) {
         // A dismissible heartbeat notification with this code is already active.
         return;
@@ -152,7 +152,9 @@ export class ConnectionHealthNotifier {
             HEARTBEAT_NOTIFICATION_ERROR,
             code,
             '**Nuclide Server Is Not Reachable**<br/>' +
-              `It could be running on a port that is not accessible: ${String(port)}.`,
+              `It could be running on a port that is not accessible: ${String(
+                port,
+              )}.`,
             /* dismissable */ true,
             /* askToReload */ false,
           );

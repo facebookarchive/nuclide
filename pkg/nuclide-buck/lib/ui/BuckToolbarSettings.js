@@ -47,9 +47,10 @@ export default class BuckToolbarSettings extends React.Component {
   }
 
   render(): React.Element<any> {
-    const extraSettingsUi = this.props.platformProviderSettings != null
-      ? this.props.platformProviderSettings.ui
-      : null;
+    const extraSettingsUi =
+      this.props.platformProviderSettings != null
+        ? this.props.platformProviderSettings.ui
+        : null;
     return (
       <Modal onDismiss={this.props.onDismiss}>
         <div className="block">
@@ -82,9 +83,7 @@ export default class BuckToolbarSettings extends React.Component {
           </div>
           <div style={{display: 'flex', justifyContent: 'flex-end'}}>
             <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>
-                Cancel
-              </Button>
+              <Button onClick={this.props.onDismiss}>Cancel</Button>
               <Button
                 buttonType={ButtonTypes.PRIMARY}
                 onClick={this._onSave.bind(this)}>

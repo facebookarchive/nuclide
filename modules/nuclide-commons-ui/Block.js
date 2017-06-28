@@ -17,6 +17,7 @@ type Props = {
 };
 
 /** A Block. */
-export const Block = (props: Props) => (
-  <div className="block">{props.children}</div>
-);
+export const Block = (props: Props) =>
+  <div className="block">
+    {props.children}
+  </div>;

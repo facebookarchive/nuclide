@@ -145,7 +145,8 @@ export class FileTreeToolbarComponent extends React.Component {
       <div
         className={classnames({
           'nuclide-file-tree-toolbar': true,
-          'nuclide-file-tree-toolbar-fader': workingSet.isEmpty() &&
+          'nuclide-file-tree-toolbar-fader':
+            workingSet.isEmpty() &&
             !this.state.selectionIsActive &&
             !this._store.isEditingWorkingSet(),
         })}>

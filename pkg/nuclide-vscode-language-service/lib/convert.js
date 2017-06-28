@@ -29,9 +29,7 @@ import type {
   Completion,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {
-  ShowNotificationLevel,
-} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {ShowNotificationLevel} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {
   TextDocumentIdentifier,
   Position,

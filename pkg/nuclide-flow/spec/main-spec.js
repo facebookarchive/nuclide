@@ -57,14 +57,16 @@ describe('serverStatusUpdatesToBusyMessages', () => {
           message: 'Flow server is busy (/local/root)',
         },
         {
-          message: 'Flow server is initializing (host.example.com:/remote/root)',
+          message:
+            'Flow server is initializing (host.example.com:/remote/root)',
         },
         {
           message: 'Flow server is busy (/local/root)',
           dispose: true,
         },
         {
-          message: 'Flow server is initializing (host.example.com:/remote/root)',
+          message:
+            'Flow server is initializing (host.example.com:/remote/root)',
           dispose: true,
         },
         {

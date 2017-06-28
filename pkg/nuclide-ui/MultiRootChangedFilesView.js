@@ -348,7 +348,9 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     } = this.props;
     if (fileStatusesByRoot.size === 0) {
       return (
-        <TreeList showArrows={true}><TreeItem>No changes</TreeItem></TreeList>
+        <TreeList showArrows={true}>
+          <TreeItem>No changes</TreeItem>
+        </TreeList>
       );
       // The 'showArrows' is so CSS styling gives this the same indent as
       // real changes do (which themselves have showArrows=true).
@@ -359,12 +361,10 @@ export class MultiRootChangedFilesView extends React.PureComponent {
         {Array.from(
           fileStatusesByRoot.entries(),
         ).map(([root, fileStatuses]) => {
-          const fileChanges = fileChangesByRoot == null
-            ? null
-            : fileChangesByRoot.get(root);
-          const checkedFiles = checkedFilesByRoot == null
-            ? null
-            : checkedFilesByRoot.get(root);
+          const fileChanges =
+            fileChangesByRoot == null ? null : fileChangesByRoot.get(root);
+          const checkedFiles =
+            checkedFilesByRoot == null ? null : checkedFilesByRoot.get(root);
           return (
             <ChangedFilesList
               checkedFiles={checkedFiles}

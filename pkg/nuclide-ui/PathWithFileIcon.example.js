@@ -18,7 +18,8 @@ function PathWithFileIconExample(): React.Element<any> {
     <div>
       <Block>
         <p>
-          Simply wrap paths in &lt;PathWithFileIcon /&gt; to get the appropriate icons:
+          Simply wrap paths in &lt;PathWithFileIcon /&gt; to get the appropriate
+          icons:
         </p>
         <div>
           <PathWithFileIcon path="maybe/some/javascript.js" />
@@ -36,7 +37,8 @@ function PathWithFileIconExample(): React.Element<any> {
 
 export const PathWithFileIconExamples = {
   sectionName: 'PathWithFileIcon',
-  description: 'Renders a file icon for a given path iff the file-icons package is installed.',
+  description:
+    'Renders a file icon for a given path iff the file-icons package is installed.',
   examples: [
     {
       title: 'File icon wrapper example',

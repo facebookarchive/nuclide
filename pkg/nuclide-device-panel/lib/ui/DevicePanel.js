@@ -37,11 +37,11 @@ export class DevicePanel extends React.Component {
   _createInfoTables(): React.Element<any>[] {
     return Array.from(
       this.props.infoTables.entries(),
-    ).map(([title, infoTable]) => (
+    ).map(([title, infoTable]) =>
       <div className="block" key={title}>
         <InfoTable title={title} table={infoTable} />
-      </div>
-    ));
+      </div>,
+    );
   }
 
   _createProcessTable(): React.Element<any> {
@@ -94,9 +94,7 @@ export class DevicePanel extends React.Component {
           <a
             className="nuclide-device-panel-text-with-icon"
             onClick={() => this.props.goToRootPanel()}>
-            <Icon icon="chevron-left">
-              Choose another device
-            </Icon>
+            <Icon icon="chevron-left">Choose another device</Icon>
           </a>
         </span>
       </div>
@@ -110,9 +108,7 @@ export class DevicePanel extends React.Component {
     return (
       <div className="block">
         <span className="nuclide-device-panel-text-with-icon nuclide-device-panel-disconnected-icon">
-          <Icon icon="primitive-dot">
-            Disconnected
-          </Icon>
+          <Icon icon="primitive-dot">Disconnected</Icon>
         </span>
       </div>
     );

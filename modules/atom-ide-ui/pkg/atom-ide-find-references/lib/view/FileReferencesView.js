@@ -69,7 +69,11 @@ export default class FileReferencesView extends React.Component {
 
       let caller;
       if (firstRef.name && firstRef.name === lastRef.name) {
-        caller = <span> in <code>{firstRef.name}</code></span>;
+        caller = (
+          <span>
+            {' '}in <code>{firstRef.name}</code>
+          </span>
+        );
       }
       const startRange = firstRef.range.start;
       const endRange = lastRef.range.end;
@@ -81,11 +85,7 @@ export default class FileReferencesView extends React.Component {
             {'Line '}
             {startRange.row + 1}
             :
-            {startRange.column + 1}
-            {' '}
-            -
-            {' '}
-            {endRange.row + 1}
+            {startRange.column + 1} - {endRange.row + 1}
             :
             {endRange.column + 1}
             {caller}

@@ -10,9 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  HostServices,
-} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 
 import {FileCache} from '../../nuclide-open-files-rpc';
 import {LspLanguageService} from './LspLanguageService';
@@ -54,7 +52,7 @@ export function createMultiLspLanguageService(
     const lsp = new LspLanguageService(
       logger,
       fileCache,
-      (await forkHostServices(host, logger)),
+      await forkHostServices(host, logger),
       languageId,
       command,
       args,

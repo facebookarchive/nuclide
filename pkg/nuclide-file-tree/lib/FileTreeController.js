@@ -113,7 +113,7 @@ export default class FileTreeController {
     for (
       let i = 0, c = VALID_FILTER_CHARS.charCodeAt(0);
       i < VALID_FILTER_CHARS.length;
-      i++, (c = VALID_FILTER_CHARS.charCodeAt(i))
+      i++, c = VALID_FILTER_CHARS.charCodeAt(i)
     ) {
       const char = String.fromCharCode(c);
       letterKeyBindings[
@@ -478,13 +478,16 @@ export default class FileTreeController {
           },
           Cancel: () => {},
         },
-        detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
+        detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(
+          os.EOL,
+        )}`,
         message,
       });
     } else {
       let message;
       if (rootPaths.size === 1) {
-        message = `The root directory '${rootPaths.first().nodeName}' can't be removed.`;
+        message = `The root directory '${rootPaths.first()
+          .nodeName}' can't be removed.`;
       } else {
         const rootPathNames = rootPaths
           .map(node => `'${node.nodeName}'`)

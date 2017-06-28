@@ -16,7 +16,7 @@ import {Block} from './Block';
 import {AtomInput} from './AtomInput';
 import {AtomTextEditor} from './AtomTextEditor';
 
-const AtomInputExample = (): React.Element<any> => (
+const AtomInputExample = (): React.Element<any> =>
   <div>
     <Block>
       <AtomInput
@@ -67,14 +67,14 @@ const AtomInputExample = (): React.Element<any> => (
         width={200}
       />
     </Block>
-  </div>
-);
+  </div>;
 
 const buffer1 = new TextBuffer({
   text: '/**\n * Hi!\n */\n\n// I am a TextBuffer.\nconst a = 42;',
 });
 const buffer2 = new TextBuffer({
-  text: '/**\n * Hi!\n */\n\n// I am a read-only, gutter-less TextBuffer.\nconst a = 42;',
+  text:
+    '/**\n * Hi!\n */\n\n// I am a read-only, gutter-less TextBuffer.\nconst a = 42;',
 });
 const editorWrapperStyle = {
   display: 'flex',
@@ -83,7 +83,7 @@ const editorWrapperStyle = {
   boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.3)',
 };
 
-const AtomTextEditorExample = (): React.Element<any> => (
+const AtomTextEditorExample = (): React.Element<any> =>
   <Block>
     <div style={editorWrapperStyle}>
       <AtomTextEditor
@@ -105,8 +105,7 @@ const AtomTextEditorExample = (): React.Element<any> => (
         textBuffer={buffer2}
       />
     </div>
-  </Block>
-);
+  </Block>;
 
 export const TextInputExamples = {
   sectionName: 'Text Inputs',

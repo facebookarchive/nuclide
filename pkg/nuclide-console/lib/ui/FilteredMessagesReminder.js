@@ -39,8 +39,8 @@ export default class FilteredMessagesReminder extends React.Component {
         <div style={{flex: 1}}>
           <pre>
             {filteredRecordCount}{' '}
-            {filteredRecordCount === 1 ? 'message is' : 'messages are'}{' '}
-            hidden by filters.
+            {filteredRecordCount === 1 ? 'message is' : 'messages are'} hidden
+            by filters.
           </pre>
         </div>
         <a href="#" onClick={this.handleClick}>

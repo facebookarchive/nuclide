@@ -14,9 +14,10 @@ import React from 'react';
 import {Block} from './Block';
 import {Table} from './Table';
 
-const Highlight42Component = (props: {data: ?number}): ?React.Element<any> => (
-  <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>{props.data}</div>
-);
+const Highlight42Component = (props: {data: ?number}): ?React.Element<any> =>
+  <div style={props.data === 42 ? {fontWeight: 'bold'} : {}}>
+    {props.data}
+  </div>;
 
 const TableExample = (): React.Element<any> => {
   const columns = [
@@ -151,9 +152,8 @@ class SortableTableExample extends React.Component {
     return (
       <Block>
         <Table
-          emptyComponent={() => (
-            <div>An optional, custom "empty message" component.</div>
-          )}
+          emptyComponent={() =>
+            <div>An optional, custom "empty message" component.</div>}
           columns={columns}
           rows={this.state.rows}
           sortable={true}

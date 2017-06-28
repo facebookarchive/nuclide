@@ -20,9 +20,10 @@ export function serialize(state: AppState): SerializedAppState {
       new Map(
         Array.from(state.locations.entries())
           .map(([id, location]) => {
-            const serialized = typeof location.serialize === 'function'
-              ? location.serialize()
-              : null;
+            const serialized =
+              typeof location.serialize === 'function'
+                ? location.serialize()
+                : null;
             return [id, serialized];
           })
           .filter(([, serialized]) => serialized != null),

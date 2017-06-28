@@ -284,9 +284,8 @@ export class PanelLocation extends SimpleModel<State> {
     return {
       deserializer: 'PanelLocation',
       data: {
-        paneContainer: this._paneContainer == null
-          ? null
-          : this._paneContainer.serialize(),
+        paneContainer:
+          this._paneContainer == null ? null : this._paneContainer.serialize(),
         size: this._size,
         active: this.state.active,
       },

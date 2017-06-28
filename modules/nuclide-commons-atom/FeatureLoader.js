@@ -151,9 +151,10 @@ export default class FeatureLoader {
         // this point `atom.config.get` returns the user set value. If it's
         // `undefined`, then the user has not set it.
         const enabled = atom.config.get(this.useKeyPathForFeature(feature));
-        const shouldEnable = enabled == null
-          ? this._config.use.properties[feature.pkg.name].default
-          : enabled;
+        const shouldEnable =
+          enabled == null
+            ? this._config.use.properties[feature.pkg.name].default
+            : enabled;
 
         if (shouldEnable) {
           atom.packages.loadPackage(feature.dirname);

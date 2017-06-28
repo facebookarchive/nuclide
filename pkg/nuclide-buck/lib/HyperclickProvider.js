@@ -18,9 +18,7 @@ import type {Point} from 'atom';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import {getBuildFileName} from './buildFiles';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import escapeStringRegExp from 'escape-string-regexp';

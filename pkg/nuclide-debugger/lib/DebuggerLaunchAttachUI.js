@@ -47,8 +47,11 @@ type StateType = {
   }>,
 };
 
-export class DebuggerLaunchAttachUI
-  extends React.Component<void, PropsType, StateType> {
+export class DebuggerLaunchAttachUI extends React.Component<
+  void,
+  PropsType,
+  StateType,
+> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -164,9 +167,10 @@ export class DebuggerLaunchAttachUI
 
     let providerContent = null;
     if (tabs.length > 0) {
-      let selectedTab = this.state.selectedProviderTab != null
-        ? this.state.selectedProviderTab
-        : this.state.enabledProviders[0].debuggerName;
+      let selectedTab =
+        this.state.selectedProviderTab != null
+          ? this.state.selectedProviderTab
+          : this.state.enabledProviders[0].debuggerName;
       let provider = this.state.enabledProviders.find(
         p => p.debuggerName === selectedTab,
       );

@@ -68,13 +68,12 @@ export class Toolbar extends React.Component {
       }
     }
 
-    const ButtonComponent = buttonProps => (
+    const ButtonComponent = buttonProps =>
       <TaskRunnerButton
         {...buttonProps}
         disabled={this.props.taskIsRunning}
         iconComponent={this.props.iconComponent}
-      />
-    );
+      />;
 
     return (
       <div className={`${className} padded`}>
@@ -170,11 +169,8 @@ function NoTaskRunnersMessage(): ?React.Element<any> {
   const featureLink = 'https://nuclide.io/docs/features/task-runner/';
   return (
     <span style={{'white-space': 'nowrap'}}>
-      Install and enable a
-      {' '}
-      <a href={featureLink}>task runner</a>
-      {' '}
-      to use this toolbar
+      Install and enable a <a href={featureLink}>task runner</a> to use this
+      toolbar
     </span>
   );
 }

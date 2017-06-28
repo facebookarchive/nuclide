@@ -14,9 +14,7 @@ import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
 import invariant from 'assert';
@@ -26,9 +24,7 @@ import createPackage from 'nuclide-commons-atom/createPackage';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import disablePackage from '../../commons-atom/disablePackage';
-import {
-  viewableFromReactElement,
-} from '../../commons-atom/viewableFromReactElement';
+import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {macrotask, nextAnimationFrame} from 'nuclide-commons/observable';
 

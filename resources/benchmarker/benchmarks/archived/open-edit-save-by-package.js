@@ -25,7 +25,8 @@ const PACKAGES = [
 const REPETITIONS = 3;
 
 module.exports = {
-  description: 'times how long a 10k file takes to open, edit, save, close with different packages',
+  description:
+    'times how long a 10k file takes to open, edit, save, close with different packages',
   columns: [
     'packages',
     'activate',

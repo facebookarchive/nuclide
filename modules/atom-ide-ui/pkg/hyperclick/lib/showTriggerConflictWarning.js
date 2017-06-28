@@ -22,13 +22,15 @@ export default function showTriggerConflictWarning(): atom$Notification {
   const {platform} = process;
   const commandOrMeta = platform === 'darwin' ? 'command' : 'meta';
   const optionOrAlt = platform === 'darwin' ? 'option' : 'alt';
-  const alternative = triggerKeys === 'altKey,metaKey'
-    ? commandOrMeta
-    : `${commandOrMeta} + ${optionOrAlt}`;
+  const alternative =
+    triggerKeys === 'altKey,metaKey'
+      ? commandOrMeta
+      : `${commandOrMeta} + ${optionOrAlt}`;
   return atom.notifications.addInfo(
     `Hyperclick (jump to definition) is using ${triggerKeyDescription}`,
     {
-      description: `If you want to use ${triggerKeyDescription} for multiple cursors instead,` +
+      description:
+        `If you want to use ${triggerKeyDescription} for multiple cursors instead,` +
         ' change the Hyperclick "Trigger Keys" setting.<br /><br />' +
         `(You can still use ${alternative} + click for multiple cursors.)`,
       dismissable: true,

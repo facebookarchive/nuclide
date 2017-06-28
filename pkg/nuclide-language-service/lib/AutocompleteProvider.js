@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  AutocompleteCacherConfig,
-} from '../../commons-atom/AutocompleteCacher';
+import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
 
 import type {
   AutocompleteResult,

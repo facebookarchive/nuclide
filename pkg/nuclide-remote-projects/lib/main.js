@@ -10,9 +10,7 @@
  */
 
 import type {HomeFragments} from '../../nuclide-home/lib/types';
-import type {
-  RemoteConnectionConfiguration,
-} from '../../nuclide-remote-connection/lib/RemoteConnection';
+import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 
@@ -350,7 +348,8 @@ async function reloadRemoteProjects(
 
 function shutdownServersAndRestartNuclide(): void {
   atom.confirm({
-    message: 'This will shutdown your Nuclide servers and restart Atom, ' +
+    message:
+      'This will shutdown your Nuclide servers and restart Atom, ' +
       'discarding all unsaved changes. Continue?',
     buttons: {
       'Shutdown & Restart': async () => {

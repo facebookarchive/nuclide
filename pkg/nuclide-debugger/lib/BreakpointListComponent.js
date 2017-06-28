@@ -106,8 +106,8 @@ export class BreakpointListComponent extends React.Component {
         const title = !enabled
           ? 'Disabled breakpoint'
           : !resolved
-              ? 'Unresolved Breakpoint'
-              : `Breakpoint at ${label} (resolved)`;
+            ? 'Unresolved Breakpoint'
+            : `Breakpoint at ${label} (resolved)`;
         const content = (
           <div
             className={classnames('nuclide-debugger-breakpoint', {
@@ -138,7 +138,9 @@ export class BreakpointListComponent extends React.Component {
           </div>
         );
         return (
-          <ListViewItem key={label} value={breakpoint}>{content}</ListViewItem>
+          <ListViewItem key={label} value={breakpoint}>
+            {content}
+          </ListViewItem>
         );
       });
     return (

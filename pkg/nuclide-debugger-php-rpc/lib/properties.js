@@ -22,9 +22,7 @@ import invariant from 'assert';
 
 import type {ObjectId} from './ObjectId';
 import type {DbgpProperty} from './DbgpSocket';
-import type {
-  PropertyDescriptor,
-} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {PropertyDescriptor} from '../../nuclide-debugger-base/lib/protocol-types';
 
 export function convertProperties(
   id: ObjectId,

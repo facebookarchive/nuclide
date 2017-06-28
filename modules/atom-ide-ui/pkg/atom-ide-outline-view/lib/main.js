@@ -11,9 +11,7 @@
  */
 
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
-import type {
-  WorkspaceViewsService,
-} from 'nuclide-commons-atom/workspace-views-compat';
+import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
 
 import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
 import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
@@ -21,9 +19,7 @@ import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
-import {
-  consumeWorkspaceViewsCompat,
-} from 'nuclide-commons-atom/workspace-views-compat';
+import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';

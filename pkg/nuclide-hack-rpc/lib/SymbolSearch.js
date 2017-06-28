@@ -10,9 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  SymbolResult,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {SymbolResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {HHSearchPosition} from './types';
 
 import {findHackConfigDir} from './hack-config';

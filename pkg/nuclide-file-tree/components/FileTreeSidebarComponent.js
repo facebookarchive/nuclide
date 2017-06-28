@@ -16,8 +16,7 @@ import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 import {Emitter} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import observePaneItemVisibility
-  from 'nuclide-commons-atom/observePaneItemVisibility';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Observable} from 'rxjs';
 import {ShowUncommittedChangesKind} from '../lib/Constants';
@@ -46,12 +45,8 @@ import {OpenFilesListComponent} from './OpenFilesListComponent';
 import {LockableHeight} from './LockableHeightComponent';
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import {
-  MultiRootChangedFilesView,
-} from '../../nuclide-ui/MultiRootChangedFilesView';
-import {
-  PanelComponentScroller,
-} from 'nuclide-commons-ui/PanelComponentScroller';
+import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
+import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {
   nextAnimationFrame,
   toggle,

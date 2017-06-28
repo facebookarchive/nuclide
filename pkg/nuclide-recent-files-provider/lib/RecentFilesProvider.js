@@ -141,7 +141,9 @@ export const RecentFilesProvider: Provider = {
             path={filename}>
             {filePath}
           </PathWithFileIcon>
-          <span className="recent-files-provider-file-name">{filename}</span>
+          <span className="recent-files-provider-file-name">
+            {filename}
+          </span>
         </div>
         <div className="recent-files-provider-datetime-container">
           <span className="recent-files-provider-datetime-label">

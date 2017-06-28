@@ -145,14 +145,14 @@ function _convertArgsToMultiLineSnippet(
   );
 
   return args.reduce((body, arg, index) => {
-    const spacesCnt = index === 0
-      ? 0
-      : colonPosition - arg.offset - arg.text.length;
+    const spacesCnt =
+      index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
     if (spacesCnt < 0) {
       throw Error('This is a bug! Spaces count is negative.');
     }
 
-    const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${arg.placeholder}}\n`;
+    const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index +
+      1}:${arg.placeholder}}\n`;
     if (index > 0 && line[colonPosition - arg.offset] !== ':') {
       throw Error('This is a bug! Colons are not aligned!');
     }

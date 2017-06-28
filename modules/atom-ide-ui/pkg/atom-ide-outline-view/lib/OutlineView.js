@@ -26,9 +26,7 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
-import {
-  PanelComponentScroller,
-} from 'nuclide-commons-ui/PanelComponentScroller';
+import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {Message, MessageTypes} from 'nuclide-commons-ui/Message';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 
@@ -166,8 +164,8 @@ class OutlineViewComponent extends React.Component {
               title="No outline available"
               message={
                 'Outline view does not currently support ' +
-                  outline.grammar +
-                  '.'
+                outline.grammar +
+                '.'
               }
             />;
       case 'provider-no-outline':
@@ -285,14 +283,15 @@ function renderItem(
       }),
     );
   } else if (outline.plainText != null) {
-    const textWithMatching = searchResult && searchResult.matchingCharacters
-      ? groupMatchIndexes(
-          outline.plainText,
-          searchResult.matchingCharacters,
-          renderMatchedSubsequence,
-          renderUnmatchedSubsequence,
-        )
-      : outline.plainText;
+    const textWithMatching =
+      searchResult && searchResult.matchingCharacters
+        ? groupMatchIndexes(
+            outline.plainText,
+            searchResult.matchingCharacters,
+            renderMatchedSubsequence,
+            renderUnmatchedSubsequence,
+          )
+        : outline.plainText;
     r.push(...textWithMatching);
   } else {
     r.push('Missing text');
@@ -324,7 +323,11 @@ function renderTextToken(
 }
 
 function renderSubsequence(seq: string, props: Object): React.Element<any> {
-  return <span {...props}>{seq}</span>;
+  return (
+    <span {...props}>
+      {seq}
+    </span>
+  );
 }
 
 function renderUnmatchedSubsequence(
@@ -355,20 +358,18 @@ function renderTrees(
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
-    (
-      <ul className="list-tree" style={{position: 'relative'}}>
-        {outlines.map((outline, index) => {
-          const result = searchResults.get(outline);
-          return !result || result.visible
-            ? <OutlineTree
-                editor={editor}
-                outline={outline}
-                key={index}
-                searchResults={searchResults}
-              />
-            : null;
-        })}
-      </ul>
-    )
+    <ul className="list-tree" style={{position: 'relative'}}>
+      {outlines.map((outline, index) => {
+        const result = searchResults.get(outline);
+        return !result || result.visible
+          ? <OutlineTree
+              editor={editor}
+              outline={outline}
+              key={index}
+              searchResults={searchResults}
+            />
+          : null;
+      })}
+    </ul>
   );
 }

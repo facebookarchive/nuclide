@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  ContinueToLocationRequest,
-} from '../../nuclide-debugger-base/lib/protocol-types.js';
+import type {ContinueToLocationRequest} from '../../nuclide-debugger-base/lib/protocol-types.js';
 
 import invariant from 'assert';
 import {updateSettings} from './settings';
@@ -170,9 +168,10 @@ export class DebuggerHandler extends Handler {
   async _getThreadStack(): Object {
     const enabledConnection = this._connectionMultiplexer.getEnabledConnectionId();
     return {
-      callFrames: enabledConnection == null
-        ? []
-        : await this._getStackFrames(enabledConnection),
+      callFrames:
+        enabledConnection == null
+          ? []
+          : await this._getStackFrames(enabledConnection),
     };
   }
 
@@ -416,9 +415,10 @@ export class DebuggerHandler extends Handler {
         break;
       case ConnectionMultiplexerNotification.RequestUpdate:
         invariant(params);
-        const frame = params.status === ConnectionStatus.Break
-          ? await this._getTopFrameForConnection(params.id)
-          : null;
+        const frame =
+          params.status === ConnectionStatus.Break
+            ? await this._getTopFrameForConnection(params.id)
+            : null;
         this.sendMethod('Debugger.threadUpdated', {
           thread: {
             id: String(params.id),
@@ -450,9 +450,10 @@ export class DebuggerHandler extends Handler {
     }
     const enabledConnectionId = this._connectionMultiplexer.getEnabledConnectionId();
     this.sendMethod('Debugger.paused', {
-      callFrames: enabledConnectionId != null
-        ? await this._getStackFrames(enabledConnectionId)
-        : [],
+      callFrames:
+        enabledConnectionId != null
+          ? await this._getStackFrames(enabledConnectionId)
+          : [],
       reason: 'breakpoint', // TODO: better reason?
       threadSwitchMessage: requestSwitchMessage,
       data: {},

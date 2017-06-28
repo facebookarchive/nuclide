@@ -10,11 +10,8 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type WatchmanSubscription
-  from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
-import type {
-  FileChange,
-} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type WatchmanSubscription from '../../nuclide-watchman-helpers/lib/WatchmanSubscription';
+import type {FileChange} from '../../nuclide-watchman-helpers/lib/WatchmanClient';
 import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -108,7 +105,9 @@ async function getRealPath(
   }
   if (stat.isFile() !== isFile) {
     getLogger('nuclide-filewatcher-rpc').warn(
-      `FileWatcherService: expected ${entityPath} to be a ${isFile ? 'file' : 'directory'}`,
+      `FileWatcherService: expected ${entityPath} to be a ${isFile
+        ? 'file'
+        : 'directory'}`,
     );
   }
   return fsPromise.realpath(entityPath);

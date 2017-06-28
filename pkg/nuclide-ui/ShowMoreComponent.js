@@ -38,8 +38,8 @@ export class ShowMoreComponent extends React.Component {
     super(props);
     this.state = {
       // Defaults to false if showMoreByDefault not specified
-      showingMore: this.props.showMoreByDefault != null &&
-        this.props.showMoreByDefault,
+      showingMore:
+        this.props.showMoreByDefault != null && this.props.showMoreByDefault,
       currentHeight: 0,
     };
     (this: any)._toggleShowMore = this._toggleShowMore.bind(this);
@@ -65,9 +65,8 @@ export class ShowMoreComponent extends React.Component {
           overflowY: 'hidden',
         }
       : {};
-    const displayNoneIfBelowMaxHeight = currentHeight <= maxHeight
-      ? {display: 'none'}
-      : {};
+    const displayNoneIfBelowMaxHeight =
+      currentHeight <= maxHeight ? {display: 'none'} : {};
     const showMoreButton = (
       <div
         className="nuclide-ui-show-more-button-container"

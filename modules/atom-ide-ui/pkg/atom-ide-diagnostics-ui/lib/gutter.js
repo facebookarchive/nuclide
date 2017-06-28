@@ -11,9 +11,7 @@
  */
 
 import type {FileMessageUpdate} from '../../atom-ide-diagnostics';
-import type {
-  FileDiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/rpc-types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 
@@ -21,9 +19,7 @@ import {Range} from 'atom';
 import invariant from 'assert';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {
-  goToLocation as atomGoToLocation,
-} from 'nuclide-commons-atom/go-to-location';
+import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons-atom/analytics';
 import {DiagnosticsPopup} from './DiagnosticsPopup';
@@ -103,9 +99,10 @@ export function applyUpdateToEditor(
   }
 
   for (const message of update.messages) {
-    const wordRange = message.range != null && message.range.isEmpty()
-      ? wordAtPosition(editor, message.range.start)
-      : null;
+    const wordRange =
+      message.range != null && message.range.isEmpty()
+        ? wordAtPosition(editor, message.range.start)
+        : null;
     const range = wordRange != null ? wordRange.range : message.range;
 
     const highlightCssClass = classnames(

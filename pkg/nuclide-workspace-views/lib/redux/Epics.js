@@ -19,9 +19,7 @@ import type {
 } from '../types';
 import type {ActionsObservable} from '../../../commons-node/redux-observable';
 
-import {
-  LocalStorageJsonTable,
-} from '../../../commons-atom/LocalStorageJsonTable';
+import {LocalStorageJsonTable} from '../../../commons-atom/LocalStorageJsonTable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import analytics from 'nuclide-commons-atom/analytics';
 import * as Actions from './Actions';
@@ -160,9 +158,8 @@ export function openEpic(
           location = locations.get(getNewLocation(preferredLocationId));
         }
         if (location == null) {
-          const defaultLocationId = item.getDefaultLocation != null
-            ? item.getDefaultLocation()
-            : null;
+          const defaultLocationId =
+            item.getDefaultLocation != null ? item.getDefaultLocation() : null;
           if (defaultLocationId != null) {
             location = locations.get(defaultLocationId);
           }
@@ -227,11 +224,12 @@ export function toggleItemVisibilityEpic(
 
       // Change the visibility of all matching items. If some are visible and some aren't, this
       // won't be a true toggle, but it makes more sense.
-      const makeVisible = visible != null
-        ? visible
-        : !itemsAndLocations.some(({item, location}) =>
-            location.itemIsVisible(item),
-          );
+      const makeVisible =
+        visible != null
+          ? visible
+          : !itemsAndLocations.some(({item, location}) =>
+              location.itemIsVisible(item),
+            );
       return Observable.from(
         itemsAndLocations.map(({item, location}) =>
           Actions.setItemVisibility({

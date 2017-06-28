@@ -321,7 +321,9 @@ export class FlowProcess {
           if (!couldRetry && !suppressErrors) {
             // not sure what happened, but we'll let the caller deal with it
             logger.error(
-              `Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`,
+              `Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(
+                e,
+              )}`,
             );
           }
           throw e;

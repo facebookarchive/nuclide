@@ -61,22 +61,20 @@ export class ATCustomDBPathModal extends React.Component {
     return (
       <div>
         <label>
-          Active
-          {' '}
-          {this.props.type}
-          {' '}
-          path:
-          {' '}
-          <i><strong>{this.props.activePath}</strong></i>
+          Active {this.props.type} path:{' '}
+          <i>
+            <strong>
+              {this.props.activePath}
+            </strong>
+          </i>
         </label>
         <label>
-          Active
-          {' '}
-          {this.props.type}
-          {' '}
-          port:
-          {' '}
-          <i><strong>{this.props.activePort || 'default'}</strong></i>
+          Active {this.props.type} port:{' '}
+          <i>
+            <strong>
+              {this.props.activePort || 'default'}
+            </strong>
+          </i>
         </label>
       </div>
     );
@@ -123,22 +121,13 @@ export class ATCustomDBPathModal extends React.Component {
     return (
       <p>
         <small>
-          A custom
-          {' '}
-          {this.props.type}
-          {' '}
-          path takes priority over any other path that nuclide knows.
-          {' '}
-          This is specially useful if you also use
-          {' '}
-          {this.props.type}
-          {' '}
-          from the command line along with nuclide.
+          A custom {this.props.type} path takes priority over any other path
+          that nuclide knows. This is specially useful if you also use{' '}
+          {this.props.type} from the command line along with nuclide.
           <br />
-          Keep in mind that using two different versions of
-          {' '}
-          {this.props.type}
-          {' '}
+          Keep in mind that using two different versions of {
+            this.props.type
+          }{' '}
           simultaneously might break both tools.
         </small>
       </p>

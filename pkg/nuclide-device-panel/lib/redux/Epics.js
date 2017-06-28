@@ -166,9 +166,10 @@ function getInfoTables(
             return provider.fetch(state.host, device.name).map(list => ({
               title: provider.getTitle(),
               list,
-              priority: provider.getPriority === undefined
-                ? -1
-                : provider.getPriority(),
+              priority:
+                provider.getPriority === undefined
+                  ? -1
+                  : provider.getPriority(),
             }));
           })
           .catch(() => Observable.empty());

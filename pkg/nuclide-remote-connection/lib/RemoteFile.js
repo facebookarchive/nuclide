@@ -12,8 +12,7 @@
 import type {ServerConnection} from './ServerConnection';
 import type {RemoteDirectory} from './RemoteDirectory';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as FileSystemService
-  from '../../nuclide-server/lib/services/FileSystemService';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
 import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
@@ -122,9 +121,12 @@ export class RemoteFile {
       (await passesGK('nuclide_watch_warn_unmanaged_file'))
     ) {
       atom.notifications.addWarning(
-        `Couldn't watch remote file \`${nuclideUri.basename(this._path)}\` for changes!`,
+        `Couldn't watch remote file \`${nuclideUri.basename(
+          this._path,
+        )}\` for changes!`,
         {
-          detail: "Updates to the file outside Nuclide won't reload automatically\n" +
+          detail:
+            "Updates to the file outside Nuclide won't reload automatically\n" +
             "Please add the file's project directory to Nuclide\n",
           dismissable: true,
         },
@@ -307,9 +309,10 @@ export class RemoteFile {
   getParent(): RemoteDirectory {
     const directoryPath = nuclideUri.dirname(this._path);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
-    const hgRepositoryDescription = remoteConnection != null
-      ? remoteConnection.getHgRepositoryDescription()
-      : null;
+    const hgRepositoryDescription =
+      remoteConnection != null
+        ? remoteConnection.getHgRepositoryDescription()
+        : null;
     return this._server.createDirectory(directoryPath, hgRepositoryDescription);
   }
 

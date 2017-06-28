@@ -18,7 +18,7 @@ import {ToolbarLeft} from './ToolbarLeft';
 import {ToolbarRight} from './ToolbarRight';
 import {Button} from './Button';
 
-const ToolbarExampleLeft = (): React.Element<any> => (
+const ToolbarExampleLeft = (): React.Element<any> =>
   <div>
     <Block>
       <Toolbar location="top">
@@ -30,37 +30,35 @@ const ToolbarExampleLeft = (): React.Element<any> => (
     </Block>
     <Block>
       <div>
-        Be sure to use
-        {' '}
-        {'<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>'}
-        {' '}
-        as children.
+        Be sure to use {'<ToolbarLeft/>, <ToolbarLeft/>, and <ToolbarLeft/>'} as
+        children.
       </div>
     </Block>
-  </div>
-);
+  </div>;
 
-const ToolbarExampleCenter = (): React.Element<any> => (
+const ToolbarExampleCenter = (): React.Element<any> =>
   <Block>
     <Toolbar location="top">
       <ToolbarCenter>
-        <div>Example of {'<ToolbarCenter />'}.</div>
+        <div>
+          Example of {'<ToolbarCenter />'}.
+        </div>
       </ToolbarCenter>
     </Toolbar>
-  </Block>
-);
+  </Block>;
 
-const ToolbarExampleRight = (): React.Element<any> => (
+const ToolbarExampleRight = (): React.Element<any> =>
   <Block>
     <Toolbar location="top">
       <ToolbarRight>
-        <div>Example of {'<ToolbarRight />'}</div>
+        <div>
+          Example of {'<ToolbarRight />'}
+        </div>
       </ToolbarRight>
     </Toolbar>
-  </Block>
-);
+  </Block>;
 
-const ToolbarExampleMultiple = (): React.Element<any> => (
+const ToolbarExampleMultiple = (): React.Element<any> =>
   <Block>
     <Toolbar location="top">
       <ToolbarLeft>
@@ -73,8 +71,7 @@ const ToolbarExampleMultiple = (): React.Element<any> => (
         <div>of aligners.</div>
       </ToolbarRight>
     </Toolbar>
-  </Block>
-);
+  </Block>;
 
 export const ToolbarExamples = {
   sectionName: 'Toolbar',

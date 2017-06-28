@@ -31,9 +31,10 @@ export class Cache<KeyArgs, T> {
     if (config.dispose != null) {
       this._dispose = config.dispose;
     }
-    this._keyFactory = config.keyFactory != null
-      ? config.keyFactory
-      : (keyArgs: KeyArgs) => keyArgs;
+    this._keyFactory =
+      config.keyFactory != null
+        ? config.keyFactory
+        : (keyArgs: KeyArgs) => keyArgs;
   }
 
   _getUnsafe(key: mixed): T {

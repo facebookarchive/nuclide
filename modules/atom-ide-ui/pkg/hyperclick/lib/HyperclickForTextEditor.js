@@ -91,8 +91,8 @@ export default class HyperclickForTextEditor {
         process.platform === 'darwin'
           ? 'hyperclick.darwinTriggerKeys'
           : process.platform === 'win32'
-              ? 'hyperclick.win32TriggerKeys'
-              : 'hyperclick.linuxTriggerKeys',
+            ? 'hyperclick.win32TriggerKeys'
+            : 'hyperclick.linuxTriggerKeys',
         newValue_ => {
           const newValue = ((newValue_: any): string);
           // For all Flow knows, newValue.split could return any old strings

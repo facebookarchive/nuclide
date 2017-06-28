@@ -107,7 +107,9 @@ describe('Nuclide performance', () => {
         resultFile = createResultFile(resultDir, benchmark, columns);
         setTestState({resultFile});
         console.log(
-          `Writing raw results for ${String(benchmark.name)} to ${yellow(resultFile)}`,
+          `Writing raw results for ${String(benchmark.name)} to ${yellow(
+            resultFile,
+          )}`,
         );
       }
 
@@ -116,9 +118,10 @@ describe('Nuclide performance', () => {
       await sleepUntilNoRequests();
 
       // Run the benchmark for this iteration/repetition and append the results to the result file.
-      const iterationDescription = benchmark.getIterationDescription != null
-        ? `; ${benchmark.getIterationDescription(iteration)}`
-        : '';
+      const iterationDescription =
+        benchmark.getIterationDescription != null
+          ? `; ${benchmark.getIterationDescription(iteration)}`
+          : '';
 
       console.log(
         yellow(
@@ -144,7 +147,9 @@ describe('Nuclide performance', () => {
       if (nextTestState.iteration === 0) {
         const processedResultFile = processResultFile(resultFile);
         console.log(
-          `Results for ${String(benchmark.name)} are in ${green(processedResultFile)}`,
+          `Results for ${String(benchmark.name)} are in ${green(
+            processedResultFile,
+          )}`,
         );
       }
       if (nextTestState.benchmarkIndex === 0) {

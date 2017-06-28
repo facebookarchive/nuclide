@@ -48,7 +48,8 @@ class DevicePoller {
               Observable.of(
                 Expect.error(
                   new Error(
-                    `Can't fetch ${this._getPlatform()} devices. Make sure that ${this._type} is in your $PATH and that it works properly.`,
+                    `Can't fetch ${this._getPlatform()} devices. Make sure that ${this
+                      ._type} is in your $PATH and that it works properly.`,
                   ),
                 ),
               ),
@@ -60,9 +61,10 @@ class DevicePoller {
   }
 
   fetch(host: NuclideUri): Observable<Device[]> {
-    const rpc = this._type === 'adb'
-      ? getAdbServiceByNuclideUri(host)
-      : getSdbServiceByNuclideUri(host);
+    const rpc =
+      this._type === 'adb'
+        ? getAdbServiceByNuclideUri(host)
+        : getSdbServiceByNuclideUri(host);
 
     return rpc
       .getDeviceList()

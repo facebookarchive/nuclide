@@ -225,11 +225,12 @@ export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
     'nuclide-ui-dropdown-flat': props.isFlat === true,
   });
 
-  const label = props.children == null
-    ? null
-    : <span className="nuclide-dropdown-label-text-wrapper">
-        {props.children}
-      </span>;
+  const label =
+    props.children == null
+      ? null
+      : <span className="nuclide-dropdown-label-text-wrapper">
+          {props.children}
+        </span>;
 
   return (
     <ButtonComponent

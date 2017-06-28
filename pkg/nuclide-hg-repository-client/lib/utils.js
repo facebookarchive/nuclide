@@ -12,9 +12,7 @@
 import fsPromise from 'nuclide-commons/fsPromise';
 import {Observable} from 'rxjs';
 import {runCommandDetailed} from 'nuclide-commons/process';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export function gitDiffContentAgainstFile(
   content: string,

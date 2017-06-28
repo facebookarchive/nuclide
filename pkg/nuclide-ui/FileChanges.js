@@ -63,7 +63,12 @@ const GutterElement = (props: {
   // pad the line number with leading spaces.
   const filler = fillWidth > 0 ? new Array(fillWidth).fill(NBSP).join('') : '';
   // Attempt to reuse the existing line-number styles.
-  return <div className="line-number">{filler}{lineNumber}</div>;
+  return (
+    <div className="line-number">
+      {filler}
+      {lineNumber}
+    </div>
+  );
 };
 
 export class HunkDiff extends React.Component {
@@ -273,36 +278,34 @@ export default class FileChanges extends React.Component {
     if (annotation != null) {
       annotationComponent = (
         <span>
-          {annotation
-            .split('\n')
-            .map((line, index) => <span key={index}>{line}<br /></span>)}
+          {annotation.split('\n').map((line, index) =>
+            <span key={index}>
+              {line}
+              <br />
+            </span>,
+          )}
         </span>
       );
     }
 
     const diffDetails = (
       <span>
-        {annotationComponent}
-        {' '}
-        (
-        {additions + deletions}
-        {' '}
-        {pluralize('line', additions + deletions)}
+        {annotationComponent} (
+        {additions + deletions} {pluralize('line', additions + deletions)}
         )
       </span>
     );
 
-    const renderedFilename = fullPath != null
-      ? <a onClick={this._handleFilenameClick}>
-          {fileName}
-        </a>
-      : fileName;
+    const renderedFilename =
+      fullPath != null
+        ? <a onClick={this._handleFilenameClick}>
+            {fileName}
+          </a>
+        : fileName;
 
     const headline = (
       <span className="nuclide-ui-file-changes-item">
-        {renderedFilename}
-        {' '}
-        {diffDetails}
+        {renderedFilename} {diffDetails}
       </span>
     );
 

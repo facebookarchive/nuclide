@@ -21,9 +21,7 @@ import React from 'react';
 import classnames from 'classnames';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {
-  LazyNestedValueComponent,
-} from '../../nuclide-ui/LazyNestedValueComponent';
+import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 
 type WatchExpressionComponentProps = {

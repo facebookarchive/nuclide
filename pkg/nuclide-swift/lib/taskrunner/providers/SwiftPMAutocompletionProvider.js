@@ -13,8 +13,7 @@ import type {SourceKittenCompletion} from '../../sourcekitten/Complete';
 
 import SwiftPMTaskRunnerStore from '../SwiftPMTaskRunnerStore';
 import {asyncExecuteSourceKitten} from '../../sourcekitten/SourceKitten';
-import sourceKittenCompletionToAtomSuggestion
-  from '../../sourcekitten/Complete';
+import sourceKittenCompletionToAtomSuggestion from '../../sourcekitten/Complete';
 
 /**
  * An autocompletion provider that uses the compile commands in a built Swift

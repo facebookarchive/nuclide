@@ -13,11 +13,8 @@ import type {FileDiagnosticMessage, Trace} from 'atom-ide-ui';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import typeof * as FileSystemService
-  from '../../nuclide-server/lib/services/FileSystemService';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 const DIAGNOSTIC_REGEX = /^([^\s:]+):([0-9]+):([0-9]+): (.*)$/gm;
 
@@ -114,16 +111,17 @@ function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
     type: result.level === 'error' ? 'Error' : 'Warning',
     filePath: result.filePath,
     text: result.text,
-    range: result.column == null
-      ? new Range(
-          [result.line - 1, 0],
-          [result.line - 1, INDEFINITE_END_COLUMN],
-        )
-      : // This gets expanded to the containing word at display time.
-        new Range(
-          [result.line - 1, result.column - 1],
-          [result.line - 1, result.column - 1],
-        ),
+    range:
+      result.column == null
+        ? new Range(
+            [result.line - 1, 0],
+            [result.line - 1, INDEFINITE_END_COLUMN],
+          )
+        : // This gets expanded to the containing word at display time.
+          new Range(
+            [result.line - 1, result.column - 1],
+            [result.line - 1, result.column - 1],
+          ),
   };
 }
 

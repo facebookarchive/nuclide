@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  CodeHighlightProvider as CodeHighlightProviderType,
-} from 'atom-ide-ui';
+import type {CodeHighlightProvider as CodeHighlightProviderType} from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 
 import {trackTiming} from '../../nuclide-analytics';

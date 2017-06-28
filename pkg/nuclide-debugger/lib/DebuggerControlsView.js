@@ -65,41 +65,43 @@ export class DebuggerControlsView extends React.PureComponent {
     const {model} = this.props;
     const actions = model.getActions();
     const {mode} = this.state;
-    const debuggerStoppedNotice = mode !== DebuggerMode.STOPPED
-      ? null
-      : <div className="nuclide-debugger-pane-content">
-          <div className="nuclide-debugger-state-notice">
-            <span>The debugger is not attached.</span>
-            <div className="padded">
-              <TruncatedButton
-                onClick={() =>
-                  atom.commands.dispatch(
-                    atom.views.getView(atom.workspace),
-                    'nuclide-debugger:show-attach-dialog',
-                  )}
-                icon="nuclicon-debugger"
-                label="Attach debugger..."
-              />
-              <TruncatedButton
-                onClick={() =>
-                  atom.commands.dispatch(
-                    atom.views.getView(atom.workspace),
-                    'nuclide-debugger:show-launch-dialog',
-                  )}
-                icon="nuclicon-debugger"
-                label="Launch debugger..."
-              />
+    const debuggerStoppedNotice =
+      mode !== DebuggerMode.STOPPED
+        ? null
+        : <div className="nuclide-debugger-pane-content">
+            <div className="nuclide-debugger-state-notice">
+              <span>The debugger is not attached.</span>
+              <div className="padded">
+                <TruncatedButton
+                  onClick={() =>
+                    atom.commands.dispatch(
+                      atom.views.getView(atom.workspace),
+                      'nuclide-debugger:show-attach-dialog',
+                    )}
+                  icon="nuclicon-debugger"
+                  label="Attach debugger..."
+                />
+                <TruncatedButton
+                  onClick={() =>
+                    atom.commands.dispatch(
+                      atom.views.getView(atom.workspace),
+                      'nuclide-debugger:show-launch-dialog',
+                    )}
+                  icon="nuclicon-debugger"
+                  label="Launch debugger..."
+                />
+              </div>
             </div>
-          </div>
-        </div>;
+          </div>;
 
-    const debugeeRunningNotice = mode !== DebuggerMode.RUNNING
-      ? null
-      : <div className="nuclide-debugger-pane-content">
-          <div className="nuclide-debugger-state-notice">
-            The debug target is currently running.
-          </div>
-        </div>;
+    const debugeeRunningNotice =
+      mode !== DebuggerMode.RUNNING
+        ? null
+        : <div className="nuclide-debugger-pane-content">
+            <div className="nuclide-debugger-state-notice">
+              The debug target is currently running.
+            </div>
+          </div>;
 
     return (
       <div className="nuclide-debugger-container-new">

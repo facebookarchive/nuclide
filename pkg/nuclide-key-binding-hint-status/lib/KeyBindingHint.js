@@ -77,7 +77,9 @@ export default class KeyBindingHint extends React.Component {
     return (
       <div ref={tooltip}>
         <Icon icon="keyboard">
-          <span style={{paddingLeft: '5px'}}>{firstBinding}</span>
+          <span style={{paddingLeft: '5px'}}>
+            {firstBinding}
+          </span>
         </Icon>
       </div>
     );

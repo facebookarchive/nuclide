@@ -10,15 +10,11 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  PhpDebuggerService as PhpDebuggerServiceType,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
+import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {
-  getPhpDebuggerServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import logger from './utils';

@@ -300,9 +300,10 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
   ): Promise<Object> {
     // contextify is important needed for Reason support.
     // https://github.com/the-lambda-church/merlin/blob/d98a08d318ca14d9c702bbd6eeadbb762d325ce7/doc/dev/PROTOCOL.md#contextual-commands
-    const wrappedCommand = wrapForContext === false
-      ? command
-      : {query: command, context: ['auto', file]};
+    const wrappedCommand =
+      wrapForContext === false
+        ? command
+        : {query: command, context: ['auto', file]};
     return runSingleCommandImpl(this._proc, wrappedCommand);
   }
 

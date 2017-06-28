@@ -77,12 +77,10 @@ export default class BuckToolbar extends React.Component {
       selectedDeploymentTarget,
       taskSettings,
     } = this.props.appState;
-    const extraToolbarUi = platformProviderUi != null
-      ? platformProviderUi.toolbar
-      : null;
-    const extraSettings = platformProviderUi != null
-      ? platformProviderUi.settings
-      : null;
+    const extraToolbarUi =
+      platformProviderUi != null ? platformProviderUi.toolbar : null;
+    const extraSettings =
+      platformProviderUi != null ? platformProviderUi.settings : null;
 
     let status;
     if (isLoadingRule || isLoadingPlatforms) {

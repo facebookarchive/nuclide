@@ -11,9 +11,7 @@
 
 import type {Definition, DefinitionPreviewProvider} from 'atom-ide-ui';
 
-import {
-  getDefinitionPreviewServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getDefinitionPreviewServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 export function provideDefinitionPreview(): DefinitionPreviewProvider {
   return {

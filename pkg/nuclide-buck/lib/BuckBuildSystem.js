@@ -114,10 +114,11 @@ export class BuckBuildSystem {
           ).share();
         }
 
-        const args = runArguments.length > 0 &&
+        const args =
+          runArguments.length > 0 &&
           (subcommand === 'run' || subcommand === 'install')
-          ? buildArguments.concat(['--']).concat(runArguments)
-          : buildArguments;
+            ? buildArguments.concat(['--']).concat(runArguments)
+            : buildArguments;
 
         const processMessages = runBuckCommand(
           buckService,

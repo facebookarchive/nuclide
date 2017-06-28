@@ -20,8 +20,11 @@ type Props = {
 };
 
 /** Component to prompt the user for authentication information. */
-export default class AuthenticationPrompt
-  extends React.Component<void, Props, void> {
+export default class AuthenticationPrompt extends React.Component<
+  void,
+  Props,
+  void,
+> {
   props: Props;
 
   _disposables: CompositeDisposable;

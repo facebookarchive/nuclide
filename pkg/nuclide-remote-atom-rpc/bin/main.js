@@ -85,9 +85,10 @@ async function main(argv): Promise<number> {
 
   // TODO(t10180337): Consider a batch API for openFile().
   if (argv._ != null && argv._.length > 0) {
-    const commands = argv.port != null
-      ? await startCommands(argv.port, argv.family)
-      : await getCommands();
+    const commands =
+      argv.port != null
+        ? await startCommands(argv.port, argv.family)
+        : await getCommands();
 
     for (const arg of argv._) {
       const {filePath, line, column} = parseLocationParameter(arg);
@@ -139,7 +140,8 @@ async function run() {
     .demand(1, 'At least one file name is required.')
     .option('a', {
       alias: 'add',
-      describe: 'Ignored, as --add as always implied. ' +
+      describe:
+        'Ignored, as --add as always implied. ' +
         'Included for compatibility with atom CLI.',
       type: 'boolean',
     })
@@ -155,7 +157,8 @@ async function run() {
     })
     .option('f', {
       alias: 'family',
-      describe: 'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
+      describe:
+        'Address family for connecting to nuclide. Either "IPv4" or "IPv6".',
       type: 'string',
     });
   if (argv.port == null !== (argv.family == null)) {

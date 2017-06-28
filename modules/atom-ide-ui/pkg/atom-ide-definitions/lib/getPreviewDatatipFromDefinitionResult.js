@@ -11,9 +11,7 @@
  */
 
 import analytics from 'nuclide-commons-atom/analytics';
-import {
-  getDefinitionPreview as getLocalFileDefinitionPreview,
-} from 'nuclide-commons/symbol-definition-preview';
+import {getDefinitionPreview as getLocalFileDefinitionPreview} from 'nuclide-commons/symbol-definition-preview';
 
 import type {Datatip} from '../../atom-ide-datatip';
 

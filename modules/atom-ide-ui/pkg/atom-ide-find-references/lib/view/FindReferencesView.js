@@ -88,15 +88,15 @@ export default class FindReferencesView extends React.Component {
   }
 
   render(): React.Element<any> {
-    const children = this.state.references.map((fileRefs, i) => (
+    const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}
         isSelected={this.state.selected === i}
         {...fileRefs}
         basePath={this.props.model.getBasePath()}
         clickCallback={() => this._childClick(i)}
-      />
-    ));
+      />,
+    );
 
     const refCount = this.props.model.getReferenceCount();
     const fileCount = this.props.model.getFileCount();
@@ -112,8 +112,8 @@ export default class FindReferencesView extends React.Component {
     return (
       <div className="atom-ide-find-references">
         <div className="atom-ide-find-references-count panel-heading">
-          {refCount} {pluralize('reference', refCount)}{' '}
-          found in {fileCount} {pluralize('file', fileCount)} for{' '}
+          {refCount} {pluralize('reference', refCount)} found in {fileCount}{' '}
+          {pluralize('file', fileCount)} for{' '}
           <span className="highlight-info">
             {this.props.model.getSymbolName()}
           </span>

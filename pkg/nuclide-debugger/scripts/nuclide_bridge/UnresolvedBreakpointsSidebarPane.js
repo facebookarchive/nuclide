@@ -55,7 +55,8 @@ class UnresolvedBreakpointsComponent extends React.Component {
       const {pathname} = url.parse(breakpoint.url);
       invariant(pathname);
       const longRep = `${pathname}:${breakpoint.line + 1}`;
-      const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line + 1}`;
+      const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line +
+        1}`;
       return (
         <li
           key={longRep}
@@ -90,8 +91,7 @@ class UnresolvedBreakpointsComponent extends React.Component {
   }
 }
 
-export default class UnresolvedBreakpointsSidebarPane
-  extends WebInspector.SidebarPane {
+export default class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
   constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
     super();

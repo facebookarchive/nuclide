@@ -18,9 +18,7 @@ import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import DebuggerModel from './DebuggerModel';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import {__DEV__} from '../../nuclide-node-transpiler/lib/env';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 
@@ -239,12 +237,11 @@ export class DebuggerLayoutManager {
         isLifetimeView: false,
         title: () => 'Watch Expressions',
         isEnabled: () => true,
-        createView: () => (
+        createView: () =>
           <WatchView
             model={this._model}
             watchExpressionListStore={this._model.getWatchExpressionListStore()}
-          />
-        ),
+          />,
       },
       {
         uri: debuggerUriBase + 'threads',
@@ -586,12 +583,10 @@ export class DebuggerLayoutManager {
     this._debuggerPanes
       .slice()
       .sort((a, b) => {
-        const aPos = a.previousLocation == null
-          ? 0
-          : a.previousLocation.layoutIndex;
-        const bPos = b.previousLocation == null
-          ? 0
-          : b.previousLocation.layoutIndex;
+        const aPos =
+          a.previousLocation == null ? 0 : a.previousLocation.layoutIndex;
+        const bPos =
+          b.previousLocation == null ? 0 : b.previousLocation.layoutIndex;
         return aPos - bPos;
       })
       .filter(

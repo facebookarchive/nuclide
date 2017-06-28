@@ -198,8 +198,8 @@ export class FileTreeEntryComponent extends React.Component {
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
               'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
-              'icon-nuclicon-file-directory-starred': node.isContainer &&
-                node.isCwd,
+              'icon-nuclicon-file-directory-starred':
+                node.isContainer && node.isCwd,
             })}
             isFolder={node.isContainer}
             path={node.uri}

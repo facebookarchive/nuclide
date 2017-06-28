@@ -16,9 +16,7 @@ import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import scheduleIdleCallback from '../../commons-node/scheduleIdleCallback';
-import {
-  getFuzzyFileSearchServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFuzzyFileSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {RpcTimeoutError} from '../../nuclide-rpc';
 import {getLogger} from 'log4js';
 import FuzzyFileNameProvider from './FuzzyFileNameProvider';
@@ -93,11 +91,12 @@ class Activation {
     const disposables = this._subscriptionsByRoot.get(projectPath);
     invariant(disposables != null);
 
-    const busySignalDisposable = this._busySignalService == null
-      ? new UniversalDisposable()
-      : this._busySignalService.reportBusy(
-          `File search: indexing ${projectPath}`,
-        );
+    const busySignalDisposable =
+      this._busySignalService == null
+        ? new UniversalDisposable()
+        : this._busySignalService.reportBusy(
+            `File search: indexing ${projectPath}`,
+          );
     disposables.add(busySignalDisposable);
 
     // It doesn't matter what the search term is. Empirically, doing an initial

@@ -152,7 +152,8 @@ export class WorkingSetSelectionComponent extends React.Component {
         <div>
           <HR />
           <span>
-            The working sets below are not applicable to your current project folders
+            The working sets below are not applicable to your current project
+            folders
           </span>
           <ol className="list-group">
             {notApplicableDefinitions}

@@ -40,7 +40,8 @@ export default (async function updateKeymap(
         'Nuclide: Deprecated Commands',
         {
           icon: 'nuclicon-nuclide',
-          description: 'Your keymap contains the following deprecated commands:' +
+          description:
+            'Your keymap contains the following deprecated commands:' +
             `\n\n${matchesList}\n\n` +
             'Would you like to update your keymap?',
           dismissable: true,

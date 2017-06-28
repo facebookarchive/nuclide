@@ -12,8 +12,7 @@
 import React from 'react';
 import classnames from 'classnames';
 
-import ignoreTextSelectionEvents
-  from 'nuclide-commons-ui/ignoreTextSelectionEvents';
+import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 
 type DefaultProps = {
   disabled: boolean,
@@ -53,9 +52,12 @@ export class Toggle extends React.Component {
 
   render(): React.Element<any> {
     const {className, disabled, label, onClick, toggled} = this.props;
-    const text = label === ''
-      ? null
-      : <span className="nuclide-ui-toggle-label-text">{' '}{label}</span>;
+    const text =
+      label === ''
+        ? null
+        : <span className="nuclide-ui-toggle-label-text">
+            {' '}{label}
+          </span>;
     return (
       <label
         className={classnames(className, 'nuclide-ui-toggle-label', {

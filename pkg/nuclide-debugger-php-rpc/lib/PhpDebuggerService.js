@@ -136,7 +136,8 @@ export class PhpDebuggerService {
     if (mightBeAttached) {
       this._clientCallback.sendUserMessage('notification', {
         type: 'warning',
-        message: 'You may have an hphpd instance currently attached to your server!' +
+        message:
+          'You may have an hphpd instance currently attached to your server!' +
           '<br />Please kill it, or the Nuclide debugger may not work properly.',
       });
     }

@@ -18,9 +18,7 @@ import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
 } from '../../nuclide-remote-connection/lib/SshHandshake';
-import type {
-  RemoteConnection,
-} from '../../nuclide-remote-connection/lib/RemoteConnection';
+import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -138,7 +136,8 @@ export default class ConnectionDialog extends React.Component {
 
     this.state = {
       finish: answers => {},
-      indexOfSelectedConnectionProfile: props.indexOfInitiallySelectedConnectionProfile,
+      indexOfSelectedConnectionProfile:
+        props.indexOfInitiallySelectedConnectionProfile,
       instructions: '',
       isDirty: false,
       mode: REQUEST_CONNECTION_DETAILS,
@@ -312,9 +311,7 @@ export default class ConnectionDialog extends React.Component {
     ) {
       saveButtonGroup = (
         <ButtonGroup className="inline-block">
-          <Button onClick={this._handleClickSave}>
-            Save
-          </Button>
+          <Button onClick={this._handleClickSave}>Save</Button>
         </ButtonGroup>
       );
     }

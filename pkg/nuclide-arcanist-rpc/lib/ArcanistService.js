@@ -27,12 +27,8 @@ import {
 import {compact} from 'nuclide-commons/observable';
 import {niceObserveProcess} from 'nuclide-commons/nice';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {
-  fetchFilesChangedSinceRevision,
-} from '../../nuclide-hg-rpc/lib/hg-revision-state-helpers';
-import {
-  expressionForRevisionsBeforeHead,
-} from '../../nuclide-hg-rpc/lib/hg-revision-expression-helpers';
+import {fetchFilesChangedSinceRevision} from '../../nuclide-hg-rpc/lib/hg-revision-state-helpers';
+import {expressionForRevisionsBeforeHead} from '../../nuclide-hg-rpc/lib/hg-revision-expression-helpers';
 import {findHgRepository} from '../../nuclide-source-control-helpers';
 import {getLogger} from 'log4js';
 import LRU from 'lru-cache';

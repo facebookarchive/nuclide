@@ -335,7 +335,8 @@ export function getHomeFragments(): HomeFragments {
     feature: {
       title: 'Quick Open',
       icon: 'search',
-      description: 'A powerful search box to quickly find local and remote files and content.',
+      description:
+        'A powerful search box to quickly find local and remote files and content.',
       command: 'nuclide-quick-open:find-anything-via-omni-search',
     },
     priority: 10,

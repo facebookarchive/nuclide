@@ -88,8 +88,8 @@ export default class DiagnosticsView extends React.Component {
         <Toolbar>
           <ToolbarCenter>
             <span className="inline-block highlight-info">
-              nuclide-diagnostics is not compatible with the linter package. We recommend that
-              you&nbsp;
+              nuclide-diagnostics is not compatible with the linter package. We
+              recommend that you&nbsp;
               <a onClick={this.props.disableLinter}>
                 disable the linter package
               </a>
@@ -103,8 +103,12 @@ export default class DiagnosticsView extends React.Component {
       );
     }
 
-    const errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
-    const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
+    const errorSpanClassName = `inline-block ${errorCount > 0
+      ? 'text-error'
+      : ''}`;
+    const warningSpanClassName = `inline-block ${warningCount > 0
+      ? 'text-warning'
+      : ''}`;
 
     return (
       <div

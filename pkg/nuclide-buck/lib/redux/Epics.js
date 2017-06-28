@@ -26,9 +26,10 @@ export function setProjectRootEpic(
   return actions.ofType(Actions.SET_PROJECT_ROOT).switchMap(action => {
     invariant(action.type === Actions.SET_PROJECT_ROOT);
     const {projectRoot} = action;
-    const rootObs = projectRoot == null
-      ? Observable.of(null)
-      : Observable.fromPromise(getBuckProjectRoot(projectRoot));
+    const rootObs =
+      projectRoot == null
+        ? Observable.of(null)
+        : Observable.fromPromise(getBuckProjectRoot(projectRoot));
     return rootObs.switchMap(buckRoot =>
       Observable.of(
         Actions.setBuckRoot(buckRoot),

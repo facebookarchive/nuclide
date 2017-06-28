@@ -28,9 +28,7 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
-import {
-  parseHgDiffUnifiedOutput,
-} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
+import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
@@ -838,7 +836,7 @@ export class HgRepositoryClient {
       .map(({filePath, diff}) => {
         // This is to differentiate between diff delimiter and the source
         // eslint-disable-next-line no-useless-escape
-        const toParse = diff.split('\-\-\- ');
+        const toParse = diff.split('--- ');
         const lineDiff = parseHgDiffUnifiedOutput(toParse[1]);
         return [filePath, lineDiff];
       })

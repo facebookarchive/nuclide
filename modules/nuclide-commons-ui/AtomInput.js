@@ -192,8 +192,8 @@ export class AtomInput extends React.Component {
   render(): React.Element<any> {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
-      [`atom-text-editor-${maybeToString(this.props.size)}`]: this.props.size !=
-        null,
+      [`atom-text-editor-${maybeToString(this.props.size)}`]:
+        this.props.size != null,
     });
 
     return (
@@ -201,15 +201,13 @@ export class AtomInput extends React.Component {
       // component class when "Use Shadow DOM" is disabled, this element should never have children.
       // If an element has no children, React guarantees it will never re-render the element (which
       // would wipe out the web component's work in this case).
-      (
-        <atom-text-editor
-          class={className}
-          mini
-          onClick={this.props.onClick}
-          onFocus={this.props.onFocus}
-          onBlur={this.props.onBlur}
-        />
-      )
+      <atom-text-editor
+        class={className}
+        mini
+        onClick={this.props.onClick}
+        onFocus={this.props.onFocus}
+        onBlur={this.props.onBlur}
+      />
     );
   }
 

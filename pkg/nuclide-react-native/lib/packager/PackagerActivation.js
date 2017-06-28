@@ -10,9 +10,7 @@
  */
 
 import type {OutputService} from '../../../nuclide-console/lib/types';
-import type {
-  CwdApi,
-} from '../../../nuclide-current-working-directory/lib/CwdApi';
+import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {PackagerEvent} from './types';
 
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
@@ -60,7 +58,8 @@ export class PackagerActivation {
               "Couldn't find a React Native project",
               {
                 dismissable: true,
-                description: 'Make sure that your current working root (or its ancestor) contains a' +
+                description:
+                  'Make sure that your current working root (or its ancestor) contains a' +
                   ' "node_modules" directory with react-native installed, or a .buckconfig file' +
                   ' with a "[react-native]" section that has a "server" key.',
               },
@@ -92,10 +91,10 @@ export class PackagerActivation {
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-react-native:start-packager': event => {
-          const detail = event.detail != null &&
-            typeof event.detail === 'object'
-            ? event.detail
-            : undefined;
+          const detail =
+            event.detail != null && typeof event.detail === 'object'
+              ? event.detail
+              : undefined;
           this._logTailer.start(detail);
         },
         'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
@@ -185,9 +184,8 @@ function getPackagerObservable(
     .scan(
       (acc, event) => {
         return {
-          stderr: event.kind === 'stderr'
-            ? acc.stderr + event.data
-            : acc.stderr,
+          stderr:
+            event.kind === 'stderr' ? acc.stderr + event.data : acc.stderr,
           event,
         };
       },

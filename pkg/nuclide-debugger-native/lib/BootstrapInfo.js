@@ -16,8 +16,7 @@ import type {
   DebuggerConfig,
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {
@@ -79,8 +78,8 @@ export class BootstrapInfo extends DebuggerProcessInfo {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
-      lldbPythonPath: this._bootstrapInfo.lldbPythonPath ||
-        getConfig().lldbPythonPath,
+      lldbPythonPath:
+        this._bootstrapInfo.lldbPythonPath || getConfig().lldbPythonPath,
       envPythonPath: '',
     };
   }

@@ -40,9 +40,8 @@ const ButtonGroupSizeClassnames = Object.freeze({
  */
 export const ButtonGroup = (props: Props) => {
   const {size, children, className} = props;
-  const sizeClassName = size == null
-    ? ''
-    : ButtonGroupSizeClassnames[size] || '';
+  const sizeClassName =
+    size == null ? '' : ButtonGroupSizeClassnames[size] || '';
   const newClassName = classnames(className, 'btn-group', 'nuclide-btn-group', {
     [sizeClassName]: size != null,
   });

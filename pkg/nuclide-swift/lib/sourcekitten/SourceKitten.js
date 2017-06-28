@@ -52,7 +52,8 @@ export async function asyncExecuteSourceKitten(
     atom.notifications.addError(
       `Could not invoke SourceKitten at path \`${sourceKittenPath}\``,
       {
-        description: 'Please double-check that the path you have set for the ' +
+        description:
+          'Please double-check that the path you have set for the ' +
           '`nuclide-swift.sourceKittenPath` config setting is correct.<br>' +
           `**Error code:** \`${err.errno || ''}\`<br>` +
           `**Error message:** <pre>${err.message}</pre>`,
@@ -62,7 +63,8 @@ export async function asyncExecuteSourceKitten(
   }
   if (result.exitCode !== 0 || result.stdout.length === 0) {
     atom.notifications.addError('An error occured when invoking SourceKitten', {
-      description: 'Please file a bug.<br>' +
+      description:
+        'Please file a bug.<br>' +
         `**exit code:** \`${String(result.exitCode)}\`<br>` +
         `**stdout:** <pre>${String(result.stdout)}</pre><br>` +
         `**stderr:** <pre>${String(result.stderr)}</pre><br>` +

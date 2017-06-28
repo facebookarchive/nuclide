@@ -21,13 +21,9 @@ import {
   translateMessageToServer,
 } from './ChromeMessageRemoting';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  WebSocketServer,
-} from '../../nuclide-debugger-common/lib/WebSocketServer';
+import {WebSocketServer} from '../../nuclide-debugger-common/lib/WebSocketServer';
 import {stringifyError} from 'nuclide-commons/string';
-import {
-  isNewProtocolChannelEnabled,
-} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
+import {isNewProtocolChannelEnabled} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 import NewProtocolMessageChecker from './NewProtocolMessageChecker';
 
 import {getLogger} from 'log4js';

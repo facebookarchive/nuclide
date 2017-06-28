@@ -19,9 +19,7 @@ import type {OutputService, Message} from '../../nuclide-console/lib/types';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {Subject, Observable} from 'rxjs';
-import {
-  forkHostServices,
-} from '../../nuclide-language-service-rpc/lib/HostServicesAggregator';
+import {forkHostServices} from '../../nuclide-language-service-rpc/lib/HostServicesAggregator';
 
 let rootAggregatorPromise: ?Promise<HostServices>;
 const logger = getLogger('HostServices');

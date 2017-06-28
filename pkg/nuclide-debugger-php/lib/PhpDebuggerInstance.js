@@ -10,9 +10,7 @@
  */
 
 import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import type {
-  PhpDebuggerService as PhpDebuggerServiceType,
-} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
+import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 
 import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {ObservableManager} from './ObservableManager';

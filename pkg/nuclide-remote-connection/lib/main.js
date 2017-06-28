@@ -62,33 +62,24 @@ import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import typeof * as CtagsService from '../../nuclide-ctags-rpc';
-import typeof * as DefinitionPreviewService
-  from '../../nuclide-definition-preview-rpc';
-import typeof * as FileSystemService
-  from '../../nuclide-server/lib/services/FileSystemService';
+import typeof * as DefinitionPreviewService from '../../nuclide-definition-preview-rpc';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
-import typeof * as FuzzyFileSearchService
-  from '../../nuclide-fuzzy-file-search-rpc';
+import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
 import typeof * as GrepService from '../../nuclide-grep-rpc';
 import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-import typeof * as InfoService
-  from '../../nuclide-server/lib/services/InfoService';
-import typeof * as MerlinService
-  from '../../nuclide-ocaml-rpc/lib/MerlinService';
-import typeof * as NativeDebuggerService
-  from '../../nuclide-debugger-native-rpc';
-import typeof * as OpenFilesService
-  from '../../nuclide-open-files-rpc/lib/OpenFilesService';
+import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
+import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService';
+import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc';
+import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
 import typeof * as PhpDebuggerService from '../../nuclide-debugger-php-rpc';
 import typeof * as PythonService from '../../nuclide-python-rpc';
-import typeof * as ReasonService
-  from '../../nuclide-ocaml-rpc/lib/ReasonService';
+import typeof * as ReasonService from '../../nuclide-ocaml-rpc/lib/ReasonService';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
-import typeof * as SourceControlService
-  from '../../nuclide-server/lib/services/SourceControlService';
+import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));

@@ -21,9 +21,7 @@ import {getLastProjectPath} from '../../nuclide-arcanist-base';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {asyncFilter} from 'nuclide-commons/promise';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import getMatchingProjects from './getMatchingProjects';
 import tryReopenProject from './tryReopenProject';
 
@@ -133,9 +131,8 @@ export async function openArcDeepLink(
     for (let i = 0; i < paths.length; i++) {
       const localPath = nuclideUri.join(match, paths[i]);
       const intLine = lines == null ? undefined : parseInt(lines[i], 10) - 1;
-      const intColumn = columns == null
-        ? undefined
-        : parseInt(columns[i], 10) - 1;
+      const intColumn =
+        columns == null ? undefined : parseInt(columns[i], 10) - 1;
       goToLocation(localPath, intLine, intColumn);
     }
   } catch (err) {

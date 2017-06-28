@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  DnsLookup,
-} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
+import type {DnsLookup} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 
 import type {
   NuclideRemoteConnectionParams,
@@ -257,7 +255,8 @@ export default class ConnectionDetailsPrompt extends React.Component {
                     this.tip.style.zIndex = 10999;
                     return 'right';
                   },
-                  title: 'The settings most recently used to connect. To save settings permanently, ' +
+                  title:
+                    'The settings most recently used to connect. To save settings permanently, ' +
                     'create a profile.',
                 })}
               />
@@ -282,9 +281,10 @@ export default class ConnectionDetailsPrompt extends React.Component {
 
     // The default profile is sliced from the Array to render it separately, which means
     // decrementing the effective index into the Array passed to the `MutableListSelector`.
-    let idOfSelectedItem = this.props.indexOfSelectedConnectionProfile == null
-      ? null
-      : this.props.indexOfSelectedConnectionProfile - 1;
+    let idOfSelectedItem =
+      this.props.indexOfSelectedConnectionProfile == null
+        ? null
+        : this.props.indexOfSelectedConnectionProfile - 1;
     if (idOfSelectedItem === null || idOfSelectedItem < 0) {
       idOfSelectedItem = null;
     } else {
@@ -307,7 +307,8 @@ export default class ConnectionDetailsPrompt extends React.Component {
               this.tip.style.zIndex = 10999;
               return 'right';
             },
-            title: 'Two or more of your profiles use host names that resolve ' +
+            title:
+              'Two or more of your profiles use host names that resolve ' +
               'to the same IP address. Consider unifying them to avoid ' +
               'potential collisions.',
           })}

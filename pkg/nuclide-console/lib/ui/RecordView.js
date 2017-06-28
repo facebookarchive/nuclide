@@ -19,9 +19,7 @@ import type {
 
 import classnames from 'classnames';
 import React from 'react';
-import {
-  LazyNestedValueComponent,
-} from '../../../nuclide-ui/LazyNestedValueComponent';
+import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
 import {TextRenderer} from '../../../nuclide-ui/TextRenderer';
@@ -77,7 +75,11 @@ export default class RecordView extends React.Component {
       // TODO: We really want to use a text editor to render this so that we can get syntax
       // highlighting, but they're just too expensive. Figure out a less-expensive way to get syntax
       // highlighting.
-      return <pre>{record.text || ' '}</pre>;
+      return (
+        <pre>
+          {record.text || ' '}
+        </pre>
+      );
     } else if (record.kind === 'response') {
       const executor = this.props.getExecutor(record.sourceId);
       return this._renderNestedValueComponent(displayableRecord, executor);
@@ -87,7 +89,11 @@ export default class RecordView extends React.Component {
     } else {
       // If there's not text, use a space to make sure the row doesn't collapse.
       const text = record.text || ' ';
-      return <pre>{parseText(text)}</pre>;
+      return (
+        <pre>
+          {parseText(text)}
+        </pre>
+      );
     }
   }
 
@@ -133,15 +139,18 @@ export default class RecordView extends React.Component {
     const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
     const sourceLabel = this.props.showSourceLabel
       ? <span
-          className={`nuclide-console-record-source-label ${getHighlightClassName(level)}`}>
+          className={`nuclide-console-record-source-label ${getHighlightClassName(
+            level,
+          )}`}>
           {sourceId}
         </span>
       : null;
     let renderedTimestamp;
     if (timestamp != null) {
-      const timestampLabel = Date.now() - timestamp > ONE_DAY
-        ? timestamp.toLocaleString()
-        : timestamp.toLocaleTimeString();
+      const timestampLabel =
+        Date.now() - timestamp > ONE_DAY
+          ? timestamp.toLocaleString()
+          : timestamp.toLocaleTimeString();
       renderedTimestamp = (
         <div className="nuclide-console-record-timestamp">
           {timestampLabel}
@@ -241,7 +250,9 @@ function parseText(text: string): Array<string | React.Element<any>> {
     // Since we're splitting on the URL regex, every other piece will be a URL.
     const isURL = i % 2 !== 0;
     return isURL
-      ? <a key={`d${i}`} href={chunk} target="_blank">{chunk}</a>
+      ? <a key={`d${i}`} href={chunk} target="_blank">
+          {chunk}
+        </a>
       : chunk;
   });
 }

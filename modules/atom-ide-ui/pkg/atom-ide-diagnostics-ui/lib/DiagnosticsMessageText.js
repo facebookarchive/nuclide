@@ -79,11 +79,19 @@ function renderRowWithLinks(
       const openUrl = () => {
         shell.openExternal(part.url);
       };
-      return <a href="#" key={index} onClick={openUrl}>{part.url}</a>;
+      return (
+        <a href="#" key={index} onClick={openUrl}>
+          {part.url}
+        </a>
+      );
     }
   });
 
-  return <div key={rowIndex}>{parts}</div>;
+  return (
+    <div key={rowIndex}>
+      {parts}
+    </div>
+  );
 }
 
 export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
@@ -96,10 +104,15 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
       />
     );
   } else if (message.text != null) {
-    const rows = props.preserveNewlines !== false
-      ? message.text.split('\n')
-      : [message.text];
-    return <span title={message.text}>{rows.map(renderRowWithLinks)}</span>;
+    const rows =
+      props.preserveNewlines !== false
+        ? message.text.split('\n')
+        : [message.text];
+    return (
+      <span title={message.text}>
+        {rows.map(renderRowWithLinks)}
+      </span>
+    );
   } else {
     return <span>Diagnostic lacks message.</span>;
   }

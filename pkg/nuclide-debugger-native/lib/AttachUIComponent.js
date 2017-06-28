@@ -12,9 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
-import type {
-  AttachTargetInfo,
-} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import type {AttachTargetInfo} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {Column} from 'nuclide-commons-ui/Table';
 
 import React from 'react';
@@ -52,7 +50,7 @@ function getColumns(): Array<Column> {
     {
       title: 'PID',
       key: 'pid',
-      width: 0.10,
+      width: 0.1,
     },
     {
       title: 'Command Name',
@@ -93,8 +91,11 @@ function getCompareFunction(
   return () => 0;
 }
 
-export class AttachUIComponent
-  extends React.Component<void, PropsType, StateType> {
+export class AttachUIComponent extends React.Component<
+  void,
+  PropsType,
+  StateType,
+> {
   props: PropsType;
   state: StateType;
   _targetListUpdating: boolean;
@@ -192,9 +193,10 @@ export class AttachUIComponent
     }
 
     if (newSelectedTarget == null) {
-      newSelectedTarget = this.state.selectedAttachTarget == null
-        ? null
-        : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
+      newSelectedTarget =
+        this.state.selectedAttachTarget == null
+          ? null
+          : this._getAttachTargetOfPid(this.state.selectedAttachTarget.pid);
     }
     this._targetListUpdating = false;
     this.setState({

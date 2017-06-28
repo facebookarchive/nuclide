@@ -121,9 +121,10 @@ export default class OutputTable extends React.Component {
   }
 
   render(): ?React.Element<any> {
-    const grammar = this.props.scopeName == null
-      ? null
-      : atom.grammars.grammarForScopeName(this.props.scopeName);
+    const grammar =
+      this.props.scopeName == null
+        ? null
+        : atom.grammars.grammarForScopeName(this.props.scopeName);
     return (
       <div className="nuclide-console-input-wrapper">
         <AtomTextEditor

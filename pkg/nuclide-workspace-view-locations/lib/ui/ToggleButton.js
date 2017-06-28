@@ -39,7 +39,8 @@ export class ToggleButton extends React.Component {
     return (
       <div className={className}>
         <div
-          className={`nuclide-workspace-views-toggle-button-inner ${this.props.position}`}
+          className={`nuclide-workspace-views-toggle-button-inner ${this.props
+            .position}`}
           onClick={this.props.toggle}
           onDragEnter={this.props.onDragEnter}>
           <Icon icon={getIconName(this.props.position, this.props.open)} />

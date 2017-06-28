@@ -24,9 +24,7 @@ import type {
   FileDiagnosticMessage,
   Trace,
 } from '../../atom-ide-diagnostics/lib/rpc-types';
-import type {
-  WorkspaceViewsService,
-} from 'nuclide-commons-atom/workspace-views-compat';
+import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
 
 import invariant from 'assert';
 
@@ -42,9 +40,7 @@ import {applyUpdateToEditor} from './gutter';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {
-  consumeWorkspaceViewsCompat,
-} from 'nuclide-commons-atom/workspace-views-compat';
+import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 const LINTER_PACKAGE = 'linter';
@@ -449,9 +445,8 @@ class KeyboardShortcuts {
     if (traces == null) {
       return;
     }
-    let candidateTrace = this._traceIndex == null
-      ? traces.length - 1
-      : this._traceIndex - 1;
+    let candidateTrace =
+      this._traceIndex == null ? traces.length - 1 : this._traceIndex - 1;
     while (candidateTrace >= 0) {
       if (this.trySetCurrentTrace(traces, candidateTrace)) {
         return;

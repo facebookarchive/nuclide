@@ -10,20 +10,15 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as AdbService
-  from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
+import typeof * as AdbService from '../../../nuclide-adb-sdb-rpc/lib/AdbService';
 import type {Store} from '../types';
-import type {
-  DebugBridgeFullConfig,
-} from '../../../nuclide-adb-sdb-rpc/lib/types';
+import type {DebugBridgeFullConfig} from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Expected} from '../../../commons-node/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import * as Actions from '../redux/Actions';
 import {getAdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {
-  observeAndroidDevicesX,
-} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeAndroidDevicesX} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
 import {Observable} from 'rxjs';
 
 export class AndroidBridge {

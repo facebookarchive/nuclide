@@ -160,22 +160,21 @@ export type LinterMessageV2 = {
   severity: 'error' | 'warning' | 'info',
   // TODO: only the first solution is used at the moment.
   solutions?: Array<
-
-      | {
-          title?: string,
-          position: atom$RangeLike,
-          priority?: number,
-          currentText?: string,
-          replaceWith: string,
-        }
-      | {
-          // TODO: not currently supported.
-          title?: string,
-          position: atom$RangeLike,
-          priority?: number,
-          apply: () => any,
-          replaceWith?: void, // Hint for Flow.
-        },
+    | {
+      title?: string,
+      position: atom$RangeLike,
+      priority?: number,
+      currentText?: string,
+      replaceWith: string,
+    }
+    | {
+      // TODO: not currently supported.
+      title?: string,
+      position: atom$RangeLike,
+      priority?: number,
+      apply: () => any,
+      replaceWith?: void, // Hint for Flow.
+    },
   >,
   // TODO: the callback version is not supported.
   description?: string | (() => Promise<string> | string),

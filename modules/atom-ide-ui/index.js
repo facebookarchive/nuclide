@@ -18,7 +18,8 @@ import FeatureLoader from 'nuclide-commons-atom/FeatureLoader';
 
 if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
   atom.notifications.addWarning('Duplicate package: `atom-ide-ui`', {
-    description: '`atom-ide-ui` is already included as part of `nuclide`.<br>' +
+    description:
+      '`atom-ide-ui` is already included as part of `nuclide`.<br>' +
       'Please uninstall `atom-ide-ui` to avoid conflicts.',
     dismissable: true,
   });

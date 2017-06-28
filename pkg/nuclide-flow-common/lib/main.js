@@ -13,9 +13,7 @@ import {Range} from 'simple-text-buffer';
 
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 
-import type {
-  AutocompleteResult,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {FlowLocNoSource} from '../../nuclide-flow-rpc';
 
 // A simple heuristic for identifier names in JavaScript.

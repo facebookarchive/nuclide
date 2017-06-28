@@ -23,8 +23,7 @@ import {highlightOnUpdate} from './highlightOnUpdate';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import ignoreTextSelectionEvents
-  from 'nuclide-commons-ui/ignoreTextSelectionEvents';
+import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 import classnames from 'classnames';
 
 const SPINNER_DELAY = 100; /* ms */
@@ -78,7 +77,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
   }
   return (
     <span>
-      {children.map(child => (
+      {children.map(child =>
         <TreeItem key={child.name}>
           <ValueComponent
             evaluationResult={child.value}
@@ -92,8 +91,8 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
             getCachedChildren={getCachedChildren}
             setCachedChildren={setCachedChildren}
           />
-        </TreeItem>
-      ))}
+        </TreeItem>,
+      )}
     </span>
   );
 };
@@ -105,7 +104,9 @@ function renderValueLine(
 ): React.Element<any> {
   if (expression == null) {
     return (
-      <div className="nuclide-ui-lazy-nested-value-container">{value}</div>
+      <div className="nuclide-ui-lazy-nested-value-container">
+        {value}
+      </div>
     );
   } else {
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions (t11408154)
@@ -248,7 +249,9 @@ class ValueComponent extends React.Component {
       );
       return isRoot
         ? simpleValueElement
-        : <TreeItem>{simpleValueElement}</TreeItem>;
+        : <TreeItem>
+            {simpleValueElement}
+          </TreeItem>;
     }
     const description =
       evaluationResult.description || '<no description provided>';
@@ -362,9 +365,10 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
     (this: any).handleExpansionChange = this.handleExpansionChange.bind(this);
     (this: any).getCachedChildren = this.getCachedChildren.bind(this);
     (this: any).setCachedChildren = this.setCachedChildren.bind(this);
-    this.shouldCacheChildren = this.props.shouldCacheChildren == null
-      ? false
-      : this.props.shouldCacheChildren;
+    this.shouldCacheChildren =
+      this.props.shouldCacheChildren == null
+        ? false
+        : this.props.shouldCacheChildren;
   }
 
   handleExpansionChange(expandedValuePath: string, isExpanded: boolean): void {

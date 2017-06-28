@@ -22,9 +22,7 @@ import React from 'react';
 import {List} from 'react-virtualized';
 import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
-import {
-  ResizeSensitiveContainer,
-} from '../../../nuclide-ui/ResizeSensitiveContainer';
+import {ResizeSensitiveContainer} from '../../../nuclide-ui/ResizeSensitiveContainer';
 
 type Props = {
   displayableRecords: Array<DisplayableRecord>,

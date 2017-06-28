@@ -265,9 +265,10 @@ export default class CodeFormatManager {
           this._checkContentsAreSame(contents, editor.getText());
           buffer.setTextViaDiff(formatted);
 
-          const newPosition = newCursor != null
-            ? buffer.positionForCharacterIndex(newCursor)
-            : editor.getCursorBufferPosition();
+          const newPosition =
+            newCursor != null
+              ? buffer.positionForCharacterIndex(newCursor)
+              : editor.getCursorBufferPosition();
 
           // We call setCursorBufferPosition even when there is no newCursor,
           // because it unselects the text selection.

@@ -16,7 +16,8 @@ export function getHomeFragments(): HomeFragments {
     feature: {
       title: 'Diagnostics',
       icon: 'law',
-      description: 'Displays diagnostics, errors, and lint warnings for your files and projects.',
+      description:
+        'Displays diagnostics, errors, and lint warnings for your files and projects.',
       command: () => {
         atom.commands.dispatch(
           atom.views.getView(atom.workspace),

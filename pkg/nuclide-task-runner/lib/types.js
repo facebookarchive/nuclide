@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  LocalStorageJsonTable,
-} from '../../commons-atom/LocalStorageJsonTable';
+import type {LocalStorageJsonTable} from '../../commons-atom/LocalStorageJsonTable';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Task} from '../../commons-node/tasks';
 import type {Message} from 'nuclide-commons/process';

@@ -23,9 +23,7 @@ import type {
 } from '../types';
 import type {CreatePasteFunction} from '../../../nuclide-paste-base';
 
-import {
-  viewableFromReactElement,
-} from '../../../commons-atom/viewableFromReactElement';
+import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import getCurrentExecutorId from '../getCurrentExecutorId';
@@ -118,9 +116,8 @@ export class ConsoleContainer extends React.Component {
       sources: [],
       filterText: initialFilterText == null ? '' : initialFilterText,
       enableRegExpFilter: Boolean(initialEnableRegExpFilter),
-      unselectedSourceIds: initialUnselectedSourceIds == null
-        ? []
-        : initialUnselectedSourceIds,
+      unselectedSourceIds:
+        initialUnselectedSourceIds == null ? [] : initialUnselectedSourceIds,
     };
     this._nextRecordId = 0;
     this._displayableRecords = new WeakMap();
@@ -174,9 +171,10 @@ export class ConsoleContainer extends React.Component {
       .audit(() => nextAnimationFrame)
       .subscribe(state => {
         const currentExecutorId = getCurrentExecutorId(state);
-        const currentExecutor = currentExecutorId != null
-          ? state.executors.get(currentExecutorId)
-          : null;
+        const currentExecutor =
+          currentExecutorId != null
+            ? state.executors.get(currentExecutorId)
+            : null;
         this.setState({
           ready: true,
           currentExecutor,
@@ -244,9 +242,8 @@ export class ConsoleContainer extends React.Component {
       )
       .map(displayable => {
         const record = displayable.record;
-        const level = record.level != null
-          ? record.level.toString().toUpperCase()
-          : 'LOG';
+        const level =
+          record.level != null ? record.level.toString().toUpperCase() : 'LOG';
         const timestamp = record.timestamp.toLocaleString();
         return `[${level}][${record.sourceId}][${timestamp}]\t ${record.text}`;
       })
@@ -318,9 +315,8 @@ export class ConsoleContainer extends React.Component {
     const filteredRecordCount =
       this.state.displayableRecords.length - displayableRecords.length;
 
-    const createPaste = this.props.createPasteFunction != null
-      ? this._createPaste
-      : null;
+    const createPaste =
+      this.props.createPasteFunction != null ? this._createPaste : null;
 
     return (
       <Console
@@ -459,9 +455,8 @@ function getSources(state: AppState): Array<Source> {
         id: provider.id,
         name: provider.id,
         status: state.providerStatuses.get(provider.id) || 'stopped',
-        start: typeof provider.start === 'function'
-          ? provider.start
-          : undefined,
+        start:
+          typeof provider.start === 'function' ? provider.start : undefined,
         stop: typeof provider.stop === 'function' ? provider.stop : undefined,
       };
       return [k, source];

@@ -94,9 +94,8 @@ export class Button extends React.Component {
       ...remainingProps
     } = this.props;
     const sizeClassname = size == null ? '' : ButtonSizeClassnames[size] || '';
-    const buttonTypeClassname = buttonType == null
-      ? ''
-      : ButtonTypeClassnames[buttonType] || '';
+    const buttonTypeClassname =
+      buttonType == null ? '' : ButtonTypeClassnames[buttonType] || '';
     const ref = tooltip ? addTooltip(tooltip) : null;
     const newClassName = classnames(className, 'btn', {
       [`icon icon-${maybeToString(icon)}`]: icon != null,

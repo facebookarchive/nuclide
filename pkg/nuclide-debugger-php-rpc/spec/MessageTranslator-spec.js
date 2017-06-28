@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  MessageTranslator as MessageTranslatorType,
-} from '../lib/MessageTranslator';
+import type {MessageTranslator as MessageTranslatorType} from '../lib/MessageTranslator';
 import type {ClientCallback} from '../lib/ClientCallback';
 
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';

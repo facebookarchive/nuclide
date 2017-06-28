@@ -120,9 +120,8 @@ export default class NuclideTextBuffer extends TextBuffer {
       // Timeouts occur quite frequently when the network is unstable.
       // Demote these to 'error' level.
       const logger = getLogger('nuclide-remote-connection');
-      const logFunction = e instanceof RpcTimeoutError
-        ? logger.error
-        : logger.fatal;
+      const logFunction =
+        e instanceof RpcTimeoutError ? logger.error : logger.fatal;
       logFunction('Failed to save remote file.', e);
       let message = e.message;
       // This can happen if the user triggered the save while closing the file.

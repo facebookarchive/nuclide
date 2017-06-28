@@ -10,9 +10,7 @@
  */
 
 import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
-import type {
-  ConnectionMultiplexer as ConnectionMultiplexerType,
-} from '../lib/ConnectionMultiplexer';
+import type {ConnectionMultiplexer as ConnectionMultiplexerType} from '../lib/ConnectionMultiplexer';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';

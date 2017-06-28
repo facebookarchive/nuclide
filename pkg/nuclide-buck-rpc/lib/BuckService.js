@@ -12,9 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {ConnectableObservable} from 'rxjs';
-import type {
-  ClangCompilationDatabase,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 import type {
   BaseBuckBuildOptions,
   ResolvedRuleType,

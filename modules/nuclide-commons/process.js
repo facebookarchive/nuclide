@@ -293,9 +293,8 @@ export function getOutputStream(
   options?: GetOutputStreamOptions,
   rest: void,
 ): Observable<ProcessMessage> {
-  const chunk = idx(options, _ => _.splitByLines) === false
-    ? x => x
-    : splitStream;
+  const chunk =
+    idx(options, _ => _.splitByLines) === false ? x => x : splitStream;
   const maxBuffer = idx(options, _ => _.maxBuffer);
   const isExitError = idx(options, _ => _.isExitError) || isExitErrorDefault;
   const exitErrorBufferSize = idx(options, _ => _.exitErrorBufferSize) || 2000;
@@ -695,9 +694,8 @@ export class ProcessExitError extends Error {
   ) {
     // $FlowIssue: This isn't typed in the Flow node type defs
     const {spawnargs} = proc;
-    const commandName = spawnargs[0] === process.execPath
-      ? spawnargs[1]
-      : spawnargs[0];
+    const commandName =
+      spawnargs[0] === process.execPath ? spawnargs[1] : spawnargs[0];
     super(
       `"${commandName}" failed with ${exitEventToMessage({
         exitCode,
@@ -746,9 +744,8 @@ export class ProcessTimeoutError extends Error {
   constructor(timeout: number, proc: child_process$ChildProcess) {
     // $FlowIssue: This isn't typed in the Flow node type defs
     const {spawnargs} = proc;
-    const commandName = spawnargs[0] === process.execPath
-      ? spawnargs[1]
-      : spawnargs[0];
+    const commandName =
+      spawnargs[0] === process.execPath ? spawnargs[1] : spawnargs[0];
     super(`"${commandName}" timed out after ${timeout}ms`);
     this.name = 'ProcessTimeoutError';
   }
@@ -767,14 +764,15 @@ const MAX_LOGGED_CALLS = 100;
 const PREVERVED_HISTORY_CALLS = 50;
 
 const noopDisposable = {dispose: () => {}};
-const whenShellEnvironmentLoaded = typeof atom !== 'undefined' &&
+const whenShellEnvironmentLoaded =
+  typeof atom !== 'undefined' &&
   atomWhenShellEnvironmentLoaded &&
   !atom.inSpecMode()
-  ? atomWhenShellEnvironmentLoaded
-  : cb => {
-      cb();
-      return noopDisposable;
-    };
+    ? atomWhenShellEnvironmentLoaded
+    : cb => {
+        cb();
+        return noopDisposable;
+      };
 
 export const loggedCalls = [];
 function logCall(duration, command, args) {
@@ -821,9 +819,10 @@ function createProcessStream(
   const inputOption = options.input;
   let input;
   if (inputOption != null) {
-    input = typeof inputOption === 'string'
-      ? Observable.of(inputOption)
-      : inputOption;
+    input =
+      typeof inputOption === 'string'
+        ? Observable.of(inputOption)
+        : inputOption;
   }
 
   return observableFromSubscribeFunction(whenShellEnvironmentLoaded)

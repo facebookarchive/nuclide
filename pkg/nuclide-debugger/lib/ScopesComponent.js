@@ -14,9 +14,7 @@ import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
 import React from 'react';
-import {
-  LazyNestedValueComponent,
-} from '../../nuclide-ui/LazyNestedValueComponent';
+import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';
 
@@ -85,13 +83,14 @@ export class ScopesComponent extends React.Component {
   ): ?React.Element<any> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const collapsedByDefault = !isLocalScopeName(scope.name);
-    const noLocals = collapsedByDefault || scope.scopeVariables.length > 0
-      ? null
-      : <div className="nuclide-debugger-expression-value-row">
-          <span className="nuclide-debugger-expression-value-content">
-            (no variables)
-          </span>
-        </div>;
+    const noLocals =
+      collapsedByDefault || scope.scopeVariables.length > 0
+        ? null
+        : <div className="nuclide-debugger-expression-value-row">
+            <span className="nuclide-debugger-expression-value-content">
+              (no variables)
+            </span>
+          </div>;
 
     return (
       <Section

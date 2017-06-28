@@ -130,11 +130,13 @@ export default class ActiveEditorRegistry<T: Provider, V> {
     this._providerRegistry = new ProviderRegistry();
     this._newProviderEvents = new Subject();
     this._resultsStream = this._createResultsStream({
-      activeEditors: eventSources.activeEditors ||
-        observeActiveEditorsDebounced(),
-      changesForEditor: eventSources.changesForEditor ||
+      activeEditors:
+        eventSources.activeEditors || observeActiveEditorsDebounced(),
+      changesForEditor:
+        eventSources.changesForEditor ||
         (editor => editorChangesDebounced(editor)),
-      savesForEditor: eventSources.savesForEditor ||
+      savesForEditor:
+        eventSources.savesForEditor ||
         (editor => {
           return observableFromSubscribeFunction(callback =>
             editor.onDidSave(callback),

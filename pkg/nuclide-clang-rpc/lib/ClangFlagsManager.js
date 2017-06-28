@@ -138,7 +138,9 @@ export default class ClangFlagsManager {
     src: string,
     compilationDB: ?ClangCompilationDatabase,
   ): Promise<?ClangFlags> {
-    const cacheKey = `${src}-${this._cacheKeyForCompilationDatabase(compilationDB)}`;
+    const cacheKey = `${src}-${this._cacheKeyForCompilationDatabase(
+      compilationDB,
+    )}`;
     let cached = this._pathToFlags.get(cacheKey);
     if (cached == null) {
       cached = this._getFlagsForSrcImpl(src, compilationDB);
@@ -344,9 +346,10 @@ export default class ClangFlagsManager {
     }
 
     // Even if we can't get flags, try to watch the build file in case they get added.
-    const buildFile = compilationDB != null && compilationDB.flagsFile != null
-      ? compilationDB.flagsFile
-      : await guessBuildFile(src);
+    const buildFile =
+      compilationDB != null && compilationDB.flagsFile != null
+        ? compilationDB.flagsFile
+        : await guessBuildFile(src);
     if (buildFile != null) {
       return {
         rawData: null,

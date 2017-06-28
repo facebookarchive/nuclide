@@ -218,7 +218,7 @@ describe('FlowSingleProjectLanguageService', () => {
     }
 
     async function getNameSet(_: void): Promise<Set<?string>> {
-      return new Set((await getNameArray()));
+      return new Set(await getNameArray());
     }
 
     function hasEqualElements(set1: Set<?string>, set2: Set<?string>): boolean {

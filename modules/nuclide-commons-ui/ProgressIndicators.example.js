@@ -15,7 +15,7 @@ import {Block} from './Block';
 import {ProgressBar} from './ProgressBar';
 import {LoadingSpinner} from './LoadingSpinner';
 
-const ProgressBarExample = (): React.Element<any> => (
+const ProgressBarExample = (): React.Element<any> =>
   <div>
     <Block>
       <ProgressBar />
@@ -29,10 +29,9 @@ const ProgressBarExample = (): React.Element<any> => (
     <Block>
       <ProgressBar max={100} value={100} />
     </Block>
-  </div>
-);
+  </div>;
 
-const LoadingSpinnerExample = (): React.Element<any> => (
+const LoadingSpinnerExample = (): React.Element<any> =>
   <div>
     <Block>
       <LoadingSpinner size="EXTRA_SMALL" />
@@ -46,12 +45,12 @@ const LoadingSpinnerExample = (): React.Element<any> => (
     <Block>
       <LoadingSpinner size="LARGE" />
     </Block>
-  </div>
-);
+  </div>;
 
 export const ProgressIndicatorExamples = {
   sectionName: 'Progress Indicators',
-  description: 'Show that work is being performed. Consider using one of these for any work > 1s.',
+  description:
+    'Show that work is being performed. Consider using one of these for any work > 1s.',
   examples: [
     {
       title: 'ProgressBar',

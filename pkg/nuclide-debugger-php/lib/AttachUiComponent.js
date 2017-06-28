@@ -33,8 +33,11 @@ type StateType = {
   pathMenuItems: Array<{label: string, value: number}>,
 };
 
-export class AttachUiComponent
-  extends React.Component<void, PropsType, StateType> {
+export class AttachUiComponent extends React.Component<
+  void,
+  PropsType,
+  StateType,
+> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;

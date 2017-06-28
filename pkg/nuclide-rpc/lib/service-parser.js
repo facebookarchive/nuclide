@@ -903,7 +903,8 @@ class FileParser {
         return type.name;
       case 'QualifiedTypeIdentifier':
         invariant(type.id.type === 'Identifier');
-        return `${this._parseTypeName(serviceParser, type.qualification)}.${type.id.name}`;
+        return `${this._parseTypeName(serviceParser, type.qualification)}.${type
+          .id.name}`;
       default:
         throw this._error(type, `Expected named type. Found ${type.type}`);
     }

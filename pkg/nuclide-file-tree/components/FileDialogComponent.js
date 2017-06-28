@@ -134,7 +134,9 @@ export default class FileDialogComponent extends React.Component {
     // [1] https://github.com/atom/tree-view/blob/v0.200.0/lib/dialog.coffee#L7
     return (
       <div className="tree-view-dialog" ref="dialog">
-        <label className={labelClassName}>{this.props.message}</label>
+        <label className={labelClassName}>
+          {this.props.message}
+        </label>
         <AtomInput initialValue={this.props.initialValue} ref="input" />
         {checkboxes}
       </div>

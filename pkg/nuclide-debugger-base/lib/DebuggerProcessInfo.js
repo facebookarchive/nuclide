@@ -11,9 +11,7 @@
 
 import type DebuggerInstanceBase from './DebuggerInstance';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  ControlButtonSpecification,
-} from '../../nuclide-debugger/lib/types';
+import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 
 export default class DebuggerProcessInfo {

@@ -11,9 +11,7 @@
 
 import type {Definition} from 'atom-ide-ui';
 
-import {
-  getDefinitionPreview as getDefinitionPreviewImpl,
-} from 'nuclide-commons/symbol-definition-preview';
+import {getDefinitionPreview as getDefinitionPreviewImpl} from 'nuclide-commons/symbol-definition-preview';
 
 export function getDefinitionPreview(definition: Definition): Promise<string> {
   return getDefinitionPreviewImpl(definition);

@@ -19,9 +19,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {TaskButton} from './TaskButton';
 import {DeviceTask} from '../DeviceTask';
 import React from 'react';
-import {
-  PanelComponentScroller,
-} from 'nuclide-commons-ui/PanelComponentScroller';
+import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';
 import {DeviceTable} from './DeviceTable';

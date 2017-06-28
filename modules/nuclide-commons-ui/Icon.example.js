@@ -14,25 +14,29 @@ import React from 'react';
 import {Block} from './Block';
 import {Icon} from './Icon';
 
-const IconExample = (): React.Element<any> => (
+const IconExample = (): React.Element<any> =>
   <div>
     <Block>
       <Icon icon="gift" />
       <Icon icon="heart" />
       <Icon icon="info" />
     </Block>
-  </div>
-);
+  </div>;
 
-const IconWithTextExample = (): React.Element<any> => (
+const IconWithTextExample = (): React.Element<any> =>
   <div>
     <Block>
-      <div><Icon icon="gift">gift</Icon></div>
-      <div><Icon icon="heart">heart</Icon></div>
-      <div><Icon icon="info">info</Icon></div>
+      <div>
+        <Icon icon="gift">gift</Icon>
+      </div>
+      <div>
+        <Icon icon="heart">heart</Icon>
+      </div>
+      <div>
+        <Icon icon="info">info</Icon>
+      </div>
     </Block>
-  </div>
-);
+  </div>;
 
 export const IconExamples = {
   sectionName: 'Icons',

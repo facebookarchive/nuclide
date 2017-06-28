@@ -12,8 +12,7 @@
 import type {Datatip} from 'atom-ide-ui';
 
 import {wordAtPosition} from 'nuclide-commons-atom/range';
-import makeUnescapedUnicodeDatatipComponent
-  from './UnescapedUnicodeDatatipComponent';
+import makeUnescapedUnicodeDatatipComponent from './UnescapedUnicodeDatatipComponent';
 import {decodeSurrogateCodePoints, extractCodePoints} from './Unicode';
 
 // Our "word" for the datatip is a contiguous alphanumeric string

@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  ClangCompilationDatabase,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
 
 export type ClangCompilationDatabaseProvider = {
   getCompilationDatabase: (path: string) => Promise<?ClangCompilationDatabase>,

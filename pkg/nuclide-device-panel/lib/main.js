@@ -17,9 +17,7 @@ import {
 } from './DevicePanelWorkspaceView';
 import {Disposable} from 'atom';
 import invariant from 'invariant';
-import {
-  ServerConnection,
-} from '../../nuclide-remote-connection/lib/ServerConnection';
+import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnection';
 import {
   combineEpics,
   createEpicMiddleware,
@@ -31,9 +29,7 @@ import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {getProviders} from './providers';
 
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {Store, DevicePanelServiceApi} from './types';
 
 let activation = null;

@@ -49,9 +49,10 @@ export default class Hasher<K> {
         if (hash == null) {
           hash = `${type}:${this._objectCount}`;
           this._hashes.set(item, hash);
-          this._objectCount = this._objectCount + 1 === Number.MAX_SAFE_INTEGER
-            ? Number.MIN_SAFE_INTEGER
-            : this._objectCount + 1;
+          this._objectCount =
+            this._objectCount + 1 === Number.MAX_SAFE_INTEGER
+              ? Number.MIN_SAFE_INTEGER
+              : this._objectCount + 1;
         }
         return hash;
       }

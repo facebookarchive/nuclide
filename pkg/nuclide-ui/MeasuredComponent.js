@@ -13,9 +13,7 @@ import React from 'react';
 
 import type {DOMMeasurements} from '../commons-atom/observe-element-dimensions';
 
-import {
-  observeElementDimensions,
-} from '../commons-atom/observe-element-dimensions';
+import {observeElementDimensions} from '../commons-atom/observe-element-dimensions';
 
 type Props = {
   onMeasurementsChanged: (measurements: DOMMeasurements) => void,
@@ -52,6 +50,10 @@ export class MeasuredComponent extends React.Component {
   }
 
   render(): React.Element<any> {
-    return <div ref={this._updateDomNode}>{this.props.children}</div>;
+    return (
+      <div ref={this._updateDomNode}>
+        {this.props.children}
+      </div>
+    );
   }
 }

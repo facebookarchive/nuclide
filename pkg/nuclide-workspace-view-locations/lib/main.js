@@ -9,12 +9,8 @@
  * @format
  */
 
-import type {
-  DistractionFreeModeProvider,
-} from '../../nuclide-distraction-free-mode';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {DistractionFreeModeProvider} from '../../nuclide-distraction-free-mode';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {PanelLocationId} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -68,9 +64,8 @@ class Activation {
         api.registerLocation({
           id,
           create: serializedState_ => {
-            const serializedState = serializedState_ == null
-              ? {}
-              : serializedState_;
+            const serializedState =
+              serializedState_ == null ? {} : serializedState_;
             const initialVisibility = this._initialPanelVisibility.get(id);
             if (initialVisibility != null) {
               serializedState.visible = initialVisibility;

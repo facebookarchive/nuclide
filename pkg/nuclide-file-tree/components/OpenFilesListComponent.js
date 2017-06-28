@@ -13,9 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import React from 'react';
 import classnames from 'classnames';
-import {
-  PanelComponentScroller,
-} from 'nuclide-commons-ui/PanelComponentScroller';
+import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from '../../nuclide-ui/Tree';

@@ -10,20 +10,15 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as SdbService
-  from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
+import typeof * as SdbService from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
 import type {Store} from '../types';
-import type {
-  DebugBridgeFullConfig,
-} from '../../../nuclide-adb-sdb-rpc/lib/types';
+import type {DebugBridgeFullConfig} from '../../../nuclide-adb-sdb-rpc/lib/types';
 import type {Expected} from '../../../commons-node/expected';
 import type {Device} from '../../../nuclide-device-panel/lib/types';
 
 import * as Actions from '../redux/Actions';
 import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {
-  observeTizenDevicesX,
-} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
+import {observeTizenDevicesX} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
 import {Observable} from 'rxjs';
 
 export class TizenBridge {

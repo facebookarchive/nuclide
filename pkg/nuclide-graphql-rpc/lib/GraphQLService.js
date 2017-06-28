@@ -12,22 +12,16 @@
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  HostServices,
-} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 
 /* LanguageService related type imports */
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import invariant from 'assert';
 
 import {FileCache} from '../../nuclide-open-files-rpc';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {
-  createMultiLspLanguageService,
-} from '../../nuclide-vscode-language-service';
+import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service';
 
 import {logger} from './config';
 

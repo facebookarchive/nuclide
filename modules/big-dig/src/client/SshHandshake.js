@@ -321,7 +321,8 @@ export class SshHandshake {
             '', // ignored
             [
               {
-                prompt: 'Encrypted private key detected, but no passphrase given.\n' +
+                prompt:
+                  'Encrypted private key detected, but no passphrase given.\n' +
                   `Enter passphrase for ${config.pathToPrivateKey}: `,
                 echo: false,
               },
@@ -393,9 +394,10 @@ export class SshHandshake {
   _updateServerInfo(serverInfo: {}) {
     invariant(typeof serverInfo.port === 'number');
     this._remotePort = serverInfo.port;
-    this._remoteHost = typeof serverInfo.hostname === 'string'
-      ? serverInfo.hostname
-      : this._config.host;
+    this._remoteHost =
+      typeof serverInfo.hostname === 'string'
+        ? serverInfo.hostname
+        : this._config.host;
 
     // The following keys are optional in `RemoteConnectionConfiguration`.
     //

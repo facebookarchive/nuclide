@@ -101,20 +101,21 @@ export default class ChangedFilesList extends React.Component {
       collapsed: this.state.isCollapsed,
     });
 
-    const showMoreFilesElement = fileStatuses.size > filesToShow
-      ? <div
-          className="icon icon-ellipsis"
-          ref={addTooltip({
-            title: 'Show more files with uncommitted changes',
-            delay: 300,
-            placement: 'bottom',
-          })}
-          onClick={() =>
-            this.setState({
-              visiblePagesCount: this.state.visiblePagesCount + 1,
+    const showMoreFilesElement =
+      fileStatuses.size > filesToShow
+        ? <div
+            className="icon icon-ellipsis"
+            ref={addTooltip({
+              title: 'Show more files with uncommitted changes',
+              delay: 300,
+              placement: 'bottom',
             })}
-        />
-      : null;
+            onClick={() =>
+              this.setState({
+                visiblePagesCount: this.state.visiblePagesCount + 1,
+              })}
+          />
+        : null;
 
     const isHgRoot = isHgPath(rootPath);
     return (
@@ -134,7 +135,7 @@ export default class ChangedFilesList extends React.Component {
               </div>
             : null}
           <ul className="list-tree has-flat-children">
-            {sizeLimitedFileChanges.map(([filePath, fileStatus]) => (
+            {sizeLimitedFileChanges.map(([filePath, fileStatus]) =>
               <ChangedFile
                 commandPrefix={commandPrefix}
                 enableFileExpansion={enableFileExpansion}
@@ -158,9 +159,11 @@ export default class ChangedFilesList extends React.Component {
                 onOpenFileInDiffView={onOpenFileInDiffView}
                 onRevertFile={onRevertFile}
                 rootPath={rootPath}
-              />
-            ))}
-            <li>{showMoreFilesElement}</li>
+              />,
+            )}
+            <li>
+              {showMoreFilesElement}
+            </li>
           </ul>
         </li>
       </ul>

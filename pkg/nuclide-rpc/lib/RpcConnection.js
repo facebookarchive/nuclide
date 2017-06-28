@@ -823,9 +823,10 @@ export class RpcConnection<TransportType: Transport> {
       return;
     }
     const eventName = trackingIdOfMessage(this._objectRegistry, message);
-    const args = message.args != null
-      ? shorten(JSON.stringify(message.args), 100, '...')
-      : '';
+    const args =
+      message.args != null
+        ? shorten(JSON.stringify(message.args), 100, '...')
+        : '';
     logger.warn(`${eventName}: Large response of size ${size}. Args:`, args);
     track('large-rpc-response', {
       eventName,

@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  DevicePanelServiceApi,
-} from '../../../nuclide-device-panel/lib/types';
+import type {DevicePanelServiceApi} from '../../../nuclide-device-panel/lib/types';
 
 import {AndroidBridge} from '../bridges/AndroidBridge';
 import {TizenBridge} from '../bridges/TizenBridge';

@@ -146,9 +146,10 @@ export default class WatchmanClient {
       // TODO(most): use state messages to decide on when to send updates.
       const stateEnter = response['state-enter'];
       const stateLeave = response['state-leave'];
-      const stateMessage = stateEnter != null
-        ? `Entering ${stateEnter}`
-        : `Leaving ${maybeToString(stateLeave)}`;
+      const stateMessage =
+        stateEnter != null
+          ? `Entering ${stateEnter}`
+          : `Leaving ${maybeToString(stateLeave)}`;
       logger.info(`Subscription state: ${stateMessage}`);
       return;
     }

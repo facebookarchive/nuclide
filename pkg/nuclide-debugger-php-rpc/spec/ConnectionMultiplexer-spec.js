@@ -14,12 +14,8 @@ import type {Socket} from 'net';
 import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
 import type {DbgpConnector as DbgpConnectorType} from '../lib/DbgpConnector';
 import type {Connection as ConnectionType} from '../lib/Connection';
-import type {
-  BreakpointStore as BreakpointStoreType,
-} from '../lib/BreakpointStore';
-import type {
-  ConnectionMultiplexer as ConnectionMultiplexerType,
-} from '../lib/ConnectionMultiplexer';
+import type {BreakpointStore as BreakpointStoreType} from '../lib/BreakpointStore';
+import type {ConnectionMultiplexer as ConnectionMultiplexerType} from '../lib/ConnectionMultiplexer';
 import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
 import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
 import {updateSettings} from '../lib/settings';

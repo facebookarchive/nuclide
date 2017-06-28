@@ -11,13 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import typeof * as HackService from '../../nuclide-hack-rpc/lib/HackService';
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {
   AutocompleteResult,
   Completion,
@@ -39,9 +35,7 @@ import {
   getReplacementPrefix,
   findHackPrefix,
 } from '../../nuclide-hack-common/lib/autocomplete';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import passesGK from '../../commons-node/passesGK';
 import {getEvaluationExpression} from './evaluationExpression';
 

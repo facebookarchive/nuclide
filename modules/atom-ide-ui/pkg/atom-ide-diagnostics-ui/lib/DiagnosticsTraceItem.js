@@ -36,7 +36,14 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
       event.stopPropagation();
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
-    locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
+    locSpan = (
+      <span>
+        :{' '}
+        <a href="#" onClick={onClick}>
+          {locString}
+        </a>
+      </span>
+    );
   }
   return (
     <div>

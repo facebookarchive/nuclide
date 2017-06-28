@@ -25,14 +25,22 @@ const DEPRECATED_COMMANDS = {
   'nuclide-code-format:format-code': 'code-format:format-code',
   'nuclide-datatip:copy-to-clipboard': 'datatip:copy-to-clipboard',
   'nuclide-datatip:toggle': 'datatip:toggle',
-  'nuclide-diagnostics-ui:fix-all-in-current-file': 'diagnostics:fix-all-in-current-file',
-  'nuclide-diagnostics-ui:go-to-first-diagnostic': 'diagnostics:go-to-first-diagnostic',
-  'nuclide-diagnostics-ui:go-to-last-diagnostic': 'diagnostics:go-to-last-diagnostic',
-  'nuclide-diagnostics-ui:go-to-next-diagnostic-trace': 'diagnostics:go-to-next-diagnostic-trace',
-  'nuclide-diagnostics-ui:go-to-next-diagnostic': 'diagnostics:go-to-next-diagnostic',
-  'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace': 'diagnostics:go-to-previous-diagnostic-trace',
-  'nuclide-diagnostics-ui:go-to-previous-diagnostic': 'diagnostics:go-to-previous-diagnostic',
-  'nuclide-diagnostics-ui:open-all-files-with-errors': 'diagnostics:open-all-files-with-errors',
+  'nuclide-diagnostics-ui:fix-all-in-current-file':
+    'diagnostics:fix-all-in-current-file',
+  'nuclide-diagnostics-ui:go-to-first-diagnostic':
+    'diagnostics:go-to-first-diagnostic',
+  'nuclide-diagnostics-ui:go-to-last-diagnostic':
+    'diagnostics:go-to-last-diagnostic',
+  'nuclide-diagnostics-ui:go-to-next-diagnostic-trace':
+    'diagnostics:go-to-next-diagnostic-trace',
+  'nuclide-diagnostics-ui:go-to-next-diagnostic':
+    'diagnostics:go-to-next-diagnostic',
+  'nuclide-diagnostics-ui:go-to-previous-diagnostic-trace':
+    'diagnostics:go-to-previous-diagnostic-trace',
+  'nuclide-diagnostics-ui:go-to-previous-diagnostic':
+    'diagnostics:go-to-previous-diagnostic',
+  'nuclide-diagnostics-ui:open-all-files-with-errors':
+    'diagnostics:open-all-files-with-errors',
   'nuclide-diagnostics-ui:toggle-table': 'diagnostics:toggle-table',
   'nuclide-find-references:activate': 'find-references:activate',
   'nuclide-outline-view:toggle': 'outline-view:toggle',
@@ -71,7 +79,8 @@ class Activation {
         track('deprecated-command-dispatched', {command});
         atom.notifications.addWarning('Nuclide: Deprecated Command', {
           icon: 'nuclicon-nuclide',
-          description: `The command \`${command}\` has been deprecated.\n` +
+          description:
+            `The command \`${command}\` has been deprecated.\n` +
             `Please use the new command \`${newCommand}\`.`,
           dismissable: true,
         });

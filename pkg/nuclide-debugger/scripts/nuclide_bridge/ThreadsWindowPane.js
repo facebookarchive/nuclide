@@ -156,10 +156,18 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
               style={rowStyle}
               ref={ref => this._setStoppedThread(ref)}>
-              <td>{indicator}</td>
-              <td>{thread.id}</td>
-              <td>{thread.address}</td>
-              <td>{thread.stopReason}</td>
+              <td>
+                {indicator}
+              </td>
+              <td>
+                {thread.id}
+              </td>
+              <td>
+                {thread.address}
+              </td>
+              <td>
+                {thread.stopReason}
+              </td>
             </tr>,
           );
         } else {
@@ -167,10 +175,18 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
             <tr
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
               style={rowStyle}>
-              <td>{indicator}</td>
-              <td>{thread.id}</td>
-              <td>{thread.address}</td>
-              <td>{thread.stopReason}</td>
+              <td>
+                {indicator}
+              </td>
+              <td>
+                {thread.id}
+              </td>
+              <td>
+                {thread.address}
+              </td>
+              <td>
+                {thread.stopReason}
+              </td>
             </tr>,
           );
         }

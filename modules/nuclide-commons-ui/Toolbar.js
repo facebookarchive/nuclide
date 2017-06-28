@@ -24,8 +24,8 @@ export const Toolbar = (props: Props) => {
   const className = classnames(
     'nuclide-ui-toolbar',
     {
-      [`nuclide-ui-toolbar--${maybeToString(props.location)}`]: props.location !=
-        null,
+      [`nuclide-ui-toolbar--${maybeToString(props.location)}`]:
+        props.location != null,
     },
     props.className,
   );

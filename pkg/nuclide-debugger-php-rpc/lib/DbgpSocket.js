@@ -296,9 +296,10 @@ export class DbgpSocket {
     // The body of the `stream` XML can be omitted, e.g. `echo null`, so we defend against this.
     const outputText = stream._ != null ? base64Decode(stream._) : '';
     logger.debug(`${outputType} message received: ${outputText}`);
-    const status = outputType === 'stdout'
-      ? ConnectionStatus.Stdout
-      : ConnectionStatus.Stderr;
+    const status =
+      outputType === 'stdout'
+        ? ConnectionStatus.Stdout
+        : ConnectionStatus.Stderr;
     // TODO: t13439903 -- add a way to fetch the rest of the data.
     const truncatedOutputText = outputText.slice(0, STREAM_MESSAGE_MAX_SIZE);
     this._emitStatus(status, truncatedOutputText);
@@ -310,7 +311,9 @@ export class DbgpSocket {
       const breakpoint = notify.breakpoint[0].$;
       if (breakpoint == null) {
         logger.error(
-          `Fail to get breakpoint from 'breakpoint_resolved' notify: ${JSON.stringify(notify)}`,
+          `Fail to get breakpoint from 'breakpoint_resolved' notify: ${JSON.stringify(
+            notify,
+          )}`,
         );
         return;
       }

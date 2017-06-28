@@ -69,12 +69,12 @@ export class Section extends React.Component {
   }
 
   render(): React.Element<any> {
-    const collapsable: boolean = this.props.collapsable != null
-      ? this.props.collapsable
-      : false;
-    const collapsed = this.props.collapsed == null
-      ? this.state.isCollapsed
-      : this.props.collapsed;
+    const collapsable: boolean =
+      this.props.collapsable != null ? this.props.collapsable : false;
+    const collapsed =
+      this.props.collapsed == null
+        ? this.state.isCollapsed
+        : this.props.collapsed;
     // Only include classes if the component is collapsable
     const iconClass = classnames({
       icon: collapsable,

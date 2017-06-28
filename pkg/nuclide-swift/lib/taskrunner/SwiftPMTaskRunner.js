@@ -31,8 +31,7 @@ import {
   SwiftPMTaskRunnerTaskMetadata,
 } from './SwiftPMTaskRunnerTaskMetadata';
 import SwiftPMTaskRunnerToolbar from './toolbar/SwiftPMTaskRunnerToolbar';
-import SwiftPMAutocompletionProvider
-  from './providers/SwiftPMAutocompletionProvider';
+import SwiftPMAutocompletionProvider from './providers/SwiftPMAutocompletionProvider';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nullthrows from 'nullthrows';
 import nuclideUri from 'nuclide-commons/nuclideUri.js';
@@ -97,9 +96,8 @@ export class SwiftPMTaskRunner {
   }
 
   getIcon(): ReactClass<any> {
-    return () => (
-      <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />
-    );
+    return () =>
+      <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
   }
 
   runTask(taskName: string): Task {
@@ -158,7 +156,9 @@ export class SwiftPMTaskRunner {
                 );
               } else {
                 return createMessage(
-                  `${command.command} failed with ${exitEventToMessage(message)}`,
+                  `${command.command} failed with ${exitEventToMessage(
+                    message,
+                  )}`,
                   'error',
                 );
               }

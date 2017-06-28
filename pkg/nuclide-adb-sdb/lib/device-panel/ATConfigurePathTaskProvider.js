@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  DeviceTypeTaskProvider,
-} from '../../../nuclide-device-panel/lib/types';
+import type {DeviceTypeTaskProvider} from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Bridge} from '../types';
@@ -42,7 +40,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
     ).switchMap(fullConfig => {
       return Observable.create(observer => {
         const disposable = showModal(
-          dismiss => (
+          dismiss =>
             <ATCustomDBPathModal
               dismiss={dismiss}
               activePath={fullConfig.active}
@@ -52,8 +50,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
               setCustomPath={customPath =>
                 this._bridge.setCustomDebugBridgePath(host, customPath)}
               type={this._bridge.debugBridge}
-            />
-          ),
+            />,
           {
             className: 'nuclide-adb-sdb-custom-path-modal',
             onDismiss: () => {

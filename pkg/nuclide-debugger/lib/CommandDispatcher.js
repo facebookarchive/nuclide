@@ -17,9 +17,7 @@ import InspectorBackendClass from './Protocol/NuclideProtocolParser';
 import invariant from 'assert';
 import {Observable} from 'rxjs';
 import BridgeAdapter from './Protocol/BridgeAdapter';
-import {
-  isNewProtocolChannelEnabled,
-} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
+import {isNewProtocolChannelEnabled} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {reportError} from './Protocol/EventReporter';
 

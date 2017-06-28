@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  DnsLookup,
-} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
+import type {DnsLookup} from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 import type {
   NuclideRemoteAuthMethods,
   NuclideRemoteConnectionParamsWithPassword,
@@ -23,8 +21,7 @@ import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {CompositeDisposable} from 'atom';
 import {getIPsForHosts} from './connection-profile-utils';
-import lookupPreferIpv6
-  from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
+import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 import RadioGroup from '../../nuclide-ui/RadioGroup';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -205,9 +202,7 @@ export default class ConnectionDetailsForm extends React.Component {
     // _onKeyPress so that escape and enter work
     const passwordLabel = (
       <div className="nuclide-auth-method">
-        <div className="nuclide-auth-method-label">
-          Password:
-        </div>
+        <div className="nuclide-auth-method-label">Password:</div>
         <div
           className="nuclide-auth-method-input nuclide-auth-method-password"
           onClick={this._handlePasswordInputClick}>
@@ -224,9 +219,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
     const privateKeyLabel = (
       <div className="nuclide-auth-method">
-        <div className="nuclide-auth-method-label">
-          Private Key File:
-        </div>
+        <div className="nuclide-auth-method-label">Private Key File:</div>
         <div className="nuclide-auth-method-input nuclide-auth-method-privatekey">
           <AtomInput
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
@@ -241,9 +234,7 @@ export default class ConnectionDetailsForm extends React.Component {
       </div>
     );
     const sshAgentLabel = (
-      <div className="nuclide-auth-method">
-        Use ssh-agent
-      </div>
+      <div className="nuclide-auth-method">Use ssh-agent</div>
     );
     let toolTipWarning;
     if (this.state.shouldDisplayTooltipWarning) {
@@ -263,7 +254,8 @@ export default class ConnectionDetailsForm extends React.Component {
               this.tip.style.zIndex = 10999;
               return 'right';
             },
-            title: 'One of your profiles uses a host name that resolves to the' +
+            title:
+              'One of your profiles uses a host name that resolves to the' +
               ' same IP as this one. Consider using the uniform host ' +
               'name to avoid potential collisions.',
           })}
@@ -373,7 +365,8 @@ export default class ConnectionDetailsForm extends React.Component {
       username: this._getText('username'),
       server: this._getText('server'),
       cwd: this._getText('cwd'),
-      remoteServerCommand: this._getText('remoteServerCommand') ||
+      remoteServerCommand:
+        this._getText('remoteServerCommand') ||
         getOfficialRemoteServerCommand(),
       sshPort: this._getText('sshPort'),
       pathToPrivateKey: this._getText('pathToPrivateKey'),

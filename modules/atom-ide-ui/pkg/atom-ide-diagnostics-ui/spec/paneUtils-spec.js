@@ -10,9 +10,7 @@
  * @format
  */
 
-import type {
-  FileDiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/rpc-types';
 
 import {Range} from 'atom';
 import {compareMessagesByFile} from '../lib/paneUtils';

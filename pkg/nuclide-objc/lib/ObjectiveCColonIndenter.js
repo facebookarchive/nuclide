@@ -11,8 +11,7 @@
 
 import {CompositeDisposable, Range} from 'atom';
 import {trackTiming} from '../../nuclide-analytics';
-import observeLanguageTextEditors
-  from '../../commons-atom/observe-language-text-editors';
+import observeLanguageTextEditors from '../../commons-atom/observe-language-text-editors';
 
 const GRAMMARS = ['source.objc', 'source.objcpp'];
 
@@ -102,9 +101,10 @@ export default class ObjectiveCColonIndenter {
           const numberOfIndentCharacters = line.length - unindentedLine.length;
           const unindentedCurrentColonColumn =
             currentColonPosition.column - numberOfIndentCharacters;
-          const totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
-            ? 0
-            : colonColumn - unindentedCurrentColonColumn;
+          const totalIndentAmount =
+            unindentedCurrentColonColumn >= colonColumn
+              ? 0
+              : colonColumn - unindentedCurrentColonColumn;
           // 3. Replace the current line with the properly-indented line.
           textEditor.setTextInBufferRange(
             buffer.rangeForRow(

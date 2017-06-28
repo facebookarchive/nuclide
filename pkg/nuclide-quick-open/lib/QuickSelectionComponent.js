@@ -126,9 +126,8 @@ export default class QuickSelectionComponent extends React.Component {
       resultsByService: initialResults,
       renderableProviders: this.props.searchResultManager.getRenderableProviders(),
       selectedService: topOuterResult != null ? topOuterResult.serviceName : '',
-      selectedDirectory: topOuterResult != null
-        ? topOuterResult.directoryName
-        : '',
+      selectedDirectory:
+        topOuterResult != null ? topOuterResult.directoryName : '',
       selectedItemIndex: topOuterResult != null ? 0 : -1,
       hasUserSelection: false,
       initialQuery,
@@ -713,7 +712,12 @@ export default class QuickSelectionComponent extends React.Component {
       }
       return {
         name: tab.name,
-        tabContent: <span>{tab.title}{keyBinding}</span>,
+        tabContent: (
+          <span>
+            {tab.title}
+            {keyBinding}
+          </span>
+        ),
       };
     });
     return (

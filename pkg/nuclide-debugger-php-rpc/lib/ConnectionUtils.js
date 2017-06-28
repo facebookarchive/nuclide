@@ -27,7 +27,9 @@ async function getHackRoot(filePath: string): Promise<?string> {
 export async function setRootDirectoryUri(directoryUri: string): Promise<void> {
   const hackRootDirectory = await getHackRoot(directoryUri);
   logger.debug(
-    `setRootDirectoryUri: from ${directoryUri} to ${maybeToString(hackRootDirectory)}`,
+    `setRootDirectoryUri: from ${directoryUri} to ${maybeToString(
+      hackRootDirectory,
+    )}`,
   );
   // TODO: make xdebug_includes.php path configurable from hhconfig.
   const hackDummyRequestFilePath = nuclideUri.join(

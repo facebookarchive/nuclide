@@ -9,9 +9,7 @@
  * @format
  */
 
-import type {
-  NuclideEvaluationExpressionProvider,
-} from '../../nuclide-debugger-interfaces/service';
+import type {NuclideEvaluationExpressionProvider} from '../../nuclide-debugger-interfaces/service';
 import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
 import type DebuggerModel from './DebuggerModel';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';

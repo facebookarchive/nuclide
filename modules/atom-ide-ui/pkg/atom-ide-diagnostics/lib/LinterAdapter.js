@@ -56,13 +56,14 @@ export function linterMessageToDiagnosticMessage(
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
       trace,
-      fix: fix == null
-        ? undefined
-        : {
-            oldRange: Range.fromObject(fix.range),
-            oldText: fix.oldText,
-            newText: fix.newText,
-          },
+      fix:
+        fix == null
+          ? undefined
+          : {
+              oldRange: Range.fromObject(fix.range),
+              oldText: fix.oldText,
+              newText: fix.newText,
+            },
     }: FileDiagnosticMessage);
   } else {
     return ({
@@ -92,9 +93,10 @@ export function linterMessageV2ToDiagnosticMessage(
   if (msg.trace != null) {
     trace = msg.trace.map(component => ({...component}));
   } else if (msg.reference != null) {
-    const point = msg.reference.position != null
-      ? Point.fromObject(msg.reference.position)
-      : null;
+    const point =
+      msg.reference.position != null
+        ? Point.fromObject(msg.reference.position)
+        : null;
     trace = [
       {
         type: 'Trace',
@@ -152,9 +154,10 @@ export function linterMessagesToDiagnosticUpdate(
   }
   const projectMessages = [];
   for (const msg of msgs) {
-    const diagnosticMessage = msg.type === undefined
-      ? linterMessageV2ToDiagnosticMessage(msg, providerName)
-      : linterMessageToDiagnosticMessage(msg, providerName);
+    const diagnosticMessage =
+      msg.type === undefined
+        ? linterMessageV2ToDiagnosticMessage(msg, providerName)
+        : linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
       const path = diagnosticMessage.filePath;
       let messages = filePathToMessages.get(path);

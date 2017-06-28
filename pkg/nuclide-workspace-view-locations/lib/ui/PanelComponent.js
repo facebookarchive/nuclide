@@ -305,9 +305,8 @@ export class PanelComponent extends React.Component {
 
   _handleToggleButton(toggleButton: ?ToggleButton): void {
     // $FlowFixMe
-    this._toggleButtonEl = toggleButton == null
-      ? null
-      : ReactDOM.findDOMNode(toggleButton);
+    this._toggleButtonEl =
+      toggleButton == null ? null : ReactDOM.findDOMNode(toggleButton);
   }
 
   _handleDragLeave(): void {

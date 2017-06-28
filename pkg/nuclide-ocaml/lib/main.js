@@ -14,9 +14,7 @@ import type {
   LinterProvider,
   OutlineProvider,
 } from 'atom-ide-ui';
-import type {
-  TypeHintProvider as TypeHintProviderType,
-} from '../../nuclide-type-hint/lib/types';
+import type {TypeHintProvider as TypeHintProviderType} from '../../nuclide-type-hint/lib/types';
 
 import {trackTiming} from '../../nuclide-analytics';
 import HyperclickProvider from './HyperclickProvider';

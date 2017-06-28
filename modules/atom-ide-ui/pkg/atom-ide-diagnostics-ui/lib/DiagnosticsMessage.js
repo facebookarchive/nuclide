@@ -10,9 +10,7 @@
  * @format
  */
 
-import type {
-  FileDiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/rpc-types';
 
 import React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -53,7 +51,9 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
       <ButtonGroup>
         {fixButton}
       </ButtonGroup>
-      <span className={providerClassName}>{message.providerName}</span>
+      <span className={providerClassName}>
+        {message.providerName}
+      </span>
     </div>
   );
 }
@@ -61,13 +61,13 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
 function traceElements(props: DiagnosticsMessageProps) {
   const {message, goToLocation} = props;
   return message.trace
-    ? message.trace.map((traceItem, i) => (
+    ? message.trace.map((traceItem, i) =>
         <DiagnosticsTraceItem
           key={i}
           trace={traceItem}
           goToLocation={goToLocation}
-        />
-      ))
+        />,
+      )
     : null;
 }
 

@@ -10,9 +10,7 @@
  */
 
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
-import type {
-  HgRepositoryClient,
-} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
+import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -20,9 +18,7 @@ import {arrayCompact, mapFilter} from 'nuclide-commons/collection';
 import {runCommand} from 'nuclide-commons/process';
 import {diffSets} from 'nuclide-commons/observable';
 import {Directory} from 'atom';
-import {
-  getFileSystemServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -217,7 +213,9 @@ export function confirmAndRevertPath(
   toRevision?: ?string,
 ): void {
   const result = atom.confirm({
-    message: `Are you sure you want to revert${path == null ? '' : ` "${path}"`}?`,
+    message: `Are you sure you want to revert${path == null
+      ? ''
+      : ` "${path}"`}?`,
     buttons: ['Revert', 'Cancel'],
   });
   invariant(result === 0 || result === 1);
@@ -247,7 +245,9 @@ async function hgActionToPath(
   try {
     await action(hgRepository);
     atom.notifications.addSuccess(
-      `${actionDoneMessage} \`${repository.relativize(nodePath)}\` successfully.`,
+      `${actionDoneMessage} \`${repository.relativize(
+        nodePath,
+      )}\` successfully.`,
     );
   } catch (error) {
     atom.notifications.addError(
@@ -406,7 +406,9 @@ export async function confirmAndDeletePath(
 ): Promise<boolean> {
   const result = atom.confirm({
     message: 'Are you sure you want to delete the following item?',
-    detailedMessage: `You are deleting: \n ${nuclideUri.getPath(nuclideFilePath)}`,
+    detailedMessage: `You are deleting: \n ${nuclideUri.getPath(
+      nuclideFilePath,
+    )}`,
     buttons: ['Delete', 'Cancel'],
   });
   invariant(result === 0 || result === 1);

@@ -17,9 +17,7 @@ import type {
   FlowSettings,
 } from '../../nuclide-flow-rpc';
 import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {BusySignalService} from 'atom-ide-ui';
 
 import invariant from 'assert';
@@ -134,10 +132,10 @@ export function serverStatusUpdatesToBusyMessages(
               const readablePath = nuclideUri.nuclideUriToDisplayString(
                 nextStatus.pathToRoot,
               );
-              const readableStatus = nextStatus.status ===
-                ('init': ServerStatusType)
-                ? 'initializing'
-                : 'busy';
+              const readableStatus =
+                nextStatus.status === ('init': ServerStatusType)
+                  ? 'initializing'
+                  : 'busy';
               // Use an observable to encapsulate clearing the message.
               // The switchMap above will ensure that messages get cleared.
               return Observable.create(observer => {
@@ -246,7 +244,8 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
           filterResultsByPrefix(request.prefix, results),
         shouldFilter,
       },
-      onDidInsertSuggestionAnalyticsEventName: 'nuclide-flow.autocomplete-chosen',
+      onDidInsertSuggestionAnalyticsEventName:
+        'nuclide-flow.autocomplete-chosen',
     },
     diagnostics: (await shouldUsePushDiagnostics())
       ? {

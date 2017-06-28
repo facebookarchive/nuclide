@@ -201,7 +201,8 @@ export class ConnectionMultiplexer {
         .switchMap(() => {
           this._clientCallback.sendUserMessage('notification', {
             type: 'error',
-            message: 'Error: Timed out while trying to establish debugger connection. ' +
+            message:
+              'Error: Timed out while trying to establish debugger connection. ' +
               'Is the webserver available?',
           });
           return Observable.of(null).take(DEBUGGER_TEAR_DOWN_TIMEOUT_MS);
@@ -296,7 +297,9 @@ export class ConnectionMultiplexer {
         );
         if (breakpointId == null) {
           logger.error(
-            `Cannot find xdebug breakpoint ${JSON.stringify(xdebugBreakpoint)} in connection.`,
+            `Cannot find xdebug breakpoint ${JSON.stringify(
+              xdebugBreakpoint,
+            )} in connection.`,
           );
           break;
         }
@@ -493,7 +496,7 @@ export class ConnectionMultiplexer {
   _setBreakStatus(): void {
     this._setStatus(
       this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent ||
-        getConfig().stopOneStopAll
+      getConfig().stopOneStopAll
         ? ConnectionMultiplexerStatus.AllConnectionsPaused
         : ConnectionMultiplexerStatus.SingleConnectionPaused,
     );
@@ -597,7 +600,8 @@ export class ConnectionMultiplexer {
     if (result.wasThrown) {
       this._sendOutput(
         'Failed to evaluate ' +
-          `"${expression}": (${result.error.$.code}) ${result.error.message[0]}`,
+          `"${expression}": (${result.error.$.code}) ${result.error
+            .message[0]}`,
         'error',
       );
     }
@@ -846,7 +850,8 @@ export class ConnectionMultiplexer {
       logger.error('HHVM returned failure for a stdout request');
       this._clientCallback.sendUserMessage('outputWindow', {
         level: 'error',
-        text: 'HHVM failed to redirect stdout, so no output will be sent to the output window.',
+        text:
+          'HHVM failed to redirect stdout, so no output will be sent to the output window.',
       });
     }
     // TODO: Stderr redirection is not implemented in HHVM so we won't check this return value.

@@ -73,11 +73,12 @@ export class LogTailer {
     this._eventNames = options.trackingEvents;
     this._errorHandler = options.handleError;
     const messages = options.messages.share();
-    this._ready = options.ready == null
-      ? null
-      : // Guard against a never-ending ready stream.
-        // $FlowFixMe: Add `materialize()` to Rx defs
-        options.ready.takeUntil(messages.materialize().takeLast(1));
+    this._ready =
+      options.ready == null
+        ? null
+        : // Guard against a never-ending ready stream.
+          // $FlowFixMe: Add `materialize()` to Rx defs
+          options.ready.takeUntil(messages.materialize().takeLast(1));
     this._runningCallbacks = [];
     this._startCount = 0;
     this._statuses = new BehaviorSubject('stopped');
@@ -120,7 +121,8 @@ export class LogTailer {
         if (!errorWasHandled) {
           // Default error handling.
           const message =
-            `An unexpected error occurred while running the ${this._name} process` +
+            `An unexpected error occurred while running the ${this
+              ._name} process` +
             (err.message ? `:\n\n**${err.message}**` : '.');
           const notification = atom.notifications.addError(message, {
             dismissable: true,

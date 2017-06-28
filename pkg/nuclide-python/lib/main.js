@@ -11,15 +11,10 @@
 
 import type {BusySignalService, LinterProvider} from 'atom-ide-ui';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
-import typeof * as PythonService
-  from '../../nuclide-python-rpc/lib/PythonService';
+import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {
-  AtomLanguageServiceConfig,
-} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {
-  LanguageService,
-} from '../../nuclide-language-service/lib/LanguageService';
+import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
+import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
 import {GRAMMARS, GRAMMAR_SET} from './constants';
 import {getLintOnFly} from './config';
@@ -82,7 +77,8 @@ const atomConfig: AtomLanguageServiceConfig = {
     excludeLowerPriority: false,
     analyticsEventName: 'nuclide-python:getAutocompleteSuggestions',
     autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'nuclide-python.autocomplete-chosen',
+    onDidInsertSuggestionAnalyticsEventName:
+      'nuclide-python.autocomplete-chosen',
   },
   definition: {
     version: '0.1.0',

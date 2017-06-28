@@ -9,12 +9,8 @@
  * @format
  */
 
-import type {
-  ClangCompilationDatabase,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {
-  ClangCompilationDatabaseProvider,
-} from '../../nuclide-clang/lib/types';
+import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangCompilationDatabaseProvider} from '../../nuclide-clang/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams} from './types';
 
@@ -22,9 +18,7 @@ import {Subscription} from 'rxjs';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {
-  getFileWatcherServiceByNuclideUri,
-} from '../../nuclide-remote-connection';
+import {getFileWatcherServiceByNuclideUri} from '../../nuclide-remote-connection';
 import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {BuckTaskRunner} from './BuckTaskRunner';
 

@@ -31,12 +31,8 @@ import type {
   AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {
-  HostServices,
-} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {
-  NuclideEvaluationExpression,
-} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
   InitializeParams,
@@ -204,7 +200,10 @@ export class LspLanguageService {
         this._host
           .dialogNotification(
             'error',
-            `Couldn't start ${this._languageId} server - ${this._errorString(e, this._command)}`,
+            `Couldn't start ${this._languageId} server - ${this._errorString(
+              e,
+              this._command,
+            )}`,
           )
           .refCount()
           .subscribe(); // fire-and-forget
@@ -419,7 +418,8 @@ export class LspLanguageService {
           // the lspConnection might already have been torn down.
 
           const offerRetry = e.data != null && Boolean(e.data.retry);
-          const msg = `Couldn't initialize ${this._languageId} server - ${this._errorString(e)}`;
+          const msg = `Couldn't initialize ${this
+            ._languageId} server - ${this._errorString(e)}`;
           this._childOut = {stdout: '', stderr: ''};
           if (!offerRetry) {
             this._host.dialogNotification('error', msg).refCount().subscribe();
@@ -680,7 +680,9 @@ export class LspLanguageService {
     // Message is the JsonRPC object we were trying to write.
     if (message != null && count != null) {
       this._logger.error(
-        `Lsp.JsonRpc.${String(error)} - ${count} errors so far - ${JSON.stringify(message)}`,
+        `Lsp.JsonRpc.${String(
+          error,
+        )} - ${count} errors so far - ${JSON.stringify(message)}`,
       );
     } else {
       this._logger.error(`Lsp.JsonRpc.${String(error)}`);
@@ -691,7 +693,10 @@ export class LspLanguageService {
     this._host
       .dialogNotification(
         'error',
-        `Connection to the ${this._languageId} language server is erroring; shutting it down - ${this._errorString(error)}`,
+        `Connection to the ${this
+          ._languageId} language server is erroring; shutting it down - ${this._errorString(
+          error,
+        )}`,
       )
       .refCount()
       .subscribe(); // fire and forget
@@ -728,7 +733,8 @@ export class LspLanguageService {
       this._host
         .dialogNotification(
           'error',
-          `Language server '${this._languageId}' has crashed 5 times in the last 3 minutes. It will not be restarted.`,
+          `Language server '${this
+            ._languageId}' has crashed 5 times in the last 3 minutes. It will not be restarted.`,
         )
         .refCount()
         .subscribe(); // fire and forget

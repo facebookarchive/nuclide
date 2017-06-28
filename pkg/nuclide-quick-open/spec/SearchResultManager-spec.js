@@ -107,9 +107,8 @@ function constructSingleProviderResult(
   result: ProviderResult,
 ): GroupedResults {
   const groupResult: GroupedResult = {
-    priority: provider.priority != null
-      ? provider.priority
-      : Number.POSITIVE_INFINITY,
+    priority:
+      provider.priority != null ? provider.priority : Number.POSITIVE_INFINITY,
     title: provider.display != null ? provider.display.title : provider.name,
     results: {
       global: {...result},

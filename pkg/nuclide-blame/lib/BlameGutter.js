@@ -332,7 +332,8 @@ class GutterElement extends React.Component {
     if (isFirstLine) {
       const unixname = shortNameForAuthor(revision.author);
       const tooltip = {
-        title: escapeHTML(revision.title) +
+        title:
+          escapeHTML(revision.title) +
           '<br />' +
           escapeHTML(unixname) +
           ' &middot; ' +
@@ -349,7 +350,9 @@ class GutterElement extends React.Component {
             ? <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
             : null}
           {Avatar ? <Avatar size={16} unixname={unixname} /> : unixname + ': '}
-          <span>{revision.title}</span>
+          <span>
+            {revision.title}
+          </span>
           <div style={{opacity}} className="nuclide-blame-border-age" />
         </div>
       );

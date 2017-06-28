@@ -11,11 +11,8 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
-import type {
-  HgRepositoryDescription,
-} from '../../nuclide-source-control-helpers';
-import typeof * as InfoService
-  from '../../nuclide-server/lib/services/InfoService';
+import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import type {WatchResult} from '../../nuclide-filewatcher-rpc';
 

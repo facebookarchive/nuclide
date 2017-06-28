@@ -15,9 +15,7 @@ import type BreakpointStore from './BreakpointStore';
 import type DebuggerActions from './DebuggerActions';
 
 import invariant from 'assert';
-import {
-  bufferPositionForMouseEvent,
-} from 'nuclide-commons-atom/mouse-to-position';
+import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
 
@@ -447,10 +445,10 @@ export default class BreakpointDisplayController {
     elem.className = isShadow
       ? 'nuclide-debugger-shadow-breakpoint-icon'
       : !enabled
-          ? 'nuclide-debugger-breakpoint-icon-disabled'
-          : unresolved
-              ? 'nuclide-debugger-breakpoint-icon-unresolved'
-              : 'nuclide-debugger-breakpoint-icon';
+        ? 'nuclide-debugger-breakpoint-icon-disabled'
+        : unresolved
+          ? 'nuclide-debugger-breakpoint-icon-unresolved'
+          : 'nuclide-debugger-breakpoint-icon';
 
     if (!isShadow) {
       if (!enabled) {

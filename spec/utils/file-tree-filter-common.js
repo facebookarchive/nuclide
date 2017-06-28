@@ -14,9 +14,7 @@ import invariant from 'assert';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {FileTreeStore} from '../../pkg/nuclide-file-tree/lib/FileTreeStore';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {
-  EVENT_HANDLER_SELECTOR,
-} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
+import {EVENT_HANDLER_SELECTOR} from '../../pkg/nuclide-file-tree/lib/FileTreeConstants';
 
 import type {TestContext} from './remotable-tests';
 
