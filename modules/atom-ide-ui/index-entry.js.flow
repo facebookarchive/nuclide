@@ -11,14 +11,21 @@
  */
 
 export type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from './pkg/hyperclick/lib/types';
-
-export type {
   BusySignalOptions,
   BusySignalService,
 } from './pkg/atom-ide-busy-signal/lib/types';
+
+export type {
+  CodeFormatProvider,
+  RangeCodeFormatProvider,
+  FileCodeFormatProvider,
+  OnTypeCodeFormatProvider,
+  OnSaveCodeFormatProvider,
+} from './pkg/atom-ide-code-format/lib/types';
+
+export type {
+  CodeHighlightProvider,
+} from './pkg/atom-ide-code-highlight/lib/types';
 
 export type {
   Datatip,
@@ -28,6 +35,13 @@ export type {
   ModifierDatatipProvider,
   ModifierKey,
 } from './pkg/atom-ide-datatip/lib/types';
+
+export type {
+  Definition,
+  DefinitionProvider,
+  DefinitionPreviewProvider,
+  DefinitionQueryResult,
+} from './pkg/atom-ide-definitions/lib/types';
 
 export type {
   CallbackDiagnosticProvider,
@@ -53,18 +67,6 @@ export type {
 } from './pkg/atom-ide-diagnostics';
 
 export type {
-  CodeFormatProvider,
-  RangeCodeFormatProvider,
-  FileCodeFormatProvider,
-  OnTypeCodeFormatProvider,
-  OnSaveCodeFormatProvider,
-} from './pkg/atom-ide-code-format/lib/types';
-
-export type {
-  CodeHighlightProvider,
-} from './pkg/atom-ide-code-highlight/lib/types';
-
-export type {
   FindReferencesProvider,
   FindReferencesReturn,
   Reference,
@@ -78,8 +80,6 @@ export type {
 } from './pkg/atom-ide-outline-view';
 
 export type {
-  Definition,
-  DefinitionProvider,
-  DefinitionPreviewProvider,
-  DefinitionQueryResult,
-} from './pkg/atom-ide-definitions';
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from './pkg/hyperclick/lib/types';

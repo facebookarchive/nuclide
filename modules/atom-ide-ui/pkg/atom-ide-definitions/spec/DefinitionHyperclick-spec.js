@@ -14,7 +14,7 @@ import type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from '../../hyperclick/lib/types';
-import type {DefinitionProvider} from '..';
+import type {DefinitionProvider} from '../lib/types';
 
 import {Point, Range, TextEditor} from 'atom';
 import invariant from 'assert';

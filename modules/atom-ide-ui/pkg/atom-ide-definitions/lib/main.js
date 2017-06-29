@@ -26,7 +26,6 @@ import type {
 } from '../../atom-ide-datatip/lib/types';
 
 import type {
-  Definition,
   DefinitionQueryResult,
   DefinitionProvider,
   DefinitionPreviewProvider,
@@ -44,13 +43,6 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
 import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
-
-export type {
-  Definition,
-  DefinitionQueryResult,
-  DefinitionProvider,
-  DefinitionPreviewProvider,
-};
 
 class Activation {
   _providers: ProviderRegistry<DefinitionProvider>;
