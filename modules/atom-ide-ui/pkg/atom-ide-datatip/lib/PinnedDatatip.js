@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Datatip} from '..';
+import type {Datatip} from './types';
 
 type Position = {
   x: number,

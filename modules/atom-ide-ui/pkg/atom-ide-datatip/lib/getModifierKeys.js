@@ -10,8 +10,8 @@
  * @format
  */
 
-import type {ModifierKey} from '..';
-import {ModifierKeys} from '..';
+import type {ModifierKey} from './types';
+import {ModifierKeys} from './types';
 
 const KEYNAME_TO_PROPERTY = {
   Meta: ModifierKeys.META,

@@ -18,7 +18,7 @@ import type {
   DatatipProvider,
   ModifierDatatipProvider,
   ModifierKey,
-} from '..';
+} from './types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

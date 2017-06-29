@@ -14,7 +14,7 @@ import type {
   Datatip,
   DatatipProvider,
   DatatipService,
-} from '../../atom-ide-datatip';
+} from '../../atom-ide-datatip/lib/types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
 import type {
   FileMessageUpdate,

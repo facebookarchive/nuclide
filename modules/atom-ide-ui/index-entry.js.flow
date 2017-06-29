@@ -27,8 +27,7 @@ export type {
   MarkedString,
   ModifierDatatipProvider,
   ModifierKey,
-  PinnedDatatip,
-} from './pkg/atom-ide-datatip';
+} from './pkg/atom-ide-datatip/lib/types';
 
 export type {
   CallbackDiagnosticProvider,

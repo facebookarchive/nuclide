@@ -23,7 +23,7 @@ import type {
   DatatipService,
   ModifierDatatipProvider,
   ModifierKey,
-} from '../../atom-ide-datatip';
+} from '../../atom-ide-datatip/lib/types';
 
 import type {
   Definition,
