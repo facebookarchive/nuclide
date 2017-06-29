@@ -46,6 +46,7 @@ import {Point, Range as atom$Range} from 'simple-text-buffer';
 import {
   CompletionItemKind,
   DiagnosticSeverity,
+  InsertTextFormat,
   SymbolKind,
   MessageType as LspMessageType,
 } from './protocol';
@@ -200,13 +201,16 @@ function lspCompletionItemKind_atomCompletionType(kind: ?number): ?string {
 export function lspCompletionItem_atomCompletion(
   item: CompletionItem,
 ): Completion {
+  const useSnippet = item.insertTextFormat === InsertTextFormat.Snippet;
   return {
     // LSP: label is what should be displayed in the autocomplete list
     // Atom: displayText is what's displayed
     displayText: item.label,
-    // LSP: if item.insertText is present, insert that, else fall back to label
-    // Atom: insert field 'text'
-    text: item.insertText || item.label,
+    // LSP: if insertText is present, insert that, else fall back to label
+    // LSP: insertTextFormat says whether we're inserting text or snippet
+    // Atom: text/snippet: one of them has to be defined
+    snippet: useSnippet ? item.insertText || item.label : undefined,
+    text: useSnippet ? undefined : item.insertText || item.label,
     // LSP: [nuclide-specific] itemType is return type of function
     // Atom: it's convention to display return types in the left column
     leftLabel: item.itemType,

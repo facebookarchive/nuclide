@@ -398,6 +398,12 @@ export type CompletionList = {
   items: CompletionItem[],
 };
 
+// Defines whether the insert text in a completion item should be interpreted as plain text or a snippet.
+export const InsertTextFormat = {
+  PlainText: 1,
+  Snippet: 2,
+};
+
 export type CompletionItem = {
   //  The label of this completion item. By default
   //  also the text that is inserted when selecting
@@ -431,6 +437,9 @@ export type CompletionItem = {
   //  A string that should be inserted a document when selecting
   //  this completion. When `falsy` the label is used.
   insertText?: string,
+  //  The format of the insert text. The format applies to both the `insertText` property
+  //  and the `newText` property of a provided `textEdit`.
+  insertTextFormat?: number,
   //  An edit which is applied to a document when selecting
   //  this completion. When an edit is provided the value of
   //  insertText is ignored.
