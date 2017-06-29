@@ -11,7 +11,7 @@
  */
 
 import {updateSearchSet} from '../lib/OutlineViewSearch';
-import type {OutlineTreeForUi} from '../lib/main';
+import type {OutlineTreeForUi} from '../lib/createOutlines';
 import {Point} from 'atom';
 
 const sampleOutlineView: Array<OutlineTreeForUi> = [

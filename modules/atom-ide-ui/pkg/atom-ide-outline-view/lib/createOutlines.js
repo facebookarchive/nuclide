@@ -10,8 +10,13 @@
  * @format
  */
 
-import type {OutlineForUi, OutlineTreeForUi, OutlineProvider} from '..';
-import type {Outline, OutlineTree} from './rpc-types';
+import type {
+  Outline,
+  OutlineProvider,
+  OutlineTree,
+  OutlineTreeKind,
+} from './types';
+import type {TokenizedText} from 'nuclide-commons/tokenized-text';
 import type ActiveEditorRegistry, {
   Result,
 } from 'nuclide-commons-atom/ActiveEditorRegistry';
@@ -23,6 +28,57 @@ import invariant from 'assert';
 import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 
 const LOADING_DELAY_MS = 500;
+
+export type OutlineTreeForUi = {
+  icon?: string, // from atom$Octicon, but we use string for convenience of remoting
+  kind?: OutlineTreeKind, // kind you can pass to the UI for theming
+  plainText?: string,
+  tokenizedText?: TokenizedText,
+
+  startPosition: atom$Point,
+  endPosition?: atom$Point,
+  children: Array<OutlineTreeForUi>,
+  highlighted: boolean,
+};
+
+/**
+ * Includes additional information that is useful to the UI, but redundant or nonsensical for
+ * providers to include in their responses.
+ */
+export type OutlineForUi =
+  | {
+      // The initial state at startup.
+      kind: 'empty',
+    }
+  | {
+      // The thing that currently has focus is not a text editor.
+      kind: 'not-text-editor',
+    }
+  | {
+      // Currently awaiting results from a provider (for longer than a certain delay).
+      kind: 'loading',
+    }
+  | {
+      // Indicates that no provider is registered for the given grammar.
+      kind: 'no-provider',
+      // Human-readable name for the grammar.
+      grammar: string,
+    }
+  | {
+      // Indicates that a provider is registered but that it did not return an outline.
+      kind: 'provider-no-outline',
+    }
+  | {
+      kind: 'outline',
+      outlineTrees: Array<OutlineTreeForUi>,
+      /**
+   * Use a TextEditor instead of a path so that:
+   * - If there are multiple editors for a file, we always jump to outline item
+   *   locations in the correct editor.
+   * - Jumping to outline item locations works for new, unsaved files.
+   */
+      editor: atom$TextEditor,
+    };
 
 export function createOutlines(
   editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>,

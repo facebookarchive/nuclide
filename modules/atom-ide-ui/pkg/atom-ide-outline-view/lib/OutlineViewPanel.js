@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {OutlineForUi, SerializedOutlineViewPanelState} from '..';
+import type {OutlineForUi} from './createOutlines';
 
 import React from 'react';
 
@@ -20,6 +20,10 @@ import {OutlineView} from './OutlineView';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
+
+export type SerializedOutlineViewPanelState = {
+  deserializer: 'atom-ide-ui.OutlineViewPanelState',
+};
 
 export class OutlineViewPanelState {
   _outlines: Observable<OutlineForUi>;

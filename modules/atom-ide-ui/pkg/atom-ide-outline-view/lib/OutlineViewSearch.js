@@ -18,7 +18,7 @@ import debounce from 'nuclide-commons/debounce';
 import analytics from 'nuclide-commons-atom/analytics';
 
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import type {OutlineTreeForUi} from './main';
+import type {OutlineTreeForUi} from './createOutlines';
 
 export type SearchResult = {
   matches: boolean,

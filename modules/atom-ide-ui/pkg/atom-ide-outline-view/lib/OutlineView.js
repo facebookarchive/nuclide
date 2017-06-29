@@ -11,7 +11,7 @@
  */
 
 import type {Observable} from 'rxjs';
-import type {OutlineForUi, OutlineTreeForUi} from './main';
+import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 

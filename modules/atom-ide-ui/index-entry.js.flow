@@ -76,7 +76,7 @@ export type {
   OutlineProvider,
   OutlineTree,
   ResultsStreamProvider,
-} from './pkg/atom-ide-outline-view';
+} from './pkg/atom-ide-outline-view/lib/types';
 
 export type {
   HyperclickProvider,

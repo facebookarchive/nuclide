@@ -10,7 +10,19 @@
  * @format
  */
 
+import type {Observable} from 'rxjs';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text';
+import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
+
+export type OutlineProvider = {
+  name: string,
+  // If there are multiple providers for a given grammar, the one with the highest priority will be
+  // used.
+  priority: number,
+  grammarScopes: Array<string>,
+  updateOnEdit?: boolean,
+  getOutline(editor: TextEditor): Promise<?Outline>,
+};
 
 export type OutlineTree = {
   icon?: string, // from atom$Octicon (that type's not allowed over rpc so we use string)
@@ -50,3 +62,7 @@ export type OutlineTreeKind =
   | 'number'
   | 'boolean'
   | 'array';
+
+export type ResultsStreamProvider = {
+  getResultsStream: () => Observable<Result<OutlineProvider, ?Outline>>,
+};
