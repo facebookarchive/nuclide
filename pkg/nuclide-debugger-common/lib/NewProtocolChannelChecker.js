@@ -11,7 +11,7 @@
 
 import passesGK from '../../commons-node/passesGK';
 
-const NewChannelCompatibleEngines = new Set(['hhvm', 'lldb']);
+const NewChannelCompatibleEngines = new Set(['hhvm', 'java', 'lldb']);
 
 export function isNewProtocolChannelEnabled(
   engineName: string,
