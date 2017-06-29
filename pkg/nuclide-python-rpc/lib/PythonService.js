@@ -17,10 +17,10 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
+  DiagnosticMessageType,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FindReferencesReturn,
-  MessageType,
   Outline,
 } from 'atom-ide-ui';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
@@ -108,7 +108,7 @@ export type PythonDiagnostic = {
   file: NuclideUri,
   code: string,
   message: string,
-  type: MessageType,
+  type: DiagnosticMessageType,
   line: number,
   column: number,
 };
@@ -152,7 +152,7 @@ class PythonSingleFileLanguageService {
     throw new Error('Not Yet Implemented');
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
     throw new Error('Not Yet Implemented');
   }
 

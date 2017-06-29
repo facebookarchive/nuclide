@@ -10,8 +10,10 @@
  * @format
  */
 
-import type {FileMessageUpdate} from '../../atom-ide-diagnostics';
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {
+  FileDiagnosticMessage,
+  FileDiagnosticMessages,
+} from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import classnames from 'classnames';
 
@@ -54,7 +56,7 @@ const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 
 export function applyUpdateToEditor(
   editor: TextEditor,
-  update: FileMessageUpdate,
+  update: FileDiagnosticMessages,
   fixer: (message: FileDiagnosticMessage) => void,
 ): void {
   let gutter = editor.gutterWithName(GUTTER_ID);

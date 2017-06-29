@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 
 import React from 'react';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';

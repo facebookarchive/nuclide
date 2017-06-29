@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {LinterProvider} from '..';
+import type {LinterProvider} from './types';
 import {LinterAdapter} from './LinterAdapter';
 
 function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {

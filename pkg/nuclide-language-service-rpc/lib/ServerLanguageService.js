@@ -17,7 +17,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
@@ -45,7 +45,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>>,
+  observeDiagnostics(): Observable<Array<FileDiagnosticMessages>>,
 
   getAutocompleteSuggestions(
     filePath: NuclideUri,
@@ -148,7 +148,7 @@ export class ServerLanguageService<
     return this._service.getDiagnostics(filePath, buffer);
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
     return this._service.observeDiagnostics().publish();
   }
 
@@ -322,12 +322,12 @@ export class ServerLanguageService<
 
 export function ensureInvalidations(
   logger: log4js$Logger,
-  diagnostics: Observable<Array<FileDiagnosticUpdate>>,
-): Observable<Array<FileDiagnosticUpdate>> {
+  diagnostics: Observable<Array<FileDiagnosticMessages>>,
+): Observable<Array<FileDiagnosticMessages>> {
   const filesWithErrors = new Set();
   const trackedDiagnostics: Observable<
-    Array<FileDiagnosticUpdate>,
-  > = diagnostics.do((diagnosticArray: Array<FileDiagnosticUpdate>) => {
+    Array<FileDiagnosticMessages>,
+  > = diagnostics.do((diagnosticArray: Array<FileDiagnosticMessages>) => {
     for (const diagnostic of diagnosticArray) {
       const filePath = diagnostic.filePath;
       if (diagnostic.messages.length === 0) {
@@ -341,7 +341,7 @@ export function ensureInvalidations(
   });
 
   const fileInvalidations: Observable<
-    Array<FileDiagnosticUpdate>,
+    Array<FileDiagnosticMessages>,
   > = Observable.defer(() => {
     logger.debug('Clearing errors after stream closed');
     return Observable.of(

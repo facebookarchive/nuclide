@@ -14,10 +14,10 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TokenizedText} from 'nuclide-commons/tokenized-text';
 import type {
   Definition,
-  MessageType as DiagnosticMessageType,
+  DiagnosticMessageType,
+  DiagnosticTrace,
   FileDiagnosticMessage,
-  Trace,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   Reference,
 } from 'atom-ide-ui';
 import type {
@@ -367,7 +367,9 @@ function lspSeverity_atomDiagnosticMessageType(
   }
 }
 
-function lspRelatedLocation_atomTrace(related: RelatedLocation): Trace {
+function lspRelatedLocation_atomTrace(
+  related: RelatedLocation,
+): DiagnosticTrace {
   return {
     type: 'Trace',
     text: related.message,
@@ -395,7 +397,7 @@ function lspDiagnostic_atomDiagnostic(
 
 export function lspDiagnostics_atomDiagnostics(
   params: PublishDiagnosticsParams,
-): Array<FileDiagnosticUpdate> {
+): Array<FileDiagnosticMessages> {
   const filePath = lspUri_localPath(params.uri);
   return [
     {

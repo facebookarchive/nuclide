@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
+import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {compareMessagesByFile} from './paneUtils';

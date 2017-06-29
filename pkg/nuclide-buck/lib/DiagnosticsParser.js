@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {FileDiagnosticMessage, Trace} from 'atom-ide-ui';
+import type {DiagnosticTrace, FileDiagnosticMessage} from 'atom-ide-ui';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -125,7 +125,7 @@ function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
   };
 }
 
-function makeTrace(result: ParsedDiagnostic): Trace {
+function makeTrace(result: ParsedDiagnostic): DiagnosticTrace {
   const point = new Point(
     result.line - 1,
     result.column == null ? 0 : result.column - 1,

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {LinterProvider} from '..';
+import type {LinterProvider} from '../lib/types';
 
 import {Disposable, Range} from 'atom';
 import invariant from 'assert';

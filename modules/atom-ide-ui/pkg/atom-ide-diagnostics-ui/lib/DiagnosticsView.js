@@ -11,7 +11,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
+import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import DiagnosticsTable from './DiagnosticsTable';

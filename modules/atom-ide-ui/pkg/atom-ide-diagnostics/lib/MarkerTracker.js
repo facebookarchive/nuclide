@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {FileDiagnosticMessage} from './rpc-types';
+import type {FileDiagnosticMessage} from './types';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

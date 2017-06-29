@@ -22,7 +22,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
   OutlineTree,
@@ -946,7 +946,7 @@ export class LspLanguageService {
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>> {
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
     // Note: this function can (and should!) be called even before
     // we reach state 'Running'.
 

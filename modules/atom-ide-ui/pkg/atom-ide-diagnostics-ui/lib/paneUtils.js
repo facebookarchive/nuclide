@@ -10,8 +10,10 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
-import type {MessageType} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {
+  DiagnosticMessage,
+  DiagnosticMessageType,
+} from '../../atom-ide-diagnostics/lib/types';
 
 function fileOfDiagnosticMessage(diagnostic: DiagnosticMessage): string {
   if (typeof diagnostic.filePath === 'string') {
@@ -62,7 +64,7 @@ export function compareMessagesByFile(
   return compareVal;
 }
 
-const messageLevelRank: {[key: MessageType]: number} = {
+const messageLevelRank: {[key: DiagnosticMessageType]: number} = {
   Error: 0,
   Warning: 1,
   Info: 2,

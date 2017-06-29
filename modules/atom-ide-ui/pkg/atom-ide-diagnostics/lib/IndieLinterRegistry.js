@@ -12,9 +12,9 @@
 
 import type {
   DiagnosticProviderUpdate,
-  InvalidationMessage,
+  DiagnosticInvalidationMessage,
   LinterMessageV2,
-} from '..';
+} from './types';
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -24,12 +24,12 @@ export class IndieLinterDelegate {
   _name: string;
   _messages: Array<LinterMessageV2>;
   _updates: Subject<DiagnosticProviderUpdate>;
-  _invalidations: Subject<InvalidationMessage>;
+  _invalidations: Subject<DiagnosticInvalidationMessage>;
   _destroyed: BehaviorSubject<boolean>;
 
   // For compatibility with the Nuclide API.
   updates: Observable<DiagnosticProviderUpdate>;
-  invalidations: Observable<InvalidationMessage>;
+  invalidations: Observable<DiagnosticInvalidationMessage>;
 
   constructor(name: string) {
     this._name = name;

@@ -17,7 +17,7 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
@@ -33,7 +33,7 @@ import type {
 export interface HackLanguageService extends LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticUpdate>>,
+  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>>,
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,

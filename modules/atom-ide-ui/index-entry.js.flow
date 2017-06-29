@@ -45,26 +45,25 @@ export type {
 
 export type {
   CallbackDiagnosticProvider,
+  DiagnosticFix,
+  DiagnosticInvalidationCallback,
+  DiagnosticInvalidationMessage,
   DiagnosticMessage,
+  DiagnosticMessageType,
   DiagnosticProvider,
   DiagnosticProviderUpdate,
+  DiagnosticTrace,
+  DiagnosticUpdateCallback,
   FileDiagnosticMessage,
-  FileDiagnosticUpdate,
-  FileMessageUpdate,
-  Fix,
-  InvalidationMessage,
+  FileDiagnosticMessages,
   LinterMessage,
   LinterMessageV1,
   LinterMessageV2,
   LinterProvider,
   LinterTrace,
-  MessageInvalidationCallback,
-  MessageType,
-  MessageUpdateCallback,
   ObservableDiagnosticProvider,
   ProjectDiagnosticMessage,
-  Trace,
-} from './pkg/atom-ide-diagnostics';
+} from './pkg/atom-ide-diagnostics/lib/types';
 
 export type {
   FindReferencesProvider,

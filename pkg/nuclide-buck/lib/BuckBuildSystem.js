@@ -22,9 +22,9 @@ import type {
   TaskSettings,
 } from './types';
 import type {
-  ObservableDiagnosticProvider,
+  DiagnosticInvalidationMessage,
   DiagnosticProviderUpdate,
-  InvalidationMessage,
+  ObservableDiagnosticProvider,
 } from 'atom-ide-ui';
 
 import {Observable, Subject, TimeoutError} from 'rxjs';
@@ -50,7 +50,9 @@ export type {BuckSubcommand} from './types';
 
 export class BuckBuildSystem {
   _diagnosticUpdates: Subject<DiagnosticProviderUpdate> = new Subject();
-  _diagnosticInvalidations: Subject<InvalidationMessage> = new Subject();
+  _diagnosticInvalidations: Subject<
+    DiagnosticInvalidationMessage,
+  > = new Subject();
 
   build(opts: BuckBuildOptions): BuckBuildTask {
     const {root, target, args} = opts;

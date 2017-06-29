@@ -19,7 +19,7 @@ import type {
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FileDiagnosticMessage,
   FindReferencesReturn,
   Outline,
@@ -271,7 +271,7 @@ export class FlowSingleProjectLanguageService {
     };
   }
 
-  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>> {
+  observeDiagnostics(): Observable<Array<FileDiagnosticMessages>> {
     const ideConnections = this._process.getIDEConnections();
     return ideConnections
       .switchMap(ideConnection => {
@@ -821,7 +821,7 @@ export function updateDiagnostics(
 // Exported only for testing
 export function getDiagnosticUpdates(
   state: DiagnosticsState,
-): Observable<Array<FileDiagnosticUpdate>> {
+): Observable<Array<FileDiagnosticMessages>> {
   const updates = [];
   for (const file of state.filesToUpdate) {
     const messages = [

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {FileDiagnosticMessage} from '../lib/rpc-types';
+import type {FileDiagnosticMessage} from '../lib/types';
 
 import invariant from 'assert';
 import {Range} from 'atom';

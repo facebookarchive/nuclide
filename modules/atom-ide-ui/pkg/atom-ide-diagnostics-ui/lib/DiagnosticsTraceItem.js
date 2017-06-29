@@ -10,13 +10,13 @@
  * @format
  */
 
-import type {Trace} from '../../atom-ide-diagnostics/lib/rpc-types';
+import type {DiagnosticTrace} from '../../atom-ide-diagnostics/lib/types';
 
 import React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
 type DiagnosticsTraceItemProps = {
-  trace: Trace,
+  trace: DiagnosticTrace,
   goToLocation: (path: string, line: number) => mixed,
 };
 

@@ -13,7 +13,7 @@
 import type {
   ObservableDiagnosticUpdater,
   DiagnosticMessage,
-} from '../../atom-ide-diagnostics';
+} from '../../atom-ide-diagnostics/lib/types';
 
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';

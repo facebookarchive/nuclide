@@ -15,15 +15,13 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../atom-ide-datatip/lib/types';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics';
 import type {
-  FileMessageUpdate,
-  ObservableDiagnosticUpdater,
-} from '../../atom-ide-diagnostics';
-import type {
+  DiagnosticMessage,
+  DiagnosticTrace,
   FileDiagnosticMessage,
-  Trace,
-} from '../../atom-ide-diagnostics/lib/rpc-types';
+  FileDiagnosticMessages,
+  ObservableDiagnosticUpdater,
+} from '../../atom-ide-diagnostics/lib/types';
 import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
 
 import invariant from 'assert';
@@ -57,7 +55,7 @@ function disableLinter() {
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: ObservableDiagnosticUpdater,
-): Observable<FileMessageUpdate> {
+): Observable<FileDiagnosticMessages> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
     .switchMap(
@@ -457,7 +455,7 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  currentTraces(): ?Array<Trace> {
+  currentTraces(): ?Array<DiagnosticTrace> {
     if (this._index == null) {
       return null;
     }
@@ -466,7 +464,10 @@ class KeyboardShortcuts {
   }
 
   // TODO: Should filter out traces whose location matches the main diagnostic's location?
-  trySetCurrentTrace(traces: Array<Trace>, traceIndex: number): boolean {
+  trySetCurrentTrace(
+    traces: Array<DiagnosticTrace>,
+    traceIndex: number,
+  ): boolean {
     const trace = traces[traceIndex];
     if (trace.filePath != null && trace.range != null) {
       this._traceIndex = traceIndex;

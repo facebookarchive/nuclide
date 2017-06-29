@@ -13,18 +13,16 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {
+  DiagnosticInvalidationMessage,
   DiagnosticMessage,
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
   LinterMessage,
   LinterMessageV1,
   LinterMessageV2,
   LinterProvider,
-} from '..';
-import type {
-  DiagnosticProviderUpdate,
-  InvalidationMessage,
-  FileDiagnosticMessage,
   ProjectDiagnosticMessage,
-} from './rpc-types';
+} from './types';
 
 import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
@@ -189,7 +187,7 @@ export class LinterAdapter {
   _disposables: UniversalDisposable;
 
   _updates: Subject<DiagnosticProviderUpdate>;
-  _invalidations: Subject<InvalidationMessage>;
+  _invalidations: Subject<DiagnosticInvalidationMessage>;
 
   constructor(provider: LinterProvider) {
     this._provider = provider;
@@ -293,7 +291,7 @@ export class LinterAdapter {
     return this._updates.asObservable();
   }
 
-  getInvalidations(): Observable<InvalidationMessage> {
+  getInvalidations(): Observable<DiagnosticInvalidationMessage> {
     return this._invalidations.asObservable();
   }
 }

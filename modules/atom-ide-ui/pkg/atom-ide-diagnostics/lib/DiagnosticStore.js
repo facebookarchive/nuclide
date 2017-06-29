@@ -11,16 +11,14 @@
  */
 
 import type {
+  DiagnosticInvalidationMessage,
   DiagnosticMessage,
   DiagnosticProvider,
-  FileMessageUpdate,
-} from '..';
-import type {
-  InvalidationMessage,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
+  FileDiagnosticMessages,
   ProjectDiagnosticMessage,
-} from './rpc-types';
+} from './types';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -49,7 +47,7 @@ export default class DiagnosticStore {
     Array<ProjectDiagnosticMessage>,
   >;
 
-  _fileChanges: Subject<FileMessageUpdate>;
+  _fileChanges: Subject<FileDiagnosticMessages>;
   _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
   _allChanges: BehaviorSubject<Array<DiagnosticMessage>>;
 
@@ -151,7 +149,7 @@ export default class DiagnosticStore {
    */
   invalidateMessages(
     diagnosticProvider: DiagnosticProvider,
-    invalidationMessage: InvalidationMessage,
+    invalidationMessage: DiagnosticInvalidationMessage,
   ): void {
     if (invalidationMessage.scope === 'file') {
       this._invalidateFileMessagesForProvider(
@@ -232,7 +230,9 @@ export default class DiagnosticStore {
    * Section: Methods to read from the store.
    */
 
-  getFileMessageUpdates(filePath: NuclideUri): Observable<FileMessageUpdate> {
+  getFileMessageUpdates(
+    filePath: NuclideUri,
+  ): Observable<FileDiagnosticMessages> {
     const fileMessages = this._getFileMessages(filePath);
     const initialObservable = Observable.of({filePath, messages: fileMessages});
     return Observable.concat(
@@ -258,7 +258,7 @@ export default class DiagnosticStore {
    *   messages for this file path.
    */
   onFileMessagesDidUpdate(
-    callback: (update: FileMessageUpdate) => mixed,
+    callback: (update: FileDiagnosticMessages) => mixed,
     filePath: NuclideUri,
   ): IDisposable {
     return new UniversalDisposable(

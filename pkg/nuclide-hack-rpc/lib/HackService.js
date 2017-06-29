@@ -25,7 +25,7 @@ import type {HackReferencesResult} from './FindReferences';
 import type {
   DefinitionQueryResult,
   DiagnosticProviderUpdate,
-  FileDiagnosticUpdate,
+  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
 } from 'atom-ide-ui';
@@ -212,7 +212,7 @@ class HackSingleFileLanguageService {
     throw new Error('replaced by observeDiagnstics');
   }
 
-  observeDiagnostics(): Observable<Array<FileDiagnosticUpdate>> {
+  observeDiagnostics(): Observable<Array<FileDiagnosticMessages>> {
     logger.debug('observeDiagnostics');
     return observeConnections(this._fileCache)
       .mergeMap(connection => {

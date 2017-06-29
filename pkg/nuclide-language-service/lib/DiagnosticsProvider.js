@@ -11,11 +11,11 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
-  FileDiagnosticUpdate,
+  DiagnosticInvalidationCallback,
+  DiagnosticInvalidationMessage,
   DiagnosticProviderUpdate,
-  InvalidationMessage,
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
+  DiagnosticUpdateCallback,
+  FileDiagnosticMessages,
 } from 'atom-ide-ui';
 import type {LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
@@ -215,7 +215,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     return Array.from(filePaths);
   }
 
-  _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
+  _receivedNewUpdateSubscriber(callback: DiagnosticUpdateCallback): void {
     // Every time we get a new subscriber, we need to push results to them. This
     // logic is common to all providers and should be abstracted out (t7813069)
     //
@@ -240,11 +240,11 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     this._providerBase.setRunOnTheFly(runOnTheFly);
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
+  onMessageUpdate(callback: DiagnosticUpdateCallback): IDisposable {
     return this._providerBase.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
+  onMessageInvalidation(callback: DiagnosticInvalidationCallback): IDisposable {
     return this._providerBase.onMessageInvalidation(callback);
   }
 
@@ -296,7 +296,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
 
 export class ObservableDiagnosticProvider<T: LanguageService> {
   updates: Observable<DiagnosticProviderUpdate>;
-  invalidations: Observable<InvalidationMessage>;
+  invalidations: Observable<DiagnosticInvalidationMessage>;
   _analyticsEventName: string;
   _connectionToLanguageService: ConnectionCache<T>;
   _connectionToFiles: Cache<?ServerConnection, Set<NuclideUri>>;
@@ -342,7 +342,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
               }),
             );
           })
-          .map((updates: Array<FileDiagnosticUpdate>) => {
+          .map((updates: Array<FileDiagnosticMessages>) => {
             const filePathToMessages = new Map();
             updates.forEach(update => {
               const {filePath, messages} = update;

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {FileDiagnosticUpdate} from 'atom-ide-ui';
+import type {FileDiagnosticMessages} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 import type {
@@ -495,7 +495,7 @@ type AbbreviatedResult = {
 async function getAbbreviatedResults(
   messages: Array<?PushDiagnosticsMessage>,
 ): Promise<Array<Array<AbbreviatedResult>>> {
-  const results: Array<Array<FileDiagnosticUpdate>> = [];
+  const results: Array<Array<FileDiagnosticMessages>> = [];
   let state: DiagnosticsState = emptyDiagnosticsState();
   results.push(await getDiagnosticUpdates(state).toPromise());
   for (const message of messages) {
