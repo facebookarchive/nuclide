@@ -10,16 +10,12 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {BusySignalOptions} from './types';
 import type MessageStore from './MessageStore';
 
 import invariant from 'assert';
 import {isPromise} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export type MessageDisplayOptions = {
-  onlyForFile: NuclideUri,
-};
 
 export default class BusySignalInstance {
   _messageStore: MessageStore;
@@ -39,7 +35,7 @@ export default class BusySignalInstance {
    */
   reportBusy(
     message: string,
-    options?: MessageDisplayOptions,
+    options?: BusySignalOptions,
   ): UniversalDisposable {
     if (options == null || options.onlyForFile == null) {
       const disposable = this._messageStore.displayMessage(message);
@@ -87,7 +83,7 @@ export default class BusySignalInstance {
   reportBusyWhile<T>(
     message: string,
     f: () => Promise<T>,
-    options?: MessageDisplayOptions,
+    options?: BusySignalOptions,
   ): Promise<T> {
     const messageRemover = this.reportBusy(message, options);
     const removeMessage = messageRemover.dispose.bind(messageRemover);
