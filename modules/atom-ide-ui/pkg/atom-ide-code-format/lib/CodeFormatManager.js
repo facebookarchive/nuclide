@@ -169,9 +169,12 @@ export default class CodeFormatManager {
             }
           })
           .catch(err => {
-            atom.notifications.addError('Failed to format code', {
-              description: err.message,
-            });
+            atom.notifications.addError(
+              `Failed to format code: ${err.message}`,
+              {
+                detail: err.detail,
+              },
+            );
             return Observable.empty();
           });
       case 'type':
