@@ -14,7 +14,7 @@
     "atom": ">= 1.17.0"
   },
   "dependencies": {
-    "async-to-generator": "1.0.0",
+    "async-to-generator": "1.1.0",
     "classnames": "2.2.5",
     "fuzzaldrin-plus": "0.4.1",
     "idx": "1.2.0",

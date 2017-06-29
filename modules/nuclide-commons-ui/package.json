@@ -11,7 +11,7 @@
   },
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "dependencies": {
-    "async-to-generator": "1.0.0",
+    "async-to-generator": "1.1.0",
     "classnames": "2.2.5",
     "nuclide-commons": "0.1.7",
     "nuclide-commons-atom": "0.1.7",
