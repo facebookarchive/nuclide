@@ -202,10 +202,11 @@ function getPackagerObservable(
           return Observable.of(event.data);
         case 'exit':
           if (event.exitCode !== 0) {
-            // Completely ignore EADDRINUSE errors since the packager is probably already running.
             if (!stderr.includes('Error: listen EADDRINUSE :::8081')) {
               atom.notifications.addWarning(
-                'Packager failed to start - continuing anyway.',
+                'Packager failed to start - continuing anyway. This is expected if you ' +
+                  'are intentionally running a packager in a separate terminal. If not, ' +
+                  '`lsof -i tcp:8081` might help you find the process using the packager port',
                 {
                   dismissable: true,
                   detail: stderr.trim() === '' ? undefined : stderr,
