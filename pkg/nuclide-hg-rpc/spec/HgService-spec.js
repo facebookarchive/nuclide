@@ -420,7 +420,7 @@ describe('HgService', () => {
     });
   });
 
-  describe('::fetchMergeConflictsWithDetails', () => {
+  describe('::fetchMergeConflicts', () => {
     it('fetches rich merge conflict data', () => {
       let wasCalled = false;
       spyOn(hgService, '_hgRunCommand').andCallFake((args, options) => {
@@ -429,7 +429,7 @@ describe('HgService', () => {
       });
       waitsForPromise(async () => {
         const mergeConflictsEnriched = await hgService
-          .fetchMergeConflictsWithDetails()
+          .fetchMergeConflicts()
           .refCount()
           .toPromise();
         expect(wasCalled).toBeTruthy();
@@ -443,7 +443,7 @@ describe('HgService', () => {
     });
   });
 
-  describe('::fetchMergeConflictsWithDetails()', () => {
+  describe('::fetchMergeConflicts()', () => {
     const relativePath1 = relativize(PATH_1);
     const relativePath2 = relativize(PATH_2);
 
@@ -490,7 +490,7 @@ describe('HgService', () => {
       spyOn(hgService, '_checkMergeDirectoryExists').andCallFake(() => {
         return mergeDirectoryExists;
       });
-      spyOn(hgService, '_fetchMergeConflictsWithDetails').andCallFake(
+      spyOn(hgService, '_fetchMergeConflicts').andCallFake(
         () => mergeConflicts,
       );
     });

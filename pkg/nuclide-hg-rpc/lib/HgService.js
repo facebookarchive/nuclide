@@ -215,7 +215,7 @@ export type MergeConflictFileData = {
   conflictCount?: number,
 };
 
-export type MergeConflictsEnriched = {
+export type MergeConflicts = {
   conflicts: Array<MergeConflictFileData>,
   command: string,
 };
@@ -585,7 +585,7 @@ export class HgService {
       return;
     } else if (mergeDirectoryExists) {
       // Detect if the repository is in a conflict state.
-      const mergeConflicts = await this._fetchMergeConflictsWithDetails();
+      const mergeConflicts = await this._fetchMergeConflicts();
       if (mergeConflicts != null) {
         this._isInConflict = true;
         this._hgConflictStateDidChangeObserver.next(true);
@@ -593,8 +593,8 @@ export class HgService {
     }
   }
 
-  async _fetchMergeConflictsWithDetails(): Promise<?MergeConflictsEnriched> {
-    return this.fetchMergeConflictsWithDetails().refCount().toPromise();
+  async _fetchMergeConflicts(): Promise<?MergeConflicts> {
+    return this.fetchMergeConflicts().refCount().toPromise();
   }
 
   _emitHgRepoStateChanged(): void {
@@ -1299,7 +1299,7 @@ export class HgService {
     return {entries};
   }
 
-  fetchMergeConflictsWithDetails(): ConnectableObservable<?MergeConflictsEnriched> {
+  fetchMergeConflicts(): ConnectableObservable<?MergeConflicts> {
     const args = ['resolve', '--tool=internal:dumpjson', '--all'];
     const execOptions = {
       cwd: this._workingDirectory,

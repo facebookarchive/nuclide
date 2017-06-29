@@ -18,7 +18,7 @@ import type {
   LineDiff,
   RevisionInfo,
   RevisionShowInfo,
-  MergeConflictsEnriched,
+  MergeConflicts,
   RevisionFileChanges,
   StatusCodeNumberValue,
   StatusCodeIdValue,
@@ -860,8 +860,8 @@ export class HgRepositoryClient {
     this._emitter.emit('did-change-interactive-mode', isInteractiveMode);
   }
 
-  fetchMergeConflictsWithDetails(): Observable<?MergeConflictsEnriched> {
-    return this._service.fetchMergeConflictsWithDetails().refCount();
+  fetchMergeConflicts(): Observable<?MergeConflicts> {
+    return this._service.fetchMergeConflicts().refCount();
   }
 
   markConflictedFile(
