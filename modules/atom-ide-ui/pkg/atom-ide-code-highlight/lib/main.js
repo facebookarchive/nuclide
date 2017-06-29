@@ -10,17 +10,10 @@
  * @format
  */
 
+import type {CodeHighlightProvider} from './types';
+
 import createPackage from 'nuclide-commons-atom/createPackage';
 import CodeHighlightManager from './CodeHighlightManager';
-
-export type CodeHighlightProvider = {
-  highlight(
-    editor: atom$TextEditor,
-    bufferPosition: atom$Point,
-  ): Promise<?Array<atom$Range>>,
-  priority: number,
-  grammarScopes: Array<string>,
-};
 
 class Activation {
   _codeHighlightManager: CodeHighlightManager;

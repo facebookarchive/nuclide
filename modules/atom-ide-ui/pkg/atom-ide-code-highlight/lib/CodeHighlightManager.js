@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {CodeHighlightProvider} from '..';
+import type {CodeHighlightProvider} from './types';
 
 import debounce from 'nuclide-commons/debounce';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
