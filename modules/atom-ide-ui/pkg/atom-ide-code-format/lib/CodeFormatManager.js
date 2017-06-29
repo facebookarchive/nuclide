@@ -31,8 +31,6 @@ import {applyTextEditsToBuffer} from 'nuclide-commons-atom/text-edit';
 import {getFormatOnSave, getFormatOnType} from './config';
 import {getLogger} from 'log4js';
 
-const logger = getLogger('atom-ide-code-format');
-
 // Save events are critical, so don't allow providers to block them.
 const SAVE_TIMEOUT = 2500;
 
@@ -181,7 +179,7 @@ export default class CodeFormatManager {
           editor,
           event.edit,
         ).catch(err => {
-          logger.warn('Failed to format code on type:', err);
+          getLogger('code-format').warn('Failed to format code on type:', err);
           return Observable.empty();
         });
       case 'save':
@@ -189,7 +187,10 @@ export default class CodeFormatManager {
           this._formatCodeOnSaveInTextEditor(editor)
             .timeout(SAVE_TIMEOUT)
             .catch(err => {
-              logger.warn('Failed to format code on save:', err);
+              getLogger('code-format').warn(
+                'Failed to format code on save:',
+                err,
+              );
               return Observable.empty();
             })
             // Fire-and-forget the original save function.

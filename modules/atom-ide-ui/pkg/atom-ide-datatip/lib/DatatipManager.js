@@ -42,8 +42,6 @@ import {
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-const logger = getLogger('atom-ide-datatip');
-
 const CUMULATIVE_WHEELX_THRESHOLD = 20;
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
 const DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY = 1000;
@@ -57,7 +55,7 @@ type DataTipResult = {
 
 function getProviderName(provider: AnyDatatipProvider): string {
   if (provider.providerName == null) {
-    logger.error('Datatip provider has no name', provider);
+    getLogger('datatip').error('Datatip provider has no name', provider);
     return 'unknown';
   }
   return provider.providerName;
@@ -129,7 +127,10 @@ async function getTopDatatipAndProvider<TProvider: AnyDatatipProvider>(
         return result;
       } catch (e) {
         timingTracker.onError(e);
-        logger.error(`Error getting datatip from provider ${name}`, e);
+        getLogger('datatip').error(
+          `Error getting datatip from provider ${name}`,
+          e,
+        );
         return null;
       }
     },

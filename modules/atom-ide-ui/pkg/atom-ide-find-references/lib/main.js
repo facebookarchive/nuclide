@@ -26,8 +26,6 @@ import {FindReferencesViewModel} from './FindReferencesViewModel';
 import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
 
-const logger = getLogger('atom-ide-find-references');
-
 function showWarning(message: string): void {
   atom.notifications.addWarning('Find References: ' + message, {
     dismissable: true,
@@ -62,7 +60,7 @@ async function tryCreateView(
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
-    logger.error('Exception in atom-ide-find-references', e);
+    getLogger('find-references').error('Erorr finding references', e);
     atom.notifications.addError(`Find References: ${e}`, {
       dismissable: true,
     });
