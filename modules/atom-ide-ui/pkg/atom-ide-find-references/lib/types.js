@@ -12,6 +12,18 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+export type FindReferencesProvider = {
+  // Return true if your provider supports finding references for the provided TextEditor.
+  isEditorSupported(editor: TextEditor): Promise<boolean>,
+
+  // `findReferences` will only be called if `isEditorSupported` previously returned true
+  // for the given TextEditor.
+  findReferences(
+    editor: TextEditor,
+    position: atom$Point,
+  ): Promise<?FindReferencesReturn>,
+};
+
 export type Reference = {
   uri: NuclideUri, // Nuclide URI of the file path
   name: ?string, // name of calling method/function/symbol

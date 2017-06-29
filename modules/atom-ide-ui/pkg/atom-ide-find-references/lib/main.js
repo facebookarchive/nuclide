@@ -12,7 +12,7 @@
 
 /* global getSelection */
 
-import type {FindReferencesReturn, Reference} from './types';
+import type {FindReferencesProvider, FindReferencesReturn} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
@@ -27,20 +27,6 @@ import {getLogger} from 'log4js';
 import FindReferencesModel from './FindReferencesModel';
 
 const logger = getLogger('atom-ide-find-references');
-
-export type {FindReferencesReturn, Reference};
-
-export type FindReferencesProvider = {
-  // Return true if your provider supports finding references for the provided TextEditor.
-  isEditorSupported(editor: TextEditor): Promise<boolean>,
-
-  // `findReferences` will only be called if `isEditorSupported` previously returned true
-  // for the given TextEditor.
-  findReferences(
-    editor: TextEditor,
-    position: atom$Point,
-  ): Promise<?FindReferencesReturn>,
-};
 
 function showWarning(message: string): void {
   atom.notifications.addWarning('Find References: ' + message, {

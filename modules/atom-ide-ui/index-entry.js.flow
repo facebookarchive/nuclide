@@ -69,7 +69,7 @@ export type {
   FindReferencesProvider,
   FindReferencesReturn,
   Reference,
-} from './pkg/atom-ide-find-references';
+} from './pkg/atom-ide-find-references/lib/types';
 
 export type {
   Outline,
