@@ -168,6 +168,11 @@ class Activation {
             }
           }),
         );
+        if (editor.isDestroyed()) {
+          // This is asynchronous, so the editor may have been destroyed!
+          this._supportedProviders.delete(editor);
+          return;
+        }
         const disposable = editor.onDidDestroy(() => {
           this._supportedProviders.delete(editor);
           this._subscriptions.remove(disposable);

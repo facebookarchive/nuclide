@@ -758,12 +758,12 @@ export class DatatipManager {
           this._modifierDatatipProviders,
         );
         this._editorManagers.set(editor, manager);
-        const dispose = () => {
+        const disposable = new UniversalDisposable(() => {
           manager.dispose();
           this._editorManagers.delete(editor);
-        };
-        this._subscriptions.add(new UniversalDisposable(dispose));
-        editor.onDidDestroy(dispose);
+        });
+        this._subscriptions.add(disposable);
+        editor.onDidDestroy(() => disposable.dispose());
       }),
     );
   }

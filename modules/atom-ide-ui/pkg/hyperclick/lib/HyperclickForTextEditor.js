@@ -103,7 +103,7 @@ export default class HyperclickForTextEditor {
   }
 
   _setupMouseListeners(): void {
-    const getLinesDomNode = (): HTMLElement => {
+    const getLinesDomNode = (): ?HTMLElement => {
       const {component} = this._textEditorView;
       invariant(component);
       if (component.refs != null) {
@@ -111,17 +111,6 @@ export default class HyperclickForTextEditor {
       } else {
         return component.linesComponent.getDomNode();
       }
-    };
-    const removeMouseListeners = () => {
-      if (this._textEditorView.component == null) {
-        return;
-      }
-      const linesDomNode = getLinesDomNode();
-      if (linesDomNode == null) {
-        return;
-      }
-      linesDomNode.removeEventListener('mousedown', this._onMouseDown);
-      linesDomNode.removeEventListener('mousemove', this._onMouseMove);
     };
     const addMouseListeners = () => {
       const {component} = this._textEditorView;
@@ -132,15 +121,22 @@ export default class HyperclickForTextEditor {
       }
       linesDomNode.addEventListener('mousedown', this._onMouseDown);
       linesDomNode.addEventListener('mousemove', this._onMouseMove);
+      const removalDisposable = new Disposable(() => {
+        linesDomNode.removeEventListener('mousedown', this._onMouseDown);
+        linesDomNode.removeEventListener('mousemove', this._onMouseMove);
+      });
+      this._subscriptions.add(removalDisposable);
+      this._subscriptions.add(
+        this._textEditorView.onDidDetach(() => removalDisposable.dispose()),
+      );
     };
-    this._subscriptions.add(new Disposable(removeMouseListeners));
-    this._subscriptions.add(
-      this._textEditorView.onDidDetach(removeMouseListeners),
-    );
-    this._subscriptions.add(
-      this._textEditorView.onDidAttach(addMouseListeners),
-    );
-    addMouseListeners();
+    if (this._textEditorView.component) {
+      addMouseListeners();
+    } else {
+      this._subscriptions.add(
+        this._textEditorView.onDidAttach(addMouseListeners),
+      );
+    }
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
