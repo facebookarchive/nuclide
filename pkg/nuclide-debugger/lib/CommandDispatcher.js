@@ -140,7 +140,9 @@ export default class CommandDispatcher {
   }
 
   _sendViaNuclideChannel(...args: Array<any>): void {
-    invariant(this._bridgeAdapter != null);
+    if (this._bridgeAdapter == null) {
+      return;
+    }
     switch (args[0]) {
       case 'Continue':
         this._bridgeAdapter.resume();
