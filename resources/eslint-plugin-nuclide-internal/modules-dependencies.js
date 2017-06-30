@@ -17,6 +17,7 @@ const resolveFrom = require('resolve-from');
 const {ATOM_BUILTIN_PACKAGES, getPackage, isRequire} = require('./utils');
 
 const MODULES_DIR = path.join(__dirname, '..', '..', 'modules');
+const ASYNC_TO_GENERATOR = 'async-to-generator';
 
 module.exports = function(context) {
   const filename = context.getFilename();
@@ -61,7 +62,14 @@ module.exports = function(context) {
     }
   }
 
+  function checkAsyncToGenerator(node) {
+    if (node.async) {
+      checkDependency(node, ASYNC_TO_GENERATOR);
+    }
+  }
+
   return {
+    ArrowFunctionExpression: checkAsyncToGenerator,
     CallExpression(node) {
       if (!isRequire(node)) {
         return;
@@ -79,6 +87,8 @@ module.exports = function(context) {
       // export * from "…"
       checkDependency(node, node.source.value);
     },
+    FunctionDeclaration: checkAsyncToGenerator,
+    FunctionExpression: checkAsyncToGenerator,
     ImportDeclaration(node) {
       // import foo from "…"
       checkDependency(node, node.source.value);
