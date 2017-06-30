@@ -32,12 +32,17 @@ export function bindObservableAsProps<T: ReactClass<any>, U: T>(
     _subscription: ?rxjs$ISubscription;
     state: {[key: string]: any};
     _resolved: boolean;
+    _wrappedComponent: ?T;
 
     constructor(props) {
       super(props);
       this._subscription = null;
       this.state = {};
       this._resolved = false;
+    }
+
+    getWrappedComponent(): ?T {
+      return this._wrappedComponent;
     }
 
     componentDidMount(): void {
@@ -61,7 +66,12 @@ export function bindObservableAsProps<T: ReactClass<any>, U: T>(
         ...this.props,
         ...this.state,
       };
-      return <ComposedComponent {...props} />;
+      return (
+        <ComposedComponent
+          ref={component => (this._wrappedComponent = component)}
+          {...props}
+        />
+      );
     }
   };
 }
