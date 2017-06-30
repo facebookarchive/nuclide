@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {DebuggerInstanceBase} from '../../nuclide-debugger-base';
+import type {
+  DebuggerCapabilities,
+  DebuggerProperties,
+  DebuggerInstanceBase,
+} from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   LaunchTargetInfo,
@@ -40,12 +44,17 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return new LaunchProcessInfo(this._targetUri, this._launchTargetInfo);
   }
 
-  supportThreads(): boolean {
-    return true;
+  getDebuggerCapabilities(): DebuggerCapabilities {
+    return {
+      ...super.getDebuggerCapabilities(),
+      continueToLocation: true,
+      singleThreadStepping: true,
+      threads: true,
+    };
   }
 
-  supportContinueToLocation(): boolean {
-    return true;
+  getDebuggerProps(): DebuggerProperties {
+    return super.getDebuggerProps();
   }
 
   async debug(): Promise<DebuggerInstanceBase> {
@@ -75,10 +84,6 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       }
     }
     return debugSession;
-  }
-
-  supportSingleThreadStepping(): boolean {
-    return true;
   }
 
   getDebuggerConfig(): DebuggerConfig {

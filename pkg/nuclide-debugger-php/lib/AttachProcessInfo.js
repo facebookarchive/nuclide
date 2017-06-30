@@ -12,7 +12,11 @@
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ControlButtonSpecification} from '../../nuclide-debugger/lib/types';
-import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
+import type {
+  DebuggerCapabilities,
+  DebuggerProperties,
+  ThreadColumn,
+} from '../../nuclide-debugger-base/lib/types';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
@@ -29,6 +33,24 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
 
   clone(): AttachProcessInfo {
     return new AttachProcessInfo(this._targetUri);
+  }
+
+  getDebuggerCapabilities(): DebuggerCapabilities {
+    return {
+      ...super.getDebuggerCapabilities(),
+      continueToLocation: true,
+      singleThreadStepping: true,
+      threads: true,
+    };
+  }
+
+  getDebuggerProps(): DebuggerProperties {
+    return {
+      ...super.getDebuggerProps(),
+      customControlButtons: this._getCustomControlButtons(),
+      threadColumns: this._getThreadColumns(),
+      threadsComponentTitle: 'Requests',
+    };
   }
 
   preAttachActions(): Promise<void> {
@@ -64,15 +86,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     return new service.PhpDebuggerService();
   }
 
-  supportThreads(): boolean {
-    return true;
-  }
-
-  getThreadsComponentTitle(): string {
-    return 'Requests';
-  }
-
-  getThreadColumns(): ?Array<ThreadColumn> {
+  _getThreadColumns(): ?Array<ThreadColumn> {
     return [
       {
         key: 'id',
@@ -92,19 +106,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     ];
   }
 
-  supportSingleThreadStepping(): boolean {
-    return true;
-  }
-
-  singleThreadSteppingEnabled(): boolean {
-    return true;
-  }
-
-  supportContinueToLocation(): boolean {
-    return true;
-  }
-
-  customControlButtons(): Array<ControlButtonSpecification> {
+  _getCustomControlButtons(): Array<ControlButtonSpecification> {
     const customControlButtons = [
       {
         icon: 'link-external',

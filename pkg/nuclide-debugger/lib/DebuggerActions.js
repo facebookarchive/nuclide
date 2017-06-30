@@ -76,11 +76,13 @@ export default class DebuggerActions {
     this.setDebuggerMode(DebuggerMode.STARTING);
     this.setDebugProcessInfo(processInfo);
     try {
+      const debuggerCapabilities = processInfo.getDebuggerCapabilities();
+      const debuggerProps = processInfo.getDebuggerProps();
       const debuggerInstance = await processInfo.debug();
       await this._store.getBridge().setupNuclideChannel(debuggerInstance);
       this._registerConsole();
       const supportThreadsWindow =
-        processInfo.supportThreads() &&
+        debuggerCapabilities.threads &&
         (await this._allowThreadsForPhp(processInfo));
       this._store
         .getSettings()
@@ -88,23 +90,21 @@ export default class DebuggerActions {
       if (supportThreadsWindow) {
         this._store
           .getSettings()
-          .set('CustomThreadColumns', processInfo.getThreadColumns());
+          .set('CustomThreadColumns', debuggerProps.threadColumns);
         this._store
           .getSettings()
-          .set('threadsComponentTitle', processInfo.getThreadsComponentTitle());
+          .set('threadsComponentTitle', debuggerProps.threadsComponentTitle);
       }
-      const singleThreadStepping = processInfo.supportSingleThreadStepping();
+      const singleThreadStepping = debuggerCapabilities.singleThreadStepping;
       this._store
         .getSettings()
         .set('SingleThreadStepping', singleThreadStepping);
-      this.toggleSingleThreadStepping(
-        singleThreadStepping && processInfo.singleThreadSteppingEnabled(),
-      );
+      this.toggleSingleThreadStepping(singleThreadStepping);
       if (
         processInfo.getServiceName() !== 'hhvm' ||
         (await passesGK(GK_DEBUGGER_REQUEST_SENDER))
       ) {
-        const customControlButtons = processInfo.customControlButtons();
+        const customControlButtons = debuggerProps.customControlButtons;
         if (customControlButtons.length > 0) {
           this.updateControlButtons(customControlButtons);
         } else {
@@ -112,7 +112,7 @@ export default class DebuggerActions {
         }
       }
 
-      if (processInfo.supportsConfigureSourcePaths()) {
+      if (debuggerCapabilities.customSourcePaths) {
         this.updateConfigureSourcePathsCallback(
           processInfo.configureSourceFilePaths.bind(processInfo),
         );

@@ -324,7 +324,7 @@ class Activation {
                     debuggerInstance != null &&
                     debuggerInstance
                       .getDebuggerProcessInfo()
-                      .supportContinueToLocation()
+                      .getDebuggerCapabilities().continueToLocation
                   ) {
                     return true;
                   }

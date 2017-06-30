@@ -11,6 +11,10 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
+import type {
+  DebuggerCapabilities,
+  DebuggerProperties,
+} from '../../nuclide-debugger-base';
 
 import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
 import {PhpDebuggerInstance} from './PhpDebuggerInstance';
@@ -42,6 +46,19 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     );
   }
 
+  getDebuggerCapabilities(): DebuggerCapabilities {
+    return {
+      ...super.getDebuggerCapabilities(),
+      continueToLocation: true,
+      singleThreadStepping: true,
+      threads: true,
+    };
+  }
+
+  getDebuggerProps(): DebuggerProperties {
+    return super.getDebuggerProps();
+  }
+
   async debug(): Promise<PhpDebuggerInstance> {
     const rpcService = this._getRpcService();
     const sessionConfig = getSessionConfig(
@@ -67,21 +84,5 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   _getRpcService(): PhpDebuggerServiceType {
     const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
     return new service.PhpDebuggerService();
-  }
-
-  supportThreads(): boolean {
-    return true;
-  }
-
-  supportSingleThreadStepping(): boolean {
-    return true;
-  }
-
-  singleThreadSteppingEnabled(): boolean {
-    return true;
-  }
-
-  supportContinueToLocation(): boolean {
-    return true;
   }
 }
