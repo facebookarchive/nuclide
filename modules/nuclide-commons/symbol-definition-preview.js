@@ -38,7 +38,11 @@ export async function getDefinitionPreview(
 
   const buffer = [];
   for (
-    let i = start, openParenCount = 0, closedParenCount = 0;
+    let i = start,
+      openParenCount = 0,
+      closedParenCount = 0,
+      openCurlyCount = 0,
+      closedCurlyCount = 0;
     i < start + MAX_PREVIEW_LINES && i < lines.length;
     i++
   ) {
@@ -46,16 +50,30 @@ export async function getDefinitionPreview(
     const indentLevel = getIndentLevel(line);
     openParenCount += countOccurrences(line, '(');
     closedParenCount += countOccurrences(line, ')');
+    openCurlyCount += countOccurrences(line, '{');
+    closedCurlyCount += countOccurrences(line, '}');
 
     buffer.push(line.substr(Math.min(indentLevel, initialIndentLevel))); // dedent
 
-    // heuristic for the end of a function signature. // we've returned back to the original indentation level
-    // and we have balanced pairs of parens
-    if (
-      indentLevel <= initialIndentLevel &&
-      openParenCount === closedParenCount
-    ) {
-      break;
+    // heuristic for the end of a function signature:
+    if (indentLevel <= initialIndentLevel) {
+      // we've returned back to the original indentation level
+      if (openParenCount > 0 && openParenCount === closedParenCount) {
+        // if we're in a fn definition, make sure we have balanced pairs of parens
+        break;
+      } else if (line.trim().endsWith(';')) {
+        // c-style statement ending
+        break;
+      } else if (
+        // end of a property definition
+        line.trim().endsWith(',') &&
+        // including complex types as values
+        openCurlyCount === closedCurlyCount &&
+        // but still not before function signatures are closed
+        openParenCount === closedParenCount
+      ) {
+        break;
+      }
     }
   }
 

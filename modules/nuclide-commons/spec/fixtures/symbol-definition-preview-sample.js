@@ -39,3 +39,13 @@ aReallyReallyLongArgumentNameThatWouldRequireThisToBreakAcrossMultipleLines: Som
 ): number {
   return 97;
 }
+
+type SomethingComplex = {
+  properties: {
+    name: string,
+    age?: number,
+  },
+};
+
+const foo: ?SomethingComplex = null;
+foo;
