@@ -1609,7 +1609,6 @@ declare class atom$TextBuffer {
   emitter: atom$Emitter,
   refcount: number,
   loaded: boolean,
-  changeCount: number,
   wasModifiedBeforeRemove: boolean,
   finishLoading(): atom$TextBuffer,
   updateCachedDiskContents(flushCache?: boolean, callback?: () => mixed): Promise<void>,

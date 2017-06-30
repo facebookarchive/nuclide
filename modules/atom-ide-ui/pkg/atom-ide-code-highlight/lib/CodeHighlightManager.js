@@ -12,10 +12,12 @@
 
 import type {CodeHighlightProvider} from './types';
 
-import debounce from 'nuclide-commons/debounce';
+import {getLogger} from 'log4js';
+import {Observable} from 'rxjs';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
+import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 
 const HIGHLIGHT_DELAY_MS = 250;
 
@@ -27,72 +29,54 @@ export default class CodeHighlightManager {
   constructor() {
     this._providers = new ProviderRegistry();
     this._markers = [];
-    this._subscriptions = new UniversalDisposable();
-    const debouncedCallback = debounce(
-      this._onCursorMove.bind(this),
-      HIGHLIGHT_DELAY_MS,
-      false,
-    );
-    this._subscriptions.add(
-      observeTextEditors(editor => {
-        const editorSubscriptions = new UniversalDisposable();
-        editorSubscriptions.add(
-          editor.onDidChangeCursorPosition(event => {
-            debouncedCallback(editor, event.newBufferPosition);
-          }),
-        );
-        editorSubscriptions.add(
-          editor.onDidChange(event => {
-            this._destroyMarkers();
-            debouncedCallback(editor, editor.getCursorBufferPosition());
-          }),
-        );
-        editorSubscriptions.add(
-          editor.onDidDestroy(() => {
-            editorSubscriptions.dispose();
-            this._subscriptions.remove(editorSubscriptions);
-          }),
-        );
-        this._subscriptions.add(editorSubscriptions);
-      }),
-    );
+    this._subscriptions = new UniversalDisposable(this._highlightEditors());
   }
 
-  async _onCursorMove(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<void> {
-    if (editor.isDestroyed() || this._isPositionInHighlightedRanges(position)) {
-      return;
-    }
+  _highlightEditors(): rxjs$Subscription {
+    return observeActiveEditorsDebounced(0)
+      .switchMap(editor => {
+        if (editor == null) {
+          return Observable.empty();
+        }
+        const changeCursorEvents = observableFromSubscribeFunction(
+          editor.onDidChangeCursorPosition.bind(editor),
+        )
+          .map(event => event.newBufferPosition)
+          .filter(
+            // If we're moving around inside highlighted ranges, that's fine.
+            position => !this._isPositionInHighlightedRanges(editor, position),
+          );
 
-    // The cursor is outside the old markers, so they are now stale
-    this._destroyMarkers();
+        const changeEvents = observableFromSubscribeFunction(
+          editor.onDidChange.bind(editor),
+        )
+          // Ensure we start highlighting immediately.
+          .startWith(null)
+          .map(() => editor.getCursorBufferPosition());
 
-    const originalChangeCount = editor.getBuffer().changeCount;
-    const highlightedRanges = await this._getHighlightedRanges(
-      editor,
-      position,
-    );
-    if (highlightedRanges == null) {
-      return;
-    }
+        const destroyEvents = observableFromSubscribeFunction(
+          editor.onDidDestroy.bind(editor),
+        );
 
-    // If the cursor has moved, or the file was edited
-    // the highlighted ranges we just computed are useless, so abort
-    if (this._hasEditorChanged(editor, position, originalChangeCount)) {
-      return;
-    }
-
-    this._markers = highlightedRanges.map(range =>
-      editor.markBufferRange(range, {}),
-    );
-    this._markers.forEach(marker => {
-      editor.decorateMarker(marker, {
-        type: 'highlight',
-        class: 'atom-ide-code-highlight-marker',
+        return (
+          Observable.merge(changeCursorEvents, changeEvents)
+            // Destroy old markers immediately - never show stale results.
+            .do(() => this._destroyMarkers())
+            .debounceTime(HIGHLIGHT_DELAY_MS)
+            .switchMap(async position => {
+              return {
+                editor,
+                ranges: await this._getHighlightedRanges(editor, position),
+              };
+            })
+            .takeUntil(destroyEvents)
+        );
+      })
+      .subscribe(({editor, ranges}) => {
+        if (ranges != null) {
+          this._highlightRanges(editor, ranges);
+        }
       });
-    });
   }
 
   async _getHighlightedRanges(
@@ -104,21 +88,28 @@ export default class CodeHighlightManager {
       return null;
     }
 
-    return provider.highlight(editor, position);
+    try {
+      return await provider.highlight(editor, position);
+    } catch (e) {
+      getLogger('code-highlight').error('Error getting code highlights', e);
+      return null;
+    }
   }
 
-  _hasEditorChanged(
+  _highlightRanges(editor: atom$TextEditor, ranges: Array<atom$Range>): void {
+    this._markers = ranges.map(range => editor.markBufferRange(range, {}));
+    this._markers.forEach(marker => {
+      editor.decorateMarker(marker, {
+        type: 'highlight',
+        class: 'atom-ide-code-highlight-marker',
+      });
+    });
+  }
+
+  _isPositionInHighlightedRanges(
     editor: atom$TextEditor,
     position: atom$Point,
-    originalChangeCount: number,
   ): boolean {
-    return (
-      !editor.getCursorBufferPosition().isEqual(position) ||
-      editor.getBuffer().changeCount !== originalChangeCount
-    );
-  }
-
-  _isPositionInHighlightedRanges(position: atom$Point): boolean {
     return this._markers
       .map(marker => marker.getBufferRange())
       .some(range => range.containsPoint(position));
