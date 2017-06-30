@@ -25,14 +25,26 @@ if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
   });
 } else {
   const featureDir = path.join(__dirname, 'pkg');
-  const features = fs.readdirSync(featureDir).map(item => {
-    const dirname = path.join(featureDir, item);
-    const pkgJson = fs.readFileSync(path.join(dirname, 'package.json'), 'utf8');
-    return {
-      dirname,
-      pkg: JSON.parse(pkgJson),
-    };
-  });
+  const features = fs
+    .readdirSync(featureDir)
+    .map(item => {
+      const dirname = path.join(featureDir, item);
+      try {
+        const pkgJson = fs.readFileSync(
+          path.join(dirname, 'package.json'),
+          'utf8',
+        );
+        return {
+          dirname,
+          pkg: JSON.parse(pkgJson),
+        };
+      } catch (err) {
+        if (err.code !== 'ENOENT') {
+          throw err;
+        }
+      }
+    })
+    .filter(Boolean);
   const disposables = new UniversalDisposable();
   const featureLoader = new FeatureLoader({
     pkgName: 'atom-ide-ui',
