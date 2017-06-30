@@ -15,7 +15,7 @@ import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
 import fs from '../common/fs';
 import {sleep} from 'nuclide-commons/promise';
-import {quote} from 'shell-quote';
+import {shellQuote} from 'nuclide-commons/string';
 import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import {WebSocketTransport} from '../common/WebSocketTransport';
@@ -435,7 +435,7 @@ export class SshHandshake {
         expiration: '7d',
         serverParams: this._config.remoteServerCustomParams,
       };
-      const cmd = `${this._config.remoteServerCommand} ${quote([
+      const cmd = `${this._config.remoteServerCommand} ${shellQuote([
         JSON.stringify(params),
       ])}`;
 

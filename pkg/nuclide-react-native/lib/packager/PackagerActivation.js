@@ -17,12 +17,12 @@ import type {PackagerEvent} from './types';
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {getCommandInfo} from '../../../nuclide-react-native-base';
 import {observeProcess} from 'nuclide-commons/process';
+import {shellQuote} from 'nuclide-commons/string';
 import {parseMessages} from './parseMessages';
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 import electron from 'electron';
 import {Observable} from 'rxjs';
-import {quote} from 'shell-quote';
 
 /**
  * Runs the server in the appropriate place. This class encapsulates all the state of the packager
@@ -175,7 +175,7 @@ function getPackagerObservable(
       }
       return observeProcess(command, args, {
         cwd,
-        env: {...process.env, REACT_EDITOR: quote(editor)},
+        env: {...process.env, REACT_EDITOR: shellQuote(editor)},
         killTreeWhenDone: true,
         /* TODO(T17353599) */ isExitError: () => false,
       }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)

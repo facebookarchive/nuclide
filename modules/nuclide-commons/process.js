@@ -52,7 +52,6 @@ import child_process from 'child_process';
 import idx from 'idx';
 import invariant from 'assert';
 import {Observable, TimeoutError} from 'rxjs';
-import {quote} from 'shell-quote';
 
 import UniversalDisposable from './UniversalDisposable';
 import nuclideUri from './nuclideUri';
@@ -61,6 +60,7 @@ import {MultiMap} from './collection';
 import {observableFromSubscribeFunction} from './event';
 import {observeStream} from './stream';
 import {splitStream, takeWhileInclusive} from './observable';
+import {shellQuote} from './string';
 
 // TODO(T17266325): Replace this in favor of `atom.whenShellEnvironmentLoaded()` when it lands
 import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
@@ -390,7 +390,7 @@ export function scriptifyCommand<T>(
     // On Linux, script takes the command to run as the -c parameter so we have to combine all of
     // the arguments into a single string. Apparently, because of how `script` works, however, we
     // wind up with double escapes. So we just strip one level of them.
-    const joined = quote([command, ...args]).replace(/\\\\/g, '\\');
+    const joined = shellQuote([command, ...args]).replace(/\\\\/g, '\\');
     const opts = options || {};
     const env = opts.env || {};
     return [

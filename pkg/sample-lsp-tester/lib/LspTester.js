@@ -24,7 +24,7 @@ import React from 'react';
 import * as rpc from 'vscode-jsonrpc';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Scheduler} from 'rxjs';
-import shellQuote from 'shell-quote';
+import {shellParse} from 'nuclide-commons/string';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/sample-lsp-tester';
 
@@ -118,7 +118,7 @@ export class LspTester extends SimpleModel {
 
   _startServer(commandString: string): void {
     this._stopServer();
-    const [command, ...args] = shellQuote.parse(commandString);
+    const [command, ...args] = shellParse(commandString);
     const events = takeWhileInclusive(
       // Use the async scheduler so that `disposable.dispose()` can still be called in
       // error/complete handlers.

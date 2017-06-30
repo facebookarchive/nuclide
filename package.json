@@ -87,7 +87,6 @@
     "rxjs": "5.3.1",
     "semver": "5.3.0",
     "shallowequal": "0.2.2",
-    "shell-quote": "1.6.1",
     "simple-text-buffer": "9.2.11",
     "split": "1.0.0",
     "ssh2": "0.5.4",

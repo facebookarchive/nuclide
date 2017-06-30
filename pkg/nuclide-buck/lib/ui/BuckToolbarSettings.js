@@ -12,9 +12,8 @@
 import type {PlatformProviderSettings, TaskSettings} from '../types';
 
 import React from 'react';
-import {quote} from 'shell-quote';
 
-import {shellParse} from 'nuclide-commons/string';
+import {shellParse, shellQuote} from 'nuclide-commons/string';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -41,8 +40,8 @@ export default class BuckToolbarSettings extends React.Component {
     super(props);
     const {buildArguments, runArguments} = props.settings;
     this.state = {
-      buildArguments: buildArguments == null ? '' : quote(buildArguments),
-      runArguments: runArguments == null ? '' : quote(runArguments),
+      buildArguments: buildArguments == null ? '' : shellQuote(buildArguments),
+      runArguments: runArguments == null ? '' : shellQuote(runArguments),
     };
   }
 

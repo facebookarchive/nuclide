@@ -18,7 +18,7 @@ import {PromisePool} from '../../commons-node/promise-executors';
 import {getOriginalEnvironment} from 'nuclide-commons/process';
 import * as os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
-import {quote} from 'shell-quote';
+import {shellQuote} from 'nuclide-commons/string';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getLogger} from 'log4js';
 
@@ -192,7 +192,7 @@ export async function getOwners(
   filePath: NuclideUri,
   kindFilter?: string,
 ): Promise<Array<string>> {
-  let queryString = `owner("${quote([filePath])}")`;
+  let queryString = `owner("${shellQuote([filePath])}")`;
   if (kindFilter != null) {
     queryString = `kind(${JSON.stringify(kindFilter)}, ${queryString})`;
   }
@@ -221,7 +221,7 @@ export async function runBuckCommandFromProjectRoot(
 
   const newArgs = addClientId ? args.concat(CLIENT_ID_ARGS) : args;
   return getPool(rootPath, readOnly).submit(() => {
-    logger.debug(`Running \`${pathToBuck} ${quote(args)}\``);
+    logger.debug(`Running \`${pathToBuck} ${shellQuote(args)}\``);
     return runCommand(pathToBuck, newArgs, options).toPromise();
   });
 }
