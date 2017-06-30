@@ -541,8 +541,6 @@ export class DebuggerLayoutManager {
 
         return this._shouldDestroyPaneItem(mode, item);
       });
-    } else if (mode === DebuggerMode.STARTING) {
-      this.showDebuggerViews(api);
     }
 
     this._previousDebuggerMode = mode;

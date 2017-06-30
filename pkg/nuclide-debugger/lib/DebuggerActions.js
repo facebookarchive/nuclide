@@ -236,7 +236,6 @@ export default class DebuggerActions {
     const newDebuggerInfo = currentDebuggerInfo.clone();
     invariant(newDebuggerInfo);
 
-    atom.notifications.addInfo('Restarting debugger...');
     this.startDebugging(newDebuggerInfo);
   }
 
