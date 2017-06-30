@@ -11,7 +11,7 @@
  */
 
 import invariant from 'assert';
-import {parse} from 'shell-quote';
+import {parse, quote} from './_shell-quote';
 
 export function stringifyError(error: Error): string {
   return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
@@ -124,19 +124,33 @@ export function countOccurrences(haystack: string, char: string) {
 }
 
 /**
- * shell-quote's parse allows pipe operators.
+ * shell-quote's parse allows pipe operators and comments.
  * Generally users don't care about this, so throw if we encounter any operators.
  */
 export function shellParse(str: string, env?: Object): Array<string> {
   const result = parse(str, env);
   for (let i = 0; i < result.length; i++) {
     if (typeof result[i] !== 'string') {
-      throw new Error(
-        `Unexpected operator "${result[i].op}" provided to shellParse`,
-      );
+      if (result[i].op != null) {
+        throw new Error(
+          `Unexpected operator "${result[i].op}" provided to shellParse`,
+        );
+      } else {
+        throw new Error(
+          `Unexpected comment "${result[i].comment}" provided to shellParse`,
+        );
+      }
     }
   }
   return result;
+}
+
+/**
+ * Technically you can pass in { operator: string } here,
+ * but we don't use that in most APIs.
+ */
+export function shellQuote(args: Array<string>): string {
+  return quote(args);
 }
 
 export function removeCommonPrefix(a: string, b: string): [string, string] {
