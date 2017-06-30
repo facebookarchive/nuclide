@@ -31,56 +31,56 @@ ruleTester.run('prefer-nuclide-uri', rule, {
     {
       code: 'import path from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import {join} from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import {join, basename} from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import pathModule from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import * as path from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import * as pathModule from "path";',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import pathModule, {path} from "path"',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
     {
       code: 'import pathUtils, {path} from "path"',
       errors: [{
-        message: 'path module is not to be used. Use commons-node/nuclideUri instead',
+        message: 'path module is not to be used. Use nuclide-commons/nuclideUri instead',
         type: 'ImportDeclaration',
       }],
     },
