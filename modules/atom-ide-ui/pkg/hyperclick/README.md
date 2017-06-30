@@ -9,7 +9,7 @@ Hyperclick is triggered by two events:
 
 ## Known Providers
 
-* [Nuclide](https://atom.io/packages/nuclide) features like nuclide-buck, nuclide-clang, nuclide-flow, nuclide-hack and nuclide-ocaml.
+* [Nuclide](https://atom.io/packages/nuclide) uses Hyperclick for C++, Flow, Hack, and more!
 * [js-hyperclick](https://atom.io/packages/js-hyperclick) Jump to variable definitions, including when imported/required from another file
 * [hyperclick-php](https://atom.io/packages/hyperclick-php) Locate php classes with the help of composer, and open the file
 * [go-plus](https://atom.io/packages/go-plus) Jump to definition for [go](https://golang.org)
@@ -19,8 +19,7 @@ Hyperclick is triggered by two events:
 Install `hyperclick` with this [demo package](https://github.com/oclbdk/hyperclick-provider-demo)
 to recreate the screencast below.
 
-![hyperclick-demo](http://i.imgur.com/364jzWO.gif)
-
+![hyperclick-demo](https://thumbs.gfycat.com/EcstaticEvilEstuarinecrocodile-size_restricted.gif)
 
 ## Provider API
 
@@ -38,11 +37,16 @@ Declare the provider callback in the `package.json` (e.g. `getProvider`).
 }
 ```
 
+NOTE: Providers for `hyperclick.provider@0.0.0` are still accepted, but that naming is now deprecated.
+Please use `hyperclick@0.1.0` for new providers.
+
 Define the provider callback in `lib/main.js`.
 
 ```js
 export function getProvider() {
   return {
+    priority: 1
+    grammarScopes: ['source.js'], // JavaScript files
     getSuggestionForWord(
       textEditor: TextEditor,
       text: string,
@@ -95,9 +99,13 @@ The methods return a suggestion or a `Promise` that resolves to a suggestion:
     - `rightLabel`(optional): An indicator denoting the "kind" of suggestion this represents
     - `callback`: The function to call when the user selects this object.
 
-Additional properties:
+Additional provider fields:
 
 - `priority`: The higher this is, the more precedence the provider gets.
 
   Hyperclick only returns suggestions from a single provider, so this is a
   workaround for providers to override others. `priority` defaults to 0.
+
+- `grammarScopes`: An (optional) `Array` of grammar `scopeNames` to provide suggestions for.
+  Your provider will only be triggered in matching text editors.
+
