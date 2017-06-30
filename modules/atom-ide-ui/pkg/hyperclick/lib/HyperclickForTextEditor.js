@@ -130,7 +130,10 @@ export default class HyperclickForTextEditor {
         this._textEditorView.onDidDetach(() => removalDisposable.dispose()),
       );
     };
-    if (this._textEditorView.component) {
+    if (
+      this._textEditorView.component &&
+      this._textEditorView.parentNode != null
+    ) {
       addMouseListeners();
     } else {
       this._subscriptions.add(
