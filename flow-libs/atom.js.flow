@@ -722,8 +722,6 @@ type MarkerOptions = {|
 
 declare class atom$TextEditor extends atom$Model {
   id: number,
-  firstVisibleScreenRow: number,
-  rowsPerPage: number,
 
   // Event Subscription
   onDidChange(callback: () => void): IDisposable,
@@ -944,9 +942,6 @@ declare class atom$TextEditor extends atom$Model {
 
   isFoldedAtBufferRow(row: number): boolean,
   getLastBufferRow(): number,
-
-  // Undocumented properties
-  presenter: ?atom$TextEditorPresenter,
 
   // Undocumented Methods
   getDefaultCharWidth(): number,
