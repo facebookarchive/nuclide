@@ -63,6 +63,11 @@
       "versions": {
         "0.0.0": "consumeNotifications"
       }
+    },
+    "working-sets.provider": {
+      "versions": {
+        "0.0.0": "consumeWorkingSetsStore"
+      }
     }
   }
 }

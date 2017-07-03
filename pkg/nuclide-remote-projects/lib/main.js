@@ -13,9 +13,10 @@ import type {HomeFragments} from '../../nuclide-home/lib/types';
 import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
-import {getLogger} from 'log4js';
 import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
+import {logger} from './constants';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import loadingNotification from '../../commons-atom/loading-notification';
@@ -36,8 +37,6 @@ import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
 import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
 import {setNotificationService} from './AtomNotifications';
-
-const logger = getLogger('nuclide-remote-projects');
 
 export type RemoteProjectsService = {
   /**
@@ -85,6 +84,7 @@ export type SerializableRemoteConnectionConfiguration = {
 let packageSubscriptions: ?CompositeDisposable = null;
 let controller: ?RemoteProjectsController = null;
 let remoteProjectsService: ?RemoteProjectsServiceImpl = null;
+let workingSetsStore: ?WorkingSetsStore = null;
 
 const CLOSE_PROJECT_DELAY_MS = 100;
 const pendingFiles = {};
@@ -547,7 +547,7 @@ export function createRemoteDirectoryProvider(): RemoteDirectoryProvider {
 export function createRemoteDirectorySearcher(): RemoteDirectorySearcher {
   return new RemoteDirectorySearcher((dir: RemoteDirectory) => {
     return getGrepServiceByNuclideUri(dir.getPath());
-  });
+  }, () => workingSetsStore);
 }
 
 export function getHomeFragments(): HomeFragments {
@@ -576,4 +576,8 @@ export function consumeNotifications(
   ) => ?IDisposable,
 ): void {
   setNotificationService(raiseNativeNotification);
+}
+
+export function consumeWorkingSetsStore(store: WorkingSetsStore): void {
+  workingSetsStore = store;
 }
