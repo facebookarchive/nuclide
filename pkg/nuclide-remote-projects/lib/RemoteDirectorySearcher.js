@@ -18,8 +18,9 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RemoteDirectory} from '../../nuclide-remote-connection';
+import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
 
-import {logger, WORKING_SET_PATH_MARKER} from './constants';
+import {logger} from './constants';
 
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>,

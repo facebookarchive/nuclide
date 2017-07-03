@@ -9,6 +9,4 @@
  * @format
  */
 
-import {getLogger} from 'log4js';
-
-export const logger = getLogger('nuclide-remote-projects');
+export const WORKING_SET_PATH_MARKER = '#WORKING_SET#';

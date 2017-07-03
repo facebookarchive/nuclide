@@ -13,7 +13,7 @@ import {Observable} from 'rxjs';
 
 import {RemoteDirectory} from '../../nuclide-remote-connection';
 import RemoteDirectorySearcher from '../lib/RemoteDirectorySearcher';
-import {WORKING_SET_PATH_MARKER} from '../lib/constants';
+import {WORKING_SET_PATH_MARKER} from '../../nuclide-working-sets-common/lib/constants';
 
 describe('RemoteDirectorySearcher.processPaths', () => {
   const serviceSpy: any = {grepSearch: () => null};
