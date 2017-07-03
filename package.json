@@ -122,7 +122,7 @@
     "eslint-plugin-dependencies": "2.4.0",
     "eslint-plugin-flowtype": "2.30.0",
     "eslint-plugin-jasmine": "2.2.0",
-    "eslint-plugin-jsx-a11y": "^5.0.3",
+    "eslint-plugin-jsx-a11y": "5.0.3",
     "eslint-plugin-prefer-object-spread": "1.1.0",
     "eslint-plugin-prettier": "2.1.0",
     "eslint-plugin-react": "6.8.0",
