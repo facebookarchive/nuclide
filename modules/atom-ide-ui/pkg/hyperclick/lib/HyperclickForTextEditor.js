@@ -18,6 +18,7 @@ import type Hyperclick from './Hyperclick';
 import {CompositeDisposable, Disposable, Point} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
+import {isPositionInRange} from 'nuclide-commons/range';
 import showTriggerConflictWarning from './showTriggerConflictWarning';
 import invariant from 'assert';
 
@@ -270,7 +271,7 @@ export default class HyperclickForTextEditor {
     if (this._lastSuggestionAtMouse != null) {
       const {range} = this._lastSuggestionAtMouse;
       invariant(range, 'Hyperclick result must have a valid Range');
-      if (this._isPositionInRange(position, range)) {
+      if (isPositionInRange(position, range)) {
         return;
       }
     }
@@ -347,10 +348,7 @@ export default class HyperclickForTextEditor {
     }
     const {range} = this._lastSuggestionAtMouse;
     invariant(range, 'Hyperclick result must have a valid Range');
-    return this._isPositionInRange(
-      this._getMousePositionAsBufferPosition(),
-      range,
-    );
+    return isPositionInRange(this._getMousePositionAsBufferPosition(), range);
   }
 
   _isMouseAtLastWordRange(): boolean {
@@ -358,19 +356,10 @@ export default class HyperclickForTextEditor {
     if (lastWordRange == null) {
       return false;
     }
-    return this._isPositionInRange(
+    return isPositionInRange(
       this._getMousePositionAsBufferPosition(),
       lastWordRange,
     );
-  }
-
-  _isPositionInRange(
-    position: atom$Point,
-    range: atom$Range | Array<atom$Range>,
-  ): boolean {
-    return Array.isArray(range)
-      ? range.some(r => r.containsPoint(position))
-      : range.containsPoint(position);
   }
 
   _clearSuggestion(): void {

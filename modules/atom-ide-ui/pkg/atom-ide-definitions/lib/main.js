@@ -42,16 +42,19 @@ import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
+import DefinitionCache from './DefinitionCache';
 import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
 
 class Activation {
   _providers: ProviderRegistry<DefinitionProvider>;
   _definitionPreviewProvider: ?DefinitionPreviewProvider;
+  _definitionCache: DefinitionCache;
   _disposables: UniversalDisposable;
   _triggerKeys: Set<ModifierKey>;
 
   constructor() {
     this._providers = new ProviderRegistry();
+    this._definitionCache = new DefinitionCache();
     this._triggerKeys = new Set();
 
     this._disposables = new UniversalDisposable(
@@ -95,7 +98,9 @@ class Activation {
     editor: atom$TextEditor,
     position: atom$Point,
   ): Promise<?HyperclickSuggestion> {
-    const result = await this._getDefinition(editor, position);
+    const result = await this._definitionCache.get(editor, position, () =>
+      this._getDefinition(editor, position),
+    );
 
     if (result == null) {
       return null;

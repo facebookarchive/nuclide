@@ -54,3 +54,12 @@ export function matchRegexEndingAt(
   const match = regex.exec(line);
   return match == null ? null : match[0];
 }
+
+export function isPositionInRange(
+  position: atom$Point,
+  range: atom$Range | Array<atom$Range>,
+): boolean {
+  return Array.isArray(range)
+    ? range.some(r => r.containsPoint(position))
+    : range.containsPoint(position);
+}
