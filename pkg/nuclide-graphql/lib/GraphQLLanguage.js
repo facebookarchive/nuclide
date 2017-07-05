@@ -59,7 +59,6 @@ async function createLanguageService(): Promise<
     version: '0.1.0',
     priority: 1,
     definitionEventName: 'graphql.definition',
-    definitionByIdEventName: 'graphql.definition-by-id',
   };
 
   const autocompleteConfig = {

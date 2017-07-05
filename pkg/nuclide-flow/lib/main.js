@@ -228,7 +228,6 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       version: '0.1.0',
       priority: 20,
       definitionEventName: 'flow.get-definition',
-      definitionByIdEventName: 'flow.get-definition-by-id',
     },
     autocomplete: {
       version: '2.0.0',
