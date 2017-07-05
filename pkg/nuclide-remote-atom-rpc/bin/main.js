@@ -78,7 +78,7 @@ async function getIsDirectory(filePath: NuclideUri): Promise<boolean> {
 }
 
 async function main(argv): Promise<number> {
-  await setupLogging();
+  setupLogging();
   setupErrorHandling();
 
   logger.debug(`nuclide-remote-atom with arguments: ${argv._}`);

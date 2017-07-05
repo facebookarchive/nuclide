@@ -42,15 +42,15 @@ export function setupErrorHandling() {
   });
 }
 
-export async function setupLogging() {
+export function setupLogging() {
   // Initialize logging
-  await initialUpdateConfig();
+  initialUpdateConfig();
 
   const config = {
     appenders: [FileAppender],
   };
 
-  const serverLogAppenderConfig = await getServerLogAppenderConfig();
+  const serverLogAppenderConfig = getServerLogAppenderConfig();
   if (serverLogAppenderConfig) {
     config.appenders.push(serverLogAppenderConfig);
   }
