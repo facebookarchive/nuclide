@@ -25,12 +25,12 @@ import {BufferSubscription} from './BufferSubscription';
 
 export class Activation {
   _disposables: UniversalDisposable;
-  _bufferSubscriptions: WeakMap<atom$TextBuffer, BufferSubscription>;
+  _bufferSubscriptions: Map<string, BufferSubscription>;
   notifiers: NotifiersByConnection;
 
   constructor(state: ?Object) {
     this._disposables = new UniversalDisposable();
-    this._bufferSubscriptions = new WeakMap();
+    this._bufferSubscriptions = new Map();
 
     const notifiers = new NotifiersByConnection();
     this.notifiers = notifiers;
@@ -38,15 +38,17 @@ export class Activation {
 
     this._disposables.add(
       observeBufferOpen().subscribe(buffer => {
-        if (this._bufferSubscriptions.has(buffer)) {
+        const path = buffer.getPath();
+        // Empty files don't need to be monitored.
+        if (path == null || this._bufferSubscriptions.has(path)) {
           return;
         }
         const bufferSubscription = new BufferSubscription(notifiers, buffer);
-        this._bufferSubscriptions.set(buffer, bufferSubscription);
+        this._bufferSubscriptions.set(path, bufferSubscription);
         const subscriptions = new UniversalDisposable(bufferSubscription);
         subscriptions.add(
           observeBufferCloseOrRename(buffer).subscribe(closeEvent => {
-            this._bufferSubscriptions.delete(buffer);
+            this._bufferSubscriptions.delete(path);
             this._disposables.remove(subscriptions);
             subscriptions.dispose();
           }),
@@ -57,7 +59,9 @@ export class Activation {
   }
 
   getVersion(buffer: atom$TextBuffer): number {
-    const bufferSubscription = this._bufferSubscriptions.get(buffer);
+    const path = buffer.getPath();
+    invariant(path != null); // Guaranteed when called below.
+    const bufferSubscription = this._bufferSubscriptions.get(path);
     if (bufferSubscription == null) {
       getLogger('nuclide-open-files').fatal(
         'Failed to get version of text buffer',
@@ -70,6 +74,7 @@ export class Activation {
 
   dispose() {
     this._disposables.dispose();
+    this._bufferSubscriptions.clear();
   }
 }
 
