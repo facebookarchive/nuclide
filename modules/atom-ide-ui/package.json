@@ -8,7 +8,9 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-ui",
   "scripts": {
     "prepublish": "../../scripts/modules-prepublish.sh",
-    "test": "scripts/test.js"
+    "test": "scripts/test.js",
+    "lint": "../../node_modules/.bin/eslint .",
+    "flow": "../../node_modules/.bin/flow"
   },
   "engines": {
     "atom": ">= 1.17.0"

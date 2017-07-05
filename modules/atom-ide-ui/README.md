@@ -42,3 +42,7 @@ These are then surfaced via `hyperclick` and preview datatips.
 ### atom-ide-outline-view
 
 Displays a tree listing of symbols in the current file.
+
+## License
+
+`atom-ide-ui` is BSD-licensed. We also provide an additional patent grant.
