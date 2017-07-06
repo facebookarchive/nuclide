@@ -57,6 +57,7 @@ export class CodeFormatProvider<T: LanguageService> {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
+    this._analyticsEventName = analyticsEventName;
     this._connectionToLanguageService = connectionToLanguageService;
     this._busySignalProvider = busySignalProvider;
   }
