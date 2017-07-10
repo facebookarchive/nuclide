@@ -1,5 +1,16 @@
 # Nuclide Changelog
 
+## v0.237.0
+
+### General
+
+* Fixed a regression that made the file-tree's selected element behavior erratic.
+* Updated Find in Project to search in your active Working Set (remote only) `Cmd-Ctrl-Shift-F` (windows: `Ctrl-Alt-Shift-F`) to try
+
+### Debugger
+
+* Strip ANSI codes from stdout/stderr debugger output.
+
 ## v0.236.0
 
 ### Highlights
