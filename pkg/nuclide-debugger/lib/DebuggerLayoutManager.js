@@ -536,6 +536,8 @@ export class DebuggerLayoutManager {
           item.destroyWhere(innerItem =>
             this._shouldDestroyPaneItem(mode, innerItem),
           );
+
+          this._destroyContainerIfEmpty(item);
           return false;
         }
 
@@ -544,6 +546,35 @@ export class DebuggerLayoutManager {
     }
 
     this._previousDebuggerMode = mode;
+  }
+
+  _countPanesForTargetDock(dockName: string, defaultDockName: string): number {
+    const mode = this._model.getStore().getDebuggerMode();
+    return this._debuggerPanes
+      .filter(
+        // Filter out any panes that the user has hidden or that aren't visible
+        // in the current debug mode.
+        debuggerPane =>
+          (debuggerPane.previousLocation == null ||
+            !debuggerPane.previousLocation.userHidden) &&
+          (debuggerPane.debuggerModeFilter == null ||
+            debuggerPane.debuggerModeFilter(mode)),
+      )
+      .map(debuggerPane => {
+        // Map each debugger pane to the name of the dock it will belong to.
+        if (debuggerPane.previousLocation != null) {
+          const previousDock = this._getWorkspaceDocks().find(
+            d =>
+              debuggerPane.previousLocation != null &&
+              d.name === debuggerPane.previousLocation.dock,
+          );
+          if (previousDock != null) {
+            return previousDock.name;
+          }
+        }
+        return defaultDockName;
+      })
+      .filter(targetDockName => targetDockName === dockName).length;
   }
 
   showDebuggerViews(api: WorkspaceViewsService): void {
@@ -557,21 +588,29 @@ export class DebuggerLayoutManager {
 
     const leftDock = this._getWorkspaceDocks().find(d => d.name === 'left');
     invariant(leftDock != null);
-    const leftPaneContainer = createPaneContainer();
-    this._leftPaneContainerModel = this._addPaneContainerToWorkspace(
-      leftPaneContainer,
-      leftDock.dock,
-      addedItemsByDock,
-    );
+
+    let leftPaneContainer = null;
+    if (this._countPanesForTargetDock(leftDock.name, defaultDock.name) > 0) {
+      leftPaneContainer = createPaneContainer();
+      this._leftPaneContainerModel = this._addPaneContainerToWorkspace(
+        leftPaneContainer,
+        leftDock.dock,
+        addedItemsByDock,
+      );
+    }
 
     const rightDock = this._getWorkspaceDocks().find(d => d.name === 'right');
     invariant(rightDock != null);
-    const rightPaneContainer = createPaneContainer();
-    this._rightPaneContainerModel = this._addPaneContainerToWorkspace(
-      rightPaneContainer,
-      rightDock.dock,
-      addedItemsByDock,
-    );
+
+    let rightPaneContainer = null;
+    if (this._countPanesForTargetDock(rightDock.name, defaultDock.name) > 0) {
+      rightPaneContainer = createPaneContainer();
+      this._rightPaneContainerModel = this._addPaneContainerToWorkspace(
+        rightPaneContainer,
+        rightDock.dock,
+        addedItemsByDock,
+      );
+    }
 
     // Lay out the remaining debugger panes according to their configurations.
     // Sort the debugger panes by the index at which they appeared the last
@@ -619,6 +658,7 @@ export class DebuggerLayoutManager {
           debuggerPane.debuggerModeFilter == null ||
           debuggerPane.debuggerModeFilter(mode)
         ) {
+          invariant(targetContainer != null);
           this._appendItemToDock(
             debuggerPane,
             targetContainer,
@@ -632,10 +672,6 @@ export class DebuggerLayoutManager {
           );
         }
       });
-
-    // If either container ended up not having any panes added to it, just destroy the container.
-    this._destroyContainerIfEmpty(this._leftPaneContainerModel);
-    this._destroyContainerIfEmpty(this._rightPaneContainerModel);
   }
 
   _addPaneContainerToWorkspace(
