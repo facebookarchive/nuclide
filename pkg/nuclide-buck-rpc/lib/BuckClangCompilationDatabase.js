@@ -190,11 +190,18 @@ class BuckClangCompilationDatabaseHandler {
     );
 
     const buildFile = await BuckService.getBuildFile(buckProjectRoot, target);
-    return {
+    const compilationDB = {
       file: pathToCompilationDatabase,
       flagsFile: buildFile,
       libclangPath: null,
     };
+    try {
+      // $FlowFB
+      const {createOmCompilationDb} = require('./fb/omCompilationDb');
+      return await createOmCompilationDb(compilationDB);
+    } catch (e) {
+      return compilationDB;
+    }
   }
 }
 
