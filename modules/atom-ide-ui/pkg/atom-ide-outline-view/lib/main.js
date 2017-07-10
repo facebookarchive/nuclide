@@ -10,15 +10,14 @@
  * @format
  */
 
-import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
-
 import ActiveEditorRegistry from 'nuclide-commons-atom/ActiveEditorRegistry';
 import {observeActivePaneItemDebounced} from 'nuclide-commons-atom/debounced';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
-import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
+
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 import {OutlineViewPanelState, WORKSPACE_VIEW_URI} from './OutlineViewPanel';
 import {createOutlines} from './createOutlines';
@@ -32,11 +31,8 @@ class Activation {
   _editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
-    this._disposables.add(
-      consumeWorkspaceViewsCompat(service =>
-        this.consumeWorkspaceViewsService(service),
-      ),
+    this._disposables = new UniversalDisposable(
+      this.registerOpenerAndCommand(),
     );
 
     this._editorService = new ActiveEditorRegistry(
@@ -79,24 +75,25 @@ class Activation {
     return new OutlineViewPanelState(createOutlines(this._editorService));
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+  registerOpenerAndCommand(): IDisposable {
     const commandDisposable = atom.commands.add(
       'atom-workspace',
       'outline-view:toggle',
-      event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       },
     );
-    this._disposables.add(
-      api.addOpener(uri => {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return this._createOutlineViewPanelState();
         }
       }),
-      () => api.destroyWhere(item => item instanceof OutlineViewPanelState),
+      () => {
+        destroyItemWhere(item => item instanceof OutlineViewPanelState);
+      },
       commandDisposable,
     );
-    return commandDisposable;
   }
 
   deserializeOutlineViewPanelState(): OutlineViewPanelState {

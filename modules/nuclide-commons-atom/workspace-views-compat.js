@@ -115,14 +115,10 @@ export function getDocksWorkspaceViewsService() {
                 typeof item.getURI === 'function' && item.getURI() === uri,
             );
           if (hasItem) {
-            // TODO(matthewwithanm): Add this to the Flow defs once docks land
-            // $FlowIgnore
             atom.workspace.toggle(uri);
           }
         }
       } else {
-        // TODO(matthewwithanm): Add this to the Flow defs once docks land
-        // $FlowIgnore
         atom.workspace.toggle(uri);
       }
     },

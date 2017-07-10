@@ -1145,6 +1145,8 @@ declare class atom$Workspace {
   handleGrammarUsed?: (grammar: atom$Grammar) => void,
   reopenItem(): Promise<?atom$TextEditor>,
   addOpener(callback: (uri: string) => any): IDisposable,
+  hide(uriOrItem: string | Object): void, 
+  toggle(uriOrItem: string | Object): void,
 
   // Pane Items
   getPaneItems(): Array<Object>,

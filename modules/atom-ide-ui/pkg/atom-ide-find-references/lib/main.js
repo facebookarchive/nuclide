@@ -16,8 +16,6 @@ import type {FindReferencesProvider, FindReferencesReturn} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
-import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
-import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
 import {bufferPositionForMouseEvent} from 'nuclide-commons-atom/mouse-to-position';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -86,11 +84,10 @@ class Activation {
   > = new Map();
 
   constructor(state: ?any): void {
-    this._subscriptions = new UniversalDisposable(
-      consumeWorkspaceViewsCompat(service =>
-        this.consumeWorkspaceViewsService(service),
-      ),
-    );
+    this._subscriptions = new UniversalDisposable();
+    // Add this seperately as registerOpenerAndCommand requires
+    // this._subscriptions to be initialized for observeTextEditors function.
+    this._subscriptions.add(this.registerOpenerAndCommand());
   }
 
   dispose(): void {
@@ -123,7 +120,7 @@ class Activation {
     });
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+  registerOpenerAndCommand(): IDisposable {
     let lastMouseEvent;
     return new UniversalDisposable(
       atom.commands.add(
@@ -136,14 +133,14 @@ class Activation {
             ),
           );
           if (view != null) {
-            const disposable = api.addOpener(newUri => {
+            const disposable = atom.workspace.addOpener(newUri => {
               if (view.getURI() === newUri) {
                 return view;
               }
             });
             // not a file URI
             // eslint-disable-next-line nuclide-internal/atom-apis
-            api.open(view.getURI());
+            atom.workspace.open(view.getURI());
             // The new tab opens instantly, so this is no longer needed.
             disposable.dispose();
           }

@@ -22,7 +22,6 @@ import type {
   FileDiagnosticMessages,
   ObservableDiagnosticUpdater,
 } from '../../atom-ide-diagnostics/lib/types';
-import type {WorkspaceViewsService} from 'nuclide-commons-atom/workspace-views-compat';
 
 import invariant from 'assert';
 
@@ -38,7 +37,7 @@ import {applyUpdateToEditor} from './gutter';
 import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {consumeWorkspaceViewsCompat} from 'nuclide-commons-atom/workspace-views-compat';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 const LINTER_PACKAGE = 'linter';
@@ -78,9 +77,8 @@ class Activation {
 
   constructor(state_: ?Object): void {
     this._diagnosticUpdaters = new BehaviorSubject(null);
-    this._subscriptions = new UniversalDisposable();
-    this._subscriptions.add(
-      consumeWorkspaceViewsCompat(this.consumeWorkspaceViewsService.bind(this)),
+    this._subscriptions = new UniversalDisposable(
+      this.registerOpenerAndCommand(),
     );
     const state = state_ || {};
     this._state = {
@@ -208,24 +206,25 @@ class Activation {
     );
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): IDisposable {
+  registerOpenerAndCommand(): IDisposable {
     const commandDisposable = atom.commands.add(
       'atom-workspace',
       'diagnostics:toggle-table',
-      event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       },
     );
-    this._subscriptions.add(
-      api.addOpener(uri => {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return this._createDiagnosticsViewModel();
         }
       }),
-      () => api.destroyWhere(item => item instanceof DiagnosticsViewModel),
+      () => {
+        destroyItemWhere(item => item instanceof DiagnosticsViewModel);
+      },
       commandDisposable,
     );
-    return commandDisposable;
   }
 
   _getStatusBarTile(): StatusBarTile {
