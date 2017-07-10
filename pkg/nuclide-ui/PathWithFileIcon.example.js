@@ -13,6 +13,13 @@ import React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
 import PathWithFileIcon from './PathWithFileIcon';
 
+function ListItem(props: {children?: mixed}): React.Element<any> {
+  return (
+    <div className="list-item">
+      {props.children}
+    </div>
+  );
+}
 function PathWithFileIconExample(): React.Element<any> {
   return (
     <div>
@@ -22,13 +29,27 @@ function PathWithFileIconExample(): React.Element<any> {
           icons:
         </p>
         <div>
-          <PathWithFileIcon path="maybe/some/javascript.js" />
-          <PathWithFileIcon path="how/about/php.php" />
-          <PathWithFileIcon path="text.txt" />
-          <PathWithFileIcon path="markdown.md" />
-          <PathWithFileIcon path="emptiness" />
-          <PathWithFileIcon path=".dotfile" />
-          <PathWithFileIcon isFolder={true} path="how/about/a/folder/" />
+          <ListItem>
+            <PathWithFileIcon path="maybe/some/javascript.js" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon path="how/about/php.php" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon path="text.txt" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon path="markdown.md" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon path="emptiness" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon path=".dotfile" />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon isFolder={true} path="how/about/a/folder/" />
+          </ListItem>
         </div>
       </Block>
     </div>
