@@ -24,6 +24,7 @@ import {Emitter} from 'atom';
 import {ActionTypes} from './DebuggerDispatcher';
 import {DebuggerMode} from './DebuggerStore';
 import {DebuggerStore} from './DebuggerStore';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 
 export type LineToBreakpointMap = Map<number, FileLineBreakpoint>;
 
@@ -273,6 +274,29 @@ export default class BreakpointStore {
       if (updatedBp != null) {
         updatedBp.enabled = !enabled;
         this._updateBreakpoint(updatedBp);
+      }
+    }
+
+    const debuggerStore = this.getDebuggerStore();
+    if (debuggerStore != null) {
+      const currentInfo = debuggerStore.getDebugProcessInfo();
+      if (
+        condition !== '' &&
+        currentInfo != null &&
+        !currentInfo.getDebuggerCapabilities().conditionalBreakpoints
+      ) {
+        // If the current debugger does not support conditional breakpoints, and the bp that
+        // was just bound has a condition on it, warn the user that the condition isn't going
+        // to be honored.
+        atom.notifications.addWarning(
+          'The current debugger does not support conditional breakpoints. The breakpoint at this location will hit without ' +
+            'evaluating the specified condition expression:\n' +
+            `${nuclideUri.basename(path)}:${line}`,
+        );
+        const updatedBp = this.getBreakpointAtLine(path, line);
+        if (updatedBp != null) {
+          this._updateBreakpointCondition(updatedBp.id, '');
+        }
       }
     }
   }
