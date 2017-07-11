@@ -1,16 +1,10 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createPackage;
+
 
 /**
  * Create an Atom package from an Activation constructor.
@@ -31,10 +25,7 @@ import invariant from 'assert';
  * `module.exports = createPackage(Activation)`, to avoid code style misunderstandings wrt
  * CommonJS vs ES Modules.
  */
-export default function createPackage(
-  moduleExports: Object,
-  Activation: Class<any>,
-): void {
+function createPackage(moduleExports, Activation) {
   let activation = null;
 
   // Proxy method calls on the package to the activation object.
@@ -46,19 +37,17 @@ export default function createPackage(
       continue;
     }
     if (property === 'initialize') {
-      throw new Error(
-        'Your activation class contains an "initialize" method, but that work should be done in the' +
-          ' constructor.',
-      );
+      throw new Error('Your activation class contains an "initialize" method, but that work should be done in the' + ' constructor.');
     }
     if (property === 'deactivate') {
-      throw new Error(
-        'Your activation class contains an "deactivate" method. Please use "dispose" instead.',
-      );
+      throw new Error('Your activation class contains an "deactivate" method. Please use "dispose" instead.');
     }
 
-    moduleExports[property] = function(...args) {
-      invariant(activation != null, 'Package not initialized');
+    moduleExports[property] = function (...args) {
+      if (!(activation != null)) {
+        throw new Error('Package not initialized');
+      }
+
       return activation[property](...args);
     };
   }
@@ -66,24 +55,40 @@ export default function createPackage(
   /**
    * Calling `initialize()` creates a new instance.
    */
-  moduleExports.initialize = (initialState: ?Object): void => {
-    invariant(activation == null, 'Package already initialized');
+  moduleExports.initialize = initialState => {
+    if (!(activation == null)) {
+      throw new Error('Package already initialized');
+    }
+
     activation = new Activation(initialState);
   };
 
   /**
    * The `deactivate()` method is special-cased to null our activation instance reference.
    */
-  moduleExports.deactivate = (): void => {
-    invariant(activation != null, 'Package not initialized');
+  moduleExports.deactivate = () => {
+    if (!(activation != null)) {
+      throw new Error('Package not initialized');
+    }
+
     if (typeof activation.dispose === 'function') {
       activation.dispose();
     }
     activation = null;
   };
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
+function getPrototypeChain(prototype) {
   let currentPrototype = prototype;
   const prototypes = [];
   while (currentPrototype != null) {
@@ -97,10 +102,10 @@ function getPrototypeChain(prototype: Class<any>): Array<Class<any>> {
  * List the properties (including inherited ones) of the provided prototype, excluding the ones
  * inherited from `Object`.
  */
-function getPropertyList(prototype: Class<any>): Array<string> {
+function getPropertyList(prototype) {
   const properties = [];
   for (const proto of getPrototypeChain(prototype)) {
-    if (proto === (Object: any).prototype) {
+    if (proto === Object.prototype) {
       break;
     }
     for (const property of Object.getOwnPropertyNames(proto)) {

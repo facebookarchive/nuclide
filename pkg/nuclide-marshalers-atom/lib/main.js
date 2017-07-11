@@ -1,50 +1,46 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {PredefinedTransformer} from '../../nuclide-rpc';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getAtomSideLoopbackMarshalers = undefined;
+exports.getAtomSideMarshalers = getAtomSideMarshalers;
 
-import {
-  getRemoteNuclideUriMarshalers,
-  localNuclideUriMarshalers,
-} from '../../nuclide-marshalers-common';
-import {Range as AtomRange, Point as AtomPoint} from 'atom';
+var _nuclideMarshalersCommon;
 
-const jsonToAtomPoint = json => new AtomPoint(json.row, json.column);
-const jsonToAtomRange = json =>
-  new AtomRange(jsonToAtomPoint(json.start), jsonToAtomPoint(json.end));
+function _load_nuclideMarshalersCommon() {
+  return _nuclideMarshalersCommon = require('../../nuclide-marshalers-common');
+}
+
+var _atom = require('atom');
+
+const jsonToAtomPoint = json => new _atom.Point(json.row, json.column); /**
+                                                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                                                         * All rights reserved.
+                                                                         *
+                                                                         * This source code is licensed under the license found in the LICENSE file in
+                                                                         * the root directory of this source tree.
+                                                                         *
+                                                                         * 
+                                                                         * @format
+                                                                         */
+
+const jsonToAtomRange = json => new _atom.Range(jsonToAtomPoint(json.start), jsonToAtomPoint(json.end));
 
 const atomPointMarshalers = {
   typeName: 'atom$Point',
   marshaller: point => point,
-  unmarshaller: jsonToAtomPoint,
+  unmarshaller: jsonToAtomPoint
 };
 
 const atomRangeMarshalers = {
   typeName: 'atom$Range',
   marshaller: range => range,
-  unmarshaller: jsonToAtomRange,
+  unmarshaller: jsonToAtomRange
 };
 
-export function getAtomSideMarshalers(
-  hostname: string,
-): Array<PredefinedTransformer> {
-  return [
-    getRemoteNuclideUriMarshalers(hostname),
-    atomPointMarshalers,
-    atomRangeMarshalers,
-  ];
+function getAtomSideMarshalers(hostname) {
+  return [(0, (_nuclideMarshalersCommon || _load_nuclideMarshalersCommon()).getRemoteNuclideUriMarshalers)(hostname), atomPointMarshalers, atomRangeMarshalers];
 }
 
-export const getAtomSideLoopbackMarshalers: Array<PredefinedTransformer> = [
-  localNuclideUriMarshalers,
-  atomPointMarshalers,
-  atomRangeMarshalers,
-];
+const getAtomSideLoopbackMarshalers = exports.getAtomSideLoopbackMarshalers = [(_nuclideMarshalersCommon || _load_nuclideMarshalersCommon()).localNuclideUriMarshalers, atomPointMarshalers, atomRangeMarshalers];

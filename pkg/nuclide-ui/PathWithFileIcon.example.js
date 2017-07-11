@@ -1,69 +1,103 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
-import PathWithFileIcon from './PathWithFileIcon';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PathWithFileIconExamples = undefined;
 
-function ListItem(props: {children?: mixed}): React.Element<any> {
-  return (
-    <div className="list-item">
-      {props.children}
-    </div>
-  );
-}
-function PathWithFileIconExample(): React.Element<any> {
-  return (
-    <div>
-      <Block>
-        <p>
-          Simply wrap paths in &lt;PathWithFileIcon /&gt; to get the appropriate
-          icons:
-        </p>
-        <div>
-          <ListItem>
-            <PathWithFileIcon path="maybe/some/javascript.js" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon path="how/about/php.php" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon path="text.txt" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon path="markdown.md" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon path="emptiness" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon path=".dotfile" />
-          </ListItem>
-          <ListItem>
-            <PathWithFileIcon isFolder={true} path="how/about/a/folder/" />
-          </ListItem>
-        </div>
-      </Block>
-    </div>
-  );
+var _react = _interopRequireDefault(require('react'));
+
+var _Block;
+
+function _load_Block() {
+  return _Block = require('nuclide-commons-ui/Block');
 }
 
-export const PathWithFileIconExamples = {
+var _PathWithFileIcon;
+
+function _load_PathWithFileIcon() {
+  return _PathWithFileIcon = _interopRequireDefault(require('./PathWithFileIcon'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function ListItem(props) {
+  return _react.default.createElement(
+    'div',
+    { className: 'list-item' },
+    props.children
+  );
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function PathWithFileIconExample() {
+  return _react.default.createElement(
+    'div',
+    null,
+    _react.default.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _react.default.createElement(
+        'p',
+        null,
+        'Simply wrap paths in <PathWithFileIcon /> to get the appropriate icons:'
+      ),
+      _react.default.createElement(
+        'div',
+        null,
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: 'maybe/some/javascript.js' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: 'how/about/php.php' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: 'text.txt' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: 'markdown.md' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: 'emptiness' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { path: '.dotfile' })
+        ),
+        _react.default.createElement(
+          ListItem,
+          null,
+          _react.default.createElement((_PathWithFileIcon || _load_PathWithFileIcon()).default, { isFolder: true, path: 'how/about/a/folder/' })
+        )
+      )
+    )
+  );
+}
+
+const PathWithFileIconExamples = exports.PathWithFileIconExamples = {
   sectionName: 'PathWithFileIcon',
-  description:
-    'Renders a file icon for a given path iff the file-icons package is installed.',
-  examples: [
-    {
-      title: 'File icon wrapper example',
-      component: PathWithFileIconExample,
-    },
-  ],
+  description: 'Renders a file icon for a given path iff the file-icons package is installed.',
+  examples: [{
+    title: 'File icon wrapper example',
+    component: PathWithFileIconExample
+  }]
 };

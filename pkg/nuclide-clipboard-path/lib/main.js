@@ -1,53 +1,79 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {CompositeDisposable} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
-import {trackTiming} from '../../nuclide-analytics';
-import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-function copyAbsolutePath(): void {
+exports.activate = activate;
+exports.deactivate = deactivate;
+
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _projects;
+
+function _load_projects() {
+  return _projects = require('nuclide-commons-atom/projects');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function copyAbsolutePath() {
   trackOperation('copyAbsolutePath', () => {
     const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
-    copyToClipboard('Copied absolute path', nuclideUri.getPath(uri));
+    copyToClipboard('Copied absolute path', (_nuclideUri || _load_nuclideUri()).default.getPath(uri));
   });
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-function copyProjectRelativePath(): void {
+function copyProjectRelativePath() {
   trackOperation('copyProjectRelativePath', () => {
     const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
 
-    const projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = (0, (_projects || _load_projects()).getAtomProjectRelativePath)(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard(
-        'Path not contained in any open project.\nCopied absolute path',
-        nuclideUri.getPath(uri),
-      );
+      copyToClipboard('Path not contained in any open project.\nCopied absolute path', (_nuclideUri || _load_nuclideUri()).default.getPath(uri));
     }
   });
 }
 
-function copyRepositoryRelativePath(): void {
-  trackOperation('copyRepositoryRelativePath', async () => {
+function copyRepositoryRelativePath() {
+  trackOperation('copyRepositoryRelativePath', (0, _asyncToGenerator.default)(function* () {
     const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
@@ -61,43 +87,40 @@ function copyRepositoryRelativePath(): void {
     }
 
     // Next try arcanist relative.
-    const arcRelativePath = await getArcanistRelativePath(uri);
+    const arcRelativePath = yield getArcanistRelativePath(uri);
     if (arcRelativePath) {
       copyToClipboard('Copied arc project relative path', arcRelativePath);
       return;
     }
 
     // Lastly, project and absolute.
-    const projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = (0, (_projects || _load_projects()).getAtomProjectRelativePath)(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
-      copyToClipboard(
-        'Path not contained in any repository.\nCopied absolute path',
-        nuclideUri.getPath(uri),
-      );
+      copyToClipboard('Path not contained in any repository.\nCopied absolute path', (_nuclideUri || _load_nuclideUri()).default.getPath(uri));
     }
-  });
+  }));
 }
 
-function getRepositoryRelativePath(path: NuclideUri): ?string {
+function getRepositoryRelativePath(path) {
   // TODO(peterhal): repositoryForPath is the same as projectRelativePath
   // only less robust. We'll need a version of findHgRepository which is
   // aware of remote paths.
   return null;
 }
 
-function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  const arcService = getArcanistServiceByNuclideUri(path);
+function getArcanistRelativePath(path) {
+  const arcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getArcanistServiceByNuclideUri)(path);
   return arcService.getProjectRelativePath(path);
 }
 
-function copyToClipboard(messagePrefix: string, value: string): void {
+function copyToClipboard(messagePrefix, value) {
   atom.clipboard.write(value);
   notify(`${messagePrefix}: \`\`\`${value}\`\`\``);
 }
 
-function getCurrentNuclideUri(): ?NuclideUri {
+function getCurrentNuclideUri() {
   const editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     notify('Nothing copied. No active text editor.');
@@ -113,40 +136,21 @@ function getCurrentNuclideUri(): ?NuclideUri {
   return path;
 }
 
-function trackOperation(eventName: string, operation: () => mixed): void {
-  trackTiming('nuclide-clipboard-path:' + eventName, operation);
+function trackOperation(eventName, operation) {
+  (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-clipboard-path:' + eventName, operation);
 }
 
-function notify(message: string): void {
+function notify(message) {
   atom.notifications.addInfo(message);
 }
 
 class Activation {
-  _subscriptions: CompositeDisposable;
 
-  constructor(state: ?Object) {
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-absolute-path',
-        copyAbsolutePath,
-      ),
-    );
-    this._subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-repository-relative-path',
-        copyRepositoryRelativePath,
-      ),
-    );
-    this._subscriptions.add(
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-clipboard-path:copy-project-relative-path',
-        copyProjectRelativePath,
-      ),
-    );
+  constructor(state) {
+    this._subscriptions = new _atom.CompositeDisposable();
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-absolute-path', copyAbsolutePath));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-repository-relative-path', copyRepositoryRelativePath));
+    this._subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-clipboard-path:copy-project-relative-path', copyProjectRelativePath));
   }
 
   dispose() {
@@ -154,15 +158,15 @@ class Activation {
   }
 }
 
-let activation: ?Activation = null;
+let activation = null;
 
-export function activate(state: ?mixed): void {
+function activate(state) {
   if (!activation) {
     activation = new Activation();
   }
 }
 
-export function deactivate(): void {
+function deactivate() {
   if (activation) {
     activation.dispose();
     activation = null;

@@ -1,38 +1,43 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ButtonSize} from 'nuclide-commons-ui/Button';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TaskRunnerButton = TaskRunnerButton;
 
-import {Button} from 'nuclide-commons-ui/Button';
-import React from 'react';
+var _Button;
 
-type Props = {
-  selected?: boolean,
-  size?: ButtonSize,
-  children?: mixed,
-  iconComponent: ?ReactClass<any>,
-};
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
 
-export function TaskRunnerButton(props: Props): React.Element<any> {
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function TaskRunnerButton(props) {
   const IconComponent = props.iconComponent;
-  const icon = IconComponent ? <IconComponent /> : null;
-  const buttonProps = {...props};
+  const icon = IconComponent ? _react.default.createElement(IconComponent, null) : null;
+  const buttonProps = Object.assign({}, props);
   delete buttonProps.label;
   delete buttonProps.iconComponent;
-  return (
-    <Button {...buttonProps} className="nuclide-task-runner-task-runner-button">
-      <div className="nuclide-task-runner-task-runner-icon-wrapper">
-        {icon}
-      </div>
-      {props.children}
-    </Button>
+  return _react.default.createElement(
+    (_Button || _load_Button()).Button,
+    Object.assign({}, buttonProps, { className: 'nuclide-task-runner-task-runner-button' }),
+    _react.default.createElement(
+      'div',
+      { className: 'nuclide-task-runner-task-runner-icon-wrapper' },
+      icon
+    ),
+    props.children
   );
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

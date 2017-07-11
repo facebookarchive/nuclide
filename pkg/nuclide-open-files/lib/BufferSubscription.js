@@ -1,29 +1,38 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  FileNotifier,
-  LocalFileEvent,
-  FileSyncEvent,
-  FileEvent,
-} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {NotifiersByConnection} from './NotifiersByConnection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BufferSubscription = undefined;
 
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import {getLogger} from 'log4js';
-import {FileEventKind} from '../../nuclide-open-files-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const logger = getLogger('nuclide-open-files');
+var _atom = require('atom');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-open-files'); /**
+                                                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                  * All rights reserved.
+                                                                                  *
+                                                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                                                  * the root directory of this source tree.
+                                                                                  *
+                                                                                  * 
+                                                                                  * @format
+                                                                                  */
 
 const RESYNC_TIMEOUT_MS = 2000;
 
@@ -39,18 +48,11 @@ const RESYNC_TIMEOUT_MS = 2000;
 // renamed or destroyed, so rather than keep the per-buffer info around after
 // a buffer is destroyed, the outstanding close messages are kept with the
 // per-connection info in NotifiersByConnection.
-export class BufferSubscription {
-  _oldPath: ?NuclideUri;
-  _notifiers: NotifiersByConnection;
-  _buffer: atom$TextBuffer;
-  _notifier: ?Promise<FileNotifier>;
-  _subscriptions: CompositeDisposable;
-  _serverVersion: number;
-  _lastAttemptedSync: number;
-  _changeCount: number;
-  _sentOpen: boolean;
+class BufferSubscription {
 
-  constructor(notifiers: NotifiersByConnection, buffer: atom$TextBuffer) {
+  constructor(notifiers, buffer) {
+    var _this = this;
+
     this._notifiers = notifiers;
     this._buffer = buffer;
     this._notifier = null;
@@ -59,41 +61,52 @@ export class BufferSubscription {
     this._changeCount = 1;
     this._sentOpen = false;
 
-    const subscriptions = new CompositeDisposable();
+    const subscriptions = new _atom.CompositeDisposable();
 
-    subscriptions.add(
-      buffer.onDidChange(async (event: atom$TextEditEvent) => {
-        this._changeCount++;
-        if (this._notifier == null) {
+    subscriptions.add(buffer.onDidChange((() => {
+      var _ref = (0, _asyncToGenerator.default)(function* (event) {
+        _this._changeCount++;
+        if (_this._notifier == null) {
           return;
         }
 
         // Must inspect the buffer before awaiting on the notifier
         // to avoid race conditions
-        const filePath = this._buffer.getPath();
-        invariant(filePath != null);
-        const version = this._changeCount;
+        const filePath = _this._buffer.getPath();
 
-        invariant(this._notifier != null);
-        const notifier = await this._notifier;
-        if (this._sentOpen) {
-          this.sendEvent({
-            kind: FileEventKind.EDIT,
+        if (!(filePath != null)) {
+          throw new Error('Invariant violation: "filePath != null"');
+        }
+
+        const version = _this._changeCount;
+
+        if (!(_this._notifier != null)) {
+          throw new Error('Invariant violation: "this._notifier != null"');
+        }
+
+        const notifier = yield _this._notifier;
+        if (_this._sentOpen) {
+          _this.sendEvent({
+            kind: (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.EDIT,
             fileVersion: {
               notifier,
               filePath,
-              version,
+              version
             },
             oldRange: event.oldRange,
             newRange: event.newRange,
             oldText: event.oldText,
-            newText: event.newText,
+            newText: event.newText
           });
         } else {
-          this._sendOpenByNotifier(notifier);
+          _this._sendOpenByNotifier(notifier);
         }
-      }),
-    );
+      });
+
+      return function (_x) {
+        return _ref.apply(this, arguments);
+      };
+    })()));
 
     this._subscriptions = subscriptions;
 
@@ -109,45 +122,56 @@ export class BufferSubscription {
     }
   }
 
-  _sendOpenByNotifier(notifier: FileNotifier): void {
+  _sendOpenByNotifier(notifier) {
     const filePath = this._buffer.getPath();
-    invariant(filePath != null);
+
+    if (!(filePath != null)) {
+      throw new Error('Invariant violation: "filePath != null"');
+    }
+
     const version = this._changeCount;
 
     this._sentOpen = true;
     this.sendEvent({
-      kind: FileEventKind.OPEN,
+      kind: (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.OPEN,
       fileVersion: {
         notifier,
         filePath,
-        version,
+        version
       },
-      contents: this._buffer.getText(),
+      contents: this._buffer.getText()
     });
   }
 
-  getVersion(): number {
+  getVersion() {
     return this._changeCount;
   }
 
-  async sendEvent(event: LocalFileEvent) {
-    invariant(event.kind !== FileEventKind.SYNC);
-    try {
-      await event.fileVersion.notifier.onFileEvent(event);
-      this.updateServerVersion(event.fileVersion.version);
-    } catch (e) {
-      logger.error(`Error sending file event: ${eventToString(event)}`, e);
+  sendEvent(event) {
+    var _this2 = this;
 
-      if (event.fileVersion.filePath === this._buffer.getPath()) {
-        logger.error('Attempting file resync');
-        this.attemptResync();
-      } else {
-        logger.error('File renamed, so no resync attempted');
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(event.kind !== (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.SYNC)) {
+        throw new Error('Invariant violation: "event.kind !== FileEventKind.SYNC"');
       }
-    }
+
+      try {
+        yield event.fileVersion.notifier.onFileEvent(event);
+        _this2.updateServerVersion(event.fileVersion.version);
+      } catch (e) {
+        logger.error(`Error sending file event: ${eventToString(event)}`, e);
+
+        if (event.fileVersion.filePath === _this2._buffer.getPath()) {
+          logger.error('Attempting file resync');
+          _this2.attemptResync();
+        } else {
+          logger.error('File renamed, so no resync attempted');
+        }
+      }
+    })();
   }
 
-  updateServerVersion(sentVersion: number): void {
+  updateServerVersion(sentVersion) {
     this._serverVersion = Math.max(this._serverVersion, sentVersion);
     this._lastAttemptedSync = Math.max(this._lastAttemptedSync, sentVersion);
   }
@@ -155,6 +179,8 @@ export class BufferSubscription {
   // Something went awry in our synchronization protocol
   // Attempt a reset with a 'sync' event.
   attemptResync() {
+    var _this3 = this;
+
     // always attempt to resync to the latest version
     const resyncVersion = this._changeCount;
     const filePath = this._buffer.getPath();
@@ -165,51 +191,56 @@ export class BufferSubscription {
       logger.error('At most recent edit, attempting file resync');
       this._lastAttemptedSync = resyncVersion;
 
-      const sendResync = async () => {
-        if (this._notifier == null) {
-          logger.error('Resync preempted by remote connection closed');
-          return;
-        }
-        invariant(filePath != null);
-        const notifier = await this._notifier;
-        if (this._buffer.isDestroyed()) {
-          logger.error('Resync preempted by later event');
-        } else if (filePath !== this._buffer.getPath()) {
-          logger.error('Resync preempted by file rename');
-        } else if (resyncVersion !== this._lastAttemptedSync) {
-          logger.error('Resync preempted by later resync');
-        } else if (resyncVersion !== this._changeCount) {
-          logger.error('Resync preempted by later edit');
-        } else {
-          const syncEvent: FileSyncEvent = {
-            kind: FileEventKind.SYNC,
-            fileVersion: {
-              notifier,
-              filePath,
-              version: resyncVersion,
-            },
-            contents: this._buffer.getText(),
-          };
-          try {
-            await notifier.onFileEvent(syncEvent);
-            this.updateServerVersion(resyncVersion);
-
-            logger.error(
-              `Successful resync event: ${eventToString(syncEvent)}`,
-            );
-          } catch (syncError) {
-            logger.error(
-              `Error sending file sync event: ${eventToString(syncEvent)}`,
-              syncError,
-            );
-
-            // continue trying until either the file is closed,
-            // or a resync to a later edit is attempted
-            // or the resync succeeds
-            setTimeout(sendResync, RESYNC_TIMEOUT_MS);
+      const sendResync = (() => {
+        var _ref2 = (0, _asyncToGenerator.default)(function* () {
+          if (_this3._notifier == null) {
+            logger.error('Resync preempted by remote connection closed');
+            return;
           }
-        }
-      };
+
+          if (!(filePath != null)) {
+            throw new Error('Invariant violation: "filePath != null"');
+          }
+
+          const notifier = yield _this3._notifier;
+          if (_this3._buffer.isDestroyed()) {
+            logger.error('Resync preempted by later event');
+          } else if (filePath !== _this3._buffer.getPath()) {
+            logger.error('Resync preempted by file rename');
+          } else if (resyncVersion !== _this3._lastAttemptedSync) {
+            logger.error('Resync preempted by later resync');
+          } else if (resyncVersion !== _this3._changeCount) {
+            logger.error('Resync preempted by later edit');
+          } else {
+            const syncEvent = {
+              kind: (_nuclideOpenFilesRpc || _load_nuclideOpenFilesRpc()).FileEventKind.SYNC,
+              fileVersion: {
+                notifier,
+                filePath,
+                version: resyncVersion
+              },
+              contents: _this3._buffer.getText()
+            };
+            try {
+              yield notifier.onFileEvent(syncEvent);
+              _this3.updateServerVersion(resyncVersion);
+
+              logger.error(`Successful resync event: ${eventToString(syncEvent)}`);
+            } catch (syncError) {
+              logger.error(`Error sending file sync event: ${eventToString(syncEvent)}`, syncError);
+
+              // continue trying until either the file is closed,
+              // or a resync to a later edit is attempted
+              // or the resync succeeds
+              setTimeout(sendResync, RESYNC_TIMEOUT_MS);
+            }
+          }
+        });
+
+        return function sendResync() {
+          return _ref2.apply(this, arguments);
+        };
+      })();
 
       sendResync();
     } else {
@@ -231,9 +262,10 @@ export class BufferSubscription {
   }
 }
 
-function eventToString(event: FileEvent): string {
-  const jsonable = {...event};
-  jsonable.fileVersion = {...event.fileVersion};
+exports.BufferSubscription = BufferSubscription;
+function eventToString(event) {
+  const jsonable = Object.assign({}, event);
+  jsonable.fileVersion = Object.assign({}, event.fileVersion);
   jsonable.fileVersion.notifier = null;
   return JSON.stringify(jsonable);
 }

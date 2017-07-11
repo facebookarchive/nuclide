@@ -1,3 +1,38 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AutocompleteProvider = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _AutocompleteCacher;
+
+function _load_AutocompleteCacher() {
+  return _AutocompleteCacher = _interopRequireDefault(require('../../commons-atom/AutocompleteCacher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,70 +40,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
+class AutocompleteProvider {
 
-import type {
-  AutocompleteResult,
-  Completion,
-  LanguageService,
-} from './LanguageService';
-
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming, track} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
-
-export type OnDidInsertSuggestionArgument = {
-  editor: atom$TextEditor,
-  triggerPosition: atom$Point,
-  suggestion: Completion,
-};
-
-export type OnDidInsertSuggestionCallback = (
-  arg: OnDidInsertSuggestionArgument,
-) => mixed;
-
-export type AutocompleteConfig = {|
-  inclusionPriority: number,
-  suggestionPriority: number,
-  disableForSelector: ?string,
-  excludeLowerPriority: boolean,
-  version: '2.0.0',
-  analyticsEventName: string,
-  onDidInsertSuggestionAnalyticsEventName: string,
-  autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
-|};
-
-export class AutocompleteProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  suggestionPriority: number;
-  disableForSelector: ?string;
-  excludeLowerPriority: boolean;
-  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
-  onDidInsertSuggestion: OnDidInsertSuggestionCallback;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
-
-  constructor(
-    name: string,
-    selector: string,
-    inclusionPriority: number,
-    suggestionPriority: number,
-    disableForSelector: ?string,
-    excludeLowerPriority: boolean,
-    analyticsEventName: string,
-    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    onDidInsertSuggestionAnalyticsEventName: string,
-    autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+  constructor(name, selector, inclusionPriority, suggestionPriority, disableForSelector, excludeLowerPriority, analyticsEventName, onDidInsertSuggestion, onDidInsertSuggestionAnalyticsEventName, autocompleteCacherConfig, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -79,80 +57,53 @@ export class AutocompleteProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
 
     if (autocompleteCacherConfig != null) {
-      this._autocompleteCacher = new AutocompleteCacher(
-        request => this._getSuggestionsFromLanguageService(request),
-        autocompleteCacherConfig,
-      );
+      this._autocompleteCacher = new (_AutocompleteCacher || _load_AutocompleteCacher()).default(request => this._getSuggestionsFromLanguageService(request), autocompleteCacherConfig);
     }
 
     this._onDidInsertSuggestion = onDidInsertSuggestion;
 
     this.onDidInsertSuggestion = arg => {
-      track(onDidInsertSuggestionAnalyticsEventName);
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(onDidInsertSuggestionAnalyticsEventName);
       if (this._onDidInsertSuggestion != null) {
         this._onDidInsertSuggestion(arg);
       }
     };
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: AutocompleteConfig,
-    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
-      new AutocompleteProvider(
-        name,
-        grammars.map(grammar => '.' + grammar).join(', '),
-        config.inclusionPriority,
-        config.suggestionPriority,
-        config.disableForSelector,
-        config.excludeLowerPriority,
-        config.analyticsEventName,
-        onDidInsertSuggestion,
-        config.onDidInsertSuggestionAnalyticsEventName,
-        config.autocompleteCacherConfig,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammars, config, onDidInsertSuggestion, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('autocomplete.provider', config.version, new AutocompleteProvider(name, grammars.map(grammar => '.' + grammar).join(', '), config.inclusionPriority, config.suggestionPriority, config.disableForSelector, config.excludeLowerPriority, config.analyticsEventName, onDidInsertSuggestion, config.onDidInsertSuggestionAnalyticsEventName, config.autocompleteCacherConfig, connectionToLanguageService));
   }
 
-  getSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<Completion>> {
-    return trackTiming(this._analyticsEventName, async () => {
+  getSuggestions(request) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
       let result;
-      if (this._autocompleteCacher != null) {
-        result = await this._autocompleteCacher.getSuggestions(request);
+      if (_this._autocompleteCacher != null) {
+        result = yield _this._autocompleteCacher.getSuggestions(request);
       } else {
-        result = await this._getSuggestionsFromLanguageService(request);
+        result = yield _this._getSuggestionsFromLanguageService(request);
       }
       return result != null ? result.items : null;
-    });
+    }));
   }
 
-  async _getSuggestionsFromLanguageService(
-    request: atom$AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    const {editor, activatedManually, prefix} = request;
-    const position = editor.getLastCursor().getBufferPosition();
-    const path = editor.getPath();
-    const fileVersion = await getFileVersionOfEditor(editor);
+  _getSuggestionsFromLanguageService(request) {
+    var _this2 = this;
 
-    const languageService = this._connectionToLanguageService.getForUri(path);
-    if (languageService == null || fileVersion == null) {
-      return {isIncomplete: false, items: []};
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const { editor, activatedManually, prefix } = request;
+      const position = editor.getLastCursor().getBufferPosition();
+      const path = editor.getPath();
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
 
-    return (await languageService).getAutocompleteSuggestions(
-      fileVersion,
-      position,
-      activatedManually == null ? false : activatedManually,
-      prefix,
-    );
+      const languageService = _this2._connectionToLanguageService.getForUri(path);
+      if (languageService == null || fileVersion == null) {
+        return { isIncomplete: false, items: [] };
+      }
+
+      return (yield languageService).getAutocompleteSuggestions(fileVersion, position, activatedManually == null ? false : activatedManually, prefix);
+    })();
   }
 }
+exports.AutocompleteProvider = AutocompleteProvider;

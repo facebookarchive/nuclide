@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerPaneViewModel = undefined;
+
+var _DebuggerModel;
+
+function _load_DebuggerModel() {
+  return _DebuggerModel = _interopRequireDefault(require('./DebuggerModel'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// A model that will serve as the view model for all debugger panes. We must provide
+// a unique instance of a view model for each pane, which Atom can destroy when the
+// pane that contains it is destroyed. We therefore cannot give it the actual debugger
+// model directly, since there is only one and its lifetime is tied to the lifetime
+// of the debugging session.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +27,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import DebuggerModel from './DebuggerModel';
-import type {DebuggerPaneConfig} from './DebuggerLayoutManager';
-import React from 'react';
+class DebuggerPaneViewModel {
 
-// A model that will serve as the view model for all debugger panes. We must provide
-// a unique instance of a view model for each pane, which Atom can destroy when the
-// pane that contains it is destroyed. We therefore cannot give it the actual debugger
-// model directly, since there is only one and its lifetime is tied to the lifetime
-// of the debugging session.
-export class DebuggerPaneViewModel {
-  _config: DebuggerPaneConfig;
-  _isLifetimeView: boolean;
-  _debuggerModel: DebuggerModel;
-  _paneDestroyed: (pane: DebuggerPaneConfig) => void;
-  _removedFromLayout: boolean;
-
-  constructor(
-    config: DebuggerPaneConfig,
-    debuggerModel: DebuggerModel,
-    isLifetimeView: boolean,
-    paneDestroyed: (pane: DebuggerPaneConfig) => void,
-  ) {
+  constructor(config, debuggerModel, isLifetimeView, paneDestroyed) {
     this._config = config;
     this._debuggerModel = debuggerModel;
     this._isLifetimeView = isLifetimeView;
@@ -38,55 +41,56 @@ export class DebuggerPaneViewModel {
     this._removedFromLayout = false;
   }
 
-  dispose(): void {}
+  dispose() {}
 
-  destroy(): void {
+  destroy() {
     if (!this._removedFromLayout) {
       this._paneDestroyed(this._config);
     }
   }
 
-  getTitle(): string {
+  getTitle() {
     return this._config.title();
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return this._debuggerModel.getDefaultLocation();
   }
 
-  getURI(): string {
+  getURI() {
     return this._config.uri;
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return this._debuggerModel.getPreferredWidth();
   }
 
-  createView(): React.Element<any> {
+  createView() {
     if (this._config.previousLocation != null) {
       this._config.previousLocation.userHidden = false;
     }
     return this._config.createView();
   }
 
-  getConfig(): DebuggerPaneConfig {
+  getConfig() {
     return this._config;
   }
 
-  isLifetimeView(): boolean {
+  isLifetimeView() {
     return this._isLifetimeView;
   }
 
-  setRemovedFromLayout(removed: boolean): void {
+  setRemovedFromLayout(removed) {
     this._removedFromLayout = removed;
   }
 
   // Atom view needs to provide this, otherwise Atom throws an exception splitting panes for the view.
-  serialize(): Object {
+  serialize() {
     return {};
   }
 
-  copy(): boolean {
+  copy() {
     return false;
   }
 }
+exports.DebuggerPaneViewModel = DebuggerPaneViewModel;

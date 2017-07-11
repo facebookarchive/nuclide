@@ -1,3 +1,44 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SelectHunkChanges = undefined;
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _GutterCheckbox;
+
+function _load_GutterCheckbox() {
+  return _GutterCheckbox = require('./GutterCheckbox');
+}
+
+var _FileChanges;
+
+function _load_FileChanges() {
+  return _FileChanges = require('../../../nuclide-ui/FileChanges');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('../constants');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,65 +46,39 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ExtraFileChangesData, HunkData} from '../types';
-import type {HunkProps} from '../../../nuclide-ui/FileChanges';
-
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {GutterCheckbox} from './GutterCheckbox';
-import {HunkDiff} from '../../../nuclide-ui/FileChanges';
-import nullthrows from 'nullthrows';
-import React from 'react';
-import {SelectedState} from '../constants';
-
-type Props = HunkProps;
-
-type State = {
-  editor: ?atom$TextEditor,
-  firstChangeIndex: number,
-  hunkData: HunkData,
-};
-
-function getExtraData(props: Props): ExtraFileChangesData {
-  return (nullthrows(props.extraData): any);
+function getExtraData(props) {
+  return (0, (_nullthrows || _load_nullthrows()).default)(props.extraData);
 }
 
-function getHunkData(props: Props): HunkData {
-  const hunks = nullthrows(getExtraData(props).fileData.chunks);
-  return nullthrows(hunks.get(props.hunk.oldStart));
+function getHunkData(props) {
+  const hunks = (0, (_nullthrows || _load_nullthrows()).default)(getExtraData(props).fileData.chunks);
+  return (0, (_nullthrows || _load_nullthrows()).default)(hunks.get(props.hunk.oldStart));
 }
 
-export class SelectHunkChanges extends React.Component {
-  props: Props;
-  state: State;
-  _onToggleHunk: () => mixed;
+class SelectHunkChanges extends _react.default.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
 
-    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(
-      props,
-    );
-    this._onToggleHunk = () =>
-      actionCreators.toggleHunk(patchId, fileId, props.hunk.oldStart);
+    const { actionCreators, fileData: { id: fileId }, patchId } = getExtraData(props);
+    this._onToggleHunk = () => actionCreators.toggleHunk(patchId, fileId, props.hunk.oldStart);
 
     const hunkData = getHunkData(props);
-    const firstChangeIndex = props.hunk.changes.findIndex(
-      change => change.type !== 'normal',
-    );
+    const firstChangeIndex = props.hunk.changes.findIndex(change => change.type !== 'normal');
 
-    this.state = {editor: null, firstChangeIndex, hunkData};
+    this.state = { editor: null, firstChangeIndex, hunkData };
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentWillReceiveProps(nextProps) {
     const hunkData = getHunkData(nextProps);
-    this.setState({hunkData});
+    this.setState({ hunkData });
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
+  shouldComponentUpdate(nextProps, nextState) {
     if (nextState.hunkData !== this.state.hunkData) {
       return true;
     }
@@ -75,48 +90,39 @@ export class SelectHunkChanges extends React.Component {
     return false;
   }
 
-  render(): React.Element<any> {
-    const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(
-      this.props,
-    );
+  render() {
+    const { actionCreators, fileData: { id: fileId }, patchId } = getExtraData(this.props);
 
     let gutterCheckboxes;
-    const {editor} = this.state;
+    const { editor } = this.state;
     if (editor != null) {
-      gutterCheckboxes = this.state.hunkData.allChanges.map(
-        (isEnabled, index) =>
-          <GutterCheckbox
-            checked={isEnabled}
-            editor={editor}
-            key={index}
-            lineNumber={index + this.state.firstChangeIndex}
-            onToggleLine={() =>
-              actionCreators.toggleLine(
-                patchId,
-                fileId,
-                this.props.hunk.oldStart,
-                index,
-              )}
-          />,
-      );
+      gutterCheckboxes = this.state.hunkData.allChanges.map((isEnabled, index) => _react.default.createElement((_GutterCheckbox || _load_GutterCheckbox()).GutterCheckbox, {
+        checked: isEnabled,
+        editor: editor,
+        key: index,
+        lineNumber: index + this.state.firstChangeIndex,
+        onToggleLine: () => actionCreators.toggleLine(patchId, fileId, this.props.hunk.oldStart, index)
+      }));
     }
 
-    return (
-      <div className="nuclide-patch-editor-select-hunk-changes">
-        <Checkbox
-          checked={this.state.hunkData.selected === SelectedState.ALL}
-          className="nuclide-patch-editor-hunk-checkbox"
-          indeterminate={this.state.hunkData.selected === SelectedState.SOME}
-          onChange={this._onToggleHunk}
-        />
-        <div className="nuclide-patch-editor-hunk-changes">
-          <HunkDiff
-            {...this.props}
-            ref={hunk => hunk && this.setState({editor: hunk.editor})}
-          />
-        </div>
-        {gutterCheckboxes}
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-patch-editor-select-hunk-changes' },
+      _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+        checked: this.state.hunkData.selected === (_constants || _load_constants()).SelectedState.ALL,
+        className: 'nuclide-patch-editor-hunk-checkbox',
+        indeterminate: this.state.hunkData.selected === (_constants || _load_constants()).SelectedState.SOME,
+        onChange: this._onToggleHunk
+      }),
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-patch-editor-hunk-changes' },
+        _react.default.createElement((_FileChanges || _load_FileChanges()).HunkDiff, Object.assign({}, this.props, {
+          ref: hunk => hunk && this.setState({ editor: hunk.editor })
+        }))
+      ),
+      gutterCheckboxes
     );
   }
 }
+exports.SelectHunkChanges = SelectHunkChanges;

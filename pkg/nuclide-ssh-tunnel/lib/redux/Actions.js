@@ -1,45 +1,42 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  OpenTunnelAction,
-  AddOpenTunnelAction,
-  CloseTunnelAction,
-  Tunnel,
-} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.openTunnel = openTunnel;
+exports.addOpenTunnel = addOpenTunnel;
+exports.closeTunnel = closeTunnel;
+const OPEN_TUNNEL = exports.OPEN_TUNNEL = 'OPEN_TUNNEL'; /**
+                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                          * All rights reserved.
+                                                          *
+                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                          * the root directory of this source tree.
+                                                          *
+                                                          * 
+                                                          * @format
+                                                          */
 
-export const OPEN_TUNNEL = 'OPEN_TUNNEL';
-export const ADD_OPEN_TUNNEL = 'ADD_OPEN_TUNNEL';
-export const CLOSE_TUNNEL = 'CLOSE_TUNNEL';
+const ADD_OPEN_TUNNEL = exports.ADD_OPEN_TUNNEL = 'ADD_OPEN_TUNNEL';
+const CLOSE_TUNNEL = exports.CLOSE_TUNNEL = 'CLOSE_TUNNEL';
 
-export function openTunnel(tunnel: Tunnel): OpenTunnelAction {
+function openTunnel(tunnel) {
   return {
     type: OPEN_TUNNEL,
-    payload: {tunnel},
+    payload: { tunnel }
   };
 }
 
-export function addOpenTunnel(
-  tunnel: Tunnel,
-  close: () => void,
-): AddOpenTunnelAction {
+function addOpenTunnel(tunnel, close) {
   return {
     type: ADD_OPEN_TUNNEL,
-    payload: {tunnel, close},
+    payload: { tunnel, close }
   };
 }
 
-export function closeTunnel(tunnel: Tunnel): CloseTunnelAction {
+function closeTunnel(tunnel) {
   return {
     type: CLOSE_TUNNEL,
-    payload: {tunnel},
+    payload: { tunnel }
   };
 }

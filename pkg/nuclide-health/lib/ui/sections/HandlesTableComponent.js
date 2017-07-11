@@ -1,42 +1,21 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";
 
-import React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props<T> = {
-  title: string,
-  handles: Array<T>,
-  keyed: Function,
-  columns: Array<{
-    title: string,
-    value: (handle: T, index: number) => ?string | ?number,
-    widthPercentage: number,
-  }>,
-};
+var _react = _interopRequireDefault(require("react"));
 
-export default class HandlesTableComponent<T: Object> extends React.Component<
-  void,
-  Props<T>,
-  void,
-> {
-  props: Props<T>;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  previousHandleSummaries: Object;
+class HandlesTableComponent extends _react.default.Component {
 
-  constructor(props: Object) {
+  constructor(props) {
     super(props);
     this.previousHandleSummaries = {};
   }
 
-  getHandleSummaries(handles: Array<T>): Object {
+  getHandleSummaries(handles) {
     const handleSummaries = {};
     handles.forEach((handle, h) => {
       const summarizedHandle = {};
@@ -48,61 +27,84 @@ export default class HandlesTableComponent<T: Object> extends React.Component<
     return handleSummaries;
   }
 
-  render(): React.Element<any> {
+  render() {
     if (this.props.handles.length === 0) {
-      return <div />;
+      return _react.default.createElement("div", null);
     }
 
     const handleSummaries = this.getHandleSummaries(this.props.handles);
-    const component = (
-      <div>
-        <h3>
-          {this.props.title}
-        </h3>
-        <table className="table">
-          <thead>
-            <tr>
-              <th width="10%">ID</th>
-              {this.props.columns.map((column, c) =>
-                <th key={c} width={`${column.widthPercentage}%`}>
-                  {column.title}
-                </th>,
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(handleSummaries).map(key => {
-              const handleSummary = handleSummaries[key];
-              const previousHandle = this.previousHandleSummaries[key];
-              return (
-                <tr
-                  key={key}
-                  className={previousHandle ? '' : 'nuclide-health-handle-new'}>
-                  <th>
-                    {key}
-                  </th>
-                  {this.props.columns.map((column, c) => {
-                    let className = '';
-                    if (
-                      previousHandle &&
-                      previousHandle[c] !== handleSummary[c]
-                    ) {
-                      className = 'nuclide-health-handle-updated';
-                    }
-                    return (
-                      <td key={c} className={className}>
-                        {handleSummary[c]}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    const component = _react.default.createElement(
+      "div",
+      null,
+      _react.default.createElement(
+        "h3",
+        null,
+        this.props.title
+      ),
+      _react.default.createElement(
+        "table",
+        { className: "table" },
+        _react.default.createElement(
+          "thead",
+          null,
+          _react.default.createElement(
+            "tr",
+            null,
+            _react.default.createElement(
+              "th",
+              { width: "10%" },
+              "ID"
+            ),
+            this.props.columns.map((column, c) => _react.default.createElement(
+              "th",
+              { key: c, width: `${column.widthPercentage}%` },
+              column.title
+            ))
+          )
+        ),
+        _react.default.createElement(
+          "tbody",
+          null,
+          Object.keys(handleSummaries).map(key => {
+            const handleSummary = handleSummaries[key];
+            const previousHandle = this.previousHandleSummaries[key];
+            return _react.default.createElement(
+              "tr",
+              {
+                key: key,
+                className: previousHandle ? '' : 'nuclide-health-handle-new' },
+              _react.default.createElement(
+                "th",
+                null,
+                key
+              ),
+              this.props.columns.map((column, c) => {
+                let className = '';
+                if (previousHandle && previousHandle[c] !== handleSummary[c]) {
+                  className = 'nuclide-health-handle-updated';
+                }
+                return _react.default.createElement(
+                  "td",
+                  { key: c, className: className },
+                  handleSummary[c]
+                );
+              })
+            );
+          })
+        )
+      )
     );
     this.previousHandleSummaries = handleSummaries;
     return component;
   }
 }
+exports.default = HandlesTableComponent; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */
