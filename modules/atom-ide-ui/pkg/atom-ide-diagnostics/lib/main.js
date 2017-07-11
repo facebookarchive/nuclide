@@ -23,7 +23,6 @@ import type {LinterAdapter} from './LinterAdapter';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {getLogger} from 'log4js';
 
 import DiagnosticStore from './DiagnosticStore';
 import {createAdapters} from './LinterAdapterFactory';
@@ -145,46 +144,7 @@ class Activation {
   consumeDiagnosticsProviderV2(
     provider: ObservableDiagnosticProvider,
   ): IDisposable {
-    const store = this._diagnosticStore;
-
-    const subscriptions = new UniversalDisposable(
-      provider.updates.subscribe(
-        update => store.updateMessages(provider, update),
-        error => {
-          getLogger('atom-ide-diagnostics').error(
-            `Error: updates.subscribe ${error}`,
-          );
-        },
-        () => {
-          getLogger('atom-ide-diagnostics').error(
-            'updates.subscribe completed',
-          );
-        },
-      ),
-      provider.invalidations.subscribe(
-        invalidation => store.invalidateMessages(provider, invalidation),
-        error => {
-          getLogger('atom-ide-diagnostics').error(
-            `Error: invalidations.subscribe ${error}`,
-          );
-        },
-        () => {
-          getLogger('atom-ide-diagnostics').error(
-            'invalidations.subscribe completed',
-          );
-        },
-      ),
-    );
-    this._disposables.add(subscriptions);
-
-    return new UniversalDisposable(
-      // V1 providers have no way of terminating the streams, so unsubscribe just in case.
-      subscriptions,
-      () => {
-        // When the provider package goes away, we need to invalidate its messages.
-        store.invalidateMessages(provider, {scope: 'all'});
-      },
-    );
+    return this._diagnosticStore.addProvider(provider);
   }
 }
 

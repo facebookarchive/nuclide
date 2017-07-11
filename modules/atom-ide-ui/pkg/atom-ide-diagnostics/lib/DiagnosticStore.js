@@ -17,6 +17,7 @@ import type {
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
+  ObservableDiagnosticProvider,
   ProjectDiagnosticMessage,
 } from './types';
 
@@ -28,6 +29,7 @@ import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {MarkerTracker} from './MarkerTracker';
 import invariant from 'assert';
+import {getLogger} from 'log4js';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
 
 export default class DiagnosticStore {
@@ -47,6 +49,9 @@ export default class DiagnosticStore {
     Array<ProjectDiagnosticMessage>,
   >;
 
+  _providersAdded: Subject<ObservableDiagnosticProvider>;
+  _providersRemoved: Subject<ObservableDiagnosticProvider>;
+  _disposables: UniversalDisposable;
   _fileChanges: Subject<FileDiagnosticMessages>;
   _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
   _allChanges: BehaviorSubject<Array<DiagnosticMessage>>;
@@ -58,11 +63,43 @@ export default class DiagnosticStore {
     this._fileToProviders = new MultiMap();
     this._providerToProjectDiagnostics = new Map();
 
+    this._providersAdded = new Subject();
+    this._providersRemoved = new Subject();
     this._fileChanges = new Subject();
     this._projectChanges = new BehaviorSubject([]);
     this._allChanges = new BehaviorSubject([]);
 
     this._markerTracker = new MarkerTracker();
+
+    const whenRemoved = provider =>
+      this._providersRemoved.filter(p => p === provider);
+
+    this._disposables = new UniversalDisposable(
+      // Update the messages whenever the provider has some.
+      this._providersAdded
+        .mergeMap(provider =>
+          logEndings(provider.updates, 'Updates')
+            .takeUntil(whenRemoved(provider))
+            .map(update => ({provider, update})),
+        )
+        .subscribe(({provider, update}) => {
+          this.updateMessages(provider, update);
+        }),
+      // Trigger invalidations.
+      this._providersAdded
+        .mergeMap(provider =>
+          logEndings(provider.invalidations, 'Invalidations')
+            .takeUntil(whenRemoved(provider))
+            .map(invalidation => ({provider, invalidation}))
+            .finally(() => {
+              // When the provider goes away, we need to invalidate its messages.
+              this.invalidateMessages(provider, {scope: 'all'});
+            }),
+        )
+        .subscribe(({provider, invalidation}) =>
+          this.invalidateMessages(provider, invalidation),
+        ),
+    );
   }
 
   dispose() {
@@ -77,6 +114,13 @@ export default class DiagnosticStore {
   /**
    * Section: Methods to modify the store.
    */
+
+  addProvider(provider: ObservableDiagnosticProvider): IDisposable {
+    this._providersAdded.next(provider);
+    return new UniversalDisposable(() => {
+      this._providersRemoved.next(provider);
+    });
+  }
 
   /**
    * Update the messages from the given provider.
@@ -429,4 +473,15 @@ function notifyFixFailed() {
   atom.notifications.addWarning(
     'Failed to apply fix. Try saving to get fresh results and then try again.',
   );
+}
+
+function logEndings<T>(input: Observable<T>, name: string): Observable<T> {
+  return input.do({
+    error(err) {
+      getLogger('atom-ide-diagnostics').error(`Error: ${name}: ${err}`);
+    },
+    complete() {
+      getLogger('atom-ide-diagnostics').error(`${name} completed unexpectedly`);
+    },
+  });
 }
