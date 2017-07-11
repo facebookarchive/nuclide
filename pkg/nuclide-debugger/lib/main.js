@@ -32,6 +32,7 @@ import type {
 } from '../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
+import type {FileLineBreakpoint} from './types';
 
 import {AnalyticsEvents} from './constants';
 import {BreakpointConfigComponent} from './BreakpointConfigComponent';
@@ -599,7 +600,9 @@ class Activation {
           <BreakpointConfigComponent
             breakpoint={bp}
             actions={this.getModel().getActions()}
-            onDismiss={() => ReactDOM.unmountComponentAtNode(container)}
+            onDismiss={() => {
+              ReactDOM.unmountComponentAtNode(container);
+            }}
             breakpointStore={store}
           />,
           container,

@@ -19,8 +19,9 @@ import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {BreakpointStore} from './BreakpointStore';
+import BreakpointStore from './BreakpointStore';
 import {Modal} from '../../nuclide-ui/Modal';
+import invariant from 'invariant';
 
 type PropsType = {
   onDismiss: () => void,
@@ -57,6 +58,7 @@ export class BreakpointConfigComponent
           // Breakpoint no longer exists.
           this.props.onDismiss();
         }
+        invariant(breakpoint != null);
         this.setState({breakpoint});
       }),
     );
