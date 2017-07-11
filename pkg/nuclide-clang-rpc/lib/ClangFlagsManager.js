@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ClangCompilationDatabase} from './rpc-types';
+import type {ClangCompilationDatabase, ClangFlags} from './rpc-types';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -18,7 +18,7 @@ import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
-import * as BuckService from '../../nuclide-buck-rpc';
+import * as BuckService from '../../nuclide-buck-rpc/lib/BuckServiceImpl';
 import {mapPathsInFlags} from './clang-flags-parser';
 import {
   isHeaderFile,
@@ -34,17 +34,6 @@ const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
 
 const INCLUDE_SEARCH_TIMEOUT = 15000;
-
-export type ClangFlags = {
-  // Will be computed and memoized from rawData on demand.
-  flags?: ?Array<string>,
-  rawData: ?{
-    flags: Array<string> | string,
-    file: string,
-    directory: string,
-  },
-  flagsFile: ?string,
-};
 
 type ClangProjectFlags = {
   extraCompilerFlags: Array<string>,
@@ -74,7 +63,7 @@ function overrideIncludePath(src: string): string {
 }
 
 export default class ClangFlagsManager {
-  _compilationDatabases: Map<string, Map<string, ClangFlags>>;
+  _compilationDatabases: Map<string, Promise<Map<string, ClangFlags>>>;
   _realpathCache: Object;
   _pathToFlags: Map<string, Promise<?ClangFlags>>;
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
@@ -267,7 +256,7 @@ export default class ClangFlagsManager {
     if (compilationDB != null && compilationDB.file != null) {
       // Look for a compilation database provided by the client.
       dbDir = nuclideUri.dirname(compilationDB.file);
-      dbFlags = await this._loadFlagsFromCompilationDatabase(compilationDB);
+      dbFlags = await this.loadFlagsFromCompilationDatabase(compilationDB);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -276,7 +265,7 @@ export default class ClangFlagsManager {
       );
       if (dbDir != null) {
         const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-        dbFlags = await this._loadFlagsFromCompilationDatabase({
+        dbFlags = await this.loadFlagsFromCompilationDatabase({
           file: dbFile,
           flagsFile: null,
           libclangPath: null,
@@ -399,18 +388,9 @@ export default class ClangFlagsManager {
   }
 
   async _loadFlagsFromCompilationDatabase(
-    db: ClangCompilationDatabase,
+    dbFile: string,
+    flagsFile: ?string,
   ): Promise<Map<string, ClangFlags>> {
-    if (db.file == null) {
-      return new Map();
-    }
-    const dbFile = db.file;
-    const key = this._cacheKeyForCompilationDatabase(db);
-    const cache = this._compilationDatabases.get(key);
-    if (cache != null) {
-      return cache;
-    }
-
     const flags = new Map();
     try {
       const contents = await fsPromise.readFile(dbFile, 'utf8');
@@ -442,18 +422,36 @@ export default class ClangFlagsManager {
                 file,
                 directory,
               },
-              flagsFile: db.flagsFile || db.file,
+              flagsFile: flagsFile || dbFile,
             };
             flags.set(realpath, result);
             this._pathToFlags.set(realpath, Promise.resolve(result));
           }
         }),
       );
-      this._compilationDatabases.set(key, flags);
     } catch (e) {
       logger.error(`Error reading compilation flags from ${dbFile}`, e);
     }
     return flags;
+  }
+
+  loadFlagsFromCompilationDatabase(
+    db: ClangCompilationDatabase,
+  ): Promise<Map<string, ClangFlags>> {
+    const dbFile = db.file;
+    if (dbFile == null) {
+      return Promise.resolve(new Map());
+    }
+    const key = this._cacheKeyForCompilationDatabase(db);
+    let cached = this._compilationDatabases.get(key);
+    if (cached == null) {
+      cached = this._loadFlagsFromCompilationDatabase(dbFile, db.flagsFile);
+      if (cached == null) {
+        cached = Promise.resolve(new Map());
+      }
+      this._compilationDatabases.set(key, cached);
+    }
+    return cached;
   }
 
   static sanitizeCommand(

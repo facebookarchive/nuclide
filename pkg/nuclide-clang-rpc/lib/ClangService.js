@@ -19,10 +19,12 @@ import type {
   ClangLocalReferences,
   ClangOutlineTree,
   ClangCompilationDatabase,
+  ClangCompilationDatabaseEntry,
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {keyMirror} from 'nuclide-commons/collection';
+import invariant from 'invariant';
+import {keyMirror, mapTransform} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
@@ -273,6 +275,27 @@ export async function formatCode(
     newCursor: JSON.parse(stdout.substring(0, newLine)).Cursor,
     formatted: stdout.substring(newLine + 1),
   };
+}
+
+export function loadFlagsFromCompilationDatabaseAndCacheThem(
+  db: ClangCompilationDatabase,
+): Promise<Map<string, ClangCompilationDatabaseEntry>> {
+  return serverManager
+    .getClangFlagsManager()
+    .loadFlagsFromCompilationDatabase(db)
+    .then(fullFlags =>
+      mapTransform(fullFlags, flags => {
+        const {rawData} = flags;
+        invariant(rawData != null); // TODO(wallace): improve typing in clang-rpc so that this check is removed
+        const args = rawData.flags;
+        invariant(Array.isArray(args)); // TODO(wallace): improve clang-rpc so that it always return string[]
+        return {
+          arguments: args,
+          file: rawData.file,
+          directory: rawData.directory,
+        };
+      }),
+    );
 }
 
 /**

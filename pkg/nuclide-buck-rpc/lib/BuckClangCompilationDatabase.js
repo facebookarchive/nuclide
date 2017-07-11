@@ -13,6 +13,7 @@ import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-typ
 import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
 import type {CompilationDatabaseParams} from '../../nuclide-buck/lib/types';
 
+import * as ClangService from '../../nuclide-clang-rpc';
 import * as BuckService from './BuckServiceImpl';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
@@ -65,10 +66,17 @@ class BuckClangCompilationDatabaseHandler {
 
   getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
     return this._sourceCache.getOrCreate(src, () =>
-      this._loadCompilationDatabaseFromBuck(src).catch(err => {
-        logger.error('Error getting flags from Buck', err);
-        return null;
-      }),
+      this._loadCompilationDatabaseFromBuck(src)
+        .catch(err => {
+          logger.error('Error getting flags from Buck', err);
+          return null;
+        })
+        .then(db => {
+          if (db != null) {
+            this._cacheAllTheFilesInTheSameDB(db);
+          }
+          return db;
+        }),
     );
   }
 
@@ -195,13 +203,29 @@ class BuckClangCompilationDatabaseHandler {
       flagsFile: buildFile,
       libclangPath: null,
     };
+    return this._processCompilationDb(compilationDB);
+  }
+
+  async _processCompilationDb(
+    db: ClangCompilationDatabase,
+  ): Promise<ClangCompilationDatabase> {
     try {
       // $FlowFB
       const {createOmCompilationDb} = require('./fb/omCompilationDb');
-      return await createOmCompilationDb(compilationDB);
-    } catch (e) {
-      return compilationDB;
-    }
+      return await createOmCompilationDb(db);
+    } catch (e) {}
+    return db;
+  }
+
+  async _cacheAllTheFilesInTheSameDB(
+    db: ClangCompilationDatabase,
+  ): Promise<void> {
+    const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
+      db,
+    );
+    pathToFlags.forEach((fullFlags, path) => {
+      this._sourceCache.set(path, Promise.resolve(db));
+    });
   }
 }
 
