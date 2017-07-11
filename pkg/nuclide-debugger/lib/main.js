@@ -18,9 +18,7 @@ import type {
   RegisterExecutorFunction,
   OutputService,
 } from '../../nuclide-console/lib/types';
-import type {
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
+import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {EvaluationResult, SerializedBreakpoint} from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
@@ -47,9 +45,7 @@ import {debuggerDatatip} from './DebuggerDatatip';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
-import {
-  DebuggerLaunchAttachConnectionChooser,
-} from './DebuggerLaunchAttachConnectionChooser';
+import {DebuggerLaunchAttachConnectionChooser} from './DebuggerLaunchAttachConnectionChooser';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
@@ -799,7 +795,8 @@ class Activation {
         const path = nuclideUri.basename(
           item.location.path.replace(/^[a-zA-Z]+:\/\//, ''),
         );
-        callstackText += `${i}\t${item.name}\t${path}:${item.location.line}${os.EOL}`;
+        callstackText += `${i}\t${item.name}\t${path}:${item.location
+          .line}${os.EOL}`;
       });
 
       atom.clipboard.write(callstackText.trim());
@@ -808,9 +805,8 @@ class Activation {
 
   consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {
     const updateSelectedConnection = directory => {
-      this._selectedDebugConnection = directory != null
-        ? directory.getPath()
-        : null;
+      this._selectedDebugConnection =
+        directory != null ? directory.getPath() : null;
     };
     const boundUpdateSelectedColumn = updateSelectedConnection.bind(this);
     const disposable = cwdApi.observeCwd(directory =>
@@ -1006,7 +1002,8 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
 
 function createDebuggerNuxTourModel(): NuxTourModel {
   const welcomeToNewUiNux = {
-    content: 'Welcome to the new Nuclide debugger UI!</br>' +
+    content:
+      'Welcome to the new Nuclide debugger UI!</br>' +
       'We are evolving the debugger to integrate more closely with Nuclide.',
     selector: '.nuclide-debugger-container-new',
     position: 'left',

@@ -115,33 +115,33 @@ export class BreakpointListComponent extends React.Component {
         const title = !enabled
           ? 'Disabled breakpoint'
           : !resolved
-              ? 'Unresolved Breakpoint'
-              : `Breakpoint at ${label} (resolved)`;
+            ? 'Unresolved Breakpoint'
+            : `Breakpoint at ${label} (resolved)`;
 
-        const conditionElement = this._debuggerSupportsConditionalBp(
-          breakpoint,
-        ) && breakpoint.condition !== ''
-          ? <Icon
-              icon="question"
-              className="nuclide-debugger-breakpoint-condition"
-              title={`Breakpoint condition: ${breakpoint.condition}`}
-              data-path={path}
-              data-line={line}
-              onClick={event => {
-                atom.commands.dispatch(
-                  event.target,
-                  'nuclide-debugger:edit-breakpoint',
-                );
-              }}
-            />
-          : null;
+        const conditionElement =
+          this._debuggerSupportsConditionalBp(breakpoint) &&
+          breakpoint.condition !== ''
+            ? <Icon
+                icon="question"
+                className="nuclide-debugger-breakpoint-condition"
+                title={`Breakpoint condition: ${breakpoint.condition}`}
+                data-path={path}
+                data-line={line}
+                onClick={event => {
+                  atom.commands.dispatch(
+                    event.target,
+                    'nuclide-debugger:edit-breakpoint',
+                  );
+                }}
+              />
+            : null;
 
         const content = (
           <div
             className={classnames('nuclide-debugger-breakpoint', {
               'nuclide-debugger-breakpoint-disabled': !enabled,
-              'nuclide-debugger-breakpoint-with-condition': breakpoint.condition !==
-                '',
+              'nuclide-debugger-breakpoint-with-condition':
+                breakpoint.condition !== '',
             })}
             key={i}>
             <Checkbox

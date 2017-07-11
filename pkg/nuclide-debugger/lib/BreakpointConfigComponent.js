@@ -21,6 +21,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import BreakpointStore from './BreakpointStore';
 import {Modal} from '../../nuclide-ui/Modal';
+import {track} from '../../nuclide-analytics';
 import invariant from 'invariant';
 
 type PropsType = {
@@ -34,8 +35,11 @@ type StateType = {
   breakpoint: FileLineBreakpoint,
 };
 
-export class BreakpointConfigComponent
-  extends React.Component<void, PropsType, StateType> {
+export class BreakpointConfigComponent extends React.Component<
+  void,
+  PropsType,
+  StateType,
+> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -65,6 +69,9 @@ export class BreakpointConfigComponent
   }
 
   componentDidMount(): void {
+    track('nuclide-debugger-breakpoint-condition-shown', {
+      fileExtension: nuclideUri.extname(this.props.breakpoint.path),
+    });
     this._disposables.add(
       atom.commands.add(window, 'core:cancel', this.props.onDismiss),
       atom.commands.add(window, 'core:confirm', this._updateBreakpoint),
@@ -81,6 +88,9 @@ export class BreakpointConfigComponent
       this.state.breakpoint.id,
       condition,
     );
+    track('nuclide-debugger-breakpoint-condition-saved', {
+      fileExtension: nuclideUri.extname(this.props.breakpoint.path),
+    });
     this.props.onDismiss();
   }
 
@@ -88,14 +98,10 @@ export class BreakpointConfigComponent
     return (
       <Modal onDismiss={() => this.props.onDismiss()}>
         <div className="padded nuclide-debugger-bp-dialog">
-          <h1 className="nuclide-debugger-bp-config-header">
-            Edit breakpoint
-          </h1>
+          <h1 className="nuclide-debugger-bp-config-header">Edit breakpoint</h1>
           <div className="block">
             <label>
-              Breakpoint at
-              {' '}
-              {nuclideUri.basename(this.state.breakpoint.path)}
+              Breakpoint at {nuclideUri.basename(this.state.breakpoint.path)}
               :
               {this.state.breakpoint.line}
             </label>
@@ -121,8 +127,8 @@ export class BreakpointConfigComponent
             />
           </div>
           <label>
-            This expression will be evaluated each time the corresponding line is
-            hit, but the debugger will only break execution if the expression
+            This expression will be evaluated each time the corresponding line
+            is hit, but the debugger will only break execution if the expression
             evaluates to true.
           </label>
           <div className="nuclide-debugger-bp-config-actions">
