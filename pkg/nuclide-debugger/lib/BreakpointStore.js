@@ -352,6 +352,26 @@ export default class BreakpointStore {
     return this._debuggerStore;
   }
 
+  breakpointSupportsConditions(breakpoint: FileLineBreakpoint): boolean {
+    // If currently debugging, return whether or not the current debugger supports this.
+    const debuggerStore = this.getDebuggerStore();
+    if (
+      debuggerStore != null &&
+      debuggerStore.getDebuggerMode() !== DebuggerMode.STOPPED
+    ) {
+      const currentDebugInfo = debuggerStore.getDebugProcessInfo();
+      if (currentDebugInfo != null) {
+        return currentDebugInfo.getDebuggerCapabilities()
+          .conditionalBreakpoints;
+      }
+    }
+
+    // If not currently debugging, return if any of the debuggers that support
+    // the file extension this bp is in support conditions.
+    // TODO: have providers register their file extensions and filter correctly here.
+    return true;
+  }
+
   _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
     for (const breakpoint of breakpoints) {
       const {line, sourceURL, disabled, condition} = breakpoint;

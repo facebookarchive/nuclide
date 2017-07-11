@@ -52,6 +52,10 @@
               "command": "nuclide-debugger:run-to-location"
             },
             {
+              "label": "Edit Breakpoint",
+              "command": "nuclide-debugger:edit-breakpoint"
+            },
+            {
               "label": "Toggle Breakpoint",
               "command": "nuclide-debugger:toggle-breakpoint"
             },

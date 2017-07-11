@@ -144,6 +144,17 @@ Use flexbox cross-axis stretch to fill the vertical space.
   text-decoration: line-through;
 }
 
+.nuclide-debugger-breakpoint-with-condition {
+  color: @text-color-warning;
+}
+
+.nuclide-debugger-breakpoint-condition {
+  opacity: 0.5;
+  position: relative;
+  top: 2px;
+  left: 8px;
+}
+
 /* Watch Expressions */
 @leftMargin: 0.5em;
 
@@ -315,4 +326,27 @@ Use flexbox cross-axis stretch to fill the vertical space.
   height: 100%;
   display: flex;
   justify-content: center;
+}
+
+/* Breakpoint config dialog */
+.nuclide-debugger-bp-config-header {
+  align-items: baseline;
+  margin-bottom: 1em;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.nuclide-debugger-bp-config-actions {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  padding-top: 10px;
+  position: relative;
+  right: 8px;
+  bottom: 8px;
+}
+
+.nuclide-debugger-bp-dialog {
+  font-family: @font-family;
+  font-size: 12pt;
 }

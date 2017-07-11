@@ -11,6 +11,7 @@
 
 import type DebuggerActions from './DebuggerActions';
 import type BreakpointStore from './BreakpointStore';
+import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
@@ -18,8 +19,8 @@ import React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
-import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 import classnames from 'classnames';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions,
@@ -41,6 +42,9 @@ export class BreakpointListComponent extends React.Component {
       this,
     );
     (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
+    (this: any)._debuggerSupportsConditionalBp = this._debuggerSupportsConditionalBp.bind(
+      this,
+    );
     this.state = {
       breakpoints: this.props.breakpointStore.getAllBreakpoints(),
     };
@@ -82,11 +86,16 @@ export class BreakpointListComponent extends React.Component {
     );
   }
 
+  _debuggerSupportsConditionalBp(breakpoint: FileLineBreakpoint): boolean {
+    return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
+  }
+
   render(): ?React.Element<any> {
     const {breakpoints} = this.state;
     if (breakpoints == null || breakpoints.length === 0) {
       return <span>(no breakpoints)</span>;
     }
+
     const items = breakpoints
       .map(breakpoint => ({
         ...breakpoint,
@@ -106,12 +115,33 @@ export class BreakpointListComponent extends React.Component {
         const title = !enabled
           ? 'Disabled breakpoint'
           : !resolved
-            ? 'Unresolved Breakpoint'
-            : `Breakpoint at ${label} (resolved)`;
+              ? 'Unresolved Breakpoint'
+              : `Breakpoint at ${label} (resolved)`;
+
+        const conditionElement = this._debuggerSupportsConditionalBp(
+          breakpoint,
+        ) && breakpoint.condition !== ''
+          ? <Icon
+              icon="question"
+              className="nuclide-debugger-breakpoint-condition"
+              title={`Breakpoint condition: ${breakpoint.condition}`}
+              data-path={path}
+              data-line={line}
+              onClick={event => {
+                atom.commands.dispatch(
+                  event.target,
+                  'nuclide-debugger:edit-breakpoint',
+                );
+              }}
+            />
+          : null;
+
         const content = (
           <div
             className={classnames('nuclide-debugger-breakpoint', {
               'nuclide-debugger-breakpoint-disabled': !enabled,
+              'nuclide-debugger-breakpoint-with-condition': breakpoint.condition !==
+                '',
             })}
             key={i}>
             <Checkbox
@@ -135,6 +165,7 @@ export class BreakpointListComponent extends React.Component {
               data-line={line}>
               {label}
             </span>
+            {conditionElement}
           </div>
         );
         return (
