@@ -45,6 +45,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
       ...super.getDebuggerCapabilities(),
+      conditionalBreakpoints: true,
       continueToLocation: true,
       singleThreadStepping: true,
       threads: true,

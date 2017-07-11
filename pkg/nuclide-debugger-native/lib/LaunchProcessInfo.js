@@ -20,7 +20,8 @@ import type {
   DebuggerConfig,
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
-import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import typeof * as NativeDebuggerService
+  from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
 import {
@@ -47,6 +48,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
       ...super.getDebuggerCapabilities(),
+      conditionalBreakpoints: true,
       continueToLocation: true,
       singleThreadStepping: true,
       threads: true,
@@ -91,8 +93,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       logLevel: getConfig().serverLogLevel,
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
-      lldbPythonPath:
-        this._launchTargetInfo.lldbPythonPath || getConfig().lldbPythonPath,
+      lldbPythonPath: this._launchTargetInfo.lldbPythonPath ||
+        getConfig().lldbPythonPath,
       envPythonPath: '',
     };
   }
