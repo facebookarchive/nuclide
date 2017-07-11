@@ -35,6 +35,7 @@ export default class DebuggerProcessInfo {
 
   getDebuggerCapabilities(): DebuggerCapabilities {
     return {
+      conditionalBreakpoints: false,
       continueToLocation: false,
       customSourcePaths: false,
       singleThreadStepping: false,

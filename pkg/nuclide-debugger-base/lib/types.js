@@ -33,6 +33,7 @@ export type ThreadColumn = {
 
 // Indicates which of various optional features that this debugger supports.
 export type DebuggerCapabilities = {
+  +conditionalBreakpoints: boolean,
   +continueToLocation: boolean,
   +customSourcePaths: boolean,
   +singleThreadStepping: boolean,
