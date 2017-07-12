@@ -22,6 +22,7 @@ import type {
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import readline from 'readline';
 
+import {getUseLspConnection} from './OCamlService';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {
   runCommand,
@@ -439,6 +440,10 @@ export class MerlinProcessV2_5 extends MerlinProcessBase {
 let merlinProcessInstance: ?MerlinProcess;
 
 export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
+  if (await getUseLspConnection()) {
+    return null;
+  }
+
   if (merlinProcessInstance && merlinProcessInstance.isRunning()) {
     return merlinProcessInstance;
   }
