@@ -601,7 +601,7 @@ export class FileTreeStore {
         const {performance} = global;
         const renderStart = performance.now();
         const childrenCount = this.roots.reduce(
-          (sum, root) => sum + root.shownChildrenBelow,
+          (sum, root) => sum + root.shownChildrenCount,
           0,
         );
 
@@ -1497,16 +1497,16 @@ export class FileTreeStore {
           if (!node.shouldBeShown) {
             return node;
           }
-          if (node.shownChildrenBelow === 1) {
+          if (node.shownChildrenCount === 1) {
             beginIndex++;
             return node;
           }
-          const endIndex = beginIndex + node.shownChildrenBelow - 1;
+          const endIndex = beginIndex + node.shownChildrenCount - 1;
           if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
             beginIndex++;
             return null;
           }
-          beginIndex += node.shownChildrenBelow;
+          beginIndex += node.shownChildrenCount;
           return node;
         },
         // flip the isSelected flag accordingly, based on previous and current range.
@@ -1514,7 +1514,7 @@ export class FileTreeStore {
           if (!node.shouldBeShown) {
             return node;
           }
-          const curIndex = beginIndex - node.shownChildrenBelow;
+          const curIndex = beginIndex - node.shownChildrenCount;
           const inOldRange =
             Math.sign(curIndex - anchorIndex) *
               Math.sign(curIndex - rangeIndex) !==
@@ -1844,6 +1844,7 @@ export class FileTreeStore {
         deepest.set({
           isLoading: true,
           isExpanded: true,
+          isPendingLoad: true,
           children: deepest.children.set(currentChild.name, currentChild),
         }),
         expandNode,

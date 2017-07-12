@@ -198,11 +198,11 @@ function findFirstNodeToRender(
   let skipped = 0;
 
   const node = roots.find(r => {
-    if (skipped + r.shownChildrenBelow > firstToRender) {
+    if (skipped + r.shownChildrenCount > firstToRender) {
       return true;
     }
 
-    skipped += r.shownChildrenBelow;
+    skipped += r.shownChildrenCount;
     return false;
   });
 
@@ -227,7 +227,7 @@ function findIndexOfTheTrackedNode(
       return true;
     }
 
-    skipped += node.shownChildrenBelow;
+    skipped += node.shownChildrenCount;
     return false;
   });
 
@@ -243,5 +243,5 @@ function findIndexOfTheTrackedNode(
 }
 
 function countShownNodes(roots: OrderedMap<mixed, FileTreeNode>): number {
-  return roots.reduce((sum, root) => sum + root.shownChildrenBelow, 0);
+  return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 }
