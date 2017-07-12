@@ -57,7 +57,7 @@ class Activation {
     const toolBar = getToolBar('nuclide-outline-view');
     const {element} = toolBar.addButton({
       icon: 'list-unordered',
-      callback: 'nuclide-outline-view:toggle',
+      callback: 'outline-view:toggle',
       tooltip: 'Toggle Outline View',
       priority: 200,
     });
