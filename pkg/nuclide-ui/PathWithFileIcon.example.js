@@ -11,7 +11,7 @@
 
 import React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
-import PathWithFileIcon from './PathWithFileIcon';
+import PathWithFileIcon, {DecorationIcons} from './PathWithFileIcon';
 
 function ListItem(props: {children?: mixed}): React.Element<any> {
   return (
@@ -20,7 +20,8 @@ function ListItem(props: {children?: mixed}): React.Element<any> {
     </div>
   );
 }
-function PathWithFileIconExample(): React.Element<any> {
+
+function BasicExample(): React.Element<any> {
   return (
     <div>
       <Block>
@@ -56,6 +57,48 @@ function PathWithFileIconExample(): React.Element<any> {
   );
 }
 
+function DecorationIconExample(): React.Element<any> {
+  return (
+    <div>
+      <Block>
+        <p>
+          PathWithFileIcon export a DecorationIcons object containing custom
+          decorations. You can optionally pass one of those decorations to
+          decorate the file icon with e.g. a small AtomIcon:
+        </p>
+        <div>
+          <ListItem>
+            <PathWithFileIcon
+              decorationIcon={DecorationIcons.Warning}
+              path="fileA.js"
+            />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon
+              decorationIcon={DecorationIcons.Error}
+              path="fileB.js"
+            />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon
+              decorationIcon={DecorationIcons.Warning}
+              isFolder={true}
+              path="folderA"
+            />
+          </ListItem>
+          <ListItem>
+            <PathWithFileIcon
+              decorationIcon={DecorationIcons.Error}
+              isFolder={true}
+              path="folderB"
+            />
+          </ListItem>
+        </div>
+      </Block>
+    </div>
+  );
+}
+
 export const PathWithFileIconExamples = {
   sectionName: 'PathWithFileIcon',
   description:
@@ -63,7 +106,11 @@ export const PathWithFileIconExamples = {
   examples: [
     {
       title: 'File icon wrapper example',
-      component: PathWithFileIconExample,
+      component: BasicExample,
+    },
+    {
+      title: 'decorationIcon',
+      component: DecorationIconExample,
     },
   ],
 };

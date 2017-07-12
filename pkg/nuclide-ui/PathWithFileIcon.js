@@ -13,6 +13,46 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Icon} from 'nuclide-commons-ui/Icon';
+
+function WarningIconWithShadow(): React.Element<any> {
+  return (
+    <div>
+      <svg
+        className="nuclide-ui-path-with-file-icon-warning-icon-background"
+        width="20"
+        height="18"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg">
+        <polygon points="10,2 0,18 20,18" />
+      </svg>
+      <Icon className="text-warning" icon="alert" />
+    </div>
+  );
+}
+
+function ErrorIconWithShadow(): React.Element<any> {
+  return (
+    <div>
+      <svg
+        className="nuclide-ui-path-with-file-icon-error-icon-background"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        xmlns="http://www.w3.org/2000/svg">
+        <circle cx="10" cy="10" r="8" />
+      </svg>
+      <Icon className="text-error" icon="stop" />
+    </div>
+  );
+}
+
+// The decoration icons require a backdrop to be fully visible,
+// so we only allow the following, blessed decorations:
+export const DecorationIcons = Object.freeze({
+  Warning: WarningIconWithShadow,
+  Error: ErrorIconWithShadow,
+});
 
 type FileIconsAddItemToElementFn = (
   element: HTMLElement,
@@ -22,6 +62,9 @@ type FileIconsAddItemToElementFn = (
 type Props = {
   className?: string,
   children?: React.Element<any> | Array<?React.Element<any>>,
+  // Optional <Icon /> element. If set, will render a small version of
+  // the decorationIcon on top of the file icon.
+  decorationIcon?: WarningIconWithShadow | ErrorIconWithShadow,
   isFolder?: boolean,
   path: string,
 };
@@ -136,18 +179,27 @@ export default class PathWithFileIcon extends React.Component {
     const {
       className,
       children,
+      decorationIcon: DecorationIcon,
       isFolder,
       path,
       // forward properties such as `data-path`, etc
       ...rest
     } = this.props;
     const displayPath = children == null ? path : children;
+    const decoration =
+      DecorationIcon == null
+        ? null
+        : <div className="nuclide-ui-path-with-file-icon-decoration-icon">
+            {/* $FlowIssue "expected React component instead of prototype" */}
+            <DecorationIcon />
+          </div>;
     return (
       <div
         className={this._getDefaultClassName()}
         ref={this._handleRef}
         {...rest}>
         {displayPath}
+        {decoration}
       </div>
     );
   }
