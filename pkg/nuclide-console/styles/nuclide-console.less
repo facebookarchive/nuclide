@@ -119,6 +119,14 @@
   border-radius: 0;
   border-top: @nuclide-console-border-size solid @nuclide-console-record-border-color-normal;
   color: @nuclide-console-record-text-color-normal;
+
+  &,
+  // Make sure the specificity is high enough to override list item styling.
+  // (List items are used in the debugger records.)
+  &.nuclide-console-record.nuclide-console-record .list-item {
+    color: @nuclide-console-record-text-color-normal;
+  }
+
   cursor: text;
   border-left: (@component-padding / 2) solid transparent;
   pre {
