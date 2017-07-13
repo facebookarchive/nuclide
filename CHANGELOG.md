@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.239.0
+
+### Hotfix Release
+* Revert Atom 1.19 buffer changeCount fix
+
 ## v0.238.0
 
 ### Hotfix Release
