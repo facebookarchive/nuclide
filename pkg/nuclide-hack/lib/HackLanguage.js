@@ -45,6 +45,10 @@ async function getUseLspConnection(): Promise<boolean> {
   return passesGK('nuclide_hack_use_lsp_connection');
 }
 
+async function getUseFfpAutocomplete(): Promise<boolean> {
+  return passesGK('nuclide_hack_use_ffp_autocomplete');
+}
+
 async function connectionToHackService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
@@ -57,9 +61,12 @@ async function connectionToHackService(
 
   if (await getUseLspConnection()) {
     const host = await getHostServices();
+    const autocompleteArg = (await getUseFfpAutocomplete())
+      ? ['--ffp-autocomplete']
+      : [];
     return hackService.initializeLsp(
       config.hhClientPath, // command
-      ['lsp', '--from', 'nuclide'], // arguments
+      ['lsp', '--from', 'nuclide', ...autocompleteArg], // arguments
       '.hhconfig', // project file
       ['.php'], // which file-notifications should be sent to LSP
       config.logLevel,
