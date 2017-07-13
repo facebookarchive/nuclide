@@ -147,14 +147,20 @@ export default class FileTreeSidebarComponent extends React.Component {
     (this: any)._handleUncommittedFilesExpandedChange = this._handleUncommittedFilesExpandedChange.bind(
       this,
     );
+    (this: any)._handleFoldersExpandedChange = this._handleFoldersExpandedChange.bind(
+      this,
+    );
     (this: any)._handleUncommittedChangesKindDownArrow = this._handleUncommittedChangesKindDownArrow.bind(
+      this,
+    );
+    (this: any)._handleFileTreeHovered = this._handleFileTreeHovered.bind(this);
+    (this: any)._handleFileTreeUnhovered = this._handleFileTreeUnhovered.bind(
       this,
     );
   }
 
   componentDidMount(): void {
     this._processExternalUpdate();
-    const fileTreeNode = ReactDOM.findDOMNode(this.refs.fileTree);
 
     const remeasureEvents = Observable.merge(
       Observable.of(null),
@@ -228,12 +234,6 @@ export default class FileTreeSidebarComponent extends React.Component {
       observePaneItemVisibility(this).subscribe(visible => {
         this.didChangeVisibility(visible);
       }),
-      Observable.fromEvent(fileTreeNode, 'mouseenter').subscribe(() => {
-        this.setState({isFileTreeHovered: true});
-      }),
-      Observable.fromEvent(fileTreeNode, 'mouseleave').subscribe(() => {
-        this.setState({isFileTreeHovered: false});
-      }),
     );
   }
 
@@ -242,31 +242,32 @@ export default class FileTreeSidebarComponent extends React.Component {
   }
 
   componentDidUpdate(prevProps: mixed, prevState: State): void {
-    if (this.state.hidden !== prevState.hidden) {
-      if (!this.state.hidden) {
-        // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
-        // user expects when the side bar shows the file tree.
-        if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
-          atom.commands.dispatch(
-            atom.views.getView(atom.workspace),
-            'nuclide-file-tree:reveal-active-file',
-          );
-        }
-        this._actions.clearFilter();
-        const scrollerHeight = this._getScrollerHeight();
-        if (scrollerHeight != null) {
-          this.setState({scrollerHeight});
-        }
+    if (prevState.hidden && !this.state.hidden) {
+      // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
+      // user expects when the side bar shows the file tree.
+      if (featureConfig.get(REVEAL_FILE_ON_SWITCH_SETTING)) {
+        atom.commands.dispatch(
+          atom.views.getView(atom.workspace),
+          'nuclide-file-tree:reveal-active-file',
+        );
       }
+      this._actions.clearFilter();
+      const scrollerHeight = this._getScrollerHeight();
+      if (scrollerHeight != null) {
+        this.setState({scrollerHeight});
+      }
+    }
+
+    const node = ReactDOM.findDOMNode(this.refs.scroller);
+    if (node) {
+      // $FlowFixMe
+      node.scrollTop = this.state.scrollerScrollTop;
     }
   }
 
   _handleFocus(event: SyntheticEvent): void {
-    // Delegate focus to the FileTree component if this component gains focus because the FileTree
-    // matches the selectors targeted by themes to show the containing panel has focus.
     if (event.target === ReactDOM.findDOMNode(this)) {
-      // $FlowFixMe
-      ReactDOM.findDOMNode(this.refs.fileTree).focus();
+      this.focus();
     }
   }
 
@@ -281,10 +282,11 @@ export default class FileTreeSidebarComponent extends React.Component {
             filter={this._store.getFilter()}
             found={this._store.getFilterFound()}
           />
-          <FileTreeToolbarComponent
-            key="toolbar"
-            workingSetsStore={workingSetsStore}
-          />
+          {this._store.foldersExpanded &&
+            <FileTreeToolbarComponent
+              key="toolbar"
+              workingSetsStore={workingSetsStore}
+            />}
         </div>
       );
     }
@@ -407,6 +409,9 @@ All the changes across your entire stacked diff.
         <Section
           className="nuclide-file-tree-section-caption"
           headline="FOLDERS"
+          collapsable={true}
+          collapsed={!this._store.foldersExpanded}
+          onChange={this._handleFoldersExpandedChange}
           size="small"
         />
       );
@@ -422,16 +427,27 @@ All the changes across your entire stacked diff.
         {openFilesSection}
         {foldersCaption}
         {toolbar}
-        <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
-          <FileTree
-            ref="fileTree"
-            containerHeight={this.state.scrollerHeight}
-            containerScrollTop={this.state.scrollerScrollTop}
-            scrollToPosition={this._scrollToPosition}
-          />
-        </PanelComponentScroller>
+        {this._store.foldersExpanded &&
+          <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
+            <FileTree
+              ref="fileTree"
+              containerHeight={this.state.scrollerHeight}
+              containerScrollTop={this.state.scrollerScrollTop}
+              scrollToPosition={this._scrollToPosition}
+              onMouseEnter={this._handleFileTreeHovered}
+              onMouseLeave={this._handleFileTreeUnhovered}
+            />
+          </PanelComponentScroller>}
       </div>
     );
+  }
+
+  _handleFileTreeHovered() {
+    this.setState({isFileTreeHovered: true});
+  }
+
+  _handleFileTreeUnhovered() {
+    this.setState({isFileTreeHovered: false});
   }
 
   _processExternalUpdate(): void {
@@ -471,6 +487,13 @@ All the changes across your entire stacked diff.
   _onFileChosen(filePath: NuclideUri): void {
     track('filetree-uncommitted-file-changes-file-open');
     goToLocation(filePath);
+  }
+
+  _handleFoldersExpandedChange(isCollapsed: boolean): void {
+    if (isCollapsed) {
+      this.setState({isFileTreeHovered: false});
+    }
+    this._actions.setFoldersExpanded(!isCollapsed);
   }
 
   _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
@@ -579,7 +602,15 @@ All the changes across your entire stacked diff.
     }
   }
 
-  _scrollToPosition(top: number, height: number): void {
+  _scrollToPosition(top: number, height: number, approximate: boolean): void {
+    const node = ReactDOM.findDOMNode(this.refs.scroller);
+    if (node == null) {
+      return;
+    }
+
+    if (!approximate) {
+      this._actions.clearTrackedNodeIfNotLoading();
+    }
     const requestedBottom = top + height;
     const currentBottom =
       this.state.scrollerScrollTop + this.state.scrollerHeight;
@@ -590,10 +621,6 @@ All the changes across your entire stacked diff.
       return; // Already in the view
     }
 
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    if (node == null) {
-      return;
-    }
     const newTop = Math.max(
       top + height / 2 - this.state.scrollerHeight / 2,
       0,

@@ -301,6 +301,7 @@ export default class FileTreeController {
         'nuclide-file-tree:toggle',
         {visible: true},
       );
+      this._actions.setFoldersExpanded(true);
     }
 
     if (!filePath) {

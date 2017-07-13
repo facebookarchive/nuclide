@@ -186,6 +186,12 @@ export default class FileTreeActions {
     });
   }
 
+  clearTrackedNodeIfNotLoading(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING,
+    });
+  }
+
   moveToNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.MOVE_TO_NODE,
@@ -493,6 +499,13 @@ export default class FileTreeActions {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED,
       uncommittedChangesExpanded,
+    });
+  }
+
+  setFoldersExpanded(foldersExpanded: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_FOLDERS_EXPANDED,
+      foldersExpanded,
     });
   }
 

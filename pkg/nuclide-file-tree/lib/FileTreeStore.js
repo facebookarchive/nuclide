@@ -49,6 +49,7 @@ export type ExportStoreData = {
   version: number,
   openFilesExpanded?: boolean,
   uncommittedChangesExpanded?: boolean,
+  foldersExpanded?: boolean,
 };
 
 export type StoreConfigData = {
@@ -100,6 +101,7 @@ export class FileTreeStore {
   roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
   openFilesExpanded: boolean;
   uncommittedChangesExpanded: boolean;
+  foldersExpanded: boolean;
 
   _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
   _workingSetsStore: ?WorkingSetsStore;
@@ -116,7 +118,6 @@ export class FileTreeStore {
   _emitter: Emitter;
   _logger: any;
   _animationFrameRequestSubscription: ?rxjs$Subscription;
-  _suppressChanges: boolean;
   _cwdKey: ?NuclideUri;
   _filter: string;
   _extraProjectSelectionContent: Immutable.List<React.Element<any>>;
@@ -151,9 +152,9 @@ export class FileTreeStore {
     this._repositories = new Immutable.Set();
 
     this._conf = DEFAULT_CONF;
-    this._suppressChanges = false;
     this._filter = '';
     this._extraProjectSelectionContent = new Immutable.List();
+    this.foldersExpanded = true;
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
     this._selectionRange = null;
@@ -209,6 +210,7 @@ export class FileTreeStore {
       selectedKeysByRoot,
       openFilesExpanded: this.openFilesExpanded,
       uncommittedChangesExpanded: this.uncommittedChangesExpanded,
+      foldersExpanded: this.foldersExpanded,
     };
   }
 
@@ -259,6 +261,10 @@ export class FileTreeStore {
 
     if (data.uncommittedChangesExpanded != null) {
       this.uncommittedChangesExpanded = data.uncommittedChangesExpanded;
+    }
+
+    if (data.foldersExpanded != null) {
+      this.foldersExpanded = data.foldersExpanded;
     }
 
     const normalizedAtomPaths = atom.project
@@ -340,6 +346,9 @@ export class FileTreeStore {
         break;
       case ActionTypes.CLEAR_TRACKED_NODE:
         this._clearTrackedNode();
+        break;
+      case ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
+        this._clearTrackedNodeIfNotLoading();
         break;
       case ActionTypes.MOVE_TO_NODE:
         this._moveToNode(payload.rootKey, payload.nodeKey);
@@ -465,6 +474,9 @@ export class FileTreeStore {
       case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
         this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
+      case ActionTypes.SET_FOLDERS_EXPANDED:
+        this._setFoldersExpanded(payload.foldersExpanded);
+        break;
       case ActionTypes.INVALIDATE_REMOVED_FOLDER:
         this._invalidateRemovedFolder();
         break;
@@ -588,10 +600,6 @@ export class FileTreeStore {
   }
 
   _emitChange(): void {
-    if (this._suppressChanges) {
-      return;
-    }
-
     if (this._animationFrameRequestSubscription != null) {
       this._animationFrameRequestSubscription.unsubscribe();
     }
@@ -606,9 +614,6 @@ export class FileTreeStore {
         );
 
         this._emitter.emit('change');
-        this._suppressChanges = true;
-        this._checkTrackedNode();
-        this._suppressChanges = false;
         this._animationFrameRequestSubscription = null;
 
         const duration = (performance.now() - renderStart).toString();
@@ -1182,7 +1187,7 @@ export class FileTreeStore {
    * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
    * because it only changes state if a node is being tracked.
    */
-  _checkTrackedNode(): void {
+  _clearTrackedNodeIfNotLoading(): void {
     if (
       /*
        * The loading map being empty is a heuristic for when loading has completed. It is inexact
@@ -1775,7 +1780,7 @@ export class FileTreeStore {
 
   /**
   * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
-  * needed and scheduling a chilld key fetch. Used by the reveal active file functionality.
+  * needed and scheduling a child key fetch. Used by the reveal active file functionality.
   */
   _ensureChildNode(nodeKey: NuclideUri): void {
     let firstRootUri;
@@ -1989,6 +1994,11 @@ export class FileTreeStore {
 
   _setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
     this.uncommittedChangesExpanded = uncommittedChangesExpanded;
+    this._emitChange();
+  }
+
+  _setFoldersExpanded(foldersExpanded: boolean): void {
+    this.foldersExpanded = foldersExpanded;
     this._emitChange();
   }
 

@@ -74,6 +74,9 @@ export type FileTreeAction =
       actionType: 'CLEAR_TRACKED_NODE',
     }
   | {
+      actionType: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
+    }
+  | {
       actionType: 'MOVE_TO_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
@@ -202,6 +205,10 @@ export type FileTreeAction =
       content: React.Element<any>,
     }
   | {
+      actionType: 'SET_FOLDERS_EXPANDED',
+      foldersExpanded: boolean,
+    }
+  | {
       actionType: 'SET_OPEN_FILES_EXPANDED',
       openFilesExpanded: boolean,
     }
@@ -227,6 +234,7 @@ export const ActionTypes = Object.freeze({
   SET_ROOT_KEYS: 'SET_ROOT_KEYS',
   SET_TRACKED_NODE: 'SET_TRACKED_NODE',
   CLEAR_TRACKED_NODE: 'CLEAR_TRACKED_NODE',
+  CLEAR_TRACKED_NODE_IF_NOT_LOADING: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
   MOVE_TO_NODE: 'MOVE_TO_NODE',
   SET_DROP_TARGET_NODE: 'SET_DROP_TARGET_NODE',
   SET_USE_PREVIEW_TABS: 'SET_USE_PREVIEW_TABS',
@@ -261,6 +269,7 @@ export const ActionTypes = Object.freeze({
     'REMOVE_EXTRA_PROJECT_SELECTION_CONTENT',
   SET_OPEN_FILES_EXPANDED: 'SET_OPEN_FILES_EXPANDED',
   SET_UNCOMMITTED_CHANGES_EXPANDED: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
+  SET_FOLDERS_EXPANDED: 'SET_FOLDERS_EXPANDED',
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
 });
 
