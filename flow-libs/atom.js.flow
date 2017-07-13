@@ -1145,7 +1145,7 @@ declare class atom$Workspace {
   handleGrammarUsed?: (grammar: atom$Grammar) => void,
   reopenItem(): Promise<?atom$TextEditor>,
   addOpener(callback: (uri: string) => any): IDisposable,
-  hide(uriOrItem: string | Object): void, 
+  hide(uriOrItem: string | Object): void,
   toggle(uriOrItem: string | Object): void,
 
   // Pane Items
@@ -1509,6 +1509,7 @@ declare class atom$TextBuffer {
   }): atom$TextBuffer,
 
   file: ?atom$File,
+  changeCount: number,
 
   // Mixin
   static deserialize: (state: Object, params: Object) => mixed,

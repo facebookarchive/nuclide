@@ -14,7 +14,6 @@ import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
-import {getLogger} from 'log4js';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   observeBufferOpen,
@@ -25,12 +24,10 @@ import {BufferSubscription} from './BufferSubscription';
 
 export class Activation {
   _disposables: UniversalDisposable;
-  _bufferSubscriptions: Map<string, BufferSubscription>;
   notifiers: NotifiersByConnection;
 
   constructor(state: ?Object) {
     this._disposables = new UniversalDisposable();
-    this._bufferSubscriptions = new Map();
 
     const notifiers = new NotifiersByConnection();
     this.notifiers = notifiers;
@@ -38,17 +35,10 @@ export class Activation {
 
     this._disposables.add(
       observeBufferOpen().subscribe(buffer => {
-        const path = buffer.getPath();
-        // Empty files don't need to be monitored.
-        if (path == null || this._bufferSubscriptions.has(path)) {
-          return;
-        }
-        const bufferSubscription = new BufferSubscription(notifiers, buffer);
-        this._bufferSubscriptions.set(path, bufferSubscription);
-        const subscriptions = new UniversalDisposable(bufferSubscription);
+        const subscriptions = new UniversalDisposable();
+        subscriptions.add(new BufferSubscription(notifiers, buffer));
         subscriptions.add(
           observeBufferCloseOrRename(buffer).subscribe(closeEvent => {
-            this._bufferSubscriptions.delete(path);
             this._disposables.remove(subscriptions);
             subscriptions.dispose();
           }),
@@ -58,23 +48,8 @@ export class Activation {
     );
   }
 
-  getVersion(buffer: atom$TextBuffer): number {
-    const path = buffer.getPath();
-    invariant(path != null); // Guaranteed when called below.
-    const bufferSubscription = this._bufferSubscriptions.get(path);
-    if (bufferSubscription == null) {
-      getLogger('nuclide-open-files').fatal(
-        'Failed to get version of text buffer',
-        buffer.getPath(),
-      );
-      return 0;
-    }
-    return bufferSubscription.getVersion();
-  }
-
   dispose() {
     this._disposables.dispose();
-    this._bufferSubscriptions.clear();
   }
 }
 
@@ -85,11 +60,10 @@ let activation: ?Activation = new Activation();
 export function reset(): void {
   if (activation != null) {
     activation.dispose();
+    activation = null;
   }
-  activation = null;
 }
-
-function getActivation() {
+export function getActivation(): Activation {
   if (activation == null) {
     activation = new Activation();
   }
@@ -114,7 +88,7 @@ export async function getFileVersionOfBuffer(
   return {
     notifier: await notifier,
     filePath,
-    version: getActivation().getVersion(buffer),
+    version: buffer.changeCount,
   };
 }
 

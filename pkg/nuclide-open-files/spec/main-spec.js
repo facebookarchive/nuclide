@@ -11,11 +11,7 @@
 
 import invariant from 'assert';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
-import {
-  reset,
-  getFileVersionOfBuffer,
-  getNotifierByConnection,
-} from '../lib/main';
+import {getActivation, reset, getFileVersionOfBuffer} from '../lib/main';
 import {TextBuffer} from 'atom';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {Subject} from 'rxjs';
@@ -25,7 +21,7 @@ describe('nuclide-open-files', () => {
   let notifier: FileCache = (null: any);
 
   async function getFileCache(): Promise<FileCache> {
-    const cache = await getNotifierByConnection(null);
+    const cache = await getActivation().notifiers._notifiers.get(null);
     invariant(cache != null);
     return (cache: any);
   }
