@@ -47,7 +47,6 @@ export class BufferSubscription {
   _subscriptions: CompositeDisposable;
   _serverVersion: number;
   _lastAttemptedSync: number;
-  _changeCount: number;
   _sentOpen: boolean;
 
   constructor(notifiers: NotifiersByConnection, buffer: atom$TextBuffer) {
@@ -56,14 +55,12 @@ export class BufferSubscription {
     this._notifier = null;
     this._serverVersion = -1;
     this._lastAttemptedSync = -1;
-    this._changeCount = 1;
     this._sentOpen = false;
 
     const subscriptions = new CompositeDisposable();
 
     subscriptions.add(
       buffer.onDidChange(async (event: atom$TextEditEvent) => {
-        this._changeCount++;
         if (this._notifier == null) {
           return;
         }
@@ -72,7 +69,7 @@ export class BufferSubscription {
         // to avoid race conditions
         const filePath = this._buffer.getPath();
         invariant(filePath != null);
-        const version = this._changeCount;
+        const version = this._buffer.changeCount;
 
         invariant(this._notifier != null);
         const notifier = await this._notifier;
@@ -112,7 +109,7 @@ export class BufferSubscription {
   _sendOpenByNotifier(notifier: FileNotifier): void {
     const filePath = this._buffer.getPath();
     invariant(filePath != null);
-    const version = this._changeCount;
+    const version = this._buffer.changeCount;
 
     this._sentOpen = true;
     this.sendEvent({
@@ -124,10 +121,6 @@ export class BufferSubscription {
       },
       contents: this._buffer.getText(),
     });
-  }
-
-  getVersion(): number {
-    return this._changeCount;
   }
 
   async sendEvent(event: LocalFileEvent) {
@@ -156,7 +149,7 @@ export class BufferSubscription {
   // Attempt a reset with a 'sync' event.
   attemptResync() {
     // always attempt to resync to the latest version
-    const resyncVersion = this._changeCount;
+    const resyncVersion = this._buffer.changeCount;
     const filePath = this._buffer.getPath();
 
     // don't send a resync if another edit has already succeeded at this version
@@ -178,7 +171,7 @@ export class BufferSubscription {
           logger.error('Resync preempted by file rename');
         } else if (resyncVersion !== this._lastAttemptedSync) {
           logger.error('Resync preempted by later resync');
-        } else if (resyncVersion !== this._changeCount) {
+        } else if (resyncVersion !== this._buffer.changeCount) {
           logger.error('Resync preempted by later edit');
         } else {
           const syncEvent: FileSyncEvent = {
@@ -220,7 +213,7 @@ export class BufferSubscription {
   sendClose() {
     // Use different retry policy for close messages.
     if (this._oldPath != null) {
-      this._notifiers.sendClose(this._oldPath, this._changeCount);
+      this._notifiers.sendClose(this._oldPath, this._buffer.changeCount);
     }
   }
 
