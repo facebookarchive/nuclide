@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,18 +10,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-export default class NewProtocolMessageChecker {
-  _outMessageIds: Set<string>;
+class NewProtocolMessageChecker {
 
   constructor() {
     this._outMessageIds = new Set();
   }
 
-  registerSentMessage(message: string): void {
+  registerSentMessage(message) {
     const id = this._getIdFromMessage(message);
     if (id == null) {
       return;
@@ -24,7 +28,7 @@ export default class NewProtocolMessageChecker {
     this._outMessageIds.add(id);
   }
 
-  isSentMessageResponse(message: string, finishMessage: boolean): boolean {
+  isSentMessageResponse(message, finishMessage) {
     const id = this._getIdFromMessage(message);
     if (this._outMessageIds.has(id)) {
       if (finishMessage) {
@@ -35,12 +39,12 @@ export default class NewProtocolMessageChecker {
     return false;
   }
 
-  _getIdFromMessage(message: string): string {
+  _getIdFromMessage(message) {
     const msgObj = JSON.parse(message);
     return msgObj.id;
   }
 
-  isNewProtocolEventMessage(message: string): boolean {
+  isNewProtocolEventMessage(message) {
     const msgObj = JSON.parse(message);
     switch (msgObj.method) {
       case 'Debugger.breakpointResolved':
@@ -55,3 +59,4 @@ export default class NewProtocolMessageChecker {
     }
   }
 }
+exports.default = NewProtocolMessageChecker;

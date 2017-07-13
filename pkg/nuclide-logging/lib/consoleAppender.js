@@ -1,23 +1,11 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import util from 'util';
+var _util = _interopRequireDefault(require('util'));
 
-function layout(loggingEvent: any): Array<any> {
-  const eventInfo = util.format(
-    '[%s] [%s] %s - ',
-    loggingEvent.startTime.toISOString(),
-    loggingEvent.level,
-    loggingEvent.categoryName,
-  );
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function layout(loggingEvent) {
+  const eventInfo = _util.default.format('[%s] [%s] %s - ', loggingEvent.startTime.toISOString(), loggingEvent.level, loggingEvent.categoryName);
 
   const data = loggingEvent.data.slice();
 
@@ -47,7 +35,18 @@ function layout(loggingEvent: any): Array<any> {
  * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
  * the object in console logged by this Appender.
  */
-function consoleAppender(): (loggingEvent: any) => void {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+function consoleAppender() {
   return loggingEvent => {
     // eslint-disable-next-line no-console
     console.log(...layout(loggingEvent));
@@ -56,5 +55,5 @@ function consoleAppender(): (loggingEvent: any) => void {
 
 module.exports = {
   appender: consoleAppender,
-  configure: consoleAppender,
+  configure: consoleAppender
 };

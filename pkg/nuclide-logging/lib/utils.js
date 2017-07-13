@@ -1,17 +1,19 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import log4js from 'log4js';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.patchErrorsOfLoggingEvent = patchErrorsOfLoggingEvent;
+exports.serializeLoggingEvent = serializeLoggingEvent;
+exports.deserializeLoggingEvent = deserializeLoggingEvent;
 
-import type {LoggingEvent} from './types';
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = _interopRequireDefault(require('log4js'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * JSON.stringify can't stringify instance of Error. To solve this problem, we
@@ -21,10 +23,8 @@ import type {LoggingEvent} from './types';
  * loggingEvent.data, so that we could get stack information which helps categorization in
  * logview.
  */
-export function patchErrorsOfLoggingEvent(
-  loggingEvent: LoggingEvent,
-): LoggingEvent {
-  const loggingEventCopy = {...loggingEvent};
+function patchErrorsOfLoggingEvent(loggingEvent) {
+  const loggingEventCopy = Object.assign({}, loggingEvent);
   loggingEventCopy.data = (loggingEventCopy.data || []).slice();
 
   if (!loggingEventCopy.data.some(item => item instanceof Error)) {
@@ -37,7 +37,7 @@ export function patchErrorsOfLoggingEvent(
         name: item.name,
         message: item.message,
         stack: item.stack,
-        stackTrace: item.stackTrace,
+        stackTrace: item.stackTrace
       };
     }
     return item;
@@ -49,7 +49,18 @@ export function patchErrorsOfLoggingEvent(
 /**
  * Takes a loggingEvent object, returns string representation of it.
  */
-export function serializeLoggingEvent(loggingEvent: mixed): string {
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+function serializeLoggingEvent(loggingEvent) {
   return JSON.stringify(loggingEvent);
 }
 
@@ -63,21 +74,19 @@ export function serializeLoggingEvent(loggingEvent: mixed): string {
  * so we need smart deserialization that will recreate log date and level for further processing by
  * log4js internals.
  */
-export function deserializeLoggingEvent(
-  loggingEventString: string,
-): LoggingEvent {
+function deserializeLoggingEvent(loggingEventString) {
   let loggingEvent;
   try {
     loggingEvent = JSON.parse(loggingEventString);
     loggingEvent.startTime = new Date(loggingEvent.startTime);
-    loggingEvent.level = log4js.levels.toLevel(loggingEvent.level.levelStr);
+    loggingEvent.level = (_log4js || _load_log4js()).default.levels.toLevel(loggingEvent.level.levelStr);
   } catch (e) {
     // JSON.parse failed, just log the contents probably a naughty.
     loggingEvent = {
       startTime: new Date(),
       categoryName: 'log4js',
-      level: log4js.levels.ERROR,
-      data: ['Unable to parse log:', loggingEventString],
+      level: (_log4js || _load_log4js()).default.levels.ERROR,
+      data: ['Unable to parse log:', loggingEventString]
     };
   }
   return loggingEvent;

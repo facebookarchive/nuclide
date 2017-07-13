@@ -1,3 +1,9 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = getNewLocation;
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,7 +11,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -13,7 +19,7 @@
   * When we upstreamed this functionality into Atom, we picked better location names. This
   * translates from our old ones to the new ones.
   */
-export default function getNewLocation(location: string): string {
+function getNewLocation(location) {
   switch (location) {
     case 'left-panel':
       return 'left';

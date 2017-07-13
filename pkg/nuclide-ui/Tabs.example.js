@@ -1,86 +1,115 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
-import Tabs from './Tabs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TabExamples = undefined;
 
-const tabs = [
-  {
-    name: 'one',
-    tabContent: <div>One</div>,
-  },
-  {
-    name: 'two',
-    tabContent: <div>Two</div>,
-  },
-  {
-    name: 'three',
-    tabContent: <div>Three</div>,
-  },
-  {
-    name: 'four',
-    tabContent: <div>Four</div>,
-  },
-  {
-    name: 'five',
-    tabContent: <div>Five</div>,
-  },
-];
+var _react = _interopRequireDefault(require('react'));
 
-class TabExample extends React.Component {
-  state: {activeTabName: string};
+var _Block;
 
-  constructor(props: any) {
+function _load_Block() {
+  return _Block = require('nuclide-commons-ui/Block');
+}
+
+var _Tabs;
+
+function _load_Tabs() {
+  return _Tabs = _interopRequireDefault(require('./Tabs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const tabs = [{
+  name: 'one',
+  tabContent: _react.default.createElement(
+    'div',
+    null,
+    'One'
+  )
+}, {
+  name: 'two',
+  tabContent: _react.default.createElement(
+    'div',
+    null,
+    'Two'
+  )
+}, {
+  name: 'three',
+  tabContent: _react.default.createElement(
+    'div',
+    null,
+    'Three'
+  )
+}, {
+  name: 'four',
+  tabContent: _react.default.createElement(
+    'div',
+    null,
+    'Four'
+  )
+}, {
+  name: 'five',
+  tabContent: _react.default.createElement(
+    'div',
+    null,
+    'Five'
+  )
+}]; /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */
+
+class TabExample extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    (this: any).handleTabChange = this.handleTabChange.bind(this);
+    this.handleTabChange = this.handleTabChange.bind(this);
     this.state = {
-      activeTabName: 'one',
+      activeTabName: 'one'
     };
   }
 
-  handleTabChange(newTabName: {
-    name: string,
-    tabContent: React.Element<any>,
-  }): void {
+  handleTabChange(newTabName) {
     this.setState({
-      activeTabName: newTabName.name,
+      activeTabName: newTabName.name
     });
   }
 
-  render(): React.Element<any> {
-    const {activeTabName} = this.state;
-    return (
-      <Block>
-        <Tabs
-          tabs={tabs}
-          activeTabName={activeTabName}
-          triggeringEvent="onClick"
-          onActiveTabChange={this.handleTabChange}
-        />
-        <div style={{padding: '2em 0 2em 0'}}>
-          Showing content for tab "{activeTabName}".
-        </div>
-      </Block>
+  render() {
+    const { activeTabName } = this.state;
+    return _react.default.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _react.default.createElement((_Tabs || _load_Tabs()).default, {
+        tabs: tabs,
+        activeTabName: activeTabName,
+        triggeringEvent: 'onClick',
+        onActiveTabChange: this.handleTabChange
+      }),
+      _react.default.createElement(
+        'div',
+        { style: { padding: '2em 0 2em 0' } },
+        'Showing content for tab "',
+        activeTabName,
+        '".'
+      )
     );
   }
 }
 
-export const TabExamples = {
+const TabExamples = exports.TabExamples = {
   sectionName: 'Tabs',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: TabExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: TabExample
+  }]
 };

@@ -1,3 +1,0 @@
-a	a.cpp	/^void a() {$/
-b	b.cpp	/^void b() {$/;"	f	namespace:test
-c	c.cpp	/^void c() {$/

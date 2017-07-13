@@ -1,3 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _NuclideBridge;
+
+function _load_NuclideBridge() {
+  return _NuclideBridge = _interopRequireDefault(require('./NuclideBridge'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _url = _interopRequireDefault(require('url'));
+
+var _WebInspector;
+
+function _load_WebInspector() {
+  return _WebInspector = _interopRequireDefault(require('../../lib/WebInspector'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,79 +37,67 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import NuclideBridge from './NuclideBridge';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import url from 'url';
-import invariant from 'assert';
-import WebInspector from '../../lib/WebInspector';
+class UnresolvedBreakpointsComponent extends _react.default.Component {
 
-type Props = {};
-
-type State = {
-  breakpoints: Array<{url: string, line: number}>,
-};
-
-class UnresolvedBreakpointsComponent extends React.Component {
-  props: Props;
-  state: State;
-
-  _changeHandler: ?IDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
 
     this._changeHandler = null;
     this.state = this._getState();
 
-    (this: any)._updateState = this._updateState.bind(this);
-    (this: any)._getState = this._getState.bind(this);
+    this._updateState = this._updateState.bind(this);
+    this._getState = this._getState.bind(this);
   }
 
   componentWillMount() {
-    this._changeHandler = NuclideBridge.onUnresolvedBreakpointsChanged(
-      this._updateState,
-    );
+    this._changeHandler = (_NuclideBridge || _load_NuclideBridge()).default.onUnresolvedBreakpointsChanged(this._updateState);
   }
 
   componentWillUnmount() {
-    invariant(this._changeHandler != null);
+    if (!(this._changeHandler != null)) {
+      throw new Error('Invariant violation: "this._changeHandler != null"');
+    }
+
     this._changeHandler.dispose();
   }
 
   render() {
     const children = this.state.breakpoints.map(breakpoint => {
-      const {pathname} = url.parse(breakpoint.url);
-      invariant(pathname);
+      const { pathname } = _url.default.parse(breakpoint.url);
+
+      if (!pathname) {
+        throw new Error('Invariant violation: "pathname"');
+      }
+
       const longRep = `${pathname}:${breakpoint.line + 1}`;
-      const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line +
-        1}`;
-      return (
-        <li
-          key={longRep}
-          className="cursor-pointer source-text"
-          onClick={this._onBreakpointClick.bind(this, breakpoint)}
-          title={longRep}>
-          {shortRep}
-        </li>
+      const shortRep = `${(_nuclideUri || _load_nuclideUri()).default.basename(pathname)}:${breakpoint.line + 1}`;
+      return _react.default.createElement(
+        'li',
+        {
+          key: longRep,
+          className: 'cursor-pointer source-text',
+          onClick: this._onBreakpointClick.bind(this, breakpoint),
+          title: longRep },
+        shortRep
       );
     });
-    return (
-      <ol className="breakpoint-list">
-        {this.state.breakpoints.length > 0
-          ? children
-          : <div className="info">None</div>}
-      </ol>
+    return _react.default.createElement(
+      'ol',
+      { className: 'breakpoint-list' },
+      this.state.breakpoints.length > 0 ? children : _react.default.createElement(
+        'div',
+        { className: 'info' },
+        'None'
+      )
     );
   }
 
-  _onBreakpointClick(breakpoint: {url: string, line: number}) {
-    NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
+  _onBreakpointClick(breakpoint) {
+    (_NuclideBridge || _load_NuclideBridge()).default.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
   }
 
   _updateState() {
@@ -86,21 +106,21 @@ class UnresolvedBreakpointsComponent extends React.Component {
 
   _getState() {
     return {
-      breakpoints: NuclideBridge.getUnresolvedBreakpointsList(),
+      breakpoints: (_NuclideBridge || _load_NuclideBridge()).default.getUnresolvedBreakpointsList()
     };
   }
 }
 
-export default class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
+class UnresolvedBreakpointsSidebarPane extends (_WebInspector || _load_WebInspector()).default.SidebarPane {
   constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
     super();
     // Actual super call.
-    WebInspector.SidebarPane.call(this, 'Unresolved Breakpoints');
+    (_WebInspector || _load_WebInspector()).default.SidebarPane.call(this, 'Unresolved Breakpoints');
 
     this.registerRequiredCSS('components/breakpointsList.css');
 
-    ReactDOM.render(<UnresolvedBreakpointsComponent />, this.bodyElement);
+    _reactDom.default.render(_react.default.createElement(UnresolvedBreakpointsComponent, null), this.bodyElement);
 
     this.expand();
   }
@@ -110,3 +130,4 @@ export default class UnresolvedBreakpointsSidebarPane extends WebInspector.Sideb
   // it's probably safer to have this.
   reset() {}
 }
+exports.default = UnresolvedBreakpointsSidebarPane;

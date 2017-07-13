@@ -1,92 +1,101 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as GraphQLService from '../../nuclide-graphql-rpc/lib/GraphQLService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.graphqlLanguageService = undefined;
 
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const GRAPHQL_SERVICE_NAME = 'GraphQLService';
+let connectionToGraphQLService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const graphqlService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(GRAPHQL_SERVICE_NAME, connection);
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
+    const graphqlCommand = 'graphql-language-service/bin/graphql.js';
 
-async function connectionToGraphQLService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const graphqlService: GraphQLService = getServiceByConnection(
-    GRAPHQL_SERVICE_NAME,
-    connection,
-  );
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-  const graphqlCommand = 'graphql-language-service/bin/graphql.js';
+    return graphqlService.initializeLsp(graphqlCommand, ['server', '--method', 'stream'], '.graphqlconfig', ['.js', '.graphql'], 'INFO', fileNotifier, host);
+  });
 
-  return graphqlService.initializeLsp(
-    graphqlCommand,
-    ['server', '--method', 'stream'],
-    '.graphqlconfig',
-    ['.js', '.graphql'],
-    'INFO',
-    fileNotifier,
-    host,
-  );
+  return function connectionToGraphQLService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let createLanguageService = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    const diagnosticsConfig = {
+      version: '0.2.0',
+      analyticsEventName: 'graphql.observe-diagnostics'
+    };
+
+    const definitionConfig = {
+      version: '0.1.0',
+      priority: 1,
+      definitionEventName: 'graphql.definition'
+    };
+
+    const autocompleteConfig = {
+      version: '2.0.0',
+      inclusionPriority: 1,
+      suggestionPriority: 3,
+      excludeLowerPriority: false,
+      analyticsEventName: 'graphql.getAutocompleteSuggestions',
+      disableForSelector: null,
+      autocompleteCacherConfig: null,
+      onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen'
+    };
+
+    const atomConfig = {
+      name: 'GraphQL',
+      grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
+      diagnostics: diagnosticsConfig,
+      definition: definitionConfig,
+      autocomplete: autocompleteConfig
+    };
+    return new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectionToGraphQLService, atomConfig);
+  });
+
+  return function createLanguageService() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+exports.resetGraphQLLanguageService = resetGraphQLLanguageService;
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
 }
 
-async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>,
-> {
-  const diagnosticsConfig = {
-    version: '0.2.0',
-    analyticsEventName: 'graphql.observe-diagnostics',
-  };
+var _nuclideOpenFiles;
 
-  const definitionConfig = {
-    version: '0.1.0',
-    priority: 1,
-    definitionEventName: 'graphql.definition',
-  };
-
-  const autocompleteConfig = {
-    version: '2.0.0',
-    inclusionPriority: 1,
-    suggestionPriority: 3,
-    excludeLowerPriority: false,
-    analyticsEventName: 'graphql.getAutocompleteSuggestions',
-    disableForSelector: null,
-    autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'graphql.autocomplete-chosen',
-  };
-
-  const atomConfig: AtomLanguageServiceConfig = {
-    name: 'GraphQL',
-    grammars: ['source.graphql', 'source.js.jsx', 'source.js'],
-    diagnostics: diagnosticsConfig,
-    definition: definitionConfig,
-    autocomplete: autocompleteConfig,
-  };
-  return new AtomLanguageService(connectionToGraphQLService, atomConfig);
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
 }
 
-export let graphqlLanguageService: Promise<
-  AtomLanguageService<LanguageService>,
-> = createLanguageService();
+var _nuclideRemoteConnection;
 
-export function resetGraphQLLanguageService(): void {
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const GRAPHQL_SERVICE_NAME = 'GraphQLService'; /**
+                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the license found in the LICENSE file in
+                                                * the root directory of this source tree.
+                                                *
+                                                * 
+                                                * @format
+                                                */
+
+let graphqlLanguageService = exports.graphqlLanguageService = createLanguageService();
+
+function resetGraphQLLanguageService() {
   graphqlLanguageService.then(value => value.dispose());
-  graphqlLanguageService = createLanguageService();
+  exports.graphqlLanguageService = graphqlLanguageService = createLanguageService();
 }
