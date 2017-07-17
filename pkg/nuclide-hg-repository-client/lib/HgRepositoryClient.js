@@ -40,10 +40,9 @@ import {
 import {BehaviorSubject, Observable} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import {
-  observeBufferOpen,
-  observeBufferCloseOrRename,
-} from '../../commons-atom/text-buffer';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
+import {observeBufferCloseOrRename} from '../../commons-atom/text-buffer';
 import {getLogger} from 'log4js';
 
 const STATUS_DEBOUNCE_DELAY_MS = 300;
@@ -124,7 +123,6 @@ import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import invariant from 'assert';
 import {mapTransform} from 'nuclide-commons/collection';
 
 export type HgStatusChanges = {
@@ -153,7 +151,6 @@ export class HgRepositoryClient {
   _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
   _fileContentsAtHead: LRUCache<NuclideUri, string>;
-  _currentHeadId: ?string;
 
   _bookmarks: BehaviorSubject<{
     isLoading: boolean,
@@ -204,37 +201,50 @@ export class HgRepositoryClient {
           return Observable.empty();
         }
 
-        return observeBufferOpen()
-          .filter(buffer => {
+        return observableFromSubscribeFunction(
+          atom.workspace.observePaneItems.bind(atom.workspace),
+        ).flatMap(paneItem => {
+          const item = ((paneItem: any): Object);
+          return this._observePaneItemVisibility(item).switchMap(visible => {
+            if (!visible || !isValidTextEditor(item)) {
+              return Observable.empty();
+            }
+
+            const textEditor = (item: atom$TextEditor);
+            const buffer = textEditor.getBuffer();
             const filePath = buffer.getPath();
-            return (
-              filePath != null &&
-              filePath.length !== 0 &&
-              this.isPathRelevant(filePath)
-            );
-          })
-          .flatMap(buffer => {
-            const filePath = buffer.getPath();
-            invariant(
-              filePath,
-              'already filtered empty and non-relevant file paths',
-            );
-            return observableFromSubscribeFunction(
-              buffer.onDidSave.bind(buffer),
+            if (
+              filePath == null ||
+              filePath.length === 0 ||
+              !this.isPathRelevant(filePath)
+            ) {
+              return Observable.empty();
+            }
+            return Observable.combineLatest(
+              observableFromSubscribeFunction(
+                buffer.onDidSave.bind(buffer),
+              ).startWith(''),
+              this._hgUncommittedStatusChanges.statusChanges,
             )
+              .filter(([_, statusChanges]) => {
+                return statusChanges.has(filePath);
+              })
               .map(() => filePath)
-              .startWith(filePath)
               .takeUntil(
-                observeBufferCloseOrRename(buffer).do(() => {
+                Observable.merge(
+                  observeBufferCloseOrRename(buffer),
+                  this._observePaneItemVisibility(item).filter(v => !v),
+                ).do(() => {
                   // TODO(most): rewrite to be simpler and avoid side effects.
                   // Remove the file from the diff stats cache when the buffer is closed.
                   this._hgDiffCacheFilesToClear.add(filePath);
                 }),
               );
           });
+        });
       })
-      .subscribe(filePath => this._updateDiffInfo([filePath]).toPromise());
-
+      .flatMap(filePath => this._updateDiffInfo([filePath]))
+      .subscribe();
     this._subscriptions.add(diffStatsSubscription);
 
     this._initializationPromise = this._service.waitForWatchmanSubscriptions();
@@ -319,9 +329,11 @@ export class HgRepositoryClient {
         this._bookmarks.next({isLoading: false, bookmarks}),
       ),
       conflictStateChanges.subscribe(this._conflictStateChanged.bind(this)),
-      shouldRevisionsUpdate.subscribe(() =>
-        this._revisionsCache.refreshRevisions(),
-      ),
+      shouldRevisionsUpdate.subscribe(() => {
+        this._revisionsCache.refreshRevisions();
+        this._fileContentsAtHead.reset();
+        this._hgDiffCache = new Map();
+      }),
     );
   }
 
@@ -431,6 +443,10 @@ export class HgRepositoryClient {
 
   observeStackStatusChanges(): HgStatusChanges {
     return this._hgStackStatusChanges;
+  }
+
+  _observePaneItemVisibility(item: Object): Observable<boolean> {
+    return observePaneItemVisibility(item);
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
@@ -771,37 +787,39 @@ export class HgRepositoryClient {
       }
     });
 
-    if (pathsToFetch.length === 0) {
+    const currentHead = this._revisionsCache
+      .getCachedRevisions()
+      .find(revision => revision.isHead);
+
+    if (pathsToFetch.length === 0 || currentHead == null) {
       return Observable.of(new Map());
     }
 
-    return this._getCurrentHeadId().switchMap(currentHeadId => {
-      return this._getFileDiffs(
-        pathsToFetch,
-        currentHeadId,
-      ).do(pathsToDiffInfo => {
-        if (pathsToDiffInfo) {
-          for (const [filePath, diffInfo] of pathsToDiffInfo) {
-            this._hgDiffCache.set(filePath, diffInfo);
-          }
+    return this._getFileDiffs(
+      pathsToFetch,
+      currentHead.hash,
+    ).do(pathsToDiffInfo => {
+      if (pathsToDiffInfo) {
+        for (const [filePath, diffInfo] of pathsToDiffInfo) {
+          this._hgDiffCache.set(filePath, diffInfo);
         }
+      }
 
-        // Remove files marked for deletion.
-        this._hgDiffCacheFilesToClear.forEach(fileToClear => {
-          this._hgDiffCache.delete(fileToClear);
-        });
-        this._hgDiffCacheFilesToClear.clear();
-
-        // The fetched files can now be updated again.
-        for (const pathToFetch of pathsToFetch) {
-          this._hgDiffCacheFilesUpdating.delete(pathToFetch);
-        }
-
-        // TODO (t9113913) Ideally, we could send more targeted events that better
-        // describe what change has occurred. Right now, GitRepository dictates either
-        // 'did-change-status' or 'did-change-statuses'.
-        this._emitter.emit('did-change-statuses');
+      // Remove files marked for deletion.
+      this._hgDiffCacheFilesToClear.forEach(fileToClear => {
+        this._hgDiffCache.delete(fileToClear);
       });
+      this._hgDiffCacheFilesToClear.clear();
+
+      // The fetched files can now be updated again.
+      for (const pathToFetch of pathsToFetch) {
+        this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+      }
+
+      // TODO (t9113913) Ideally, we could send more targeted events that better
+      // describe what change has occurred. Right now, GitRepository dictates either
+      // 'did-change-status' or 'did-change-statuses'.
+      this._emitter.emit('did-change-statuses');
     });
   }
 
@@ -843,17 +861,6 @@ export class HgRepositoryClient {
       .toArray()
       .map(contents => new Map(contents));
     return diffs;
-  }
-
-  _getCurrentHeadId(): Observable<string> {
-    if (this._currentHeadId != null) {
-      return Observable.of(this._currentHeadId);
-    }
-
-    return this._service
-      .getHeadId()
-      .refCount()
-      .do(headId => (this._currentHeadId = headId));
   }
 
   _updateInteractiveMode(isInteractiveMode: boolean) {
@@ -1192,7 +1199,6 @@ export class HgRepositoryClient {
       this._hgDiffCache = new Map();
       this._hgStatusCache = new Map();
       this._fileContentsAtHead.reset();
-      this._currentHeadId = null;
     } else {
       this._hgDiffCache = new Map(this._hgDiffCache);
       this._hgStatusCache = new Map(this._hgStatusCache);

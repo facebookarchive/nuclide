@@ -273,6 +273,7 @@ describe('HgRepositoryClient', () => {
       });
 
       spyOn(repo, '_updateDiffInfo').andReturn(Observable.of('fake'));
+      spyOn(repo, '_observePaneItemVisibility').andReturn(Observable.of(true));
     });
 
     // eslint-disable-next-line jasmine/no-disabled-tests
@@ -306,6 +307,9 @@ describe('HgRepositoryClient', () => {
         ' project.',
       () => {
         const file = temp.openSync({dir: projectDirectory.getPath()});
+        repo._hgUncommittedStatusChanges.statusChanges = Observable.of(
+          new Map().set(file.path, 1),
+        );
         waitsForPromise(async () => {
           const editor = await atom.workspace.open(file.path);
           expect(repo._hgDiffCacheFilesToClear.size).toBe(0);
@@ -332,8 +336,8 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._service, 'getHeadId').andCallFake(() => {
-        return Observable.of('test').publish();
+      spyOn(repo._revisionsCache, 'getCachedRevisions').andCallFake(() => {
+        return [{isHead: true}];
       });
       spyOn(
         repo._service,
