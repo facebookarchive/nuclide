@@ -99,6 +99,7 @@ export class LspLanguageService {
   _languageId: string;
   _command: string;
   _args: Array<string>;
+  _spawnOptions: Object; // supplies the options for spawning a process
   _fileExtensions: Array<string>;
   _logger: log4js$Logger;
   _host: HostServices;
@@ -129,6 +130,7 @@ export class LspLanguageService {
     languageId: string,
     command: string,
     args: Array<string>,
+    spawnOptions: Object = {},
     projectRoot: string,
     fileExtensions: Array<string>,
     initializationOptions: Object,
@@ -140,6 +142,7 @@ export class LspLanguageService {
     this._languageId = languageId;
     this._command = command;
     this._args = args;
+    this._spawnOptions = spawnOptions;
     this._fileExtensions = fileExtensions;
     this._initializationOptions = initializationOptions;
   }
@@ -178,6 +181,7 @@ export class LspLanguageService {
           // type" error, which is jolly confusing. So we catch it ourselves.
         }
         const childProcessStream = spawn(this._command, this._args, {
+          ...this._spawnOptions,
           killTreeWhenDone: true,
         }).publish();
         // disposing of the stream will kill the process, if it still exists
