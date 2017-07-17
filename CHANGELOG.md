@@ -1,5 +1,13 @@
 # Nuclide Changelog
 
+## v0.240.0
+
+### Debugger
+
+* Added support for **conditional breakpoints **in Java, PHP/Hack, C++ and Python debuggers. Right click any breakpoint and choose “Edit Breakpoint...” to add conditions!
+* Fixed bug that caused the File Tree to open when starting the debugger, even if the file tree had previously been hidden
+* Removing request memory limit when debugging PHP with Nuclide to avoid OOM exceptions when using the debugger console. (Note: requires an HHVM patch: should be available with the next HHVM release)
+
 ## v0.239.0
 
 ### Hotfix Release
