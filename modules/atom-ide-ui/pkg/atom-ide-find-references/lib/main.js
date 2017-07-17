@@ -187,7 +187,7 @@ class Activation {
         'atom-text-editor:not(.mini).enable-atom-ide-find-references': [
           {
             label: 'Find References',
-            command: 'nuclide-find-references:activate',
+            command: 'find-references:activate',
             created: event => {
               lastMouseEvent = event;
             },
