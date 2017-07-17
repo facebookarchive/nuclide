@@ -692,6 +692,10 @@ All the changes across your entire stacked diff.
     return 300;
   }
 
+  getIconName(): string {
+    return 'file-directory';
+  }
+
   getURI(): string {
     return WORKSPACE_VIEW_URI;
   }
