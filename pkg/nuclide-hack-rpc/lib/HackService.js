@@ -105,6 +105,7 @@ export async function initializeLsp(
     'hack',
     cmd,
     args,
+    {},
     projectFileName,
     fileExtensions,
     {},

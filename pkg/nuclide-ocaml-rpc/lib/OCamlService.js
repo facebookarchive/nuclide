@@ -47,6 +47,7 @@ export async function initializeLsp(
     'ocaml',
     command,
     args,
+    {},
     projectFileName,
     fileExtensions,
     {

@@ -35,10 +35,14 @@ async function connectionToGraphQLService(
     getHostServices(),
   ]);
   const graphqlCommand = 'graphql-language-service/bin/graphql.js';
+  const options = {
+    env: {...process.env, ELECTRON_RUN_AS_NODE: '1'},
+  };
 
   return graphqlService.initializeLsp(
     graphqlCommand,
     ['server', '--method', 'stream'],
+    options,
     '.graphqlconfig',
     ['.js', '.graphql'],
     'INFO',
