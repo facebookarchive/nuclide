@@ -20,7 +20,10 @@ import type {
 } from 'atom-ide-ui';
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
-import type {ClangCompilationDatabaseProvider} from './types';
+import type {
+  ClangCompilationDatabaseProvider,
+  ClangDeclarationInfoProvider,
+} from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -37,6 +40,7 @@ import {
   resetForSource,
   registerCompilationDatabaseProvider,
   getRelatedSourceOrHeader,
+  getDeclarationInfo,
 } from './libclang';
 
 let busySignalService: ?BusySignalService = null;
@@ -167,6 +171,12 @@ export function provideRefactoring(): RefactorProvider {
     refactor(request) {
       return Refactoring.refactor(request);
     },
+  };
+}
+
+export function provideDeclarationInfo(): ClangDeclarationInfoProvider {
+  return {
+    getDeclarationInfo,
   };
 }
 

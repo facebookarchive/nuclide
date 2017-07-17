@@ -66,6 +66,11 @@
     }
   },
   "providedServices": {
+    "nuclide.clang.declaration-info": {
+      "versions": {
+        "0.0.0": "provideDeclarationInfo"
+      }
+    },
     "nuclide.related-files.provider": {
       "versions": {
         "0.0.0": "provideRelatedFiles"
