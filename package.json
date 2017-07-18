@@ -48,6 +48,7 @@
     "connect": "3.5.0",
     "core-js": "2.4.1",
     "dedent": "0.6.0",
+    "deep-is": "^0.1.3",
     "dequeue": "1.0.5",
     "diff": "3.0.1",
     "diffparser": "1.1.0",
