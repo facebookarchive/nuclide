@@ -1,29 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {RevisionInfo} from '../../nuclide-hg-rpc/lib/HgService';
-import type {BlameForEditor, BlameProvider} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
-import {track, trackTiming} from '../../nuclide-analytics';
-import {CompositeDisposable} from 'atom';
-import {shell} from 'electron';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+var _hideAllTooltips;
+
+function _load_hideAllTooltips() {
+  return _hideAllTooltips = _interopRequireDefault(require('../../nuclide-ui/hide-all-tooltips'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _atom = require('atom');
+
+var _electron = require('electron');
+
+var _nuclideVcsLog;
+
+function _load_nuclideVcsLog() {
+  return _nuclideVcsLog = require('../../nuclide-vcs-log');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
-import {shortNameForAuthor} from '../../nuclide-vcs-log';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-
-const BLAME_DECORATION_CLASS = 'blame-decoration';
+const BLAME_DECORATION_CLASS = 'blame-decoration'; /**
+                                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                                    * All rights reserved.
+                                                    *
+                                                    * This source code is licensed under the license found in the LICENSE file in
+                                                    * the root directory of this source tree.
+                                                    *
+                                                    * 
+                                                    * @format
+                                                    */
 
 let Avatar;
 try {
@@ -33,26 +66,18 @@ try {
   Avatar = null;
 }
 
-function escapeHTML(str: string): string {
+function escapeHTML(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function getHash(revision: ?RevisionInfo): ?string {
+function getHash(revision) {
   if (revision == null) {
     return null;
   }
   return revision.hash;
 }
 
-export default class BlameGutter {
-  _editor: atom$TextEditor;
-  _blameProvider: BlameProvider;
-  _bufferLineToDecoration: Map<number, atom$Decoration>;
-  _gutter: atom$Gutter;
-  _loadingSpinnerDiv: ?HTMLElement;
-  _isDestroyed: boolean;
-  _isEditorDestroyed: boolean;
-  _subscriptions: CompositeDisposable;
+class BlameGutter {
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -61,91 +86,81 @@ export default class BlameGutter {
    * @param blameProvider The BlameProvider that provides the appropriate blame
    *   information for this BlameGutter.
    */
-  constructor(
-    gutterName: string,
-    editor: atom$TextEditor,
-    blameProvider: BlameProvider,
-  ) {
+  constructor(gutterName, editor, blameProvider) {
     this._isDestroyed = false;
     this._isEditorDestroyed = false;
 
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._editor = editor;
     this._blameProvider = blameProvider;
     this._bufferLineToDecoration = new Map();
     // Priority is -200 by default and 0 is the line number
-    this._gutter = editor.addGutter({name: gutterName, priority: -1200});
-    const gutterView: HTMLElement = atom.views.getView(this._gutter);
+    this._gutter = editor.addGutter({ name: gutterName, priority: -1200 });
+    const gutterView = atom.views.getView(this._gutter);
     gutterView.classList.add('nuclide-blame');
 
-    this._subscriptions.add(
-      editor.onDidDestroy(() => {
-        this._isEditorDestroyed = true;
-      }),
-    );
+    this._subscriptions.add(editor.onDidDestroy(() => {
+      this._isEditorDestroyed = true;
+    }));
     const editorView = atom.views.getView(editor);
-    this._subscriptions.add(
-      editorView.onDidChangeScrollTop(() => {
-        hideAllTooltips();
-      }),
-    );
+    this._subscriptions.add(editorView.onDidChangeScrollTop(() => {
+      (0, (_hideAllTooltips || _load_hideAllTooltips()).default)();
+    }));
     this._fetchAndDisplayBlame();
   }
 
-  async _onClick(revision: RevisionInfo): Promise<void> {
-    const blameProvider = this._blameProvider;
-    if (typeof blameProvider.getUrlForRevision !== 'function') {
-      return;
-    }
+  _onClick(revision) {
+    var _this = this;
 
-    const url = await blameProvider.getUrlForRevision(
-      this._editor,
-      revision.hash,
-    );
-    if (url) {
-      // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
-      shell.openExternal(url);
-    } else {
-      atom.notifications.addWarning(`No URL found for ${revision.hash}.`);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const blameProvider = _this._blameProvider;
+      if (typeof blameProvider.getUrlForRevision !== 'function') {
+        return;
+      }
 
-    track('blame-gutter-click-revision', {
-      editorPath: this._editor.getPath() || '',
-      url: url || '',
-    });
+      const url = yield blameProvider.getUrlForRevision(_this._editor, revision.hash);
+      if (url) {
+        // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
+        _electron.shell.openExternal(url);
+      } else {
+        atom.notifications.addWarning(`No URL found for ${revision.hash}.`);
+      }
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('blame-gutter-click-revision', {
+        editorPath: _this._editor.getPath() || '',
+        url: url || ''
+      });
+    })();
   }
 
-  async _fetchAndDisplayBlame(): Promise<void> {
-    // Add a loading spinner while we fetch the blame.
-    this._addLoadingSpinner();
+  _fetchAndDisplayBlame() {
+    var _this2 = this;
 
-    let newBlame;
-    try {
-      newBlame = await this._blameProvider.getBlameForEditor(this._editor);
-    } catch (error) {
-      atom.notifications.addError(
-        'Failed to fetch blame to display. ' +
-          'The file is empty or untracked or the repository cannot be reached.',
-        {detail: error},
-      );
-      atom.commands.dispatch(
-        atom.views.getView(this._editor),
-        'nuclide-blame:hide-blame',
-      );
-      return;
-    }
-    // The BlameGutter could have been destroyed while blame was being fetched.
-    if (this._isDestroyed) {
-      return;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      // Add a loading spinner while we fetch the blame.
+      _this2._addLoadingSpinner();
 
-    // Remove the loading spinner before setting the contents of the blame gutter.
-    this._cleanUpLoadingSpinner();
+      let newBlame;
+      try {
+        newBlame = yield _this2._blameProvider.getBlameForEditor(_this2._editor);
+      } catch (error) {
+        atom.notifications.addError('Failed to fetch blame to display. ' + 'The file is empty or untracked or the repository cannot be reached.', { detail: error });
+        atom.commands.dispatch(atom.views.getView(_this2._editor), 'nuclide-blame:hide-blame');
+        return;
+      }
+      // The BlameGutter could have been destroyed while blame was being fetched.
+      if (_this2._isDestroyed) {
+        return;
+      }
 
-    this._updateBlame(newBlame);
+      // Remove the loading spinner before setting the contents of the blame gutter.
+      _this2._cleanUpLoadingSpinner();
+
+      _this2._updateBlame(newBlame);
+    })();
   }
 
-  _addLoadingSpinner(): void {
+  _addLoadingSpinner() {
     if (this._loadingSpinnerDiv) {
       return;
     }
@@ -156,7 +171,7 @@ export default class BlameGutter {
     gutterView.classList.add('nuclide-blame-loading');
   }
 
-  _cleanUpLoadingSpinner(): void {
+  _cleanUpLoadingSpinner() {
     if (this._loadingSpinnerDiv) {
       this._loadingSpinnerDiv.remove();
       this._loadingSpinnerDiv = null;
@@ -165,7 +180,7 @@ export default class BlameGutter {
     }
   }
 
-  destroy(): void {
+  destroy() {
     this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
     if (!this._isEditorDestroyed) {
@@ -179,19 +194,15 @@ export default class BlameGutter {
     }
   }
 
-  _updateBlame(blameForEditor: BlameForEditor): void {
-    return trackTiming('blame-ui.blame-gutter.updateBlame', () =>
-      this.__updateBlame(blameForEditor),
-    );
+  _updateBlame(blameForEditor) {
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('blame-ui.blame-gutter.updateBlame', () => this.__updateBlame(blameForEditor));
   }
 
   // The BlameForEditor completely replaces any previous blame information.
-  __updateBlame(blameForEditor: BlameForEditor): void {
+  __updateBlame(blameForEditor) {
     if (blameForEditor.length === 0) {
-      atom.notifications.addInfo(
-        `Found no blame to display. Is this file empty or untracked?
-          If not, check for errors in the Nuclide logs local to your repo.`,
-      );
+      atom.notifications.addInfo(`Found no blame to display. Is this file empty or untracked?
+          If not, check for errors in the Nuclide logs local to your repo.`);
     }
     const allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
@@ -218,14 +229,7 @@ export default class BlameGutter {
 
       const blameInfo = blameForEditor[bufferLine];
       if (blameInfo) {
-        this._setBlameLine(
-          bufferLine,
-          blameInfo,
-          isFirstLine,
-          isLastLine,
-          oldest,
-          newest,
-        );
+        this._setBlameLine(bufferLine, blameInfo, isFirstLine, isLastLine, oldest, newest);
       }
       allPreviousBlamedLines.delete(bufferLine);
     }
@@ -236,138 +240,102 @@ export default class BlameGutter {
     }
   }
 
-  _setBlameLine(
-    bufferLine: number,
-    revision: RevisionInfo,
-    isFirstLine: boolean,
-    isLastLine: boolean,
-    oldest: number,
-    newest: number,
-  ): void {
-    const item = this._createGutterItem(
-      revision,
-      isFirstLine,
-      isLastLine,
-      oldest,
-      newest,
-    );
+  _setBlameLine(bufferLine, revision, isFirstLine, isLastLine, oldest, newest) {
+    const item = this._createGutterItem(revision, isFirstLine, isLastLine, oldest, newest);
     const decorationProperties = {
       type: 'gutter',
       gutterName: this._gutter.name,
       class: BLAME_DECORATION_CLASS,
-      item,
+      item
     };
 
     let decoration = this._bufferLineToDecoration.get(bufferLine);
     if (!decoration) {
-      const marker = this._editor.markBufferRange(
-        [[bufferLine, 0], [bufferLine, 100000]],
-        {invalidate: 'touch'},
-      );
+      const marker = this._editor.markBufferRange([[bufferLine, 0], [bufferLine, 100000]], { invalidate: 'touch' });
 
       decoration = this._editor.decorateMarker(marker, decorationProperties);
       this._bufferLineToDecoration.set(bufferLine, decoration);
     } else {
-      ReactDOM.unmountComponentAtNode(decoration.getProperties().item);
+      _reactDom.default.unmountComponentAtNode(decoration.getProperties().item);
       decoration.setProperties(decorationProperties);
     }
   }
 
-  _removeBlameLine(bufferLine: number): void {
+  _removeBlameLine(bufferLine) {
     const blameDecoration = this._bufferLineToDecoration.get(bufferLine);
     if (!blameDecoration) {
       return;
     }
-    ReactDOM.unmountComponentAtNode(blameDecoration.getProperties().item);
+    _reactDom.default.unmountComponentAtNode(blameDecoration.getProperties().item);
     // The recommended way of destroying a decoration is by destroying its marker.
     blameDecoration.getMarker().destroy();
     this._bufferLineToDecoration.delete(bufferLine);
   }
 
-  _createGutterItem(
-    blameInfo: RevisionInfo,
-    isFirstLine: boolean,
-    isLastLine: boolean,
-    oldest: number,
-    newest: number,
-  ): HTMLElement {
+  _createGutterItem(blameInfo, isFirstLine, isLastLine, oldest, newest) {
     const item = document.createElement('div');
 
     item.addEventListener('click', () => {
       this._onClick(blameInfo);
     });
 
-    ReactDOM.render(
-      <GutterElement
-        revision={blameInfo}
-        isFirstLine={isFirstLine}
-        isLastLine={isLastLine}
-        oldest={oldest}
-        newest={newest}
-      />,
-      item,
-    );
+    _reactDom.default.render(_react.default.createElement(GutterElement, {
+      revision: blameInfo,
+      isFirstLine: isFirstLine,
+      isLastLine: isLastLine,
+      oldest: oldest,
+      newest: newest
+    }), item);
     return item;
   }
 }
 
-type Props = {
-  revision: RevisionInfo,
-  isFirstLine: boolean,
-  isLastLine: boolean,
-  oldest: number,
-  newest: number,
-};
+exports.default = BlameGutter;
 
-class GutterElement extends React.Component {
-  props: Props;
 
-  render(): React.Element<any> {
-    const {oldest, newest, revision, isLastLine, isFirstLine} = this.props;
+class GutterElement extends _react.default.Component {
+
+  render() {
+    const { oldest, newest, revision, isLastLine, isFirstLine } = this.props;
     const date = Number(revision.date);
 
     const alpha = 1 - (date - newest) / (oldest - newest);
     const opacity = 0.2 + 0.8 * alpha;
 
     if (isFirstLine) {
-      const unixname = shortNameForAuthor(revision.author);
+      const unixname = (0, (_nuclideVcsLog || _load_nuclideVcsLog()).shortNameForAuthor)(revision.author);
       const tooltip = {
-        title:
-          escapeHTML(revision.title) +
-          '<br />' +
-          escapeHTML(unixname) +
-          ' &middot; ' +
-          escapeHTML(revision.date.toDateString()),
+        title: escapeHTML(revision.title) + '<br />' + escapeHTML(unixname) + ' &middot; ' + escapeHTML(revision.date.toDateString()),
         delay: 0,
-        placement: 'right',
+        placement: 'right'
       };
 
-      return (
-        <div
-          className="nuclide-blame-row nuclide-blame-content"
-          ref={addTooltip(tooltip)}>
-          {!isLastLine
-            ? <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
-            : null}
-          {Avatar ? <Avatar size={16} unixname={unixname} /> : unixname + ': '}
-          <span>
-            {revision.title}
-          </span>
-          <div style={{opacity}} className="nuclide-blame-border-age" />
-        </div>
+      return _react.default.createElement(
+        'div',
+        {
+          className: 'nuclide-blame-row nuclide-blame-content',
+          ref: (0, (_addTooltip || _load_addTooltip()).default)(tooltip) },
+        !isLastLine ? _react.default.createElement('div', { className: 'nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first' }) : null,
+        Avatar ? _react.default.createElement(Avatar, { size: 16, unixname: unixname }) : unixname + ': ',
+        _react.default.createElement(
+          'span',
+          null,
+          revision.title
+        ),
+        _react.default.createElement('div', { style: { opacity }, className: 'nuclide-blame-border-age' })
       );
     }
 
-    return (
-      <div className="nuclide-blame-row">
-        <div
-          className={classnames('nuclide-blame-vertical-bar', {
-            'nuclide-blame-vertical-bar-last': isLastLine,
-            'nuclide-blame-vertical-bar-middle': !isLastLine,
-          })}
-        />
-        <div style={{opacity}} className="nuclide-blame-border-age" />
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-blame-row' },
+      _react.default.createElement('div', {
+        className: (0, (_classnames || _load_classnames()).default)('nuclide-blame-vertical-bar', {
+          'nuclide-blame-vertical-bar-last': isLastLine,
+          'nuclide-blame-vertical-bar-middle': !isLastLine
+        })
+      }),
+      _react.default.createElement('div', { style: { opacity }, className: 'nuclide-blame-border-age' })
     );
   }
 }

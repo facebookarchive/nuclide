@@ -1,83 +1,89 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as OCamlService from '../../nuclide-ocaml-rpc/lib/OCamlService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-async function createOCamlLanguageService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const ocamlService: OCamlService = getServiceByConnection(
-    'OCamlService',
-    connection,
-  );
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
+let createOCamlLanguageService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const ocamlService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)('OCamlService', connection);
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
 
-  return ocamlService.initializeLsp(
-    'ocaml-language-server',
-    ['--stdio'],
-    '.merlin',
-    ['.ml', '.mli'],
-    'INFO',
-    fileNotifier,
-    host,
-  );
+    return ocamlService.initializeLsp('ocaml-language-server', ['--stdio'], '.merlin', ['.ml', '.mli'], 'INFO', fileNotifier, host);
+  });
+
+  return function createOCamlLanguageService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       * @format
+       */
+
+exports.createLanguageService = createLanguageService;
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
 }
 
-export function createLanguageService(): AtomLanguageService<LanguageService> {
-  const atomConfig: AtomLanguageServiceConfig = {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createLanguageService() {
+  const atomConfig = {
     name: 'OCaml',
     grammars: ['source.ocaml'],
     highlight: {
       version: '0.1.0',
       priority: 1,
-      analyticsEventName: 'ocaml.codeHighlight',
+      analyticsEventName: 'ocaml.codeHighlight'
     },
     outline: {
       version: '0.1.0',
       priority: 1,
-      analyticsEventName: 'ocaml.outline',
+      analyticsEventName: 'ocaml.outline'
     },
     definition: {
       version: '0.1.0',
       priority: 20,
-      definitionEventName: 'ocaml.getDefinition',
+      definitionEventName: 'ocaml.getDefinition'
     },
     typeHint: {
       version: '0.0.0',
       priority: 1,
-      analyticsEventName: 'ocaml.typeHint',
+      analyticsEventName: 'ocaml.typeHint'
     },
     codeFormat: {
       version: '0.1.0',
       priority: 1,
       analyticsEventName: 'ocaml.formatCode',
       canFormatRanges: true,
-      canFormatAtPosition: false,
+      canFormatAtPosition: false
     },
     findReferences: {
       version: '0.1.0',
-      analyticsEventName: 'ocaml.findReferences',
+      analyticsEventName: 'ocaml.findReferences'
     },
     autocomplete: {
       version: '2.0.0',
@@ -88,13 +94,13 @@ export function createLanguageService(): AtomLanguageService<LanguageService> {
       excludeLowerPriority: false,
       analyticsEventName: 'ocaml.getAutocompleteSuggestions',
       autocompleteCacherConfig: null,
-      onDidInsertSuggestionAnalyticsEventName: 'ocaml.autocompleteChosen',
+      onDidInsertSuggestionAnalyticsEventName: 'ocaml.autocompleteChosen'
     },
     diagnostics: {
       version: '0.2.0',
-      analyticsEventName: 'ocaml.observeDiagnostics',
-    },
+      analyticsEventName: 'ocaml.observeDiagnostics'
+    }
   };
 
-  return new AtomLanguageService(createOCamlLanguageService, atomConfig);
+  return new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(createOCamlLanguageService, atomConfig);
 }

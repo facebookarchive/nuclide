@@ -1,106 +1,78 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  DiagnosticInvalidationMessage,
-  DiagnosticMessage,
-  DiagnosticProvider,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
-  ObservableDiagnosticProvider,
-  ProjectDiagnosticMessage,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {TextEdit} from 'nuclide-commons-atom/text-edit';
+var _textEdit;
 
-import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
-import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {MarkerTracker} from './MarkerTracker';
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import {BehaviorSubject, Subject, Observable} from 'rxjs';
+function _load_textEdit() {
+  return _textEdit = require('nuclide-commons-atom/text-edit');
+}
 
-export default class DiagnosticStore {
-  // A map from each diagnostic provider to:
-  // a map from each file it has messages for to the array of messages for that file.
-  _providerToFileToMessages: Map<
-    DiagnosticProvider,
-    Map<NuclideUri, Array<FileDiagnosticMessage>>,
-  >;
-  // A map from each file that has messages from any diagnostic provider
-  // to the set of diagnostic providers that have messages for it.
-  _fileToProviders: MultiMap<NuclideUri, DiagnosticProvider>;
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _MarkerTracker;
+
+function _load_MarkerTracker() {
+  return _MarkerTracker = require('./MarkerTracker');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DiagnosticStore {
 
   // A map from each diagnostic provider to the array of project messages from it.
-  _providerToProjectDiagnostics: Map<
-    DiagnosticProvider,
-    Array<ProjectDiagnosticMessage>,
-  >;
 
-  _providersAdded: Subject<ObservableDiagnosticProvider>;
-  _providersRemoved: Subject<ObservableDiagnosticProvider>;
-  _disposables: UniversalDisposable;
-  _fileChanges: Subject<FileDiagnosticMessages>;
-  _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
-  _allChanges: BehaviorSubject<Array<DiagnosticMessage>>;
-
-  _markerTracker: MarkerTracker;
-
+  // A map from each diagnostic provider to:
+  // a map from each file it has messages for to the array of messages for that file.
   constructor() {
     this._providerToFileToMessages = new Map();
-    this._fileToProviders = new MultiMap();
+    this._fileToProviders = new (_collection || _load_collection()).MultiMap();
     this._providerToProjectDiagnostics = new Map();
 
-    this._providersAdded = new Subject();
-    this._providersRemoved = new Subject();
-    this._fileChanges = new Subject();
-    this._projectChanges = new BehaviorSubject([]);
-    this._allChanges = new BehaviorSubject([]);
+    this._providersAdded = new _rxjsBundlesRxMinJs.Subject();
+    this._providersRemoved = new _rxjsBundlesRxMinJs.Subject();
+    this._fileChanges = new _rxjsBundlesRxMinJs.Subject();
+    this._projectChanges = new _rxjsBundlesRxMinJs.BehaviorSubject([]);
+    this._allChanges = new _rxjsBundlesRxMinJs.BehaviorSubject([]);
 
-    this._markerTracker = new MarkerTracker();
+    this._markerTracker = new (_MarkerTracker || _load_MarkerTracker()).MarkerTracker();
 
-    const whenRemoved = provider =>
-      this._providersRemoved.filter(p => p === provider);
+    const whenRemoved = provider => this._providersRemoved.filter(p => p === provider);
 
-    this._disposables = new UniversalDisposable(
-      // Update the messages whenever the provider has some.
-      this._providersAdded
-        .mergeMap(provider =>
-          logEndings(provider.updates, 'Updates')
-            .takeUntil(whenRemoved(provider))
-            .map(update => ({provider, update})),
-        )
-        .subscribe(({provider, update}) => {
-          this.updateMessages(provider, update);
-        }),
-      // Trigger invalidations.
-      this._providersAdded
-        .mergeMap(provider =>
-          logEndings(provider.invalidations, 'Invalidations')
-            .takeUntil(whenRemoved(provider))
-            .map(invalidation => ({provider, invalidation}))
-            .finally(() => {
-              // When the provider goes away, we need to invalidate its messages.
-              this.invalidateMessages(provider, {scope: 'all'});
-            }),
-        )
-        .subscribe(({provider, invalidation}) =>
-          this.invalidateMessages(provider, invalidation),
-        ),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(
+    // Update the messages whenever the provider has some.
+    this._providersAdded.mergeMap(provider => logEndings(provider.updates, 'Updates').takeUntil(whenRemoved(provider)).map(update => ({ provider, update }))).subscribe(({ provider, update }) => {
+      this.updateMessages(provider, update);
+    }),
+    // Trigger invalidations.
+    this._providersAdded.mergeMap(provider => logEndings(provider.invalidations, 'Invalidations').takeUntil(whenRemoved(provider)).map(invalidation => ({ provider, invalidation })).finally(() => {
+      // When the provider goes away, we need to invalidate its messages.
+      this.invalidateMessages(provider, { scope: 'all' });
+    })).subscribe(({ provider, invalidation }) => this.invalidateMessages(provider, invalidation)));
   }
+  // A map from each file that has messages from any diagnostic provider
+  // to the set of diagnostic providers that have messages for it.
+
 
   dispose() {
     this._providerToFileToMessages.clear();
@@ -115,9 +87,9 @@ export default class DiagnosticStore {
    * Section: Methods to modify the store.
    */
 
-  addProvider(provider: ObservableDiagnosticProvider): IDisposable {
+  addProvider(provider) {
     this._providersAdded.next(provider);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._providersRemoved.next(provider);
     });
   }
@@ -130,10 +102,7 @@ export default class DiagnosticStore {
    * @param diagnosticProvider The diagnostic provider that these messages come from.
    * @param updates Set of updates to apply.
    */
-  updateMessages(
-    diagnosticProvider: DiagnosticProvider,
-    updates: DiagnosticProviderUpdate,
-  ): void {
+  updateMessages(diagnosticProvider, updates) {
     if (updates.filePathToMessages) {
       this._updateFileMessages(diagnosticProvider, updates.filePathToMessages);
     }
@@ -145,10 +114,7 @@ export default class DiagnosticStore {
     }
   }
 
-  _updateFileMessages(
-    diagnosticProvider: DiagnosticProvider,
-    newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>,
-  ): void {
+  _updateFileMessages(diagnosticProvider, newFilePathsToMessages) {
     let fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
     if (!fileToMessages) {
       fileToMessages = new Map();
@@ -157,7 +123,9 @@ export default class DiagnosticStore {
     newFilePathsToMessages.forEach((newMessagesForPath, filePath) => {
       // Flow naively thinks that since we are in a closure, fileToMessages could have been
       // reassigned to something null by the time this executes.
-      invariant(fileToMessages != null);
+      if (!(fileToMessages != null)) {
+        throw new Error('Invariant violation: "fileToMessages != null"');
+      }
 
       const messagesToRemove = fileToMessages.get(filePath);
       if (messagesToRemove != null) {
@@ -174,10 +142,7 @@ export default class DiagnosticStore {
     });
   }
 
-  _updateProjectMessages(
-    diagnosticProvider: DiagnosticProvider,
-    projectMessages: Array<ProjectDiagnosticMessage>,
-  ): void {
+  _updateProjectMessages(diagnosticProvider, projectMessages) {
     this._providerToProjectDiagnostics.set(diagnosticProvider, projectMessages);
     this._emitProjectMessages();
   }
@@ -191,15 +156,9 @@ export default class DiagnosticStore {
    *       * 'all': all messages are cleared.
    *   * filePaths: Array of absolute file paths (NuclideUri) to clear messages for.
    */
-  invalidateMessages(
-    diagnosticProvider: DiagnosticProvider,
-    invalidationMessage: DiagnosticInvalidationMessage,
-  ): void {
+  invalidateMessages(diagnosticProvider, invalidationMessage) {
     if (invalidationMessage.scope === 'file') {
-      this._invalidateFileMessagesForProvider(
-        diagnosticProvider,
-        invalidationMessage.filePaths,
-      );
+      this._invalidateFileMessagesForProvider(diagnosticProvider, invalidationMessage.filePaths);
       this._emitAllMessages();
     } else if (invalidationMessage.scope === 'project') {
       this._invalidateProjectMessagesForProvider(diagnosticProvider);
@@ -209,13 +168,8 @@ export default class DiagnosticStore {
     }
   }
 
-  _invalidateFileMessagesForProvider(
-    diagnosticProvider: DiagnosticProvider,
-    pathsToRemove: Iterable<NuclideUri>,
-  ): void {
-    const fileToDiagnostics = this._providerToFileToMessages.get(
-      diagnosticProvider,
-    );
+  _invalidateFileMessagesForProvider(diagnosticProvider, pathsToRemove) {
+    const fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
     for (const filePath of pathsToRemove) {
       // Update _providerToFileToMessages.
       if (fileToDiagnostics) {
@@ -232,20 +186,14 @@ export default class DiagnosticStore {
     }
   }
 
-  _invalidateProjectMessagesForProvider(
-    diagnosticProvider: DiagnosticProvider,
-  ): void {
+  _invalidateProjectMessagesForProvider(diagnosticProvider) {
     this._providerToProjectDiagnostics.delete(diagnosticProvider);
     this._emitProjectMessages();
   }
 
-  _invalidateAllMessagesForProvider(
-    diagnosticProvider: DiagnosticProvider,
-  ): void {
+  _invalidateAllMessagesForProvider(diagnosticProvider) {
     // Invalidate all file messages.
-    const filesToDiagnostics = this._providerToFileToMessages.get(
-      diagnosticProvider,
-    );
+    const filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
     if (filesToDiagnostics) {
       const allFilePaths = filesToDiagnostics.keys();
       this._invalidateFileMessagesForProvider(diagnosticProvider, allFilePaths);
@@ -256,12 +204,12 @@ export default class DiagnosticStore {
     this._emitAllMessages();
   }
 
-  _invalidateSingleMessage(message: FileDiagnosticMessage): void {
+  _invalidateSingleMessage(message) {
     this._markerTracker.removeFileMessages([message]);
     for (const fileToMessages of this._providerToFileToMessages.values()) {
       const fileMessages = fileToMessages.get(message.filePath);
       if (fileMessages != null) {
-        arrayRemove(fileMessages, message);
+        (0, (_collection || _load_collection()).arrayRemove)(fileMessages, message);
       }
     }
     // Looks like emitAllMessages does not actually emit all messages. We need to do both for both
@@ -274,22 +222,17 @@ export default class DiagnosticStore {
    * Section: Methods to read from the store.
    */
 
-  getFileMessageUpdates(
-    filePath: NuclideUri,
-  ): Observable<FileDiagnosticMessages> {
+  getFileMessageUpdates(filePath) {
     const fileMessages = this._getFileMessages(filePath);
-    const initialObservable = Observable.of({filePath, messages: fileMessages});
-    return Observable.concat(
-      initialObservable,
-      this._fileChanges.filter(change => change.filePath === filePath),
-    );
+    const initialObservable = _rxjsBundlesRxMinJs.Observable.of({ filePath, messages: fileMessages });
+    return _rxjsBundlesRxMinJs.Observable.concat(initialObservable, this._fileChanges.filter(change => change.filePath === filePath));
   }
 
-  getProjectMessageUpdates(): Observable<Array<ProjectDiagnosticMessage>> {
+  getProjectMessageUpdates() {
     return this._projectChanges.asObservable();
   }
 
-  getAllMessageUpdates(): Observable<Array<DiagnosticMessage>> {
+  getAllMessageUpdates() {
     return this._allChanges.asObservable();
   }
 
@@ -301,13 +244,8 @@ export default class DiagnosticStore {
    *   change. The array of messages is meant to completely replace any previous
    *   messages for this file path.
    */
-  onFileMessagesDidUpdate(
-    callback: (update: FileDiagnosticMessages) => mixed,
-    filePath: NuclideUri,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this.getFileMessageUpdates(filePath).subscribe(callback),
-    );
+  onFileMessagesDidUpdate(callback, filePath) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this.getFileMessageUpdates(filePath).subscribe(callback));
   }
 
   /**
@@ -318,12 +256,8 @@ export default class DiagnosticStore {
    *   change. The array of messages is meant to completely replace any previous
    *   project-scope messages.
    */
-  onProjectMessagesDidUpdate(
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this.getProjectMessageUpdates().subscribe(callback),
-    );
+  onProjectMessagesDidUpdate(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this.getProjectMessageUpdates().subscribe(callback));
   }
 
   /**
@@ -333,26 +267,30 @@ export default class DiagnosticStore {
    * @param callback The function to message when any messages change. The array
    *   of messages is meant to completely replace any previous messages.
    */
-  onAllMessagesDidUpdate(
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this.getAllMessageUpdates().subscribe(callback),
-    );
+  onAllMessagesDidUpdate(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this.getAllMessageUpdates().subscribe(callback));
   }
 
   /**
    * Gets the current diagnostic messages for the file.
    * Prefer to get updates via ::onFileMessagesDidUpdate.
    */
-  _getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
+  _getFileMessages(filePath) {
     let allFileMessages = [];
     const relevantProviders = this._fileToProviders.get(filePath);
     for (const provider of relevantProviders) {
       const fileToMessages = this._providerToFileToMessages.get(provider);
-      invariant(fileToMessages != null);
+
+      if (!(fileToMessages != null)) {
+        throw new Error('Invariant violation: "fileToMessages != null"');
+      }
+
       const messages = fileToMessages.get(filePath);
-      invariant(messages != null);
+
+      if (!(messages != null)) {
+        throw new Error('Invariant violation: "messages != null"');
+      }
+
       allFileMessages = allFileMessages.concat(messages);
     }
     return allFileMessages;
@@ -362,7 +300,7 @@ export default class DiagnosticStore {
    * Gets the current project-scope diagnostic messages.
    * Prefer to get updates via ::onProjectMessagesDidUpdate.
    */
-  _getProjectMessages(): Array<ProjectDiagnosticMessage> {
+  _getProjectMessages() {
     let allProjectMessages = [];
     for (const messages of this._providerToProjectDiagnostics.values()) {
       allProjectMessages = allProjectMessages.concat(messages);
@@ -374,7 +312,7 @@ export default class DiagnosticStore {
    * Gets all current diagnostic messages.
    * Prefer to get updates via ::onAllMessagesDidUpdate.
    */
-  _getAllMessages(): Array<DiagnosticMessage> {
+  _getAllMessages() {
     let allMessages = [];
     // Get all file messages.
     for (const fileToMessages of this._providerToFileToMessages.values()) {
@@ -391,24 +329,19 @@ export default class DiagnosticStore {
    * Section: Feedback from the UI
    */
 
-  applyFix(message: FileDiagnosticMessage): void {
+  applyFix(message) {
     this._applyFixes(message.filePath, message);
   }
 
-  applyFixesForFile(file: NuclideUri): void {
-    const messages = this._getFileMessages(file).filter(
-      msg => msg.fix != null && msg.fix.speculative !== true,
-    );
+  applyFixesForFile(file) {
+    const messages = this._getFileMessages(file).filter(msg => msg.fix != null && msg.fix.speculative !== true);
     this._applyFixes(file, ...messages);
   }
 
   // Precondition: all messages have the given filePath
-  _applyFixes(
-    filePath: NuclideUri,
-    ...messages: Array<FileDiagnosticMessage>
-  ): void {
+  _applyFixes(filePath, ...messages) {
     const messagesWithFixes = messages.filter(msg => msg.fix != null);
-    const fixes: Array<TextEdit> = [];
+    const fixes = [];
     for (const message of messagesWithFixes) {
       const fix = this._getUpdatedFix(message);
       if (fix == null) {
@@ -417,7 +350,7 @@ export default class DiagnosticStore {
       }
       fixes.push(fix);
     }
-    const succeeded = applyTextEdits(filePath, ...fixes);
+    const succeeded = (0, (_textEdit || _load_textEdit()).applyTextEdits)(filePath, ...fixes);
     if (succeeded) {
       for (const message of messagesWithFixes) {
         this._invalidateSingleMessage(message);
@@ -433,9 +366,12 @@ export default class DiagnosticStore {
    *
    * Precondition: message.fix != null
    */
-  _getUpdatedFix(message: FileDiagnosticMessage): ?TextEdit {
+  _getUpdatedFix(message) {
     const fix = message.fix;
-    invariant(fix != null);
+
+    if (!(fix != null)) {
+      throw new Error('Invariant violation: "fix != null"');
+    }
 
     const actualRange = this._markerTracker.getCurrentRange(message);
 
@@ -443,45 +379,54 @@ export default class DiagnosticStore {
       return null;
     }
 
-    return {
-      ...fix,
-      oldRange: actualRange,
-    };
+    return Object.assign({}, fix, {
+      oldRange: actualRange
+    });
   }
 
   /**
    * Section: Event Emitting
    */
 
-  _emitFileMessages(filePath: NuclideUri): void {
+  _emitFileMessages(filePath) {
     this._fileChanges.next({
       filePath,
-      messages: this._getFileMessages(filePath),
+      messages: this._getFileMessages(filePath)
     });
   }
 
-  _emitProjectMessages(): void {
+  _emitProjectMessages() {
     this._projectChanges.next(this._getProjectMessages());
   }
 
-  _emitAllMessages(): void {
+  _emitAllMessages() {
     this._allChanges.next(this._getAllMessages());
   }
 }
 
+exports.default = DiagnosticStore; /**
+                                    * Copyright (c) 2017-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the BSD-style license found in the
+                                    * LICENSE file in the root directory of this source tree. An additional grant
+                                    * of patent rights can be found in the PATENTS file in the same directory.
+                                    *
+                                    * 
+                                    * @format
+                                    */
+
 function notifyFixFailed() {
-  atom.notifications.addWarning(
-    'Failed to apply fix. Try saving to get fresh results and then try again.',
-  );
+  atom.notifications.addWarning('Failed to apply fix. Try saving to get fresh results and then try again.');
 }
 
-function logEndings<T>(input: Observable<T>, name: string): Observable<T> {
+function logEndings(input, name) {
   return input.do({
     error(err) {
-      getLogger('atom-ide-diagnostics').error(`Error: ${name}: ${err}`);
+      (0, (_log4js || _load_log4js()).getLogger)('atom-ide-diagnostics').error(`Error: ${name}: ${err}`);
     },
     complete() {
-      getLogger('atom-ide-diagnostics').error(`${name} completed unexpectedly`);
-    },
+      (0, (_log4js || _load_log4js()).getLogger)('atom-ide-diagnostics').error(`${name} completed unexpectedly`);
+    }
   });
 }

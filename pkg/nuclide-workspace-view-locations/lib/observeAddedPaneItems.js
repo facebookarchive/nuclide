@@ -1,18 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Viewable} from '../../nuclide-workspace-views/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeAddedPaneItems = observeAddedPaneItems;
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {Observable} from 'rxjs';
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
 /**
  * Atom's PaneContainer [doesn't call onDidAddItem when panes are moved][1]. Since we need to
@@ -20,18 +19,19 @@ import {Observable} from 'rxjs';
  *
  * [1]: https://github.com/atom/atom/blob/v1.12.7/src/pane-container.coffee#L235
  */
-export function observeAddedPaneItems(
-  paneContainer: atom$PaneContainer,
-): Observable<Viewable> {
-  return observableFromSubscribeFunction(
-    paneContainer.observePanes.bind(paneContainer),
-  )
-    .mergeMap(pane =>
-      observableFromSubscribeFunction(pane.onDidAddItem.bind(pane)),
-    )
-    .map(event => {
-      // Technically, Viewable isn't a subtype of PaneItem.
-      const item = (event.item: atom$PaneItem);
-      return ((item: any): Viewable);
-    });
-}
+function observeAddedPaneItems(paneContainer) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(paneContainer.observePanes.bind(paneContainer)).mergeMap(pane => (0, (_event || _load_event()).observableFromSubscribeFunction)(pane.onDidAddItem.bind(pane))).map(event => {
+    // Technically, Viewable isn't a subtype of PaneItem.
+    const item = event.item;
+    return item;
+  });
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

@@ -1,24 +1,20 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * A small compatibilty stub for interop with Nuclide, which still supports Atom 1.16.
- * For Atom 1.17+ this just uses the native Atom APIs.
- * TODO(matthewwithanm): Delete this and refactor to workspace
- * API once Nuclide uses 1.17.
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDocksWorkspaceViewsService = getDocksWorkspaceViewsService;
+exports.consumeWorkspaceViewsCompat = consumeWorkspaceViewsCompat;
 
-import {Disposable} from 'atom';
-import semver from 'semver';
+var _atom = require('atom');
+
+var _semver;
+
+function _load_semver() {
+  return _semver = _interopRequireDefault(require('semver'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * The object used as items in locations. This is based on the supported interface for items in Atom
@@ -32,58 +28,30 @@ import semver from 'semver';
  * IMPORTANT: All properties and methods must be optional so that we maintain compatibility with
  * non-nuclide items.
  */
-export type Viewable = atom$PaneItem & {
-  // Used by PanelLocation to get an initial size for the panel.
-  +getPreferredHeight?: () => number,
-  +getPreferredWidth?: () => number,
-  +didChangeVisibility?: (visible: boolean) => void,
-  +getDefaultLocation?: () => string,
-};
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
 
-export type Opener = (uri: string) => ?Viewable;
+/**
+ * A small compatibilty stub for interop with Nuclide, which still supports Atom 1.16.
+ * For Atom 1.17+ this just uses the native Atom APIs.
+ * TODO(matthewwithanm): Delete this and refactor to workspace
+ * API once Nuclide uses 1.17.
+ */
 
-export type OpenOptions = {
-  activateItem?: boolean,
-  activateLocation?: boolean,
-  searchAllPanes?: boolean,
-};
-
-export type Location = {
-  activate(): void,
-  activateItem(item: Object): void,
-  addItem(item: Object): void,
-  destroy(): void,
-  destroyItem(item: Object): void,
-  getItems(): Array<Viewable>,
-  hideItem(item: Viewable): void,
-  itemIsVisible(item: Viewable): boolean,
-  serialize(): ?Object,
-
-  onDidAddItem(cb: (item: Viewable) => void): IDisposable,
-};
-
-export type LocationFactory = {
-  id: string,
-  create(serializedState: ?Object): Location,
-};
-
-export type ToggleOptions = {
-  visible?: ?boolean,
-};
-
-export type WorkspaceViewsService = {
-  addOpener(opener: Opener): IDisposable,
-  destroyWhere(predicate: (item: Viewable) => boolean): void,
-  open(uri: string, options?: OpenOptions): void,
-  registerLocation(factory: LocationFactory): IDisposable,
-  toggle(uri: string, options?: ToggleOptions): void,
-};
-
-export function getDocksWorkspaceViewsService() {
+function getDocksWorkspaceViewsService() {
   return {
-    registerLocation: () => new Disposable(() => {}),
+    registerLocation: () => new _atom.Disposable(() => {}),
     addOpener: opener => atom.workspace.addOpener(opener),
-    destroyWhere(predicate: (item: Viewable) => boolean) {
+    destroyWhere(predicate) {
       atom.workspace.getPanes().forEach(pane => {
         pane.getItems().forEach(item => {
           if (predicate(item)) {
@@ -92,15 +60,15 @@ export function getDocksWorkspaceViewsService() {
         });
       });
     },
-    open(uri: string, options?: Object): void {
+    open(uri, options) {
       // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(uri, options);
     },
-    toggle(uri: string, options?: ?ToggleOptions): void {
+    toggle(uri, options) {
       const visible = options && options.visible;
       if (visible === true) {
         // eslint-disable-next-line nuclide-internal/atom-apis
-        atom.workspace.open(uri, {searchAllPanes: true});
+        atom.workspace.open(uri, { searchAllPanes: true });
       } else if (visible === false) {
         // TODO(jxg) remove this once Atom 1.17 lands.
         if (typeof atom.workspace.hide === 'function') {
@@ -108,12 +76,7 @@ export function getDocksWorkspaceViewsService() {
           atom.workspace.hide(uri);
         } else {
           // Atom version <1.17
-          const hasItem = atom.workspace
-            .getPaneItems()
-            .some(
-              item =>
-                typeof item.getURI === 'function' && item.getURI() === uri,
-            );
+          const hasItem = atom.workspace.getPaneItems().some(item => typeof item.getURI === 'function' && item.getURI() === uri);
           if (hasItem) {
             atom.workspace.toggle(uri);
           }
@@ -121,20 +84,14 @@ export function getDocksWorkspaceViewsService() {
       } else {
         atom.workspace.toggle(uri);
       }
-    },
+    }
   };
 }
 
-export function consumeWorkspaceViewsCompat(
-  callback: (service: WorkspaceViewsService) => IDisposable,
-): IDisposable {
-  if (semver.gte(atom.getVersion(), '1.17.0')) {
+function consumeWorkspaceViewsCompat(callback) {
+  if ((_semver || _load_semver()).default.gte(atom.getVersion(), '1.17.0')) {
     callback(getDocksWorkspaceViewsService());
-    return new Disposable();
+    return new _atom.Disposable();
   }
-  return atom.packages.serviceHub.consume(
-    'nuclide.workspace-views',
-    '0.0.0',
-    callback,
-  );
+  return atom.packages.serviceHub.consume('nuclide.workspace-views', '0.0.0', callback);
 }

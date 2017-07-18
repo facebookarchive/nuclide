@@ -1,3 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ATDeviceInfoProvider = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,54 +14,41 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {DeviceInfoProvider} from '../../../nuclide-device-panel/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {Bridge} from '../types';
+class ATDeviceInfoProvider {
 
-import {Observable} from 'rxjs';
-
-export class ATDeviceInfoProvider implements DeviceInfoProvider {
-  _bridge: Bridge;
-
-  constructor(bridge: Bridge) {
+  constructor(bridge) {
     this._bridge = bridge;
   }
 
-  getType(): string {
+  getType() {
     return this._bridge.name;
   }
 
-  fetch(host: NuclideUri, device: string): Observable<Map<string, string>> {
-    return this._bridge
-      .getService(host)
-      .getDeviceInfo(device)
-      .refCount()
-      .map(props => {
-        const infoMap = new Map();
-        for (const [key, value] of props) {
-          const beautifulKey = key.toLowerCase().replace('_', ' ');
-          infoMap.set(
-            beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1),
-            value,
-          );
-        }
-        return infoMap;
-      });
+  fetch(host, device) {
+    return this._bridge.getService(host).getDeviceInfo(device).refCount().map(props => {
+      const infoMap = new Map();
+      for (const [key, value] of props) {
+        const beautifulKey = key.toLowerCase().replace('_', ' ');
+        infoMap.set(beautifulKey.charAt(0).toUpperCase() + beautifulKey.slice(1), value);
+      }
+      return infoMap;
+    });
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Device information';
   }
 
-  getPriority(): number {
+  getPriority() {
     return 100;
   }
 
-  isSupported(): Observable<boolean> {
-    return Observable.of(true);
+  isSupported() {
+    return _rxjsBundlesRxMinJs.Observable.of(true);
   }
 }
+exports.ATDeviceInfoProvider = ATDeviceInfoProvider;

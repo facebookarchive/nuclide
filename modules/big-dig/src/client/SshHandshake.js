@@ -1,3 +1,73 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SshHandshake = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.decorateSshConnectionDelegateWithTracking = decorateSshConnectionDelegateWithTracking;
+
+var _net = _interopRequireDefault(require('net'));
+
+var _ssh;
+
+function _load_ssh() {
+  return _ssh = require('ssh2');
+}
+
+var _fs;
+
+function _load_fs() {
+  return _fs = _interopRequireDefault(require('../common/fs'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = require('../common/temp');
+}
+
+var _ConnectionTracker;
+
+function _load_ConnectionTracker() {
+  return _ConnectionTracker = _interopRequireDefault(require('./ConnectionTracker'));
+}
+
+var _WebSocketTransport;
+
+function _load_WebSocketTransport() {
+  return _WebSocketTransport = require('../common/WebSocketTransport');
+}
+
+var _lookupPreferIpV;
+
+function _load_lookupPreferIpV() {
+  return _lookupPreferIpV = _interopRequireDefault(require('./lookup-prefer-ip-v6'));
+}
+
+var _createWebSocketTransport;
+
+function _load_createWebSocketTransport() {
+  return _createWebSocketTransport = _interopRequireDefault(require('./createWebSocketTransport'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TODO
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,32 +76,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import net from 'net';
-import invariant from 'assert';
-import {Client as SshConnection} from 'ssh2';
-import fs from '../common/fs';
-import {sleep} from 'nuclide-commons/promise';
-import {shellQuote} from 'nuclide-commons/string';
-import {tempfile} from '../common/temp';
-import ConnectionTracker from './ConnectionTracker';
-import {WebSocketTransport} from '../common/WebSocketTransport';
-import lookupPreferIpv6 from './lookup-prefer-ip-v6';
-import createWebSocketTransport from './createWebSocketTransport';
-
-// TODO
-function restoreWebSocketTransport(address: string) {}
-
-export type RemoteConnectionConfiguration = {
-  host: string, // host nuclide server is running on.
-  port: number, // port to connect to.
-  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
-  clientCertificate?: Buffer, // client certificate for https connection.
-  clientKey?: Buffer, // key for https connection.
-};
+function restoreWebSocketTransport(address) {}
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 120 * 1000;
@@ -40,21 +89,10 @@ const SFTP_TIMEOUT_MS = 20 * 1000;
 // Automatically retry with a password prompt if existing authentication methods fail.
 const PASSWORD_RETRIES = 3;
 
-export type SshConnectionConfiguration = {
-  host: string, // host nuclide server is running on
-  sshPort: number, // ssh port of host nuclide server is running on
-  username: string, // username to authenticate as
-  pathToPrivateKey: string, // The path to private key
-  remoteServerCommand: string, // Command to use to start server
-  remoteServerCustomParams?: Object, // JSON-serializable params.
-  authMethod: string, // Which of the authentication methods in `SupportedMethods` to use.
-  password: string, // for simple password-based authentication
-};
-
 const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
-  PRIVATE_KEY: 'PRIVATE_KEY',
+  PRIVATE_KEY: 'PRIVATE_KEY'
 });
 
 const ErrorType = Object.freeze({
@@ -68,29 +106,8 @@ const ErrorType = Object.freeze({
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
-  USER_CANCELLED: 'USER_CANCELLED',
+  USER_CANCELLED: 'USER_CANCELLED'
 });
-
-export type SshHandshakeErrorType =
-  | 'UNKNOWN'
-  | 'HOST_NOT_FOUND'
-  | 'CANT_READ_PRIVATE_KEY'
-  | 'SSH_CONNECT_TIMEOUT'
-  | 'SSH_CONNECT_FAILED'
-  | 'SSH_AUTHENTICATION'
-  | 'DIRECTORY_NOT_FOUND'
-  | 'SERVER_START_FAILED'
-  | 'SERVER_CANNOT_CONNECT'
-  | 'SFTP_TIMEOUT'
-  | 'USER_CANCELLED';
-
-type SshConnectionErrorLevel =
-  | 'client-timeout'
-  | 'client-socket'
-  | 'protocal'
-  | 'client-authentication'
-  | 'agent'
-  | 'client-dns';
 
 /**
  * The server is asking for replies to the given prompts for
@@ -105,251 +122,163 @@ type SshConnectionErrorLevel =
  *     array of strings and passed to finish when you are ready to continue. Note:
  *     It's possible for the server to come back and ask more questions.
  */
-export type KeyboardInteractiveCallback = (
-  name: string,
-  instructions: string,
-  instructionsLang: string,
-  prompts: Array<{prompt: string, echo: boolean}>,
-  finish: (answers: Array<string>) => void,
-) => void;
 
-export type SshConnectionDelegate = {
-  /** Invoked when server requests keyboard interaction */
-  onKeyboardInteractive: KeyboardInteractiveCallback,
-  /** Invoked when trying to connect */
-  onWillConnect: (config: SshConnectionConfiguration) => void,
-  /** Invoked when connection is sucessful */
-  onDidConnect: (
-    connection: WebSocketTransport,
-    config: SshConnectionConfiguration,
-  ) => mixed,
-  /** Invoked when connection is fails */
-  onError: (
-    errorType: SshHandshakeErrorType,
-    error: Error,
-    config: SshConnectionConfiguration,
-  ) => void,
-};
 
-const SshConnectionErrorLevelMap: Map<
-  SshConnectionErrorLevel,
-  SshHandshakeErrorType,
-> = new Map([
-  ['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT],
-  ['client-socket', ErrorType.SSH_CONNECT_FAILED],
-  ['protocal', ErrorType.SSH_CONNECT_FAILED],
-  ['client-authentication', ErrorType.SSH_AUTHENTICATION],
-  ['agent', ErrorType.SSH_AUTHENTICATION],
-  ['client-dns', ErrorType.SSH_AUTHENTICATION],
-]);
+const SshConnectionErrorLevelMap = new Map([['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT], ['client-socket', ErrorType.SSH_CONNECT_FAILED], ['protocal', ErrorType.SSH_CONNECT_FAILED], ['client-authentication', ErrorType.SSH_AUTHENTICATION], ['agent', ErrorType.SSH_AUTHENTICATION], ['client-dns', ErrorType.SSH_AUTHENTICATION]]);
 
-export class SshHandshake {
-  static ErrorType = ErrorType;
-  static SupportedMethods: typeof SupportedMethods = SupportedMethods;
+class SshHandshake {
 
-  _delegate: SshConnectionDelegate;
-  _connection: SshConnection;
-  _config: SshConnectionConfiguration;
-  _forwardingServer: net.Server;
-  _remoteHost: ?string;
-  _remotePort: ?number;
-  _certificateAuthorityCertificate: Buffer;
-  _clientCertificate: Buffer;
-  _clientKey: Buffer;
-  _passwordRetryCount: number;
-  _cancelled: boolean;
-
-  constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
+  constructor(delegate, connection) {
     this._cancelled = false;
     this._delegate = delegate;
-    this._connection = connection ? connection : new SshConnection();
+    this._connection = connection ? connection : new (_ssh || _load_ssh()).Client();
     this._connection.on('ready', () => this._onSshConnectionIsReady());
     this._connection.on('error', this._onSshConnectionError.bind(this));
-    this._connection.on(
-      'keyboard-interactive',
-      this._onKeyboardInteractive.bind(this),
-    );
+    this._connection.on('keyboard-interactive', this._onKeyboardInteractive.bind(this));
   }
 
-  _willConnect(): void {
+  _willConnect() {
     this._delegate.onWillConnect(this._config);
   }
 
-  _didConnect(connection: WebSocketTransport): void {
+  _didConnect(connection) {
     this._delegate.onDidConnect(connection, this._config);
   }
 
-  _error(
-    message: string,
-    errorType: SshHandshakeErrorType,
-    error: Error,
-  ): void {
+  _error(message, errorType, error) {
     // eslint-disable-next-line no-console
     console.error(`SshHandshake failed: ${errorType}, ${message}`, error);
     this._delegate.onError(errorType, error, this._config);
   }
 
-  _onSshConnectionError(error: Error): void {
-    const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
+  _onSshConnectionError(error) {
+    const errorLevel = error.level;
     // Upon authentication failure, fall back to using a password.
-    if (
-      errorLevel === 'client-authentication' &&
-      this._passwordRetryCount < PASSWORD_RETRIES
-    ) {
+    if (errorLevel === 'client-authentication' && this._passwordRetryCount < PASSWORD_RETRIES) {
       const config = this._config;
       const retryText = this._passwordRetryCount ? ' again' : '';
-      this._delegate.onKeyboardInteractive(
-        '',
-        '',
-        '', // ignored
-        [
-          {
-            prompt: `Authentication failed. Try entering your password${retryText}: `,
-            echo: false,
-          },
-        ],
-        ([password]) => {
-          this._connection.connect({
-            host: config.host,
-            port: config.sshPort,
-            username: config.username,
-            password,
-            tryKeyboard: true,
-            readyTimeout: READY_TIMEOUT_MS,
-          });
-        },
-      );
+      this._delegate.onKeyboardInteractive('', '', '', // ignored
+      [{
+        prompt: `Authentication failed. Try entering your password${retryText}: `,
+        echo: false
+      }], ([password]) => {
+        this._connection.connect({
+          host: config.host,
+          port: config.sshPort,
+          username: config.username,
+          password,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        });
+      });
       this._passwordRetryCount++;
       return;
     }
-    const errorType =
-      SshConnectionErrorLevelMap.get(errorLevel) ||
-      SshHandshake.ErrorType.UNKNOWN;
+    const errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
     this._error('Ssh connection failed.', errorType, error);
   }
 
-  async connect(config: SshConnectionConfiguration): Promise<void> {
-    this._config = config;
-    this._passwordRetryCount = 0;
-    this._cancelled = false;
-    this._willConnect();
+  connect(config) {
+    var _this = this;
 
-    let address;
-    try {
-      address = await lookupPreferIpv6(config.host);
-    } catch (e) {
-      return this._error(
-        'Failed to resolve DNS.',
-        SshHandshake.ErrorType.HOST_NOT_FOUND,
-        e,
-      );
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._config = config;
+      _this._passwordRetryCount = 0;
+      _this._cancelled = false;
+      _this._willConnect();
 
-    const connection =
-      (await restoreWebSocketTransport(this._config.host)) ||
+      let address;
+      try {
+        address = yield (0, (_lookupPreferIpV || _load_lookupPreferIpV()).default)(config.host);
+      } catch (e) {
+        return _this._error('Failed to resolve DNS.', SshHandshake.ErrorType.HOST_NOT_FOUND, e);
+      }
+
+      const connection = (yield restoreWebSocketTransport(_this._config.host)) || (
       // We save connections by their IP address as well, in case a different hostname
       // was used for the same server.
-      (await restoreWebSocketTransport(address));
+      yield restoreWebSocketTransport(address));
 
-    if (connection) {
-      this._didConnect(connection);
-      return;
-    }
-
-    if (config.authMethod === SupportedMethods.SSL_AGENT) {
-      // Point to ssh-agent's socket for ssh-agent-based authentication.
-      let agent = process.env.SSH_AUTH_SOCK;
-      if (!agent && /^win/.test(process.platform)) {
-        // #100: On Windows, fall back to pageant.
-        agent = 'pageant';
-      }
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        agent,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      });
-    } else if (config.authMethod === SupportedMethods.PASSWORD) {
-      // The user has already entered the password once.
-      this._passwordRetryCount++;
-      // When the user chooses password-based authentication, we specify
-      // the config as follows so that it tries simple password auth and
-      // failing that it falls through to the keyboard interactive path
-      this._connection.connect({
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        password: config.password,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      });
-    } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
-      // Note that if the path the user entered contains a ~, the calling function is responsible
-      // for doing the expansion before it is passed in.
-      const expandedPath = config.pathToPrivateKey;
-      let privateKey;
-      try {
-        privateKey = await fs.readFileAsBuffer(expandedPath);
-      } catch (e) {
-        this._error(
-          `Failed to read private key at ${expandedPath}.`,
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          e,
-        );
+      if (connection) {
+        _this._didConnect(connection);
         return;
       }
 
-      try {
-        this._connection.connect({
+      if (config.authMethod === SupportedMethods.SSL_AGENT) {
+        // Point to ssh-agent's socket for ssh-agent-based authentication.
+        let agent = process.env.SSH_AUTH_SOCK;
+        if (!agent && /^win/.test(process.platform)) {
+          // #100: On Windows, fall back to pageant.
+          agent = 'pageant';
+        }
+        _this._connection.connect({
           host: address,
           port: config.sshPort,
           username: config.username,
-          privateKey,
+          agent,
           tryKeyboard: true,
-          readyTimeout: READY_TIMEOUT_MS,
+          readyTimeout: READY_TIMEOUT_MS
         });
-      } catch (e) {
-        if (
-          e.message ===
-          'Encrypted private key detected, but no passphrase given'
-        ) {
-          this._delegate.onKeyboardInteractive(
-            '',
-            '',
-            '', // ignored
-            [
-              {
-                prompt:
-                  'Encrypted private key detected, but no passphrase given.\n' +
-                  `Enter passphrase for ${config.pathToPrivateKey}: `,
-                echo: false,
-              },
-            ],
-            ([passphrase]) => {
-              this._connection.connect({
+      } else if (config.authMethod === SupportedMethods.PASSWORD) {
+        // The user has already entered the password once.
+        _this._passwordRetryCount++;
+        // When the user chooses password-based authentication, we specify
+        // the config as follows so that it tries simple password auth and
+        // failing that it falls through to the keyboard interactive path
+        _this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          password: config.password,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        });
+      } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
+        // Note that if the path the user entered contains a ~, the calling function is responsible
+        // for doing the expansion before it is passed in.
+        const expandedPath = config.pathToPrivateKey;
+        let privateKey;
+        try {
+          privateKey = yield (_fs || _load_fs()).default.readFileAsBuffer(expandedPath);
+        } catch (e) {
+          _this._error(`Failed to read private key at ${expandedPath}.`, SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY, e);
+          return;
+        }
+
+        try {
+          _this._connection.connect({
+            host: address,
+            port: config.sshPort,
+            username: config.username,
+            privateKey,
+            tryKeyboard: true,
+            readyTimeout: READY_TIMEOUT_MS
+          });
+        } catch (e) {
+          if (e.message === 'Encrypted private key detected, but no passphrase given') {
+            _this._delegate.onKeyboardInteractive('', '', '', // ignored
+            [{
+              prompt: 'Encrypted private key detected, but no passphrase given.\n' + `Enter passphrase for ${config.pathToPrivateKey}: `,
+              echo: false
+            }], function ([passphrase]) {
+              _this._connection.connect({
                 host: config.host,
                 port: config.sshPort,
                 username: config.username,
                 privateKey,
                 passphrase,
                 tryKeyboard: true,
-                readyTimeout: READY_TIMEOUT_MS,
+                readyTimeout: READY_TIMEOUT_MS
               });
-            },
-          );
-          this._passwordRetryCount++;
-          return;
-        }
+            });
+            _this._passwordRetryCount++;
+            return;
+          }
 
-        this._error(
-          'Failed to read private key',
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          e,
-        );
+          _this._error('Failed to read private key', SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY, e);
+        }
       }
-    }
+    })();
   }
 
   cancel() {
@@ -357,47 +286,29 @@ export class SshHandshake {
     this._connection.end();
   }
 
-  _onKeyboardInteractive(
-    name: string,
-    instructions: string,
-    instructionsLang: string,
-    prompts: Array<{prompt: string, echo: boolean}>,
-    finish: (answers: Array<string>) => void,
-  ): void {
-    this._delegate.onKeyboardInteractive(
-      name,
-      instructions,
-      instructionsLang,
-      prompts,
-      finish,
-    );
+  _onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish) {
+    this._delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, finish);
   }
 
-  _forwardSocket(socket: net.Socket): void {
-    this._connection.forwardOut(
-      socket.remoteAddress,
-      socket.remotePort,
-      'localhost',
-      this._remotePort,
-      (err, stream) => {
-        if (err) {
-          socket.end();
-          console.error(err); // eslint-disable-line no-console
-          return;
-        }
-        socket.pipe(stream);
-        stream.pipe(socket);
-      },
-    );
+  _forwardSocket(socket) {
+    this._connection.forwardOut(socket.remoteAddress, socket.remotePort, 'localhost', this._remotePort, (err, stream) => {
+      if (err) {
+        socket.end();
+        console.error(err); // eslint-disable-line no-console
+        return;
+      }
+      socket.pipe(stream);
+      stream.pipe(socket);
+    });
   }
 
-  _updateServerInfo(serverInfo: {}) {
-    invariant(typeof serverInfo.port === 'number');
+  _updateServerInfo(serverInfo) {
+    if (!(typeof serverInfo.port === 'number')) {
+      throw new Error('Invariant violation: "typeof serverInfo.port === \'number\'"');
+    }
+
     this._remotePort = serverInfo.port;
-    this._remoteHost =
-      typeof serverInfo.hostname === 'string'
-        ? serverInfo.hostname
-        : this._config.host;
+    this._remoteHost = typeof serverInfo.hostname === 'string' ? serverInfo.hostname : this._config.host;
 
     // The following keys are optional in `RemoteConnectionConfiguration`.
     //
@@ -415,15 +326,13 @@ export class SshHandshake {
     }
   }
 
-  _isSecure(): boolean {
-    return Boolean(
-      this._certificateAuthorityCertificate &&
-        this._clientCertificate &&
-        this._clientKey,
-    );
+  _isSecure() {
+    return Boolean(this._certificateAuthorityCertificate && this._clientCertificate && this._clientKey);
   }
 
-  _startRemoteServer(): Promise<boolean> {
+  _startRemoteServer() {
+    var _this2 = this;
+
     let sftpTimer = null;
     return new Promise((resolve, reject) => {
       let stdOut = '';
@@ -433,19 +342,17 @@ export class SshHandshake {
         jsonOutputFile: remoteTempFile,
         timeout: '60s', // Currently unused and not configurable.
         expiration: '7d',
-        serverParams: this._config.remoteServerCustomParams,
+        serverParams: this._config.remoteServerCustomParams
       };
-      const cmd = `${this._config.remoteServerCommand} ${shellQuote([
-        JSON.stringify(params),
-      ])}`;
+      const cmd = `${this._config.remoteServerCommand} ${(0, (_string || _load_string()).shellQuote)([JSON.stringify(params)])}`;
 
-      this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
+      this._connection.exec(cmd, { pty: { term: 'nuclide' } }, (err, stream) => {
         if (err) {
           this._onSshConnectionError(err);
           return resolve(false);
         }
-        stream
-          .on('close', async (code, signal) => {
+        stream.on('close', (() => {
+          var _ref = (0, _asyncToGenerator.default)(function* (code, signal) {
             // Note: this code is probably the code from the child shell if one
             // is in use.
             if (code === 0) {
@@ -453,95 +360,80 @@ export class SshHandshake {
               // the old channel has been cleaned up on the server.
               // TODO(hansonw): Implement a proper retry mechanism.
               // But first, we have to clean up this callback hell.
-              await sleep(100);
-              sftpTimer = setTimeout(() => {
-                this._error(
-                  'Failed to start sftp connection',
-                  SshHandshake.ErrorType.SFTP_TIMEOUT,
-                  new Error(),
-                );
+              yield (0, (_promise || _load_promise()).sleep)(100);
+              sftpTimer = setTimeout(function () {
+                _this2._error('Failed to start sftp connection', SshHandshake.ErrorType.SFTP_TIMEOUT, new Error());
                 sftpTimer = null;
-                this._connection.end();
+                _this2._connection.end();
                 resolve(false);
               }, SFTP_TIMEOUT_MS);
-              this._connection.sftp(async (error, sftp) => {
-                if (sftpTimer != null) {
-                  // Clear the sftp timer once we get a response.
-                  clearTimeout(sftpTimer);
-                } else {
-                  // If the timer already triggered, we timed out. Just exit.
-                  return;
-                }
-                if (error) {
-                  this._error(
-                    'Failed to start sftp connection',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    error,
-                  );
-                  return resolve(false);
-                }
-                const localTempFile = await tempfile();
-                sftp.fastGet(remoteTempFile, localTempFile, async sftpError => {
-                  sftp.end();
-                  if (sftpError) {
-                    this._error(
-                      'Failed to transfer server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      sftpError,
-                    );
+              _this2._connection.sftp((() => {
+                var _ref2 = (0, _asyncToGenerator.default)(function* (error, sftp) {
+                  if (sftpTimer != null) {
+                    // Clear the sftp timer once we get a response.
+                    clearTimeout(sftpTimer);
+                  } else {
+                    // If the timer already triggered, we timed out. Just exit.
+                    return;
+                  }
+                  if (error) {
+                    _this2._error('Failed to start sftp connection', SshHandshake.ErrorType.SERVER_START_FAILED, error);
                     return resolve(false);
                   }
+                  const localTempFile = yield (0, (_temp || _load_temp()).tempfile)();
+                  sftp.fastGet(remoteTempFile, localTempFile, (() => {
+                    var _ref3 = (0, _asyncToGenerator.default)(function* (sftpError) {
+                      sftp.end();
+                      if (sftpError) {
+                        _this2._error('Failed to transfer server start information', SshHandshake.ErrorType.SERVER_START_FAILED, sftpError);
+                        return resolve(false);
+                      }
 
-                  let serverInfo: any = null;
-                  const serverInfoJson = await fs.readFileAsString(
-                    localTempFile,
-                    'utf8',
-                  );
-                  try {
-                    serverInfo = JSON.parse(serverInfoJson);
-                  } catch (e) {
-                    this._error(
-                      'Malformed server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfoJson),
-                    );
-                    return resolve(false);
-                  }
+                      let serverInfo = null;
+                      const serverInfoJson = yield (_fs || _load_fs()).default.readFileAsString(localTempFile, 'utf8');
+                      try {
+                        serverInfo = JSON.parse(serverInfoJson);
+                      } catch (e) {
+                        _this2._error('Malformed server start information', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfoJson));
+                        return resolve(false);
+                      }
 
-                  if (!serverInfo.success) {
-                    this._error(
-                      'Remote server failed to start',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
+                      if (!serverInfo.success) {
+                        _this2._error('Remote server failed to start', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfo.logs));
+                        return resolve(false);
+                      }
 
-                  // Update server info that is needed for setting up client.
-                  this._updateServerInfo(serverInfo);
-                  return resolve(true);
+                      // Update server info that is needed for setting up client.
+                      _this2._updateServerInfo(serverInfo);
+                      return resolve(true);
+                    });
+
+                    return function (_x5) {
+                      return _ref3.apply(this, arguments);
+                    };
+                  })());
                 });
-              });
+
+                return function (_x3, _x4) {
+                  return _ref2.apply(this, arguments);
+                };
+              })());
             } else {
-              if (this._cancelled) {
-                this._error(
-                  'Cancelled by user',
-                  SshHandshake.ErrorType.USER_CANCELLED,
-                  new Error(stdOut),
-                );
+              if (_this2._cancelled) {
+                _this2._error('Cancelled by user', SshHandshake.ErrorType.USER_CANCELLED, new Error(stdOut));
               } else {
-                this._error(
-                  'Remote shell execution failed',
-                  SshHandshake.ErrorType.UNKNOWN,
-                  new Error(stdOut),
-                );
+                _this2._error('Remote shell execution failed', SshHandshake.ErrorType.UNKNOWN, new Error(stdOut));
               }
               return resolve(false);
             }
-          })
-          .on('data', data => {
-            stdOut += data;
           });
+
+          return function (_x, _x2) {
+            return _ref.apply(this, arguments);
+          };
+        })()).on('data', data => {
+          stdOut += data;
+        });
       });
     });
   }
@@ -549,124 +441,126 @@ export class SshHandshake {
   /**
    * This is called when the SshConnection is ready.
    */
-  async _onSshConnectionIsReady(): Promise<void> {
-    if (!await this._startRemoteServer()) {
-      return;
-    }
+  _onSshConnectionIsReady() {
+    var _this3 = this;
 
-    // Use an ssh tunnel if server is not secure
-    if (this._isSecure()) {
-      invariant(this._remoteHost);
-      invariant(this._remotePort);
-      this._establishWebSocketTransport({
-        host: this._remoteHost,
-        port: this._remotePort,
-        certificateAuthorityCertificate: this._certificateAuthorityCertificate,
-        clientCertificate: this._clientCertificate,
-        clientKey: this._clientKey,
-      });
-    } else {
-      /* $FlowIssue t9212378 */
-      this._forwardingServer = net
-        .createServer(sock => {
-          this._forwardSocket(sock);
-        })
-        .listen(0, 'localhost', () => {
-          const localPort = this._getLocalPort();
-          invariant(localPort);
-          this._establishWebSocketTransport({
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(yield _this3._startRemoteServer())) {
+        return;
+      }
+
+      // Use an ssh tunnel if server is not secure
+      if (_this3._isSecure()) {
+        if (!_this3._remoteHost) {
+          throw new Error('Invariant violation: "this._remoteHost"');
+        }
+
+        if (!_this3._remotePort) {
+          throw new Error('Invariant violation: "this._remotePort"');
+        }
+
+        _this3._establishWebSocketTransport({
+          host: _this3._remoteHost,
+          port: _this3._remotePort,
+          certificateAuthorityCertificate: _this3._certificateAuthorityCertificate,
+          clientCertificate: _this3._clientCertificate,
+          clientKey: _this3._clientKey
+        });
+      } else {
+        /* $FlowIssue t9212378 */
+        _this3._forwardingServer = _net.default.createServer(function (sock) {
+          _this3._forwardSocket(sock);
+        }).listen(0, 'localhost', function () {
+          const localPort = _this3._getLocalPort();
+
+          if (!localPort) {
+            throw new Error('Invariant violation: "localPort"');
+          }
+
+          _this3._establishWebSocketTransport({
             host: 'localhost',
-            port: localPort,
+            port: localPort
           });
         });
-    }
+      }
+    })();
   }
 
   /**
    * Now that the remote server has been started, create the WebSocketTransport to talk to it and
    * pass it to the _didConnect() callback.
    */
-  async _establishWebSocketTransport(
-    config: RemoteConnectionConfiguration,
-  ): Promise<void> {
-    let webSocketTransport = null;
-    try {
-      webSocketTransport = await createWebSocketTransport(config);
-    } catch (e) {
-      this._error(
-        'Connection check failed',
-        SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
-        e,
-      );
-    }
+  _establishWebSocketTransport(config) {
+    var _this4 = this;
 
-    if (webSocketTransport != null) {
-      this._didConnect(webSocketTransport);
-      // If we are secure then we don't need the ssh tunnel.
-      if (this._isSecure()) {
-        this._connection.end();
+    return (0, _asyncToGenerator.default)(function* () {
+      let webSocketTransport = null;
+      try {
+        webSocketTransport = yield (0, (_createWebSocketTransport || _load_createWebSocketTransport()).default)(config);
+      } catch (e) {
+        _this4._error('Connection check failed', SshHandshake.ErrorType.SERVER_CANNOT_CONNECT, e);
       }
-    }
+
+      if (webSocketTransport != null) {
+        _this4._didConnect(webSocketTransport);
+        // If we are secure then we don't need the ssh tunnel.
+        if (_this4._isSecure()) {
+          _this4._connection.end();
+        }
+      }
+    })();
   }
 
-  _getLocalPort(): ?number {
-    return this._forwardingServer
-      ? this._forwardingServer.address().port
-      : null;
+  _getLocalPort() {
+    return this._forwardingServer ? this._forwardingServer.address().port : null;
   }
 
-  getConfig(): SshConnectionConfiguration {
+  getConfig() {
     return this._config;
   }
 }
 
-export function decorateSshConnectionDelegateWithTracking(
-  delegate: SshConnectionDelegate,
-): SshConnectionDelegate {
+exports.SshHandshake = SshHandshake;
+SshHandshake.ErrorType = ErrorType;
+SshHandshake.SupportedMethods = SupportedMethods;
+function decorateSshConnectionDelegateWithTracking(delegate) {
   let connectionTracker;
 
   return {
-    onKeyboardInteractive: (
-      name: string,
-      instructions: string,
-      instructionsLang: string,
-      prompts: Array<{prompt: string, echo: boolean}>,
-      finish: (answers: Array<string>) => void,
-    ) => {
-      invariant(connectionTracker);
+    onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish) => {
+      if (!connectionTracker) {
+        throw new Error('Invariant violation: "connectionTracker"');
+      }
+
       connectionTracker.trackPromptYubikeyInput();
-      delegate.onKeyboardInteractive(
-        name,
-        instructions,
-        instructionsLang,
-        prompts,
-        answers => {
-          invariant(connectionTracker);
-          connectionTracker.trackFinishYubikeyInput();
-          finish(answers);
-        },
-      );
+      delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts, answers => {
+        if (!connectionTracker) {
+          throw new Error('Invariant violation: "connectionTracker"');
+        }
+
+        connectionTracker.trackFinishYubikeyInput();
+        finish(answers);
+      });
     },
-    onWillConnect: (config: SshConnectionConfiguration) => {
-      connectionTracker = new ConnectionTracker(config);
+    onWillConnect: config => {
+      connectionTracker = new (_ConnectionTracker || _load_ConnectionTracker()).default(config);
       delegate.onWillConnect(config);
     },
-    onDidConnect: (
-      connection: WebSocketTransport,
-      config: SshConnectionConfiguration,
-    ) => {
-      invariant(connectionTracker);
+    onDidConnect: (connection, config) => {
+      if (!connectionTracker) {
+        throw new Error('Invariant violation: "connectionTracker"');
+      }
+
       connectionTracker.trackSuccess();
       delegate.onDidConnect(connection, config);
     },
-    onError: (
-      errorType: SshHandshakeErrorType,
-      error: Error,
-      config: SshConnectionConfiguration,
-    ) => {
-      invariant(connectionTracker);
+    onError: (errorType, error, config) => {
+      if (!connectionTracker) {
+        throw new Error('Invariant violation: "connectionTracker"');
+      }
+
       connectionTracker.trackFailure(errorType, error);
       delegate.onError(errorType, error, config);
-    },
+    }
   };
 }
