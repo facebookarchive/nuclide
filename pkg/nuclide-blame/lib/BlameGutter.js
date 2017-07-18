@@ -75,8 +75,6 @@ export default class BlameGutter {
     this._bufferLineToDecoration = new Map();
     // Priority is -200 by default and 0 is the line number
     this._gutter = editor.addGutter({name: gutterName, priority: -1200});
-    const gutterView: HTMLElement = atom.views.getView(this._gutter);
-    gutterView.classList.add('nuclide-blame');
 
     this._subscriptions.add(
       editor.onDidDestroy(() => {
