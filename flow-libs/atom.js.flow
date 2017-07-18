@@ -1509,7 +1509,6 @@ declare class atom$TextBuffer {
   }): atom$TextBuffer,
 
   file: ?atom$File,
-  changeCount: number,
 
   // Mixin
   static deserialize: (state: Object, params: Object) => mixed,
