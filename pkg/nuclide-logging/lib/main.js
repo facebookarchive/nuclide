@@ -20,7 +20,6 @@ import type {AdditionalLogFile} from './config';
 
 import log4js from 'log4js';
 
-import addPrepareStackTraceHook from './stacktrace';
 import once from '../../commons-node/once';
 import {
   getDefaultConfig,
@@ -58,6 +57,5 @@ export const initialUpdateConfig = once(() => {
 });
 
 export function initializeLogging() {
-  addPrepareStackTraceHook();
   initialUpdateConfig();
 }
