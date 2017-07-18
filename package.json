@@ -146,6 +146,7 @@
   "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
+    "file-icons",
     "tool-bar:1.1.0",
     "haskell-grammar",
     "highlight-selected",
