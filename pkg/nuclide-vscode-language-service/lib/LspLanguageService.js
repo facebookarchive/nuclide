@@ -987,6 +987,10 @@ export class LspLanguageService {
       return null;
     }
 
+    if (response == null) {
+      return null;
+    }
+
     const isIncomplete = Array.isArray(response)
       ? false
       : response.isIncomplete;
