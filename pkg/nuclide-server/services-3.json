@@ -97,6 +97,10 @@
     "name": "SdbService"
   },
   {
+    "implementation": "../nuclide-socket-rpc/lib/SocketService.js",
+    "name": "SocketService"
+  },
+  {
     "implementation": "./lib/services/SourceControlService.js",
     "name": "SourceControlService"
   }

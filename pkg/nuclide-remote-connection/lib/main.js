@@ -79,6 +79,7 @@ import typeof * as PythonService from '../../nuclide-python-rpc';
 import typeof * as ReasonService from '../../nuclide-ocaml-rpc/lib/ReasonService';
 import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
+import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
@@ -185,6 +186,10 @@ export function getRemoteCommandServiceByNuclideUri(
 
 export function getSdbServiceByNuclideUri(uri: NuclideUri): SdbService {
   return nullthrows(getServiceByNuclideUri('SdbService', uri));
+}
+
+export function getSocketServiceByNuclideUri(uri: NuclideUri): SocketService {
+  return nullthrows(getServiceByNuclideUri('SocketService', uri));
 }
 
 export function getSourceControlServiceByNuclideUri(
