@@ -49,7 +49,7 @@ type atom$Octicon = 'alert' | 'alignment-align' | 'alignment-aligned-to' | 'alig
   'trashcan' | 'triangle-down' | 'triangle-left' | 'triangle-right' | 'triangle-up' | 'unfold' |
   'unmute' | 'unverified' | 'verified' | 'versions' | 'watch' | 'x' | 'zap';
 
-type atom$ItemLocation = 'left' | 'right' | 'bottom' | 'center';
+type atom$PaneLocation = 'left' | 'right' | 'bottom' | 'center';
 
 declare class atom$Model {
   destroy(): void,
@@ -479,6 +479,7 @@ declare class atom$PaneContainer {
   destroy(): void,
   getActivePane(): atom$Pane,
   getActivePaneItem(): ?Object,
+  getLocation(): atom$PaneLocation,
   getPanes(): Array<atom$Pane>,
   getPaneItems(): Array<atom$PaneItem>,
   observePanes(cb: (pane: atom$Pane) => void): IDisposable,
@@ -1116,6 +1117,8 @@ declare class atom$Workspace {
   ): IDisposable,
   onDidOpen(callback: (event: OnDidOpenEvent) => mixed): IDisposable,
 
+  getElement(): HTMLElement,
+
   // Opening
   open(
     uri?: string,
@@ -1147,6 +1150,10 @@ declare class atom$Workspace {
   addOpener(callback: (uri: string) => any): IDisposable,
   hide(uriOrItem: string | Object): void,
   toggle(uriOrItem: string | Object): void,
+
+  // Pane Containers
+  getPaneContainers(): Array<atom$PaneContainer>,
+  paneContainerForItem(item: ?mixed): ?atom$PaneContainer,
 
   // Pane Items
   getPaneItems(): Array<Object>,

@@ -20,22 +20,12 @@ import shallowEqual from 'shallowequal';
 export default function observePaneItemVisibility(
   item: Object,
 ): Observable<boolean> {
-  // If this is a version of Atom that doesn't have Docks, return an empty observable. Until they
-  // land, the functionality is provided by the workspace views package, which calls
-  // `didChangeVisibility()` on items automatically.
-  // TODO cleanup post Atom 1.17
-  if (atom.workspace.getPaneContainers == null) {
-    return Observable.empty();
-  }
-
   patchDocks();
 
   return Observable.combineLatest(
     // atom.workspace.reset() (in tests) resets all the panes.
     // Pass in atom.workspace.getElement() to act as a cache-breaker.
-    // $FlowFixMe: Add atom.workspace.getElement() after 1.17.
     observeActiveItems(atom.workspace.getElement()),
-    // $FlowFixMe: Add atom.workspace.getElement() after 1.17.
     observePaneContainerVisibilities(atom.workspace.getElement()),
   )
     .map(([activeItems, locationVisibilities]) => {
@@ -44,10 +34,10 @@ export default function observePaneItemVisibility(
         return false;
       }
       // If it's active, it's only visible if its container is.
-      // $FlowFixMe: Add atom.workspace.paneContainerForItem() after 1.17.
       const paneContainer = atom.workspace.paneContainerForItem(item);
-      const location = paneContainer && paneContainer.getLocation();
-      return Boolean(locationVisibilities[location]);
+      return paneContainer == null
+        ? false
+        : locationVisibilities[paneContainer.getLocation()];
     })
     .distinctUntilChanged();
 }
@@ -55,7 +45,6 @@ export default function observePaneItemVisibility(
 const observeActiveItems = memoizeUntilChanged(_cacheKey => {
   // An observable that emits `{pane, item}` whenever the active item of a pane changes.
   const itemActivations = Observable.merge(
-    // $FlowFixMe: Add `getPaneContainers()` to the type defs once Atom 1.17 lands.
     ...atom.workspace.getPaneContainers().map(paneContainer => {
       const observePanes = paneContainer.observePanes.bind(paneContainer);
       return observableFromSubscribeFunction(observePanes).flatMap(pane => {
@@ -136,7 +125,7 @@ const observePaneContainerVisibilities = memoizeUntilChanged(_cacheKey => {
 });
 
 // HACK: Monkey-patch Docks in order to observe visibility toggling.
-// TODO: Get a `Dock::observeVisibility()` upstreamed and use that API instead.
+// TODO: Use `Dock::observeVisibility` once atom/atom#14736 is in our lowest-supported version
 let docksPatched = false;
 const dockStateChanges = new Subject();
 function patchDocks() {

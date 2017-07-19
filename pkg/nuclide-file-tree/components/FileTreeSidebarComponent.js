@@ -680,11 +680,11 @@ All the changes across your entire stacked diff.
     return `Current Working Directory: '${directory}' on '${host}'`;
   }
 
-  getDefaultLocation(): atom$ItemLocation {
+  getDefaultLocation(): atom$PaneLocation {
     return 'left';
   }
 
-  getAllowedLocations(): Array<atom$ItemLocation> {
+  getAllowedLocations(): Array<atom$PaneLocation> {
     return ['left', 'right'];
   }
 
