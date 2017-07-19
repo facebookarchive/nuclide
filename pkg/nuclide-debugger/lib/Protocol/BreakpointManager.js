@@ -95,7 +95,9 @@ export default class BreakpointManager {
       // not implement "resolved" flag in resolved resposne.
       if (resolved !== false) {
         for (const location of locations) {
-          this._sendBreakpointResolved(breakpointId, location);
+          if (location != null) {
+            this._sendBreakpointResolved(breakpointId, location);
+          }
         }
       }
     }
@@ -293,7 +295,7 @@ export default class BreakpointManager {
 
   handleBreakpointResolved(params: BreakpointResolvedEvent): void {
     const {breakpointId, location} = params;
-    if (this._getBreakpointFromId(breakpointId) !== null) {
+    if (this._getBreakpointFromId(breakpointId) !== null && location != null) {
       this._sendBreakpointResolved(breakpointId, location);
     } else {
       // User has removed this breakpoint before engine resolves it.
