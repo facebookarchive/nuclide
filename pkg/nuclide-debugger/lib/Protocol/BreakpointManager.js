@@ -131,7 +131,9 @@ export default class BreakpointManager {
       // In current design, there is a UI race between user sets breakpoint
       // while engine haven't created it yet so this may be expected.
       // Issue an warning instead of error.
-      reportWarning('Do you try to update a breakpoint not exist?');
+      reportWarning(
+        'Failed to update breakpoint: the debugger was unable to locate the breakpoint at the specified file and line.',
+      );
     }
   }
 
@@ -148,7 +150,7 @@ export default class BreakpointManager {
         this.setFilelineBreakpoint(newRequest);
         break;
       case 'RemoveBreakpoint':
-        this.removeBreakpoint(newRequest);
+        this._removeBreakpointFromBackend(newRequest);
         break;
       case 'ReplaceBreakpoint':
         this.removeBreakpoint(newRequest);
@@ -179,6 +181,12 @@ export default class BreakpointManager {
   }
 
   removeBreakpoint(request: IPCBreakpoint): void {
+    this._removeBreakpointFromBackend(request);
+    // Remove from our record list.
+    this._removeBreakpointFromList(request);
+  }
+
+  _removeBreakpointFromBackend(request: IPCBreakpoint): void {
     const breakpoint = this._findBreakpointOnFileLine(
       request.sourceURL,
       request.lineNumber,
@@ -188,13 +196,6 @@ export default class BreakpointManager {
       if (this._isConfirmedBreakpoint(breakpoint)) {
         this._debuggerDispatcher.removeBreakpoint(breakpoint.id);
       }
-      // Remove from our record list.
-      this._removeBreakpointFromList(request);
-    } else {
-      // In current design, there is a UI race between user remove breakpoint
-      // while engine haven't created it yet so this may be expected.
-      // Issue an warning instead of error.
-      reportWarning('Do you try to remove a breakpoint not exist?');
     }
   }
 
