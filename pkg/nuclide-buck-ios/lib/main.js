@@ -20,6 +20,8 @@ import type {
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
+import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -27,6 +29,7 @@ import {Disposable} from 'atom';
 import {Observable} from 'rxjs';
 import * as IosSimulator from '../../nuclide-ios-common';
 import invariant from 'assert';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
 let disposable: ?Disposable = null;
 
@@ -60,54 +63,81 @@ function provideIosDevices(
     if (result) {
       return Observable.of(null);
     } else {
-      return IosSimulator.getFbsimctlSimulators().map(simulators => {
-        if (!simulators.length) {
-          return null;
-        }
+      return Observable.fromPromise(
+        (async () => {
+          const nativeDebuggerService = await consumeFirstProvider(
+            'nuclide-debugger.native-debugger-service',
+          );
 
-        return {
-          name: 'iOS Simulators',
-          platforms: [
-            {
-              isMobile: true,
-              name: 'iOS Simulators',
-              tasksForDevice: device => getTasks(buckRoot, ruleType),
-              runTask: (builder, taskType, target, settings, device) =>
-                _runTask(
-                  builder,
-                  taskType,
-                  ruleType,
-                  target,
-                  settings,
-                  device,
-                  buckRoot,
-                ),
-              deviceGroups: [
-                {
-                  name: 'iOS Simulators',
-                  devices: simulators.map(simulator => ({
-                    name: `${simulator.name} (${simulator.os})`,
-                    udid: simulator.udid,
-                    arch: simulator.arch,
-                  })),
-                },
-              ],
-            },
-          ],
-        };
+          if (nativeDebuggerService != null) {
+            return (processStream: Observable<LegacyProcessMessage>) => {
+              return nativeDebuggerService.debugTargetFromBuckOutput(
+                buckRoot,
+                processStream,
+              );
+            };
+          } else {
+            return null;
+          }
+        })(),
+      ).switchMap(debuggerCallback => {
+        return IosSimulator.getFbsimctlSimulators().map(simulators => {
+          if (!simulators.length) {
+            return null;
+          }
+
+          return {
+            name: 'iOS Simulators',
+            platforms: [
+              {
+                isMobile: true,
+                name: 'iOS Simulators',
+                tasksForDevice: device =>
+                  getTasks(buckRoot, ruleType, debuggerCallback != null),
+                runTask: (builder, taskType, target, settings, device) =>
+                  _runTask(
+                    builder,
+                    taskType,
+                    ruleType,
+                    target,
+                    settings,
+                    device,
+                    buckRoot,
+                    debuggerCallback,
+                  ),
+                deviceGroups: [
+                  {
+                    name: 'iOS Simulators',
+                    devices: simulators.map(simulator => ({
+                      name: `${simulator.name} (${simulator.os})`,
+                      udid: simulator.udid,
+                      arch: simulator.arch,
+                    })),
+                  },
+                ],
+              },
+            ],
+          };
+        });
       });
     }
   });
 }
 
-function getTasks(buckRoot: NuclideUri, ruleType: string): Set<TaskType> {
+function getTasks(
+  buckRoot: NuclideUri,
+  ruleType: string,
+  debuggerAvailable: boolean,
+): Set<TaskType> {
   const tasks = new Set(['build']);
   if (RUNNABLE_RULE_TYPES.has(ruleType)) {
     tasks.add('run');
   }
   if (!nuclideUri.isRemote(buckRoot)) {
     tasks.add('test');
-    tasks.add('debug');
+    if (debuggerAvailable) {
+      tasks.add('debug');
+    }
   }
   return tasks;
 }
@@ -120,6 +150,9 @@ function _runTask(
   settings: TaskSettings,
   device: ?Device,
   buckRoot: NuclideUri,
+  debuggerCallback: ?(
+    processStream: Observable<LegacyProcessMessage>,
+  ) => Observable<BuckEvent>,
 ): Observable<TaskEvent> {
   invariant(device);
   invariant(device.arch);
@@ -169,6 +202,7 @@ function _runTask(
       settings,
       taskType === 'debug',
       udid,
+      debuggerCallback,
     );
   }
 }

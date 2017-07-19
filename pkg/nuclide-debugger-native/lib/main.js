@@ -24,6 +24,7 @@ import type {
 } from '../../nuclide-buck/lib/types';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {ResolvedBuildTarget} from '../../nuclide-buck-rpc/lib/types';
+import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {Observable} from 'rxjs';
@@ -46,6 +47,13 @@ import {getLogger} from 'log4js';
 const SUPPORTED_RULE_TYPES = new Set(['cxx_binary', 'cxx_test']);
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
+export type NativeDebuggerService = {
+  debugTargetFromBuckOutput: (
+    buckRoot: NuclideUri,
+    processStream: Observable<LegacyProcessMessage>,
+  ) => Observable<BuckEvent>,
+};
+
 class Activation {
   _disposables: UniversalDisposable;
 
@@ -53,6 +61,9 @@ class Activation {
     this._disposables = new UniversalDisposable();
     logger.setLevel(getConfig().clientLogLevel);
     (this: any).provideLLDBPlatformGroup = this.provideLLDBPlatformGroup.bind(
+      this,
+    );
+    (this: any).createNativeDebuggerService = this.createNativeDebuggerService.bind(
       this,
     );
   }
@@ -68,6 +79,18 @@ class Activation {
         connection: NuclideUri,
       ): ?DebuggerLaunchAttachProvider {
         return new LLDBLaunchAttachProvider('Native', connection);
+      },
+    };
+  }
+
+  createNativeDebuggerService(): NativeDebuggerService {
+    const callback = this._waitForBuckThenDebugNativeTarget.bind(this);
+    return {
+      debugTargetFromBuckOutput(
+        buckRoot: NuclideUri,
+        processStream: Observable<LegacyProcessMessage>,
+      ): Observable<BuckEvent> {
+        return callback(buckRoot, processStream);
       },
     };
   }
@@ -121,6 +144,36 @@ class Activation {
         },
       ],
     });
+  }
+
+  _waitForBuckThenDebugNativeTarget(
+    buckRoot: NuclideUri,
+    processStream: Observable<LegacyProcessMessage>,
+  ) {
+    return processStream
+      .flatMap(message => {
+        if (message.kind !== 'stderr') {
+          return Observable.empty();
+        }
+
+        const regMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
+        if (regMatch != null) {
+          return Observable.of(regMatch[1]);
+        }
+
+        return Observable.empty();
+      })
+      .switchMap(attachArg => {
+        return Observable.fromPromise(
+          this._debugPidWithLLDB(parseInt(attachArg, 10), buckRoot),
+        )
+          .ignoreElements()
+          .startWith({
+            type: 'log',
+            message: `Attaching LLDB debugger to pid ${attachArg}...`,
+            level: 'info',
+          });
+      });
   }
 
   _runDebugTask(
@@ -204,33 +257,13 @@ class Activation {
           'test',
           buildTarget,
           settings,
-          false,
+          true,
           null,
           (processStream: Observable<LegacyProcessMessage>) => {
-            return processStream
-              .flatMap(message => {
-                if (message.kind !== 'stderr') {
-                  return Observable.empty();
-                }
-
-                const regMatch = message.data.match(LLDB_PROCESS_ID_REGEX);
-                if (regMatch != null) {
-                  return Observable.of(regMatch[1]);
-                }
-
-                return Observable.empty();
-              })
-              .switchMap(attachArg => {
-                return Observable.fromPromise(
-                  this._debugPidWithLLDB(parseInt(attachArg, 10), buckRoot),
-                )
-                  .ignoreElements()
-                  .startWith({
-                    type: 'log',
-                    message: `Attaching LLDB debugger to pid ${attachArg}...`,
-                    level: 'info',
-                  });
-              });
+            return this._waitForBuckThenDebugNativeTarget(
+              buckRoot,
+              processStream,
+            );
           },
         );
       default:

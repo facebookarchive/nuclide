@@ -79,6 +79,12 @@
       "versions": {
         "0.0.0": "createDebuggerProvider"
       }
+    },
+    "nuclide-debugger.native-debugger-service": {
+      "description": "LLDB debugger provider.",
+      "versions": {
+        "0.0.0": "createNativeDebuggerService"
+      }
     }
   },
   "consumedServices": {
