@@ -16,6 +16,7 @@ import type {
 import type {SshTunnelService, Store} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {TunnelsPanel, WORKSPACE_VIEW_URI} from './ui/TunnelsPanel';
 import * as Actions from './redux/Actions';
@@ -57,7 +58,7 @@ class Activation {
           return new TunnelsPanel(this._store);
         }
       }),
-      () => api.destroyWhere(item => item instanceof TunnelsPanel),
+      () => destroyItemWhere(item => item instanceof TunnelsPanel),
       atom.commands.add(
         'atom-workspace',
         'nuclide-ssh-tunnels-panel:toggle',

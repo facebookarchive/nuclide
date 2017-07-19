@@ -22,6 +22,7 @@ import {Observable} from 'rxjs';
 import {track} from '../../nuclide-analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
@@ -132,7 +133,7 @@ class Activation {
           );
         }
       }),
-      () => api.destroyWhere(item => item instanceof HealthPaneItem),
+      () => destroyItemWhere(item => item instanceof HealthPaneItem),
       atom.commands.add('atom-workspace', 'nuclide-health:toggle', event => {
         api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
       }),

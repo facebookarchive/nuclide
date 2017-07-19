@@ -16,6 +16,7 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
 import {getLogger} from 'log4js';
 
@@ -268,7 +269,7 @@ class Activation {
         }
       }),
       new Disposable(() =>
-        api.destroyWhere(item => item instanceof TestRunnerController),
+        destroyItemWhere(item => item instanceof TestRunnerController),
       ),
       atom.commands.add(
         'atom-workspace',

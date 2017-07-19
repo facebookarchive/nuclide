@@ -17,6 +17,7 @@ import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/type
 import {ContextViewManager, WORKSPACE_VIEW_URI} from './ContextViewManager';
 import {Disposable, CompositeDisposable} from 'atom';
 import invariant from 'assert';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 let manager: ?ContextViewManager = null;
 let disposables: CompositeDisposable;
@@ -99,7 +100,7 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
       }
     }),
     new Disposable(() =>
-      api.destroyWhere(item => item instanceof ContextViewManager),
+      destroyItemWhere(item => item instanceof ContextViewManager),
     ),
     atom.commands.add(
       'atom-workspace',

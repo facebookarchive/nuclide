@@ -37,6 +37,7 @@ import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
 import FileTreeController from './FileTreeController';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {REVEAL_FILE_ON_SWITCH_SETTING, WORKSPACE_VIEW_URI} from './Constants';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import React from 'react';
 import {Observable} from 'rxjs';
 
@@ -356,7 +357,7 @@ class Activation {
           return this._createView();
         }
       }),
-      () => api.destroyWhere(item => item instanceof FileTreeSidebarComponent),
+      () => destroyItemWhere(item => item instanceof FileTreeSidebarComponent),
       atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle', event => {
         api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
       }),

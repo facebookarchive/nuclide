@@ -28,6 +28,7 @@ import type {
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
 import createPackage from 'nuclide-commons-atom/createPackage';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import {
   combineEpics,
@@ -137,7 +138,7 @@ class Activation {
           );
         }
       }),
-      () => api.destroyWhere(item => item instanceof ConsoleContainer),
+      () => destroyItemWhere(item => item instanceof ConsoleContainer),
       atom.commands.add('atom-workspace', 'nuclide-console:toggle', event => {
         api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
       }),

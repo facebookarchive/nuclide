@@ -15,6 +15,7 @@ import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElem
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 let subscriptions: UniversalDisposable = (null: any);
 
@@ -34,7 +35,7 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
         return viewableFromReactElement(<SettingsPaneItem />);
       }
     }),
-    () => api.destroyWhere(item => item instanceof SettingsPaneItem),
+    () => destroyItemWhere(item => item instanceof SettingsPaneItem),
     atom.commands.add('atom-workspace', 'nuclide-settings:toggle', event => {
       api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
     }),

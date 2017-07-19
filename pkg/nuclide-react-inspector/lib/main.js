@@ -16,6 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Inspector, {WORKSPACE_VIEW_URI} from './ui/Inspector';
 import invariant from 'assert';
 import React from 'react';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 let disposables: ?UniversalDisposable = null;
 
@@ -37,7 +38,7 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
         return viewableFromReactElement(<Inspector />);
       }
     }),
-    () => api.destroyWhere(item => item instanceof Inspector),
+    () => destroyItemWhere(item => item instanceof Inspector),
     atom.commands.add(
       'atom-workspace',
       'nuclide-react-inspector:toggle',

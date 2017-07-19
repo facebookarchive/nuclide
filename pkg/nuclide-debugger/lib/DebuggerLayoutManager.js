@@ -21,6 +21,7 @@ import invariant from 'assert';
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import {__DEV__} from '../../nuclide-node-transpiler/lib/env';
 import createPaneContainer from '../../commons-atom/create-pane-container';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 // Debugger views
 import {DebuggerControlsView} from './DebuggerControlsView';
@@ -548,7 +549,7 @@ export class DebuggerLayoutManager {
     ) {
       this._saveDebuggerPaneLocations();
     } else if (mode === DebuggerMode.STOPPED) {
-      api.destroyWhere(item => {
+      destroyItemWhere(item => {
         if (item instanceof DebuggerPaneContainerViewModel) {
           // Forward the destruction logic to the contianer.
           item.destroyWhere(innerItem =>

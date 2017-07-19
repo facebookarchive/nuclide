@@ -28,6 +28,7 @@ import * as Reducers from './redux/Reducers';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';
 import {getProviders} from './providers';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
 import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {Store, DevicePanelServiceApi} from './types';
@@ -66,7 +67,7 @@ class Activation {
           return new DevicePanelWorkspaceView(this._store);
         }
       }),
-      () => api.destroyWhere(item => item instanceof DevicePanelWorkspaceView),
+      () => destroyItemWhere(item => item instanceof DevicePanelWorkspaceView),
       atom.commands.add(
         'atom-workspace',
         'nuclide-device-panel:toggle',

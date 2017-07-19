@@ -37,18 +37,12 @@ describe('Health', () => {
       {label: 'workspace views to load', timeout: 10000},
       async () => {
         jasmine.unspy(window, 'setTimeout');
-        const WORKSPACE_VIEW_DIRS = [
-          nuclideUri.dirname(
-            require.resolve('../../nuclide-workspace-views/package.json'),
-          ),
-          nuclideUri.dirname(
-            require.resolve(
-              '../../nuclide-workspace-view-locations/package.json',
+        await Promise.all([
+          atom.packages.activatePackage(
+            nuclideUri.dirname(
+              require.resolve('../../nuclide-workspace-views/package.json'),
             ),
           ),
-        ];
-        await Promise.all([
-          ...WORKSPACE_VIEW_DIRS.map(dir => atom.packages.activatePackage(dir)),
           atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
         ]);
       },

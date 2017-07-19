@@ -24,6 +24,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
 import Immutable from 'immutable';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
@@ -121,7 +122,7 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
         );
       }
     }),
-    () => api.destroyWhere(item => item instanceof HomePaneItem),
+    () => destroyItemWhere(item => item instanceof HomePaneItem),
     atom.commands.add('atom-workspace', 'nuclide-home:toggle', event => {
       api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
     }),
