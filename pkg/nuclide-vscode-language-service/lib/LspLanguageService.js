@@ -986,6 +986,10 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.completion(params);
+      invariant(
+        response != null,
+        'AutocompleteSuggestion textDocument/completion returned null.',
+      );
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1025,15 +1029,19 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.gotoDefinition(params);
+      invariant(
+        response != null,
+        'Definition textDocument/definition returned null.',
+      );
     } catch (e) {
       this._logLspException(e);
       return null;
     }
 
-    if (
-      response == null ||
-      (Array.isArray(response) && response.length === 0)
-    ) {
+    // Since Nuclide hyperclick provider has an invariant that if getDefinition
+    // returned an array then it's non-empty, LspLanguageService will detect and
+    // return null an empty array response.
+    if (Array.isArray(response) && response.length === 0) {
       return null;
     }
 
