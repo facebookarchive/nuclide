@@ -25,6 +25,7 @@ import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
 import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
+import {track} from '../../nuclide-analytics';
 
 type AttachInfoArgsType = {
   pid: string,
@@ -148,7 +149,14 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         ? launchInfo.basepath
         : this._config.buckConfigRootFile,
       lldb_python_path: this._config.lldbPythonPath,
+      core_dump_path: launchInfo.coreDump,
     };
+
+    if (launchInfo.coreDump != null && launchInfo.coreDump !== '') {
+      // Track feature usage of core dump debugging.
+      track('nuclide-debugger-debug-coredump-start');
+    }
+
     return Observable.fromPromise(
       this._startDebugging(inferiorArguments),
     ).publish();
