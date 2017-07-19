@@ -533,11 +533,17 @@ class Activation {
     }
   }
 
+  _isReadonlyTarget() {
+    return this._model.getStore().getIsReadonlyTarget();
+  }
+
   _continue() {
     // TODO(jeffreytan): when we figured out the launch lifecycle story
     // we may bind this to start-debugging too.
-    track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
-    this._model.getBridge().continue();
+    if (!this._isReadonlyTarget()) {
+      track(AnalyticsEvents.DEBUGGER_STEP_CONTINUE);
+      this._model.getBridge().continue();
+    }
   }
 
   _stop() {
@@ -549,18 +555,24 @@ class Activation {
   }
 
   _stepOver() {
-    track(AnalyticsEvents.DEBUGGER_STEP_OVER);
-    this._model.getBridge().stepOver();
+    if (!this._isReadonlyTarget()) {
+      track(AnalyticsEvents.DEBUGGER_STEP_OVER);
+      this._model.getBridge().stepOver();
+    }
   }
 
   _stepInto() {
-    track(AnalyticsEvents.DEBUGGER_STEP_INTO);
-    this._model.getBridge().stepInto();
+    if (!this._isReadonlyTarget()) {
+      track(AnalyticsEvents.DEBUGGER_STEP_INTO);
+      this._model.getBridge().stepInto();
+    }
   }
 
   _stepOut() {
-    track(AnalyticsEvents.DEBUGGER_STEP_OUT);
-    this._model.getBridge().stepOut();
+    if (!this._isReadonlyTarget()) {
+      track(AnalyticsEvents.DEBUGGER_STEP_OUT);
+      this._model.getBridge().stepOut();
+    }
   }
 
   _toggleBreakpoint(event: any) {

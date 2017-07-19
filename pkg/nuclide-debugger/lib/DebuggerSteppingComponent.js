@@ -176,7 +176,8 @@ export class DebuggerSteppingComponent extends React.Component {
       customControlButtons,
       waitingForPause,
     } = this.state;
-    const {actions} = this.props;
+    const {actions, debuggerStore} = this.props;
+    const isReadonlyTarget = debuggerStore.getIsReadonlyTarget();
     const isPaused = debuggerMode === DebuggerMode.PAUSED;
     const isStopped = debuggerMode === DebuggerMode.STOPPED;
     const isPausing = debuggerMode === DebuggerMode.RUNNING && waitingForPause;
@@ -219,12 +220,30 @@ export class DebuggerSteppingComponent extends React.Component {
           onClick={() => actions.restartDebugger()}
         />;
 
+    const DebuggerStepButton = (props: {
+      icon: React.Element<any>,
+      title: string,
+      keyBindingCommand: string,
+      disabled: boolean,
+      action: string,
+    }) =>
+      <SVGButton
+        icon={props.icon}
+        disabled={props.disabled}
+        tooltip={{
+          ...defaultTooltipOptions,
+          title: props.title,
+          keyBindingCommand: props.keyBindingCommand,
+        }}
+        onClick={actions.triggerDebuggerAction.bind(actions, props.action)}
+      />;
+
     return (
       <div className="nuclide-debugger-stepping-component">
         <ButtonGroup className="nuclide-debugger-stepping-buttongroup">
           {restartDebuggerButton}
           <Button
-            disabled={isStopped || isPausing}
+            disabled={isStopped || isPausing || isReadonlyTarget}
             tooltip={{
               ...defaultTooltipOptions,
               title: isPausing
@@ -240,44 +259,26 @@ export class DebuggerSteppingComponent extends React.Component {
               {loadingIndicator}
             </div>
           </Button>
-          <SVGButton
+          <DebuggerStepButton
             icon={STEP_OVER_ICON}
-            disabled={!isPaused}
-            tooltip={{
-              ...defaultTooltipOptions,
-              title: 'Step over',
-              keyBindingCommand: 'nuclide-debugger:step-over',
-            }}
-            onClick={actions.triggerDebuggerAction.bind(
-              actions,
-              ChromeActionRegistryActions.STEP_OVER,
-            )}
+            disabled={!isPaused || isReadonlyTarget}
+            title="Step over"
+            keyBindingCommand="nuclide-debugger:step-over"
+            action={ChromeActionRegistryActions.STEP_OVER}
           />
-          <SVGButton
+          <DebuggerStepButton
             icon={STEP_INTO_ICON}
-            disabled={!isPaused}
-            tooltip={{
-              ...defaultTooltipOptions,
-              title: 'Step into',
-              keyBindingCommand: 'nuclide-debugger:step-into',
-            }}
-            onClick={actions.triggerDebuggerAction.bind(
-              actions,
-              ChromeActionRegistryActions.STEP_INTO,
-            )}
+            disabled={!isPaused || isReadonlyTarget}
+            title="Step into"
+            keyBindingCommand="nuclide-debugger:step-into"
+            action={ChromeActionRegistryActions.STEP_INTO}
           />
-          <SVGButton
+          <DebuggerStepButton
             icon={STEP_OUT_ICON}
-            disabled={!isPaused}
-            tooltip={{
-              ...defaultTooltipOptions,
-              title: 'Step out',
-              keyBindingCommand: 'nuclide-debugger:step-out',
-            }}
-            onClick={actions.triggerDebuggerAction.bind(
-              actions,
-              ChromeActionRegistryActions.STEP_OUT,
-            )}
+            disabled={!isPaused || isReadonlyTarget}
+            title="Step out"
+            keyBindingCommand="nuclide-debugger:step-out"
+            action={ChromeActionRegistryActions.STEP_OUT}
           />
           <Button
             icon="primitive-square"
@@ -300,6 +301,7 @@ export class DebuggerSteppingComponent extends React.Component {
           className="nuclide-debugger-exception-checkbox"
           onChange={() => actions.togglePauseOnException(!pauseOnException)}
           checked={pauseOnException}
+          disabled={isReadonlyTarget}
           label={pauseOnException ? 'Pause on' : 'Pause on exception'}
         />
         {pauseOnException
@@ -327,7 +329,7 @@ export class DebuggerSteppingComponent extends React.Component {
           : null}
         {allowSingleThreadStepping
           ? <Checkbox
-              disabled={isStopped}
+              disabled={isStopped || isReadonlyTarget}
               className="nuclide-debugger-exception-checkbox"
               onChange={() =>
                 actions.toggleSingleThreadStepping(!enableSingleThreadStepping)}

@@ -44,8 +44,9 @@ export default class BridgeAdapter {
   _runtimeDispatcher: RuntimeDomainDispatcher;
   _engineCreated: boolean;
   _pausedMode: boolean;
+  _getIsReadonlyTarget: () => boolean;
 
-  constructor(dispatchers: Object) {
+  constructor(dispatchers: Object, getIsReadonlyTarget: () => boolean) {
     const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
@@ -54,7 +55,10 @@ export default class BridgeAdapter {
     (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
     this._breakpointManager = new BreakpointManager(debuggerDispatcher);
     this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
-    this._executionManager = new ExecutionManager(debuggerDispatcher);
+    this._executionManager = new ExecutionManager(
+      debuggerDispatcher,
+      getIsReadonlyTarget,
+    );
     this._threadManager = new ThreadManager(debuggerDispatcher);
     this._debuggerSettingsManager = new DebuggerSettingsManager(
       debuggerDispatcher,
@@ -66,6 +70,7 @@ export default class BridgeAdapter {
     this._subscriptions = new UniversalDisposable(
       debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent),
     );
+    this._getIsReadonlyTarget = getIsReadonlyTarget;
   }
 
   enable(): void {
@@ -74,28 +79,38 @@ export default class BridgeAdapter {
   }
 
   resume(): void {
-    this._clearStates();
-    this._executionManager.resume();
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.resume();
+    }
   }
 
   pause(): void {
-    this._clearStates();
-    this._executionManager.pause();
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.pause();
+    }
   }
 
   stepOver(): void {
-    this._clearStates();
-    this._executionManager.stepOver();
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.stepOver();
+    }
   }
 
   stepInto(): void {
-    this._clearStates();
-    this._executionManager.stepInto();
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.stepInto();
+    }
   }
 
   stepOut(): void {
-    this._clearStates();
-    this._executionManager.stepOut();
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.stepOut();
+    }
   }
 
   _clearStates(): void {
@@ -105,8 +120,10 @@ export default class BridgeAdapter {
   }
 
   runToLocation(fileUri: NuclideUri, line: number): void {
-    this._clearStates();
-    this._executionManager.runToLocation(fileUri, line);
+    if (!this._getIsReadonlyTarget()) {
+      this._clearStates();
+      this._executionManager.runToLocation(fileUri, line);
+    }
   }
 
   setSelectedCallFrameIndex(index: number): void {
@@ -203,6 +220,17 @@ export default class BridgeAdapter {
     }
   }
 
+  _handlePausedEvent(params: PausedEvent) {
+    this._pausedMode = true;
+    this._stackTraceManager.refreshStack(params.callFrames);
+    const currentFrame = this._stackTraceManager.getCurrentFrame();
+    this._executionManager.raiseDebuggerPause(
+      params,
+      currentFrame ? currentFrame.location : null,
+    );
+    this._updateCurrentScopes();
+  }
+
   _handleDebugEvent(event: ProtocolDebugEvent): void {
     switch (event.method) {
       case 'Debugger.loaderBreakpoint': {
@@ -211,7 +239,12 @@ export default class BridgeAdapter {
         this._breakpointManager.syncInitialBreakpointsToEngine();
         this._breakpointManager.syncPauseExceptionState();
         // This should be the last method called.
-        this._executionManager.continueFromLoaderBreakpoint();
+        if (!this._executionManager.continueFromLoaderBreakpoint()) {
+          // If this target was not resumed from the loader breakpoint, handle
+          // this as a paused event.
+          const params: PausedEvent = event.params;
+          this._handlePausedEvent(params);
+        }
         break;
       }
       case 'Debugger.breakpointResolved': {
@@ -230,14 +263,7 @@ export default class BridgeAdapter {
         break;
       case 'Debugger.paused': {
         const params: PausedEvent = event.params;
-        this._pausedMode = true;
-        this._stackTraceManager.refreshStack(params.callFrames);
-        const currentFrame = this._stackTraceManager.getCurrentFrame();
-        this._executionManager.raiseDebuggerPause(
-          params,
-          currentFrame ? currentFrame.location : null,
-        );
-        this._updateCurrentScopes();
+        this._handlePausedEvent(params);
         break;
       }
       case 'Debugger.threadsUpdated': {

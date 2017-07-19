@@ -37,6 +37,7 @@ export type DebuggerCapabilities = {
   +continueToLocation: boolean,
   +customSourcePaths: boolean,
   +singleThreadStepping: boolean,
+  +readOnlyTarget: boolean,
   +threads: boolean,
 };
 

@@ -157,6 +157,13 @@ export class DebuggerStore {
     return this._enableSingleThreadStepping;
   }
 
+  getIsReadonlyTarget(): boolean {
+    return (
+      this._debugProcessInfo != null &&
+      this._debugProcessInfo.getDebuggerCapabilities().readOnlyTarget
+    );
+  }
+
   getSettings(): DebuggerSettings {
     return this._debuggerSettings;
   }

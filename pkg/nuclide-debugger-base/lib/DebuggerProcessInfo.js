@@ -38,6 +38,7 @@ export default class DebuggerProcessInfo {
       conditionalBreakpoints: false,
       continueToLocation: false,
       customSourcePaths: false,
+      readOnlyTarget: false,
       singleThreadStepping: false,
       threads: false,
     };

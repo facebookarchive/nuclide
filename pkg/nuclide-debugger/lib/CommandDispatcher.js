@@ -32,9 +32,11 @@ export default class CommandDispatcher {
   _webviewUrl: ?string;
   _bridgeAdapter: ?BridgeAdapter;
   _useNewChannel: boolean;
+  _getIsReadonlyTarget: () => boolean;
 
-  constructor() {
+  constructor(getIsReadonlyTarget: () => boolean) {
     this._useNewChannel = false;
+    this._getIsReadonlyTarget = getIsReadonlyTarget;
   }
 
   isNewChannel(): boolean {
@@ -90,7 +92,10 @@ export default class CommandDispatcher {
       const dispatchers = await InspectorBackendClass.bootstrap(
         debuggerInstance,
       );
-      this._bridgeAdapter = new BridgeAdapter(dispatchers);
+      this._bridgeAdapter = new BridgeAdapter(
+        dispatchers,
+        this._getIsReadonlyTarget,
+      );
       invariant(this._sessionSubscriptions != null);
       this._sessionSubscriptions.add(() => {
         if (this._bridgeAdapter != null) {

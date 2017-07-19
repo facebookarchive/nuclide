@@ -49,7 +49,9 @@ export default class Bridge {
     (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
-    this._commandDispatcher = new CommandDispatcher();
+    this._commandDispatcher = new CommandDispatcher(() =>
+      debuggerModel.getStore().getIsReadonlyTarget(),
+    );
     this._consoleEvent$ = new Subject();
     this._disposables = new UniversalDisposable(
       debuggerModel

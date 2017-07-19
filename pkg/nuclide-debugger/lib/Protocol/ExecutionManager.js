@@ -26,10 +26,15 @@ import {reportError} from './EventReporter';
 export default class ExecutionManager {
   _debuggerDispatcher: DebuggerDomainDispatcher;
   _executionEvent$: Subject<Array<mixed>>;
+  _getIsReadonlyTarget: () => boolean;
 
-  constructor(debuggerDispatcher: DebuggerDomainDispatcher) {
+  constructor(
+    debuggerDispatcher: DebuggerDomainDispatcher,
+    getIsReadonlyTarget: () => boolean,
+  ) {
     this._executionEvent$ = new Subject();
     this._debuggerDispatcher = debuggerDispatcher;
+    this._getIsReadonlyTarget = getIsReadonlyTarget;
   }
 
   getEventObservable(): Observable<Array<mixed>> {
@@ -37,44 +42,60 @@ export default class ExecutionManager {
   }
 
   resume(): void {
-    this._debuggerDispatcher.resume();
-  }
-
-  pause(): void {
-    this._debuggerDispatcher.pause();
-  }
-
-  stepOver(): void {
-    this._debuggerDispatcher.stepOver();
-  }
-
-  stepInto(): void {
-    this._debuggerDispatcher.stepInto();
-  }
-
-  stepOut(): void {
-    this._debuggerDispatcher.stepOut();
-  }
-
-  runToLocation(fileUri: NuclideUri, line: number): void {
-    // Chrome's continueToLocation implementation incorrect
-    // uses source uri instead of scriptId as the location ScriptId
-    // field, we mirrow the same behavior for compatibility reason.
-    const scriptId = this._debuggerDispatcher.getSourceUriFromUri(fileUri);
-    if (scriptId != null) {
-      this._debuggerDispatcher.continueToLocation({
-        scriptId,
-        lineNumber: line,
-        columnNumber: 0,
-      });
-    } else {
-      reportError(`Cannot find resolve location for file: ${fileUri}`);
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.resume();
     }
   }
 
-  continueFromLoaderBreakpoint(): void {
-    this._debuggerDispatcher.resume();
-    this._raiseIPCEvent('LoaderBreakpointResumed');
+  pause(): void {
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.pause();
+    }
+  }
+
+  stepOver(): void {
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.stepOver();
+    }
+  }
+
+  stepInto(): void {
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.stepInto();
+    }
+  }
+
+  stepOut(): void {
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.stepOut();
+    }
+  }
+
+  runToLocation(fileUri: NuclideUri, line: number): void {
+    if (!this._getIsReadonlyTarget()) {
+      // Chrome's continueToLocation implementation incorrect
+      // uses source uri instead of scriptId as the location ScriptId
+      // field, we mirrow the same behavior for compatibility reason.
+      const scriptId = this._debuggerDispatcher.getSourceUriFromUri(fileUri);
+      if (scriptId != null) {
+        this._debuggerDispatcher.continueToLocation({
+          scriptId,
+          lineNumber: line,
+          columnNumber: 0,
+        });
+      } else {
+        reportError(`Cannot find resolve location for file: ${fileUri}`);
+      }
+    }
+  }
+
+  continueFromLoaderBreakpoint(): boolean {
+    if (!this._getIsReadonlyTarget()) {
+      this._debuggerDispatcher.resume();
+      this._raiseIPCEvent('LoaderBreakpointResumed');
+      return true;
+    }
+    return false;
   }
 
   raiseDebuggerPause(
