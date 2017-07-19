@@ -409,6 +409,14 @@ export type BreakpointResolvedEvent = {
   location: Location,
 };
 
+export type BreakpointHitCountEvent = {
+  /** Breakpoint unique identifier. */
+  breakpointId: BreakpointId,
+
+  /** New hit count for the breakpoint. */
+  hitCount: number,
+};
+
 export type PausedEvent = {
   /** Call stack the virtual machine stopped on. */
   callFrames: CallFrame[],
@@ -687,6 +695,10 @@ export type DebuggerEvent =
   | {
       method: 'Debugger.breakpointResolved',
       params: BreakpointResolvedEvent,
+    }
+  | {
+      method: 'Debugger.breakpointHitCountChanged',
+      params: BreakpointHitCountEvent,
     }
   | {
       method: 'Debugger.threadUpdated',

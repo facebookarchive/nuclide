@@ -14,6 +14,7 @@ import type {
   BreakpointId,
   Location,
   BreakpointResolvedEvent,
+  BreakpointHitCountEvent,
   SetBreakpointByUrlResponse,
   SetPauseOnExceptionsRequest,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
@@ -258,6 +259,19 @@ export default class BreakpointManager {
     }
   }
 
+  _sendBreakpointHitCountChanged(
+    breakpointId: BreakpointId,
+    hitCount: number,
+  ): void {
+    const breakpoint = this._getBreakpointFromId(breakpointId);
+    if (breakpoint != null) {
+      this._raiseIPCEvent('BreakpointHitCountChanged', {
+        breakpoint: breakpoint.request,
+        hitCount,
+      });
+    }
+  }
+
   _getBreakpointFromId(breakpointId: BreakpointId): ?UserBreakpoint {
     return this._breakpointList.find(bp => bp.id === breakpointId);
   }
@@ -283,6 +297,16 @@ export default class BreakpointManager {
       this._sendBreakpointResolved(breakpointId, location);
     } else {
       // User has removed this breakpoint before engine resolves it.
+      // This is an expected scenario, just ignore it.
+    }
+  }
+
+  handleBreakpointHitCountChanged(params: BreakpointHitCountEvent): void {
+    const {breakpointId, hitCount} = params;
+    if (this._getBreakpointFromId(breakpointId) !== null) {
+      this._sendBreakpointHitCountChanged(breakpointId, hitCount);
+    } else {
+      // User has removed this breakpoint before this message reached the front-end.
       // This is an expected scenario, just ignore it.
     }
   }

@@ -558,6 +558,17 @@ export default class DebuggerActions {
     });
   }
 
+  updateBreakpointHitCount(path: string, line: number, hitCount: number): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.UPDATE_BREAKPOINT_HITCOUNT,
+      data: {
+        path,
+        line,
+        hitCount,
+      },
+    });
+  }
+
   bindBreakpointIPC(
     path: string,
     line: number,

@@ -14,6 +14,7 @@ import type {IPCEvent, IPCBreakpoint, ObjectGroup} from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ProtocolDebugEvent} from './DebuggerDomainDispatcher';
 import type {
+  BreakpointHitCountEvent,
   BreakpointResolvedEvent,
   PausedEvent,
   ThreadsUpdatedEvent,
@@ -216,6 +217,11 @@ export default class BridgeAdapter {
       case 'Debugger.breakpointResolved': {
         const params: BreakpointResolvedEvent = event.params;
         this._breakpointManager.handleBreakpointResolved(params);
+        break;
+      }
+      case 'Debugger.breakpointHitCountChanged': {
+        const params: BreakpointHitCountEvent = event.params;
+        this._breakpointManager.handleBreakpointHitCountChanged(params);
         break;
       }
       case 'Debugger.resumed':

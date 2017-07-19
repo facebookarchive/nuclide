@@ -20,7 +20,6 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import classnames from 'classnames';
-import {Icon} from 'nuclide-commons-ui/Icon';
 
 type BreakpointListComponentProps = {
   actions: DebuggerActions,
@@ -121,8 +120,7 @@ export class BreakpointListComponent extends React.Component {
         const conditionElement =
           this._debuggerSupportsConditionalBp(breakpoint) &&
           breakpoint.condition !== ''
-            ? <Icon
-                icon="question"
+            ? <div
                 className="nuclide-debugger-breakpoint-condition"
                 title={`Breakpoint condition: ${breakpoint.condition}`}
                 data-path={path}
@@ -132,40 +130,53 @@ export class BreakpointListComponent extends React.Component {
                     event.target,
                     'nuclide-debugger:edit-breakpoint',
                   );
-                }}
-              />
+                }}>
+                Condition: {breakpoint.condition}
+              </div>
             : null;
 
+        const {hitCount} = breakpoint;
+        const hitCountElement =
+          hitCount != null && hitCount >= 0
+            ? <div
+                className="nuclide-debugger-breakpoint-hitcount"
+                title={`Breakpoint hit count: ${hitCount}`}>
+                Hit count: {hitCount}
+              </div>
+            : null;
         const content = (
-          <div
-            className={classnames('nuclide-debugger-breakpoint', {
-              'nuclide-debugger-breakpoint-disabled': !enabled,
-              'nuclide-debugger-breakpoint-with-condition':
-                breakpoint.condition !== '',
-            })}
-            key={i}>
-            <Checkbox
-              checked={enabled}
-              indeterminate={!resolved}
-              disabled={!resolved}
-              onChange={this._handleBreakpointEnabledChange.bind(
-                this,
-                breakpoint,
-              )}
-              onClick={(event: SyntheticEvent) => event.stopPropagation()}
-              title={title}
-              className={classnames(
-                resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
-              )}
-            />
-            <span
-              className="nuclide-debugger-breakpoint"
-              title={title}
-              data-path={path}
-              data-line={line}>
-              {label}
-            </span>
-            {conditionElement}
+          <div className="inline-block">
+            <div
+              className={classnames('nuclide-debugger-breakpoint', {
+                'nuclide-debugger-breakpoint-disabled': !enabled,
+                'nuclide-debugger-breakpoint-with-condition':
+                  breakpoint.condition !== '',
+              })}
+              key={i}>
+              <Checkbox
+                checked={enabled}
+                indeterminate={!resolved}
+                disabled={!resolved}
+                onChange={this._handleBreakpointEnabledChange.bind(
+                  this,
+                  breakpoint,
+                )}
+                onClick={(event: SyntheticEvent) => event.stopPropagation()}
+                title={title}
+                className={classnames(
+                  resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
+                )}
+              />
+              <span
+                className="nuclide-debugger-breakpoint"
+                title={title}
+                data-path={path}
+                data-line={line}>
+                {label}
+              </span>
+              {conditionElement}
+            </div>
+            {hitCountElement}
           </div>
         );
         return (

@@ -104,6 +104,13 @@ export default class BreakpointStore {
       case ActionTypes.DELETE_BREAKPOINT_IPC:
         this._deleteBreakpoint(payload.data.path, payload.data.line, false);
         break;
+      case ActionTypes.UPDATE_BREAKPOINT_HITCOUNT:
+        this._updateBreakpointHitcount(
+          payload.data.path,
+          payload.data.line,
+          payload.data.hitCount,
+        );
+        break;
       case ActionTypes.BIND_BREAKPOINT_IPC:
         this._bindBreakpoint(
           payload.data.path,
@@ -152,6 +159,19 @@ export default class BreakpointStore {
         breakpoint,
       });
     }
+  }
+
+  _updateBreakpointHitcount(
+    path: string,
+    line: number,
+    hitCount: number,
+  ): void {
+    const breakpoint = this.getBreakpointAtLine(path, line);
+    if (breakpoint == null) {
+      return;
+    }
+    breakpoint.hitCount = hitCount;
+    this._updateBreakpoint(breakpoint);
   }
 
   _updateBreakpointEnabled(breakpointId: number, enabled: boolean): void {
@@ -304,7 +324,7 @@ export default class BreakpointStore {
   _handleDebuggerModeChange(newMode: DebuggerModeType): void {
     if (newMode === DebuggerMode.STOPPED) {
       // All breakpoints should be unresolved after stop debugging.
-      this._resetBreakpointUnresolved();
+      this._resetBreakpoints();
     } else {
       for (const breakpoint of this.getAllBreakpoints()) {
         if (!breakpoint.resolved) {
@@ -314,9 +334,11 @@ export default class BreakpointStore {
     }
   }
 
-  _resetBreakpointUnresolved(): void {
+  _resetBreakpoints(): void {
     for (const breakpoint of this.getAllBreakpoints()) {
       breakpoint.resolved = false;
+      breakpoint.hitCount = undefined;
+      this._emitter.emit(BREAKPOINT_NEED_UI_UPDATE, breakpoint.path);
     }
   }
 

@@ -237,6 +237,9 @@ export default class Bridge {
           case 'BreakpointRemoved':
             this._removeBreakpoint(event.args[1]);
             break;
+          case 'BreakpointHitCountChanged':
+            this._handleBreakpointHitCountChanged(event.args[1]);
+            break;
           case 'NonLoaderDebuggerPaused':
             this._handleDebuggerPaused(event.args[1]);
             break;
@@ -382,6 +385,20 @@ export default class Bridge {
       } finally {
         this._suppressBreakpointSync = false;
       }
+    }
+  }
+
+  _handleBreakpointHitCountChanged(params: {
+    breakpoint: IPCBreakpoint,
+    hitCount: number,
+  }): void {
+    const {breakpoint, hitCount} = params;
+    const {sourceURL, lineNumber} = breakpoint;
+    const path = nuclideUri.uriToNuclideUri(sourceURL);
+    if (path) {
+      this._debuggerModel
+        .getActions()
+        .updateBreakpointHitCount(path, lineNumber, hitCount);
     }
   }
 

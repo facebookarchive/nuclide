@@ -159,6 +159,10 @@ export type DebuggerAction =
       data: {path: string, line: number},
     }
   | {
+      actionType: 'UPDATE_BREAKPOINT_HITCOUNT',
+      data: {path: string, line: number, hitCount: number},
+    }
+  | {
       actionType: 'BIND_BREAKPOINT_IPC',
       data: {
         path: string,
@@ -262,6 +266,7 @@ export const ActionTypes = Object.freeze({
   DISABLE_ALL_BREAKPOINTS: 'DISABLE_ALL_BREAKPOINTS',
   TOGGLE_BREAKPOINT: 'TOGGLE_BREAKPOINT',
   DELETE_BREAKPOINT_IPC: 'DELETE_BREAKPOINT_IPC',
+  UPDATE_BREAKPOINT_HITCOUNT: 'UPDATE_BREAKPOINT_HITCOUNT',
   BIND_BREAKPOINT_IPC: 'BIND_BREAKPOINT_IPC',
   UPDATE_SCOPES: 'UPDATE_SCOPES',
   TOGGLE_PAUSE_ON_EXCEPTION: 'TOGGLE_PAUSE_ON_EXCEPTION',

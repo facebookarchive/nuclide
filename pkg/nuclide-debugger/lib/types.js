@@ -72,6 +72,7 @@ export type FileLineBreakpoint = {
   condition: string,
   enabled: boolean,
   resolved: boolean,
+  hitCount?: number,
 };
 export type FileLineBreakpoints = Array<FileLineBreakpoint>;
 

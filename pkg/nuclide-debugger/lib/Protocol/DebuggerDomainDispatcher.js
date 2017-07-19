@@ -15,6 +15,7 @@ import type {
   ScriptId,
   BreakpointId,
   DebuggerEvent,
+  BreakpointHitCountEvent,
   BreakpointResolvedEvent,
   ThreadsUpdatedEvent,
   ThreadUpdatedEvent,
@@ -195,6 +196,13 @@ class DebuggerDomainDispatcher {
   breakpointResolved(params: BreakpointResolvedEvent): void {
     this._raiseProtocolEvent({
       method: 'Debugger.breakpointResolved',
+      params,
+    });
+  }
+
+  breakpointHitCountChanged(params: BreakpointHitCountEvent): void {
+    this._raiseProtocolEvent({
+      method: 'Debugger.breakpointHitCountChanged',
       params,
     });
   }
