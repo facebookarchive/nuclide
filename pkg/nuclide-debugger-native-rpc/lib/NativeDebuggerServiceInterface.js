@@ -27,6 +27,7 @@ export type LaunchTargetInfo = {
   stdinFilePath?: string,
   basepath?: string,
   lldbPythonPath?: ?string, // see DebuggerConfig
+  coreDump?: string,
 };
 
 export type BootstrapDebuggerInfo = {

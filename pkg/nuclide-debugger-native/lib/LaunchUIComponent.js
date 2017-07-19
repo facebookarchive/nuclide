@@ -23,6 +23,7 @@ import {
   serializeDebuggerConfig,
   deserializeDebuggerConfig,
 } from '../../nuclide-debugger-base';
+import classnames from 'classnames';
 
 type PropsType = {
   targetUri: NuclideUri,
@@ -37,6 +38,7 @@ type StateType = {
   launchEnvironmentVariables: string,
   launchWorkingDirectory: string,
   stdinFilePath: string,
+  coreDump: string,
 };
 
 export class LaunchUIComponent extends React.Component<
@@ -59,6 +61,7 @@ export class LaunchUIComponent extends React.Component<
       launchEnvironmentVariables: '',
       launchWorkingDirectory: '',
       stdinFilePath: '',
+      coreDump: '',
     };
   }
 
@@ -91,6 +94,7 @@ export class LaunchUIComponent extends React.Component<
           launchEnvironmentVariables: savedSettings.launchEnvironmentVariables,
           launchWorkingDirectory: savedSettings.launchWorkingDirectory,
           stdinFilePath: savedSettings.stdinFilePath,
+          coreDump: savedSettings.coreDump || '',
         });
       },
     );
@@ -129,39 +133,61 @@ export class LaunchUIComponent extends React.Component<
           value={this.state.launchExecutable}
           onDidChange={value => this.setState({launchExecutable: value})}
         />
-        <label>Arguments: </label>
+        <label>Core dump file: </label>
         <AtomInput
-          ref="launchArguments"
+          ref="coreDump"
           tabIndex="12"
-          placeholderText="Arguments to the executable"
-          value={this.state.launchArguments}
-          onDidChange={value => this.setState({launchArguments: value})}
+          placeholderText="Optional path to a core dump file to offline debug a crash"
+          value={this.state.coreDump}
+          onDidChange={value => this.setState({coreDump: value})}
         />
-        <label>Environment Variables: </label>
-        <AtomInput
-          ref="launchEnvironmentVariables"
-          tabIndex="13"
-          placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
-          value={this.state.launchEnvironmentVariables}
-          onDidChange={value =>
-            this.setState({launchEnvironmentVariables: value})}
-        />
-        <label>Working directory: </label>
-        <AtomInput
-          ref="launchWorkingDirectory"
-          tabIndex="14"
-          placeholderText="Working directory for the launched executable"
-          value={this.state.launchWorkingDirectory}
-          onDidChange={value => this.setState({launchWorkingDirectory: value})}
-        />
-        <label>Stdin file: </label>
-        <AtomInput
-          ref="stdinFilePath"
-          tabIndex="15"
-          placeholderText="Redirect stdin to this file"
-          value={this.state.stdinFilePath}
-          onDidChange={value => this.setState({stdinFilePath: value})}
-        />
+        <div className="nuclide-native-launch-small-text">
+          Be sure to copy the core dump to a location where Nuclide has read
+          access. (Nuclide server does not run as root).
+        </div>
+        <div
+          className={classnames({
+            'nuclide-native-launch-disabled': this.state.coreDump !== '',
+          })}>
+          <label>Arguments: </label>
+          <AtomInput
+            ref="launchArguments"
+            tabIndex="13"
+            disabled={this.state.coreDump !== ''}
+            placeholderText="Arguments to the executable"
+            value={this.state.launchArguments}
+            onDidChange={value => this.setState({launchArguments: value})}
+          />
+          <label>Environment Variables: </label>
+          <AtomInput
+            ref="launchEnvironmentVariables"
+            tabIndex="14"
+            disabled={this.state.coreDump !== ''}
+            placeholderText="Environment variables (e.g., SHELL=/bin/bash PATH=/bin)"
+            value={this.state.launchEnvironmentVariables}
+            onDidChange={value =>
+              this.setState({launchEnvironmentVariables: value})}
+          />
+          <label>Working directory: </label>
+          <AtomInput
+            ref="launchWorkingDirectory"
+            tabIndex="15"
+            disabled={this.state.coreDump !== ''}
+            placeholderText="Working directory for the launched executable"
+            value={this.state.launchWorkingDirectory}
+            onDidChange={value =>
+              this.setState({launchWorkingDirectory: value})}
+          />
+          <label>Stdin file: </label>
+          <AtomInput
+            ref="stdinFilePath"
+            tabIndex="16"
+            disabled={this.state.coreDump !== ''}
+            placeholderText="Redirect stdin to this file"
+            value={this.state.stdinFilePath}
+            onDidChange={value => this.setState({stdinFilePath: value})}
+          />
+        </div>
       </div>
     );
   }
@@ -169,6 +195,7 @@ export class LaunchUIComponent extends React.Component<
   _handleLaunchClick(): void {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
+    const coreDump = this.refs.coreDump.getText().trim();
     const launchArguments = shellParse(this.refs.launchArguments.getText());
     const launchEnvironmentVariables = shellParse(
       this.refs.launchEnvironmentVariables.getText(),
@@ -183,6 +210,7 @@ export class LaunchUIComponent extends React.Component<
       environmentVariables: launchEnvironmentVariables,
       workingDirectory: launchWorkingDirectory,
       stdinFilePath,
+      coreDump,
     };
     // Fire and forget.
     this.props.actions.launchDebugger(launchTarget);
@@ -193,6 +221,7 @@ export class LaunchUIComponent extends React.Component<
       launchEnvironmentVariables: this.state.launchEnvironmentVariables,
       launchWorkingDirectory: this.state.launchWorkingDirectory,
       stdinFilePath: this.state.stdinFilePath,
+      coreDump: this.state.coreDump,
     });
   }
 }
