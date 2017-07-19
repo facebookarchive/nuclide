@@ -25,13 +25,19 @@ export class DebuggerPaneContainerViewModel {
   _disposables: UniversalDisposable;
   _paneEvents: Map<atom$Pane, UniversalDisposable>;
   _removedFromLayout: boolean;
+  _preferredWidth: ?number;
 
-  constructor(debuggerModel: DebuggerModel, paneContainer: atom$PaneContainer) {
+  constructor(
+    debuggerModel: DebuggerModel,
+    paneContainer: atom$PaneContainer,
+    preferredWidth: ?number,
+  ) {
     this._disposables = new UniversalDisposable();
     this._paneEvents = new Map();
     this._removedFromLayout = false;
     this._debuggerModel = debuggerModel;
     this._container = paneContainer;
+    this._preferredWidth = preferredWidth;
 
     for (const pane of this._container.getPanes()) {
       this._deferredAddTabBarToEmptyPane(pane);
@@ -287,7 +293,7 @@ export class DebuggerPaneContainerViewModel {
   }
 
   getPreferredWidth(): number {
-    return this._debuggerModel.getPreferredWidth();
+    return this._preferredWidth || this._debuggerModel.getPreferredWidth();
   }
 
   createView(): React.Element<any> {

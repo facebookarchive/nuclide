@@ -1199,6 +1199,9 @@ declare class atom$AbstractPaneContainer {
   getActivePane(): atom$Pane,
   getPanes(): Array<atom$Pane>,
   onDidAddPaneItem((item: {item: Object}) => void): IDisposable,
+  state: {
+    size: number,
+  }
 }
 
 declare class atom$Dock extends atom$AbstractPaneContainer {

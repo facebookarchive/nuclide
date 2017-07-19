@@ -426,6 +426,13 @@ export class DebuggerLayoutManager {
       localStorage.setItem(key, '');
     }
 
+    // Forget all previous dock sizes;
+    for (const dockInfo of this._getWorkspaceDocks()) {
+      const {name} = dockInfo;
+      const key = this._getPaneStorageKey('dock-size' + name);
+      localStorage.removeItem(key);
+    }
+
     // Pop the debugger open with the default layout.
     this._debuggerPanes = [];
     this._paneHiddenWarningShown = false;
@@ -472,6 +479,7 @@ export class DebuggerLayoutManager {
       const {name, dock} = dockInfo;
       const panes = dock.getPanes();
       let layoutIndex = 0;
+      let dockContainsDebuggerItem = false;
       for (const pane of panes) {
         for (const item of pane.getItems()) {
           const paneItems = [];
@@ -489,11 +497,21 @@ export class DebuggerLayoutManager {
                 userHidden: false,
               };
 
+              dockContainsDebuggerItem = true;
               itemToSave.getConfig().previousLocation = location;
               layoutIndex++;
             }
           }
         }
+      }
+
+      const key = this._getPaneStorageKey('dock-size' + name);
+      if (dockContainsDebuggerItem) {
+        // Save the size of a dock only if it contains a debugger item.
+        const sizeInfo = JSON.stringify(dock.state.size);
+        localStorage.setItem(key, sizeInfo);
+      } else {
+        localStorage.removeItem(key);
       }
     }
 
@@ -577,6 +595,23 @@ export class DebuggerLayoutManager {
       .filter(targetDockName => targetDockName === dockName).length;
   }
 
+  _getSavedDebuggerPaneSize(dock: {
+    name: string,
+    dock: atom$AbstractPaneContainer,
+    orientation: string,
+  }): ?number {
+    const key = this._getPaneStorageKey('dock-size' + dock.name);
+    const savedItem = localStorage.getItem(key);
+    if (savedItem != null) {
+      const sizeInfo = JSON.parse(savedItem);
+      if (!Number.isNaN(sizeInfo)) {
+        return sizeInfo;
+      }
+    }
+
+    return null;
+  }
+
   showDebuggerViews(api: WorkspaceViewsService): void {
     // Hide any debugger panes other than the controls so we have a known
     // starting point for preparing the layout.
@@ -592,10 +627,12 @@ export class DebuggerLayoutManager {
     let leftPaneContainer = null;
     if (this._countPanesForTargetDock(leftDock.name, defaultDock.name) > 0) {
       leftPaneContainer = createPaneContainer();
+      const size = this._getSavedDebuggerPaneSize(leftDock);
       this._leftPaneContainerModel = this._addPaneContainerToWorkspace(
         leftPaneContainer,
         leftDock.dock,
         addedItemsByDock,
+        size,
       );
     }
 
@@ -605,10 +642,12 @@ export class DebuggerLayoutManager {
     let rightPaneContainer = null;
     if (this._countPanesForTargetDock(rightDock.name, defaultDock.name) > 0) {
       rightPaneContainer = createPaneContainer();
+      const size = this._getSavedDebuggerPaneSize(rightDock);
       this._rightPaneContainerModel = this._addPaneContainerToWorkspace(
         rightPaneContainer,
         rightDock.dock,
         addedItemsByDock,
+        size,
       );
     }
 
@@ -659,6 +698,7 @@ export class DebuggerLayoutManager {
           debuggerPane.debuggerModeFilter(mode)
         ) {
           invariant(targetContainer != null);
+          const size = this._getSavedDebuggerPaneSize(targetDock);
           this._appendItemToDock(
             debuggerPane,
             targetContainer,
@@ -667,6 +707,7 @@ export class DebuggerLayoutManager {
               this._model,
               debuggerPane.isLifetimeView,
               pane => this._paneDestroyed(pane),
+              size,
             ),
             addedItemsByDock,
           );
@@ -678,10 +719,12 @@ export class DebuggerLayoutManager {
     container: atom$PaneContainer,
     dock: atom$AbstractPaneContainer,
     addedItemsByDock: Map<atom$AbstractPaneContainer, number>,
+    dockSize: ?number,
   ): DebuggerPaneContainerViewModel {
     const containerModel = new DebuggerPaneContainerViewModel(
       this._model,
       container,
+      dockSize,
     );
     this._appendItemToDock(null, dock, containerModel, addedItemsByDock);
 
