@@ -71,8 +71,8 @@ class Activation {
 
   provideSshTunnelService(): SshTunnelService {
     return {
-      openTunnel: tunnel => {
-        this._store.dispatch(Actions.openTunnel(tunnel));
+      openTunnel: (tunnel, onOpen, onClose) => {
+        this._store.dispatch(Actions.openTunnel(tunnel, onOpen, onClose));
         return new Disposable(() =>
           this._store.dispatch(Actions.closeTunnel(tunnel)),
         );
