@@ -89,6 +89,9 @@ export class BreakpointConfigComponent extends React.Component<
       condition,
     );
     track('nuclide-debugger-breakpoint-condition-saved', {
+      path: this.props.breakpoint.path,
+      line: this.props.breakpoint.line,
+      condition,
       fileExtension: nuclideUri.extname(this.props.breakpoint.path),
     });
     this.props.onDismiss();
