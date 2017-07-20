@@ -18,6 +18,7 @@ import type {
 } from './types';
 
 import {Range} from 'atom';
+import semver from 'semver';
 import {Observable} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {microtask} from 'nuclide-commons/observable';
@@ -36,7 +37,7 @@ const SAVE_TIMEOUT = 2500;
 
 type FormatEvent =
   | {
-      type: 'command' | 'save',
+      type: 'command' | 'save' | 'new-save',
       editor: atom$TextEditor,
     }
   | {
@@ -132,10 +133,19 @@ export default class CodeFormatManager {
       // before a save operation.
       // If we try to format after the save, and then save again,
       // it's a poor user experience (and also races the text buffer's reload).
-      // TODO(hansonw): Revisit this with the new 1.19 editors.
       const editor_ = (editor: any);
       editor_.save = () => {
-        observer.next();
+        // TODO(19829039): remove check
+        if (semver.gte(atom.getVersion(), '1.19.0-beta0')) {
+          // In 1.19, TextEditor.save() is async (and the promise is used).
+          // We can just directly format + save here.
+          observer.next('new-save');
+          return this._safeFormatCodeOnSave(editor)
+            .toPromise()
+            .then(() => realSave.call(editor));
+        } else {
+          observer.next('save');
+        }
       };
       return () => {
         // Restore the save function when we're done.
@@ -152,7 +162,7 @@ export default class CodeFormatManager {
 
     return Observable.merge(
       changeEvents.map(edit => ({type: 'type', editor, edit})),
-      saveEvents.map(() => ({type: 'save', editor})),
+      saveEvents.map(type => ({type, editor})),
     ).takeUntil(
       Observable.merge(observeEditorDestroy(editor), willDestroyEvents),
     );
@@ -187,20 +197,14 @@ export default class CodeFormatManager {
         });
       case 'save':
         return (
-          this._formatCodeOnSaveInTextEditor(editor)
-            .timeout(SAVE_TIMEOUT)
-            .catch(err => {
-              getLogger('code-format').warn(
-                'Failed to format code on save:',
-                err,
-              );
-              return Observable.empty();
-            })
+          this._safeFormatCodeOnSave(editor)
             // Fire-and-forget the original save function.
             // This is actually async for remote files, but we don't use the result.
             // NOTE: finally is important, as saves should still fire on unsubscribe.
             .finally(() => editor.getBuffer().save())
         );
+      case 'new-save':
+        return Observable.empty();
       default:
         return Observable.throw(`unknown event type ${event.type}`);
     }
@@ -339,6 +343,15 @@ export default class CodeFormatManager {
           }
         });
     });
+  }
+
+  _safeFormatCodeOnSave(editor: atom$TextEditor): Observable<void> {
+    return this._formatCodeOnSaveInTextEditor(editor)
+      .timeout(SAVE_TIMEOUT)
+      .catch(err => {
+        getLogger('code-format').warn('Failed to format code on save:', err);
+        return Observable.empty();
+      });
   }
 
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
