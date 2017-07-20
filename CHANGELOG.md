@@ -1,5 +1,14 @@
 # Nuclide Changelog
 
+## v0.241.0
+
+### Hotfix Release
+
+* Fixes the issues that were created with the latest `graphql-language-service` release:
+* Fixes the breakage happening from using user's local node, which may have a different version from Atom's node
+* Fixes Nuclide's LSP implementation to handle `null` value
+* Fixed `graphql-language-service` incorrectly using node's `URL` module
+
 ## v0.240.0
 
 ### Debugger
