@@ -27,15 +27,18 @@ export function parsePsTableOutput(
 
   const formattedData = [];
   const data = lines.slice(1);
+  const ignoreSColumn = cols.find(col => col.trim() === 'S') == null;
   data.filter(row => row.trim() !== '').forEach(row => {
     const rowData = row.split(/\s+/);
     const rowObj = {};
     for (let i = 0; i < rowData.length; i++) {
-      // Android's ps output has an extra column "S" in the data that doesn't appear
-      // in the header. Skip that column's value.
       const effectiveColumn = i;
-      if (rowData[i] === 'S' && i < rowData.length - 1) {
-        i++;
+      if (ignoreSColumn) {
+        // Android's ps output has an extra column "S" (versions prior to API 26)
+        // in the data that doesn't appear in the header. Skip that column's value.
+        if (rowData[i] === 'S' && i < rowData.length - 1) {
+          i++;
+        }
       }
 
       if (colMapping[effectiveColumn] !== undefined) {
