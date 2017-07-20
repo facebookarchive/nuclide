@@ -36,6 +36,7 @@ import {
 } from './ConnectionMultiplexer.js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {sleep} from 'nuclide-commons/promise';
+import {BREAKPOINT} from './Connection';
 
 import {FileCache} from '../../nuclide-debugger-common';
 import EventEmitter from 'events';
@@ -355,11 +356,36 @@ export class DebuggerHandler extends Handler {
     this._connectionMultiplexer.resume();
   }
 
+  _updateBreakpointHitCount() {
+    // If the enabled connection just hit a breakpoint, update its hit count.
+    if (this._connectionMultiplexer.getEnabledConnection != null) {
+      const currentConnection = this._connectionMultiplexer.getEnabledConnection();
+      if (currentConnection != null) {
+        if (currentConnection.getStopReason() === BREAKPOINT) {
+          const stopLocation = currentConnection.getStopBreakpointLocation();
+          if (stopLocation != null) {
+            const bp = this._connectionMultiplexer
+              .getBreakpointStore()
+              .findBreakpoint(stopLocation.filename, stopLocation.lineNumber);
+            if (bp != null) {
+              bp.hitCount++;
+              this.sendMethod('Debugger.breakpointHitCountChanged', {
+                breakpointId: bp.chromeId,
+                hitCount: bp.hitCount,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
   async _onStatusChanged(status: string, params: ?Object): Promise<void> {
     logger.debug('Sending status: ' + status);
     switch (status) {
       case ConnectionMultiplexerStatus.AllConnectionsPaused:
       case ConnectionMultiplexerStatus.SingleConnectionPaused:
+        this._updateBreakpointHitCount();
         await this._sendPausedMessage();
         await this._clearIfTemporaryBreakpoint();
         break;

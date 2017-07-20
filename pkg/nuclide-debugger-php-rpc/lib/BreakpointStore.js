@@ -24,6 +24,7 @@ export type Breakpoint = {
   chromeId: BreakpointId,
   breakpointInfo: FileLineBreakpointInfo,
   resolved: boolean,
+  hitCount: number,
 };
 
 export type ExceptionState = 'none' | 'uncaught' | 'all';
@@ -68,6 +69,7 @@ export class BreakpointStore {
       chromeId,
       breakpointInfo,
       resolved: false,
+      hitCount: 0,
     });
     const connectionEnries = Array.from(this._connections.entries());
     const breakpointPromises = connectionEnries.map(async entry => {
@@ -103,6 +105,7 @@ export class BreakpointStore {
       chromeId,
       breakpointInfo,
       resolved: false,
+      hitCount: 0,
     });
     const breakpoints = this._connections.get(connection);
     invariant(breakpoints != null);
@@ -236,16 +239,7 @@ export class BreakpointStore {
     );
   }
 
-  breakpointExists(filename: string, lineNumber: number) {
-    if (filename == null || isNaN(lineNumber) || lineNumber < 0) {
-      // Invalid bp info. Assume the breakpoint exists otherwise we might erroneously resume
-      // the target. This is expected if the target hits a stop condition that doesn't provide
-      // file location info. At the very least, this happens for exceptions, async-breaks, and
-      // breaks in evaluated code, but there may be additional cases where HHVM doesn't provide
-      // this data in the xdebug status message.
-      return true;
-    }
-
+  findBreakpoint(filename: string, lineNumber: number): ?Breakpoint {
     // Check all known breakpoints to see if one matches the current file + line.
     for (const key of this._breakpoints.keys()) {
       const bp = this._breakpoints.get(key);
@@ -259,12 +253,25 @@ export class BreakpointStore {
         locationInfo.lineNumber === lineNumber
       ) {
         // Found a matching bp.
-        return true;
+        return bp;
       }
     }
 
     // Not found.
-    return false;
+    return null;
+  }
+
+  breakpointExists(filename: string, lineNumber: number) {
+    if (filename == null || isNaN(lineNumber) || lineNumber < 0) {
+      // Invalid bp info. Assume the breakpoint exists otherwise we might erroneously resume
+      // the target. This is expected if the target hits a stop condition that doesn't provide
+      // file location info. At the very least, this happens for exceptions, async-breaks, and
+      // breaks in evaluated code, but there may be additional cases where HHVM doesn't provide
+      // this data in the xdebug status message.
+      return true;
+    }
+
+    return this.findBreakpoint(filename, lineNumber) != null;
   }
 
   async addConnection(connection: Connection): Promise<void> {
