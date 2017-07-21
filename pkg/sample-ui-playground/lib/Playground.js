@@ -35,6 +35,7 @@ import {ModalExamples} from '../../nuclide-ui/Modal.example';
 import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 import {MessageExamples} from 'nuclide-commons-ui/Message.example';
 import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.example';
+import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -59,6 +60,7 @@ const playgroundComponents = [
   MultiRootChangedFilesViewExample,
   FileChangesExamples,
   PathWithFileIconExamples,
+  AnimatedEllipsisExamples,
 ];
 
 type ComponentSpec = {
