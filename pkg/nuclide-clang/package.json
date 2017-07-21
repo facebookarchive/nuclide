@@ -59,9 +59,9 @@
         "0.1.0": "consumeBusySignal"
       }
     },
-    "nuclide.clang.compilation-database": {
+    "nuclide.clang.request-settings": {
       "versions": {
-        "0.0.0": "consumeCompilationDatabase"
+        "0.0.0": "consumeClangRequestSettings"
       }
     }
   },

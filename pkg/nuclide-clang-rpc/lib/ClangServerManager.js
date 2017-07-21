@@ -10,7 +10,7 @@
  */
 
 import type {ClangServerFlags} from './ClangServer';
-import type {ClangCompilationDatabase} from './rpc-types';
+import type {ClangCompilationDatabase, ClangRequestSettings} from './rpc-types';
 
 import LRUCache from 'lru-cache';
 import os from 'os';
@@ -82,7 +82,7 @@ export default class ClangServerManager {
   getClangServer(
     src: string,
     contents: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ?ClangRequestSettings,
     defaultFlags?: ?Array<string>,
     restartIfChanged?: boolean,
   ): ClangServer {
@@ -94,6 +94,8 @@ export default class ClangServerManager {
         return server;
       }
     }
+    const compilationDB =
+      requestSettings == null ? null : requestSettings.compilationDatabase;
     server = new ClangServer(
       src,
       contents,

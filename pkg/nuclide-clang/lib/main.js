@@ -21,7 +21,7 @@ import type {
 import type {TypeHintProvider} from '../../nuclide-type-hint/lib/types';
 import type {RefactorProvider} from '../../nuclide-refactorizer';
 import type {
-  ClangCompilationDatabaseProvider,
+  ClangRequestSettingsProvider,
   ClangDeclarationInfoProvider,
 } from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
@@ -38,7 +38,7 @@ import ClangLinter from './ClangLinter';
 import {GRAMMARS, GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {
   resetForSource,
-  registerCompilationDatabaseProvider,
+  registerRequestSettingsProvider,
   getRelatedSourceOrHeader,
   getDeclarationInfo,
 } from './libclang';
@@ -190,10 +190,10 @@ export function provideRelatedFiles(): RelatedFilesProvider {
   };
 }
 
-export function consumeCompilationDatabase(
-  provider: ClangCompilationDatabaseProvider,
+export function consumeClangRequestSettings(
+  provider: ClangRequestSettingsProvider,
 ): Disposable {
-  return registerCompilationDatabaseProvider(provider);
+  return registerRequestSettingsProvider(provider);
 }
 
 export function deactivate() {

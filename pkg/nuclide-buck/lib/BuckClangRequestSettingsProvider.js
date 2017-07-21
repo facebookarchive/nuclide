@@ -9,8 +9,11 @@
  * @format
  */
 
-import type {ClangCompilationDatabase} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {ClangCompilationDatabaseProvider} from '../../nuclide-clang/lib/types';
+import type {
+  ClangCompilationDatabase,
+  ClangRequestSettings,
+} from '../../nuclide-clang-rpc/lib/rpc-types';
+import type {ClangRequestSettingsProvider} from '../../nuclide-clang/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams} from './types';
 
@@ -117,13 +120,23 @@ function getProvider(
   );
 }
 
-export function getClangCompilationDatabaseProvider(
+export function getClangRequestSettingsProvider(
   taskRunner: BuckTaskRunner,
-): ClangCompilationDatabaseProvider {
+): ClangRequestSettingsProvider {
   return {
-    getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+    async getSettings(src: string): Promise<?ClangRequestSettings> {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
-      return getProvider(src, params).getCompilationDatabase(src);
+      const compilationDatabase = await getProvider(
+        src,
+        params,
+      ).getCompilationDatabase(src);
+      if (compilationDatabase == null) {
+        return null;
+      }
+      return {
+        projectRoot: null,
+        compilationDatabase,
+      };
     },
     resetForSource(src: string): void {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();

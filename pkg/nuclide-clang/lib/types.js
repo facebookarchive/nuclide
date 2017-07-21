@@ -10,12 +10,12 @@
  */
 
 import type {
-  ClangCompilationDatabase,
+  ClangRequestSettings,
   ClangCursor,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 
-export type ClangCompilationDatabaseProvider = {
-  getCompilationDatabase: (path: string) => Promise<?ClangCompilationDatabase>,
+export type ClangRequestSettingsProvider = {
+  getSettings: string => Promise<?ClangRequestSettings>,
   reset: (host: string) => void,
   resetForSource: (src: string) => void,
 };

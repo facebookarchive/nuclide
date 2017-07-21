@@ -111,11 +111,16 @@ export type ClangLocalReferences = {
   references: Array<atom$Range>,
 };
 
-export type ClangCompilationDatabase = {
+export type ClangRequestSettings = {|
+  compilationDatabase: ?ClangCompilationDatabase,
+  projectRoot: ?string,
+|};
+
+export type ClangCompilationDatabase = {|
   file: ?string,
   flagsFile: ?string,
   libclangPath: ?string,
-};
+|};
 
 export type ClangCompilationDatabaseEntry = {|
   command: string,
@@ -124,9 +129,9 @@ export type ClangCompilationDatabaseEntry = {|
   arguments?: Array<string>,
 |};
 
-export type ClangFlags = {
+export type ClangFlags = {|
   // Will be computed and memoized from rawData on demand.
   flags?: ?Array<string>,
   rawData: ?ClangCompilationDatabaseEntry,
   flagsFile: ?string,
-};
+|};

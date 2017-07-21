@@ -13,6 +13,7 @@ import type {
   ClangCompilationDatabase,
   ClangFlags,
   ClangCompilationDatabaseEntry,
+  ClangRequestSettings,
 } from './rpc-types';
 
 import invariant from 'assert';
@@ -304,11 +305,11 @@ export default class ClangFlagsManager {
 
   async getRelatedSrcFileForHeader(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ?ClangRequestSettings,
   ): Promise<?string> {
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
-      compilationDB,
+      requestSettings == null ? null : requestSettings.compilationDatabase,
     );
     return this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
   }

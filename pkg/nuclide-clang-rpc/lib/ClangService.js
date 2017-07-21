@@ -20,6 +20,7 @@ import type {
   ClangOutlineTree,
   ClangCompilationDatabase,
   ClangCompilationDatabaseEntry,
+  ClangRequestSettings,
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
@@ -84,14 +85,14 @@ export const ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
 async function getClangService(
   src: NuclideUri,
   contents: string,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags: ?Array<string>,
   blocking?: boolean,
 ): Promise<?ClangProcessService> {
   const server = serverManager.getClangServer(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
   );
   if (!server.isReady()) {
@@ -116,7 +117,7 @@ async function getClangService(
 export function compile(
   src: NuclideUri,
   contents: string,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags?: ?Array<string>,
 ): ConnectableObservable<?ClangCompileResult> {
   const doCompile = async () => {
@@ -124,7 +125,7 @@ export function compile(
     const server = serverManager.getClangServer(
       src,
       contents,
-      compilationDB,
+      requestSettings,
       defaultFlags,
       true,
     );
@@ -142,13 +143,13 @@ export async function getCompletions(
   column: number,
   tokenStartColumn: number,
   prefix: string,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags?: ?Array<string>,
 ): Promise<?Array<ClangCompletion>> {
   const service = await getClangService(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
   );
   if (service != null) {
@@ -167,13 +168,13 @@ export async function getDeclaration(
   contents: string,
   line: number,
   column: number,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags?: ?Array<string>,
 ): Promise<?ClangDeclaration> {
   const service = await getClangService(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
   );
   if (service != null) {
@@ -189,13 +190,13 @@ export async function getDeclarationInfo(
   contents: string,
   line: number,
   column: number,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangCursor>> {
   const service = await getClangService(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
   );
   if (service != null) {
@@ -205,23 +206,23 @@ export async function getDeclarationInfo(
 
 export async function getRelatedSourceOrHeader(
   src: NuclideUri,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
 ): Promise<?NuclideUri> {
   return serverManager
     .getClangFlagsManager()
-    .getRelatedSrcFileForHeader(src, compilationDB);
+    .getRelatedSrcFileForHeader(src, requestSettings);
 }
 
 export async function getOutline(
   src: NuclideUri,
   contents: string,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags: ?Array<string>,
 ): Promise<?Array<ClangOutlineTree>> {
   const service = await getClangService(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
     true,
   );
@@ -235,13 +236,13 @@ export async function getLocalReferences(
   contents: string,
   line: number,
   column: number,
-  compilationDB: ?ClangCompilationDatabase,
+  requestSettings: ?ClangRequestSettings,
   defaultFlags: ?Array<string>,
 ): Promise<?ClangLocalReferences> {
   const service = await getClangService(
     src,
     contents,
-    compilationDB,
+    requestSettings,
     defaultFlags,
     true,
   );
