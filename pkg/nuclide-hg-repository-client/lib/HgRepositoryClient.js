@@ -227,7 +227,10 @@ export class HgRepositoryClient {
               this._hgUncommittedStatusChanges.statusChanges,
             )
               .filter(([_, statusChanges]) => {
-                return statusChanges.has(filePath);
+                return (
+                  statusChanges.has(filePath) &&
+                  this.isStatusModified(statusChanges.get(filePath))
+                );
               })
               .map(() => filePath)
               .takeUntil(
