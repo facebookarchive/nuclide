@@ -1,3 +1,86 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileTreeEntryComponent = undefined;
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _FileTreeFilterHelper;
+
+function _load_FileTreeFilterHelper() {
+  return _FileTreeFilterHelper = require('../lib/FileTreeFilterHelper');
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _hgConstants;
+
+function _load_hgConstants() {
+  return _hgConstants = require('../../nuclide-hg-rpc/lib/hg-constants');
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('../lib/FileTreeStore');
+}
+
+var _FileTreeHgHelpers;
+
+function _load_FileTreeHgHelpers() {
+  return _FileTreeHgHelpers = _interopRequireDefault(require('../lib/FileTreeHgHelpers'));
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+var _PathWithFileIcon;
+
+function _load_PathWithFileIcon() {
+  return _PathWithFileIcon = _interopRequireDefault(require('../../nuclide-ui/PathWithFileIcon'));
+}
+
+var _os = _interopRequireDefault(require('os'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,90 +88,48 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {FileTreeNode} from '../lib/FileTreeNode';
-
-import FileTreeActions from '../lib/FileTreeActions';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {filterName} from '../lib/FileTreeFilterHelper';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import {FileTreeStore} from '../lib/FileTreeStore';
-import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
-import invariant from 'assert';
-import os from 'os';
-import {Observable} from 'rxjs';
-
-const store = FileTreeStore.getInstance();
-const getActions = FileTreeActions.getInstance;
-
-type Props = {
-  node: FileTreeNode,
-};
-type State = {
-  isLoading: boolean,
-};
-
-type SelectionMode =
-  | 'single-select'
-  | 'multi-select'
-  | 'range-select'
-  | 'invalid-select';
+const store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
+const getActions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance;
 
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
 
-export class FileTreeEntryComponent extends React.Component {
-  state: State;
-  props: Props;
+class FileTreeEntryComponent extends _react.default.Component {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
   // when an entry is truly hovered/unhovered, since these fire many times over
   // the duration of one user interaction.
-  dragEventCount: number;
-  _loadingTimeout: ?number;
-  _disposables: ?UniversalDisposable;
-  _pathContainer: ?HTMLElement;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.dragEventCount = 0;
-    (this: any)._onMouseDown = this._onMouseDown.bind(this);
-    (this: any)._onClick = this._onClick.bind(this);
-    (this: any)._onDoubleClick = this._onDoubleClick.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
+    this._onClick = this._onClick.bind(this);
+    this._onDoubleClick = this._onDoubleClick.bind(this);
 
-    (this: any)._onDragEnter = this._onDragEnter.bind(this);
-    (this: any)._onDragLeave = this._onDragLeave.bind(this);
-    (this: any)._onDragStart = this._onDragStart.bind(this);
-    (this: any)._onDragOver = this._onDragOver.bind(this);
-    (this: any)._onDrop = this._onDrop.bind(this);
+    this._onDragEnter = this._onDragEnter.bind(this);
+    this._onDragLeave = this._onDragLeave.bind(this);
+    this._onDragStart = this._onDragStart.bind(this);
+    this._onDragOver = this._onDragOver.bind(this);
+    this._onDrop = this._onDrop.bind(this);
 
-    (this: any)._checkboxOnChange = this._checkboxOnChange.bind(this);
-    (this: any)._checkboxOnClick = this._checkboxOnClick.bind(this);
-    (this: any)._checkboxOnMouseDown = this._checkboxOnMouseDown.bind(this);
+    this._checkboxOnChange = this._checkboxOnChange.bind(this);
+    this._checkboxOnClick = this._checkboxOnClick.bind(this);
+    this._checkboxOnMouseDown = this._checkboxOnMouseDown.bind(this);
 
     this.state = {
-      isLoading: false,
+      isLoading: false
     };
   }
 
-  shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
-    return (
-      nextProps.node !== this.props.node ||
-      nextState.isLoading !== this.state.isLoading
-    );
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps.node !== this.props.node || nextState.isLoading !== this.state.isLoading;
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.node.isLoading !== this.props.node.isLoading) {
       if (this._loadingTimeout != null) {
         clearTimeout(this._loadingTimeout);
@@ -96,49 +137,45 @@ export class FileTreeEntryComponent extends React.Component {
       }
 
       if (nextProps.node.isLoading) {
-        const spinnerDelay = nextProps.node.wasFetched
-          ? SUBSEQUENT_FETCH_SPINNER_DELAY
-          : INITIAL_FETCH_SPINNER_DELAY;
+        const spinnerDelay = nextProps.node.wasFetched ? SUBSEQUENT_FETCH_SPINNER_DELAY : INITIAL_FETCH_SPINNER_DELAY;
 
         this._loadingTimeout = setTimeout(() => {
           this._loadingTimeout = null;
           this.setState({
-            isLoading: Boolean(this.props.node.isLoading),
+            isLoading: Boolean(this.props.node.isLoading)
           });
         }, spinnerDelay);
       } else {
         this.setState({
-          isLoading: false,
+          isLoading: false
         });
       }
     }
   }
 
-  componentDidMount(): void {
-    const el = ReactDOM.findDOMNode(this);
-    this._disposables = new UniversalDisposable(
-      // Because this element can be inside of an Atom panel (which adds its own drag and drop
-      // handlers) we need to sidestep React's event delegation.
-      Observable.fromEvent(el, 'dragenter').subscribe(this._onDragEnter),
-      Observable.fromEvent(el, 'dragleave').subscribe(this._onDragLeave),
-      Observable.fromEvent(el, 'dragstart').subscribe(this._onDragStart),
-      Observable.fromEvent(el, 'dragover').subscribe(this._onDragOver),
-      Observable.fromEvent(el, 'drop').subscribe(this._onDrop),
-    );
+  componentDidMount() {
+    const el = _reactDom.default.findDOMNode(this);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(
+    // Because this element can be inside of an Atom panel (which adds its own drag and drop
+    // handlers) we need to sidestep React's event delegation.
+    _rxjsBundlesRxMinJs.Observable.fromEvent(el, 'dragenter').subscribe(this._onDragEnter), _rxjsBundlesRxMinJs.Observable.fromEvent(el, 'dragleave').subscribe(this._onDragLeave), _rxjsBundlesRxMinJs.Observable.fromEvent(el, 'dragstart').subscribe(this._onDragStart), _rxjsBundlesRxMinJs.Observable.fromEvent(el, 'dragover').subscribe(this._onDragOver), _rxjsBundlesRxMinJs.Observable.fromEvent(el, 'drop').subscribe(this._onDrop));
   }
 
-  componentWillUnmount(): void {
-    invariant(this._disposables != null);
+  componentWillUnmount() {
+    if (!(this._disposables != null)) {
+      throw new Error('Invariant violation: "this._disposables != null"');
+    }
+
     this._disposables.dispose();
     if (this._loadingTimeout != null) {
       clearTimeout(this._loadingTimeout);
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     const node = this.props.node;
 
-    const outerClassName = classnames('entry', {
+    const outerClassName = (0, (_classnames || _load_classnames()).default)('entry', {
       'file list-item': !node.isContainer,
       'directory list-nested-item': node.isContainer,
       'current-working-directory': node.isCwd,
@@ -146,19 +183,19 @@ export class FileTreeEntryComponent extends React.Component {
       expanded: !node.isLoading && node.isExpanded,
       'project-root': node.isRoot,
       selected: node.isSelected || node.isDragHovered,
-      'nuclide-file-tree-softened': node.shouldBeSoftened,
+      'nuclide-file-tree-softened': node.shouldBeSoftened
     });
-    const listItemClassName = classnames({
+    const listItemClassName = (0, (_classnames || _load_classnames()).default)({
       'header list-item': node.isContainer,
-      loading: this.state.isLoading,
+      loading: this.state.isLoading
     });
 
     let statusClass;
     if (!node.conf.isEditingWorkingSet) {
       const vcsStatusCode = node.vcsStatusCode;
-      if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
+      if (vcsStatusCode === (_hgConstants || _load_hgConstants()).StatusCodeNumber.MODIFIED) {
         statusClass = 'status-modified';
-      } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
+      } else if (vcsStatusCode === (_hgConstants || _load_hgConstants()).StatusCodeNumber.ADDED) {
         statusClass = 'status-added';
       } else if (node.isIgnored) {
         statusClass = 'status-ignored';
@@ -182,59 +219,60 @@ export class FileTreeEntryComponent extends React.Component {
     let tooltip;
     if (node.isContainer) {
       if (node.isCwd) {
-        tooltip = addTooltip({title: 'Current Working Root'});
+        tooltip = (0, (_addTooltip || _load_addTooltip()).default)({ title: 'Current Working Root' });
       }
     }
 
-    return (
-      <li
-        className={`${outerClassName} ${statusClass}`}
-        style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
-        draggable={true}
-        onMouseDown={this._onMouseDown}
-        onClick={this._onClick}
-        onDoubleClick={this._onDoubleClick}>
-        <div className={listItemClassName} ref="arrowContainer">
-          <PathWithFileIcon
-            className={classnames('name', 'nuclide-file-tree-path', {
+    return _react.default.createElement(
+      'li',
+      {
+        className: `${outerClassName} ${statusClass}`,
+        style: { paddingLeft: this.props.node.getDepth() * INDENT_LEVEL },
+        draggable: true,
+        onMouseDown: this._onMouseDown,
+        onClick: this._onClick,
+        onDoubleClick: this._onDoubleClick },
+      _react.default.createElement(
+        'div',
+        { className: listItemClassName, ref: 'arrowContainer' },
+        _react.default.createElement(
+          (_PathWithFileIcon || _load_PathWithFileIcon()).default,
+          {
+            className: (0, (_classnames || _load_classnames()).default)('name', 'nuclide-file-tree-path', {
               'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
-              'icon-nuclicon-file-directory-starred':
-                node.isContainer && node.isCwd,
-            })}
-            isFolder={node.isContainer}
-            path={node.uri}
-            ref={elem => {
+              'icon-nuclicon-file-directory-starred': node.isContainer && node.isCwd
+            }),
+            isFolder: node.isContainer,
+            path: node.uri,
+            ref: elem => {
               this._pathContainer = elem;
               tooltip && tooltip(elem);
-            }}
-            data-name={node.name}
-            data-path={node.uri}>
-            {this._renderCheckbox()}
-            {filterName(node.name, node.highlightedText, node.isSelected)}
-          </PathWithFileIcon>
-          {this._renderConnectionTitle()}
-        </div>
-      </li>
+            },
+            'data-name': node.name,
+            'data-path': node.uri },
+          this._renderCheckbox(),
+          (0, (_FileTreeFilterHelper || _load_FileTreeFilterHelper()).filterName)(node.name, node.highlightedText, node.isSelected)
+        ),
+        this._renderConnectionTitle()
+      )
     );
   }
 
-  _renderCheckbox(): ?React.Element<any> {
+  _renderCheckbox() {
     if (!this.props.node.conf.isEditingWorkingSet) {
       return;
     }
 
-    return (
-      <Checkbox
-        checked={this.props.node.checkedStatus === 'checked'}
-        indeterminate={this.props.node.checkedStatus === 'partial'}
-        onChange={this._checkboxOnChange}
-        onClick={this._checkboxOnClick}
-        onMouseDown={this._checkboxOnMouseDown}
-      />
-    );
+    return _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+      checked: this.props.node.checkedStatus === 'checked',
+      indeterminate: this.props.node.checkedStatus === 'partial',
+      onChange: this._checkboxOnChange,
+      onClick: this._checkboxOnClick,
+      onMouseDown: this._checkboxOnMouseDown
+    });
   }
 
-  _renderConnectionTitle(): ?React.Element<any> {
+  _renderConnectionTitle() {
     if (!this.props.node.isRoot) {
       return null;
     }
@@ -243,30 +281,27 @@ export class FileTreeEntryComponent extends React.Component {
       return null;
     }
 
-    return (
-      <span className="nuclide-file-tree-connection-title highlight">
-        {title}
-      </span>
+    return _react.default.createElement(
+      'span',
+      { className: 'nuclide-file-tree-connection-title highlight' },
+      title
     );
   }
 
-  _isToggleNodeExpand(event: SyntheticMouseEvent) {
+  _isToggleNodeExpand(event) {
     if (!this._pathContainer) {
       return;
     }
 
     const node = this.props.node;
-    return (
-      node.isContainer &&
-      // $FlowFixMe
-      ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target) &&
-      event.clientX <
-        // $FlowFixMe
-        ReactDOM.findDOMNode(this._pathContainer).getBoundingClientRect().left
-    );
+    return node.isContainer &&
+    // $FlowFixMe
+    _reactDom.default.findDOMNode(this.refs.arrowContainer).contains(event.target) && event.clientX <
+    // $FlowFixMe
+    _reactDom.default.findDOMNode(this._pathContainer).getBoundingClientRect().left;
   }
 
-  _onMouseDown(event: SyntheticMouseEvent) {
+  _onMouseDown(event) {
     event.stopPropagation();
     if (this._isToggleNodeExpand(event)) {
       return;
@@ -284,7 +319,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onClick(event: SyntheticMouseEvent) {
+  _onClick(event) {
     event.stopPropagation();
     const node = this.props.node;
 
@@ -296,10 +331,7 @@ export class FileTreeEntryComponent extends React.Component {
 
     const selectionMode = getSelectionMode(event);
 
-    if (
-      selectionMode === 'range-select' ||
-      selectionMode === 'invalid-select'
-    ) {
+    if (selectionMode === 'range-select' || selectionMode === 'invalid-select') {
       return;
     }
 
@@ -330,7 +362,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onDoubleClick(event: SyntheticMouseEvent) {
+  _onDoubleClick(event) {
     event.stopPropagation();
 
     if (this.props.node.isContainer) {
@@ -344,13 +376,9 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onDragEnter(event: DragEvent) {
+  _onDragEnter(event) {
     event.stopPropagation();
-    const movableNodes = store
-      .getSelectedNodes()
-      .filter(node =>
-        FileTreeHgHelpers.isValidRename(node, this.props.node.uri),
-      );
+    const movableNodes = store.getSelectedNodes().filter(node => (_FileTreeHgHelpers || _load_FileTreeHgHelpers()).default.isValidRename(node, this.props.node.uri));
 
     // Ignores hover over invalid targets.
     if (!this.props.node.isContainer || movableNodes.size === 0) {
@@ -358,15 +386,12 @@ export class FileTreeEntryComponent extends React.Component {
     }
     if (this.dragEventCount <= 0) {
       this.dragEventCount = 0;
-      getActions().setDragHoveredNode(
-        this.props.node.rootUri,
-        this.props.node.uri,
-      );
+      getActions().setDragHoveredNode(this.props.node.rootUri, this.props.node.uri);
     }
     this.dragEventCount++;
   }
 
-  _onDragLeave(event: DragEvent) {
+  _onDragLeave(event) {
     event.stopPropagation();
     // Avoid calling an unhoverNode action if dragEventCount is already 0.
     if (this.dragEventCount === 0) {
@@ -379,42 +404,48 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _onDragStart(event: DragEvent) {
+  _onDragStart(event) {
     event.stopPropagation();
     if (this._pathContainer == null) {
       return;
     }
 
     // $FlowFixMe
-    const target: HTMLElement = ReactDOM.findDOMNode(this._pathContainer);
+    const target = _reactDom.default.findDOMNode(this._pathContainer);
     if (target == null) {
       return;
     }
 
     const fileIcon = target.cloneNode(false);
-    fileIcon.style.cssText =
-      'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
-    invariant(document.body != null);
+    fileIcon.style.cssText = 'position: absolute; top: 0; left: 0; color: #fff; opacity: .8;';
+
+    if (!(document.body != null)) {
+      throw new Error('Invariant violation: "document.body != null"');
+    }
+
     document.body.appendChild(fileIcon);
 
-    const {dataTransfer} = event;
+    const { dataTransfer } = event;
     if (dataTransfer != null) {
       dataTransfer.effectAllowed = 'move';
       dataTransfer.setDragImage(fileIcon, -8, -4);
       dataTransfer.setData('initialPath', this.props.node.uri);
     }
-    nextAnimationFrame.subscribe(() => {
-      invariant(document.body != null);
+    (_observable || _load_observable()).nextAnimationFrame.subscribe(() => {
+      if (!(document.body != null)) {
+        throw new Error('Invariant violation: "document.body != null"');
+      }
+
       document.body.removeChild(fileIcon);
     });
   }
 
-  _onDragOver(event: DragEvent) {
+  _onDragOver(event) {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  _onDrop(event: DragEvent) {
+  _onDrop(event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -423,29 +454,23 @@ export class FileTreeEntryComponent extends React.Component {
     getActions().moveToNode(this.props.node.rootUri, this.props.node.uri);
   }
 
-  _toggleNodeExpanded(deep: boolean): void {
+  _toggleNodeExpanded(deep) {
     if (this.props.node.isExpanded) {
       if (deep) {
-        getActions().collapseNodeDeep(
-          this.props.node.rootUri,
-          this.props.node.uri,
-        );
+        getActions().collapseNodeDeep(this.props.node.rootUri, this.props.node.uri);
       } else {
         getActions().collapseNode(this.props.node.rootUri, this.props.node.uri);
       }
     } else {
       if (deep) {
-        getActions().expandNodeDeep(
-          this.props.node.rootUri,
-          this.props.node.uri,
-        );
+        getActions().expandNodeDeep(this.props.node.rootUri, this.props.node.uri);
       } else {
         getActions().expandNode(this.props.node.rootUri, this.props.node.uri);
       }
     }
   }
 
-  _checkboxOnChange(isChecked: boolean): void {
+  _checkboxOnChange(isChecked) {
     if (isChecked) {
       getActions().checkNode(this.props.node.rootUri, this.props.node.uri);
     } else {
@@ -453,25 +478,23 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  _checkboxOnClick(event: SyntheticEvent): void {
+  _checkboxOnClick(event) {
     event.stopPropagation();
   }
 
-  _checkboxOnMouseDown(event: SyntheticMouseEvent): void {
+  _checkboxOnMouseDown(event) {
     // Chrome messes with scrolling if a focused input is being scrolled out of view
     // so we'll just prevent the checkbox from receiving the focus
     event.preventDefault();
   }
 }
 
-function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
-  if (
-    (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
-    (os.platform() !== 'darwin' && event.ctrlKey && event.button === 0)
-  ) {
+exports.FileTreeEntryComponent = FileTreeEntryComponent;
+function getSelectionMode(event) {
+  if (_os.default.platform() === 'darwin' && event.metaKey && event.button === 0 || _os.default.platform() !== 'darwin' && event.ctrlKey && event.button === 0) {
     return 'multi-select';
   }
-  if (os.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
+  if (_os.default.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
     return 'single-select';
   }
   if (event.shiftKey && event.button === 0) {

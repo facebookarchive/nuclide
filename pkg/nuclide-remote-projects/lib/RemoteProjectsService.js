@@ -1,79 +1,90 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {SerializableRemoteConnectionConfiguration} from '..';
-import type {OpenConnectionDialogOptions} from './open-connection';
-import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {ReplaySubject} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {RemoteConnection} from '../../nuclide-remote-connection';
-import {openConnectionDialog} from './open-connection';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export default class RemoteProjectsService {
-  _subject: ReplaySubject<Array<string>>;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _openConnection;
+
+function _load_openConnection() {
+  return _openConnection = require('./open-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class RemoteProjectsService {
 
   constructor() {
-    this._subject = new ReplaySubject(1);
+    this._subject = new _rxjsBundlesRxMinJs.ReplaySubject(1);
   }
 
   dispose() {
     this._subject.complete();
   }
 
-  _reloadFinished(projects: Array<string>) {
+  _reloadFinished(projects) {
     this._subject.next(projects);
     this._subject.complete();
   }
 
-  waitForRemoteProjectReload(
-    callback: (loadedProjects: Array<string>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(this._subject.subscribe(callback));
+  waitForRemoteProjectReload(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._subject.subscribe(callback));
   }
 
-  async createRemoteConnection(
-    remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-  ): Promise<?RemoteConnection> {
-    const {host, cwd, displayTitle} = remoteProjectConfig;
-    let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
-    if (connection != null) {
-      return connection;
-    }
+  createRemoteConnection(remoteProjectConfig) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const { host, cwd, displayTitle } = remoteProjectConfig;
+      let connection = (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.getByHostnameAndPath(host, cwd);
+      if (connection != null) {
+        return connection;
+      }
 
-    connection = await RemoteConnection.createConnectionBySavedConfig(
-      host,
-      cwd,
-      displayTitle,
-    );
-    if (connection != null) {
-      return connection;
-    }
+      connection = yield (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.createConnectionBySavedConfig(host, cwd, displayTitle);
+      if (connection != null) {
+        return connection;
+      }
 
-    // If connection fails using saved config, open connect dialog.
-    return openConnectionDialog({
-      initialServer: host,
-      initialCwd: cwd,
-    });
+      // If connection fails using saved config, open connect dialog.
+      return (0, (_openConnection || _load_openConnection()).openConnectionDialog)({
+        initialServer: host,
+        initialCwd: cwd
+      });
+    })();
   }
 
-  openConnectionDialog(
-    options: OpenConnectionDialogOptions,
-  ): Promise<?RemoteConnection> {
-    return openConnectionDialog(options);
+  openConnectionDialog(options) {
+    return (0, (_openConnection || _load_openConnection()).openConnectionDialog)(options);
   }
 
-  async findOrCreate(
-    config: RemoteConnectionConfiguration,
-  ): Promise<RemoteConnection> {
-    return RemoteConnection.findOrCreate(config);
+  findOrCreate(config) {
+    return (0, _asyncToGenerator.default)(function* () {
+      return (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).RemoteConnection.findOrCreate(config);
+    })();
   }
 }
+exports.default = RemoteProjectsService; /**
+                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                          * All rights reserved.
+                                          *
+                                          * This source code is licensed under the license found in the LICENSE file in
+                                          * the root directory of this source tree.
+                                          *
+                                          * 
+                                          * @format
+                                          */

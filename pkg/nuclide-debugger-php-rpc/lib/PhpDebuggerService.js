@@ -1,3 +1,63 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PhpDebuggerService = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _helpers;
+
+function _load_helpers() {
+  return _helpers = require('./helpers');
+}
+
+var _config;
+
+function _load_config() {
+  return _config = require('./config');
+}
+
+var _ConnectionUtils;
+
+function _load_ConnectionUtils() {
+  return _ConnectionUtils = require('./ConnectionUtils');
+}
+
+var _MessageTranslator;
+
+function _load_MessageTranslator() {
+  return _MessageTranslator = require('./MessageTranslator');
+}
+
+var _eventKit;
+
+function _load_eventKit() {
+  return _eventKit = require('event-kit');
+}
+
+var _ClientCallback;
+
+function _load_ClientCallback() {
+  return _ClientCallback = require('./ClientCallback');
+}
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Connection states
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,43 +65,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import logger from './utils';
-import {hphpdMightBeAttached} from './helpers';
-import {clearConfig, setConfig} from './config';
-import {setRootDirectoryUri} from './ConnectionUtils';
-import {MessageTranslator} from './MessageTranslator';
-import {CompositeDisposable} from 'event-kit';
-
-import type {ConnectableObservable} from 'rxjs';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-
-export type PhpDebuggerSessionConfig = {
-  xdebugAttachPort: number,
-  xdebugLaunchingPort: number,
-  launchScriptPath?: string,
-  pid?: number,
-  attachScriptRegex?: string,
-  idekeyRegex?: string,
-  endDebugWhenNoRequests?: boolean,
-  logLevel: LogLevel,
-  targetUri: string,
-  phpRuntimePath: string,
-  phpRuntimeArgs: string,
-  dummyRequestFilePath: string,
-  stopOneStopAll: boolean,
-  launchWrapperCommand?: string,
-};
-
-export type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError',
-  message: string,
-};
-
-// Connection states
 const INITIAL = 'initial';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
@@ -64,16 +91,11 @@ let lastServiceObjectDispose = null;
  *    After the promise returned by debug() is resolved, call sendCommand() to send Chrome Commands,
  *    and be prepared to receive notifications via the server notifications observable.
  */
-import {ClientCallback} from './ClientCallback';
-import passesGK from '../../commons-node/passesGK';
+
 
 const GK_PAUSE_ONE_PAUSE_ALL = 'nuclide_debugger_php_pause_one_pause_all';
 
-export class PhpDebuggerService {
-  _state: string;
-  _translator: ?MessageTranslator;
-  _clientCallback: ClientCallback;
-  _disposables: CompositeDisposable;
+class PhpDebuggerService {
 
   constructor() {
     if (lastServiceObjectDispose != null) {
@@ -82,73 +104,83 @@ export class PhpDebuggerService {
     lastServiceObjectDispose = this.dispose.bind(this);
     this._state = INITIAL;
     this._translator = null;
-    this._disposables = new CompositeDisposable();
-    this._clientCallback = new ClientCallback();
+    this._disposables = new (_eventKit || _load_eventKit()).CompositeDisposable();
+    this._clientCallback = new (_ClientCallback || _load_ClientCallback()).ClientCallback();
     this._disposables.add(this._clientCallback);
   }
 
-  getNotificationObservable(): ConnectableObservable<NotificationMessage> {
+  getNotificationObservable() {
     return this._clientCallback.getNotificationObservable().publish();
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
+  getServerMessageObservable() {
     return this._clientCallback.getServerMessageObservable().publish();
   }
 
-  getOutputWindowObservable(): ConnectableObservable<string> {
+  getOutputWindowObservable() {
     return this._clientCallback.getOutputWindowObservable().publish();
   }
 
-  async debug(config: PhpDebuggerSessionConfig): Promise<string> {
-    logger.info('Connecting config: ' + JSON.stringify(config));
+  debug(config) {
+    var _this = this;
 
-    await this._warnIfHphpdAttached();
-    if (!await passesGK(GK_PAUSE_ONE_PAUSE_ALL)) {
-      config.stopOneStopAll = false;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      (_utils || _load_utils()).default.info('Connecting config: ' + JSON.stringify(config));
 
-    setConfig(config);
-    await setRootDirectoryUri(config.targetUri);
-    logger.setLevel(config.logLevel);
-    this._setState(CONNECTING);
+      yield _this._warnIfHphpdAttached();
+      if (!(yield (0, (_passesGK || _load_passesGK()).default)(GK_PAUSE_ONE_PAUSE_ALL))) {
+        config.stopOneStopAll = false;
+      }
 
-    const translator = new MessageTranslator(this._clientCallback);
-    this._disposables.add(translator);
-    translator.onSessionEnd(() => {
-      this._onEnd();
-    });
-    this._translator = translator;
+      (0, (_config || _load_config()).setConfig)(config);
+      yield (0, (_ConnectionUtils || _load_ConnectionUtils()).setRootDirectoryUri)(config.targetUri);
+      (_utils || _load_utils()).default.setLevel(config.logLevel);
+      _this._setState(CONNECTING);
 
-    this._setState(CONNECTED);
-
-    return 'HHVM connected';
-  }
-
-  async sendCommand(message: string): Promise<void> {
-    logger.info('Recieved command: ' + message);
-    if (this._translator) {
-      await this._translator.handleCommand(message);
-    }
-  }
-
-  async _warnIfHphpdAttached(): Promise<void> {
-    const mightBeAttached = await hphpdMightBeAttached();
-    if (mightBeAttached) {
-      this._clientCallback.sendUserMessage('notification', {
-        type: 'warning',
-        message:
-          'You may have an hphpd instance currently attached to your server!' +
-          '<br />Please kill it, or the Nuclide debugger may not work properly.',
+      const translator = new (_MessageTranslator || _load_MessageTranslator()).MessageTranslator(_this._clientCallback);
+      _this._disposables.add(translator);
+      translator.onSessionEnd(function () {
+        _this._onEnd();
       });
-    }
+      _this._translator = translator;
+
+      _this._setState(CONNECTED);
+
+      return 'HHVM connected';
+    })();
   }
 
-  _onEnd(): void {
+  sendCommand(message) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      (_utils || _load_utils()).default.info('Recieved command: ' + message);
+      if (_this2._translator) {
+        yield _this2._translator.handleCommand(message);
+      }
+    })();
+  }
+
+  _warnIfHphpdAttached() {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const mightBeAttached = yield (0, (_helpers || _load_helpers()).hphpdMightBeAttached)();
+      if (mightBeAttached) {
+        _this3._clientCallback.sendUserMessage('notification', {
+          type: 'warning',
+          message: 'You may have an hphpd instance currently attached to your server!' + '<br />Please kill it, or the Nuclide debugger may not work properly.'
+        });
+      }
+    })();
+  }
+
+  _onEnd() {
     this._setState(CLOSED);
   }
 
-  _setState(newState: string): void {
-    logger.debug('state change from ' + this._state + ' to ' + newState);
+  _setState(newState) {
+    (_utils || _load_utils()).default.debug('state change from ' + this._state + ' to ' + newState);
     // TODO: Consider logging socket info: remote ip, etc.
     this._state = newState;
 
@@ -157,10 +189,11 @@ export class PhpDebuggerService {
     }
   }
 
-  dispose(): Promise<void> {
-    logger.info('Proxy: Ending session');
-    clearConfig();
+  dispose() {
+    (_utils || _load_utils()).default.info('Proxy: Ending session');
+    (0, (_config || _load_config()).clearConfig)();
     this._disposables.dispose();
     return Promise.resolve();
   }
 }
+exports.PhpDebuggerService = PhpDebuggerService;

@@ -1,98 +1,97 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {Icon} from 'nuclide-commons-ui/Icon';
-import React from 'react';
-import classnames from 'classnames';
-import nullthrows from 'nullthrows';
+var _Icon;
 
-export type Tab = {
-  name: string,
-  icon?: IconName,
-  tabContent: React.Element<any>,
-};
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
 
-type Props = {
-  tabs: Array<Tab>,
-  activeTabName: ?string,
-  closeable: boolean,
-  onActiveTabChange: (tab: Tab) => void,
-  onClose?: () => void,
-  triggeringEvent: string,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export default class Tabs extends React.Component {
-  props: Props;
+var _classnames;
 
-  static defaultProps = {
-    closeable: false,
-    triggeringEvent: 'onClick',
-  };
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  constructor(props: Props) {
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Tabs extends _react.default.Component {
+
+  constructor(props) {
     super(props);
 
-    (this: any)._handleTabChange = this._handleTabChange.bind(this);
-    (this: any)._renderTabMenu = this._renderTabMenu.bind(this);
+    this._handleTabChange = this._handleTabChange.bind(this);
+    this._renderTabMenu = this._renderTabMenu.bind(this);
   }
 
-  _handleTabChange(selectedTabName: string) {
+  _handleTabChange(selectedTabName) {
     if (typeof this.props.onActiveTabChange === 'function') {
-      this.props.onActiveTabChange(
-        nullthrows(this.props.tabs.find(tab => tab.name === selectedTabName)),
-      );
+      this.props.onActiveTabChange((0, (_nullthrows || _load_nullthrows()).default)(this.props.tabs.find(tab => tab.name === selectedTabName)));
     }
   }
 
-  _renderTabMenu(): React.Element<any> {
-    const closeButton = this.props.closeable
-      ? <div className="close-icon" onClick={this.props.onClose} />
-      : null;
+  _renderTabMenu() {
+    const closeButton = this.props.closeable ? _react.default.createElement('div', { className: 'close-icon', onClick: this.props.onClose }) : null;
     const tabs = this.props.tabs.map(tab => {
-      const icon = tab.icon == null ? null : <Icon icon={tab.icon} />;
+      const icon = tab.icon == null ? null : _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: tab.icon });
       const handler = {};
-      handler[this.props.triggeringEvent] = this._handleTabChange.bind(
-        this,
-        tab.name,
-      );
-      return (
-        <li
-          className={classnames({
+      handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
+      return _react.default.createElement(
+        'li',
+        Object.assign({
+          className: (0, (_classnames || _load_classnames()).default)({
             tab: true,
-            active: this.props.activeTabName === tab.name,
-          })}
-          key={tab.name}
-          {...handler}>
-          <div className="title">
-            {icon}
-            {tab.tabContent}
-          </div>
-          {closeButton}
-        </li>
+            active: this.props.activeTabName === tab.name
+          }),
+          key: tab.name
+        }, handler),
+        _react.default.createElement(
+          'div',
+          { className: 'title' },
+          icon,
+          tab.tabContent
+        ),
+        closeButton
       );
     });
-    return (
-      <ul className="tab-bar list-inline inset-panel">
-        {tabs}
-      </ul>
+    return _react.default.createElement(
+      'ul',
+      { className: 'tab-bar list-inline inset-panel' },
+      tabs
     );
   }
 
-  render(): React.Element<any> {
-    return (
-      <div className="nuclide-tabs">
-        {this._renderTabMenu()}
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-tabs' },
+      this._renderTabMenu()
     );
   }
 }
+exports.default = Tabs; /**
+                         * Copyright (c) 2015-present, Facebook, Inc.
+                         * All rights reserved.
+                         *
+                         * This source code is licensed under the license found in the LICENSE file in
+                         * the root directory of this source tree.
+                         *
+                         * 
+                         * @format
+                         */
+
+Tabs.defaultProps = {
+  closeable: false,
+  triggeringEvent: 'onClick'
+};

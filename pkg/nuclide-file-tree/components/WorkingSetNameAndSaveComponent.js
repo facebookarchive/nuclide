@@ -1,91 +1,87 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WorkingSetNameAndSaveComponent = undefined;
 
-type Props = {
-  isEditing: boolean,
-  initialName: string,
-  onUpdate: (prevName: string, name: string) => void,
-  onSave: (name: string) => void,
-  onCancel: () => void,
-};
+var _react = _interopRequireDefault(require('react'));
 
-type State = {
-  name: string,
-};
+var _AtomInput;
 
-export class WorkingSetNameAndSaveComponent extends React.Component {
-  props: Props;
-  state: State;
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
 
-  constructor(props: Props) {
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class WorkingSetNameAndSaveComponent extends _react.default.Component {
+
+  constructor(props) {
     super(props);
 
     this.state = {
-      name: props.initialName,
+      name: props.initialName
     };
 
-    (this: any)._trackName = this._trackName.bind(this);
-    (this: any)._saveWorkingSet = this._saveWorkingSet.bind(this);
+    this._trackName = this._trackName.bind(this);
+    this._saveWorkingSet = this._saveWorkingSet.bind(this);
   }
 
-  componentDidMount(): void {}
+  componentDidMount() {}
 
-  componentWillUnmount(): void {}
+  componentWillUnmount() {}
 
   render() {
     let setNameText;
     if (this.state.name === '') {
-      setNameText = (
-        <atom-panel class="nuclide-file-tree-working-set-name-missing">
-          Name is missing
-        </atom-panel>
+      setNameText = _react.default.createElement(
+        'atom-panel',
+        { 'class': 'nuclide-file-tree-working-set-name-missing' },
+        'Name is missing'
       );
     }
 
-    return (
-      <div>
-        <div className="nuclide-file-tree-working-set-name-outline">
-          <AtomInput
-            placeholderText="name"
-            size="sm"
-            className="nuclide-file-tree-working-set-name inline-block-tight"
-            onDidChange={this._trackName}
-            initialValue={this.props.initialName}
-            onConfirm={this._saveWorkingSet}
-            onCancel={this.props.onCancel}
-          />
-        </div>
-        <Button
-          buttonType={ButtonTypes.SUCCESS}
-          disabled={this.state.name === ''}
-          icon="check"
-          onClick={this._saveWorkingSet}
-        />
-        {setNameText}
-      </div>
+    return _react.default.createElement(
+      'div',
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-file-tree-working-set-name-outline' },
+        _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+          placeholderText: 'name',
+          size: 'sm',
+          className: 'nuclide-file-tree-working-set-name inline-block-tight',
+          onDidChange: this._trackName,
+          initialValue: this.props.initialName,
+          onConfirm: this._saveWorkingSet,
+          onCancel: this.props.onCancel
+        })
+      ),
+      _react.default.createElement((_Button || _load_Button()).Button, {
+        buttonType: (_Button || _load_Button()).ButtonTypes.SUCCESS,
+        disabled: this.state.name === '',
+        icon: 'check',
+        onClick: this._saveWorkingSet
+      }),
+      setNameText
     );
   }
 
-  _trackName(text: string): void {
-    this.setState({name: text});
+  _trackName(text) {
+    this.setState({ name: text });
   }
 
-  _saveWorkingSet(): void {
+  _saveWorkingSet() {
     if (this.state.name === '') {
       atom.notifications.addWarning('Name is missing', {
-        detail: 'Please provide a name for the Working Set',
+        detail: 'Please provide a name for the Working Set'
       });
       return;
     }
@@ -97,3 +93,13 @@ export class WorkingSetNameAndSaveComponent extends React.Component {
     }
   }
 }
+exports.WorkingSetNameAndSaveComponent = WorkingSetNameAndSaveComponent; /**
+                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                          * All rights reserved.
+                                                                          *
+                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                          * the root directory of this source tree.
+                                                                          *
+                                                                          * 
+                                                                          * @format
+                                                                          */

@@ -1,60 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {MemoizedFieldsDeriver} from './MemoizedFieldsDeriver';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import Immutable from 'immutable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileTreeNode = undefined;
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+var _MemoizedFieldsDeriver;
 
-export type FileTreeNodeOptions = {
-  uri: NuclideUri,
-  rootUri: NuclideUri,
-  isExpanded?: boolean,
-  isSelected?: boolean,
-  isFocused?: boolean,
-  isDragHovered?: boolean,
-  isLoading?: boolean,
-  wasFetched?: boolean,
-  isCwd?: boolean,
-  isTracked?: boolean,
-  children?: Immutable.OrderedMap<string, FileTreeNode>,
-  connectionTitle?: string,
-  checkedStatus?: NodeCheckedStatus,
-  subscription?: ?IDisposable,
-  highlightedText?: string,
-  matchesFilter?: boolean,
-  isPendingLoad?: boolean,
-};
+function _load_MemoizedFieldsDeriver() {
+  return _MemoizedFieldsDeriver = require('./MemoizedFieldsDeriver');
+}
 
-type DefaultFileTreeNodeOptions = {
-  isExpanded: boolean,
-  isSelected: boolean,
-  isFocused: boolean,
-  isDragHovered: boolean,
-  isLoading: boolean,
-  wasFetched: boolean,
-  isCwd: boolean,
-  isTracked: boolean,
-  children: Immutable.OrderedMap<string, FileTreeNode>,
-  connectionTitle: string,
-  subscription: ?IDisposable,
-  highlightedText: string,
-  matchesFilter: boolean,
-  isPendingLoad: boolean,
-};
+var _nuclideUri;
 
-const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DEFAULT_OPTIONS = {
   isExpanded: false,
   isSelected: false,
   isFocused: false,
@@ -63,29 +34,22 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   wasFetched: false,
   isCwd: false,
   isTracked: false,
-  children: new Immutable.OrderedMap(),
+  children: new (_immutable || _load_immutable()).default.OrderedMap(),
   connectionTitle: '',
   subscription: null,
   highlightedText: '',
   matchesFilter: true,
-  isPendingLoad: false,
-};
-
-export type ImmutableNodeSettableFields = {
-  isExpanded?: boolean,
-  isSelected?: boolean,
-  isFocused?: boolean,
-  isDragHovered?: boolean,
-  isLoading?: boolean,
-  wasFetched?: boolean,
-  isCwd?: boolean,
-  isTracked?: boolean,
-  children?: Immutable.OrderedMap<string, FileTreeNode>,
-  subscription?: ?IDisposable,
-  highlightedText?: string,
-  matchesFilter?: boolean,
-  isPendingLoad?: boolean,
-};
+  isPendingLoad: false
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
 /**
 * OVERVIEW
@@ -134,74 +98,29 @@ export type ImmutableNodeSettableFields = {
 *
 *   All property derivation and links set-up is done with one traversal only over the children.
 */
-export class FileTreeNode {
-  // Mutable properties - set when the node is assigned to its parent (and are immutable after)
-  parent: ?FileTreeNode;
-  nextSibling: ?FileTreeNode;
-  prevSibling: ?FileTreeNode;
-
-  conf: StoreConfigData;
-  _deriver: MemoizedFieldsDeriver;
-
-  uri: NuclideUri;
-  rootUri: NuclideUri;
-  isExpanded: boolean;
-  isSelected: boolean;
-  isFocused: boolean;
-  isDragHovered: boolean;
-  isLoading: boolean;
-  wasFetched: boolean;
-  isTracked: boolean;
-  isCwd: boolean;
-  children: Immutable.OrderedMap<string, FileTreeNode>;
-  connectionTitle: string;
-  subscription: ?IDisposable;
-  highlightedText: string;
-  matchesFilter: boolean;
-  isPendingLoad: boolean;
-
-  // Derived
-  isRoot: boolean;
-  name: string;
-  hashKey: string;
-  relativePath: string;
-  localPath: string;
-  isContainer: boolean;
-  shouldBeShown: boolean;
-  shouldBeSoftened: boolean;
-  vcsStatusCode: StatusCodeNumberValue;
-  repo: ?atom$Repository;
-  isIgnored: boolean;
-  checkedStatus: NodeCheckedStatus;
-
-  // Derived from children
-  containsSelection: boolean;
-  containsDragHover: boolean;
-  containsTrackedNode: boolean;
-  containsFilterMatches: boolean;
-  shownChildrenCount: number;
-  containsHidden: boolean;
-  childrenAreLoading: boolean;
+class FileTreeNode {
 
   /**
   * The children property is an OrderedMap instance keyed by child's name property.
   * This convenience function would create such OrderedMap instance from a plain JS Array
   * of FileTreeNode instances
   */
-  static childrenFromArray(
-    children: Array<FileTreeNode>,
-  ): Immutable.OrderedMap<string, FileTreeNode> {
-    return new Immutable.OrderedMap(children.map(child => [child.name, child]));
+
+  // Mutable properties - set when the node is assigned to its parent (and are immutable after)
+  static childrenFromArray(children) {
+    return new (_immutable || _load_immutable()).default.OrderedMap(children.map(child => [child.name, child]));
   }
 
   /**
   * The _derivedChange param is not for external use.
   */
-  constructor(
-    options: FileTreeNodeOptions,
-    conf: StoreConfigData,
-    _deriver: ?MemoizedFieldsDeriver = null,
-  ) {
+
+
+  // Derived from children
+
+
+  // Derived
+  constructor(options, conf, _deriver = null) {
     this.parent = null;
     this.nextSibling = null;
     this.prevSibling = null;
@@ -209,8 +128,7 @@ export class FileTreeNode {
 
     this._assignOptions(options);
 
-    this._deriver =
-      _deriver || new MemoizedFieldsDeriver(options.uri, options.rootUri);
+    this._deriver = _deriver || new (_MemoizedFieldsDeriver || _load_MemoizedFieldsDeriver()).MemoizedFieldsDeriver(options.uri, options.rootUri);
     const derived = this._deriver.buildDerivedFields(conf);
     this._assignDerived(derived);
 
@@ -222,7 +140,7 @@ export class FileTreeNode {
   * siblings.
   *   Additionally calculates the properties derived from children and assigns them to this instance
   */
-  _handleChildren(): void {
+  _handleChildren() {
     let containsSelection = this.isSelected;
     let containsDragHover = this.isDragHovered;
     let containsTrackedNode = this.isTracked;
@@ -293,7 +211,7 @@ export class FileTreeNode {
   * Since in heavy updates, nodes are created by the thousands we need to keep the creation
   * flow performant.
   */
-  _assignOptions(options: Object): void {
+  _assignOptions(options) {
     // Don't pass the 100 chars limit
     const o = options;
     const D = DEFAULT_OPTIONS;
@@ -303,23 +221,17 @@ export class FileTreeNode {
     this.isExpanded = o.isExpanded !== undefined ? o.isExpanded : D.isExpanded;
     this.isSelected = o.isSelected !== undefined ? o.isSelected : D.isSelected;
     this.isFocused = o.isFocused !== undefined ? o.isFocused : D.isFocused;
-    this.isDragHovered =
-      o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
+    this.isDragHovered = o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
     this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
     this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
     this.isTracked = o.isTracked !== undefined ? o.isTracked : D.isTracked;
     this.isCwd = o.isCwd !== undefined ? o.isCwd : D.isCwd;
     this.children = o.children !== undefined ? o.children : D.children;
-    this.connectionTitle =
-      o.connectionTitle !== undefined ? o.connectionTitle : D.connectionTitle;
-    this.subscription =
-      o.subscription !== undefined ? o.subscription : D.subscription;
-    this.highlightedText =
-      o.highlightedText !== undefined ? o.highlightedText : D.highlightedText;
-    this.matchesFilter =
-      o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
-    this.isPendingLoad =
-      o.isPendingLoad !== undefined ? o.isPendingLoad : D.isPendingLoad;
+    this.connectionTitle = o.connectionTitle !== undefined ? o.connectionTitle : D.connectionTitle;
+    this.subscription = o.subscription !== undefined ? o.subscription : D.subscription;
+    this.highlightedText = o.highlightedText !== undefined ? o.highlightedText : D.highlightedText;
+    this.matchesFilter = o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
+    this.isPendingLoad = o.isPendingLoad !== undefined ? o.isPendingLoad : D.isPendingLoad;
   }
 
   /**
@@ -327,7 +239,7 @@ export class FileTreeNode {
   * Since in heavy updates, nodes are created by the thousands we need to keep the creation
   * flow performant.
   */
-  _assignDerived(derived: Object): void {
+  _assignDerived(derived) {
     this.isRoot = derived.isRoot;
     this.name = derived.name;
     this.hashKey = derived.hashKey;
@@ -347,7 +259,7 @@ export class FileTreeNode {
   * properties identical except for those being modified. This method creates the baseline options
   * instance
   */
-  _buildOptions(): FileTreeNodeOptions {
+  _buildOptions() {
     return {
       uri: this.uri,
       rootUri: this.rootUri,
@@ -364,49 +276,49 @@ export class FileTreeNode {
       subscription: this.subscription,
       highlightedText: this.highlightedText,
       matchesFilter: this.matchesFilter,
-      isPendingLoad: this.isPendingLoad,
+      isPendingLoad: this.isPendingLoad
     };
   }
 
-  setIsExpanded(isExpanded: boolean): FileTreeNode {
-    return this.set({isExpanded});
+  setIsExpanded(isExpanded) {
+    return this.set({ isExpanded });
   }
 
-  setIsSelected(isSelected: boolean): FileTreeNode {
-    return this.set({isSelected});
+  setIsSelected(isSelected) {
+    return this.set({ isSelected });
   }
 
-  setIsFocused(isFocused: boolean): FileTreeNode {
-    return this.set({isFocused});
+  setIsFocused(isFocused) {
+    return this.set({ isFocused });
   }
 
-  setIsDragHovered(isDragHovered: boolean): FileTreeNode {
-    return this.set({isDragHovered});
+  setIsDragHovered(isDragHovered) {
+    return this.set({ isDragHovered });
   }
 
-  setIsLoading(isLoading: boolean): FileTreeNode {
-    return this.set({isLoading});
+  setIsLoading(isLoading) {
+    return this.set({ isLoading });
   }
 
-  setIsTracked(isTracked: boolean): FileTreeNode {
-    return this.set({isTracked});
+  setIsTracked(isTracked) {
+    return this.set({ isTracked });
   }
 
-  setIsCwd(isCwd: boolean): FileTreeNode {
-    return this.set({isCwd});
+  setIsCwd(isCwd) {
+    return this.set({ isCwd });
   }
 
-  setChildren(children: Immutable.List<FileTreeNode>): FileTreeNode {
-    return this.set({children});
+  setChildren(children) {
+    return this.set({ children });
   }
 
   /**
   * Notifies the node about the change that happened in the configuration object. Will trigger
   * the complete reconstruction of the entire tree branch
   */
-  updateConf(): FileTreeNode {
+  updateConf() {
     const children = this.children.map(c => c.updateConf(this.conf));
-    return this.newNode({children}, this.conf);
+    return this.newNode({ children }, this.conf);
   }
 
   /**
@@ -414,7 +326,7 @@ export class FileTreeNode {
   * instances. For example:
   * const newNode = node.set({isExpanded: true, isSelected: false});
   */
-  set(props: ImmutableNodeSettableFields): FileTreeNode {
+  set(props) {
     if (this._propsAreTheSame(props)) {
       return this;
     }
@@ -432,10 +344,7 @@ export class FileTreeNode {
   * The `postPredicate` is invoked on the way up. It has to return a non-null node, but it may
   * be the same instance as it was called with.
   */
-  setRecursive(
-    prePredicate: ?(node: FileTreeNode) => ?FileTreeNode,
-    postPredicate: (node: FileTreeNode) => FileTreeNode = n => n,
-  ): FileTreeNode {
+  setRecursive(prePredicate, postPredicate = n => n) {
     if (prePredicate != null) {
       const newNode = prePredicate(this);
       if (newNode != null) {
@@ -443,9 +352,7 @@ export class FileTreeNode {
       }
     }
 
-    const children = this.children.map(child =>
-      child.setRecursive(prePredicate, postPredicate),
-    );
+    const children = this.children.map(child => child.setRecursive(prePredicate, postPredicate));
     return postPredicate(this.setChildren(children));
   }
 
@@ -455,9 +362,9 @@ export class FileTreeNode {
   * that children names (derived from their uris) are unmodifiable. Thus we won't ever have a
   * problem locating the value that we need to replace.
   */
-  updateChild(newChild: FileTreeNode): FileTreeNode {
+  updateChild(newChild) {
     const children = this.children.set(newChild.name, newChild);
-    return this.set({children});
+    return this.set({ children });
   }
 
   /**
@@ -465,10 +372,7 @@ export class FileTreeNode {
   * The first is invoked upon descent and with its return value controls whether need to traverse
   * deeper into the tree. True - descend, False - don't.
   */
-  traverse(
-    preCallback: (node: FileTreeNode) => boolean,
-    postCallback: (node: FileTreeNode) => void = () => {},
-  ): void {
+  traverse(preCallback, postCallback = () => {}) {
     const descend = preCallback(this);
 
     if (descend) {
@@ -481,7 +385,7 @@ export class FileTreeNode {
   /**
   * Looks for a node with the given URI in the sub branch - returns null if not found
   */
-  find(uri: NuclideUri): ?FileTreeNode {
+  find(uri) {
     const deepestFound = this.findDeepest(uri);
 
     if (deepestFound == null || deepestFound.uri !== uri) {
@@ -496,7 +400,7 @@ export class FileTreeNode {
   * of the node being looked for.
   * Returns null if the node can not belong to the sub-branch
   */
-  findDeepest(uri: NuclideUri): ?FileTreeNode {
+  findDeepest(uri) {
     if (!uri.startsWith(this.uri)) {
       return null;
     }
@@ -505,7 +409,7 @@ export class FileTreeNode {
       return this;
     }
 
-    const childNamePath = nuclideUri.split(nuclideUri.relative(this.uri, uri));
+    const childNamePath = (_nuclideUri || _load_nuclideUri()).default.split((_nuclideUri || _load_nuclideUri()).default.relative(this.uri, uri));
     return this._findLastByNamePath(childNamePath);
   }
 
@@ -513,7 +417,7 @@ export class FileTreeNode {
   * Finds the next node in the tree in the natural order - from top to to bottom as is displayed
   * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
   */
-  findNext(): ?FileTreeNode {
+  findNext() {
     if (!this.shouldBeShown) {
       if (this.parent != null) {
         return this.parent.findNext();
@@ -540,7 +444,7 @@ export class FileTreeNode {
     return null;
   }
 
-  findNextShownSibling(): ?FileTreeNode {
+  findNextShownSibling() {
     let it = this.nextSibling;
     while (it != null && !it.shouldBeShown) {
       it = it.nextSibling;
@@ -553,7 +457,7 @@ export class FileTreeNode {
   * Finds the previous node in the tree in the natural order - from top to to bottom as is displayed
   * in the file-tree panel, minus the indentation. Only the nodes that should be shown are returned.
   */
-  findPrevious(): ?FileTreeNode {
+  findPrevious() {
     if (!this.shouldBeShown) {
       if (this.parent != null) {
         return this.parent.findPrevious();
@@ -570,7 +474,7 @@ export class FileTreeNode {
     return this.parent;
   }
 
-  findPrevShownSibling(): ?FileTreeNode {
+  findPrevShownSibling() {
     let it = this.prevSibling;
     while (it != null && !it.shouldBeShown) {
       it = it.prevSibling;
@@ -584,7 +488,7 @@ export class FileTreeNode {
   * the file-tree panel. (Last child of the last child of the last child...)
   * Or null, if none are found
   */
-  findLastRecursiveChild(): ?FileTreeNode {
+  findLastRecursiveChild() {
     if (!this.isContainer || !this.isExpanded || this.children.isEmpty()) {
       return this;
     }
@@ -604,7 +508,7 @@ export class FileTreeNode {
     }
   }
 
-  getDepth(): number {
+  getDepth() {
     let it = this.parent;
     let depth = 0;
     while (it != null) {
@@ -620,107 +524,67 @@ export class FileTreeNode {
    * The index is zero based.
    * If the node is not shown, the index is for the previous shown node.
    */
-  calculateVisualIndex(): number {
+  calculateVisualIndex() {
     let index = this.shouldBeShown ? 1 : 0;
     let prev = this.findPrevShownSibling();
     while (prev != null) {
       index += prev.shownChildrenCount;
       prev = prev.findPrevShownSibling();
     }
-    return (
-      index + (this.parent == null ? 0 : this.parent.calculateVisualIndex())
-    );
+    return index + (this.parent == null ? 0 : this.parent.calculateVisualIndex());
   }
 
-  _propsAreTheSame(props: Object): boolean {
-    if (
-      props.isSelected !== undefined &&
-      this.isSelected !== props.isSelected
-    ) {
+  _propsAreTheSame(props) {
+    if (props.isSelected !== undefined && this.isSelected !== props.isSelected) {
       return false;
     }
     if (props.isFocused !== undefined && this.isFocused !== props.isFocused) {
       return false;
     }
-    if (
-      props.isDragHovered !== undefined &&
-      this.isDragHovered !== props.isDragHovered
-    ) {
+    if (props.isDragHovered !== undefined && this.isDragHovered !== props.isDragHovered) {
       return false;
     }
     if (props.isTracked !== undefined && this.isTracked !== props.isTracked) {
       return false;
     }
-    if (
-      props.isExpanded !== undefined &&
-      this.isExpanded !== props.isExpanded
-    ) {
+    if (props.isExpanded !== undefined && this.isExpanded !== props.isExpanded) {
       return false;
     }
     if (props.isLoading !== undefined && this.isLoading !== props.isLoading) {
       return false;
     }
-    if (
-      props.wasFetched !== undefined &&
-      this.wasFetched !== props.wasFetched
-    ) {
+    if (props.wasFetched !== undefined && this.wasFetched !== props.wasFetched) {
       return false;
     }
     if (props.isCwd !== undefined && this.isCwd !== props.isCwd) {
       return false;
     }
-    if (
-      props.subscription !== undefined &&
-      this.subscription !== props.subscription
-    ) {
+    if (props.subscription !== undefined && this.subscription !== props.subscription) {
       return false;
     }
-    if (
-      props.highlightedText !== undefined &&
-      this.highlightedText !== props.highlightedText
-    ) {
+    if (props.highlightedText !== undefined && this.highlightedText !== props.highlightedText) {
       return false;
     }
-    if (
-      props.matchesFilter !== undefined &&
-      this.matchesFilter !== props.matchesFilter
-    ) {
+    if (props.matchesFilter !== undefined && this.matchesFilter !== props.matchesFilter) {
       return false;
     }
 
-    if (
-      props.children !== undefined &&
-      props.children !== this.children &&
-      !Immutable.is(this.children, props.children)
-    ) {
+    if (props.children !== undefined && props.children !== this.children && !(_immutable || _load_immutable()).default.is(this.children, props.children)) {
       return false;
     }
 
-    if (
-      props.isPendingLoad !== undefined &&
-      props.isPendingLoad !== this.isPendingLoad
-    ) {
+    if (props.isPendingLoad !== undefined && props.isPendingLoad !== this.isPendingLoad) {
       return false;
     }
 
     return true;
   }
 
-  newNode(
-    props: ImmutableNodeSettableFields,
-    conf: StoreConfigData,
-  ): FileTreeNode {
-    return new FileTreeNode(
-      {
-        ...this._buildOptions(),
-        ...props,
-      },
-      conf,
-      this._deriver,
-    );
+  newNode(props, conf) {
+    return new FileTreeNode(Object.assign({}, this._buildOptions(), props), conf, this._deriver);
   }
 
-  _findLastByNamePath(childNamePath: Array<string>): FileTreeNode {
+  _findLastByNamePath(childNamePath) {
     if (childNamePath.length === 0) {
       return this;
     }
@@ -733,3 +597,4 @@ export class FileTreeNode {
     return child._findLastByNamePath(childNamePath.slice(1));
   }
 }
+exports.FileTreeNode = FileTreeNode;

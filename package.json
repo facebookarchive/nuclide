@@ -143,7 +143,6 @@
     "atom": ">=1.18.0",
     "node": ">=6.5.0"
   },
-  "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
     "tool-bar:1.1.0",

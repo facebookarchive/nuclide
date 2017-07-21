@@ -1,3 +1,21 @@
+'use strict';
+
+var _atom = require('atom');
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _HhvmBuildSystem;
+
+function _load_HhvmBuildSystem() {
+  return _HhvmBuildSystem = _interopRequireDefault(require('./HhvmBuildSystem'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +23,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
-
-import {CompositeDisposable} from 'atom';
-import createPackage from 'nuclide-commons-atom/createPackage';
-
-import HhvmBuildSystem from './HhvmBuildSystem';
-
 class Activation {
-  _buildSystem: ?HhvmBuildSystem;
-  _disposables: CompositeDisposable;
 
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+  constructor(state) {
+    this._disposables = new _atom.CompositeDisposable();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  consumeTaskRunnerServiceApi(api: TaskRunnerServiceApi): void {
+  consumeTaskRunnerServiceApi(api) {
     this._disposables.add(api.register(this._getBuildSystem()));
   }
 
-  _getBuildSystem(): HhvmBuildSystem {
+  _getBuildSystem() {
     if (this._buildSystem == null) {
-      const buildSystem = new HhvmBuildSystem();
+      const buildSystem = new (_HhvmBuildSystem || _load_HhvmBuildSystem()).default();
       this._disposables.add(buildSystem);
       this._buildSystem = buildSystem;
     }
@@ -42,4 +51,4 @@ class Activation {
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

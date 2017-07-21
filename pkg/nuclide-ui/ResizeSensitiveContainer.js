@@ -1,23 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import classnames from 'classnames';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ResizeSensitiveContainer = undefined;
 
-type SensorProps = {
-  targetHeight: number,
-  targetWidth: number,
-  onDetectedResize: () => void,
-};
+var _react = _interopRequireDefault(require('react'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const EXPANSION_BUFFER = 50;
 
@@ -36,33 +38,38 @@ const EXPANSION_BUFFER = 50;
  *
  * This strategy is derived from https://github.com/wnr/element-resize-detector
  */
-class ResizeSensor extends React.Component {
-  props: SensorProps;
-  _expand: ?HTMLElement;
-  _shrink: ?HTMLElement;
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
 
-  constructor(props: SensorProps) {
+class ResizeSensor extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._handleScroll = this._handleScroll.bind(this);
-    (this: any)._handleExpandRef = this._handleExpandRef.bind(this);
-    (this: any)._handleShrinkRef = this._handleShrinkRef.bind(this);
+    this._handleScroll = this._handleScroll.bind(this);
+    this._handleExpandRef = this._handleExpandRef.bind(this);
+    this._handleShrinkRef = this._handleShrinkRef.bind(this);
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._resetScrollbars();
   }
 
-  componentDidUpdate(prevProps: SensorProps): void {
-    const {targetWidth, targetHeight} = this.props;
-    if (
-      prevProps.targetWidth !== targetWidth ||
-      prevProps.targetHeight !== targetHeight
-    ) {
+  componentDidUpdate(prevProps) {
+    const { targetWidth, targetHeight } = this.props;
+    if (prevProps.targetWidth !== targetWidth || prevProps.targetHeight !== targetHeight) {
       this._resetScrollbars();
     }
   }
 
-  _resetScrollbars(): void {
+  _resetScrollbars() {
     if (this._expand == null || this._shrink == null) {
       return;
     }
@@ -74,61 +81,53 @@ class ResizeSensor extends React.Component {
     this._shrink.scrollTop = this._shrink.scrollHeight;
   }
 
-  _handleScroll(): void {
+  _handleScroll() {
     this._resetScrollbars();
     this.props.onDetectedResize();
   }
 
-  _handleExpandRef(el: HTMLElement): void {
+  _handleExpandRef(el) {
     this._expand = el;
   }
 
-  _handleShrinkRef(el: HTMLElement): void {
+  _handleShrinkRef(el) {
     this._shrink = el;
   }
 
-  render(): React.Element<any> {
-    const {targetWidth, targetHeight} = this.props;
+  render() {
+    const { targetWidth, targetHeight } = this.props;
     const expandInnerStyle = {
       width: targetWidth + EXPANSION_BUFFER,
-      height: targetHeight + EXPANSION_BUFFER,
+      height: targetHeight + EXPANSION_BUFFER
     };
 
-    return (
-      <div
-        className="nuclide-resize-sensitive-container-sensor"
-        onAnimationStart={this._handleScroll}>
-        <div
-          ref={this._handleExpandRef}
-          className="nuclide-resize-sensitive-container-expand"
-          onScroll={this._handleScroll}>
-          <div
-            className="nuclide-resize-sensitive-container-expand-inner"
-            style={expandInnerStyle}
-          />
-        </div>
-        <div
-          ref={this._handleShrinkRef}
-          className="nuclide-resize-sensitive-container-shrink"
-          onScroll={this._handleScroll}>
-          <div className="nuclide-resize-sensitive-container-shrink-inner" />
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      {
+        className: 'nuclide-resize-sensitive-container-sensor',
+        onAnimationStart: this._handleScroll },
+      _react.default.createElement(
+        'div',
+        {
+          ref: this._handleExpandRef,
+          className: 'nuclide-resize-sensitive-container-expand',
+          onScroll: this._handleScroll },
+        _react.default.createElement('div', {
+          className: 'nuclide-resize-sensitive-container-expand-inner',
+          style: expandInnerStyle
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        {
+          ref: this._handleShrinkRef,
+          className: 'nuclide-resize-sensitive-container-shrink',
+          onScroll: this._handleScroll },
+        _react.default.createElement('div', { className: 'nuclide-resize-sensitive-container-shrink-inner' })
+      )
     );
   }
 }
-
-type Props = {
-  className?: string,
-  tabIndex?: string,
-  children?: React.Element<any>,
-  onResize: (height: number, width: number) => void,
-};
-
-type State = {
-  height: number,
-  width: number,
-};
 
 /**
  * Size-sensitive container that provides an onResize callback that
@@ -139,89 +138,80 @@ type State = {
  *       changes as a result of a DOM mutation, use MeasuredComponent
  *       instead.
  */
-export class ResizeSensitiveContainer extends React.Component {
-  props: Props;
-  state: State;
+class ResizeSensitiveContainer extends _react.default.Component {
 
-  _container: ?HTMLElement;
-  _rafDisposable: ?rxjs$Subscription;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._handleContainer = this._handleContainer.bind(this);
-    (this: any)._handleResize = this._handleResize.bind(this);
-    (this: any)._updateContainerSize = this._updateContainerSize.bind(this);
+    this._handleContainer = this._handleContainer.bind(this);
+    this._handleResize = this._handleResize.bind(this);
+    this._updateContainerSize = this._updateContainerSize.bind(this);
     this.state = {
       height: -1,
-      width: -1,
+      width: -1
     };
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._rafDisposable != null) {
       this._rafDisposable.unsubscribe();
     }
   }
 
-  _containerRendered(): boolean {
+  _containerRendered() {
     return this.state.height !== -1 && this.state.width !== -1;
   }
 
-  _handleContainer(el: ?HTMLElement): void {
+  _handleContainer(el) {
     this._container = el;
     this._updateContainerSize();
   }
 
-  _updateContainerSize(): void {
+  _updateContainerSize() {
     if (this._container == null) {
       return;
     }
 
-    const {offsetHeight, offsetWidth} = this._container;
-    const {height, width} = this.state;
+    const { offsetHeight, offsetWidth } = this._container;
+    const { height, width } = this.state;
     if (offsetHeight === height && offsetWidth === width) {
       return;
     }
 
     this.setState({
       height: offsetHeight,
-      width: offsetWidth,
+      width: offsetWidth
     });
     this.props.onResize(offsetHeight, offsetWidth);
   }
 
-  _handleResize(): void {
+  _handleResize() {
     if (this._rafDisposable != null) {
       this._rafDisposable.unsubscribe();
     }
-    this._rafDisposable = nextAnimationFrame.subscribe(
-      this._updateContainerSize,
-    );
+    this._rafDisposable = (_observable || _load_observable()).nextAnimationFrame.subscribe(this._updateContainerSize);
   }
 
-  render(): React.Element<any> {
-    const {children, className, tabIndex} = this.props;
-    const {height, width} = this.state;
-    const containerClasses = classnames(
-      'nuclide-resize-sensitive-container',
-      className,
-    );
-    return (
-      <div className="nuclide-resize-sensitive-container-wrapper">
-        <div
-          ref={this._handleContainer}
-          className={containerClasses}
-          tabIndex={tabIndex}>
-          {children}
-        </div>
-        {this._containerRendered()
-          ? <ResizeSensor
-              targetHeight={height}
-              targetWidth={width}
-              onDetectedResize={this._handleResize}
-            />
-          : null}
-      </div>
+  render() {
+    const { children, className, tabIndex } = this.props;
+    const { height, width } = this.state;
+    const containerClasses = (0, (_classnames || _load_classnames()).default)('nuclide-resize-sensitive-container', className);
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-resize-sensitive-container-wrapper' },
+      _react.default.createElement(
+        'div',
+        {
+          ref: this._handleContainer,
+          className: containerClasses,
+          tabIndex: tabIndex },
+        children
+      ),
+      this._containerRendered() ? _react.default.createElement(ResizeSensor, {
+        targetHeight: height,
+        targetWidth: width,
+        onDetectedResize: this._handleResize
+      }) : null
     );
   }
 }
+exports.ResizeSensitiveContainer = ResizeSensitiveContainer;

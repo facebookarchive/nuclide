@@ -1,37 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {FileCache} from '../../nuclide-open-files-rpc';
-import {LspLanguageService} from './LspLanguageService';
-import {
-  MultiProjectLanguageService,
-  forkHostServices,
-} from '../../nuclide-language-service-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export function createMultiLspLanguageService(
-  logger: log4js$Logger,
-  fileCache: FileCache,
-  host: HostServices,
-  languageId: string,
-  command: string,
-  args: Array<string>,
-  spawnOptions: Object,
-  projectFileName: string,
-  fileExtensions: Array<NuclideUri>,
-  initializationOptions: Object,
-): MultiProjectLanguageService<LspLanguageService> {
-  const result = new MultiProjectLanguageService();
+exports.createMultiLspLanguageService = createMultiLspLanguageService;
+
+var _nuclideOpenFilesRpc;
+
+function _load_nuclideOpenFilesRpc() {
+  return _nuclideOpenFilesRpc = require('../../nuclide-open-files-rpc');
+}
+
+var _LspLanguageService;
+
+function _load_LspLanguageService() {
+  return _LspLanguageService = require('./LspLanguageService');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createMultiLspLanguageService(logger, fileCache, host, languageId, command, args, spawnOptions, projectFileName, fileExtensions, initializationOptions) {
+  const result = new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).MultiProjectLanguageService();
 
   // This MultiProjectLanguageService stores LspLanguageServices, lazily
   // created upon demand, one per project root. Demand is usually "when the
@@ -45,42 +43,39 @@ export function createMultiLspLanguageService(
   //   restarted, but we can still respond to those LanguageServiceRequests
   //   that don't require an LspConnection).
 
-  const languageServiceFactory = async (projectDir: string) => {
-    await result.hasObservedDiagnostics();
-    // We're awaiting until AtomLanguageService has observed diagnostics (to
-    // prevent race condition: see below).
+  const languageServiceFactory = (() => {
+    var _ref = (0, _asyncToGenerator.default)(function* (projectDir) {
+      yield result.hasObservedDiagnostics();
+      // We're awaiting until AtomLanguageService has observed diagnostics (to
+      // prevent race condition: see below).
 
-    const lsp = new LspLanguageService(
-      logger,
-      fileCache,
-      await forkHostServices(host, logger),
-      languageId,
-      command,
-      args,
-      spawnOptions,
-      projectDir,
-      fileExtensions,
-      initializationOptions,
-    );
+      const lsp = new (_LspLanguageService || _load_LspLanguageService()).LspLanguageService(logger, fileCache, (yield (0, (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).forkHostServices)(host, logger)), languageId, command, args, spawnOptions, projectDir, fileExtensions, initializationOptions);
 
-    lsp.start(); // Kick off 'Initializing'...
-    return lsp;
+      lsp.start(); // Kick off 'Initializing'...
+      return lsp;
 
-    // CARE! We want to avoid a race condition where LSP starts producing
-    // diagnostics before AtomLanguageService has yet had a chance to observe
-    // them (and we don't want to have to buffer the diagnostics indefinitely).
-    // We rely on the fact that LSP won't produce them before start() has
-    // returned. As soon as we ourselves return, MultiProjectLanguageService
-    // will hook up observeDiagnostics into the LSP process, so it'll be ready.
-  };
+      // CARE! We want to avoid a race condition where LSP starts producing
+      // diagnostics before AtomLanguageService has yet had a chance to observe
+      // them (and we don't want to have to buffer the diagnostics indefinitely).
+      // We rely on the fact that LSP won't produce them before start() has
+      // returned. As soon as we ourselves return, MultiProjectLanguageService
+      // will hook up observeDiagnostics into the LSP process, so it'll be ready.
+    });
 
-  result.initialize(
-    logger,
-    fileCache,
-    host,
-    projectFileName,
-    fileExtensions,
-    languageServiceFactory,
-  );
+    return function languageServiceFactory(_x) {
+      return _ref.apply(this, arguments);
+    };
+  })();
+
+  result.initialize(logger, fileCache, host, projectFileName, fileExtensions, languageServiceFactory);
   return result;
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
