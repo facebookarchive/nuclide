@@ -65,25 +65,26 @@ class BuckClangCompilationDatabaseHandler {
   }
 
   getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
-    return this._sourceCache.getOrCreate(src, () =>
-      this._loadCompilationDatabaseFromBuck(src)
+    return this._sourceCache.getOrCreate(src, async () => {
+      const buckRoot = await BuckService.getRootForPath(src);
+      return this._loadCompilationDatabaseFromBuck(src, buckRoot)
         .catch(err => {
           logger.error('Error getting flags from Buck', err);
           return null;
         })
         .then(db => {
           if (db != null) {
-            this._cacheAllTheFilesInTheSameDB(db);
+            this._cacheAllTheFilesInTheSameDB(db, buckRoot);
           }
           return db;
-        }),
-    );
+        });
+    });
   }
 
   async _loadCompilationDatabaseFromBuck(
     src: string,
+    buckRoot: ?string,
   ): Promise<?ClangCompilationDatabase> {
-    const buckRoot = await BuckService.getRootForPath(src);
     if (buckRoot == null) {
       return null;
     }
@@ -203,25 +204,30 @@ class BuckClangCompilationDatabaseHandler {
       flagsFile: buildFile,
       libclangPath: null,
     };
-    return this._processCompilationDb(compilationDB);
+    return this._processCompilationDb(compilationDB, buckProjectRoot);
   }
 
   async _processCompilationDb(
     db: ClangCompilationDatabase,
+    buckRoot: string,
   ): Promise<ClangCompilationDatabase> {
     try {
       // $FlowFB
       const {createOmCompilationDb} = require('./fb/omCompilationDb');
-      return await createOmCompilationDb(db);
+      return await createOmCompilationDb(db, buckRoot);
     } catch (e) {}
     return db;
   }
 
   async _cacheAllTheFilesInTheSameDB(
     db: ClangCompilationDatabase,
+    buckRoot: ?string,
   ): Promise<void> {
     const pathToFlags = await ClangService.loadFlagsFromCompilationDatabaseAndCacheThem(
-      db,
+      {
+        compilationDatabase: db,
+        projectRoot: buckRoot,
+      },
     );
     pathToFlags.forEach((fullFlags, path) => {
       this._sourceCache.set(path, Promise.resolve(db));

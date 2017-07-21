@@ -21,6 +21,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
 import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
+import {Cache} from '../../commons-node/cache';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
 import {mapPathsInFlags} from './clang-flags-parser';
@@ -66,15 +67,34 @@ function overrideIncludePath(src: string): string {
   return src;
 }
 
+function getCacheKeyForDb(
+  compilationDatabase: ?ClangCompilationDatabase,
+): ?string {
+  // only requestSettings.compilationDatabase.file is meaningful
+  return compilationDatabase == null ? null : compilationDatabase.file;
+}
+
 export default class ClangFlagsManager {
-  _compilationDatabases: Map<string, Promise<Map<string, ClangFlags>>>;
+  _compilationDatabases: Cache<
+    ClangCompilationDatabase,
+    Promise<Map<string, ClangFlags>>,
+  > = new Cache({
+    keyFactory: db => getCacheKeyForDb(db),
+  });
   _realpathCache: Object;
-  _pathToFlags: Map<string, Promise<?ClangFlags>>;
+  _pathToFlags: Cache<
+    [string, ClangRequestSettings],
+    Promise<?ClangFlags>,
+  > = new Cache({
+    keyFactory: ([src, requestSettings]) =>
+      JSON.stringify([
+        src,
+        getCacheKeyForDb(requestSettings.compilationDatabase),
+      ]),
+  });
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
   constructor() {
-    this._pathToFlags = new Map();
-    this._compilationDatabases = new Map();
     this._realpathCache = {};
     this._clangProjectFlags = new Map();
   }
@@ -119,13 +139,9 @@ export default class ClangFlagsManager {
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    const cacheKey = `${src}-${JSON.stringify(requestSettings)}`;
-    let cached = this._pathToFlags.get(cacheKey);
-    if (cached == null) {
-      cached = this._getFlagsForSrcImpl(src, requestSettings);
-      this._pathToFlags.set(cacheKey, cached);
-    }
-    return cached;
+    return this._pathToFlags.getOrCreate([src, requestSettings], () =>
+      this._getFlagsForSrcImpl(src, requestSettings),
+    );
   }
 
   _getFlagsForSrcImpl(
@@ -240,17 +256,18 @@ export default class ClangFlagsManager {
 
   async _getDBFlagsAndDirForSrc(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<{
     dbFlags: ?Map<string, ClangFlags>,
     dbDir: ?string,
   }> {
     let dbFlags = null;
     let dbDir = null;
+    const compilationDB = requestSettings.compilationDatabase;
     if (compilationDB != null && compilationDB.file != null) {
       // Look for a compilation database provided by the client.
       dbDir = nuclideUri.dirname(compilationDB.file);
-      dbFlags = await this.loadFlagsFromCompilationDatabase(compilationDB);
+      dbFlags = await this.loadFlagsFromCompilationDatabase(requestSettings);
     } else {
       // Look for a manually provided compilation database.
       dbDir = await fsPromise.findNearestFile(
@@ -259,10 +276,14 @@ export default class ClangFlagsManager {
       );
       if (dbDir != null) {
         const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
-        dbFlags = await this.loadFlagsFromCompilationDatabase({
+        const compilationDatabase = {
           file: dbFile,
           flagsFile: null,
           libclangPath: null,
+        };
+        dbFlags = await this.loadFlagsFromCompilationDatabase({
+          compilationDatabase,
+          projectRoot: requestSettings.projectRoot,
         });
       }
     }
@@ -291,11 +312,11 @@ export default class ClangFlagsManager {
 
   async getRelatedSrcFileForHeader(
     src: string,
-    requestSettings: ?ClangRequestSettings,
+    requestSettings: ClangRequestSettings,
   ): Promise<?string> {
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
-      requestSettings == null ? null : requestSettings.compilationDatabase,
+      requestSettings,
     );
     const projectRoot =
       requestSettings == null ? null : requestSettings.projectRoot;
@@ -306,10 +327,9 @@ export default class ClangFlagsManager {
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    const compilationDB = requestSettings.compilationDatabase;
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
-      compilationDB,
+      requestSettings,
     );
     if (dbFlags != null) {
       const flags = dbFlags.get(src);
@@ -332,6 +352,7 @@ export default class ClangFlagsManager {
       }
     }
 
+    const compilationDB = requestSettings.compilationDatabase;
     // Even if we can't get flags, try to watch the build file in case they get added.
     const buildFile =
       compilationDB != null && compilationDB.flagsFile != null
@@ -387,6 +408,7 @@ export default class ClangFlagsManager {
   async _loadFlagsFromCompilationDatabase(
     dbFile: string,
     flagsFile: ?string,
+    requestSettings: ClangRequestSettings,
   ): Promise<Map<string, ClangFlags>> {
     const flags = new Map();
     try {
@@ -418,7 +440,10 @@ export default class ClangFlagsManager {
               flagsFile: flagsFile || dbFile,
             };
             flags.set(realpath, result);
-            this._pathToFlags.set(realpath, Promise.resolve(result));
+            this._pathToFlags.set(
+              [realpath, requestSettings],
+              Promise.resolve(result),
+            );
           }
         }),
       );
@@ -429,22 +454,25 @@ export default class ClangFlagsManager {
   }
 
   loadFlagsFromCompilationDatabase(
-    db: ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<Map<string, ClangFlags>> {
+    const db = requestSettings.compilationDatabase;
+    if (db == null) {
+      return Promise.resolve(new Map());
+    }
     const dbFile = db.file;
     if (dbFile == null) {
       return Promise.resolve(new Map());
     }
-    const key = JSON.stringify(db);
-    let cached = this._compilationDatabases.get(key);
-    if (cached == null) {
-      cached = this._loadFlagsFromCompilationDatabase(dbFile, db.flagsFile);
-      if (cached == null) {
-        cached = Promise.resolve(new Map());
-      }
-      this._compilationDatabases.set(key, cached);
-    }
-    return cached;
+    return this._compilationDatabases.getOrCreate(
+      db,
+      () =>
+        this._loadFlagsFromCompilationDatabase(
+          dbFile,
+          db.flagsFile,
+          requestSettings,
+        ) || Promise.resolve(new Map()),
+    );
   }
 
   static sanitizeCommand(

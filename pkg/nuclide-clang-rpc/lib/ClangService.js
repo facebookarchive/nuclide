@@ -18,7 +18,6 @@ import type {
   ClangDeclaration,
   ClangLocalReferences,
   ClangOutlineTree,
-  ClangCompilationDatabase,
   ClangCompilationDatabaseEntry,
   ClangRequestSettings,
 } from './rpc-types';
@@ -210,7 +209,10 @@ export async function getRelatedSourceOrHeader(
 ): Promise<?NuclideUri> {
   return serverManager
     .getClangFlagsManager()
-    .getRelatedSrcFileForHeader(src, requestSettings);
+    .getRelatedSrcFileForHeader(
+      src,
+      requestSettings || {compilationDatabase: null, projectRoot: null},
+    );
 }
 
 export async function getOutline(
@@ -278,11 +280,11 @@ export async function formatCode(
 }
 
 export function loadFlagsFromCompilationDatabaseAndCacheThem(
-  db: ClangCompilationDatabase,
+  requestSettings: ClangRequestSettings,
 ): Promise<Map<string, ClangCompilationDatabaseEntry>> {
   return serverManager
     .getClangFlagsManager()
-    .loadFlagsFromCompilationDatabase(db)
+    .loadFlagsFromCompilationDatabase(requestSettings)
     .then(fullFlags =>
       mapCompact(mapTransform(fullFlags, flags => flags.rawData)),
     );
