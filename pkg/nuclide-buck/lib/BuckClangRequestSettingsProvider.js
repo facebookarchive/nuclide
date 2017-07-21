@@ -26,6 +26,7 @@ import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {BuckTaskRunner} from './BuckTaskRunner';
 
 class Provider {
+  _projectRootCache: Cache<string, Promise<?string>> = new Cache();
   _compilationDBCache: Cache<
     string,
     Promise<?ClangCompilationDatabase>,
@@ -84,6 +85,12 @@ class Provider {
     });
   }
 
+  getProjectRoot(src: string): Promise<?string> {
+    return this._projectRootCache.getOrCreate(src, () =>
+      getBuckServiceByNuclideUri(this._host).getRootForPath(src),
+    );
+  }
+
   resetForSource(src: string): void {
     this._compilationDBCache.delete(src);
     getBuckServiceByNuclideUri(this._host).resetCompilationDatabaseForSource(
@@ -126,15 +133,16 @@ export function getClangRequestSettingsProvider(
   return {
     async getSettings(src: string): Promise<?ClangRequestSettings> {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
-      const compilationDatabase = await getProvider(
-        src,
-        params,
-      ).getCompilationDatabase(src);
-      if (compilationDatabase == null) {
+      const provider = getProvider(src, params);
+      const [compilationDatabase, projectRoot] = await Promise.all([
+        provider.getCompilationDatabase(src),
+        provider.getProjectRoot(src),
+      ]);
+      if (projectRoot == null) {
         return null;
       }
       return {
-        projectRoot: null,
+        projectRoot,
         compilationDatabase,
       };
     },

@@ -18,13 +18,23 @@ import {guessBuildFile} from '../lib/utils';
 
 describe('ClangFlagsManager', () => {
   let flagsManager: ClangFlagsManager;
-  let compilationDB;
+  let compilationDatabase;
+  let requestSettings;
+  let emptyRequestSettings;
   beforeEach(() => {
     flagsManager = new ClangFlagsManager();
-    compilationDB = {
+    compilationDatabase = {
       file: nuclideUri.join(__dirname, 'fixtures', 'compile_commands.json'),
       flagsFile: nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
       libclangPath: null,
+    };
+    requestSettings = {
+      compilationDatabase,
+      projectRoot: null,
+    };
+    emptyRequestSettings = {
+      compilationDatabase: null,
+      projectRoot: null,
     };
   });
 
@@ -151,19 +161,19 @@ describe('ClangFlagsManager', () => {
   it('gets flags for a source file', () => {
     waitsForPromise(async () => {
       const srcPath = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
-      let result = await flagsManager.getFlagsForSrc(srcPath, compilationDB);
+      let result = await flagsManager.getFlagsForSrc(srcPath, requestSettings);
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
       expect(nullthrows(result).flagsFile).toEqual(
         nuclideUri.join(__dirname, 'fixtures', 'BUCK'),
       );
 
       // Make sure this is cached (different file, but same target).
-      result = await flagsManager.getFlagsForSrc('test.h', compilationDB);
+      result = await flagsManager.getFlagsForSrc('test.h', requestSettings);
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Make sure cache gets reset.
       flagsManager.reset();
-      result = await flagsManager.getFlagsForSrc(srcPath, compilationDB);
+      result = await flagsManager.getFlagsForSrc(srcPath, requestSettings);
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
     });
   });
@@ -171,17 +181,20 @@ describe('ClangFlagsManager', () => {
   it('supports negative caching', () => {
     waitsForPromise(async () => {
       // Unowned projects shouldn't invoke Buck again.
-      let result = await flagsManager.getFlagsForSrc('test', compilationDB);
+      let result = await flagsManager.getFlagsForSrc('test', requestSettings);
       expect(nullthrows(result).flags).toBe(null);
 
-      result = await flagsManager.getFlagsForSrc('test', compilationDB);
+      result = await flagsManager.getFlagsForSrc('test', requestSettings);
       expect(nullthrows(result).flags).toBe(null);
     });
   });
 
   it('gets flags for header files', () => {
     waitsForPromise(async () => {
-      let result = await flagsManager.getFlagsForSrc('header.h', compilationDB);
+      let result = await flagsManager.getFlagsForSrc(
+        'header.h',
+        requestSettings,
+      );
       expect(nullthrows(result).flags).toEqual([
         'g++',
         '-fPIC',
@@ -190,7 +203,7 @@ describe('ClangFlagsManager', () => {
         'c++',
       ]);
 
-      result = await flagsManager.getFlagsForSrc('header.hpp', compilationDB);
+      result = await flagsManager.getFlagsForSrc('header.hpp', requestSettings);
       expect(nullthrows(result).flags).toEqual([
         'g++',
         '-fPIC',
@@ -204,6 +217,7 @@ describe('ClangFlagsManager', () => {
       const dir = nuclideUri.join(__dirname, 'fixtures');
       result = await flagsManager.getFlagsForSrc(
         nuclideUri.join(dir, 'testInternal.h'),
+        emptyRequestSettings,
       );
       expect(nullthrows(result).flags).toEqual([
         'g++',
@@ -215,6 +229,7 @@ describe('ClangFlagsManager', () => {
 
       result = await flagsManager.getFlagsForSrc(
         nuclideUri.join(dir, 'test-inl.h'),
+        emptyRequestSettings,
       );
       expect(nullthrows(result).flags).toEqual([
         'g++',
@@ -226,6 +241,7 @@ describe('ClangFlagsManager', () => {
 
       result = await flagsManager.getFlagsForSrc(
         nuclideUri.join(dir, 'test2.h'),
+        emptyRequestSettings,
       );
       expect(nullthrows(result).flags).not.toBeNull();
     });
@@ -234,16 +250,25 @@ describe('ClangFlagsManager', () => {
   it('gets flags from the compilation database', () => {
     waitsForPromise(async () => {
       let testFile = nuclideUri.join(__dirname, 'fixtures', 'test.cpp');
-      let result = await flagsManager.getFlagsForSrc(testFile);
+      let result = await flagsManager.getFlagsForSrc(
+        testFile,
+        emptyRequestSettings,
+      );
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test.h');
-      result = await flagsManager.getFlagsForSrc(testFile);
+      result = await flagsManager.getFlagsForSrc(
+        testFile,
+        emptyRequestSettings,
+      );
       expect(nullthrows(result).flags).toEqual(['g++', '-fPIC', '-O3']);
 
       // Fall back to Buck if it's not in the compilation DB.
       testFile = nuclideUri.join(__dirname, 'fixtures', 'test2.cpp');
-      result = await flagsManager.getFlagsForSrc(testFile);
+      result = await flagsManager.getFlagsForSrc(
+        testFile,
+        emptyRequestSettings,
+      );
       expect(nullthrows(result).flags).toEqual(null);
     });
   });
@@ -262,11 +287,17 @@ describe('ClangFlagsManager', () => {
       ];
 
       let testFile = nuclideUri.join(testDir, 'test.cpp');
-      let result = await flagsManager.getFlagsForSrc(testFile);
+      let result = await flagsManager.getFlagsForSrc(
+        testFile,
+        emptyRequestSettings,
+      );
       expect(nullthrows(result).flags).toEqual(expectedFlags);
 
       testFile = nuclideUri.join(testDir, 'test.h');
-      result = await flagsManager.getFlagsForSrc(testFile);
+      result = await flagsManager.getFlagsForSrc(
+        testFile,
+        emptyRequestSettings,
+      );
       expect(nullthrows(result).flags).toEqual(expectedFlags);
     });
   });

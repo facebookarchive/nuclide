@@ -23,7 +23,6 @@ import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {getLogger} from 'log4js';
-import * as BuckService from '../../nuclide-buck-rpc/lib/BuckServiceImpl';
 import {mapPathsInFlags} from './clang-flags-parser';
 import {
   isHeaderFile,
@@ -94,9 +93,9 @@ export default class ClangFlagsManager {
    */
   async getFlagsForSrc(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(src, compilationDB);
+    const data = await this._getFlagsForSrcCached(src, requestSettings);
     if (data == null) {
       return null;
     }
@@ -116,24 +115,14 @@ export default class ClangFlagsManager {
     return data;
   }
 
-  _cacheKeyForCompilationDatabase(
-    compilationDB: ?ClangCompilationDatabase,
-  ): string {
-    return compilationDB == null
-      ? ''
-      : `${compilationDB.file || ''}-${compilationDB.flagsFile || ''}`;
-  }
-
   _getFlagsForSrcCached(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    const cacheKey = `${src}-${this._cacheKeyForCompilationDatabase(
-      compilationDB,
-    )}`;
+    const cacheKey = `${src}-${JSON.stringify(requestSettings)}`;
     let cached = this._pathToFlags.get(cacheKey);
     if (cached == null) {
-      cached = this._getFlagsForSrcImpl(src, compilationDB);
+      cached = this._getFlagsForSrcImpl(src, requestSettings);
       this._pathToFlags.set(cacheKey, cached);
     }
     return cached;
@@ -141,10 +130,10 @@ export default class ClangFlagsManager {
 
   _getFlagsForSrcImpl(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
     return trackTiming('nuclide-clang.get-flags', () =>
-      this.__getFlagsForSrcImpl(src, compilationDB),
+      this.__getFlagsForSrcImpl(src, requestSettings),
     );
   }
 
@@ -196,9 +185,9 @@ export default class ClangFlagsManager {
 
   async _getFlagsFromSourceFileForHeader(
     sourceFile: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
-    const data = await this._getFlagsForSrcCached(sourceFile, compilationDB);
+    const data = await this._getFlagsForSrcCached(sourceFile, requestSettings);
     if (data != null) {
       const {rawData} = data;
       if (rawData != null) {
@@ -283,7 +272,7 @@ export default class ClangFlagsManager {
   async _getRelatedSrcFileForHeader(
     src: string,
     dbFlags: ?Map<string, ClangFlags>,
-    dbDir: ?string,
+    projectRoot: ?string,
   ): Promise<?string> {
     if (dbFlags != null) {
       const sourceFile = this._findSourceFileForHeaderFromCompilationDatabase(
@@ -294,9 +283,6 @@ export default class ClangFlagsManager {
         return sourceFile;
       }
     }
-    // Try finding flags for a related source file.
-    const projectRoot = (await BuckService.getRootForPath(src)) || dbDir;
-    // If we don't have a .buckconfig or a compile_commands.json, we won't find flags regardless.
     if (projectRoot != null) {
       return ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
     }
@@ -311,13 +297,16 @@ export default class ClangFlagsManager {
       src,
       requestSettings == null ? null : requestSettings.compilationDatabase,
     );
-    return this._getRelatedSrcFileForHeader(src, dbFlags, dbDir);
+    const projectRoot =
+      requestSettings == null ? null : requestSettings.projectRoot;
+    return this._getRelatedSrcFileForHeader(src, dbFlags, projectRoot || dbDir);
   }
 
   async __getFlagsForSrcImpl(
     src: string,
-    compilationDB: ?ClangCompilationDatabase,
+    requestSettings: ClangRequestSettings,
   ): Promise<?ClangFlags> {
+    const compilationDB = requestSettings.compilationDatabase;
     const {dbFlags, dbDir} = await this._getDBFlagsAndDirForSrc(
       src,
       compilationDB,
@@ -333,10 +322,13 @@ export default class ClangFlagsManager {
       const sourceFile = await this._getRelatedSrcFileForHeader(
         src,
         dbFlags,
-        dbDir,
+        requestSettings.projectRoot || dbDir,
       );
       if (sourceFile != null) {
-        return this._getFlagsFromSourceFileForHeader(sourceFile, compilationDB);
+        return this._getFlagsFromSourceFileForHeader(
+          sourceFile,
+          requestSettings,
+        );
       }
     }
 
@@ -443,7 +435,7 @@ export default class ClangFlagsManager {
     if (dbFile == null) {
       return Promise.resolve(new Map());
     }
-    const key = this._cacheKeyForCompilationDatabase(db);
+    const key = JSON.stringify(db);
     let cached = this._compilationDatabases.get(key);
     if (cached == null) {
       cached = this._loadFlagsFromCompilationDatabase(dbFile, db.flagsFile);
