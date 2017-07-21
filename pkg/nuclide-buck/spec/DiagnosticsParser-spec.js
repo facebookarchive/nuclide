@@ -430,4 +430,86 @@ describe('DiagnosticsProvider', () => {
       ]);
     });
   });
+
+  it('matches ocaml errors in Buck', () => {
+    waitsForPromise(async () => {
+      const diagnostics = Promise.all([
+        diagnosticsParser.getDiagnostics(
+          'File "/a/good_file.ml", line 2, characters 10-12:\n' +
+            'Error: Unbound value a\n' +
+            'Hint: Did you mean b?',
+          'error',
+          '/',
+        ),
+        diagnosticsParser.getDiagnostics(
+          'File "/a/good_file2.ml", line 10, characters 15-17:\n' +
+            'Error: whatever error',
+          'error',
+          '/',
+        ),
+      ]);
+
+      expect(await diagnostics).toEqual([
+        [
+          {
+            scope: 'file',
+            providerName: 'Buck',
+            type: 'Error',
+            filePath: '/a/good_file.ml',
+            text: 'Error: Unbound value a, Hint: Did you mean b?',
+            range: {
+              start: {
+                row: 1,
+                column: 9,
+              },
+              end: {
+                row: 1,
+                column: 9,
+              },
+            },
+          },
+        ],
+        [
+          {
+            scope: 'file',
+            providerName: 'Buck',
+            type: 'Error',
+            filePath: '/a/good_file2.ml',
+            text: 'Error: whatever error',
+            range: {
+              start: {
+                row: 9,
+                column: 14,
+              },
+              end: {
+                row: 9,
+                column: 14,
+              },
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  it('matches ocaml warnings', () => {
+    waitsForPromise(async () => {
+      const message =
+        'File "/a/good_file.ml", line 2, characters 10-12:\n' +
+        'Warning: Unbound value a';
+
+      expect(
+        await diagnosticsParser.getDiagnostics(message, 'warning', '/'),
+      ).toEqual([
+        {
+          scope: 'file',
+          providerName: 'Buck',
+          type: 'Warning',
+          filePath: '/a/good_file.ml',
+          text: 'Warning: Unbound value a',
+          range: new Range([1, 9], [1, 9]),
+        },
+      ]);
+    });
+  });
 });

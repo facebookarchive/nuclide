@@ -28,6 +28,12 @@ const DIAGNOSTIC_REGEX = /^([^\s:]+):([0-9]+):([0-9]+): (.*)$/gm;
 const TEST_FAILURE_START_REGEX = /^FAILURE.*: (.*):([0-9]+): (.*)$/gm;
 const TEST_FAILURE_CONTINUED_REGEX = /^([^:]+):([0-9]+): (.*)$/gm;
 
+// Buck output for OCaml errors looks somthing like this:
+// File "/path/to/bar.ml", line 110, characters 16-28:
+// Error: Unbound value id_to_string
+// (Hint: Did you mean id_to_stridng?)
+const OCAML_ERROR_REGEX = /^File "([^"]+)", line ([0-9]+), characters ([0-9]+)-[0-9]+:\n(\S+: .*)\n?(Hint:.*)?$/gm;
+
 // It's expensive to get the real length of the lines (we'd have to read each file).
 // Instead, just use a very large number ("infinity"). The diagnostics UI handles this
 // and won't underline any characters past the end of the line.
@@ -159,6 +165,7 @@ export default class DiagnosticsParser {
     DIAGNOSTIC_REGEX.lastIndex = 0;
     TEST_FAILURE_START_REGEX.lastIndex = 0;
     TEST_FAILURE_CONTINUED_REGEX.lastIndex = 0;
+    OCAML_ERROR_REGEX.lastIndex = 0;
 
     // Collect diagnostics promises and check all matches at once.
     const promises = [];
@@ -177,6 +184,29 @@ export default class DiagnosticsParser {
         root,
         file,
         level,
+        text,
+        line,
+        column,
+      );
+    }
+
+    let ocamlMatch;
+    while ((ocamlMatch = OCAML_ERROR_REGEX.exec(message))) {
+      const [, file, strLine, column, problem, hint] = ocamlMatch;
+      fileSystemService = getFileSystemServiceIfNecessary(
+        fileSystemService,
+        root,
+      );
+      const line = parseInt(strLine, 10);
+      const text = hint ? problem + ', ' + hint : problem;
+      const ocamlLevel = problem.startsWith('Error') ? 'error' : level;
+
+      pushParsedDiagnostic(
+        fileSystemService,
+        promises,
+        root,
+        file,
+        ocamlLevel,
         text,
         line,
         column,
