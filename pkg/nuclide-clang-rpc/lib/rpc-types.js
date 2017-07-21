@@ -117,19 +117,16 @@ export type ClangCompilationDatabase = {
   libclangPath: ?string,
 };
 
+export type ClangCompilationDatabaseEntry = {|
+  command: string,
+  file: string,
+  directory: string,
+  arguments?: Array<string>,
+|};
+
 export type ClangFlags = {
   // Will be computed and memoized from rawData on demand.
   flags?: ?Array<string>,
-  rawData: ?{
-    flags: Array<string> | string,
-    file: string,
-    directory: string,
-  },
+  rawData: ?ClangCompilationDatabaseEntry,
   flagsFile: ?string,
-};
-
-export type ClangCompilationDatabaseEntry = {
-  arguments: Array<string>,
-  file: string,
-  directory: string,
 };

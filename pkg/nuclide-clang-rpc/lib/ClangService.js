@@ -23,8 +23,7 @@ import type {
 } from './rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import invariant from 'invariant';
-import {keyMirror, mapTransform} from 'nuclide-commons/collection';
+import {keyMirror, mapTransform, mapCompact} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
 import {runCommand} from 'nuclide-commons/process';
 import ClangServerManager from './ClangServerManager';
@@ -284,17 +283,7 @@ export function loadFlagsFromCompilationDatabaseAndCacheThem(
     .getClangFlagsManager()
     .loadFlagsFromCompilationDatabase(db)
     .then(fullFlags =>
-      mapTransform(fullFlags, flags => {
-        const {rawData} = flags;
-        invariant(rawData != null); // TODO(wallace): improve typing in clang-rpc so that this check is removed
-        const args = rawData.flags;
-        invariant(Array.isArray(args)); // TODO(wallace): improve clang-rpc so that it always return string[]
-        return {
-          arguments: args,
-          file: rawData.file,
-          directory: rawData.directory,
-        };
-      }),
+      mapCompact(mapTransform(fullFlags, flags => flags.rawData)),
     );
 }
 

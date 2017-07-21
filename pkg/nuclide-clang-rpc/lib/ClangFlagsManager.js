@@ -9,7 +9,11 @@
  * @format
  */
 
-import type {ClangCompilationDatabase, ClangFlags} from './rpc-types';
+import type {
+  ClangCompilationDatabase,
+  ClangFlags,
+  ClangCompilationDatabaseEntry,
+} from './rpc-types';
 
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -100,11 +104,7 @@ export default class ClangFlagsManager {
       if (rawData == null) {
         data.flags = null;
       } else {
-        let {flags} = rawData;
-        if (typeof flags === 'string') {
-          flags = shellParse(flags);
-        }
-        flags = await this._getModifiedFlags(src, flags);
+        const flags = await this._getModifiedFlags(src, rawData);
         data.flags = ClangFlagsManager.sanitizeCommand(
           rawData.file,
           flags,
@@ -202,16 +202,16 @@ export default class ClangFlagsManager {
       const {rawData} = data;
       if (rawData != null) {
         const xFlag = this._getXFlagForSourceFile(sourceFile);
-        let {flags} = rawData;
-        if (typeof flags === 'string') {
-          if (!flags.includes('-x ')) {
-            flags += ` -x ${xFlag}`;
-            rawData.flags = flags;
-          }
-        } else {
-          if (flags.find(s => s === '-x') === undefined) {
-            rawData.flags = flags.concat(['-x', xFlag]);
-          }
+        let {command} = rawData;
+        if (!command.includes('-x ')) {
+          command += ` -x ${xFlag}`;
+          rawData.command = command;
+        }
+        if (
+          rawData.arguments != null &&
+          !rawData.arguments.find(arg => arg === '-x')
+        ) {
+          rawData.arguments.push('-x', xFlag);
         }
       }
     }
@@ -220,8 +220,12 @@ export default class ClangFlagsManager {
 
   async _getModifiedFlags(
     src: string,
-    originalFlags: Array<string>,
+    rawData: ClangCompilationDatabaseEntry,
   ): Promise<Array<string>> {
+    const originalFlags =
+      rawData.arguments !== undefined
+        ? rawData.arguments
+        : shellParse(rawData.command);
     // Look for the project-wide flags
     const projectFlagsDir = await fsPromise.findNearestFile(
       PROJECT_CLANG_FLAGS_FILE,
@@ -411,16 +415,12 @@ export default class ClangFlagsManager {
               filename,
               this._realpathCache,
             );
-            // Buck sends the flags in the arguments section. We use it if it was correctly parsed
-            // by JSON.parse. The command section emitted by buck is not a valid json expression nor
-            // can be parsed by shellParse.
             const result = {
               rawData: {
-                flags: Array.isArray(entry.arguments)
-                  ? entry.arguments
-                  : command,
+                command,
                 file,
                 directory,
+                arguments: entry.arguments,
               },
               flagsFile: flagsFile || dbFile,
             };

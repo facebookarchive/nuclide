@@ -94,6 +94,16 @@ export function mapUnion<T, X>(...maps: Array<Map<T, X>>): Map<T, X> {
   return unionMap;
 }
 
+export function mapCompact<T, X>(map: Map<T, ?X>): Map<T, X> {
+  const selected = new Map();
+  for (const [key, value] of map) {
+    if (value != null) {
+      selected.set(key, value);
+    }
+  }
+  return selected;
+}
+
 export function mapFilter<T, X>(
   map: Map<T, X>,
   selector: (key: T, value: X) => boolean,
