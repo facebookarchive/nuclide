@@ -647,21 +647,24 @@ declare class atom$ThemeManager {
 type atom$TooltipsPlacementOption = 'top' | 'bottom' | 'left' | 'right' | 'auto';
 
 type atom$TooltipsAddOptions = {
-  title: string,
+  title?: string,
+  item?: HTMLElement,
   keyBindingCommand?: string,
   keyBindingTarget?: HTMLElement,
   animation?: boolean,
   container?: string | false,
   delay?: number | {show: number, hide: number},
   placement?: atom$TooltipsPlacementOption | () => atom$TooltipsPlacementOption,
+  trigger?: string,
 };
 
 type atom$Tooltip = {
   hide(): void;
+  getTooltipElement(): HTMLElement,
 };
 
 declare class atom$TooltipManager {
-  tooltips: Map<HTMLElement, atom$Tooltip>;
+  tooltips: Map<HTMLElement, Array<atom$Tooltip>>;
   add(
     target: HTMLElement,
     options: atom$TooltipsAddOptions,

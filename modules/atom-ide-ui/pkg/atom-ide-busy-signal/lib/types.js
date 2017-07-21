@@ -12,29 +12,42 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-export type BusySignalOptions = {
-  onlyForFile: NuclideUri,
-};
+export type BusySignalOptions = {|
+  // Can say that a busy signal will only appear when a given file is open.
+  // Default = null, meaning the busy signal applies to all files.
+  onlyForFile?: NuclideUri,
+  // Can say that a busy signal will be debounced. Default = true.
+  debounce?: boolean,
+  // Is user waiting for computer to finish a task? (traditional busy spinner)
+  // or is the computer waiting for user to finish a task? (action required)
+  // Default = spinner.
+  waitingFor?: 'computer' | 'user',
+  // If onClick is set, then the tooltip will be clickable. Default = null.
+  onDidClick?: () => void,
+|};
 
 export type BusySignalService = {
-  // Activates the busy signal with the given message and returns the promise
+  // Activates the busy signal with the given title and returns the promise
   // from the provided callback.
   // The busy signal automatically deactivates when the returned promise
   // either resolves or rejects.
   reportBusyWhile<T>(
-    message: string,
+    title: string,
     f: () => Promise<T>,
     options?: BusySignalOptions,
   ): Promise<T>,
 
-  // Activates the busy signal with the given message.
-  // The returned disposable/subscription can be dispose()d or unsubscribe()d
-  // to deactivate the given busy message.
-  reportBusy(
-    message: string,
-    options?: BusySignalOptions,
-  ): IDisposable & rxjs$ISubscription,
+  // Activates the busy signal. Set the title in the returned BusySignal
+  // object (you can update the title multiple times) and dispose it when done.
+  reportBusy(title: string, options?: BusySignalOptions): BusyMessage,
 
   // Call this when you're done to ensure that all busy signals are removed.
+  dispose(): void,
+};
+
+export type BusyMessage = {
+  // You can set/update the title.
+  setTitle(title: string): void,
+  // Dispose of the signal when done to make it go away.
   dispose(): void,
 };

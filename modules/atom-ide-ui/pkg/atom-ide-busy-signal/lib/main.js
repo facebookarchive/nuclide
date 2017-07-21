@@ -15,17 +15,16 @@ import type {BusySignalService} from './types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import BusySignalInstance from './BusySignalInstance';
-import MessageStore from './MessageStore';
+import {MessageStore} from './MessageStore';
 import StatusBarTile from './StatusBarTile';
 
 class Activation {
-  _statusBarTile: ?StatusBarTile;
   _disposables: UniversalDisposable;
   _messageStore: MessageStore;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
     this._messageStore = new MessageStore();
+    this._disposables = new UniversalDisposable(this._messageStore);
   }
 
   dispose() {
@@ -35,7 +34,11 @@ class Activation {
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
     // Avoid retaining StatusBarTile by wrapping it.
     const disposable = new UniversalDisposable(
-      new StatusBarTile(statusBar, this._messageStore.getMessageStream()),
+      new StatusBarTile(
+        statusBar,
+        this._messageStore.getMessageStream(),
+        this._messageStore.getTargetStream(),
+      ),
     );
     this._disposables.add(disposable);
     return disposable;
