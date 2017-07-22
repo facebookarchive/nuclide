@@ -43,6 +43,14 @@ export default class RemoteControlService {
     model.getActions().toggleBreakpoint(filePath, line);
   }
 
+  addBreakpoint(filePath: string, line: number): void {
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+    model.getActions().addBreakpoint(filePath, line);
+  }
+
   isInDebuggingMode(providerName: string): boolean {
     const model = this._getModel();
     if (model == null) {
