@@ -62,12 +62,15 @@ export default class CodeHighlightManager {
           Observable.merge(changeCursorEvents, changeEvents)
             // Destroy old markers immediately - never show stale results.
             .do(() => this._destroyMarkers())
-            .debounceTime(HIGHLIGHT_DELAY_MS)
-            .switchMap(async position => {
-              return {
-                editor,
-                ranges: await this._getHighlightedRanges(editor, position),
-              };
+            .switchMap(position => {
+              return Observable.timer(
+                HIGHLIGHT_DELAY_MS,
+              ).switchMap(async () => {
+                return {
+                  editor,
+                  ranges: await this._getHighlightedRanges(editor, position),
+                };
+              });
             })
             .takeUntil(destroyEvents)
         );
@@ -97,6 +100,7 @@ export default class CodeHighlightManager {
   }
 
   _highlightRanges(editor: atom$TextEditor, ranges: Array<atom$Range>): void {
+    this._destroyMarkers();
     this._markers = ranges.map(range => editor.markBufferRange(range, {}));
     this._markers.forEach(marker => {
       editor.decorateMarker(marker, {
@@ -125,6 +129,6 @@ export default class CodeHighlightManager {
 
   dispose() {
     this._subscriptions.dispose();
-    this._markers = [];
+    this._destroyMarkers();
   }
 }
