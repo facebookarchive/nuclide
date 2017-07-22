@@ -135,7 +135,7 @@ export function shortHeadChangedNotification(
       {
         detail:
           'Would you like to open the files you had active then?\n \n' +
-          "ProTip: Change the default behavior from 'Nuclide Settings>IDE Settings>Book Shelf'",
+          "ProTip: Change the default behavior from 'Nuclide Settings>Nuclide-bookshelf'",
         dismissable: true,
         buttons: [
           {
