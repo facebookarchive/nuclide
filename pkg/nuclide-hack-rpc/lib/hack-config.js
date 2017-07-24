@@ -35,7 +35,7 @@ export const HACK_FILE_EXTENSIONS: Array<string> = [
 const DEFAULT_HACK_COMMAND: Promise<string> = findHackCommand();
 let hackCommand = DEFAULT_HACK_COMMAND;
 
-const configCache = new ConfigCache(HACK_CONFIG_FILE_NAME);
+const configCache = new ConfigCache([HACK_CONFIG_FILE_NAME]);
 
 /**
 * If this returns null, then it is not safe to run hack.

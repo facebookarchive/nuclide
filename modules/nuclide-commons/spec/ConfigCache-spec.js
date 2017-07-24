@@ -14,6 +14,7 @@ import {ConfigCache} from 'nuclide-commons/ConfigCache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
 const CONFIG_FILE_NAME = '.test_nuclide_config_file';
+const CONFIG_FILE_NAME_2 = '.test_nuclide_config_file_2';
 
 describe('ConfigCache', () => {
   const noConfigFolder = nuclideUri.join(__dirname, 'fixtures');
@@ -23,20 +24,33 @@ describe('ConfigCache', () => {
     __dirname,
     'fixtures/ConfigCache/testFolder',
   );
+  const nestedFolder2 = nuclideUri.join(
+    __dirname,
+    'fixtures/ConfigCache/testFolder2',
+  );
   const nestedFile = nuclideUri.join(
     __dirname,
     'fixtures/ConfigCache/testFolder/file',
   );
 
-  it('ConfigCache', () => {
+  it('finds the right config dir', () => {
     waitsForPromise(async () => {
-      const cache = new ConfigCache(CONFIG_FILE_NAME);
+      const cache = new ConfigCache([CONFIG_FILE_NAME]);
 
       expect(await cache.getConfigDir(noConfigFolder)).toBe(null);
       expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
       expect(await cache.getConfigDir(rootFile)).toBe(rootFolder);
       expect(await cache.getConfigDir(nestedFolder)).toBe(rootFolder);
       expect(await cache.getConfigDir(nestedFile)).toBe(rootFolder);
+    });
+  });
+
+  it('prefers closer matches with multiple config files', () => {
+    waitsForPromise(async () => {
+      const cache = new ConfigCache([CONFIG_FILE_NAME, CONFIG_FILE_NAME_2]);
+
+      expect(await cache.getConfigDir(rootFolder)).toBe(rootFolder);
+      expect(await cache.getConfigDir(nestedFolder2)).toBe(nestedFolder2);
     });
   });
 });
