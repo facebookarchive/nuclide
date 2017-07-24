@@ -92,14 +92,6 @@ export class ConsoleContainer extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDisplayableRecordHeightChange = this._handleDisplayableRecordHeightChange.bind(
-      this,
-    );
-    (this: any)._selectSources = this._selectSources.bind(this);
-    (this: any)._toggleRegExpFilter = this._toggleRegExpFilter.bind(this);
-    (this: any)._updateFilterText = this._updateFilterText.bind(this);
-    (this: any)._resetAllFilters = this._resetAllFilters.bind(this);
-    (this: any)._createPaste = this._createPaste.bind(this);
     const {
       initialFilterText,
       initialEnableRegExpFilter,
@@ -222,12 +214,12 @@ export class ConsoleContainer extends React.Component {
     return this._actionCreators;
   }
 
-  _resetAllFilters(): void {
+  _resetAllFilters = (): void => {
     this._selectSources(this.state.sources.map(s => s.id));
     this._updateFilterText('');
-  }
+  };
 
-  async _createPaste(): Promise<void> {
+  _createPaste = async (): Promise<void> => {
     if (this.props.createPasteFunction == null) {
       return;
     }
@@ -269,7 +261,7 @@ export class ConsoleContainer extends React.Component {
     );
 
     atom.notifications.addSuccess(`Created Paste at ${uri}`);
-  }
+  };
 
   _getFilterInfo(): {
     isValid: boolean,
@@ -357,21 +349,21 @@ export class ConsoleContainer extends React.Component {
     };
   }
 
-  _selectSources(selectedSourceIds: Array<string>): void {
+  _selectSources = (selectedSourceIds: Array<string>): void => {
     const sourceIds = this.state.sources.map(source => source.id);
     const unselectedSourceIds = sourceIds.filter(
       sourceId => selectedSourceIds.indexOf(sourceId) === -1,
     );
     this.setState({unselectedSourceIds});
-  }
+  };
 
-  _toggleRegExpFilter(): void {
+  _toggleRegExpFilter = (): void => {
     this.setState({enableRegExpFilter: !this.state.enableRegExpFilter});
-  }
+  };
 
-  _updateFilterText(filterText: string): void {
+  _updateFilterText = (filterText: string): void => {
     this.setState({filterText});
-  }
+  };
 
   _getFilterPattern(
     filterText: string,
@@ -394,11 +386,11 @@ export class ConsoleContainer extends React.Component {
     }
   }
 
-  _handleDisplayableRecordHeightChange(
+  _handleDisplayableRecordHeightChange = (
     recordId: number,
     newHeight: number,
     callback: () => void,
-  ): void {
+  ): void => {
     const newDisplayableRecords = [];
     this.state.displayableRecords.forEach(displayableRecord => {
       if (displayableRecord.id === recordId) {
@@ -422,7 +414,7 @@ export class ConsoleContainer extends React.Component {
       },
       callback,
     );
-  }
+  };
 
   /**
    * Transforms the Records from the store into DisplayableRecords. This caches the result

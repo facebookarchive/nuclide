@@ -51,8 +51,6 @@ export class FileTree extends React.Component {
       elementHeight: 22, // The minimal observed height makes a good default
       initialHeightMeasured: false,
     };
-
-    (this: any)._measureHeights = this._measureHeights.bind(this);
   }
 
   componentDidMount(): void {
@@ -107,7 +105,7 @@ export class FileTree extends React.Component {
     );
   }
 
-  _measureHeights(): void {
+  _measureHeights = (): void => {
     const measuredComponent = this.refs.measured;
     if (measuredComponent == null) {
       return;
@@ -123,7 +121,7 @@ export class FileTree extends React.Component {
         initialHeightMeasured: true,
       });
     }
-  }
+  };
 
   render(): React.Element<any> {
     const classes = {

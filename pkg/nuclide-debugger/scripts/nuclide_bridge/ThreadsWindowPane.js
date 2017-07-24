@@ -32,8 +32,6 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
       threadData: null,
     };
     this._stoppedThread = null;
-    (this: any)._handleThreadsUpdated = this._handleThreadsUpdated.bind(this);
-    (this: any)._handleClearInterface = this._handleClearInterface.bind(this);
   }
 
   componentWillUnmount() {
@@ -48,9 +46,9 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
     this._scrollToStoppedThread();
   }
 
-  _handleThreadsUpdated(event: WebInspector.Event): void {
+  _handleThreadsUpdated = (event: WebInspector.Event): void => {
     this.setState(this._getState());
-  }
+  };
 
   _getState(): StateType {
     let threadData = null;
@@ -82,9 +80,9 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
     );
   }
 
-  _handleClearInterface(event: WebInspector.Event): void {
+  _handleClearInterface = (event: WebInspector.Event): void => {
     this.setState({threadData: null});
-  }
+  };
 
   _unregisterUpdate(): void {
     WebInspector.targetManager.removeModelListener(

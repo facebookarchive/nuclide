@@ -32,9 +32,6 @@ export class DebuggerControlsView extends React.PureComponent {
   constructor(props: Props) {
     super(props);
 
-    (this: any)._openDevTools = this._openDevTools.bind(this);
-    (this: any)._stopDebugging = this._stopDebugging.bind(this);
-
     this._disposables = new CompositeDisposable();
     const debuggerStore = props.model.getStore();
     this.state = {
@@ -126,13 +123,13 @@ export class DebuggerControlsView extends React.PureComponent {
     );
   }
 
-  _openDevTools(): void {
+  _openDevTools = (): void => {
     const {model} = this.props;
     model.getActions().openDevTools();
-  }
+  };
 
-  _stopDebugging(): void {
+  _stopDebugging = (): void => {
     const {model} = this.props;
     model.getActions().stopDebugging();
-  }
+  };
 }

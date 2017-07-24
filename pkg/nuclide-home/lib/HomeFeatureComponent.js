@@ -22,12 +22,7 @@ type Props = {
 export default class HomeFeatureComponent extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._tryIt = this._tryIt.bind(this);
-  }
-
-  _tryIt(): void {
+  _tryIt = (): void => {
     const {command} = this.props;
     if (command == null) {
       return;
@@ -42,7 +37,7 @@ export default class HomeFeatureComponent extends React.Component {
       default:
         throw new Error('Invalid command value');
     }
-  }
+  };
 
   render(): React.Element<any> {
     const {title, command} = this.props;

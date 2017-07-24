@@ -51,7 +51,6 @@ export class RootPanel extends React.Component {
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
-    (this: any)._goToRootPanel = this._goToRootPanel.bind(this);
   }
 
   componentDidMount(): void {
@@ -106,9 +105,9 @@ export class RootPanel extends React.Component {
     );
   }
 
-  _goToRootPanel(): void {
+  _goToRootPanel = (): void => {
     this.props.setDevice(null);
-  }
+  };
 
   _getInnerPanel(): React.Element<any> {
     if (this.props.device != null) {

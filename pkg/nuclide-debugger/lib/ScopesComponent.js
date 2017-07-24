@@ -36,7 +36,6 @@ export class ScopesComponent extends React.Component {
 
   constructor(props: ScopesComponentProps) {
     super(props);
-    (this: any)._renderExpression = this._renderExpression.bind(this);
     this._expansionStates = new Map();
   }
 
@@ -49,14 +48,14 @@ export class ScopesComponent extends React.Component {
     return expansionStateId;
   }
 
-  _renderExpression(
+  _renderExpression = (
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
     binding: {
       name: string,
       value: EvaluationResult,
     },
     index: number,
-  ): ?React.Element<any> {
+  ): ?React.Element<any> => {
     if (binding == null) {
       // `binding` might be `null` while switching threads.
       return null;
@@ -75,7 +74,7 @@ export class ScopesComponent extends React.Component {
         </div>
       </div>
     );
-  }
+  };
 
   _renderScopeSection(
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,

@@ -71,12 +71,7 @@ export default class Console extends React.Component {
     };
     this._disposables = new UniversalDisposable();
     this._isScrolledNearBottom = true;
-    (this: any)._getExecutor = this._getExecutor.bind(this);
-    (this: any)._getProvider = this._getProvider.bind(this);
-    (this: any)._handleOutputTable = this._handleOutputTable.bind(this);
-    (this: any)._handleScroll = this._handleScroll.bind(this);
     (this: any)._handleScrollEnd = debounce(this._handleScrollEnd, 100);
-    (this: any)._scrollToBottom = this._scrollToBottom.bind(this);
   }
 
   componentDidMount(): void {
@@ -158,13 +153,13 @@ export default class Console extends React.Component {
     );
   }
 
-  _getExecutor(id: string): ?Executor {
+  _getExecutor = (id: string): ?Executor => {
     return this.props.executors.get(id);
-  }
+  };
 
-  _getProvider(id: string): ?OutputProvider {
+  _getProvider = (id: string): ?OutputProvider => {
     return this.props.getProvider(id);
-  }
+  };
 
   render(): ?React.Element<any> {
     return (
@@ -230,13 +225,13 @@ export default class Console extends React.Component {
     );
   }
 
-  _handleScroll(
+  _handleScroll = (
     offsetHeight: number,
     scrollHeight: number,
     scrollTop: number,
-  ): void {
+  ): void => {
     this._handleScrollEnd(offsetHeight, scrollHeight, scrollTop);
-  }
+  };
 
   _handleScrollEnd(
     offsetHeight: number,
@@ -253,15 +248,15 @@ export default class Console extends React.Component {
     });
   }
 
-  _handleOutputTable(ref: OutputTable): void {
+  _handleOutputTable = (ref: OutputTable): void => {
     this._outputTable = ref;
-  }
+  };
 
-  _scrollToBottom(): void {
+  _scrollToBottom = (): void => {
     if (!this._outputTable) {
       return;
     }
     this._outputTable.scrollToBottom();
     this.setState({unseenMessages: false});
-  }
+  };
 }

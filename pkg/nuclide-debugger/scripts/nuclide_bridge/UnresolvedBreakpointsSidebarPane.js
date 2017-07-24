@@ -34,9 +34,6 @@ class UnresolvedBreakpointsComponent extends React.Component {
 
     this._changeHandler = null;
     this.state = this._getState();
-
-    (this: any)._updateState = this._updateState.bind(this);
-    (this: any)._getState = this._getState.bind(this);
   }
 
   componentWillMount() {
@@ -80,15 +77,15 @@ class UnresolvedBreakpointsComponent extends React.Component {
     NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
   }
 
-  _updateState() {
+  _updateState = () => {
     this.setState(this._getState());
-  }
+  };
 
-  _getState() {
+  _getState = () => {
     return {
       breakpoints: NuclideBridge.getUnresolvedBreakpointsList(),
     };
-  }
+  };
 }
 
 export default class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {

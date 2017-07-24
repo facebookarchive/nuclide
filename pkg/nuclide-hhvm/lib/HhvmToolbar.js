@@ -33,19 +33,11 @@ type Props = {
 export default class HhvmToolbar extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleDropdownChange = this._handleDropdownChange.bind(this);
-    (this: any)._updateLastScriptCommand = this._updateLastScriptCommand.bind(
-      this,
-    );
-  }
-
-  _updateLastScriptCommand(command: string): void {
+  _updateLastScriptCommand = (command: string): void => {
     if (this.props.projectStore.getDebugMode() !== 'webserver') {
       this.props.projectStore.updateLastScriptCommand(command);
     }
-  }
+  };
 
   _getMenuItems(): Array<{label: string, value: DebugMode}> {
     const additionalOptions = [];
@@ -155,8 +147,8 @@ export default class HhvmToolbar extends React.Component {
     }
   }
 
-  _handleDropdownChange(value: DebugMode) {
+  _handleDropdownChange = (value: DebugMode) => {
     this.props.projectStore.setDebugMode(value);
     this._suggestTargetIfCustomDebugMode(value);
-  }
+  };
 }

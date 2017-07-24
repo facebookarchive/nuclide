@@ -45,8 +45,6 @@ export default class RecordView extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any).measureAndNotifyHeight = this.measureAndNotifyHeight.bind(this);
-    (this: any)._handleRecordWrapper = this._handleRecordWrapper.bind(this);
 
     // The MeasuredComponent can call this many times in quick succession as the
     // child components render, so we debounce it since we only want to know about
@@ -172,7 +170,7 @@ export default class RecordView extends React.Component {
     );
   }
 
-  measureAndNotifyHeight() {
+  measureAndNotifyHeight = () => {
     // This method is called after the necessary DOM mutations have
     // already occurred, however it is possible that the updates have
     // not been flushed to the screen. So the height change update
@@ -191,11 +189,11 @@ export default class RecordView extends React.Component {
         onHeightChange(displayableRecord.id, offsetHeight);
       }
     });
-  }
+  };
 
-  _handleRecordWrapper(wrapper: HTMLElement) {
+  _handleRecordWrapper = (wrapper: HTMLElement) => {
     this._wrapper = wrapper;
-  }
+  };
 }
 
 function getComponent(type: ?string): ReactClass<any> {

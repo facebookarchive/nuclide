@@ -95,18 +95,6 @@ export class Combobox extends React.Component {
       selectedIndex: -1,
       textInput: props.initialTextInput,
     };
-    (this: any).receiveUpdate = this.receiveUpdate.bind(this);
-    (this: any)._handleTextInputChange = this._handleTextInputChange.bind(this);
-    (this: any)._handleInputBlur = this._handleInputBlur.bind(this);
-    (this: any)._handleInputClick = this._handleInputClick.bind(this);
-    (this: any)._handleInputFocus = this._handleInputFocus.bind(this);
-    (this: any)._handleMoveDown = this._handleMoveDown.bind(this);
-    (this: any)._handleMoveUp = this._handleMoveUp.bind(this);
-    (this: any)._handleCancel = this._handleCancel.bind(this);
-    (this: any)._handleConfirm = this._handleConfirm.bind(this);
-    (this: any)._scrollSelectedOptionIntoViewIfNeeded = this._scrollSelectedOptionIntoViewIfNeeded.bind(
-      this,
-    );
   }
 
   componentDidMount() {
@@ -158,7 +146,7 @@ export class Combobox extends React.Component {
     );
   }
 
-  receiveUpdate(newOptions: Array<string>) {
+  receiveUpdate = (newOptions: Array<string>) => {
     const filteredOptions = this._getFilteredOptions(
       newOptions,
       this.state.textInput,
@@ -169,7 +157,7 @@ export class Combobox extends React.Component {
       filteredOptions,
       selectedIndex: this._getNewSelectedIndex(filteredOptions),
     });
-  }
+  };
 
   selectValue(newValue: string, didRenderCallback?: () => void) {
     this.refs.freeformInput.setText(newValue);
@@ -257,7 +245,7 @@ export class Combobox extends React.Component {
     return this.state.selectedIndex;
   }
 
-  _handleTextInputChange(): void {
+  _handleTextInputChange = (): void => {
     const newText = this.refs.freeformInput.getText();
     if (newText === this.state.textInput) {
       return;
@@ -274,9 +262,9 @@ export class Combobox extends React.Component {
       selectedIndex: this._getNewSelectedIndex(filteredOptions),
     });
     this.props.onChange(newText);
-  }
+  };
 
-  _handleInputFocus(): void {
+  _handleInputFocus = (): void => {
     this.requestUpdate(this.state.textInput);
     // $FlowFixMe
     const boundingRect = ReactDOM.findDOMNode(this).getBoundingClientRect();
@@ -288,9 +276,9 @@ export class Combobox extends React.Component {
         width: boundingRect.width,
       },
     });
-  }
+  };
 
-  _handleInputBlur(event: Object): void {
+  _handleInputBlur = (event: Object): void => {
     const {relatedTarget} = event;
     if (
       relatedTarget == null ||
@@ -308,11 +296,11 @@ export class Combobox extends React.Component {
     if (onBlur != null) {
       onBlur(this.getText());
     }
-  }
+  };
 
-  _handleInputClick(): void {
+  _handleInputClick = (): void => {
     this.setState({optionsVisible: true});
-  }
+  };
 
   _handleItemClick(selectedValue: string, event: any) {
     this.selectValue(selectedValue, () => {
@@ -328,7 +316,7 @@ export class Combobox extends React.Component {
     });
   }
 
-  _handleMoveDown() {
+  _handleMoveDown = () => {
     // show the options but don't move the index
     if (!this.state.optionsVisible) {
       this.setState(
@@ -348,41 +336,41 @@ export class Combobox extends React.Component {
       },
       this._scrollSelectedOptionIntoViewIfNeeded,
     );
-  }
+  };
 
-  _handleMoveUp() {
+  _handleMoveUp = () => {
     this.setState(
       {
         selectedIndex: Math.max(0, this.state.selectedIndex - 1),
       },
       this._scrollSelectedOptionIntoViewIfNeeded,
     );
-  }
+  };
 
-  _handleCancel() {
+  _handleCancel = () => {
     this.setState({
       optionsVisible: false,
     });
-  }
+  };
 
-  _handleConfirm() {
+  _handleConfirm = () => {
     const option = this.state.filteredOptions[this.state.selectedIndex];
     if (option !== undefined) {
       this.selectValue(option);
     }
-  }
+  };
 
   _setSelectedIndex(selectedIndex: number) {
     this.setState({selectedIndex});
   }
 
-  _scrollSelectedOptionIntoViewIfNeeded(): void {
+  _scrollSelectedOptionIntoViewIfNeeded = (): void => {
     const selectedOption = ReactDOM.findDOMNode(this.refs.selectedOption);
     if (selectedOption) {
       // $FlowFixMe
       selectedOption.scrollIntoViewIfNeeded();
     }
-  }
+  };
 
   render(): React.Element<any> {
     let optionsContainer;

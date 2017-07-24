@@ -39,8 +39,6 @@ export class DebuggerCallstackComponent extends React.Component {
 
   constructor(props: DebuggerCallstackComponentProps) {
     super(props);
-    (this: any)._handleCallframeClick = this._handleCallframeClick.bind(this);
-    (this: any)._locationComponent = this._locationComponent.bind(this);
     this._disposables = new UniversalDisposable();
     this.state = {
       callstack: props.callstackStore.getCallstack(),
@@ -48,14 +46,14 @@ export class DebuggerCallstackComponent extends React.Component {
     };
   }
 
-  _locationComponent(props: {
+  _locationComponent = (props: {
     data: {
       path: string,
       line: number,
       column?: number,
       hasSource?: boolean,
     },
-  }): React.Element<any> {
+  }): React.Element<any> => {
     const missingSourceItem =
       this.props.callstackStore.getDebuggerStore().getCanSetSourcePaths() &&
       !props.data.hasSource
@@ -88,7 +86,7 @@ export class DebuggerCallstackComponent extends React.Component {
         </span>
       </div>
     );
-  }
+  };
 
   componentDidMount(): void {
     const {callstackStore} = this.props;
@@ -106,13 +104,13 @@ export class DebuggerCallstackComponent extends React.Component {
     this._disposables.dispose();
   }
 
-  _handleCallframeClick(
+  _handleCallframeClick = (
     clickedCallframe: ?CallstackItem,
     callFrameIndex: number,
-  ): void {
+  ): void => {
     this.props.bridge.setSelectedCallFrameIndex(callFrameIndex);
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
-  }
+  };
 
   render(): ?React.Element<any> {
     const {callstack} = this.state;

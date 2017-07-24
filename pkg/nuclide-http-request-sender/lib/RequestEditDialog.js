@@ -42,8 +42,6 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
   constructor(props: PropsType) {
     super(props);
     this._editorComponent = null;
-    (this: any)._onCancel = this._onCancel.bind(this);
-    (this: any)._onSendHttpRequest = this._onSendHttpRequest.bind(this);
   }
 
   shouldComponentUpdate(nextProps: PropsType): boolean {
@@ -78,14 +76,14 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     editor.setText(JSON.stringify(this.props.headers, null, 2));
   }
 
-  _onSendHttpRequest(): void {
+  _onSendHttpRequest = (): void => {
     this.props.actionCreators.sendHttpRequest();
     this._toggleDialog();
-  }
+  };
 
-  _onCancel(): void {
+  _onCancel = (): void => {
     this._toggleDialog();
-  }
+  };
 
   _toggleDialog(): void {
     atom.commands.dispatch(

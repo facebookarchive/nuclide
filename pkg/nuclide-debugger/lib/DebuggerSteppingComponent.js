@@ -100,8 +100,6 @@ export class DebuggerSteppingComponent extends React.Component {
 
   constructor(props: DebuggerSteppingComponentProps) {
     super(props);
-    (this: any)._setWaitingForPause = this._setWaitingForPause.bind(this);
-    (this: any)._togglePauseState = this._togglePauseState.bind(this);
 
     this._disposables = new UniversalDisposable();
     const {debuggerStore} = props;
@@ -147,13 +145,13 @@ export class DebuggerSteppingComponent extends React.Component {
     this._disposables.dispose();
   }
 
-  _setWaitingForPause(waiting: boolean): void {
+  _setWaitingForPause = (waiting: boolean): void => {
     this.setState({
       waitingForPause: waiting,
     });
-  }
+  };
 
-  _togglePauseState() {
+  _togglePauseState = () => {
     if (this.state.debuggerMode === DebuggerMode.RUNNING) {
       this._setWaitingForPause(true);
     }
@@ -164,7 +162,7 @@ export class DebuggerSteppingComponent extends React.Component {
         ? ChromeActionRegistryActions.PAUSE
         : ChromeActionRegistryActions.RUN;
     this.props.actions.triggerDebuggerAction(actionId);
-  }
+  };
 
   render(): ?React.Element<any> {
     const {

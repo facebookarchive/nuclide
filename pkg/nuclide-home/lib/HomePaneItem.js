@@ -64,9 +64,6 @@ export default class HomePaneItem extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleShowOnStartupChange = this._handleShowOnStartupChange.bind(
-      this,
-    );
     this.state = {
       showOnStartup: Boolean(featureConfig.get('nuclide-home.showHome')),
       allHomeFragments: Immutable.Set(),
@@ -145,9 +142,9 @@ export default class HomePaneItem extends React.Component {
     );
   }
 
-  _handleShowOnStartupChange(checked: boolean): void {
+  _handleShowOnStartupChange = (checked: boolean): void => {
     featureConfig.set('nuclide-home.showHome', checked);
-  }
+  };
 
   getTitle(): string {
     return 'Home';

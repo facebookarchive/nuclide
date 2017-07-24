@@ -362,16 +362,16 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
 
   constructor(props: TopLevelValueComponentProps) {
     super(props);
-    (this: any).handleExpansionChange = this.handleExpansionChange.bind(this);
-    (this: any).getCachedChildren = this.getCachedChildren.bind(this);
-    (this: any).setCachedChildren = this.setCachedChildren.bind(this);
     this.shouldCacheChildren =
       this.props.shouldCacheChildren == null
         ? false
         : this.props.shouldCacheChildren;
   }
 
-  handleExpansionChange(expandedValuePath: string, isExpanded: boolean): void {
+  handleExpansionChange = (
+    expandedValuePath: string,
+    isExpanded: boolean,
+  ): void => {
     const expandedValuePaths = this.getExpandedValuePaths();
     const nodeData = expandedValuePaths.get(expandedValuePath) || {
       isExpanded,
@@ -388,7 +388,7 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
         isExpanded: false,
       });
     }
-  }
+  };
 
   getExpandedValuePaths(): Map<string, NodeData> {
     const reference = this.props.expansionStateId;
@@ -400,16 +400,16 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
     return expandedValuePaths;
   }
 
-  getCachedChildren(path: string): ?ExpansionResult {
+  getCachedChildren = (path: string): ?ExpansionResult => {
     const nodeData = this.getExpandedValuePaths().get(path);
     if (nodeData == null) {
       return null;
     } else {
       return nodeData.cachedChildren;
     }
-  }
+  };
 
-  setCachedChildren(path: string, children: ExpansionResult): void {
+  setCachedChildren = (path: string, children: ExpansionResult): void => {
     const nodeData = this.getExpandedValuePaths().get(path);
     if (nodeData != null) {
       this.getExpandedValuePaths().set(path, {
@@ -417,7 +417,7 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
         cachedChildren: children,
       });
     }
-  }
+  };
 
   render(): React.Element<any> {
     const className = classnames(this.props.className, {

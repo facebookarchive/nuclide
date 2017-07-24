@@ -60,12 +60,6 @@ class Activation {
   constructor() {
     this._disposables = new UniversalDisposable();
     logger.setLevel(getConfig().clientLogLevel);
-    (this: any).provideLLDBPlatformGroup = this.provideLLDBPlatformGroup.bind(
-      this,
-    );
-    (this: any).createNativeDebuggerService = this.createNativeDebuggerService.bind(
-      this,
-    );
   }
 
   dispose() {
@@ -83,7 +77,7 @@ class Activation {
     };
   }
 
-  createNativeDebuggerService(): NativeDebuggerService {
+  createNativeDebuggerService = (): NativeDebuggerService => {
     const callback = this._waitForBuckThenDebugNativeTarget.bind(this);
     return {
       debugTargetFromBuckOutput(
@@ -93,17 +87,17 @@ class Activation {
         return callback(buckRoot, processStream);
       },
     };
-  }
+  };
 
   consumePlatformService(service: PlatformService): void {
     this._disposables.add(service.register(this.provideLLDBPlatformGroup));
   }
 
-  provideLLDBPlatformGroup(
+  provideLLDBPlatformGroup = (
     buckRoot: NuclideUri,
     ruleType: string,
     buildTarget: string,
-  ): Observable<?PlatformGroup> {
+  ): Observable<?PlatformGroup> => {
     if (!SUPPORTED_RULE_TYPES.has(ruleType)) {
       return Observable.of(null);
     }
@@ -144,7 +138,7 @@ class Activation {
         },
       ],
     });
-  }
+  };
 
   _waitForBuckThenDebugNativeTarget(
     buckRoot: NuclideUri,

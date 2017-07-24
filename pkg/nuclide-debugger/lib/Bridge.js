@@ -46,7 +46,6 @@ export default class Bridge {
   _consoleEvent$: Subject<string>;
 
   constructor(debuggerModel: DebuggerModel) {
-    (this: any)._handleIpcMessage = this._handleIpcMessage.bind(this);
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
     this._commandDispatcher = new CommandDispatcher(() =>
@@ -201,7 +200,7 @@ export default class Bridge {
     this._debuggerModel.getActions().updateScopes(scopeSections);
   }
 
-  _handleIpcMessage(event: IPCEvent): void {
+  _handleIpcMessage = (event: IPCEvent): void => {
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {
@@ -272,7 +271,7 @@ export default class Bridge {
         }
         break;
     }
-  }
+  };
 
   _sendConsoleMessage(level: string, text: string): void {
     this._consoleEvent$.next(

@@ -37,14 +37,12 @@ class Activation {
     });
     this._subscriptionsByRoot = new Map();
 
-    (this: any)._readySearch = this._readySearch.bind(this);
-
     // Do search preprocessing for all existing and future root directories.
     this._readySearch(atom.project.getPaths());
     this._subscriptions.add(atom.project.onDidChangePaths(this._readySearch));
   }
 
-  _readySearch(projectPaths: Array<string>): void {
+  _readySearch = (projectPaths: Array<string>): void => {
     // Add new project roots.
     for (const projectPath of projectPaths) {
       if (!this._subscriptionsByRoot.has(projectPath)) {
@@ -79,7 +77,7 @@ class Activation {
         this._disposeSearch(projectPath);
       }
     }
-  }
+  };
 
   async _initialSearch(projectPath: string): Promise<void> {
     const service = getFuzzyFileSearchServiceByNuclideUri(projectPath);

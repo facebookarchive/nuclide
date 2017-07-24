@@ -25,13 +25,6 @@ type Props = {
 export default class StatusBarTile extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onStatusBarTileClicked = this._onStatusBarTileClicked.bind(
-      this,
-    );
-  }
-
   render(): ?React.Element<any> {
     let iconName = null;
     switch (this.props.connectionState) {
@@ -57,7 +50,7 @@ export default class StatusBarTile extends React.Component {
     );
   }
 
-  _onStatusBarTileClicked(): void {
+  _onStatusBarTileClicked = (): void => {
     if (!this.props.fileUri) {
       return;
     }
@@ -72,5 +65,5 @@ export default class StatusBarTile extends React.Component {
         notifyDisconnectedRemoteFile(this.props.fileUri);
         break;
     }
-  }
+  };
 }

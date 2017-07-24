@@ -72,9 +72,6 @@ export class ContextViewManager {
     this._locked = false; // Should be unlocked by default
     this.currentDefinition = null;
 
-    (this: any).hide = this.hide.bind(this);
-    (this: any)._setLocked = this._setLocked.bind(this);
-
     this._panelDOMElement = document.createElement('div');
     this._panelDOMElement.style.display = 'flex';
 
@@ -94,14 +91,14 @@ export class ContextViewManager {
     this._disposables.dispose();
   }
 
-  hide(): void {
+  hide = (): void => {
     track('nuclide-context-view:hide');
     if (this._isVisible) {
       this._isVisible = false;
       this._render();
     }
     this.updateSubscription();
-  }
+  };
 
   registerProvider(newProvider: ContextProvider): boolean {
     // Ensure provider with given ID isn't already registered,
@@ -254,13 +251,13 @@ export class ContextViewManager {
     this._render();
   }
 
-  _setLocked(locked: boolean): void {
+  _setLocked = (locked: boolean): void => {
     if (locked !== this._locked) {
       this._locked = locked;
       this.updateSubscription();
       this._render();
     }
-  }
+  };
 
   _disposeView(): void {
     ReactDOM.unmountComponentAtNode(this._panelDOMElement);

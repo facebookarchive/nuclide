@@ -238,19 +238,14 @@ export default class FileChanges extends React.Component {
     hunkComponentClass: HunkDiff,
   };
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleFilenameClick = this._handleFilenameClick.bind(this);
-  }
-
-  _handleFilenameClick(event: SyntheticMouseEvent): void {
+  _handleFilenameClick = (event: SyntheticMouseEvent): void => {
     const {fullPath} = this.props;
     if (fullPath == null) {
       return;
     }
     goToLocation(fullPath);
     event.stopPropagation();
-  }
+  };
 
   render(): ?React.Element<any> {
     const {diff, fullPath, collapsable, collapsedByDefault} = this.props;

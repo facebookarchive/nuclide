@@ -19,11 +19,6 @@ type Props = {||};
 export default class Inspector extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleDidFinishLoad = this._handleDidFinishLoad.bind(this);
-  }
-
   getTitle(): string {
     return 'React Inspector';
   }
@@ -48,7 +43,7 @@ export default class Inspector extends React.Component {
     );
   }
 
-  _handleDidFinishLoad(event: Event) {
+  _handleDidFinishLoad = (event: Event) => {
     const themes = atom.config.get('core.themes');
 
     let theme = '';
@@ -69,5 +64,5 @@ export default class Inspector extends React.Component {
         ${JSON.stringify(theme)}
       );`,
     );
-  }
+  };
 }

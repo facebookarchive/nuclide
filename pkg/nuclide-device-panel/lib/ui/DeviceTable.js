@@ -27,9 +27,6 @@ export class DeviceTable extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDeviceTableSelection = this._handleDeviceTableSelection.bind(
-      this,
-    );
     this._emptyComponent = () => {
       if (this.props.devices.isError) {
         return (
@@ -70,9 +67,12 @@ export class DeviceTable extends React.Component {
     );
   }
 
-  _handleDeviceTableSelection(item: any, selectedDeviceIndex: number): void {
+  _handleDeviceTableSelection = (
+    item: any,
+    selectedDeviceIndex: number,
+  ): void => {
     if (!this.props.devices.isError) {
       this.props.setDevice(this.props.devices.value[selectedDeviceIndex]);
     }
-  }
+  };
 }

@@ -41,33 +41,19 @@ type Props = {
 export default class ConsoleHeader extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleClearButtonClick = this._handleClearButtonClick.bind(
-      this,
-    );
-    (this: any)._handleCreatePasteButtonClick = this._handleCreatePasteButtonClick.bind(
-      this,
-    );
-    (this: any)._handleReToggleButtonClick = this._handleReToggleButtonClick.bind(
-      this,
-    );
-    (this: any)._renderOption = this._renderOption.bind(this);
-  }
-
-  _handleClearButtonClick(event: SyntheticMouseEvent): void {
+  _handleClearButtonClick = (event: SyntheticMouseEvent): void => {
     this.props.clear();
-  }
+  };
 
-  _handleCreatePasteButtonClick(event: SyntheticMouseEvent): void {
+  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent): void => {
     if (this.props.createPaste != null) {
       this.props.createPaste();
     }
-  }
+  };
 
-  _handleReToggleButtonClick(): void {
+  _handleReToggleButtonClick = (): void => {
     this.props.toggleRegExpFilter();
-  }
+  };
 
   _renderProcessControlButton(source: Source): ?React.Element<any> {
     let action;
@@ -103,9 +89,9 @@ export default class ConsoleHeader extends React.Component {
     );
   }
 
-  _renderOption(optionProps: {
+  _renderOption = (optionProps: {
     option: {label: string, value: string},
-  }): React.Element<any> {
+  }): React.Element<any> => {
     const {option} = optionProps;
     const source = this.props.sources.find(s => s.id === option.value);
     invariant(source != null);
@@ -115,7 +101,7 @@ export default class ConsoleHeader extends React.Component {
         {this._renderProcessControlButton(source)}
       </span>
     );
-  }
+  };
 
   render(): ?React.Element<any> {
     const options = this.props.sources

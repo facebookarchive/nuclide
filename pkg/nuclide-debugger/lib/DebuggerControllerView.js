@@ -43,8 +43,6 @@ export default class DebuggerControllerView extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = getStateFromStore(props.store);
-
-    (this: any)._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
   componentWillMount() {
@@ -99,11 +97,11 @@ export default class DebuggerControllerView extends React.Component {
     return null;
   }
 
-  _updateStateFromStore(store?: DebuggerStore) {
+  _updateStateFromStore = (store?: DebuggerStore) => {
     if (store != null) {
       this.setState(getStateFromStore(store));
     } else {
       this.setState(getStateFromStore(this.props.store));
     }
-  }
+  };
 }

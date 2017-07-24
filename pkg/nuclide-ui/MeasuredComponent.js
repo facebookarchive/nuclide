@@ -30,12 +30,7 @@ export class MeasuredComponent extends React.Component {
   _mutationObserverSubscription: rxjs$ISubscription;
   _domNode: ?HTMLElement;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._updateDomNode = this._updateDomNode.bind(this);
-  }
-
-  _updateDomNode(node: ?HTMLElement): void {
+  _updateDomNode = (node: ?HTMLElement): void => {
     if (node == null) {
       this._domNode = null;
       // _updateDomNode is called before component unmount, so don't need to unsubscribe()
@@ -47,7 +42,7 @@ export class MeasuredComponent extends React.Component {
       node,
     ).subscribe(this.props.onMeasurementsChanged);
     this._domNode = node;
-  }
+  };
 
   render(): React.Element<any> {
     return (

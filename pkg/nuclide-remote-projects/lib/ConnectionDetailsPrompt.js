@@ -76,17 +76,6 @@ export default class ConnectionDetailsPrompt extends React.Component {
       IPs: null,
       shouldDisplayTooltipWarning: false,
     };
-
-    (this: any)._handleConnectionDetailsFormDidChange = this._handleConnectionDetailsFormDidChange.bind(
-      this,
-    );
-    (this: any)._onDefaultProfileClicked = this._onDefaultProfileClicked.bind(
-      this,
-    );
-    (this: any)._onDeleteProfileClicked = this._onDeleteProfileClicked.bind(
-      this,
-    );
-    (this: any)._onProfileClicked = this._onProfileClicked.bind(this);
   }
 
   componentDidMount() {
@@ -165,23 +154,23 @@ export default class ConnectionDetailsPrompt extends React.Component {
     }
   }
 
-  _handleConnectionDetailsFormDidChange(): void {
+  _handleConnectionDetailsFormDidChange = (): void => {
     if (this._settingFormFieldsLock) {
       return;
     }
 
     this.props.onDidChange();
-  }
+  };
 
-  _onDefaultProfileClicked(): void {
+  _onDefaultProfileClicked = (): void => {
     const existingConnectionDetailsForm = this.refs['connection-details-form'];
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
     }
     this.props.onProfileClicked(0);
-  }
+  };
 
-  _onDeleteProfileClicked(profileId: ?string): void {
+  _onDeleteProfileClicked = (profileId: ?string): void => {
     if (profileId == null) {
       return;
     }
@@ -193,9 +182,9 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
     this.props.onDeleteProfileClicked(parseInt(profileId, 10) + 1);
-  }
+  };
 
-  _onProfileClicked(profileId: string): void {
+  _onProfileClicked = (profileId: string): void => {
     const existingConnectionDetailsForm = this.refs['connection-details-form'];
     if (existingConnectionDetailsForm) {
       existingConnectionDetailsForm.promptChanged();
@@ -204,7 +193,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     // * This requires a `+ 1` because the default profile is sliced from the Array during render
     //   creating an effective offset of -1 for each index passed to the `MutableListSelector`.
     this.props.onProfileClicked(parseInt(profileId, 10) + 1);
-  }
+  };
 
   async _checkForHostCollisions() {
     if (this.state.IPs) {

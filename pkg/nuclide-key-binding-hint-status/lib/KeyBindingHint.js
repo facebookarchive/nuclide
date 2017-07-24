@@ -45,8 +45,6 @@ export default class KeyBindingHint extends React.Component {
     super(props);
     this._areProcessingUserEvent = false;
     this.state = {event: null};
-    (this: any)._handleWillDispatch = this._handleWillDispatch.bind(this);
-    (this: any)._userEventComplete = this._userEventComplete.bind(this);
 
     this._disposables = new UniversalDisposable(
       atom.commands.onWillDispatch(this._handleWillDispatch),
@@ -89,7 +87,7 @@ export default class KeyBindingHint extends React.Component {
     this._disposables.dispose();
   }
 
-  _handleWillDispatch(event: Event) {
+  _handleWillDispatch = (event: Event) => {
     // We don't care about events dispatched by other events.
     if (!this._areProcessingUserEvent) {
       this._areProcessingUserEvent = true;
@@ -104,9 +102,9 @@ export default class KeyBindingHint extends React.Component {
       // instigated events.
       setImmediate(this._userEventComplete);
     }
-  }
+  };
 
-  _userEventComplete() {
+  _userEventComplete = () => {
     this._areProcessingUserEvent = false;
-  }
+  };
 }

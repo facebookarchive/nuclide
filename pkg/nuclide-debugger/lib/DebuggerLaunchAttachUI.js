@@ -59,8 +59,6 @@ export class DebuggerLaunchAttachUI extends React.Component<
   constructor(props: PropsType) {
     super(props);
 
-    (this: any)._setConfigValid = this._setConfigValid.bind(this);
-
     this._disposables = new UniversalDisposable();
     this._disposables.add(
       atom.commands.add('atom-workspace', {
@@ -143,11 +141,11 @@ export class DebuggerLaunchAttachUI extends React.Component<
     });
   }
 
-  _setConfigValid(valid: boolean): void {
+  _setConfigValid = (valid: boolean): void => {
     this.setState({
       configIsValid: valid,
     });
-  }
+  };
 
   render(): React.Element<any> {
     const displayName = nuclideUri.isRemote(this.props.connection)

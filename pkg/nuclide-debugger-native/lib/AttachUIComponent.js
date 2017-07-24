@@ -105,16 +105,6 @@ export class AttachUIComponent extends React.Component<
   constructor(props: PropsType) {
     super(props);
 
-    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(
-      this,
-    );
-    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
-    (this: any)._handleAttachClick = this._handleAttachClick.bind(this);
-    (this: any)._updateAttachTargetList = this._updateAttachTargetList.bind(
-      this,
-    );
-    (this: any)._updateList = this._updateList.bind(this);
-    (this: any)._handleSort = this._handleSort.bind(this);
     this._disposables = new UniversalDisposable();
     this._targetListUpdating = false;
     this._deserializedSavedSettings = false;
@@ -170,7 +160,7 @@ export class AttachUIComponent extends React.Component<
     return this.state.selectedAttachTarget != null;
   }
 
-  _updateList(): void {
+  _updateList = (): void => {
     let filterText = null;
     let newSelectedTarget = null;
     if (
@@ -204,7 +194,7 @@ export class AttachUIComponent extends React.Component<
       selectedAttachTarget: newSelectedTarget,
       filterText: filterText || this.state.filterText,
     });
-  }
+  };
 
   _getAttachTargetOfPid(pid: number): ?AttachTargetInfo {
     for (const target of this.props.store.getAttachTargetInfos()) {
@@ -215,12 +205,12 @@ export class AttachUIComponent extends React.Component<
     return null;
   }
 
-  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+  _handleSort = (sortedColumn: ?string, sortDescending: boolean): void => {
     this.setState({
       sortedColumn,
       sortDescending,
     });
-  }
+  };
 
   render(): React.Element<any> {
     const filterRegex = new RegExp(this.state.filterText, 'i');
@@ -279,34 +269,37 @@ export class AttachUIComponent extends React.Component<
     );
   }
 
-  _handleFilterTextChange(text: string): void {
+  _handleFilterTextChange = (text: string): void => {
     this.setState({
       filterText: text,
     });
-  }
+  };
 
-  _handleSelectTableRow(item: {pid: number}, selectedIndex: number): void {
+  _handleSelectTableRow = (
+    item: {pid: number},
+    selectedIndex: number,
+  ): void => {
     const attachTarget = this._getAttachTargetOfPid(item.pid);
     this.setState({
       selectedAttachTarget: attachTarget,
     });
-  }
+  };
 
   _handleDoubleClickTableRow(): void {
     this._attachToProcess();
   }
 
-  _handleAttachClick(): void {
+  _handleAttachClick = (): void => {
     this._attachToProcess();
-  }
+  };
 
-  _updateAttachTargetList(): void {
+  _updateAttachTargetList = (): void => {
     // Fire and forget.
     if (!this._targetListUpdating) {
       this._targetListUpdating = true;
       this.props.actions.updateAttachTargetList();
     }
-  }
+  };
 
   _attachToProcess(): void {
     const attachTarget = this.state.selectedAttachTarget;

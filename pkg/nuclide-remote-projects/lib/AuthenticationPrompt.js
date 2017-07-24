@@ -32,7 +32,6 @@ export default class AuthenticationPrompt extends React.Component<
   constructor(props: Props) {
     super(props);
     this._disposables = new CompositeDisposable();
-    (this: any)._onKeyUp = this._onKeyUp.bind(this);
   }
 
   componentDidMount(): void {
@@ -78,7 +77,7 @@ export default class AuthenticationPrompt extends React.Component<
     return this.refs.password.value;
   }
 
-  _onKeyUp(e: SyntheticKeyboardEvent): void {
+  _onKeyUp = (e: SyntheticKeyboardEvent): void => {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
@@ -86,7 +85,7 @@ export default class AuthenticationPrompt extends React.Component<
     if (e.key === 'Escape') {
       this.props.onCancel();
     }
-  }
+  };
 
   render(): React.Element<any> {
     // * Need native-key-bindings so that delete works and we need `_onKeyUp` so that escape and

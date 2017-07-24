@@ -53,10 +53,9 @@ export class Section extends React.Component {
     this.state = {
       isCollapsed: initialIsCollapsed,
     };
-    (this: any)._toggleCollapsed = this._toggleCollapsed.bind(this);
   }
 
-  _toggleCollapsed(): void {
+  _toggleCollapsed = (): void => {
     if (this.props.collapsed == null) {
       // uncontrolled mode
       this.setState({isCollapsed: !this.state.isCollapsed});
@@ -66,7 +65,7 @@ export class Section extends React.Component {
         this.props.onChange(!this.props.collapsed);
       }
     }
-  }
+  };
 
   render(): React.Element<any> {
     const collapsable: boolean =

@@ -21,15 +21,10 @@ type Props = SettingsPropsDefault & {
 export default class SettingsSelect extends React.Component {
   props: Props;
 
-  constructor(props: Object) {
-    super(props);
-    (this: any)._handleChange = this._handleChange.bind(this);
-  }
-
-  _handleChange(event: SyntheticEvent) {
+  _handleChange = (event: SyntheticEvent) => {
     const value = ((event.target: any): HTMLInputElement).value;
     this.props.onChange(value);
-  }
+  };
 
   render(): React.Element<any> {
     const keyPath = this.props.keyPath;

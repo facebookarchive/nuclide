@@ -52,7 +52,6 @@ export default class BridgeAdapter {
     this._runtimeDispatcher = runtimeDispatcher;
     this._engineCreated = false;
     this._pausedMode = false;
-    (this: any)._handleDebugEvent = this._handleDebugEvent.bind(this);
     this._breakpointManager = new BreakpointManager(debuggerDispatcher);
     this._stackTraceManager = new StackTraceManager(debuggerDispatcher);
     this._executionManager = new ExecutionManager(
@@ -231,7 +230,7 @@ export default class BridgeAdapter {
     this._updateCurrentScopes();
   }
 
-  _handleDebugEvent(event: ProtocolDebugEvent): void {
+  _handleDebugEvent = (event: ProtocolDebugEvent): void => {
     switch (event.method) {
       case 'Debugger.loaderBreakpoint': {
         this._engineCreated = true;
@@ -279,7 +278,7 @@ export default class BridgeAdapter {
       default:
         break;
     }
-  }
+  };
 
   getEventObservable(): Observable<IPCEvent> {
     // TODO: hook other debug events when it's ready.

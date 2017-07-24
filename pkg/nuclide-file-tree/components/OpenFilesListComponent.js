@@ -46,7 +46,6 @@ export class OpenFilesListComponent extends React.PureComponent {
     this.state = {
       hoveredUri: null,
     };
-    (this: any)._onListItemMouseLeave = this._onListItemMouseLeave.bind(this);
   }
 
   componentDidUpdate(prevProps: Props): void {
@@ -96,11 +95,11 @@ export class OpenFilesListComponent extends React.PureComponent {
     });
   }
 
-  _onListItemMouseLeave() {
+  _onListItemMouseLeave = () => {
     this.setState({
       hoveredUri: null,
     });
-  }
+  };
 
   render(): React.Element<any> {
     const sortedEntries = propsToEntries(this.props);

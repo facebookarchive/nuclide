@@ -80,18 +80,6 @@ export default class OutputTable extends React.Component {
     super(props);
     this._hasher = new Hasher();
     this._renderedRecords = new Map();
-    (this: any)._getExecutor = this._getExecutor.bind(this);
-    (this: any)._getProvider = this._getProvider.bind(this);
-    (this: any)._getRowHeight = this._getRowHeight.bind(this);
-    (this: any)._handleListRef = this._handleListRef.bind(this);
-    (this: any)._handleListRender = this._handleListRender.bind(this);
-    (this: any)._handleTableWrapper = this._handleTableWrapper.bind(this);
-    (this: any)._handleRecordHeightChange = this._handleRecordHeightChange.bind(
-      this,
-    );
-    (this: any)._handleResize = this._handleResize.bind(this);
-    (this: any)._onScroll = this._onScroll.bind(this);
-    (this: any)._renderRow = this._renderRow.bind(this);
     this.state = {
       width: 0,
       height: 0,
@@ -136,10 +124,10 @@ export default class OutputTable extends React.Component {
     );
   }
 
-  _handleListRender(opts: {startIndex: number, stopIndex: number}): void {
+  _handleListRender = (opts: {startIndex: number, stopIndex: number}): void => {
     this._startIndex = opts.startIndex;
     this._stopIndex = opts.stopIndex;
-  }
+  };
 
   scrollToBottom(): void {
     if (this._list != null) {
@@ -148,15 +136,15 @@ export default class OutputTable extends React.Component {
     }
   }
 
-  _getExecutor(id: string): ?Executor {
+  _getExecutor = (id: string): ?Executor => {
     return this.props.getExecutor(id);
-  }
+  };
 
-  _getProvider(id: string): ?OutputProvider {
+  _getProvider = (id: string): ?OutputProvider => {
     return this.props.getProvider(id);
-  }
+  };
 
-  _renderRow(rowMetadata: RowRendererParams): React.Element<any> {
+  _renderRow = (rowMetadata: RowRendererParams): React.Element<any> => {
     const {index, style} = rowMetadata;
     const displayableRecord = this.props.displayableRecords[index];
     const {record} = displayableRecord;
@@ -181,25 +169,25 @@ export default class OutputTable extends React.Component {
         />
       </div>
     );
-  }
+  };
 
   _containerRendered(): boolean {
     return this.state.width !== 0 && this.state.height !== 0;
   }
 
-  _getRowHeight({index}: RowHeightParams): number {
+  _getRowHeight = ({index}: RowHeightParams): number => {
     return this.props.displayableRecords[index].height;
-  }
+  };
 
-  _handleTableWrapper(tableWrapper: HTMLElement): void {
+  _handleTableWrapper = (tableWrapper: HTMLElement): void => {
     this._wrapper = tableWrapper;
-  }
+  };
 
-  _handleListRef(listRef: React.Element<any>): void {
+  _handleListRef = (listRef: React.Element<any>): void => {
     this._list = listRef;
-  }
+  };
 
-  _handleResize(height: number, width: number): void {
+  _handleResize = (height: number, width: number): void => {
     this.setState({
       width,
       height,
@@ -211,9 +199,9 @@ export default class OutputTable extends React.Component {
     this._renderedRecords.forEach(recordView =>
       recordView.measureAndNotifyHeight(),
     );
-  }
+  };
 
-  _handleRecordHeightChange(recordId: number, newHeight: number): void {
+  _handleRecordHeightChange = (recordId: number, newHeight: number): void => {
     this.props.onDisplayableRecordHeightChange(recordId, newHeight, () => {
       // The react-virtualized List component is provided the row heights
       // through a function, so it has no way of knowing that a row's height
@@ -238,9 +226,13 @@ export default class OutputTable extends React.Component {
         this._list.scrollToRow(index);
       }
     });
-  }
+  };
 
-  _onScroll({clientHeight, scrollHeight, scrollTop}: OnScrollParams): void {
+  _onScroll = ({
+    clientHeight,
+    scrollHeight,
+    scrollTop,
+  }: OnScrollParams): void => {
     this.props.onScroll(clientHeight, scrollHeight, scrollTop);
-  }
+  };
 }

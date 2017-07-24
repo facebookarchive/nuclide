@@ -21,15 +21,10 @@ type Props = SettingsPropsDefault & {
 export default class SettingsCheckbox extends React.Component {
   props: Props;
 
-  constructor(props: Object) {
-    super(props);
-    (this: any)._handleChange = this._handleChange.bind(this);
-  }
-
-  _handleChange(event: SyntheticEvent) {
+  _handleChange = (event: SyntheticEvent) => {
     const isChecked = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange(isChecked);
-  }
+  };
 
   render(): React.Element<any> {
     const keyPath = this.props.keyPath;

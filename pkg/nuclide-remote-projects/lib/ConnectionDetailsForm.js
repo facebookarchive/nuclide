@@ -87,20 +87,6 @@ export default class ConnectionDetailsForm extends React.Component {
       IPs: null,
       shouldDisplayTooltipWarning: false,
     };
-
-    (this: any)._handleAuthMethodChange = this._handleAuthMethodChange.bind(
-      this,
-    );
-    (this: any)._handleInputDidChange = this._handleInputDidChange.bind(this);
-    (this: any)._handleInputDidChangeForServer = this._handleInputDidChangeForServer.bind(
-      this,
-    );
-    (this: any)._handleKeyFileInputClick = this._handleKeyFileInputClick.bind(
-      this,
-    );
-    (this: any)._handlePasswordInputClick = this._handlePasswordInputClick.bind(
-      this,
-    );
   }
 
   _onKeyPress(e: SyntheticKeyboardEvent): void {
@@ -113,18 +99,18 @@ export default class ConnectionDetailsForm extends React.Component {
     }
   }
 
-  _handleAuthMethodChange(newIndex: number) {
+  _handleAuthMethodChange = (newIndex: number) => {
     this.props.onDidChange();
     this.setState({
       selectedAuthMethodIndex: newIndex,
     });
-  }
+  };
 
-  _handleInputDidChange(): void {
+  _handleInputDidChange = (): void => {
     this.props.onDidChange();
-  }
+  };
 
-  _handleInputDidChangeForServer() {
+  _handleInputDidChangeForServer = () => {
     // If the input changed due to a higher level change in the
     // ConnectionDetailsPrompt, don't check for host collisions
     if (!this._promptChanged) {
@@ -132,9 +118,9 @@ export default class ConnectionDetailsForm extends React.Component {
       this.props.onDidChange();
     }
     this._promptChanged = false;
-  }
+  };
 
-  _handleKeyFileInputClick(event: SyntheticEvent): void {
+  _handleKeyFileInputClick = (event: SyntheticEvent): void => {
     const privateKeyAuthMethodIndex = authMethods.indexOf(
       SupportedMethods.PRIVATE_KEY,
     );
@@ -150,9 +136,9 @@ export default class ConnectionDetailsForm extends React.Component {
         }, 0);
       },
     );
-  }
+  };
 
-  _handlePasswordInputClick(event: SyntheticEvent): void {
+  _handlePasswordInputClick = (event: SyntheticEvent): void => {
     const passwordAuthMethodIndex = authMethods.indexOf(
       SupportedMethods.PASSWORD,
     );
@@ -165,7 +151,7 @@ export default class ConnectionDetailsForm extends React.Component {
         ReactDOM.findDOMNode(this.refs.password).focus();
       },
     );
-  }
+  };
 
   async _checkForHostCollisions(hostName: string) {
     const uniqueHosts = this.props.profileHosts;

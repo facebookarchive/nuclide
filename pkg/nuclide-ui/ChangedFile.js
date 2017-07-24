@@ -60,12 +60,6 @@ type Props = {
 export default class ChangedFile extends React.Component {
   props: Props;
 
-  constructor(props: Props) {
-    super(props);
-
-    (this: any)._onCheckboxChange = this._onCheckboxChange.bind(this);
-  }
-
   _getFileClassname(): string {
     const {commandPrefix, fileStatus, isHgPath, isSelected} = this.props;
     return classnames(
@@ -158,9 +152,9 @@ export default class ChangedFile extends React.Component {
     );
   }
 
-  _onCheckboxChange(isChecked: boolean): void {
+  _onCheckboxChange = (isChecked: boolean): void => {
     this.props.onFileChecked(this.props.filePath);
-  }
+  };
 
   render(): React.Element<any> {
     const {

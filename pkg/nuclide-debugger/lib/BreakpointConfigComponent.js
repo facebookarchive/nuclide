@@ -47,7 +47,6 @@ export class BreakpointConfigComponent extends React.Component<
   constructor(props: PropsType) {
     super(props);
     this._disposables = new UniversalDisposable();
-    (this: any)._updateBreakpoint = this._updateBreakpoint.bind(this);
     this.state = {
       breakpoint: this.props.breakpoint,
     };
@@ -82,7 +81,7 @@ export class BreakpointConfigComponent extends React.Component<
     this._disposables.dispose();
   }
 
-  _updateBreakpoint() {
+  _updateBreakpoint = () => {
     const condition = this.refs.condition.getText().trim();
     this.props.actions.updateBreakpointCondition(
       this.state.breakpoint.id,
@@ -95,7 +94,7 @@ export class BreakpointConfigComponent extends React.Component<
       fileExtension: nuclideUri.extname(this.props.breakpoint.path),
     });
     this.props.onDismiss();
-  }
+  };
 
   render(): React.Element<any> {
     return (

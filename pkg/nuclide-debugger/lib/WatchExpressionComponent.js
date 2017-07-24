@@ -45,15 +45,6 @@ export class WatchExpressionComponent extends React.Component {
 
   constructor(props: WatchExpressionComponentProps) {
     super(props);
-    (this: any)._renderExpression = this._renderExpression.bind(this);
-    (this: any)._onConfirmNewExpression = this._onConfirmNewExpression.bind(
-      this,
-    );
-    (this: any)._resetExpressionEditState = this._resetExpressionEditState.bind(
-      this,
-    );
-    (this: any)._onEditorCancel = this._onEditorCancel.bind(this);
-    (this: any)._onEditorBlur = this._onEditorBlur.bind(this);
     this._expansionStates = new Map();
     this.state = {
       rowBeingEdited: null,
@@ -78,11 +69,11 @@ export class WatchExpressionComponent extends React.Component {
     this.props.onAddWatchExpression(expression);
   }
 
-  _onConfirmNewExpression(): void {
+  _onConfirmNewExpression = (): void => {
     const text = this.refs.newExpressionEditor.getText();
     this.addExpression(text);
     this.refs.newExpressionEditor.setText('');
-  }
+  };
 
   _onConfirmExpressionEdit(index: number): void {
     const text = this.refs.editExpressionEditor.getText();
@@ -90,13 +81,13 @@ export class WatchExpressionComponent extends React.Component {
     this._resetExpressionEditState();
   }
 
-  _onEditorCancel(): void {
+  _onEditorCancel = (): void => {
     this._resetExpressionEditState();
-  }
+  };
 
-  _onEditorBlur(): void {
+  _onEditorBlur = (): void => {
     this._resetExpressionEditState();
-  }
+  };
 
   _setRowBeingEdited(index: number): void {
     this.setState({
@@ -115,19 +106,19 @@ export class WatchExpressionComponent extends React.Component {
     }, 16);
   }
 
-  _resetExpressionEditState(): void {
+  _resetExpressionEditState = (): void => {
     if (this.coreCancelDisposable) {
       this.coreCancelDisposable.dispose();
       this.coreCancelDisposable = null;
     }
     this.setState({rowBeingEdited: null});
-  }
+  };
 
-  _renderExpression(
+  _renderExpression = (
     fetchChildren: (objectId: string) => Observable<?ExpansionResult>,
     watchExpression: EvaluatedExpression,
     index: number,
-  ): React.Element<any> {
+  ): React.Element<any> => {
     const {expression, value} = watchExpression;
     if (index === this.state.rowBeingEdited) {
       return (
@@ -175,7 +166,7 @@ export class WatchExpressionComponent extends React.Component {
         />
       </div>
     );
-  }
+  };
 
   render(): ?React.Element<any> {
     const {watchExpressions, watchExpressionStore} = this.props;

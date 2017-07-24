@@ -83,10 +83,6 @@ export class Playground extends React.Component {
 
   constructor(props: any) {
     super(props);
-    (this: any)._collapseAllSections = this._collapseAllSections.bind(this);
-    (this: any).renderExampleForComponent = this.renderExampleForComponent.bind(
-      this,
-    );
     this.state = {
       collapsedSections: new Set(),
     };
@@ -114,13 +110,13 @@ export class Playground extends React.Component {
     };
   }
 
-  _collapseAllSections(): void {
+  _collapseAllSections = (): void => {
     this.setState({
       collapsedSections: new Set(
         playgroundComponents.map(spec => spec.sectionName),
       ),
     });
-  }
+  };
 
   _toggleSection(sectionName: string): void {
     const {collapsedSections} = this.state;
@@ -132,10 +128,10 @@ export class Playground extends React.Component {
     this.forceUpdate();
   }
 
-  renderExampleForComponent(
+  renderExampleForComponent = (
     spec: ComponentSpec,
     index: number,
-  ): React.Element<any> {
+  ): React.Element<any> => {
     const {sectionName, description, examples} = spec;
     let renderedDescription;
     let flattenedExample;
@@ -176,7 +172,7 @@ export class Playground extends React.Component {
         {flattenedExample}
       </section>
     );
-  }
+  };
 
   render(): React.Element<any> {
     const renderedExamples = playgroundComponents.map(

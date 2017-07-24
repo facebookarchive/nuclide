@@ -44,12 +44,6 @@ export class AttachUiComponent extends React.Component<
 
   constructor(props: PropsType) {
     super(props);
-    (this: any)._handleAttachButtonClick = this._handleAttachButtonClick.bind(
-      this,
-    );
-    (this: any)._handlePathsDropdownChange = this._handlePathsDropdownChange.bind(
-      this,
-    );
     this._disposables = new UniversalDisposable();
     this.state = {
       selectedPathIndex: 0,
@@ -136,14 +130,14 @@ export class AttachUiComponent extends React.Component<
     });
   }
 
-  _handlePathsDropdownChange(newIndex: number): void {
+  _handlePathsDropdownChange = (newIndex: number): void => {
     this.setState({
       selectedPathIndex: newIndex,
       pathMenuItems: this._getPathMenuItems(),
     });
-  }
+  };
 
-  _handleAttachButtonClick(): void {
+  _handleAttachButtonClick = (): void => {
     // Start a debug session with the user-supplied information.
     const {hostname} = nuclideUri.parseRemoteUri(this.props.targetUri);
     const selectedPath = this.state.pathMenuItems[this.state.selectedPathIndex]
@@ -158,5 +152,5 @@ export class AttachUiComponent extends React.Component<
     serializeDebuggerConfig(...this._getSerializationArgs(), {
       selectedPath,
     });
-  }
+  };
 }

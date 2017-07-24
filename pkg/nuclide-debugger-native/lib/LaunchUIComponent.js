@@ -52,7 +52,6 @@ export class LaunchUIComponent extends React.Component<
 
   constructor(props: PropsType) {
     super(props);
-    (this: any)._handleLaunchClick = this._handleLaunchClick.bind(this);
 
     this._disposables = new UniversalDisposable();
     this.state = {
@@ -192,7 +191,7 @@ export class LaunchUIComponent extends React.Component<
     );
   }
 
-  _handleLaunchClick(): void {
+  _handleLaunchClick = (): void => {
     // TODO: perform some validation for the input.
     const launchExecutable = this.refs.launchExecutable.getText().trim();
     const coreDump = this.refs.coreDump.getText().trim();
@@ -223,5 +222,5 @@ export class LaunchUIComponent extends React.Component<
       stdinFilePath: this.state.stdinFilePath,
       coreDump: this.state.coreDump,
     });
-  }
+  };
 }

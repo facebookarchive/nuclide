@@ -35,11 +35,6 @@ export class ProcessTable extends React.Component {
   constructor(props: Props) {
     super(props);
 
-    (this: any)._handleFilterTextChange = this._handleFilterTextChange.bind(
-      this,
-    );
-    (this: any)._handleSort = this._handleSort.bind(this);
-
     this.state = {
       filterText: '',
       sortedColumn: 'cpuUsage',
@@ -69,9 +64,9 @@ export class ProcessTable extends React.Component {
     }
   }
 
-  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+  _handleSort = (sortedColumn: ?string, sortDescending: boolean): void => {
     this.setState({sortedColumn, sortDescending});
-  }
+  };
 
   _sortProcesses(
     processes: Process[],
@@ -199,9 +194,9 @@ export class ProcessTable extends React.Component {
     );
   }
 
-  _handleFilterTextChange(text: string): void {
+  _handleFilterTextChange = (text: string): void => {
     this.setState({
       filterText: text,
     });
-  }
+  };
 }

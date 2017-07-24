@@ -40,15 +40,10 @@ export class Toggle extends React.Component {
     onClick(event) {},
   };
 
-  constructor(props: Object) {
-    super(props);
-    (this: any)._onChange = this._onChange.bind(this);
-  }
-
-  _onChange(event: SyntheticEvent) {
+  _onChange = (event: SyntheticEvent) => {
     const isToggled = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange.call(null, isToggled);
-  }
+  };
 
   render(): React.Element<any> {
     const {className, disabled, label, onClick, toggled} = this.props;

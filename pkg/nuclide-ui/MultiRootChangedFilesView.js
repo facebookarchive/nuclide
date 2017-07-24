@@ -67,17 +67,6 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     onFileChecked: () => {},
   };
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._handleAddFile = this._handleAddFile.bind(this);
-    (this: any)._handleDeleteFile = this._handleDeleteFile.bind(this);
-    (this: any)._handleForgetFile = this._handleForgetFile.bind(this);
-    (this: any)._handleOpenFileInDiffView = this._handleOpenFileInDiffView.bind(
-      this,
-    );
-    (this: any)._handleRevertFile = this._handleRevertFile.bind(this);
-  }
-
   componentDidMount(): void {
     this._subscriptions = new UniversalDisposable();
     const {commandPrefix, openInDiffViewOption} = this.props;
@@ -273,54 +262,54 @@ export class MultiRootChangedFilesView extends React.PureComponent {
     return analyticsSurface == null ? 'n/a' : analyticsSurface;
   }
 
-  _handleAddFile(
+  _handleAddFile = (
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
-  ): void {
+  ): void => {
     addPath(filePath);
     track(`${ANALYTICS_PREFIX}-add-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
     });
-  }
+  };
 
-  _handleDeleteFile(
+  _handleDeleteFile = (
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
-  ): void {
+  ): void => {
     confirmAndDeletePath(filePath);
     track(`${ANALYTICS_PREFIX}-delete-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
     });
-  }
+  };
 
-  _handleForgetFile(
+  _handleForgetFile = (
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
-  ): void {
+  ): void => {
     forgetPath(filePath);
     track(`${ANALYTICS_PREFIX}-forget-file`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
     });
-  }
+  };
 
-  _handleOpenFileInDiffView(
+  _handleOpenFileInDiffView = (
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
-  ): void {
+  ): void => {
     openFileInDiffView(filePath);
     track(`${ANALYTICS_PREFIX}-file-in-diff-view`, {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
     });
-  }
+  };
 
-  _handleRevertFile(
+  _handleRevertFile = (
     filePath: string,
     analyticsSource?: string = DEFAULT_ANALYTICS_SOURCE_KEY,
-  ): void {
+  ): void => {
     const {getRevertTargetRevision} = this.props;
     let targetRevision = null;
     if (getRevertTargetRevision != null) {
@@ -331,7 +320,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       source: analyticsSource,
       surface: this._getAnalyticsSurface(),
     });
-  }
+  };
 
   render(): React.Element<any> {
     const {

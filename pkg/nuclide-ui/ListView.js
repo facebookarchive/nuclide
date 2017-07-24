@@ -67,20 +67,15 @@ type ListViewProps = {
 export class ListView extends React.Component {
   props: ListViewProps;
 
-  constructor(props: ListViewProps) {
-    super(props);
-    (this: any)._handleSelect = this._handleSelect.bind(this);
-  }
-
-  _handleSelect(
+  _handleSelect = (
     value: ?Object,
     index: number,
     event: SyntheticMouseEvent,
-  ): void {
+  ): void => {
     if (this.props.selectable && this.props.onSelect != null) {
       this.props.onSelect(index, value);
     }
-  }
+  };
 
   render(): React.Element<any> {
     const {children, alternateBackground, selectable} = this.props;

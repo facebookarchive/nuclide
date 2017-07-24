@@ -58,9 +58,6 @@ export default class BuckToolbar extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleDeploymentTargetChange = this._handleDeploymentTargetChange.bind(
-      this,
-    );
     this.state = {settingsVisible: false};
   }
 
@@ -175,9 +172,9 @@ export default class BuckToolbar extends React.Component {
     );
   }
 
-  _handleDeploymentTargetChange(deploymentTarget: DeploymentTarget) {
+  _handleDeploymentTargetChange = (deploymentTarget: DeploymentTarget) => {
     this.props.setDeploymentTarget(deploymentTarget);
-  }
+  };
 
   _showSettings() {
     this.setState({settingsVisible: true});

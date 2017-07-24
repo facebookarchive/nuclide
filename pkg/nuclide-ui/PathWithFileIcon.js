@@ -91,7 +91,6 @@ export default class PathWithFileIcon extends React.Component {
         }
       },
     );
-    (this: any)._handleRef = this._handleRef.bind(this);
   }
 
   componentDidMount(): void {
@@ -116,7 +115,7 @@ export default class PathWithFileIcon extends React.Component {
     });
   }
 
-  _handleRef(element: ?HTMLElement): void {
+  _handleRef = (element: ?HTMLElement): void => {
     if (this.props.isFolder) {
       return;
     }
@@ -137,7 +136,7 @@ export default class PathWithFileIcon extends React.Component {
         element.className = this._getDefaultClassName();
       },
     );
-  }
+  };
 
   _getDefaultClassName(): string {
     const {className, isFolder} = this.props;

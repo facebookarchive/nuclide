@@ -37,13 +37,6 @@ export class BreakpointListComponent extends React.Component {
 
   constructor(props: BreakpointListComponentProps) {
     super(props);
-    (this: any)._handleBreakpointEnabledChange = this._handleBreakpointEnabledChange.bind(
-      this,
-    );
-    (this: any)._handleBreakpointClick = this._handleBreakpointClick.bind(this);
-    (this: any)._debuggerSupportsConditionalBp = this._debuggerSupportsConditionalBp.bind(
-      this,
-    );
     this.state = {
       breakpoints: this.props.breakpointStore.getAllBreakpoints(),
     };
@@ -66,28 +59,30 @@ export class BreakpointListComponent extends React.Component {
     }
   }
 
-  _handleBreakpointEnabledChange(
+  _handleBreakpointEnabledChange = (
     breakpoint: FileLineBreakpoint,
     enabled: boolean,
-  ): void {
+  ): void => {
     this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
-  }
+  };
 
-  _handleBreakpointClick(
+  _handleBreakpointClick = (
     breakpointIndex: number,
     breakpoint: ?FileLineBreakpoint,
-  ): void {
+  ): void => {
     invariant(breakpoint != null);
     const {path, line} = breakpoint;
     this.props.actions.openSourceLocation(
       nuclideUri.nuclideUriToUri(path),
       line,
     );
-  }
+  };
 
-  _debuggerSupportsConditionalBp(breakpoint: FileLineBreakpoint): boolean {
+  _debuggerSupportsConditionalBp = (
+    breakpoint: FileLineBreakpoint,
+  ): boolean => {
     return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
-  }
+  };
 
   render(): ?React.Element<any> {
     const {breakpoints} = this.state;

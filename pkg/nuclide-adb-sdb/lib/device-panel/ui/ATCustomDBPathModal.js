@@ -36,26 +36,20 @@ export class ATCustomDBPathModal extends React.Component {
   constructor(props: Props) {
     super(props);
     this.state = {customPath: this.props.currentCustomPath};
-
-    (this: any)._handleConfirm = this._handleConfirm.bind(this);
-    (this: any)._handleCancel = this._handleCancel.bind(this);
-    (this: any)._handleCustomPathChange = this._handleCustomPathChange.bind(
-      this,
-    );
   }
 
-  _handleConfirm(): void {
+  _handleConfirm = (): void => {
     this.props.setCustomPath(this.state.customPath);
     this.props.dismiss();
-  }
+  };
 
-  _handleCancel(): void {
+  _handleCancel = (): void => {
     this.props.dismiss();
-  }
+  };
 
-  _handleCustomPathChange(customPath: string): void {
+  _handleCustomPathChange = (customPath: string): void => {
     this.setState({customPath: customPath.length === 0 ? null : customPath});
-  }
+  };
 
   _getActiveConfig(): React.Element<any> {
     return (

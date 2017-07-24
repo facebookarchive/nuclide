@@ -70,12 +70,6 @@ export default class TestRunnerPanel extends React.Component {
       // later indicate there were no active test runners.
       selectedTestRunnerIndex: props.testRunners.length > 0 ? 0 : -1,
     };
-
-    // Bind Functions for use as callbacks;
-    // TODO: Replace with property initializers when supported by Flow;
-    this.setSelectedTestRunnerIndex = this.setSelectedTestRunnerIndex.bind(
-      this,
-    );
   }
 
   componentDidMount() {
@@ -267,9 +261,9 @@ export default class TestRunnerPanel extends React.Component {
     return this.props.testRunners.length === 0;
   }
 
-  setSelectedTestRunnerIndex(selectedTestRunnerIndex: number): void {
+  setSelectedTestRunnerIndex = (selectedTestRunnerIndex: number): void => {
     this.setState({selectedTestRunnerIndex});
-  }
+  };
 
   getSelectedTestRunner(): ?Object {
     const selectedTestRunnerIndex = this.state.selectedTestRunnerIndex;

@@ -143,12 +143,6 @@ export default class ConnectionDialog extends React.Component {
       mode: REQUEST_CONNECTION_DETAILS,
       sshHandshake,
     };
-
-    (this: any).cancel = this.cancel.bind(this);
-    (this: any)._handleClickSave = this._handleClickSave.bind(this);
-    (this: any)._handleDidChange = this._handleDidChange.bind(this);
-    (this: any).ok = this.ok.bind(this);
-    (this: any).onProfileClicked = this.onProfileClicked.bind(this);
   }
 
   componentDidMount(): void {
@@ -207,11 +201,11 @@ export default class ConnectionDialog extends React.Component {
     }
   }
 
-  _handleDidChange(): void {
+  _handleDidChange = (): void => {
     this.setState({isDirty: true});
-  }
+  };
 
-  _handleClickSave(): void {
+  _handleClickSave = (): void => {
     invariant(this.props.connectionProfiles != null);
 
     const selectedProfile = this.props.connectionProfiles[
@@ -244,7 +238,7 @@ export default class ConnectionDialog extends React.Component {
       newProfile,
     );
     this.setState({isDirty: false});
-  }
+  };
 
   _validateInitialDirectory(path: string): boolean {
     return path !== '/';
@@ -340,7 +334,7 @@ export default class ConnectionDialog extends React.Component {
     );
   }
 
-  cancel() {
+  cancel = () => {
     const mode = this.state.mode;
 
     // It is safe to call cancel even if no connection is started
@@ -357,7 +351,7 @@ export default class ConnectionDialog extends React.Component {
       this.props.onCancel();
       this.close();
     }
-  }
+  };
 
   close() {
     if (this.props.onClosed) {
@@ -365,7 +359,7 @@ export default class ConnectionDialog extends React.Component {
     }
   }
 
-  ok() {
+  ok = () => {
     const {mode} = this.state;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
@@ -424,7 +418,7 @@ export default class ConnectionDialog extends React.Component {
         mode: WAITING_FOR_AUTHENTICATION,
       });
     }
-  }
+  };
 
   requestAuthentication(
     instructions: {echo: boolean, prompt: string},
@@ -466,10 +460,10 @@ export default class ConnectionDialog extends React.Component {
     };
   }
 
-  onProfileClicked(indexOfSelectedConnectionProfile: number): void {
+  onProfileClicked = (indexOfSelectedConnectionProfile: number): void => {
     this.setState({
       indexOfSelectedConnectionProfile,
       isDirty: false,
     });
-  }
+  };
 }

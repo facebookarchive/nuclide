@@ -60,8 +60,6 @@ export default class CreateConnectionProfileForm extends React.Component<
 
   constructor(props: Props) {
     super(props);
-    (this: any)._clickSave = this._clickSave.bind(this);
-    (this: any)._clickCancel = this._clickCancel.bind(this);
     this.disposables = new CompositeDisposable();
   }
 
@@ -135,7 +133,7 @@ export default class CreateConnectionProfileForm extends React.Component<
     );
   }
 
-  _clickSave(): void {
+  _clickSave = (): void => {
     // Validate the form inputs.
     const profileName = this._getProfileName();
     const connectionDetails: NuclideRemoteConnectionParamsWithPassword = this.refs[
@@ -160,9 +158,9 @@ export default class CreateConnectionProfileForm extends React.Component<
       atom.notifications.addWarning(validationResult.warningMessage);
     }
     this.props.onSave(newProfile);
-  }
+  };
 
-  _clickCancel(): void {
+  _clickCancel = (): void => {
     this.props.onCancel();
-  }
+  };
 }

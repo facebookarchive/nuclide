@@ -40,9 +40,6 @@ class Activation {
   _healthButton: ?HTMLElement;
 
   constructor(state: ?Object): void {
-    (this: any)._updateAnalytics = this._updateAnalytics.bind(this);
-    (this: any)._updateToolbarJewel = this._updateToolbarJewel.bind(this);
-
     // Observe all of the settings.
     const configs: Observable<any> = featureConfig.observeAsStream(
       'nuclide-health',
@@ -140,7 +137,7 @@ class Activation {
     );
   }
 
-  _updateToolbarJewel(label: string): void {
+  _updateToolbarJewel = (label: string): void => {
     const healthButton = this._healthButton;
     if (healthButton != null) {
       healthButton.classList.toggle(
@@ -149,9 +146,9 @@ class Activation {
       );
       healthButton.dataset.jewelValue = label;
     }
-  }
+  };
 
-  _updateAnalytics(analyticsBuffer: Array<HealthStats>): void {
+  _updateAnalytics = (analyticsBuffer: Array<HealthStats>): void => {
     if (analyticsBuffer.length === 0) {
       return;
     }
@@ -180,7 +177,7 @@ class Activation {
       });
     });
     track('nuclide-health', aggregateStats);
-  }
+  };
 }
 
 function aggregate(

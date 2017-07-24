@@ -136,27 +136,6 @@ export default class FileTreeSidebarComponent extends React.Component {
 
     this._disposables = new UniversalDisposable(this._emitter);
     this._scrollWasTriggeredProgrammatically = false;
-    (this: any)._handleFocus = this._handleFocus.bind(this);
-    (this: any)._getScrollerHeight = this._getScrollerHeight.bind(this);
-    (this: any)._handleScroll = this._handleScroll.bind(this);
-    (this: any)._scrollToPosition = this._scrollToPosition.bind(this);
-    (this: any)._processExternalUpdate = this._processExternalUpdate.bind(this);
-    (this: any)._handleOpenFilesExpandedChange = this._handleOpenFilesExpandedChange.bind(
-      this,
-    );
-    (this: any)._handleUncommittedFilesExpandedChange = this._handleUncommittedFilesExpandedChange.bind(
-      this,
-    );
-    (this: any)._handleFoldersExpandedChange = this._handleFoldersExpandedChange.bind(
-      this,
-    );
-    (this: any)._handleUncommittedChangesKindDownArrow = this._handleUncommittedChangesKindDownArrow.bind(
-      this,
-    );
-    (this: any)._handleFileTreeHovered = this._handleFileTreeHovered.bind(this);
-    (this: any)._handleFileTreeUnhovered = this._handleFileTreeUnhovered.bind(
-      this,
-    );
   }
 
   componentDidMount(): void {
@@ -265,11 +244,11 @@ export default class FileTreeSidebarComponent extends React.Component {
     }
   }
 
-  _handleFocus(event: SyntheticEvent): void {
+  _handleFocus = (event: SyntheticEvent): void => {
     if (event.target === ReactDOM.findDOMNode(this)) {
       this.focus();
     }
-  }
+  };
 
   render() {
     const workingSetsStore = this._store.getWorkingSetsStore();
@@ -442,15 +421,15 @@ All the changes across your entire stacked diff.
     );
   }
 
-  _handleFileTreeHovered() {
+  _handleFileTreeHovered = () => {
     this.setState({isFileTreeHovered: true});
-  }
+  };
 
-  _handleFileTreeUnhovered() {
+  _handleFileTreeUnhovered = () => {
     this.setState({isFileTreeHovered: false});
-  }
+  };
 
-  _processExternalUpdate(): void {
+  _processExternalUpdate = (): void => {
     const shouldRenderToolbar = !this._store.roots.isEmpty();
     const openFilesUris = this._store.getOpenFilesWorkingSet().getUris();
 
@@ -482,30 +461,32 @@ All the changes across your entire stacked diff.
       this._emitter.emit('did-change-title', this.getTitle());
       this._emitter.emit('did-change-path', this.getPath());
     }
-  }
+  };
 
   _onFileChosen(filePath: NuclideUri): void {
     track('filetree-uncommitted-file-changes-file-open');
     goToLocation(filePath);
   }
 
-  _handleFoldersExpandedChange(isCollapsed: boolean): void {
+  _handleFoldersExpandedChange = (isCollapsed: boolean): void => {
     if (isCollapsed) {
       this.setState({isFileTreeHovered: false});
     }
     this._actions.setFoldersExpanded(!isCollapsed);
-  }
+  };
 
-  _handleOpenFilesExpandedChange(isCollapsed: boolean): void {
+  _handleOpenFilesExpandedChange = (isCollapsed: boolean): void => {
     this._actions.setOpenFilesExpanded(!isCollapsed);
-  }
+  };
 
-  _handleUncommittedFilesExpandedChange(isCollapsed: boolean): void {
+  _handleUncommittedFilesExpandedChange = (isCollapsed: boolean): void => {
     track('filetree-uncommitted-file-changes-toggle');
     this._actions.setUncommittedChangesExpanded(!isCollapsed);
-  }
+  };
 
-  _handleUncommittedChangesKindDownArrow(event: SyntheticMouseEvent): void {
+  _handleUncommittedChangesKindDownArrow = (
+    event: SyntheticMouseEvent,
+  ): void => {
     invariant(remote != null);
     const menu = new remote.Menu();
     for (const enumKey in ShowUncommittedChangesKind) {
@@ -524,7 +505,7 @@ All the changes across your entire stacked diff.
     const currentWindow = remote.getCurrentWindow();
     menu.popup(currentWindow, event.clientX, event.clientY);
     event.stopPropagation();
-  }
+  };
 
   _handleShowUncommittedChangesKindChange(
     showUncommittedChangesKind: ShowUncommittedChangesKindValue,
@@ -576,7 +557,7 @@ All the changes across your entire stacked diff.
     );
   }
 
-  _getScrollerHeight(): ?number {
+  _getScrollerHeight = (): ?number => {
     const component = this.refs.scroller;
     if (component == null) {
       return null;
@@ -587,9 +568,9 @@ All the changes across your entire stacked diff.
     }
     // $FlowFixMe
     return el.clientHeight;
-  }
+  };
 
-  _handleScroll(): void {
+  _handleScroll = (): void => {
     if (!this._scrollWasTriggeredProgrammatically) {
       this._actions.clearTrackedNode();
     }
@@ -600,9 +581,13 @@ All the changes across your entire stacked diff.
     if (scrollTop !== this.state.scrollerScrollTop) {
       this.setState({scrollerScrollTop: scrollTop});
     }
-  }
+  };
 
-  _scrollToPosition(top: number, height: number, approximate: boolean): void {
+  _scrollToPosition = (
+    top: number,
+    height: number,
+    approximate: boolean,
+  ): void => {
     const node = ReactDOM.findDOMNode(this.refs.scroller);
     if (node == null) {
       return;
@@ -634,7 +619,7 @@ All the changes across your entire stacked diff.
         this.setState({scrollerScrollTop: newTop});
       } catch (e) {}
     });
-  }
+  };
 
   isFocused(): boolean {
     const el = ReactDOM.findDOMNode(this.refs.fileTree);

@@ -54,9 +54,6 @@ export class DebuggerThreadsComponent extends React.Component {
 
   constructor(props: DebuggerThreadsComponentProps) {
     super(props);
-    (this: any)._handleSelectThread = this._handleSelectThread.bind(this);
-    (this: any)._handleSort = this._handleSort.bind(this);
-    (this: any)._sortRows = this._sortRows.bind(this);
     (this: any)._handleThreadStoreChanged = debounce(
       this._handleThreadStoreChanged,
       150,
@@ -112,19 +109,19 @@ export class DebuggerThreadsComponent extends React.Component {
     });
   }
 
-  _handleSelectThread(data: ThreadItem): void {
+  _handleSelectThread = (data: ThreadItem): void => {
     this.props.bridge.selectThread(data.id);
-  }
+  };
 
-  _handleSort(sortedColumn: ?string, sortDescending: boolean): void {
+  _handleSort = (sortedColumn: ?string, sortDescending: boolean): void => {
     this.setState({sortedColumn, sortDescending});
-  }
+  };
 
-  _sortRows(
+  _sortRows = (
     threads: Array<Row>,
     sortedColumnName: ?string,
     sortDescending: boolean,
-  ): Array<Row> {
+  ): Array<Row> => {
     if (sortedColumnName == null) {
       return threads;
     }
@@ -145,7 +142,7 @@ export class DebuggerThreadsComponent extends React.Component {
     return [...threads].sort((a, b) => {
       return compare(getter(a), getter(b), !sortDescending);
     });
-  }
+  };
 
   render(): ?React.Element<any> {
     const {threadList, selectedThreadId} = this.state;

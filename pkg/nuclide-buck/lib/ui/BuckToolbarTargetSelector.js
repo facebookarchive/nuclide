@@ -41,10 +41,6 @@ export default class BuckToolbarTargetSelector extends React.Component {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._requestOptions = this._requestOptions.bind(this);
-    (this: any)._handleBuildTargetChange = this._handleBuildTargetChange.bind(
-      this,
-    );
     this._projectAliasesCache = new Map();
   }
 
@@ -67,7 +63,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
       .map(option => option.value);
   }
 
-  _requestOptions(inputText: string): Observable<Array<string>> {
+  _requestOptions = (inputText: string): Observable<Array<string>> => {
     const {buckRoot} = this.props.appState;
     if (buckRoot == null) {
       return Observable.throw(Error(NO_ACTIVE_PROJECT_ERROR));
@@ -77,7 +73,7 @@ export default class BuckToolbarTargetSelector extends React.Component {
       Observable.fromPromise(this._getActiveOwners(buckRoot)),
       Observable.fromPromise(this._getAliases(buckRoot)),
     ).map(list => Array.from(new Set(list)));
-  }
+  };
 
   _getAliases(buckRoot: string): Promise<Array<string>> {
     let cachedAliases = this._projectAliasesCache.get(buckRoot);
@@ -136,13 +132,13 @@ export default class BuckToolbarTargetSelector extends React.Component {
     return this._cachedOwners;
   }
 
-  _handleBuildTargetChange(value: string) {
+  _handleBuildTargetChange = (value: string) => {
     const trimmed = value.trim();
     if (this.props.appState.buildTarget === trimmed) {
       return;
     }
     this.props.setBuildTarget(trimmed);
-  }
+  };
 
   render(): React.Element<any> {
     return (
