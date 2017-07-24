@@ -142,7 +142,7 @@ export class BreakpointListComponent extends React.Component {
         const content = (
           <div className="inline-block">
             <div
-              className={classnames('nuclide-debugger-breakpoint', {
+              className={classnames({
                 'nuclide-debugger-breakpoint-disabled': !enabled,
                 'nuclide-debugger-breakpoint-with-condition':
                   breakpoint.condition !== '',
@@ -162,11 +162,7 @@ export class BreakpointListComponent extends React.Component {
                   resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
                 )}
               />
-              <span
-                className="nuclide-debugger-breakpoint"
-                title={title}
-                data-path={path}
-                data-line={line}>
+              <span title={title} data-path={path} data-line={line}>
                 {label}
               </span>
               {conditionElement}
@@ -175,7 +171,13 @@ export class BreakpointListComponent extends React.Component {
           </div>
         );
         return (
-          <ListViewItem key={label} value={breakpoint}>
+          <ListViewItem
+            key={label}
+            value={breakpoint}
+            data-path={path}
+            data-line={line}
+            title={title}
+            className="nuclide-debugger-breakpoint">
             {content}
           </ListViewItem>
         );

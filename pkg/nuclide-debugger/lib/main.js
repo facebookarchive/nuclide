@@ -299,6 +299,21 @@ class Activation {
       }),
       // Context Menu Items.
       atom.contextMenu.add({
+        '.nuclide-debugger-breakpoint-list': [
+          {
+            label: 'Enable All Breakpoints',
+            command: 'nuclide-debugger:enable-all-breakpoints',
+          },
+          {
+            label: 'Disable All Breakpoints',
+            command: 'nuclide-debugger:disable-all-breakpoints',
+          },
+          {
+            label: 'Remove All Breakpoints',
+            command: 'nuclide-debugger:remove-all-breakpoints',
+          },
+          {type: 'separator'},
+        ],
         '.nuclide-debugger-breakpoint': [
           {
             label: 'Edit breakpoint...',
@@ -325,19 +340,6 @@ class Activation {
           {
             label: 'Remove Breakpoint',
             command: 'nuclide-debugger:remove-breakpoint',
-          },
-          {type: 'separator'},
-          {
-            label: 'Enable All Breakpoints',
-            command: 'nuclide-debugger:enable-all-breakpoints',
-          },
-          {
-            label: 'Disable All Breakpoints',
-            command: 'nuclide-debugger:disable-all-breakpoints',
-          },
-          {
-            label: 'Remove All Breakpoints',
-            command: 'nuclide-debugger:remove-all-breakpoints',
           },
           {type: 'separator'},
         ],
