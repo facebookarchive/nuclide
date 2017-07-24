@@ -20,8 +20,8 @@ import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service';
 import {getLogger} from 'log4js';
+import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 
 export async function getUseLspConnection(): Promise<boolean> {
   return passesGK('nuclide_ocaml_lsp');

@@ -41,7 +41,7 @@ import {Observable} from 'rxjs';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import invariant from 'assert';
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service';
+import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 import {callHHClient} from './HackHelpers';
 import {
   findHackConfigDir,

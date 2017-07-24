@@ -21,7 +21,7 @@ import invariant from 'assert';
 
 import {FileCache} from '../../nuclide-open-files-rpc';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service';
+import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 
 import {logger} from './config';
 
