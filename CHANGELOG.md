@@ -1,5 +1,24 @@
 # Nuclide Changelog
 
+## v0.242.0
+
+### Highlights
+
+* The file-icons package is now installed for all users by default.
+
+### General
+
+* Fixed a bug causing spurious segments of code to be highlighted.
+
+### Debugger
+
+* Added the ability to debug native core dumps.
+* Added breakpoint hit counts for PHP, Python, C++ and Java debuggers.
+* Debugger will now remember the width of the debugging panes when the debugger is stopped, and use your preferred size the next time it is launched.
+* Fixed the “Debug” button on the task runner toolbar for iOS targets was not working.
+* Fixed a bug causing occasional warning messages when removing or editing a breakpoint.
+
+
 ## v0.241.0
 
 ### Hotfix Release
