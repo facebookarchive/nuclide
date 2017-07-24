@@ -89,7 +89,7 @@ export type HackFormatSourceResult = {
 export async function initializeLsp(
   command: string,
   args: Array<string>,
-  projectFileName: string,
+  projectFileNames: Array<string>,
   fileExtensions: Array<NuclideUri>,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
@@ -106,7 +106,7 @@ export async function initializeLsp(
     cmd,
     args,
     {},
-    projectFileName,
+    projectFileNames,
     fileExtensions,
     {},
   );

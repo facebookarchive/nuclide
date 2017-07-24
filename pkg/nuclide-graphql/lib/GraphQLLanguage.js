@@ -43,7 +43,7 @@ async function connectionToGraphQLService(
     graphqlCommand,
     ['server', '--method', 'stream'],
     options,
-    '.graphqlconfig',
+    ['.graphqlconfig'],
     ['.js', '.graphql'],
     'INFO',
     fileNotifier,

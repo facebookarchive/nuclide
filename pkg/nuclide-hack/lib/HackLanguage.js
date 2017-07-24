@@ -67,7 +67,7 @@ async function connectionToHackService(
     return hackService.initializeLsp(
       config.hhClientPath, // command
       ['lsp', '--from', 'nuclide', ...autocompleteArg], // arguments
-      '.hhconfig', // project file
+      ['.hhconfig'], // project file
       ['.php'], // which file-notifications should be sent to LSP
       config.logLevel,
       fileNotifier,

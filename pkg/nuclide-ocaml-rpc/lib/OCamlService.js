@@ -32,7 +32,7 @@ const logger = getLogger('OCamlService');
 export async function initializeLsp(
   command: string,
   args: Array<string>,
-  projectFileName: string,
+  projectFileNames: Array<string>,
   fileExtensions: Array<NuclideUri>,
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
@@ -48,7 +48,7 @@ export async function initializeLsp(
     command,
     args,
     {},
-    projectFileName,
+    projectFileNames,
     fileExtensions,
     {
       codelens: {

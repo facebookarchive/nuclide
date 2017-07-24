@@ -59,13 +59,13 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     logger: log4js$Logger,
     fileCache: FileCache,
     host: HostServices,
-    projectFileName: string,
+    projectFileNames: Array<string>,
     fileExtensions: Array<NuclideUri>,
     languageServiceFactory: (projectDir: NuclideUri) => Promise<?T>,
   ) {
     this._logger = logger;
     this._resources = new UniversalDisposable();
-    this._configCache = new ConfigCache([projectFileName]);
+    this._configCache = new ConfigCache(projectFileNames);
 
     this._processes = new Cache(languageServiceFactory, value => {
       value.then(process => {

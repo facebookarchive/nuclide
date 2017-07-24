@@ -27,7 +27,7 @@ export function createMultiLspLanguageService(
   command: string,
   args: Array<string>,
   spawnOptions: Object,
-  projectFileName: string,
+  projectFileNames: Array<string>,
   fileExtensions: Array<NuclideUri>,
   initializationOptions: Object,
 ): MultiProjectLanguageService<LspLanguageService> {
@@ -78,7 +78,7 @@ export function createMultiLspLanguageService(
     logger,
     fileCache,
     host,
-    projectFileName,
+    projectFileNames,
     fileExtensions,
     languageServiceFactory,
   );

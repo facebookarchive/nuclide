@@ -112,7 +112,7 @@ class FlowLanguageService extends MultiProjectLanguageService<
       logger,
       fileCache,
       host,
-      '.flowconfig',
+      ['.flowconfig'],
       ['.js', '.jsx'],
       projectDir => {
         const execInfoContainer = getState().getExecInfoContainer();

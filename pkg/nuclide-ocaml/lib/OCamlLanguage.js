@@ -36,7 +36,7 @@ async function createOCamlLanguageService(
   return ocamlService.initializeLsp(
     'ocaml-language-server',
     ['--stdio'],
-    '.merlin',
+    ['.merlin'],
     ['.ml', '.mli'],
     'INFO',
     fileNotifier,
