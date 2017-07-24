@@ -20,14 +20,11 @@ import invariant from 'assert';
 import passesGK from '../../commons-node/passesGK';
 import {FileCache} from '../../nuclide-open-files-rpc';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {getLogger} from 'log4js';
 import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 
 export async function getUseLspConnection(): Promise<boolean> {
   return passesGK('nuclide_ocaml_lsp');
 }
-
-const logger = getLogger('OCamlService');
 
 export async function initializeLsp(
   command: string,
@@ -39,18 +36,14 @@ export async function initializeLsp(
   host: HostServices,
 ): Promise<LanguageService> {
   invariant(fileNotifier instanceof FileCache);
-  logger.setLevel(logLevel);
-  return createMultiLspLanguageService(
-    logger,
+  return createMultiLspLanguageService('ocaml', command, args, {
+    logCategory: 'OcamlService',
+    logLevel,
     fileNotifier,
     host,
-    'ocaml',
-    command,
-    args,
-    {},
     projectFileNames,
     fileExtensions,
-    {
+    initializationOptions: {
       codelens: {
         unicode: true,
       },
@@ -70,5 +63,5 @@ export async function initializeLsp(
         languages: ['ocaml'],
       },
     },
-  );
+  });
 }

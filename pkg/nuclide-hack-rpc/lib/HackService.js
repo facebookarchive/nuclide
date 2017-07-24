@@ -49,6 +49,7 @@ import {
   getHackCommand,
   logger,
   HACK_FILE_EXTENSIONS,
+  HACK_LOGGER_CATEGORY,
 } from './hack-config';
 import {
   getHackProcess,
@@ -95,21 +96,15 @@ export async function initializeLsp(
   fileNotifier: FileNotifier,
   host: HostServices,
 ): Promise<LanguageService> {
-  invariant(fileNotifier instanceof FileCache);
-  logger.setLevel(logLevel);
   const cmd = command === '' ? await getHackCommand() : command;
-  return createMultiLspLanguageService(
-    logger,
+  return createMultiLspLanguageService('hack', cmd, args, {
+    logCategory: HACK_LOGGER_CATEGORY,
+    logLevel,
     fileNotifier,
     host,
-    'hack',
-    cmd,
-    args,
-    {},
     projectFileNames,
     fileExtensions,
-    {},
-  );
+  });
 }
 
 export async function initialize(

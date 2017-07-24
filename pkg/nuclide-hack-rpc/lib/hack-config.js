@@ -13,7 +13,7 @@ import {ConfigCache} from 'nuclide-commons/ConfigCache';
 import {runCommand} from 'nuclide-commons/process';
 import {getLogger} from 'log4js';
 
-const HACK_LOGGER_CATEGORY = 'nuclide-hack';
+export const HACK_LOGGER_CATEGORY = 'nuclide-hack';
 export const logger = getLogger(HACK_LOGGER_CATEGORY);
 
 const HACK_CONFIG_FILE_NAME = '.hhconfig';

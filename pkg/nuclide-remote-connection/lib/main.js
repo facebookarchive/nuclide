@@ -81,6 +81,7 @@ import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
 import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
+import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));
@@ -196,4 +197,18 @@ export function getSourceControlServiceByNuclideUri(
   uri: NuclideUri,
 ): SourceControlService {
   return nullthrows(getServiceByNuclideUri('SourceControlService', uri));
+}
+
+export function getVSCodeLanguageServiceByConnection(
+  connection: ?ServerConnection,
+): VSCodeLanguageService {
+  return nullthrows(
+    getServiceByConnection('VSCodeLanguageService', connection),
+  );
+}
+
+export function getVSCodeLanguageServiceByNuclideUri(
+  uri: NuclideUri,
+): VSCodeLanguageService {
+  return nullthrows(getServiceByNuclideUri('VSCodeLanguageService', uri));
 }

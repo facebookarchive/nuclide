@@ -103,5 +103,9 @@
   {
     "implementation": "./lib/services/SourceControlService.js",
     "name": "SourceControlService"
+  },
+  {
+    "implementation": "../nuclide-vscode-language-service-rpc/lib/main.js",
+    "name": "VSCodeLanguageService"
   }
 ]

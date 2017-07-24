@@ -17,13 +17,10 @@ import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-type
 /* LanguageService related type imports */
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
-import invariant from 'assert';
-
-import {FileCache} from '../../nuclide-open-files-rpc';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 
-import {logger} from './config';
+import {GRAPHQL_LOGGER_CATEGORY} from './config';
 
 export async function initializeLsp(
   command: string,
@@ -35,19 +32,18 @@ export async function initializeLsp(
   fileNotifier: FileNotifier,
   host: HostServices,
 ): Promise<LanguageService> {
-  invariant(fileNotifier instanceof FileCache);
-  logger.setLevel(logLevel);
-
   return createMultiLspLanguageService(
-    logger,
-    fileNotifier,
-    host,
     'graphql',
     process.execPath,
     [require.resolve(command), ...args],
-    spawnOptions,
-    projectFileNames,
-    fileExtensions,
-    {},
+    {
+      logCategory: GRAPHQL_LOGGER_CATEGORY,
+      logLevel,
+      fileNotifier,
+      host,
+      spawnOptions,
+      projectFileNames,
+      fileExtensions,
+    },
   );
 }
