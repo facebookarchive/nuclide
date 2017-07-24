@@ -69,10 +69,6 @@
     "name": "NativeDebuggerService"
   },
   {
-    "implementation": "../nuclide-ocaml-rpc/lib/OCamlService.js",
-    "name": "OCamlService"
-  },
-  {
     "implementation": "../nuclide-open-files-rpc/lib/OpenFilesService.js",
     "name": "OpenFilesService"
   },

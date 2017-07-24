@@ -12,35 +12,55 @@
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import typeof * as OCamlService from '../../nuclide-ocaml-rpc/lib/OCamlService';
 
 import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
 import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 
 async function createOCamlLanguageService(
   connection: ?ServerConnection,
 ): Promise<LanguageService> {
-  const ocamlService: OCamlService = getServiceByConnection(
-    'OCamlService',
-    connection,
-  );
+  const service = getVSCodeLanguageServiceByConnection(connection);
   const [fileNotifier, host] = await Promise.all([
     getNotifierByConnection(connection),
     getHostServices(),
   ]);
 
-  return ocamlService.initializeLsp(
+  return service.createMultiLspLanguageService(
+    'ocaml',
     'ocaml-language-server',
     ['--stdio'],
-    ['.merlin'],
-    ['.ml', '.mli'],
-    'INFO',
-    fileNotifier,
-    host,
+    {
+      logCategory: 'OcamlService',
+      logLevel: 'INFO',
+      fileNotifier,
+      host,
+      projectFileNames: ['.merlin'],
+      fileExtensions: ['.ml', '.mli'],
+      initializationOptions: {
+        codelens: {
+          unicode: true,
+        },
+        debounce: {
+          linter: 500,
+        },
+        path: {
+          ocamlfind: 'ocamlfind',
+          ocamlmerlin: 'ocamlmerlin',
+          opam: 'opam',
+          rebuild: 'rebuild',
+          refmt: 'refmt',
+          refmterr: 'refmterr',
+          rtop: 'rtop',
+        },
+        server: {
+          languages: ['ocaml'],
+        },
+      },
+    },
   );
 }
 

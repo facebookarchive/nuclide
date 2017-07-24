@@ -9,59 +9,8 @@
  * @format
  */
 
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-
-import invariant from 'assert';
-
 import passesGK from '../../commons-node/passesGK';
-import {FileCache} from '../../nuclide-open-files-rpc';
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
 
 export async function getUseLspConnection(): Promise<boolean> {
   return passesGK('nuclide_ocaml_lsp');
-}
-
-export async function initializeLsp(
-  command: string,
-  args: Array<string>,
-  projectFileNames: Array<string>,
-  fileExtensions: Array<NuclideUri>,
-  logLevel: LogLevel,
-  fileNotifier: FileNotifier,
-  host: HostServices,
-): Promise<LanguageService> {
-  invariant(fileNotifier instanceof FileCache);
-  return createMultiLspLanguageService('ocaml', command, args, {
-    logCategory: 'OcamlService',
-    logLevel,
-    fileNotifier,
-    host,
-    projectFileNames,
-    fileExtensions,
-    initializationOptions: {
-      codelens: {
-        unicode: true,
-      },
-      debounce: {
-        linter: 500,
-      },
-      path: {
-        ocamlfind: 'ocamlfind',
-        ocamlmerlin: 'ocamlmerlin',
-        opam: 'opam',
-        rebuild: 'rebuild',
-        refmt: 'refmt',
-        refmterr: 'refmterr',
-        rtop: 'rtop',
-      },
-      server: {
-        languages: ['ocaml'],
-      },
-    },
-  });
 }
