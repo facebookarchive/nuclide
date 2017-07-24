@@ -26,6 +26,8 @@ import type {
 } from './types';
 import type {RelatedFilesProvider} from '../../nuclide-related-files/lib/types';
 
+import {Observable} from 'rxjs';
+import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {CompositeDisposable, Disposable} from 'atom';
 import AutocompleteHelpers from './AutocompleteHelpers';
@@ -130,6 +132,18 @@ export function provideCodeFormat(): CodeFormatProvider {
   };
 }
 
+const busySignalCache = new SharedObservableCache(path => {
+  // Return an observable that starts the busy signal on subscription
+  // and disposes it upon unsubscription.
+  return Observable.create(() => {
+    if (busySignalService != null) {
+      return new UniversalDisposable(
+        busySignalService.reportBusy(`Clang: compiling \`${path}\``),
+      );
+    }
+  }).share();
+});
+
 export function provideLinter(): LinterProvider {
   return {
     grammarScopes: Array.from(GRAMMAR_SET),
@@ -139,10 +153,12 @@ export function provideLinter(): LinterProvider {
     lint(editor) {
       const getResult = () => ClangLinter.lint(editor);
       if (busySignalService != null) {
-        return busySignalService.reportBusyWhile(
-          `Clang: compiling \`${editor.getTitle()}\``,
-          getResult,
-        );
+        // Use the busy signal cache to dedupe busy signal messages.
+        // The shared subscription gets released when all the lints finish.
+        return busySignalCache
+          .get(editor.getTitle())
+          .race(Observable.defer(getResult))
+          .toPromise();
       }
       return getResult();
     },
