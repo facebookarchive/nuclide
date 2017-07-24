@@ -119,7 +119,6 @@ function objectToStats(jsonStats: Object): fs.Stats {
   stats.ctime = new Date(jsonStats.ctime);
 
   if (jsonStats.birthtime) {
-    // $FlowIssue
     stats.birthtime = new Date(jsonStats.birthtime);
   }
 
