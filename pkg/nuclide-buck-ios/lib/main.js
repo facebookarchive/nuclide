@@ -80,46 +80,48 @@ function provideIosDevices(
             return null;
           }
         })(),
-      ).switchMap(debuggerCallback => {
-        return IosSimulator.getFbsimctlSimulators().map(simulators => {
-          if (!simulators.length) {
-            return null;
-          }
+      )
+        .startWith(null)
+        .switchMap(debuggerCallback => {
+          return IosSimulator.getFbsimctlSimulators().map(simulators => {
+            if (!simulators.length) {
+              return null;
+            }
 
-          return {
-            name: 'iOS Simulators',
-            platforms: [
-              {
-                isMobile: true,
-                name: 'iOS Simulators',
-                tasksForDevice: device =>
-                  getTasks(buckRoot, ruleType, debuggerCallback != null),
-                runTask: (builder, taskType, target, settings, device) =>
-                  _runTask(
-                    builder,
-                    taskType,
-                    ruleType,
-                    target,
-                    settings,
-                    device,
-                    buckRoot,
-                    debuggerCallback,
-                  ),
-                deviceGroups: [
-                  {
-                    name: 'iOS Simulators',
-                    devices: simulators.map(simulator => ({
-                      name: `${simulator.name} (${simulator.os})`,
-                      udid: simulator.udid,
-                      arch: simulator.arch,
-                    })),
-                  },
-                ],
-              },
-            ],
-          };
+            return {
+              name: 'iOS Simulators',
+              platforms: [
+                {
+                  isMobile: true,
+                  name: 'iOS Simulators',
+                  tasksForDevice: device =>
+                    getTasks(buckRoot, ruleType, debuggerCallback != null),
+                  runTask: (builder, taskType, target, settings, device) =>
+                    _runTask(
+                      builder,
+                      taskType,
+                      ruleType,
+                      target,
+                      settings,
+                      device,
+                      buckRoot,
+                      debuggerCallback,
+                    ),
+                  deviceGroups: [
+                    {
+                      name: 'iOS Simulators',
+                      devices: simulators.map(simulator => ({
+                        name: `${simulator.name} (${simulator.os})`,
+                        udid: simulator.udid,
+                        arch: simulator.arch,
+                      })),
+                    },
+                  ],
+                },
+              ],
+            };
+          });
         });
-      });
     }
   });
 }
