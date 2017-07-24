@@ -407,7 +407,7 @@ module.exports = {
     'react/jsx-max-props-per-line': 0,
     'react/jsx-no-bind': 0,
     // 'react/jsx-no-bind': 1,
-    'react/jsx-no-comment-textnodes': 0,
+    'react/jsx-no-comment-textnodes': 1,
     'react/jsx-no-duplicate-props': 1,
     'react/jsx-no-literals': 0,
     'react/jsx-no-target-blank': 0,
