@@ -90,7 +90,7 @@ export class BufferSubscription {
             newText: event.newText,
           });
         } else {
-          this._sendOpenByNotifier(notifier);
+          this._sendOpenByNotifier(notifier, version);
         }
       }),
     );
@@ -105,14 +105,15 @@ export class BufferSubscription {
     // TODO: Could watch onDidReload() which will catch the case where an empty file is opened
     // after startup, leaving the only failure the reopening of empty files at startup.
     if (this._buffer.getText() !== '' && this._notifier != null) {
-      this._notifier.then(notifier => this._sendOpenByNotifier(notifier));
+      this._notifier.then(notifier =>
+        this._sendOpenByNotifier(notifier, this._changeCount),
+      );
     }
   }
 
-  _sendOpenByNotifier(notifier: FileNotifier): void {
+  _sendOpenByNotifier(notifier: FileNotifier, version: number): void {
     const filePath = this._buffer.getPath();
     invariant(filePath != null);
-    const version = this._changeCount;
 
     this._sentOpen = true;
     this.sendEvent({

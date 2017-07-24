@@ -15,6 +15,7 @@ import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   observeBufferOpen,
@@ -43,31 +44,41 @@ export class Activation {
         if (path == null || this._bufferSubscriptions.has(path)) {
           return;
         }
-        const bufferSubscription = new BufferSubscription(notifiers, buffer);
-        this._bufferSubscriptions.set(path, bufferSubscription);
-        const subscriptions = new UniversalDisposable(bufferSubscription);
-        subscriptions.add(
-          observeBufferCloseOrRename(buffer).subscribe(closeEvent => {
-            this._bufferSubscriptions.delete(path);
-            this._disposables.remove(subscriptions);
-            subscriptions.dispose();
-          }),
-        );
-        this._disposables.add(subscriptions);
+        this._createBufferSubscription(path, buffer);
       }),
     );
+  }
+
+  _createBufferSubscription(
+    path: string,
+    buffer: atom$TextBuffer,
+  ): BufferSubscription {
+    const bufferSubscription = new BufferSubscription(this.notifiers, buffer);
+    this._bufferSubscriptions.set(path, bufferSubscription);
+    const subscriptions = new UniversalDisposable(bufferSubscription);
+    subscriptions.add(
+      observeBufferCloseOrRename(buffer).subscribe(closeEvent => {
+        this._bufferSubscriptions.delete(path);
+        this._disposables.remove(subscriptions);
+        subscriptions.dispose();
+      }),
+    );
+    this._disposables.add(subscriptions);
+    return bufferSubscription;
   }
 
   getVersion(buffer: atom$TextBuffer): number {
     const path = buffer.getPath();
     invariant(path != null); // Guaranteed when called below.
-    const bufferSubscription = this._bufferSubscriptions.get(path);
+    let bufferSubscription = this._bufferSubscriptions.get(path);
     if (bufferSubscription == null) {
-      getLogger('nuclide-open-files').fatal(
-        'Failed to get version of text buffer',
-        buffer.getPath(),
+      // In rare situations, the buffer subscription may not have been created
+      // when initially opened above (e.g. exceptions).
+      // It's fine to just create the subscription at this point.
+      bufferSubscription = this._createBufferSubscription(path, buffer);
+      getLogger('nuclide-open-files').warn(
+        `Did not register open event for buffer ${path}. Manually creating subscription`,
       );
-      return 0;
     }
     return bufferSubscription.getVersion();
   }
@@ -106,11 +117,11 @@ export async function getFileVersionOfBuffer(
   buffer: atom$TextBuffer,
 ): Promise<?FileVersion> {
   const filePath = buffer.getPath();
-  const notifier = await getActivation().notifiers.getForUri(filePath);
-  if (notifier == null) {
+  if (nuclideUri.isBrokenDeserializedUri(filePath)) {
     return null;
   }
-  if (buffer.isDestroyed()) {
+  const notifier = await getActivation().notifiers.getForUri(filePath);
+  if (notifier == null || buffer.isDestroyed()) {
     return null;
   }
   invariant(filePath != null);
