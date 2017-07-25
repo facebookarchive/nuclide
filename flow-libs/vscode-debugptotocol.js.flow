@@ -420,6 +420,24 @@ declare module 'vscode-debugprotocol' {
     },
   }
 
+  declare interface nuclide_ContinueToLocationRequest extends base$Request {
+    command: 'nuclide_continueToLocation',
+    arguments: nuclide_ContinueToLocationArguments,
+  }
+
+  /** Arguments for 'nuclide_continueToLocation' request. */
+  declare interface nuclide_ContinueToLocationArguments {
+    /** The source location for which the goto targets are determined. */
+    source: Source,
+    /** The line location for which the goto targets are determined. */
+    line: number,
+    /** An optional column location for which the goto targets are determined. */
+    column?: number,
+  }
+
+  /** Response to 'nuclide_continueToLocation' request. */
+  declare interface nuclide_ContinueToLocationResponse extends base$Response {}
+
   /** Next request; value of command field is 'next'.
 		The request starts the debuggee to run again for one step.
 		The debug adapter first sends the NextResponse and then a StoppedEvent (event type 'step') after the step has completed.
@@ -946,6 +964,7 @@ declare module 'vscode-debugprotocol' {
     | GotoTargetsRequest
     | CompletionsRequest
     | ExceptionInfoRequest
+    | nuclide_ContinueToLocationRequest
     | CustomRequest;
   declare type Response =
     | RunInTerminalResponse
@@ -979,6 +998,7 @@ declare module 'vscode-debugprotocol' {
     | GotoTargetsResponse
     | CompletionsResponse
     | ExceptionInfoResponse
+    | nuclide_ContinueToLocationResponse
     | CustomResponse;
   declare type Event =
     | InitializedEvent

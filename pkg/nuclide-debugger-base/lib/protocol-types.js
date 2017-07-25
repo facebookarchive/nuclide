@@ -573,6 +573,10 @@ export type DebuggerCommand =
     }
   | {
       id: number,
+      method: 'Debugger.pause',
+    }
+  | {
+      id: number,
       method: 'Debugger.resume',
     }
   | {

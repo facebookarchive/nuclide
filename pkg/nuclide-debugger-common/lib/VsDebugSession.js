@@ -402,6 +402,12 @@ export default class VsDebugSession extends V8Protocol {
     return this.send('reverseContinue', args);
   }
 
+  nuclide_continueToLocation(
+    args: DebugProtocol.nuclide_ContinueToLocationArguments,
+  ): Promise<DebugProtocol.nuclide_ContinueToLocationResponse> {
+    return this.custom('nuclide_continueToLocation', args);
+  }
+
   getLengthInSeconds(): number {
     return (new Date().getTime() - this._startTime) / 1000;
   }

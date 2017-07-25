@@ -14,4 +14,4 @@ export type VSAdapterExecutableInfo = {
   args: Array<string>,
 };
 
-export type VsAdapterType = 'python';
+export type VsAdapterType = 'python' | 'hhvm';

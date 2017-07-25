@@ -94,8 +94,14 @@ function catchCommandError(handler: CommandHandler): CommandHandler {
 
 const OUTPUT_CATEGORY_TO_LEVEL = Object.freeze({
   console: 'debug',
+  info: 'info',
+  log: 'log',
+  warning: 'warning',
+  error: 'error',
+  debug: 'debug',
   stderr: 'error',
   stdout: 'log',
+  success: 'success',
 });
 
 // VSP deoesn't provide process id.
@@ -195,11 +201,8 @@ export default class VsDebugSessionTranslator {
       ),
       this._commandsOfType('Debugger.pause').flatMap(
         catchCommandError(async command => {
-          if (this._threadsById.size === 0) {
-            return getErrorResponse(command.id, 'No running thread to pause!');
-          }
           const mainThreadId =
-            this._mainThreadId || Array.from(this._threadsById.keys())[0];
+            this._mainThreadId || Array.from(this._threadsById.keys())[0] || -1;
           await this._session.pause({threadId: mainThreadId});
           return getEmptyResponse(command.id);
         }),
@@ -284,6 +287,14 @@ export default class VsDebugSessionTranslator {
           return getEmptyResponse(command.id);
         }),
       ),
+      this._commandsOfType('Debugger.continueToLocation').switchMap(
+        catchCommandError(async command => {
+          invariant(command.method === 'Debugger.continueToLocation');
+          const {location} = command.params;
+          await this._continueToLocation(location);
+          return getEmptyResponse(command.id);
+        }),
+      ),
       // Ack config commands
       Observable.merge(
         this._commandsOfType('Debugger.setDebuggerSettings'),
@@ -341,6 +352,22 @@ export default class VsDebugSessionTranslator {
         getErrorResponse(command.id, 'Unknown command: ' + command.method),
       ),
     );
+  }
+
+  async _continueToLocation(
+    location: NuclideDebugProtocol.Location,
+  ): Promise<void> {
+    const {columnNumber, lineNumber, scriptId} = location;
+    const source = {
+      path: nuclideUri.getPath(scriptId),
+      name: nuclideUri.basename(scriptId),
+    };
+    await this._files.registerFile(pathToUri(scriptId));
+    await this._session.nuclide_continueToLocation({
+      column: columnNumber || 1,
+      line: lineNumber + 1,
+      source,
+    });
   }
 
   _handleSetBreakpointsCommands(): Observable<
@@ -603,6 +630,11 @@ export default class VsDebugSessionTranslator {
         } else {
           this._logger.error('Unkown thread event:', body);
         }
+        const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
+        this._sendMessageToClient({
+          method: 'Debugger.threadsUpdated',
+          params: threadsUpdatedEvent,
+        });
       }),
       this._session.observeStopEvents().subscribe(({body}) => {
         const {threadId, allThreadsStopped, reason} = body;
@@ -726,6 +758,9 @@ export default class VsDebugSessionTranslator {
         const output = (body.output || '').replace(/\r?\n$/, '');
         if (level != null && output.length > 0) {
           this._sendUserOutputMessage(level, output);
+        } else if (category === 'nuclide_notification') {
+          invariant(body.data);
+          this._sendAtomNotification(body.data.type, body.output);
         }
       }),
       this._session
