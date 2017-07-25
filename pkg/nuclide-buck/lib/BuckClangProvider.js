@@ -17,13 +17,11 @@ import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams} from './types';
 
-import {Subscription} from 'rxjs';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Cache} from '../../commons-node/cache';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getFileWatcherServiceByNuclideUri} from '../../nuclide-remote-connection';
-import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import {BuckTaskRunner} from './BuckTaskRunner';
+import {ClangFlagsFileWatcher} from '../../nuclide-clang-base/lib/ClangFlagsFileWatcher';
 
 class Provider {
   _projectRootCache: Cache<string, Promise<?string>> = new Cache();
@@ -31,44 +29,14 @@ class Provider {
     string,
     Promise<?ClangCompilationDatabase>,
   > = new Cache();
-  _buildFileForSourceCache: Cache<string, string> = new Cache();
-  _watchedFilesCache: Cache<string, Subscription> = new Cache({
-    dispose: subscription => subscription.unsubscribe(),
-  });
-  _watchedFilesObservablesCache: SharedObservableCache<string, *>;
   _host: NuclideUri;
   _params: CompilationDatabaseParams;
+  _flagsFileWatcher: ClangFlagsFileWatcher;
 
   constructor(host: NuclideUri, params: CompilationDatabaseParams) {
     this._host = host;
-    this._watchedFilesObservablesCache = this._createWatchedFilesObservablesCache();
+    this._flagsFileWatcher = new ClangFlagsFileWatcher(host);
     this._params = params;
-  }
-
-  _createWatchedFilesObservablesCache(): SharedObservableCache<string, *> {
-    return new SharedObservableCache(buildFile =>
-      getFileWatcherServiceByNuclideUri(this._host)
-        .watchFileWithNode(buildFile)
-        .refCount()
-        .share()
-        .take(1),
-    );
-  }
-
-  watchBuildFile(buildFile: string, src: string): void {
-    const watchedFile = this._buildFileForSourceCache.get(src);
-    if (watchedFile != null) {
-      return;
-    }
-    this._buildFileForSourceCache.set(src, buildFile);
-    this._watchedFilesCache.set(
-      src,
-      this._watchedFilesObservablesCache.get(buildFile).subscribe(() => {
-        try {
-          this.resetForSource(src);
-        } catch (_) {}
-      }),
-    );
   }
 
   getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
@@ -78,7 +46,9 @@ class Provider {
         .refCount()
         .do(db => {
           if (db != null && db.flagsFile != null) {
-            this.watchBuildFile(db.flagsFile, src);
+            this._flagsFileWatcher.watch(db.flagsFile, src, () =>
+              this.resetForSource(src),
+            );
           }
         })
         .toPromise();
@@ -97,8 +67,7 @@ class Provider {
       src,
       this._params,
     );
-    this._buildFileForSourceCache.delete(src);
-    this._watchedFilesCache.delete(src);
+    this._flagsFileWatcher.resetForSource(src);
   }
 
   reset(): void {
@@ -106,8 +75,7 @@ class Provider {
     getBuckServiceByNuclideUri(this._host).resetCompilationDatabase(
       this._params,
     );
-    this._buildFileForSourceCache.clear();
-    this._watchedFilesCache.clear();
+    this._flagsFileWatcher.reset();
   }
 }
 
