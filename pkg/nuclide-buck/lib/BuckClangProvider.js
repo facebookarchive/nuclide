@@ -127,13 +127,18 @@ function getProvider(
   );
 }
 
+const supportsSourceCache: Cache<string, Promise<boolean>> = new Cache();
+
 export function getClangProvider(
   taskRunner: BuckTaskRunner,
 ): ClangConfigurationProvider {
   return {
     async supportsSource(src: string): Promise<boolean> {
-      // TODO(wallace): use find buck root as an implementation
-      return true;
+      return supportsSourceCache.getOrCreate(
+        src,
+        async () =>
+          (await getBuckServiceByNuclideUri(src).getRootForPath(src)) != null,
+      );
     },
     async getSettings(src: string): Promise<?ClangRequestSettings> {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
@@ -153,10 +158,12 @@ export function getClangProvider(
     resetForSource(src: string): void {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       getProvider(src, params).resetForSource(src);
+      supportsSourceCache.delete(src);
     },
     reset(src: string): void {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       providersCache.delete([src, params]);
+      supportsSourceCache.clear();
     },
   };
 }
