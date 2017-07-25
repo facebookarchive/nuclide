@@ -285,15 +285,11 @@ export default class Bridge {
   _reportEngineError(message: string): void {
     const outputMessage = `Debugger engine reports error: ${message}`;
     logger.error(outputMessage);
-    this._sendConsoleMessage('error', outputMessage);
-    atom.notifications.addError(outputMessage);
   }
 
   _reportEngineWarning(message: string): void {
     const outputMessage = `Debugger engine reports warning: ${message}`;
     logger.warn(outputMessage);
-    this._sendConsoleMessage('warning', outputMessage);
-    atom.notifications.addWarning(outputMessage);
   }
 
   _updateDebuggerSettings(): void {
