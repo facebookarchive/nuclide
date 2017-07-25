@@ -131,6 +131,10 @@ export function getClangRequestSettingsProvider(
   taskRunner: BuckTaskRunner,
 ): ClangRequestSettingsProvider {
   return {
+    async supportsSource(src: string): Promise<boolean> {
+      // TODO(wallace): use find buck root as an implementation
+      return true;
+    },
     async getSettings(src: string): Promise<?ClangRequestSettings> {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       const provider = getProvider(src, params);
@@ -150,9 +154,9 @@ export function getClangRequestSettingsProvider(
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       getProvider(src, params).resetForSource(src);
     },
-    reset(host: string): void {
+    reset(src: string): void {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
-      providersCache.delete([host, params]);
+      providersCache.delete([src, params]);
     },
   };
 }

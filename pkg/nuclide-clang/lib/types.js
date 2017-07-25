@@ -18,6 +18,7 @@ export type ClangRequestSettingsProvider = {
   getSettings: string => Promise<?ClangRequestSettings>,
   reset: (host: string) => void,
   resetForSource: (src: string) => void,
+  supportsSource: (src: string) => Promise<boolean>,
 };
 
 export type ClangDeclarationInfoProvider = {

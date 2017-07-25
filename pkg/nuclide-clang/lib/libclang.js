@@ -21,6 +21,7 @@ import type {
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import type {ClangRequestSettingsProvider} from './types';
 
+import {arrayCompact} from 'nuclide-commons/collection';
 import {Disposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {
@@ -45,20 +46,28 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
+async function getRequestSettingsProvidersForSource(
+  src: string,
+): Promise<ClangRequestSettingsProvider[]> {
+  return arrayCompact(
+    await Promise.all(
+      Array.from(clangRequestSettingsProviders.values()).map(async provider => {
+        if (await provider.supportsSource(src)) {
+          return provider;
+        }
+        return null;
+      }),
+    ),
+  );
+}
+
 async function getClangRequestSettings(
   src: string,
 ): Promise<?ClangRequestSettings> {
-  const settings = await Promise.all(
-    Array.from(clangRequestSettingsProviders.values()).map(provider =>
-      provider.getSettings(src),
-    ),
-  );
-  for (const requestSettings of settings) {
-    if (requestSettings != null) {
-      return requestSettings;
-    }
+  const provider = (await getRequestSettingsProvidersForSource(src))[0];
+  if (provider != null) {
+    return provider.getSettings(src);
   }
-  return null;
 }
 
 const clangServices = new WeakSet();
@@ -253,10 +262,10 @@ module.exports = {
     };
   },
 
-  resetForSource(editor: atom$TextEditor) {
+  async resetForSource(editor: atom$TextEditor): Promise<void> {
     const src = editor.getPath();
     if (src != null) {
-      clangRequestSettingsProviders.forEach(provider =>
+      (await getRequestSettingsProvidersForSource(src)).forEach(provider =>
         provider.resetForSource(src),
       );
       const service = getClangServiceByNuclideUri(src);
@@ -264,8 +273,10 @@ module.exports = {
     }
   },
 
-  async reset(host: string): Promise<void> {
-    clangRequestSettingsProviders.forEach(provider => provider.reset(host));
-    await getClangServiceByNuclideUri(host).reset();
+  async reset(src: string): Promise<void> {
+    (await getRequestSettingsProvidersForSource(src)).forEach(provider =>
+      provider.reset(src),
+    );
+    await getClangServiceByNuclideUri(src).reset();
   },
 };
