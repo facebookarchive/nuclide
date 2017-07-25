@@ -19,7 +19,7 @@ import type {
   ClangRequestSettings,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
-import type {ClangRequestSettingsProvider} from './types';
+import type {ClangConfigurationProvider} from './types';
 
 import {arrayCompact} from 'nuclide-commons/collection';
 import {Disposable} from 'atom';
@@ -34,9 +34,7 @@ type NuclideClangConfig = {
   defaultFlags: Array<string>,
 };
 
-const clangRequestSettingsProviders: Set<
-  ClangRequestSettingsProvider,
-> = new Set();
+const clangProviders: Set<ClangConfigurationProvider> = new Set();
 
 function getDefaultFlags(): ?Array<string> {
   const config: NuclideClangConfig = (featureConfig.get('nuclide-clang'): any);
@@ -46,12 +44,12 @@ function getDefaultFlags(): ?Array<string> {
   return config.defaultFlags;
 }
 
-async function getRequestSettingsProvidersForSource(
+async function getClangProvidersForSource(
   src: string,
-): Promise<ClangRequestSettingsProvider[]> {
+): Promise<ClangConfigurationProvider[]> {
   return arrayCompact(
     await Promise.all(
-      Array.from(clangRequestSettingsProviders.values()).map(async provider => {
+      [...clangProviders].map(async provider => {
         if (await provider.supportsSource(src)) {
           return provider;
         }
@@ -64,7 +62,7 @@ async function getRequestSettingsProvidersForSource(
 async function getClangRequestSettings(
   src: string,
 ): Promise<?ClangRequestSettings> {
-  const provider = (await getRequestSettingsProvidersForSource(src))[0];
+  const provider = (await getClangProvidersForSource(src))[0];
   if (provider != null) {
     return provider.getSettings(src);
   }
@@ -73,11 +71,9 @@ async function getClangRequestSettings(
 const clangServices = new WeakSet();
 
 module.exports = {
-  registerRequestSettingsProvider(
-    provider: ClangRequestSettingsProvider,
-  ): Disposable {
-    clangRequestSettingsProviders.add(provider);
-    return new Disposable(() => clangRequestSettingsProviders.delete(provider));
+  registerClangProvider(provider: ClangConfigurationProvider): Disposable {
+    clangProviders.add(provider);
+    return new Disposable(() => clangProviders.delete(provider));
   },
 
   async getRelatedSourceOrHeader(src: string): Promise<?string> {
@@ -265,7 +261,7 @@ module.exports = {
   async resetForSource(editor: atom$TextEditor): Promise<void> {
     const src = editor.getPath();
     if (src != null) {
-      (await getRequestSettingsProvidersForSource(src)).forEach(provider =>
+      (await getClangProvidersForSource(src)).forEach(provider =>
         provider.resetForSource(src),
       );
       const service = getClangServiceByNuclideUri(src);
@@ -274,7 +270,7 @@ module.exports = {
   },
 
   async reset(src: string): Promise<void> {
-    (await getRequestSettingsProvidersForSource(src)).forEach(provider =>
+    (await getClangProvidersForSource(src)).forEach(provider =>
       provider.reset(src),
     );
     await getClangServiceByNuclideUri(src).reset();

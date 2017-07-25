@@ -13,7 +13,7 @@ import type {
   ClangCompilationDatabase,
   ClangRequestSettings,
 } from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {ClangRequestSettingsProvider} from '../../nuclide-clang/lib/types';
+import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CompilationDatabaseParams} from './types';
 
@@ -127,9 +127,9 @@ function getProvider(
   );
 }
 
-export function getClangRequestSettingsProvider(
+export function getClangProvider(
   taskRunner: BuckTaskRunner,
-): ClangRequestSettingsProvider {
+): ClangConfigurationProvider {
   return {
     async supportsSource(src: string): Promise<boolean> {
       // TODO(wallace): use find buck root as an implementation

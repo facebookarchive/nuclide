@@ -13,7 +13,7 @@ import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 import type {HyperclickProvider} from 'atom-ide-ui';
 import type {SerializedState} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
-import type {ClangRequestSettingsProvider} from '../../nuclide-clang/lib/types';
+import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import registerGrammar from '../../commons-atom/register-grammar';
@@ -23,7 +23,7 @@ import {getSuggestion} from './HyperclickProvider';
 import {track} from '../../nuclide-analytics';
 import {BuckTaskRunner} from './BuckTaskRunner';
 import {PlatformService} from './PlatformService';
-import {getClangRequestSettingsProvider} from './BuckClangRequestSettingsProvider';
+import {getClangProvider} from './BuckClangProvider';
 
 const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 
@@ -86,8 +86,8 @@ class Activation {
     return this._taskRunner.getPlatformService();
   }
 
-  provideClangRequestSettings(): ClangRequestSettingsProvider {
-    return getClangRequestSettingsProvider(this._taskRunner);
+  provideClangConfiguration(): ClangConfigurationProvider {
+    return getClangProvider(this._taskRunner);
   }
 }
 

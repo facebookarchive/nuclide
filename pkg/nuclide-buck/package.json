@@ -62,9 +62,9 @@
         "0.0.0": "providePlatformService"
       }
     },
-    "nuclide.clang.request-settings": {
+    "nuclide.clang.configuration": {
       "versions": {
-        "0.0.0": "provideClangRequestSettings"
+        "0.0.0": "provideClangConfiguration"
       }
     }
   },
