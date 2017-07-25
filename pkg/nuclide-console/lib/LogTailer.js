@@ -16,6 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {WORKSPACE_VIEW_URI as CONSOLE_VIEW_URI} from './ui/ConsoleContainer';
 
 type TrackingEventNames = {
   start: string,
@@ -208,11 +209,8 @@ export class LogTailer {
   }
 
   _start(trackCall: boolean): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(CONSOLE_VIEW_URI);
 
     const currentStatus = this._statuses.getValue();
     if (currentStatus === 'starting') {

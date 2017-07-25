@@ -36,11 +36,6 @@
   },
   "activationCommands": {},
   "consumedServices": {
-    "nuclide.workspace-views": {
-      "versions": {
-        "0.0.0": "consumeWorkspaceViewsService"
-      }
-    },
     "tool-bar": {
       "versions": {
         "^1.0.0": "consumeToolBar"

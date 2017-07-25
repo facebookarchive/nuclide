@@ -10,10 +10,6 @@
  */
 
 import type {
-  Viewable,
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
-import type {
   AppState,
   ConsolePersistedState,
   ConsoleService,
@@ -86,6 +82,7 @@ class Activation {
           );
         },
       ),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -126,9 +123,9 @@ class Activation {
     this._createPasteFunction = (provider.createPaste: CreatePasteFunction);
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandAndOpener(): UniversalDisposable {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return viewableFromReactElement(
             <ConsoleContainer
@@ -139,13 +136,13 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof ConsoleContainer),
-      atom.commands.add('atom-workspace', 'nuclide-console:toggle', event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      atom.commands.add('atom-workspace', 'nuclide-console:toggle', () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
   }
 
-  deserializeConsoleContainer(state: ConsolePersistedState): Viewable {
+  deserializeConsoleContainer(state: ConsolePersistedState): atom$Pane {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this._getStore()}

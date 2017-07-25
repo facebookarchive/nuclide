@@ -72,6 +72,9 @@ const TASKS = [
   },
 ];
 
+// This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
 function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
   switch (taskType) {
     case 'build':
@@ -263,11 +266,8 @@ export class BuckTaskRunner {
       'Invalid task type',
     );
 
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(CONSOLE_VIEW_URI);
 
     const state = this._getStore().getState();
     const {

@@ -71,6 +71,8 @@ type BoundActionCreators = {
   clearRecords: () => void,
 };
 
+// Other Nuclide packages (which cannot import this) depend on this URI. If this
+// needs to be changed, grep for CONSOLE_VIEW_URI and ensure that the URIs match.
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
 
 const INITIAL_RECORD_HEIGHT = 21;

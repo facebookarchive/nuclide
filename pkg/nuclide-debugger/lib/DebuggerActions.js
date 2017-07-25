@@ -50,6 +50,9 @@ import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
+// This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
 /**
  * Flux style action creator for actions that affect the debugger.
  */
@@ -718,10 +721,7 @@ export default class DebuggerActions {
 
   _handleDebugModeStart(): void {
     // Open the console window if it's not already opened.
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(CONSOLE_VIEW_URI);
   }
 }

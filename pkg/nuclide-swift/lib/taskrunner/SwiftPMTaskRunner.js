@@ -52,6 +52,9 @@ type SwiftPMTaskRunnerFlux = {
   actions: SwiftPMTaskRunnerActions,
 };
 
+// This must match URI defined in ../../../nuclide-console/lib/ui/ConsoleContainer
+const CONSOLE_VIEW_URI = 'atom://nuclide/console';
+
 /**
  * The primary controller for spawning SwiftPM tasks, such as building a
  * package, or running its tests. This class conforms to Nuclide's TaskRunner
@@ -125,11 +128,9 @@ export class SwiftPMTaskRunner {
         throw new Error(`Unknown task name: ${taskName}`);
     }
 
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-console:toggle',
-      {visible: true},
-    );
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(CONSOLE_VIEW_URI);
+
     const observable = createMessage(
       `${command.command} ${command.args.join(' ')}`,
       'log',
