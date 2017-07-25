@@ -149,7 +149,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
         ? launchInfo.basepath
         : this._config.buckConfigRootFile,
       lldb_python_path: this._config.lldbPythonPath,
-      core_dump_path: launchInfo.coreDump,
+      core_dump_path: launchInfo.coreDump || '',
     };
 
     if (launchInfo.coreDump != null && launchInfo.coreDump !== '') {
