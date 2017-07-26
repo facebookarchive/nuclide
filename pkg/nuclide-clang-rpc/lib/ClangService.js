@@ -209,7 +209,7 @@ export async function getRelatedSourceOrHeader(
 ): Promise<?NuclideUri> {
   return serverManager
     .getClangFlagsManager()
-    .getRelatedSrcFileForHeader(
+    .getRelatedSourceOrHeader(
       src,
       requestSettings || {compilationDatabase: null, projectRoot: null},
     );

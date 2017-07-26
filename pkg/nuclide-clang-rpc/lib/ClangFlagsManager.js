@@ -19,7 +19,6 @@ import type {
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {shellParse} from 'nuclide-commons/string';
-import {Observable} from 'rxjs';
 import {trackTiming} from '../../nuclide-analytics';
 import {Cache} from '../../commons-node/cache';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -28,17 +27,19 @@ import {mapPathsInFlags} from './clang-flags-parser';
 import {
   isHeaderFile,
   isSourceFile,
-  findIncludingSourceFile,
   commonPrefix,
   guessBuildFile,
+  getFileBasename,
 } from './utils';
+import {
+  getRelatedHeaderForSource,
+  findSourceFileForHeader,
+} from './RelatedFileFinder';
 
 const logger = getLogger('nuclide-clang-rpc');
 
 const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 const PROJECT_CLANG_FLAGS_FILE = '.nuclide_clang_config.json';
-
-const INCLUDE_SEARCH_TIMEOUT = 15000;
 
 type ClangProjectFlags = {
   extraCompilerFlags: Array<string>,
@@ -157,14 +158,11 @@ export default class ClangFlagsManager {
     header: string,
     dbFlags: Map<string, ClangFlags>,
   ): ?string {
-    const basename = ClangFlagsManager._getFileBasename(header);
+    const basename = getFileBasename(header);
     const srcWithSameBasename = [];
     const otherSrcs = [];
     for (const path of dbFlags.keys()) {
-      if (
-        ClangFlagsManager._getFileBasename(path) === basename &&
-        isSourceFile(path)
-      ) {
+      if (getFileBasename(path) === basename && isSourceFile(path)) {
         srcWithSameBasename.push({
           score: commonPrefix(path, header),
           path,
@@ -305,12 +303,12 @@ export default class ClangFlagsManager {
       }
     }
     if (projectRoot != null) {
-      return ClangFlagsManager._findSourceFileForHeader(src, projectRoot);
+      return findSourceFileForHeader(src, projectRoot);
     }
     return null;
   }
 
-  async getRelatedSrcFileForHeader(
+  async getRelatedSourceOrHeader(
     src: string,
     requestSettings: ClangRequestSettings,
   ): Promise<?string> {
@@ -320,7 +318,14 @@ export default class ClangFlagsManager {
     );
     const projectRoot =
       requestSettings == null ? null : requestSettings.projectRoot;
-    return this._getRelatedSrcFileForHeader(src, dbFlags, projectRoot || dbDir);
+    if (isHeaderFile(src)) {
+      return this._getRelatedSrcFileForHeader(
+        src,
+        dbFlags,
+        projectRoot || dbDir,
+      );
+    }
+    return getRelatedHeaderForSource(src);
   }
 
   async __getFlagsForSrcImpl(
@@ -508,41 +513,5 @@ export default class ClangFlagsManager {
     }
 
     return args;
-  }
-
-  static async _findSourceFileForHeader(
-    header: string,
-    projectRoot: string,
-  ): Promise<?string> {
-    // Basic implementation: look at files in the same directory for paths
-    // with matching file names.
-    const dir = nuclideUri.dirname(header);
-    const files = await fsPromise.readdir(dir);
-    const basename = ClangFlagsManager._getFileBasename(header);
-    for (const file of files) {
-      if (
-        isSourceFile(file) &&
-        ClangFlagsManager._getFileBasename(file) === basename
-      ) {
-        return nuclideUri.join(dir, file);
-      }
-    }
-
-    // Try searching all subdirectories for source files that include this header.
-    // Give up after INCLUDE_SEARCH_TIMEOUT.
-    return findIncludingSourceFile(header, projectRoot)
-      .timeout(INCLUDE_SEARCH_TIMEOUT)
-      .catch(() => Observable.of(null))
-      .toPromise();
-  }
-
-  // Strip off the extension and conventional suffixes like "Internal" and "-inl".
-  static _getFileBasename(file: string): string {
-    let basename = nuclideUri.basename(file);
-    const ext = basename.lastIndexOf('.');
-    if (ext !== -1) {
-      basename = basename.substr(0, ext);
-    }
-    return basename.replace(/(Internal|-inl)$/, '');
   }
 }
