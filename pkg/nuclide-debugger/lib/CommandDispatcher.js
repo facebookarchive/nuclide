@@ -11,6 +11,7 @@
 
 import type {IPCEvent} from './types';
 
+// eslint-disable-next-line nuclide-internal/no-commonjs
 require('./Protocol/Object');
 import InspectorBackendClass from './Protocol/NuclideProtocolParser';
 

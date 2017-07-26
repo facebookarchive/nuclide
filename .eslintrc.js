@@ -9,7 +9,11 @@
  */
 'use strict';
 
-/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
+/* eslint
+  comma-dangle: [1, always-multiline],
+  prefer-object-spread/prefer-object-spread: 0,
+  nuclide-internal/no-commonjs: 0,
+  */
 /* eslint-disable max-len */
 
 module.exports = {
@@ -354,7 +358,7 @@ module.exports = {
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/use-nuclide-ui-components': 1,
-    'nuclide-internal/no-commonjs': 0,
+    'nuclide-internal/no-commonjs': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,

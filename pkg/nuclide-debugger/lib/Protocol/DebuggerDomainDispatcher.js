@@ -223,4 +223,4 @@ class DebuggerDomainDispatcher {
 }
 
 // Use old school export to allow legacy code to import it.
-module.exports = DebuggerDomainDispatcher;
+module.exports = DebuggerDomainDispatcher; // eslint-disable-line nuclide-internal/no-commonjs

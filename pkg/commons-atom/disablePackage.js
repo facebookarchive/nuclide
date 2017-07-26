@@ -32,6 +32,7 @@ function disablePackage(name) {
   delete atom.packages.preloadedPackages[name];
 }
 
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = function(name: string) {
   // Disable Atom's bundled package. If this activation is happening during the
   // normal startup activation, the `onDidActivateInitialPackages` handler below must unload the

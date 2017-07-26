@@ -26,4 +26,4 @@ const styleDisposables = new CompositeDisposable(
     .map(file => atom.themes.requireStylesheet(path.join(styleDir, file))),
 );
 
-module.exports = styleDisposables;
+module.exports = styleDisposables; // eslint-disable-line nuclide-internal/no-commonjs

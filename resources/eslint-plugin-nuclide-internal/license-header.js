@@ -9,7 +9,11 @@
  */
 'use strict';
 
-/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
+/* eslint
+  comma-dangle: [1, always-multiline],
+  prefer-object-spread/prefer-object-spread: 0,
+  nuclide-internal/no-commonjs: 0,
+  */
 
 const path = require('path');
 
@@ -42,7 +46,11 @@ const NO_FLOW_AND_NO_TRANSPILE = `\
  */
 'use strict';
 
-/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
+/* eslint
+  comma-dangle: [1, always-multiline],
+  prefer-object-spread/prefer-object-spread: 0,
+  nuclide-internal/no-commonjs: 0,
+  */
 `;
 
 const MODULES_FLOW_FORMAT_AND_TRANSPILE = `\
@@ -72,7 +80,11 @@ const MODULES_NO_FLOW_AND_NO_TRANSPILE = `\
  */
 'use strict';
 
-/* eslint comma-dangle: [1, always-multiline], prefer-object-spread/prefer-object-spread: 0 */
+/* eslint
+  comma-dangle: [1, always-multiline],
+  prefer-object-spread/prefer-object-spread: 0,
+  nuclide-internal/no-commonjs: 0,
+  */
 `;
 
 module.exports = function(context) {

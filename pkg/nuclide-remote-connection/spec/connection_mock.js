@@ -53,4 +53,5 @@ const connectionMock: ServerConnection & {getFsService(): Object} = ({
   },
 }: any);
 
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = connectionMock;

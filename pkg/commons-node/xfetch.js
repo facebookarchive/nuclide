@@ -42,4 +42,4 @@
 
 export default (typeof global.fetch === 'function'
   ? global.fetch
-  : require('node-fetch'): typeof fetch);
+  : require('node-fetch'): typeof fetch); // eslint-disable-line nuclide-internal/no-commonjs

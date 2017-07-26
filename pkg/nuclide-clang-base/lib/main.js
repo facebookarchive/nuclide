@@ -9,6 +9,7 @@
  * @format
  */
 
+// eslint-disable-next-line nuclide-internal/no-commonjs
 module.exports = {
   // TODO(wallace): Add export code here.
 };

@@ -10,7 +10,7 @@
  */
 
 /* global sessionStorage */
-/* eslint-disable no-console */
+/* eslint-disable no-console, nuclide-internal/no-commonjs */
 
 declare function waitsForPromise(
   optionsOrFunc:
