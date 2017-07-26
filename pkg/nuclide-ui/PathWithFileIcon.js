@@ -12,6 +12,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
+import {getLogger} from 'log4js';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Icon} from 'nuclide-commons-ui/Icon';
 
@@ -107,7 +108,17 @@ export default class PathWithFileIcon extends React.Component {
   _consumeFileIconService(
     addItemToElement: FileIconsAddItemToElementFn,
   ): IDisposable {
-    this._addItemToElement = addItemToElement;
+    this._addItemToElement = (element: HTMLElement, path: string) => {
+      try {
+        return addItemToElement(element, path);
+      } catch (e) {
+        getLogger('nuclide-ui-path-with-file-icon').error(
+          'Error adding item to element',
+          e,
+        );
+        return new UniversalDisposable();
+      }
+    };
     this._forceIconUpdate();
     return new UniversalDisposable(() => {
       this._addItemToElement = null;
