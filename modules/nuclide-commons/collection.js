@@ -470,3 +470,12 @@ export function iterableContains<T>(iterable: Iterable<T>, value: T): boolean {
     filterIterable(iterable, element => element === value),
   );
 }
+
+export function count<T>(iterable: Iterable<T>): number {
+  let size = 0;
+  // eslint-disable-next-line no-unused-vars
+  for (const element of iterable) {
+    size++;
+  }
+  return size;
+}

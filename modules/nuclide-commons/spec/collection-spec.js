@@ -33,6 +33,7 @@ import {
   mapEqual,
   mapIterable,
   mapGetWithDefault,
+  count,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -467,5 +468,11 @@ describe('mapGetWithDefault', () => {
   it('returns `null` or `undefined` if they are values in the map', () => {
     expect(mapGetWithDefault(new Map([[1, null]]), 1, 3)).toBeNull();
     expect(mapGetWithDefault(new Map([[1, undefined]]), 1, 3)).toBeUndefined();
+  });
+});
+
+describe('count', () => {
+  it('returns how many values are in an iterable', () => {
+    expect(count([1, 2])).toBe(2);
   });
 });
