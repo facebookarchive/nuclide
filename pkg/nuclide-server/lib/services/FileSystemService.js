@@ -339,17 +339,37 @@ async function copyFilePermissions(
 }
 
 /**
- * The writeFile endpoint accepts the following query parameters:
+ * A small wrapper around fs.writeFile that also implements:
  *
- *   path: path to the file to read (it must be url encoded).
- *   data: file contents to write.
- *   options: options to pass to fs.writeFile
+ * - atomic writes (by writing to a temporary file first)
+ * - uses a promise rather than a callback
  *
- * TODO: move to nuclide-commons and rename to writeFileAtomic
+ * `options` is passed directly into fs.writeFile.
  */
-export async function writeFile(
+export function writeFile(
   path: NuclideUri,
   data: string,
+  options?: {encoding?: string, mode?: number, flag?: string},
+): Promise<void> {
+  return _writeFile(path, data, options);
+}
+
+/**
+ * This is the same as writeFile but with buffers.
+ * The RPC framework can't use string | Buffer so we have to create a separate function.
+ * Note that options.encoding is ignored for raw buffers.
+ */
+export function writeFileBuffer(
+  path: NuclideUri,
+  data: Buffer,
+  options?: {encoding?: string, mode?: number, flag?: string},
+): Promise<void> {
+  return _writeFile(path, data, options);
+}
+
+async function _writeFile(
+  path: NuclideUri,
+  data: string | Buffer,
   options?: {encoding?: string, mode?: number, flag?: string},
 ): Promise<void> {
   let complete = false;
