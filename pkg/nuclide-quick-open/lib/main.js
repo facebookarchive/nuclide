@@ -81,6 +81,9 @@ class Activation {
       this._handleSelectionChanged.bind(this),
       ANALYTICS_CHANGE_SELECTION_DEBOUCE,
     );
+
+    (this: any)._handleSelection = (this: any)._handleSelection.bind(this);
+    (this: any)._closeSearchPanel = (this: any)._closeSearchPanel.bind(this);
   }
 
   _handleActions(action: QuickSelectionAction): void {
@@ -94,11 +97,11 @@ class Activation {
     }
   }
 
-  _handleSelection = (
+  _handleSelection(
     selections: Array<FileResult>,
     providerName: string,
     query: string,
-  ): void => {
+  ): void {
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i];
       if (selection.callback != null) {
@@ -117,7 +120,7 @@ class Activation {
       });
     }
     this._closeSearchPanel();
-  };
+  }
 
   _handleSelectionChanged(
     selectionIndex: SelectionIndex,
@@ -224,7 +227,7 @@ class Activation {
     }
   }
 
-  _closeSearchPanel = (): void => {
+  _closeSearchPanel(): void {
     if (this._searchComponent != null) {
       invariant(this._searchPanel != null);
       ReactDOM.unmountComponentAtNode(this._searchPanel.getItem());
@@ -243,7 +246,7 @@ class Activation {
       this._previousFocus.focus();
       this._previousFocus = null;
     }
-  };
+  }
 
   registerProvider(service: Provider): IDisposable {
     const subscriptions = new UniversalDisposable(

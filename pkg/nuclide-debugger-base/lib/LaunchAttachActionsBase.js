@@ -27,21 +27,27 @@ export class LaunchAttachActionsBase {
     this._refreshTimerId = null;
     this._parentUIVisible = true; // Visible by default.
     this._attachUIVisible = false;
+    (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(
+      this,
+    );
+    (this: any).updateParentUIVisibility = this.updateParentUIVisibility.bind(
+      this,
+    );
   }
 
   getTargetUri(): NuclideUri {
     return this._targetUri;
   }
 
-  updateParentUIVisibility = (visible: boolean): void => {
+  updateParentUIVisibility(visible: boolean): void {
     this._parentUIVisible = visible;
     this._updateAutoRefresh();
-  };
+  }
 
-  updateAttachUIVisibility = (visible: boolean): void => {
+  updateAttachUIVisibility(visible: boolean): void {
     this._attachUIVisible = visible;
     this._updateAutoRefresh();
-  };
+  }
 
   _updateAutoRefresh(): void {
     this._killAutoRefreshTimer();
@@ -54,9 +60,9 @@ export class LaunchAttachActionsBase {
     }
   }
 
-  updateAttachTargetList = (): Promise<void> => {
+  async updateAttachTargetList(): Promise<void> {
     throw Error('Not implemented');
-  };
+  }
 
   _killAutoRefreshTimer(): void {
     if (this._refreshTimerId != null) {

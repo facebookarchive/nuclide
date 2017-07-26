@@ -32,6 +32,7 @@ export class LaunchAttachActions extends LaunchAttachActionsBase {
   constructor(dispatcher: LaunchAttachDispatcher, targetUri: NuclideUri) {
     super(targetUri);
     this._dispatcher = dispatcher;
+    (this: any).updateAttachTargetList = this.updateAttachTargetList.bind(this);
   }
 
   attachDebugger(attachTarget: AttachTargetInfo): Promise<void> {
@@ -52,7 +53,7 @@ export class LaunchAttachActions extends LaunchAttachActionsBase {
   }
 
   // Override.
-  updateAttachTargetList = async (): Promise<void> => {
+  async updateAttachTargetList(): Promise<void> {
     const rpcService: ?NativeDebuggerService = getServiceByNuclideUri(
       'NativeDebuggerService',
       this.getTargetUri(),
@@ -63,5 +64,5 @@ export class LaunchAttachActions extends LaunchAttachActionsBase {
       actionType: ActionTypes.UPDATE_ATTACH_TARGET_LIST,
       attachTargetInfos: attachTargetList,
     });
-  };
+  }
 }
