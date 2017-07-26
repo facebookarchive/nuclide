@@ -119,6 +119,7 @@ class FlowLanguageService extends MultiProjectLanguageService<
         const singleProjectLS = new FlowSingleProjectLanguageService(
           projectDir,
           execInfoContainer,
+          fileCache,
         );
         const languageService = new ServerLanguageService(
           fileCache,

@@ -52,6 +52,7 @@ describe('FlowSingleProjectLanguageService', () => {
     return new FlowSingleProjectLanguageService(
       root,
       new FlowExecInfoContainer(),
+      (null: any) /* File Cache */,
     );
   }
 

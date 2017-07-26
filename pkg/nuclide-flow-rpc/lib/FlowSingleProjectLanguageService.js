@@ -62,6 +62,8 @@ import prettyPrintTypes from './prettyPrintTypes';
 import {astToOutline} from './astToOutline';
 import {flowStatusOutputToDiagnostics} from './diagnosticsParser';
 
+import type {FileCache} from '../../nuclide-open-files-rpc';
+
 /** Encapsulates all of the state information we need about a specific Flow root */
 export class FlowSingleProjectLanguageService {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
@@ -70,10 +72,14 @@ export class FlowSingleProjectLanguageService {
   _version: FlowVersion;
   _execInfoContainer: FlowExecInfoContainer;
 
-  constructor(root: string, execInfoContainer: FlowExecInfoContainer) {
+  constructor(
+    root: string,
+    execInfoContainer: FlowExecInfoContainer,
+    fileCache: FileCache,
+  ) {
     this._root = root;
     this._execInfoContainer = execInfoContainer;
-    this._process = new FlowProcess(root, execInfoContainer);
+    this._process = new FlowProcess(root, execInfoContainer, fileCache);
     this._version = new FlowVersion(async () => {
       const execInfo = await execInfoContainer.getFlowExecInfo(root);
       if (!execInfo) {
