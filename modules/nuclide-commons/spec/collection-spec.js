@@ -18,6 +18,7 @@ import {
   mapUnion,
   isEmpty,
   keyMirror,
+  setFilter,
   setIntersect,
   setUnion,
   collect,
@@ -165,6 +166,18 @@ describe('isEmpty', () => {
 describe('keyMirror', () => {
   it('correctly mirrors objects', () => {
     expect(keyMirror({a: null, b: null})).toEqual({a: 'a', b: 'b'});
+  });
+});
+
+describe('setFilter', () => {
+  it('filters', () => {
+    const set = new Set(['foo', 'bar', 'baz']);
+    const filtered = setFilter(set, x => x.startsWith('b'));
+
+    expect(filtered.size).toBe(2);
+    expect(filtered.has('bar')).toBe(true);
+    expect(filtered.has('baz')).toBe(true);
+    expect(filtered.has('foo')).toBe(false);
   });
 });
 

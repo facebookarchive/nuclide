@@ -178,7 +178,7 @@ export function every<T>(
 }
 
 export function setIntersect<T>(a: Set<T>, b: Set<T>): Set<T> {
-  return new Set(Array.from(a).filter(e => b.has(e)));
+  return setFilter(a, e => b.has(e));
 }
 
 export function setUnion<T>(a: Set<T>, b: Set<T>): Set<T> {
@@ -210,6 +210,20 @@ export function setDifference<T>(
     }
   });
   return result;
+}
+
+export function setFilter<T>(
+  set: Set<T>,
+  predicate: (value: T) => boolean,
+): Set<T> {
+  const out = new Set();
+  for (const item of set) {
+    if (predicate(item)) {
+      out.add(item);
+    }
+  }
+
+  return out;
 }
 
 /**

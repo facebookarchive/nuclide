@@ -12,6 +12,7 @@
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
+import {setFilter} from 'nuclide-commons/collection';
 import {Observable, Scheduler, Subject} from 'rxjs';
 import shallowEqual from 'shallowequal';
 
@@ -22,11 +23,12 @@ export default function observePaneItemVisibility(
 ): Observable<boolean> {
   patchDocks();
 
+  const workspaceEl = atom.workspace.getElement();
   return Observable.combineLatest(
     // atom.workspace.reset() (in tests) resets all the panes.
-    // Pass in atom.workspace.getElement() to act as a cache-breaker.
-    observeActiveItems(atom.workspace.getElement()),
-    observePaneContainerVisibilities(atom.workspace.getElement()),
+    // Pass in the workspace dom element to act as a cache-breaker.
+    observeActiveItems(workspaceEl),
+    observePaneContainerVisibilities(workspaceEl),
   )
     .map(([activeItems, locationVisibilities]) => {
       // If it's not active, it's not visible.
@@ -40,6 +42,24 @@ export default function observePaneItemVisibility(
         : locationVisibilities[paneContainer.getLocation()];
     })
     .distinctUntilChanged();
+}
+
+export function observeVisibleItems() {
+  patchDocks();
+
+  const workspaceEl = atom.workspace.getElement();
+  return Observable.combineLatest(
+    observeActiveItems(workspaceEl),
+    observePaneContainerVisibilities(workspaceEl),
+  ).map(([activeItems, locationVisibilities]) => {
+    // If it's not active, it's not visible.
+    // If it's active, it's only visible if its container is.
+    return setFilter(activeItems, item => {
+      const paneContainer = atom.workspace.paneContainerForItem(item);
+      const location = paneContainer && paneContainer.getLocation();
+      return location ? Boolean(locationVisibilities[location]) : false;
+    });
+  });
 }
 
 const observeActiveItems = memoizeUntilChanged(_cacheKey => {
