@@ -31,6 +31,9 @@ const fsService = {
   exists(uri) {
     return fsPromise.exists(nuclideUri.getPath(uri));
   },
+  writeFileBuffer(path, buffer, options) {
+    return fsPromise.writeFile(path, buffer, options);
+  },
 };
 
 const connectionMock: ServerConnection & {getFsService(): Object} = ({

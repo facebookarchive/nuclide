@@ -20,6 +20,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
 import {getLogger} from 'log4js';
+import Stream from 'stream';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -326,5 +327,69 @@ export class RemoteFile {
 
   _getService(serviceName: string): any {
     return this._server.getService(serviceName);
+  }
+
+  /**
+   * Implementing a real stream (with chunks) is potentially very inefficient, as making
+   * multiple RPC calls can take much longer than just fetching the entire file.
+   * This stream just fetches the entire file contents for now.
+   */
+  createReadStream(): stream$Readable {
+    const path = this._path;
+    const service = this._getFileSystemService();
+    // push() triggers another read(), so make sure we don't read the file twice.
+    let pushed = false;
+    const stream = new Stream.Readable({
+      read(size) {
+        if (pushed) {
+          return;
+        }
+        service.readFile(path).then(
+          buffer => {
+            pushed = true;
+            stream.push(buffer);
+            stream.push(null);
+          },
+          err => {
+            stream.emit('error', err);
+          },
+        );
+      },
+    });
+    return stream;
+  }
+
+  /**
+   * As with createReadStream, it's potentially very inefficient to write remotely in multiple
+   * chunks. This stream just accumulates the data locally and flushes it all at once.
+   */
+  createWriteStream(): stream$Writable {
+    const writeData = [];
+    let writeLength = 0;
+    const stream = new Stream.Writable({
+      write(chunk, encoding, next) {
+        writeData.push(chunk);
+        writeLength += chunk.length;
+        next();
+      },
+    });
+    const originalEnd = stream.end;
+    // TODO: (hansonw) T20364274 Override final() in Node 8 and above.
+    // For now, we'll overwrite the end function manually.
+    // $FlowIgnore
+    stream.end = cb => {
+      invariant(cb instanceof Function, 'end() called without a callback');
+      this._getFileSystemService()
+        .writeFileBuffer(this._path, Buffer.concat(writeData, writeLength))
+        .then(
+          () => cb(),
+          err => {
+            stream.emit('error', err);
+            cb();
+          },
+        );
+      originalEnd.call(stream);
+    };
+    return stream;
   }
 }
