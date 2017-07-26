@@ -97,7 +97,6 @@ export class FlowIDEConnection {
         this._connection.onNotification(
           NOTIFICATION_METHOD_NAME,
           (errors: FlowStatusOutput) => {
-            // $FlowFixMe
             handler(errors);
           },
         );
@@ -110,11 +109,9 @@ export class FlowIDEConnection {
     this._recheckBookends = Observable.fromEventPattern(
       handler => {
         this._connection.onNotification('startRecheck', () => {
-          // $FlowFixMe
           handler({kind: 'start-recheck'});
         });
         this._connection.onNotification('endRecheck', () => {
-          // $FlowFixMe
           handler({kind: 'end-recheck'});
         });
       },
