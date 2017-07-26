@@ -113,13 +113,13 @@ export async function activate(): Promise<void> {
       ),
       atom.packages.serviceHub.provide(
         'hyperclick',
-        '0.0.0',
+        '0.1.0',
         getHyperclickProvider(),
       ),
       atom.packages.serviceHub.provide('linter', '1.0.0', provideLinter()),
       atom.packages.serviceHub.provide(
         'code-format.file',
-        '0.0.0',
+        '0.1.0',
         createCodeFormatProvider(),
       ),
     );
