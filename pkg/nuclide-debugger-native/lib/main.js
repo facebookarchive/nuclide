@@ -183,6 +183,7 @@ class Activation {
 
     switch (ruleType) {
       case 'cxx_binary':
+      case 'cxx_test':
         return builder.runSubcommand(
           buckRoot,
           'build',
@@ -206,7 +207,7 @@ class Activation {
                 : ` with arguments "${runArguments.join(' ')}"`;
             return Observable.concat(
               processStream.ignoreElements(),
-              Observable.fromPromise(
+              Observable.defer(() =>
                 this._debugBuckTarget(
                   buckService,
                   buckRoot,
@@ -242,21 +243,6 @@ class Activation {
                     progress: null,
                   },
                 ),
-            );
-          },
-        );
-      case 'cxx_test':
-        return builder.runSubcommand(
-          buckRoot,
-          'test',
-          buildTarget,
-          settings,
-          true,
-          null,
-          (processStream: Observable<LegacyProcessMessage>) => {
-            return this._waitForBuckThenDebugNativeTarget(
-              buckRoot,
-              processStream,
             );
           },
         );
