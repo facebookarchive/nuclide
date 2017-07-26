@@ -19,6 +19,7 @@ module.exports = {
     'import-type-style': require('./import-type-style'),
     'license-header': require('./license-header'),
     'modules-dependencies': require('./modules-dependencies'),
+    'no-commonjs': require('./no-commonjs'),
     'no-cross-atom-imports': require('./no-cross-atom-imports'),
     'no-shell-quote': require('./no-shell-quote'),
     'no-unnecessary-disposable-wrapping': require('./no-unnecessary-disposable-wrapping'),

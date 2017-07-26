@@ -47,6 +47,8 @@ function getPackage(startPath) {
 
 function isRequire(node) {
   return (
+    node &&
+    node.type === 'CallExpression' &&
     node.callee.type === 'Identifier' &&
     node.callee.name === 'require' &&
     node.arguments[0] &&

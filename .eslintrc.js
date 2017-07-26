@@ -354,6 +354,7 @@ module.exports = {
     'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
     'nuclide-internal/prefer-nuclide-uri': 1,
     'nuclide-internal/use-nuclide-ui-components': 1,
+    'nuclide-internal/no-commonjs': 0,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
