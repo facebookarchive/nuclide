@@ -18,7 +18,6 @@ import type {
   RegisterExecutorFunction,
   OutputService,
 } from '../../nuclide-console/lib/types';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {EvaluationResult, SerializedBreakpoint} from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
@@ -431,6 +430,7 @@ class Activation {
           {type: 'separator'},
         ],
       }),
+      this._registerCommandsContextMenuAndOpener(),
     );
   }
 
@@ -475,38 +475,33 @@ class Activation {
     return disposable;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandsContextMenuAndOpener(): UniversalDisposable {
+    const disposable = new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         return this._layoutManager.getModelForDebuggerUri(uri);
       }),
       () => {
-        this._layoutManager.hideDebuggerViews(api, false);
+        this._layoutManager.hideDebuggerViews(false);
       },
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:show': () => {
-          this._layoutManager.showDebuggerViews(api);
+          this._layoutManager.showDebuggerViews();
         },
       }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:hide': () => {
-          this._layoutManager.hideDebuggerViews(api, false);
+          this._layoutManager.hideDebuggerViews(false);
           this._model.getActions().stopDebugging();
         },
       }),
       this._model
         .getStore()
-        .onDebuggerModeChange(() =>
-          this._layoutManager.debuggerModeChanged(api),
-        ),
+        .onDebuggerModeChange(() => this._layoutManager.debuggerModeChanged()),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:reset-layout': () => {
-          this._layoutManager.resetLayout(api);
+          this._layoutManager.resetLayout();
         },
       }),
-    );
-
-    this._disposables.add(
       atom.contextMenu.add({
         '.nuclide-debugger-container': [
           {
@@ -521,8 +516,8 @@ class Activation {
         ],
       }),
     );
-
-    this._layoutManager.consumeWorkspaceViewsService(api);
+    this._layoutManager.registerContextMenus();
+    return disposable;
   }
 
   setTriggerNux(triggerNux: TriggerNux): void {
@@ -1042,11 +1037,6 @@ export function consumeTriggerNuxService(tryTriggerNux: TriggerNux): void {
   if (activation != null) {
     activation.setTriggerNux(tryTriggerNux);
   }
-}
-
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(activation);
-  activation.consumeWorkspaceViewsService(api);
 }
 
 export function consumeCurrentWorkingDirectory(cwdApi: CwdApi): IDisposable {

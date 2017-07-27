@@ -18,7 +18,6 @@ import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import DebuggerModel from './DebuggerModel';
 import {DebuggerMode} from './DebuggerStore';
 import invariant from 'assert';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import {__DEV__} from '../../nuclide-node-transpiler/lib/env';
 import createPaneContainer from '../../commons-atom/create-pane-container';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
@@ -101,7 +100,7 @@ export class DebuggerLayoutManager {
     this._disposables.dispose();
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  registerContextMenus(): void {
     // Add context menus to let the user restore hidden panes.
     this._debuggerPanes.forEach(pane => {
       const command = `nuclide-debugger:show-window-${pane
@@ -109,7 +108,7 @@ export class DebuggerLayoutManager {
         .replace(/ /g, '-')}`;
       this._disposables.add(
         atom.commands.add('atom-workspace', {
-          [String(command)]: () => this.showHiddenDebuggerPane(api, pane.uri),
+          [String(command)]: () => this.showHiddenDebuggerPane(pane.uri),
         }),
       );
 
@@ -266,13 +265,13 @@ export class DebuggerLayoutManager {
     this._restoreDebuggerPaneLocations();
   }
 
-  showHiddenDebuggerPane(api: WorkspaceViewsService, uri: string): void {
+  showHiddenDebuggerPane(uri: string): void {
     const pane = this._debuggerPanes.find(p => p.uri === uri);
     if (pane != null && pane.previousLocation != null) {
       pane.previousLocation.userHidden = false;
     }
 
-    this.showDebuggerViews(api);
+    this.showDebuggerViews();
   }
 
   getModelForDebuggerUri(uri: string): any {
@@ -416,9 +415,9 @@ export class DebuggerLayoutManager {
     }
   }
 
-  resetLayout(api: WorkspaceViewsService): void {
+  resetLayout(): void {
     // Remove all debugger panes from the UI.
-    this.hideDebuggerViews(api, false);
+    this.hideDebuggerViews(false);
 
     // Forget all their previous locations.
     for (const debuggerPane of this._debuggerPanes) {
@@ -438,7 +437,7 @@ export class DebuggerLayoutManager {
     this._debuggerPanes = [];
     this._paneHiddenWarningShown = false;
     this._initializeDebuggerPanes();
-    this.showDebuggerViews(api);
+    this.showDebuggerViews();
   }
 
   _getPaneStorageKey(uri: string): string {
@@ -538,7 +537,7 @@ export class DebuggerLayoutManager {
     return false;
   }
 
-  debuggerModeChanged(api: WorkspaceViewsService): void {
+  debuggerModeChanged(): void {
     const mode = this._model.getStore().getDebuggerMode();
 
     // Most panes disappear when the debugger is stopped, only keep
@@ -613,10 +612,10 @@ export class DebuggerLayoutManager {
     return null;
   }
 
-  showDebuggerViews(api: WorkspaceViewsService): void {
+  showDebuggerViews(): void {
     // Hide any debugger panes other than the controls so we have a known
     // starting point for preparing the layout.
-    this.hideDebuggerViews(api, true);
+    this.hideDebuggerViews(true);
 
     const addedItemsByDock = new Map();
     const defaultDock = this._getWorkspaceDocks().find(d => d.name === 'right');
@@ -743,7 +742,7 @@ export class DebuggerLayoutManager {
         this._saveDebuggerPaneLocations();
       }
 
-      this.hideDebuggerViews(null, false);
+      this.hideDebuggerViews(false);
       this._model.getActions().stopDebugging();
       return;
     }
@@ -797,10 +796,7 @@ export class DebuggerLayoutManager {
     }
   }
 
-  hideDebuggerViews(
-    api: ?WorkspaceViewsService,
-    performingLayout: boolean,
-  ): void {
+  hideDebuggerViews(performingLayout: boolean): void {
     // Docks do not toggle closed automatically when we remove all their items.
     // They can contain things other than the debugger items though, and could
     // have been left open and empty by the user. Toggle closed any docks that
