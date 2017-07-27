@@ -10,8 +10,6 @@
  */
 
 /* global localStorage */
-
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {HomeFragments} from './types';
 
 import createUtmUrl from './createUtmUrl';
@@ -37,6 +35,7 @@ const allHomeFragmentsStream: BehaviorSubject<
 > = new BehaviorSubject(Immutable.Set());
 
 export function activate(state: ?Object): void {
+  subscriptions = new UniversalDisposable(registerCommandAndOpener());
   considerDisplayingHome();
   const runtimeInfo = getRuntimeInformation();
   if (
@@ -54,7 +53,6 @@ export function activate(state: ?Object): void {
       }
     }
   }
-  subscriptions = new UniversalDisposable();
   subscriptions.add(
     // eslint-disable-next-line nuclide-internal/atom-apis
     atom.commands.add('atom-workspace', 'nuclide-home:open-docs', e => {
@@ -80,11 +78,8 @@ export function setHomeFragments(
 function considerDisplayingHome() {
   const showHome = featureConfig.get('nuclide-home.showHome');
   if (showHome) {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-home:toggle',
-      {visible: true},
-    );
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(WORKSPACE_VIEW_URI);
   }
 }
 
@@ -113,9 +108,9 @@ export function deactivate(): void {
   subscriptions = (null: any);
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  subscriptions.add(
-    api.addOpener(uri => {
+function registerCommandAndOpener(): UniversalDisposable {
+  const disposable = new UniversalDisposable(
+    atom.workspace.addOpener(uri => {
       if (uri === WORKSPACE_VIEW_URI) {
         return viewableFromReactElement(
           <HomePaneItem allHomeFragmentsStream={allHomeFragmentsStream} />,
@@ -123,12 +118,13 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
       }
     }),
     () => destroyItemWhere(item => item instanceof HomePaneItem),
-    atom.commands.add('atom-workspace', 'nuclide-home:toggle', event => {
-      api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+    atom.commands.add('atom-workspace', 'nuclide-home:toggle', () => {
+      atom.workspace.toggle(WORKSPACE_VIEW_URI);
     }),
-    atom.commands.add('atom-workspace', 'nuclide-docs:open', event => {
+    atom.commands.add('atom-workspace', 'nuclide-docs:open', () => {
       shell.openExternal('https://nuclide.io/');
     }),
   );
   considerDisplayingHome();
+  return disposable;
 }

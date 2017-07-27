@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
@@ -20,7 +18,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 let subscriptions: UniversalDisposable = (null: any);
 
 export function activate(state: ?Object): void {
-  subscriptions = new UniversalDisposable();
+  subscriptions = new UniversalDisposable(registerCommandAndOpener());
 }
 
 export function deactivate(): void {
@@ -28,16 +26,16 @@ export function deactivate(): void {
   subscriptions = (null: any);
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  subscriptions.add(
-    api.addOpener(uri => {
+function registerCommandAndOpener(): UniversalDisposable {
+  return new UniversalDisposable(
+    atom.workspace.addOpener(uri => {
       if (uri === WORKSPACE_VIEW_URI) {
         return viewableFromReactElement(<SettingsPaneItem />);
       }
     }),
     () => destroyItemWhere(item => item instanceof SettingsPaneItem),
-    atom.commands.add('atom-workspace', 'nuclide-settings:toggle', event => {
-      api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+    atom.commands.add('atom-workspace', 'nuclide-settings:toggle', () => {
+      atom.workspace.toggle(WORKSPACE_VIEW_URI);
     }),
   );
 }

@@ -9,8 +9,6 @@
  * @format
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
-
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import Inspector, {WORKSPACE_VIEW_URI} from './ui/Inspector';
@@ -21,7 +19,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 let disposables: ?UniversalDisposable = null;
 
 export function activate(): void {
-  disposables = new UniversalDisposable();
+  disposables = new UniversalDisposable(registerCommandAndOpener());
 }
 
 export function deactivate(): void {
@@ -30,10 +28,9 @@ export function deactivate(): void {
   disposables = null;
 }
 
-export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-  invariant(disposables != null);
-  disposables.add(
-    api.addOpener(uri => {
+function registerCommandAndOpener(): UniversalDisposable {
+  return new UniversalDisposable(
+    atom.workspace.addOpener(uri => {
       if (uri === WORKSPACE_VIEW_URI) {
         return viewableFromReactElement(<Inspector />);
       }
@@ -42,8 +39,8 @@ export function consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
     atom.commands.add(
       'atom-workspace',
       'nuclide-react-inspector:toggle',
-      event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       },
     ),
   );
