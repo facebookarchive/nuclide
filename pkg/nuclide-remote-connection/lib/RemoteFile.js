@@ -307,6 +307,16 @@ export class RemoteFile {
     }
   }
 
+  async writeWithPermission(text: string, permission: number): Promise<void> {
+    const previouslyExisted = await this.exists();
+    await this._getFileSystemService().writeFile(this._path, text, {
+      mode: permission,
+    });
+    if (!previouslyExisted && this._subscriptionCount > 0) {
+      this._subscribeToNativeChangeEvents();
+    }
+  }
+
   getParent(): RemoteDirectory {
     const directoryPath = nuclideUri.dirname(this._path);
     const remoteConnection = this._server.getRemoteConnectionForUri(this._path);
