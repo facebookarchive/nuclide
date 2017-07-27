@@ -208,6 +208,12 @@ export function pluralize(noun: string, count: number) {
   return count === 1 ? noun : noun + 's';
 }
 
+export function capitalize(str: string): string {
+  return str.length === 0
+    ? str
+    : str.charAt(0).toUpperCase().concat(str.slice(1));
+}
+
 // Originally copied from:
 // http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
 // But adopted to match `www.` urls as well as `https?` urls

@@ -11,6 +11,7 @@
  */
 
 import {
+  capitalize,
   countOccurrences,
   indent,
   maybeToString,
@@ -277,5 +278,14 @@ describe('pluralize', () => {
     expect(pluralize('test', 1)).toEqual('test');
     expect(pluralize('test', 2)).toEqual('tests');
     expect(pluralize('test', 123)).toEqual('tests');
+  });
+});
+
+describe('capitalize', () => {
+  it('works', () => {
+    expect(capitalize('')).toEqual('');
+    expect(capitalize('t')).toEqual('T');
+    expect(capitalize('te')).toEqual('Te');
+    expect(capitalize('test')).toEqual('Test');
   });
 });
