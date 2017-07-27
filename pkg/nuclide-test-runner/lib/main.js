@@ -11,8 +11,8 @@
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {TestRunner} from './types';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -91,6 +91,7 @@ class Activation {
           event.stopPropagation();
         },
       ),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -261,21 +262,19 @@ class Activation {
     return controller;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandAndOpener(): UniversalDisposable {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return this.getController();
         }
       }),
-      new Disposable(() =>
-        destroyItemWhere(item => item instanceof TestRunnerController),
-      ),
+      () => destroyItemWhere(item => item instanceof TestRunnerController),
       atom.commands.add(
         'atom-workspace',
         'nuclide-test-runner:toggle-panel',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+        () => {
+          atom.workspace.toggle(WORKSPACE_VIEW_URI);
         },
       ),
     );

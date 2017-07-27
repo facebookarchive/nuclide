@@ -26,6 +26,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {WORKSPACE_VIEW_URI} from './Constants';
 
 import {Disposable} from 'atom';
 import os from 'os';
@@ -296,11 +297,8 @@ export default class FileTreeController {
     if (showIfHidden) {
       // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
       // active pane is not an ordinary editor, we still at least want to show the tree.
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-file-tree:toggle',
-        {visible: true},
-      );
+      // eslint-disable-next-line nuclide-internal/atom-apis
+      atom.workspace.open(WORKSPACE_VIEW_URI);
       this._actions.setFoldersExpanded(true);
     }
 

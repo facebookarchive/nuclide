@@ -9,10 +9,6 @@
  * @format
  */
 
-import type {
-  Viewable,
-  WorkspaceViewsService,
-} from '../../nuclide-workspace-views/lib/types';
 import type {SshTunnelService, Store} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -44,6 +40,7 @@ class Activation {
 
     this._disposables = new UniversalDisposable(
       this._closeAllTunnels.bind(this),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -51,9 +48,9 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService) {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandAndOpener(): UniversalDisposable {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return new TunnelsPanel(this._store);
         }
@@ -62,8 +59,8 @@ class Activation {
       atom.commands.add(
         'atom-workspace',
         'nuclide-ssh-tunnels-panel:toggle',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+        () => {
+          atom.workspace.toggle(WORKSPACE_VIEW_URI);
         },
       ),
     );
@@ -80,7 +77,7 @@ class Activation {
     };
   }
 
-  deserializeSshTunnelsPanel(): Viewable {
+  deserializeSshTunnelsPanel(): atom$PaneItem {
     return new TunnelsPanel(this._store);
   }
 

@@ -14,7 +14,6 @@ import type FileTreeContextMenu from './FileTreeContextMenu';
 import type {ExportStoreData} from './FileTreeStore';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -166,6 +165,7 @@ class Activation {
           }
         },
       ),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -350,21 +350,23 @@ class Activation {
     return this._fileTreeComponent;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandAndOpener(): UniversalDisposable {
+    const disposable = new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return this._createView();
         }
       }),
       () => destroyItemWhere(item => item instanceof FileTreeSidebarComponent),
-      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle', event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      atom.commands.add('atom-workspace', 'nuclide-file-tree:toggle', () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
     if (!this._restored) {
-      api.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
+      // eslint-disable-next-line nuclide-internal/atom-apis
+      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
     }
+    return disposable;
   }
 
   deserializeFileTreeSidebarComponent(): FileTreeSidebarComponent {

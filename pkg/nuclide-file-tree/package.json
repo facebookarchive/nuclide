@@ -10,11 +10,6 @@
         "0.0.0": "consumeCwdApi"
       }
     },
-    "nuclide.workspace-views": {
-      "versions": {
-        "0.0.0": "consumeWorkspaceViewsService"
-      }
-    },
     "working-sets.provider": {
       "versions": {
         "0.0.0": "consumeWorkingSetsStore"

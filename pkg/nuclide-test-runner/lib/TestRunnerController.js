@@ -86,11 +86,9 @@ export class TestRunnerController {
    */
   async runTests(path?: string): Promise<void> {
     this._runningTest = true;
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-test-runner:toggle-panel',
-      {visible: true},
-    );
+
+    // eslint-disable-next-line nuclide-internal/atom-apis
+    atom.workspace.open(WORKSPACE_VIEW_URI);
 
     // Get selected test runner when Flow knows `this._testRunnerPanel` is defined.
     const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
