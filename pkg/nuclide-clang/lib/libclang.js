@@ -56,7 +56,7 @@ async function getClangProvidersForSource(
         return null;
       }),
     ),
-  );
+  ).sort(provider => -provider.priority);
 }
 
 async function getClangRequestSettings(

@@ -133,5 +133,6 @@ export function getClangProvider(
       providersCache.delete([src, params]);
       supportsSourceCache.clear();
     },
+    priority: 100,
   };
 }

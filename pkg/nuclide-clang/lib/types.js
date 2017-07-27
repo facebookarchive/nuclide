@@ -19,6 +19,7 @@ export type ClangConfigurationProvider = {
   reset: (host: string) => void,
   resetForSource: (src: string) => void,
   supportsSource: (src: string) => Promise<boolean>,
+  priority: number,
 };
 
 export type ClangDeclarationInfoProvider = {
