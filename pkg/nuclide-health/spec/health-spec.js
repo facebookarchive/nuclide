@@ -36,11 +36,6 @@ describe('Health', () => {
       async () => {
         jasmine.unspy(window, 'setTimeout');
         await Promise.all([
-          atom.packages.activatePackage(
-            nuclideUri.dirname(
-              require.resolve('../../nuclide-workspace-views/package.json'),
-            ),
-          ),
           atom.packages.activatePackage(nuclideUri.join(__dirname, '..')),
         ]);
       },

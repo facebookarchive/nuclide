@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {Viewable} from '../../../nuclide-workspace-views/lib/types';
 import type {
   AppState,
   ConsolePersistedState,
@@ -186,7 +185,7 @@ export class ConsoleContainer extends React.Component {
     this._statesSubscription.unsubscribe();
   }
 
-  copy(): Viewable {
+  copy(): atom$PaneItem {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this.props.store}
