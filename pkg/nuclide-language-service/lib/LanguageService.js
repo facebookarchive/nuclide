@@ -61,6 +61,13 @@ export type SymbolResult = {
   hoverText: ?string, // sometimes used to explain the icon in words
 };
 
+export type FormatOptions = {
+  // Size of a tab in spaces.
+  tabSize: number,
+  // Prefer spaces over tabs.
+  insertSpaces: boolean,
+};
+
 export interface LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
@@ -97,11 +104,13 @@ export interface LanguageService {
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>>,
 
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -111,6 +120,7 @@ export interface LanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>>,
 
   getEvaluationExpression(

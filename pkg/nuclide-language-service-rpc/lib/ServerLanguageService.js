@@ -23,8 +23,9 @@ import type {
 } from 'atom-ide-ui';
 import type {
   AutocompleteResult,
-  SymbolResult,
+  FormatOptions,
   LanguageService,
+  SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
@@ -90,12 +91,14 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>>,
 
   formatEntireFile(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -106,6 +109,7 @@ export type SingleFileLanguageService = {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>>,
 
   getEvaluationExpression(
@@ -236,18 +240,20 @@ export class ServerLanguageService<
   async formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
       return null;
     }
-    return this._service.formatSource(filePath, buffer, range);
+    return this._service.formatSource(filePath, buffer, range, options);
   }
 
   async formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -257,13 +263,14 @@ export class ServerLanguageService<
     if (buffer == null) {
       return null;
     }
-    return this._service.formatEntireFile(filePath, buffer, range);
+    return this._service.formatEntireFile(filePath, buffer, range, options);
   }
 
   async formatAtPosition(
     fileVersion: FileVersion,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
@@ -275,6 +282,7 @@ export class ServerLanguageService<
       buffer,
       position,
       triggerCharacter,
+      options,
     );
   }
 

@@ -29,6 +29,7 @@ import type {
 } from 'atom-ide-ui';
 import type {
   AutocompleteResult,
+  FormatOptions,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
@@ -1349,6 +1350,7 @@ export class LspLanguageService {
   async formatSource(
     fileVersion: FileVersion,
     atomRange: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     if (this._state !== 'Running') {
       return null;
@@ -1373,8 +1375,6 @@ export class LspLanguageService {
       );
       return null;
     }
-    const options = {tabSize: 2, insertSpaces: true};
-    // TODO: from where should we pick up these options? Can we omit them?
     const params = {
       textDocument: convert.localPath_lspTextDocumentIdentifier(
         fileVersion.filePath,
@@ -1424,6 +1424,7 @@ export class LspLanguageService {
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -1440,6 +1441,7 @@ export class LspLanguageService {
     fileVersion: FileVersion,
     point: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     const triggerCharacters = this._derivedServerCapabilities
       .onTypeFormattingTriggerCharacters;
@@ -1457,7 +1459,7 @@ export class LspLanguageService {
       ),
       position: convert.atomPoint_lspPosition(point),
       ch: triggerCharacter,
-      options: {tabSize: 2, insertSpaces: true},
+      options,
     });
     return convert.lspTextEdits_atomTextEdits(edits);
   }

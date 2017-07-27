@@ -23,8 +23,9 @@ import type {
 } from 'atom-ide-ui';
 import type {
   AutocompleteResult,
-  SymbolResult,
+  FormatOptions,
   LanguageService,
+  SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -291,32 +292,35 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   async formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
-    )).formatSource(fileVersion, range);
+    )).formatSource(fileVersion, range, options);
   }
 
   async formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
   }> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
-    )).formatEntireFile(fileVersion, range);
+    )).formatEntireFile(fileVersion, range, options);
   }
 
   async formatAtPosition(
     fileVersion: FileVersion,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
-    )).formatAtPosition(fileVersion, position, triggerCharacter);
+    )).formatAtPosition(fileVersion, position, triggerCharacter, options);
   }
 
   async getEvaluationExpression(

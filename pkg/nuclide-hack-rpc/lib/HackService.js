@@ -12,7 +12,11 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 import type {HackRange} from './rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
+import type {
+  FormatOptions,
+  LanguageService,
+} from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -387,6 +391,7 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     const contents = buffer.getText();
     const startOffset = buffer.characterIndexForPosition(range.start) + 1;
@@ -420,6 +425,7 @@ class HackSingleFileLanguageService {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -432,6 +438,7 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     throw new Error('Not implemented');
   }
@@ -459,6 +466,9 @@ class HackSingleFileLanguageService {
 
   dispose(): void {}
 }
+
+// Assert that HackSingleFileLanguageService satisifes the SingleFileLanguageService interface:
+(((null: any): HackSingleFileLanguageService): SingleFileLanguageService);
 
 function formatAtomLineColumn(position: atom$Point): string {
   return formatLineColumn(position.row + 1, position.column + 1);

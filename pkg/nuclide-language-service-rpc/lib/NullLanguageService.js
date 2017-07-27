@@ -25,6 +25,8 @@ import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {
   AutocompleteResult,
+  FormatOptions,
+  LanguageService,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 
@@ -86,6 +88,7 @@ export class NullLanguageService {
   formatSource(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     return Promise.resolve(null);
   }
@@ -93,6 +96,7 @@ export class NullLanguageService {
   formatEntireFile(
     fileVersion: FileVersion,
     range: atom$Range,
+    options: FormatOptions,
   ): Promise<?{
     newCursor?: number,
     formatted: string,
@@ -104,6 +108,7 @@ export class NullLanguageService {
     fileVersion: FileVersion,
     position: atom$Point,
     triggerCharacter: string,
+    options: FormatOptions,
   ): Promise<?Array<TextEdit>> {
     return Promise.resolve(null);
   }
@@ -136,3 +141,6 @@ export class NullLanguageService {
 
   dispose(): void {}
 }
+
+// Assert that NullLanguageService satisifes the LanguageService interface:
+(((null: any): NullLanguageService): LanguageService);

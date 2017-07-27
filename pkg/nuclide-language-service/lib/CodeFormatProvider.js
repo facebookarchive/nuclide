@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {LanguageService} from './LanguageService';
+import type {FormatOptions, LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
 import type {
   RangeCodeFormatProvider,
@@ -150,7 +150,11 @@ class RangeFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
         const result = await this._busySignalProvider.reportBusyWhile(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
-            return (await languageService).formatSource(fileVersion, range);
+            return (await languageService).formatSource(
+              fileVersion,
+              range,
+              getFormatOptions(editor),
+            );
           },
         );
         if (result != null) {
@@ -206,7 +210,11 @@ class FileFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
         const result = await this._busySignalProvider.reportBusyWhile(
           `${this.name}: Formatting ${fileVersion.filePath}`,
           async () => {
-            return (await languageService).formatEntireFile(fileVersion, range);
+            return (await languageService).formatEntireFile(
+              fileVersion,
+              range,
+              getFormatOptions(editor),
+            );
           },
         );
         if (result != null) {
@@ -246,6 +254,7 @@ class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
               fileVersion,
               position,
               character,
+              getFormatOptions(editor),
             );
           },
         );
@@ -265,4 +274,11 @@ class PositionFormatProvider<T: LanguageService> extends CodeFormatProvider<T> {
       priority: this.priority,
     };
   }
+}
+
+function getFormatOptions(editor: atom$TextEditor): FormatOptions {
+  return {
+    tabSize: editor.getTabLength(),
+    insertSpaces: editor.getSoftTabs(),
+  };
 }
