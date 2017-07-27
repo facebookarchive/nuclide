@@ -9,6 +9,7 @@
  * @format
  */
 
+// flowlint-next-line untyped-type-import:off
 import type Immutable from 'immutable';
 
 export class LazyTreeNode {

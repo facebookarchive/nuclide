@@ -18,6 +18,7 @@ import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
 import classnames from 'classnames';
 
+// flowlint-next-line untyped-type-import:off
 import type {OrderedMap} from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
 

@@ -10,6 +10,7 @@
  */
 
 import type {FileTreeNode} from './FileTreeNode';
+// flowlint-next-line untyped-type-import:off
 import type Immutable from 'immutable';
 
 import ContextMenu from 'nuclide-commons-atom/ContextMenu';
