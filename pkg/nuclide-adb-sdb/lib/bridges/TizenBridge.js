@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TizenBridge = undefined;
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('../redux/Actions'));
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../../nuclide-remote-connection');
+}
+
+var _DevicePoller;
+
+function _load_DevicePoller() {
+  return _DevicePoller = require('../../../nuclide-adb-sdb-base/lib/DevicePoller');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,49 +34,37 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import typeof * as SdbService from '../../../nuclide-adb-sdb-rpc/lib/SdbService';
-import type {Store} from '../types';
-import type {DebugBridgeFullConfig} from '../../../nuclide-adb-sdb-rpc/lib/types';
-import type {Expected} from '../../../commons-node/expected';
-import type {Device} from '../../../nuclide-device-panel/lib/types';
+class TizenBridge {
 
-import * as Actions from '../redux/Actions';
-import {getSdbServiceByNuclideUri} from '../../../nuclide-remote-connection';
-import {observeTizenDevicesX} from '../../../nuclide-adb-sdb-base/lib/DevicePoller';
-import {Observable} from 'rxjs';
+  constructor(store) {
+    this.debugBridge = 'sdb';
+    this.name = 'tizen';
 
-export class TizenBridge {
-  debugBridge: 'sdb' = 'sdb';
-  name: 'tizen' = 'tizen';
-
-  _store: Store;
-
-  constructor(store: Store) {
     this._store = store;
   }
 
-  getService(host: NuclideUri): SdbService {
-    return getSdbServiceByNuclideUri(host);
+  getService(host) {
+    return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getSdbServiceByNuclideUri)(host);
   }
 
-  getCustomDebugBridgePath(host: NuclideUri): ?string {
+  getCustomDebugBridgePath(host) {
     return this._store.getState().customSdbPaths.get(host);
   }
 
-  setCustomDebugBridgePath(host: NuclideUri, path: ?string): void {
-    this._store.dispatch(Actions.setCustomSdbPath(host, path));
+  setCustomDebugBridgePath(host, path) {
+    this._store.dispatch((_Actions || _load_Actions()).setCustomSdbPath(host, path));
   }
 
-  getFullConfig(host: NuclideUri): Promise<DebugBridgeFullConfig> {
+  getFullConfig(host) {
     return this.getService(host).getFullConfig();
   }
 
-  observeDevicesX(host: NuclideUri): Observable<Expected<Device[]>> {
-    return observeTizenDevicesX(host);
+  observeDevicesX(host) {
+    return (0, (_DevicePoller || _load_DevicePoller()).observeTizenDevicesX)(host);
   }
 }
+exports.TizenBridge = TizenBridge;

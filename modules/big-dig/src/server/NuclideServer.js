@@ -1,42 +1,19 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import https from 'https';
-import WS from 'ws';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.launchServer = launchServer;
 
-export type LauncherParameters = {
-  webServer: tls$Server,
-  webSocketServer: WS.Server,
-  // Any sort of JSON-serializable object is fine.
-  serverParams: mixed,
-};
+var _https = _interopRequireDefault(require('https'));
 
-export type NuclideServerOptions = {
-  // These options will be passed verbatim to https.createServer(). Admittedly,
-  // this is not the complete list of options that it takes, but these are the
-  // ones we intentionally work with.
-  webServer: {
-    // Optional private keys in PEM format.
-    key?: string | Array<string> | Buffer | Array<Buffer>,
-    // Optional cert chains in PEM format
-    cert?: string | Array<string> | Buffer | Array<Buffer>,
-    // Optionally override the trusted CA certificates.
-    ca?: string | Array<string> | Buffer | Array<Buffer>,
-  },
-  port: number,
-  absolutePathToServerMain: string,
-  // Any sort of JSON-serializable object is fine.
-  serverParams: mixed,
-};
+var _ws;
+
+function _load_ws() {
+  return _ws = _interopRequireDefault(require('ws'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Launch a NuclideServer with the specified parameters.
@@ -49,13 +26,25 @@ export type NuclideServerOptions = {
  * Note that if options.port=0 is specified to choose an ephemeral port, then the caller should
  * check server.address().port to see what the actual port is.
  */
-export function launchServer(options: NuclideServerOptions): Promise<number> {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+function launchServer(options) {
   // TODO(mbolin): Must specify a requestListener to createServer().
   const requestListener = (req, res) => {
     console.log('Received a request!'); // eslint-disable-line no-console
   };
 
-  const webServer = https.createServer(options.webServer, requestListener);
+  const webServer = _https.default.createServer(options.webServer, requestListener);
   return new Promise((resolve, reject) => {
     // TODO(mbolin): Once the webServer is up and running and this Promise is resolved,
     // rejecting the Promise will be a noop. We need better error handling here.
@@ -72,13 +61,10 @@ export function launchServer(options: NuclideServerOptions): Promise<number> {
     // TODO(mbolin): If we want the new WebSocketServer to get the 'connection' event,
     // then we need to get it wired up before the webServer is connected.
     webServer.on('listening', () => {
-      const webSocketServer = new WS.Server({server: webServer});
+      const webSocketServer = new (_ws || _load_ws()).default.Server({ server: webServer });
       webSocketServer.on('error', onError);
 
-      const launcher: (
-        params: LauncherParameters,
-        // $FlowIgnore
-      ) => Promise<void> = require(options.absolutePathToServerMain);
+      const launcher = require(options.absolutePathToServerMain);
 
       // TODO(mbolin): Expand the launcher API to let it add extra properties to the JSON file that
       // gets written.
@@ -89,7 +75,7 @@ export function launchServer(options: NuclideServerOptions): Promise<number> {
       launcher({
         webServer,
         webSocketServer,
-        serverParams: options.serverParams,
+        serverParams: options.serverParams
       }).then(() => {
         // Now the NuclideServer should have attached its own error handler.
         webServer.removeListener('error', onError);

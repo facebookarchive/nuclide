@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebugBridge = undefined;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,74 +20,38 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DebugBridgeConfig} from '../types';
-
-import {Observable} from 'rxjs';
-import {observeProcess, runCommand} from 'nuclide-commons/process';
-
-function getPortArg(port: ?number): Array<string> {
+function getPortArg(port) {
   return port != null ? ['-P', String(port)] : [];
 }
 
-export class DebugBridge {
-  static configObs: Observable<DebugBridgeConfig>;
+class DebugBridge {
 
-  _device: string;
-
-  constructor(device: string) {
+  constructor(device) {
     this._device = device;
   }
 
-  runShortCommand(...command: string[]): Observable<string> {
-    return this.constructor.configObs.switchMap(config =>
-      runCommand(
-        config.path,
-        this._getDeviceArg(this._device)
-          .concat(getPortArg(config.port))
-          .concat(command),
-      ),
-    );
+  runShortCommand(...command) {
+    return this.constructor.configObs.switchMap(config => (0, (_process || _load_process()).runCommand)(config.path, this._getDeviceArg(this._device).concat(getPortArg(config.port)).concat(command)));
   }
 
-  runLongCommand(...command: string[]): Observable<LegacyProcessMessage> {
+  runLongCommand(...command) {
     // TODO(T17463635)
-    return this.constructor.configObs.switchMap(config =>
-      observeProcess(
-        config.path,
-        this._getDeviceArg(this._device)
-          .concat(getPortArg(config.port))
-          .concat(command),
-        {
-          killTreeWhenDone: true,
-          /* TODO(T17353599) */ isExitError: () => false,
-        },
-      ).catch(error => Observable.of({kind: 'error', error})),
-    ); // TODO(T17463635)
+    return this.constructor.configObs.switchMap(config => (0, (_process || _load_process()).observeProcess)(config.path, this._getDeviceArg(this._device).concat(getPortArg(config.port)).concat(command), {
+      killTreeWhenDone: true,
+      /* TODO(T17353599) */isExitError: () => false
+    }).catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error }))); // TODO(T17463635)
   }
 
-  _getDeviceArg(device: string): string[] {
+  _getDeviceArg(device) {
     return device !== '' ? ['-s', device] : [];
   }
 
-  static getDevices(): Observable<Array<string>> {
-    return this.configObs.switchMap(config =>
-      runCommand(
-        config.path,
-        getPortArg(config.port).concat(['devices']),
-      ).map(stdout =>
-        stdout
-          .split(/\n+/g)
-          .slice(1)
-          .filter(s => s.length > 0 && !s.trim().startsWith('*'))
-          .map(s => s.split(/\s+/g))
-          .filter(a => a[0] !== '')
-          .map(a => a[0]),
-      ),
-    );
+  static getDevices() {
+    return this.configObs.switchMap(config => (0, (_process || _load_process()).runCommand)(config.path, getPortArg(config.port).concat(['devices'])).map(stdout => stdout.split(/\n+/g).slice(1).filter(s => s.length > 0 && !s.trim().startsWith('*')).map(s => s.split(/\s+/g)).filter(a => a[0] !== '').map(a => a[0])));
   }
 }
+exports.DebugBridge = DebugBridge;

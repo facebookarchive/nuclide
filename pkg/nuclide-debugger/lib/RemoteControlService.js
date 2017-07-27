@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,15 +15,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-
-export default class RemoteControlService {
-  _getModel: () => ?DebuggerModel;
+class RemoteControlService {
 
   /**
    * @param getModel function always returning the latest singleton model.
@@ -23,19 +29,23 @@ export default class RemoteControlService {
    * outside of any model, so objects vended early must still always manipulate
    * the latest model's state.
    */
-  constructor(getModel: () => ?DebuggerModel) {
+  constructor(getModel) {
     this._getModel = getModel;
   }
 
-  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-    await model.getActions().startDebugging(processInfo);
+  startDebugging(processInfo) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const model = _this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      yield model.getActions().startDebugging(processInfo);
+    })();
   }
 
-  toggleBreakpoint(filePath: string, line: number): void {
+  toggleBreakpoint(filePath, line) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -43,7 +53,7 @@ export default class RemoteControlService {
     model.getActions().toggleBreakpoint(filePath, line);
   }
 
-  addBreakpoint(filePath: string, line: number): void {
+  addBreakpoint(filePath, line) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -51,7 +61,7 @@ export default class RemoteControlService {
     model.getActions().addBreakpoint(filePath, line);
   }
 
-  isInDebuggingMode(providerName: string): boolean {
+  isInDebuggingMode(providerName) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -60,7 +70,7 @@ export default class RemoteControlService {
     return session != null && session.getProviderName() === providerName;
   }
 
-  killDebugger(): void {
+  killDebugger() {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -68,3 +78,4 @@ export default class RemoteControlService {
     model.getActions().stopDebugging();
   }
 }
+exports.default = RemoteControlService;

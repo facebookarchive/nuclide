@@ -1,3 +1,73 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _AtomInput;
+
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+var _FunnelIcon;
+
+function _load_FunnelIcon() {
+  return _FunnelIcon = require('./FunnelIcon');
+}
+
+var _ModalMultiSelect;
+
+function _load_ModalMultiSelect() {
+  return _ModalMultiSelect = require('../../../nuclide-ui/ModalMultiSelect');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('nuclide-commons-ui/Toolbar');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('nuclide-commons-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('nuclide-commons-ui/ToolbarRight');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,179 +75,163 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Source} from '../types';
+class ConsoleHeader extends _react.default.Component {
+  constructor(...args) {
+    var _temp;
 
-import classnames from 'classnames';
-import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {FunnelIcon} from './FunnelIcon';
-import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
-import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
-import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
+    return _temp = super(...args), this._handleClearButtonClick = event => {
+      this.props.clear();
+    }, this._handleCreatePasteButtonClick = event => {
+      if (this.props.createPaste != null) {
+        this.props.createPaste();
+      }
+    }, this._handleReToggleButtonClick = () => {
+      this.props.toggleRegExpFilter();
+    }, this._renderOption = optionProps => {
+      const { option } = optionProps;
+      const source = this.props.sources.find(s => s.id === option.value);
 
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import invariant from 'assert';
+      if (!(source != null)) {
+        throw new Error('Invariant violation: "source != null"');
+      }
 
-type Props = {
-  clear: () => void,
-  createPaste: ?() => Promise<void>,
-  invalidFilterInput: boolean,
-  enableRegExpFilter: boolean,
-  selectedSourceIds: Array<string>,
-  sources: Array<Source>,
-  onFilterTextChange: (filterText: string) => void,
-  toggleRegExpFilter: () => void,
-  onSelectedSourcesChange: (sourceIds: Array<string>) => void,
-  filterText: string,
-};
+      return _react.default.createElement(
+        'span',
+        null,
+        option.label,
+        this._renderProcessControlButton(source)
+      );
+    }, _temp;
+  }
 
-export default class ConsoleHeader extends React.Component {
-  props: Props;
-
-  _handleClearButtonClick = (event: SyntheticMouseEvent): void => {
-    this.props.clear();
-  };
-
-  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent): void => {
-    if (this.props.createPaste != null) {
-      this.props.createPaste();
-    }
-  };
-
-  _handleReToggleButtonClick = (): void => {
-    this.props.toggleRegExpFilter();
-  };
-
-  _renderProcessControlButton(source: Source): ?React.Element<any> {
+  _renderProcessControlButton(source) {
     let action;
     let label;
     let icon;
     switch (source.status) {
       case 'starting':
-      case 'running': {
-        action = source.stop;
-        label = 'Stop Process';
-        icon = 'primitive-square';
-        break;
-      }
-      case 'stopped': {
-        action = source.start;
-        label = 'Start Process';
-        icon = 'triangle-right';
-        break;
-      }
+      case 'running':
+        {
+          action = source.stop;
+          label = 'Stop Process';
+          icon = 'primitive-square';
+          break;
+        }
+      case 'stopped':
+        {
+          action = source.start;
+          label = 'Start Process';
+          icon = 'triangle-right';
+          break;
+        }
     }
     if (action == null) {
       return;
     }
     const clickHandler = event => {
       event.stopPropagation();
-      invariant(action != null);
+
+      if (!(action != null)) {
+        throw new Error('Invariant violation: "action != null"');
+      }
+
       action();
     };
-    return (
-      <Button className="pull-right" icon={icon} onClick={clickHandler}>
-        {label}
-      </Button>
+    return _react.default.createElement(
+      (_Button || _load_Button()).Button,
+      { className: 'pull-right', icon: icon, onClick: clickHandler },
+      label
     );
   }
 
-  _renderOption = (optionProps: {
-    option: {label: string, value: string},
-  }): React.Element<any> => {
-    const {option} = optionProps;
-    const source = this.props.sources.find(s => s.id === option.value);
-    invariant(source != null);
-    return (
-      <span>
-        {option.label}
-        {this._renderProcessControlButton(source)}
-      </span>
-    );
-  };
+  render() {
+    const options = this.props.sources.slice().sort((a, b) => sortAlpha(a.name, b.name)).map(source => ({
+      label: source.id,
+      value: source.name
+    }));
 
-  render(): ?React.Element<any> {
-    const options = this.props.sources
-      .slice()
-      .sort((a, b) => sortAlpha(a.name, b.name))
-      .map(source => ({
-        label: source.id,
-        value: source.name,
-      }));
-
-    const filterInputClassName = classnames('nuclide-console-filter-field', {
-      invalid: this.props.invalidFilterInput,
+    const filterInputClassName = (0, (_classnames || _load_classnames()).default)('nuclide-console-filter-field', {
+      invalid: this.props.invalidFilterInput
     });
 
     const MultiSelectOption = this._renderOption;
-    const pasteButton =
-      this.props.createPaste == null
-        ? null
-        : <Button
-            className="inline-block"
-            size={ButtonSizes.SMALL}
-            onClick={this._handleCreatePasteButtonClick}
-            ref={addTooltip({
-              title: 'Creates a Paste from the current contents of the console',
-            })}>
-            Create Paste
-          </Button>;
+    const pasteButton = this.props.createPaste == null ? null : _react.default.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        className: 'inline-block',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        onClick: this._handleCreatePasteButtonClick,
+        ref: (0, (_addTooltip || _load_addTooltip()).default)({
+          title: 'Creates a Paste from the current contents of the console'
+        }) },
+      'Create Paste'
+    );
 
-    return (
-      <Toolbar location="top">
-        <ToolbarLeft>
-          <span className="nuclide-console-header-filter-icon inline-block">
-            <FunnelIcon />
-          </span>
-          <ModalMultiSelect
-            labelComponent={MultiSelectLabel}
-            optionComponent={MultiSelectOption}
-            size={ButtonSizes.SMALL}
-            options={options}
-            value={this.props.selectedSourceIds}
-            onChange={this.props.onSelectedSourcesChange}
-            className="inline-block"
-          />
-          <ButtonGroup className="inline-block">
-            <AtomInput
-              className={filterInputClassName}
-              size="sm"
-              width={200}
-              placeholderText="Filter"
-              onDidChange={this.props.onFilterTextChange}
-              value={this.props.filterText}
-            />
-            <Button
-              className="nuclide-console-filter-regexp-button"
-              size={ButtonSizes.SMALL}
-              selected={this.props.enableRegExpFilter}
-              onClick={this._handleReToggleButtonClick}
-              tooltip={{title: 'Use Regex'}}>
-              .*
-            </Button>
-          </ButtonGroup>
-        </ToolbarLeft>
-        <ToolbarRight>
-          {pasteButton}
-          <Button
-            size={ButtonSizes.SMALL}
-            onClick={this._handleClearButtonClick}>
-            Clear
-          </Button>
-        </ToolbarRight>
-      </Toolbar>
+    return _react.default.createElement(
+      (_Toolbar || _load_Toolbar()).Toolbar,
+      { location: 'top' },
+      _react.default.createElement(
+        (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+        null,
+        _react.default.createElement(
+          'span',
+          { className: 'nuclide-console-header-filter-icon inline-block' },
+          _react.default.createElement((_FunnelIcon || _load_FunnelIcon()).FunnelIcon, null)
+        ),
+        _react.default.createElement((_ModalMultiSelect || _load_ModalMultiSelect()).ModalMultiSelect, {
+          labelComponent: MultiSelectLabel,
+          optionComponent: MultiSelectOption,
+          size: (_Button || _load_Button()).ButtonSizes.SMALL,
+          options: options,
+          value: this.props.selectedSourceIds,
+          onChange: this.props.onSelectedSourcesChange,
+          className: 'inline-block'
+        }),
+        _react.default.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          { className: 'inline-block' },
+          _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            className: filterInputClassName,
+            size: 'sm',
+            width: 200,
+            placeholderText: 'Filter',
+            onDidChange: this.props.onFilterTextChange,
+            value: this.props.filterText
+          }),
+          _react.default.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              className: 'nuclide-console-filter-regexp-button',
+              size: (_Button || _load_Button()).ButtonSizes.SMALL,
+              selected: this.props.enableRegExpFilter,
+              onClick: this._handleReToggleButtonClick,
+              tooltip: { title: 'Use Regex' } },
+            '.*'
+          )
+        )
+      ),
+      _react.default.createElement(
+        (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+        null,
+        pasteButton,
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            size: (_Button || _load_Button()).ButtonSizes.SMALL,
+            onClick: this._handleClearButtonClick },
+          'Clear'
+        )
+      )
     );
   }
 }
 
-function sortAlpha(a: string, b: string): number {
+exports.default = ConsoleHeader;
+function sortAlpha(a, b) {
   const aLower = a.toLowerCase();
   const bLower = b.toLowerCase();
   if (aLower < bLower) {
@@ -188,19 +242,13 @@ function sortAlpha(a: string, b: string): number {
   return 0;
 }
 
-type LabelProps = {
-  selectedOptions: Array<{value: string, label: string}>,
-};
-
-function MultiSelectLabel(props: LabelProps): React.Element<any> {
-  const {selectedOptions} = props;
-  const label =
-    selectedOptions.length === 1
-      ? selectedOptions[0].label
-      : `${selectedOptions.length} Sources`;
-  return (
-    <span>
-      Showing: {label}
-    </span>
+function MultiSelectLabel(props) {
+  const { selectedOptions } = props;
+  const label = selectedOptions.length === 1 ? selectedOptions[0].label : `${selectedOptions.length} Sources`;
+  return _react.default.createElement(
+    'span',
+    null,
+    'Showing: ',
+    label
   );
 }

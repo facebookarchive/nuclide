@@ -1,62 +1,87 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {IPCEvent} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-require('./Protocol/Object');
-import InspectorBackendClass from './Protocol/NuclideProtocolParser';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-import BridgeAdapter from './Protocol/BridgeAdapter';
-import {isNewProtocolChannelEnabled} from '../../nuclide-debugger-common/lib/NewProtocolChannelChecker';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {reportError} from './Protocol/EventReporter';
+var _NuclideProtocolParser;
+
+function _load_NuclideProtocolParser() {
+  return _NuclideProtocolParser = _interopRequireDefault(require('./Protocol/NuclideProtocolParser'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _BridgeAdapter;
+
+function _load_BridgeAdapter() {
+  return _BridgeAdapter = _interopRequireDefault(require('./Protocol/BridgeAdapter'));
+}
+
+var _NewProtocolChannelChecker;
+
+function _load_NewProtocolChannelChecker() {
+  return _NewProtocolChannelChecker = require('../../nuclide-debugger-common/lib/NewProtocolChannelChecker');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _EventReporter;
+
+function _load_EventReporter() {
+  return _EventReporter = require('./Protocol/EventReporter');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+require('./Protocol/Object'); /**
+                               * Copyright (c) 2015-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the license found in the LICENSE file in
+                               * the root directory of this source tree.
+                               *
+                               * 
+                               * @format
+                               */
 
 /**
   * Class that dispatches Nuclide commands to debugger engine.
   * This is used to abstract away the underlying implementation for command dispatching
   * and allows us to switch between chrome IPC and new non-chrome channel.
   */
-export default class CommandDispatcher {
-  _sessionSubscriptions: ?UniversalDisposable;
-  _webview: ?WebviewElement;
-  _webviewUrl: ?string;
-  _bridgeAdapter: ?BridgeAdapter;
-  _useNewChannel: boolean;
-  _getIsReadonlyTarget: () => boolean;
+class CommandDispatcher {
 
-  constructor(getIsReadonlyTarget: () => boolean) {
+  constructor(getIsReadonlyTarget) {
     this._useNewChannel = false;
     this._getIsReadonlyTarget = getIsReadonlyTarget;
   }
 
-  isNewChannel(): boolean {
+  isNewChannel() {
     return this._useNewChannel;
   }
 
-  setupChromeChannel(url: string): void {
+  setupChromeChannel(url) {
     this._ensureSessionCreated();
     // Do not bother setup load if new channel is enabled.
     if (this._useNewChannel) {
-      invariant(this._bridgeAdapter != null);
+      if (!(this._bridgeAdapter != null)) {
+        throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+      }
+
       this._bridgeAdapter.enable();
       return;
     }
     if (this._webview == null) {
       // Cast from HTMLElement down to WebviewElement without instanceof
       // checking, as WebviewElement constructor is not exposed.
-      const webview = ((document.createElement(
-        'webview',
-      ): any): WebviewElement);
+      const webview = document.createElement('webview');
       webview.src = url;
       webview.nodeintegration = true;
       webview.disablewebsecurity = true;
@@ -67,11 +92,19 @@ export default class CommandDispatcher {
       // to live in the DOM. We render it into the body to keep it separate from our view, which may
       // be detached. If the webview were a child, it would cause the webview to reload when
       // reattached, and we'd lose our state.
-      invariant(document.body != null);
+
+      if (!(document.body != null)) {
+        throw new Error('Invariant violation: "document.body != null"');
+      }
+
       document.body.appendChild(webview);
 
       this._webview = webview;
-      invariant(this._sessionSubscriptions != null);
+
+      if (!(this._sessionSubscriptions != null)) {
+        throw new Error('Invariant violation: "this._sessionSubscriptions != null"');
+      }
+
       this._sessionSubscriptions.add(() => {
         webview.remove();
         this._webview = null;
@@ -83,43 +116,44 @@ export default class CommandDispatcher {
     this._webviewUrl = url;
   }
 
-  async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
-    this._ensureSessionCreated();
-    this._useNewChannel = await isNewProtocolChannelEnabled(
-      debuggerInstance.getProviderName(),
-    );
-    if (this._useNewChannel) {
-      const dispatchers = await InspectorBackendClass.bootstrap(
-        debuggerInstance,
-      );
-      this._bridgeAdapter = new BridgeAdapter(
-        dispatchers,
-        this._getIsReadonlyTarget,
-      );
-      invariant(this._sessionSubscriptions != null);
-      this._sessionSubscriptions.add(() => {
-        if (this._bridgeAdapter != null) {
-          this._bridgeAdapter.dispose();
-          this._bridgeAdapter = null;
+  setupNuclideChannel(debuggerInstance) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this._ensureSessionCreated();
+      _this._useNewChannel = yield (0, (_NewProtocolChannelChecker || _load_NewProtocolChannelChecker()).isNewProtocolChannelEnabled)(debuggerInstance.getProviderName());
+      if (_this._useNewChannel) {
+        const dispatchers = yield (_NuclideProtocolParser || _load_NuclideProtocolParser()).default.bootstrap(debuggerInstance);
+        _this._bridgeAdapter = new (_BridgeAdapter || _load_BridgeAdapter()).default(dispatchers, _this._getIsReadonlyTarget);
+
+        if (!(_this._sessionSubscriptions != null)) {
+          throw new Error('Invariant violation: "this._sessionSubscriptions != null"');
         }
-      });
-    }
+
+        _this._sessionSubscriptions.add(function () {
+          if (_this._bridgeAdapter != null) {
+            _this._bridgeAdapter.dispose();
+            _this._bridgeAdapter = null;
+          }
+        });
+      }
+    })();
   }
 
-  _ensureSessionCreated(): void {
+  _ensureSessionCreated() {
     if (this._sessionSubscriptions == null) {
-      this._sessionSubscriptions = new UniversalDisposable();
+      this._sessionSubscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
   }
 
-  cleanupSessionState(): void {
+  cleanupSessionState() {
     if (this._sessionSubscriptions != null) {
       this._sessionSubscriptions.dispose();
       this._sessionSubscriptions = null;
     }
   }
 
-  send(...args: Array<any>): void {
+  send(...args) {
     if (this._useNewChannel) {
       this._sendViaNuclideChannel(...args);
     } else {
@@ -127,24 +161,30 @@ export default class CommandDispatcher {
     }
   }
 
-  openDevTools(): void {
+  openDevTools() {
     if (this._webview == null) {
       return;
     }
     this._webview.openDevTools();
   }
 
-  getEventObservable(): Observable<IPCEvent> {
+  getEventObservable() {
     if (this._useNewChannel) {
-      invariant(this._bridgeAdapter != null);
+      if (!(this._bridgeAdapter != null)) {
+        throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+      }
+
       return this._bridgeAdapter.getEventObservable();
     } else {
-      invariant(this._webview != null);
-      return Observable.fromEvent(this._webview, 'ipc-message');
+      if (!(this._webview != null)) {
+        throw new Error('Invariant violation: "this._webview != null"');
+      }
+
+      return _rxjsBundlesRxMinJs.Observable.fromEvent(this._webview, 'ipc-message');
     }
   }
 
-  _sendViaNuclideChannel(...args: Array<any>): void {
+  _sendViaNuclideChannel(...args) {
     if (this._bridgeAdapter == null) {
       return;
     }
@@ -207,21 +247,21 @@ export default class CommandDispatcher {
         this._bridgeAdapter.setSingleThreadStepping(args[1]);
         break;
       default:
-        reportError(`Command ${args[0]} is not implemented yet.`);
+        (0, (_EventReporter || _load_EventReporter()).reportError)(`Command ${args[0]} is not implemented yet.`);
         break;
     }
   }
 
-  _triggerDebuggerAction(actionId: string): void {
-    invariant(this._bridgeAdapter != null);
+  _triggerDebuggerAction(actionId) {
+    if (!(this._bridgeAdapter != null)) {
+      throw new Error('Invariant violation: "this._bridgeAdapter != null"');
+    }
+
     switch (actionId) {
       case 'debugger.toggle-pause':
         // TODO[jetan]: 'debugger.toggle-pause' needs to implement state management which
         // I haven't think well yet so forward to chrome for now.
-        this._sendViaChromeChannel(
-          'triggerDebuggerAction',
-          'debugger.toggle-pause',
-        );
+        this._sendViaChromeChannel('triggerDebuggerAction', 'debugger.toggle-pause');
         break;
       case 'debugger.step-over':
         this._bridgeAdapter.stepOver();
@@ -236,13 +276,11 @@ export default class CommandDispatcher {
         this._bridgeAdapter.resume();
         break;
       default:
-        throw Error(
-          `_triggerDebuggerAction: unrecognized actionId: ${actionId}`,
-        );
+        throw Error(`_triggerDebuggerAction: unrecognized actionId: ${actionId}`);
     }
   }
 
-  _sendViaChromeChannel(...args: Array<any>): void {
+  _sendViaChromeChannel(...args) {
     const webview = this._webview;
     if (webview != null) {
       webview.send('command', ...args);
@@ -251,3 +289,4 @@ export default class CommandDispatcher {
     }
   }
 }
+exports.default = CommandDispatcher;
