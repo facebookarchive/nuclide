@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {HealthStats, PaneItemState} from './types';
 
 // Imports from non-Nuclide modules.
@@ -98,6 +97,7 @@ class Activation {
         .buffer(analyticsTimeouts.switchMap(Observable.interval))
         .subscribe(this._updateAnalytics),
       trackStalls(),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -122,10 +122,10 @@ class Activation {
     return disposable;
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
+  _registerCommandAndOpener(): UniversalDisposable {
     invariant(this._paneItemStates);
-    this._subscriptions.add(
-      api.addOpener(uri => {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           invariant(this._paneItemStates != null);
           return viewableFromReactElement(
@@ -134,8 +134,8 @@ class Activation {
         }
       }),
       () => destroyItemWhere(item => item instanceof HealthPaneItem),
-      atom.commands.add('atom-workspace', 'nuclide-health:toggle', event => {
-        api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
+      atom.commands.add('atom-workspace', 'nuclide-health:toggle', () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
       }),
     );
   }

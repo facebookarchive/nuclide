@@ -30,7 +30,6 @@ import * as Epics from './redux/Epics';
 import {getProviders} from './providers';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 
-import type {WorkspaceViewsService} from '../../nuclide-workspace-views/lib/types';
 import type {Store, DevicePanelServiceApi} from './types';
 
 let activation = null;
@@ -53,6 +52,7 @@ class Activation {
         const hosts = conns.map(conn => conn.getUriOfRemotePath('/'));
         this._store.dispatch(Actions.setHosts([''].concat(hosts)));
       }),
+      this._registerCommandAndOpener(),
     );
   }
 
@@ -60,21 +60,17 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeWorkspaceViewsService(api: WorkspaceViewsService): void {
-    this._disposables.add(
-      api.addOpener(uri => {
+  _registerCommandAndOpener(): UniversalDisposable {
+    return new UniversalDisposable(
+      atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return new DevicePanelWorkspaceView(this._store);
         }
       }),
       () => destroyItemWhere(item => item instanceof DevicePanelWorkspaceView),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-device-panel:toggle',
-        event => {
-          api.toggle(WORKSPACE_VIEW_URI, (event: any).detail);
-        },
-      ),
+      atom.commands.add('atom-workspace', 'nuclide-device-panel:toggle', () => {
+        atom.workspace.toggle(WORKSPACE_VIEW_URI);
+      }),
     );
   }
 

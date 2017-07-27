@@ -11,13 +11,11 @@
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
+import {WORKSPACE_VIEW_URI} from '../lib/HealthPaneItem';
 
 const openHealthPane = () => {
-  atom.commands.dispatch(
-    atom.views.getView(atom.workspace),
-    'nuclide-health:toggle',
-    {visible: true},
-  );
+  // eslint-disable-next-line nuclide-internal/atom-apis
+  atom.workspace.open(WORKSPACE_VIEW_URI);
 };
 
 function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {

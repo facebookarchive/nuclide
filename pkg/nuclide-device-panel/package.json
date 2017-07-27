@@ -14,13 +14,6 @@
   "deserializers": {
     "nuclide.DevicePanelWorkspaceView": "deserializeDevicePanelState"
   },
-  "consumedServices": {
-    "nuclide.workspace-views": {
-      "versions": {
-        "0.0.0": "consumeWorkspaceViewsService"
-      }
-    }
-  },
   "providedServices": {
     "nuclide.devices": {
       "versions": {

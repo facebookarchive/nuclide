@@ -17,11 +17,6 @@
       "versions": {
         "0.1.0": "consumeDefinitionProvider"
       }
-    },
-    "nuclide.workspace-views": {
-      "versions": {
-        "0.0.0": "consumeWorkspaceViewsService"
-      }
     }
   },
   "providedServices": {
