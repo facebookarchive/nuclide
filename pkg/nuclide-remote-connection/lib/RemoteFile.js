@@ -378,7 +378,8 @@ export class RemoteFile {
     let writeLength = 0;
     const stream = new Stream.Writable({
       write(chunk, encoding, next) {
-        writeData.push(chunk);
+        // `chunk` may be mutated by the caller, so make sure it's copied.
+        writeData.push(Buffer.from(chunk));
         writeLength += chunk.length;
         next();
       },
