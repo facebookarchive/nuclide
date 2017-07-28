@@ -28,6 +28,7 @@ import type {
   OutlineTree,
 } from 'atom-ide-ui';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   FormatOptions,
   SymbolResult,
@@ -968,8 +969,7 @@ export class LspLanguageService {
   async getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     if (
       this._state !== 'Running' ||

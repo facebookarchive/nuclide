@@ -143,7 +143,22 @@ export class AutocompleteProvider<T: LanguageService> {
     request: atom$AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     const {editor, activatedManually, prefix} = request;
+    // TODO(ljw): the following line uses the position of the cursor --
+    // shouldn't it be using request.bufferPosition instead?
     const position = editor.getLastCursor().getBufferPosition();
+
+    // In case of automatic requests, we'd like to know what character triggered
+    // the autocomplete request. That information isn't provided to us, so the
+    // best we can do is find the character to the left of the position.
+    let triggerCharacter;
+    if (activatedManually != null && activatedManually) {
+      triggerCharacter = null;
+    } else if (position.column === 0) {
+      triggerCharacter = '\n';
+    } else {
+      const range = new Range([position.row, position.column - 1], position);
+      triggerCharacter = editor.getTextInBufferRange(range);
+    }
 
     // 'prefix' has to do with what's replaced when the user accepts an
     // autocomplete suggestion. It's based on the current word. For instance,
@@ -193,8 +208,12 @@ export class AutocompleteProvider<T: LanguageService> {
     const results = await (await languageService).getAutocompleteSuggestions(
       fileVersion,
       position,
-      activatedManually == null ? false : activatedManually,
-      langSpecificPrefix,
+      {
+        activatedManually:
+          activatedManually == null ? false : activatedManually,
+        triggerCharacter,
+        prefix: langSpecificPrefix,
+      },
     );
 
     // Here's where we patch up the prefix in the results, if necessary

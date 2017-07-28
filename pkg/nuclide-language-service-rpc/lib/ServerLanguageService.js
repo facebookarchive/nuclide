@@ -22,6 +22,7 @@ import type {
   Outline,
 } from 'atom-ide-ui';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   FormatOptions,
   LanguageService,
@@ -159,20 +160,20 @@ export class ServerLanguageService<
   async getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     const filePath = fileVersion.filePath;
     const buffer = await getBufferAtVersion(fileVersion);
     if (buffer == null) {
+      // TODO: this should return null so the empty list doesn't get cached
       return {isIncomplete: false, items: []};
     }
     return this._service.getAutocompleteSuggestions(
       filePath,
       buffer,
       position,
-      activatedManually,
-      prefix,
+      request.activatedManually,
+      request.prefix,
     );
   }
 

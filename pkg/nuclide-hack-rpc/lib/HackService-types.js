@@ -24,6 +24,7 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   SymbolResult,
   LanguageService,
@@ -38,8 +39,7 @@ export interface HackLanguageService extends LanguageService {
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult>,
 
   getDefinition(

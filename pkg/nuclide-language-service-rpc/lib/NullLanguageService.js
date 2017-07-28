@@ -24,6 +24,7 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   FormatOptions,
   LanguageService,
@@ -46,8 +47,7 @@ export class NullLanguageService {
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     return Promise.resolve(null);
   }

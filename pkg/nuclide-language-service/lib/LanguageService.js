@@ -72,6 +72,20 @@ export type FormatOptions = {
   insertSpaces: boolean,
 };
 
+export type AutocompleteRequest = {|
+  // The request might have been triggered manually (by the user pressing
+  // ctrl+space) or automatically (by the user typing into the buffer).
+  activatedManually: boolean,
+  // If it was an automatic trigger, this is the character to the left of the
+  // caret (i.e. what the user most likely just typed). If manual, it is null.
+  triggerCharacter: ?string,
+  // Prefix is that part of whatever word the caret's on that's to the left of
+  // the caret. This prefix is calculated heuristically by the caller via a
+  // language-appropriate regex. The results of autocomplete have the option to
+  // override this.
+  prefix: string,
+|};
+
 export interface LanguageService {
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
 
@@ -80,8 +94,7 @@ export interface LanguageService {
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult>,
 
   getDefinition(

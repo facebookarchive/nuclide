@@ -13,6 +13,7 @@ import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   FormatOptions,
   SymbolResult,
@@ -182,8 +183,7 @@ export interface FlowLanguageServiceType {
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult>,
 
   getDefinition(

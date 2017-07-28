@@ -35,6 +35,7 @@ import type {
 } from 'atom-ide-ui';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {
+  AutocompleteRequest,
   AutocompleteResult,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -148,8 +149,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
   async getAutocompleteSuggestions(
     fileVersion: FileVersion,
     position: atom$Point,
-    activatedManually: boolean,
-    prefix: string,
+    request: AutocompleteRequest,
   ): Promise<?AutocompleteResult> {
     try {
       const process = await getHackProcess(
@@ -159,7 +159,7 @@ class HackLanguageServiceImpl extends ServerLanguageService {
       return process.getAutocompleteSuggestions(
         fileVersion,
         position,
-        activatedManually,
+        request.activatedManually,
       );
     } catch (e) {
       return null;
