@@ -10,6 +10,7 @@
  */
 
 import passesGK from '../commons-node/passesGK';
+import {PromiseWithState} from 'nuclide-commons/promise';
 
 export type AutocompleteCacherConfig<T> = {|
   // Return null here to indicate that we should fall back to `getSuggestions`.
@@ -30,7 +31,7 @@ export type AutocompleteCacherConfig<T> = {|
 |};
 
 type AutocompleteSession<T> = {
-  firstResult: Promise<?T>,
+  firstResultPromise: PromiseWithState<?T>,
   lastRequest: atom$AutocompleteRequest,
 };
 
@@ -69,21 +70,36 @@ export default class AutocompleteCacher<T> {
     }
     const session = this._session;
     if (session != null && this._canMaybeFilterResults(session, request)) {
-      // We need to send this request speculatively because if firstResult resolves to `null`, we'll
-      // need this result. If we wait for firstResult to resolve before sending it, satisfying this
-      // request could take as much as two round trips to the server. We could avoid this in some
-      // cases by checking if firstResult has already been resolved. If it has already resolved to a
-      // non-null value, we can skip this request.
+      const state = session.firstResultPromise.getState();
+      if (state.kind === 'fulfilled' && state.value != null) {
+        // Maybe an earlier request had already resolved to not-null so we can use
+        // it right now, synchronously?
+        const firstResult = state.value;
+        const result = this._config.updateResults(request, firstResult);
+        if (result != null) {
+          this._session = {...this._session, lastRequest: request};
+          return Promise.resolve(result);
+        }
+      }
+
+      // If it hasn't already resolved, or if it had resolved to not-null,
+      // or if the updateResults function decided synchronously that it wasn't
+      // able to do anything, then in all cases we'll send an additional request
+      // speculatively right now (to reduce overall latency) and defer the
+      // decision about whether to use the existing response or
+      // the speculative one.
       const resultFromLanguageService = this._getSuggestions(request);
       const result = this._filterSuggestionsIfPossible(
         request,
-        session.firstResult,
+        session.firstResultPromise.getPromise(),
         resultFromLanguageService,
       );
       this._session = {
-        firstResult: getNewFirstResult(
-          session.firstResult,
-          resultFromLanguageService,
+        firstResultPromise: new PromiseWithState(
+          getNewFirstResult(
+            session.firstResultPromise.getPromise(),
+            resultFromLanguageService,
+          ),
         ),
         lastRequest: request,
       };
@@ -91,7 +107,7 @@ export default class AutocompleteCacher<T> {
     } else {
       const result = this._getSuggestions(request);
       this._session = {
-        firstResult: result,
+        firstResultPromise: new PromiseWithState(result),
         lastRequest: request,
       };
       return result;

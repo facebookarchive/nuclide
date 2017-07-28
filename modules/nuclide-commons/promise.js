@@ -536,3 +536,40 @@ export function lastly<T>(
     },
   );
 }
+
+/**
+ * With a pure promise object, there's no way to tell synchronously
+ * whether or not it has 'settled' (i.e. been fulfilled or rejected).
+ * Here we provide a wrapper that provides that information.
+ */
+export type PromiseState<T> =
+  | {kind: 'pending'}
+  | {kind: 'fulfilled', value: T}
+  | {kind: 'rejected', error: any};
+
+export class PromiseWithState<T> {
+  _promise: Promise<T>;
+  _state: PromiseState<T>;
+
+  constructor(promise: Promise<T>) {
+    this._state = {kind: 'pending'};
+    this._promise = promise.then(
+      value => {
+        this._state = {kind: 'fulfilled', value};
+        return value;
+      },
+      error => {
+        this._state = {kind: 'rejected', error};
+        throw error;
+      },
+    );
+  }
+
+  getPromise(): Promise<T> {
+    return this._promise;
+  }
+
+  getState(): PromiseState<T> {
+    return this._state;
+  }
+}
