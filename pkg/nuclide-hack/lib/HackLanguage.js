@@ -27,6 +27,8 @@ import {getNotifierByConnection} from '../../nuclide-open-files';
 import {
   AtomLanguageService,
   getHostServices,
+  updateAutocompleteResults,
+  updateAutocompleteFirstResults,
 } from '../../nuclide-language-service';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common';
 import {
@@ -139,9 +141,14 @@ async function createLanguageService(): Promise<
       disableForSelector: null,
       excludeLowerPriority: false,
       analyticsEventName: 'hack.getAutocompleteSuggestions',
-      autocompleteCacherConfig: {
-        updateResults: updateAutocompleteResults,
-      },
+      autocompleteCacherConfig: usingLsp
+        ? {
+            updateResults: updateAutocompleteResults,
+            updateFirstResults: updateAutocompleteFirstResults,
+          }
+        : {
+            updateResults: hackUpdateAutocompleteResults,
+          },
       onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
     },
     diagnostics: {
@@ -187,7 +194,7 @@ export async function isFileInHackProject(
   return foundDir != null;
 }
 
-function updateAutocompleteResults(
+function hackUpdateAutocompleteResults(
   request: atom$AutocompleteRequest,
   firstResult: AutocompleteResult,
 ): ?AutocompleteResult {
