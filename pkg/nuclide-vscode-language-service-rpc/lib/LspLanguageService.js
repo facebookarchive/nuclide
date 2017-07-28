@@ -979,6 +979,15 @@ export class LspLanguageService {
       return null;
     }
 
+    const activatedAutomaticallyOkay =
+      request.triggerCharacter != null &&
+      this._derivedServerCapabilities.completionTriggerCharacters.has(
+        request.triggerCharacter,
+      );
+    if (!request.activatedManually && !activatedAutomaticallyOkay) {
+      return null;
+    }
+
     const params = convert.atom_lspPositionParams(
       fileVersion.filePath,
       position,
@@ -1515,6 +1524,7 @@ class DerivedServerCapabilities {
   serverWantsChange: 'full' | 'incremental' | 'none';
 
   onTypeFormattingTriggerCharacters: Set<string>;
+  completionTriggerCharacters: Set<string>;
 
   constructor(capabilities: ServerCapabilities, logger: log4js$Logger) {
     let syncKind;
@@ -1565,6 +1575,18 @@ class DerivedServerCapabilities {
         moreTriggerCharacter || [],
       );
       this.onTypeFormattingTriggerCharacters = new Set(triggerCharacters);
+    }
+
+    if (capabilities.completionProvider == null) {
+      this.completionTriggerCharacters = new Set();
+    } else {
+      const lspChars = capabilities.completionProvider.triggerCharacters || [];
+      const intrinsicChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(
+        '',
+      );
+      this.completionTriggerCharacters = new Set(
+        lspChars.concat(intrinsicChars),
+      );
     }
   }
 }
