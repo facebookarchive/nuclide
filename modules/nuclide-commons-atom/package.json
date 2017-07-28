@@ -12,6 +12,7 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "dependencies": {
     "async-to-generator": "1.1.0",
+    "escape-string-regexp": "1.0.5",
     "log4js": "1.1.1",
     "nuclide-commons": "0.1.9",
     "rxjs": "5.3.1",

@@ -956,6 +956,7 @@ declare class atom$TextEditor extends atom$Model {
   onDidConflict(callback: () => void): IDisposable,
   serialize: () => mixed,
   foldBufferRowRange(startRow: number, endRow: number): void,
+  getNonWordCharacters(scope?: atom$ScopeDescriptor): string,
 }
 
 /**
