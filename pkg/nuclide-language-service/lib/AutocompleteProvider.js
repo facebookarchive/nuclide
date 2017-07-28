@@ -17,6 +17,8 @@ import type {
   LanguageService,
 } from './LanguageService';
 
+import {Point, Range} from 'simple-text-buffer';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 import {trackTiming, track} from '../../nuclide-analytics';
 import {getFileVersionOfEditor} from '../../nuclide-open-files';
@@ -140,6 +142,44 @@ export class AutocompleteProvider<T: LanguageService> {
   ): Promise<?AutocompleteResult> {
     const {editor, activatedManually, prefix} = request;
     const position = editor.getLastCursor().getBufferPosition();
+
+    // 'prefix' has to do with what's replaced when the user accepts an
+    // autocomplete suggestion. It's based on the current word. For instance,
+    //  '$c|'      => suggestion '$compare'  => hopefully replace '$c'
+    //  'Vec\com|' => suggestion 'compare'   => hopefully replace 'com'
+    // The way autocomplete works is: the language service might say what prefix
+    // its suggestion will replace; and if it doesn't, then autocomplete will
+    // replace whatever prefix was part of the 'request' object.
+    //
+    // Atom has its own way of computing the current word (to support gestures
+    // like cursor-past-word). It bases this on 'editor.nonWordCharacters', by
+    // default roughly [a-zA-Z0-9_]. But language packages can and do override
+    // this -- e.g. PHP allows '$' in identifiers.
+    //
+    // Autocomplete doesn't use Atom's technique (I suspect because the html and
+    // css and xml packages never bothered overriding it). Instead autocomplete
+    // has its own regex, roughly the same but allowing '-' as well. It uses
+    // this to populate 'prefix'.
+    //
+    // Autocomplete's suggestion is wrong for languages like PHP which have
+    // their own regex, is right for languages like HTML which should but don't,
+    // and is wrong for languages like Java which don't provide their own
+    // regex and which don't allow hyphens.
+    //
+    // What we'll do is work around this mess right here as best we can:
+    // if the language-package provides its own regex which gives a different
+    // prefix from Autocomplete's, then we'll suggest that to the language
+    // service, and we'll patch the output of the language service to reflect
+    // this.
+
+    let langSpecificPrefix = prefix;
+    const defaultWordRules = editor.getNonWordCharacters();
+    const scope = editor.scopeDescriptorForBufferPosition(position);
+    const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
+    if (defaultWordRules !== langWordRules) {
+      langSpecificPrefix = findAtomWordPrefix(editor, position);
+    }
+
     const path = editor.getPath();
     const fileVersion = await getFileVersionOfEditor(editor);
 
@@ -148,11 +188,39 @@ export class AutocompleteProvider<T: LanguageService> {
       return {isIncomplete: false, items: []};
     }
 
-    return (await languageService).getAutocompleteSuggestions(
+    const results = await (await languageService).getAutocompleteSuggestions(
       fileVersion,
       position,
       activatedManually == null ? false : activatedManually,
-      prefix,
+      langSpecificPrefix,
     );
+
+    // Here's where we patch up the prefix in the results, if necessary
+    if (langSpecificPrefix !== prefix && results != null) {
+      results.items = results.items.map((c: Completion) => {
+        return c.replacementPrefix == null
+          ? {replacementPrefix: langSpecificPrefix, ...c}
+          : c;
+      });
+    }
+    return results;
+  }
+}
+
+function findAtomWordPrefix(
+  editor: atom$TextEditor,
+  position: atom$Point,
+): string {
+  const positionOneCharBefore = new Point(
+    position.row,
+    Math.max(0, position.column - 1),
+  );
+  const match = wordAtPosition(editor, positionOneCharBefore, {
+    includeNonWordCharacters: false,
+  });
+  if (match == null) {
+    return '';
+  } else {
+    return editor.getTextInBufferRange(new Range(match.range.start, position));
   }
 }
