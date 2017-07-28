@@ -26,6 +26,7 @@ import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interface
 
 // Subtype of atom$AutocompleteSuggestion.
 export type Completion = {
+  // These fields are part of atom$AutocompleteSuggestion:
   text?: string,
   snippet?: string,
   displayText?: string,
@@ -39,7 +40,10 @@ export type Completion = {
   iconHTML?: ?string,
   description?: ?string,
   descriptionMoreURL?: ?string,
-  extraData?: mixed,
+  // These fields are extra:
+  filterText?: string, // used by updateAutocompleteResults
+  sortText?: string, // used by updateAutocompleteResults
+  extraData?: mixed, // used by whichever packages want to use it
 };
 
 // This assertion ensures that Completion is a subtype of atom$AutocompleteSuggestion. If you are

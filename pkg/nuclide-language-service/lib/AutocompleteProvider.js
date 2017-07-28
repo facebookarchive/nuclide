@@ -17,6 +17,8 @@ import type {
   LanguageService,
 } from './LanguageService';
 
+import invariant from 'assert';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import {Point, Range} from 'simple-text-buffer';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -223,4 +225,86 @@ function findAtomWordPrefix(
   } else {
     return editor.getTextInBufferRange(new Range(match.range.start, position));
   }
+}
+
+function padEnd(s: string, targetLength: number, padString: string): string {
+  const padLength = Math.max(targetLength - s.length, 0);
+  return s + padString.repeat(padLength);
+}
+
+export function updateAutocompleteResults(
+  request: atom$AutocompleteRequest,
+  firstResult: AutocompleteResult,
+): ?AutocompleteResult {
+  if (firstResult.isIncomplete) {
+    return null;
+  }
+
+  // Our objective is to provide a filtered list of results which [1] are
+  // filtered to only those results whose 'filterText' matches the user's
+  // typeahead (i.e. 'prefix'), [2] sorted according to a score of how
+  // well their 'filterText' matches the user's typeahead, and [3] within groups
+  // of equivalently-scored suggestions, sorted according to 'sortText'.
+  const prefix = findAtomWordPrefix(request.editor, request.bufferPosition);
+
+  // Step [1]: filter based on the user's typeahead. Users love typing just a
+  // few characters and having it match camelHumps or similar. SublimeText and
+  // VSCode and the other major IDEs do this too. It's a gnarly dynamic-
+  // programming problem so we're happy to leave it to the third-party library
+  // fuzzaldrinPlus. Except: fuzzaldrinPlus by default sorts shorter suggestions
+  // ahead of longer ones, e.g. for typeahead 'g' it scores 'genZoo' higher than
+  // 'genAlpha'. Our only way to defeat that is by artificially padding out the
+  // filter text to 40 characters. (That's an arbitrary hack, but good enough,
+  // and cheaper than doing one pass to for max-length and another to pad).
+  //
+  // While we're here, for sake of AutocompletePlus, each item also needs its
+  // 'replacementPrefix' updated, because that's what AutcompletePlus uses to
+  // to decide which characters to replace in the editor buffer.
+  //
+  // This 'reduce' takes ~25ms for 1000 items, largely in the scoring. The rest
+  // of the function takes negligible time.
+
+  const items: Array<{filterScore: number, completion: Completion}> = [];
+  for (const item of firstResult.items) {
+    const text = item.displayText || item.snippet || item.text || '';
+    const filterText = padEnd(item.filterText || text, 40, ' ');
+    // If no prefix, then include all items and avoid doing work to score.
+    const filterScore: number =
+      prefix === '' ? 1 : fuzzaldrinPlus.score(filterText, prefix);
+    // Score of 0 means the item fails the filter.
+    if (filterScore === 0) {
+      continue;
+    }
+    const completion: Completion = {
+      ...item,
+      replacementPrefix: prefix,
+      sortText: item.sortText || text,
+    };
+    items.push({filterScore, completion});
+  }
+
+  // Step [2+3]: sort by filterScore, and within that by sortText. We do a sort
+  // that's basically alphabetical/ascii except that (like VisualStudio) we sort
+  // underscore at the end rather than the start, to reflect the common cross-
+  // language idiom that underscore functions are "lesser".
+  items.sort((itemA, itemB) => {
+    if (itemA.filterScore < itemB.filterScore) {
+      return 1;
+    } else if (itemA.filterScore > itemB.filterScore) {
+      return -1;
+    } else {
+      const a = itemA.completion.sortText;
+      const b = itemB.completion.sortText;
+      invariant(a != null && b != null);
+      if (a.startsWith('_') === b.startsWith('_')) {
+        return a.localeCompare(b);
+      } else if (a.startsWith('_')) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+  });
+
+  return {...firstResult, items: items.map(item => item.completion)};
 }
