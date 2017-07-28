@@ -257,9 +257,11 @@ function renderItem(
   searchResult: ?SearchResult,
 ): Array<React.Element<any> | string> {
   const r = [];
+  const icon =
+    outline.icon || (outline.kind && OUTLINE_KIND_TO_ICON[outline.kind]);
 
-  if (outline.icon != null) {
-    r.push(<span className={`icon icon-${outline.icon}`} />);
+  if (icon != null) {
+    r.push(<span className={`icon icon-${icon}`} />);
     // Note: icons here are fixed-width, so the text lines up.
   }
 
@@ -363,3 +365,24 @@ function renderTrees(
     </ul>
   );
 }
+
+const OUTLINE_KIND_TO_ICON = {
+  array: 'type-array',
+  boolean: 'type-boolean',
+  class: 'type-class',
+  constant: 'type-constant',
+  constructor: 'type-constructor',
+  enum: 'type-enum',
+  field: 'type-field',
+  file: 'type-file',
+  function: 'type-function',
+  interface: 'type-interface',
+  method: 'type-method',
+  module: 'type-module',
+  namespace: 'type-namespace',
+  number: 'type-number',
+  package: 'type-package',
+  property: 'type-property',
+  string: 'type-string',
+  variable: 'type-variable',
+};
