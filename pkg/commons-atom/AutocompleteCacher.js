@@ -169,6 +169,26 @@ function defaultShouldFilter(
   currentRequest: atom$AutocompleteRequest,
   charsSinceLastRequest: number,
 ) {
+  // This function's goal is to check whether the currentRequest represents
+  // additional typing to do further filtering, or whether it represents an
+  // entirely new autocomplete request.
+  // It does this by checking the request.prefix that AutocompletePlus had
+  // computed for the previous request vs the currentRequest. How
+  // AutocompletePlus computes this prefix is via a 'word regex' to see what
+  // word the caret is on, and take the portion of it to the left of the caret.
+  // Its word regex is roughly [a-zA-Z0-9_-]+. If the currentRequest.prefix
+  // is strictly longer than the lastRequest.prefix, by the right number
+  // of characters, then we should continue to do further filtering.
+  // NOTE: the prefix computed by AutocompletePlus is not necessarily the
+  // replacementPrefix that will be used if the user accepts a suggestion.
+  // And it's not necessarily appropriate for the language (e.g. flow
+  // disallows hyphens, and php allows $). But that doesn't matter. We're merely
+  // using it as a convenient consistent source of a good enough word regex.
+  // We do further filtering to only accept [a-zA-Z_], so no numerals or
+  // hyphens. This makes us very conservative. When we're too conservative
+  // (e.g. always failing to cache for identifiers that have numerals or
+  // hyphens), the only bad effect is more autocomplete requests to the
+  // language server than is strictly necessary.
   return (
     currentRequest.prefix.startsWith(lastRequest.prefix) &&
     currentRequest.prefix.length ===
