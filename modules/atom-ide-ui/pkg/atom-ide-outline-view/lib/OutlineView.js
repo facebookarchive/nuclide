@@ -261,7 +261,7 @@ function renderItem(
     outline.icon || (outline.kind && OUTLINE_KIND_TO_ICON[outline.kind]);
 
   if (icon != null) {
-    r.push(<span className={`icon icon-${icon}`} />);
+    r.push(<span key={`icon-${icon}`} className={`icon icon-${icon}`} />);
     // Note: icons here are fixed-width, so the text lines up.
   }
 
