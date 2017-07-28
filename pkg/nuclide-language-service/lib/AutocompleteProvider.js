@@ -239,6 +239,18 @@ export function updateAutocompleteResults(
   if (firstResult.isIncomplete) {
     return null;
   }
+  return updateAutocompleteFirstResults(request, firstResult);
+}
+
+export function updateAutocompleteFirstResults(
+  request: atom$AutocompleteRequest,
+  firstResult: AutocompleteResult,
+): AutocompleteResult {
+  // This function is sometimes called because the user invoked autocomplete
+  // manually, e.g. pressing ctrl+space at "x.|" or "x.f|". Or it's invoked
+  // from updateAutocompleteResults because there was it had previously
+  // been invoked, and then the user typed more characters. In both cases
+  // the behavior is the same...
 
   // Our objective is to provide a filtered list of results which [1] are
   // filtered to only those results whose 'filterText' matches the user's

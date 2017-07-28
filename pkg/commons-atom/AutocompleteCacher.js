@@ -13,8 +13,13 @@ import passesGK from '../commons-node/passesGK';
 import {PromiseWithState} from 'nuclide-commons/promise';
 
 export type AutocompleteCacherConfig<T> = {|
-  // Return null here to indicate that we should fall back to `getSuggestions`.
+  // This function filters+sorts the firstResult that came back from `getSuggestions`.
+  // Return null here to if firstResult isn't appropriate and we should go back
+  // to the language service.
   updateResults: (request: atom$AutocompleteRequest, firstResult: T) => ?T,
+  // If we had to go to `getSuggestions` for whatever reason, we can still configure
+  // a filter+sort function to be used in that case too.
+  updateFirstResults?: (request: atom$AutocompleteRequest, firstResult: T) => T,
   // If this is provided, we will ask it whether we can filter on the given request after first
   // verifying that the cursor has only moved by one column since the last request.
   shouldFilter?: (
@@ -49,7 +54,12 @@ export default class AutocompleteCacher<T> {
     getSuggestions: (request: atom$AutocompleteRequest) => Promise<?T>,
     config: AutocompleteCacherConfig<T>,
   ) {
-    this._getSuggestions = getSuggestions;
+    this._getSuggestions = async (request: atom$AutocompleteRequest) => {
+      const results = await getSuggestions(request);
+      return config.updateFirstResults == null || results == null
+        ? results
+        : config.updateFirstResults(request, results);
+    };
     this._config = config;
     this._setEnabled();
   }
