@@ -13,6 +13,7 @@ import type {Observable} from 'rxjs';
 import type {OutputService} from '../../nuclide-console/lib/types';
 
 import stripAnsi from 'strip-ansi';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type raiseNativeNotificationFunc = ?(
   title: string,
@@ -24,8 +25,11 @@ type raiseNativeNotificationFunc = ?(
 let _outputServiceApi: ?OutputService = null;
 let _raiseNativeNotification: ?raiseNativeNotificationFunc = null;
 
-export function setOutputService(api: OutputService): void {
+export function setOutputService(api: OutputService): IDisposable {
   _outputServiceApi = api;
+  return new UniversalDisposable(() => {
+    _outputServiceApi = null;
+  });
 }
 
 export function getOutputService(): ?OutputService {

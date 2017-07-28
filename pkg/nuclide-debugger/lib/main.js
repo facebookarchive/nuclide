@@ -873,8 +873,8 @@ export function deactivate() {
   }
 }
 
-export function consumeOutputService(api: OutputService): void {
-  setOutputService(api);
+export function consumeOutputService(api: OutputService): IDisposable {
+  return setOutputService(api);
 }
 
 function registerConsoleExecutor(
