@@ -141,7 +141,6 @@ async function createLanguageService(): Promise<
       analyticsEventName: 'hack.getAutocompleteSuggestions',
       autocompleteCacherConfig: {
         updateResults: updateAutocompleteResults,
-        gatekeeper: 'nuclide_hack_fast_autocomplete',
       },
       onDidInsertSuggestionAnalyticsEventName: 'hack.autocomplete-chosen',
     },
