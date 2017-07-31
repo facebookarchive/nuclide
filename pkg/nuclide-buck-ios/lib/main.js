@@ -197,9 +197,14 @@ function _runTask(
 
     return runRemoteTask();
   } else {
+    const subcommand = _getLocalSubcommand(taskType, ruleType);
+    if (subcommand === 'install' || subcommand === 'test') {
+      startLogger();
+    }
+
     return builder.runSubcommand(
       buckRoot,
-      _getLocalSubcommand(taskType, ruleType),
+      subcommand,
       newTarget,
       settings,
       taskType === 'debug',
@@ -221,4 +226,11 @@ function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
     default:
       throw new Error('Unsupported rule type');
   }
+}
+
+function startLogger(): void {
+  atom.commands.dispatch(
+    atom.views.getView(atom.workspace),
+    'nuclide-ios-simulator-logs:start',
+  );
 }
