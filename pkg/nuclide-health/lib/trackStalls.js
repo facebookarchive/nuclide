@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import {remote} from 'electron';
 import {getLogger} from 'log4js';
+import {Observable} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {HistogramTracker} from '../../nuclide-analytics';
@@ -58,9 +59,6 @@ function trackStallsImpl(): IDisposable {
     intentionalBlockTime = Date.now();
   };
 
-  // Electron context menus block the event loop.
-  browserWindow.on('context-menu', onIntentionalBlock);
-
   let blockedInterval = null;
   function startBlockedCheck() {
     if (blockedInterval != null) {
@@ -95,19 +93,22 @@ function trackStallsImpl(): IDisposable {
   if (document.hasFocus()) {
     startBlockedCheck();
   }
-  browserWindow.on('focus', startBlockedCheck);
-  browserWindow.on('blur', stopBlockedCheck);
 
   return new UniversalDisposable(
     histogram,
     // Confirmation dialogs also block the event loop.
     // This typically happens when you're about to close an unsaved file.
     atom.workspace.onWillDestroyPaneItem(onIntentionalBlock),
-    () => {
-      stopBlockedCheck();
-      browserWindow.removeListener('focus', startBlockedCheck);
-      browserWindow.removeListener('blur', stopBlockedCheck);
-      browserWindow.removeListener('context-menu', onIntentionalBlock);
-    },
+    // Electron context menus block the event loop.
+    Observable.fromEvent(browserWindow, 'context-menu')
+      // There appears to be an race with browser window shutdown where
+      // the 'context-menu' event fires after window destruction.
+      // Try to prevent this by removing the event on close.
+      // https://github.com/facebook/nuclide/issues/1246
+      .takeUntil(Observable.fromEvent(browserWindow, 'close'))
+      .subscribe(onIntentionalBlock),
+    Observable.fromEvent(browserWindow, 'focus').subscribe(startBlockedCheck),
+    Observable.fromEvent(browserWindow, 'blur').subscribe(stopBlockedCheck),
+    () => stopBlockedCheck(),
   );
 }
