@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## v0.243.0
+
+### General
+
+* Items in the View context menu are now sorted alphabetically
+* Many compatibility fixes for Atom 1.19.
+* Fixed broken go-to-definition / code-formatting for OCaml files.
+
+### Debugger
+
+* Fixed an issue where right clicking the background of the breakpoints pane doesn't offer breakpoint options like "remove all breakpoints"
+* Fixed a bug preventing the debugger from auto attaching to a cxx_test target from the when clicking debug on the Buck toolbar
+
+
 ## v0.242.0
 
 ### Highlights
