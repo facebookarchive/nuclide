@@ -15,6 +15,7 @@ import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {jasmineAttachWorkspace} from 'nuclide-commons-atom/test-helpers';
 import Hyperclick from '../lib/Hyperclick';
 import showTriggerConflictWarning from '../lib/showTriggerConflictWarning';
 import invariant from 'assert';
@@ -26,15 +27,14 @@ describe('Hyperclick', () => {
   let hyperclickForTextEditor: HyperclickForTextEditor = (null: any);
 
   async function setup() {
+    jasmineAttachWorkspace();
+
     atom.packages.activatePackage('hyperclick');
 
     textEditor = await atom.workspace.open(
       nuclideUri.join(__dirname, 'fixtures', 'hyperclick.txt'),
     );
     textEditorView = atom.views.getView(textEditor);
-
-    // We need the view attached to the DOM for the mouse events to work.
-    jasmine.attachToDOM(textEditorView);
 
     hyperclick = new Hyperclick();
     hyperclickForTextEditor = Array.from(
@@ -54,9 +54,7 @@ describe('Hyperclick', () => {
     const positionOffset = textEditorView.pixelPositionForScreenPosition(
       screenPosition,
     );
-    const {component} = textEditorView;
-    invariant(component != null);
-    const scrollViewElement = component.domNode.querySelector('.scroll-view');
+    const scrollViewElement = textEditorView.querySelector('.scroll-view');
     invariant(scrollViewElement != null);
     const scrollViewClientRect = scrollViewElement.getBoundingClientRect();
     const clientX =
@@ -87,7 +85,11 @@ describe('Hyperclick', () => {
     if (eventClass === MouseEvent) {
       const {component} = textEditorView;
       invariant(component);
-      domNode = component.linesComponent.getDomNode();
+      if (component.refs != null) {
+        domNode = component.refs.lineTiles;
+      } else {
+        domNode = component.linesComponent.getDomNode();
+      }
     } else {
       domNode = textEditorView;
     }
@@ -843,6 +845,8 @@ describe('Hyperclick', () => {
 
     afterEach(() => {
       hyperclick.dispose();
+      // Bug: Atom 1.19+ hangs on teardown if we don't manually detach the DOM.
+      atom.workspace.getElement().remove();
     });
 
     describe('when the editor has soft-wrapped lines', () => {
