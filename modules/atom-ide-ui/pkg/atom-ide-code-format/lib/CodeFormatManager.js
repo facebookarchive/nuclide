@@ -19,7 +19,7 @@ import type {
 
 import {Range} from 'atom';
 import semver from 'semver';
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -128,6 +128,7 @@ export default class CodeFormatManager {
 
     const saveEvents = Observable.create(observer => {
       const realSave = editor.save;
+      const newSaves = new Subject();
       // HACK: intercept the real TextEditor.save and handle it ourselves.
       // Atom has no way of injecting content into the buffer asynchronously
       // before a save operation.
@@ -139,17 +140,20 @@ export default class CodeFormatManager {
         if (semver.gte(atom.getVersion(), '1.19.0-beta0')) {
           // In 1.19, TextEditor.save() is async (and the promise is used).
           // We can just directly format + save here.
-          observer.next('new-save');
+          newSaves.next('new-save');
           return this._safeFormatCodeOnSave(editor)
+            .takeUntil(newSaves)
             .toPromise()
             .then(() => realSave.call(editor));
         } else {
           observer.next('save');
         }
       };
+      const subscription = newSaves.subscribe(observer);
       return () => {
         // Restore the save function when we're done.
         editor_.save = realSave;
+        subscription.unsubscribe();
       };
     });
 

@@ -162,12 +162,23 @@ describe('CodeFormatManager', () => {
 
       const spy = spyOn(textEditor.getBuffer(), 'save').andCallThrough();
       textEditor.save();
-      textEditor.save();
+      const savePromise = Promise.resolve(textEditor.save());
+
       // The first save should be pushed through after the 2nd.
-      expect(spy.callCount).toBe(1);
-      jasmine.Clock.tick(3000);
+      waitsFor(() => spy.callCount === 1);
+
+      runs(() => {
+        jasmine.Clock.tick(3000);
+      });
+
       // Hitting the timeout will force the 2nd save through.
-      expect(spy.callCount).toBe(2);
+      waitsFor(() => spy.callCount === 2);
+
+      // The real save should still go through.
+      waitsForPromise(() => savePromise);
+
+      // Sanity check.
+      runs(() => expect(spy.callCount).toBe(2));
     });
   });
 });
