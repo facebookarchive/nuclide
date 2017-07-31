@@ -47,11 +47,14 @@ class DefinitionCache {
       this._cachedResultEditor = null;
       this._cachedResultRange = null;
       this._cachedResultRange = null;
-      this._disposables.remove(changeDisposable);
-      changeDisposable.dispose();
+      this._disposables.remove(editorDisposables);
+      editorDisposables.dispose();
     };
-    const changeDisposable = editor.onDidChange(invalidateAndStopListening);
-    this._disposables.add(changeDisposable);
+    const editorDisposables = new UniversalDisposable(
+      editor.onDidChange(invalidateAndStopListening),
+      editor.onDidDestroy(invalidateAndStopListening),
+    );
+    this._disposables.add(editorDisposables);
 
     const wordGuess = wordAtPosition(editor, position);
     this._cachedResultRange = wordGuess && wordGuess.range;
