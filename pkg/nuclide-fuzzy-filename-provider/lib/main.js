@@ -10,7 +10,7 @@
  */
 
 import type {BusySignalService} from 'atom-ide-ui';
-import type {Provider} from '../../nuclide-quick-open/lib/types';
+import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -24,8 +24,19 @@ import {getIgnoredNames} from './utils';
 
 const logger = getLogger('nuclide-fuzzy-filename-provider');
 
+/**
+ * A fallback provider for when the initial query hasn't come back yet.
+ */
+export type FuzzyFilenameFallbackProvider = {
+  executeQuery(
+    query: string,
+    directory: atom$Directory,
+  ): Promise<?Array<FileResult>>,
+};
+
 class Activation {
   _busySignalService: ?BusySignalService;
+  _fallbackProvider: ?FuzzyFilenameFallbackProvider;
   _subscriptions: UniversalDisposable;
   _subscriptionsByRoot: Map<string, UniversalDisposable>;
 
@@ -107,8 +118,7 @@ class Activation {
     } catch (err) {
       throw err;
     } finally {
-      busySignalDisposable.dispose();
-      disposables.remove(busySignalDisposable);
+      disposables.dispose();
     }
   }
 
@@ -131,13 +141,44 @@ class Activation {
   }
 
   registerProvider(): Provider {
-    return FuzzyFileNameProvider;
+    return {
+      ...FuzzyFileNameProvider,
+      executeQuery: async (query: string, directory: atom$Directory) => {
+        const initialDisposable = this._subscriptionsByRoot.get(
+          directory.getPath(),
+        );
+        // If the initial query is still executing, use the fallback provider.
+        if (
+          initialDisposable != null &&
+          !initialDisposable.disposed &&
+          this._fallbackProvider != null
+        ) {
+          const results = await this._fallbackProvider.executeQuery(
+            query,
+            directory,
+          );
+          if (results != null && results.length > 0) {
+            return results;
+          }
+        }
+        return FuzzyFileNameProvider.executeQuery(query, directory);
+      },
+    };
   }
 
   consumeBusySignal(service: BusySignalService): IDisposable {
     this._busySignalService = service;
     return new UniversalDisposable(() => {
       this._busySignalService = null;
+    });
+  }
+
+  consumeFallbackProvider(
+    provider: FuzzyFilenameFallbackProvider,
+  ): IDisposable {
+    this._fallbackProvider = provider;
+    return new UniversalDisposable(() => {
+      this._fallbackProvider = null;
     });
   }
 

@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
+import type {
+  FileResult,
+  DirectoryProviderType,
+} from '../../nuclide-quick-open/lib/types';
 
 import {
   RemoteDirectory,
@@ -71,4 +74,4 @@ export default ({
       column,
     }));
   },
-}: Provider);
+}: DirectoryProviderType);
