@@ -156,6 +156,7 @@ export class LspConnection {
 
   documentHighlight(
     params: p.TextDocumentPositionParams,
+    token: CancellationToken,
   ): Promise<Array<p.DocumentHighlight>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/documentHighlight',

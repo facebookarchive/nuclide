@@ -129,7 +129,12 @@ export class LspLanguageService {
   _derivedServerCapabilities: DerivedServerCapabilities;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
 
+  // Whenever we trigger a new request, we cancel the outstanding request, so
+  // only one request of these types would be active at a time. Note that the
+  // language server is free to ignore any cancellation request, so we could
+  // still potentially have multiple outstanding requests of the same type.
   _hoverCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
+  _highlightCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
 
   constructor(
     logger: log4js$Logger,
@@ -1356,7 +1361,12 @@ export class LspLanguageService {
 
     let response;
     try {
-      response = await this._lspConnection.documentHighlight(params);
+      this._highlightCancellation.cancel();
+      this._highlightCancellation = new rpc.CancellationTokenSource();
+      response = await this._lspConnection.documentHighlight(
+        params,
+        this._highlightCancellation.token,
+      );
     } catch (e) {
       this._logLspException(e);
       return null;
