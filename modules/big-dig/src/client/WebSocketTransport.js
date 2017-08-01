@@ -14,6 +14,7 @@ import type WS from 'ws';
 import type {Observable} from 'rxjs';
 
 import {Subject} from 'rxjs';
+import https from 'https';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {Emitter} from 'event-kit';
@@ -29,13 +30,15 @@ const logger = getLogger();
 // onClose handlers will be called before close() returns.
 export class WebSocketTransport {
   id: string;
+  _agent: http$Agent;
   _socket: ?WS;
   _emitter: Emitter;
   _messages: Subject<string>;
 
-  constructor(clientId: string, socket: WS) {
+  constructor(clientId: string, agent: http$Agent, socket: WS) {
     this.id = clientId;
     this._emitter = new Emitter();
+    this._agent = agent;
     this._socket = socket;
     this._messages = new Subject();
 
@@ -84,6 +87,32 @@ export class WebSocketTransport {
     const socket = this._socket;
     invariant(socket);
     return socket.url;
+  }
+
+  // TODO(mbolin): Remove this once we have BigDigClient working. Until then,
+  // this demonstrates how to make a secure request to the HTTPS server.
+  testAgent() {
+    const {hostname, port} = require('url').parse(this.getAddress());
+    // eslint-disable-next-line no-console
+    console.log(`will connect to ${String(hostname)} ${String(port)}`);
+    const request = https.request(
+      {
+        hostname,
+        port,
+        path: '/test',
+        method: 'GET',
+        agent: this._agent,
+      },
+      response => {
+        // eslint-disable-next-line no-console
+        console.log(`received response in testAgent: ${response.statusCode}`);
+      },
+    );
+    request.on('error', e => {
+      // eslint-disable-next-line no-console
+      console.error(`problem with request: ${e.message}`);
+    });
+    request.end();
   }
 
   _onSocketMessage(message: string): void {

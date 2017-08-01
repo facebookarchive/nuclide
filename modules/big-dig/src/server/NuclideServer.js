@@ -10,12 +10,12 @@
  * @format
  */
 
-import https from 'https';
+import BigDigServer from './BigDigServer';
 import WS from 'ws';
+import https from 'https';
 
 export type LauncherParameters = {
-  webServer: tls$Server,
-  webSocketServer: WS.Server,
+  server: BigDigServer,
   // Any sort of JSON-serializable object is fine.
   serverParams: mixed,
 };
@@ -50,12 +50,8 @@ export type NuclideServerOptions = {
  * check server.address().port to see what the actual port is.
  */
 export function launchServer(options: NuclideServerOptions): Promise<number> {
-  // TODO(mbolin): Must specify a requestListener to createServer().
-  const requestListener = (req, res) => {
-    console.log('Received a request!'); // eslint-disable-line no-console
-  };
+  const webServer = https.createServer(options.webServer);
 
-  const webServer = https.createServer(options.webServer, requestListener);
   return new Promise((resolve, reject) => {
     // TODO(mbolin): Once the webServer is up and running and this Promise is resolved,
     // rejecting the Promise will be a noop. We need better error handling here.
@@ -80,15 +76,9 @@ export function launchServer(options: NuclideServerOptions): Promise<number> {
         // $FlowIgnore
       ) => Promise<void> = require(options.absolutePathToServerMain);
 
-      // TODO(mbolin): Expand the launcher API to let it add extra properties to the JSON file that
-      // gets written.
-      // TODO(mbolin): Expand the launcher API so that it can receive additional command-line
-      // arguments from the caller.
-
-      // The server that is created is responsible for closing webServer and webSocketServer.
+      const bigDigServer = new BigDigServer(webServer, webSocketServer);
       launcher({
-        webServer,
-        webSocketServer,
+        server: bigDigServer,
         serverParams: options.serverParams,
       }).then(() => {
         // Now the NuclideServer should have attached its own error handler.

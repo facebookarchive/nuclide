@@ -10,9 +10,23 @@
  * @format
  */
 
+import log4js from 'log4js';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import {getUsername} from '../common/username';
 import {generateCertificatesAndStartServer} from './main';
+
+log4js.configure({
+  appenders: [
+    {
+      type: 'file',
+      filename: nuclideUri.join(os.tmpdir(), 'big-dig-cli.log'),
+    },
+    {
+      type: 'console',
+    },
+  ],
+});
 
 const DEFAULT_PORT = 0;
 

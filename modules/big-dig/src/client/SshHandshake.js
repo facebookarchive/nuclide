@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {BigDigClient} from './BigDigClient';
+
 import net from 'net';
 import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
@@ -18,12 +20,11 @@ import {sleep} from 'nuclide-commons/promise';
 import {shellQuote} from 'nuclide-commons/string';
 import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
-import {WebSocketTransport} from '../common/WebSocketTransport';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
-import createWebSocketTransport from './createWebSocketTransport';
+import createBigDigClient from './createBigDigClient';
 
 // TODO
-function restoreWebSocketTransport(address: string) {}
+function restoreBigDigClient(address: string) {}
 
 export type RemoteConnectionConfiguration = {
   host: string, // host nuclide server is running on.
@@ -46,6 +47,7 @@ export type SshConnectionConfiguration = {
   username: string, // username to authenticate as
   pathToPrivateKey: string, // The path to private key
   remoteServerCommand: string, // Command to use to start server
+  remoteServerPort?: number, // Port remote server should run on (defaults to 0)
   remoteServerCustomParams?: Object, // JSON-serializable params.
   authMethod: string, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
@@ -120,7 +122,7 @@ export type SshConnectionDelegate = {
   onWillConnect: (config: SshConnectionConfiguration) => void,
   /** Invoked when connection is sucessful */
   onDidConnect: (
-    connection: WebSocketTransport,
+    connection: BigDigClient,
     config: SshConnectionConfiguration,
   ) => mixed,
   /** Invoked when connection is fails */
@@ -175,7 +177,7 @@ export class SshHandshake {
     this._delegate.onWillConnect(this._config);
   }
 
-  _didConnect(connection: WebSocketTransport): void {
+  _didConnect(connection: BigDigClient): void {
     this._delegate.onDidConnect(connection, this._config);
   }
 
@@ -246,10 +248,10 @@ export class SshHandshake {
     }
 
     const connection =
-      (await restoreWebSocketTransport(this._config.host)) ||
+      (await restoreBigDigClient(this._config.host)) ||
       // We save connections by their IP address as well, in case a different hostname
       // was used for the same server.
-      (await restoreWebSocketTransport(address));
+      (await restoreBigDigClient(address));
 
     if (connection) {
       this._didConnect(connection);
@@ -434,6 +436,7 @@ export class SshHandshake {
         timeout: '60s', // Currently unused and not configurable.
         expiration: '7d',
         serverParams: this._config.remoteServerCustomParams,
+        port: this._config.remoteServerPort,
       };
       const cmd = `${this._config.remoteServerCommand} ${shellQuote([
         JSON.stringify(params),
@@ -558,7 +561,7 @@ export class SshHandshake {
     if (this._isSecure()) {
       invariant(this._remoteHost);
       invariant(this._remotePort);
-      this._establishWebSocketTransport({
+      this._establishBigDigClient({
         host: this._remoteHost,
         port: this._remotePort,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
@@ -574,7 +577,7 @@ export class SshHandshake {
         .listen(0, 'localhost', () => {
           const localPort = this._getLocalPort();
           invariant(localPort);
-          this._establishWebSocketTransport({
+          this._establishBigDigClient({
             host: 'localhost',
             port: localPort,
           });
@@ -583,15 +586,15 @@ export class SshHandshake {
   }
 
   /**
-   * Now that the remote server has been started, create the WebSocketTransport to talk to it and
+   * Now that the remote server has been started, create the BigDigClient to talk to it and
    * pass it to the _didConnect() callback.
    */
-  async _establishWebSocketTransport(
+  async _establishBigDigClient(
     config: RemoteConnectionConfiguration,
   ): Promise<void> {
-    let webSocketTransport = null;
+    let bigDigClient = null;
     try {
-      webSocketTransport = await createWebSocketTransport(config);
+      bigDigClient = await createBigDigClient(config);
     } catch (e) {
       this._error(
         'Connection check failed',
@@ -600,8 +603,8 @@ export class SshHandshake {
       );
     }
 
-    if (webSocketTransport != null) {
-      this._didConnect(webSocketTransport);
+    if (bigDigClient != null) {
+      this._didConnect(bigDigClient);
       // If we are secure then we don't need the ssh tunnel.
       if (this._isSecure()) {
         this._connection.end();
@@ -652,7 +655,7 @@ export function decorateSshConnectionDelegateWithTracking(
       delegate.onWillConnect(config);
     },
     onDidConnect: (
-      connection: WebSocketTransport,
+      connection: BigDigClient,
       config: SshConnectionConfiguration,
     ) => {
       invariant(connectionTracker);

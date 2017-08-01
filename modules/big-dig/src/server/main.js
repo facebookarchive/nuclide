@@ -14,6 +14,7 @@ import child_process from 'child_process';
 import fs from '../common/fs';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getLogger} from 'log4js';
 import {generateCertificates} from './certificates';
 
 export async function generateCertificatesAndStartServer(
@@ -26,6 +27,9 @@ export async function generateCertificatesAndStartServer(
   absolutePathToServerMain: string,
   serverParams: mixed,
 ): Promise<void> {
+  const logger = getLogger();
+  logger.info('in generateCertificatesAndStartServer()');
+
   const homeDir = process.env.HOME || process.env.USERPROFILE;
   invariant(homeDir);
 
@@ -53,6 +57,8 @@ export async function generateCertificatesAndStartServer(
     sharedCertsDir,
     expirationDays,
   );
+  logger.info('generateCertificates() succeeded!');
+
   const [key, cert, ca] = await Promise.all([
     fs.readFileAsBuffer(paths.serverKey),
     fs.readFileAsBuffer(paths.serverCert),
@@ -66,14 +72,18 @@ export async function generateCertificatesAndStartServer(
     launcher: absolutePathToServerMain,
     serverParams,
   };
+
+  const launcherScript = require.resolve('./launchServer-entry.js');
+  logger.info(`About to spawn ${launcherScript} to launch Big Dig server.`);
   const child = child_process.spawn(
     process.execPath,
-    [require.resolve('./launchServer-entry.js'), JSON.stringify(params)],
+    [launcherScript, JSON.stringify(params)],
     {
       detached: true,
       stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
     },
   );
+  logger.info(`spawn called for ${launcherScript}`);
 
   const childPort = await new Promise((resolve, reject) => {
     const onMessage = ({port: result}) => {
@@ -83,6 +93,7 @@ export async function generateCertificatesAndStartServer(
     child.on('message', onMessage);
     child.on('error', reject);
     child.on('exit', code => {
+      logger.info(`${launcherScript} exited with code ${code}`);
       reject(Error(`child exited early with code ${code}`));
     });
   });
@@ -102,5 +113,6 @@ export async function generateCertificatesAndStartServer(
     },
   );
   await fs.writeFile(jsonOutputFile, json, {mode: 0o600});
+  logger.info(`Server config written to ${jsonOutputFile}.`);
   child.unref();
 }

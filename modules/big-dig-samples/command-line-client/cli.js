@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {WebSocketTransport} from 'big-dig/src/common/WebSocketTransport';
+import type {BigDigClient} from 'big-dig/src/client/BigDigClient';
 import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
@@ -71,7 +71,7 @@ function parseArgsAndRunMain(): Promise<void> {
       },
 
       async onDidConnect(
-        connection: WebSocketTransport,
+        connection: BigDigClient,
         config: SshConnectionConfiguration,
       ) {
         getLogger().info(`Connected to server at: ${connection.getAddress()}`);
@@ -79,7 +79,7 @@ function parseArgsAndRunMain(): Promise<void> {
         // with logging output. Maybe a simpler send/response would be a better
         // first sample and there could be a more complex example that uses more
         // of the Observable API.
-        connection.onMessage().subscribe(x => getLogger().info(x));
+        connection.onMessage('raw-data').subscribe(x => getLogger().info(x));
 
         // Once the connection is established, the common pattern is to pass
         // the WebSocketTransport to the business logic that needs to
@@ -112,10 +112,10 @@ function parseArgsAndRunMain(): Promise<void> {
 }
 
 class QuestionClient {
-  connection_: WebSocketTransport;
+  connection_: BigDigClient;
   exit_: () => void;
 
-  constructor(connection: WebSocketTransport, exit: () => void) {
+  constructor(connection: BigDigClient, exit: () => void) {
     this.connection_ = connection;
     this.exit_ = exit;
   }
@@ -127,11 +127,11 @@ class QuestionClient {
     );
 
     if (data !== 'exit') {
-      this.connection_.send(data);
+      this.connection_.sendMessage('raw-data', data);
       await this.run();
     } else {
       this.exit_();
-      this.connection_.close();
+      this.connection_.dispose();
     }
   }
 }

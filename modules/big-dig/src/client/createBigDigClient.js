@@ -11,21 +11,29 @@
  */
 
 import WS from 'ws';
+import https from 'https';
 
 import type {RemoteConnectionConfiguration} from './SshHandshake';
-import {WebSocketTransport} from '../common/WebSocketTransport';
+import {WebSocketTransport} from './WebSocketTransport';
+import {BigDigClient} from './BigDigClient';
 
-export default (async function createWebSocketTransport(
+/**
+ * Creates a Big Dig client that speaks the v1 protocol.
+ */
+export default (async function createBigDigClient(
   config: RemoteConnectionConfiguration,
-): Promise<WebSocketTransport> {
-  const socket = new WS(`wss://${config.host}:${config.port}`, {
+): Promise<BigDigClient> {
+  const options = {
     ca: config.certificateAuthorityCertificate,
     cert: config.clientCertificate,
     key: config.clientKey,
-  });
+  };
+  const socket = new WS(`wss://${config.host}:${config.port}/v1`, options);
   await new Promise((resolve, reject) => {
     socket.once('open', resolve);
     socket.once('error', reject);
   });
-  return new WebSocketTransport('test', socket);
+  const agent = new https.Agent(options);
+  const webSocketTransport = new WebSocketTransport('test', agent, socket);
+  return new BigDigClient(webSocketTransport);
 });
