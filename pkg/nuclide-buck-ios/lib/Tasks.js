@@ -132,11 +132,13 @@ function _getLocalSubcommand(taskType: TaskType, ruleType: string) {
 }
 
 function startLogger(iosDeployable: IosDeployable): Observable<TaskEvent> {
-  if (iosDeployable.type === 'simulator') {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-ios-simulator-logs:start',
-    );
-  }
-  return Observable.empty();
+  return Observable.create(observer => {
+    if (iosDeployable.type === 'simulator') {
+      atom.commands.dispatch(
+        atom.views.getView(atom.workspace),
+        'nuclide-ios-simulator-logs:start',
+      );
+    }
+    observer.complete();
+  });
 }
