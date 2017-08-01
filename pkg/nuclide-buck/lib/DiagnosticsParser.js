@@ -34,6 +34,26 @@ const TEST_FAILURE_CONTINUED_REGEX = /^([^:]+):([0-9]+): (.*)$/gm;
 // (Hint: Did you mean id_to_stridng?)
 const OCAML_ERROR_REGEX = /^File "([^"]+)", line ([0-9]+), characters ([0-9]+)-[0-9]+:\n(\S+: .*)\n?(Hint:.*)?$/gm;
 
+// Buck output for Rust warnings and errors look something like this:
+//
+// warning: unused variable: `unused`
+//   --> buck-out/foo/target#some-container/path/to/foo.rs:15:9
+//    |
+// 15 |     let unused = 32;
+//    |         ^^^^^^
+//    |
+//    = note: #[warn(unused_variables)] on by default
+//
+// error[E0425]: cannot find value `breakage` in this scope
+//   --> buck-out/foo/target#some-container/path/to/foo.rs:11:5
+//    |
+// 11 |     breakage
+//    |     ^^^^^^^^ not found in this scope
+//
+// error: aborting due to previous error
+//
+const RUST_ERROR_REGEX = /(^(error|warning)(?:\[.+?\]){0,1}: [^\n]+)(?:\n +--> .+?#[^/]+\/([^:]+\.rs):([0-9]+):([0-9]+)(?:[\s\S]+?))+/gm;
+
 // It's expensive to get the real length of the lines (we'd have to read each file).
 // Instead, just use a very large number ("infinity"). The diagnostics UI handles this
 // and won't underline any characters past the end of the line.
@@ -208,6 +228,28 @@ export default class DiagnosticsParser {
         file,
         ocamlLevel,
         text,
+        line,
+        column,
+      );
+    }
+
+    let rustMatch;
+    while ((rustMatch = RUST_ERROR_REGEX.exec(message))) {
+      const [, rustMessage, rustLevel, file, strLine, strColumn] = rustMatch;
+      fileSystemService = getFileSystemServiceIfNecessary(
+        fileSystemService,
+        root,
+      );
+      const line = parseInt(strLine, 10);
+      const column = parseInt(strColumn, 10);
+
+      pushParsedDiagnostic(
+        fileSystemService,
+        promises,
+        root,
+        file,
+        rustLevel,
+        rustMessage,
         line,
         column,
       );

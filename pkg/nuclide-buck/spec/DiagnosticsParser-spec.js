@@ -512,4 +512,89 @@ describe('DiagnosticsProvider', () => {
       ]);
     });
   });
+
+  it('matches rustc errors in Buck', () => {
+    waitsForPromise(async () => {
+      const diagnostics = Promise.all([
+        diagnosticsParser.getDiagnostics(
+          'error: expected one of `.`, `;`, `?`, `}`, or an operator, found `breakage`\n' +
+            '  --> buck-out/foo/bar#some-container/good/path/to/hello.rs:11:5\n' +
+            '   |\n' +
+            '9  |     println!("Rust says \'Hello World!\'")\n' +
+            '   |                                         - expected one of `.`, `;`, `?`, `}`, or an operator here\n' +
+            '10 | \n' +
+            '11 |     breakage\n' +
+            '   |     ^^^^^^^^ unexpected token\n' +
+            '\n' +
+            'error: aborting due to previous error',
+          'error',
+          '/',
+        ),
+      ]);
+
+      expect(await diagnostics).toEqual([
+        [
+          {
+            scope: 'file',
+            providerName: 'Buck',
+            type: 'Error',
+            filePath: '/good/path/to/hello.rs',
+            text:
+              'error: expected one of `.`, `;`, `?`, `}`, or an operator, found `breakage`',
+            range: {
+              start: {
+                row: 10,
+                column: 4,
+              },
+              end: {
+                row: 10,
+                column: 4,
+              },
+            },
+          },
+        ],
+      ]);
+    });
+  });
+
+  it('matches rustc warnings in Buck', () => {
+    waitsForPromise(async () => {
+      const diagnostics = Promise.all([
+        diagnosticsParser.getDiagnostics(
+          'warning: unused variable: `unused`\n' +
+            '  --> buck-out/foo/bar#some-container/good/path/to/hello.rs:10:9\n' +
+            '   |\n' +
+            '10 |     let unused = 44;\n' +
+            '   |         ^^^^^^\n' +
+            '   |\n' +
+            '   = note: #[warn(unused_variables)] on by default' +
+            'error: aborting due to previous error',
+          'error',
+          '/',
+        ),
+      ]);
+
+      expect(await diagnostics).toEqual([
+        [
+          {
+            scope: 'file',
+            providerName: 'Buck',
+            type: 'Warning',
+            filePath: '/good/path/to/hello.rs',
+            text: 'warning: unused variable: `unused`',
+            range: {
+              start: {
+                row: 9,
+                column: 8,
+              },
+              end: {
+                row: 9,
+                column: 8,
+              },
+            },
+          },
+        ],
+      ]);
+    });
+  });
 });
