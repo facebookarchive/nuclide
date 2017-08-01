@@ -56,6 +56,18 @@ module.exports = function(context) {
     if (ATOM_BUILTIN_PACKAGES.has(dep) || resolveFrom(moduleDir, dep) === dep) {
       return;
     }
+
+    if (dep === 'vscode') {
+      if (!(modulePkg.engines instanceof Object) ||
+          !modulePkg.engines.hasOwnProperty('vscode')) {
+        context.report({
+          node,
+          message: 'If "vscode" is an import, must declare vscode in "engines." ',
+        });
+      }
+      return;
+    }
+
     const depName = dep.split('/')[0];
     if (!Object.hasOwnProperty.call(modulePkg.dependencies, depName)) {
       context.report({
