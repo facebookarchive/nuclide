@@ -29,6 +29,7 @@ type DefaultProps = {
   onFocus: () => mixed,
   onBlur: (blurEvent: Event) => mixed,
   unstyled: boolean,
+  style: ?Object,
 };
 
 type Props = {
@@ -51,6 +52,7 @@ type Props = {
   // If the `value` prop is specified, then the component's displayed text is controlled by this
   // prop.  Otherwise its displayed text must be imperatively set on the instance.
   value?: string,
+  style: ?Object,
 };
 
 type State = {
@@ -77,6 +79,7 @@ export class AtomInput extends React.Component {
     onFocus: () => {},
     onBlur: () => {},
     unstyled: false,
+    style: null,
   };
 
   constructor(props: Props) {
@@ -207,6 +210,7 @@ export class AtomInput extends React.Component {
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
+        style={this.props.style}
       />
     );
   }

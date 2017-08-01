@@ -46,6 +46,7 @@ class Activation {
         cookie: '',
       },
       body: null,
+      parameters: [{key: '', value: ''}],
     };
     const epics = Object.keys(Epics)
       .map(k => Epics[k])

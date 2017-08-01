@@ -9,14 +9,15 @@
  * @format
  */
 
-import type {BoundActionCreators} from './types';
+import type {BoundActionCreators, Parameter} from './types';
 
 import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
+import {ParameterInput} from './ParameterInput';
 import invariant from 'assert';
 import shallowequal from 'shallowequal';
 
@@ -28,6 +29,7 @@ type PropsType = {
   method: string,
   headers: Headers,
   body: ?string,
+  parameters: Array<Parameter>,
 };
 
 const METHOD_DROPDOWN_OPTIONS = [
@@ -42,15 +44,20 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
   constructor(props: PropsType) {
     super(props);
     this._editorComponent = null;
+    (this: any)._onCancel = this._onCancel.bind(this);
+    (this: any)._onSendHttpRequest = this._onSendHttpRequest.bind(this);
+    (this: any)._handleParameterChange = this._handleParameterChange.bind(this);
+    (this: any)._handleRemoveParameter = this._handleRemoveParameter.bind(this);
   }
 
   shouldComponentUpdate(nextProps: PropsType): boolean {
-    const {uri, method, headers, body} = this.props;
+    const {uri, method, headers, body, parameters} = this.props;
     return (
       nextProps.uri !== uri ||
       nextProps.method !== method ||
       nextProps.body !== body ||
-      !shallowequal(nextProps.headers, headers)
+      !shallowequal(nextProps.headers, headers) ||
+      !shallowequal(nextProps.parameters, parameters)
     );
   }
 
@@ -103,6 +110,80 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     this.props.actionCreators.updateState({headers});
   }
 
+  _renderRequestBody(): React.Element<any> | null {
+    if (this.props.method !== 'POST') {
+      return null;
+    }
+
+    return (
+      <div>
+        <label>Body</label>
+        <AtomInput
+          onDidChange={body => this.props.actionCreators.updateState({body})}
+        />
+      </div>
+    );
+  }
+
+  _renderRequestParameters(): React.Element<any> | null {
+    const parameterObj = {};
+    return (
+      <div>
+        <label>Parameters</label>
+        <div className="nuclide-parameter-input-container">
+          <label>Key</label>
+          <label>Value</label>
+        </div>
+        {this.props.parameters.map((parameter, index) => {
+          if (!parameter) {
+            return null;
+          }
+          const key = parameter.key;
+          const value = parameter.value;
+          const trimmedKey = key.trim();
+          const output = (
+            <ParameterInput
+              key={index}
+              index={index}
+              paramKey={key}
+              paramValue={value}
+              isDuplicate={Boolean(key && parameterObj[trimmedKey])}
+              updateParameter={this._handleParameterChange}
+              removeParameter={this._handleRemoveParameter}
+            />
+          );
+
+          parameterObj[trimmedKey] = true;
+          return output;
+        })}
+      </div>
+    );
+  }
+
+  _handleParameterChange(index: number, parameter: Parameter): void {
+    const parameters = this.props.parameters.map(param => ({...param}));
+    parameters[index] = parameter;
+    this._updateParameterState(index, parameters);
+  }
+
+  _handleRemoveParameter(index: number): void {
+    const parameters = this.props.parameters.map(param => ({...param}));
+    parameters[index] = null;
+    this._updateParameterState(index, parameters);
+  }
+
+  _updateParameterState(
+    modifiedIndex: number,
+    parameters: Array<Parameter>,
+  ): void {
+    // If last parameter is modified, add new parameter
+    if (modifiedIndex === parameters.length - 1) {
+      parameters.push({key: '', value: ''});
+    }
+
+    this.props.actionCreators.updateState({parameters});
+  }
+
   render(): React.Element<any> {
     return (
       <div className="block">
@@ -114,22 +195,15 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
             value={this.props.uri}
             onDidChange={uri => this.props.actionCreators.updateState({uri})}
           />
-          <label>Method: </label>
+          <label>Method:</label>
           <Dropdown
+            className="nuclide-edit-request-method-select"
             value={this.props.method}
             options={METHOD_DROPDOWN_OPTIONS}
             onChange={method => this.props.actionCreators.updateState({method})}
           />
-          {this.props.method !== 'POST'
-            ? null
-            : <div>
-                <label>Body</label>
-                <AtomInput
-                  tabIndex="2"
-                  onDidChange={body =>
-                    this.props.actionCreators.updateState({body})}
-                />
-              </div>}
+          {this._renderRequestParameters()}
+          {this._renderRequestBody()}
           <label>Headers: </label>
           <div className="nuclide-http-request-sender-headers">
             <AtomTextEditor
