@@ -350,7 +350,9 @@ All the changes across your entire stacked diff.
           headline={uncommittedChangesHeadline}
           onChange={this._handleUncommittedFilesExpandedChange}
           size="small">
-          {uncommittedChangesList}
+          <PanelComponentScroller>
+            {uncommittedChangesList}
+          </PanelComponentScroller>
         </Section>
       );
     }

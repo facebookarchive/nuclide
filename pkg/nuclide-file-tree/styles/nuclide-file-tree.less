@@ -29,6 +29,7 @@
   }
 
   .entry {
+    position: relative;
     // This fixes https://github.com/atom/tree-view/issues/110, see that issue for more details
     &:before {
       content: '';
@@ -152,6 +153,7 @@
 .nuclide-file-tree-open-files-list {
   position: relative;
   width: 100%;
+  min-width: min-content;
 
   .list-item:hover {
     color: @text-color-highlight;
@@ -182,6 +184,11 @@
 .nuclide-file-tree-sidebar-uncommitted-changes {
   display: flex;
   max-height: 20vh;
+  width: 100%;
+}
+
+.nuclide-file-tree .list-item {
+  position: relative;
 }
 
 .nuclide-file-tree .list-item::before {

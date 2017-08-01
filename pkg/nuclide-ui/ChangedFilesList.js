@@ -119,7 +119,7 @@ export default class ChangedFilesList extends React.Component {
 
     const isHgRoot = isHgPath(rootPath);
     return (
-      <ul className="list-tree has-collapsable-children">
+      <ul className="list-tree has-collapsable-children nuclide-changed-files-list">
         <li className={rootClassName}>
           {this.props.shouldShowFolderName
             ? <div
