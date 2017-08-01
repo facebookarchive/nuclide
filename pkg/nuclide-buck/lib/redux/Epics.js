@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {PlatformGroup, Store} from '../types';
 import type {Action} from './Actions';
 import type {ResolvedRuleType} from '../../../nuclide-buck-rpc/lib/types';

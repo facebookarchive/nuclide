@@ -31,7 +31,7 @@ import {arrayEqual} from 'nuclide-commons/collection';
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';
 import * as Epics from './redux/Epics';

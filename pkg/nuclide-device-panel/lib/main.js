@@ -21,7 +21,7 @@ import {ServerConnection} from '../../nuclide-remote-connection/lib/ServerConnec
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import {applyMiddleware, createStore} from 'redux';
 import {createEmptyAppState} from './redux/createEmptyAppState';
 import * as Reducers from './redux/Reducers';

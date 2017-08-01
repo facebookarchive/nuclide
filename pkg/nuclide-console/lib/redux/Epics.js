@@ -10,7 +10,7 @@
  */
 
 import type {Action, Store} from '../types';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import * as Actions from './Actions';

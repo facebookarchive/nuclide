@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {Action, Store, Tunnel} from '../types';
 
 import * as Actions from './Actions';

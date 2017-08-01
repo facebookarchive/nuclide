@@ -29,7 +29,7 @@ import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElem
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from './redux/Actions';

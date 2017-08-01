@@ -17,7 +17,7 @@ import {DeviceTask} from '../DeviceTask';
 import {Cache} from '../../../commons-node/cache';
 import shallowEqual from 'shallowequal';
 
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 import type {Action, Store, AppState, ProcessTask, Process} from '../types';
 
 export function pollDevicesEpic(

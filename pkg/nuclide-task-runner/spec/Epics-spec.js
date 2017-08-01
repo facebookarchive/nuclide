@@ -16,7 +16,7 @@ import type {ConsoleApi, SourceInfo} from '../../nuclide-console/lib/types';
 import {
   ActionsObservable,
   combineEpics,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import * as Actions from '../lib/redux/Actions';

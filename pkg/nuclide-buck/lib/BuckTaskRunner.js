@@ -31,7 +31,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger} from 'log4js';

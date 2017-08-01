@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  ActionsObservable,
-  Epic,
-} from '../../commons-node/redux-observable';
+import type {ActionsObservable, Epic} from 'nuclide-commons/redux-observable';
 import type ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {getFileForPath} from 'nuclide-commons-atom/projects';
 import type {

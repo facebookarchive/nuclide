@@ -22,7 +22,7 @@ import {applyMiddleware, combineReducers, createStore} from 'redux';
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import {Disposable} from 'atom';
 
 class Activation {

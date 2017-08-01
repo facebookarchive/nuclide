@@ -23,7 +23,7 @@ import * as Reducers from './Reducers';
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import {Observable} from 'rxjs';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {track} from '../../nuclide-analytics';

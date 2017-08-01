@@ -19,7 +19,7 @@ import type {
   TaskRunnerState,
 } from '../types';
 import type {Directory} from '../../../nuclide-remote-connection';
-import type {ActionsObservable} from '../../../commons-node/redux-observable';
+import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
 import {saveBuffer} from '../../../nuclide-remote-connection';
 import {observableFromTask} from '../../../commons-node/tasks';

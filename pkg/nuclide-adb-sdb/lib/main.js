@@ -25,7 +25,7 @@ import {applyMiddleware, createStore} from 'redux';
 import {
   combineEpics,
   createEpicMiddleware,
-} from '../../commons-node/redux-observable';
+} from 'nuclide-commons/redux-observable';
 import {registerDevicePanelProviders} from './device-panel/Registration';
 import {AndroidBridge} from './bridges/AndroidBridge';
 import {TizenBridge} from './bridges/TizenBridge';
