@@ -11,7 +11,11 @@
 
 // https://github.com/Microsoft/vscode-languageserver-node/blob/master/jsonrpc/src/main.ts
 export type JsonRpcConnection = {
-  sendRequest(method: string, params?: Object): Promise<any>,
+  sendRequest(
+    method: string,
+    params?: Object,
+    token?: CancellationToken,
+  ): Promise<any>,
   sendNotification(method: string, params?: Object): void,
   listen(): void,
   onNotification(type: {method: string}, callback: (Object) => void): void,
@@ -40,4 +44,10 @@ export type JsonRpcTraceLogger = {
 export type CancellationToken = {
   +isCancellationRequested: boolean,
   onCancellationRequested(callback: () => any): void,
+};
+
+export type CancellationTokenSource = {
+  +token: CancellationToken,
+  cancel(): void,
+  dispose(): void,
 };

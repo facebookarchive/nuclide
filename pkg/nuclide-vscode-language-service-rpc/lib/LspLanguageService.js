@@ -51,7 +51,11 @@ import type {
   SymbolInformation,
   UncoveredRange,
 } from './protocol';
-import type {JsonRpcConnection, CancellationToken} from './jsonrpc';
+import type {
+  JsonRpcConnection,
+  CancellationToken,
+  CancellationTokenSource,
+} from './jsonrpc';
 
 import invariant from 'assert';
 import through from 'through';
@@ -124,6 +128,8 @@ export class LspLanguageService {
   _serverCapabilities: ServerCapabilities;
   _derivedServerCapabilities: DerivedServerCapabilities;
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
+
+  _hoverCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
 
   constructor(
     logger: log4js$Logger,
@@ -1301,7 +1307,12 @@ export class LspLanguageService {
 
     let response;
     try {
-      response = await this._lspConnection.hover(params);
+      this._hoverCancellation.cancel();
+      this._hoverCancellation = new rpc.CancellationTokenSource();
+      response = await this._lspConnection.hover(
+        params,
+        this._hoverCancellation.token,
+      );
     } catch (e) {
       this._logLspException(e);
       return null;

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {JsonRpcConnection} from './jsonrpc';
+import type {CancellationToken, JsonRpcConnection} from './jsonrpc';
 
 import * as p from './protocol';
 
@@ -116,8 +116,15 @@ export class LspConnection {
     );
   }
 
-  hover(params: p.TextDocumentPositionParams): Promise<p.Hover> {
-    return this._jsonRpcConnection.sendRequest('textDocument/hover', params);
+  hover(
+    params: p.TextDocumentPositionParams,
+    token: CancellationToken,
+  ): Promise<p.Hover> {
+    return this._jsonRpcConnection.sendRequest(
+      'textDocument/hover',
+      params,
+      token,
+    );
   }
 
   signatureHelp(
