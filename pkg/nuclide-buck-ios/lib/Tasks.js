@@ -103,14 +103,16 @@ export function runTask(
       startLogger(iosDeployable);
     }
 
+    const debug = taskType === 'debug';
+
     return builder.runSubcommand(
       buckRoot,
       subcommand,
       newTarget,
       settings,
-      taskType === 'debug',
+      debug,
       udid,
-      debuggerCallback,
+      debug ? debuggerCallback : null,
     );
   }
 }
