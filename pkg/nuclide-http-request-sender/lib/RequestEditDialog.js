@@ -48,6 +48,7 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     (this: any)._onSendHttpRequest = this._onSendHttpRequest.bind(this);
     (this: any)._handleParameterChange = this._handleParameterChange.bind(this);
     (this: any)._handleRemoveParameter = this._handleRemoveParameter.bind(this);
+    (this: any)._getParameters = this._getParameters.bind(this);
   }
 
   shouldComponentUpdate(nextProps: PropsType): boolean {
@@ -160,14 +161,20 @@ export class RequestEditDialog extends React.Component<void, PropsType, void> {
     );
   }
 
+  _getParameters() {
+    return this.props.parameters.map(
+      param => (param == null ? null : {...param}),
+    );
+  }
+
   _handleParameterChange(index: number, parameter: Parameter): void {
-    const parameters = this.props.parameters.map(param => ({...param}));
+    const parameters = this._getParameters();
     parameters[index] = parameter;
     this._updateParameterState(index, parameters);
   }
 
   _handleRemoveParameter(index: number): void {
-    const parameters = this.props.parameters.map(param => ({...param}));
+    const parameters = this._getParameters();
     parameters[index] = null;
     this._updateParameterState(index, parameters);
   }
