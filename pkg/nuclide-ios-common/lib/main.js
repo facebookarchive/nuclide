@@ -35,29 +35,29 @@ export type Device = {
 };
 
 export function getFbsimctlDevices(): Observable<Array<Device>> {
-  return (
+  return Observable.interval(5000).startWith(0).switchMap(() =>
     runCommand('fbsimctl', ['--json', '--devices', '--format=%n%u%a', 'list'])
       .map(parseDevicesFromFbsimctlOutput)
       // Users may not have fbsimctl installed. If the command failed, just return an empty list.
       .catch(error => Observable.of([]))
-      .share()
+      .share(),
   );
 }
 
-export const getFbsimctlSimulators: () => Observable<
-  Array<Simulator>,
-> = memoize(() =>
-  runCommand('fbsimctl', [
-    '--json',
-    '--simulators',
-    '--format=%n%u%s%o%a',
-    'list',
-  ])
-    .map(parseSimulatorsFromFbsimctlOutput)
-    .catch(error => getSimulators())
-    // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
-    .share(),
-);
+export function getFbsimctlSimulators(): Observable<Array<Simulator>> {
+  return Observable.interval(5000).startWith(0).switchMap(() =>
+    runCommand('fbsimctl', [
+      '--json',
+      '--simulators',
+      '--format=%n%u%s%o%a',
+      'list',
+    ])
+      .map(parseSimulatorsFromFbsimctlOutput)
+      .catch(error => getSimulators())
+      // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
+      .share(),
+  );
+}
 
 export const getSimulators: () => Observable<Array<Simulator>> = memoize(() =>
   runCommand('xcrun', ['simctl', 'list', 'devices'])
@@ -68,27 +68,6 @@ export const getSimulators: () => Observable<Array<Simulator>> = memoize(() =>
     )
     .share(),
 );
-
-export function getActiveDeviceIndex(devices: Array<Simulator>): number {
-  const bootedDeviceIndex = devices.findIndex(
-    device => device.state === 'BOOTED',
-  );
-  if (bootedDeviceIndex > -1) {
-    return bootedDeviceIndex;
-  }
-
-  let defaultDeviceIndex = 0;
-  let lastOS = '';
-  devices.forEach((device, index) => {
-    if (device.name === 'iPhone 5s') {
-      if (device.os > lastOS) {
-        defaultDeviceIndex = index;
-        lastOS = device.os;
-      }
-    }
-  });
-  return defaultDeviceIndex;
-}
 
 function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
   const simulators = [];
