@@ -1175,6 +1175,7 @@ declare class atom$Workspace {
   paneForItem(item: mixed): ?atom$Pane,
 
   // Panels
+  panelContainers: Array<atom$PanelContainer>,
   getBottomPanels(): Array<atom$Panel>,
   addBottomPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
   getLeftPanels(): Array<atom$Panel>,
@@ -1901,3 +1902,13 @@ declare class atom$Selection {
     },
   ): string,
 }
+
+declare class atom$PanelContainer {
+  dock: atom$Dock,
+  element: HTMLElement,
+  emitter: atom$Emitter,
+  location: atom$PaneLocation,
+  panels: Array<atom$Panel>,
+  subscriptions: atom$CompositeDisposable,
+  viewRegistry: atom$ViewRegistry,
+};
