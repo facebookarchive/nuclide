@@ -221,25 +221,15 @@ class HostServicesRelay {
     title: string,
     options?: {|debounce?: boolean|},
   ): Promise<Progress> {
-    const progressPromise = this._aggregator._parent.showProgress(
-      title,
-      options,
-    );
+    // Here 'progress' is the underlying progress object we got back from our
+    // parent, or null/void if childIsDisposed gets fired before we got it back.
+    let progress: ?Progress = await Promise.race([
+      this._aggregator._parent.showProgress(title, options),
+      this._childIsDisposed.toPromise(),
+    ]);
 
-    // If chidIsDisposed gets fired while we're awaiting for the progress
-    // object, then we'll use this empty progress object instead:
-    const disposedPromise = this._childIsDisposed.toPromise().then(() => {
-      const emptyProgress: Progress = {
-        setTitle: () => {},
-        dispose: () => {},
-      };
-      return emptyProgress;
-    });
-    let progress = await Promise.race([progressPromise, disposedPromise]);
-
-    // If childIsDisposed gets fired after we've returned a wrapper around the
-    // progress object, then we'll dispose the underlying progress object, and
-    // our wrapper will become just a no-op.
+    // After we've returned the wrapper, then childIsDisposed (which disposes
+    // this._disposables) and wrapper.dispose will both be idempotent.
     const wrapper: Progress = {
       setTitle: title2 => {
         if (progress != null) {
@@ -247,8 +237,8 @@ class HostServicesRelay {
         }
       },
       dispose: () => {
+        this._disposables.remove(wrapper);
         if (progress != null) {
-          this._disposables.remove(wrapper);
           progress.dispose();
           progress = null;
         }
