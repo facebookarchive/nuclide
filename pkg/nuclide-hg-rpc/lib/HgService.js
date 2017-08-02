@@ -1378,6 +1378,16 @@ export class HgService {
     return hgRunCommand(args, execOptions).publish();
   }
 
+  resolveAllFiles(): ConnectableObservable<LegacyProcessMessage> {
+    const args = ['resolve', '--all'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgObserveExecution(args, execOptions)
+      .switchMap(processExitCodeAndThrow)
+      .publish();
+  }
+
   rebase(
     destination: string,
     source?: string,

@@ -1197,6 +1197,10 @@ export class HgRepositoryClient {
     return this._service.abortOperation(command).refCount();
   }
 
+  resolveAllFiles(): Observable<LegacyProcessMessage> {
+    return this._service.resolveAllFiles().refCount();
+  }
+
   rebase(
     destination: string,
     source?: string,
