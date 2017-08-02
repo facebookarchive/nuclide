@@ -842,3 +842,20 @@ export type FileEvent = {
   // The change type.
   type: number,
 };
+
+export type ExecuteCommandParams = {
+  // The identifier of the actual command handler.
+  command: string,
+  // Arguments that the command should be invoked with.
+  arguments?: any[],
+};
+
+export type ApplyWorkspaceEditParams = {
+  // The edits to apply.
+  edit: WorkspaceEdit,
+};
+
+export type ApplyWorkspaceEditResponse = {
+  // Indicates whether the edit was applied or not.
+  applied: boolean,
+};

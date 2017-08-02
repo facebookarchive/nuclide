@@ -186,6 +186,13 @@ export class LspConnection {
     return this._jsonRpcConnection.sendRequest('workspace/symbol', params);
   }
 
+  executeCommand(params: p.ExecuteCommandParams): Promise<any> {
+    return this._jsonRpcConnection.sendRequest(
+      'workspace/executeCommand',
+      params,
+    );
+  }
+
   codeAction(params: p.CodeActionParams): Promise<Array<p.Command>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/codeAction',
@@ -274,10 +281,22 @@ export class LspConnection {
   }
 
   onShowMessageRequest(
-    callback: (p.ShowMessageRequestParams, Object) => Promise<any>,
+    callback: (p.ShowMessageRequestParams, CancellationToken) => Promise<any>,
   ): void {
     this._jsonRpcConnection.onRequest(
       {method: 'window/showMessageRequest'},
+      callback,
+    );
+  }
+
+  onApplyEditRequest(
+    callback: (
+      p.ApplyWorkspaceEditParams,
+      CancellationToken,
+    ) => Promise<p.ApplyWorkspaceEditResponse>,
+  ): void {
+    this._jsonRpcConnection.onRequest(
+      {method: 'workspace/applyEdit'},
       callback,
     );
   }
