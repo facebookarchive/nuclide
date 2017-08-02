@@ -118,6 +118,7 @@ export class LspLanguageService {
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
   _state: State = 'Initial';
+  _stateIndicator: UniversalDisposable = new UniversalDisposable();
   _recentRestarts: Array<number> = [];
   _diagnosticUpdates: Subject<
     Observable<PublishDiagnosticsParams>,
@@ -167,9 +168,87 @@ export class LspLanguageService {
     this._stop().catch(_ => {}).then(_ => this._host.dispose());
   }
 
+  _setState(
+    state: State,
+    actionRequiredDialogMessage?: string,
+    existingDialogToDismiss?: rxjs$ISubscription,
+  ): void {
+    this._state = state;
+    this._stateIndicator.dispose();
+    const nextDisposable = new UniversalDisposable();
+    this._stateIndicator = nextDisposable;
+
+    if (state === 'Initial' || state === 'Running') {
+      // No user indication needed for either state.
+      // In the case of 'Initial', that's because the only times we get
+      // in this state is when we're about to call start().
+    } else if (state === 'Starting' || state === 'Stopping') {
+      // Show a progress spinner
+      const tooltip =
+        state === 'Starting'
+          ? `Starting ${this._languageId} language service...`
+          : `Stopping ${this._languageId} language service...`;
+      this._host.showProgress(tooltip).then(progress => {
+        if (nextDisposable.disposed) {
+          progress.dispose();
+        } else {
+          nextDisposable.add(progress);
+        }
+      });
+    } else if (state === 'StartFailed' || state === 'Stopped') {
+      // StartFailed is when we failed to spawn the language server
+      // Stopped is when the JsonRPC transport has been erroring,
+      // or when the connection has been closed too many times and we give up.
+
+      const tooltip =
+        state === 'StartFailed'
+          ? `Failed to start ${this._languageId} - click to retry.`
+          : `Crash in ${this._languageId} - click to restart.`;
+      const defaultMessage =
+        state === 'StartFailed'
+          ? `Failed to start ${this._languageId} language service.`
+          : `Language service ${this._languageId} has crashed.`;
+      const button = state === 'StartFailed' ? 'Retry' : 'Restart';
+      const message = actionRequiredDialogMessage || defaultMessage;
+
+      const subscription = this._host
+        .showActionRequired(tooltip, {clickable: true})
+        .refCount()
+        .switchMap(_ => {
+          if (existingDialogToDismiss != null) {
+            existingDialogToDismiss.unsubscribe();
+          }
+          return this._host
+            .dialogRequest('error', message, [button], 'Close')
+            .refCount();
+        })
+        .subscribe(dialogResponse => {
+          if (dialogResponse !== button) {
+            return;
+          }
+          // Note that if a new state had come along, that would have
+          // unsubscribed nextDisposable, which would (1) dismiss the action-
+          // required indicator, (2) dismiss the dialogRequest. The fact that
+          // we're here now means that this has not happened, i.e. a new state
+          // has not come along.
+          this._host.consoleNotification(
+            this._languageId,
+            'info',
+            `Restarting ${this._languageId}`,
+          );
+          this._setState('Initial');
+          this.start();
+        });
+      nextDisposable.add(subscription);
+    } else {
+      (state: empty);
+      invariant(false, 'unreachable state');
+    }
+  }
+
   async start(): Promise<void> {
     invariant(this._state === 'Initial');
-    this._state = 'Starting';
+    this._setState('Starting');
 
     const startTimeMs = Date.now();
     const spawnCommandForLogs = `${this._command} ${this._args.join(' ')}`;
@@ -215,18 +294,14 @@ export class LspLanguageService {
           timeTakenMs: Date.now() - startTimeMs,
         });
 
-        this._state = 'StartFailed';
-
-        this._host
-          .dialogNotification(
-            'error',
-            `Couldn't start ${this._languageId} server - ${this._errorString(
-              e,
-              this._command,
-            )}`,
-          )
+        const message =
+          `Couldn't start ${this._languageId} server` +
+          ` - ${this._errorString(e, this._command)}`;
+        const dialog = this._host
+          .dialogNotification('error', message)
           .refCount()
-          .subscribe(); // fire-and-forget
+          .subscribe();
+        this._setState('StartFailed', message, dialog);
         return;
       }
 
@@ -496,7 +571,7 @@ export class LspLanguageService {
         });
 
         this._logger.info('Lsp state=Running!');
-        this._state = 'Running';
+        this._setState('Running');
         // At this point we're good to call into LSP.
 
         // CARE! Don't try to hook up file-events until after we're already
@@ -601,11 +676,11 @@ export class LspLanguageService {
       return;
     }
     if (this._lspConnection == null) {
-      this._state = 'Stopped';
+      this._setState('Stopped');
       return;
     }
 
-    this._state = 'Stopping';
+    this._setState('Stopping');
     try {
       // Request the server to close down. It will respond when it's done,
       // but it won't actually terminate its stdin/stdout/process (since if
@@ -621,7 +696,7 @@ export class LspLanguageService {
     // (If we didn't dispose, then they'd be stuck indefinitely).
     // The dispose handler also resets _lspConnection to null.
 
-    this._state = 'Stopped';
+    this._setState('Stopped');
   }
 
   _errorString(error: any, command?: ?string): string {
@@ -732,7 +807,7 @@ export class LspLanguageService {
     }
 
     const prevState = this._state;
-    this._state = 'Stopped';
+    this._setState('Stopped');
     if (this._lspConnection != null) {
       this._lspConnection.dispose();
     }
@@ -749,23 +824,37 @@ export class LspLanguageService {
     }
     track('lsp-handle-close', {recentRestarts: this._recentRestarts.length});
     if (this._recentRestarts.length >= 5) {
-      this._logger.error('Lsp.Close - will not restart.');
-      this._host
-        .dialogNotification(
-          'error',
-          `Language server '${this
-            ._languageId}' has crashed 5 times in the last 3 minutes. It will not be restarted.`,
-        )
+      this._logger.error('Lsp.Close - will not auto-restart.');
+      const message =
+        `Language server '${this._languageId}' ` +
+        'has crashed 5 times in the last 3 minutes.';
+      const dialog = this._host
+        .dialogRequest('error', message, ['Restart'], 'Close')
         .refCount()
-        .subscribe(); // fire and forget
+        .subscribe(response => {
+          if (response === 'Restart') {
+            this._host.consoleNotification(
+              this._languageId,
+              'warning',
+              `Restarting ${this._languageId}`,
+            );
+            this._setState('Initial');
+            this.start();
+          }
+        });
+      // We'll call _setState again, in the same 'Stopped' state, but this time
+      // providing a message+dialog to tailor the action-required indicator,
+      // including dismissing the above dialog if the user clicks the indicator
+      // to pop up another restart dialog.
+      this._setState('Stopped', message, dialog);
     } else {
-      this._logger.error('Lsp.Close - will attempt to restart');
+      this._logger.error('Lsp.Close - will auto-restart');
       this._host.consoleNotification(
         this._languageId,
         'warning',
-        'Automatically restarting language service.',
+        `Automatically restarting ${this._languageId} after a crash`,
       );
-      this._state = 'Initial';
+      this._setState('Initial');
       this.start();
     }
   }
