@@ -16,6 +16,11 @@ export type {
 } from './pkg/atom-ide-busy-signal/lib/types';
 
 export type {
+  CodeAction,
+  CodeActionProvider,
+} from './pkg/atom-ide-code-actions/lib/types';
+
+export type {
   CodeFormatProvider,
   RangeCodeFormatProvider,
   FileCodeFormatProvider,
