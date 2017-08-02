@@ -1099,16 +1099,9 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.completion(params);
-      invariant(
-        response != null,
-        'AutocompleteSuggestion textDocument/completion returned null.',
-      );
+      invariant(response != null, 'null textDocument/completion');
     } catch (e) {
       this._logLspException(e);
-      return null;
-    }
-
-    if (response == null) {
       return null;
     }
 
@@ -1142,10 +1135,7 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.gotoDefinition(params);
-      invariant(
-        response != null,
-        'Definition textDocument/definition returned null.',
-      );
+      invariant(response != null, 'null textDocument/definition');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1193,6 +1183,7 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.findReferences(params);
+      invariant(response != null, 'null textDocument/references');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1267,6 +1258,7 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.typeCoverage(params);
+      invariant(response != null, 'null textDocument/coverage');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1299,6 +1291,7 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.documentSymbol(params);
+      invariant(response != null, 'null textDocument/documentSymbol');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1479,6 +1472,7 @@ export class LspLanguageService {
         params,
         this._hoverCancellation.token,
       );
+      invariant(response != null, 'null textDocument/hover');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1528,6 +1522,7 @@ export class LspLanguageService {
         params,
         this._highlightCancellation.token,
       );
+      invariant(response != null, 'null textDocument/documentHighlight');
     } catch (e) {
       this._logLspException(e);
       return null;
@@ -1585,6 +1580,7 @@ export class LspLanguageService {
     if (canAll && (wantAll || !canRange)) {
       try {
         response = await this._lspConnection.documentFormatting(params);
+        invariant(response != null, 'null textDocument/documentFormatting');
       } catch (e) {
         this._logLspException(e);
         return null;
@@ -1597,6 +1593,10 @@ export class LspLanguageService {
       const params2 = {...params, range};
       try {
         response = await this._lspConnection.documentRangeFormatting(params2);
+        invariant(
+          response != null,
+          'null textDocument/documentRangeFormatting',
+        );
       } catch (e) {
         this._logLspException(e);
         return null;
@@ -1643,16 +1643,25 @@ export class LspLanguageService {
     ) {
       return null;
     }
-
-    const edits = await this._lspConnection.documentOnTypeFormatting({
+    const params = {
       textDocument: convert.localPath_lspTextDocumentIdentifier(
         fileVersion.filePath,
       ),
       position: convert.atomPoint_lspPosition(point),
       ch: triggerCharacter,
       options,
-    });
-    return convert.lspTextEdits_atomTextEdits(edits);
+    };
+
+    let response;
+    try {
+      response = await this._lspConnection.documentOnTypeFormatting(params);
+      invariant(response != null, 'null textDocument/documentOnTypeFormatting');
+    } catch (e) {
+      this._logLspException(e);
+      return null;
+    }
+
+    return convert.lspTextEdits_atomTextEdits(response);
   }
 
   getEvaluationExpression(
@@ -1682,6 +1691,7 @@ export class LspLanguageService {
     let response;
     try {
       response = await this._lspConnection.workspaceSymbol(params);
+      invariant(response != null, 'null workspace/symbol');
     } catch (e) {
       this._logLspException(e);
       return null;
