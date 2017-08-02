@@ -33,9 +33,30 @@ export interface HostServices {
     closeLabel: string,
   ): ConnectableObservable<string>,
 
+  // showProgress shows the busy spinner with a tooltip message that can update
+  // over time. Use the returned Progress interface to update title if wanted,
+  // and to dispose when done.
+  showProgress(
+    title: string,
+    options?: {|debounce?: boolean|},
+  ): Promise<Progress>,
+
+  // showActionRequired shows an icon with the tooltip message. If clickable,
+  // then the user can click on the message, which will generate a next().
+  // Unsubscribe when done.
+  showActionRequired(
+    title: string,
+    options?: {|clickable?: boolean|},
+  ): ConnectableObservable<void>,
+
   dispose(): void,
 
   // Internal implementation method. Normally we'd keep it private.
   // But we need it to be remotable across NuclideRPC, so it must be public.
   childRegister(child: HostServices): Promise<HostServices>,
+}
+
+export interface Progress {
+  setTitle(title: string): void,
+  dispose(): void,
 }
