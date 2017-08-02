@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const DOT_ANIMATION_INTERVAL = 500; /* ms */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,49 +24,35 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+class AnimatedEllipsis extends _react.default.Component {
 
-type Props = {};
-type State = {n: number};
-
-const DOT_ANIMATION_INTERVAL = 500; /* ms */
-export default class AnimatedEllipsis extends React.Component {
-  props: Props;
-  state: State;
-  _disposables: UniversalDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this.state = {
-      n: 0,
+      n: 0
     };
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      Observable.interval(DOT_ANIMATION_INTERVAL).subscribe(_ =>
-        this.setState({n: this.state.n + 1}),
-      ),
-    );
+  componentDidMount() {
+    this._disposables.add(_rxjsBundlesRxMinJs.Observable.interval(DOT_ANIMATION_INTERVAL).subscribe(_ => this.setState({ n: this.state.n + 1 })));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render() {
     const ellipsis = new Array(this.state.n % 4).fill('.').join('');
-    return (
-      <span className="nuclide-ui-animated-ellipsis">
-        {ellipsis}
-      </span>
+    return _react.default.createElement(
+      'span',
+      { className: 'nuclide-ui-animated-ellipsis' },
+      ellipsis
     );
   }
 }
+exports.default = AnimatedEllipsis;

@@ -1,26 +1,17 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-export type AnyTeardown = (() => mixed) | rxjs$ISubscription | IDisposable;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 
 /**
  * Like a CompositeDisposable, but in addition to Disposable instances it can
  * also accept plain functions and Rx subscriptions.
  */
-export default class UniversalDisposable {
-  disposed: boolean;
-  teardowns: Set<AnyTeardown>;
+class UniversalDisposable {
 
-  constructor(...teardowns: Array<AnyTeardown>) {
+  constructor(...teardowns) {
     this.teardowns = new Set();
     this.disposed = false;
     if (teardowns.length) {
@@ -28,7 +19,7 @@ export default class UniversalDisposable {
     }
   }
 
-  add(...teardowns: Array<AnyTeardown>): void {
+  add(...teardowns) {
     if (this.disposed) {
       throw new Error('Cannot add to an already disposed UniversalDisposable!');
     }
@@ -38,13 +29,13 @@ export default class UniversalDisposable {
     }
   }
 
-  remove(teardown: AnyTeardown): void {
+  remove(teardown) {
     if (!this.disposed) {
       this.teardowns.delete(teardown);
     }
   }
 
-  dispose(): void {
+  dispose() {
     if (!this.disposed) {
       this.disposed = true;
       this.teardowns.forEach(teardown => {
@@ -56,30 +47,36 @@ export default class UniversalDisposable {
           teardown();
         }
       });
-      this.teardowns = (null: any);
+      this.teardowns = null;
     }
   }
 
-  unsubscribe(): void {
+  unsubscribe() {
     this.dispose();
   }
 
-  clear(): void {
+  clear() {
     if (!this.disposed) {
       this.teardowns.clear();
     }
   }
 }
 
-function assertTeardown(teardown: AnyTeardown): void {
-  if (
-    typeof teardown.dispose === 'function' ||
-    typeof teardown.unsubscribe === 'function' ||
-    typeof teardown === 'function'
-  ) {
+exports.default = UniversalDisposable; /**
+                                        * Copyright (c) 2017-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the BSD-style license found in the
+                                        * LICENSE file in the root directory of this source tree. An additional grant
+                                        * of patent rights can be found in the PATENTS file in the same directory.
+                                        *
+                                        * 
+                                        * @format
+                                        */
+
+function assertTeardown(teardown) {
+  if (typeof teardown.dispose === 'function' || typeof teardown.unsubscribe === 'function' || typeof teardown === 'function') {
     return;
   }
-  throw new TypeError(
-    'Arguments to UniversalDisposable.add must be disposable',
-  );
+  throw new TypeError('Arguments to UniversalDisposable.add must be disposable');
 }

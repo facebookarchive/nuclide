@@ -1,27 +1,16 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.applyTextEdits = applyTextEdits;
+exports.applyTextEditsToBuffer = applyTextEditsToBuffer;
 
-import invariant from 'assert';
+var _textEditor;
 
-import {existingEditorForUri} from './text-editor';
-
-export type TextEdit = {
-  oldRange: atom$Range,
-  newText: string,
-  // If included, this will be used to verify that the edit still applies cleanly.
-  oldText?: string,
-};
+function _load_textEditor() {
+  return _textEditor = require('./text-editor');
+}
 
 /**
  * Attempts to apply the given patches to the given file.
@@ -35,19 +24,27 @@ export type TextEdit = {
  * Returns true if the application was successful, otherwise false (e.g. if the oldText did not
  * match).
  */
-export function applyTextEdits(
-  path: NuclideUri,
-  ...edits: Array<TextEdit>
-): boolean {
-  const editor = existingEditorForUri(path);
-  invariant(editor != null);
-  return applyTextEditsToBuffer(editor.getBuffer(), edits);
-}
+function applyTextEdits(path, ...edits) {
+  const editor = (0, (_textEditor || _load_textEditor()).existingEditorForUri)(path);
 
-export function applyTextEditsToBuffer(
-  buffer: atom$TextBuffer,
-  edits: Array<TextEdit>,
-): boolean {
+  if (!(editor != null)) {
+    throw new Error('Invariant violation: "editor != null"');
+  }
+
+  return applyTextEditsToBuffer(editor.getBuffer(), edits);
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
+
+function applyTextEditsToBuffer(buffer, edits) {
   // Special-case whole-buffer changes to minimize disruption.
   if (edits.length === 1 && edits[0].oldRange.isEqual(buffer.getRange())) {
     if (edits[0].oldText != null && edits[0].oldText !== buffer.getText()) {
@@ -74,7 +71,7 @@ export function applyTextEditsToBuffer(
   return true;
 }
 
-function applyToBuffer(buffer: atom$TextBuffer, edit: TextEdit): boolean {
+function applyToBuffer(buffer, edit) {
   if (edit.oldRange.start.row === edit.oldRange.end.row) {
     // A little extra validation when the old range spans only one line. In particular, this helps
     // when the old range is empty so there is no old text for us to compare against. We can at

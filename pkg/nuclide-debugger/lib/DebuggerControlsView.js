@@ -1,135 +1,156 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type DebuggerModel from './DebuggerModel';
-import {CompositeDisposable} from 'atom';
-import React from 'react';
-import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
-import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
-import type {DebuggerModeType} from './types';
-import {DebuggerMode} from './DebuggerStore';
-import DebuggerControllerView from './DebuggerControllerView';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerControlsView = undefined;
 
-type Props = {
-  model: DebuggerModel,
-};
+var _atom = require('atom');
 
-export class DebuggerControlsView extends React.PureComponent {
-  props: Props;
-  state: {
-    mode: DebuggerModeType,
-  };
-  _disposables: CompositeDisposable;
+var _react = _interopRequireDefault(require('react'));
 
-  constructor(props: Props) {
+var _TruncatedButton;
+
+function _load_TruncatedButton() {
+  return _TruncatedButton = _interopRequireDefault(require('nuclide-commons-ui/TruncatedButton'));
+}
+
+var _DebuggerSteppingComponent;
+
+function _load_DebuggerSteppingComponent() {
+  return _DebuggerSteppingComponent = require('./DebuggerSteppingComponent');
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _DebuggerControllerView;
+
+function _load_DebuggerControllerView() {
+  return _DebuggerControllerView = _interopRequireDefault(require('./DebuggerControllerView'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerControlsView extends _react.default.PureComponent {
+
+  constructor(props) {
     super(props);
 
-    this._disposables = new CompositeDisposable();
+    this._openDevTools = () => {
+      const { model } = this.props;
+      model.getActions().openDevTools();
+    };
+
+    this._stopDebugging = () => {
+      const { model } = this.props;
+      model.getActions().stopDebugging();
+    };
+
+    this._disposables = new _atom.CompositeDisposable();
     const debuggerStore = props.model.getStore();
     this.state = {
-      mode: debuggerStore.getDebuggerMode(),
+      mode: debuggerStore.getDebuggerMode()
     };
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     const debuggerStore = this.props.model.getStore();
-    this._disposables.add(
-      debuggerStore.onChange(() => {
-        this.setState({
-          mode: debuggerStore.getDebuggerMode(),
-        });
-      }),
-    );
+    this._disposables.add(debuggerStore.onChange(() => {
+      this.setState({
+        mode: debuggerStore.getDebuggerMode()
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._dispose();
   }
 
-  _dispose(): void {
+  _dispose() {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
-    const {model} = this.props;
+  render() {
+    const { model } = this.props;
     const actions = model.getActions();
-    const {mode} = this.state;
-    const debuggerStoppedNotice =
-      mode !== DebuggerMode.STOPPED
-        ? null
-        : <div className="nuclide-debugger-pane-content">
-            <div className="nuclide-debugger-state-notice">
-              <span>The debugger is not attached.</span>
-              <div className="padded">
-                <TruncatedButton
-                  onClick={() =>
-                    atom.commands.dispatch(
-                      atom.views.getView(atom.workspace),
-                      'nuclide-debugger:show-attach-dialog',
-                    )}
-                  icon="nuclicon-debugger"
-                  label="Attach debugger..."
-                />
-                <TruncatedButton
-                  onClick={() =>
-                    atom.commands.dispatch(
-                      atom.views.getView(atom.workspace),
-                      'nuclide-debugger:show-launch-dialog',
-                    )}
-                  icon="nuclicon-debugger"
-                  label="Launch debugger..."
-                />
-              </div>
-            </div>
-          </div>;
+    const { mode } = this.state;
+    const debuggerStoppedNotice = mode !== (_DebuggerStore || _load_DebuggerStore()).DebuggerMode.STOPPED ? null : _react.default.createElement(
+      'div',
+      { className: 'nuclide-debugger-pane-content' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-state-notice' },
+        _react.default.createElement(
+          'span',
+          null,
+          'The debugger is not attached.'
+        ),
+        _react.default.createElement(
+          'div',
+          { className: 'padded' },
+          _react.default.createElement((_TruncatedButton || _load_TruncatedButton()).default, {
+            onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show-attach-dialog'),
+            icon: 'nuclicon-debugger',
+            label: 'Attach debugger...'
+          }),
+          _react.default.createElement((_TruncatedButton || _load_TruncatedButton()).default, {
+            onClick: () => atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show-launch-dialog'),
+            icon: 'nuclicon-debugger',
+            label: 'Launch debugger...'
+          })
+        )
+      )
+    );
 
-    const debugeeRunningNotice =
-      mode !== DebuggerMode.RUNNING
-        ? null
-        : <div className="nuclide-debugger-pane-content">
-            <div className="nuclide-debugger-state-notice">
-              The debug target is currently running.
-            </div>
-          </div>;
+    const debugeeRunningNotice = mode !== (_DebuggerStore || _load_DebuggerStore()).DebuggerMode.RUNNING ? null : _react.default.createElement(
+      'div',
+      { className: 'nuclide-debugger-pane-content' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-state-notice' },
+        'The debug target is currently running.'
+      )
+    );
 
-    return (
-      <div className="nuclide-debugger-container-new">
-        <div className="nuclide-debugger-section-header">
-          <DebuggerControllerView
-            store={model.getStore()}
-            bridge={model.getBridge()}
-            breakpointStore={model.getBreakpointStore()}
-            openDevTools={this._openDevTools}
-            stopDebugging={this._stopDebugging}
-          />
-        </div>
-        <div className="nuclide-debugger-section-header nuclide-debugger-controls-section">
-          <DebuggerSteppingComponent
-            actions={actions}
-            debuggerStore={model.getStore()}
-          />
-        </div>
-        {debugeeRunningNotice}
-        {debuggerStoppedNotice}
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-debugger-container-new' },
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-section-header' },
+        _react.default.createElement((_DebuggerControllerView || _load_DebuggerControllerView()).default, {
+          store: model.getStore(),
+          bridge: model.getBridge(),
+          breakpointStore: model.getBreakpointStore(),
+          openDevTools: this._openDevTools,
+          stopDebugging: this._stopDebugging
+        })
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'nuclide-debugger-section-header nuclide-debugger-controls-section' },
+        _react.default.createElement((_DebuggerSteppingComponent || _load_DebuggerSteppingComponent()).DebuggerSteppingComponent, {
+          actions: actions,
+          debuggerStore: model.getStore()
+        })
+      ),
+      debugeeRunningNotice,
+      debuggerStoppedNotice
     );
   }
 
-  _openDevTools = (): void => {
-    const {model} = this.props;
-    model.getActions().openDevTools();
-  };
-
-  _stopDebugging = (): void => {
-    const {model} = this.props;
-    model.getActions().stopDebugging();
-  };
 }
+exports.DebuggerControlsView = DebuggerControlsView; /**
+                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                      * All rights reserved.
+                                                      *
+                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                      * the root directory of this source tree.
+                                                      *
+                                                      * 
+                                                      * @format
+                                                      */
