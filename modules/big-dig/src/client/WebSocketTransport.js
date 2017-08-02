@@ -152,7 +152,7 @@ export class WebSocketTransport {
           logger.warn(
             'Failed sending socket message to client:',
             this.id,
-            JSON.parse(message),
+            message,
           );
           resolve(false);
         } else {
