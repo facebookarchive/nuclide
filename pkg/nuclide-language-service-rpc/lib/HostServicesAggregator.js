@@ -221,17 +221,37 @@ class HostServicesRelay {
     title: string,
     options?: {|debounce?: boolean|},
   ): Promise<Progress> {
-    const progress = await this._aggregator._parent.showProgress(
+    const progressPromise = this._aggregator._parent.showProgress(
       title,
       options,
     );
+
+    // If chidIsDisposed gets fired while we're awaiting for the progress
+    // object, then we'll use this empty progress object instead:
+    const disposedPromise = this._childIsDisposed.toPromise().then(() => {
+      const emptyProgress: Progress = {
+        setTitle: () => {},
+        dispose: () => {},
+      };
+      return emptyProgress;
+    });
+    let progress = await Promise.race([progressPromise, disposedPromise]);
+
+    // If childIsDisposed gets fired after we've returned a wrapper around the
+    // progress object, then we'll dispose the underlying progress object, and
+    // our wrapper will become just a no-op.
     const wrapper: Progress = {
       setTitle: title2 => {
-        progress.setTitle(title2);
+        if (progress != null) {
+          progress.setTitle(title2);
+        }
       },
       dispose: () => {
-        this._disposables.remove(wrapper);
-        progress.dispose();
+        if (progress != null) {
+          this._disposables.remove(wrapper);
+          progress.dispose();
+          progress = null;
+        }
       },
     };
     this._disposables.add(wrapper);
