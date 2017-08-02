@@ -26,9 +26,12 @@ describe('BusySignalSingleton', () => {
     singleton = new BusySignalSingleton(messageStore);
     messages = [];
     messageStore.getMessageStream().skip(1).subscribe(elements => {
-      const strings = elements.map(element => {
+      const strings = [...elements].map(element => {
+        const titleElement = element.getTitleElement();
         const child =
-          element.childNodes.length >= 1 ? element.childNodes[0] : {};
+          titleElement != null && titleElement.childNodes.length >= 1
+            ? titleElement.childNodes[0]
+            : {};
         return child.data != null && typeof child.data === 'string'
           ? child.data
           : '';

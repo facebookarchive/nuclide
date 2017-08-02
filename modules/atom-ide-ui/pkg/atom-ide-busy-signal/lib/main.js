@@ -36,11 +36,7 @@ class Activation {
   consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
     // Avoid retaining StatusBarTile by wrapping it.
     const disposable = new UniversalDisposable(
-      new StatusBarTile(
-        statusBar,
-        this._messageStore.getMessageStream(),
-        this._messageStore.getTargetStream(),
-      ),
+      new StatusBarTile(statusBar, this._messageStore.getMessageStream()),
     );
     this._disposables.add(disposable);
     return disposable;

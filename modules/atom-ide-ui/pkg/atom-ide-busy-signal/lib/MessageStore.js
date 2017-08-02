@@ -15,7 +15,7 @@ import type {BusyMessage, BusySignalOptions} from './types';
 import invariant from 'assert';
 import {Observable, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {arrayCompact, arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual} from 'nuclide-commons/collection';
 import {BusyMessageInstance} from './BusyMessageInstance';
 
 // The "busy debounce delay" is for busy messages that were created with the
@@ -24,30 +24,16 @@ import {BusyMessageInstance} from './BusyMessageInstance';
 // before this time, then the user won't see anything.
 const BUSY_DEBOUNCE_DELAY = 300;
 
-export type BusyTarget = {|
-  waitingForComputer: boolean,
-  waitingForUser: boolean,
-|};
-
-const emptyTarget: BusyTarget = {
-  waitingForComputer: false,
-  waitingForUser: false,
-};
-
 export class MessageStore {
   _counter: number = 0;
   _messages: Set<BusyMessageInstance> = new Set();
-  // _messages will include all messages in the store, including those that
-  // aren't currently visible. _messageStream will only contain visible ones.
-  _messageStream: BehaviorSubject<Array<HTMLElement>> = new BehaviorSubject([]);
-  _targetStream: BehaviorSubject<BusyTarget> = new BehaviorSubject(emptyTarget);
+  _prevMessageTitles: Array<?HTMLElement> = [];
+  _messageStream: BehaviorSubject<
+    Array<BusyMessageInstance>,
+  > = new BehaviorSubject([]);
 
-  getMessageStream(): Observable<Array<HTMLElement>> {
+  getMessageStream(): Observable<Array<BusyMessageInstance>> {
     return this._messageStream;
-  }
-
-  getTargetStream(): Observable<BusyTarget> {
-    return this._targetStream;
   }
 
   dispose(): void {
@@ -57,30 +43,22 @@ export class MessageStore {
     }
     invariant(this._messages.size === 0);
     this._messageStream.complete();
-    this._targetStream.complete();
   }
 
   _publish(): void {
-    const messages = [...this._messages]
+    const visibleMessages = [...this._messages]
       .filter(m => m.isVisible())
       .sort((m1, m2) => m1.compare(m2));
 
-    const prevTarget = this._targetStream.getValue();
-    const newTarget = {
-      waitingForComputer: messages.some(m => m.waitingFor === 'computer'),
-      waitingForUser: messages.some(m => m.waitingFor === 'user'),
-    };
-    if (
-      newTarget.waitingForUser !== prevTarget.waitingForUser ||
-      newTarget.waitingForComputer !== prevTarget.waitingForComputer
-    ) {
-      this._targetStream.next(newTarget);
-    }
-
-    const prevMessages = this._messageStream.getValue();
-    const newMessages = arrayCompact(messages.map(m => m.getTitleHTML()));
-    if (!arrayEqual(newMessages, prevMessages)) {
-      this._messageStream.next(newMessages);
+    // How to know that we should send out something new on messageStream?
+    // i.e. how to know that the observable set of messages has changed?
+    // Most properties of a message are fixed at construction. So comparison
+    // of array equality based on object identity of titleHTML will be
+    // necessary and sufficient.
+    const newMessageTitles = visibleMessages.map(m => m.getTitleElement());
+    if (!arrayEqual(this._prevMessageTitles, newMessageTitles)) {
+      this._messageStream.next(visibleMessages);
+      this._prevMessageTitles = newMessageTitles;
     }
   }
 

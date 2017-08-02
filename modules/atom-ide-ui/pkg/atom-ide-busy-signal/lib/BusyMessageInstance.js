@@ -23,7 +23,7 @@ export class BusyMessageInstance {
   _onDidClick: ?() => void;
   _disposables: UniversalDisposable;
   // These things might be modified afterwards:
-  _title: ?HTMLElement = null;
+  _titleElement: ?HTMLElement = null;
   _isVisibleForDebounce: boolean = true;
   _isVisibleForFile: boolean = true;
 
@@ -50,20 +50,22 @@ export class BusyMessageInstance {
     if (this._onDidClick == null) {
       const span = document.createElement('span');
       span.appendChild(document.createTextNode(val));
-      this._title = span;
+      this._titleElement = span;
     } else {
       const anchor = document.createElement('a');
       anchor.onclick = this._onDidClick;
       anchor.appendChild(document.createTextNode(val));
-      this._title = anchor;
+      this._titleElement = anchor;
     }
     if (this.isVisible()) {
       this._publishCallback();
     }
   }
 
-  getTitleHTML(): ?HTMLElement {
-    return this._title;
+  getTitleElement(): ?HTMLElement {
+    // Note: callers will compare the result of this function by
+    // object identity === to tell if the title has changed.
+    return this._titleElement;
   }
 
   setIsVisibleForDebounce(val: boolean): void {
@@ -83,7 +85,7 @@ export class BusyMessageInstance {
     return (
       this._isVisibleForFile &&
       this._isVisibleForDebounce &&
-      this._title != null
+      this._titleElement != null
     );
   }
 
@@ -93,7 +95,7 @@ export class BusyMessageInstance {
 
   dispose(): void {
     this._disposables.dispose();
-    this._title = null;
+    this._titleElement = null;
     this._publishCallback();
   }
 }
