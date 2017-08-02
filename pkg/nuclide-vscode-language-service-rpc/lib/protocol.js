@@ -184,6 +184,16 @@ export type WorkspaceClientCapabilities = {|
     //  Execute command supports dynamic registration.
     dynamicRegistration?: boolean,
   |},
+  //  Capabilities specific to the `workspace/progress` notification.
+  progress?: {|
+    //  Progress notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `workspace/actionRequired` notification.
+  actionRequired?: {|
+    //  ActionRequired notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
 |};
 
 //  Text document specific client capabilities.
@@ -776,6 +786,20 @@ export type LogMessageParams = {
   type: number,
   // The actual message
   message: string,
+};
+
+export type ProgressParams = {
+  // The id of this progress report (so we can update/close it)
+  id: number | string,
+  // A message/tooltip for this progress report; pass `null` when done.
+  label: string | null,
+};
+
+export type ActionRequiredParams = {
+  // The id of this action-required report (so we can close it)
+  id: string | number,
+  // A message/tooltip. Pass `null` when action is no longer required.
+  label: string | null,
 };
 
 // Workspace

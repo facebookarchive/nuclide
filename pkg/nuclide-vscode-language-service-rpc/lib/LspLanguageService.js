@@ -35,7 +35,10 @@ import type {
   FormatOptions,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {
+  HostServices,
+  Progress,
+} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 import type {
@@ -46,6 +49,8 @@ import type {
   LogMessageParams,
   ShowMessageParams,
   ShowMessageRequestParams,
+  ProgressParams,
+  ActionRequiredParams,
   DidOpenTextDocumentParams,
   DidCloseTextDocumentParams,
   DidChangeTextDocumentParams,
@@ -78,7 +83,10 @@ import * as convert from './convert';
 import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
-import {ensureInvalidations} from '../../nuclide-language-service-rpc';
+import {
+  ensureInvalidations,
+  forkHostServices,
+} from '../../nuclide-language-service-rpc';
 import {JsonRpcTrace} from './jsonrpc';
 import {LspConnection} from './LspConnection';
 import {
@@ -102,7 +110,8 @@ export class LspLanguageService {
   // These fields are provided upon construction
   _projectRoot: string;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
-  _host: HostServices;
+  _masterHost: HostServices; // this is the one we're given
+  _host: HostServices; // this is created per-connection
   _lspFileVersionNotifier: FileVersionNotifier; // tracks which fileversions we've sent to LSP
   _fileEventSubscription: rxjs$ISubscription;
   _languageId: string;
@@ -119,6 +128,11 @@ export class LspLanguageService {
   // (Most should be nullable types, but it's not worth the bother.)
   _state: State = 'Initial';
   _stateIndicator: UniversalDisposable = new UniversalDisposable();
+  _progressIndicators: Map<string | number, Promise<Progress>> = new Map();
+  _actionRequiredIndicators: Map<
+    string | number,
+    UniversalDisposable,
+  > = new Map();
   _recentRestarts: Array<number> = [];
   _diagnosticUpdates: Subject<
     Observable<PublishDiagnosticsParams>,
@@ -154,6 +168,7 @@ export class LspLanguageService {
   ) {
     this._logger = logger;
     this._fileCache = fileCache;
+    this._masterHost = host;
     this._host = host;
     this._projectRoot = projectRoot;
     this._languageId = languageId;
@@ -165,7 +180,7 @@ export class LspLanguageService {
   }
 
   dispose(): void {
-    this._stop().catch(_ => {}).then(_ => this._host.dispose());
+    this._stop().catch(_ => {}).then(_ => this._masterHost.dispose());
   }
 
   _setState(
@@ -188,7 +203,7 @@ export class LspLanguageService {
         state === 'Starting'
           ? `Starting ${this._languageId} language service...`
           : `Stopping ${this._languageId} language service...`;
-      this._host.showProgress(tooltip).then(progress => {
+      this._masterHost.showProgress(tooltip).then(progress => {
         if (nextDisposable.disposed) {
           progress.dispose();
         } else {
@@ -211,14 +226,14 @@ export class LspLanguageService {
       const button = state === 'StartFailed' ? 'Retry' : 'Restart';
       const message = actionRequiredDialogMessage || defaultMessage;
 
-      const subscription = this._host
+      const subscription = this._masterHost
         .showActionRequired(tooltip, {clickable: true})
         .refCount()
         .switchMap(_ => {
           if (existingDialogToDismiss != null) {
             existingDialogToDismiss.unsubscribe();
           }
-          return this._host
+          return this._masterHost
             .dialogRequest('error', message, [button], 'Close')
             .refCount();
         })
@@ -231,7 +246,7 @@ export class LspLanguageService {
           // required indicator, (2) dismiss the dialogRequest. The fact that
           // we're here now means that this has not happened, i.e. a new state
           // has not come along.
-          this._host.consoleNotification(
+          this._masterHost.consoleNotification(
             this._languageId,
             'info',
             `Restarting ${this._languageId}`,
@@ -260,6 +275,15 @@ export class LspLanguageService {
       // disposes of all of them (via the above perConnectionDisposables),
       // and also sets _lspConnection and other per-connection fields to null
       // so that any attempt to use them will throw an exception.
+
+      // Each connection gets its own 'host' object, as an easy way to
+      // get rid of all outstanding busy-signals and notifications and
+      // dialogs from that connection.
+      this._host = await forkHostServices(this._masterHost, this._logger);
+      perConnectionDisposables.add(() => {
+        this._host.dispose();
+        this._host = this._masterHost;
+      });
 
       // Error reporting? We'll be catching+reporting errors at each layer:
       // 1. operating system support for launch the process itself
@@ -377,6 +401,14 @@ export class LspLanguageService {
         this._childOut.stdout = null;
         return this._handleShowMessageRequest(params, cancel);
       });
+      this._lspConnection.onProgressNotification(params => {
+        this._childOut.stdout = null;
+        return this._handleProgressNotification(params);
+      });
+      this._lspConnection.onActionRequiredNotification(params => {
+        this._childOut.stdout = null;
+        return this._handleActionRequiredNotification(params);
+      });
       this._lspConnection.onDiagnosticsNotification(params => {
         this._childOut.stdout = null;
         perConnectionUpdates.next(params);
@@ -411,6 +443,12 @@ export class LspLanguageService {
             dynamicRegistration: false,
           },
           executeCommand: {
+            dynamicRegistration: false,
+          },
+          progress: {
+            dynamicRegistration: false,
+          },
+          actionRequired: {
             dynamicRegistration: false,
           },
         },
@@ -944,6 +982,48 @@ export class LspLanguageService {
       const chosenAction = actions.find(action => action.title === response);
       invariant(chosenAction != null);
       return chosenAction;
+    }
+  }
+
+  _handleProgressNotification(params: ProgressParams): void {
+    // CARE! This method may be called before initialization has finished.
+
+    // How do we deal with race conditions? For instance, if a volley of
+    // progress updates come, how do we ensure that they're handled in
+    // order? -- We store *promises* inside this._progressIndicators.
+    // Every time we receive a request to update an indicator, we replace
+    // the promise with a new chained promise that will only be completed
+    // when the original is done and when the update is done.
+    const indicatorPromise = this._progressIndicators.get(params.id);
+    const label = params.label;
+    if (label == null) {
+      if (indicatorPromise != null) {
+        indicatorPromise.then(indicator => indicator.dispose());
+        this._progressIndicators.delete(params.id);
+      }
+    } else {
+      const indicatorPromise2 =
+        indicatorPromise == null
+          ? this._host.showProgress(label)
+          : indicatorPromise.then(indicator => {
+              indicator.setTitle(label);
+              return indicator;
+            });
+      this._progressIndicators.set(params.id, indicatorPromise2);
+    }
+  }
+
+  _handleActionRequiredNotification(params: ActionRequiredParams): void {
+    const oldIndicator = this._actionRequiredIndicators.get(params.id);
+    if (oldIndicator != null) {
+      oldIndicator.dispose();
+      this._actionRequiredIndicators.delete(params.id);
+    }
+    if (params.label != null) {
+      const newIndicator = new UniversalDisposable(
+        this._host.showActionRequired(params.label).refCount().subscribe(),
+      );
+      this._actionRequiredIndicators.set(params.id, newIndicator);
     }
   }
 

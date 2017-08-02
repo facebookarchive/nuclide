@@ -300,4 +300,18 @@ export class LspConnection {
       callback,
     );
   }
+
+  onProgressNotification(callback: p.ProgressParams => void): void {
+    this._jsonRpcConnection.onNotification(
+      {method: 'window/progress'},
+      callback,
+    );
+  }
+
+  onActionRequiredNotification(callback: p.ActionRequiredParams => void): void {
+    this._jsonRpcConnection.onNotification(
+      {method: 'window/actionRequired'},
+      callback,
+    );
+  }
 }
