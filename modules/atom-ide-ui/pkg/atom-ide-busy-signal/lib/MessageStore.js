@@ -27,7 +27,7 @@ const BUSY_DEBOUNCE_DELAY = 300;
 export class MessageStore {
   _counter: number = 0;
   _messages: Set<BusyMessageInstance> = new Set();
-  _prevMessageTitles: Array<?HTMLElement> = [];
+  _currentVisibleMessages: Array<BusyMessageInstance> = [];
   _messageStream: BehaviorSubject<
     Array<BusyMessageInstance>,
   > = new BehaviorSubject([]);
@@ -50,15 +50,13 @@ export class MessageStore {
       .filter(m => m.isVisible())
       .sort((m1, m2) => m1.compare(m2));
 
-    // How to know that we should send out something new on messageStream?
-    // i.e. how to know that the observable set of messages has changed?
-    // Most properties of a message are fixed at construction. So comparison
-    // of array equality based on object identity of titleHTML will be
-    // necessary and sufficient.
-    const newMessageTitles = visibleMessages.map(m => m.getTitleElement());
-    if (!arrayEqual(this._prevMessageTitles, newMessageTitles)) {
+    // We only send out on messageStream when the list of visible
+    // BusyMessageInstance object identities has changed, e.g. when ones
+    // are made visible or invisible or new ones are created. We don't send
+    // out just on title change.
+    if (!arrayEqual(this._currentVisibleMessages, visibleMessages)) {
       this._messageStream.next(visibleMessages);
-      this._prevMessageTitles = newMessageTitles;
+      this._currentVisibleMessages = visibleMessages;
     }
   }
 
