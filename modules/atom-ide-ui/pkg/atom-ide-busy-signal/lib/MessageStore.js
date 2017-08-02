@@ -83,7 +83,11 @@ export class MessageStore {
     this._messages.add(message);
     messageDisposables.add(() => this._messages.delete(message));
 
-    if (options == null || options.debounce !== false) {
+    // debounce defaults 'true' for busy-signal, and 'false' for action-required
+    const debounceRaw: ?boolean = options == null ? null : options.debounce;
+    const debounce: boolean =
+      debounceRaw == null ? waitingFor === 'computer' : debounceRaw;
+    if (debounce) {
       message.setIsVisibleForDebounce(false);
       // After the debounce time, we'll check whether the messageId is still
       // around (i.e. hasn't yet been disposed), and if so we'll display it.

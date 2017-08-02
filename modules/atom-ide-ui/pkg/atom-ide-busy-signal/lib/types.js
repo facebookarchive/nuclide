@@ -16,12 +16,12 @@ export type BusySignalOptions = {|
   // Can say that a busy signal will only appear when a given file is open.
   // Default = null, meaning the busy signal applies to all files.
   onlyForFile?: NuclideUri,
-  // Can say that a busy signal will be debounced. Default = true.
-  debounce?: boolean,
   // Is user waiting for computer to finish a task? (traditional busy spinner)
   // or is the computer waiting for user to finish a task? (action required)
   // Default = spinner.
   waitingFor?: 'computer' | 'user',
+  // Debounce it? default = true for busy-signal, and false for action-required.
+  debounce?: boolean,
   // If onClick is set, then the tooltip will be clickable. Default = null.
   onDidClick?: () => void,
 |};
