@@ -336,9 +336,7 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._revisionsCache, 'getCachedRevisions').andCallFake(() => {
-        return [{isHead: true}];
-      });
+      spyOn(repo, '_getCurrentHeadId').andReturn(Observable.of('test'));
       spyOn(
         repo._service,
         'fetchFileContentAtRevision',

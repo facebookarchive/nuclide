@@ -1435,4 +1435,15 @@ export class HgService {
       }
     }
   }
+
+  /**
+   * Gets the current head revision hash
+   */
+  getHeadId(): ConnectableObservable<string> {
+    const args = ['log', '--template', '{node}', '--limit', '1'];
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return this._hgRunCommand(args, execOptions).publish();
+  }
 }

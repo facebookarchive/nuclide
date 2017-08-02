@@ -151,6 +151,7 @@ export class HgRepositoryClient {
   _revisionIdToFileChanges: LRUCache<string, RevisionFileChanges>;
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
   _fileContentsAtHead: LRUCache<NuclideUri, string>;
+  _currentHeadId: ?string;
 
   _bookmarks: BehaviorSubject<{
     isLoading: boolean,
@@ -790,39 +791,41 @@ export class HgRepositoryClient {
       }
     });
 
-    const currentHead = this._revisionsCache
-      .getCachedRevisions()
-      .find(revision => revision.isHead);
-
-    if (pathsToFetch.length === 0 || currentHead == null) {
+    if (pathsToFetch.length === 0) {
       return Observable.of(new Map());
     }
 
-    return this._getFileDiffs(
-      pathsToFetch,
-      currentHead.hash,
-    ).do(pathsToDiffInfo => {
-      if (pathsToDiffInfo) {
-        for (const [filePath, diffInfo] of pathsToDiffInfo) {
-          this._hgDiffCache.set(filePath, diffInfo);
+    return this._getCurrentHeadId().switchMap(currentHeadId => {
+      if (currentHeadId == null) {
+        return Observable.of(new Map());
+      }
+
+      return this._getFileDiffs(
+        pathsToFetch,
+        currentHeadId,
+      ).do(pathsToDiffInfo => {
+        if (pathsToDiffInfo) {
+          for (const [filePath, diffInfo] of pathsToDiffInfo) {
+            this._hgDiffCache.set(filePath, diffInfo);
+          }
         }
-      }
 
-      // Remove files marked for deletion.
-      this._hgDiffCacheFilesToClear.forEach(fileToClear => {
-        this._hgDiffCache.delete(fileToClear);
+        // Remove files marked for deletion.
+        this._hgDiffCacheFilesToClear.forEach(fileToClear => {
+          this._hgDiffCache.delete(fileToClear);
+        });
+        this._hgDiffCacheFilesToClear.clear();
+
+        // The fetched files can now be updated again.
+        for (const pathToFetch of pathsToFetch) {
+          this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+        }
+
+        // TODO (t9113913) Ideally, we could send more targeted events that better
+        // describe what change has occurred. Right now, GitRepository dictates either
+        // 'did-change-status' or 'did-change-statuses'.
+        this._emitter.emit('did-change-statuses');
       });
-      this._hgDiffCacheFilesToClear.clear();
-
-      // The fetched files can now be updated again.
-      for (const pathToFetch of pathsToFetch) {
-        this._hgDiffCacheFilesUpdating.delete(pathToFetch);
-      }
-
-      // TODO (t9113913) Ideally, we could send more targeted events that better
-      // describe what change has occurred. Right now, GitRepository dictates either
-      // 'did-change-status' or 'did-change-statuses'.
-      this._emitter.emit('did-change-statuses');
     });
   }
 
@@ -864,6 +867,16 @@ export class HgRepositoryClient {
       .toArray()
       .map(contents => new Map(contents));
     return diffs;
+  }
+
+  _getCurrentHeadId(): Observable<string> {
+    if (this._currentHeadId != null) {
+      return Observable.of(this._currentHeadId);
+    }
+    return this._service
+      .getHeadId()
+      .refCount()
+      .do(headId => (this._currentHeadId = headId));
   }
 
   _updateInteractiveMode(isInteractiveMode: boolean) {
