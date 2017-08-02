@@ -36,25 +36,30 @@ async function searchOtherWindows(
   path: string,
 ): Promise<?electron$BrowserWindow> {
   const windows = await Promise.all(
-    remote.BrowserWindow.getAllWindows().map(browserWindow => {
-      return new Promise((resolve, reject) => {
-        // In case `atom` hasn't been initialized yet.
-        browserWindow.webContents.executeJavaScript(
-          'atom && atom.project.getPaths()',
-          result => {
-            // Guard against null returns (and also help Flow).
-            const containsPath =
-              Array.isArray(result) &&
-              result.find(
-                project =>
-                  typeof project === 'string' &&
-                  nuclideUri.contains(path, project),
-              );
-            resolve(containsPath ? browserWindow : null);
-          },
-        );
-      });
-    }),
+    remote.BrowserWindow
+      .getAllWindows()
+      // Atom 1.17 added GitHub's git integration, which spawns a hidden
+      // browser window which we should ignore.
+      .filter(browserWindow => browserWindow.isVisible())
+      .map(browserWindow => {
+        return new Promise((resolve, reject) => {
+          // In case `atom` hasn't been initialized yet.
+          browserWindow.webContents.executeJavaScript(
+            'atom && atom.project.getPaths()',
+            result => {
+              // Guard against null returns (and also help Flow).
+              const containsPath =
+                Array.isArray(result) &&
+                result.find(
+                  project =>
+                    typeof project === 'string' &&
+                    nuclideUri.contains(path, project),
+                );
+              resolve(containsPath ? browserWindow : null);
+            },
+          );
+        });
+      }),
   );
   return windows.find(Boolean);
 }
