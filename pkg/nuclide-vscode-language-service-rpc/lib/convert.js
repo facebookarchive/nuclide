@@ -19,6 +19,7 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticMessages,
   Reference,
+  CodeAction,
 } from 'atom-ide-ui';
 import type {
   Diagnostic,
@@ -38,6 +39,7 @@ import type {
   CompletionItem,
   TextDocumentPositionParams,
   SymbolInformation,
+  Command,
 } from './protocol';
 import type {TextEdit as LspTextEditType} from './protocol';
 
@@ -57,6 +59,7 @@ import {
   string,
   plain,
 } from 'nuclide-commons/tokenized-text';
+import {arrayCompact} from 'nuclide-commons/collection';
 
 export function localPath_lspUri(filepath: NuclideUri): string {
   // NuclideUris are either a local file path, or nuclide://<host><path>.
@@ -365,9 +368,29 @@ function lspSeverity_atomDiagnosticMessageType(
     default:
       return 'Error';
     case DiagnosticSeverity.Warning:
+      return 'Warning';
     case DiagnosticSeverity.Information:
     case DiagnosticSeverity.Hint:
-      return 'Warning';
+      return 'Info';
+  }
+}
+
+function atomDiagnosticMessageType_lspSeverity(
+  diagnosticType: DiagnosticMessageType,
+): number {
+  switch (diagnosticType) {
+    case 'Error':
+      return DiagnosticSeverity.Error;
+    case 'Warning':
+      return DiagnosticSeverity.Warning;
+    case 'Info':
+      // The inverse function maps both DiagnosticServerity.Hint and
+      // DiagnosticServerity.Information to 'Info', but in the reverse direction
+      // we'll pick to map 'Info' to DiagnosticSeverity.Information.
+      return DiagnosticSeverity.Information;
+    default:
+      (diagnosticType: empty); // Will cause a Flow error if a new DiagnosticSeverity value is added.
+      throw new Error('Unsupported DiagnosticMessageType');
   }
 }
 
@@ -380,6 +403,27 @@ function lspRelatedLocation_atomTrace(
     filePath: lspUri_localPath(related.location.uri),
     range: lspRange_atomRange(related.location.range),
   };
+}
+
+/**
+* Converts an Atom Trace to an Lsp RelatedLocation. A RelatedLocation requires a
+* range. Therefore, this will return null when called with an Atom Trace that
+* does not have a range.
+*/
+function atomTrace_lspRelatedLocation(
+  trace: DiagnosticTrace,
+): ?RelatedLocation {
+  const {range, text, filePath} = trace;
+  if (range != null) {
+    return {
+      message: text || '',
+      location: {
+        uri: localPath_lspUri(filePath || ''),
+        range: atomRange_lspRange(range),
+      },
+    };
+  }
+  return null;
 }
 
 function lspDiagnostic_atomDiagnostic(
@@ -397,6 +441,41 @@ function lspDiagnostic_atomDiagnostic(
     trace: (diagnostic.relatedLocations || [])
       .map(lspRelatedLocation_atomTrace),
   };
+}
+
+export function lspCommand_atomCodeAction(
+  command: Command,
+  applyFunc: () => Promise<void>,
+): CodeAction {
+  return {
+    getTitle: () => {
+      return Promise.resolve(command.title);
+    },
+    apply: applyFunc,
+    dispose: () => {},
+  };
+}
+
+/**
+* Converts an Atom FileMessageDiagnostic to an LSP Diagnostic. LSP diagnostics
+* require a range, while they are currently optional for Atom Diangostics. Therefore,
+* this will return null when called with an Atom Diagnostic without a range.
+*/
+export function atomDiagnostic_lspDiagnostic(
+  diagnostic: FileDiagnosticMessage,
+): ?Diagnostic {
+  if (diagnostic.range != null) {
+    return {
+      range: atomRange_lspRange(diagnostic.range),
+      severity: atomDiagnosticMessageType_lspSeverity(diagnostic.type),
+      source: diagnostic.providerName,
+      message: diagnostic.text || '',
+      relatedLocations: arrayCompact(
+        (diagnostic.trace || []).map(atomTrace_lspRelatedLocation),
+      ),
+    };
+  }
+  return null;
 }
 
 export function lspDiagnostics_atomDiagnostics(

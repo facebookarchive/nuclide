@@ -86,6 +86,7 @@ import {
   TextDocumentSyncKind,
   MessageType as LspMessageType,
 } from './protocol';
+import {arrayCompact} from 'nuclide-commons/collection';
 
 type State =
   | 'Initial'
@@ -1296,13 +1297,73 @@ export class LspLanguageService {
     return {outlineTrees: root.children};
   }
 
+  // Private API to send executeCommand requests to the server. Returns a
+  // boolean indicating whether executing the command was successful.
+  // This function will throw an error if the server isn't in a state to handle
+  // the request, the server can't handle this type of request, or if the LSP
+  // server throws its own exception (ex: an internal server error exception)
+  async _executeCommand(command: string, args?: Array<any>): Promise<void> {
+    if (this._state !== 'Running') {
+      throw new Error(
+        `${this._languageId} is not currently in a state to handle the request`,
+      );
+    } else if (!this._serverCapabilities.executeCommandProvider) {
+      throw new Error(`${this._languageId} cannot handle the request`);
+    }
+    try {
+      await this._lspConnection.executeCommand({
+        command,
+        arguments: args,
+      });
+    } catch (e) {
+      this._logLspException(e);
+      // Rethrow the exception so the upsteam caller has access to the error message.
+      throw e;
+    }
+  }
+
   async getCodeActions(
     fileVersion: FileVersion,
     range: atom$Range,
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>> {
-    // TODO(seansegal): Implement Adapter from LSP Command <=> Atom CodeAction
-    return [];
+    if (
+      this._state !== 'Running' ||
+      !this._serverCapabilities.codeActionProvider
+    ) {
+      return [];
+    }
+
+    const params = {
+      textDocument: convert.localPath_lspTextDocumentIdentifier(
+        fileVersion.filePath,
+      ),
+      range: convert.atomRange_lspRange(range),
+      context: {
+        diagnostics: arrayCompact(
+          diagnostics.map(convert.atomDiagnostic_lspDiagnostic),
+        ),
+      },
+    };
+
+    let response;
+    try {
+      response = await this._lspConnection.codeAction(params);
+    } catch (e) {
+      this._logLspException(e);
+      return [];
+    }
+    return response.map(command => {
+      // This function, which will be called when the CodeAction is applied
+      // by the user, returns Promise<void>. If the Promise is fulfilled, then
+      // the CodeAction was successful. If unsuccessful, the Promise will be rejected
+      // and the upstream caller (ex: a CodeAction UI package) should catch the
+      // error and display it to the user in whatever way they think best.
+      const applyFunc = async () => {
+        await this._executeCommand(command.command, command.arguments);
+      };
+      return convert.lspCommand_atomCodeAction(command, applyFunc);
+    });
   }
 
   async typeHint(
