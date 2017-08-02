@@ -23,6 +23,7 @@ import type {
   FileDiagnosticMessage,
   FindReferencesReturn,
   Outline,
+  CodeAction,
 } from 'atom-ide-ui';
 import type {SingleFileLanguageService} from '../../nuclide-language-service-rpc';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -546,6 +547,14 @@ export class FlowSingleProjectLanguageService {
       return null;
     }
     return json;
+  }
+
+  getCodeActions(
+    filePath: NuclideUri,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    throw new Error('Not implemeneted');
   }
 
   formatSource(

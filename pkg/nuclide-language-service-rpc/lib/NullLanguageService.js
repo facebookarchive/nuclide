@@ -20,6 +20,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -72,6 +74,14 @@ export class NullLanguageService {
 
   getOutline(fileVersion: FileVersion): Promise<?Outline> {
     return Promise.resolve(null);
+  }
+
+  getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    return Promise.resolve([]);
   }
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint> {

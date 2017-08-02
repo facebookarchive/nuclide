@@ -32,6 +32,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
@@ -199,6 +201,12 @@ export interface FlowLanguageServiceType {
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>,
+
+  getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>>,
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
 

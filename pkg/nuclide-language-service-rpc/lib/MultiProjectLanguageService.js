@@ -20,6 +20,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -264,6 +266,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).getOutline(fileVersion);
+  }
+
+  async getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).getCodeActions(fileVersion, range, diagnostics);
   }
 
   async typeHint(

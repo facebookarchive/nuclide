@@ -26,6 +26,8 @@ import type {
   FindReferencesReturn,
   Outline,
   OutlineTree,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -1292,6 +1294,15 @@ export class LspLanguageService {
     }
 
     return {outlineTrees: root.children};
+  }
+
+  async getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    // TODO(seansegal): Implement Adapter from LSP Command <=> Atom CodeAction
+    return [];
   }
 
   async typeHint(

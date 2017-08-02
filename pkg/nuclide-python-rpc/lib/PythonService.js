@@ -22,6 +22,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  FileDiagnosticMessage,
+  CodeAction,
 } from 'atom-ide-ui';
 import type {AutocompleteResult} from '../../nuclide-language-service/lib/LanguageService';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -143,6 +145,14 @@ class PythonSingleFileLanguageService {
     this._showGlobalVariables = config.showGlobalVariables;
     this._autocompleteArguments = config.autocompleteArguments;
     this._includeOptionalArguments = config.includeOptionalArguments;
+  }
+
+  async getCodeActions(
+    filePath: NuclideUri,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    throw new Error('Not implemented');
   }
 
   getDiagnostics(

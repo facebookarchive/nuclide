@@ -20,6 +20,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
@@ -110,6 +112,20 @@ export interface LanguageService {
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult>,
 
   getOutline(fileVersion: FileVersion): Promise<?Outline>,
+
+  /**
+  * Requests CodeActions from a language service. This function can be called either
+  * whenever the cursor position changes (in which case the range should be from
+  * the beginning of the current word to the cursor's position) or whenever a user interacts
+  * with a Diagnostic (in which case the range should be the range of that diagnostic)
+  *
+  * If no CodeActions are available, an empty array should be returned.
+  */
+  getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>>,
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
 

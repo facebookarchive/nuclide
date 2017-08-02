@@ -32,6 +32,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {
@@ -210,6 +212,14 @@ class HackSingleFileLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?DiagnosticProviderUpdate> {
     throw new Error('replaced by observeDiagnstics');
+  }
+
+  async getCodeActions(
+    filePath: NuclideUri,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    throw new Error('Not implemented');
   }
 
   observeDiagnostics(): Observable<Array<FileDiagnosticMessages>> {

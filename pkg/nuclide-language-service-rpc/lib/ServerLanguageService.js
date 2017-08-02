@@ -20,6 +20,8 @@ import type {
   FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
+  CodeAction,
+  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
@@ -75,6 +77,12 @@ export type SingleFileLanguageService = {
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
   ): Promise<?Outline>,
+
+  getCodeActions(
+    filePath: NuclideUri,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>>,
 
   typeHint(
     filePath: NuclideUri,
@@ -203,6 +211,15 @@ export class ServerLanguageService<
 
   getCoverage(filePath: NuclideUri): Promise<?CoverageResult> {
     return this._service.getCoverage(filePath);
+  }
+
+  async getCodeActions(
+    fileVersion: FileVersion,
+    range: atom$Range,
+    diagnostics: Array<FileDiagnosticMessage>,
+  ): Promise<Array<CodeAction>> {
+    const {filePath} = fileVersion;
+    return this._service.getCodeActions(filePath, range, diagnostics);
   }
 
   async getOutline(fileVersion: FileVersion): Promise<?Outline> {

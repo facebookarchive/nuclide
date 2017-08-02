@@ -20,6 +20,7 @@ import type {TypeHintConfig} from './TypeHintProvider';
 import type {CodeFormatConfig} from './CodeFormatProvider';
 import type {FindReferencesConfig} from './FindReferencesProvider';
 import type {EvaluationExpressionConfig} from './EvaluationExpressionProvider';
+import type {CodeActionConfig} from './CodeActionProvider';
 import type {
   AutocompleteConfig,
   OnDidInsertSuggestionCallback,
@@ -40,6 +41,7 @@ import {FindReferencesProvider} from './FindReferencesProvider';
 import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
+import {CodeActionProvider} from './CodeActionProvider';
 import {getLogger} from 'log4js';
 
 export type BusySignalProvider = {
@@ -59,6 +61,7 @@ export type AtomLanguageServiceConfig = {|
   evaluationExpression?: EvaluationExpressionConfig,
   autocomplete?: AutocompleteConfig,
   diagnostics?: DiagnosticsConfig,
+  codeAction?: CodeActionConfig,
 |};
 
 export class AtomLanguageService<T: LanguageService> {
@@ -237,6 +240,18 @@ export class AtomLanguageService<T: LanguageService> {
           this._logger,
           this._connectionToLanguageService,
           busySignalProvider,
+        ),
+      );
+    }
+
+    const codeActionConfig = this._config.codeAction;
+    if (codeActionConfig != null) {
+      this._subscriptions.add(
+        CodeActionProvider.register(
+          this._config.name,
+          this._config.grammars,
+          codeActionConfig,
+          this._connectionToLanguageService,
         ),
       );
     }
