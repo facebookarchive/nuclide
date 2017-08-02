@@ -161,17 +161,11 @@ export function consumeBusySignal(service: BusySignalService): IDisposable {
       return ls.getServerStatusUpdates().refCount();
     });
 
-  if (disposables != null) {
-    disposables.add(service);
-  }
   const subscription = serverStatusUpdatesToBusyMessages(
     serverStatusUpdates,
     service,
   );
   return new UniversalDisposable(() => {
-    if (disposables != null) {
-      disposables.remove(service);
-    }
     subscription.unsubscribe();
   });
 }

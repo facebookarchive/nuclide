@@ -13,17 +13,17 @@
 import type {BusySignalOptions} from '../lib/types';
 
 import {MessageStore} from '../lib/MessageStore';
-import BusySignalInstance from '../lib/BusySignalInstance';
+import BusySignalSingleton from '../lib/BusySignalSingleton';
 
-describe('BusySignalInstance', () => {
+describe('BusySignalSingleton', () => {
   let messageStore: MessageStore;
-  let instance: BusySignalInstance;
+  let singleton: BusySignalSingleton;
   let messages: Array<Array<string>>;
   const options: BusySignalOptions = {debounce: false};
 
   beforeEach(() => {
     messageStore = new MessageStore();
-    instance = new BusySignalInstance(messageStore);
+    singleton = new BusySignalSingleton(messageStore);
     messages = [];
     messageStore.getMessageStream().skip(1).subscribe(elements => {
       const strings = elements.map(element => {
@@ -39,7 +39,7 @@ describe('BusySignalInstance', () => {
 
   it('should record messages before and after a call', () => {
     expect(messages.length).toBe(0);
-    instance.reportBusyWhile('foo', () => Promise.resolve(5), options);
+    singleton.reportBusyWhile('foo', () => Promise.resolve(5), options);
     expect(messages.length).toBe(1);
     waitsFor(
       () => messages.length === 2,
@@ -49,7 +49,11 @@ describe('BusySignalInstance', () => {
   });
 
   it("should send the 'done' message even if the promise rejects", () => {
-    instance.reportBusyWhile('foo', () => Promise.reject(new Error()), options);
+    singleton.reportBusyWhile(
+      'foo',
+      () => Promise.reject(new Error()),
+      options,
+    );
     expect(messages.length).toBe(1);
     waitsFor(
       () => messages.length === 2,
@@ -59,11 +63,11 @@ describe('BusySignalInstance', () => {
   });
 
   it('should properly display duplicate messages', () => {
-    const dispose1 = instance.reportBusy('foo', options);
+    const dispose1 = singleton.reportBusy('foo', options);
     expect(messages.length).toBe(1);
     expect(messages[0]).toEqual(['foo']);
 
-    const dispose2 = instance.reportBusy('foo', options);
+    const dispose2 = singleton.reportBusy('foo', options);
     expect(messages.length).toBe(2);
     expect(messages[1]).toEqual(['foo', 'foo']);
 
@@ -96,7 +100,7 @@ describe('BusySignalInstance', () => {
     it('should only display for the proper text editor', () => {
       atom.workspace.getActivePane().activateItem(editor1);
 
-      const disposable = instance.reportBusy('foo', {
+      const disposable = singleton.reportBusy('foo', {
         onlyForFile: '/file2.txt',
         ...options,
       });

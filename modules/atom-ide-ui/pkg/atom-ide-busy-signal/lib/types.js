@@ -41,7 +41,8 @@ export type BusySignalService = {
   // object (you can update the title multiple times) and dispose it when done.
   reportBusy(title: string, options?: BusySignalOptions): BusyMessage,
 
-  // Call this when you're done to ensure that all busy signals are removed.
+  // This is a no-op. When someone consumes the busy service, they get back a
+  // reference to the single shared instance, so disposing of it would be wrong.
   dispose(): void,
 };
 

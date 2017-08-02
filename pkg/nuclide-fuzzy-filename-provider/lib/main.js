@@ -43,11 +43,7 @@ class Activation {
   constructor() {
     (this: any)._readySearch = this._readySearch.bind(this);
 
-    this._subscriptions = new UniversalDisposable(() => {
-      if (this._busySignalService != null) {
-        this._busySignalService.dispose();
-      }
-    });
+    this._subscriptions = new UniversalDisposable();
     this._subscriptionsByRoot = new Map();
 
     // Do search preprocessing for all existing and future root directories.

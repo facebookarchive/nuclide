@@ -13,35 +13,17 @@
 import type {BusySignalOptions, BusyMessage} from './types';
 import type {MessageStore} from './MessageStore';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class BusySignalInstance {
+export default class BusySignalSingleton {
   _messageStore: MessageStore;
-  _disposables: UniversalDisposable = new UniversalDisposable();
 
   constructor(messageStore: MessageStore) {
     this._messageStore = messageStore;
   }
 
-  dispose() {
-    this._disposables.dispose();
-  }
+  dispose() {}
 
   reportBusy(title: string, options?: BusySignalOptions): BusyMessage {
-    const busyMessage = this._messageStore.add(title, options || {});
-
-    const serviceDisposables = this._disposables;
-    const wrapper: BusyMessage = {
-      setTitle(title2: string): void {
-        busyMessage.setTitle(title2);
-      },
-      dispose(): void {
-        busyMessage.dispose();
-        serviceDisposables.remove(wrapper);
-      },
-    };
-    serviceDisposables.add(wrapper);
-    return wrapper;
+    return this._messageStore.add(title, options || {});
   }
 
   /**

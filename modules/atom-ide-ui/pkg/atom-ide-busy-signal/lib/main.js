@@ -14,16 +14,18 @@ import type {BusySignalService} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import BusySignalInstance from './BusySignalInstance';
+import BusySignalSingleton from './BusySignalSingleton';
 import {MessageStore} from './MessageStore';
 import StatusBarTile from './StatusBarTile';
 
 class Activation {
   _disposables: UniversalDisposable;
+  _service: BusySignalService;
   _messageStore: MessageStore;
 
   constructor() {
     this._messageStore = new MessageStore();
+    this._service = new BusySignalSingleton(this._messageStore);
     this._disposables = new UniversalDisposable(this._messageStore);
   }
 
@@ -45,7 +47,7 @@ class Activation {
   }
 
   provideBusySignal(): BusySignalService {
-    return new BusySignalInstance(this._messageStore);
+    return this._service;
   }
 }
 

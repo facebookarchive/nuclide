@@ -110,14 +110,8 @@ export function provideDefinitions(): DefinitionProvider {
 }
 
 export function consumeBusySignal(service: BusySignalService): IDisposable {
-  if (subscriptions != null) {
-    subscriptions.add(service);
-  }
   busySignalService = service;
   return new UniversalDisposable(() => {
-    if (subscriptions != null) {
-      subscriptions.remove(service);
-    }
     busySignalService = null;
   });
 }

@@ -102,7 +102,6 @@ class Activation {
   }
 
   consumeBusySignal(service: BusySignalService): IDisposable {
-    this._subscriptions.add(service);
     this._busySignalService = service;
     return new UniversalDisposable(() => {
       this._busySignalService = null;
