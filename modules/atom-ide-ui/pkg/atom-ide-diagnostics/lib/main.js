@@ -14,7 +14,6 @@ import type {
   CallbackDiagnosticProvider,
   LinterProvider,
   ObservableDiagnosticProvider,
-  ObservableDiagnosticUpdater,
   RegisterIndieLinter,
 } from './types';
 import type {LinterAdapter} from './services/LinterAdapter';
@@ -27,12 +26,11 @@ import DiagnosticStore from './DiagnosticStore';
 import DiagnosticUpdater from './services/DiagnosticUpdater';
 import {createAdapters} from './services/LinterAdapterFactory';
 import IndieLinterRegistry from './services/IndieLinterRegistry';
+import ObservableDiagnosticUpdater from './services/ObservableDiagnosticUpdater';
 
 class Activation {
   _disposables: UniversalDisposable;
   _diagnosticStore: DiagnosticStore;
-
-  _observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
 
   _allLinterAdapters: Set<LinterAdapter>;
   _indieRegistry: ?IndieLinterRegistry;
@@ -69,17 +67,7 @@ class Activation {
   }
 
   provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
-    if (this._observableDiagnosticUpdater == null) {
-      const store = this._diagnosticStore;
-      this._observableDiagnosticUpdater = {
-        getFileMessageUpdates: path => store.getFileMessageUpdates(path),
-        projectMessageUpdates: store.getProjectMessageUpdates(),
-        allMessageUpdates: store.getAllMessageUpdates(),
-        applyFix: message => store.applyFix(message),
-        applyFixesForFile: file => store.applyFixesForFile(file),
-      };
-    }
-    return this._observableDiagnosticUpdater;
+    return new ObservableDiagnosticUpdater(this._diagnosticStore);
   }
 
   provideIndie(): RegisterIndieLinter {
