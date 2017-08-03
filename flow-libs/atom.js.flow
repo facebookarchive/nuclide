@@ -563,6 +563,7 @@ declare class atom$Range {
   end: atom$Point,
   isEmpty(): boolean,
   isEqual(otherRange: atom$RangeLike): boolean,
+  intersectsWith(otherRange: atom$RangeLike, exclusive?: boolean): boolean,
   containsPoint(point: atom$PointLike, exclusive?: boolean): boolean,
   containsRange(other: atom$Range, exclusive?: boolean): boolean,
   union(other: atom$Range): atom$Range,
