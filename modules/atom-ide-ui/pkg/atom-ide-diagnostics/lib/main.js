@@ -12,7 +12,6 @@
 
 import type {
   CallbackDiagnosticProvider,
-  DiagnosticUpdater,
   LinterProvider,
   ObservableDiagnosticProvider,
   ObservableDiagnosticUpdater,
@@ -25,6 +24,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 import DiagnosticStore from './DiagnosticStore';
+import DiagnosticUpdater from './services/DiagnosticUpdater';
 import {createAdapters} from './services/LinterAdapterFactory';
 import IndieLinterRegistry from './services/IndieLinterRegistry';
 
@@ -32,7 +32,6 @@ class Activation {
   _disposables: UniversalDisposable;
   _diagnosticStore: DiagnosticStore;
 
-  _diagnosticUpdater: ?DiagnosticUpdater;
   _observableDiagnosticUpdater: ?ObservableDiagnosticUpdater;
 
   _allLinterAdapters: Set<LinterAdapter>;
@@ -66,19 +65,7 @@ class Activation {
    * @return A wrapper around the methods on DiagnosticStore that allow reading data.
    */
   provideDiagnosticUpdates(): DiagnosticUpdater {
-    if (!this._diagnosticUpdater) {
-      const store = this._diagnosticStore;
-      this._diagnosticUpdater = {
-        onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
-        onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(
-          store,
-        ),
-        onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
-        applyFix: store.applyFix.bind(store),
-        applyFixesForFile: store.applyFixesForFile.bind(store),
-      };
-    }
-    return this._diagnosticUpdater;
+    return new DiagnosticUpdater(this._diagnosticStore);
   }
 
   provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {

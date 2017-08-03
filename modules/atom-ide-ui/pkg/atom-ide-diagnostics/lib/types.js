@@ -115,21 +115,6 @@ export type DiagnosticMessage =
   | FileDiagnosticMessage
   | ProjectDiagnosticMessage;
 
-export type DiagnosticUpdater = {
-  onFileMessagesDidUpdate: (
-    callback: (update: FileDiagnosticMessages) => mixed,
-    filePath: NuclideUri,
-  ) => IDisposable,
-  onProjectMessagesDidUpdate: (
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ) => IDisposable,
-  onAllMessagesDidUpdate: (
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ) => IDisposable,
-  applyFix: (message: FileDiagnosticMessage) => void,
-  applyFixesForFile: (file: NuclideUri) => void,
-};
-
 export type ObservableDiagnosticUpdater = {
   // All observables here will issue an initial value on subscribe.
 
