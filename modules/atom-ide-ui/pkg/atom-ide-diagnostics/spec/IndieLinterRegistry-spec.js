@@ -10,7 +10,7 @@
  * @format
  */
 
-import IndieLinterRegistry from '../lib/IndieLinterRegistry';
+import IndieLinterRegistry from '../lib/services/IndieLinterRegistry';
 
 describe('IndieLinterRegistry', () => {
   const registry = new IndieLinterRegistry();

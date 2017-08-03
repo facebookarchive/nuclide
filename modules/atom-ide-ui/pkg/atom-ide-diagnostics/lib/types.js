@@ -13,7 +13,7 @@
 import type {Observable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
-import type {IndieLinterDelegate} from './IndieLinterRegistry';
+import type {IndieLinterDelegate} from './services/IndieLinterRegistry';
 
 export type DiagnosticProvider =
   | CallbackDiagnosticProvider

@@ -14,11 +14,11 @@ import type {
   DiagnosticProviderUpdate,
   DiagnosticInvalidationMessage,
   LinterMessageV2,
-} from './types';
+} from '../types';
 
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {linterMessagesToDiagnosticUpdate} from './LinterAdapter';
+import {linterMessagesToDiagnosticUpdate} from '../services/LinterAdapter';
 
 export class IndieLinterDelegate {
   _name: string;

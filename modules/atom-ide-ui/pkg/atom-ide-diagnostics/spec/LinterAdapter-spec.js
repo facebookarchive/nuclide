@@ -21,7 +21,7 @@ import {
   linterMessageToDiagnosticMessage,
   linterMessageV2ToDiagnosticMessage,
   linterMessagesToDiagnosticUpdate,
-} from '../lib/LinterAdapter';
+} from '../lib/services/LinterAdapter';
 
 const grammar = 'testgrammar';
 

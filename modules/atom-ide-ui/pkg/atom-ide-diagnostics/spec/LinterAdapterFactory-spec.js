@@ -10,7 +10,10 @@
  * @format
  */
 
-import {createAdapters, validateLinter} from '../lib/LinterAdapterFactory';
+import {
+  createAdapters,
+  validateLinter,
+} from '../lib/services/LinterAdapterFactory';
 
 const grammar = 'testgrammar';
 

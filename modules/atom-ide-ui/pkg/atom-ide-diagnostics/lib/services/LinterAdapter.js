@@ -22,7 +22,7 @@ import type {
   LinterMessageV2,
   LinterProvider,
   ProjectDiagnosticMessage,
-} from './types';
+} from '../types';
 
 import {Point, Range} from 'atom';
 import {Observable, Subject} from 'rxjs';

@@ -18,15 +18,15 @@ import type {
   ObservableDiagnosticUpdater,
   RegisterIndieLinter,
 } from './types';
-import type {LinterAdapter} from './LinterAdapter';
+import type {LinterAdapter} from './services/LinterAdapter';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 import DiagnosticStore from './DiagnosticStore';
-import {createAdapters} from './LinterAdapterFactory';
-import IndieLinterRegistry from './IndieLinterRegistry';
+import {createAdapters} from './services/LinterAdapterFactory';
+import IndieLinterRegistry from './services/IndieLinterRegistry';
 
 class Activation {
   _disposables: UniversalDisposable;
