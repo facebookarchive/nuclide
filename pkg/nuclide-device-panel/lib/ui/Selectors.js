@@ -22,6 +22,7 @@ const FB_HOST_SUFFIX = '.facebook.com';
 type Props = {|
   setHost: (host: NuclideUri) => void,
   setDeviceType: (deviceType: string) => void,
+  toggleDevicePolling: (isActive: boolean) => void,
   hosts: NuclideUri[],
   host: NuclideUri,
   deviceTypes: string[],
@@ -33,7 +34,7 @@ export class Selectors extends React.Component {
 
   componentDidMount(): void {
     if (this.props.deviceTypes.length > 0) {
-      this.props.setDeviceType(this.props.deviceTypes[0]);
+      this._setDeviceType(this.props.deviceTypes[0]);
     }
   }
 
@@ -65,11 +66,16 @@ export class Selectors extends React.Component {
       return (
         <Button
           key={deviceType}
-          onClick={() => this.props.setDeviceType(deviceType)}>
+          onClick={() => this._setDeviceType(deviceType)}>
           {deviceType}
         </Button>
       );
     });
+  }
+
+  _setDeviceType(deviceType: string) {
+    this.props.setDeviceType(deviceType);
+    this.props.toggleDevicePolling(true);
   }
 
   _getTypesSelector(): React.Element<any> {

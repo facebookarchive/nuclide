@@ -134,6 +134,7 @@ export class RootPanel extends React.Component {
             hosts={this.props.hosts}
             host={this.props.host}
             setDeviceType={this.props.setDeviceType}
+            toggleDevicePolling={this.props.toggleDevicePolling}
             setHost={this.props.setHost}
           />
         </div>
