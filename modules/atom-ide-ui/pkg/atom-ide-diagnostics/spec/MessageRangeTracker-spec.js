@@ -15,12 +15,12 @@ import type {FileDiagnosticMessage} from '../lib/types';
 import invariant from 'assert';
 import {Range} from 'atom';
 
-import {MarkerTracker} from '../lib/MarkerTracker';
+import {MessageRangeTracker} from '../lib/MessageRangeTracker';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-describe('MarkerTracker', () => {
-  let tracker: MarkerTracker = (null: any);
+describe('MessageRangeTracker', () => {
+  let tracker: MessageRangeTracker = (null: any);
 
   let initiallyOpenFilePath: string = (null: any);
   let initiallyClosedFilePath: string = (null: any);
@@ -31,7 +31,7 @@ describe('MarkerTracker', () => {
   let initiallyOpenEditor: atom$TextEditor = (null: any);
 
   beforeEach(() => {
-    tracker = new MarkerTracker();
+    tracker = new MessageRangeTracker();
 
     const fixturesPath = nuclideUri.join(__dirname, 'fixtures');
     initiallyOpenFilePath = nuclideUri.join(
@@ -134,7 +134,7 @@ describe('MarkerTracker', () => {
     });
   });
 
-  // The tests below break the MarkerTracker abstraction so that they can ensure that disposal
+  // The tests below break the MessageRangeTracker abstraction so that they can ensure that disposal
   // happens properly.
 
   it('should remove messages for open files and destroy markers', () => {
@@ -214,7 +214,7 @@ describe('MarkerTracker', () => {
  * Ensures that the representation invariants hold. Obviously, this breaks abstraction by reaching
  * into private properties.
  */
-function checkRep(tracker: MarkerTracker): void {
+function checkRep(tracker: MessageRangeTracker): void {
   const openFiles = new Set(
     atom.workspace.getTextEditors().map(editor => editor.getPath()),
   );

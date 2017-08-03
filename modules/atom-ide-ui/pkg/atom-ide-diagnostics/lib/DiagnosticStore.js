@@ -27,7 +27,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
 import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {MarkerTracker} from './MarkerTracker';
+import {MessageRangeTracker} from './MessageRangeTracker';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';
@@ -56,7 +56,7 @@ export default class DiagnosticStore {
   _projectChanges: BehaviorSubject<Array<ProjectDiagnosticMessage>>;
   _allChanges: BehaviorSubject<Array<DiagnosticMessage>>;
 
-  _markerTracker: MarkerTracker;
+  _messageRangeTracker: MessageRangeTracker;
 
   constructor() {
     this._providerToFileToMessages = new Map();
@@ -69,7 +69,7 @@ export default class DiagnosticStore {
     this._projectChanges = new BehaviorSubject([]);
     this._allChanges = new BehaviorSubject([]);
 
-    this._markerTracker = new MarkerTracker();
+    this._messageRangeTracker = new MessageRangeTracker();
 
     const whenRemoved = provider =>
       this._providersRemoved.filter(p => p === provider);
@@ -161,9 +161,9 @@ export default class DiagnosticStore {
 
       const messagesToRemove = fileToMessages.get(filePath);
       if (messagesToRemove != null) {
-        this._markerTracker.removeFileMessages(messagesToRemove);
+        this._messageRangeTracker.removeFileMessages(messagesToRemove);
       }
-      this._markerTracker.addFileMessages(newMessagesForPath);
+      this._messageRangeTracker.addFileMessages(newMessagesForPath);
 
       // Update _providerToFileToMessages.
       fileToMessages.set(filePath, newMessagesForPath);
@@ -221,7 +221,7 @@ export default class DiagnosticStore {
       if (fileToDiagnostics) {
         const diagnosticsToRemove = fileToDiagnostics.get(filePath);
         if (diagnosticsToRemove != null) {
-          this._markerTracker.removeFileMessages(diagnosticsToRemove);
+          this._messageRangeTracker.removeFileMessages(diagnosticsToRemove);
         }
         fileToDiagnostics.delete(filePath);
       }
@@ -257,7 +257,7 @@ export default class DiagnosticStore {
   }
 
   _invalidateSingleMessage(message: FileDiagnosticMessage): void {
-    this._markerTracker.removeFileMessages([message]);
+    this._messageRangeTracker.removeFileMessages([message]);
     for (const fileToMessages of this._providerToFileToMessages.values()) {
       const fileMessages = fileToMessages.get(message.filePath);
       if (fileMessages != null) {
@@ -437,7 +437,7 @@ export default class DiagnosticStore {
     const fix = message.fix;
     invariant(fix != null);
 
-    const actualRange = this._markerTracker.getCurrentRange(message);
+    const actualRange = this._messageRangeTracker.getCurrentRange(message);
 
     if (actualRange == null) {
       return null;

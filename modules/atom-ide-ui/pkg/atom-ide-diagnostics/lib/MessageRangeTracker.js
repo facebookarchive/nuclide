@@ -21,7 +21,12 @@ import invariant from 'assert';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {MultiMap} from 'nuclide-commons/collection';
 
-export class MarkerTracker {
+/**
+ * This class tracks the position of messages as the contents of the editor changes. It does this
+ * using markers. Note that there's no visible change to the editor; the markers are just a means to
+ * track ranges as surrounding lines change.
+ */
+export class MessageRangeTracker {
   /**
    * Stores all current FileDiagnosticMessages, indexed by file. Includes those for files that are
    * not open.
@@ -150,6 +155,6 @@ export class MarkerTracker {
   }
 
   _assertNotDisposed(): void {
-    invariant(!this._disposed, 'MarkerTracker has been disposed');
+    invariant(!this._disposed, `${this.constructor.name} has been disposed`);
   }
 }
