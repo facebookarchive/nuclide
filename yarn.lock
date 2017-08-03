@@ -3806,7 +3806,7 @@ vscode-languageserver@3.3.0, vscode-languageserver@^3.3.0:
     vscode-jsonrpc "^3.3.0"
     vscode-languageserver-types "^3.3.0"
 
-vscode@^1.1.2:
+vscode@1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.4.tgz#1f1d4d662d55c9a28bc467aacb632291f70a686d"
   dependencies:
