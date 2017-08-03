@@ -97,6 +97,9 @@ class JsTestRunner(object):
             name = package_config['name']
             test_runner = package_config['testRunner']
 
+            if test_runner is None:
+                continue
+
             if package_config['excludeTestsFromContinuousIntegration']:
                 continue
 
