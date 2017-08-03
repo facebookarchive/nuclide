@@ -11,13 +11,10 @@
  */
 
 import type {FileDiagnosticMessage} from './types';
-
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import {CompositeDisposable} from 'atom';
-
 import invariant from 'assert';
-
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import {MultiMap} from 'nuclide-commons/collection';
 
@@ -26,7 +23,7 @@ import {MultiMap} from 'nuclide-commons/collection';
  * using markers. Note that there's no visible change to the editor; the markers are just a means to
  * track ranges as surrounding lines change.
  */
-export class MessageRangeTracker {
+export default class MessageRangeTracker {
   /**
    * Stores all current FileDiagnosticMessages, indexed by file. Includes those for files that are
    * not open.
@@ -39,17 +36,13 @@ export class MessageRangeTracker {
    */
   _messageToMarker: Map<FileDiagnosticMessage, atom$Marker>;
 
-  _subscriptions: CompositeDisposable;
-
-  _disposed: boolean;
+  _disposables: UniversalDisposable;
 
   constructor() {
     this._messageToMarker = new Map();
     this._fileToMessages = new MultiMap();
-    this._subscriptions = new CompositeDisposable();
-    this._disposed = false;
 
-    this._subscriptions.add(
+    this._disposables = new UniversalDisposable(
       observeTextEditors(editor => {
         const path = editor.getPath();
         if (path == null) {
@@ -64,19 +57,18 @@ export class MessageRangeTracker {
           }
         }
       }),
+      () => {
+        for (const marker of this._messageToMarker.values()) {
+          marker.destroy();
+        }
+        this._fileToMessages.clear();
+        this._messageToMarker.clear();
+      },
     );
   }
 
-  dispose() {
-    if (!this._disposed) {
-      this._subscriptions.dispose();
-      for (const marker of this._messageToMarker.values()) {
-        marker.destroy();
-      }
-      this._fileToMessages.clear();
-      this._messageToMarker.clear();
-      this._disposed = true;
-    }
+  dispose(): void {
+    this._disposables.dispose();
   }
 
   /** Return a Range if the marker is still valid, otherwise return null */
@@ -91,12 +83,13 @@ export class MessageRangeTracker {
     }
   }
 
-  addFileMessages(messages: Array<FileDiagnosticMessage>): void {
+  addFileMessages(messages: Iterable<FileDiagnosticMessage>): void {
     this._assertNotDisposed();
     // Right now we only care about messages with fixes.
-    const messagesWithFix = messages.filter(m => m.fix != null);
+    const messagesWithFix = Array.from(messages).filter(m => m.fix != null);
 
     for (const message of messagesWithFix) {
+      invariant(message.fix != null);
       this._fileToMessages.add(message.filePath, message);
 
       // If the file is currently open, create a marker.
@@ -149,12 +142,15 @@ export class MessageRangeTracker {
     const markerSubscription = marker.onDidDestroy(() => {
       this._messageToMarker.delete(message);
       markerSubscription.dispose();
-      this._subscriptions.remove(markerSubscription);
+      this._disposables.remove(markerSubscription);
     });
-    this._subscriptions.add(markerSubscription);
+    this._disposables.add(markerSubscription);
   }
 
   _assertNotDisposed(): void {
-    invariant(!this._disposed, `${this.constructor.name} has been disposed`);
+    invariant(
+      !this._disposables.disposed,
+      `${this.constructor.name} has been disposed`,
+    );
   }
 }

@@ -27,7 +27,7 @@ import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import {applyTextEdits} from 'nuclide-commons-atom/text-edit';
 import {arrayRemove, MultiMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {MessageRangeTracker} from './MessageRangeTracker';
+import MessageRangeTracker from './MessageRangeTracker';
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {BehaviorSubject, Subject, Observable} from 'rxjs';

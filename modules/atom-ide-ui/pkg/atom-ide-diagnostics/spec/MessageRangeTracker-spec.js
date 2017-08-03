@@ -15,7 +15,7 @@ import type {FileDiagnosticMessage} from '../lib/types';
 import invariant from 'assert';
 import {Range} from 'atom';
 
-import {MessageRangeTracker} from '../lib/MessageRangeTracker';
+import MessageRangeTracker from '../lib/MessageRangeTracker';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -204,7 +204,6 @@ describe('MessageRangeTracker', () => {
 
     expect(tracker._fileToMessages.size).toBe(0);
     expect(tracker._messageToMarker.size).toBe(0);
-    expect(tracker._disposed).toBeTruthy();
 
     checkRep(tracker);
   });
