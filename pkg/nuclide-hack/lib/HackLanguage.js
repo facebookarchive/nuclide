@@ -22,6 +22,10 @@ import type {
 import invariant from 'assert';
 
 import {getServiceByConnection} from '../../nuclide-remote-connection';
+import {
+  HACK_CONFIG_FILE_NAME,
+  HACK_FILE_EXTENSIONS,
+} from '../../nuclide-hack-common/lib/constants';
 import {getConfig, logger} from './config';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {
@@ -69,8 +73,8 @@ async function connectionToHackService(
     return hackService.initializeLsp(
       config.hhClientPath, // command
       ['lsp', '--from', 'nuclide', ...autocompleteArg], // arguments
-      ['.hhconfig'], // project file
-      ['.php'], // which file-notifications should be sent to LSP
+      [HACK_CONFIG_FILE_NAME], // project file
+      HACK_FILE_EXTENSIONS, // which file-notifications should be sent to LSP
       config.logLevel,
       fileNotifier,
       host,

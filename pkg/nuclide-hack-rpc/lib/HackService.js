@@ -49,13 +49,13 @@ import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {arrayFlatten, arrayCompact} from 'nuclide-commons/collection';
 import invariant from 'assert';
 import {createMultiLspLanguageService} from '../../nuclide-vscode-language-service-rpc';
+import {HACK_FILE_EXTENSIONS} from '../../nuclide-hack-common/lib/constants';
 import {callHHClient} from './HackHelpers';
 import {
   findHackConfigDir,
   setHackCommand,
   getHackCommand,
   logger,
-  HACK_FILE_EXTENSIONS,
   HACK_LOGGER_CATEGORY,
 } from './hack-config';
 import {
