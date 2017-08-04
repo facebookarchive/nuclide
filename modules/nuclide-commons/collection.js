@@ -375,7 +375,11 @@ export class MultiMap<K, V> {
   }
 }
 
-export function objectEntries<T>(obj: {[key: string]: T}): Array<[string, T]> {
+export function objectValues<T>(obj: {[key: string]: T}): Array<T> {
+  return Object.keys(obj).map(key => obj[key]);
+}
+
+export function objectEntries<T>(obj: ?{[key: string]: T}): Array<[string, T]> {
   if (obj == null) {
     throw new TypeError();
   }

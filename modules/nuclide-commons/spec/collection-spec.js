@@ -25,6 +25,7 @@ import {
   MultiMap,
   objectEntries,
   objectFromMap,
+  objectValues,
   concatIterators,
   areSetsEqual,
   someOfIterable,
@@ -308,6 +309,26 @@ describe('MultiMap', () => {
     multimap.add(1, 2);
     expect(multimap.hasAny(1)).toBe(true);
     expect(multimap.hasAny(2)).toBe(false);
+  });
+});
+
+describe('objectValues', () => {
+  it('returns the values of an object', () => {
+    expect(
+      objectValues({
+        a: 1,
+        b: 2,
+        c: 4,
+      }),
+    ).toEqual([1, 2, 4]);
+  });
+
+  it('throws for null', () => {
+    expect(() => objectEntries(null)).toThrow();
+  });
+
+  it('throws for undefined', () => {
+    expect(() => objectEntries(undefined)).toThrow();
   });
 });
 

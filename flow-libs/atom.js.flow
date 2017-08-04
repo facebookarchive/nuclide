@@ -501,7 +501,8 @@ declare class atom$Panel {
   onDidDestroy(callback: (panel: atom$Panel) => any): IDisposable,
 
   // Panel Details
-  getItem(): HTMLElement,
+  getElement(): HTMLElement,
+  getItem(): any,
   getPriority(): number,
   isVisible(): boolean,
   hide(): void,
@@ -1176,7 +1177,8 @@ declare class atom$Workspace {
   paneForItem(item: mixed): ?atom$Pane,
 
   // Panels
-  panelContainers: Array<atom$PanelContainer>,
+  panelContainers: {[location: string]: atom$PanelContainer},
+  getElement(): HTMLElement,
   getBottomPanels(): Array<atom$Panel>,
   addBottomPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
   getLeftPanels(): Array<atom$Panel>,
@@ -1912,4 +1914,6 @@ declare class atom$PanelContainer {
   panels: Array<atom$Panel>,
   subscriptions: atom$CompositeDisposable,
   viewRegistry: atom$ViewRegistry,
+
+  getPanels(): Array<atom$Panel>,
 };
