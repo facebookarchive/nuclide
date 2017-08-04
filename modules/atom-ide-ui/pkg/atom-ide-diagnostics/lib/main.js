@@ -33,7 +33,6 @@ import createStore from './redux/createStore';
 class Activation {
   _disposables: UniversalDisposable;
   _allLinterAdapters: Set<LinterAdapter>;
-  _indieRegistry: ?IndieLinterRegistry;
   _store: Store;
 
   constructor() {
@@ -52,16 +51,6 @@ class Activation {
     this._disposables.dispose();
   }
 
-  _getIndieRegistry(): IndieLinterRegistry {
-    if (this._indieRegistry == null) {
-      const registry = new IndieLinterRegistry();
-      this._disposables.add(registry);
-      this._indieRegistry = registry;
-      return registry;
-    }
-    return this._indieRegistry;
-  }
-
   /**
    * @return A wrapper around the methods on DiagnosticStore that allow reading data.
    */
@@ -74,8 +63,10 @@ class Activation {
   }
 
   provideIndie(): RegisterIndieLinter {
+    const registry = new IndieLinterRegistry();
+    this._disposables.add(registry);
     return config => {
-      const delegate = this._getIndieRegistry().register(config);
+      const delegate = registry.register(config);
       const disposable = this.consumeDiagnosticsProviderV2(delegate);
       delegate.onDidDestroy(() => {
         disposable.dispose();
