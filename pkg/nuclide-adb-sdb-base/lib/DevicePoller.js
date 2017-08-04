@@ -61,15 +61,21 @@ class DevicePoller {
   }
 
   fetch(host: NuclideUri): Observable<Device[]> {
-    const rpc =
-      this._type === 'adb'
-        ? getAdbServiceByNuclideUri(host)
-        : getSdbServiceByNuclideUri(host);
+    try {
+      const rpc =
+        this._type === 'adb'
+          ? getAdbServiceByNuclideUri(host)
+          : getSdbServiceByNuclideUri(host);
 
-    return rpc
-      .getDeviceList()
-      .refCount()
-      .map(devices => devices.map(device => this.parseRawDevice(device)));
+      return rpc
+        .getDeviceList()
+        .refCount()
+        .map(devices => devices.map(device => this.parseRawDevice(device)));
+    } catch (e) {
+      // The remote host connection can go away while we are fetching if the user
+      // removes it from the file tree or the network connection is lost.
+      return Observable.of([]);
+    }
   }
 
   parseRawDevice(device: DeviceDescription): Device {
