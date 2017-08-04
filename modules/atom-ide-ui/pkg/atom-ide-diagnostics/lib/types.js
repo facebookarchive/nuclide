@@ -119,9 +119,11 @@ export type {
   default as ObservableDiagnosticUpdater,
 } from './services/ObservableDiagnosticUpdater';
 
-/**
- * Linter APIs, for compatibility with the Atom linter package.
- */
+//
+//
+// Linter APIs, for compatibility with the Atom linter package.
+//
+//
 
 export type LinterTrace = {
   type: 'Trace',
@@ -205,3 +207,78 @@ export type LinterProvider = {
 };
 
 export type RegisterIndieLinter = ({name: string}) => IndieLinterDelegate;
+
+//
+//
+// Redux
+//
+//
+
+export type AppState = {
+  messages: MessagesState,
+  projectMessages: ProjectMessagesState,
+};
+
+export type MessagesState = Map<
+  ObservableDiagnosticProvider,
+  Map<NuclideUri, Array<FileDiagnosticMessage>>,
+>;
+
+export type ProjectMessagesState = Map<
+  ObservableDiagnosticProvider,
+  Array<ProjectDiagnosticMessage>,
+>;
+
+export type Store = {
+  getState(): AppState,
+  dispatch(action: Action): void,
+};
+
+export type Action =
+  // Providers
+  | {
+    type: 'ADD_PROVIDER',
+    payload: {provider: ObservableDiagnosticProvider},
+  }
+  | {
+    type: 'REMOVE_PROVIDER',
+    payload: {provider: ObservableDiagnosticProvider},
+  }
+
+  // Fixes
+  | {
+    type: 'APPLY_FIX',
+    payload: {
+      message: FileDiagnosticMessage,
+    },
+  }
+  | {
+    type: 'APPLY_FIXES_FOR_FILE',
+    payload: {
+      file: NuclideUri,
+    },
+  }
+  | {type: 'FIX_FAILED'}
+  | {
+    type: 'FIXES_APPLIED',
+    payload: {
+      filePath: NuclideUri,
+      messages: Set<FileDiagnosticMessage>,
+    },
+  }
+
+  // Messages
+  | {
+    type: 'UPDATE_MESSAGES',
+    payload: {
+      provider: ObservableDiagnosticProvider,
+      update: DiagnosticProviderUpdate,
+    },
+  }
+  | {
+    type: 'INVALIDATE_MESSAGES',
+    payload: {
+      provider: ObservableDiagnosticProvider,
+      invalidation: DiagnosticInvalidationMessage,
+    },
+  };

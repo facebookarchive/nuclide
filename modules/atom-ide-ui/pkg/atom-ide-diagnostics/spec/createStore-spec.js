@@ -11,7 +11,11 @@
  */
 
 import {Range} from 'atom';
-import DiagnosticStore from '../lib/DiagnosticStore';
+import createStore from '../lib/redux/createStore';
+import * as Actions from '../lib/redux/Actions';
+import * as Selectors from '../lib/redux/Selectors';
+import DiagnosticUpdater from '../lib/services/DiagnosticUpdater';
+import MessageRangeTracker from '../lib/MessageRangeTracker';
 import invariant from 'assert';
 
 // Test Constants
@@ -55,8 +59,9 @@ const projectMessageB = {
   type: 'Error',
 };
 
-describe('DiagnosticStore', () => {
-  let diagnosticStore;
+describe('createStore', () => {
+  let store: Store = (null: any);
+  let updater: DiagnosticUpdater = (null: any);
   let spy_fileA: any;
   let spy_fileA_subscription;
   let spy_fileB: any;
@@ -87,19 +92,16 @@ describe('DiagnosticStore', () => {
     spy_project = jasmine.createSpy();
     spy_allMessages = jasmine.createSpy();
 
-    invariant(diagnosticStore);
-    spy_fileA_subscription = diagnosticStore.onFileMessagesDidUpdate(
+    spy_fileA_subscription = updater.onFileMessagesDidUpdate(
       spy_fileA,
       'fileA',
     );
-    spy_fileB_subscription = diagnosticStore.onFileMessagesDidUpdate(
+    spy_fileB_subscription = updater.onFileMessagesDidUpdate(
       spy_fileB,
       'fileB',
     );
-    spy_project_subscription = diagnosticStore.onProjectMessagesDidUpdate(
-      spy_project,
-    );
-    spy_allMessages_subscription = diagnosticStore.onAllMessagesDidUpdate(
+    spy_project_subscription = updater.onProjectMessagesDidUpdate(spy_project);
+    spy_allMessages_subscription = updater.onAllMessagesDidUpdate(
       spy_allMessages,
     );
   };
@@ -109,8 +111,7 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileA', [fileMessageA]]]),
       projectMessages: [projectMessageA],
     };
-    invariant(diagnosticStore);
-    diagnosticStore.updateMessages(dummyProviderA, updateA);
+    store.dispatch(Actions.updateMessages(dummyProviderA, updateA));
   };
 
   const addUpdateB = () => {
@@ -118,8 +119,7 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileB', [fileMessageB]]]),
       projectMessages: [projectMessageB],
     };
-    invariant(diagnosticStore);
-    diagnosticStore.updateMessages(dummyProviderB, updateB);
+    store.dispatch(Actions.updateMessages(dummyProviderB, updateB));
   };
 
   const addUpdateA2 = () => {
@@ -127,18 +127,29 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileA', [fileMessageA2]]]),
       projectMessages: [projectMessageA2],
     };
-    invariant(diagnosticStore);
-    diagnosticStore.updateMessages(dummyProviderA, updateA2);
+    store.dispatch(Actions.updateMessages(dummyProviderA, updateA2));
   };
 
   beforeEach(() => {
-    diagnosticStore = new DiagnosticStore();
+    store = createStore(new MessageRangeTracker());
+    updater = new DiagnosticUpdater(store);
   });
 
   afterEach(() => {
-    invariant(diagnosticStore);
-    diagnosticStore.dispose();
     disposeSpies();
+  });
+
+  it("removes the provider when it's unregistered", () => {
+    addUpdateA();
+    addUpdateB();
+    let state = store.getState();
+    expect(state.messages.size).toBe(2);
+    expect(state.projectMessages.size).toBe(2);
+
+    store.dispatch(Actions.removeProvider(dummyProviderA));
+    state = store.getState();
+    expect(state.messages.size).toBe(1);
+    expect(state.projectMessages.size).toBe(1);
   });
 
   it('An updates only notifies listeners for the scope(s) of the update.', () => {
@@ -167,10 +178,13 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageA);
 
     // Expect the getter methods on DiagnosticStore to return correct info.
-    invariant(diagnosticStore);
-    expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
-    expect(diagnosticStore._getProjectMessages()).toEqual([projectMessageA]);
-    const allMessages = diagnosticStore._getAllMessages();
+    expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual([
+      fileMessageA,
+    ]);
+    expect(Selectors.getProjectMessages(store.getState())).toEqual([
+      projectMessageA,
+    ]);
+    const allMessages = Selectors.getAllMessages(store.getState());
     expect(allMessages.length).toBe(2);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -228,14 +242,17 @@ describe('DiagnosticStore', () => {
       expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
       // Expect the getter methods on DiagnosticStore to return correct data.
-      invariant(diagnosticStore);
-      expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
-      expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-      const projectMessages = diagnosticStore._getProjectMessages();
+      expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual([
+        fileMessageA,
+      ]);
+      expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([
+        fileMessageB,
+      ]);
+      const projectMessages = Selectors.getProjectMessages(store.getState());
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA);
       expect(projectMessages).toContain(projectMessageB);
-      const allMessages = diagnosticStore._getAllMessages();
+      const allMessages = Selectors.getAllMessages(store.getState());
       expect(allMessages.length).toBe(4);
       expect(allMessages).toContain(fileMessageA);
       expect(allMessages).toContain(projectMessageA);
@@ -284,16 +301,17 @@ describe('DiagnosticStore', () => {
       expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
       // Expect the getter methods on DiagnosticStore to return the correct info.
-      invariant(diagnosticStore);
-      expect(diagnosticStore._getFileMessages('fileA')).toEqual([
+      expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual([
         fileMessageA2,
       ]);
-      expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-      const projectMessages = diagnosticStore._getProjectMessages();
+      expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([
+        fileMessageB,
+      ]);
+      const projectMessages = Selectors.getProjectMessages(store.getState());
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA2);
       expect(projectMessages).toContain(projectMessageB);
-      const allMessages = diagnosticStore._getAllMessages();
+      const allMessages = Selectors.getAllMessages(store.getState());
       expect(allMessages.length).toBe(4);
       expect(allMessages).toContain(fileMessageA2);
       expect(allMessages).toContain(projectMessageA2);
@@ -317,10 +335,8 @@ describe('DiagnosticStore', () => {
 
         // Test 4A. Invalidate file messages from ProviderA.
         const fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
-        invariant(diagnosticStore);
-        diagnosticStore.invalidateMessages(
-          dummyProviderA,
-          fileInvalidationMessage,
+        store.dispatch(
+          Actions.invalidateMessages(dummyProviderA, fileInvalidationMessage),
         );
 
         // Expect spy_fileA and spy_allMessages to have been called from the
@@ -346,15 +362,17 @@ describe('DiagnosticStore', () => {
         );
 
         // Expect the getter methods on DiagnosticStore to return the correct info.
-        expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
-        expect(diagnosticStore._getFileMessages('fileB')).toEqual([
+        expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual(
+          [],
+        );
+        expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([
           fileMessageB,
         ]);
-        const projectMessages = diagnosticStore._getProjectMessages();
+        const projectMessages = Selectors.getProjectMessages(store.getState());
         expect(projectMessages.length).toBe(2);
         expect(projectMessages).toContain(projectMessageA2);
         expect(projectMessages).toContain(projectMessageB);
-        const allMessages = diagnosticStore._getAllMessages();
+        const allMessages = Selectors.getAllMessages(store.getState());
         expect(allMessages.length).toBe(3);
         expect(allMessages).toContain(projectMessageA2);
         expect(allMessages).toContain(fileMessageB);
@@ -370,10 +388,8 @@ describe('DiagnosticStore', () => {
         addUpdateB();
         addUpdateA2();
         const fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
-        invariant(diagnosticStore);
-        diagnosticStore.invalidateMessages(
-          dummyProviderA,
-          fileInvalidationMessage,
+        store.dispatch(
+          Actions.invalidateMessages(dummyProviderA, fileInvalidationMessage),
         );
 
         // Register spies. All spies expect spy_fileA should be called immediately
@@ -382,10 +398,11 @@ describe('DiagnosticStore', () => {
 
         // Test 4B. Invalidate project messages from ProviderA.
         const projectInvalidationMessage = {scope: 'project'};
-        invariant(diagnosticStore);
-        diagnosticStore.invalidateMessages(
-          dummyProviderA,
-          projectInvalidationMessage,
+        store.dispatch(
+          Actions.invalidateMessages(
+            dummyProviderA,
+            projectInvalidationMessage,
+          ),
         );
 
         // Expect spy_project and spy_allMessages to have been called from the
@@ -410,14 +427,16 @@ describe('DiagnosticStore', () => {
         );
 
         // Expect the getter methods on DiagnosticStore to return the correct info.
-        expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
-        expect(diagnosticStore._getFileMessages('fileB')).toEqual([
+        expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual(
+          [],
+        );
+        expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([
           fileMessageB,
         ]);
-        const projectMessages = diagnosticStore._getProjectMessages();
+        const projectMessages = Selectors.getProjectMessages(store.getState());
         expect(projectMessages.length).toBe(1);
         expect(projectMessages).toContain(projectMessageB);
-        const allMessages = diagnosticStore._getAllMessages();
+        const allMessages = Selectors.getAllMessages(store.getState());
         expect(allMessages.length).toBe(2);
         expect(allMessages).toContain(fileMessageB);
         expect(allMessages).toContain(projectMessageB);
@@ -448,10 +467,8 @@ describe('DiagnosticStore', () => {
 
     // All messages from ProviderB should be removed.
     const providerInvalidationMessage = {scope: 'all'};
-    invariant(diagnosticStore);
-    diagnosticStore.invalidateMessages(
-      dummyProviderB,
-      providerInvalidationMessage,
+    store.dispatch(
+      Actions.invalidateMessages(dummyProviderB, providerInvalidationMessage),
     );
 
     // There should have been no additional calls on the spies.
@@ -461,10 +478,10 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.callCount).toBe(1);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
-    expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
-    expect(diagnosticStore._getFileMessages('fileB')).toEqual([]);
-    expect(diagnosticStore._getProjectMessages().length).toBe(0);
-    expect(diagnosticStore._getAllMessages().length).toBe(0);
+    expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual([]);
+    expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([]);
+    expect(Selectors.getProjectMessages(store.getState()).length).toBe(0);
+    expect(Selectors.getAllMessages(store.getState()).length).toBe(0);
   });
 
   describe('autofix', () => {
@@ -485,31 +502,35 @@ describe('DiagnosticStore', () => {
       waitsForPromise(async () => {
         editor = await atom.workspace.open('/tmp/fileA');
         editor.setText('foobar\n');
-        diagnosticStore.updateMessages(dummyProviderA, {
-          filePathToMessages: new Map([['/tmp/fileA', [messageWithAutofix]]]),
-          projectMessages: [],
-        });
+        store.dispatch(
+          Actions.updateMessages(dummyProviderA, {
+            filePathToMessages: new Map([['/tmp/fileA', [messageWithAutofix]]]),
+            projectMessages: [],
+          }),
+        );
       });
     });
 
     describe('applyFix', () => {
       it('should apply the fix to the editor', () => {
-        diagnosticStore.applyFix(messageWithAutofix);
+        store.dispatch(Actions.applyFix(messageWithAutofix));
         expect(editor.getText()).toEqual('FOOoobar\n');
       });
 
       it('should invalidate the message', () => {
-        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([
-          messageWithAutofix,
-        ]);
-        diagnosticStore.applyFix(messageWithAutofix);
-        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
+        expect(
+          Selectors.getFileMessages(store.getState(), '/tmp/fileA'),
+        ).toEqual([messageWithAutofix]);
+        store.dispatch(Actions.applyFix(messageWithAutofix));
+        expect(
+          Selectors.getFileMessages(store.getState(), '/tmp/fileA'),
+        ).toEqual([]);
       });
     });
 
     describe('applyFixesForFile', () => {
       it('should apply the fixes for the given file', () => {
-        diagnosticStore.applyFixesForFile('/tmp/fileA');
+        store.dispatch(Actions.applyFixesForFile('/tmp/fileA'));
         expect(editor.getText()).toEqual('FOOoobar\n');
       });
     });

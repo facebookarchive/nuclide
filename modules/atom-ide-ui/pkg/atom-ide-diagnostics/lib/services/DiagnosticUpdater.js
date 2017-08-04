@@ -17,39 +17,49 @@ import type {
   ProjectDiagnosticMessage,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type DiagnosticStore from '../DiagnosticStore';
+
+import ObservableDiagnosticUpdater from './ObservableDiagnosticUpdater';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 export default class DiagnosticUpdater {
-  _store: DiagnosticStore;
+  _observableUpdater: ObservableDiagnosticUpdater;
 
-  constructor(store: DiagnosticStore) {
-    this._store = store;
+  constructor(store: Store) {
+    this._observableUpdater = new ObservableDiagnosticUpdater(store);
   }
 
   onFileMessagesDidUpdate(
     callback: (update: FileDiagnosticMessages) => mixed,
     filePath: NuclideUri,
   ): IDisposable {
-    return this._store.onFileMessagesDidUpdate(callback, filePath);
+    return new UniversalDisposable(
+      this._observableUpdater
+        .getFileMessageUpdates(filePath)
+        .subscribe(callback),
+    );
   }
 
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable {
-    return this._store.onProjectMessagesDidUpdate(callback);
+    return new UniversalDisposable(
+      this._observableUpdater.projectMessageUpdates.subscribe(callback),
+    );
   }
 
   onAllMessagesDidUpdate(
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable {
-    return this._store.onAllMessagesDidUpdate(callback);
+    return new UniversalDisposable(
+      this._observableUpdater.allMessageUpdates.subscribe(callback),
+    );
   }
 
   applyFix(message: FileDiagnosticMessage): void {
-    this._store.applyFix(message);
+    this._observableUpdater.applyFix(message);
   }
 
   applyFixesForFile(file: NuclideUri): void {
-    this._store.applyFixesForFile(file);
+    this._observableUpdater.applyFixesForFile(file);
   }
 }

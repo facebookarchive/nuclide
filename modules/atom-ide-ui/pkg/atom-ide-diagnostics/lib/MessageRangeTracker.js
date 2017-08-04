@@ -85,10 +85,8 @@ export default class MessageRangeTracker {
 
   addFileMessages(messages: Iterable<FileDiagnosticMessage>): void {
     this._assertNotDisposed();
-    // Right now we only care about messages with fixes.
-    const messagesWithFix = Array.from(messages).filter(m => m.fix != null);
 
-    for (const message of messagesWithFix) {
+    for (const message of messages) {
       invariant(message.fix != null);
       this._fileToMessages.add(message.filePath, message);
 

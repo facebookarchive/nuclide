@@ -15,31 +15,34 @@ import type {
   LinterProvider,
   ObservableDiagnosticProvider,
   RegisterIndieLinter,
+  Store,
 } from './types';
 import type {LinterAdapter} from './services/LinterAdapter';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-
-import DiagnosticStore from './DiagnosticStore';
+import MessageRangeTracker from './MessageRangeTracker';
 import DiagnosticUpdater from './services/DiagnosticUpdater';
-import {createAdapters} from './services/LinterAdapterFactory';
 import IndieLinterRegistry from './services/IndieLinterRegistry';
+import {createAdapters} from './services/LinterAdapterFactory';
 import ObservableDiagnosticUpdater from './services/ObservableDiagnosticUpdater';
+import * as Actions from './redux/Actions';
+import createStore from './redux/createStore';
 
 class Activation {
   _disposables: UniversalDisposable;
-  _diagnosticStore: DiagnosticStore;
-
   _allLinterAdapters: Set<LinterAdapter>;
   _indieRegistry: ?IndieLinterRegistry;
+  _store: Store;
 
   constructor() {
     this._allLinterAdapters = new Set();
-    this._diagnosticStore = new DiagnosticStore();
 
-    this._disposables = new UniversalDisposable(this._diagnosticStore, () => {
+    const messageRangeTracker = new MessageRangeTracker();
+    this._store = createStore(messageRangeTracker);
+
+    this._disposables = new UniversalDisposable(messageRangeTracker, () => {
       this._allLinterAdapters.forEach(adapter => adapter.dispose());
       this._allLinterAdapters.clear();
     });
@@ -63,11 +66,11 @@ class Activation {
    * @return A wrapper around the methods on DiagnosticStore that allow reading data.
    */
   provideDiagnosticUpdates(): DiagnosticUpdater {
-    return new DiagnosticUpdater(this._diagnosticStore);
+    return new DiagnosticUpdater(this._store);
   }
 
   provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
-    return new ObservableDiagnosticUpdater(this._diagnosticStore);
+    return new ObservableDiagnosticUpdater(this._store);
   }
 
   provideIndie(): RegisterIndieLinter {
@@ -119,7 +122,10 @@ class Activation {
   consumeDiagnosticsProviderV2(
     provider: ObservableDiagnosticProvider,
   ): IDisposable {
-    return this._diagnosticStore.addProvider(provider);
+    this._store.dispatch(Actions.addProvider(provider));
+    return new UniversalDisposable(() => {
+      this._store.dispatch(Actions.removeProvider(provider));
+    });
   }
 }
 

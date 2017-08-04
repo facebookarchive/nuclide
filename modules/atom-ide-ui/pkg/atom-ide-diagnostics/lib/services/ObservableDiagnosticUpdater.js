@@ -11,36 +11,90 @@
  */
 
 import type {
+  AppState,
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
   ProjectDiagnosticMessage,
+  Store,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type DiagnosticStore from '../DiagnosticStore';
-import type {Observable} from 'rxjs';
+
+import * as Actions from '../redux/Actions';
+import {arrayEqual, arrayFlatten} from 'nuclide-commons/collection';
+import {cacheWhileSubscribed} from 'nuclide-commons/observable';
+import {Observable} from 'rxjs';
 
 // All observables here will issue an initial value on subscribe.
 export default class ObservableDiagnosticUpdater {
-  _store: DiagnosticStore;
-  projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
-  allMessageUpdates: Observable<Array<DiagnosticMessage>>;
+  _store: Store;
+  _states: Observable<AppState>;
 
-  constructor(store: DiagnosticStore) {
+  allMessageUpdates: Observable<Array<DiagnosticMessage>>;
+  projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
+
+  constructor(store: Store) {
     this._store = store;
-    this.projectMessageUpdates = store.getProjectMessageUpdates();
-    this.allMessageUpdates = store.getAllMessageUpdates();
+    // $FlowIgnore: Flow doesn't know about Symbol.observable
+    this._states = Observable.from(store).share();
+
+    // Cache so the mapping only happens once per update, and only when we have subscribers.
+    this.projectMessageUpdates = cacheWhileSubscribed(
+      Observable.defer(() =>
+        this._states
+          .startWith(this._store.getState())
+          .map(state => state.projectMessages)
+          .distinctUntilChanged()
+          .map(projectMessages => arrayFlatten([...projectMessages.values()])),
+      ),
+    );
+
+    // Cache so the mapping only happens once per update, and only when we have subscribers.
+    // TODO: As a potential perf improvement, we could precalculate this in the reducer.
+    this.allMessageUpdates = cacheWhileSubscribed(
+      Observable.defer(() =>
+        this._states.startWith(this._store.getState()).map(state => {
+          const projectMessages = arrayFlatten(
+            Array.from(state.projectMessages.values()),
+          );
+          const fileScopedMessageMaps = Array.from(state.messages.values());
+          const ungrouped = fileScopedMessageMaps.map(map =>
+            Array.from(map.values()),
+          );
+          const flattened = arrayFlatten(arrayFlatten(ungrouped));
+          return [...projectMessages, ...flattened];
+        }),
+      ),
+    );
   }
 
-  getFileMessageUpdates(path: NuclideUri): Observable<FileDiagnosticMessages> {
-    return this._store.getFileMessageUpdates(path);
+  getFileMessageUpdates(
+    filePath: NuclideUri,
+  ): Observable<FileDiagnosticMessages> {
+    // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
+    // Whether that's worth it depends on how often this is actually called with the same path.
+    return this._states
+      .startWith(this._store.getState())
+      .map(state => state.messages)
+      .distinctUntilChanged()
+      .map(pathsToMessages => {
+        const pathToMessageMaps = Array.from(pathsToMessages.values());
+        const messages = arrayFlatten(
+          pathToMessageMaps.map(
+            pathToMessageMap => pathToMessageMap.get(filePath) || [],
+          ),
+        );
+        return messages;
+      })
+      .distinctUntilChanged(arrayEqual)
+      .map(messages => ({filePath, messages}));
   }
 
   applyFix(message: FileDiagnosticMessage): void {
-    this._store.applyFix(message);
+    this._store.dispatch(Actions.applyFix(message));
   }
 
   applyFixesForFile(file: NuclideUri): void {
-    this._store.applyFixesForFile(file);
+    this._store.dispatch(Actions.applyFixesForFile(file));
   }
 }
