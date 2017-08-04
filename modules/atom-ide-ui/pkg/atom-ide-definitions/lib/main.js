@@ -120,14 +120,14 @@ class Activation {
     }
 
     function createTitle(definition) {
-      invariant(
-        definition.name != null,
-        'must include name when returning multiple definitions',
-      );
       const filePath =
         definition.projectRoot == null
           ? definition.path
           : nuclideUri.relative(definition.projectRoot, definition.path);
+      if (definition.name == null) {
+        // Fall back to just displaying the path:line.
+        return `${filePath}:${definition.position.row + 1}`;
+      }
       return `${definition.name} (${filePath})`;
     }
 

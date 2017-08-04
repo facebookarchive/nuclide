@@ -12,24 +12,22 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-// position is the first char of the definition's identifier, while range
-// includes the entire definition. For example in:
-//   class Foo { }
-// position should be the 'F' in Foo, while range should span the 'c' in class
-// to the '}'
-// id is a string which uniquely identifies this symbol in a project. It is not suitable
-// for display to humans.
-// name is a string suitable for display to humans.
-// projectRoot is the root directory of the project containing this definition.
-// name is required, and projectRoot is encouraged, when returning multiple results.
 export type Definition = {
+  // Path of the file in which the definition is located.
   path: NuclideUri,
+  // First character of the definition's identifier.
+  // e.g. "F" in `class Foo {}`
   position: atom$Point,
+  // Optional: the range of the entire definition.
+  // e.g. "c" to "}" in `class Foo {}`
   range?: atom$Range,
-  id?: string,
+  // Optional: `name` and `projectRoot` can be provided to display a more human-readable title
+  // inside of Hyperclick when there are multiple definitions.
   name?: string,
-  language: string,
+  // If provided, `projectRoot` will be used to display a relativized version of `path`.
   projectRoot?: NuclideUri,
+  // `language` may be used by consumers to identify the source of definitions.
+  language: string,
 };
 
 // Definition queries supply a point.

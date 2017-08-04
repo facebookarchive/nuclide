@@ -137,6 +137,13 @@ describe('DefinitionHyperclick', () => {
             name: 'd2',
             projectRoot: '/a',
           },
+          {
+            path: '/a/b/path3',
+            position: new Point(3, 4),
+            range: null,
+            id: 'symbol-without-name',
+            projectRoot: '/a',
+          },
         ],
       };
       const spy = spyOn(definitionProvider, 'getDefinition').andReturn(
@@ -159,11 +166,13 @@ describe('DefinitionHyperclick', () => {
         callback: () => mixed,
       }> = (result.callback: any);
 
-      expect(callbacks.length).toBe(2);
+      expect(callbacks.length).toBe(3);
       expect(callbacks[0].title).toBe('d1 (b/path1)');
       expect(typeof callbacks[0].callback).toBe('function');
       expect(callbacks[1].title).toBe('d2 (b/path2)');
       expect(typeof callbacks[1].callback).toBe('function');
+      expect(callbacks[2].title).toBe('b/path3:4');
+      expect(typeof callbacks[2].callback).toBe('function');
 
       callbacks[1].callback();
       expect(goToLocation).toHaveBeenCalledWith('/a/b/path2', 3, 4);
