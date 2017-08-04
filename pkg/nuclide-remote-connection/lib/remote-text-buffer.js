@@ -27,14 +27,6 @@ const TEXT_BUFFER_PARAMS = {
   shouldDestroyOnFileDelete: () => atom.config.get('core.closeDeletedFileTabs'),
 };
 
-if (IS_ATOM_119) {
-  // TODO: (hansonw) T20364353 Remove after https://github.com/atom/text-buffer/pull/238
-  // $FlowIgnore
-  TextBuffer.prototype.save = function() {
-    this.saveTo(this.file);
-  };
-}
-
 export async function loadBufferForUri(
   uri: NuclideUri,
 ): Promise<atom$TextBuffer> {
