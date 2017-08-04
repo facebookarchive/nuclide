@@ -53,6 +53,7 @@ type Props = {
     filePath: NuclideUri,
     analyticsSourceKey: string,
   ) => void,
+  openInDiffViewOption: boolean,
   onRevertFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
   rootPath: NuclideUri,
 };
@@ -139,17 +140,19 @@ export default class ChangedFile extends React.Component {
     );
   }
 
-  _renderOpenInDiffViewAction(filePath: string): React.Element<any> {
-    return this._renderAction(
-      'diff' /* key */,
-      'diff' /* icon */,
-      'Open file in Diff View' /* title */,
-      this.props.onOpenFileInDiffView.bind(
-        this,
-        filePath,
-        ANALYTICS_SOURCE_KEY,
-      ),
-    );
+  _renderOpenInDiffViewAction(filePath: string): ?React.Element<any> {
+    return this.props.openInDiffViewOption
+      ? this._renderAction(
+          'diff' /* key */,
+          'diff' /* icon */,
+          'Open file in Diff View' /* title */,
+          this.props.onOpenFileInDiffView.bind(
+            this,
+            filePath,
+            ANALYTICS_SOURCE_KEY,
+          ),
+        )
+      : null;
   }
 
   _onCheckboxChange = (isChecked: boolean): void => {

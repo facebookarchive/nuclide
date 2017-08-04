@@ -49,6 +49,7 @@ function BasicExample(): React.Element<any> {
           commandPrefix="sample-ui-playground"
           selectedFile={null}
           onFileChosen={onFileChosen}
+          openInDiffViewOption={true}
         />
       </Block>
     </div>

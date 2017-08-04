@@ -46,6 +46,7 @@ type Props = {
   onForgetFile: (filePath: NuclideUri) => void,
   onOpenFileInDiffView: (filePath: NuclideUri) => void,
   onRevertFile: (filePath: NuclideUri) => void,
+  openInDiffViewOption: boolean,
   rootPath: NuclideUri,
   selectedFile: ?NuclideUri,
   shouldShowFolderName: boolean,
@@ -82,6 +83,7 @@ export default class ChangedFilesList extends React.Component {
       onFileChosen,
       onForgetFile,
       onOpenFileInDiffView,
+      openInDiffViewOption,
       onRevertFile,
       rootPath,
       selectedFile,
@@ -157,6 +159,7 @@ export default class ChangedFilesList extends React.Component {
                 onFileChosen={onFileChosen}
                 onForgetFile={onForgetFile}
                 onOpenFileInDiffView={onOpenFileInDiffView}
+                openInDiffViewOption={openInDiffViewOption}
                 onRevertFile={onRevertFile}
                 rootPath={rootPath}
               />,

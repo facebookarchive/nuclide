@@ -333,6 +333,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       hideEmptyFolders,
       onFileChecked,
       onFileChosen,
+      openInDiffViewOption,
       selectedFile,
     } = this.props;
     if (fileStatusesByRoot.size === 0) {
@@ -370,6 +371,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
               onFileChosen={onFileChosen}
               onForgetFile={this._handleForgetFile}
               onOpenFileInDiffView={this._handleOpenFileInDiffView}
+              openInDiffViewOption={openInDiffViewOption || false}
               onRevertFile={this._handleRevertFile}
               rootPath={root}
               selectedFile={selectedFile}
