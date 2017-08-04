@@ -135,17 +135,25 @@ class Activation {
       return;
     }
 
+    // The hostname might have changed slightly from what was passed in due to
+    // DNS lookup, so create a new remote URI rather than using cwd from above.
+    const hackRootUri = remoteConnection.getUriOfRemotePath(hackRootString);
+    const navUri = remoteConnection.getUriOfRemotePath(
+      nuclideUri.getPath(pathString),
+    );
+
     // Set the current project root.
     if (this._cwdApi != null) {
-      this._cwdApi.setCwd(cwd);
+      this._cwdApi.setCwd(hackRootUri);
     }
 
     // Open the script path in the editor.
     const lineNumber = parseInt(line, 10);
     if (Number.isNaN(lineNumber)) {
-      goToLocation(pathString);
+      goToLocation(navUri);
     } else {
-      goToLocation(pathString, lineNumber);
+      // NOTE: line numbers start at 0, so subtract 1.
+      goToLocation(navUri, lineNumber - 1);
     }
 
     // Debug the remote HHVM server!
@@ -156,10 +164,10 @@ class Activation {
     if (addBreakpoint === 'true' && !Number.isNaN(lineNumber)) {
       // Insert a breakpoint if requested.
       // NOTE: Nuclide protocol breakpoint line numbers start at 0, so subtract 1.
-      debuggerService.addBreakpoint(pathString, lineNumber - 1);
+      debuggerService.addBreakpoint(navUri, lineNumber - 1);
     }
 
-    await debuggerService.startDebugging(new AttachProcessInfo(hackRootString));
+    await debuggerService.startDebugging(new AttachProcessInfo(hackRootUri));
     notification.dismiss();
   }
 }
