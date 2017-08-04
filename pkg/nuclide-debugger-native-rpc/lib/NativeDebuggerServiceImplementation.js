@@ -20,6 +20,7 @@ import type {
 import child_process from 'child_process';
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import {DebuggerRpcWebSocketService} from '../../nuclide-debugger-common';
 import {observeStream} from 'nuclide-commons/stream';
 import {splitStream} from 'nuclide-commons/observable';
@@ -114,12 +115,35 @@ export async function getAttachTargetInfoList(
     });
 }
 
+function _getDefaultLLDBConfig(): {pythonPath: string, lldbModulePath: string} {
+  try {
+    // $FlowFB
+    const fbPaths = require('./fb-Paths');
+    return {
+      pythonPath: fbPaths.getFBPythonPath(),
+      lldbModulePath: fbPaths.getFBLLDBModulePath(),
+    };
+  } catch (_) {}
+
+  /*
+   * Default is to use the system python and let the python scripts figure out
+   * which lldb to use.
+   */
+  return {pythonPath: '/usr/bin/python', lldbModulePath: ''};
+}
+
 export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   _config: DebuggerConfig;
 
   constructor(config: DebuggerConfig) {
     super('native');
     this._config = config;
+    if (!this._config.pythonBinaryPath) {
+      this._config.pythonBinaryPath = _getDefaultLLDBConfig().pythonPath;
+    }
+    if (!this._config.lldbPythonPath) {
+      this._config.lldbPythonPath = _getDefaultLLDBConfig().lldbModulePath;
+    }
     this.getLogger().setLevel(config.logLevel);
   }
 
@@ -246,7 +270,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       `spawn child_process: ${JSON.stringify(python_args)}`,
     );
     const lldbProcess = child_process.spawn(
-      this._config.pythonBinaryPath,
+      nullthrows(this._config.pythonBinaryPath),
       python_args,
       options,
     );
