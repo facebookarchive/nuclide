@@ -16,7 +16,6 @@ from find_lldb import get_lldb
 from shlex import split
 from chromedebugger import ChromeDevToolsDebuggerApp
 import argparse
-import six
 import sys
 import signal
 import os
@@ -134,8 +133,7 @@ def start_debugging(debugger, arguments, ipc_channel, is_attach):
     elif getattr(arguments, 'executable_path', None):
         argument_list = map(os.path.expanduser, map(str, arguments.launch_arguments)) \
             if arguments.launch_arguments else None
-        environment_variables = [six.binary_type(arg) for arg in
-                                 arguments.launch_environment_variables] \
+        environment_variables = arguments.launch_environment_variables \
             if arguments.launch_environment_variables else None
         # TODO: should we resolve symbol link?
         executable_path = os.path.expanduser(str(arguments.executable_path)) \
