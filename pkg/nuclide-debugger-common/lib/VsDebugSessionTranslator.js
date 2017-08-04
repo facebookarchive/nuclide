@@ -347,6 +347,19 @@ export default class VsDebugSessionTranslator {
           };
         }),
       ),
+      this._commandsOfType('Runtime.evaluate').flatMap(
+        catchCommandError(async command => {
+          invariant(command.method === 'Runtime.evaluate');
+          const {expression} = command.params;
+          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
+            expression,
+          );
+          return {
+            id: command.id,
+            result,
+          };
+        }),
+      ),
       // Error for unhandled commands
       this._unhandledCommands().map(command =>
         getErrorResponse(command.id, 'Unknown command: ' + command.method),
@@ -564,7 +577,7 @@ export default class VsDebugSessionTranslator {
 
   async _evaluateOnCallFrame(
     expression: string,
-    frameId: number,
+    frameId?: number,
   ): Promise<NuclideDebugProtocol.EvaluateResponse> {
     const {body} = await this._session.evaluate({
       expression,
