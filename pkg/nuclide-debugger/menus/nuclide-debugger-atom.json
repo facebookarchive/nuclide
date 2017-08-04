@@ -92,6 +92,10 @@
               "command": "nuclide-debugger:step-out"
             },
             {
+              "label": "Copy Callstack",
+              "command": "nuclide-debugger:copy-debugger-callstack"
+            },
+            {
               "label": "Add to Watch",
               "command": "nuclide-debugger:add-to-watch"
             }

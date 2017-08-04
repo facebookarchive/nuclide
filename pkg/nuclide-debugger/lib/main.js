@@ -291,7 +291,7 @@ class Activation {
           this,
         ),
       }),
-      atom.commands.add('.nuclide-debugger-root', {
+      atom.commands.add('atom-workspace', {
         'nuclide-debugger:copy-debugger-callstack': this._copyDebuggerCallstack.bind(
           this,
         ),
