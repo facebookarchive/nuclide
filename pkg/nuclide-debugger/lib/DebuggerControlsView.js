@@ -17,6 +17,9 @@ import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';
 import DebuggerControllerView from './DebuggerControllerView';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+
+const DEVICE_PANEL_URL = 'atom://nuclide/devices';
 
 type Props = {
   model: DebuggerModel,
@@ -86,6 +89,11 @@ export class DebuggerControlsView extends React.PureComponent {
                     )}
                   icon="nuclicon-debugger"
                   label="Launch debugger..."
+                />
+                <TruncatedButton
+                  onClick={() => goToLocation(DEVICE_PANEL_URL)}
+                  icon="device-mobile"
+                  label="Manage devices..."
                 />
               </div>
             </div>
