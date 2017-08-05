@@ -47,7 +47,7 @@
         "0.1.0": "getHyperclickProvider"
       }
     },
-    "diagnostics": {
+    "DEPRECATED-diagnostics": {
       "versions": {
         "0.2.0": "provideObservableDiagnosticUpdates"
       }
