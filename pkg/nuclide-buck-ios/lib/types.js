@@ -20,5 +20,6 @@ export type IosDeployable = {
 export const RUNNABLE_RULE_TYPES = new Set(['apple_bundle']);
 export const SUPPORTED_RULE_TYPES = new Set([
   ...RUNNABLE_RULE_TYPES,
+  'apple_library',
   'apple_test',
 ]);
