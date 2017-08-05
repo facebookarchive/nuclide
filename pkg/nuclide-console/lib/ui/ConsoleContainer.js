@@ -31,14 +31,12 @@ import Console from './Console';
 import escapeStringRegexp from 'escape-string-regexp';
 import React from 'react';
 import {Observable, Subject} from 'rxjs';
-import invariant from 'assert';
 
 type Props = {
   store: Store,
   initialFilterText?: string,
   initialEnableRegExpFilter?: boolean,
   initialUnselectedSourceIds?: Array<string>,
-  createPasteFunction: ?CreatePasteFunction,
 };
 
 type State = {
@@ -46,6 +44,7 @@ type State = {
   // State shared between all Console instances
   //
 
+  createPasteFunction: ?CreatePasteFunction,
   currentExecutor: ?Executor,
   providers: Map<string, OutputProvider>,
   providerStatuses: Map<string, OutputProviderStatus>,
@@ -100,6 +99,7 @@ export class ConsoleContainer extends React.Component {
     } = props;
     this.state = {
       ready: false,
+      createPasteFunction: null,
       currentExecutor: null,
       providers: new Map(),
       providerStatuses: new Map(),
@@ -169,6 +169,7 @@ export class ConsoleContainer extends React.Component {
             ? state.executors.get(currentExecutorId)
             : null;
         this.setState({
+          createPasteFunction: state.createPasteFunction,
           ready: true,
           currentExecutor,
           executors: state.executors,
@@ -189,7 +190,6 @@ export class ConsoleContainer extends React.Component {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this.props.store}
-        createPasteFunction={this.props.createPasteFunction}
         initialFilterText={this.state.filterText}
         initialEnableRegExpFilter={this.state.enableRegExpFilter}
         initialUnselectedSourceIds={this.state.unselectedSourceIds}
@@ -221,7 +221,8 @@ export class ConsoleContainer extends React.Component {
   };
 
   _createPaste = async (): Promise<void> => {
-    if (this.props.createPasteFunction == null) {
+    const {createPasteFunction} = this.state;
+    if (createPasteFunction == null) {
       return;
     }
 
@@ -252,8 +253,7 @@ export class ConsoleContainer extends React.Component {
 
     atom.notifications.addInfo('Creating Paste...');
 
-    invariant(this.props.createPasteFunction != null);
-    const uri = await this.props.createPasteFunction(
+    const uri = await createPasteFunction(
       lines,
       {
         title: 'Nuclide Console Paste',
@@ -309,7 +309,7 @@ export class ConsoleContainer extends React.Component {
       this.state.displayableRecords.length - displayableRecords.length;
 
     const createPaste =
-      this.props.createPasteFunction != null ? this._createPaste : null;
+      this.state.createPasteFunction != null ? this._createPaste : null;
 
     return (
       <Console

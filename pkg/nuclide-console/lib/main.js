@@ -47,7 +47,6 @@ class Activation {
   _disposables: UniversalDisposable;
   _rawState: ?Object;
   _store: Store;
-  _createPasteFunction: ?CreatePasteFunction;
 
   constructor(rawState: ?Object) {
     this._rawState = rawState;
@@ -119,8 +118,14 @@ class Activation {
     });
   }
 
-  consumePasteProvider(provider: any): void {
-    this._createPasteFunction = (provider.createPaste: CreatePasteFunction);
+  consumePasteProvider(provider: any): IDisposable {
+    const createPaste: CreatePasteFunction = provider.createPaste;
+    this._getStore().dispatch(Actions.setCreatePasteFunction(createPaste));
+    return new UniversalDisposable(() => {
+      if (this._getStore().getState().createPasteFunction === createPaste) {
+        this._getStore().dispatch(Actions.setCreatePasteFunction(null));
+      }
+    });
   }
 
   _registerCommandAndOpener(): UniversalDisposable {
@@ -128,10 +133,7 @@ class Activation {
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
           return viewableFromReactElement(
-            <ConsoleContainer
-              store={this._getStore()}
-              createPasteFunction={this._createPasteFunction}
-            />,
+            <ConsoleContainer store={this._getStore()} />,
           );
         }
       }),
@@ -146,7 +148,6 @@ class Activation {
     return viewableFromReactElement(
       <ConsoleContainer
         store={this._getStore()}
-        createPasteFunction={this._createPasteFunction}
         initialFilterText={state.filterText}
         initialEnableRegExpFilter={state.enableRegExpFilter}
         initialUnselectedSourceIds={state.unselectedSourceIds}
@@ -289,6 +290,7 @@ class Activation {
 function deserializeAppState(rawState: ?Object): AppState {
   return {
     executors: new Map(),
+    createPasteFunction: null,
     currentExecutorId: null,
     records:
       rawState && rawState.records

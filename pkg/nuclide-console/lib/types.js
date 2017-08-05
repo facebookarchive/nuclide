@@ -16,6 +16,8 @@ import type {
   ExpansionResult,
 } from '../../nuclide-debugger/lib/types';
 
+import type {CreatePasteFunction} from '../../nuclide-paste-base';
+
 export type Level = TaskLevelType | Color;
 type Color =
   | 'red'
@@ -55,6 +57,7 @@ export type Record = {
 };
 
 export type AppState = {
+  createPasteFunction: ?CreatePasteFunction,
   currentExecutorId: ?string,
   executors: Map<string, Executor>,
   maxMessageCount: number,
@@ -221,6 +224,13 @@ export type SelectExecutorAction = {
   },
 };
 
+export type SetCreatePasteFunctionAction = {
+  type: 'SET_CREATE_PASTE_FUNCTION',
+  payload: {
+    createPasteFunction: ?CreatePasteFunction,
+  },
+};
+
 export type SetMaxMessageCountAction = {
   type: 'SET_MAX_MESSAGE_COUNT',
   payload: {
@@ -238,6 +248,7 @@ export type UpdateStatusAction = {
 
 export type Action =
   | ClearRecordsAction
+  | SetCreatePasteFunctionAction
   | ExecuteAction
   | RecordReceivedAction
   | RegisterExecutorAction

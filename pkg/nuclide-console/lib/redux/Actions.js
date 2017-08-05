@@ -23,12 +23,16 @@ import type {
   RegisterSourceAction,
   RemoveSourceAction,
   SelectExecutorAction,
+  SetCreatePasteFunctionAction,
   SetMaxMessageCountAction,
   SourceInfo,
   UpdateStatusAction,
 } from '../types';
 
+import type {CreatePasteFunction} from '../../../nuclide-paste-base';
+
 export const CLEAR_RECORDS = 'CLEAR_RECORDS';
+export const SET_CREATE_PASTE_FUNCTION = 'SET_CREATE_PASTE_FUNCTION';
 export const REGISTER_EXECUTOR = 'REGISTER_EXECUTOR';
 export const EXECUTE = 'EXECUTE';
 export const REGISTER_RECORD_PROVIDER = 'REGISTER_RECORD_PROVIDER';
@@ -151,5 +155,14 @@ export function updateStatus(
   return {
     type: UPDATE_STATUS,
     payload: {providerId, status},
+  };
+}
+
+export function setCreatePasteFunction(
+  createPasteFunction: ?CreatePasteFunction,
+): SetCreatePasteFunctionAction {
+  return {
+    type: SET_CREATE_PASTE_FUNCTION,
+    payload: {createPasteFunction},
   };
 }
