@@ -80,6 +80,15 @@ type Props = {
    */
   onSelect?: (selectedItem: any, selectedIndex: number) => mixed,
   /**
+   * Callback to be invoked before calling onSelect. Called iff `selectable` is `true`.
+   * If this callback returns false, row selection is canceled.
+   */
+  onWillSelect?: (
+    selectedItem: any,
+    selectedIndex: number,
+    event: SyntheticMouseEvent,
+  ) => boolean,
+  /**
    * Optional React Component to override the default message when zero rows are provided.
    * Useful for showing loading spinners and custom messages.
    */
@@ -266,11 +275,16 @@ export class Table extends React.Component {
   }
 
   _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent): void {
-    const {onSelect, rows} = this.props;
+    const {onSelect, onWillSelect, rows} = this.props;
     if (onSelect == null) {
       return;
     }
     const selectedItem = rows[selectedIndex];
+    if (onWillSelect != null) {
+      if (onWillSelect(selectedItem, selectedIndex, event) === false) {
+        return;
+      }
+    }
     onSelect(selectedItem.data, selectedIndex);
   }
 
