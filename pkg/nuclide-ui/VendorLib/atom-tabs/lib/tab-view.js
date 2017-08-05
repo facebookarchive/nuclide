@@ -40,6 +40,7 @@
       this.updateIcon();
       this.updateModifiedStatus();
       this.setupTooltip();
+      layout.activate();
       if (this.isItemPending()) {
         this.itemTitle.classList.add('temp');
         this.element.classList.add('pending-tab');
