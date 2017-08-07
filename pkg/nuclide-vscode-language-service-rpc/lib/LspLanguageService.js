@@ -445,12 +445,6 @@ export class LspLanguageService {
           executeCommand: {
             dynamicRegistration: false,
           },
-          progress: {
-            dynamicRegistration: false,
-          },
-          actionRequired: {
-            dynamicRegistration: false,
-          },
         },
         textDocument: {
           synchronization: {
@@ -502,6 +496,14 @@ export class LspLanguageService {
             dynamicRegistration: false,
           },
           rename: {
+            dynamicRegistration: false,
+          },
+        },
+        window: {
+          progress: {
+            dynamicRegistration: false,
+          },
+          actionRequired: {
             dynamicRegistration: false,
           },
         },

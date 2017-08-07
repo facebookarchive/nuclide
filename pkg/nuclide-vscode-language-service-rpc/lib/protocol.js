@@ -184,16 +184,6 @@ export type WorkspaceClientCapabilities = {|
     //  Execute command supports dynamic registration.
     dynamicRegistration?: boolean,
   |},
-  //  Capabilities specific to the `workspace/progress` notification.
-  progress?: {|
-    //  Progress notification supports dynamic registration.
-    dynamicRegistration?: boolean,
-  |},
-  //  Capabilities specific to the `workspace/actionRequired` notification.
-  actionRequired?: {|
-    //  ActionRequired notification supports dynamic registration.
-    dynamicRegistration?: boolean,
-  |},
 |};
 
 //  Text document specific client capabilities.
@@ -277,11 +267,26 @@ export type TextDocumentClientCapabilities = {|
   |},
 |};
 
+export type WindowClientCapabilities = {|
+  //  Capabilities specific to the `window/progress` notification.
+  progress?: {|
+    //  Progress notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+  //  Capabilities specific to the `window/actionRequired` notification.
+  actionRequired?: {|
+    //  ActionRequired notification supports dynamic registration.
+    dynamicRegistration?: boolean,
+  |},
+|};
+
 export type ClientCapabilities = {|
   //  Workspace specific client capabilities.
   workspace?: WorkspaceClientCapabilities,
   //  Text document specific client capabilities.
   textDocument?: TextDocumentClientCapabilities,
+  //  Window specific client capabilities. (Nuclide-only)
+  window?: WindowClientCapabilities,
   //  Experimental client capabilities.
   experimental?: mixed,
 |};
