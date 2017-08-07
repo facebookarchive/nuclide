@@ -9,7 +9,10 @@
  * @format
  */
 
-import type {AtomNotificationType} from '../../nuclide-debugger-base/lib/types';
+import type {
+  AtomNotificationType,
+  DebuggerConfigAction,
+} from '../../nuclide-debugger-base/lib/types';
 import type {
   VsAdapterType,
   VSAdapterExecutableInfo,
@@ -151,6 +154,7 @@ export default class VsDebugSessionTranslator {
   _threadsById: Map<number, ThreadInfo>;
   _mainThreadId: ?number;
   _debuggerArgs: Object;
+  _debugMode: DebuggerConfigAction;
   _exceptionFilters: Array<string>;
 
   // Session state.
@@ -159,11 +163,13 @@ export default class VsDebugSessionTranslator {
   constructor(
     adapterType: VsAdapterType,
     adapter: VSAdapterExecutableInfo,
+    debugMode: DebuggerConfigAction,
     debuggerArgs: Object,
     clientCallback: ClientCallback,
     logger: log4js$Logger,
   ) {
     this._adapterType = adapterType;
+    this._debugMode = debugMode;
     this._session = new VsDebugSession('id', logger, adapter);
     this._debuggerArgs = debuggerArgs;
     this._clientCallback = clientCallback;
@@ -390,7 +396,7 @@ export default class VsDebugSessionTranslator {
       'Debugger.setBreakpointByUrl',
     );
 
-    let launched = false;
+    let startedDebugging = false;
 
     return Observable.concat(
       setBreakpointsCommands
@@ -401,8 +407,8 @@ export default class VsDebugSessionTranslator {
               return Observable.of(null);
             } else {
               // Session initialization is pending launch.
-              this._session.launch(this._debuggerArgs);
-              launched = true;
+              this._startDebugging();
+              startedDebugging = true;
               return this._session.observeInitializeEvents();
             }
           }),
@@ -414,9 +420,9 @@ export default class VsDebugSessionTranslator {
           const responses = this._setBulkBreakpoints(commands);
           this._configDone();
 
-          if (!launched) {
-            this._session.launch(this._debuggerArgs);
-            launched = true;
+          if (!startedDebugging) {
+            this._startDebugging();
+            startedDebugging = true;
           }
           return responses;
         }),
@@ -426,6 +432,14 @@ export default class VsDebugSessionTranslator {
         this._setBulkBreakpoints([command]),
       ),
     ).flatMap(responses => Observable.from(responses));
+  }
+
+  _startDebugging(): Promise<mixed> {
+    if (this._debugMode === 'launch') {
+      return this._session.launch(this._debuggerArgs);
+    } else {
+      return this._session.attach(this._debuggerArgs);
+    }
   }
 
   async _setBulkBreakpoints(

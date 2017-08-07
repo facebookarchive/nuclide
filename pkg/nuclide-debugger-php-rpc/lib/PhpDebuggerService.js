@@ -107,6 +107,7 @@ export class PhpDebuggerService {
         command: this._getNodePath(),
         args: [require.resolve('./vscode/vscode-debugger-entry')],
       },
+      'launch',
       {
         config,
         trace: false,
