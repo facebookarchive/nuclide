@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## v0.244.0
+
+### General
+
+* More Atom 1.19 compatibility updates
+* Fixed misaligned file-tree highlights while horizontally scrolling
+* Fixed minor wrapping issues in long diagnostics popups
+
+### Debugger
+
+* Added “Manage Devices” button to debugger pane to allow quick access to the Device Panel
+* Fixed a bug preventing "Copy Callstack" from working properly
+* Fixed an issue causing red error boxes when dragging debugger panes around on Atom 1.18+
+
 ## v0.243.0
 
 ### General
