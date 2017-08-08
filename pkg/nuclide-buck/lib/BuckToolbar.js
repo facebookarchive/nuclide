@@ -212,6 +212,7 @@ export default class BuckToolbar extends React.Component {
     let header;
     invariant(platform.isMobile);
 
+    const headerLabel = `${platformGroup.name} ${platform.name}`;
     if (platform.deviceGroups.length === 0) {
       header = {
         label: platformGroup.name,
@@ -221,12 +222,11 @@ export default class BuckToolbar extends React.Component {
       selectableOptions = [
         {
           label: `  ${platform.name}`,
-          selectedLabel: platform.name,
+          selectedLabel: headerLabel,
           value: {platform, device: null},
         },
       ];
     } else {
-      const headerLabel = `${platformGroup.name} ${platform.name}`;
       header = {
         label: headerLabel,
         value: platform.name,
@@ -254,6 +254,7 @@ export default class BuckToolbar extends React.Component {
     const selectableOptions = [];
 
     for (const platform of platformGroup.platforms) {
+      const headerLabel = `${platformGroup.name} ${platform.name}`;
       if (platform.isMobile && platform.deviceGroups.length) {
         const submenu = [];
 
@@ -269,7 +270,7 @@ export default class BuckToolbar extends React.Component {
           for (const device of deviceGroup.devices) {
             submenu.push({
               label: `  ${device.name}`,
-              selectedLabel: `${platformGroup.name} ${platform.name}: ${device.name}`,
+              selectedLabel: `${headerLabel}: ${device.name}`,
               value: {platform, device},
             });
           }
@@ -287,7 +288,7 @@ export default class BuckToolbar extends React.Component {
       } else {
         selectableOptions.push({
           label: `  ${platform.name}`,
-          selectedLabel: platform.name,
+          selectedLabel: headerLabel,
           value: {platform, device: null},
         });
       }
