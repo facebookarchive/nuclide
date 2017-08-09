@@ -26,7 +26,7 @@ const fsService = {
     return true;
   },
   rmdir(uri) {
-    return fsPromise.rmdir(nuclideUri.getPath(uri));
+    return fsPromise.rimraf(nuclideUri.getPath(uri));
   },
   exists(uri) {
     return fsPromise.exists(nuclideUri.getPath(uri));

@@ -163,7 +163,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-function rmdir(filePath: string): Promise<void> {
+function rimrafWrapper(filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     rimraf(filePath, (err, result) => {
       if (err == null) {
@@ -438,7 +438,7 @@ export default {
   getCommonAncestorDirectory,
   exists,
   mkdirp,
-  rmdir,
+  rimraf: rimrafWrapper,
   isNfs,
   glob,
   isNonNfsDirectory,

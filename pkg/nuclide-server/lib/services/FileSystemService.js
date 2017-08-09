@@ -221,11 +221,11 @@ export async function copy(
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
 export function rmdir(path: NuclideUri): Promise<void> {
-  return fsPromise.rmdir(path);
+  return fsPromise.rimraf(path);
 }
 
 export async function rmdirAll(paths: Array<NuclideUri>): Promise<void> {
-  await Promise.all(paths.map(p => fsPromise.rmdir(p)));
+  await Promise.all(paths.map(p => fsPromise.rimraf(p)));
 }
 
 /**
