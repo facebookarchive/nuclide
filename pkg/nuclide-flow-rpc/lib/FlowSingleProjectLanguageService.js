@@ -317,7 +317,10 @@ export class FlowSingleProjectLanguageService {
     // Allows completions to immediately appear when we are completing off of object properties.
     // This also needs to be changed if minimumPrefixLength goes above 1, since after you type a
     // single alphanumeric character, autocomplete-plus no longer includes the dot in the prefix.
-    const prefixHasDot = prefix.indexOf('.') !== -1;
+    const prefixHasDot =
+      // charAt(index) returns an empty string if the index is out of bounds
+      buffer.lineForRow(position.row).charAt(position.column - 1) === '.' ||
+      prefix.indexOf('.') !== -1;
 
     if (
       !activatedManually &&
