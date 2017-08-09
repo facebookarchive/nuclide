@@ -458,16 +458,11 @@ atom-text-editor[mini].nuclide-console-filter-field {
   font-family: Menlo, monospace;
 }
 
-.nuclide-console-header-icon-fill {
-  fill: @text-color;
-}
-
 .nuclide-console-header-filter-icon {
   display: flex;
-}
-
-.nuclide-console-header-funnel-icon {
-  height: 12px;
+  .icon-nuclicon-funnel::before {
+    margin: 0;
+  }
 }
 
 .nuclide-console-filtered-reminder {
