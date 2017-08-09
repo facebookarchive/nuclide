@@ -231,21 +231,20 @@ export class Adb extends DebugBridge {
         return Promise.resolve(map);
       })
       .switchMap(allProcessesMap => {
-        return this.runLongCommand('jdwp')
-          .timeout(1000)
-          .map(output => {
-            if (output.kind === 'stdout') {
-              const block: string = output.data;
-              block.split(/\s+/).forEach(pid => {
-                const proc = allProcessesMap.get(pid);
-                if (proc != null) {
-                  jdwpProcesses.add(proc);
-                }
-              });
-            }
-          })
-          .catch(error => Observable.empty());
+        return this.runLongCommand('jdwp').map(output => {
+          if (output.kind === 'stdout') {
+            const block: string = output.data;
+            block.split(/\s+/).forEach(pid => {
+              const proc = allProcessesMap.get(pid);
+              if (proc != null) {
+                jdwpProcesses.add(proc);
+              }
+            });
+          }
+        });
       })
+      .timeout(500)
+      .catch(error => Observable.of([]))
       .switchMap(() => {
         return Promise.resolve(Array.from(jdwpProcesses));
       });
