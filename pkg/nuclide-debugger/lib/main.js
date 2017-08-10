@@ -494,6 +494,19 @@ class Activation {
           this._model.getActions().stopDebugging();
         },
       }),
+      atom.commands.add('atom-workspace', 'nuclide-debugger:toggle', () => {
+        if (this._layoutManager.isDebuggerVisible() === true) {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-debugger:hide',
+          );
+        } else {
+          atom.commands.dispatch(
+            atom.views.getView(atom.workspace),
+            'nuclide-debugger:show',
+          );
+        }
+      }),
       this._model
         .getStore()
         .onDebuggerModeChange(() => this._layoutManager.debuggerModeChanged()),

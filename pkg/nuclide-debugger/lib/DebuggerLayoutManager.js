@@ -77,6 +77,7 @@ export class DebuggerLayoutManager {
   _paneHiddenWarningShown: boolean;
   _leftPaneContainerModel: ?DebuggerPaneContainerViewModel;
   _rightPaneContainerModel: ?DebuggerPaneContainerViewModel;
+  _debuggerVisible: boolean;
 
   constructor(model: DebuggerModel) {
     this._disposables = new UniversalDisposable();
@@ -85,6 +86,7 @@ export class DebuggerLayoutManager {
     this._paneHiddenWarningShown = false;
     this._leftPaneContainerModel = null;
     this._rightPaneContainerModel = null;
+    this._debuggerVisible = false;
     this._initializeDebuggerPanes();
     this._disposables.add(() => {
       if (this._leftPaneContainerModel != null) {
@@ -713,6 +715,8 @@ export class DebuggerLayoutManager {
           );
         }
       });
+
+    this._debuggerVisible = true;
   }
 
   _addPaneContainerToWorkspace(
@@ -847,5 +851,11 @@ export class DebuggerLayoutManager {
       this._rightPaneContainerModel.dispose();
       this._rightPaneContainerModel = null;
     }
+
+    this._debuggerVisible = false;
+  }
+
+  isDebuggerVisible(): boolean {
+    return this._debuggerVisible;
   }
 }
