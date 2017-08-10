@@ -618,7 +618,9 @@ All the changes across your entire stacked diff.
         this._scrollWasTriggeredProgrammatically = true;
         // $FlowFixMe
         node.scrollTop = newTop;
-        this.setState({scrollerScrollTop: newTop});
+        if (this.state.scrollerScrollTop !== newTop) {
+          this.setState({scrollerScrollTop: newTop});
+        }
       } catch (e) {}
     });
   };
