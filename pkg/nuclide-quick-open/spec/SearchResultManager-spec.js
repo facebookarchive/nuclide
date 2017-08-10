@@ -151,7 +151,6 @@ describe('SearchResultManager', () => {
   describe('provider/directory cache', () => {
     it('updates the cache when providers become (un)available', () => {
       waitsForPromise(async () => {
-        spyOn(Date, 'now').andCallFake(() => global.now); // needed to mock debounce
         let providersChangedCallCount = 0;
         const providersChanged = new Promise(resolve => {
           searchResultManager.onProvidersChanged(() => {
