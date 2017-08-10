@@ -1,45 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {LanguageService} from './LanguageService';
-import type {
-  FileDiagnosticMessage,
-  CodeAction,
-  CodeActionProvider as CodeActionProviderType,
-} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeActionProvider = undefined;
 
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import {trackTiming} from '../../nuclide-analytics';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type CodeActionConfig = {|
-  version: '0.1.0',
-  priority: number,
-  analyticsEventName: string,
-|};
+var _nuclideRemoteConnection;
 
-export class CodeActionProvider<T: LanguageService> {
-  grammarScopes: Array<string>;
-  priority: number;
-  name: string;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
 
-  constructor(
-    name: string,
-    grammarScopes: Array<string>,
-    priority: number,
-    analyticsEventName: string,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeActionProvider {
+
+  constructor(name, grammarScopes, priority, analyticsEventName, connectionToLanguageService) {
     this.name = name;
     this.grammarScopes = grammarScopes;
     this.priority = priority;
@@ -47,48 +37,36 @@ export class CodeActionProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
   }
 
-  static register(
-    name: string,
-    grammarScopes: Array<string>,
-    config: CodeActionConfig,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'code-actions',
-      config.version,
-      new CodeActionProvider(
-        name,
-        grammarScopes,
-        config.priority,
-        config.analyticsEventName,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammarScopes, config, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('code-actions', config.version, new CodeActionProvider(name, grammarScopes, config.priority, config.analyticsEventName, connectionToLanguageService));
   }
 
-  getCodeActions(
-    editor: atom$TextEditor,
-    range: atom$Range,
-    diagnostics: Array<FileDiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    return trackTiming(this._analyticsEventName, async () => {
-      const fileVersion = await getFileVersionOfEditor(editor);
-      const languageService = this._connectionToLanguageService.getForUri(
-        editor.getPath(),
-      );
+  getCodeActions(editor, range, diagnostics) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
+      const languageService = _this._connectionToLanguageService.getForUri(editor.getPath());
       if (languageService == null || fileVersion == null) {
         return [];
       }
 
-      return (await languageService).getCodeActions(
-        fileVersion,
-        range,
-        diagnostics,
-      );
-    });
+      return (yield languageService).getCodeActions(fileVersion, range, diagnostics);
+    }));
   }
 }
 
-// Ensures that CodeActionProvider has all the fields and methods defined in
+exports.CodeActionProvider = CodeActionProvider; // Ensures that CodeActionProvider has all the fields and methods defined in
 // the CodeActionProvider type in the atom-ide-code-actions package.
-(((null: any): CodeActionProvider<LanguageService>): CodeActionProviderType);
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+null;

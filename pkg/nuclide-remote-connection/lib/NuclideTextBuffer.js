@@ -1,3 +1,58 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _atom = require('atom');
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideRpc;
+
+function _load_nuclideRpc() {
+  return _nuclideRpc = require('../../nuclide-rpc');
+}
+
+var _debounce;
+
+function _load_debounce() {
+  return _debounce = _interopRequireDefault(require('nuclide-commons/debounce'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _loadingNotification;
+
+function _load_loadingNotification() {
+  return _loadingNotification = _interopRequireDefault(require('../../commons-atom/loading-notification'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Diffing is O(lines^2), so don't bother for files with too many lines.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,53 +60,28 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ServerConnection} from './ServerConnection';
-import type {RemoteFile} from './RemoteFile';
-
-import {getLogger} from 'log4js';
-import invariant from 'assert';
-import {CompositeDisposable, TextBuffer} from 'atom';
-import {track} from '../../nuclide-analytics';
-import {RpcTimeoutError} from '../../nuclide-rpc';
-import debounce from 'nuclide-commons/debounce';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {countOccurrences} from 'nuclide-commons/string';
-import loadingNotification from '../../commons-atom/loading-notification';
-
-// Diffing is O(lines^2), so don't bother for files with too many lines.
 const DIFF_LINE_LIMIT = 5000;
 
 // Matches the default in Atom 1.19.
 const CHANGE_DEBOUNCE = 200;
 
-export default class NuclideTextBuffer extends TextBuffer {
-  _connection: ServerConnection;
-  fileSubscriptions: ?CompositeDisposable;
-  /* $FlowFixMe */
-  file: ?RemoteFile;
-  conflict: boolean;
-  _exists: boolean;
+class NuclideTextBuffer extends _atom.TextBuffer {
 
   // This is a counter that will be incremented after every successful save request.
   // We use this to accurately detect changes on disk - conflicts should not be reported
   // if any saves finished while fetching the updated contents.
-  _saveID: number;
-  // Handling pending saves is also tricky. It's possible we get the file change event
-  // before the file finishes saving, which is fine.
-  _pendingSaveContents: ?string;
-
-  constructor(connection: ServerConnection, params: any) {
+  constructor(connection, params) {
     super(params);
     this._exists = true;
     this._connection = connection;
     this._saveID = 0;
     this._pendingSaveContents = null;
     this.setPath(params.filePath);
-    const encoding: string = (atom.config.get('core.fileEncoding'): any);
+    const encoding = atom.config.get('core.fileEncoding');
     this.setEncoding(encoding);
   }
 
@@ -61,11 +91,16 @@ export default class NuclideTextBuffer extends TextBuffer {
   // However, when there is no key, it's not looked up in cache, but rather by
   // its path. This behavior ensures that when a connection is reestablished,
   // a buffer exists with that path. See https://github.com/atom/atom/pull/9968.
-  getId(): string {
+
+  // Handling pending saves is also tricky. It's possible we get the file change event
+  // before the file finishes saving, which is fine.
+
+  /* $FlowFixMe */
+  getId() {
     return '';
   }
 
-  setPath(filePath: string): void {
+  setPath(filePath) {
     if (!this._connection) {
       // If this._connection is not set, then the superclass constructor is still executing.
       // NuclideTextBuffer's constructor will ensure setPath() is called once this.constructor
@@ -92,187 +127,174 @@ export default class NuclideTextBuffer extends TextBuffer {
     this.emitter.emit('did-change-path', this.getPath());
   }
 
-  createFile(filePath: string): RemoteFile {
+  createFile(filePath) {
     return this._connection.createFile(filePath);
   }
 
-  async saveAs(filePath: string): Promise<void> {
-    if (!filePath) {
-      throw new Error("Can't save buffer with no file path");
-    }
+  saveAs(filePath) {
+    var _this = this;
 
-    let success;
-    this.emitter.emit('will-save', {path: filePath});
-    this.setPath(filePath);
-    const toSaveContents = this.getText();
-    try {
-      const file = this.file;
-      invariant(file, 'Cannot save an null file!');
-      this._pendingSaveContents = toSaveContents;
-      await loadingNotification(
-        file.write(toSaveContents),
-        `Saving \`${nuclideUri.nuclideUriToDisplayString(filePath)}\`...`,
-        1000 /* delay */,
-      );
-      this.cachedDiskContents = toSaveContents;
-      this._saveID++;
-      this.conflict = false;
-      this.emitModifiedStatusChanged(false);
-      this.emitter.emit('did-save', {path: filePath});
-      success = true;
-    } catch (e) {
-      // Timeouts occur quite frequently when the network is unstable.
-      // Demote these to 'error' level.
-      const logger = getLogger('nuclide-remote-connection');
-      const logFunction =
-        e instanceof RpcTimeoutError ? logger.error : logger.fatal;
-      logFunction('Failed to save remote file.', e);
-      let message = e.message;
-      // This can happen if the user triggered the save while closing the file.
-      // Unfortunately, we can't interrupt the user action, but we can at least reopen the buffer.
-      if (this.destroyed) {
-        message += '<br><br>Opening a new tab with your unsaved changes.';
-        // goToLocation does not support opening an untitled editor
-        // eslint-disable-next-line nuclide-internal/atom-apis
-        atom.workspace.open().then(editor => editor.setText(toSaveContents));
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!filePath) {
+        throw new Error("Can't save buffer with no file path");
       }
-      atom.notifications.addError(
-        `Failed to save remote file ${filePath}: ${message}`,
-      );
-      success = false;
-    }
 
-    // Once the save is finished, cachedDiskContents is the source of truth.
-    this._pendingSaveContents = null;
+      let success;
+      _this.emitter.emit('will-save', { path: filePath });
+      _this.setPath(filePath);
+      const toSaveContents = _this.getText();
+      try {
+        const file = _this.file;
 
-    track('remoteprojects-text-buffer-save-as', {
-      'remoteprojects-file-path': filePath,
-      'remoteprojects-save-success': success.toString(),
-    });
+        if (!file) {
+          throw new Error('Cannot save an null file!');
+        }
+
+        _this._pendingSaveContents = toSaveContents;
+        yield (0, (_loadingNotification || _load_loadingNotification()).default)(file.write(toSaveContents), `Saving \`${(_nuclideUri || _load_nuclideUri()).default.nuclideUriToDisplayString(filePath)}\`...`, 1000 /* delay */
+        );
+        _this.cachedDiskContents = toSaveContents;
+        _this._saveID++;
+        _this.conflict = false;
+        _this.emitModifiedStatusChanged(false);
+        _this.emitter.emit('did-save', { path: filePath });
+        success = true;
+      } catch (e) {
+        // Timeouts occur quite frequently when the network is unstable.
+        // Demote these to 'error' level.
+        const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-remote-connection');
+        const logFunction = e instanceof (_nuclideRpc || _load_nuclideRpc()).RpcTimeoutError ? logger.error : logger.fatal;
+        logFunction('Failed to save remote file.', e);
+        let message = e.message;
+        // This can happen if the user triggered the save while closing the file.
+        // Unfortunately, we can't interrupt the user action, but we can at least reopen the buffer.
+        if (_this.destroyed) {
+          message += '<br><br>Opening a new tab with your unsaved changes.';
+          // goToLocation does not support opening an untitled editor
+          // eslint-disable-next-line nuclide-internal/atom-apis
+          atom.workspace.open().then(function (editor) {
+            return editor.setText(toSaveContents);
+          });
+        }
+        atom.notifications.addError(`Failed to save remote file ${filePath}: ${message}`);
+        success = false;
+      }
+
+      // Once the save is finished, cachedDiskContents is the source of truth.
+      _this._pendingSaveContents = null;
+
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('remoteprojects-text-buffer-save-as', {
+        'remoteprojects-file-path': filePath,
+        'remoteprojects-save-success': success.toString()
+      });
+    })();
   }
 
-  updateCachedDiskContentsSync(): void {
-    throw new Error(
-      "updateCachedDiskContentsSync isn't supported in NuclideTextBuffer",
-    );
+  updateCachedDiskContentsSync() {
+    throw new Error("updateCachedDiskContentsSync isn't supported in NuclideTextBuffer");
   }
 
-  async updateCachedDiskContents(
-    flushCache?: boolean,
-    callback?: () => mixed,
-  ): Promise<void> {
-    try {
-      // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
-      // https://github.com/babel/babel/issues/3930
-      await TextBuffer.prototype.updateCachedDiskContents.call(
-        this,
-        flushCache,
-        callback,
-      );
-      this._exists = true;
-    } catch (e) {
-      this._exists = false;
-      throw e;
-    }
+  updateCachedDiskContents(flushCache, callback) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        // Babel workaround: w/o the es2015-classes transform, async functions can't call `super`.
+        // https://github.com/babel/babel/issues/3930
+        yield _atom.TextBuffer.prototype.updateCachedDiskContents.call(_this2, flushCache, callback);
+        _this2._exists = true;
+      } catch (e) {
+        _this2._exists = false;
+        throw e;
+      }
+    })();
   }
 
   // Override of TextBuffer's implementation.
   // Atom tries to diff contents even for extremely large files, which can
   // easily cause the editor to lock.
   // TODO(hansonw): Remove after https://github.com/atom/text-buffer/issues/153 is resolved.
-  setTextViaDiff(newText: string): void {
-    if (
-      this.getLineCount() > DIFF_LINE_LIMIT ||
-      countOccurrences(newText, '\n') > DIFF_LINE_LIMIT
-    ) {
+  setTextViaDiff(newText) {
+    if (this.getLineCount() > DIFF_LINE_LIMIT || (0, (_string || _load_string()).countOccurrences)(newText, '\n') > DIFF_LINE_LIMIT) {
       this.setText(newText);
     } else {
       super.setTextViaDiff(newText);
     }
   }
 
-  subscribeToFile(): void {
+  subscribeToFile() {
+    var _this3 = this;
+
     if (this.fileSubscriptions) {
       this.fileSubscriptions.dispose();
     }
     const file = this.file;
-    invariant(file, 'Cannot subscribe to no-file');
-    const fileSubscriptions = new CompositeDisposable();
 
-    fileSubscriptions.add(
-      file.onDidChange(
-        debounce(async () => {
-          // The buffer could have been destroyed during the debounce.
-          if (this.destroyed) {
-            return;
-          }
-          const isModified = this._isModified();
-          this.emitModifiedStatusChanged(isModified);
-          if (isModified) {
-            this.conflict = true;
-          }
-          const previousContents = this.cachedDiskContents;
-          const previousSaveID = this._saveID;
-          await this.updateCachedDiskContents();
-          // The buffer could have been destroyed while waiting.
-          if (this.destroyed) {
-            return;
-          }
-          // If any save requests finished in the meantime, previousContents is not longer accurate.
-          // The most recent save request should trigger another change event, so we'll check for
-          // conflicts when that happens.
-          // Also, if a save is currently pending, it's possible we get the change event before the
-          // write promise comes back.
-          // Otherwise, what we wrote and what we read should match exactly.
-          if (
-            this._saveID !== previousSaveID ||
-            previousContents === this.cachedDiskContents ||
-            this._pendingSaveContents === this.cachedDiskContents
-          ) {
-            this.conflict = false;
-            return;
-          }
-          if (this.conflict) {
-            this.emitter.emit('did-conflict');
-          } else {
-            this.reload();
-          }
-        }, CHANGE_DEBOUNCE),
-      ),
-    );
+    if (!file) {
+      throw new Error('Cannot subscribe to no-file');
+    }
 
-    fileSubscriptions.add(
-      file.onDidDelete(() => {
-        this._exists = false;
-        const modified = this.getText() !== this.cachedDiskContents;
-        this.wasModifiedBeforeRemove = modified;
-        if (modified) {
-          this.updateCachedDiskContents();
-        } else {
-          this._maybeDestroy();
-        }
-      }),
-    );
+    const fileSubscriptions = new _atom.CompositeDisposable();
+
+    fileSubscriptions.add(file.onDidChange((0, (_debounce || _load_debounce()).default)((0, _asyncToGenerator.default)(function* () {
+      // The buffer could have been destroyed during the debounce.
+      if (_this3.destroyed) {
+        return;
+      }
+      const isModified = _this3._isModified();
+      _this3.emitModifiedStatusChanged(isModified);
+      if (isModified) {
+        _this3.conflict = true;
+      }
+      const previousContents = _this3.cachedDiskContents;
+      const previousSaveID = _this3._saveID;
+      yield _this3.updateCachedDiskContents();
+      // The buffer could have been destroyed while waiting.
+      if (_this3.destroyed) {
+        return;
+      }
+      // If any save requests finished in the meantime, previousContents is not longer accurate.
+      // The most recent save request should trigger another change event, so we'll check for
+      // conflicts when that happens.
+      // Also, if a save is currently pending, it's possible we get the change event before the
+      // write promise comes back.
+      // Otherwise, what we wrote and what we read should match exactly.
+      if (_this3._saveID !== previousSaveID || previousContents === _this3.cachedDiskContents || _this3._pendingSaveContents === _this3.cachedDiskContents) {
+        _this3.conflict = false;
+        return;
+      }
+      if (_this3.conflict) {
+        _this3.emitter.emit('did-conflict');
+      } else {
+        _this3.reload();
+      }
+    }), CHANGE_DEBOUNCE)));
+
+    fileSubscriptions.add(file.onDidDelete(() => {
+      this._exists = false;
+      const modified = this.getText() !== this.cachedDiskContents;
+      this.wasModifiedBeforeRemove = modified;
+      if (modified) {
+        this.updateCachedDiskContents();
+      } else {
+        this._maybeDestroy();
+      }
+    }));
 
     // TODO: Not supported by RemoteFile.
     // fileSubscriptions.add(file.onDidRename(() => {
     //   this.emitter.emit('did-change-path', this.getPath());
     // }));
 
-    fileSubscriptions.add(
-      file.onWillThrowWatchError(errorObject => {
-        this.emitter.emit('will-throw-watch-error', errorObject);
-      }),
-    );
+    fileSubscriptions.add(file.onWillThrowWatchError(errorObject => {
+      this.emitter.emit('will-throw-watch-error', errorObject);
+    }));
 
     this.fileSubscriptions = fileSubscriptions;
   }
 
-  _maybeDestroy(): void {
-    if (
-      this.shouldDestroyOnFileDelete == null ||
-      this.shouldDestroyOnFileDelete()
-    ) {
+  _maybeDestroy() {
+    if (this.shouldDestroyOnFileDelete == null || this.shouldDestroyOnFileDelete()) {
       this.destroy();
     } else {
       if (this.fileSubscriptions != null) {
@@ -285,7 +307,7 @@ export default class NuclideTextBuffer extends TextBuffer {
     }
   }
 
-  _isModified(): boolean {
+  _isModified() {
     if (!this.loaded) {
       return false;
     }
@@ -300,3 +322,4 @@ export default class NuclideTextBuffer extends TextBuffer {
     }
   }
 }
+exports.default = NuclideTextBuffer;

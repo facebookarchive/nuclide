@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _ObservableDiagnosticUpdater;
+
+function _load_ObservableDiagnosticUpdater() {
+  return _ObservableDiagnosticUpdater = _interopRequireDefault(require('./ObservableDiagnosticUpdater'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,60 +26,34 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  DiagnosticMessage,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
-  ProjectDiagnosticMessage,
-} from '../types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+class DiagnosticUpdater {
 
-import ObservableDiagnosticUpdater from './ObservableDiagnosticUpdater';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-export default class DiagnosticUpdater {
-  _observableUpdater: ObservableDiagnosticUpdater;
-
-  constructor(store: Store) {
-    this._observableUpdater = new ObservableDiagnosticUpdater(store);
+  constructor(store) {
+    this._observableUpdater = new (_ObservableDiagnosticUpdater || _load_ObservableDiagnosticUpdater()).default(store);
   }
 
-  onFileMessagesDidUpdate(
-    callback: (update: FileDiagnosticMessages) => mixed,
-    filePath: NuclideUri,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observableUpdater
-        .getFileMessageUpdates(filePath)
-        .subscribe(callback),
-    );
+  onFileMessagesDidUpdate(callback, filePath) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._observableUpdater.getFileMessageUpdates(filePath).subscribe(callback));
   }
 
-  onProjectMessagesDidUpdate(
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observableUpdater.projectMessageUpdates.subscribe(callback),
-    );
+  onProjectMessagesDidUpdate(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._observableUpdater.projectMessageUpdates.subscribe(callback));
   }
 
-  onAllMessagesDidUpdate(
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observableUpdater.allMessageUpdates.subscribe(callback),
-    );
+  onAllMessagesDidUpdate(callback) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._observableUpdater.allMessageUpdates.subscribe(callback));
   }
 
-  applyFix(message: FileDiagnosticMessage): void {
+  applyFix(message) {
     this._observableUpdater.applyFix(message);
   }
 
-  applyFixesForFile(file: NuclideUri): void {
+  applyFixesForFile(file) {
     this._observableUpdater.applyFixesForFile(file);
   }
 }
+exports.default = DiagnosticUpdater;

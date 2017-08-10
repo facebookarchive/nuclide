@@ -1,47 +1,58 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  NuclideNewConnectionProfileInitialFields,
-  NuclideRemoteConnectionParams,
-  NuclideRemoteConnectionParamsWithPassword,
-  NuclideRemoteConnectionProfile,
-} from './connection-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
-import ConnectionDetailsForm from './ConnectionDetailsForm';
-import {validateFormInputs} from './form-validation-utils';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+var _AtomInput;
 
-type Props = {
-  // A function called when the "Cancel" button is clicked.
-  onCancel: () => mixed,
-  // A function called when the "Save" button is clicked. The profile passed
-  // to the function is the profile that the user has just created.
-  // The CreateConnectionProfileForm will do basic validation on the inputs: It
-  // checks that the fields are non-empty before calling this function.
-  onSave: (profile: NuclideRemoteConnectionProfile) => mixed,
-  // The inputs to pre-fill the form with.
-  initialFormFields:
-    | NuclideNewConnectionProfileInitialFields
-    | NuclideRemoteConnectionParams,
-  profileHosts: ?Array<string>,
-};
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
 
-const PROFILE_NAME_LABEL = 'Profile Name';
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _atom = require('atom');
+
+var _ConnectionDetailsForm;
+
+function _load_ConnectionDetailsForm() {
+  return _ConnectionDetailsForm = _interopRequireDefault(require('./ConnectionDetailsForm'));
+}
+
+var _formValidationUtils;
+
+function _load_formValidationUtils() {
+  return _formValidationUtils = require('./form-validation-utils');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const PROFILE_NAME_LABEL = 'Profile Name'; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            * @format
+                                            */
+
 const DEFAULT_SERVER_COMMAND_PLACEHOLDER = '(DEFAULT)';
 
 const emptyFunction = () => {};
@@ -49,34 +60,53 @@ const emptyFunction = () => {};
 /**
  * A form that is used to create a new connection profile.
  */
-export default class CreateConnectionProfileForm extends React.Component<
-  void,
-  Props,
-  void,
-> {
-  props: Props;
+class CreateConnectionProfileForm extends _react.default.Component {
 
-  disposables: CompositeDisposable;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this.disposables = new CompositeDisposable();
+
+    this._clickSave = () => {
+      // Validate the form inputs.
+      const profileName = this._getProfileName();
+      const connectionDetails = this.refs['connection-details'].getFormFields();
+      const validationResult = (0, (_formValidationUtils || _load_formValidationUtils()).validateFormInputs)(profileName, connectionDetails, DEFAULT_SERVER_COMMAND_PLACEHOLDER);
+      if (typeof validationResult.errorMessage === 'string') {
+        atom.notifications.addError(validationResult.errorMessage);
+        return;
+      }
+
+      if (!(validationResult.validatedProfile != null && typeof validationResult.validatedProfile === 'object')) {
+        throw new Error('Invariant violation: "validationResult.validatedProfile != null &&\\n        typeof validationResult.validatedProfile === \'object\'"');
+      }
+
+      const newProfile = validationResult.validatedProfile;
+      // Save the validated profile, and show any warning messages.
+      if (typeof validationResult.warningMessage === 'string') {
+        atom.notifications.addWarning(validationResult.warningMessage);
+      }
+      this.props.onSave(newProfile);
+    };
+
+    this._clickCancel = () => {
+      this.props.onCancel();
+    };
+
+    this.disposables = new _atom.CompositeDisposable();
   }
 
-  componentDidMount(): void {
-    const root = ReactDOM.findDOMNode(this);
+  componentDidMount() {
+    const root = _reactDom.default.findDOMNode(this);
     this.disposables.add(
-      // Hitting enter when this panel has focus should confirm the dialog.
-      // $FlowFixMe
-      atom.commands.add(root, 'core:confirm', this._clickSave),
-      // Hitting escape when this panel has focus should cancel the dialog.
-      // $FlowFixMe
-      atom.commands.add(root, 'core:cancel', this._clickCancel),
-    );
+    // Hitting enter when this panel has focus should confirm the dialog.
+    // $FlowFixMe
+    atom.commands.add(root, 'core:confirm', this._clickSave),
+    // Hitting escape when this panel has focus should cancel the dialog.
+    // $FlowFixMe
+    atom.commands.add(root, 'core:cancel', this._clickCancel));
     this.refs['profile-name'].focus();
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this.disposables.dispose();
   }
 
@@ -85,82 +115,63 @@ export default class CreateConnectionProfileForm extends React.Component<
    * remote server command. The remote server command will only be saved if the
    * user changes it from this default.
    */
-  render(): React.Element<any> {
+  render() {
     const initialFields = this.props.initialFormFields;
 
-    return (
-      <div>
-        <div className="form-group">
-          <label>
-            {PROFILE_NAME_LABEL}:
-          </label>
-          <AtomInput initialValue="" ref="profile-name" unstyled={true} />
-        </div>
-        <ConnectionDetailsForm
-          initialUsername={initialFields.username}
-          initialServer={initialFields.server}
-          initialCwd={initialFields.cwd}
-          initialRemoteServerCommand={
-            initialFields.remoteServerCommand ||
-            DEFAULT_SERVER_COMMAND_PLACEHOLDER
-          }
-          initialSshPort={initialFields.sshPort}
-          initialPathToPrivateKey={initialFields.pathToPrivateKey}
-          initialAuthMethod={initialFields.authMethod}
-          initialDisplayTitle={initialFields.displayTitle}
-          profileHosts={this.props.profileHosts}
-          onCancel={emptyFunction}
-          onConfirm={this._clickSave}
-          onDidChange={emptyFunction}
-          ref="connection-details"
-        />
-        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-          <ButtonGroup>
-            <Button onClick={this._clickCancel}>Cancel</Button>
-            <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
-              Save
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      null,
+      _react.default.createElement(
+        'div',
+        { className: 'form-group' },
+        _react.default.createElement(
+          'label',
+          null,
+          PROFILE_NAME_LABEL,
+          ':'
+        ),
+        _react.default.createElement((_AtomInput || _load_AtomInput()).AtomInput, { initialValue: '', ref: 'profile-name', unstyled: true })
+      ),
+      _react.default.createElement((_ConnectionDetailsForm || _load_ConnectionDetailsForm()).default, {
+        initialUsername: initialFields.username,
+        initialServer: initialFields.server,
+        initialCwd: initialFields.cwd,
+        initialRemoteServerCommand: initialFields.remoteServerCommand || DEFAULT_SERVER_COMMAND_PLACEHOLDER,
+        initialSshPort: initialFields.sshPort,
+        initialPathToPrivateKey: initialFields.pathToPrivateKey,
+        initialAuthMethod: initialFields.authMethod,
+        initialDisplayTitle: initialFields.displayTitle,
+        profileHosts: this.props.profileHosts,
+        onCancel: emptyFunction,
+        onConfirm: this._clickSave,
+        onDidChange: emptyFunction,
+        ref: 'connection-details'
+      }),
+      _react.default.createElement(
+        'div',
+        { style: { display: 'flex', justifyContent: 'flex-end' } },
+        _react.default.createElement(
+          (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+          null,
+          _react.default.createElement(
+            (_Button || _load_Button()).Button,
+            { onClick: this._clickCancel },
+            'Cancel'
+          ),
+          _react.default.createElement(
+            (_Button || _load_Button()).Button,
+            { buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY, onClick: this._clickSave },
+            'Save'
+          )
+        )
+      )
     );
   }
 
-  _getProfileName(): string {
+  _getProfileName() {
     const fieldName = 'profile-name';
-    return (
-      (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || ''
-    );
+    return this.refs[fieldName] && this.refs[fieldName].getText().trim() || '';
   }
 
-  _clickSave = (): void => {
-    // Validate the form inputs.
-    const profileName = this._getProfileName();
-    const connectionDetails: NuclideRemoteConnectionParamsWithPassword = this.refs[
-      'connection-details'
-    ].getFormFields();
-    const validationResult = validateFormInputs(
-      profileName,
-      connectionDetails,
-      DEFAULT_SERVER_COMMAND_PLACEHOLDER,
-    );
-    if (typeof validationResult.errorMessage === 'string') {
-      atom.notifications.addError(validationResult.errorMessage);
-      return;
-    }
-    invariant(
-      validationResult.validatedProfile != null &&
-        typeof validationResult.validatedProfile === 'object',
-    );
-    const newProfile = validationResult.validatedProfile;
-    // Save the validated profile, and show any warning messages.
-    if (typeof validationResult.warningMessage === 'string') {
-      atom.notifications.addWarning(validationResult.warningMessage);
-    }
-    this.props.onSave(newProfile);
-  };
-
-  _clickCancel = (): void => {
-    this.props.onCancel();
-  };
 }
+exports.default = CreateConnectionProfileForm;

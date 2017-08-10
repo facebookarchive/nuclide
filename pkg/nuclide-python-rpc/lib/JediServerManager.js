@@ -1,91 +1,128 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import typeof * as JediService from './JediService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import LRUCache from 'lru-cache';
-import fsPromise from 'nuclide-commons/fsPromise';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getOriginalEnvironment} from 'nuclide-commons/process';
-import JediServer from './JediServer';
-import LinkTreeManager from './LinkTreeManager';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-async function getServerArgs(src: string) {
-  let overrides = {};
-  try {
-    // Override the python path and additional sys paths
-    // if override script is present.
-    // $FlowFB
-    const findJediServerArgs = require('./fb/find-jedi-server-args').default;
-    overrides = await findJediServerArgs(src);
-  } catch (e) {
+let getServerArgs = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (src) {
+    let overrides = {};
+    try {
+      // Override the python path and additional sys paths
+      // if override script is present.
+      // $FlowFB
+      const findJediServerArgs = require('./fb/find-jedi-server-args').default;
+      overrides = yield findJediServerArgs(src);
+    } catch (e) {}
     // Ignore.
-  }
 
-  // Append the user's PYTHONPATH if it exists.
-  const {PYTHONPATH} = await getOriginalEnvironment();
-  if (PYTHONPATH != null && PYTHONPATH.trim() !== '') {
-    overrides.paths = (overrides.paths || [])
-      .concat(nuclideUri.splitPathList(PYTHONPATH));
-  }
 
-  return {
-    // Default to assuming that python is in system PATH.
-    pythonPath: 'python',
-    paths: [],
-    ...overrides,
+    // Append the user's PYTHONPATH if it exists.
+    const { PYTHONPATH } = yield (0, (_process || _load_process()).getOriginalEnvironment)();
+    if (PYTHONPATH != null && PYTHONPATH.trim() !== '') {
+      overrides.paths = (overrides.paths || []).concat((_nuclideUri || _load_nuclideUri()).default.splitPathList(PYTHONPATH));
+    }
+
+    return Object.assign({
+      // Default to assuming that python is in system PATH.
+      pythonPath: 'python',
+      paths: []
+    }, overrides);
+  });
+
+  return function getServerArgs(_x) {
+    return _ref.apply(this, arguments);
   };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       * @format
+       */
+
+var _lruCache;
+
+function _load_lruCache() {
+  return _lruCache = _interopRequireDefault(require('lru-cache'));
 }
 
-export default class JediServerManager {
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _JediServer;
+
+function _load_JediServer() {
+  return _JediServer = _interopRequireDefault(require('./JediServer'));
+}
+
+var _LinkTreeManager;
+
+function _load_LinkTreeManager() {
+  return _LinkTreeManager = _interopRequireDefault(require('./LinkTreeManager'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class JediServerManager {
   // Cache the promises of additional paths to ensure that we never trigger two
   // calls for the same file name from external calls to getLinkTreePaths and
   // getTopLevelModulePath.
-  _cachedTopLevelModulePaths: Map<string, Promise<?string>>;
-  _cachedLinkTreePaths: Map<string, Promise<Array<string>>>;
-
-  _linkTreeManager: LinkTreeManager;
-  _servers: LRUCache<string, JediServer>;
-
   constructor() {
     this._cachedTopLevelModulePaths = new Map();
     this._cachedLinkTreePaths = new Map();
 
-    this._linkTreeManager = new LinkTreeManager();
-    this._servers = new LRUCache({
+    this._linkTreeManager = new (_LinkTreeManager || _load_LinkTreeManager()).default();
+    this._servers = new (_lruCache || _load_lruCache()).default({
       max: 20,
-      dispose(key: string, val: JediServer) {
+      dispose(key, val) {
         val.dispose();
-      },
+      }
     });
   }
 
-  async getJediService(src: string): Promise<JediService> {
-    let server = this._servers.get(src);
-    if (server == null) {
-      const {pythonPath, paths} = await getServerArgs(src);
-      // Create a JediServer using default python path.
-      server = new JediServer(src, pythonPath, paths);
-      this._servers.set(src, server);
+  getJediService(src) {
+    var _this = this;
 
-      // Add link tree and top-level module paths without awaiting,
-      // so we don't block the service from returning.
-      this._addLinkTreePaths(src, server);
-      this._addTopLevelModulePath(src, server);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      let server = _this._servers.get(src);
+      if (server == null) {
+        const { pythonPath, paths } = yield getServerArgs(src);
+        // Create a JediServer using default python path.
+        server = new (_JediServer || _load_JediServer()).default(src, pythonPath, paths);
+        _this._servers.set(src, server);
 
-    return server.getService();
+        // Add link tree and top-level module paths without awaiting,
+        // so we don't block the service from returning.
+        _this._addLinkTreePaths(src, server);
+        _this._addTopLevelModulePath(src, server);
+      }
+
+      return server.getService();
+    })();
   }
 
-  getLinkTreePaths(src: string): Promise<Array<string>> {
+  getLinkTreePaths(src) {
     let linkTreePathsPromise = this._cachedLinkTreePaths.get(src);
     if (linkTreePathsPromise == null) {
       linkTreePathsPromise = this._linkTreeManager.getLinkTreePaths(src);
@@ -95,17 +132,14 @@ export default class JediServerManager {
     return Promise.resolve(linkTreePathsPromise);
   }
 
-  getTopLevelModulePath(src: string): Promise<?string> {
+  getTopLevelModulePath(src) {
     let topLevelModulePathPromise = this._cachedTopLevelModulePaths.get(src);
     // We don't need to explicitly check undefined since the cached promise
     // itself is not nullable, though its content is.
     if (topLevelModulePathPromise == null) {
       // Find the furthest directory while an __init__.py is present, stopping
       // search once a directory does not contain an __init__.py.
-      topLevelModulePathPromise = fsPromise.findFurthestFile(
-        '__init__.py',
-        nuclideUri.dirname(src),
-        true /* stopOnMissing */,
+      topLevelModulePathPromise = (_fsPromise || _load_fsPromise()).default.findFurthestFile('__init__.py', (_nuclideUri || _load_nuclideUri()).default.dirname(src), true /* stopOnMissing */
       );
       this._cachedTopLevelModulePaths.set(src, topLevelModulePathPromise);
     }
@@ -113,33 +147,42 @@ export default class JediServerManager {
     return Promise.resolve(topLevelModulePathPromise);
   }
 
-  async _addLinkTreePaths(src: string, server: JediServer): Promise<void> {
-    const linkTreePaths = await this.getLinkTreePaths(src);
-    if (server.isDisposed() || linkTreePaths.length === 0) {
-      return;
-    }
-    const service = await server.getService();
-    await service.add_paths(linkTreePaths);
+  _addLinkTreePaths(src, server) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const linkTreePaths = yield _this2.getLinkTreePaths(src);
+      if (server.isDisposed() || linkTreePaths.length === 0) {
+        return;
+      }
+      const service = yield server.getService();
+      yield service.add_paths(linkTreePaths);
+    })();
   }
 
-  async _addTopLevelModulePath(src: string, server: JediServer): Promise<void> {
-    const topLevelModulePath = await this.getTopLevelModulePath(src);
-    if (server.isDisposed() || !topLevelModulePath) {
-      return;
-    }
-    const service = await server.getService();
-    // Add the parent dir of the top level module path, i.e. the closest
-    // directory that does NOT contain __init__.py.
-    await service.add_paths([nuclideUri.dirname(topLevelModulePath)]);
+  _addTopLevelModulePath(src, server) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const topLevelModulePath = yield _this3.getTopLevelModulePath(src);
+      if (server.isDisposed() || !topLevelModulePath) {
+        return;
+      }
+      const service = yield server.getService();
+      // Add the parent dir of the top level module path, i.e. the closest
+      // directory that does NOT contain __init__.py.
+      yield service.add_paths([(_nuclideUri || _load_nuclideUri()).default.dirname(topLevelModulePath)]);
+    })();
   }
 
-  reset(src: string): void {
+  reset(src) {
     this._servers.del(src);
     this._linkTreeManager.reset(src);
   }
 
-  dispose(): void {
+  dispose() {
     this._servers.reset();
     this._linkTreeManager.dispose();
   }
 }
+exports.default = JediServerManager;

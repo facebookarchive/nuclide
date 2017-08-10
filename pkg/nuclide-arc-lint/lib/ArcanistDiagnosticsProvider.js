@@ -1,152 +1,174 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ArcDiagnostic} from '../../nuclide-arcanist-rpc';
-import type {LinterMessage} from 'atom-ide-ui';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__testing__ = undefined;
 
-import {Range} from 'atom';
-import {Subject} from 'rxjs';
-import os from 'os';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {trackTiming} from '../../nuclide-analytics';
-import {removeCommonSuffix} from 'nuclide-commons/string';
-import {PromisePool} from '../../commons-node/promise-executors';
-import {getLogger} from 'log4js';
-import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
-
-const logger = getLogger('nuclide-arc-lint');
-
-const _runningProcess = new Map();
-const _promisePool = new PromisePool(Math.round(os.cpus().length / 2));
-
-export function lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
-  return trackTiming('nuclide-arcanist:lint', () => _lint(textEditor));
-}
-
-async function _lint(textEditor: TextEditor): Promise<?Array<LinterMessage>> {
-  const filePath = textEditor.getPath();
-  if (filePath == null) {
-    return null;
-  }
-
-  let diagnostics;
-  try {
-    diagnostics = await _findDiagnostics(filePath);
-  } catch (err) {
-    logger.warn('arc lint failed:', err);
-    return null;
-  }
-
-  if (diagnostics == null) {
-    return null;
-  } else if (textEditor.isDestroyed()) {
-    return [];
-  }
-
-  return diagnostics.map(diagnostic => {
-    const range = new Range(
-      [diagnostic.row, diagnostic.col],
-      [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)],
-    );
-    let text;
-    if (Array.isArray(diagnostic.text)) {
-      // Sometimes `arc lint` returns an array of strings for the text, rather than just a
-      // string :(.
-      text = diagnostic.text.join(' ');
-    } else {
-      text = diagnostic.text;
+let _lint = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (textEditor) {
+    const filePath = textEditor.getPath();
+    if (filePath == null) {
+      return null;
     }
-    const maybeProperties = {};
-    if (
-      diagnostic.original != null &&
-      diagnostic.replacement != null &&
+
+    let diagnostics;
+    try {
+      diagnostics = yield _findDiagnostics(filePath);
+    } catch (err) {
+      logger.warn('arc lint failed:', err);
+      return null;
+    }
+
+    if (diagnostics == null) {
+      return null;
+    } else if (textEditor.isDestroyed()) {
+      return [];
+    }
+
+    return diagnostics.map(function (diagnostic) {
+      const range = new _atom.Range([diagnostic.row, diagnostic.col], [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)]);
+      let text;
+      if (Array.isArray(diagnostic.text)) {
+        // Sometimes `arc lint` returns an array of strings for the text, rather than just a
+        // string :(.
+        text = diagnostic.text.join(' ');
+      } else {
+        text = diagnostic.text;
+      }
+      const maybeProperties = {};
+      if (diagnostic.original != null && diagnostic.replacement != null &&
       // Sometimes linters set original and replacement to the same value. Obviously that won't
       // fix anything.
-      diagnostic.original !== diagnostic.replacement
-    ) {
-      // Copy the object so the type refinements hold...
-      maybeProperties.fix = _getFix({...diagnostic});
-    }
-    return {
-      name: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
-      type: diagnostic.type,
-      text,
-      filePath: diagnostic.filePath,
-      range,
-      ...maybeProperties,
-    };
+      diagnostic.original !== diagnostic.replacement) {
+        // Copy the object so the type refinements hold...
+        maybeProperties.fix = _getFix(Object.assign({}, diagnostic));
+      }
+      return Object.assign({
+        name: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
+        type: diagnostic.type,
+        text,
+        filePath: diagnostic.filePath,
+        range
+      }, maybeProperties);
+    });
   });
-}
 
-async function _findDiagnostics(
-  filePath: string,
-): Promise<?Array<ArcDiagnostic>> {
-  const blacklistedLinters: Array<string> = (featureConfig.get(
-    'nuclide-arc-lint.blacklistedLinters',
-  ): any);
-  const runningProcess = _runningProcess.get(filePath);
-  if (runningProcess != null) {
-    // This will cause the previous lint run to resolve with `undefined`.
-    runningProcess.complete();
-  }
-  const subject = new Subject();
-  _runningProcess.set(filePath, subject);
-  return _promisePool.submit(() => {
-    // It's possible that the subject was replaced by a queued lint run.
-    if (_runningProcess.get(filePath) !== subject) {
-      return Promise.resolve(null);
+  return function _lint(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let _findDiagnostics = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (filePath) {
+    const blacklistedLinters = (_featureConfig || _load_featureConfig()).default.get('nuclide-arc-lint.blacklistedLinters');
+    const runningProcess = _runningProcess.get(filePath);
+    if (runningProcess != null) {
+      // This will cause the previous lint run to resolve with `undefined`.
+      runningProcess.complete();
     }
-    const arcService = getArcanistServiceByNuclideUri(filePath);
-    const subscription = arcService
-      .findDiagnostics(filePath, blacklistedLinters)
-      .refCount()
-      .toArray()
-      .timeout((featureConfig.get('nuclide-arc-lint.lintTimeout'): any))
-      .subscribe(subject);
-    return subject
-      .finally(() => {
+    const subject = new _rxjsBundlesRxMinJs.Subject();
+    _runningProcess.set(filePath, subject);
+    return _promisePool.submit(function () {
+      // It's possible that the subject was replaced by a queued lint run.
+      if (_runningProcess.get(filePath) !== subject) {
+        return Promise.resolve(null);
+      }
+      const arcService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getArcanistServiceByNuclideUri)(filePath);
+      const subscription = arcService.findDiagnostics(filePath, blacklistedLinters).refCount().toArray().timeout((_featureConfig || _load_featureConfig()).default.get('nuclide-arc-lint.lintTimeout')).subscribe(subject);
+      return subject.finally(function () {
         subscription.unsubscribe();
         _runningProcess.delete(filePath);
-      })
-      .toPromise();
+      }).toPromise();
+    });
   });
-}
+
+  return function _findDiagnostics(_x2) {
+    return _ref2.apply(this, arguments);
+  };
+})();
 
 // This type is a bit different than an ArcDiagnostic since original and replacement are
 // mandatory.
-function _getFix(diagnostic: {
-  row: number,
-  col: number,
-  original: string,
-  replacement: string,
-}) {
+
+
+exports.lint = lint;
+
+var _atom = require('atom');
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _os = _interopRequireDefault(require('os'));
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _promiseExecutors;
+
+function _load_promiseExecutors() {
+  return _promiseExecutors = require('../../commons-node/promise-executors');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-arc-lint'); /**
+                                                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                * All rights reserved.
+                                                                                *
+                                                                                * This source code is licensed under the license found in the LICENSE file in
+                                                                                * the root directory of this source tree.
+                                                                                *
+                                                                                * 
+                                                                                * @format
+                                                                                */
+
+const _runningProcess = new Map();
+const _promisePool = new (_promiseExecutors || _load_promiseExecutors()).PromisePool(Math.round(_os.default.cpus().length / 2));
+
+function lint(textEditor) {
+  return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-arcanist:lint', () => _lint(textEditor));
+}
+
+function _getFix(diagnostic) {
   // For now just remove the suffix. The prefix would be nice too but it's a bit harder since we
-  // then also have to manipulate the row/col accordingly.
-  const [original, replacement] = removeCommonSuffix(
-    diagnostic.original,
-    diagnostic.replacement,
-  );
+  const [original, replacement] = (0, (_string || _load_string()).removeCommonSuffix)(diagnostic.original, diagnostic.replacement);
   return {
     range: _getRangeForFix(diagnostic.row, diagnostic.col, original),
     newText: replacement,
-    oldText: original,
+    oldText: original
   };
 }
 
-function _getRangeForFix(
-  startRow: number,
-  startCol: number,
-  originalText: string,
-): atom$Range {
+function _getRangeForFix(startRow, startCol, originalText) {
   let newlineCount = 0;
   for (const char of originalText) {
     if (char === '\n') {
@@ -162,12 +184,12 @@ function _getRangeForFix(
     endCol = originalText.length - lastNewlineIndex - 1;
   }
 
-  return new Range([startRow, startCol], [endRow, endCol]);
+  return new _atom.Range([startRow, startCol], [endRow, endCol]);
 }
 
-export const __testing__ = {
+const __testing__ = exports.__testing__ = {
   _findDiagnostics,
   _getRangeForFix,
   _getFix,
-  _runningProcess,
+  _runningProcess
 };
