@@ -407,30 +407,39 @@ export default class VsDebugSessionTranslator {
               return Observable.of(null);
             } else {
               // Session initialization is pending launch.
-              this._startDebugging();
               startedDebugging = true;
-              return this._session.observeInitializeEvents();
+              return Observable.fromPromise(this._startDebugging())
+                .ignoreElements()
+                .concat(this._session.observeInitializeEvents());
             }
           }),
         )
         .first()
-        .flatMap(commands => {
+        .flatMap(async commands => {
           // Upon session start, send the cached breakpoints
           // and other configuration requests.
-          const responses = this._setBulkBreakpoints(commands);
-          this._configDone();
+          try {
+            const responses = await this._setBulkBreakpoints(commands);
+            await this._configDone();
 
-          if (!startedDebugging) {
-            this._startDebugging();
-            startedDebugging = true;
+            if (!startedDebugging) {
+              startedDebugging = true;
+              await this._startDebugging();
+            }
+            return responses;
+          } catch (error) {
+            return commands.map(({id}) => getErrorResponse(id, error.message));
           }
-          return responses;
         }),
       // Following breakpoint requests are handled by
       // immediatelly passing to the active debug session.
-      setBreakpointsCommands.flatMap(command =>
-        this._setBulkBreakpoints([command]),
-      ),
+      setBreakpointsCommands.flatMap(async command => {
+        try {
+          return await this._setBulkBreakpoints([command]);
+        } catch (error) {
+          return [getErrorResponse(command.id, error.message)];
+        }
+      }),
     ).flatMap(responses => Observable.from(responses));
   }
 
@@ -542,7 +551,15 @@ export default class VsDebugSessionTranslator {
       })),
     });
     if (vsBreakpoints.length !== breakpoints.length) {
-      throw new Error('Failed to set breakpoints - count mismatch!');
+      const errorMessage =
+        'Failed to set breakpoints - count mismatch!' +
+        ` ${vsBreakpoints.length} vs. ${breakpoints.length}`;
+      this._logger.error(
+        errorMessage,
+        JSON.stringify(vsBreakpoints),
+        JSON.stringify(breakpoints),
+      );
+      throw new Error(errorMessage);
     }
     return vsBreakpoints.map((vsBreakpoint, i) => {
       const bpDescriptior = breakpoints[i];
