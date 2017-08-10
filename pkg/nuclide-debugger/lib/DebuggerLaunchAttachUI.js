@@ -23,10 +23,11 @@ import {
   getLastUsedDebugger,
   setLastUsedDebugger,
 } from '../../nuclide-debugger-base';
-import {asyncFilter} from 'nuclide-commons/promise';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import Tabs from '../../nuclide-ui/Tabs';
+import {Observable} from 'rxjs';
+import invariant from 'invariant';
 
 type PropsType = {
   dialogMode: DebuggerConfigAction,
@@ -117,28 +118,44 @@ export class DebuggerLaunchAttachUI extends React.Component<
     this._disposables.dispose();
   }
 
-  async _filterProviders(): Promise<void> {
-    const enabled = await asyncFilter(this.props.providers, provider =>
-      provider.getCallbacksForAction(this.props.dialogMode).isEnabled(),
-    );
+  async _getProviderIfEnabled(
+    provider: DebuggerLaunchAttachProvider,
+  ): Promise<?DebuggerLaunchAttachProvider> {
+    const enabled = await provider
+      .getCallbacksForAction(this.props.dialogMode)
+      .isEnabled();
+    return enabled ? provider : null;
+  }
 
-    const enabledProviders = [].concat(
-      ...enabled.map(provider => {
-        return provider
-          .getCallbacksForAction(this.props.dialogMode)
-          .getDebuggerTypeNames()
-          .map(debuggerName => {
-            return {
-              provider,
-              debuggerName,
-            };
-          });
-      }),
-    );
-
+  _filterProviders(): void {
     this.setState({
-      enabledProviders,
+      enabledProviders: [],
     });
+
+    Observable.merge(
+      ...this.props.providers.map(provider =>
+        Observable.fromPromise(this._getProviderIfEnabled(provider)),
+      ),
+    )
+      .filter(provider => provider != null)
+      .subscribe(provider => {
+        invariant(provider != null);
+        const enabledProviders = this.state.enabledProviders.concat(
+          ...provider
+            .getCallbacksForAction(this.props.dialogMode)
+            .getDebuggerTypeNames()
+            .map(debuggerName => {
+              return {
+                provider,
+                debuggerName,
+              };
+            }),
+        );
+
+        this.setState({
+          enabledProviders,
+        });
+      });
   }
 
   _setConfigValid = (valid: boolean): void => {
