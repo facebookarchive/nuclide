@@ -14,15 +14,15 @@ import classnames from 'classnames';
 import React from 'react';
 
 type Props = {
-  progress: ?number,
+  progress: ?number /* 0..1 */,
   visible: boolean,
 };
 
-export class ProgressBar extends React.Component {
+export default class FullWidthProgressBar extends React.Component {
   props: Props;
 
   render(): ?React.Element<any> {
-    const className = classnames('nuclide-task-runner-progress-bar', {
+    const className = classnames('nuclide-ui-full-width-progress-bar', {
       indeterminate: this._isIndeterminate(),
     });
     return (
@@ -57,7 +57,7 @@ class Bar extends React.Component {
     const pct = Math.max(0, Math.min(100, this.props.progress * 100));
     return (
       <div
-        className="nuclide-task-runner-progress-bar-bar"
+        className="nuclide-ui-full-width-progress-bar-bar"
         style={{width: `${pct}%`}}
       />
     );
