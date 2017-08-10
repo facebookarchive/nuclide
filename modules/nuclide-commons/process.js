@@ -456,6 +456,10 @@ export async function getOriginalEnvironment(): Promise<Object> {
         ] = envVar.substring(equalIndex + 1);
       }
     }
+    // Guard against invalid original environments.
+    if (!Object.keys(cachedOriginalEnvironment).length) {
+      cachedOriginalEnvironment = process.env;
+    }
   } else {
     cachedOriginalEnvironment = process.env;
   }
