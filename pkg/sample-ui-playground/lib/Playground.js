@@ -37,6 +37,7 @@ import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 import {MessageExamples} from 'nuclide-commons-ui/Message.example';
 import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.example';
 import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
+import RegExpFilterExamples from 'nuclide-commons-ui/RegExpFilter.example';
 
 const playgroundComponents = [
   ButtonExamples,
@@ -50,6 +51,7 @@ const playgroundComponents = [
   ResizableFlexContainerExamples,
   RadioGroupExamples,
   TextInputExamples,
+  RegExpFilterExamples,
   ToolbarExamples,
   BadgeExamples,
   HighlightExamples,
