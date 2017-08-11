@@ -147,11 +147,13 @@ export class OutlineViewSearchComponent extends React.Component {
           value={this.state.currentQuery}
           size="sm"
         />
-        <Icon
-          icon="x"
-          className="atom-ide-outline-view-search-clear"
-          onClick={this._onDidClear}
-        />
+        {this.state.currentQuery.length > 0
+          ? <Icon
+              icon="x"
+              className="atom-ide-outline-view-search-clear"
+              onClick={this._onDidClear}
+            />
+          : null}
       </div>
     );
   }
