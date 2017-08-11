@@ -142,6 +142,7 @@ export class OutlineViewSearchComponent extends React.Component {
         <AtomInput
           className="atom-ide-outline-view-search-pane"
           onConfirm={this._onConfirm}
+          onCancel={this._onDidClear}
           onDidChange={this._onDidChange}
           placeholderText={this.state.currentQuery || this.SEARCH_PLACEHOLDER}
           value={this.state.currentQuery}
