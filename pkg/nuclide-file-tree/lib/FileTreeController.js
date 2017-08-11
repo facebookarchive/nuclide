@@ -171,6 +171,7 @@ export default class FileTreeController {
           this,
         ),
         'nuclide-file-tree:remove': this._deleteSelection.bind(this),
+        'core:delete': this._deleteSelection.bind(this),
         'nuclide-file-tree:remove-project-folder-selection': this._removeRootFolderSelection.bind(
           this,
         ),
