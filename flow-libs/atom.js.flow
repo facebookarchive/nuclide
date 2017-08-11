@@ -1036,6 +1036,7 @@ declare class atom$TextEditorElement extends HTMLElement {
   getScrollLeft(): number,
 
   getScrollHeight(): number,
+  getHeight(): number,
 
   onDidChangeScrollTop(callback: (scrollTop: number) => mixed): IDisposable,
   onDidChangeScrollLeft(callback: (scrollLeft: number) => mixed): IDisposable,
