@@ -21,14 +21,15 @@ import type {
   Store,
 } from '../types';
 import type {CreatePasteFunction} from '../../../nuclide-paste-base';
+import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {viewableFromReactElement} from '../../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
+import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
-import escapeStringRegexp from 'escape-string-regexp';
 import React from 'react';
 import {Observable, Subject} from 'rxjs';
 
@@ -217,7 +218,7 @@ export class ConsoleContainer extends React.Component {
 
   _resetAllFilters = (): void => {
     this._selectSources(this.state.sources.map(s => s.id));
-    this._updateFilterText('');
+    this.setState({filterText: ''});
   };
 
   _createPaste = async (): Promise<void> => {
@@ -265,11 +266,11 @@ export class ConsoleContainer extends React.Component {
   };
 
   _getFilterInfo(): {
-    isValid: boolean,
+    invalid: boolean,
     selectedSourceIds: Array<string>,
     displayableRecords: Array<DisplayableRecord>,
   } {
-    const {pattern, isValid} = this._getFilterPattern(
+    const {pattern, invalid} = getFilterPattern(
       this.state.filterText,
       this.state.enableRegExpFilter,
     );
@@ -288,7 +289,7 @@ export class ConsoleContainer extends React.Component {
     );
 
     return {
-      isValid,
+      invalid,
       selectedSourceIds,
       displayableRecords,
     };
@@ -301,7 +302,7 @@ export class ConsoleContainer extends React.Component {
 
     const actionCreators = this._getBoundActionCreators();
     const {
-      isValid,
+      invalid,
       selectedSourceIds,
       displayableRecords,
     } = this._getFilterInfo();
@@ -313,7 +314,7 @@ export class ConsoleContainer extends React.Component {
 
     return (
       <Console
-        invalidFilterInput={!isValid}
+        invalidFilterInput={invalid}
         execute={actionCreators.execute}
         selectExecutor={actionCreators.selectExecutor}
         clearRecords={actionCreators.clearRecords}
@@ -330,8 +331,7 @@ export class ConsoleContainer extends React.Component {
         selectSources={this._selectSources}
         executors={this.state.executors}
         getProvider={id => this.state.providers.get(id)}
-        toggleRegExpFilter={this._toggleRegExpFilter}
-        updateFilterText={this._updateFilterText}
+        updateFilter={this._updateFilter}
         onDisplayableRecordHeightChange={
           this._handleDisplayableRecordHeightChange
         }
@@ -358,34 +358,13 @@ export class ConsoleContainer extends React.Component {
     this.setState({unselectedSourceIds});
   };
 
-  _toggleRegExpFilter = (): void => {
-    this.setState({enableRegExpFilter: !this.state.enableRegExpFilter});
+  _updateFilter = (change: RegExpFilterChange): void => {
+    const {text, isRegExp} = change;
+    this.setState({
+      filterText: text,
+      enableRegExpFilter: isRegExp,
+    });
   };
-
-  _updateFilterText = (filterText: string): void => {
-    this.setState({filterText});
-  };
-
-  _getFilterPattern(
-    filterText: string,
-    isRegExp: boolean,
-  ): {pattern: ?RegExp, isValid: boolean} {
-    if (filterText === '') {
-      return {pattern: null, isValid: true};
-    }
-    const source = isRegExp ? filterText : escapeStringRegexp(filterText);
-    try {
-      return {
-        pattern: new RegExp(source, 'i'),
-        isValid: true,
-      };
-    } catch (err) {
-      return {
-        pattern: null,
-        isValid: false,
-      };
-    }
-  }
 
   _handleDisplayableRecordHeightChange = (
     recordId: number,

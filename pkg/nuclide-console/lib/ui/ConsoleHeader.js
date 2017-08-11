@@ -10,13 +10,12 @@
  */
 
 import type {Source} from '../types';
+import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
-import classnames from 'classnames';
 import React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
@@ -30,10 +29,9 @@ type Props = {
   createPaste: ?() => Promise<void>,
   invalidFilterInput: boolean,
   enableRegExpFilter: boolean,
+  onFilterChange: (change: RegExpFilterChange) => void,
   selectedSourceIds: Array<string>,
   sources: Array<Source>,
-  onFilterTextChange: (filterText: string) => void,
-  toggleRegExpFilter: () => void,
   onSelectedSourcesChange: (sourceIds: Array<string>) => void,
   filterText: string,
 };
@@ -51,8 +49,8 @@ export default class ConsoleHeader extends React.Component {
     }
   };
 
-  _handleReToggleButtonClick = (): void => {
-    this.props.toggleRegExpFilter();
+  _handleFilterChange = (value: RegExpFilterChange): void => {
+    this.props.onFilterChange(value);
   };
 
   _renderProcessControlButton(source: Source): ?React.Element<any> {
@@ -112,10 +110,6 @@ export default class ConsoleHeader extends React.Component {
         value: source.name,
       }));
 
-    const filterInputClassName = classnames('nuclide-console-filter-field', {
-      invalid: this.props.invalidFilterInput,
-    });
-
     const MultiSelectOption = this._renderOption;
     const pasteButton =
       this.props.createPaste == null
@@ -145,24 +139,14 @@ export default class ConsoleHeader extends React.Component {
             onChange={this.props.onSelectedSourcesChange}
             className="inline-block"
           />
-          <ButtonGroup className="inline-block">
-            <AtomInput
-              className={filterInputClassName}
-              size="sm"
-              width={200}
-              placeholderText="Filter"
-              onDidChange={this.props.onFilterTextChange}
-              value={this.props.filterText}
-            />
-            <Button
-              className="nuclide-console-filter-regexp-button"
-              size={ButtonSizes.SMALL}
-              selected={this.props.enableRegExpFilter}
-              onClick={this._handleReToggleButtonClick}
-              tooltip={{title: 'Use Regex'}}>
-              .*
-            </Button>
-          </ButtonGroup>
+          <RegExpFilter
+            value={{
+              text: this.props.filterText,
+              isRegExp: this.props.enableRegExpFilter,
+              invalid: this.props.invalidFilterInput,
+            }}
+            onChange={this._handleFilterChange}
+          />
         </ToolbarLeft>
         <ToolbarRight>
           {pasteButton}

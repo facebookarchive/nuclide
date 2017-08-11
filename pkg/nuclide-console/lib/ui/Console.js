@@ -16,6 +16,7 @@ import type {
   RecordHeightChangeHandler,
   Source,
 } from '../types';
+import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import debounce from 'nuclide-commons/debounce';
@@ -44,8 +45,7 @@ type Props = {
   selectExecutor: (executorId: string) => void,
   selectSources: (sourceIds: Array<string>) => void,
   sources: Array<Source>,
-  toggleRegExpFilter: () => void,
-  updateFilterText: (filterText: string) => void,
+  updateFilter: (change: RegExpFilterChange) => void,
   getProvider: (id: string) => ?OutputProvider,
   onDisplayableRecordHeightChange: RecordHeightChangeHandler,
   filteredRecordCount: number,
@@ -172,8 +172,7 @@ export default class Console extends React.Component {
           filterText={this.props.filterText}
           selectedSourceIds={this.props.selectedSourceIds}
           sources={this.props.sources}
-          toggleRegExpFilter={this.props.toggleRegExpFilter}
-          onFilterTextChange={this.props.updateFilterText}
+          onFilterChange={this.props.updateFilter}
           onSelectedSourcesChange={this.props.selectSources}
         />
         {/*

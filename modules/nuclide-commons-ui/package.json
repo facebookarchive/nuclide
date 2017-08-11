@@ -13,6 +13,7 @@
   "dependencies": {
     "async-to-generator": "1.1.0",
     "classnames": "2.2.5",
+    "escape-string-regexp": "1.0.5",
     "nuclide-commons": "0.1.10",
     "nuclide-commons-atom": "0.1.10",
     "react": "15.3.1",
