@@ -219,6 +219,29 @@ class Activation {
         .subscribe(visible => {
           this._panelRenderer.render({visible});
         }),
+      // Add a "stop" command when a task is running.
+      states
+        .map(state => state.runningTask != null)
+        .distinctUntilChanged()
+        .switchMap(
+          taskIsRunning =>
+            taskIsRunning
+              ? Observable.create(
+                  () =>
+                    new UniversalDisposable(
+                      atom.commands.add(
+                        'atom-workspace',
+                        // eslint-disable-next-line nuclide-internal/atom-apis
+                        'nuclide-task-runner:stop-task',
+                        () => {
+                          this._actionCreators.stopTask();
+                        },
+                      ),
+                    ),
+                )
+              : Observable.empty(),
+        )
+        .subscribe(),
     );
   }
 
