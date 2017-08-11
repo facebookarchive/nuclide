@@ -1,13 +1,29 @@
 @import 'ui-variables';
 
 .nuclide-outline-view {
-  flex: 1;
-  /* Prevents this element from shrinking smaller than the width of its content */
-  min-width: min-content;
+  height: 100%;
+  width: 100%;
+}
+
+.nuclide-outline-view-core {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.nuclide-outline-view-trees-scroller {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.nuclide-outline-view-trees {
+  display: inline-block; // so background doesn't get clipped and overflows
+  min-width: 100%;
 }
 
 .nuclide-outline-view-loading {
-  text-align: center;
+  margin: auto;
 }
 
 .nuclide-outline-view-item {

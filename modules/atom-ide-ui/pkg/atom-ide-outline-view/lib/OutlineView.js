@@ -25,7 +25,6 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
-import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -56,7 +55,7 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   type: 'syntax--support syntax--type',
 };
 
-export class OutlineView extends React.Component {
+export class OutlineView extends React.PureComponent {
   state: State;
   props: Props;
 
@@ -101,15 +100,11 @@ export class OutlineView extends React.Component {
 
   render(): React.Element<any> {
     return (
-      <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-        <PanelComponentScroller>
-          <div className="nuclide-outline-view">
-            <OutlineViewComponent
-              outline={this.state.outline}
-              searchEnabled={this.state.searchEnabled}
-            />
-          </div>
-        </PanelComponentScroller>
+      <div className="nuclide-outline-view">
+        <OutlineViewComponent
+          outline={this.state.outline}
+          searchEnabled={this.state.searchEnabled}
+        />
       </div>
     );
   }
@@ -120,19 +115,16 @@ type OutlineViewComponentProps = {
   searchEnabled: boolean,
 };
 
-class OutlineViewComponent extends React.Component {
+class OutlineViewComponent extends React.PureComponent {
   props: OutlineViewComponentProps;
-  state: {
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  };
 
   constructor(props: OutlineViewComponentProps) {
     super(props);
-    this.state = {searchResults: new Map()};
   }
 
   render(): ?React.Element<any> {
-    const outline = this.props.outline;
+    const {outline, searchEnabled} = this.props;
+
     switch (outline.kind) {
       case 'empty':
       case 'not-text-editor':
@@ -174,26 +166,56 @@ class OutlineViewComponent extends React.Component {
         );
       case 'outline':
         return (
-          <div>
-            {this.props.searchEnabled
-              ? <OutlineViewSearchComponent
-                  outlineTrees={outline.outlineTrees}
-                  editor={outline.editor}
-                  updateSearchResults={searchResults => {
-                    this.setState({searchResults});
-                  }}
-                />
-              : null}
+          <OutlineViewCore outline={outline} searchEnabled={searchEnabled} />
+        );
+      default:
+        (outline: empty);
+    }
+  }
+}
+
+type OutlineViewCoreProps = {
+  outline: OutlineForUi,
+  searchEnabled: boolean,
+};
+
+/**
+ * Contains both the search field and the scrollable outline tree
+ */
+class OutlineViewCore extends React.PureComponent {
+  props: OutlineViewCoreProps;
+  state: {
+    searchResults: Map<OutlineTreeForUi, SearchResult>,
+  } = {
+    searchResults: new Map(),
+  };
+
+  render() {
+    const {outline, searchEnabled} = this.props;
+    invariant(outline.kind === 'outline');
+
+    return (
+      <div className="nuclide-outline-view-core">
+        {searchEnabled
+          ? <OutlineViewSearchComponent
+              outlineTrees={outline.outlineTrees}
+              editor={outline.editor}
+              updateSearchResults={searchResults => {
+                this.setState({searchResults});
+              }}
+            />
+          : null}
+        <div className="nuclide-outline-view-trees-scroller">
+          <div className="nuclide-outline-view-trees">
             {renderTrees(
               outline.editor,
               outline.outlineTrees,
               this.state.searchResults,
             )}
           </div>
-        );
-      default:
-        (outline: empty);
-    }
+        </div>
+      </div>
+    );
   }
 }
 
@@ -353,7 +375,11 @@ function renderTrees(
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
-    <ul className="list-tree" style={{position: 'relative'}}>
+    <ul
+      className="list-tree"
+      style={{
+        position: 'relative',
+      }}>
       {outlines.map((outline, index) => {
         const result = searchResults.get(outline);
         return !result || result.visible
