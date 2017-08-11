@@ -204,32 +204,35 @@ class OutlineTree extends React.PureComponent {
     searchResults: Map<OutlineTreeForUi, SearchResult>,
   };
 
+  onClick = () => {
+    const {editor, outline} = this.props;
+    const pane = atom.workspace.paneForItem(editor);
+    if (pane == null) {
+      return;
+    }
+    analytics.track('atom-ide-outline-view:go-to-location');
+    pane.activate();
+    pane.activateItem(editor);
+    goToLocationInEditor(
+      editor,
+      outline.startPosition.row,
+      outline.startPosition.column,
+    );
+  };
+
+  onDoubleClick = () => {
+    const {editor, outline} = this.props;
+
+    // Assumes that the click handler has already run, activating the text editor and moving the
+    // cursor to the start of the symbol.
+    const endPosition = outline.endPosition;
+    if (endPosition != null) {
+      editor.selectToBufferPosition(endPosition);
+    }
+  };
+
   render(): React.Element<any> {
     const {editor, outline, searchResults} = this.props;
-
-    const onClick = () => {
-      const pane = atom.workspace.paneForItem(editor);
-      if (pane == null) {
-        return;
-      }
-      analytics.track('atom-ide-outline-view:go-to-location');
-      pane.activate();
-      pane.activateItem(editor);
-      goToLocationInEditor(
-        editor,
-        outline.startPosition.row,
-        outline.startPosition.column,
-      );
-    };
-
-    const onDoubleClick = () => {
-      // Assumes that the click handler has already run, activating the text editor and moving the
-      // cursor to the start of the symbol.
-      const endPosition = outline.endPosition;
-      if (endPosition != null) {
-        editor.selectToBufferPosition(endPosition);
-      }
-    };
 
     const classNames = ['list-nested-item'];
     if (outline.kind) {
@@ -242,8 +245,8 @@ class OutlineTree extends React.PureComponent {
       <li className={classes}>
         <div
           className="list-item nuclide-outline-view-item"
-          onClick={onClick}
-          onDoubleClick={onDoubleClick}>
+          onClick={this.onClick}
+          onDoubleClick={this.onDoubleClick}>
           {renderItem(outline, searchResults.get(outline))}
         </div>
         {renderTrees(editor, outline.children, searchResults)}
