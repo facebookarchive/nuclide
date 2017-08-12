@@ -27,6 +27,7 @@ import {MeasuredComponent} from '../../../nuclide-ui/MeasuredComponent';
 import debounce from 'nuclide-commons/debounce';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {URL_REGEX} from 'nuclide-commons/string';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type Props = {
   displayableRecord: DisplayableRecord,
@@ -243,14 +244,70 @@ function getIconName(record: Record): ?string {
   }
 }
 
+/**
+ * Parse special entities into links. In the future, it would be great to add a service so that we
+ * could add new clickable things and to allow providers to mark specific ranges as links to things
+ * that only they can know (e.g. relative paths output in BUCK messages). For now, however, we'll
+ * just use some pattern settings and hardcode the patterns we care about.
+ */
 function parseText(text: string): Array<string | React.Element<any>> {
-  return text.split(URL_REGEX).map((chunk, i) => {
-    // Since we're splitting on the URL regex, every other piece will be a URL.
-    const isURL = i % 2 !== 0;
-    return isURL
-      ? <a key={`d${i}`} href={chunk} target="_blank">
-          {chunk}
-        </a>
-      : chunk;
-  });
+  const chunks = [];
+  let lastIndex = 0;
+  let index = 0;
+  while (true) {
+    const match = CLICKABLE_RE.exec(text);
+    if (match == null) {
+      break;
+    }
+
+    const matchedText = match[0];
+
+    // Add all the text since our last match.
+    chunks.push(
+      text.slice(lastIndex, CLICKABLE_RE.lastIndex - matchedText.length),
+    );
+    lastIndex = CLICKABLE_RE.lastIndex;
+
+    let href;
+    if (match[1] != null) {
+      // It's a diff
+      const url = toString(featureConfig.get('nuclide-console.diffUrlPattern'));
+      if (url !== '') {
+        href = url.replace('%s', matchedText);
+      }
+    } else if (match[2] != null) {
+      // It's a task
+      const url = toString(featureConfig.get('nuclide-console.taskUrlPattern'));
+      if (url !== '') {
+        href = url.replace('%s', matchedText.slice(1));
+      }
+    } else if (match[3] != null) {
+      // It's a URL
+      href = matchedText;
+    }
+
+    chunks.push(
+      href
+        ? <a key={`r${index}`} href={href} target="_blank">
+            {matchedText}
+          </a>
+        : matchedText,
+    );
+
+    index++;
+  }
+
+  // Add any remaining text.
+  chunks.push(text.slice(lastIndex));
+
+  return chunks;
+}
+
+const DIFF_PATTERN = '\\b[dD][1-9][0-9]{5,}\\b';
+const TASK_PATTERN = '\\b[tT]\\d+\\b';
+const CLICKABLE_PATTERNS = `(${DIFF_PATTERN})|(${TASK_PATTERN})|${URL_REGEX.source}`;
+const CLICKABLE_RE = new RegExp(CLICKABLE_PATTERNS, 'g');
+
+function toString(value: mixed): string {
+  return typeof value === 'string' ? value : '';
 }
