@@ -221,15 +221,40 @@ class HostServicesRelay {
     title: string,
     options?: {|debounce?: boolean|},
   ): Promise<Progress> {
-    // Here 'progress' is the underlying progress object we got back from our
-    // parent, or null/void if childIsDisposed gets fired before we got it back.
-    let progress: ?Progress = await Promise.race([
-      this._aggregator._parent.showProgress(title, options),
-      this._childIsDisposed.toPromise(),
-    ]);
+    // TODO: this whole function would work better with CancellationToken,
+    // particularly in the case where a HostAggregator is disposed after the
+    // request has already been sent out to its parent. In the absence of
+    // CancellationToken, we can't cancel the parent, and instead have to
+    // wait until it *displays* progress before immediately disposing it.
 
-    // After we've returned the wrapper, then childIsDisposed (which disposes
-    // this._disposables) and wrapper.dispose will both be idempotent.
+    const no_op: Progress = {
+      setTitle: _ => {},
+      dispose: () => {},
+    };
+
+    // If we're already resolved, then return a no-op wrapper.
+    if (this._disposables.disposed) {
+      return no_op;
+    }
+
+    // Otherwise, we are going to make a request to our parent.
+    const parentPromise = this._aggregator._parent.showProgress(title, options);
+    const cancel = this._childIsDisposed.toPromise();
+    let progress: ?Progress = await Promise.race([parentPromise, cancel]);
+
+    // Should a cancellation come while we're waiting for our parent,
+    // then we'll immediately return a no-op wrapper and ensure that
+    // the one from our parent will eventually be disposed.
+    // The "or" check below is in case both parentPromise and cancel were
+    // both signalled, and parentPromise happened to win the race.
+    if (progress == null || this._disposables.disposed) {
+      parentPromise.then(progress2 => progress2.dispose());
+      return no_op;
+    }
+
+    // Here our parent has already displayed 'winner'. It will be disposed
+    // either when we ourselves get disposed, or when our caller disposes
+    // of the wrapper we return them, whichever happens first.
     const wrapper: Progress = {
       setTitle: title2 => {
         if (progress != null) {
