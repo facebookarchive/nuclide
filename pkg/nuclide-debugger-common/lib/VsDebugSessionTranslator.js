@@ -419,14 +419,14 @@ export default class VsDebugSessionTranslator {
           // Upon session start, send the cached breakpoints
           // and other configuration requests.
           try {
-            const responses = await this._setBulkBreakpoints(commands);
-            await this._configDone();
-
-            if (!startedDebugging) {
-              startedDebugging = true;
-              await this._startDebugging();
-            }
-            return responses;
+            const promises = [
+              this._setBulkBreakpoints(commands),
+              this._configDone(),
+              startedDebugging ? Promise.resolve() : this._startDebugging(),
+            ];
+            startedDebugging = true;
+            await Promise.all(promises);
+            return await promises[0];
           } catch (error) {
             return commands.map(({id}) => getErrorResponse(id, error.message));
           }
