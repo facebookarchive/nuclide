@@ -20,6 +20,8 @@ import analytics from 'nuclide-commons-atom/analytics';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import type {OutlineTreeForUi} from './createOutlines';
 
+const SCORE_THRESHOLD = 0.1;
+
 export type SearchResult = {
   matches: boolean,
   visible: boolean,
@@ -183,14 +185,13 @@ export function updateSearchSet(
       return;
     }
   }
+  const text = root.tokenizedText
+    ? root.tokenizedText.map(e => e.value).join('')
+    : root.plainText || '';
   const matches =
     query === '' ||
-    fuzzaldrinPlus.score(
-      root.tokenizedText
-        ? root.tokenizedText.map(e => e.value).join('')
-        : root.plainText || '',
-      query,
-    ) > 0;
+    fuzzaldrinPlus.score(text, query) / fuzzaldrinPlus.score(query, query) >
+      SCORE_THRESHOLD;
   const visible =
     matches ||
     Boolean(
@@ -201,12 +202,7 @@ export function updateSearchSet(
     );
   let matchingCharacters;
   if (matches) {
-    matchingCharacters = fuzzaldrinPlus.match(
-      root.tokenizedText
-        ? root.tokenizedText.map(e => e.value).join('')
-        : root.plainText || '',
-      query,
-    );
+    matchingCharacters = fuzzaldrinPlus.match(text, query);
   }
   map.set(root, {matches, visible, matchingCharacters});
 }
