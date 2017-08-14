@@ -1867,16 +1867,16 @@ type atom$AutocompleteRequest = {
 };
 
 type atom$AutocompleteProvider = {
-  selector: string,
-  getSuggestions: (
+  +selector: string,
+  +getSuggestions: (
     request: atom$AutocompleteRequest,
   ) => Promise<?Array<atom$AutocompleteSuggestion>>,
-  onDidInsertSuggestion?: (
+  +onDidInsertSuggestion?: (
     insertedSuggestion: atom$SuggestionInsertedRequest,
   ) => void,
-  disableForSelector?: string,
-  inclusionPriority?: number,
-  excludeLowerPriority?: boolean,
+  +disableForSelector?: string,
+  +inclusionPriority?: number,
+  +excludeLowerPriority?: boolean,
 };
 
 type atom$SuggestionInsertedRequest = {
