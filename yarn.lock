@@ -453,6 +453,10 @@ babylon@6.17.1, babylon@^6.11.0, babylon@^6.13.0, babylon@^6.15.0, babylon@^6.17
   version "6.17.1"
   resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.17.1.tgz#17f14fddf361b695981fe679385e4f1c01ebd86f"
 
+babylon@^6.17.4:
+  version "6.17.4"
+  resolved "https://registry.yarnpkg.com/babylon/-/babylon-6.17.4.tgz#3e8b7402b88d22c3423e137a1577883b15ff869a"
+
 balanced-match@^0.4.1:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-0.4.2.tgz#cb3f3e3c732dc0f01ee70b403f302e61d7709838"
@@ -1550,66 +1554,60 @@ graphql-config@~1.0.0:
     minimatch "^3.0.4"
     rimraf "^2.6.1"
 
-graphql-language-service-interface@0.0.23:
-  version "0.0.23"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-interface/-/graphql-language-service-interface-0.0.23.tgz#10d0e96dc9c0e05fec158d8fb761e16366a58de6"
+graphql-language-service-interface@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-interface/-/graphql-language-service-interface-0.1.5.tgz#024fe098ee7d7dd044352ba72e01f21a8545c156"
   dependencies:
     graphql "^0.10.5"
     graphql-config "~1.0.0"
-    graphql-language-service-parser "0.0.17"
-    graphql-language-service-types "0.0.23"
-    graphql-language-service-utils "0.0.21"
+    graphql-language-service-parser "^0.1.5"
+    graphql-language-service-types "^0.1.5"
+    graphql-language-service-utils "^0.1.5"
 
-graphql-language-service-parser@0.0.17:
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-parser/-/graphql-language-service-parser-0.0.17.tgz#c1fc71f12dd93d9dd42ba8d5e049f5997955bf14"
+graphql-language-service-parser@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-parser/-/graphql-language-service-parser-0.1.5.tgz#324bc2d4b2eaabfb5308283625718abd149c7e0d"
   dependencies:
-    graphql-language-service-types "0.0.23"
+    graphql-language-service-types "^0.1.5"
 
-graphql-language-service-server@0.0.37:
-  version "0.0.37"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-server/-/graphql-language-service-server-0.0.37.tgz#4c87efe2dec03ea5da12a129c4f81a87fefeaf4f"
+graphql-language-service-server@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-server/-/graphql-language-service-server-0.1.5.tgz#adee90e68884aab6fc85638a931b4ed110e8257d"
   dependencies:
+    babylon "^6.17.4"
     fb-watchman "^2.0.0"
     graphql "^0.10.5"
     graphql-config "~1.0.0"
-    graphql-language-service-interface "0.0.23"
-    graphql-language-service-types "0.0.23"
-    graphql-language-service-utils "0.0.21"
+    graphql-language-service-interface "^0.1.5"
+    graphql-language-service-types "^0.1.5"
+    graphql-language-service-utils "^0.1.5"
     nullthrows "^1.0.0"
     vscode-jsonrpc "^3.3.0"
     vscode-languageserver "^3.3.0"
 
-graphql-language-service-types@0.0.23:
-  version "0.0.23"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-types/-/graphql-language-service-types-0.0.23.tgz#e8a422527f8baa5d7e756de5cf2a1fdf714630cc"
+graphql-language-service-types@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-types/-/graphql-language-service-types-0.1.5.tgz#15b8713c55427a2bf18707165850ce26f6358ab0"
   dependencies:
     graphql "^0.10.5"
 
-graphql-language-service-utils@0.0.21:
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-utils/-/graphql-language-service-utils-0.0.21.tgz#a4f7445d0083b90969ab55854571e204c6382aaa"
+graphql-language-service-utils@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-utils/-/graphql-language-service-utils-0.1.5.tgz#abd360692c032e6ddebd9e8ec33f3e3734528fe8"
   dependencies:
     graphql "^0.10.5"
     graphql-config "~1.0.0"
-    graphql-language-service-types "0.0.23"
+    graphql-language-service-types "^0.1.5"
 
-graphql-language-service@0.0.42:
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/graphql-language-service/-/graphql-language-service-0.0.42.tgz#c3c6484dd7916b5828dfaee3be9bf0db2c8dbc57"
+graphql-language-service@0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-language-service/-/graphql-language-service-0.1.5.tgz#7dcac3f599864b5d50109336ab40b2d3cb55956e"
   dependencies:
     babel-polyfill "6.16.0"
-    fb-watchman "^2.0.0"
     graphql "^0.10.5"
-    graphql-config "~1.0.0"
-    graphql-language-service-interface "0.0.23"
-    graphql-language-service-parser "0.0.17"
-    graphql-language-service-server "0.0.37"
-    graphql-language-service-types "0.0.23"
-    graphql-language-service-utils "0.0.21"
-    nullthrows "^1.0.0"
-    vscode-jsonrpc "^3.3.0"
-    vscode-languageserver "^3.3.0"
+    graphql-language-service-interface "^0.1.5"
+    graphql-language-service-server "^0.1.5"
+    graphql-language-service-utils "^0.1.5"
     yargs "^3.32.0 || ^7.0.0"
 
 graphql-request@^1.2.0:
