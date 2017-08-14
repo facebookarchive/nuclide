@@ -49,6 +49,10 @@ type Props = {
   onFileChecked: (filePath: NuclideUri) => void,
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri, analyticsSourceKey: string) => void,
+  onMarkFileResolved?: (
+    filePath: NuclideUri,
+    analyticsSourceKey: string,
+  ) => void,
   onOpenFileInDiffView: (
     filePath: NuclideUri,
     analyticsSourceKey: string,
@@ -111,6 +115,21 @@ export default class ChangedFile extends React.Component {
       'Delete file from file system' /* title */,
       this.props.onDeleteFile.bind(this, filePath, ANALYTICS_SOURCE_KEY),
     );
+  }
+
+  _renderResolveAction(filePath: string): ?React.Element<any> {
+    return this.props.onMarkFileResolved
+      ? this._renderAction(
+          'resolve' /* key */,
+          'check' /* icon */,
+          'Mark file as resolved' /* title */,
+          this.props.onMarkFileResolved.bind(
+            this,
+            filePath,
+            ANALYTICS_SOURCE_KEY,
+          ),
+        )
+      : null;
   }
 
   _renderMarkDeletedAction(filePath: string): React.Element<any> {
@@ -193,6 +212,10 @@ export default class ChangedFile extends React.Component {
         case FileChangeStatus.MODIFIED:
         case FileChangeStatus.REMOVED: // removed from both FS and VCS
           eligibleActions.push(this._renderRestoreAction(filePath));
+          break;
+        case FileChangeStatus.CHANGE_DELETE:
+          eligibleActions.push(this._renderDeleteAction(filePath));
+          eligibleActions.push(this._renderResolveAction(filePath));
           break;
       }
       actions = (

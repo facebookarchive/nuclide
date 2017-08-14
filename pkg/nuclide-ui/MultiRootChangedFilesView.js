@@ -46,6 +46,7 @@ type Props = {
   // Callback when a file's checkbox is toggled
   onFileChecked?: (filePath: NuclideUri) => void,
   onFileChosen: (filePath: NuclideUri) => void,
+  onMarkFileResolved?: (filePath: NuclideUri) => void,
   getRevertTargetRevision?: () => ?string,
   openInDiffViewOption?: boolean,
 };
@@ -333,6 +334,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
       hideEmptyFolders,
       onFileChecked,
       onFileChosen,
+      onMarkFileResolved,
       openInDiffViewOption,
       selectedFile,
     } = this.props;
@@ -370,6 +372,7 @@ export class MultiRootChangedFilesView extends React.PureComponent {
               onFileChecked={onFileChecked}
               onFileChosen={onFileChosen}
               onForgetFile={this._handleForgetFile}
+              onMarkFileResolved={onMarkFileResolved}
               onOpenFileInDiffView={this._handleOpenFileInDiffView}
               openInDiffViewOption={openInDiffViewOption || false}
               onRevertFile={this._handleRevertFile}

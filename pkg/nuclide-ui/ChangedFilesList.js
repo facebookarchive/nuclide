@@ -44,6 +44,7 @@ type Props = {
   // Call back when a file is clicked on
   onFileChosen: (filePath: NuclideUri) => void,
   onForgetFile: (filePath: NuclideUri) => void,
+  onMarkFileResolved?: (filePath: NuclideUri) => void,
   onOpenFileInDiffView: (filePath: NuclideUri) => void,
   onRevertFile: (filePath: NuclideUri) => void,
   openInDiffViewOption: boolean,
@@ -82,6 +83,7 @@ export default class ChangedFilesList extends React.Component {
       onFileChecked,
       onFileChosen,
       onForgetFile,
+      onMarkFileResolved,
       onOpenFileInDiffView,
       openInDiffViewOption,
       onRevertFile,
@@ -158,6 +160,7 @@ export default class ChangedFilesList extends React.Component {
                 onFileChecked={onFileChecked}
                 onFileChosen={onFileChosen}
                 onForgetFile={onForgetFile}
+                onMarkFileResolved={onMarkFileResolved}
                 onOpenFileInDiffView={onOpenFileInDiffView}
                 openInDiffViewOption={openInDiffViewOption}
                 onRevertFile={onRevertFile}
