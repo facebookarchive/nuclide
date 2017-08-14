@@ -1,5 +1,26 @@
 # Nuclide Changelog
 
+## v0.245.0
+
+### General
+
+* Added a command (“Nuclide Task Runner: Stop Task”) and keyboard shortcut (⌘B S) for stopping the running build task.
+* Outline View no longer obscures search area when outline contents overflow.
+
+### Debugger
+
+* Fixed “Toggle Debugger” in the view menu. (Previously, it did nothing.)
+* Fixed editing watch expressions.
+
+### Buck
+
+* Buck toolbar now detects connected physical iOS devices and allows to build for and deploy to them.
+
+### GraphQL
+
+* Incorporated graphql-config for more granular project controls.
+* Missing Watchman no longer triggers a red box notification.
+
 ## v0.244.0
 
 ### General
