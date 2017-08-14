@@ -31,6 +31,7 @@ import {getFileVersionOfEditor} from '../../nuclide-open-files';
 import {Observable} from 'rxjs';
 import {ServerConnection} from '../../nuclide-remote-connection';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ensureInvalidations} from '../../nuclide-language-service-rpc';
 
@@ -74,6 +75,7 @@ export function registerDiagnostics<T: LanguageService>(
     case '0.2.0':
       provider = new ObservableDiagnosticProvider(
         config.analyticsEventName,
+        grammars,
         logger,
         connectionToLanguageService,
       );
@@ -302,15 +304,19 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
   updates: Observable<DiagnosticProviderUpdate>;
   invalidations: Observable<DiagnosticInvalidationMessage>;
   _analyticsEventName: string;
+  _grammarScopes: Set<string>;
   _connectionToLanguageService: ConnectionCache<T>;
   _connectionToFiles: Cache<?ServerConnection, Set<NuclideUri>>;
   _logger: log4js$Logger;
+  _subscriptions: UniversalDisposable;
 
   constructor(
     analyticsEventName: string,
+    grammars: Array<string>,
     logger: log4js$Logger,
     connectionToLanguageService: ConnectionCache<T>,
   ) {
+    this._grammarScopes = new Set(grammars);
     this._logger = logger;
     this._analyticsEventName = analyticsEventName;
     this._connectionToFiles = new Cache(connection => new Set());
@@ -401,5 +407,24 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
         );
         throw error;
       });
+
+    // this._connectionToFiles is lazy, but diagnostics should appear as soon as
+    // a file belonging to the connection is open.
+    // Monitor open text editors and trigger a connection for each one, if needed.
+    this._subscriptions = new UniversalDisposable(
+      observeTextEditors(editor => {
+        const path = editor.getPath();
+        if (
+          path != null &&
+          this._grammarScopes.has(editor.getGrammar().scopeName)
+        ) {
+          this._connectionToLanguageService.getForUri(path);
+        }
+      }),
+    );
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 }
