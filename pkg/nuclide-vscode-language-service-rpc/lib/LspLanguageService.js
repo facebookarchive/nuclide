@@ -300,6 +300,7 @@ export class LspLanguageService {
           // type" error, which is jolly confusing. So we catch it ourselves.
         }
         const childProcessStream = spawn(this._command, this._args, {
+          cwd: this._projectRoot,
           ...this._spawnOptions,
           killTreeWhenDone: true,
         }).publish();
