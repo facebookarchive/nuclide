@@ -19,10 +19,12 @@ import type {Observable} from 'rxjs';
 
 import React from 'react';
 import classnames from 'classnames';
+import debounce from 'nuclide-commons/debounce';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
 type WatchExpressionComponentProps = {
   watchExpressions: EvaluatedExpressionList,
@@ -32,7 +34,9 @@ type WatchExpressionComponentProps = {
   watchExpressionStore: WatchExpressionStore,
 };
 
-export class WatchExpressionComponent extends React.Component {
+const EDIT_WATCH_EXPRESSION_BLUR_DEBOUNCE_MS = 50;
+
+export class WatchExpressionComponent extends React.PureComponent {
   props: WatchExpressionComponentProps;
   state: {
     rowBeingEdited: ?number,
@@ -42,9 +46,14 @@ export class WatchExpressionComponent extends React.Component {
     string /* expression */,
     /* unique reference for expression */ Object,
   >;
+  _debouncedEditorBlur: () => void;
 
   constructor(props: WatchExpressionComponentProps) {
     super(props);
+    this._debouncedEditorBlur = debounce(
+      this._onEditorBlur.bind(this),
+      EDIT_WATCH_EXPRESSION_BLUR_DEBOUNCE_MS,
+    );
     this._expansionStates = new Map();
     this.state = {
       rowBeingEdited: null,
@@ -85,9 +94,14 @@ export class WatchExpressionComponent extends React.Component {
     this._resetExpressionEditState();
   };
 
-  _onEditorBlur = (): void => {
-    this._resetExpressionEditState();
-  };
+  _onEditorBlur(): void {
+    if (this.refs.editExpressionEditor == null) {
+      return;
+    }
+    if (!this.refs.editExpressionEditor.getTextEditorElement().hasFocus()) {
+      this._resetExpressionEditState();
+    }
+  }
 
   _setRowBeingEdited(index: number): void {
     this.setState({
@@ -99,11 +113,6 @@ export class WatchExpressionComponent extends React.Component {
     this.coreCancelDisposable = atom.commands.add('atom-workspace', {
       'core:cancel': () => this._resetExpressionEditState(),
     });
-    setTimeout(() => {
-      if (this.refs.editExpressionEditor) {
-        this.refs.editExpressionEditor.focus();
-      }
-    }, 16);
   }
 
   _resetExpressionEditState = (): void => {
@@ -124,10 +133,12 @@ export class WatchExpressionComponent extends React.Component {
       return (
         <AtomInput
           className="nuclide-debugger-watch-expression-input"
+          autofocus={true}
+          startSelected={true}
           key={index}
           onConfirm={this._onConfirmExpressionEdit.bind(this, index)}
           onCancel={this._onEditorCancel}
-          onBlur={this._onEditorBlur}
+          onBlur={this._debouncedEditorBlur}
           ref="editExpressionEditor"
           size="sm"
           initialValue={expression}
@@ -160,10 +171,18 @@ export class WatchExpressionComponent extends React.Component {
             )}
           />
         </div>
-        <i
-          className="icon icon-x nuclide-debugger-watch-expression-xout"
-          onClick={this.removeExpression.bind(this, index)}
-        />
+        <div className="nuclide-debugger-watch-expression-controls">
+          <Icon
+            icon="pencil"
+            className="nuclide-debugger-watch-expression-control"
+            onClick={this._setRowBeingEdited.bind(this, index)}
+          />
+          <Icon
+            icon="x"
+            className="nuclide-debugger-watch-expression-control"
+            onClick={this.removeExpression.bind(this, index)}
+          />
+        </div>
       </div>
     );
   };
