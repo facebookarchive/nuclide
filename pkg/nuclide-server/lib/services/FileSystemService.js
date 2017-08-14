@@ -404,3 +404,23 @@ async function _writeFile(
     }
   }
 }
+
+export async function getFreeSpace(path: NuclideUri): Promise<?number> {
+  // Only supported on Linux for now.
+  if (process.platform !== 'linux') {
+    return null;
+  }
+  // The output of this command is "Avail\n12345678\n".
+  // Just return the first line that parses to an integer.
+  return runCommand('df', ['--output=avail', path])
+    .map(output => {
+      for (const line of output.split('\n')) {
+        const number = parseInt(line, 10);
+        if (Number.isInteger(number)) {
+          return number;
+        }
+      }
+    })
+    .toPromise()
+    .catch(() => null);
+}
