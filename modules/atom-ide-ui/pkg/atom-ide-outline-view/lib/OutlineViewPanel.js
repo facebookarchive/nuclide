@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OutlineViewPanelState = exports.WORKSPACE_VIEW_URI = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _observePaneItemVisibility;
+
+function _load_observePaneItemVisibility() {
+  return _observePaneItemVisibility = _interopRequireDefault(require('nuclide-commons-atom/observePaneItemVisibility'));
+}
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('nuclide-commons-ui/renderReactRoot');
+}
+
+var _OutlineView;
+
+function _load_OutlineView() {
+  return _OutlineView = require('./OutlineView');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,42 +37,24 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {OutlineForUi} from './createOutlines';
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
 
-import React from 'react';
+class OutlineViewPanelState {
 
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {OutlineView} from './OutlineView';
-import {BehaviorSubject, Observable} from 'rxjs';
-
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
-
-export type SerializedOutlineViewPanelState = {
-  deserializer: 'atom-ide-ui.OutlineViewPanelState',
-};
-
-export class OutlineViewPanelState {
-  _outlines: Observable<OutlineForUi>;
-  _visibility: BehaviorSubject<boolean>;
-  _visibilitySubscription: rxjs$ISubscription;
-
-  constructor(outlines: Observable<OutlineForUi>) {
+  constructor(outlines) {
     this._outlines = outlines;
     // TODO(T17495163)
-    this._visibility = new BehaviorSubject(true);
-    this._visibilitySubscription = observePaneItemVisibility(
-      this,
-    ).subscribe(visible => {
+    this._visibility = new _rxjsBundlesRxMinJs.BehaviorSubject(true);
+    this._visibilitySubscription = (0, (_observePaneItemVisibility || _load_observePaneItemVisibility()).default)(this).subscribe(visible => {
       this.didChangeVisibility(visible);
     });
   }
 
-  destroy(): void {
+  destroy() {
     this._visibilitySubscription.unsubscribe();
   }
 
@@ -53,32 +66,31 @@ export class OutlineViewPanelState {
     return 'list-unordered';
   }
 
-  getPreferredWidth(): number {
+  getPreferredWidth() {
     return 300;
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'right';
   }
 
-  didChangeVisibility(visible: boolean): void {
+  didChangeVisibility(visible) {
     this._visibility.next(visible);
   }
 
-  getElement(): HTMLElement {
-    const outlines = this._visibility.switchMap(
-      visible => (visible ? this._outlines : Observable.of({kind: 'empty'})),
-    );
-    return renderReactRoot(<OutlineView outlines={outlines} />);
+  getElement() {
+    const outlines = this._visibility.switchMap(visible => visible ? this._outlines : _rxjsBundlesRxMinJs.Observable.of({ kind: 'empty' }));
+    return (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_react.default.createElement((_OutlineView || _load_OutlineView()).OutlineView, { outlines: outlines }));
   }
 
-  serialize(): SerializedOutlineViewPanelState {
+  serialize() {
     return {
-      deserializer: 'atom-ide-ui.OutlineViewPanelState',
+      deserializer: 'atom-ide-ui.OutlineViewPanelState'
     };
   }
 }
+exports.OutlineViewPanelState = OutlineViewPanelState;

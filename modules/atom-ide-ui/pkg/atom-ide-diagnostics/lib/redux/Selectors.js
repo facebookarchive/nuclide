@@ -1,3 +1,17 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getFileMessages = getFileMessages;
+exports.getProjectMessages = getProjectMessages;
+exports.getAllMessages = getAllMessages;
+
+
+/**
+  * Gets the current diagnostic messages for the file.
+  * Prefer to get updates via ::onFileMessagesDidUpdate.
+  */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +20,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AppState,
-  DiagnosticMessage,
-  FileDiagnosticMessage,
-  ProjectDiagnosticMessage,
-} from '../types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-/**
-  * Gets the current diagnostic messages for the file.
-  * Prefer to get updates via ::onFileMessagesDidUpdate.
-  */
-export function getFileMessages(
-  state: AppState,
-  filePath: NuclideUri,
-): Array<FileDiagnosticMessage> {
+function getFileMessages(state, filePath) {
   const messages = [];
   for (const providerMessages of state.messages.values()) {
     const messagesForFile = providerMessages.get(filePath);
@@ -41,9 +40,7 @@ export function getFileMessages(
   * Gets the current project-scope diagnostic messages.
   * Prefer to get updates via ::onProjectMessagesDidUpdate.
   */
-export function getProjectMessages(
-  state: AppState,
-): Array<ProjectDiagnosticMessage> {
+function getProjectMessages(state) {
   const messages = [];
   for (const providerMessages of state.projectMessages.values()) {
     messages.push(...providerMessages);
@@ -55,7 +52,7 @@ export function getProjectMessages(
   * Gets all current diagnostic messages.
   * Prefer to get updates via ::onAllMessagesDidUpdate.
   */
-export function getAllMessages(state: AppState): Array<DiagnosticMessage> {
+function getAllMessages(state) {
   const messages = [];
 
   // Get all file messages.

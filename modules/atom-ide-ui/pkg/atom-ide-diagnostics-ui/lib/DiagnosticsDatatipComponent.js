@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsDatatipComponent = undefined;
+exports.makeDiagnosticsDatatipComponent = makeDiagnosticsDatatipComponent;
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _DiagnosticsMessage;
+
+function _load_DiagnosticsMessage() {
+  return _DiagnosticsMessage = require('./DiagnosticsMessage');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,42 +30,30 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import React from 'react';
-import {DiagnosticsMessage} from './DiagnosticsMessage';
-
-type DiagnosticsDatatipComponentProps = {
-  message: FileDiagnosticMessage,
-};
-
 const NOOP = () => {};
 
-export class DiagnosticsDatatipComponent extends React.Component {
-  props: DiagnosticsDatatipComponentProps;
+class DiagnosticsDatatipComponent extends _react.default.Component {
 
-  render(): React.Element<any> {
+  render() {
     // Remove the `fix` property to prevent the fix button from showing up (for now).
-    const message = {...this.props.message, fix: undefined};
-    return (
-      <div className="nuclide-diagnostics-datatip">
-        <DiagnosticsMessage
-          message={message}
-          goToLocation={goToLocation}
-          fixer={NOOP}
-        />
-      </div>
+    const message = Object.assign({}, this.props.message, { fix: undefined });
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-diagnostics-datatip' },
+      _react.default.createElement((_DiagnosticsMessage || _load_DiagnosticsMessage()).DiagnosticsMessage, {
+        message: message,
+        goToLocation: (_goToLocation || _load_goToLocation()).goToLocation,
+        fixer: NOOP
+      })
     );
   }
 }
 
-export function makeDiagnosticsDatatipComponent(
-  message: FileDiagnosticMessage,
-): ReactClass<any> {
-  return () => <DiagnosticsDatatipComponent message={message} />;
+exports.DiagnosticsDatatipComponent = DiagnosticsDatatipComponent;
+function makeDiagnosticsDatatipComponent(message) {
+  return () => _react.default.createElement(DiagnosticsDatatipComponent, { message: message });
 }

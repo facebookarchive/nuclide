@@ -1,3 +1,46 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Stick this to the left of remote-projects (-99)
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,93 +49,55 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  ObservableDiagnosticUpdater,
-  DiagnosticMessage,
-} from '../../atom-ide-diagnostics/lib/types';
-
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import {Icon} from 'nuclide-commons-ui/Icon';
-import classnames from 'classnames';
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import analytics from 'nuclide-commons-atom/analytics';
-
-type DiagnosticCount = {
-  errorCount: number,
-  warningCount: number,
-};
-
-// Stick this to the left of remote-projects (-99)
 const STATUS_BAR_PRIORITY = -99.5;
 
 const RENDER_DEBOUNCE_TIME = 100;
 
-export default class StatusBarTile {
-  _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
-  _totalDiagnosticCount: DiagnosticCount;
-  _subscriptions: UniversalDisposable;
-  _tile: ?atom$StatusBarTile;
-  _item: ?HTMLElement;
+class StatusBarTile {
 
   constructor() {
     this._diagnosticUpdaters = new Map();
     this._totalDiagnosticCount = {
       errorCount: 0,
-      warningCount: 0,
+      warningCount: 0
     };
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  consumeDiagnosticUpdates(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
-  ): void {
+  consumeDiagnosticUpdates(diagnosticUpdater) {
     if (this._diagnosticUpdaters.has(diagnosticUpdater)) {
       return;
     }
 
     const diagnosticCount = {
       errorCount: 0,
-      warningCount: 0,
+      warningCount: 0
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
-    this._subscriptions.add(
-      diagnosticUpdater.allMessageUpdates
-        .debounceTime(RENDER_DEBOUNCE_TIME)
-        .subscribe(
-          this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
-          null,
-          this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater, []),
-        ),
-    );
+    this._subscriptions.add(diagnosticUpdater.allMessageUpdates.debounceTime(RENDER_DEBOUNCE_TIME).subscribe(this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater), null, this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater, [])));
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
+  consumeStatusBar(statusBar) {
     if (this._item) {
       // Assuming our invariants hold, if this case fires, that means that there is more than one
       // status bar provider, which is weird. For now, we just ignore this case for simplicity.
       return;
     }
 
-    const item = (this._item = document.createElement('div'));
+    const item = this._item = document.createElement('div');
     item.className = 'inline-block';
     this._render();
     this._tile = statusBar.addLeftTile({
       item,
-      priority: STATUS_BAR_PRIORITY,
+      priority: STATUS_BAR_PRIORITY
     });
   }
 
-  _onAllMessagesDidUpdate(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
-    messages: Array<DiagnosticMessage>,
-  ): void {
+  _onAllMessagesDidUpdate(diagnosticUpdater, messages) {
     // Update the DiagnosticCount for the updater.
     let errorCount = 0;
     let warningCount = 0;
@@ -106,7 +111,7 @@ export default class StatusBarTile {
     }
     this._diagnosticUpdaters.set(diagnosticUpdater, {
       errorCount,
-      warningCount,
+      warningCount
     });
 
     // Recalculate the total diagnostic count.
@@ -118,25 +123,22 @@ export default class StatusBarTile {
     }
     this._totalDiagnosticCount = {
       errorCount: totalErrorCount,
-      warningCount: totalWarningCount,
+      warningCount: totalWarningCount
     };
 
     this._render();
   }
 
-  _render(): void {
+  _render() {
     if (this._item) {
-      ReactDOM.render(
-        <StatusBarTileComponent {...this._totalDiagnosticCount} />,
-        this._item,
-      );
+      _reactDom.default.render(_react.default.createElement(StatusBarTileComponent, this._totalDiagnosticCount), this._item);
     }
   }
 
   dispose() {
     this._subscriptions.dispose();
     if (this._item) {
-      ReactDOM.unmountComponentAtNode(this._item);
+      _reactDom.default.unmountComponentAtNode(this._item);
       this._item = null;
     }
 
@@ -147,17 +149,14 @@ export default class StatusBarTile {
   }
 }
 
-type Props = {
-  errorCount: number,
-  warningCount: number,
-};
+exports.default = StatusBarTile;
 
-class StatusBarTileComponent extends React.Component {
-  props: Props;
 
-  constructor(props: Props) {
+class StatusBarTileComponent extends _react.default.Component {
+
+  constructor(props) {
     super(props);
-    (this: any)._onClick = this._onClick.bind(this);
+    this._onClick = this._onClick.bind(this);
   }
 
   render() {
@@ -165,52 +164,50 @@ class StatusBarTileComponent extends React.Component {
     const warningCount = this.props.warningCount;
     const hasErrors = errorCount > 0;
     const hasWarnings = warningCount > 0;
-    const errorClassName = classnames(
-      'nuclide-diagnostics-status-bar-highlight',
-      {
-        'text-error': hasErrors,
-      },
-    );
-    const warningClassName = classnames(
-      'nuclide-diagnostics-status-bar-highlight',
-      {
-        'text-warning': hasWarnings,
-      },
-    );
+    const errorClassName = (0, (_classnames || _load_classnames()).default)('nuclide-diagnostics-status-bar-highlight', {
+      'text-error': hasErrors
+    });
+    const warningClassName = (0, (_classnames || _load_classnames()).default)('nuclide-diagnostics-status-bar-highlight', {
+      'text-warning': hasWarnings
+    });
     const errorLabel = hasErrors ? errorCount : 'No';
     const errorSuffix = errorCount !== 1 ? 's' : '';
     const warningLabel = hasWarnings ? warningCount : 'No';
     const warningSuffix = warningCount !== 1 ? 's' : '';
 
-    return (
-      <span>
-        <a
-          className={errorClassName}
-          onClick={this._onClick}
-          ref={addTooltip({
+    return _react.default.createElement(
+      'span',
+      null,
+      _react.default.createElement(
+        'a',
+        {
+          className: errorClassName,
+          onClick: this._onClick,
+          ref: (0, (_addTooltip || _load_addTooltip()).default)({
             title: `${errorLabel} error${errorSuffix}`,
-            placement: 'top',
-          })}>
-          <Icon icon="stop" />
-          {errorCount}
-        </a>
-        <a
-          className={warningClassName}
-          onClick={this._onClick}
-          ref={addTooltip({
+            placement: 'top'
+          }) },
+        _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: 'stop' }),
+        errorCount
+      ),
+      _react.default.createElement(
+        'a',
+        {
+          className: warningClassName,
+          onClick: this._onClick,
+          ref: (0, (_addTooltip || _load_addTooltip()).default)({
             title: `${warningLabel} warning${warningSuffix}`,
-            placement: 'top',
-          })}>
-          <Icon icon="alert" />
-          {warningCount}
-        </a>
-      </span>
+            placement: 'top'
+          }) },
+        _react.default.createElement((_Icon || _load_Icon()).Icon, { icon: 'alert' }),
+        warningCount
+      )
     );
   }
 
-  _onClick(): void {
+  _onClick() {
     const target = atom.views.getView(atom.workspace);
     atom.commands.dispatch(target, 'diagnostics:toggle-table');
-    analytics.track('diagnostics-show-table-from-status-bar');
+    (_analytics || _load_analytics()).default.track('diagnostics-show-table-from-status-bar');
   }
 }

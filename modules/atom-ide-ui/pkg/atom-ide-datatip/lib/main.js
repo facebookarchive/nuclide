@@ -1,34 +1,42 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {DatatipService} from './types';
+var _createPackage;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {DatatipManager} from './DatatipManager';
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _DatatipManager;
+
+function _load_DatatipManager() {
+  return _DatatipManager = require('./DatatipManager');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Activation {
-  _datatipManager: DatatipManager;
 
   constructor() {
-    this._datatipManager = new DatatipManager();
+    this._datatipManager = new (_DatatipManager || _load_DatatipManager()).DatatipManager();
   }
 
-  provideDatatipService(): DatatipService {
+  provideDatatipService() {
     return this._datatipManager;
   }
 
   dispose() {
     this._datatipManager.dispose();
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

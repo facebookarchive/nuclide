@@ -1,58 +1,70 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {arrayFlatten} from 'nuclide-commons/collection';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeActionManager = undefined;
 
-import type {CodeActionProvider, CodeActionUpdater} from './types';
+var _ProviderRegistry;
 
-export class CodeActionManager {
-  _providerRegistry: ProviderRegistry<CodeActionProvider>;
-  _disposables: UniversalDisposable;
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CodeActionManager {
 
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
-    this._disposables = new UniversalDisposable();
+    this._providerRegistry = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  addProvider(provider: CodeActionProvider) {
+  addProvider(provider) {
     this._disposables.add(this._providerRegistry.addProvider(provider));
   }
 
-  createCodeActionUpdater(): CodeActionUpdater {
+  createCodeActionUpdater() {
     return {
       getCodeActionForDiagnostic: (diagnostic, editor) => {
         if (diagnostic.range) {
-          const {range} = diagnostic;
+          const { range } = diagnostic;
           const codeActionRequests = [];
-          for (const provider of this._providerRegistry.getAllProvidersForEditor(
-            editor,
-          )) {
-            codeActionRequests.push(
-              provider.getCodeActions(editor, range, [diagnostic]),
-            );
+          for (const provider of this._providerRegistry.getAllProvidersForEditor(editor)) {
+            codeActionRequests.push(provider.getCodeActions(editor, range, [diagnostic]));
           }
 
-          return Promise.all(codeActionRequests).then(results =>
-            arrayFlatten(results),
-          );
+          return Promise.all(codeActionRequests).then(results => (0, (_collection || _load_collection()).arrayFlatten)(results));
         }
         return Promise.resolve([]);
-      },
+      }
     };
   }
 }
+exports.CodeActionManager = CodeActionManager; /**
+                                                * Copyright (c) 2017-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the BSD-style license found in the
+                                                * LICENSE file in the root directory of this source tree. An additional grant
+                                                * of patent rights can be found in the PATENTS file in the same directory.
+                                                *
+                                                * 
+                                                * @format
+                                                */

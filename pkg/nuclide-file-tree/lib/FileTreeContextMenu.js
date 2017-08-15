@@ -1,3 +1,49 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _ContextMenu;
+
+function _load_ContextMenu() {
+  return _ContextMenu = _interopRequireDefault(require('nuclide-commons-atom/ContextMenu'));
+}
+
+var _getElementFilePath;
+
+function _load_getElementFilePath() {
+  return _getElementFilePath = _interopRequireDefault(require('../../commons-atom/getElementFilePath'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _FileTreeConstants;
+
+function _load_FileTreeConstants() {
+  return _FileTreeConstants = require('./FileTreeConstants');
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('./FileTreeStore');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// It's just atom$ContextMenuItem with an optional `callback` property added.
+// I wish flow would let add it in a more elegant way.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,59 +51,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {FileTreeNode} from './FileTreeNode';
-// flowlint-next-line untyped-type-import:off
-import type Immutable from 'immutable';
-
-import ContextMenu from 'nuclide-commons-atom/ContextMenu';
-import getElementFilePath from '../../commons-atom/getElementFilePath';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
-import {FileTreeStore} from './FileTreeStore';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
-
-type MenuItemSingle = {
-  +label: string,
-  +command: string,
-  shouldDisplay?: (event: MouseEvent) => boolean,
-};
-
-type MenuItemGroup = {
-  +label: string,
-  +submenu: Array<atom$ContextMenuItem>,
-  shouldDisplay?: (event: MouseEvent) => boolean,
-};
-
-type MenuItemSeparator = {
-  +type: string,
-};
-
-type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
-
-// It's just atom$ContextMenuItem with an optional `callback` property added.
-// I wish flow would let add it in a more elegant way.
-type AtomContextMenuItemWithCallback = {
-  command?: string,
-  callback?: () => mixed,
-  created?: (event: MouseEvent) => void,
-  enabled?: boolean,
-  label?: string,
-  shouldDisplay?: (event: MouseEvent) => boolean,
-  submenu?: Array<atom$ContextMenuItem>,
-  type?: string,
-  visible?: boolean,
-};
-
-export type FileTreeContextMenuItem =
-  | atom$ContextMenuItem
-  | AtomContextMenuItemWithCallback;
-
 const FILE_TREE_CSS = '.nuclide-file-tree';
+// flowlint-next-line untyped-type-import:off
+
 
 const PRIORITY_GROUP_SIZE = 1000;
 const PRIORITY_GROUP_SEPARATOR_OFFSET = PRIORITY_GROUP_SIZE - 1;
@@ -144,309 +144,214 @@ const SHOW_IN_MENU_PRIORITY = 7000;
  * }
  * ```
  */
-export default class FileTreeContextMenu {
-  _contextMenu: ContextMenu;
-  _newMenu: ContextMenu;
-  _sourceControlMenu: ContextMenu;
-  _store: FileTreeStore;
-  _disposables: UniversalDisposable;
+class FileTreeContextMenu {
 
   constructor() {
-    this._contextMenu = new ContextMenu({
+    this._contextMenu = new (_ContextMenu || _load_ContextMenu()).default({
       type: 'root',
-      cssSelector: EVENT_HANDLER_SELECTOR,
+      cssSelector: (_FileTreeConstants || _load_FileTreeConstants()).EVENT_HANDLER_SELECTOR
     });
-    this._disposables = new UniversalDisposable();
-    this._store = FileTreeStore.getInstance();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
     this._disposables.add(this._contextMenu);
 
     const shouldDisplaySetToCurrentWorkingRootOption = () => {
       const node = this._store.getSingleSelectedNode();
-      return (
-        node != null && node.isContainer && this._store.hasCwd() && !node.isCwd
-      );
+      return node != null && node.isContainer && this._store.hasCwd() && !node.isCwd;
     };
 
-    this._addContextMenuItemGroup(
-      [
-        {
-          label: 'Set to Current Working Root',
-          command: 'nuclide-file-tree:set-current-working-root',
-          shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption,
-        },
-      ],
-      WORKING_ROOT_PRIORITY,
-    );
+    this._addContextMenuItemGroup([{
+      label: 'Set to Current Working Root',
+      command: 'nuclide-file-tree:set-current-working-root',
+      shouldDisplay: shouldDisplaySetToCurrentWorkingRootOption
+    }], WORKING_ROOT_PRIORITY);
 
-    this._newMenu = new ContextMenu({
+    this._newMenu = new (_ContextMenu || _load_ContextMenu()).default({
       type: 'submenu',
       label: 'New',
       parent: this._contextMenu,
-      shouldDisplay: (e: MouseEvent) => {
+      shouldDisplay: e => {
         return this._store.getSingleSelectedNode() != null;
-      },
+      }
     });
-    this._newMenu.addItem(
-      {label: 'File', command: 'nuclide-file-tree:add-file'},
-      0,
-    );
-    this._newMenu.addItem(
-      {label: 'Folder', command: 'nuclide-file-tree:add-folder'},
-      1,
-    );
+    this._newMenu.addItem({ label: 'File', command: 'nuclide-file-tree:add-file' }, 0);
+    this._newMenu.addItem({ label: 'Folder', command: 'nuclide-file-tree:add-folder' }, 1);
     this._contextMenu.addSubmenu(this._newMenu, NEW_MENU_PRIORITY);
-    this._contextMenu.addItem({type: 'separator'}, NEW_MENU_PRIORITY + 1);
+    this._contextMenu.addItem({ type: 'separator' }, NEW_MENU_PRIORITY + 1);
     this._disposables.add(this._newMenu);
 
-    this._addContextMenuItemGroup(
-      [
-        {
-          label: 'Add Project Folder',
-          command: 'application:add-project-folder',
-        },
-        {
-          label: 'Add Remote Project Folder',
-          command: 'nuclide-remote-projects:connect',
-        },
-        {
-          label: 'Remove Project Folder',
-          command: 'nuclide-file-tree:remove-project-folder-selection',
-          shouldDisplay: () => {
-            const node = this.getSingleSelectedNode();
-            return node != null && node.isRoot;
-          },
-        },
-      ],
-      ADD_PROJECT_MENU_PRIORITY,
-    );
+    this._addContextMenuItemGroup([{
+      label: 'Add Project Folder',
+      command: 'application:add-project-folder'
+    }, {
+      label: 'Add Remote Project Folder',
+      command: 'nuclide-remote-projects:connect'
+    }, {
+      label: 'Remove Project Folder',
+      command: 'nuclide-file-tree:remove-project-folder-selection',
+      shouldDisplay: () => {
+        const node = this.getSingleSelectedNode();
+        return node != null && node.isRoot;
+      }
+    }], ADD_PROJECT_MENU_PRIORITY);
 
-    this._sourceControlMenu = new ContextMenu({
+    this._sourceControlMenu = new (_ContextMenu || _load_ContextMenu()).default({
       type: 'submenu',
       label: 'Source Control',
       parent: this._contextMenu,
-      shouldDisplay: (e: MouseEvent) => {
-        return (
-          !this._sourceControlMenu.isEmpty() &&
-          !this._store.getSelectedNodes().isEmpty()
-        );
-      },
+      shouldDisplay: e => {
+        return !this._sourceControlMenu.isEmpty() && !this._store.getSelectedNodes().isEmpty();
+      }
     });
-    this._contextMenu.addSubmenu(
-      this._sourceControlMenu,
-      SOURCE_CONTROL_MENU_PRIORITY,
-    );
-    this._contextMenu.addItem(
-      {
-        type: 'separator',
-        shouldDisplay: (e: MouseEvent) => !this._sourceControlMenu.isEmpty(),
-      },
-      SOURCE_CONTROL_MENU_PRIORITY + 1,
-    );
+    this._contextMenu.addSubmenu(this._sourceControlMenu, SOURCE_CONTROL_MENU_PRIORITY);
+    this._contextMenu.addItem({
+      type: 'separator',
+      shouldDisplay: e => !this._sourceControlMenu.isEmpty()
+    }, SOURCE_CONTROL_MENU_PRIORITY + 1);
     this._disposables.add(this._sourceControlMenu);
 
-    this._addContextMenuItemGroup(
-      [
-        {
-          label: 'Rename',
-          command: 'nuclide-file-tree:rename-selection',
-          shouldDisplay: () => {
-            const node = this._store.getSingleSelectedNode();
-            // For now, rename does not apply to root nodes.
-            return node != null && !node.isRoot;
-          },
-        },
-        {
-          label: 'Duplicate',
-          command: 'nuclide-file-tree:duplicate-selection',
-          shouldDisplay: () => {
-            const node = this.getSingleSelectedNode();
-            return node != null && !node.isContainer;
-          },
-        },
-        {
-          label: 'Delete',
-          command: 'nuclide-file-tree:remove',
-          shouldDisplay: () => {
-            const nodes = this.getSelectedNodes();
-            // We can delete multiple nodes as long as no root node is selected
-            return (
-              nodes.size > 0 &&
-              nodes.every(node => node != null && !node.isRoot)
-            );
-          },
-        },
-      ],
-      MODIFY_FILE_MENU_PRIORITY,
-    );
+    this._addContextMenuItemGroup([{
+      label: 'Rename',
+      command: 'nuclide-file-tree:rename-selection',
+      shouldDisplay: () => {
+        const node = this._store.getSingleSelectedNode();
+        // For now, rename does not apply to root nodes.
+        return node != null && !node.isRoot;
+      }
+    }, {
+      label: 'Duplicate',
+      command: 'nuclide-file-tree:duplicate-selection',
+      shouldDisplay: () => {
+        const node = this.getSingleSelectedNode();
+        return node != null && !node.isContainer;
+      }
+    }, {
+      label: 'Delete',
+      command: 'nuclide-file-tree:remove',
+      shouldDisplay: () => {
+        const nodes = this.getSelectedNodes();
+        // We can delete multiple nodes as long as no root node is selected
+        return nodes.size > 0 && nodes.every(node => node != null && !node.isRoot);
+      }
+    }], MODIFY_FILE_MENU_PRIORITY);
 
-    this._addContextMenuItemGroup(
-      [
-        {
-          label: 'Split',
-          shouldDisplay: () => {
-            const node = this.getSingleSelectedNode();
-            return node != null && !node.isContainer;
-          },
-          submenu: [
-            {
-              label: 'Up',
-              command: 'nuclide-file-tree:open-selected-entry-up',
-            },
-            {
-              label: 'Down',
-              command: 'nuclide-file-tree:open-selected-entry-down',
-            },
-            {
-              label: 'Left',
-              command: 'nuclide-file-tree:open-selected-entry-left',
-            },
-            {
-              label: 'Right',
-              command: 'nuclide-file-tree:open-selected-entry-right',
-            },
-          ],
-        },
-      ],
-      SPLIT_MENU_PRIORITY,
-    );
+    this._addContextMenuItemGroup([{
+      label: 'Split',
+      shouldDisplay: () => {
+        const node = this.getSingleSelectedNode();
+        return node != null && !node.isContainer;
+      },
+      submenu: [{
+        label: 'Up',
+        command: 'nuclide-file-tree:open-selected-entry-up'
+      }, {
+        label: 'Down',
+        command: 'nuclide-file-tree:open-selected-entry-down'
+      }, {
+        label: 'Left',
+        command: 'nuclide-file-tree:open-selected-entry-left'
+      }, {
+        label: 'Right',
+        command: 'nuclide-file-tree:open-selected-entry-right'
+      }]
+    }], SPLIT_MENU_PRIORITY);
 
     // Add the "Show in X" menu group. There's a bit of hackery going on here: we want these items
     // to be applied to anyhing that matches our CSS selector, but we also want them to occur in a
     // specific order in the file tree context menu. Since `atom.contextMenu` doesn't support
     // priority, we add them twice. Ideally, these menu items wouldn't be in the file tree package
     // at all, but for historical reasons they are. Someday maybe we can pull them out.
-    const showInXItems = [
-      {
-        label: 'Copy Full Path',
-        command: 'file:copy-full-path',
-        shouldDisplay: event =>
-          getElementFilePath(((event.target: any): HTMLElement)) != null,
-      },
-      {
-        label: `Show in ${getFileManagerName()}`,
-        command: 'file:show-in-file-manager',
-        shouldDisplay: event => {
-          const path = getElementFilePath(((event.target: any): HTMLElement));
-          return path != null && !nuclideUri.isRemote(path);
-        },
-      },
-      {
-        label: 'Search in Directory',
-        command: 'nuclide-file-tree:search-in-directory',
-        shouldDisplay: () => {
-          const nodes = this.getSelectedNodes();
-          return nodes.size > 0 && nodes.every(node => node.isContainer);
-        },
-      },
-    ];
+    const showInXItems = [{
+      label: 'Copy Full Path',
+      command: 'file:copy-full-path',
+      shouldDisplay: event => (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target) != null
+    }, {
+      label: `Show in ${getFileManagerName()}`,
+      command: 'file:show-in-file-manager',
+      shouldDisplay: event => {
+        const path = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target);
+        return path != null && !(_nuclideUri || _load_nuclideUri()).default.isRemote(path);
+      }
+    }, {
+      label: 'Search in Directory',
+      command: 'nuclide-file-tree:search-in-directory',
+      shouldDisplay: () => {
+        const nodes = this.getSelectedNodes();
+        return nodes.size > 0 && nodes.every(node => node.isContainer);
+      }
+    }];
 
-    this._disposables.add(
-      atom.contextMenu.add({
-        'atom-text-editor, [data-path]:not(.nuclide-file-tree-path)': showInXItems,
-      }),
-    );
+    this._disposables.add(atom.contextMenu.add({
+      'atom-text-editor, [data-path]:not(.nuclide-file-tree-path)': showInXItems
+    }));
     this._addContextMenuItemGroup(showInXItems, SHOW_IN_MENU_PRIORITY);
   }
 
   /**
    * @param priority must be an integer in the range [0, 1000).
    */
-  addItemToTestSection(
-    originalItem: FileTreeContextMenuItem,
-    priority: number,
-  ): IDisposable {
+  addItemToTestSection(originalItem, priority) {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
       throw Error(`Illegal priority value: ${priority}`);
     }
 
-    return this._addItemToMenu(
-      originalItem,
-      this._contextMenu,
-      TEST_SECTION_PRIORITY + priority,
-    );
+    return this._addItemToMenu(originalItem, this._contextMenu, TEST_SECTION_PRIORITY + priority);
   }
 
   /**
    * @param priority must be an integer in the range [0, 1000).
    */
-  addItemToProjectMenu(
-    originalItem: FileTreeContextMenuItem,
-    priority: number,
-  ): IDisposable {
+  addItemToProjectMenu(originalItem, priority) {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
       throw Error(`Illegal priority value: ${priority}`);
     }
 
-    return this._addItemToMenu(
-      originalItem,
-      this._contextMenu,
-      ADD_PROJECT_MENU_PRIORITY + priority,
-    );
+    return this._addItemToMenu(originalItem, this._contextMenu, ADD_PROJECT_MENU_PRIORITY + priority);
   }
 
-  addItemToNewMenu(
-    originalItem: FileTreeContextMenuItem,
-    priority: number,
-  ): IDisposable {
+  addItemToNewMenu(originalItem, priority) {
     return this._addItemToMenu(originalItem, this._newMenu, priority);
   }
 
-  addItemToSourceControlMenu(
-    originalItem: FileTreeContextMenuItem,
-    priority: number,
-  ): IDisposable {
+  addItemToSourceControlMenu(originalItem, priority) {
     return this._addItemToMenu(originalItem, this._sourceControlMenu, priority);
   }
 
   /**
    * @param priority must be an integer in the range [0, 1000).
    */
-  addItemToShowInSection(
-    originalItem: FileTreeContextMenuItem,
-    priority: number,
-  ): IDisposable {
+  addItemToShowInSection(originalItem, priority) {
     if (priority < 0 || priority >= PRIORITY_GROUP_SIZE) {
       throw Error(`Illegal priority value: ${priority}`);
     }
 
-    return this._addItemToMenu(
-      originalItem,
-      this._contextMenu,
-      SHOW_IN_MENU_PRIORITY + priority,
-    );
+    return this._addItemToMenu(originalItem, this._contextMenu, SHOW_IN_MENU_PRIORITY + priority);
   }
 
-  _addItemToMenu(
-    originalItem: FileTreeContextMenuItem,
-    menu: ContextMenu,
-    priority: number,
-  ): IDisposable {
-    const {itemDisposable, item} = initCommandIfPresent(originalItem);
+  _addItemToMenu(originalItem, menu, priority) {
+    const { itemDisposable, item } = initCommandIfPresent(originalItem);
     itemDisposable.add(menu.addItem(item, priority));
 
     this._disposables.add(itemDisposable);
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._disposables.remove(itemDisposable);
       itemDisposable.dispose();
     });
   }
 
-  getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
+  getSelectedNodes() {
     return this._store.getSelectedNodes();
   }
 
-  getSingleSelectedNode(): ?FileTreeNode {
+  getSingleSelectedNode() {
     return this._store.getSingleSelectedNode();
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  _addContextMenuItemGroup(
-    menuItems: Array<MenuItemDefinition>,
-    priority_: number,
-  ): void {
+  _addContextMenuItemGroup(menuItems, priority_) {
     let priority = priority_;
 
     // $FlowFixMe: The conversion between MenuItemDefinition and atom$ContextMenuItem is a mess.
@@ -454,55 +359,39 @@ export default class FileTreeContextMenu {
 
     // Atom is smart about only displaying a separator when there are items to
     // separate, so there will never be a dangling separator at the end.
-    this._contextMenu.addItem(
-      {type: 'separator'},
-      priority_ + PRIORITY_GROUP_SEPARATOR_OFFSET,
-    );
+    this._contextMenu.addItem({ type: 'separator' }, priority_ + PRIORITY_GROUP_SEPARATOR_OFFSET);
   }
 
   /**
    * @return A {boolean} whether the "Show in File Manager" context menu item should be displayed
    * for the current selection and the given `platform`.
    */
-  _shouldDisplayShowInFileManager(event: Event, platform: string): boolean {
-    const path = getElementFilePath(((event.target: any): HTMLElement));
-    return (
-      path != null &&
-      nuclideUri.isAbsolute(path) &&
-      process.platform === platform
-    );
+  _shouldDisplayShowInFileManager(event, platform) {
+    const path = (0, (_getElementFilePath || _load_getElementFilePath()).default)(event.target);
+    return path != null && (_nuclideUri || _load_nuclideUri()).default.isAbsolute(path) && process.platform === platform;
   }
 }
 
-function initCommandIfPresent(
-  item: FileTreeContextMenuItem,
-): {
-  itemDisposable: UniversalDisposable,
-  item: atom$ContextMenuItem,
-} {
-  const itemDisposable = new UniversalDisposable();
+exports.default = FileTreeContextMenu;
+function initCommandIfPresent(item) {
+  const itemDisposable = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   if (typeof item.callback === 'function' && item.label != null) {
     const command = item.command || generateNextInternalCommand(item.label);
-    itemDisposable.add(
-      atom.commands.add(FILE_TREE_CSS, command, item.callback),
-    );
-    return {itemDisposable, item: {...item, command}};
+    itemDisposable.add(atom.commands.add(FILE_TREE_CSS, command, item.callback));
+    return { itemDisposable, item: Object.assign({}, item, { command }) };
   }
 
-  return {itemDisposable, item};
+  return { itemDisposable, item };
 }
 
 let nextInternalCommandId = 0;
 
-function generateNextInternalCommand(itemLabel: string): string {
-  const cmdName =
-    itemLabel.toLowerCase().replace(/[^\w]+/g, '-') +
-    '-' +
-    nextInternalCommandId++;
+function generateNextInternalCommand(itemLabel) {
+  const cmdName = itemLabel.toLowerCase().replace(/[^\w]+/g, '-') + '-' + nextInternalCommandId++;
   return `nuclide-file-tree:${cmdName}`;
 }
 
-function getFileManagerName(): string {
+function getFileManagerName() {
   switch (process.platform) {
     case 'darwin':
       return 'Finder';

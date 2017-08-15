@@ -1,3 +1,40 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DebuggerDatatipComponent = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _LazyNestedValueComponent;
+
+function _load_LazyNestedValueComponent() {
+  return _LazyNestedValueComponent = require('../../nuclide-ui/LazyNestedValueComponent');
+}
+
+var _SimpleValueComponent;
+
+function _load_SimpleValueComponent() {
+  return _SimpleValueComponent = _interopRequireDefault(require('../../nuclide-ui/SimpleValueComponent'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _SelectableDiv;
+
+function _load_SelectableDiv() {
+  return _SelectableDiv = _interopRequireDefault(require('../../nuclide-ui/SelectableDiv'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,63 +42,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {EvaluationResult} from './types';
+class DebuggerDatatipComponent extends _react.default.Component {
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
-import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import SelectableDiv from '../../nuclide-ui/SelectableDiv';
-
-type DebuggerDatatipComponentProps = {
-  expression: string,
-  evaluationResult: EvaluationResult,
-  watchExpressionStore: WatchExpressionStore,
-};
-
-export class DebuggerDatatipComponent extends React.Component {
-  props: DebuggerDatatipComponentProps;
-  _disposables: UniversalDisposable;
-
-  componentDidMount(): void {
-    const domNode: HTMLElement = (ReactDOM.findDOMNode(this): any);
-    this._disposables = new UniversalDisposable(
-      atom.commands.add(domNode, 'core:copy', event => {
-        document.execCommand('copy');
-        event.stopPropagation();
-      }),
-    );
+  componentDidMount() {
+    const domNode = _reactDom.default.findDOMNode(this);
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add(domNode, 'core:copy', event => {
+      document.execCommand('copy');
+      event.stopPropagation();
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  render(): ?React.Element<any> {
-    const {expression, evaluationResult, watchExpressionStore} = this.props;
-    const fetchChildren = watchExpressionStore.getProperties.bind(
-      watchExpressionStore,
-    );
-    return (
-      <div className="nuclide-debugger-datatip">
-        <span className="nuclide-debugger-datatip-value">
-          <SelectableDiv>
-            <LazyNestedValueComponent
-              evaluationResult={evaluationResult}
-              expression={expression}
-              fetchChildren={fetchChildren}
-              simpleValueComponent={SimpleValueComponent}
-              expansionStateId={this}
-            />
-          </SelectableDiv>
-        </span>
-      </div>
+  render() {
+    const { expression, evaluationResult, watchExpressionStore } = this.props;
+    const fetchChildren = watchExpressionStore.getProperties.bind(watchExpressionStore);
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-debugger-datatip' },
+      _react.default.createElement(
+        'span',
+        { className: 'nuclide-debugger-datatip-value' },
+        _react.default.createElement(
+          (_SelectableDiv || _load_SelectableDiv()).default,
+          null,
+          _react.default.createElement((_LazyNestedValueComponent || _load_LazyNestedValueComponent()).LazyNestedValueComponent, {
+            evaluationResult: evaluationResult,
+            expression: expression,
+            fetchChildren: fetchChildren,
+            simpleValueComponent: (_SimpleValueComponent || _load_SimpleValueComponent()).default,
+            expansionStateId: this
+          })
+        )
+      )
     );
   }
 }
+exports.DebuggerDatatipComponent = DebuggerDatatipComponent;
