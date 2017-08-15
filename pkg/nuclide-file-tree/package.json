@@ -48,7 +48,7 @@
       "revealFileOnSwitch": {
         "title": "Reveal File on Switch",
         "type": "boolean",
-        "default": false,
+        "default": true,
         "description": "Automatically reveal the current file when you switch tabs"
       },
       "hideIgnoredNames": {
