@@ -400,8 +400,9 @@ export class DebuggerHandler {
       return {
         name: prop.name,
         type: (prop.value && prop.value.type) || 'unknown',
-        value:
-          (prop.value && (prop.value.value || prop.value.description)) || 'N/A',
+        value: String(
+          prop.value && (prop.value.description || prop.value.value),
+        ),
         variablesReference:
           prop.value && prop.value.objectId
             ? this._variableHandles.create(prop.value.objectId)
@@ -439,7 +440,7 @@ export class DebuggerHandler {
     } else {
       response.body = {
         type: hhResult.result.type,
-        result: hhResult.result.value || hhResult.result.description,
+        result: String(hhResult.result.description || hhResult.result.value),
         variablesReference: hhResult.result.objectId
           ? this._variableHandles.create(hhResult.result.objectId)
           : 0,
