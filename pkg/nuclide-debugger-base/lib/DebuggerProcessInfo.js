@@ -47,6 +47,7 @@ export default class DebuggerProcessInfo {
   getDebuggerProps(): DebuggerProperties {
     return {
       customControlButtons: [],
+      targetDescription: () => null,
       threadColumns: null,
       threadsComponentTitle: 'Threads',
     };

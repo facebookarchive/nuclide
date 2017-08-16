@@ -99,6 +99,12 @@ export class DebuggerControlsView extends React.PureComponent {
             </div>
           </div>;
 
+    const targetInfo = model.getStore().getDebugProcessInfo();
+    const targetDescription =
+      targetInfo == null
+        ? null
+        : targetInfo.getDebuggerProps().targetDescription();
+
     const debugeeRunningNotice =
       mode !== DebuggerMode.RUNNING
         ? null
@@ -106,6 +112,11 @@ export class DebuggerControlsView extends React.PureComponent {
             <div className="nuclide-debugger-state-notice">
               The debug target is currently running.
             </div>
+            {targetDescription == null
+              ? null
+              : <div className="nuclide-debugger-target-description">
+                  {targetDescription}
+                </div>}
           </div>;
 
     return (

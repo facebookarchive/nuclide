@@ -45,6 +45,7 @@ export type DebuggerCapabilities = {
 // are allowed to override.
 export type DebuggerProperties = {
   +customControlButtons: Array<ControlButtonSpecification>,
+  +targetDescription: () => ?string,
   +threadColumns: ?Array<ThreadColumn>,
   +threadsComponentTitle: string,
 };
