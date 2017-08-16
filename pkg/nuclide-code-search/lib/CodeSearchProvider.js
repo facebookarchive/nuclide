@@ -29,7 +29,8 @@ type CodeSearchFileResult = {
 };
 
 type NuclideCodeSearchConfig = {
-  tool: 'string',
+  tool: string,
+  maxResults: number,
 };
 
 export const CodeSearchProvider: Provider = {
@@ -62,7 +63,7 @@ export const CodeSearchProvider: Provider = {
     ): any);
 
     return getCodeSearchServiceByNuclideUri(projectRoot)
-      .searchWithTool(config.tool, projectRoot, query)
+      .searchWithTool(config.tool, projectRoot, query, config.maxResults)
       .refCount()
       .map(match => {
         const result = {

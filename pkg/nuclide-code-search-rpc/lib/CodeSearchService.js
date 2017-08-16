@@ -16,8 +16,6 @@ import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
 import {search} from './AgAckService';
 import {ConnectableObservable, Observable} from 'rxjs';
 
-const MAX_RESULTS = 1000;
-
 export async function isEligibleForDirectory(
   rootDirectory: NuclideUri,
 ): Promise<boolean> {
@@ -41,9 +39,10 @@ export function searchWithTool(
   tool: string,
   directory: NuclideUri,
   query: string,
+  maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
   if (tool === 'ag' || tool === 'ack') {
-    return search(directory, query, tool).take(MAX_RESULTS).publish();
+    return search(directory, query, tool).take(maxResults).publish();
   }
   return Observable.empty().publish();
 }
