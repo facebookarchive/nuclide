@@ -13,7 +13,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeSearchResult} from './types';
 
 import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
-import {search} from './AgAckService';
+import {search as agAckSearch} from './AgAckService';
+import {search as rgSearch} from './RgService';
 import {ConnectableObservable, Observable} from 'rxjs';
 
 export async function isEligibleForDirectory(
@@ -35,14 +36,27 @@ export async function isEligibleForDirectory(
   return true;
 }
 
+const searchToolHandlers = new Map([
+  [
+    'ag',
+    (directory: string, query: string) => agAckSearch(directory, query, 'ag'),
+  ],
+  [
+    'ack',
+    (directory: string, query: string) => agAckSearch(directory, query, 'ack'),
+  ],
+  ['rg', rgSearch],
+]);
+
 export function searchWithTool(
   tool: string,
   directory: NuclideUri,
   query: string,
   maxResults: number,
 ): ConnectableObservable<CodeSearchResult> {
-  if (tool === 'ag' || tool === 'ack') {
-    return search(directory, query, tool).take(maxResults).publish();
+  const handler = searchToolHandlers.get(tool);
+  if (handler != null) {
+    return handler(directory, query).take(maxResults).publish();
   }
   return Observable.empty().publish();
 }

@@ -19,14 +19,14 @@
         "title": "Code Search Tool",
         "type": "string",
         "default": "ag",
-        "enum": ["ag", "ack"],
+        "enum": ["ag", "ack", "rg"],
         "description": "The chosen tool must be available in your PATH"
       },
       "maxResults": {
         "title": "Maximum number of results per project folder",
         "type": "integer",
-        "default": 1000,
-        "description": "A much higher number might affect the CPU usage"
+        "default": 30,
+        "description": "A much higher number might affect the CPU usage and the rendering of Quick-Open"
       }
     }
   },
