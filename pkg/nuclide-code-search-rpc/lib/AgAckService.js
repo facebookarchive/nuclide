@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
 import {observeProcess} from 'nuclide-commons/process';
@@ -17,13 +18,9 @@ import {observeProcess} from 'nuclide-commons/process';
 export function search(
   directory: NuclideUri,
   query: string,
-): Observable<{
-  file: string,
-  row: number,
-  column: number,
-  line: string,
-}> {
-  return observeProcess('ag', [
+  tool: 'ag' | 'ack',
+): Observable<CodeSearchResult> {
+  return observeProcess(tool, [
     query,
     directory,
     '--nocolor',

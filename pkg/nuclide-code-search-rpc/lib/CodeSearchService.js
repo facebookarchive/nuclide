@@ -10,9 +10,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {CodeSearchResult} from './types';
 
 import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
-import {search as searchAg} from './AgService';
+import {search} from './AgAckService';
 import {ConnectableObservable} from 'rxjs';
 
 const MAX_RESULTS = 1000;
@@ -39,11 +40,13 @@ export async function isEligibleForDirectory(
 export function searchWithAg(
   directory: NuclideUri,
   query: string,
-): ConnectableObservable<{
-  file: string,
-  row: number,
-  column: number,
-  line: string,
-}> {
-  return searchAg(directory, query).take(MAX_RESULTS).publish();
+): ConnectableObservable<CodeSearchResult> {
+  return search(directory, query, 'ag').take(MAX_RESULTS).publish();
+}
+
+export function searchWithAck(
+  directory: NuclideUri,
+  query: string,
+): ConnectableObservable<CodeSearchResult> {
+  return search(directory, query, 'ack').take(MAX_RESULTS).publish();
 }
