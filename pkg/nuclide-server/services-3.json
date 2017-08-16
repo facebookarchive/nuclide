@@ -16,6 +16,10 @@
     "name": "ClangService"
   },
   {
+    "implementation": "../nuclide-code-search-rpc/lib/CodeSearchService.js",
+    "name": "CodeSearchService"
+  },
+  {
     "implementation": "../nuclide-ctags-rpc/lib/CtagsService.js",
     "name": "CtagsService"
   },

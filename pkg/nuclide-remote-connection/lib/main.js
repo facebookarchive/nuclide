@@ -61,6 +61,7 @@ import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
+import typeof * as CodeSearchService from '../../nuclide-code-search-rpc/lib/CodeSearchService';
 import typeof * as CtagsService from '../../nuclide-ctags-rpc';
 import typeof * as DefinitionPreviewService from '../../nuclide-definition-preview-rpc';
 import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
@@ -99,6 +100,12 @@ export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {
 
 export function getClangServiceByNuclideUri(uri: NuclideUri): ClangService {
   return nullthrows(getServiceByNuclideUri('ClangService', uri));
+}
+
+export function getCodeSearchServiceByNuclideUri(
+  uri: NuclideUri,
+): CodeSearchService {
+  return nullthrows(getServiceByNuclideUri('CodeSearchService', uri));
 }
 
 export function getCtagsServiceByNuclideUri(uri: NuclideUri): CtagsService {
