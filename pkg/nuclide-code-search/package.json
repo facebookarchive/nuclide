@@ -7,7 +7,22 @@
   "atomTestRunner": "../../lib/test-runner-entry.js",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Code Search"
+      ]
+    },
+    "config": {
+      "tool": {
+        "title": "Code Search Tool",
+        "type": "string",
+        "default": "ag",
+        "enum": ["ag", "ack"],
+        "description": "The chosen tool must be available in your PATH"
+      }
+    }
   },
   "providedServices": {
     "nuclide-quick-open-register-provider": {

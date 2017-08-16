@@ -16,6 +16,7 @@ import {getCodeSearchServiceByNuclideUri} from '../../nuclide-remote-connection'
 import {Observable} from 'rxjs';
 import React from 'react';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type CodeSearchFileResult = {
   path: string,
@@ -25,6 +26,10 @@ type CodeSearchFileResult = {
   context: string,
   relativePath: string,
   isFirstResultForPath: boolean,
+};
+
+type NuclideCodeSearchConfig = {
+  tool: 'string',
 };
 
 export const CodeSearchProvider: Provider = {
@@ -52,8 +57,12 @@ export const CodeSearchProvider: Provider = {
     }
     const projectRoot = directory.getPath();
     let lastPath = null;
+    const config: NuclideCodeSearchConfig = (featureConfig.get(
+      'nuclide-code-search',
+    ): any);
+
     return getCodeSearchServiceByNuclideUri(projectRoot)
-      .searchWithAg(projectRoot, query)
+      .searchWithTool(config.tool, projectRoot, query)
       .refCount()
       .map(match => {
         const result = {
