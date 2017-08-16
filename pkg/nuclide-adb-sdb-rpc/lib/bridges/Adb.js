@@ -145,12 +145,54 @@ export class Adb extends DebugBridge {
     return this.runLongCommand('uninstall', packageName);
   }
 
-  forwardJdwpPortToPid(tcpPort: number, pid: number): Promise<string> {
-    return this.runShortCommand(
+  async getForwardSpec(pid: number): Promise<?string> {
+    const specLines = await this.runShortCommand(
+      'forward',
+      '--list',
+    ).toPromise();
+    const specs = specLines.split(/\n/).map(line => {
+      const cols = line.split(/\s+/);
+      return {
+        spec: cols[1],
+        target: cols[2],
+      };
+    });
+    const matchingSpec = specs.find(spec => spec.target === `jdwp:${pid}`);
+    if (matchingSpec != null) {
+      return matchingSpec.spec;
+    }
+    return null;
+  }
+
+  async forwardJdwpPortToPid(tcpPort: number, pid: number): Promise<?string> {
+    await this.runShortCommand(
       'forward',
       `tcp:${tcpPort}`,
       `jdwp:${pid}`,
     ).toPromise();
+    return this.getForwardSpec(pid);
+  }
+
+  async removeJdwpForwardSpec(spec: ?string): Promise<string> {
+    let output;
+    let result = '';
+    if (spec != null) {
+      output = this.runLongCommand('forward', '--remove', spec);
+    } else {
+      output = this.runLongCommand('forward', '--remove-all');
+    }
+
+    const subscription = output.subscribe(processMessage => {
+      switch (processMessage.kind) {
+        case 'stdout':
+        case 'stderr':
+          result += processMessage.data + '\n';
+          break;
+      }
+    });
+    await output.toPromise();
+    subscription.unsubscribe();
+    return result;
   }
 
   launchActivity(

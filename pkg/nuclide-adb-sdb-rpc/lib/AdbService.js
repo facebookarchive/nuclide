@@ -95,8 +95,15 @@ export async function forwardJdwpPortToPid(
   device: DeviceId,
   tcpPort: number,
   pid: number,
-): Promise<string> {
+): Promise<?string> {
   return new Adb(device).forwardJdwpPortToPid(tcpPort, pid);
+}
+
+export async function removeJdwpForwardSpec(
+  device: DeviceId,
+  spec: ?string,
+): Promise<string> {
+  return new Adb(device).removeJdwpForwardSpec(spec);
 }
 
 export async function launchActivity(
