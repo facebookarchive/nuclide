@@ -10,6 +10,7 @@
  */
 
 import type {
+  Device,
   DeviceProcessesProvider,
   Process,
 } from '../../../nuclide-device-panel/lib/types';
@@ -29,7 +30,7 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
     return this._bridge.name;
   }
 
-  observe(host: NuclideUri, device: string): Observable<Process[]> {
+  observe(host: NuclideUri, device: Device): Observable<Process[]> {
     return Observable.interval(3000)
       .startWith(0)
       .switchMap(() =>

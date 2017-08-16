@@ -98,6 +98,7 @@ class DevicePoller {
 
     return {
       name: device.name,
+      port: device.port,
       displayName,
       architecture: deviceArchitecture,
       rawArchitecture: device.architecture,

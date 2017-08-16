@@ -12,6 +12,7 @@
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Expected} from '../../commons-node/expected';
+import type {Device as DeviceIdType} from '../../nuclide-device-panel/lib/types';
 
 import {DeviceTask} from './DeviceTask';
 import {Observable} from 'rxjs';
@@ -39,7 +40,10 @@ export interface DeviceListProvider {
 }
 
 export interface DeviceInfoProvider {
-  fetch(host: NuclideUri, device: string): Observable<Map<string, string>>,
+  fetch(
+    host: NuclideUri,
+    device: DeviceIdType,
+  ): Observable<Map<string, string>>,
   getType(): string,
   getTitle(): string,
   getPriority(): number,
@@ -47,12 +51,12 @@ export interface DeviceInfoProvider {
 }
 
 export interface DeviceProcessesProvider {
-  observe(host: NuclideUri, device: string): Observable<Process[]>,
+  observe(host: NuclideUri, device: DeviceIdType): Observable<Process[]>,
   getType(): string,
 }
 
 export interface DeviceTaskProvider {
-  getTask(host: NuclideUri, device: string): Observable<TaskEvent>,
+  getTask(host: NuclideUri, device: DeviceIdType): Observable<TaskEvent>,
   getName(): string,
   getType(): string,
   isSupported(host: NuclideUri): Observable<boolean>,
@@ -65,12 +69,12 @@ export interface DeviceTypeTaskProvider {
 }
 
 export interface DeviceProcessTaskProvider {
-  run(host: NuclideUri, device: string, proc: Process): Promise<void>,
+  run(host: NuclideUri, device: DeviceIdType, proc: Process): Promise<void>,
   getTaskType(): ProcessTaskType,
   getType(): string,
   getSupportedPIDs(
     host: NuclideUri,
-    device: string,
+    device: DeviceIdType,
     procs: Process[],
   ): Observable<Set<number>>,
   getName(): string,
@@ -108,6 +112,7 @@ export type DeviceArchitecture = 'x86' | 'x86_64' | 'arm' | 'arm64' | '';
 
 export type Device = {
   name: string,
+  port: number,
   displayName: string,
   architecture: DeviceArchitecture,
   rawArchitecture: string,

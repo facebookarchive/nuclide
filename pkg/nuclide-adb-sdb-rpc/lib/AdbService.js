@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {
+  DeviceId,
   DeviceDescription,
   AndroidJavaProcess,
   Process,
@@ -43,19 +44,19 @@ export async function registerCustomPath(path: ?string): Promise<void> {
 }
 
 export function getDeviceInfo(
-  device: string,
+  device: DeviceId,
 ): ConnectableObservable<Map<string, string>> {
   return new Adb(device).getDeviceInfo().publish();
 }
 
 export function getProcesses(
-  device: string,
+  device: DeviceId,
 ): ConnectableObservable<Array<Process>> {
   return new Processes(new Adb(device)).fetch().publish();
 }
 
 export async function stopPackage(
-  device: string,
+  device: DeviceId,
   packageName: string,
 ): Promise<void> {
   return new Adb(device).stopPackage(packageName);
@@ -68,14 +69,14 @@ export function getDeviceList(): ConnectableObservable<
 }
 
 export async function getPidFromPackageName(
-  device: string,
+  device: DeviceId,
   packageName: string,
 ): Promise<number> {
   return new Processes(new Adb(device)).getPidFromPackageName(packageName);
 }
 
 export function installPackage(
-  device: string,
+  device: DeviceId,
   packagePath: NuclideUri,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
@@ -83,7 +84,7 @@ export function installPackage(
 }
 
 export function uninstallPackage(
-  device: string,
+  device: DeviceId,
   packageName: string,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
@@ -91,7 +92,7 @@ export function uninstallPackage(
 }
 
 export async function forwardJdwpPortToPid(
-  device: string,
+  device: DeviceId,
   tcpPort: number,
   pid: number,
 ): Promise<string> {
@@ -99,7 +100,7 @@ export async function forwardJdwpPortToPid(
 }
 
 export async function launchActivity(
-  device: string,
+  device: DeviceId,
   packageName: string,
   activity: string,
   debug: boolean,
@@ -116,7 +117,7 @@ export async function launchActivity(
 }
 
 export async function launchMainActivity(
-  device: string,
+  device: DeviceId,
   packageName: string,
   debug: boolean,
   parameters: ?Map<string, string>,
@@ -125,7 +126,7 @@ export async function launchMainActivity(
 }
 
 export async function activityExists(
-  device: string,
+  device: DeviceId,
   packageName: string,
   activity: string,
 ): Promise<boolean> {
@@ -133,31 +134,34 @@ export async function activityExists(
 }
 
 export function getJavaProcesses(
-  device: string,
+  device: DeviceId,
 ): ConnectableObservable<Array<AndroidJavaProcess>> {
   return new Adb(device).getJavaProcesses().publish();
 }
 
 export async function dumpsysPackage(
-  device: string,
+  device: DeviceId,
   identifier: string,
 ): Promise<?string> {
   return new Adb(device).dumpsysPackage(identifier);
 }
 
-export async function touchFile(device: string, path: string): Promise<string> {
+export async function touchFile(
+  device: DeviceId,
+  path: string,
+): Promise<string> {
   return new Adb(device).touchFile(path);
 }
 
 export async function removeFile(
-  device: string,
+  device: DeviceId,
   path: string,
 ): Promise<string> {
   return new Adb(device).removeFile(path);
 }
 
 export async function getInstalledPackages(
-  device: string,
+  device: DeviceId,
 ): Promise<Array<string>> {
   return new Adb(device).getInstalledPackages();
 }

@@ -78,7 +78,7 @@ export function pollProcessesEpic(
       );
       if (providers[0] != null) {
         return providers[0]
-          .observe(state.host, device.name)
+          .observe(state.host, device)
           .map(processes => Actions.setProcesses(processes));
       }
       return Observable.empty();
@@ -163,7 +163,7 @@ function getInfoTables(
             if (!isSupported) {
               return Observable.empty();
             }
-            return provider.fetch(state.host, device.name).map(list => ({
+            return provider.fetch(state.host, device).map(list => ({
               title: provider.getTitle(),
               list,
               priority:
@@ -194,12 +194,11 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
       .filter(provider => provider.getType() === state.deviceType)
       .map(provider => {
         return provider
-          .getSupportedPIDs(state.host, device.name, state.processes)
+          .getSupportedPIDs(state.host, device, state.processes)
           .map(supportedSet => {
             return {
               type: provider.getTaskType(),
-              run: (proc: Process) =>
-                provider.run(state.host, device.name, proc),
+              run: (proc: Process) => provider.run(state.host, device, proc),
               isSupported: (proc: Process) => supportedSet.has(proc.pid),
               name: provider.getName(),
             };
@@ -234,7 +233,7 @@ function getDeviceTasks(state: AppState): Observable<DeviceTask[]> {
                 [state, provider.getName()],
                 () =>
                   new DeviceTask(
-                    () => provider.getTask(state.host, device.name),
+                    () => provider.getTask(state.host, device),
                     provider.getName(),
                   ),
               ),

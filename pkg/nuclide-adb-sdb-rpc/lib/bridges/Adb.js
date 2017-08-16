@@ -88,7 +88,8 @@ export class Adb extends DebugBridge {
         ],
       ) => {
         return new Map([
-          ['name', this._device],
+          ['name', this._device.name],
+          ['adb_port', String(this._device.port)],
           ['architecture', architecture],
           ['api_version', apiVersion],
           ['model', model],

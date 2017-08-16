@@ -19,8 +19,11 @@ export type AndroidJavaProcess = SimpleProcess;
 
 export type DebugBridgeType = 'adb' | 'sdb';
 
+export type DeviceId = {name: string, port: number};
+
 export type DeviceDescription = {|
   name: string,
+  port: number,
   architecture: string,
   apiVersion: string,
   model: string,

@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DeviceDescription, DebugBridgeFullConfig} from './types';
+import type {DeviceDescription, DebugBridgeFullConfig, DeviceId} from './types';
 
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
@@ -38,7 +38,7 @@ export async function registerCustomPath(path: ?string): Promise<void> {
 }
 
 export function getDeviceInfo(
-  device: string,
+  device: DeviceId,
 ): ConnectableObservable<Map<string, string>> {
   return new Sdb(device).getDeviceInfo().publish();
 }
@@ -50,21 +50,21 @@ export function getDeviceList(): ConnectableObservable<
 }
 
 export async function getPidFromPackageName(
-  device: string,
+  device: DeviceId,
   packageName: string,
 ): Promise<number> {
   return new Processes(new Sdb(device)).getPidFromPackageName(packageName);
 }
 
 export async function getFileContentsAtPath(
-  device: string,
+  device: DeviceId,
   path: string,
 ): Promise<string> {
   return new Sdb(device).getFileContentsAtPath(path);
 }
 
 export function installPackage(
-  device: string,
+  device: DeviceId,
   packagePath: NuclideUri,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)
@@ -72,14 +72,14 @@ export function installPackage(
 }
 
 export async function launchApp(
-  device: string,
+  device: DeviceId,
   identifier: string,
 ): Promise<string> {
   return new Sdb(device).launchApp(identifier);
 }
 
 export function uninstallPackage(
-  device: string,
+  device: DeviceId,
   packageName: string,
 ): ConnectableObservable<LegacyProcessMessage> {
   // TODO(T17463635)

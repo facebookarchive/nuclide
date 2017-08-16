@@ -34,7 +34,8 @@ export class Sdb extends DebugBridge {
       this.getDeviceModel().catch(unknownCB),
     ).map(([architecture, apiVersion, model]) => {
       return new Map([
-        ['name', this._device],
+        ['name', this._device.name],
+        ['sdb_port', String(this._device.port)],
         ['architecture', architecture],
         ['api_version', apiVersion],
         ['model', model],

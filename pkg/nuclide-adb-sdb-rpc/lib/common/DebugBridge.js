@@ -10,10 +10,12 @@
  */
 
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {DebugBridgeConfig} from '../types';
+import type {DebugBridgeConfig, DeviceId} from '../types';
 
 import {Observable} from 'rxjs';
 import {observeProcess, runCommand} from 'nuclide-commons/process';
+
+export const DEFAULT_ADB_PORT = 5037;
 
 function getPortArg(port: ?number): Array<string> {
   return port != null ? ['-P', String(port)] : [];
@@ -22,9 +24,9 @@ function getPortArg(port: ?number): Array<string> {
 export class DebugBridge {
   static configObs: Observable<DebugBridgeConfig>;
 
-  _device: string;
+  _device: DeviceId;
 
-  constructor(device: string) {
+  constructor(device: DeviceId) {
     this._device = device;
   }
 
@@ -32,9 +34,7 @@ export class DebugBridge {
     return this.constructor.configObs.switchMap(config =>
       runCommand(
         config.path,
-        this._getDeviceArg(this._device)
-          .concat(getPortArg(config.port))
-          .concat(command),
+        this._getDeviceArg().concat(this._getPortArg()).concat(command),
       ),
     );
   }
@@ -44,9 +44,7 @@ export class DebugBridge {
     return this.constructor.configObs.switchMap(config =>
       observeProcess(
         config.path,
-        this._getDeviceArg(this._device)
-          .concat(getPortArg(config.port))
-          .concat(command),
+        this._getDeviceArg().concat(this._getPortArg()).concat(command),
         {
           killTreeWhenDone: true,
           /* TODO(T17353599) */ isExitError: () => false,
@@ -55,24 +53,43 @@ export class DebugBridge {
     ); // TODO(T17463635)
   }
 
-  _getDeviceArg(device: string): string[] {
-    return device !== '' ? ['-s', device] : [];
+  _getPortArg(): Array<string> {
+    return getPortArg(this._device.port);
   }
 
-  static getDevices(): Observable<Array<string>> {
-    return this.configObs.switchMap(config =>
-      runCommand(
-        config.path,
-        getPortArg(config.port).concat(['devices']),
-      ).map(stdout =>
-        stdout
-          .split(/\n+/g)
-          .slice(1)
-          .filter(s => s.length > 0 && !s.trim().startsWith('*'))
-          .map(s => s.split(/\s+/g))
-          .filter(a => a[0] !== '')
-          .map(a => a[0]),
-      ),
-    );
+  _getDeviceArg(): Array<string> {
+    return this._device.name !== '' ? ['-s', this._device.name] : [];
+  }
+
+  static getDevices(): Observable<Array<DeviceId>> {
+    return this.configObs.switchMap(config => {
+      // TODO: Get port list from config.
+      const ports = [DEFAULT_ADB_PORT];
+      return Observable.concat(
+        ...ports.map(port =>
+          runCommand(
+            config.path,
+            getPortArg(port).concat(['devices']),
+          ).map(stdout =>
+            stdout
+              .split(/\n+/g)
+              .slice(1)
+              .filter(s => s.length > 0 && !s.trim().startsWith('*'))
+              .map(s => s.split(/\s+/g))
+              .filter(a => a[0] !== '')
+              .map(a => ({
+                name: a[0],
+                port,
+              })),
+          ),
+        ),
+      )
+        .toArray()
+        .switchMap(deviceList =>
+          Observable.of(
+            deviceList.reduce((a, b) => (a != null ? a.concat(...b) : b)),
+          ),
+        );
+    });
   }
 }
