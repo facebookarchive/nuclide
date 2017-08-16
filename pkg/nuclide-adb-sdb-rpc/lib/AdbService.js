@@ -173,10 +173,14 @@ export async function getInstalledPackages(
   return new Adb(device).getInstalledPackages();
 }
 
-export function setAdbPort(port: ?number): void {
-  getStore('adb').setPort(port);
+export function addAdbPort(port: number): void {
+  getStore('adb').addPort(port);
 }
 
-export function getAdbPort(): Promise<?number> {
-  return Promise.resolve(getStore('adb').getPort());
+export function removeAdbPort(port: number): void {
+  getStore('adb').removePort(port);
+}
+
+export function getAdbPorts(): Promise<Array<number>> {
+  return Promise.resolve(getStore('adb').getPorts());
 }

@@ -38,10 +38,10 @@ export type Process = {
   isJava: boolean,
 };
 
-export type DebugBridgeConfig = {path: string, port: ?number};
+export type DebugBridgeConfig = {path: string, ports: Array<number>};
 
 export type DebugBridgeFullConfig = {
   active: ?string,
   all: Array<string>,
-  port: ?number,
+  ports: Array<number>,
 };

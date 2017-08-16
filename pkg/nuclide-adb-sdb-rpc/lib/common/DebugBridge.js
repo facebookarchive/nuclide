@@ -63,10 +63,8 @@ export class DebugBridge {
 
   static getDevices(): Observable<Array<DeviceId>> {
     return this.configObs.switchMap(config => {
-      // TODO: Get port list from config.
-      const ports = [DEFAULT_ADB_PORT];
       return Observable.concat(
-        ...ports.map(port =>
+        ...config.ports.map(port =>
           runCommand(
             config.path,
             getPortArg(port).concat(['devices']),

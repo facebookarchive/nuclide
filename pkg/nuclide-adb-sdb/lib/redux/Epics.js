@@ -56,7 +56,7 @@ export function setAdbPortEpic(
     .ofType(Actions.SET_ADB_PORT)
     .map(action => {
       invariant(action.type === Actions.SET_ADB_PORT);
-      getAdbServiceByNuclideUri(action.payload.host).setAdbPort(
+      getAdbServiceByNuclideUri(action.payload.host).addAdbPort(
         action.payload.port,
       );
     })

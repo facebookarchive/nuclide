@@ -19,6 +19,7 @@ import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
+import {DEFAULT_ADB_PORT} from './DebugBridge';
 
 export type DBPath = {path: string, priority: number};
 
@@ -27,7 +28,7 @@ class DebugBridgePathStore {
   _sortedPaths: string[] = [];
   _lastWorkingPath: ?string = null;
   _customPath: ?string = null;
-  _port: ?number = null;
+  _ports: Array<number> = [DEFAULT_ADB_PORT];
 
   registerPath(id: string, dbPath: DBPath): void {
     this._registeredPaths.set(id, dbPath);
@@ -52,7 +53,7 @@ class DebugBridgePathStore {
     return {
       active: this._customPath || this._lastWorkingPath,
       all: this.getPaths(),
-      port: this.getPort(),
+      ports: this.getPorts(),
     };
   }
 
@@ -67,12 +68,22 @@ class DebugBridgePathStore {
     return this._customPath;
   }
 
-  setPort(port: ?number) {
-    this._port = port;
+  addPort(port: number) {
+    // Keep the ports sorted such that the most recently added
+    // is always at the end.
+    this.removePort(port);
+    this._ports.push(port);
   }
 
-  getPort(): ?number {
-    return this._port;
+  removePort(port: number) {
+    const idx = this._ports.indexOf(port);
+    if (idx >= 0) {
+      this._ports.splice(idx, 1);
+    }
+  }
+
+  getPorts(): Array<number> {
+    return Array.from(this._ports);
   }
 }
 
@@ -124,9 +135,12 @@ function pathForDebugBridge(db: DebugBridgeType): Promise<string> {
 export function createConfigObs(
   db: DebugBridgeType,
 ): Observable<DebugBridgeConfig> {
-  return Observable.defer(() => pathForDebugBridge(db)).map(path => ({
-    path,
-    port: portForDebugBridge(db),
+  return Observable.defer(async () => ({
+    path: await pathForDebugBridge(db),
+    ports: portsForDebugBridge(db),
+  })).map(config => ({
+    path: config.path,
+    ports: config.ports,
   }));
 }
 
@@ -142,7 +156,7 @@ export function getStore(db: DebugBridgeType): DebugBridgePathStore {
   return cached;
 }
 
-export function portForDebugBridge(db: DebugBridgeType): ?number {
+export function portsForDebugBridge(db: DebugBridgeType): Array<number> {
   const store = getStore(db);
-  return store.getPort();
+  return store.getPorts();
 }

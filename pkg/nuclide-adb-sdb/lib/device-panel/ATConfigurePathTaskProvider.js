@@ -44,7 +44,7 @@ export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
             <ATCustomDBPathModal
               dismiss={dismiss}
               activePath={fullConfig.active}
-              activePort={fullConfig.port}
+              activePort={fullConfig.ports[fullConfig.ports.length - 1]}
               currentCustomPath={this._bridge.getCustomDebugBridgePath(host)}
               registeredPaths={fullConfig.all}
               setCustomPath={customPath =>
