@@ -32,6 +32,7 @@ export type DevicePanelServiceApi = {
   registerDeviceTypeTaskProvider: (
     provider: DeviceTypeTaskProvider,
   ) => IDisposable,
+  registerDeviceActionProvider: (provider: DeviceActionProvider) => IDisposable,
 };
 
 export interface DeviceListProvider {
@@ -78,6 +79,15 @@ export interface DeviceProcessTaskProvider {
     procs: Process[],
   ): Observable<Set<number>>,
   getName(): string,
+}
+
+export type DeviceAction = {
+  name: string,
+  callback: (device: Device) => void,
+};
+
+export interface DeviceActionProvider {
+  getActionsForDevice(device: Device): Array<DeviceAction>,
 }
 
 //

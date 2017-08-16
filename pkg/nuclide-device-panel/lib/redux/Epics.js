@@ -129,7 +129,11 @@ export function setDeviceTypeEpic(
               ),
           ),
         ),
-    ).map(tasks => Actions.setDeviceTypeTasks(tasks));
+    ).map(tasks =>
+      Actions.setDeviceTypeTasks(
+        tasks.sort((a, b) => a.getName().localeCompare(b.getName())),
+      ),
+    );
   });
 }
 
