@@ -37,5 +37,8 @@ suppress_comment=.*\\$FlowIgnore.*
 [lints]
 untyped-type-import=error
 
+sketchy-null=error
+sketchy-null-bool=off
+
 [version]
 0.52.0

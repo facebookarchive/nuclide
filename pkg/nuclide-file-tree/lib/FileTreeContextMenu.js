@@ -482,6 +482,7 @@ function initCommandIfPresent(
 } {
   const itemDisposable = new UniversalDisposable();
   if (typeof item.callback === 'function' && item.label != null) {
+    // flowlint-next-line sketchy-null-string:off
     const command = item.command || generateNextInternalCommand(item.label);
     itemDisposable.add(
       atom.commands.add(FILE_TREE_CSS, command, item.callback),

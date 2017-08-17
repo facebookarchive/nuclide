@@ -68,6 +68,7 @@ export default class FileReferencesView extends React.Component {
       const lastRef = group.references[group.references.length - 1];
 
       let caller;
+      // flowlint-next-line sketchy-null-string:off
       if (firstRef.name && firstRef.name === lastRef.name) {
         caller = (
           <span>

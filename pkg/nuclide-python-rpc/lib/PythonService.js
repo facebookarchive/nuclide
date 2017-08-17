@@ -359,6 +359,7 @@ function getFormatterPath() {
     // $FlowFB
     const findFormatterPath = require('./fb/find-formatter-path').default;
     const overridePath = findFormatterPath();
+    // flowlint-next-line sketchy-null-string:off
     if (overridePath) {
       formatterPath = overridePath;
     }
@@ -416,6 +417,7 @@ async function runLinterCommand(
 ): Promise<string> {
   const dirName = nuclideUri.dirname(src);
   const configDir = await fsPromise.findNearestFile('.flake8', dirName);
+  // flowlint-next-line sketchy-null-string:off
   const configPath = configDir ? nuclideUri.join(configDir, '.flake8') : null;
 
   let result;
@@ -439,6 +441,7 @@ async function runLinterCommand(
     'flake8';
   const args = [];
 
+  // flowlint-next-line sketchy-null-string:off
   if (configPath) {
     args.push('--config');
     args.push(configPath);

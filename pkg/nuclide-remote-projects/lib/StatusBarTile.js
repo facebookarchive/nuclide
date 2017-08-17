@@ -51,6 +51,7 @@ export default class StatusBarTile extends React.Component {
   }
 
   _onStatusBarTileClicked = (): void => {
+    // flowlint-next-line sketchy-null-string:off
     if (!this.props.fileUri) {
       return;
     }

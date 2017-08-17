@@ -69,6 +69,7 @@ export async function findArcConfigDirectory(
 
 export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
   const arcConfigDirectory = await findArcConfigDirectory(fileName);
+  // flowlint-next-line sketchy-null-string:off
   if (!arcConfigDirectory) {
     return null;
   }
@@ -122,6 +123,7 @@ export async function getProjectRelativePath(
   fileName: NuclideUri,
 ): Promise<?string> {
   const arcPath = await findArcConfigDirectory(fileName);
+  // flowlint-next-line sketchy-null-string:off
   return arcPath && fileName ? nuclideUri.relative(arcPath, fileName) : null;
 }
 

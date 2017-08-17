@@ -62,6 +62,7 @@ class Activation {
         getPlatformKeys(process.platform),
         (newValue: ?string) => {
           this._triggerKeys = (new Set(
+            // flowlint-next-line sketchy-null-string:off
             newValue ? newValue.split(',') : null,
           ): Set<any>);
         },
@@ -174,6 +175,7 @@ class Activation {
       grammar,
     );
 
+    // flowlint-next-line sketchy-null-mixed:off
     if (previewDatatip != null && previewDatatip.markedStrings) {
       analytics.track('hyperclick-preview-popup', {
         grammar: grammar.name,

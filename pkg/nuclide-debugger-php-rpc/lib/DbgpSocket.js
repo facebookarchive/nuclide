@@ -619,6 +619,7 @@ export class DbgpSocket {
   _sendCommand(command: string, params: ?string): number {
     const id = ++this._transactionId;
     let message = `${command} -i ${id}`;
+    // flowlint-next-line sketchy-null-string:off
     if (params) {
       message += ' ' + params;
     }

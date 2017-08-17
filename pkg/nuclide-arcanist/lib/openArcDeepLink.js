@@ -55,6 +55,7 @@ async function searchOtherWindows(
                     typeof project === 'string' &&
                     nuclideUri.contains(path, project),
                 );
+              // flowlint-next-line sketchy-null-mixed:off
               resolve(containsPath ? browserWindow : null);
             },
           );

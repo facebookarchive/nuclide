@@ -42,7 +42,8 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
     const buttonType = speculative ? undefined : ButtonTypes.SUCCESS;
     fixButton = (
       <Button buttonType={buttonType} size="EXTRA_SMALL" onClick={applyFix}>
-        {message.fix.title || 'Fix'}
+        {// flowlint-next-line sketchy-null-string:off
+        message.fix.title || 'Fix'}
       </Button>
     );
   }

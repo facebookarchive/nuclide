@@ -212,7 +212,9 @@ export function lspCompletionItem_atomCompletion(
     // LSP: if insertText is present, insert that, else fall back to label
     // LSP: insertTextFormat says whether we're inserting text or snippet
     // Atom: text/snippet: one of them has to be defined
+    // flowlint-next-line sketchy-null-string:off
     snippet: useSnippet ? item.insertText || item.label : undefined,
+    // flowlint-next-line sketchy-null-string:off
     text: useSnippet ? undefined : item.insertText || item.label,
     // LSP: [nuclide-specific] itemType is return type of function
     // Atom: it's convention to display return types in the left column
@@ -433,6 +435,7 @@ function lspDiagnostic_atomDiagnostic(
   // TODO: pass the LSP diagnostic.code to Atom somehow
   return {
     scope: 'file',
+    // flowlint-next-line sketchy-null-string:off
     providerName: diagnostic.source || 'LSP', // TODO
     type: lspSeverity_atomDiagnosticMessageType(diagnostic.severity),
     filePath,

@@ -75,6 +75,7 @@ export default class DebuggerControllerView extends React.Component {
   }
 
   render(): ?React.Element<any> {
+    // flowlint-next-line sketchy-null-string:off
     if (this.state.processSocket && __DEV__) {
       return (
         <DebuggerInspector

@@ -26,6 +26,7 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
   let locSpan = null;
   // Local variable so that the type refinement holds in the onClick handler.
   const path = trace.filePath;
+  // flowlint-next-line sketchy-null-string:off
   if (path) {
     const [, relativePath] = atom.project.relativizePath(path);
     let locString = relativePath;

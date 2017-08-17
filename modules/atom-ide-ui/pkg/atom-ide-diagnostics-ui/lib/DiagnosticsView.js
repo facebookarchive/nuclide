@@ -79,6 +79,7 @@ export default class DiagnosticsView extends React.Component {
     });
     const isExpandable = diagnostics.find(
       diagnostic =>
+        // flowlint-next-line sketchy-null-string:off
         diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
     );
 

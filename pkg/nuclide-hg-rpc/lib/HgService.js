@@ -695,6 +695,7 @@ export class HgService {
 
   createBookmark(name: string, revision: ?string): Promise<void> {
     const args = [];
+    // flowlint-next-line sketchy-null-string:off
     if (revision) {
       args.push('--rev', revision);
     }

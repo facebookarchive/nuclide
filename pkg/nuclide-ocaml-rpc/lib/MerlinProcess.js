@@ -459,6 +459,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const dotMerlinPath = await fsPromise.findNearestFile('.merlin', file);
 
   const options = {
+    // flowlint-next-line sketchy-null-string:off
     cwd: dotMerlinPath ? nuclideUri.dirname(dotMerlinPath) : '.',
     // Starts the process with the user's bashrc, which might contain a
     // different ocamlmerlin. See `getMerlinVersion` for the same consistent
@@ -487,6 +488,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
       return null;
   }
 
+  // flowlint-next-line sketchy-null-string:off
   if (dotMerlinPath) {
     // TODO(pieter) add support for multiple .dotmerlin files
     await merlinProcessInstance.pushDotMerlinPath(dotMerlinPath);

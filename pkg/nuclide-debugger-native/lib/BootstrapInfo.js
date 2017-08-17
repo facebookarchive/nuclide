@@ -87,6 +87,7 @@ export class BootstrapInfo extends DebuggerProcessInfo {
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
       lldbPythonPath:
+        // flowlint-next-line sketchy-null-string:off
         this._bootstrapInfo.lldbPythonPath || getConfig().lldbPythonPath,
       envPythonPath: '',
     };

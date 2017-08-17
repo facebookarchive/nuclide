@@ -283,6 +283,7 @@ function renderItem(
 ): Array<React.Element<any> | string> {
   const r = [];
   const icon =
+    // flowlint-next-line sketchy-null-string:off
     outline.icon || (outline.kind && OUTLINE_KIND_TO_ICON[outline.kind]);
 
   if (icon != null) {

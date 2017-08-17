@@ -64,6 +64,7 @@ class Activation {
   constructor(rawState: ?SerializedState) {
     let state = rawState || {};
     const serializedVersionMatches =
+      // flowlint-next-line sketchy-null-mixed:off
       (state.version || 1) === DESERIALIZER_VERSION;
     if (!serializedVersionMatches) {
       state = {};

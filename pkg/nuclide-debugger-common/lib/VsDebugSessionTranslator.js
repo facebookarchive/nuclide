@@ -208,6 +208,7 @@ export default class VsDebugSessionTranslator {
       this._commandsOfType('Debugger.pause').flatMap(
         catchCommandError(async command => {
           const mainThreadId =
+            // flowlint-next-line sketchy-null-number:off
             this._mainThreadId || Array.from(this._threadsById.keys())[0] || -1;
           await this._session.pause({threadId: mainThreadId});
           return getEmptyResponse(command.id);
@@ -383,6 +384,7 @@ export default class VsDebugSessionTranslator {
     };
     await this._files.registerFile(pathToUri(scriptId));
     await this._session.nuclide_continueToLocation({
+      // flowlint-next-line sketchy-null-number:off
       column: columnNumber || 1,
       line: lineNumber + 1,
       source,
@@ -564,9 +566,11 @@ export default class VsDebugSessionTranslator {
     return vsBreakpoints.map((vsBreakpoint, i) => {
       const bpDescriptior = breakpoints[i];
       const breakpointId =
+        // flowlint-next-line sketchy-null-string:off
         bpDescriptior.breakpointId ||
         String(vsBreakpoint.id) ||
         this._nextBreakpointId();
+      // flowlint-next-line sketchy-null-number:off
       const lineNumber = vsBreakpoint.line || bpDescriptior.lineNumber || -1;
       const resolved = vsBreakpoint.verified;
       const condition = breakpoints[i].condition;
@@ -774,6 +778,7 @@ export default class VsDebugSessionTranslator {
       this._session.observeBreakpointEvents().subscribe(({body}) => {
         const {reason, breakpoint} = body;
         const existingBreakpoint = this._breakpointsById.get(
+          // flowlint-next-line sketchy-null-number:off
           String(breakpoint.id || -1),
         );
         if (
@@ -797,6 +802,7 @@ export default class VsDebugSessionTranslator {
         this._logger.info('Unhandled breakpoint event', reason, breakpoint);
       }),
       this._session.observeOutputEvents().subscribe(({body}) => {
+        // flowlint-next-line sketchy-null-string:off
         const category = body.category || 'console';
         const level = OUTPUT_CATEGORY_TO_LEVEL[category];
         const output = (body.output || '').replace(/\r?\n$/, '');
@@ -865,6 +871,7 @@ export default class VsDebugSessionTranslator {
         description: threadName,
         address,
         location,
+        // flowlint-next-line sketchy-null-string:off
         stopReason: stopReason || 'running',
         hasSource,
       };
@@ -872,6 +879,7 @@ export default class VsDebugSessionTranslator {
 
     return {
       owningProcessId: VSP_PROCESS_ID,
+      // flowlint-next-line sketchy-null-number:off
       stopThreadId: this._pausedThreadId || -1,
       threads,
     };

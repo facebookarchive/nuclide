@@ -291,6 +291,7 @@ export default class BreakpointDisplayController {
    */
   _handleMarkerChange(event: Object) {
     const path = this._editor.getPath();
+    // flowlint-next-line sketchy-null-string:off
     if (!path) {
       return;
     }
@@ -327,6 +328,7 @@ export default class BreakpointDisplayController {
     }
 
     const path = this._editor.getPath();
+    // flowlint-next-line sketchy-null-string:off
     if (!path) {
       return;
     }

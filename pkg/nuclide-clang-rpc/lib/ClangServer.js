@@ -97,6 +97,7 @@ function spawnClangProcess(
     const argsFd = 3;
     const args = [pathToLibClangServer, '--flags-from-pipe', `${argsFd}`];
     const libClangLibraryFile =
+      // flowlint-next-line sketchy-null-string:off
       libClangFromFlags || serverArgs.libClangLibraryFile;
     if (libClangLibraryFile != null) {
       args.push('--libclang-file', libClangLibraryFile);

@@ -135,6 +135,7 @@ export default class RecordView extends React.Component {
     );
 
     const iconName = getIconName(record);
+    // flowlint-next-line sketchy-null-string:off
     const icon = iconName ? <span className={`icon icon-${iconName}`} /> : null;
     const sourceLabel = this.props.showSourceLabel
       ? <span
@@ -287,6 +288,7 @@ function parseText(text: string): Array<string | React.Element<any>> {
     }
 
     chunks.push(
+      // flowlint-next-line sketchy-null-string:off
       href
         ? <a key={`r${index}`} href={href} target="_blank">
             {matchedText}

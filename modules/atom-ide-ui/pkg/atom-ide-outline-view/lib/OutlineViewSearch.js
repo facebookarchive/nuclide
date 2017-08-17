@@ -174,6 +174,7 @@ export function updateSearchSet(
     updateSearchSet(query, child, map, prevMap, prevQuery),
   );
   // Optimization using results from previous query.
+  // flowlint-next-line sketchy-null-string:off
   if (prevQuery) {
     const previousResult = prevMap.get(root);
     if (

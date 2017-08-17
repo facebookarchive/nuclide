@@ -147,6 +147,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     this.getLogger().debug(`attach process: ${JSON.stringify(attachInfo)}`);
     const inferiorArguments = {
       pid: String(attachInfo.pid),
+      // flowlint-next-line sketchy-null-string:off
       basepath: attachInfo.basepath
         ? attachInfo.basepath
         : this._config.buckConfigRootFile,
@@ -164,7 +165,9 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
       launch_arguments: launchInfo.arguments,
       launch_environment_variables: launchInfo.environmentVariables,
       working_directory: launchInfo.workingDirectory,
+      // flowlint-next-line sketchy-null-string:off
       stdin_filepath: launchInfo.stdinFilePath ? launchInfo.stdinFilePath : '',
+      // flowlint-next-line sketchy-null-string:off
       basepath: launchInfo.basepath
         ? launchInfo.basepath
         : this._config.buckConfigRootFile,
@@ -186,6 +189,7 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     this.getLogger().debug(`bootstrap lldb: ${JSON.stringify(bootstrapInfo)}`);
     const inferiorArguments = {
       lldb_bootstrap_files: bootstrapInfo.lldbBootstrapFiles,
+      // flowlint-next-line sketchy-null-string:off
       basepath: bootstrapInfo.basepath
         ? bootstrapInfo.basepath
         : this._config.buckConfigRootFile,
@@ -200,9 +204,11 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     inferiorArguments: LaunchAttachArgsType,
   ): Promise<void> {
     const pythonBinaryPath =
+      // flowlint-next-line sketchy-null-string:off
       this._config.pythonBinaryPath ||
       (await _getDefaultLLDBConfig()).pythonPath;
     const lldbPythonPath =
+      // flowlint-next-line sketchy-null-mixed:off
       inferiorArguments.lldb_python_path ||
       (await _getDefaultLLDBConfig()).lldbModulePath;
 

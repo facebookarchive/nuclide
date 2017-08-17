@@ -188,6 +188,7 @@ export class DebuggerHandler {
     );
     return scopes.map(scope => {
       return new Scope(
+        // flowlint-next-line sketchy-null-string:off
         scope.object.description || scope.name || scope.type,
         this._variableHandles.create(nullthrows(scope.object.objectId)),
         true,
@@ -401,9 +402,11 @@ export class DebuggerHandler {
         name: prop.name,
         type: (prop.value && prop.value.type) || 'unknown',
         value: String(
+          // flowlint-next-line sketchy-null-string:off
           prop.value && (prop.value.description || prop.value.value),
         ),
         variablesReference:
+          // flowlint-next-line sketchy-null-string:off
           prop.value && prop.value.objectId
             ? this._variableHandles.create(prop.value.objectId)
             : 0,

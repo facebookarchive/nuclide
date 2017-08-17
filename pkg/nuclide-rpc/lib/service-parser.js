@@ -125,6 +125,7 @@ function getFileParser(fileName: string, source: ?string): FileParser {
     return parser;
   }
   parser = new FileParser(fileName);
+  // flowlint-next-line sketchy-null-string:off
   parser.parse(source || fs.readFileSync(fileName, 'utf8'));
   fileParsers.set(fileName, parser);
   return parser;

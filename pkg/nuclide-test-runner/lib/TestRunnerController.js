@@ -117,6 +117,7 @@ export class TestRunnerController {
       testPath = activeTextEditor.getPath();
     }
 
+    // flowlint-next-line sketchy-null-string:off
     if (!testPath) {
       logger.warn('Attempted to run tests on an editor with no path.');
       return;

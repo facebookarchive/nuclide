@@ -81,6 +81,7 @@ class Activation {
 
   _considerDisplayingHome() {
     const showHome = featureConfig.get('nuclide-home.showHome');
+    // flowlint-next-line sketchy-null-mixed:off
     if (showHome) {
       // eslint-disable-next-line nuclide-internal/atom-apis
       atom.workspace.open(WORKSPACE_VIEW_URI);

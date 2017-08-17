@@ -57,7 +57,8 @@ export default class BuckToolbarSettings extends React.Component {
             <label>Current Buck root:</label>
             <p>
               <code>
-                {this.props.currentBuckRoot || 'No Buck project found.'}
+                {// flowlint-next-line sketchy-null-string:off
+                this.props.currentBuckRoot || 'No Buck project found.'}
               </code>
             </p>
             <label>Build Arguments:</label>

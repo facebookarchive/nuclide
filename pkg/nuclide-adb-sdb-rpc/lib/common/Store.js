@@ -51,6 +51,7 @@ class DebugBridgePathStore {
 
   getFullConfig(): DebugBridgeFullConfig {
     return {
+      // flowlint-next-line sketchy-null-string:off
       active: this._customPath || this._lastWorkingPath,
       all: this.getPaths(),
       ports: this.getPorts(),

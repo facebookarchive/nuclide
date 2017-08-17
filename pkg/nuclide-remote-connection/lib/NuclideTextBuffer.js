@@ -130,6 +130,7 @@ export default class NuclideTextBuffer extends TextBuffer {
       let message = e.message;
       // This can happen if the user triggered the save while closing the file.
       // Unfortunately, we can't interrupt the user action, but we can at least reopen the buffer.
+      // flowlint-next-line sketchy-null-mixed:off
       if (this.destroyed) {
         message += '<br><br>Opening a new tab with your unsaved changes.';
         // goToLocation does not support opening an untitled editor
@@ -203,6 +204,7 @@ export default class NuclideTextBuffer extends TextBuffer {
       file.onDidChange(
         debounce(async () => {
           // The buffer could have been destroyed during the debounce.
+          // flowlint-next-line sketchy-null-mixed:off
           if (this.destroyed) {
             return;
           }
@@ -215,6 +217,7 @@ export default class NuclideTextBuffer extends TextBuffer {
           const previousSaveID = this._saveID;
           await this.updateCachedDiskContents();
           // The buffer could have been destroyed while waiting.
+          // flowlint-next-line sketchy-null-mixed:off
           if (this.destroyed) {
             return;
           }

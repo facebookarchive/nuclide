@@ -199,6 +199,7 @@ export class SwiftPMTaskRunner {
       .map(store => store.getProjectRoot())
       .distinctUntilChanged()
       .switchMap(root => {
+        // flowlint-next-line sketchy-null-string:off
         if (!root || nuclideUri.isRemote(root)) {
           return Observable.of(false);
         }

@@ -373,6 +373,7 @@ export default class Bridge {
     const {sourceURL, lineNumber, condition, enabled} = breakpoint;
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     // only handle real files for now.
+    // flowlint-next-line sketchy-null-string:off
     if (path) {
       try {
         this._suppressBreakpointSync = true;
@@ -392,6 +393,7 @@ export default class Bridge {
     const {breakpoint, hitCount} = params;
     const {sourceURL, lineNumber} = breakpoint;
     const path = nuclideUri.uriToNuclideUri(sourceURL);
+    // flowlint-next-line sketchy-null-string:off
     if (path) {
       this._debuggerModel
         .getActions()
@@ -403,6 +405,7 @@ export default class Bridge {
     const {sourceURL, lineNumber} = breakpoint;
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     // only handle real files for now.
+    // flowlint-next-line sketchy-null-string:off
     if (path) {
       try {
         this._suppressBreakpointSync = true;

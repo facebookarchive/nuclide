@@ -123,6 +123,7 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   }
   const parsedUri = parse(remoteUri);
   invariant(
+    // flowlint-next-line sketchy-null-string:off
     parsedUri.hostname,
     `Remote Nuclide URIs must contain hostnames, '${maybeToString(
       parsedUri.hostname,
@@ -266,6 +267,7 @@ function uriToNuclideUri(uri: string): ?string {
   // two-slash file URLs of the form "file://c:\path". But those are invalid
   // file URLs, and indeed it fails to %-escape "file://c:\My%20Documents".
   const windowsPathFromUri = _getWindowsPathFromWindowsFileUri(uri);
+  // flowlint-next-line sketchy-null-string:off
   if (windowsPathFromUri) {
     // If the specified URI is a local file:// URI to a Windows path,
     // handle specially first. url.parse() gets confused by the "X:"
@@ -275,6 +277,7 @@ function uriToNuclideUri(uri: string): ?string {
   }
 
   const urlParts = url.parse(_escapeSpecialCharacters(uri), false);
+  // flowlint-next-line sketchy-null-string:off
   if (urlParts.protocol === 'file:' && urlParts.path) {
     // only handle real files for now.
     return urlParts.path;
@@ -379,6 +382,7 @@ function nuclideUriToDisplayString(uri: NuclideUri): string {
     let hostname = getHostname(uri);
     for (const formatter of hostFormatters) {
       const formattedHostname = formatter(hostname);
+      // flowlint-next-line sketchy-null-string:off
       if (formattedHostname) {
         hostname = formattedHostname;
         break;

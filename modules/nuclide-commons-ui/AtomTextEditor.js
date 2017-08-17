@@ -30,6 +30,7 @@ type TextEditorSetup = {
 
 function setupTextEditor(props: Props): TextEditorSetup {
   const textBuffer = props.textBuffer || new TextBuffer();
+  // flowlint-next-line sketchy-null-string:off
   if (props.path) {
     textBuffer.setPath(props.path);
   }
@@ -54,6 +55,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
   }
   disposables.add(enforceSoftWrap(textEditor, props.softWrapped));
 
+  // flowlint-next-line sketchy-null-string:off
   if (props.placeholderText) {
     textEditor.setPlaceholderText(props.placeholderText);
   }

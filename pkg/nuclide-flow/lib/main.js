@@ -200,6 +200,7 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
+    // flowlint-next-line sketchy-null-mixed:off
     highlight: enableHighlight
       ? {
           version: '0.1.0',

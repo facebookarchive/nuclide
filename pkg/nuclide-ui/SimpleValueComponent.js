@@ -89,6 +89,7 @@ export default class SimpleValueComponent extends React.Component {
       }
     }
     if (displayValue == null || displayValue === '') {
+      // flowlint-next-line sketchy-null-string:off
       displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {

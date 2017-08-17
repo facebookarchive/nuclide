@@ -77,6 +77,7 @@ export function* getOpenFileEditorForRemoteProject(
       const uri = sanitizeNuclideUri(paneItem.getURI());
       const {hostname: fileHostname, path: filePath} = nuclideUri.parse(uri);
       if (fileHostname === connectionConfig.host) {
+        // flowlint-next-line sketchy-null-string:off
         invariant(fileHostname);
         yield {
           pane,

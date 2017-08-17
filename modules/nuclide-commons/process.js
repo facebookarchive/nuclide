@@ -391,7 +391,9 @@ export function scriptifyCommand<T>(
     // the arguments into a single string. Apparently, because of how `script` works, however, we
     // wind up with double escapes. So we just strip one level of them.
     const joined = shellQuote([command, ...args]).replace(/\\\\/g, '\\');
+    // flowlint-next-line sketchy-null-mixed:off
     const opts = options || {};
+    // flowlint-next-line sketchy-null-mixed:off
     const env = opts.env || {};
     return [
       'script',
@@ -833,6 +835,7 @@ function createProcessStream(
     .take(1)
     .switchMap(() => {
       const {dontLogInNuclide, killTreeWhenDone, timeout} = options;
+      // flowlint-next-line sketchy-null-number:off
       const enforceTimeout = timeout
         ? x =>
             // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
@@ -946,6 +949,7 @@ function createProcessStream(
           throw err;
         })
         .finally(() => {
+          // flowlint-next-line sketchy-null-mixed:off
           if (!proc.wasKilled && !finished) {
             killProcess(proc, Boolean(killTreeWhenDone));
           }

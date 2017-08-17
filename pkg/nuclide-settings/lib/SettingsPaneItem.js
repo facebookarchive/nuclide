@@ -222,6 +222,7 @@ function getOrder(schema: atom$ConfigSchema): number {
 
 function getTitle(schema: atom$ConfigSchema, settingName: string): string {
   let title = schema.title;
+  // flowlint-next-line sketchy-null-string:off
   if (!title) {
     title = settingName
       .replace(/([A-Z])/g, ' $1')

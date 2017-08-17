@@ -100,6 +100,7 @@ export default class BlameGutter {
       this._editor,
       revision.hash,
     );
+    // flowlint-next-line sketchy-null-string:off
     if (url) {
       // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
       shell.openExternal(url);

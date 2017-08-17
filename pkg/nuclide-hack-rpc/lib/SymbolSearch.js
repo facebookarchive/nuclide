@@ -131,6 +131,7 @@ const ICONS = {
 };
 
 function bestIconForDesc(desc: ?string): ?string {
+  // flowlint-next-line sketchy-null-string:off
   if (!desc) {
     return ICONS.default;
   }

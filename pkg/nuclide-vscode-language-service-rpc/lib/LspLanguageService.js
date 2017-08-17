@@ -224,6 +224,7 @@ export class LspLanguageService {
           ? `Failed to start ${this._languageId} language service.`
           : `Language service ${this._languageId} has crashed.`;
       const button = state === 'StartFailed' ? 'Retry' : 'Restart';
+      // flowlint-next-line sketchy-null-string:off
       const message = actionRequiredDialogMessage || defaultMessage;
 
       const subscription = this._masterHost
@@ -1472,6 +1473,7 @@ export class LspLanguageService {
       throw new Error(
         `${this._languageId} is not currently in a state to handle the request`,
       );
+      // flowlint-next-line sketchy-null-mixed:off
     } else if (!this._serverCapabilities.executeCommandProvider) {
       throw new Error(`${this._languageId} cannot handle the request`);
     }

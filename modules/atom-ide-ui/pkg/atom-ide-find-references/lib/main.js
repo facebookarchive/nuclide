@@ -150,6 +150,7 @@ class Activation {
       // This ensures the context menu option only appears in supported projects.
       observeTextEditors(async editor => {
         const path = editor.getPath();
+        // flowlint-next-line sketchy-null-string:off
         if (!path || this._supportedProviders.get(editor)) {
           return;
         }
@@ -203,6 +204,7 @@ class Activation {
       return null;
     }
     const path = editor.getPath();
+    // flowlint-next-line sketchy-null-string:off
     if (!path) {
       return null;
     }

@@ -124,6 +124,7 @@ export default class JediServerManager {
 
   async _addTopLevelModulePath(src: string, server: JediServer): Promise<void> {
     const topLevelModulePath = await this.getTopLevelModulePath(src);
+    // flowlint-next-line sketchy-null-string:off
     if (server.isDisposed() || !topLevelModulePath) {
       return;
     }

@@ -88,6 +88,7 @@ export default class ObjectiveCColonIndenter {
             buffer,
             currentColonPosition,
           );
+          // flowlint-next-line sketchy-null-number:off
           if (!colonColumn) {
             return;
           }

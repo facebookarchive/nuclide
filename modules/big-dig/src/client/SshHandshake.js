@@ -261,6 +261,7 @@ export class SshHandshake {
     if (config.authMethod === SupportedMethods.SSL_AGENT) {
       // Point to ssh-agent's socket for ssh-agent-based authentication.
       let agent = process.env.SSH_AUTH_SOCK;
+      // flowlint-next-line sketchy-null-string:off
       if (!agent && /^win/.test(process.platform)) {
         // #100: On Windows, fall back to pageant.
         agent = 'pageant';
@@ -559,7 +560,9 @@ export class SshHandshake {
 
     // Use an ssh tunnel if server is not secure
     if (this._isSecure()) {
+      // flowlint-next-line sketchy-null-string:off
       invariant(this._remoteHost);
+      // flowlint-next-line sketchy-null-number:off
       invariant(this._remotePort);
       this._establishBigDigClient({
         host: this._remoteHost,
@@ -576,6 +579,7 @@ export class SshHandshake {
         })
         .listen(0, 'localhost', () => {
           const localPort = this._getLocalPort();
+          // flowlint-next-line sketchy-null-number:off
           invariant(localPort);
           this._establishBigDigClient({
             host: 'localhost',

@@ -160,6 +160,7 @@ export function parseSimulatorsFromSimctlOutput(
     const simulator = line.match(
       /^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/,
     );
+    // flowlint-next-line sketchy-null-string:off
     if (simulator && currentOS) {
       const [, name, udid, state] = simulator;
       const arch = name.match(/^(iPhone (5$|5C|4)|iPad Retina)/)

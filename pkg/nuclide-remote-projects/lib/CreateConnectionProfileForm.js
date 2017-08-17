@@ -101,6 +101,7 @@ export default class CreateConnectionProfileForm extends React.Component<
           initialServer={initialFields.server}
           initialCwd={initialFields.cwd}
           initialRemoteServerCommand={
+            // flowlint-next-line sketchy-null-string:off
             initialFields.remoteServerCommand ||
             DEFAULT_SERVER_COMMAND_PLACEHOLDER
           }

@@ -355,6 +355,7 @@ class Activation {
 createPackage(module.exports, Activation);
 
 function activateInitialPackagesObservable(): Observable<void> {
+  // flowlint-next-line sketchy-null-mixed:off
   if (atom.packages.hasActivatedInitialPackages) {
     return Observable.of(undefined);
   }

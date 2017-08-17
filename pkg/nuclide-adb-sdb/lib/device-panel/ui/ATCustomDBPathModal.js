@@ -66,7 +66,8 @@ export class ATCustomDBPathModal extends React.Component {
           Active {this.props.type} port:{' '}
           <i>
             <strong>
-              {this.props.activePort || 'default'}
+              {// flowlint-next-line sketchy-null-number:off
+              this.props.activePort || 'default'}
             </strong>
           </i>
         </label>

@@ -705,6 +705,7 @@ class Activation {
       ReactDOM.render(
         <DebuggerLaunchAttachConnectionChooser
           options={options}
+          // flowlint-next-line sketchy-null-string:off
           selectedConnection={this._selectedDebugConnection || 'local'}
           connectionChanged={(newValue: ?string) => {
             this._selectedDebugConnection = newValue;
@@ -798,6 +799,7 @@ class Activation {
     const expr = wordAtPosition(editor, editor.getCursorBufferPosition());
 
     const watchExpression = selectedText || (expr && expr.wordMatch[0]);
+    // flowlint-next-line sketchy-null-string:off
     if (watchExpression) {
       this._model.getActions().addWatchExpression(watchExpression);
     }

@@ -80,6 +80,7 @@ export function relativeDate(
   if (input instanceof Date) {
     input = input.getTime();
   }
+  // flowlint-next-line sketchy-null-number:off
   if (!reference) {
     reference = new Date().getTime();
   }

@@ -54,6 +54,7 @@ export function executeEpic(
     invariant(action.type === Actions.EXECUTE);
     const {code} = action.payload;
     const currentExecutorId = getCurrentExecutorId(store.getState());
+    // flowlint-next-line sketchy-null-string:off
     invariant(currentExecutorId);
 
     const executor = store.getState().executors.get(currentExecutorId);

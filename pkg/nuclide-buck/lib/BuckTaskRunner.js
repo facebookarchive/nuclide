@@ -277,6 +277,7 @@ export class BuckTaskRunner {
       selectedDeploymentTarget,
       taskSettings,
     } = state;
+    // flowlint-next-line sketchy-null-string:off
     invariant(buckRoot);
     invariant(buildRuleType);
 

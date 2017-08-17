@@ -254,6 +254,7 @@ class ValueComponent extends React.Component {
           </TreeItem>;
     }
     const description =
+      // flowlint-next-line sketchy-null-string:off
       evaluationResult.description || '<no description provided>';
     const {children, isExpanded} = this.state;
     let childListElement = null;

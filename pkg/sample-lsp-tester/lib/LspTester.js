@@ -87,6 +87,7 @@ export class LspTester extends SimpleModel {
   _getInitialMessage(): string {
     const dirs = atom.project.getDirectories();
     const rootPath = dirs.length > 0 ? dirs[0].getPath() : null;
+    // flowlint-next-line sketchy-null-string:off
     const rootUri = rootPath ? `file://${rootPath}` : 'file://path/to/root';
     const initialMessage = {
       jsonrpc: '2.0',

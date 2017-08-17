@@ -554,6 +554,7 @@ export class TreeRootComponent extends React.Component {
 
   _expandSelection(): void {
     const key = this._getFirstSelectedKey();
+    // flowlint-next-line sketchy-null-string:off
     if (key) {
       this.expandNodeKey(key);
     }
@@ -631,6 +632,7 @@ export class TreeRootComponent extends React.Component {
 
   _collapseSelection(): void {
     const key = this._getFirstSelectedKey();
+    // flowlint-next-line sketchy-null-string:off
     if (!key) {
       return;
     }
@@ -656,6 +658,7 @@ export class TreeRootComponent extends React.Component {
 
     let keyIndexToSelect = allKeys.length - 1;
     const key = this._getFirstSelectedKey();
+    // flowlint-next-line sketchy-null-string:off
     if (key) {
       keyIndexToSelect = allKeys.indexOf(key);
       if (keyIndexToSelect > 0) {
@@ -674,6 +677,7 @@ export class TreeRootComponent extends React.Component {
 
     let keyIndexToSelect = 0;
     const key = this._getFirstSelectedKey();
+    // flowlint-next-line sketchy-null-string:off
     if (key) {
       keyIndexToSelect = allKeys.indexOf(key);
       if (keyIndexToSelect !== -1 && keyIndexToSelect < allKeys.length - 1) {
@@ -686,6 +690,7 @@ export class TreeRootComponent extends React.Component {
 
   _confirmSelection(): void {
     const key = this._getFirstSelectedKey();
+    // flowlint-next-line sketchy-null-string:off
     if (key) {
       const node = this.getNodeForKey(key);
       if (node) {

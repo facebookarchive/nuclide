@@ -376,6 +376,7 @@ export class Combobox extends React.Component {
     let optionsContainer;
     const options = [];
 
+    // flowlint-next-line sketchy-null-string:off
     if (this.props.loadingMessage && this.state.loadingOptions) {
       options.push(
         <li key="loading-text" className="loading">

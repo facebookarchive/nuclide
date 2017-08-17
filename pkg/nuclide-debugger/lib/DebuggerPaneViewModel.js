@@ -62,6 +62,7 @@ export class DebuggerPaneViewModel {
   }
 
   getPreferredWidth(): number {
+    // flowlint-next-line sketchy-null-number:off
     return this._preferredWidth || this._debuggerModel.getPreferredWidth();
   }
 

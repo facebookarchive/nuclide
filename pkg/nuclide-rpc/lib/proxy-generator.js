@@ -510,6 +510,7 @@ function generateTransformStatement(
   const convertArgs = [id, objectToLiteral(type)];
 
   // If the type is parameterized, we send the parameters as an optional fourth argument.
+  // flowlint-next-line sketchy-null-mixed:off
   if (type.param) {
     convertArgs.push(objectToLiteral(type.param));
   }

@@ -43,6 +43,7 @@ export function linterMessageToDiagnosticMessage(
   const trace = msg.trace
     ? msg.trace.map(component => ({...component}))
     : undefined;
+  // flowlint-next-line sketchy-null-string:off
   if (msg.filePath) {
     const {fix} = msg;
     return ({
@@ -125,6 +126,7 @@ export function linterMessageV2ToDiagnosticMessage(
   }
   return {
     scope: 'file',
+    // flowlint-next-line sketchy-null-string:off
     providerName: msg.linterName || providerName,
     type: LinterSeverityMap[msg.severity],
     filePath: msg.location.file,
@@ -144,6 +146,7 @@ export function linterMessagesToDiagnosticUpdate(
     NuclideUri,
     Array<FileDiagnosticMessage>,
   > = new Map();
+  // flowlint-next-line sketchy-null-string:off
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that

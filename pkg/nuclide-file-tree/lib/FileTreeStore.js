@@ -1280,6 +1280,7 @@ export class FileTreeStore {
     const promise = new Promise(resolve => {
       const expand = () => {
         const traversedNodeKey = itNodes.traversedNode();
+        // flowlint-next-line sketchy-null-string:off
         if (traversedNodeKey) {
           this._expandNode(rootKey, traversedNodeKey);
 
@@ -2077,6 +2078,7 @@ class FileTreeStoreBfsIterator {
 
   next(): ?Promise<void> {
     const currentlyTraversedNode = this._currentlyTraversedNode;
+    // flowlint-next-line sketchy-null-string:off
     if (!this._promise && currentlyTraversedNode) {
       this._promise = this._fileTreeStore
         .promiseNodeChildKeys(this._rootKey, currentlyTraversedNode)

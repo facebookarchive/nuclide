@@ -62,6 +62,7 @@ export default class ProjectStore {
     }
 
     const fileName = activeTextEditor.getPath();
+    // flowlint-next-line sketchy-null-string:off
     if (!fileName) {
       return;
     }

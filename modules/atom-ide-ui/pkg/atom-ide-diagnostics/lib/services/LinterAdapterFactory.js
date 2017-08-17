@@ -97,6 +97,7 @@ export function validateLinter(provider: LinterProvider): Array<string> {
 }
 
 function validate(condition: mixed, msg: string, errors: Array<string>): void {
+  // flowlint-next-line sketchy-null-mixed:off
   if (!condition) {
     errors.push(msg);
   }

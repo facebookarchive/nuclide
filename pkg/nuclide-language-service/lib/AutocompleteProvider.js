@@ -297,7 +297,9 @@ export function updateAutocompleteFirstResults(
 
   const items: Array<{filterScore: number, completion: Completion}> = [];
   for (const item of firstResult.items) {
+    // flowlint-next-line sketchy-null-string:off
     const text = item.displayText || item.snippet || item.text || '';
+    // flowlint-next-line sketchy-null-string:off
     const filterText = padEnd(item.filterText || text, 40, ' ');
     // If no prefix, then include all items and avoid doing work to score.
     const filterScore: number =
@@ -309,6 +311,7 @@ export function updateAutocompleteFirstResults(
     const completion: Completion = {
       ...item,
       replacementPrefix: prefix,
+      // flowlint-next-line sketchy-null-string:off
       sortText: item.sortText || text,
     };
     items.push({filterScore, completion});

@@ -82,6 +82,7 @@ export function setRuleTypeEpic(
     const {ruleType} = action;
     if (ruleType) {
       const state = store.getState();
+      // flowlint-next-line sketchy-null-string:off
       invariant(state.buckRoot);
       return state.platformService
         .getPlatformGroups(state.buckRoot, ruleType.type, state.buildTarget)

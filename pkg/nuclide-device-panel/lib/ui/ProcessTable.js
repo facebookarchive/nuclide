@@ -82,6 +82,7 @@ export class ProcessTable extends React.Component {
     )
       ? (a: ?number, b: ?number, isAsc: boolean): number => {
           const cmp =
+            // flowlint-next-line sketchy-null-number:off
             (a || Number.NEGATIVE_INFINITY) - (b || Number.NEGATIVE_INFINITY);
           return isAsc ? cmp : -cmp;
         }

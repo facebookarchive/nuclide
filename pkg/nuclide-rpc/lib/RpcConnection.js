@@ -436,6 +436,7 @@ export class RpcConnection<TransportType: Transport> {
           );
         });
         const {trackSampleRate} = this._options;
+        // flowlint-next-line sketchy-null-number:off
         if (trackSampleRate && Math.random() * trackSampleRate <= 1) {
           return trackTiming(
             trackingIdOfMessageAndNetwork(this._objectRegistry, message),
@@ -849,6 +850,7 @@ export class RpcConnection<TransportType: Transport> {
   }
 
   _trackLargeResponse(message: RequestMessage, size: number) {
+    // flowlint-next-line sketchy-null-number:off
     if (!this._options.trackSampleRate) {
       return;
     }

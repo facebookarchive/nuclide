@@ -82,6 +82,7 @@ export function getDefaultConnectionProfile(options?: {
   if (options != null) {
     dialogSettings.cwd = options.initialCwd;
     dialogSettings.server = options.initialServer;
+    // flowlint-next-line sketchy-null-string:off
     if (options.initialRemoteServerCommand) {
       dialogSettings.remoteServerCommand = options.initialRemoteServerCommand;
     }

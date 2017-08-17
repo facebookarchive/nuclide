@@ -45,6 +45,7 @@ export function convertProperty(
   const result = {
     configurable: false,
     enumerable: true,
+    // flowlint-next-line sketchy-null-string:off
     name: dbgpProperty.$.name || 'Anonymous Property',
     value: convertValue(contextId, dbgpProperty),
   };

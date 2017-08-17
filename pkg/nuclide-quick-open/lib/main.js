@@ -116,6 +116,7 @@ class Activation {
         'quickopen-provider': providerName,
         'quickopen-session': this._analyticsSessionId || '',
         // Because the `provider` is usually OmniSearch, also track the original provider.
+        // flowlint-next-line sketchy-null-mixed:off
         'quickopen-provider-source': selection.sourceProvider || '',
       });
     }
@@ -145,6 +146,7 @@ class Activation {
      * selection or cancellation.
      */
     this._analyticsSessionId =
+      // flowlint-next-line sketchy-null-string:off
       this._analyticsSessionId || Date.now().toString();
     track('quickopen-change-tab', {
       'quickopen-provider': newProviderName,

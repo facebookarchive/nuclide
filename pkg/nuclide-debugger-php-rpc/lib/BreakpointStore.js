@@ -162,9 +162,11 @@ export class BreakpointStore {
     invariant(breakpoint != null);
     const {breakpointInfo} = breakpoint;
     breakpointInfo.lineNumber = Number(
+      // flowlint-next-line sketchy-null-number:off
       xdebugBreakpoint.lineno || breakpointInfo.lineNumber,
     );
     breakpointInfo.filename =
+      // flowlint-next-line sketchy-null-string:off
       xdebugBreakpoint.filename || breakpointInfo.filename;
     if (xdebugBreakpoint.resolved != null) {
       breakpoint.resolved = xdebugBreakpoint.resolved === 'resolved';
@@ -211,6 +213,7 @@ export class BreakpointStore {
 
   async _removePauseAllExceptionBreakpointIfNeeded(): Promise<void> {
     const breakpointId = this._pauseAllExceptionBreakpointId;
+    // flowlint-next-line sketchy-null-string:off
     if (breakpointId) {
       this._pauseAllExceptionBreakpointId = null;
       return this._removeBreakpointFromConnections(breakpointId);
@@ -290,6 +293,7 @@ export class BreakpointStore {
       map.set(chromeId, xdebugBreakpointId);
     });
     await Promise.all(breakpointPromises);
+    // flowlint-next-line sketchy-null-string:off
     if (this._pauseAllExceptionBreakpointId) {
       const breakpoitnId = await connection.setExceptionBreakpoint(
         PAUSE_ALL_EXCEPTION_NAME,

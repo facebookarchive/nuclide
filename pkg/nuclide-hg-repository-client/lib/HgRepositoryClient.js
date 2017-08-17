@@ -579,6 +579,7 @@ export class HgRepositoryClient {
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, might need to do a synchronous `hg status` query.
   isPathModified(filePath: ?NuclideUri): boolean {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return false;
     }
@@ -593,6 +594,7 @@ export class HgRepositoryClient {
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, might need to do a synchronous `hg status` query.
   isPathNew(filePath: ?NuclideUri): boolean {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return false;
     }
@@ -605,6 +607,7 @@ export class HgRepositoryClient {
   }
 
   isPathAdded(filePath: ?NuclideUri): boolean {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return false;
     }
@@ -617,6 +620,7 @@ export class HgRepositoryClient {
   }
 
   isPathUntracked(filePath: ?NuclideUri): boolean {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return false;
     }
@@ -632,6 +636,7 @@ export class HgRepositoryClient {
   // If not, this method lies a bit by using cached information.
   // TODO (jessicalin) Make this work for ignored directories.
   isPathIgnored(filePath: ?NuclideUri): boolean {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return false;
     }
@@ -679,6 +684,7 @@ export class HgRepositoryClient {
   }
 
   getCachedPathStatus(filePath: ?NuclideUri): StatusCodeNumberValue {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return StatusCodeNumber.CLEAN;
     }
@@ -734,6 +740,7 @@ export class HgRepositoryClient {
 
   getDiffStats(filePath: ?NuclideUri): {added: number, deleted: number} {
     const cleanStats = {added: 0, deleted: 0};
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return cleanStats;
     }
@@ -753,6 +760,7 @@ export class HgRepositoryClient {
   // types can be exported.
   // TODO (jessicalin) Make this method work with the passed-in `text`. t6391579
   getLineDiffs(filePath: ?NuclideUri, text: ?string): Array<LineDiff> {
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return [];
     }

@@ -217,6 +217,7 @@ export default class ContextMenu {
     // https://github.com/atom/atom/blob/v1.15.0/src/main-process/context-menu.coffee#L17
     return (
       Array.isArray(event.detail) &&
+      // flowlint-next-line sketchy-null-mixed:off
       event.detail[0] &&
       (event.detail[0]: any).contextCommand
     );

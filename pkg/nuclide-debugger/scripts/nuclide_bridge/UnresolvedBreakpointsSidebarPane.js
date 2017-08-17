@@ -50,6 +50,7 @@ class UnresolvedBreakpointsComponent extends React.Component {
   render() {
     const children = this.state.breakpoints.map(breakpoint => {
       const {pathname} = url.parse(breakpoint.url);
+      // flowlint-next-line sketchy-null-string:off
       invariant(pathname);
       const longRep = `${pathname}:${breakpoint.line + 1}`;
       const shortRep = `${nuclideUri.basename(pathname)}:${breakpoint.line +

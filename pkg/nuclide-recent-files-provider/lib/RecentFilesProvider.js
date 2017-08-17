@@ -133,6 +133,7 @@ export const RecentFilesProvider: Provider = {
     return (
       <div
         className="recent-files-provider-result"
+        // flowlint-next-line sketchy-null-number:off
         style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
         title={datetime}>
         <div className="recent-files-provider-filepath-container">

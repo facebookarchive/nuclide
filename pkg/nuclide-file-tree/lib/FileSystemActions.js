@@ -80,6 +80,7 @@ class FileSystemActions {
   openAddFileDialogRelative(onDidConfirm: (filePath: ?string) => mixed): void {
     const editor = atom.workspace.getActiveTextEditor();
     const filePath = editor != null ? editor.getPath() : null;
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return;
     }

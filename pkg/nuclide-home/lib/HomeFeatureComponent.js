@@ -46,7 +46,8 @@ export default class HomeFeatureComponent extends React.Component {
         <summary
           className={`nuclide-home-summary icon icon-${this.props.icon}`}>
           {title}
-          {command
+          {// flowlint-next-line sketchy-null-string:off
+          command
             ? <Button
                 className="pull-right nuclide-home-tryit"
                 size={ButtonSizes.SMALL}

@@ -303,6 +303,7 @@ export default class FileTreeController {
       this._actions.setFoldersExpanded(true);
     }
 
+    // flowlint-next-line sketchy-null-string:off
     if (!filePath) {
       return;
     }
@@ -337,6 +338,7 @@ export default class FileTreeController {
       invariant(this._cwdApiSubscription == null);
       this._cwdApiSubscription = cwdApi.observeCwd(directory => {
         const path = directory == null ? null : directory.getPath();
+        // flowlint-next-line sketchy-null-string:off
         const rootKey = path && FileTreeHelpers.dirPathToKey(path);
         this._actions.setCwd(rootKey);
       });

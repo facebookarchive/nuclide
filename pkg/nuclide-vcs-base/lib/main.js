@@ -191,6 +191,7 @@ export function forgetPath(nodePath: ?NuclideUri): Promise<void> {
     'forget',
     'Forgot',
     async (hgRepository: HgRepositoryClient) => {
+      // flowlint-next-line sketchy-null-string:off
       invariant(nodePath);
       track('hg-repository-forget', {nodePath});
       await hgRepository.forget([nodePath]);
@@ -204,6 +205,7 @@ export function addPath(nodePath: ?NuclideUri): Promise<void> {
     'add',
     'Added',
     async (hgRepository: HgRepositoryClient) => {
+      // flowlint-next-line sketchy-null-string:off
       invariant(nodePath);
       track('hg-repository-add', {nodePath});
       await hgRepository.addAll([nodePath]);
@@ -220,6 +222,7 @@ export function revertPath(
     'revert',
     'Reverted',
     async (hgRepository: HgRepositoryClient) => {
+      // flowlint-next-line sketchy-null-string:off
       invariant(nodePath);
       track('hg-repository-revert', {nodePath});
       await hgRepository.revert([nodePath], toRevision);

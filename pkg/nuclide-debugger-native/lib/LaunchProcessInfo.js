@@ -96,6 +96,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       pythonBinaryPath: getConfig().pythonBinaryPath,
       buckConfigRootFile: getConfig().buckConfigRootFile,
       lldbPythonPath:
+        // flowlint-next-line sketchy-null-string:off
         this._launchTargetInfo.lldbPythonPath || getConfig().lldbPythonPath,
       envPythonPath: '',
     };

@@ -203,6 +203,7 @@ function createGutterItem(
   let paneItemSubscription = null;
   let disposeTimeout = null;
   const clearDisposeTimeout = () => {
+    // flowlint-next-line sketchy-null-number:off
     if (disposeTimeout) {
       clearTimeout(disposeTimeout);
     }
@@ -311,6 +312,7 @@ function showPopupFor(
     messages.forEach(message => {
       analytics.track('diagnostics-gutter-show-popup', {
         'diagnostics-provider': message.providerName,
+        // flowlint-next-line sketchy-null-string:off
         'diagnostics-message': message.text || message.html || '',
       });
     });
