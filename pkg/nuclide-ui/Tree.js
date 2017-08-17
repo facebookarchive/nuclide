@@ -11,6 +11,7 @@
 
 import React from 'react';
 import classnames from 'classnames';
+import {scrollIntoView} from 'nuclide-commons-ui/scrollIntoView';
 
 type TreeItemProps = {
   children?: mixed,
@@ -23,7 +24,9 @@ export class TreeItem extends React.Component {
   _liNode: ?Element;
 
   scrollIntoView() {
-    this._liNode && this._liNode.scrollIntoView();
+    if (this._liNode != null) {
+      scrollIntoView(this._liNode);
+    }
   }
 
   render() {

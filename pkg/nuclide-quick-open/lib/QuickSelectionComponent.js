@@ -41,6 +41,7 @@ import {Observable, Scheduler} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Button} from 'nuclide-commons-ui/Button';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 import Tabs from '../../nuclide-ui/Tabs';
 import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -565,8 +566,7 @@ export default class QuickSelectionComponent extends React.Component {
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
     // top/bottom.
     if (selectedNode) {
-      // $FlowFixMe
-      selectedNode.scrollIntoViewIfNeeded(false);
+      scrollIntoViewIfNeeded(selectedNode, false);
     }
   }
 

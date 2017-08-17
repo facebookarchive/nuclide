@@ -9,6 +9,8 @@
  * @format
  */
 
+/* globals Element */
+
 import invariant from 'assert';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
@@ -16,6 +18,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Portal} from './Portal';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 type DefaultProps = {
   className: string,
@@ -366,9 +369,8 @@ export class Combobox extends React.Component {
 
   _scrollSelectedOptionIntoViewIfNeeded = (): void => {
     const selectedOption = ReactDOM.findDOMNode(this.refs.selectedOption);
-    if (selectedOption) {
-      // $FlowFixMe
-      selectedOption.scrollIntoViewIfNeeded();
+    if (selectedOption instanceof Element) {
+      scrollIntoViewIfNeeded(selectedOption);
     }
   };
 

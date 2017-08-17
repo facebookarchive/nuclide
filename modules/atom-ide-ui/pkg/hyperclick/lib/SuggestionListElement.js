@@ -18,6 +18,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 /**
  * We need to create this custom HTML element so we can hook into the view
@@ -229,8 +230,7 @@ class SuggestionList extends React.Component {
     const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
     // $FlowFixMe
     const selectedNode = listNode.getElementsByClassName('selected')[0];
-    // $FlowFixMe
-    selectedNode.scrollIntoViewIfNeeded(false);
+    scrollIntoViewIfNeeded(selectedNode, false);
   }
 }
 

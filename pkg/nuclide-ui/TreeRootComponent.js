@@ -9,6 +9,8 @@
  * @format
  */
 
+/* globals Element */
+
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {LazyTreeNode} from './LazyTreeNode';
@@ -16,6 +18,7 @@ import {TreeNodeComponent} from './TreeNodeComponent';
 import {forEachCachedNode} from './tree-node-traversals';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 type TreeMenuItemDefinition = {
   label: string,
@@ -151,10 +154,10 @@ export class TreeRootComponent extends React.Component {
     if (!prevState || this.state.selectedKeys !== prevState.selectedKeys) {
       const firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
       if (firstSelectedDescendant !== undefined) {
-        // $FlowFixMe
-        ReactDOM.findDOMNode(firstSelectedDescendant).scrollIntoViewIfNeeded(
-          false,
-        );
+        const el = ReactDOM.findDOMNode(firstSelectedDescendant);
+        if (el instanceof Element) {
+          scrollIntoViewIfNeeded(el, false);
+        }
       }
     }
 

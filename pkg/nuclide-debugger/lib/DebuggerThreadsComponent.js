@@ -24,6 +24,7 @@ import {
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
 import debounce from 'nuclide-commons/debounce';
+import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
 type DebuggerThreadsComponentProps = {
   bridge: Bridge,
@@ -95,8 +96,7 @@ export class DebuggerThreadsComponent extends React.Component {
         );
 
       if (selectedRows && selectedRows.length > 0) {
-        // $FlowFixMe
-        selectedRows[0].scrollIntoViewIfNeeded(false);
+        scrollIntoViewIfNeeded(selectedRows[0], false);
       }
     }
   }

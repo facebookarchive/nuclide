@@ -15,6 +15,7 @@ import NuclideBridge from './NuclideBridge';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import WebInspector from '../../lib/WebInspector';
+import {scrollIntoView} from 'nuclide-commons-ui/scrollIntoView';
 
 type StateType = {
   threadData: ?ThreadData,
@@ -130,7 +131,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
 
   _scrollToStoppedThread() {
     if (this._stoppedThread != null) {
-      this._stoppedThread.scrollIntoView();
+      scrollIntoView(this._stoppedThread);
     }
   }
 
