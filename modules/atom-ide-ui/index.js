@@ -18,13 +18,44 @@ import path from 'path';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import FeatureLoader from 'nuclide-commons-atom/FeatureLoader';
 
-if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
-  atom.notifications.addWarning('Duplicate package: `atom-ide-ui`', {
-    description:
-      '`atom-ide-ui` is already included as part of `nuclide`.<br>' +
-      'Please uninstall `atom-ide-ui` to avoid conflicts.',
-    dismissable: true,
-  });
+const HIDE_WARNING_KEY = 'atom-ide-ui.hideNuclideWarning';
+
+function displayNuclideWarning() {
+  if (!atom.config.get(HIDE_WARNING_KEY)) {
+    const notification = atom.notifications.addInfo(
+      'Atom IDE UI is bundled with Nuclide',
+      {
+        description:
+          '`atom-ide-ui` will be deactivated in favor of Nuclide.<br>' +
+          'Please disable Nuclide if you only want to use `atom-ide-ui`.',
+        dismissable: true,
+        buttons: [
+          {
+            text: 'Disable Nuclide and reload',
+            onDidClick() {
+              atom.packages.disablePackage('nuclide');
+              atom.reload();
+              notification.dismiss();
+            },
+          },
+          {
+            text: "Don't warn me again",
+            onDidClick() {
+              atom.config.set(HIDE_WARNING_KEY, true);
+              notification.dismiss();
+            },
+          },
+        ],
+      },
+    );
+  }
+}
+
+if (
+  !atom.packages.isPackageDisabled('nuclide') &&
+  atom.packages.getAvailablePackageNames().includes('nuclide')
+) {
+  displayNuclideWarning();
 } else {
   const featureDir = path.join(__dirname, 'pkg');
   const features = fs
@@ -47,7 +78,7 @@ if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
       }
     })
     .filter(Boolean);
-  const disposables = new UniversalDisposable();
+  let disposables: ?UniversalDisposable;
   const featureLoader = new FeatureLoader({
     pkgName: 'atom-ide-ui',
     config: {},
@@ -57,12 +88,22 @@ if (atom.packages.getAvailablePackageNames().includes('nuclide')) {
   module.exports = {
     config: featureLoader.getConfig(),
     activate() {
-      disposables.add(require('nuclide-commons-ui'));
+      disposables = new UniversalDisposable(
+        require('nuclide-commons-ui'),
+        atom.packages.onDidActivatePackage(pkg => {
+          if (pkg.name === 'nuclide') {
+            displayNuclideWarning();
+          }
+        }),
+      );
       featureLoader.activate();
     },
     deactivate() {
       featureLoader.deactivate();
-      disposables.dispose();
+      if (disposables != null) {
+        disposables.dispose();
+        disposables = null;
+      }
     },
     serialize() {
       featureLoader.serialize();
