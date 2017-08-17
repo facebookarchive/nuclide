@@ -348,8 +348,8 @@ class PythonSingleFileLanguageService {
 }
 
 let formatterPath;
-function getFormatterPath() {
-  if (formatterPath) {
+function getFormatterPath(): string {
+  if (formatterPath != null) {
     return formatterPath;
   }
 
@@ -359,8 +359,7 @@ function getFormatterPath() {
     // $FlowFB
     const findFormatterPath = require('./fb/find-formatter-path').default;
     const overridePath = findFormatterPath();
-    // flowlint-next-line sketchy-null-string:off
-    if (overridePath) {
+    if (overridePath != null) {
       formatterPath = overridePath;
     }
   } catch (e) {
