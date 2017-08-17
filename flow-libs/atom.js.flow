@@ -1405,6 +1405,16 @@ declare class atom$GrammarRegistry {
   clear(): IDisposable,
 }
 
+declare class atom$HistoryManager {
+  removeProject(paths: Array<string>): void,
+  getProjects(): Array<atom$HistoryProject>,
+}
+
+declare class atom$HistoryProject {
+  get paths(): Array<string>;
+  get lastOpened(): Date;
+}
+
 type atom$KeyBinding = Object;
 
 declare class atom$KeymapManager {
@@ -1728,6 +1738,7 @@ type AtomGlobal = {
   applicationDelegate: atom$applicationDelegate,
   deserializers: atom$DeserializerManager,
   grammars: atom$GrammarRegistry,
+  history: atom$HistoryManager,
   keymaps: atom$KeymapManager,
   menu: atom$MenuManager,
   notifications: atom$NotificationManager,
