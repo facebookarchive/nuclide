@@ -9,7 +9,11 @@
  * @format
  */
 
+/* eslint-env browser */
+/* global PerformanceObserver */
+
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import {remote} from 'electron';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
@@ -19,6 +23,10 @@ import {HistogramTracker} from '../../nuclide-analytics';
 
 invariant(remote != null);
 
+const CHROME_VERSION = Number(
+  nullthrows(process.versions.chrome).split('.')[0],
+);
+
 // The startup period naturally causes many event loop blockages.
 // Don't start checking blockages until some time has passed.
 const BLOCKED_GRACE_PERIOD = 30000;
@@ -26,8 +34,10 @@ const BLOCKED_GRACE_PERIOD = 30000;
 const BLOCKED_MIN = 100;
 // Discard overly long blockages as spurious (e.g. computer was asleep)
 const BLOCKED_MAX = 600000;
-// Block checking interval.
-const BLOCKED_INTERVAL = 100;
+// Range padding on either side of long task interval.
+// If an intentional block timestamp lies in this range,
+// we consider it intentional.
+const BLOCKED_RANGE_PADDING = 15;
 
 export default function trackStalls(): IDisposable {
   const disposables = new UniversalDisposable();
@@ -47,6 +57,10 @@ export default function trackStalls(): IDisposable {
 }
 
 function trackStallsImpl(): IDisposable {
+  if (!supportsPerformanceObserversWithLongTasks()) {
+    return new UniversalDisposable();
+  }
+
   const browserWindow = remote.getCurrentWindow();
   const histogram = new HistogramTracker(
     'event-loop-blocked',
@@ -56,38 +70,54 @@ function trackStallsImpl(): IDisposable {
 
   let intentionalBlockTime = 0;
   const onIntentionalBlock = () => {
-    intentionalBlockTime = Date.now();
+    intentionalBlockTime = performance.now();
   };
 
-  let blockedInterval = null;
-  function startBlockedCheck() {
-    if (blockedInterval != null) {
+  // $FlowFixMe No definition for PerformanceObserver
+  const longTaskObserver = new PerformanceObserver(list => {
+    if (!document.hasFocus()) {
       return;
     }
-    let lastTime = Date.now();
-    blockedInterval = setInterval(() => {
-      const now = Date.now();
-      if (
-        document.hasFocus() &&
-        lastTime - intentionalBlockTime > BLOCKED_INTERVAL
-      ) {
-        const delta = now - lastTime - BLOCKED_INTERVAL;
-        if (delta > BLOCKED_MIN && delta < BLOCKED_MAX) {
-          histogram.track(delta);
-          getLogger('nuclide-health').warn(
-            `Event loop was blocked for ${delta} ms`,
-          );
-        }
+
+    const entries = list.getEntries();
+    for (const entry of entries) {
+      let duration;
+      let startTime;
+      if (CHROME_VERSION <= 56) {
+        // Old versions of chrome implement longtask perf observers,
+        // but their duration is in units of whole *microseconds* instead of
+        // *milliseconds* with fractional units
+        duration = entry.duration / 1000;
+        startTime = entry.startTime / 1000;
+      } else {
+        duration = entry.duration;
+        startTime = entry.startTime;
       }
-      lastTime = now;
-    }, BLOCKED_INTERVAL);
+
+      const withinReasonableWindow =
+        duration > BLOCKED_MIN && duration < BLOCKED_MAX;
+
+      // did the intentionalblocktime occur between the start and end,
+      // accounting for some extra padding?
+      const wasBlockedIntentionally =
+        intentionalBlockTime > startTime - BLOCKED_RANGE_PADDING &&
+        intentionalBlockTime < startTime + duration + BLOCKED_RANGE_PADDING;
+
+      if (withinReasonableWindow && !wasBlockedIntentionally) {
+        histogram.track(entry.duration);
+        getLogger('nuclide-health').warn(
+          `Event loop was blocked for ${duration} ms`,
+        );
+      }
+    }
+  });
+
+  function startBlockedCheck() {
+    longTaskObserver.observe({entryTypes: ['longtask']});
   }
 
   function stopBlockedCheck() {
-    if (blockedInterval != null) {
-      clearInterval(blockedInterval);
-      blockedInterval = null;
-    }
+    longTaskObserver.disconnect();
   }
 
   if (document.hasFocus()) {
@@ -111,4 +141,23 @@ function trackStallsImpl(): IDisposable {
     Observable.fromEvent(browserWindow, 'blur').subscribe(stopBlockedCheck),
     () => stopBlockedCheck(),
   );
+}
+
+function supportsPerformanceObserversWithLongTasks() {
+  let testObserver;
+  let failed;
+
+  try {
+    // $FlowFixMe No definition for PerformanceObserver
+    testObserver = new PerformanceObserver(() => {});
+    testObserver.observe({entryTypes: ['longtask']});
+  } catch (e) {
+    failed = true;
+  } finally {
+    if (testObserver != null) {
+      testObserver.disconnect();
+    }
+  }
+
+  return !failed;
 }
