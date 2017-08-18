@@ -101,7 +101,10 @@ export class RemoteFile {
         }
       },
       error => {
-        logger.error('Failed to subscribe RemoteFile:', this._path, error);
+        // In the case of new files, it's normal for the remote file to not exist yet.
+        if (error.code !== 'ENOENT') {
+          logger.error('Failed to subscribe RemoteFile:', this._path, error);
+        }
         this._watchSubscription = null;
       },
       () => {
