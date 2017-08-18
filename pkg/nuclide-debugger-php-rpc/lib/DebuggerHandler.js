@@ -38,7 +38,7 @@ import {
   ConnectionMultiplexerStatus,
 } from './ConnectionMultiplexer';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {sleep} from 'nuclide-commons/promise';
+import {Deferred, sleep} from 'nuclide-commons/promise';
 import {BREAKPOINT} from './Connection';
 import {arrayFlatten, setDifference} from 'nuclide-commons/collection';
 import nullthrows from 'nullthrows';
@@ -51,6 +51,15 @@ import type {
 
 const RESOLVE_BREAKPOINT_DELAY_MS = 500;
 
+type VsBreakpointpointDescriptor = {
+  id: number,
+  path: string,
+  line: number,
+  condition: string,
+  vsBpDeferred: Deferred<DebugProtocol.Breakpoint>,
+  vsBp: ?DebugProtocol.Breakpoint,
+};
+
 export class DebuggerHandler {
   _connectionMultiplexer: ConnectionMultiplexer;
   _subscriptions: CompositeDisposable;
@@ -61,7 +70,7 @@ export class DebuggerHandler {
   // Since we want to send breakpoint events, we will assign an id to every event
   // so that the frontend can match events with breakpoints.
   _breakpointId = 0;
-  _breakpoints: Map<string, DebugProtocol.Breakpoint[]> = new Map();
+  _breakpoints: Map<string, VsBreakpointpointDescriptor[]> = new Map();
   _variableHandles: Handles<string> = new Handles();
 
   _sendOutput(message: string, level: string): void {
@@ -86,6 +95,7 @@ export class DebuggerHandler {
       ),
       this._connectionMultiplexer,
     );
+    (this: any)._removeBreakpoint = this._removeBreakpoint.bind(this);
   }
 
   setPauseOnExceptions(
@@ -105,63 +115,92 @@ export class DebuggerHandler {
     const existingBsSet = new Set(existingBreakpoints);
     const newBpSources = new Set(bpSources);
 
-    const addedBreakpoints = await Promise.all(
-      Array.from(
-        setDifference(newBpSources, existingBsSet, v => v.line),
-      ).map((sourceBp: any) => {
-        return this._setBreakpointFromSource(
-          ++this._breakpointId,
-          path,
-          sourceBp,
-        );
-      }),
-    );
+    const addBpDescriptors = Array.from(
+      setDifference(newBpSources, existingBsSet, v => v.line),
+    ).map(bpSrc => ({
+      id: ++this._breakpointId,
+      path,
+      line: bpSrc.line,
+      condition: bpSrc.condition || '',
+      vsBp: null,
+      vsBpDeferred: new Deferred(),
+    }));
 
-    const removedBpIds = new Set(
-      await Promise.all(
-        Array.from(
-          setDifference(existingBsSet, newBpSources, v => v.line),
-        ).map(async (existingBp: any) => {
-          const bpId: number = existingBp.id;
-          await this._removeBreakpoint(bpId);
-          return bpId;
-        }),
-      ),
-    );
+    const toRemoveBpDesciptiors: Array<VsBreakpointpointDescriptor> = [];
+    const toRemoveBpIds = new Set();
+    setDifference(
+      existingBsSet,
+      newBpSources,
+      v => v.line,
+    ).forEach((bp: any) => {
+      toRemoveBpDesciptiors.push(bp);
+      toRemoveBpIds.add(bp.id);
+    });
 
     const newBreakpoints = existingBreakpoints
-      .filter(bp => !removedBpIds.has(bp.id))
-      .concat(addedBreakpoints);
+      .filter(bp => !toRemoveBpIds.has(bp.id))
+      .concat(addBpDescriptors);
 
     this._breakpoints.set(path, newBreakpoints);
-    return newBreakpoints;
+
+    await Promise.all(
+      Array.from(toRemoveBpDesciptiors).map(this._removeBreakpoint),
+    );
+
+    addBpDescriptors.forEach((bpD: any) => {
+      const bpDescriptior: VsBreakpointpointDescriptor = bpD;
+      this._setBreakpointFromDesciptior(bpDescriptior).then((vsBp, error) => {
+        if (error != null) {
+          bpDescriptior.vsBpDeferred.reject(error);
+        } else {
+          bpDescriptior.vsBpDeferred.resolve(vsBp);
+          bpDescriptior.vsBp = vsBp;
+        }
+      });
+    });
+
+    const syncedVsBreakpoints = await Promise.all(
+      newBreakpoints.map(bp => bp.vsBpDeferred.promise),
+    );
+    if (newBreakpoints.length !== bpSources.length) {
+      logger.error(
+        'Breakpoint sources are different from set breakpoints',
+        bpSources,
+        newBreakpoints,
+      );
+    }
+    return syncedVsBreakpoints;
   }
 
-  async _setBreakpointFromSource(
-    id: number,
-    path: string,
-    bpSource: DebugProtocol.SourceBreakpoint,
+  async _setBreakpointFromDesciptior(
+    bpDescriptior: VsBreakpointpointDescriptor,
   ): Promise<DebugProtocol.Breakpoint> {
     const breakpointStore = this._connectionMultiplexer.getBreakpointStore();
     // Chrome lineNumber is 0-based while xdebug lineno is 1-based.
     const breakpointId = await breakpointStore.setFileLineBreakpoint(
-      String(id),
-      path,
-      bpSource.line,
-      bpSource.condition,
+      String(bpDescriptior.id),
+      bpDescriptior.path,
+      bpDescriptior.line,
+      bpDescriptior.condition,
     );
-    const hhBreakpoint = await breakpointStore.getBreakpoint(breakpointId);
+    const hhBreakpoint = breakpointStore.getBreakpoint(breakpointId);
     invariant(hhBreakpoint != null);
     const bp: DebugProtocol.Breakpoint = new Breakpoint(
       hhBreakpoint.resolved,
-      bpSource.line,
+      bpDescriptior.line,
     );
-    bp.id = id;
+    bp.id = bpDescriptior.id;
     return bp;
   }
 
-  _removeBreakpoint(breakpointId: number): Promise<void> {
-    return this._connectionMultiplexer.removeBreakpoint(String(breakpointId));
+  async _removeBreakpoint(
+    bpDescriptior: VsBreakpointpointDescriptor,
+  ): Promise<void> {
+    // A breakpoint may still be pending-creation.
+    await bpDescriptior.vsBpDeferred.promise;
+    await this._connectionMultiplexer.removeBreakpoint(
+      String(bpDescriptior.id),
+    );
   }
 
   async getStackFrames(id: number): Promise<Array<DebugProtocol.StackFrame>> {
@@ -360,9 +399,10 @@ export class DebuggerHandler {
   }
 
   _getBreakpointById(bpId: number): ?DebugProtocol.Breakpoint {
-    return arrayFlatten(Array.from(this._breakpoints.values())).find(
-      bp => bp.id === bpId,
-    );
+    const bpDescriptior = arrayFlatten(
+      Array.from(this._breakpoints.values()),
+    ).find(bp => bp.id === bpId);
+    return bpDescriptior == null ? null : bpDescriptior.vsBp;
   }
 
   // May only call when in paused state.
