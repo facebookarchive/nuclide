@@ -198,6 +198,12 @@ export default class BreakpointManager {
       // Remove from engine.
       if (this._isConfirmedBreakpoint(breakpoint)) {
         this._debuggerDispatcher.removeBreakpoint(breakpoint.id);
+      } else {
+        reportError(
+          `Cannot removeBreakpoint as it's unverified! ${JSON.stringify(
+            breakpoint,
+          )}`,
+        );
       }
     }
   }
