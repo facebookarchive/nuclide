@@ -11,6 +11,7 @@
 
 import {Command, Diagnostic} from 'vscode-languageserver';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AddImportCommandParams} from './CommandExecuter';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
@@ -61,17 +62,18 @@ function diagnosticToCommands(
         // Create a CodeAction for each file with an export.
         .map(missingImport =>
           missingImport.filesWithExport.map(fileWithExport => {
+            const addImportArgs: AddImportCommandParams = [
+              missingImport.symbol.id,
+              fileWithExport,
+              fileWithDiagnostic,
+            ];
             return {
               title: `Import from ${importFormatter.formatImportFile(
                 fileWithDiagnostic,
                 fileWithExport,
               )}`,
               command: 'addImport',
-              arguments: [
-                missingImport.symbol.id,
-                fileWithExport,
-                fileWithDiagnostic,
-              ],
+              arguments: addImportArgs,
             };
           }),
         ),

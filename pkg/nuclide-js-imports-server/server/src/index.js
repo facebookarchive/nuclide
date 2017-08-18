@@ -17,6 +17,7 @@ import {
   InitializeResult,
   Command,
   CodeActionParams,
+  ExecuteCommandParams,
 } from 'vscode-languageserver';
 
 import {StreamMessageReader, StreamMessageWriter} from 'vscode-jsonrpc';
@@ -29,6 +30,7 @@ import {Completions} from './Completions';
 import {Diagnostics} from './Diagnostics';
 import {Settings} from './Settings';
 import {CodeActions} from './CodeActions';
+import {CommandExecuter} from './CommandExecuter';
 
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintEnvs, getConfigFromFlow} from './getConfig';
@@ -62,6 +64,11 @@ let completion = new Completions(
 );
 let diagnostics = new Diagnostics(autoImportsManager, importFormatter);
 let codeActions = new CodeActions(autoImportsManager, importFormatter);
+let commandExecuter = new CommandExecuter(
+  connection,
+  importFormatter,
+  documents,
+);
 
 connection.onInitialize((params): InitializeResult => {
   const root = params.rootPath || process.cwd();
@@ -95,6 +102,7 @@ connection.onInitialize((params): InitializeResult => {
   );
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);
   codeActions = new CodeActions(autoImportsManager, importFormatter);
+  commandExecuter = new CommandExecuter(connection, importFormatter, documents);
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
@@ -103,6 +111,7 @@ connection.onInitialize((params): InitializeResult => {
         triggerCharacters: getAllTriggerCharacters(),
       },
       codeActionProvider: true,
+      executeCommandProvider: Array.from(Object.keys(CommandExecuter.COMMANDS)),
     },
   };
 });
@@ -179,6 +188,12 @@ connection.onCodeAction((codeActionParams: CodeActionParams): Array<
     logger.error(error);
     return [];
   }
+});
+
+connection.onExecuteCommand((params: ExecuteCommandParams): any => {
+  const {command, arguments: args} = params;
+  logger.debug('Executing command', command, 'with args', args);
+  commandExecuter.executeCommand(command, args);
 });
 
 documents.listen(connection);
