@@ -115,19 +115,32 @@ class Activation {
     if (messagesAtPosition.length === 0) {
       return null;
     }
-    const [message] = messagesAtPosition;
-    const {range} = message;
+    const codeActions = await Promise.all(
+      messagesAtPosition.map(async message => {
+        return [
+          message,
+          this._codeActionFetcher != null
+            ? await getCodeActionsForDiagnostic(
+                this._codeActionFetcher,
+                message,
+                editor,
+              )
+            : new Map(),
+        ];
+      }),
+    );
+    // TODO(matthewwithanm) Explore displaying multiple diagnostics in datatips.
+    // If a message has a code action, it should be shown first.
+    const [messageToShow, codeActionsForMessage] =
+      codeActions.find(([message, codeAction]) => codeAction.size > 0) ||
+      codeActions[0];
+    const {range} = messageToShow;
     invariant(range);
-    const codeActions =
-      this._codeActionFetcher != null
-        ? await getCodeActionsForDiagnostic(
-            this._codeActionFetcher,
-            message,
-            editor,
-          )
-        : new Map();
     return {
-      component: makeDiagnosticsDatatipComponent(message, codeActions),
+      component: makeDiagnosticsDatatipComponent(
+        messageToShow,
+        codeActionsForMessage,
+      ),
       pinnable: false,
       range,
     };
