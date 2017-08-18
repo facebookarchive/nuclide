@@ -29,12 +29,12 @@ export type CodeActionProvider = {
 };
 
 /**
-* atom-ide-code-actions provides a CodeActionUpdater which offers an API to
-* request CodeActions from all CodeAction providers. For now, CodeActionUpdater
+* atom-ide-code-actions provides a CodeActionFetcher which offers an API to
+* request CodeActions from all CodeAction providers. For now, CodeActionFetcher
 * can only fetch CodeActions for a Diagnostic. In the future, this API can be
 * extended to provide a stream of CodeActions based on the cursor position.
 */
-export type CodeActionUpdater = {
+export type CodeActionFetcher = {
   getCodeActionForDiagnostic: (
     diagnostic: FileDiagnosticMessage,
     editor: atom$TextEditor,

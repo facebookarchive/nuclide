@@ -15,6 +15,10 @@ import type {
   DatatipProvider,
   DatatipService,
 } from '../../atom-ide-datatip/lib/types';
+
+import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
+import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
+
 import type {
   DiagnosticMessage,
   DiagnosticTrace,
@@ -74,6 +78,7 @@ class Activation {
   _state: ActivationState;
   _statusBarTile: ?StatusBarTile;
   _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
+  _codeActionFetcher: ?CodeActionFetcher;
 
   constructor(state_: ?Object): void {
     this._diagnosticUpdaters = new BehaviorSubject(null);
@@ -113,8 +118,16 @@ class Activation {
     const [message] = messagesAtPosition;
     const {range} = message;
     invariant(range);
+    const codeActions =
+      this._codeActionFetcher != null
+        ? await getCodeActionsForDiagnostic(
+            this._codeActionFetcher,
+            message,
+            editor,
+          )
+        : new Map();
     return {
-      component: makeDiagnosticsDatatipComponent(message),
+      component: makeDiagnosticsDatatipComponent(message, codeActions),
       pinnable: false,
       range,
     };
@@ -158,6 +171,10 @@ class Activation {
       invariant(this._diagnosticUpdaters.getValue() === diagnosticUpdater);
       this._diagnosticUpdaters.next(null);
     });
+  }
+
+  consumeCodeActionFetcher(fetcher: CodeActionFetcher) {
+    this._codeActionFetcher = fetcher;
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): void {
@@ -498,6 +515,26 @@ function observeLinterPackageEnabled(): Observable<boolean> {
     )
       .filter(pkg => pkg.name === LINTER_PACKAGE)
       .mapTo(false),
+  );
+}
+
+async function getCodeActionsForDiagnostic(
+  codeActionFetcher: CodeActionFetcher,
+  message: FileDiagnosticMessage,
+  editor: atom$TextEditor,
+): Promise<Map<string, CodeAction>> {
+  const codeActions = await codeActionFetcher.getCodeActionForDiagnostic(
+    message,
+    editor,
+  );
+  // For RPC reasons, the getTitle function of a CodeAction is async. Therefore,
+  // we immediately request the title after we have each CodeAction.
+  return new Map(
+    await Promise.all(
+      codeActions.map(async codeAction =>
+        Promise.resolve([await codeAction.getTitle(), codeAction]),
+      ),
+    ),
   );
 }
 

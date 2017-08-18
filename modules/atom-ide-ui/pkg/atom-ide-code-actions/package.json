@@ -13,9 +13,9 @@
     }
   },
   "providedServices": {
-    "code-actions-updater": {
+    "code-actions-fetcher": {
       "versions": {
-        "0.1.0": "provideCodeActionUpdater"
+        "0.1.0": "provideCodeActionFetcher"
       }
     }
   }
