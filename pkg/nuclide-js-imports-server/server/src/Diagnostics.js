@@ -44,7 +44,7 @@ function missingImportToDiagnostic(
   importSuggestion: ImportSuggestion,
   uri: NuclideUri,
 ) {
-  const {symbol, filesWithExport} = importSuggestion;
+  const {symbol} = importSuggestion;
   return {
     severity: DiagnosticSeverity.Warning,
     range: {
@@ -57,11 +57,7 @@ function missingImportToDiagnostic(
         line: symbol.location.end.line - 1,
       },
     },
-    message: `${symbol.id} is not imported. (${symbol.type})\n Import from: ${importFormatter.formatImportFile(
-      uri,
-      // For now, just show the first suggestion:
-      filesWithExport[0],
-    )}`,
+    message: `The ${symbol.type} ${symbol.id} is not imported.`,
     source: DIAGNOSTIC_SOURCE,
   };
 }
