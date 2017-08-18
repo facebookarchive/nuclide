@@ -148,9 +148,10 @@ function provideFullImportCompletions(
     ],
     importType,
   ).map((suggestion, i) => {
-    const fileToImport = isHaste
-      ? importsFormatter.formatHasteImportFile(nuclideFormattedUri, suggestion)
-      : importsFormatter.formatImportFile(nuclideFormattedUri, suggestion);
+    const fileToImport = importsFormatter.formatImportFile(
+      nuclideFormattedUri,
+      suggestion,
+    );
 
     const insertText = getInsertTextForCompleteImport(
       importType,
@@ -334,9 +335,10 @@ function importsToCompletionItems(
   importType: ImportType,
   isHaste: boolean,
 ): CompletionItem {
-  const fileImport = isHaste
-    ? importsFormatter.formatHasteImportFile(currentFile, exportSuggestion)
-    : importsFormatter.formatImportFile(currentFile, exportSuggestion);
+  const fileImport = importsFormatter.formatImportFile(
+    currentFile,
+    exportSuggestion,
+  );
 
   // autocomplete-plus will replace everything until there is whitespace. If the
   // user writes "import Foo from " we should no longer include "from" in the

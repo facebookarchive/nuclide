@@ -15,6 +15,8 @@ import {
   TextDocumentPositionParams,
   IConnection,
   InitializeResult,
+  Command,
+  CodeActionParams,
 } from 'vscode-languageserver';
 
 import {StreamMessageReader, StreamMessageWriter} from 'vscode-jsonrpc';
@@ -26,6 +28,7 @@ import {ImportFormatter} from './lib/ImportFormatter';
 import {Completions} from './Completions';
 import {Diagnostics} from './Diagnostics';
 import {Settings} from './Settings';
+import {CodeActions} from './CodeActions';
 
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintEnvs, getConfigFromFlow} from './getConfig';
@@ -50,7 +53,7 @@ const shouldProvideFlags = {
 };
 
 let autoImportsManager = new AutoImportsManager([]);
-let importFormatter = new ImportFormatter([]);
+let importFormatter = new ImportFormatter([], false);
 let completion = new Completions(
   documents,
   autoImportsManager,
@@ -58,6 +61,7 @@ let completion = new Completions(
   false,
 );
 let diagnostics = new Diagnostics(autoImportsManager, importFormatter);
+let codeActions = new CodeActions(autoImportsManager, importFormatter);
 
 connection.onInitialize((params): InitializeResult => {
   const root = params.rootPath || process.cwd();
@@ -77,7 +81,10 @@ connection.onInitialize((params): InitializeResult => {
       },
     };
   }
-  importFormatter = new ImportFormatter(flowConfig.moduleDirs);
+  importFormatter = new ImportFormatter(
+    flowConfig.moduleDirs,
+    flowConfig.hasteSettings.isHaste,
+  );
   autoImportsManager = new AutoImportsManager(envs);
   autoImportsManager.indexAndWatchDirectory(root);
   completion = new Completions(
@@ -87,6 +94,7 @@ connection.onInitialize((params): InitializeResult => {
     flowConfig.hasteSettings.isHaste,
   );
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);
+  codeActions = new CodeActions(autoImportsManager, importFormatter);
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
@@ -94,6 +102,7 @@ connection.onInitialize((params): InitializeResult => {
         resolveProvider: true,
         triggerCharacters: getAllTriggerCharacters(),
       },
+      codeActionProvider: true,
     },
   };
 });
@@ -154,6 +163,23 @@ connection.onCompletion(
     return [];
   },
 );
+
+connection.onCodeAction((codeActionParams: CodeActionParams): Array<
+  Command,
+> => {
+  try {
+    const uri = nuclideUri.uriToNuclideUri(codeActionParams.textDocument.uri);
+    return uri != null
+      ? codeActions.provideCodeActions(
+          codeActionParams.context && codeActionParams.context.diagnostics,
+          uri,
+        )
+      : [];
+  } catch (error) {
+    logger.error(error);
+    return [];
+  }
+});
 
 documents.listen(connection);
 connection.listen();

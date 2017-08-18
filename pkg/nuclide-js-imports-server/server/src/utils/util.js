@@ -12,7 +12,7 @@
 // flowlint-next-line untyped-type-import:off
 import type {Position, IPosition, IRange} from 'vscode-languageserver-types';
 
-import {Point} from 'simple-text-buffer';
+import {Point, Range} from 'simple-text-buffer';
 
 export function lspPositionToAtomPoint(lspPosition: IPosition): atom$Point {
   return new Point(lspPosition.line, lspPosition.character);
@@ -23,6 +23,13 @@ export function atomPointToLSPPosition(atomPoint: atom$PointObject): IPosition {
     line: atomPoint.row,
     character: atomPoint.column,
   };
+}
+
+export function babelLocationToAtomRange(location: Object): atom$Range {
+  return new Range(
+    new Point(location.start.line - 1, location.start.col),
+    new Point(location.end.line - 1, location.end.col),
+  );
 }
 
 export function atomRangeToLSPRange(atomRange: atom$Range): IRange {

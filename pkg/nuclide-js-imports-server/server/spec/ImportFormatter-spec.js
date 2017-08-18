@@ -22,7 +22,7 @@ describe('ImportFormatter', () => {
       isDefault: false,
     };
 
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], false);
     expect(
       formatter.formatImportFile(
         '/Users/login/home/root/subdirectory/file.js',
@@ -38,9 +38,10 @@ describe('ImportFormatter', () => {
       isDefault: false,
     };
 
-    const formatter = new ImportFormatter([
-      '/Users/login/home/root/subdirectory/modules',
-    ]);
+    const formatter = new ImportFormatter(
+      ['/Users/login/home/root/subdirectory/modules'],
+      false,
+    );
     expect(
       formatter.formatImportFile(
         '/Users/login/home/root/subdirectory/someProject/someSubdirectory/file.js',
@@ -57,9 +58,10 @@ describe('ImportFormatter', () => {
       isDefault: false,
     };
 
-    const formatter = new ImportFormatter([
-      '/Users/login/home/root/subdirectory/modules',
-    ]);
+    const formatter = new ImportFormatter(
+      ['/Users/login/home/root/subdirectory/modules'],
+      false,
+    );
     expect(
       formatter.formatImportFile(
         '/Users/login/home/root/subdirectory/file.js',
@@ -75,7 +77,7 @@ describe('ImportFormatter', () => {
       isDefault: false,
     };
 
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], false);
     expect(
       formatter.formatImport(
         '/Users/login/home/root/subdirectory/file.js',
@@ -91,7 +93,7 @@ describe('ImportFormatter', () => {
       isDefault: false,
     };
 
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], false);
     expect(
       formatter.formatImport(
         '/Users/login/home/root/subdirectory/file.js',
@@ -107,7 +109,7 @@ describe('ImportFormatter', () => {
       isDefault: true,
     };
 
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], false);
     expect(
       formatter.formatImport(
         '/Users/login/home/root/subdirectory/file.js',
@@ -122,7 +124,7 @@ describe('ImportFormatter', () => {
       isTypeExport: false,
       isDefault: true,
     };
-    const formatter = new ImportFormatter(['/Users/modules']);
+    const formatter = new ImportFormatter(['/Users/modules'], false);
     expect(
       formatter.formatImport(
         '/Users/modules/atom-ide-ui/aDifferentPackage/lib/anotherFile.js',
@@ -137,7 +139,7 @@ describe('ImportFormatter', () => {
       isTypeExport: false,
       isDefault: true,
     };
-    const formatter = new ImportFormatter(['/Users/modules']);
+    const formatter = new ImportFormatter(['/Users/modules'], false);
     expect(
       formatter.formatImport(
         '/Users/modules/nuclide-commons/aDifferentPackage/lib/anotherFile.js',
@@ -152,9 +154,9 @@ describe('ImportFormatter', () => {
       isTypeExport: false,
       isDefault: true,
     };
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], true);
     expect(
-      formatter.formatHasteImportFile(
+      formatter.formatImportFile(
         '/Users/modules/somePackage/somePackage/AutoImportsManager.js',
         suggestedImport,
       ),
@@ -167,9 +169,9 @@ describe('ImportFormatter', () => {
       isTypeExport: false,
       isDefault: true,
     };
-    const formatter = new ImportFormatter([]);
+    const formatter = new ImportFormatter([], true);
     expect(
-      formatter.formatHasteImportFile(
+      formatter.formatImportFile(
         '/Users/modules/somePackage/somePackage/AutoImportsManager.react.js',
         suggestedImport,
       ),

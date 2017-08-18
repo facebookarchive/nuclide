@@ -65,4 +65,35 @@ describe('AutoImportsManager', () => {
     expect(missingImports).toBeDefined();
     expect(missingImports.length).toBe(0);
   });
+  it('Can filter imports by range', () => {
+    const exportProgram = 'export class SomeClass {}';
+    const missingImportProgram = 'type SomeType = {someClass: SomeClass}';
+    const fileName = '/Users/unixname/testfile.js';
+    const autoImportsManager = new AutoImportsManager([]);
+    autoImportsManager.indexFile('someFile.js', exportProgram);
+    autoImportsManager.findMissingImports(fileName, missingImportProgram);
+    const empty = autoImportsManager.getSuggestedImportsForRange(fileName, {
+      start: {line: 0, character: 0},
+      end: {line: 0, character: 0},
+    });
+    expect(empty.length).toBe(0);
+    const bigRange = autoImportsManager.getSuggestedImportsForRange(fileName, {
+      start: {line: 0, character: 1},
+      end: {line: 1000, character: 1},
+    });
+    expect(bigRange.length).toBe(1);
+    const exactRange = autoImportsManager.getSuggestedImportsForRange(
+      fileName,
+      {
+        start: {line: 0, character: 28},
+        end: {line: 0, character: 37},
+      },
+    );
+    expect(exactRange.length).toBe(1);
+    const halfRange = autoImportsManager.getSuggestedImportsForRange(fileName, {
+      start: {line: 0, character: 28},
+      end: {line: 0, character: 33},
+    });
+    expect(halfRange.length).toBe(1);
+  });
 });

@@ -18,9 +18,11 @@ const EXTENTIONS_TO_REMOVE = ['.js'];
 
 export class ImportFormatter {
   moduleDirs: Array<string>;
+  isHaste: boolean;
 
-  constructor(dirs: Array<string>) {
+  constructor(dirs: Array<string>, isHaste: boolean) {
     this.moduleDirs = dirs;
+    this.isHaste = isHaste;
   }
 
   formatImport(file: NuclideUri, exp: JSExport): string {
@@ -33,11 +35,14 @@ export class ImportFormatter {
           : ''}{${id}} from '${this.formatImportFile(file, exp)}'`;
   }
 
-  formatHasteImportFile(file: NuclideUri, exp: JSExport): string {
+  _formatHasteImportFile(file: NuclideUri, exp: JSExport): string {
     return nuclideUri.basename(nuclideUri.stripExtension(exp.uri));
   }
 
   formatImportFile(file: NuclideUri, exp: JSExport): string {
+    if (this.isHaste) {
+      return this._formatHasteImportFile(file, exp);
+    }
     const uri = abbreviateMainFiles(exp);
     const pathRelativeToModules = handleModules(uri, file, this.moduleDirs);
     // flowlint-next-line sketchy-null-string:off

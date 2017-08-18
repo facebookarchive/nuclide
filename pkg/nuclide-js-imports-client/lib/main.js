@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {CodeActionConfig} from '../../nuclide-language-service/lib/CodeActionProvider';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
@@ -72,11 +73,18 @@ async function createLanguageService(): Promise<
     onDidInsertSuggestionAnalyticsEventName: 'jsimports.autocomplete-chosen',
   };
 
+  const codeActionConfig: CodeActionConfig = {
+    version: '0.1.0',
+    priority: 0,
+    analyticsEventName: 'jsimports.codeAction',
+  };
+
   const atomConfig: AtomLanguageServiceConfig = {
     name: 'JSAutoImports',
     grammars: ['source.js.jsx', 'source.js'],
     diagnostics: diagnosticsConfig,
     autocomplete: autocompleteConfig,
+    codeAction: codeActionConfig,
   };
   return new AtomLanguageService(connectToJSImportsService, atomConfig);
 }

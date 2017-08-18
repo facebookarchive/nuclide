@@ -15,6 +15,9 @@ import {UndefinedSymbolManager} from './UndefinedSymbolManager';
 import * as babylon from 'babylon';
 import {getLogger} from 'log4js';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {babelLocationToAtomRange, lspRangeToAtomRange} from '../utils/util';
+import {Range} from 'simple-text-buffer';
+import {IRange} from 'vscode-languageserver';
 
 import type {ImportSuggestion} from './types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -38,11 +41,13 @@ const logger = getLogger();
 const IGNORE_ESLINT_DISABLED_FILES = true;
 
 export class AutoImportsManager {
+  suggestedImports: Map<NuclideUri, Array<ImportSuggestion>>;
   exportsManager: ExportManager;
   undefinedSymbolsManager: UndefinedSymbolManager;
   worker: child_process$ChildProcess;
 
   constructor(envs: Array<string>) {
+    this.suggestedImports = new Map();
     this.exportsManager = new ExportManager();
     this.undefinedSymbolsManager = new UndefinedSymbolManager(envs);
   }
@@ -94,10 +99,12 @@ export class AutoImportsManager {
       return [];
     }
 
-    return undefinedSymbolsToMissingImports(
+    const missingImports = undefinedSymbolsToMissingImports(
       this.undefinedSymbolsManager.findUndefined(ast),
       this.exportsManager,
     );
+    this.suggestedImports.set(fileUri, missingImports);
+    return missingImports;
   }
 
   handleUpdateForFile(update: ExportUpdateForFile) {
@@ -114,6 +121,20 @@ export class AutoImportsManager {
 
   findFilesWithSymbol(id: string): Array<JSExport> {
     return this.exportsManager.getExportsIndex().getExportsFromId(id);
+  }
+  getSuggestedImportsForRange(
+    file: NuclideUri,
+    range: IRange,
+  ): Array<ImportSuggestion> {
+    const suggestedImports = this.suggestedImports.get(file) || [];
+    return suggestedImports.filter(suggestedImport => {
+      // We use intersectsWith instead of containsRange to be compatible with clients
+      // like VSCode which may request small ranges (the range of the current word).
+      return Range.fromObject(lspRangeToAtomRange(range)).intersectsWith(
+        babelLocationToAtomRange(suggestedImport.symbol.location),
+        true,
+      );
+    });
   }
 }
 
