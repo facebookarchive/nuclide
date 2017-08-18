@@ -118,12 +118,6 @@ type TranslatorBreakpoint = {
   resolved: boolean,
 };
 
-type BreakpointDescriptor = {
-  breakpointId?: NuclideDebugProtocol.BreakpointId,
-  lineNumber: number,
-  condition: string,
-};
-
 type ThreadState = 'running' | 'paused';
 
 type ThreadInfo = {
@@ -479,20 +473,39 @@ export default class VsDebugSessionTranslator {
       Array.from(
         breakpointCommandsByUrl,
       ).map(async ([url, breakpointCommands]) => {
-        await this._files.registerFile(url);
         const path = uriToPath(url);
 
-        const breakpointDescriptors = breakpointCommands
-          .map(c => ({
-            lineNumber: c.params.lineNumber + 1,
-            condition: c.params.condition || '',
-          }))
-          .concat(this._getBreakpointsForFilePath(path).map(bp => ({...bp})));
-
-        const translatorBreakpoins = await this._setBreakpointsForFilePath(
+        const existingTranslatorBreakpoints = this._getBreakpointsForFilePath(
           path,
-          breakpointDescriptors,
-        );
+        ).map(bp => ({...bp}));
+
+        const breakOnLineNumbers = new Set();
+
+        const translatorBreakpoins = breakpointCommands
+          .map(c => {
+            const newTranslatorBp = {
+              breakpointId: this._nextBreakpointId(),
+              path,
+              lineNumber: c.params.lineNumber + 1,
+              condition: c.params.condition || '',
+              resolved: false,
+              hitCount: 0,
+            };
+            breakOnLineNumbers.add(newTranslatorBp.lineNumber);
+            this._breakpointsById.set(
+              newTranslatorBp.breakpointId,
+              newTranslatorBp,
+            );
+            return newTranslatorBp;
+          })
+          .concat(
+            existingTranslatorBreakpoints.filter(
+              tBp => !breakOnLineNumbers.has(tBp.lineNumber),
+            ),
+          );
+
+        await this._files.registerFile(url);
+        await this._syncBreakpointsForFilePath(path, translatorBreakpoins);
 
         return breakpointCommands.map((command, i) => {
           const {breakpointId, lineNumber, resolved} = translatorBreakpoins[i];
@@ -519,7 +532,7 @@ export default class VsDebugSessionTranslator {
     const setBreakpointPromises = [];
     for (const filePath of filePaths) {
       setBreakpointPromises.push(
-        this._setBreakpointsForFilePath(
+        this._syncBreakpointsForFilePath(
           filePath,
           this._getBreakpointsForFilePath(filePath).map(bp => ({...bp})),
         ),
@@ -537,10 +550,10 @@ export default class VsDebugSessionTranslator {
     }
   }
 
-  async _setBreakpointsForFilePath(
+  async _syncBreakpointsForFilePath(
     path: NuclideUri,
-    breakpoints: Array<BreakpointDescriptor>,
-  ): Promise<Array<TranslatorBreakpoint>> {
+    breakpoints: Array<TranslatorBreakpoint>,
+  ): Promise<void> {
     const source = {path, name: nuclideUri.basename(path)};
     const {
       body: {breakpoints: vsBreakpoints},
@@ -563,29 +576,8 @@ export default class VsDebugSessionTranslator {
       );
       throw new Error(errorMessage);
     }
-    return vsBreakpoints.map((vsBreakpoint, i) => {
-      const bpDescriptior = breakpoints[i];
-      const breakpointId =
-        // flowlint-next-line sketchy-null-string:off
-        bpDescriptior.breakpointId ||
-        String(vsBreakpoint.id) ||
-        this._nextBreakpointId();
-      // flowlint-next-line sketchy-null-number:off
-      const lineNumber = vsBreakpoint.line || bpDescriptior.lineNumber || -1;
-      const resolved = vsBreakpoint.verified;
-      const condition = breakpoints[i].condition;
-
-      // Cache breakpoint info in the translator by id
-      // for handling of removeBreakpoint by id requests.
-      const translatorBreakpoint = {
-        breakpointId,
-        lineNumber,
-        path,
-        resolved,
-        condition,
-      };
-      this._breakpointsById.set(breakpointId, translatorBreakpoint);
-      return translatorBreakpoint;
+    vsBreakpoints.forEach((vsBreakpoint, i) => {
+      breakpoints[i].resolved = vsBreakpoint.verified;
     });
   }
 
@@ -602,7 +594,7 @@ export default class VsDebugSessionTranslator {
     ).filter(breakpoint => breakpoint.breakpointId !== breakpointId);
     this._breakpointsById.delete(breakpointId);
 
-    await this._setBreakpointsForFilePath(
+    await this._syncBreakpointsForFilePath(
       foundBreakpoint.path,
       remainingBreakpoints.map(bp => ({
         ...bp,
