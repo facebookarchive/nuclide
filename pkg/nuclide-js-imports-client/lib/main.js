@@ -21,6 +21,7 @@ import {
 } from '../../nuclide-language-service';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
 
@@ -48,6 +49,7 @@ async function connectToJSImportsService(
     'INFO',
     fileNotifier,
     host,
+    getAutoImportSettings(),
   );
 }
 
@@ -77,4 +79,20 @@ async function createLanguageService(): Promise<
     autocomplete: autocompleteConfig,
   };
   return new AtomLanguageService(connectToJSImportsService, atomConfig);
+}
+
+function getAutoImportSettings() {
+  // Currently, we will get the settings when the package is initialized. This
+  // means that the user would need to restart Nuclide for a change in their
+  // settings to take effect. In the future, we would most likely want to observe
+  // their settings and send DidChangeConfiguration requests to the server.
+  // TODO: Observe settings changes + send to the server.
+  return {
+    diagnosticsWhitelist: featureConfig.get(
+      'nuclide-js-imports-client.diagnosticsWhitelist',
+    ),
+    autocompleteWhitelist: featureConfig.get(
+      'nuclide-js-imports-client.autocompleteWhitelist',
+    ),
+  };
 }

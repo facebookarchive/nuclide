@@ -10,7 +10,12 @@
  */
 
 export const Settings = {
-  shouldProvideDiagnostics: false,
+  // If initializationOptions are not used or the whitelist is empty, this will
+  // determine whether diagnostics + code actions are displayed.
+  shouldProvideDiagnosticsDefault: true,
+  // If initializationOptions are not used or the whitelist is empty, this will
+  // determine whether autocompletion results will be provided.
+  shouldProvideAutocompleteDefault: true,
   moduleExportsSettings: {
     // When true, module.exports = {a, b} will export IDs a & b
     shouldIndexEachObjectProperty: true,

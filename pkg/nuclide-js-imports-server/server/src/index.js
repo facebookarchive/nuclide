@@ -43,6 +43,12 @@ const logger = getLogger('nuclide-js-imports-server');
 
 const documents: TextDocuments = new TextDocuments();
 
+// This will be set based on initializationOptions.
+const shouldProvideFlags = {
+  diagnostics: false,
+  autocomplete: false,
+};
+
 let autoImportsManager = new AutoImportsManager([]);
 let importFormatter = new ImportFormatter([]);
 let completion = new Completions(
@@ -58,7 +64,19 @@ connection.onInitialize((params): InitializeResult => {
   logger.debug('Server initialized.');
   const envs = getEslintEnvs(root);
   const flowConfig = getConfigFromFlow(root);
-
+  shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
+  shouldProvideFlags.autocomplete = shouldProvideAutocomplete(params, root);
+  if (!shouldProvideFlags.diagnostics && !shouldProvideFlags.autocomplete) {
+    // We aren't providing autocomplete or diagnostics (+ code actions)
+    return {
+      capabilities: {
+        textDocumentSync: {
+          openClose: false,
+          change: 0, // TextDocuments not synced at all.
+        },
+      },
+    };
+  }
   importFormatter = new ImportFormatter(flowConfig.moduleDirs);
   autoImportsManager = new AutoImportsManager(envs);
   autoImportsManager.indexAndWatchDirectory(root);
@@ -83,8 +101,7 @@ connection.onInitialize((params): InitializeResult => {
 documents.onDidOpenTextDocument(params => {
   try {
     const uri = nuclideUri.uriToNuclideUri(params.textDocument.uri);
-    // flowlint-next-line sketchy-null-string:off
-    if (uri) {
+    if (uri != null) {
       autoImportsManager.workerIndexFile(uri, params.textDocument.getText());
       findAndSendDiagnostics(params.textDocument.getText(), uri);
     }
@@ -96,8 +113,7 @@ documents.onDidOpenTextDocument(params => {
 documents.onDidChangeContent(params => {
   try {
     const uri = nuclideUri.uriToNuclideUri(params.document.uri);
-    // flowlint-next-line sketchy-null-string:off
-    if (uri) {
+    if (uri != null) {
       autoImportsManager.workerIndexFile(uri, params.document.getText());
       findAndSendDiagnostics(params.document.getText(), uri);
     }
@@ -112,7 +128,7 @@ documents.onDidClose(params => {
 });
 
 function findAndSendDiagnostics(text: string, uri: NuclideUri): void {
-  if (Settings.shouldProvideDiagnostics) {
+  if (shouldProvideFlags.diagnostics) {
     const diagnosticsForFile = diagnostics.findDiagnosticsForFile(text, uri);
     connection.sendDiagnostics({
       uri: nuclideUri.nuclideUriToUri(uri),
@@ -124,13 +140,18 @@ function findAndSendDiagnostics(text: string, uri: NuclideUri): void {
 // Code completion:
 connection.onCompletion(
   (textDocumentPosition: TextDocumentPositionParams): Array<CompletionItem> => {
-    const nuclideFormattedUri = nuclideUri.uriToNuclideUri(
-      textDocumentPosition.textDocument.uri,
-    );
-    // flowlint-next-line sketchy-null-string:off
-    return nuclideFormattedUri
-      ? completion.provideCompletions(textDocumentPosition, nuclideFormattedUri)
-      : [];
+    if (shouldProvideFlags.autocomplete) {
+      const nuclideFormattedUri = nuclideUri.uriToNuclideUri(
+        textDocumentPosition.textDocument.uri,
+      );
+      return nuclideFormattedUri != null
+        ? completion.provideCompletions(
+            textDocumentPosition,
+            nuclideFormattedUri,
+          )
+        : [];
+    }
+    return [];
   },
 );
 
@@ -144,4 +165,24 @@ function getAllTriggerCharacters(): Array<string> {
     characters.push(String.fromCharCode(char));
   }
   return characters;
+}
+
+function shouldProvideDiagnostics(params: Object, root: NuclideUri): boolean {
+  return params.initializationOptions != null &&
+  params.initializationOptions.diagnosticsWhitelist != null &&
+  params.initializationOptions.diagnosticsWhitelist.length !== 0
+    ? params.initializationOptions.diagnosticsWhitelist.some(regex =>
+        root.match(new RegExp(regex)),
+      )
+    : Settings.shouldProvideDiagnosticsDefault;
+}
+
+function shouldProvideAutocomplete(params: Object, root: NuclideUri): boolean {
+  return params.initializationOptions != null &&
+  params.initializationOptions.autocompleteWhitelist != null &&
+  params.initializationOptions.diagnosticsWhitelist.length !== 0
+    ? params.initializationOptions.autocompleteWhitelist.some(regex =>
+        root.match(new RegExp(regex)),
+      )
+    : Settings.shouldProvideAutocompleteDefault;
 }

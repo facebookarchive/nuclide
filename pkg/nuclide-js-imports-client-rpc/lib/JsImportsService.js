@@ -26,6 +26,7 @@ export async function initializeLsp(
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
   host: HostServices,
+  initializationOptions: Object,
 ): Promise<LanguageService> {
   return createMultiLspLanguageService(
     'jsimports',
@@ -43,6 +44,7 @@ export async function initializeLsp(
       logLevel,
       projectFileNames,
       fileExtensions,
+      initializationOptions,
     },
   );
 }
