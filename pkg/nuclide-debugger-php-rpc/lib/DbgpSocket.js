@@ -147,6 +147,7 @@ export class DbgpSocket {
     this._transactionId = 0;
     this._calls = new Map();
     this._emitter = new EventEmitter();
+    this._emitter.setMaxListeners(100);
     this._isClosed = false;
     this._messageHandler = new DbgpMessageHandler();
     this._pendingEvalTransactionIds = new Set();
