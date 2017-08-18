@@ -14,11 +14,13 @@ import globalsJSON from 'globals';
 
 import type {UndefinedSymbol} from './types';
 
+const BUILT_IN_FLOW_TYPES = ['Iterator'];
+
 export class UndefinedSymbolManager {
   globals: Set<string>;
 
   constructor(envs: Array<string>) {
-    this.globals = new Set();
+    this.globals = new Set(BUILT_IN_FLOW_TYPES);
     envs.forEach(env => {
       Object.keys(globalsJSON[env]).forEach(globalVar => {
         this.globals.add(globalVar);
