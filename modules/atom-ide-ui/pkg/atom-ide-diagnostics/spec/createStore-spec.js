@@ -18,6 +18,8 @@ import DiagnosticUpdater from '../lib/services/DiagnosticUpdater';
 import MessageRangeTracker from '../lib/MessageRangeTracker';
 import invariant from 'assert';
 
+import type {Store} from '../lib/types';
+
 // Test Constants
 const dummyProviderA: any = {};
 const dummyProviderB: any = {};

@@ -15,6 +15,7 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticMessages,
   ProjectDiagnosticMessage,
+  Store,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
