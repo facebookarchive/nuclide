@@ -57,6 +57,8 @@ import type {
   TextDocumentContentChangeEvent,
   SymbolInformation,
   UncoveredRange,
+  ApplyWorkspaceEditParams,
+  ApplyWorkspaceEditResponse,
 } from './protocol';
 import type {
   JsonRpcConnection,
@@ -411,6 +413,10 @@ export class LspLanguageService {
         this._childOut.stdout = null;
         return this._handleActionRequiredNotification(params);
       });
+      this._lspConnection.onApplyEditRequest(async (params, cancel) => {
+        this._childOut.stdout = null;
+        return this._handleApplyEditRequest(params, cancel);
+      });
       this._lspConnection.onDiagnosticsNotification(params => {
         this._childOut.stdout = null;
         perConnectionUpdates.next(params);
@@ -431,9 +437,9 @@ export class LspLanguageService {
 
       const capabilities: ClientCapabilities = {
         workspace: {
-          applyEdit: false,
+          applyEdit: true,
           workspaceEdit: {
-            documentChanges: false,
+            documentChanges: true,
           },
           didChangeConfiguration: {
             dynamicRegistration: false,
@@ -948,6 +954,53 @@ export class LspLanguageService {
       )
       .refCount()
       .subscribe(); // fire and forget
+  }
+
+  async _handleApplyEditRequest(
+    params: ApplyWorkspaceEditParams,
+    token: CancellationToken,
+  ): Promise<ApplyWorkspaceEditResponse> {
+    const applyEdits = async editsMap => {
+      const applied = await this._host.applyTextEditsForMultipleFiles(editsMap);
+      return {applied};
+    };
+
+    const {changes, documentChanges} = params.edit;
+    if (documentChanges != null) {
+      const fileVersions = await Promise.all(
+        documentChanges.map(documentChange =>
+          this._lspFileVersionNotifier.getVersion(
+            convert.lspUri_localPath(documentChange.textDocument.uri),
+          ),
+        ),
+      );
+      const filesMatch = documentChanges.reduce(
+        (filesMatchSoFar, documentChange, i) => {
+          const {textDocument} = documentChange;
+          return filesMatchSoFar && textDocument.version === fileVersions[i];
+        },
+        true,
+      );
+      if (filesMatch) {
+        const editsMap = new Map(
+          documentChanges.map(documentChange => [
+            convert.lspUri_localPath(documentChange.textDocument.uri),
+            convert.lspTextEdits_atomTextEdits(documentChange.edits || []),
+          ]),
+        );
+        return applyEdits(editsMap);
+      }
+    } else if (changes != null) {
+      const editsMap: Map<NuclideUri, Array<TextEdit>> = new Map();
+      Object.keys(changes).forEach(fileForChange => {
+        editsMap.set(
+          convert.lspUri_localPath(fileForChange),
+          convert.lspTextEdits_atomTextEdits(changes[fileForChange]),
+        );
+      });
+      return applyEdits(editsMap);
+    }
+    return {applied: false};
   }
 
   async _handleShowMessageRequest(

@@ -71,7 +71,7 @@ export function localPath_lspUri(filepath: NuclideUri): string {
   }
 }
 
-function lspUri_localPath(uri: string): NuclideUri {
+export function lspUri_localPath(uri: string): NuclideUri {
   // We accept LSP file:// URIs, and also plain paths for back-compat
   // We return a local path.
   const path = nuclideUri.uriToNuclideUri(uri);

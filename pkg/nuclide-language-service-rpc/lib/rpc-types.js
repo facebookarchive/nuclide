@@ -11,6 +11,9 @@
 
 import {ConnectableObservable} from 'rxjs';
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
+
 export type ShowNotificationLevel = 'info' | 'log' | 'warning' | 'error';
 
 // This interface is exposed by the client to the server
@@ -54,6 +57,10 @@ export interface HostServices {
   // Internal implementation method. Normally we'd keep it private.
   // But we need it to be remotable across NuclideRPC, so it must be public.
   childRegister(child: HostServices): Promise<HostServices>,
+
+  applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean>,
 }
 
 export interface Progress {

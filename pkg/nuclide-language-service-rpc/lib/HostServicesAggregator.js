@@ -10,6 +10,8 @@
  */
 
 import type {ShowNotificationLevel, Progress, HostServices} from './rpc-types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import invariant from 'assert';
 import {Subject, ConnectableObservable} from 'rxjs';
@@ -96,6 +98,12 @@ class HostServicesAggregator {
     text: string,
   ): ConnectableObservable<void> {
     return this._selfRelay().dialogNotification(level, text);
+  }
+
+  applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean> {
+    return this._selfRelay().applyTextEditsForMultipleFiles(changes);
   }
 
   dialogRequest(
@@ -215,6 +223,12 @@ class HostServicesRelay {
       .refCount()
       .takeUntil(this._childIsDisposed)
       .publish();
+  }
+
+  applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean> {
+    return this._aggregator._parent.applyTextEditsForMultipleFiles(changes);
   }
 
   async showProgress(

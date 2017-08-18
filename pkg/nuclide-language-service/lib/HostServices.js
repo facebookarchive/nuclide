@@ -17,12 +17,15 @@ import type {
 import type {ConnectableObservable} from 'rxjs';
 import type {OutputService, Message} from '../../nuclide-console/lib/types';
 import type {BusySignalService} from 'atom-ide-ui';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {Subject, Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {forkHostServices} from '../../nuclide-language-service-rpc/lib/HostServicesAggregator';
+import {applyTextEditsForMultipleFiles} from 'nuclide-commons-atom/text-edit';
 
 let rootAggregatorPromise: ?Promise<HostServices>;
 const logger = getLogger('HostServices');
@@ -123,6 +126,12 @@ class RootHostServices {
       });
       return () => notification.dismiss();
     }).publish();
+  }
+
+  async applyTextEditsForMultipleFiles(
+    changes: Map<NuclideUri, Array<TextEdit>>,
+  ): Promise<boolean> {
+    return applyTextEditsForMultipleFiles(changes);
   }
 
   _getBusySignalService(): Promise<?BusySignalService> {
