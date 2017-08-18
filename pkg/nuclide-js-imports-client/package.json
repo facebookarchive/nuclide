@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-js-imports-client",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Provides support for JS auto-imports in nuclide ",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationHooks": [
+    "nuclide_js_auto_imports:gk:nuclide"
+  ]
+}

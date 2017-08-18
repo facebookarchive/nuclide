@@ -64,6 +64,10 @@
     "name": "InfoService"
   },
   {
+    "implementation": "../nuclide-js-imports-client-rpc/lib/JsImportsService.js",
+    "name": "JSAutoImportsService"
+  },
+  {
     "implementation": "../nuclide-ocaml-rpc/lib/MerlinService.js",
     "name": "MerlinService"
   },
