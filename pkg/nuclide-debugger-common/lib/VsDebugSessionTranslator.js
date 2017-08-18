@@ -115,6 +115,7 @@ type TranslatorBreakpoint = {
   path: NuclideUri,
   lineNumber: number,
   condition: string,
+  hitCount: number,
   resolved: boolean,
 };
 
@@ -697,28 +698,48 @@ export default class VsDebugSessionTranslator {
           );
         }
       }),
-      this._session
-        .observeBreakpointEvents()
-        .flatMap(async ({body}) => {
-          const {breakpoint} = body;
-          const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
-          if (!Number.isNaN(hitCount) && breakpoint.id != null) {
-            const changedEvent: NuclideDebugProtocol.BreakpointHitCountEvent = {
+      this._session.observeBreakpointEvents().subscribe(({body}) => {
+        const {breakpoint} = body;
+        const existingBreakpoint = this._breakpointsById.get(
+          String(breakpoint.id == null ? -1 : breakpoint.id),
+        );
+        const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
+
+        if (existingBreakpoint == null) {
+          this._logger.warn(
+            'Received a breakpoint event, but cannot find the breakpoint',
+          );
+          return;
+        } else if (!existingBreakpoint.resolved && breakpoint.verified) {
+          existingBreakpoint.resolved = true;
+          this._sendMessageToClient({
+            method: 'Debugger.breakpointResolved',
+            params: {
+              breakpointId: existingBreakpoint.breakpointId,
+              location: nuclideDebuggerLocation(
+                existingBreakpoint.path,
+                existingBreakpoint.lineNumber - 1,
+                0,
+              ),
+            },
+          });
+        } else if (
+          !Number.isNaN(hitCount) &&
+          existingBreakpoint != null &&
+          existingBreakpoint.hitCount !== hitCount
+        ) {
+          existingBreakpoint.hitCount = hitCount;
+          this._sendMessageToClient({
+            method: 'Debugger.breakpointHitCountChanged',
+            params: {
               breakpointId: String(breakpoint.id),
               hitCount,
-            };
-            return changedEvent;
-          }
-          return null;
-        })
-        .subscribe(changedEvent => {
-          if (changedEvent != null) {
-            this._sendMessageToClient({
-              method: 'Debugger.breakpointHitCountChanged',
-              params: changedEvent,
-            });
-          }
-        }),
+            },
+          });
+        } else {
+          this._logger.warn('Unkown breakpoint event', body);
+        }
+      }),
       this._session
         .observeStopEvents()
         .flatMap(async ({body}) => {
@@ -766,32 +787,6 @@ export default class VsDebugSessionTranslator {
           this._updateThreadsState([threadId], 'running');
         }
         this._sendMessageToClient({method: 'Debugger.resumed'});
-      }),
-      this._session.observeBreakpointEvents().subscribe(({body}) => {
-        const {reason, breakpoint} = body;
-        const existingBreakpoint = this._breakpointsById.get(
-          // flowlint-next-line sketchy-null-number:off
-          String(breakpoint.id || -1),
-        );
-        if (
-          existingBreakpoint != null &&
-          !existingBreakpoint.resolved &&
-          breakpoint.verified
-        ) {
-          this._sendMessageToClient({
-            method: 'Debugger.breakpointResolved',
-            params: {
-              breakpointId: existingBreakpoint.breakpointId,
-              location: nuclideDebuggerLocation(
-                existingBreakpoint.path,
-                existingBreakpoint.lineNumber - 1,
-                0,
-              ),
-            },
-          });
-          return;
-        }
-        this._logger.info('Unhandled breakpoint event', reason, breakpoint);
       }),
       this._session.observeOutputEvents().subscribe(({body}) => {
         // flowlint-next-line sketchy-null-string:off
@@ -976,6 +971,7 @@ export default class VsDebugSessionTranslator {
       | NuclideDebugProtocol.DebuggerResponse
       | NuclideDebugProtocol.DebuggerEvent,
   ): void {
+    this._logger.info('Sent message to client', JSON.stringify(message));
     this._clientCallback.sendChromeMessage(JSON.stringify(message));
   }
 
