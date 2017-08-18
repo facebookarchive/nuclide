@@ -299,11 +299,13 @@ class HostServicesRelay {
   }
 
   dispose(): void {
-    // Remember, this is a notification relayed from one of the children that
-    // it has just finished its "dispose" method. That's what a relay is.
-    // It is *NOT* a means to dispose of this relay
-    this._disposables.dispose();
-    this._aggregator._childRelays.delete(this._id);
+    if (!this._disposables.disposed) {
+      // Remember, this is a notification relayed from one of the children that
+      // it has just finished its "dispose" method. That's what a relay is.
+      // It is *NOT* a means to dispose of this relay
+      this._disposables.dispose();
+      this._aggregator._childRelays.delete(this._id);
+    }
   }
 
   childRegister(child: HostServices): Promise<HostServices> {
