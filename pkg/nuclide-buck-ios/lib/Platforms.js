@@ -17,7 +17,7 @@ import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
 import {getTasks, runTask} from './Tasks';
 
 import {Observable} from 'rxjs';
-import * as fbsimctl from '../../nuclide-ios-common';
+import * as fbsimctl from '../../nuclide-fbsimctl';
 
 export function getSimulatorPlatform(
   buckRoot: NuclideUri,
