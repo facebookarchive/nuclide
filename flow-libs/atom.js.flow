@@ -951,6 +951,7 @@ declare class atom$TextEditor extends atom$Model {
   getLastBufferRow(): number,
 
   // Undocumented Methods
+  getElement(): HTMLElement,
   getDefaultCharWidth(): number,
   getLineHeightInPixels(): number,
   moveToTop(): void,
@@ -1179,7 +1180,6 @@ declare class atom$Workspace {
 
   // Panels
   panelContainers: {[location: string]: atom$PanelContainer},
-  getElement(): HTMLElement,
   getBottomPanels(): Array<atom$Panel>,
   addBottomPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel,
   getLeftPanels(): Array<atom$Panel>,
