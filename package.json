@@ -63,7 +63,7 @@
     "glob": "7.1.1",
     "globals": "9.16.0",
     "graphql": "0.10.5",
-    "graphql-language-service": "0.1.5",
+    "graphql-language-service": "0.1.12",
     "heap": "0.2.6",
     "idx": "1.2.0",
     "immutable": "3.7.6",
