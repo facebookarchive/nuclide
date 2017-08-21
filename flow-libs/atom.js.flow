@@ -1817,6 +1817,7 @@ declare class atom$Repository {
   getWorkingDirectory: () => string,
   isProjectAtRoot: () => boolean,
   relativize: (aPath: string) => string,
+  getOriginURL: (aPath: ?string) => ?string,
 
   // Reading Status
   isPathModified: (aPath: string) => boolean,
