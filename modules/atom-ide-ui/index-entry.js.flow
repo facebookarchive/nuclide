@@ -61,6 +61,7 @@ export type {
   DiagnosticUpdateCallback,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
+  IndieLinterDelegate,
   LinterMessage,
   LinterMessageV1,
   LinterMessageV2,
@@ -68,6 +69,7 @@ export type {
   LinterTrace,
   ObservableDiagnosticProvider,
   ProjectDiagnosticMessage,
+  RegisterIndieLinter,
 } from './pkg/atom-ide-diagnostics/lib/types';
 
 export type {

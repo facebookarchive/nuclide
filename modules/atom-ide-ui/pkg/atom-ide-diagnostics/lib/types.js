@@ -207,6 +207,7 @@ export type LinterProvider = {
 };
 
 export type RegisterIndieLinter = ({name: string}) => IndieLinterDelegate;
+export type {IndieLinterDelegate} from './services/IndieLinterRegistry';
 
 //
 //
