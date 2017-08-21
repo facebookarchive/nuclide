@@ -132,6 +132,7 @@ export default class Console extends React.Component {
   componentWillReceiveProps(nextProps: Props): void {
     // If the messages were cleared, hide the notification.
     if (nextProps.displayableRecords.length === 0) {
+      this._isScrolledNearBottom = true;
       this.setState({unseenMessages: false});
     } else if (
       // If we receive new messages after we've scrolled away from the bottom, show the "new
