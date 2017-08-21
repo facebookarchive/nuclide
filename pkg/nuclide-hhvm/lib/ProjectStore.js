@@ -28,6 +28,7 @@ export default class ProjectStore {
   _isHHVMProject: ?boolean;
   _debugMode: DebugMode;
   _filePathsToScriptCommand: Map<string, string>;
+  _stickyCommand: string;
 
   constructor() {
     this._emitter = new Emitter();
@@ -36,6 +37,7 @@ export default class ProjectStore {
     this._isHHVMProject = null;
     this._debugMode = 'webserver';
     this._filePathsToScriptCommand = new Map();
+    this._stickyCommand = '';
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);
     this._disposables = new UniversalDisposable(
@@ -124,9 +126,24 @@ export default class ProjectStore {
     this._emitter.emit('change');
   }
 
+  setStickyCommand(command: string, sticky: boolean): void {
+    if (sticky) {
+      this._stickyCommand = command;
+    } else {
+      const activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (!activeTextEditor || !activeTextEditor.getPath()) {
+        this._currentFilePath = command;
+      }
+      this._stickyCommand = '';
+    }
+  }
+
   getDebugTarget(): string {
     const filePath = this._currentFilePath;
     if (this._debugMode !== 'webserver') {
+      if (this._stickyCommand !== '') {
+        return this._stickyCommand;
+      }
       const localPath = nuclideUri.getPath(filePath);
       const lastScriptCommand = this.getLastScriptCommand(localPath);
       return lastScriptCommand === '' ? localPath : lastScriptCommand;

@@ -17,6 +17,7 @@ import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button} from 'nuclide-commons-ui/Button';
+import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import React from 'react';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
@@ -30,12 +31,28 @@ type Props = {
   projectStore: ProjectStore,
 };
 
+type State = {
+  stickyScript: boolean,
+};
+
 export default class HhvmToolbar extends React.Component {
   props: Props;
+  state: State;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      stickyScript: false,
+    };
+  }
 
   _updateLastScriptCommand = (command: string): void => {
     if (this.props.projectStore.getDebugMode() !== 'webserver') {
-      this.props.projectStore.updateLastScriptCommand(command);
+      if (this.state.stickyScript) {
+        this.props.projectStore.setStickyCommand(command, true);
+      } else {
+        this.props.projectStore.updateLastScriptCommand(command);
+      }
     }
   };
 
@@ -101,7 +118,7 @@ export default class HhvmToolbar extends React.Component {
         <div className="inline-block" style={{width: '300px'}}>
           <AtomInput
             ref="debugTarget"
-            initialValue={value}
+            value={value}
             // Ugly hack: prevent people changing the value without disabling so
             // that they can copy and paste.
             onDidChange={
@@ -124,7 +141,21 @@ export default class HhvmToolbar extends React.Component {
               }}>
               Open
             </Button>
-          : null}
+          : <Checkbox
+              checked={this.state.stickyScript}
+              label="Sticky"
+              onChange={isChecked => {
+                this.props.projectStore.setStickyCommand(
+                  this.refs.debugTarget.getText(),
+                  isChecked,
+                );
+                this.setState({stickyScript: isChecked});
+              }}
+              tooltip={{
+                title:
+                  'When checked, the target script will not change when switching to another editor tab',
+              }}
+            />}
       </div>
     );
   }
