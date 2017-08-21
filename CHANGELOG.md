@@ -1,5 +1,21 @@
 # Nuclide Changelog
 
+## v0.246.0
+
+### General
+
+* Fixed a bug causing unstyled scrollbars with Atom 1.19.
+* Added support for Nuclide deep links on Windows
+* Changed the default value of the `nuclide-file-tree.revealFileOnSwitch` config to `true` so that, by default, the active file will be revealed in the file tree by default. This behavior can be disabled by unchecking "Reveal File on Switch" in Nuclide's settings.
+* Fix a bug that was causing the app to shift and scroll at apparently random times
+
+### Debugger
+
+* Changed conditional breakpoints to be orange in the gutter to indicate conditional vs normal breakpoints.
+* PHP Debugger: fix Nuclide re-adding breakpoints after they're removed.
+* PHP Debugger: fixed a bug causing exceptions to be thrown while enabling/disabling multiple breakpoints at the same time.
+* PHP Debugger: fixed a bug causing the debugger to sometimes stop at a line even after removing the corresponding breakpoint.
+
 ## v0.245.0
 
 ### General
