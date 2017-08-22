@@ -446,3 +446,11 @@
     text-decoration: underline;
   }
 }
+
+// This is for T21237354
+// There is an issue with chrome rendering where the button is not redrawn when
+// its surrounding <li> is selected. This causes the background color of the
+// <li> to cover up the button. This is a workaround that forces a redraw
+.nuclide-console-process-control-button {
+  transform: translate3d(0,0,0);
+}

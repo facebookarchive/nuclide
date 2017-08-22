@@ -81,7 +81,10 @@ export default class ConsoleHeader extends React.Component {
       action();
     };
     return (
-      <Button className="pull-right" icon={icon} onClick={clickHandler}>
+      <Button
+        className="pull-right nuclide-console-process-control-button"
+        icon={icon}
+        onClick={clickHandler}>
         {label}
       </Button>
     );
