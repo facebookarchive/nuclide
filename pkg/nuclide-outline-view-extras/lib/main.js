@@ -91,7 +91,7 @@ class Activation {
           'Displays major components of the current file (classes, methods, etc.)',
         command: () => {
           // eslint-disable-next-line nuclide-internal/atom-apis
-          atom.workspace.open(WORKSPACE_VIEW_URI);
+          atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
         },
       },
       priority: 2.5, // Between diff view and test runner

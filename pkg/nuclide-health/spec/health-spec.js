@@ -15,7 +15,7 @@ import {WORKSPACE_VIEW_URI} from '../lib/HealthPaneItem';
 
 const openHealthPane = () => {
   // eslint-disable-next-line nuclide-internal/atom-apis
-  atom.workspace.open(WORKSPACE_VIEW_URI);
+  atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
 };
 
 function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {

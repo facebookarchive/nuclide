@@ -78,7 +78,7 @@ export function getHomeFragments(): HomeFragments {
         'Easily navigate between symbols and their definitions in your code',
       command: () => {
         // eslint-disable-next-line nuclide-internal/atom-apis
-        atom.workspace.open(WORKSPACE_VIEW_URI);
+        atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
       },
     },
     priority: 2,

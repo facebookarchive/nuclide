@@ -129,7 +129,7 @@ export class SwiftPMTaskRunner {
     }
 
     // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(CONSOLE_VIEW_URI);
+    atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
     const observable = createMessage(
       `${command.command} ${command.args.join(' ')}`,

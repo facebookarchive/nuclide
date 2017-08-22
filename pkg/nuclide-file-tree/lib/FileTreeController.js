@@ -299,7 +299,7 @@ export default class FileTreeController {
       // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
       // active pane is not an ordinary editor, we still at least want to show the tree.
       // eslint-disable-next-line nuclide-internal/atom-apis
-      atom.workspace.open(WORKSPACE_VIEW_URI);
+      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
       this._actions.setFoldersExpanded(true);
     }
 

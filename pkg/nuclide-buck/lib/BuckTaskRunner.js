@@ -267,7 +267,7 @@ export class BuckTaskRunner {
     );
 
     // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(CONSOLE_VIEW_URI);
+    atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
     const state = this._getStore().getState();
     const {

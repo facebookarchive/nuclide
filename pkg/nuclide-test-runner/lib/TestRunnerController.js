@@ -88,7 +88,7 @@ export class TestRunnerController {
     this._runningTest = true;
 
     // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(WORKSPACE_VIEW_URI);
+    atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
 
     // Get selected test runner when Flow knows `this._testRunnerPanel` is defined.
     const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();

@@ -39,7 +39,7 @@ describe('React Native Inspector', () => {
     // Activate the Inspector
 
     // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(WORKSPACE_VIEW_URI);
+    atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
 
     waitsForPromise({timeout: 3000}, async () => {
       // Keep trying to connect to the server.

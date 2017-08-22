@@ -37,7 +37,7 @@ export function runTest(context: TestContext) {
     };
     const open = () => {
       runs(() => {
-        atom.workspace.open(FILE_TREE_VIEW_URI);
+        atom.workspace.open(FILE_TREE_VIEW_URI, {searchAllPanes: true});
       });
       waits(100); // Open notifications are delayed by an animation frame.
     };

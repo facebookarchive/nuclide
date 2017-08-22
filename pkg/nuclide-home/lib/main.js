@@ -84,7 +84,7 @@ class Activation {
     // flowlint-next-line sketchy-null-mixed:off
     if (showHome) {
       // eslint-disable-next-line nuclide-internal/atom-apis
-      atom.workspace.open(WORKSPACE_VIEW_URI);
+      atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
     }
   }
 

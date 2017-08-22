@@ -21,7 +21,7 @@ export function changeConsoleVisibility(visible: boolean): void {
   switch (visible) {
     case true:
       // eslint-disable-next-line nuclide-internal/atom-apis
-      atom.workspace.open(CONSOLE_VIEW_URI);
+      atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
       return;
     case false:
       atom.workspace.hide(CONSOLE_VIEW_URI);

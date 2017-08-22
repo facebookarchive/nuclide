@@ -722,6 +722,6 @@ export default class DebuggerActions {
   _handleDebugModeStart(): void {
     // Open the console window if it's not already opened.
     // eslint-disable-next-line nuclide-internal/atom-apis
-    atom.workspace.open(CONSOLE_VIEW_URI);
+    atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
   }
 }
