@@ -1,22 +1,28 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import logger from './utils';
-import BaseClientCallback from '../../nuclide-debugger-common/lib/ClientCallback';
-import {Subject} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ClientCallback = undefined;
 
-export type UserMessageType = 'notification' | 'console' | 'outputWindow';
+var _utils;
 
-function createMessage(method: string, params: ?Object): Object {
-  const result: Object = {method};
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _ClientCallback;
+
+function _load_ClientCallback() {
+  return _ClientCallback = _interopRequireDefault(require('../../nuclide-debugger-common/lib/ClientCallback'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function createMessage(method, params) {
+  const result = { method };
   if (params) {
     result.params = params;
   }
@@ -31,14 +37,25 @@ function createMessage(method: string, params: ?Object): Object {
  * 3. Chrome console user messages.
  * 4. Output window messages.
  */
-export class ClientCallback extends BaseClientCallback {
-  sendUserMessage(type: UserMessageType, message: Object): void {
-    logger.debug(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+class ClientCallback extends (_ClientCallback || _load_ClientCallback()).default {
+  sendUserMessage(type, message) {
+    (_utils || _load_utils()).default.debug(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     switch (type) {
       case 'notification':
         this._atomNotificationObservable.next({
           type: message.type,
-          message: message.message,
+          message: message.message
         });
         break;
       case 'console':
@@ -46,32 +63,30 @@ export class ClientCallback extends BaseClientCallback {
         this.sendUserOutputMessage(JSON.stringify(message));
         break;
       default:
-        logger.error(`Unknown UserMessageType: ${type}`);
+        (_utils || _load_utils()).default.error(`Unknown UserMessageType: ${type}`);
     }
   }
 
-  replyWithError(id: number, error: string): void {
+  replyWithError(id, error) {
     this.replyToCommand(id, {}, error);
   }
 
-  replyToCommand(id: number, result: Object, error: ?string): void {
-    const value: Object = {id, result};
+  replyToCommand(id, result, error) {
+    const value = { id, result };
     if (error != null) {
       value.error = error;
     }
     sendJsonObject(this._serverMessageObservable, value);
   }
 
-  sendServerMethod(method: string, params: ?Object) {
-    sendJsonObject(
-      this._serverMessageObservable,
-      createMessage(method, params),
-    );
+  sendServerMethod(method, params) {
+    sendJsonObject(this._serverMessageObservable, createMessage(method, params));
   }
 }
 
-function sendJsonObject(subject: Subject<string>, value: Object): void {
+exports.ClientCallback = ClientCallback;
+function sendJsonObject(subject, value) {
   const message = JSON.stringify(value);
-  logger.debug(`Sending JSON: ${message}`);
+  (_utils || _load_utils()).default.debug(`Sending JSON: ${message}`);
   subject.next(message);
 }

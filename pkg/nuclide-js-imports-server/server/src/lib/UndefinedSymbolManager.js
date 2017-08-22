@@ -1,3 +1,24 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.UndefinedSymbolManager = undefined;
+
+var _babelTraverse;
+
+function _load_babelTraverse() {
+  return _babelTraverse = _interopRequireDefault(require('babel-traverse'));
+}
+
+var _globals;
+
+function _load_globals() {
+  return _globals = _interopRequireDefault(require('globals'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,30 +26,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import traverse from 'babel-traverse';
-import globalsJSON from 'globals';
-
-import type {UndefinedSymbol} from './types';
-
 const BUILT_IN_FLOW_TYPES = ['Iterator'];
 
-export class UndefinedSymbolManager {
-  globals: Set<string>;
+class UndefinedSymbolManager {
 
-  constructor(envs: Array<string>) {
+  constructor(envs) {
     this.globals = new Set(BUILT_IN_FLOW_TYPES);
     envs.forEach(env => {
-      Object.keys(globalsJSON[env]).forEach(globalVar => {
+      Object.keys((_globals || _load_globals()).default[env]).forEach(globalVar => {
         this.globals.add(globalVar);
       });
     });
   }
 
-  findUndefined(ast: Object): Array<UndefinedSymbol> {
+  findUndefined(ast) {
     try {
       return traveseTreeForUndefined(ast, this.globals);
     } catch (error) {
@@ -40,13 +55,11 @@ export class UndefinedSymbolManager {
   }
 }
 
-function traveseTreeForUndefined(
-  ast: Object,
-  globals: Set<string>,
-): Array<UndefinedSymbol> {
+exports.UndefinedSymbolManager = UndefinedSymbolManager;
+function traveseTreeForUndefined(ast, globals) {
   const undefinedSymbols = [];
   const definedTypes = new Set();
-  traverse(ast, {
+  (0, (_babelTraverse || _load_babelTraverse()).default)(ast, {
     ImportDeclaration: path => {
       saveImports(path, definedTypes);
     },
@@ -74,29 +87,21 @@ function traveseTreeForUndefined(
     GenericTypeAnnotation: {
       exit(path) {
         findUndefinedTypes(path, undefinedSymbols, globals);
-      },
-    },
+      }
+    }
   });
-  return undefinedSymbols.filter(
-    symbol => symbol.type === 'value' || !definedTypes.has(symbol.id),
-  );
+  return undefinedSymbols.filter(symbol => symbol.type === 'value' || !definedTypes.has(symbol.id));
 }
 
-function findUndefinedValues(
-  path: Object,
-  undefinedSymbols: Array<UndefinedSymbol>,
-  globals: Set<string>,
-) {
-  const {node, scope} = path;
+function findUndefinedValues(path, undefinedSymbols, globals) {
+  const { node, scope } = path;
   if (
-    // Type Annotations are considered identifiers, so ignore them
-    isTypeIdentifier(path.parent.type) ||
-    // Other weird cases where we want to ignore identifiers
-    path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
-    path.parent.type === 'QualifiedTypeIdentifier' || // SomeModule.SomeType
-    globals.has(node.name) ||
-    scope.hasBinding(node.name)
-  ) {
+  // Type Annotations are considered identifiers, so ignore them
+  isTypeIdentifier(path.parent.type) ||
+  // Other weird cases where we want to ignore identifiers
+  path.parent.type === 'ExportSpecifier' || // export {a} from 'a' (a would be undefined)
+  path.parent.type === 'QualifiedTypeIdentifier' || // SomeModule.SomeType
+  globals.has(node.name) || scope.hasBinding(node.name)) {
     return;
   }
 
@@ -104,24 +109,16 @@ function findUndefinedValues(
     id: node.name,
     type: 'value',
     location: {
-      start: {line: node.loc.start.line, col: node.loc.start.column},
-      end: {line: node.loc.end.line, col: node.loc.end.column},
-    },
+      start: { line: node.loc.start.line, col: node.loc.start.column },
+      end: { line: node.loc.end.line, col: node.loc.end.column }
+    }
   });
 }
 
-function findUndefinedTypes(
-  path: Object,
-  undefinedSymbols: Array<UndefinedSymbol>,
-  globals: Set<string>,
-) {
-  const {node} = path;
+function findUndefinedTypes(path, undefinedSymbols, globals) {
+  const { node } = path;
 
-  if (
-    globals.has(node.id.name) ||
-    path.parent.type === 'TypeAlias' ||
-    path.parent.type === 'TypeofTypeAnnotation'
-  ) {
+  if (globals.has(node.id.name) || path.parent.type === 'TypeAlias' || path.parent.type === 'TypeofTypeAnnotation') {
     return;
   }
 
@@ -130,38 +127,29 @@ function findUndefinedTypes(
       id: node.id.name,
       type: 'type',
       location: {
-        start: {line: node.loc.start.line, col: node.loc.start.column},
-        end: {line: node.loc.end.line, col: node.loc.end.column},
-      },
+        start: { line: node.loc.start.line, col: node.loc.start.column },
+        end: { line: node.loc.end.line, col: node.loc.end.column }
+      }
     });
   }
 }
 
-function saveImports(path: Object, definedTypes: Set<string>) {
+function saveImports(path, definedTypes) {
   path.node.specifiers.forEach(specifier => {
     definedTypes.add(specifier.local.name);
   });
 }
 
-function save(path: Object, definedTypes: Set<string>) {
+function save(path, definedTypes) {
   if (path.node.id) {
     definedTypes.add(path.node.id.name);
   }
 }
 
-function saveTypeParameters(path: Object, definedTypes: Set<string>) {
+function saveTypeParameters(path, definedTypes) {
   definedTypes.add(path.node.name);
 }
 
-function isTypeIdentifier(node: Object) {
-  return (
-    node === 'GenericTypeAnnotation' ||
-    node === 'ObjectTypeIndexer' ||
-    node === 'TypeAlias' ||
-    node === 'FunctionTypeParam' ||
-    node === 'ObjectTypeProperty' ||
-    node === 'InterfaceDeclaration' ||
-    node === 'DeclareClass' ||
-    node === 'InterfaceExtends'
-  );
+function isTypeIdentifier(node) {
+  return node === 'GenericTypeAnnotation' || node === 'ObjectTypeIndexer' || node === 'TypeAlias' || node === 'FunctionTypeParam' || node === 'ObjectTypeProperty' || node === 'InterfaceDeclaration' || node === 'DeclareClass' || node === 'InterfaceExtends';
 }

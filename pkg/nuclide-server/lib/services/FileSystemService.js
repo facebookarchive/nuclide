@@ -1,48 +1,11 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/**
- * This code implements the NuclideFs service.  It exports the FS on http via
- * the endpoint: http://your.server:your_port/fs/method where method is one of
- * readFile, writeFile, etc.
- */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getFreeSpace = exports.readFile = exports.rmdirAll = exports.copy = exports.move = exports.readdir = exports.newFile = exports.findNearestAncestorNamed = undefined;
 
-import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import mv from 'mv';
-import fs from 'fs';
-import {arrayCompact} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
-import {runCommand} from 'nuclide-commons/process';
-import {observeRawStream} from 'nuclide-commons/stream';
-import {Observable} from 'rxjs';
-
-export type DirectoryEntry = [string, boolean, boolean];
-
-// Attempting to read large files just crashes node, so just fail.
-// Atom can't handle files of this scale anyway.
-const READFILE_SIZE_LIMIT = 10 * 1024 * 1024;
-
-//------------------------------------------------------------------------------
-// Services
-//------------------------------------------------------------------------------
-
-/**
- * Checks a certain path for existence and returns 'true'/'false' accordingly
- */
-export function exists(path: NuclideUri): Promise<boolean> {
-  return fsPromise.exists(path);
-}
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /**
  * Starting in the directory `pathToDirectory`, checks if it contains a file named `fileName`.
@@ -50,67 +13,20 @@ export function exists(path: NuclideUri): Promise<boolean> {
  * parent directory. If it gets all the way to the root and still does not find the file, then it
  * returns `null`.
  */
-export async function findNearestAncestorNamed(
-  fileName: string,
-  pathToDirectory: NuclideUri,
-): Promise<?NuclideUri> {
-  const directory = await fsPromise.findNearestFile(fileName, pathToDirectory);
-  if (directory != null) {
-    return nuclideUri.join(directory, fileName);
-  } else {
-    return null;
-  }
-}
+let findNearestAncestorNamed = exports.findNearestAncestorNamed = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (fileName, pathToDirectory) {
+    const directory = yield (_fsPromise || _load_fsPromise()).default.findNearestFile(fileName, pathToDirectory);
+    if (directory != null) {
+      return (_nuclideUri || _load_nuclideUri()).default.join(directory, fileName);
+    } else {
+      return null;
+    }
+  });
 
-export function findFilesInDirectories(
-  searchPaths: Array<NuclideUri>,
-  fileName: string,
-): ConnectableObservable<Array<NuclideUri>> {
-  if (searchPaths.length === 0) {
-    return Observable.throw(
-      new Error('No directories to search in!'),
-    ).publish();
-  }
-  const findArgs = [...searchPaths, '-type', 'f', '-name', fileName];
-  return runCommand('find', findArgs)
-    .map(stdout => stdout.split('\n').filter(filePath => filePath !== ''))
-    .publish();
-}
-
-/**
- * The lstat endpoint is the same as the stat endpoint except it will return
- * the stat of a link instead of the file the link points to.
- */
-export function lstat(path: NuclideUri): Promise<fs.Stats> {
-  return fsPromise.lstat(path);
-}
-
-/**
- * Creates a new directory with the given path.
- * Throws EEXIST error if the directory already exists.
- * Throws ENOENT if the path given is nested in a non-existing directory.
- */
-export function mkdir(path: NuclideUri): Promise<void> {
-  return fsPromise.mkdir(path);
-}
-
-/**
- * Runs the equivalent of `mkdir -p` with the given path.
- *
- * Like most implementations of mkdirp, if it fails, it is possible that
- * directories were created for some prefix of the given path.
- * @return true if the path was created; false if it already existed.
- */
-export function mkdirp(path: NuclideUri): Promise<boolean> {
-  return fsPromise.mkdirp(path);
-}
-
-/**
- * Changes permissions on a file.
- */
-export function chmod(path: NuclideUri, mode: number): Promise<void> {
-  return fsPromise.chmod(path, mode);
-}
+  return function findNearestAncestorNamed(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
 /**
  * If no file (or directory) at the specified path exists, creates the parent
@@ -119,114 +35,122 @@ export function chmod(path: NuclideUri, mode: number): Promise<void> {
  *
  * @return A boolean indicating whether the file was created.
  */
-export async function newFile(filePath: NuclideUri): Promise<boolean> {
-  const isExistingFile = await fsPromise.exists(filePath);
-  if (isExistingFile) {
-    return false;
-  }
-  await fsPromise.mkdirp(nuclideUri.dirname(filePath));
-  await fsPromise.writeFile(filePath, '');
-  return true;
-}
+let newFile = exports.newFile = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (filePath) {
+    const isExistingFile = yield (_fsPromise || _load_fsPromise()).default.exists(filePath);
+    if (isExistingFile) {
+      return false;
+    }
+    yield (_fsPromise || _load_fsPromise()).default.mkdirp((_nuclideUri || _load_nuclideUri()).default.dirname(filePath));
+    yield (_fsPromise || _load_fsPromise()).default.writeFile(filePath, '');
+    return true;
+  });
+
+  return function newFile(_x3) {
+    return _ref2.apply(this, arguments);
+  };
+})();
 
 /**
  * Lists all children of the given directory.
  */
-export async function readdir(
-  path: NuclideUri,
-): Promise<Array<DirectoryEntry>> {
-  const files = await fsPromise.readdir(path);
-  const entries = await Promise.all(
-    files.map(async file => {
-      const fullpath = nuclideUri.join(path, file);
-      const lstats = await fsPromise.lstat(fullpath);
-      if (!lstats.isSymbolicLink()) {
-        return {file, stats: lstats, isSymbolicLink: false};
-      } else {
-        try {
-          const stats = await fsPromise.stat(fullpath);
-          return {file, stats, isSymbolicLink: true};
-        } catch (error) {
-          return null;
+
+
+let readdir = exports.readdir = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (path) {
+    const files = yield (_fsPromise || _load_fsPromise()).default.readdir(path);
+    const entries = yield Promise.all(files.map((() => {
+      var _ref4 = (0, _asyncToGenerator.default)(function* (file) {
+        const fullpath = (_nuclideUri || _load_nuclideUri()).default.join(path, file);
+        const lstats = yield (_fsPromise || _load_fsPromise()).default.lstat(fullpath);
+        if (!lstats.isSymbolicLink()) {
+          return { file, stats: lstats, isSymbolicLink: false };
+        } else {
+          try {
+            const stats = yield (_fsPromise || _load_fsPromise()).default.stat(fullpath);
+            return { file, stats, isSymbolicLink: true };
+          } catch (error) {
+            return null;
+          }
         }
-      }
-    }),
-  );
-  // TODO: Return entries directly and change client to handle error.
-  return arrayCompact(entries).map(entry => {
-    return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
+      });
+
+      return function (_x5) {
+        return _ref4.apply(this, arguments);
+      };
+    })()));
+    // TODO: Return entries directly and change client to handle error.
+    return (0, (_collection || _load_collection()).arrayCompact)(entries).map(function (entry) {
+      return [entry.file, entry.stats.isFile(), entry.isSymbolicLink];
+    });
   });
-}
+
+  return function readdir(_x4) {
+    return _ref3.apply(this, arguments);
+  };
+})();
 
 /**
  * Gets the real path of a file path.
  * It could be different than the given path if the file is a symlink
  * or exists in a symlinked directory.
  */
-export function realpath(path: NuclideUri): Promise<NuclideUri> {
-  return fsPromise.realpath(path);
-}
 
-/**
- * Gets the real path of a file path, while expanding tilda paths and symlinks
- * like: ~/abc to its absolute path format.
- */
-export function resolveRealPath(path: string): Promise<string> {
-  return fsPromise.realpath(nuclideUri.expandHomeDir(path));
-}
-
-/**
- * Runs the equivalent of `mv sourcePath destinationPath`.
- */
-export function rename(
-  sourcePath: NuclideUri,
-  destinationPath: NuclideUri,
-): Promise<void> {
-  return fsPromise.move(sourcePath, destinationPath);
-}
 
 /**
  * Moves all sourcePaths into the specified destDir, assumed to be a directory name.
  */
-export async function move(
-  sourcePaths: Array<NuclideUri>,
-  destDir: NuclideUri,
-): Promise<void> {
-  await Promise.all(
-    sourcePaths.map(path => {
-      const destPath = nuclideUri.join(destDir, nuclideUri.basename(path));
-      return fsPromise.move(path, destPath);
-    }),
-  );
-}
+let move = exports.move = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (sourcePaths, destDir) {
+    yield Promise.all(sourcePaths.map(function (path) {
+      const destPath = (_nuclideUri || _load_nuclideUri()).default.join(destDir, (_nuclideUri || _load_nuclideUri()).default.basename(path));
+      return (_fsPromise || _load_fsPromise()).default.move(path, destPath);
+    }));
+  });
+
+  return function move(_x6, _x7) {
+    return _ref5.apply(this, arguments);
+  };
+})();
 
 /**
  * Runs the equivalent of `cp sourcePath destinationPath`.
  * @return true if the operation was successful; false if it wasn't.
  */
-export async function copy(
-  sourcePath: NuclideUri,
-  destinationPath: NuclideUri,
-): Promise<boolean> {
-  const isExistingFile = await fsPromise.exists(destinationPath);
-  if (isExistingFile) {
-    return false;
-  }
-  await fsPromise.copy(sourcePath, destinationPath);
-  await copyFilePermissions(sourcePath, destinationPath);
-  return true;
-}
+
+
+let copy = exports.copy = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (sourcePath, destinationPath) {
+    const isExistingFile = yield (_fsPromise || _load_fsPromise()).default.exists(destinationPath);
+    if (isExistingFile) {
+      return false;
+    }
+    yield (_fsPromise || _load_fsPromise()).default.copy(sourcePath, destinationPath);
+    yield copyFilePermissions(sourcePath, destinationPath);
+    return true;
+  });
+
+  return function copy(_x8, _x9) {
+    return _ref6.apply(this, arguments);
+  };
+})();
 
 /**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
-export function rmdir(path: NuclideUri): Promise<void> {
-  return fsPromise.rimraf(path);
-}
 
-export async function rmdirAll(paths: Array<NuclideUri>): Promise<void> {
-  await Promise.all(paths.map(p => fsPromise.rimraf(p)));
-}
+
+let rmdirAll = exports.rmdirAll = (() => {
+  var _ref7 = (0, _asyncToGenerator.default)(function* (paths) {
+    yield Promise.all(paths.map(function (p) {
+      return (_fsPromise || _load_fsPromise()).default.rimraf(p);
+    }));
+  });
+
+  return function rmdirAll(_x10) {
+    return _ref7.apply(this, arguments);
+  };
+})();
 
 /**
  * The stat endpoint accepts the following query parameters:
@@ -252,20 +176,7 @@ export async function rmdirAll(paths: Array<NuclideUri>): Promise<void> {
  * }
  *
  */
-export function stat(path: NuclideUri): Promise<fs.Stats> {
-  return fsPromise.stat(path);
-}
 
-/**
- * Removes files. Does not fail if the file doesn't exist.
- */
-export function unlink(path: NuclideUri): Promise<void> {
-  return fsPromise.unlink(path).catch(error => {
-    if (error.code !== 'ENOENT') {
-      throw error;
-    }
-  });
-}
 
 /**
  *   path: the path to the file to read
@@ -275,68 +186,43 @@ export function unlink(path: NuclideUri): Promise<void> {
  *
  *   Callers who want a string should call buffer.toString('utf8').
  */
-export async function readFile(
-  path: NuclideUri,
-  options?: {flag?: string},
-): Promise<Buffer> {
-  const stats = await fsPromise.stat(path);
-  if (stats.size > READFILE_SIZE_LIMIT) {
-    throw new Error(`File is too large (${stats.size} bytes)`);
-  }
-  return fsPromise.readFile(path, options);
-}
-
-export function createReadStream(
-  path: NuclideUri,
-  options?: {flag?: string},
-): ConnectableObservable<Buffer> {
-  return observeRawStream(fs.createReadStream(path, options)).publish();
-}
-
-/**
- * Returns true if the path being checked exists in a `NFS` mounted directory device.
- */
-export function isNfs(path: NuclideUri): Promise<boolean> {
-  return fsPromise.isNfs(path);
-}
-
-// TODO: Move to nuclide-commons
-function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    mv(sourcePath, destinationPath, {mkdirp: false}, error => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-async function copyFilePermissions(
-  sourcePath: string,
-  destinationPath: string,
-): Promise<void> {
-  try {
-    const {mode, uid, gid} = await fsPromise.stat(sourcePath);
-    await Promise.all([
-      // The user may not have permissions to use the uid/gid.
-      fsPromise.chown(destinationPath, uid, gid).catch(() => {}),
-      fsPromise.chmod(destinationPath, mode),
-    ]);
-  } catch (e) {
-    // If the file does not exist, then ENOENT will be thrown.
-    if (e.code !== 'ENOENT') {
-      throw e;
+let readFile = exports.readFile = (() => {
+  var _ref8 = (0, _asyncToGenerator.default)(function* (path, options) {
+    const stats = yield (_fsPromise || _load_fsPromise()).default.stat(path);
+    if (stats.size > READFILE_SIZE_LIMIT) {
+      throw new Error(`File is too large (${stats.size} bytes)`);
     }
-    // For new files, use the default process file creation mask.
-    await fsPromise.chmod(
-      destinationPath,
+    return (_fsPromise || _load_fsPromise()).default.readFile(path, options);
+  });
+
+  return function readFile(_x11, _x12) {
+    return _ref8.apply(this, arguments);
+  };
+})();
+
+let copyFilePermissions = (() => {
+  var _ref9 = (0, _asyncToGenerator.default)(function* (sourcePath, destinationPath) {
+    try {
+      const { mode, uid, gid } = yield (_fsPromise || _load_fsPromise()).default.stat(sourcePath);
+      yield Promise.all([
+      // The user may not have permissions to use the uid/gid.
+      (_fsPromise || _load_fsPromise()).default.chown(destinationPath, uid, gid).catch(function () {}), (_fsPromise || _load_fsPromise()).default.chmod(destinationPath, mode)]);
+    } catch (e) {
+      // If the file does not exist, then ENOENT will be thrown.
+      if (e.code !== 'ENOENT') {
+        throw e;
+      }
+      // For new files, use the default process file creation mask.
+      yield (_fsPromise || _load_fsPromise()).default.chmod(destinationPath,
       // $FlowIssue: umask argument is optional
-      0o666 & ~process.umask(), // eslint-disable-line no-bitwise
-    );
-  }
-}
+      0o666 & ~process.umask());
+    }
+  });
+
+  return function copyFilePermissions(_x13, _x14) {
+    return _ref9.apply(this, arguments);
+  };
+})();
 
 /**
  * A small wrapper around fs.writeFile that also implements:
@@ -346,11 +232,262 @@ async function copyFilePermissions(
  *
  * `options` is passed directly into fs.writeFile.
  */
-export function writeFile(
-  path: NuclideUri,
-  data: string,
-  options?: {encoding?: string, mode?: number, flag?: string},
-): Promise<void> {
+
+
+let _writeFile = (() => {
+  var _ref10 = (0, _asyncToGenerator.default)(function* (path, data, options) {
+    let complete = false;
+    const tempFilePath = yield (_fsPromise || _load_fsPromise()).default.tempfile('nuclide');
+    try {
+      yield (_fsPromise || _load_fsPromise()).default.writeFile(tempFilePath, data, options);
+
+      // Expand the target path in case it contains symlinks.
+      let realPath = path;
+      try {
+        realPath = yield resolveRealPath(path);
+      } catch (e) {}
+      // Fallback to using the specified path if it cannot be expanded.
+      // Note: this is expected in cases where the remote file does not
+      // actually exist.
+
+
+      // Ensure file still has original permissions:
+      // https://github.com/facebook/nuclide/issues/157
+      // We update the mode of the temp file rather than the destination file because
+      // if we did the mv() then the chmod(), there would be a brief period between
+      // those two operations where the destination file might have the wrong permissions.
+      yield copyFilePermissions(realPath, tempFilePath);
+
+      // TODO(mikeo): put renames into a queue so we don't write older save over new save.
+      // Use mv as fs.rename doesn't work across partitions.
+      yield mvPromise(tempFilePath, realPath);
+      complete = true;
+    } finally {
+      if (!complete) {
+        yield (_fsPromise || _load_fsPromise()).default.unlink(tempFilePath);
+      }
+    }
+  });
+
+  return function _writeFile(_x15, _x16, _x17) {
+    return _ref10.apply(this, arguments);
+  };
+})();
+
+let getFreeSpace = exports.getFreeSpace = (() => {
+  var _ref11 = (0, _asyncToGenerator.default)(function* (path) {
+    // Only supported on Linux for now.
+    if (process.platform !== 'linux') {
+      return null;
+    }
+    // The output of this command is "Avail\n12345678\n".
+    // Just return the first line that parses to an integer.
+    return (0, (_process || _load_process()).runCommand)('df', ['--output=avail', path]).map(function (output) {
+      for (const line of output.split('\n')) {
+        const number = parseInt(line, 10);
+        if (Number.isInteger(number)) {
+          return number;
+        }
+      }
+    }).toPromise().catch(function () {
+      return null;
+    });
+  });
+
+  return function getFreeSpace(_x18) {
+    return _ref11.apply(this, arguments);
+  };
+})();
+
+exports.exists = exists;
+exports.findFilesInDirectories = findFilesInDirectories;
+exports.lstat = lstat;
+exports.mkdir = mkdir;
+exports.mkdirp = mkdirp;
+exports.chmod = chmod;
+exports.realpath = realpath;
+exports.resolveRealPath = resolveRealPath;
+exports.rename = rename;
+exports.rmdir = rmdir;
+exports.stat = stat;
+exports.unlink = unlink;
+exports.createReadStream = createReadStream;
+exports.isNfs = isNfs;
+exports.writeFile = writeFile;
+exports.writeFileBuffer = writeFileBuffer;
+
+var _mv;
+
+function _load_mv() {
+  return _mv = _interopRequireDefault(require('mv'));
+}
+
+var _fs = _interopRequireDefault(require('fs'));
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _fsPromise;
+
+function _load_fsPromise() {
+  return _fsPromise = _interopRequireDefault(require('nuclide-commons/fsPromise'));
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('nuclide-commons/stream');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Attempting to read large files just crashes node, so just fail.
+// Atom can't handle files of this scale anyway.
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
+/**
+ * This code implements the NuclideFs service.  It exports the FS on http via
+ * the endpoint: http://your.server:your_port/fs/method where method is one of
+ * readFile, writeFile, etc.
+ */
+
+const READFILE_SIZE_LIMIT = 10 * 1024 * 1024;
+
+//------------------------------------------------------------------------------
+// Services
+//------------------------------------------------------------------------------
+
+/**
+ * Checks a certain path for existence and returns 'true'/'false' accordingly
+ */
+function exists(path) {
+  return (_fsPromise || _load_fsPromise()).default.exists(path);
+}function findFilesInDirectories(searchPaths, fileName) {
+  if (searchPaths.length === 0) {
+    return _rxjsBundlesRxMinJs.Observable.throw(new Error('No directories to search in!')).publish();
+  }
+  const findArgs = [...searchPaths, '-type', 'f', '-name', fileName];
+  return (0, (_process || _load_process()).runCommand)('find', findArgs).map(stdout => stdout.split('\n').filter(filePath => filePath !== '')).publish();
+}
+
+/**
+ * The lstat endpoint is the same as the stat endpoint except it will return
+ * the stat of a link instead of the file the link points to.
+ */
+function lstat(path) {
+  return (_fsPromise || _load_fsPromise()).default.lstat(path);
+}
+
+/**
+ * Creates a new directory with the given path.
+ * Throws EEXIST error if the directory already exists.
+ * Throws ENOENT if the path given is nested in a non-existing directory.
+ */
+function mkdir(path) {
+  return (_fsPromise || _load_fsPromise()).default.mkdir(path);
+}
+
+/**
+ * Runs the equivalent of `mkdir -p` with the given path.
+ *
+ * Like most implementations of mkdirp, if it fails, it is possible that
+ * directories were created for some prefix of the given path.
+ * @return true if the path was created; false if it already existed.
+ */
+function mkdirp(path) {
+  return (_fsPromise || _load_fsPromise()).default.mkdirp(path);
+}
+
+/**
+ * Changes permissions on a file.
+ */
+function chmod(path, mode) {
+  return (_fsPromise || _load_fsPromise()).default.chmod(path, mode);
+}function realpath(path) {
+  return (_fsPromise || _load_fsPromise()).default.realpath(path);
+}
+
+/**
+ * Gets the real path of a file path, while expanding tilda paths and symlinks
+ * like: ~/abc to its absolute path format.
+ */
+function resolveRealPath(path) {
+  return (_fsPromise || _load_fsPromise()).default.realpath((_nuclideUri || _load_nuclideUri()).default.expandHomeDir(path));
+}
+
+/**
+ * Runs the equivalent of `mv sourcePath destinationPath`.
+ */
+function rename(sourcePath, destinationPath) {
+  return (_fsPromise || _load_fsPromise()).default.move(sourcePath, destinationPath);
+}function rmdir(path) {
+  return (_fsPromise || _load_fsPromise()).default.rimraf(path);
+}
+
+function stat(path) {
+  return (_fsPromise || _load_fsPromise()).default.stat(path);
+}
+
+/**
+ * Removes files. Does not fail if the file doesn't exist.
+ */
+function unlink(path) {
+  return (_fsPromise || _load_fsPromise()).default.unlink(path).catch(error => {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  });
+}function createReadStream(path, options) {
+  return (0, (_stream || _load_stream()).observeRawStream)(_fs.default.createReadStream(path, options)).publish();
+}
+
+/**
+ * Returns true if the path being checked exists in a `NFS` mounted directory device.
+ */
+function isNfs(path) {
+  return (_fsPromise || _load_fsPromise()).default.isNfs(path);
+}
+
+// TODO: Move to nuclide-commons
+function mvPromise(sourcePath, destinationPath) {
+  return new Promise((resolve, reject) => {
+    (0, (_mv || _load_mv()).default)(sourcePath, destinationPath, { mkdirp: false }, error => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function writeFile(path, data, options) {
   return _writeFile(path, data, options);
 }
 
@@ -359,68 +496,6 @@ export function writeFile(
  * The RPC framework can't use string | Buffer so we have to create a separate function.
  * Note that options.encoding is ignored for raw buffers.
  */
-export function writeFileBuffer(
-  path: NuclideUri,
-  data: Buffer,
-  options?: {encoding?: string, mode?: number, flag?: string},
-): Promise<void> {
+function writeFileBuffer(path, data, options) {
   return _writeFile(path, data, options);
-}
-
-async function _writeFile(
-  path: NuclideUri,
-  data: string | Buffer,
-  options?: {encoding?: string, mode?: number, flag?: string},
-): Promise<void> {
-  let complete = false;
-  const tempFilePath = await fsPromise.tempfile('nuclide');
-  try {
-    await fsPromise.writeFile(tempFilePath, data, options);
-
-    // Expand the target path in case it contains symlinks.
-    let realPath = path;
-    try {
-      realPath = await resolveRealPath(path);
-    } catch (e) {
-      // Fallback to using the specified path if it cannot be expanded.
-      // Note: this is expected in cases where the remote file does not
-      // actually exist.
-    }
-
-    // Ensure file still has original permissions:
-    // https://github.com/facebook/nuclide/issues/157
-    // We update the mode of the temp file rather than the destination file because
-    // if we did the mv() then the chmod(), there would be a brief period between
-    // those two operations where the destination file might have the wrong permissions.
-    await copyFilePermissions(realPath, tempFilePath);
-
-    // TODO(mikeo): put renames into a queue so we don't write older save over new save.
-    // Use mv as fs.rename doesn't work across partitions.
-    await mvPromise(tempFilePath, realPath);
-    complete = true;
-  } finally {
-    if (!complete) {
-      await fsPromise.unlink(tempFilePath);
-    }
-  }
-}
-
-export async function getFreeSpace(path: NuclideUri): Promise<?number> {
-  // Only supported on Linux for now.
-  if (process.platform !== 'linux') {
-    return null;
-  }
-  // The output of this command is "Avail\n12345678\n".
-  // Just return the first line that parses to an integer.
-  return runCommand('df', ['--output=avail', path])
-    .map(output => {
-      for (const line of output.split('\n')) {
-        const number = parseInt(line, 10);
-        if (Number.isInteger(number)) {
-          return number;
-        }
-      }
-    })
-    .toPromise()
-    .catch(() => null);
 }

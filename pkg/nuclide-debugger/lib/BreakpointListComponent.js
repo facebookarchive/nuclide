@@ -1,194 +1,187 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type DebuggerActions from './DebuggerActions';
-import type BreakpointStore from './BreakpointStore';
-import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.BreakpointListComponent = undefined;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import invariant from 'assert';
-import React from 'react';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
-import classnames from 'classnames';
+var _UniversalDisposable;
 
-type BreakpointListComponentProps = {
-  actions: DebuggerActions,
-  breakpointStore: BreakpointStore,
-};
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-type BreakpointListComponentState = {
-  breakpoints: ?FileLineBreakpoints,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export class BreakpointListComponent extends React.Component {
-  props: BreakpointListComponentProps;
-  state: BreakpointListComponentState;
-  _disposables: UniversalDisposable;
+var _nuclideUri;
 
-  constructor(props: BreakpointListComponentProps) {
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _ListView;
+
+function _load_ListView() {
+  return _ListView = require('../../nuclide-ui/ListView');
+}
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class BreakpointListComponent extends _react.default.Component {
+
+  constructor(props) {
     super(props);
+
+    this._handleBreakpointEnabledChange = (breakpoint, enabled) => {
+      this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
+    };
+
+    this._handleBreakpointClick = (breakpointIndex, breakpoint) => {
+      if (!(breakpoint != null)) {
+        throw new Error('Invariant violation: "breakpoint != null"');
+      }
+
+      const { path, line } = breakpoint;
+      this.props.actions.openSourceLocation((_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(path), line);
+    };
+
+    this._debuggerSupportsConditionalBp = breakpoint => {
+      return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
+    };
+
     this.state = {
-      breakpoints: this.props.breakpointStore.getAllBreakpoints(),
+      breakpoints: this.props.breakpointStore.getAllBreakpoints()
     };
   }
 
-  componentDidMount(): void {
-    const {breakpointStore} = this.props;
-    this._disposables = new UniversalDisposable(
-      breakpointStore.onNeedUIUpdate(() => {
-        this.setState({
-          breakpoints: breakpointStore.getAllBreakpoints(),
-        });
-      }),
-    );
+  componentDidMount() {
+    const { breakpointStore } = this.props;
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(breakpointStore.onNeedUIUpdate(() => {
+      this.setState({
+        breakpoints: breakpointStore.getAllBreakpoints()
+      });
+    }));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     if (this._disposables != null) {
       this._disposables.dispose();
     }
   }
 
-  _handleBreakpointEnabledChange = (
-    breakpoint: FileLineBreakpoint,
-    enabled: boolean,
-  ): void => {
-    this.props.actions.updateBreakpointEnabled(breakpoint.id, enabled);
-  };
-
-  _handleBreakpointClick = (
-    breakpointIndex: number,
-    breakpoint: ?FileLineBreakpoint,
-  ): void => {
-    invariant(breakpoint != null);
-    const {path, line} = breakpoint;
-    this.props.actions.openSourceLocation(
-      nuclideUri.nuclideUriToUri(path),
-      line,
-    );
-  };
-
-  _debuggerSupportsConditionalBp = (
-    breakpoint: FileLineBreakpoint,
-  ): boolean => {
-    return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
-  };
-
-  render(): ?React.Element<any> {
-    const {breakpoints} = this.state;
+  render() {
+    const { breakpoints } = this.state;
     if (breakpoints == null || breakpoints.length === 0) {
-      return <span>(no breakpoints)</span>;
+      return _react.default.createElement(
+        'span',
+        null,
+        '(no breakpoints)'
+      );
     }
 
-    const items = breakpoints
-      .map(breakpoint => ({
-        ...breakpoint,
-        // Calculate the basename exactly once for each breakpoint
-        basename: nuclideUri.basename(breakpoint.path),
-      }))
-      // Show resolved breakpoints at the top of the list, then order by filename & line number.
-      .sort(
-        (breakpointA, breakpointB) =>
-          100 * (Number(breakpointB.resolved) - Number(breakpointA.resolved)) +
-          10 * breakpointA.basename.localeCompare(breakpointB.basename) +
-          Math.sign(breakpointA.line - breakpointB.line),
-      )
-      .map((breakpoint, i) => {
-        const {basename, line, enabled, resolved, path} = breakpoint;
-        const label = `${basename}:${line + 1}`;
-        const title = !enabled
-          ? 'Disabled breakpoint'
-          : !resolved
-            ? 'Unresolved Breakpoint'
-            : `Breakpoint at ${label} (resolved)`;
+    const items = breakpoints.map(breakpoint => Object.assign({}, breakpoint, {
+      // Calculate the basename exactly once for each breakpoint
+      basename: (_nuclideUri || _load_nuclideUri()).default.basename(breakpoint.path)
+    }))
+    // Show resolved breakpoints at the top of the list, then order by filename & line number.
+    .sort((breakpointA, breakpointB) => 100 * (Number(breakpointB.resolved) - Number(breakpointA.resolved)) + 10 * breakpointA.basename.localeCompare(breakpointB.basename) + Math.sign(breakpointA.line - breakpointB.line)).map((breakpoint, i) => {
+      const { basename, line, enabled, resolved, path } = breakpoint;
+      const label = `${basename}:${line + 1}`;
+      const title = !enabled ? 'Disabled breakpoint' : !resolved ? 'Unresolved Breakpoint' : `Breakpoint at ${label} (resolved)`;
 
-        const conditionElement =
-          this._debuggerSupportsConditionalBp(breakpoint) &&
-          breakpoint.condition !== ''
-            ? <div
-                className="nuclide-debugger-breakpoint-condition"
-                title={`Breakpoint condition: ${breakpoint.condition}`}
-                data-path={path}
-                data-line={line}
-                onClick={event => {
-                  atom.commands.dispatch(
-                    event.target,
-                    'nuclide-debugger:edit-breakpoint',
-                  );
-                }}>
-                Condition: {breakpoint.condition}
-              </div>
-            : null;
+      const conditionElement = this._debuggerSupportsConditionalBp(breakpoint) && breakpoint.condition !== '' ? _react.default.createElement(
+        'div',
+        {
+          className: 'nuclide-debugger-breakpoint-condition',
+          title: `Breakpoint condition: ${breakpoint.condition}`,
+          'data-path': path,
+          'data-line': line,
+          onClick: event => {
+            atom.commands.dispatch(event.target, 'nuclide-debugger:edit-breakpoint');
+          } },
+        'Condition: ',
+        breakpoint.condition
+      ) : null;
 
-        const {hitCount} = breakpoint;
-        const hitCountElement =
-          hitCount != null && hitCount >= 0
-            ? <div
-                className="nuclide-debugger-breakpoint-hitcount"
-                title={`Breakpoint hit count: ${hitCount}`}>
-                Hit count: {hitCount}
-              </div>
-            : null;
-        const content = (
-          <div className="inline-block">
-            <div
-              className={classnames({
-                'nuclide-debugger-breakpoint-disabled': !enabled,
-                'nuclide-debugger-breakpoint-with-condition':
-                  breakpoint.condition !== '',
-              })}
-              key={i}>
-              <Checkbox
-                checked={enabled}
-                indeterminate={!resolved}
-                disabled={!resolved}
-                onChange={this._handleBreakpointEnabledChange.bind(
-                  this,
-                  breakpoint,
-                )}
-                onClick={(event: SyntheticEvent) => event.stopPropagation()}
-                title={title}
-                className={classnames(
-                  resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
-                )}
-              />
-              <span title={title} data-path={path} data-line={line}>
-                {label}
-              </span>
-              {conditionElement}
-            </div>
-            {hitCountElement}
-          </div>
-        );
-        return (
-          <ListViewItem
-            key={label}
-            value={breakpoint}
-            data-path={path}
-            data-line={line}
-            title={title}
-            className="nuclide-debugger-breakpoint">
-            {content}
-          </ListViewItem>
-        );
-      });
-    return (
-      <ListView
-        alternateBackground={true}
-        onSelect={this._handleBreakpointClick}
-        selectable={true}>
-        {items}
-      </ListView>
+      const { hitCount } = breakpoint;
+      const hitCountElement = hitCount != null && hitCount >= 0 ? _react.default.createElement(
+        'div',
+        {
+          className: 'nuclide-debugger-breakpoint-hitcount',
+          title: `Breakpoint hit count: ${hitCount}` },
+        'Hit count: ',
+        hitCount
+      ) : null;
+      const content = _react.default.createElement(
+        'div',
+        { className: 'inline-block' },
+        _react.default.createElement(
+          'div',
+          {
+            className: (0, (_classnames || _load_classnames()).default)({
+              'nuclide-debugger-breakpoint-disabled': !enabled,
+              'nuclide-debugger-breakpoint-with-condition': breakpoint.condition !== ''
+            }),
+            key: i },
+          _react.default.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+            checked: enabled,
+            indeterminate: !resolved,
+            disabled: !resolved,
+            onChange: this._handleBreakpointEnabledChange.bind(this, breakpoint),
+            onClick: event => event.stopPropagation(),
+            title: title,
+            className: (0, (_classnames || _load_classnames()).default)(resolved ? '' : 'nuclide-debugger-breakpoint-unresolved')
+          }),
+          _react.default.createElement(
+            'span',
+            { title: title, 'data-path': path, 'data-line': line },
+            label
+          ),
+          conditionElement
+        ),
+        hitCountElement
+      );
+      return _react.default.createElement(
+        (_ListView || _load_ListView()).ListViewItem,
+        {
+          key: label,
+          value: breakpoint,
+          'data-path': path,
+          'data-line': line,
+          title: title,
+          className: 'nuclide-debugger-breakpoint' },
+        content
+      );
+    });
+    return _react.default.createElement(
+      (_ListView || _load_ListView()).ListView,
+      {
+        alternateBackground: true,
+        onSelect: this._handleBreakpointClick,
+        selectable: true },
+      items
     );
   }
 }
+exports.BreakpointListComponent = BreakpointListComponent; /**
+                                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                                            * All rights reserved.
+                                                            *
+                                                            * This source code is licensed under the license found in the LICENSE file in
+                                                            * the root directory of this source tree.
+                                                            *
+                                                            * 
+                                                            * @format
+                                                            */

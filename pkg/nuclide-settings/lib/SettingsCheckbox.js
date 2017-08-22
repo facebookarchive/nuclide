@@ -1,55 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {SettingsPropsDefault} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {normalizeIdentifier} from './settings-utils';
-import React from 'react';
+var _settingsUtils;
 
-type Props = SettingsPropsDefault & {
-  value: boolean,
-};
+function _load_settingsUtils() {
+  return _settingsUtils = require('./settings-utils');
+}
 
-export default class SettingsCheckbox extends React.Component {
-  props: Props;
+var _react = _interopRequireDefault(require('react'));
 
-  _handleChange = (event: SyntheticEvent) => {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
-    this.props.onChange(isChecked);
-  };
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  render(): React.Element<any> {
+class SettingsCheckbox extends _react.default.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._handleChange = event => {
+      const isChecked = event.target.checked;
+      this.props.onChange(isChecked);
+    }, _temp;
+  }
+
+  render() {
     const keyPath = this.props.keyPath;
-    const id = normalizeIdentifier(keyPath);
+    const id = (0, (_settingsUtils || _load_settingsUtils()).normalizeIdentifier)(keyPath);
     const title = this.props.title;
     const description = this.props.description;
     const value = this.props.value;
 
-    return (
-      <div className="checkbox">
-        <label htmlFor={id}>
-          <input
-            checked={value}
-            id={id}
-            onChange={this._handleChange}
-            type="checkbox"
-          />
-          <div className="setting-title">
-            {title}
-          </div>
-        </label>
-        <div className="setting-description">
-          {description}
-        </div>
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'checkbox' },
+      _react.default.createElement(
+        'label',
+        { htmlFor: id },
+        _react.default.createElement('input', {
+          checked: value,
+          id: id,
+          onChange: this._handleChange,
+          type: 'checkbox'
+        }),
+        _react.default.createElement(
+          'div',
+          { className: 'setting-title' },
+          title
+        )
+      ),
+      _react.default.createElement(
+        'div',
+        { className: 'setting-description' },
+        description
+      )
     );
   }
 }
+exports.default = SettingsCheckbox; /**
+                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the license found in the LICENSE file in
+                                     * the root directory of this source tree.
+                                     *
+                                     * 
+                                     * @format
+                                     */

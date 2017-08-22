@@ -1,204 +1,240 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  Datatip,
-  DatatipProvider,
-  DatatipService,
-} from '../../atom-ide-datatip/lib/types';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
-import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
+let getCodeActionsForDiagnostic = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* (codeActionFetcher, message, editor) {
+    const codeActions = yield codeActionFetcher.getCodeActionForDiagnostic(message, editor);
+    // For RPC reasons, the getTitle function of a CodeAction is async. Therefore,
+    // we immediately request the title after we have each CodeAction.
+    return new Map((yield Promise.all(codeActions.map((() => {
+      var _ref3 = (0, _asyncToGenerator.default)(function* (codeAction) {
+        return Promise.resolve([yield codeAction.getTitle(), codeAction]);
+      });
 
-import type {
-  DiagnosticMessage,
-  DiagnosticTrace,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
-  ObservableDiagnosticUpdater,
-} from '../../atom-ide-diagnostics/lib/types';
+      return function (_x5) {
+        return _ref3.apply(this, arguments);
+      };
+    })()))));
+  });
 
-import invariant from 'assert';
+  return function getCodeActionsForDiagnostic(_x2, _x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+})();
 
-import analytics from 'nuclide-commons-atom/analytics';
+var _analytics;
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
-import StatusBarTile from './StatusBarTile';
-import {applyUpdateToEditor} from './gutter';
-import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import {BehaviorSubject, Observable} from 'rxjs';
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
 
-const LINTER_PACKAGE = 'linter';
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _DiagnosticsViewModel;
+
+function _load_DiagnosticsViewModel() {
+  return _DiagnosticsViewModel = require('./DiagnosticsViewModel');
+}
+
+var _StatusBarTile;
+
+function _load_StatusBarTile() {
+  return _StatusBarTile = _interopRequireDefault(require('./StatusBarTile'));
+}
+
+var _gutter;
+
+function _load_gutter() {
+  return _gutter = require('./gutter');
+}
+
+var _DiagnosticsDatatipComponent;
+
+function _load_DiagnosticsDatatipComponent() {
+  return _DiagnosticsDatatipComponent = require('./DiagnosticsDatatipComponent');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _destroyItemWhere;
+
+function _load_destroyItemWhere() {
+  return _destroyItemWhere = require('nuclide-commons-atom/destroyItemWhere');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const LINTER_PACKAGE = 'linter'; /**
+                                  * Copyright (c) 2017-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the BSD-style license found in the
+                                  * LICENSE file in the root directory of this source tree. An additional grant
+                                  * of patent rights can be found in the PATENTS file in the same directory.
+                                  *
+                                  * 
+                                  * @format
+                                  */
+
 const MAX_OPEN_ALL_FILES = 20;
-
-type ActivationState = {
-  filterByActiveTextEditor: boolean,
-};
 
 function disableLinter() {
   atom.packages.disablePackage(LINTER_PACKAGE);
 }
 
-function getEditorDiagnosticUpdates(
-  editor: atom$TextEditor,
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): Observable<FileDiagnosticMessages> {
-  return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
-    .startWith(editor.getPath())
-    .switchMap(
-      filePath =>
-        filePath != null
-          ? diagnosticUpdater.getFileMessageUpdates(filePath)
-          : Observable.empty(),
-    )
-    .takeUntil(
-      observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-    );
+function getEditorDiagnosticUpdates(editor, diagnosticUpdater) {
+  return (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidChangePath.bind(editor)).startWith(editor.getPath()).switchMap(filePath => filePath != null ? diagnosticUpdater.getFileMessageUpdates(filePath) : _rxjsBundlesRxMinJs.Observable.empty()).takeUntil((0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidDestroy.bind(editor)));
 }
 
 class Activation {
-  _diagnosticUpdaters: BehaviorSubject<?ObservableDiagnosticUpdater>;
-  _subscriptions: UniversalDisposable;
-  _state: ActivationState;
-  _statusBarTile: ?StatusBarTile;
-  _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
-  _codeActionFetcher: ?CodeActionFetcher;
 
-  constructor(state_: ?Object): void {
-    this._diagnosticUpdaters = new BehaviorSubject(null);
-    this._subscriptions = new UniversalDisposable(
-      this.registerOpenerAndCommand(),
-    );
+  constructor(state_) {
+    this._diagnosticUpdaters = new _rxjsBundlesRxMinJs.BehaviorSubject(null);
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(this.registerOpenerAndCommand());
     const state = state_ || {};
     this._state = {
-      filterByActiveTextEditor: state.filterByActiveTextEditor === true,
+      filterByActiveTextEditor: state.filterByActiveTextEditor === true
     };
     this._fileDiagnostics = new WeakMap();
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: DatatipProvider = {
+  consumeDatatipService(service) {
+    const datatipProvider = {
       // show this datatip for every type of file
       providerName: 'nuclide-diagnostics-datatip',
       priority: 1,
-      datatip: this._datatip.bind(this),
+      datatip: this._datatip.bind(this)
     };
     const disposable = service.addProvider(datatipProvider);
     this._subscriptions.add(disposable);
     return disposable;
   }
 
-  async _datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-    const messagesForFile = this._fileDiagnostics.get(editor);
-    if (messagesForFile == null) {
-      return null;
-    }
-    const messagesAtPosition = messagesForFile.filter(
-      message => message.range != null && message.range.containsPoint(position),
-    );
-    if (messagesAtPosition.length === 0) {
-      return null;
-    }
-    const codeActions = await Promise.all(
-      messagesAtPosition.map(async message => {
-        return [
-          message,
-          this._codeActionFetcher != null
-            ? await getCodeActionsForDiagnostic(
-                this._codeActionFetcher,
-                message,
-                editor,
-              )
-            : new Map(),
-        ];
-      }),
-    );
-    // TODO(matthewwithanm) Explore displaying multiple diagnostics in datatips.
-    // If a message has a code action, it should be shown first.
-    const [messageToShow, codeActionsForMessage] =
-      codeActions.find(([message, codeAction]) => codeAction.size > 0) ||
-      codeActions[0];
-    const {range} = messageToShow;
-    invariant(range);
-    return {
-      component: makeDiagnosticsDatatipComponent(
-        messageToShow,
-        codeActionsForMessage,
-      ),
-      pinnable: false,
-      range,
-    };
+  _datatip(editor, position) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const messagesForFile = _this._fileDiagnostics.get(editor);
+      if (messagesForFile == null) {
+        return null;
+      }
+      const messagesAtPosition = messagesForFile.filter(function (message) {
+        return message.range != null && message.range.containsPoint(position);
+      });
+      if (messagesAtPosition.length === 0) {
+        return null;
+      }
+      const codeActions = yield Promise.all(messagesAtPosition.map((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (message) {
+          return [message, _this._codeActionFetcher != null ? yield getCodeActionsForDiagnostic(_this._codeActionFetcher, message, editor) : new Map()];
+        });
+
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      })()));
+      // TODO(matthewwithanm) Explore displaying multiple diagnostics in datatips.
+      // If a message has a code action, it should be shown first.
+      const [messageToShow, codeActionsForMessage] = codeActions.find(function ([message, codeAction]) {
+        return codeAction.size > 0;
+      }) || codeActions[0];
+      const { range } = messageToShow;
+
+      if (!range) {
+        throw new Error('Invariant violation: "range"');
+      }
+
+      return {
+        component: (0, (_DiagnosticsDatatipComponent || _load_DiagnosticsDatatipComponent()).makeDiagnosticsDatatipComponent)(messageToShow, codeActionsForMessage),
+        pinnable: false,
+        range
+      };
+    })();
   }
 
-  consumeDiagnosticUpdates(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
-  ): IDisposable {
+  consumeDiagnosticUpdates(diagnosticUpdater) {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
     // Currently, the DiagnosticsView is designed to work with only one DiagnosticUpdater.
     if (this._diagnosticUpdaters.getValue() != null) {
-      return new UniversalDisposable();
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default();
     }
     this._diagnosticUpdaters.next(diagnosticUpdater);
     const atomCommandsDisposable = addAtomCommands(diagnosticUpdater);
     this._subscriptions.add(atomCommandsDisposable);
     this._subscriptions.add(
-      // Track diagnostics for all active editors.
-      observeTextEditors((editor: TextEditor) => {
-        this._fileDiagnostics.set(editor, []);
-        // TODO: this is actually inefficient - this filters all file events
-        // by their path, so this is actually O(N^2) in the number of editors.
-        // We should merge the store and UI packages to get direct access.
-        const subscription = getEditorDiagnosticUpdates(
-          editor,
-          diagnosticUpdater,
-        )
-          .finally(() => {
-            this._subscriptions.remove(subscription);
-            this._fileDiagnostics.delete(editor);
-          })
-          .subscribe(update => {
-            this._fileDiagnostics.set(editor, update.messages);
-          });
-        this._subscriptions.add(subscription);
-      }),
-    );
-    return new UniversalDisposable(atomCommandsDisposable, () => {
-      invariant(this._diagnosticUpdaters.getValue() === diagnosticUpdater);
+    // Track diagnostics for all active editors.
+    (0, (_textEditor || _load_textEditor()).observeTextEditors)(editor => {
+      this._fileDiagnostics.set(editor, []);
+      // TODO: this is actually inefficient - this filters all file events
+      // by their path, so this is actually O(N^2) in the number of editors.
+      // We should merge the store and UI packages to get direct access.
+      const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater).finally(() => {
+        this._subscriptions.remove(subscription);
+        this._fileDiagnostics.delete(editor);
+      }).subscribe(update => {
+        this._fileDiagnostics.set(editor, update.messages);
+      });
+      this._subscriptions.add(subscription);
+    }));
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(atomCommandsDisposable, () => {
+      if (!(this._diagnosticUpdaters.getValue() === diagnosticUpdater)) {
+        throw new Error('Invariant violation: "this._diagnosticUpdaters.getValue() === diagnosticUpdater"');
+      }
+
       this._diagnosticUpdaters.next(null);
     });
   }
 
-  consumeCodeActionFetcher(fetcher: CodeActionFetcher) {
+  consumeCodeActionFetcher(fetcher) {
     this._codeActionFetcher = fetcher;
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): void {
+  consumeStatusBar(statusBar) {
     this._getStatusBarTile().consumeStatusBar(statusBar);
   }
 
-  deserializeDiagnosticsViewModel(): DiagnosticsViewModel {
+  deserializeDiagnosticsViewModel() {
     return this._createDiagnosticsViewModel();
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
     if (this._statusBarTile) {
       this._statusBarTile.dispose();
@@ -206,93 +242,61 @@ class Activation {
     }
   }
 
-  serialize(): ActivationState {
+  serialize() {
     return this._state;
   }
 
-  _createDiagnosticsViewModel(): DiagnosticsViewModel {
-    return new DiagnosticsViewModel(
-      this._diagnosticUpdaters.switchMap(
-        updater =>
-          updater == null ? Observable.of([]) : updater.allMessageUpdates,
-      ),
-      ((featureConfig.observeAsStream(
-        'atom-ide-diagnostics-ui.showDiagnosticTraces',
-      ): any): Observable<boolean>),
-      showTraces => {
-        featureConfig.set(
-          'atom-ide-diagnostics-ui.showDiagnosticTraces',
-          showTraces,
-        );
-      },
-      disableLinter,
-      observeLinterPackageEnabled(),
-      this._state.filterByActiveTextEditor,
-      filterByActiveTextEditor => {
-        if (this._state != null) {
-          this._state.filterByActiveTextEditor = filterByActiveTextEditor;
-        }
-      },
-    );
+  _createDiagnosticsViewModel() {
+    return new (_DiagnosticsViewModel || _load_DiagnosticsViewModel()).DiagnosticsViewModel(this._diagnosticUpdaters.switchMap(updater => updater == null ? _rxjsBundlesRxMinJs.Observable.of([]) : updater.allMessageUpdates), (_featureConfig || _load_featureConfig()).default.observeAsStream('atom-ide-diagnostics-ui.showDiagnosticTraces'), showTraces => {
+      (_featureConfig || _load_featureConfig()).default.set('atom-ide-diagnostics-ui.showDiagnosticTraces', showTraces);
+    }, disableLinter, observeLinterPackageEnabled(), this._state.filterByActiveTextEditor, filterByActiveTextEditor => {
+      if (this._state != null) {
+        this._state.filterByActiveTextEditor = filterByActiveTextEditor;
+      }
+    });
   }
 
-  registerOpenerAndCommand(): IDisposable {
-    const commandDisposable = atom.commands.add(
-      'atom-workspace',
-      'diagnostics:toggle-table',
-      () => {
-        atom.workspace.toggle(WORKSPACE_VIEW_URI);
-      },
-    );
-    return new UniversalDisposable(
-      atom.workspace.addOpener(uri => {
-        if (uri === WORKSPACE_VIEW_URI) {
-          return this._createDiagnosticsViewModel();
-        }
-      }),
-      () => {
-        destroyItemWhere(item => item instanceof DiagnosticsViewModel);
-      },
-      commandDisposable,
-    );
+  registerOpenerAndCommand() {
+    const commandDisposable = atom.commands.add('atom-workspace', 'diagnostics:toggle-table', () => {
+      atom.workspace.toggle((_DiagnosticsViewModel || _load_DiagnosticsViewModel()).WORKSPACE_VIEW_URI);
+    });
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.workspace.addOpener(uri => {
+      if (uri === (_DiagnosticsViewModel || _load_DiagnosticsViewModel()).WORKSPACE_VIEW_URI) {
+        return this._createDiagnosticsViewModel();
+      }
+    }), () => {
+      (0, (_destroyItemWhere || _load_destroyItemWhere()).destroyItemWhere)(item => item instanceof (_DiagnosticsViewModel || _load_DiagnosticsViewModel()).DiagnosticsViewModel);
+    }, commandDisposable);
   }
 
-  _getStatusBarTile(): StatusBarTile {
+  _getStatusBarTile() {
     if (!this._statusBarTile) {
-      this._statusBarTile = new StatusBarTile();
+      this._statusBarTile = new (_StatusBarTile || _load_StatusBarTile()).default();
     }
     return this._statusBarTile;
   }
 }
 
-function gutterConsumeDiagnosticUpdates(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): IDisposable {
+function gutterConsumeDiagnosticUpdates(diagnosticUpdater) {
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
-  const subscriptions = new UniversalDisposable();
-  subscriptions.add(
-    observeTextEditors((editor: TextEditor) => {
-      const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater)
-        .finally(() => {
-          subscriptions.remove(subscription);
-        })
-        .subscribe(update => {
-          // Although the subscription should be cleaned up on editor destroy,
-          // the very act of destroying the editor can trigger diagnostic updates.
-          // Thus this callback can still be triggered after the editor is destroyed.
-          if (!editor.isDestroyed()) {
-            applyUpdateToEditor(editor, update, fixer);
-          }
-        });
-      subscriptions.add(subscription);
-    }),
-  );
+  const subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
+  subscriptions.add((0, (_textEditor || _load_textEditor()).observeTextEditors)(editor => {
+    const subscription = getEditorDiagnosticUpdates(editor, diagnosticUpdater).finally(() => {
+      subscriptions.remove(subscription);
+    }).subscribe(update => {
+      // Although the subscription should be cleaned up on editor destroy,
+      // the very act of destroying the editor can trigger diagnostic updates.
+      // Thus this callback can still be triggered after the editor is destroyed.
+      if (!editor.isDestroyed()) {
+        (0, (_gutter || _load_gutter()).applyUpdateToEditor)(editor, update, fixer);
+      }
+    });
+    subscriptions.add(subscription);
+  }));
   return subscriptions;
 }
 
-function addAtomCommands(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): IDisposable {
+function addAtomCommands(diagnosticUpdater) {
   const fixAllInCurrentFile = () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -302,48 +306,30 @@ function addAtomCommands(
     if (path == null) {
       return;
     }
-    analytics.track('diagnostics-autofix-all-in-file');
+    (_analytics || _load_analytics()).default.track('diagnostics-autofix-all-in-file');
     diagnosticUpdater.applyFixesForFile(path);
   };
 
   const openAllFilesWithErrors = () => {
-    analytics.track('diagnostics-panel-open-all-files-with-errors');
-    diagnosticUpdater.allMessageUpdates
-      .first()
-      .subscribe((messages: Array<DiagnosticMessage>) => {
-        const errorsToOpen = getTopMostErrorLocationsByFilePath(messages);
+    (_analytics || _load_analytics()).default.track('diagnostics-panel-open-all-files-with-errors');
+    diagnosticUpdater.allMessageUpdates.first().subscribe(messages => {
+      const errorsToOpen = getTopMostErrorLocationsByFilePath(messages);
 
-        if (errorsToOpen.size > MAX_OPEN_ALL_FILES) {
-          atom.notifications.addError(
-            `Diagnostics: Will not open more than ${MAX_OPEN_ALL_FILES} files`,
-          );
-          return;
-        }
+      if (errorsToOpen.size > MAX_OPEN_ALL_FILES) {
+        atom.notifications.addError(`Diagnostics: Will not open more than ${MAX_OPEN_ALL_FILES} files`);
+        return;
+      }
 
-        const column = 0;
-        errorsToOpen.forEach((line, uri) => goToLocation(uri, line, column));
-      });
+      const column = 0;
+      errorsToOpen.forEach((line, uri) => (0, (_goToLocation || _load_goToLocation()).goToLocation)(uri, line, column));
+    });
   };
 
-  return new UniversalDisposable(
-    atom.commands.add(
-      'atom-workspace',
-      'diagnostics:fix-all-in-current-file',
-      fixAllInCurrentFile,
-    ),
-    atom.commands.add(
-      'atom-workspace',
-      'diagnostics:open-all-files-with-errors',
-      openAllFilesWithErrors,
-    ),
-    new KeyboardShortcuts(diagnosticUpdater),
-  );
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.commands.add('atom-workspace', 'diagnostics:fix-all-in-current-file', fixAllInCurrentFile), atom.commands.add('atom-workspace', 'diagnostics:open-all-files-with-errors', openAllFilesWithErrors), new KeyboardShortcuts(diagnosticUpdater));
 }
 
-function getTopMostErrorLocationsByFilePath(
-  messages: Array<DiagnosticMessage>,
-): Map<string, number> {
-  const errorLocations: Map<string, number> = new Map();
+function getTopMostErrorLocationsByFilePath(messages) {
+  const errorLocations = new Map();
 
   messages.forEach(message => {
     if (message.scope !== 'file' || message.filePath == null) {
@@ -367,69 +353,31 @@ function getTopMostErrorLocationsByFilePath(
 
 // TODO(peterhal): The current index should really live in the DiagnosticStore.
 class KeyboardShortcuts {
-  _subscriptions: UniversalDisposable;
-  _diagnostics: Array<FileDiagnosticMessage>;
-  _index: ?number;
-  _traceIndex: ?number;
 
-  constructor(diagnosticUpdater: ObservableDiagnosticUpdater) {
+  constructor(diagnosticUpdater) {
     this._index = null;
     this._diagnostics = [];
 
-    this._subscriptions = new UniversalDisposable();
+    this._subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
     const first = () => this.setIndex(0);
     const last = () => this.setIndex(this._diagnostics.length - 1);
-    this._subscriptions.add(
-      diagnosticUpdater.allMessageUpdates.subscribe(diagnostics => {
-        this._diagnostics = (diagnostics.filter(
-          diagnostic => diagnostic.scope === 'file',
-        ): any);
-        this._index = null;
-        this._traceIndex = null;
-      }),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-first-diagnostic',
-        first,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-last-diagnostic',
-        last,
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-next-diagnostic',
-        () => {
-          this._index == null ? first() : this.setIndex(this._index + 1);
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-previous-diagnostic',
-        () => {
-          this._index == null ? last() : this.setIndex(this._index - 1);
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-next-diagnostic-trace',
-        () => {
-          this.nextTrace();
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'diagnostics:go-to-previous-diagnostic-trace',
-        () => {
-          this.previousTrace();
-        },
-      ),
-    );
+    this._subscriptions.add(diagnosticUpdater.allMessageUpdates.subscribe(diagnostics => {
+      this._diagnostics = diagnostics.filter(diagnostic => diagnostic.scope === 'file');
+      this._index = null;
+      this._traceIndex = null;
+    }), atom.commands.add('atom-workspace', 'diagnostics:go-to-first-diagnostic', first), atom.commands.add('atom-workspace', 'diagnostics:go-to-last-diagnostic', last), atom.commands.add('atom-workspace', 'diagnostics:go-to-next-diagnostic', () => {
+      this._index == null ? first() : this.setIndex(this._index + 1);
+    }), atom.commands.add('atom-workspace', 'diagnostics:go-to-previous-diagnostic', () => {
+      this._index == null ? last() : this.setIndex(this._index - 1);
+    }), atom.commands.add('atom-workspace', 'diagnostics:go-to-next-diagnostic-trace', () => {
+      this.nextTrace();
+    }), atom.commands.add('atom-workspace', 'diagnostics:go-to-previous-diagnostic-trace', () => {
+      this.previousTrace();
+    }));
   }
 
-  setIndex(index: number): void {
+  setIndex(index) {
     this._traceIndex = null;
     if (this._diagnostics.length === 0) {
       this._index = null;
@@ -439,19 +387,25 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  gotoCurrentIndex(): void {
-    invariant(this._index != null);
-    invariant(this._traceIndex == null);
+  gotoCurrentIndex() {
+    if (!(this._index != null)) {
+      throw new Error('Invariant violation: "this._index != null"');
+    }
+
+    if (!(this._traceIndex == null)) {
+      throw new Error('Invariant violation: "this._traceIndex == null"');
+    }
+
     const diagnostic = this._diagnostics[this._index];
     const range = diagnostic.range;
     if (range == null) {
-      goToLocation(diagnostic.filePath);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(diagnostic.filePath);
     } else {
-      goToLocation(diagnostic.filePath, range.start.row, range.start.column);
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(diagnostic.filePath, range.start.row, range.start.column);
     }
   }
 
-  nextTrace(): void {
+  nextTrace() {
     const traces = this.currentTraces();
     if (traces == null) {
       return;
@@ -467,13 +421,12 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  previousTrace(): void {
+  previousTrace() {
     const traces = this.currentTraces();
     if (traces == null) {
       return;
     }
-    let candidateTrace =
-      this._traceIndex == null ? traces.length - 1 : this._traceIndex - 1;
+    let candidateTrace = this._traceIndex == null ? traces.length - 1 : this._traceIndex - 1;
     while (candidateTrace >= 0) {
       if (this.trySetCurrentTrace(traces, candidateTrace)) {
         return;
@@ -484,7 +437,7 @@ class KeyboardShortcuts {
     this.gotoCurrentIndex();
   }
 
-  currentTraces(): ?Array<DiagnosticTrace> {
+  currentTraces() {
     if (this._index == null) {
       return null;
     }
@@ -493,62 +446,23 @@ class KeyboardShortcuts {
   }
 
   // TODO: Should filter out traces whose location matches the main diagnostic's location?
-  trySetCurrentTrace(
-    traces: Array<DiagnosticTrace>,
-    traceIndex: number,
-  ): boolean {
+  trySetCurrentTrace(traces, traceIndex) {
     const trace = traces[traceIndex];
     if (trace.filePath != null && trace.range != null) {
       this._traceIndex = traceIndex;
-      goToLocation(
-        trace.filePath,
-        trace.range.start.row,
-        trace.range.start.column,
-      );
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(trace.filePath, trace.range.start.row, trace.range.start.column);
       return true;
     }
     return false;
   }
 
-  dispose(): void {
+  dispose() {
     this._subscriptions.dispose();
   }
 }
 
-function observeLinterPackageEnabled(): Observable<boolean> {
-  return Observable.merge(
-    Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)),
-    observableFromSubscribeFunction(
-      atom.packages.onDidActivatePackage.bind(atom.packages),
-    )
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(true),
-    observableFromSubscribeFunction(
-      atom.packages.onDidDeactivatePackage.bind(atom.packages),
-    )
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(false),
-  );
+function observeLinterPackageEnabled() {
+  return _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)), (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.packages.onDidActivatePackage.bind(atom.packages)).filter(pkg => pkg.name === LINTER_PACKAGE).mapTo(true), (0, (_event || _load_event()).observableFromSubscribeFunction)(atom.packages.onDidDeactivatePackage.bind(atom.packages)).filter(pkg => pkg.name === LINTER_PACKAGE).mapTo(false));
 }
 
-async function getCodeActionsForDiagnostic(
-  codeActionFetcher: CodeActionFetcher,
-  message: FileDiagnosticMessage,
-  editor: atom$TextEditor,
-): Promise<Map<string, CodeAction>> {
-  const codeActions = await codeActionFetcher.getCodeActionForDiagnostic(
-    message,
-    editor,
-  );
-  // For RPC reasons, the getTitle function of a CodeAction is async. Therefore,
-  // we immediately request the title after we have each CodeAction.
-  return new Map(
-    await Promise.all(
-      codeActions.map(async codeAction =>
-        Promise.resolve([await codeAction.getTitle(), codeAction]),
-      ),
-    ),
-  );
-}
-
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);
