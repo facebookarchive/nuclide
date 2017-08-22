@@ -192,6 +192,32 @@ export default class FileTreeActions {
     });
   }
 
+  startReorderDrag(draggedRootKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.START_REORDER_DRAG,
+      draggedRootKey,
+    });
+  }
+
+  endReorderDrag(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.END_REORDER_DRAG,
+    });
+  }
+
+  reorderDragInto(dragTargetNodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.REORDER_DRAG_INTO,
+      dragTargetNodeKey,
+    });
+  }
+
+  reorderRoots(): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.REORDER_ROOTS,
+    });
+  }
+
   moveToNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.MOVE_TO_NODE,

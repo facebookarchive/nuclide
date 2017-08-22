@@ -163,6 +163,32 @@ export class FileTree extends React.Component {
     firstToRender = Math.max(firstToRender, 0);
     const amountToRender = elementsInView + 2 * BUFFER_ELEMENTS;
 
+    let reorderPreview: ?{
+      entry: React.Element<any>,
+      above: boolean,
+      target: string,
+    };
+    const reorderPreviewStatus = this._store.reorderPreviewStatus;
+    if (reorderPreviewStatus != null) {
+      const source = reorderPreviewStatus.source;
+      const sourceNode = this._store.getNode(source, source);
+      const sourceIdx = reorderPreviewStatus.sourceIdx;
+      const target = reorderPreviewStatus.target;
+      const targetIdx = reorderPreviewStatus.targetIdx;
+      if (
+        sourceNode != null &&
+        target != null &&
+        targetIdx != null &&
+        targetIdx !== sourceIdx
+      ) {
+        reorderPreview = {
+          entry: <FileTreeEntryComponent node={sourceNode} isPreview={true} />,
+          above: targetIdx < sourceIdx,
+          target,
+        };
+      }
+    }
+
     const visibleChildren = [];
     let chosenMeasured = false;
     let node = findFirstNodeToRender(roots, firstToRender);
@@ -177,12 +203,30 @@ export class FileTree extends React.Component {
     let key = firstToRender % amountToRender;
     while (node != null && visibleChildren.length < amountToRender) {
       if (!node.isRoot && !chosenMeasured) {
-        visibleChildren.push(
-          <FileTreeEntryComponent key={key} node={node} ref="measured" />,
+        const entry = (
+          <FileTreeEntryComponent key={key} node={node} ref="measured" />
         );
+        if (reorderPreview != null && reorderPreview.target === node.uri) {
+          if (reorderPreview.above) {
+            visibleChildren.push(reorderPreview.entry, entry);
+          } else {
+            visibleChildren.push(entry, reorderPreview.entry);
+          }
+        } else {
+          visibleChildren.push(entry);
+        }
         chosenMeasured = true;
       } else {
-        visibleChildren.push(<FileTreeEntryComponent key={key} node={node} />);
+        const entry = <FileTreeEntryComponent key={key} node={node} />;
+        if (reorderPreview != null && reorderPreview.target === node.uri) {
+          if (reorderPreview.above) {
+            visibleChildren.push(reorderPreview.entry, entry);
+          } else {
+            visibleChildren.push(entry, reorderPreview.entry);
+          }
+        } else {
+          visibleChildren.push(entry);
+        }
       }
       node = node.findNext();
       key = (key + 1) % amountToRender;

@@ -77,6 +77,20 @@ export type FileTreeAction =
       actionType: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
     }
   | {
+      actionType: 'START_REORDER_DRAG',
+      draggedRootKey: NuclideUri,
+    }
+  | {
+      actionType: 'END_REORDER_DRAG',
+    }
+  | {
+      actionType: 'REORDER_DRAG_INTO',
+      dragTargetNodeKey: NuclideUri,
+    }
+  | {
+      actionType: 'REORDER_ROOTS',
+    }
+  | {
       actionType: 'MOVE_TO_NODE',
       rootKey: NuclideUri,
       nodeKey: NuclideUri,
@@ -235,6 +249,10 @@ export const ActionTypes = Object.freeze({
   SET_TRACKED_NODE: 'SET_TRACKED_NODE',
   CLEAR_TRACKED_NODE: 'CLEAR_TRACKED_NODE',
   CLEAR_TRACKED_NODE_IF_NOT_LOADING: 'CLEAR_TRACKED_NODE_IF_NOT_LOADING',
+  START_REORDER_DRAG: 'START_REORDER_DRAG',
+  END_REORDER_DRAG: 'END_REORDER_DRAG',
+  REORDER_DRAG_INTO: 'REORDER_DRAG_INTO',
+  REORDER_ROOTS: 'REORDER_ROOTS',
   MOVE_TO_NODE: 'MOVE_TO_NODE',
   SET_DROP_TARGET_NODE: 'SET_DROP_TARGET_NODE',
   SET_USE_PREVIEW_TABS: 'SET_USE_PREVIEW_TABS',

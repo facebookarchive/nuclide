@@ -33,6 +33,7 @@ const getActions = FileTreeActions.getInstance;
 
 type Props = {
   node: FileTreeNode,
+  isPreview?: boolean,
 };
 type State = {
   isLoading: boolean,
@@ -110,6 +111,7 @@ export class FileTreeEntryComponent extends React.Component {
       Observable.fromEvent(el, 'dragleave').subscribe(this._onDragLeave),
       Observable.fromEvent(el, 'dragstart').subscribe(this._onDragStart),
       Observable.fromEvent(el, 'dragover').subscribe(this._onDragOver),
+      Observable.fromEvent(el, 'dragend').subscribe(this._onDragEnd),
       Observable.fromEvent(el, 'drop').subscribe(this._onDrop),
     );
   }
@@ -134,6 +136,7 @@ export class FileTreeEntryComponent extends React.Component {
       'project-root': node.isRoot,
       selected: node.isSelected || node.isDragHovered,
       'nuclide-file-tree-softened': node.shouldBeSoftened,
+      'nuclide-file-tree-root-being-reordered': node.isBeingReordered,
     });
     const listItemClassName = classnames({
       'header list-item': node.isContainer,
@@ -333,11 +336,15 @@ export class FileTreeEntryComponent extends React.Component {
 
   _onDragEnter = (event: DragEvent) => {
     event.stopPropagation();
-    const movableNodes = store
-      .getSelectedNodes()
-      .filter(node =>
-        FileTreeHgHelpers.isValidRename(node, this.props.node.uri),
-      );
+
+    const nodes = store.getSelectedNodes();
+    if (!this.props.isPreview && nodes.size === 1 && nodes.first().isRoot) {
+      getActions().reorderDragInto(this.props.node.rootUri);
+      return;
+    }
+    const movableNodes = nodes.filter(node =>
+      FileTreeHgHelpers.isValidRename(node, this.props.node.uri),
+    );
 
     // Ignores hover over invalid targets.
     if (!this.props.node.isContainer || movableNodes.size === 0) {
@@ -368,6 +375,7 @@ export class FileTreeEntryComponent extends React.Component {
 
   _onDragStart = (event: DragEvent) => {
     event.stopPropagation();
+
     if (this._pathContainer == null) {
       return;
     }
@@ -394,6 +402,10 @@ export class FileTreeEntryComponent extends React.Component {
       invariant(document.body != null);
       document.body.removeChild(fileIcon);
     });
+
+    if (this.props.node.isRoot) {
+      getActions().startReorderDrag(this.props.node.uri);
+    }
   };
 
   _onDragOver = (event: DragEvent) => {
@@ -401,13 +413,24 @@ export class FileTreeEntryComponent extends React.Component {
     event.stopPropagation();
   };
 
+  _onDragEnd = (event: DragEvent) => {
+    if (this.props.node.isRoot) {
+      getActions().endReorderDrag();
+    }
+  };
+
   _onDrop = (event: DragEvent) => {
     event.preventDefault();
     event.stopPropagation();
 
-    // Reset the dragEventCount for the currently dragged node upon dropping.
-    this.dragEventCount = 0;
-    getActions().moveToNode(this.props.node.rootUri, this.props.node.uri);
+    const dragNode = store.getSingleSelectedNode();
+    if (dragNode != null && dragNode.isRoot) {
+      getActions().reorderRoots();
+    } else {
+      // Reset the dragEventCount for the currently dragged node upon dropping.
+      this.dragEventCount = 0;
+      getActions().moveToNode(this.props.node.rootUri, this.props.node.uri);
+    }
   };
 
   _toggleNodeExpanded(deep: boolean): void {

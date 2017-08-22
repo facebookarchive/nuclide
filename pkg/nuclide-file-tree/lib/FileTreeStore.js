@@ -90,6 +90,13 @@ export const DEFAULT_CONF = {
   fileChanges: new Immutable.Map(),
 };
 
+export type ReorderPreviewStatus = ?{
+  source: NuclideUri,
+  sourceIdx: number,
+  target?: NuclideUri,
+  targetIdx?: number,
+};
+
 let instance: ?Object;
 
 /**
@@ -102,6 +109,7 @@ export class FileTreeStore {
   openFilesExpanded: boolean;
   uncommittedChangesExpanded: boolean;
   foldersExpanded: boolean;
+  reorderPreviewStatus: ReorderPreviewStatus;
 
   _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
   _workingSetsStore: ?WorkingSetsStore;
@@ -145,6 +153,7 @@ export class FileTreeStore {
     this._dispatcher.register(this._onDispatch.bind(this));
     this._logger = getLogger('nuclide-file-tree');
     this._fileChanges = new Immutable.Map();
+    this.reorderPreviewStatus = null;
 
     this._usePrefixNav = false;
     this._autoExpandSingleChild = true;
@@ -349,6 +358,18 @@ export class FileTreeStore {
         break;
       case ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
         this._clearTrackedNodeIfNotLoading();
+        break;
+      case ActionTypes.START_REORDER_DRAG:
+        this._startReorderDrag(payload.draggedRootKey);
+        break;
+      case ActionTypes.END_REORDER_DRAG:
+        this._endReorderDrag();
+        break;
+      case ActionTypes.REORDER_DRAG_INTO:
+        this._reorderDragInto(payload.dragTargetNodeKey);
+        break;
+      case ActionTypes.REORDER_ROOTS:
+        this._doReorderRoots();
         break;
       case ActionTypes.MOVE_TO_NODE:
         this._moveToNode(payload.rootKey, payload.nodeKey);
@@ -1204,6 +1225,76 @@ export class FileTreeStore {
 
   _clearLoading(nodeKey: NuclideUri): void {
     this._isLoadingMap = this._isLoadingMap.delete(nodeKey);
+  }
+
+  _startReorderDrag(draggedRootKey: NuclideUri): void {
+    const rootIdx = this.getRootKeys().indexOf(draggedRootKey);
+    if (rootIdx === -1) {
+      return;
+    }
+    this._updateNodeAtRoot(draggedRootKey, draggedRootKey, node =>
+      node.setIsBeingReordered(true),
+    );
+    this.reorderPreviewStatus = {
+      source: draggedRootKey,
+      sourceIdx: rootIdx,
+    };
+    this._emitChange();
+  }
+
+  _reorderDragInto(targetRootKey: NuclideUri): void {
+    const reorderPreviewStatus = this.reorderPreviewStatus;
+    const targetIdx = this.getRootKeys().indexOf(targetRootKey);
+    const targetRootNode = this.getNode(targetRootKey, targetRootKey);
+    if (
+      reorderPreviewStatus == null ||
+      targetIdx === -1 ||
+      targetRootNode == null
+    ) {
+      return;
+    }
+
+    let targetNode;
+    if (targetIdx <= reorderPreviewStatus.sourceIdx) {
+      targetNode = targetRootNode;
+    } else {
+      targetNode = targetRootNode.findLastRecursiveChild();
+    }
+
+    this.reorderPreviewStatus = {
+      ...this.reorderPreviewStatus,
+      target: targetNode == null ? undefined : targetNode.uri,
+      targetIdx,
+    };
+    this._emitChange();
+  }
+
+  _doReorderRoots(): void {
+    const rootKeys = this.getRootKeys();
+    const rps = this.reorderPreviewStatus;
+    if (rps == null) {
+      return;
+    }
+    const sourceIdx = rps.sourceIdx;
+    const targetIdx = rps.targetIdx;
+    if (targetIdx == null || sourceIdx === targetIdx) {
+      return;
+    }
+
+    rootKeys.splice(sourceIdx, 1);
+    rootKeys.splice(targetIdx, 0, rps.source);
+    this._setRootKeys(rootKeys);
+  }
+
+  _endReorderDrag(): void {
+    if (this.reorderPreviewStatus != null) {
+      const sourceRootKey = this.reorderPreviewStatus.source;
+      this._updateNodeAtRoot(sourceRootKey, sourceRootKey, node =>
+        node.setIsBeingReordered(false),
+      );
+      this.reorderPreviewStatus = null;
+      this._emitChange();
+    }
   }
 
   async _moveToNode(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {

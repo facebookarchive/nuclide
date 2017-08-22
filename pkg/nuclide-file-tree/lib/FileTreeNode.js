@@ -24,6 +24,7 @@ export type FileTreeNodeOptions = {
   isSelected?: boolean,
   isFocused?: boolean,
   isDragHovered?: boolean,
+  isBeingReordered?: boolean,
   isLoading?: boolean,
   wasFetched?: boolean,
   isCwd?: boolean,
@@ -42,6 +43,7 @@ type DefaultFileTreeNodeOptions = {
   isSelected: boolean,
   isFocused: boolean,
   isDragHovered: boolean,
+  isBeingReordered: boolean,
   isLoading: boolean,
   wasFetched: boolean,
   isCwd: boolean,
@@ -59,6 +61,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   isSelected: false,
   isFocused: false,
   isDragHovered: false,
+  isBeingReordered: false,
   isLoading: false,
   wasFetched: false,
   isCwd: false,
@@ -76,6 +79,7 @@ export type ImmutableNodeSettableFields = {
   isSelected?: boolean,
   isFocused?: boolean,
   isDragHovered?: boolean,
+  isBeingReordered?: boolean,
   isLoading?: boolean,
   wasFetched?: boolean,
   isCwd?: boolean,
@@ -149,6 +153,7 @@ export class FileTreeNode {
   isSelected: boolean;
   isFocused: boolean;
   isDragHovered: boolean;
+  isBeingReordered: boolean;
   isLoading: boolean;
   wasFetched: boolean;
   isTracked: boolean;
@@ -305,6 +310,10 @@ export class FileTreeNode {
     this.isFocused = o.isFocused !== undefined ? o.isFocused : D.isFocused;
     this.isDragHovered =
       o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
+    this.isBeingReordered =
+      o.isBeingReordered !== undefined
+        ? o.isBeingReordered
+        : D.isBeingReordered;
     this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
     this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
     this.isTracked = o.isTracked !== undefined ? o.isTracked : D.isTracked;
@@ -355,6 +364,7 @@ export class FileTreeNode {
       isSelected: this.isSelected,
       isFocused: this.isFocused,
       isDragHovered: this.isDragHovered,
+      isBeingReordered: this.isBeingReordered,
       isLoading: this.isLoading,
       wasFetched: this.wasFetched,
       isTracked: this.isTracked,
@@ -382,6 +392,13 @@ export class FileTreeNode {
 
   setIsDragHovered(isDragHovered: boolean): FileTreeNode {
     return this.set({isDragHovered});
+  }
+
+  setIsBeingReordered(isBeingReordered: boolean): FileTreeNode {
+    return this.setRecursive(
+      node => (node.shouldBeShown ? null : node),
+      node => (node.shouldBeShown ? node.set({isBeingReordered}) : node),
+    );
   }
 
   setIsLoading(isLoading: boolean): FileTreeNode {
@@ -645,6 +662,12 @@ export class FileTreeNode {
     if (
       props.isDragHovered !== undefined &&
       this.isDragHovered !== props.isDragHovered
+    ) {
+      return false;
+    }
+    if (
+      props.isBeingReordered !== undefined &&
+      this.isBeingReordered !== props.isBeingReordered
     ) {
       return false;
     }
