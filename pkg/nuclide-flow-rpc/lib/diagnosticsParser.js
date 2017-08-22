@@ -156,7 +156,9 @@ function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
 
   // The Flow type does not capture this, but the first message always has a path, and the
   // diagnostics package requires a FileDiagnosticMessage to have a path.
-  const path = extractPath(mainMessage);
+  const path = flowMessageComponents
+    .map(extractPath)
+    .find(extractedPath => extractedPath != null);
   invariant(path != null, 'Expected path to not be null or undefined');
 
   const diagnosticMessage: FileDiagnosticMessage = {
