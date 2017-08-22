@@ -14,6 +14,7 @@ import type {NuclideRemoteConnectionProfile} from './connection-types';
 // eslint-disable-next-line nuclide-internal/import-type-style
 import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectConnectionModal';
 
+import Model from '../../commons-node/Model';
 import showModal from '../../nuclide-ui/showModal';
 import {
   getDefaultConnectionProfile,
@@ -29,7 +30,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger as getLogger_} from 'log4js';
 import React from 'react';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 
 export type OpenConnectionDialogOptions = {
   initialServer: string,
@@ -105,7 +106,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
       index: number,
       profile: NuclideRemoteConnectionProfile,
     ): void {
-      const connectionProfiles = states.getValue().connectionProfiles.slice();
+      const connectionProfiles = model.state.connectionProfiles.slice();
       // Override the existing version.
       connectionProfiles.splice(index, 1, profile);
       updateState({connectionProfiles});
@@ -119,7 +120,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
         );
         return;
       }
-      const {connectionProfiles, selectedProfileIndex} = states.getValue();
+      const {connectionProfiles, selectedProfileIndex} = model.state;
       if (connectionProfiles) {
         if (indexToDelete >= connectionProfiles.length) {
           getLogger().fatal(
@@ -142,7 +143,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     },
     onProfileCreated(newProfile: NuclideRemoteConnectionProfile) {
       const connectionProfiles = [
-        ...states.getValue().connectionProfiles,
+        ...model.state.connectionProfiles,
         newProfile,
       ];
       updateState({
@@ -157,8 +158,8 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
   };
 
   function updateState(nextState: Object, saveProfiles: boolean = true): void {
-    const prevState = states.getValue();
-    states.next({...prevState, ...nextState});
+    const prevState = model.state;
+    model.setState(nextState);
 
     // If the connection profiles changed, save them to the config. The `saveProfiles` option allows
     // us to opt out because this is a bi-directional sync and we don't want to cause an infinite
@@ -173,7 +174,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
     }
   }
 
-  const states = new BehaviorSubject({
+  const model = new Model({
     screen: 'connect',
     selectedProfileIndex: 0,
     connectionProfiles: initialConnectionProfiles,
@@ -181,7 +182,7 @@ function createPropsStream({dismiss, onConnected, dialogOptions}) {
 
   const props: Observable<
     RemoteProjectConnectionModalProps,
-  > = states.map(state => ({...state, ...staticProps}));
+  > = model.toObservable().map(state => ({...state, ...staticProps}));
 
   const savedProfilesStream = observableFromSubscribeFunction(
     onSavedConnectionProfilesDidChange,

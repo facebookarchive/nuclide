@@ -9,43 +9,25 @@
  * @format
  */
 
-import {SimpleModel} from '../SimpleModel';
-import {Observable} from 'rxjs';
+import Model from '../Model';
 
-type State = {
-  count: number,
-  other: boolean,
-};
-
-class TestModel extends SimpleModel {
-  state: State;
-  constructor() {
-    super();
-    this.state = {
-      count: 0,
-      other: true,
-    };
-  }
-}
-
-describe('SimpleModel', () => {
-  it('updates state when setState is called', () => {
-    const model = new TestModel();
+describe('Model', () => {
+  it('setStates state when setState is called', () => {
+    const model = new Model({count: 0, other: true});
     model.setState({count: 5});
     expect(model.state.count).toBe(5);
   });
 
   it('only changes the provided values when setState is called', () => {
-    const model = new TestModel();
+    const model = new Model({count: 0, other: true});
     model.setState({count: 5});
     expect(model.state.other).toBe(true);
   });
 
   it('can be converted to an observable', () => {
     waitsForPromise(async () => {
-      const model = new TestModel();
-      // $FlowFixMe: Teach Flow about Symbol.observable
-      const states = Observable.from(model).take(2).toArray().toPromise();
+      const model = new Model({count: 0, other: true});
+      const states = model.toObservable().take(2).toArray().toPromise();
       model.setState({count: 5});
       expect(await states).toEqual([
         {count: 0, other: true},

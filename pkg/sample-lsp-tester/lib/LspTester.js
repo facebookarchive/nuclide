@@ -17,7 +17,7 @@ import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
 import {splitOnce} from 'nuclide-commons/string';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from 'nuclide-commons/process';
-import {SimpleModel} from '../../commons-node/SimpleModel';
+import Model from '../../commons-node/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
 import React from 'react';
@@ -37,18 +37,17 @@ type SerializedState = {
   lastCommand: ?string,
 };
 
-export class LspTester extends SimpleModel {
+export class LspTester {
   _messages: ReplaySubject<Message>;
   _serverDisposable: ?UniversalDisposable;
   _writer: ?rpc.StreamMessageWriter;
-  state: State;
+  _model: Model<State>;
 
   constructor(serialized: ?SerializedState) {
-    super();
-    this.state = {
+    this._model = new Model({
       lastCommand: serialized && serialized.lastCommand,
       running: false,
-    };
+    });
     this._messages = new ReplaySubject(/* buffer size */ 200);
   }
 
@@ -70,8 +69,7 @@ export class LspTester extends SimpleModel {
 
   getElement(): HTMLElement {
     const initialMessage = this._getInitialMessage();
-    // $FlowFixMe: Observable.from symbol-iterator
-    const props = (Observable.from(this): Observable<State>).map(state => ({
+    const props = this._model.toObservable().map(state => ({
       initialCommand: state.lastCommand,
       initialMessage,
       messages: this._messages,
@@ -144,7 +142,7 @@ export class LspTester extends SimpleModel {
     );
     const other = events.filter(event => event.kind !== 'stdout');
 
-    this.setState({
+    this._model.setState({
       lastCommand: commandString,
       running: true,
     });
@@ -167,7 +165,7 @@ export class LspTester extends SimpleModel {
         this._writer = null;
       },
       () => {
-        this.setState({running: false});
+        this._model.setState({running: false});
       },
     ));
   };
@@ -183,7 +181,7 @@ export class LspTester extends SimpleModel {
     return {
       deserializer: 'nuclide.LspTester',
       data: {
-        lastCommand: this.state.lastCommand,
+        lastCommand: this._model.state.lastCommand,
       },
     };
   }
