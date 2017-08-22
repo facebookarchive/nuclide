@@ -9,107 +9,46 @@
  * @format
  */
 
+import type {Device, DeviceType} from './types';
+
 import {runCommand} from 'nuclide-commons/process';
-import memoize from 'lodash.memoize';
 import {Observable} from 'rxjs';
+import {arrayEqual} from 'nuclide-commons/collection';
+import shallowEqual from 'shallowequal';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-export type SimulatorState =
-  | 'CREATING'
-  | 'BOOTING'
-  | 'SHUTTING_DOWN'
-  | 'SHUT_DOWN'
-  | 'BOOTED';
+const poller = createPoller();
 
-export type Simulator = {
-  name: string,
-  udid: string,
-  state: ?SimulatorState,
-  os: string,
-  arch: string,
-};
-
-export type Device = {
-  name: string,
-  udid: string,
-  arch: string,
-};
-
-export function getFbsimctlDevices(): Observable<Array<Device>> {
-  return Observable.interval(5000).startWith(0).switchMap(() =>
-    runCommand('fbsimctl', ['--json', '--devices', '--format=%n%u%a', 'list'])
-      .map(parseDevicesFromFbsimctlOutput)
-      // Users may not have fbsimctl installed. If the command failed, just return an empty list.
-      .catch(error => Observable.of([]))
-      .share(),
-  );
+// Callback version
+export function observeDevices(callback: (Array<Device>) => void): IDisposable {
+  const subscription = poller.subscribe(devices => callback(devices));
+  return new UniversalDisposable(() => subscription.unsubscribe());
 }
 
-export function getFbsimctlSimulators(): Observable<Array<Simulator>> {
-  return Observable.interval(5000).startWith(0).switchMap(() =>
-    runCommand('fbsimctl', [
-      '--json',
-      '--simulators',
-      '--format=%n%u%s%o%a',
-      'list',
-    ])
-      .map(parseSimulatorsFromFbsimctlOutput)
-      .catch(error => getSimulators())
-      // Users may not have fbsimctl installed. Fall back to xcrun simctl in that case.
-      .share(),
-  );
+// Observable version
+export function getDevices(): Observable<Array<Device>> {
+  return poller;
 }
 
-export const getSimulators: () => Observable<Array<Simulator>> = memoize(() =>
-  runCommand('xcrun', ['simctl', 'list', 'devices'])
-    .map(parseSimulatorsFromSimctlOutput)
-    .catch(error =>
-      // Users may not have xcrun installed. If the command failed, just return an empty list.
-      Observable.of([]),
+function createPoller(): Observable<Array<Device>> {
+  return Observable.interval(2000)
+    .startWith(0)
+    .switchMap(() =>
+      runCommand('fbsimctl', ['--json', '--format=%n%u%s%o%a', 'list']).map(
+        parseFbsimctlJsonOutput,
+      ),
     )
-    .share(),
-);
-
-function parseSimulatorsFromFbsimctlOutput(output: string): Array<Simulator> {
-  const simulators = [];
-
-  output.split('\n').forEach(line => {
-    let event;
-    try {
-      event = JSON.parse(line);
-    } catch (e) {
-      return;
-    }
-    if (
-      !event ||
-      !event.event_name ||
-      event.event_name !== 'list' ||
-      !event.subject
-    ) {
-      return;
-    }
-    const simulator = event.subject;
-    const {state, os, name, udid, arch} = simulator;
-    if (!state || !os || !name || !udid || !arch) {
-      return;
-    }
-
-    if (!simulator.os.match(/^iOS (.+)$/)) {
-      return;
-    }
-
-    simulators.push({
-      name,
-      udid,
-      state: validateState(state),
-      os,
-      arch,
-    });
-  });
-
-  return simulators;
+    .distinctUntilChanged((a, b) => arrayEqual(a, b, shallowEqual))
+    .catch(() =>
+      Observable.throw(
+        "Can't fetch iOS devices. Make sure that fbsimctl is in your $PATH and that it works properly.",
+      ),
+    )
+    .publishReplay(1)
+    .refCount();
 }
 
-function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
+function parseFbsimctlJsonOutput(output: string): Array<Device> {
   const devices = [];
 
   output.split('\n').forEach(line => {
@@ -128,69 +67,41 @@ function parseDevicesFromFbsimctlOutput(output: string): Array<Device> {
       return;
     }
     const device = event.subject;
-    const {name, udid, arch} = device;
-    if (!name || !udid || !arch) {
+    const {state, os, name, udid, arch} = device;
+    if (!state || !os || !name || !udid || !arch) {
       return;
     }
 
-    devices.push({name, udid, arch});
+    if (!device.os.match(/^iOS (.+)$/)) {
+      return;
+    }
+    const type = typeFromArch(arch);
+    if (type == null) {
+      return;
+    }
+
+    devices.push({
+      name,
+      udid,
+      state,
+      os,
+      arch,
+      type,
+    });
   });
 
   return devices;
 }
 
-export function parseSimulatorsFromSimctlOutput(
-  output: string,
-): Array<Simulator> {
-  const simulators = [];
-  let currentOS = null;
-
-  output.split('\n').forEach(line => {
-    const section = line.match(/^-- (.+) --$/);
-    if (section) {
-      const header = section[1].match(/^iOS (.+)$/);
-      if (header) {
-        currentOS = header[1];
-      } else {
-        currentOS = null;
-      }
-      return;
-    }
-
-    const simulator = line.match(
-      /^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/,
-    );
-    // flowlint-next-line sketchy-null-string:off
-    if (simulator && currentOS) {
-      const [, name, udid, state] = simulator;
-      const arch = name.match(/^(iPhone (5$|5C|4)|iPad Retina)/)
-        ? 'i386'
-        : 'x86_64';
-      simulators.push({
-        name,
-        udid,
-        state: validateState(state),
-        os: currentOS,
-        arch,
-      });
-    }
-  });
-
-  return simulators;
-}
-
-function validateState(rawState: ?string): ?SimulatorState {
-  switch (rawState) {
-    case 'Creating':
-      return 'CREATING';
-    case 'Booting':
-      return 'BOOTING';
-    case 'Shutting Down':
-      return 'SHUTTING_DOWN';
-    case 'Shutdown':
-      return 'SHUT_DOWN';
-    case 'Booted':
-      return 'BOOTED';
+function typeFromArch(arch: string): ?DeviceType {
+  switch (arch) {
+    case 'x86_64':
+    case 'i386':
+      return 'simulator';
+    case 'arm64':
+    case 'armv7':
+    case 'armv7s':
+      return 'physical_device';
     default:
       return null;
   }
