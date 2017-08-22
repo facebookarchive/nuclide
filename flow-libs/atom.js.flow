@@ -1197,6 +1197,29 @@ declare class atom$Workspace {
   getCenter(): atom$WorkspaceCenter,
 
   // Searching and Replacing
+  scan(
+    regex: RegExp,
+    options: {
+      paths?: Array<string>,
+      onPathsSearched?: (numSearched: number) => mixed,
+      leadingContextLineCount?: number,
+      trailingContextLineCount?: number,
+    },
+    iterator: (
+      ?{
+        filePath: string,
+        matches: Array<{
+          leadingContextLines: Array<string>,
+          lineText: string,
+          lineTextOffset: number,
+          range: atom$RangeLike,
+          matchText: string,
+          trailingContextLines: Array<string>,
+        }>,
+      },
+      Error,
+    ) => mixed,
+  ): Promise<?string>,
 
   destroyActivePaneItemOrEmptyPane(): void,
   destroyActivePaneItem(): void,
