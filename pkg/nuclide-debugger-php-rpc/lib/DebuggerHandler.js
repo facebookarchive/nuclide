@@ -36,6 +36,7 @@ import {
 import {
   ConnectionMultiplexer,
   ConnectionMultiplexerStatus,
+  ConnectionMultiplexerNotification,
 } from './ConnectionMultiplexer';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Deferred, sleep} from 'nuclide-commons/promise';
@@ -368,9 +369,8 @@ export class DebuggerHandler {
         this._endSession();
         break;
       default:
-        const message = 'Unexpected status: ' + status;
-        logger.error(message);
-        throw new Error(message);
+        logger.warn(`Unused ConnectionMultiplexerStatus:  ${status}`);
+        break;
     }
   }
 
@@ -380,6 +380,9 @@ export class DebuggerHandler {
         invariant(params);
         const breakpoint: HhBreakpointType = params;
         this._resolveBreakpoint(Number(breakpoint.chromeId));
+        break;
+      case ConnectionMultiplexerNotification.RequestUpdate:
+        logger.debug('ConnectionMultiplexerNotification.RequestUpdate');
         break;
       default:
         const message = `Unexpected notification: ${notifyName}`;
