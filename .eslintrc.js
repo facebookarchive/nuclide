@@ -63,7 +63,7 @@ module.exports = {
     'no-empty-character-class': 1,
     'no-empty': [1, {allowEmptyCatch: true}],
     'no-ex-assign': 1,
-    'no-extra-boolean-cast': 1,
+    'no-extra-boolean-cast': 0, // Flow actually requires us to cast to avoid sketchy null checks.
     'no-extra-parens': 0,
     'no-extra-semi': 1,
     'no-func-assign': 1,
