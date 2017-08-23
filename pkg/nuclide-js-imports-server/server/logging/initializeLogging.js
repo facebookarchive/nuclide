@@ -57,13 +57,12 @@ export default function initializeLogging(connection: IConnection) {
     ],
   });
 
-  const logger = log4js.getLogger();
-  process.on('uncaughtException', e => logger.error('uncaughtException', e));
-  process.on('unhandledRejection', e => logger.error('unhandledRejection', e));
-
   // Don't let anything write to the true stdio as it could break JSON RPC
   global.console.log = connection.console.log.bind(connection.console);
   global.console.error = connection.console.error.bind(connection.console);
+
+  const logger = log4js.getLogger();
+  catchUnhandledExceptions(logger);
 }
 
 export function initializeLoggerForWorker(
@@ -91,7 +90,14 @@ export function initializeLoggerForWorker(
   });
 
   const logger = log4js.getLogger();
-  process.on('uncaughtException', e => logger.error('uncaughtException', e));
-  process.on('unhandledRejection', e => logger.error('unhandledRejection', e));
+  catchUnhandledExceptions(logger);
   return logger;
+}
+
+function catchUnhandledExceptions(logger: log4js$Logger) {
+  process.on('uncaughtException', e => {
+    logger.error('uncaughtException', e);
+    log4js.shutdown(() => process.abort());
+  });
+  process.on('unhandledRejection', e => logger.error('unhandledRejection', e));
 }

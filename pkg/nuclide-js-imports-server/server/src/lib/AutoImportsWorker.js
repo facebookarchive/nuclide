@@ -40,7 +40,6 @@ const CONCURRENCY = 1;
 
 const BATCH_SIZE = 500;
 
-const MAX_WORKERS = Math.round(os.cpus().length / 2);
 const MIN_FILES_PER_WORKER = 100;
 
 const disposables = new UniversalDisposable();
@@ -190,6 +189,7 @@ function listNodeModulesWithGlob(root: NuclideUri): Promise<Array<string>> {
 export function indexDirectory(
   root: NuclideUri,
   shouldIndexDefaultExportForEachFile?: boolean,
+  maxWorkers?: number = Math.round(os.cpus().length / 2),
 ): Observable<Array<ExportUpdateForFile>> {
   return Observable.fromPromise(
     listFilesWithWatchman(root).catch(() => listFilesWithGlob(root)),
@@ -217,7 +217,7 @@ export function indexDirectory(
       shuffle(files);
       const numWorkers = Math.min(
         Math.max(1, Math.floor(files.length / MIN_FILES_PER_WORKER)),
-        MAX_WORKERS,
+        maxWorkers,
       );
       const filesPerWorker = Math.floor(files.length / numWorkers);
       // $FlowIgnore TODO: add Observable.range to flow-typed

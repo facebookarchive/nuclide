@@ -12,6 +12,11 @@
 import traverse from 'babel-traverse';
 import globalsJSON from 'globals';
 
+// Prevent babel-traverse from yelling about Flow types in the scope.
+// We're not actually relying on this behavior here.
+// (Can be removed with babel-traverse 6.8+)
+traverse.Scope.prototype.warnOnFlowBinding = x => x;
+
 import type {UndefinedSymbol} from './types';
 
 const BUILT_IN_FLOW_TYPES = ['Iterator'];
