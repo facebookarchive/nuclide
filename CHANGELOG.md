@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.248.0
+
+* Hotfix for Facebook users
+
 ## v0.247.0
 
 ### Hotfix Release
