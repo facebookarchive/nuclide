@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
@@ -12,7 +13,7 @@
 import type {Observable} from 'rxjs';
 
 import {BehaviorSubject} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import UniversalDisposable from './UniversalDisposable';
 
 /**
  * Exposes a simple API for a stateful model. This is similar to React's `state`/`setState()` API

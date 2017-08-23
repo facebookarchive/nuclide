@@ -14,7 +14,7 @@ import type {NuclideRemoteConnectionProfile} from './connection-types';
 // eslint-disable-next-line nuclide-internal/import-type-style
 import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectConnectionModal';
 
-import Model from '../../commons-node/Model';
+import Model from 'nuclide-commons/Model';
 import showModal from '../../nuclide-ui/showModal';
 import {
   getDefaultConnectionProfile,

@@ -17,7 +17,7 @@ import {bufferUntil, takeWhileInclusive} from 'nuclide-commons/observable';
 import {splitOnce} from 'nuclide-commons/string';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from 'nuclide-commons/process';
-import Model from '../../commons-node/Model';
+import Model from 'nuclide-commons/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
 import React from 'react';
