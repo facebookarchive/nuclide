@@ -14,6 +14,7 @@ import type {CodeSearchResult} from './types';
 
 import {Observable} from 'rxjs';
 import {observeProcess} from 'nuclide-commons/process';
+import {parseAgAckRgLine} from './parser';
 
 export function search(
   directory: NuclideUri,
@@ -21,28 +22,12 @@ export function search(
   tool: 'ag' | 'ack',
 ): Observable<CodeSearchResult> {
   return observeProcess(tool, [
-    query,
-    directory,
     '--nocolor',
     '--column',
     '--nogroup',
     '--literal',
     '--ignore-case',
-  ])
-    .flatMap(event => {
-      if (event.kind === 'stdout') {
-        const matches = event.data.match(/([^:]+):([^:]+):([^:]+):(.*)/);
-        if (matches != null && matches.length === 5) {
-          const [file, row, column, line] = matches.slice(1);
-          return Observable.of({
-            file,
-            row: parseInt(row, 10) - 1,
-            column: parseInt(column, 10) - 1,
-            line,
-          });
-        }
-      }
-      return Observable.empty();
-    })
-    .filter(x => x != null);
+    query,
+    directory,
+  ]).flatMap(event => parseAgAckRgLine(event));
 }

@@ -20,7 +20,7 @@
         "type": "string",
         "default": "ag",
         "enum": ["ag", "ack", "rg"],
-        "description": "The chosen tool must be available in your PATH"
+        "description": "The chosen tool must be available in your PATH. On windows only rg works well."
       },
       "maxResults": {
         "title": "Maximum number of results per project folder",
