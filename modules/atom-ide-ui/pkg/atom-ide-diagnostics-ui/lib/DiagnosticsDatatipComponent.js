@@ -19,8 +19,7 @@ import {
   DiagnosticsMessageNoHeader,
   DiagnosticsMessage,
 } from './DiagnosticsMessage';
-import {Button} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import DiagnosticsCodeActions from './DiagnosticsCodeActions';
 
 type DiagnosticsDatatipComponentProps = {
   message: FileDiagnosticMessage,
@@ -28,9 +27,6 @@ type DiagnosticsDatatipComponentProps = {
 };
 
 const NOOP = () => {};
-
-// Maximum number of CodeActions to show for a given Diagnostic.
-const MAX_CODE_ACTIONS = 4;
 
 export class DiagnosticsDatatipComponent extends React.Component {
   props: DiagnosticsDatatipComponentProps;
@@ -41,7 +37,7 @@ export class DiagnosticsDatatipComponent extends React.Component {
     if (this.props.codeActions.size > 0) {
       return (
         <div className="nuclide-diagnostics-datatip">
-          {codeActionsHeader(message, this.props.codeActions)}
+          <DiagnosticsCodeActions codeActions={this.props.codeActions} />
           <DiagnosticsMessageNoHeader
             message={message}
             goToLocation={goToLocation}
@@ -68,42 +64,4 @@ export function makeDiagnosticsDatatipComponent(
 ): ReactClass<any> {
   return () =>
     <DiagnosticsDatatipComponent message={message} codeActions={codeActions} />;
-}
-
-function codeActionsHeader(
-  message: FileDiagnosticMessage,
-  codeActions: Map<string, CodeAction>,
-) {
-  return (
-    Array.from(codeActions.entries())
-      .splice(0, MAX_CODE_ACTIONS)
-      // TODO: (seansegal) T21130259 Display a "more" indicator when there are many CodeActions.
-      .map(([title, codeAction], i) => {
-        return (
-          <ButtonGroup key={i}>
-            <Button
-              className="nuclide-code-action-button"
-              size="EXTRA_SMALL"
-              onClick={() => {
-                // TODO: (seansegal) T21130332 Display CodeAction status indicators
-                codeAction.apply().catch(handleCodeActionFailure);
-              }}>
-              <span className="inline-block highlight">
-                {title}
-              </span>
-            </Button>
-          </ButtonGroup>
-        );
-      })
-  );
-}
-
-function handleCodeActionFailure(error: ?Error) {
-  atom.notifications.addWarning(
-    'Unfortuantely, the action could not be applied.',
-    {
-      description: error ? error.message : '',
-      dismissable: true,
-    },
-  );
 }
