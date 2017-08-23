@@ -2,13 +2,17 @@
 @import "syntax-variables";
 
 .nuclide-datatip-marked > div:not(:last-child) {
-  border-bottom: 1px solid fade(@text-color-highlight, 10%);
+  border-bottom: 1px solid fade(@syntax-cursor-color, 10%);
 }
 
 .nuclide-datatip-marked-container {
-  color: @text-color;
+  color: @syntax-text-color;
   font-family: @font-family;
+  max-height: 300px;
+  max-width: 500px;
+  overflow: auto;
   padding: 8px;
+  white-space: normal;
 
   // Avoid excess internal padding from markdown blocks.
   :first-child {

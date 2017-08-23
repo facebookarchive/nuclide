@@ -1,9 +1,10 @@
 @import "ui-variables";
+@import "syntax-variables";
 
 .nuclide-datatip-overlay {
   background: @app-background-color;
   box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
-  color: @text-color-subtle;
+  color: @syntax-text-color;
   font-family: Menlo, Monaco, Consolas, monospace;
   font-size: @font-size;
   margin-top: -2px; // Compensate for shadow
@@ -20,21 +21,20 @@
 }
 
 .nuclide-datatip-container {
-  background-color: @base-background-color;
+  background-color: @syntax-background-color;
   display: flex;
   position: relative;
   transition: background-color 0.15s ease;
   &:hover {
-    background-color: mix(@base-background-color, @background-color-highlight, 50%);
+    background-color: mix(@syntax-background-color, @syntax-selection-color, 50%);
   }
 
   &:not(:last-of-type) {
-    border-bottom: 1px solid fade(@text-color-highlight, 10%);
+    border-bottom: 1px solid fade(@syntax-cursor-color, 10%);
   }
 }
 
 .nuclide-datatip-content {
-  background-color: @base-background-color;
   flex-grow: 1;
 
   // Allow higher-level component to override the cursor property on certain children.
@@ -45,7 +45,7 @@
 
 .nuclide-datatip-pin-button {
   align-items: center;
-  border-left: 1px solid fade(@text-color-highlight, 10%);
+  border-left: 1px solid fade(@syntax-cursor-color, 10%);
   cursor: pointer;
   display: flex;
   line-height: 2;
@@ -53,7 +53,7 @@
   padding-left: 0.5em;
   &:hover {
     background-color: rgba(255, 255, 255, 0.05);
-    color: @text-color-highlight;
+    color: @syntax-selection-flash-color;
   }
 }
 
@@ -66,7 +66,7 @@
 atom-text-editor {
 
   .nuclide-datatip-highlight-region > .region {
-    background: @background-color-highlight;
+    background: @syntax-selection-color;
   }
 
   .nuclide-datatip-highlight-region-active > .region {
@@ -74,10 +74,10 @@ atom-text-editor {
     animation: RotatingBackground 1s ease-in-out infinite reverse;
     background: linear-gradient(
       90deg,
-      @background-color-highlight,
-      @base-background-color,
-      @background-color-highlight,
-      @base-background-color
+      @syntax-selection-color,
+      @syntax-background-color,
+      @syntax-selection-color,
+      @syntax-background-color
     );
     background-size: 300% 100%;
   }
