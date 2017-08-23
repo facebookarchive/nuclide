@@ -45,11 +45,17 @@ const POPUP_DISPOSE_TIMEOUT = 100;
 // happening onmousemove, we also have to be careful to make sure this is not expensive.
 const HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
 
-const ERROR_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-error';
-const WARNING_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-warning';
+const HIGHLIGHT_CSS_LEVELS = {
+  Error: 'nuclide-diagnostics-gutter-ui-highlight-error',
+  Warning: 'nuclide-diagnostics-gutter-ui-highlight-warning',
+  Info: 'nuclide-diagnostics-gutter-ui-highlight-info',
+};
 
-const ERROR_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-error';
-const WARNING_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-warning';
+const GUTTER_CSS_LEVELS = {
+  Error: 'nuclide-diagnostics-gutter-ui-gutter-error',
+  Warning: 'nuclide-diagnostics-gutter-ui-gutter-warning',
+  Info: 'nuclide-diagnostics-gutter-ui-gutter-info',
+};
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
@@ -109,7 +115,7 @@ export function applyUpdateToEditor(
 
     const highlightCssClass = classnames(
       HIGHLIGHT_CSS,
-      message.type === 'Error' ? ERROR_HIGHLIGHT_CSS : WARNING_HIGHLIGHT_CSS,
+      HIGHLIGHT_CSS_LEVELS[message.type],
     );
 
     let highlightMarker;
@@ -164,11 +170,13 @@ export function applyUpdateToEditor(
 
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
   for (const [row, messages] of rowToMessage.entries()) {
-    // If at least one of the diagnostics is an error rather than the warning,
-    // display the glyph in the gutter to represent an error rather than a warning.
-    const gutterMarkerCssClass = messages.some(msg => msg.type === 'Error')
-      ? ERROR_GUTTER_CSS
-      : WARNING_GUTTER_CSS;
+    // Show the highest priority marker (note the ordering of GUTTER_CSS).
+    const messageTypes = new Set();
+    messages.forEach(msg => messageTypes.add(msg.type));
+    const firstType = Object.keys(GUTTER_CSS_LEVELS).find(type =>
+      messageTypes.has(type),
+    );
+    const gutterMarkerCssClass = GUTTER_CSS_LEVELS[firstType || 'Error'];
 
     // This marker adds some UI to the gutter.
     const {item, dispose} = createGutterItem(

@@ -37,7 +37,8 @@ function renderMessage(
     'nuclide-diagnostics-gutter-ui-popup-diagnostic',
     {
       'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
-      'nuclide-diagnostics-gutter-ui-popup-warning': message.type !== 'Error',
+      'nuclide-diagnostics-gutter-ui-popup-warning': message.type === 'Warning',
+      'nuclide-diagnostics-gutter-ui-popup-info': message.type === 'Info',
     },
   );
   return (

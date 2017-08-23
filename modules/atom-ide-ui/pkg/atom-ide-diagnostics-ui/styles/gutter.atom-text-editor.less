@@ -9,13 +9,13 @@
 }
 
 .nuclide-diagnostics-gutter-ui-gutter-error,
-.nuclide-diagnostics-gutter-ui-gutter-warning {
+.nuclide-diagnostics-gutter-ui-gutter-warning,
+.nuclide-diagnostics-gutter-ui-gutter-info {
   // Needs to match .nuclide-debugger-breakpoint-icon
   .octicon(triangle-right, @size: 130%);
   text-align: left;
   display: block;
   width: 0.8em;
-  color: @text-color-info;
 
   // Makes it smaller, but respects the line-height :)
   transform: scale(0.7);
@@ -28,6 +28,10 @@
 
 .nuclide-diagnostics-gutter-ui-gutter-warning {
   color: @text-color-warning;
+}
+
+.nuclide-diagnostics-gutter-ui-gutter-info {
+  color: @text-color-info;
 }
 
 // Styles for popup triggered by mousing over the gutter glyph.
@@ -68,6 +72,11 @@
 .nuclide-diagnostics-gutter-ui-popup-warning
   .nuclide-diagnostics-gutter-ui-popup-header {
     background-color: fade(@text-color-warning, 20%);
+}
+
+.nuclide-diagnostics-gutter-ui-popup-info
+  .nuclide-diagnostics-gutter-ui-popup-header {
+    background-color: fade(@text-color-info, 20%);
 }
 
 .nuclide-diagnostics-gutter-ui-popup-message {
