@@ -14,11 +14,16 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import React from 'react';
 import classnames from 'classnames';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
+import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
+import {FileTreeStore} from '../lib/FileTreeStore';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import {TreeList, TreeItem, NestedTreeItem} from '../../nuclide-ui/Tree';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+
+const getActions = FileTreeActions.getInstance;
+const store = FileTreeStore.getInstance();
 
 type OpenFileEntry = {
   name: string,
@@ -55,6 +60,18 @@ export class OpenFilesListComponent extends React.PureComponent {
       // on HTMLElements, so we just have to squelch the error.
       // eslint-disable-next-line nuclide-internal/dom-apis
       selectedRow.scrollIntoView();
+    }
+  }
+
+  _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent) {
+    event.stopPropagation();
+    const rootNode = store.getRootForPath(entry.uri);
+    if (
+      FileTreeHelpers.getSelectionMode(event) === 'single-select' &&
+      !entry.isSelected &&
+      rootNode != null
+    ) {
+      getActions().setTargetNode(rootNode.rootUri, entry.uri);
     }
   }
 
@@ -118,12 +135,17 @@ export class OpenFilesListComponent extends React.PureComponent {
                 const isHoveredUri = this.state.hoveredUri === e.uri;
                 return (
                   <TreeItem
-                    className={classnames({'text-highlight': isHoveredUri})}
+                    className={classnames('file', {
+                      'text-highlight': isHoveredUri,
+                    })}
                     selected={e.isSelected}
                     key={e.uri}
                     onClick={this._onClick.bind(this, e)}
                     onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
                     onMouseLeave={this._onListItemMouseLeave}
+                    onMouseDown={this._onMouseDown.bind(this, e)}
+                    data-path={e.uri}
+                    data-name={e.name}
                     ref={e.isSelected ? 'selectedRow' : null}>
                     <span
                       className={classnames('icon', {

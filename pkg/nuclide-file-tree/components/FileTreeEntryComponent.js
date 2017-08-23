@@ -12,6 +12,7 @@
 import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import FileTreeActions from '../lib/FileTreeActions';
+import FileTreeHelpers from '../lib/FileTreeHelpers';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -25,7 +26,6 @@ import FileTreeHgHelpers from '../lib/FileTreeHgHelpers';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import invariant from 'assert';
-import os from 'os';
 import {Observable} from 'rxjs';
 
 const store = FileTreeStore.getInstance();
@@ -38,12 +38,6 @@ type Props = {
 type State = {
   isLoading: boolean,
 };
-
-type SelectionMode =
-  | 'single-select'
-  | 'multi-select'
-  | 'range-select'
-  | 'invalid-select';
 
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
@@ -264,7 +258,7 @@ export class FileTreeEntryComponent extends React.Component {
 
     const node = this.props.node;
 
-    const selectionMode = getSelectionMode(event);
+    const selectionMode = FileTreeHelpers.getSelectionMode(event);
     if (selectionMode === 'multi-select' && !node.isSelected) {
       getActions().addSelectedNode(node.rootUri, node.uri);
     } else if (selectionMode === 'range-select') {
@@ -284,7 +278,7 @@ export class FileTreeEntryComponent extends React.Component {
       return;
     }
 
-    const selectionMode = getSelectionMode(event);
+    const selectionMode = FileTreeHelpers.getSelectionMode(event);
 
     if (
       selectionMode === 'range-select' ||
@@ -472,23 +466,4 @@ export class FileTreeEntryComponent extends React.Component {
     // so we'll just prevent the checkbox from receiving the focus
     event.preventDefault();
   };
-}
-
-function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
-  if (
-    (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
-    (os.platform() !== 'darwin' && event.ctrlKey && event.button === 0)
-  ) {
-    return 'multi-select';
-  }
-  if (os.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
-    return 'single-select';
-  }
-  if (event.shiftKey && event.button === 0) {
-    return 'range-select';
-  }
-  if (!event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    return 'single-select';
-  }
-  return 'invalid-select';
 }

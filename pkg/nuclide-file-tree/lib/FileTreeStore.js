@@ -41,6 +41,11 @@ import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
 
 type ChangeListener = () => mixed;
 
+type TargetNodeKeys = {
+  rootKey: NuclideUri,
+  nodeKey: NuclideUri,
+};
+
 export type ExportStoreData = {
   childKeyMap: {[key: string]: Array<string>},
   expandedKeysByRoot: {[key: string]: Array<string>},
@@ -130,6 +135,7 @@ export class FileTreeStore {
   _filter: string;
   _extraProjectSelectionContent: Immutable.List<React.Element<any>>;
   _selectionRange: ?SelectionRange;
+  _targetNodeKeys: ?TargetNodeKeys;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -167,6 +173,7 @@ export class FileTreeStore {
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
     this._selectionRange = null;
+    this._targetNodeKeys = null;
   }
 
   /**
@@ -501,6 +508,8 @@ export class FileTreeStore {
       case ActionTypes.INVALIDATE_REMOVED_FOLDER:
         this._invalidateRemovedFolder();
         break;
+      case ActionTypes.SET_TARGET_NODE:
+        this._setTargetNode(payload.rootKey, payload.nodeKey);
     }
   }
 
@@ -902,6 +911,21 @@ export class FileTreeStore {
     return new Immutable.List(selectedNodes);
   }
 
+  // Retrieves target node in an immutable list if it's set, or all selected
+  // nodes otherwise
+  getTargetNodes(): Immutable.List<FileTreeNode> {
+    if (this._targetNodeKeys) {
+      const targetNode = this.getNode(
+        this._targetNodeKeys.rootKey,
+        this._targetNodeKeys.nodeKey,
+      );
+      if (targetNode) {
+        return new Immutable.List([targetNode]);
+      }
+    }
+    return this.getSelectedNodes();
+  }
+
   /**
   * Returns a node if it is the only one selected, or null otherwise
   */
@@ -913,6 +937,20 @@ export class FileTreeStore {
     }
 
     return selectedNodes.first();
+  }
+
+  // Retrieves the target node, if it's set, or the first selected node otherwise
+  getSingleTargetNode(): ?FileTreeNode {
+    if (this._targetNodeKeys) {
+      const targetNode = this.getNode(
+        this._targetNodeKeys.rootKey,
+        this._targetNodeKeys.nodeKey,
+      );
+      if (targetNode) {
+        return targetNode;
+      }
+    }
+    return this.getSingleSelectedNode();
   }
 
   getNode(rootKey: NuclideUri, nodeKey: NuclideUri): ?FileTreeNode {
@@ -1204,6 +1242,17 @@ export class FileTreeStore {
     return this.roots.some(root => root.containsFilterMatches);
   }
 
+  /*
+  * Manually sets a target node used for context menu actions. The value can be
+  * retrieved by calling `getTargetNodes` or `getSingleTargetNode` both of
+  * which will retrive the target node if it exists and default to selected
+  * nodes otherwise.
+  * This value gets cleared everytime a selection is set
+  */
+  _setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._targetNodeKeys = {rootKey, nodeKey};
+  }
+
   /**
    * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
    * because it only changes state if a node is being tracked.
@@ -1318,7 +1367,7 @@ export class FileTreeStore {
     const selectedNodes = this.getSelectedNodes();
     try {
       await FileTreeHgHelpers.deleteNodes(selectedNodes.toJS());
-      this._selectionRange = null;
+      this._clearSelectionRange();
     } catch (e) {
       atom.notifications.addError('Failed to delete entries: ' + e.message);
     }
@@ -1455,8 +1504,8 @@ export class FileTreeStore {
     this._clearSelection(rootKey, nodeKey);
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
     this._setTrackedNode(rootKey, nodeKey);
-    this._selectionRange = SelectionRange.ofSingleItem(
-      new RangeKey(rootKey, nodeKey),
+    this._setSelectionRange(
+      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
     );
   }
 
@@ -1476,15 +1525,15 @@ export class FileTreeStore {
       node.set({isSelected: true, isFocused: true}),
     );
     this._setTrackedNode(rootKey, nodeKey);
-    this._selectionRange = SelectionRange.ofSingleItem(
-      new RangeKey(rootKey, nodeKey),
+    this._setSelectionRange(
+      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
     );
   }
 
   _addSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
-    this._selectionRange = SelectionRange.ofSingleItem(
-      new RangeKey(rootKey, nodeKey),
+    this._setSelectionRange(
+      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
     );
   }
 
@@ -1496,10 +1545,12 @@ export class FileTreeStore {
 
   _setSelectionRange(selectionRange: SelectionRange): void {
     this._selectionRange = selectionRange;
+    this._targetNodeKeys = null;
   }
 
   _clearSelectionRange(): void {
     this._selectionRange = null;
+    this._targetNodeKeys = null;
   }
 
   /**
@@ -1518,7 +1569,7 @@ export class FileTreeStore {
     direction: 'up' | 'down' | 'none',
   } {
     const invalidate = () => {
-      this._selectionRange = null;
+      this._clearSelectionRange();
       return null;
     };
 
@@ -1675,7 +1726,9 @@ export class FileTreeStore {
         nextNode = probe;
         probe = getNextNode(nextNode);
       }
-      this._selectionRange = selectionRange.withNewRange(RangeKey.of(nextNode));
+      this._setSelectionRange(
+        selectionRange.withNewRange(RangeKey.of(nextNode)),
+      );
       this._setTrackedNode(nextNode.rootUri, nextNode.uri);
     } else {
       let nextNode = rangeNode;
@@ -1690,15 +1743,17 @@ export class FileTreeStore {
         return;
       }
       if (nextNode === anchorNode) {
-        this._selectionRange = selectionRange.withNewRange(
-          RangeKey.of(nextNode),
+        this._setSelectionRange(
+          selectionRange.withNewRange(RangeKey.of(nextNode)),
         );
         return;
       }
       nextNode = this._updateNode(nextNode, n =>
         n.set({isSelected: false, isFocused: false}),
       );
-      this._selectionRange = selectionRange.withNewRange(RangeKey.of(nextNode));
+      this._setSelectionRange(
+        selectionRange.withNewRange(RangeKey.of(nextNode)),
+      );
       this._setTrackedNode(nextNode.rootUri, nextNode.uri);
     }
   }
@@ -1829,7 +1884,7 @@ export class FileTreeStore {
         },
       );
     });
-    this._selectionRange = null;
+    this._clearSelectionRange();
   }
 
   _setRootKeys(rootKeys: Array<NuclideUri>): void {

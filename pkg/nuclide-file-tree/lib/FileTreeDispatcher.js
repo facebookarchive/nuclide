@@ -232,6 +232,11 @@ export type FileTreeAction =
     }
   | {
       actionType: 'INVALIDATE_REMOVED_FOLDER',
+    }
+  | {
+      actionType: 'SET_TARGET_NODE',
+      rootKey: NuclideUri,
+      nodeKey: NuclideUri,
     };
 
 export const ActionTypes = Object.freeze({
@@ -289,6 +294,7 @@ export const ActionTypes = Object.freeze({
   SET_UNCOMMITTED_CHANGES_EXPANDED: 'SET_UNCOMMITTED_CHANGES_EXPANDED',
   SET_FOLDERS_EXPANDED: 'SET_FOLDERS_EXPANDED',
   INVALIDATE_REMOVED_FOLDER: 'INVALIDATE_REMOVED_FOLDER',
+  SET_TARGET_NODE: 'SET_TARGET_NODE',
 });
 
 // Flow hack: Every FileTreeAction actionType must be in ActionTypes.

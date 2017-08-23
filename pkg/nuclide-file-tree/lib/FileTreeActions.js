@@ -535,6 +535,14 @@ export default class FileTreeActions {
     });
   }
 
+  setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_TARGET_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
   async _repositoryAdded(
     repo: atom$GitRepository | HgRepositoryClient,
     rootKeysForRepository: Immutable.Map<

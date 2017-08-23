@@ -32,10 +32,17 @@ import {cacheWhileSubscribed} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 import crypto from 'crypto';
+import os from 'os';
 
 export type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
 type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
+
+export type SelectionMode =
+  | 'single-select'
+  | 'multi-select'
+  | 'range-select'
+  | 'invalid-select';
 
 function dirPathToKey(path: string): string {
   return nuclideUri.ensureTrailingSeparator(
@@ -211,6 +218,25 @@ function areStackChangesEnabled(): Promise<boolean> {
   return passesGK('nuclide_file_tree_stack_changes');
 }
 
+function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
+  if (
+    (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
+    (os.platform() !== 'darwin' && event.ctrlKey && event.button === 0)
+  ) {
+    return 'multi-select';
+  }
+  if (os.platform() === 'darwin' && event.ctrlKey && event.button === 0) {
+    return 'single-select';
+  }
+  if (event.shiftKey && event.button === 0) {
+    return 'range-select';
+  }
+  if (!event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    return 'single-select';
+  }
+  return 'invalid-select';
+}
+
 export default {
   dirPathToKey,
   isDirKey,
@@ -229,4 +255,5 @@ export default {
   observeUncommittedChangesKindConfigKey,
   updatePathInOpenedEditors,
   areStackChangesEnabled,
+  getSelectionMode,
 };

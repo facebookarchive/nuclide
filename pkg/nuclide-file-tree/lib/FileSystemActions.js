@@ -224,13 +224,13 @@ class FileSystemActions {
 
   openRenameDialog(): void {
     const store = FileTreeStore.getInstance();
-    const selectedNodes = store.getSelectedNodes();
-    if (selectedNodes.size !== 1) {
+    const targetNodes = store.getTargetNodes();
+    if (targetNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
     }
 
-    const node = selectedNodes.first();
+    const node = targetNodes.first();
     const nodePath = node.localPath;
     this._openDialog({
       iconClassName: 'icon-arrow-right',
@@ -252,13 +252,13 @@ class FileSystemActions {
 
   openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     const store = FileTreeStore.getInstance();
-    const selectedNodes = store.getSelectedNodes();
-    if (selectedNodes.size !== 1) {
+    const targetNodes = store.getTargetNodes();
+    if (targetNodes.size !== 1) {
       // Can only copy one entry at a time.
       return;
     }
 
-    const node = selectedNodes.first();
+    const node = targetNodes.first();
     const nodePath = node.localPath;
     let initialValue = nuclideUri.basename(nodePath);
     const ext = nuclideUri.extname(nodePath);

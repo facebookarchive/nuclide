@@ -14,7 +14,7 @@ import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
 import type React from 'react';
 
-import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
+import {COMMANDS_SELECTOR} from './FileTreeConstants';
 import FileSystemActions from './FileSystemActions';
 import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
@@ -122,7 +122,7 @@ export default class FileTreeController {
       ] = this._handlePrefixKeypress.bind(this, char);
     }
     this._disposables.add(
-      atom.commands.add(EVENT_HANDLER_SELECTOR, {
+      atom.commands.add(COMMANDS_SELECTOR, {
         'core:move-down': this._moveDown.bind(this),
         'core:move-up': this._moveUp.bind(this),
         'core:move-to-top': this._moveToTop.bind(this),
@@ -452,7 +452,7 @@ export default class FileTreeController {
   }
 
   _deleteSelection(): void {
-    const nodes = this._store.getSelectedNodes();
+    const nodes = this._store.getTargetNodes();
     if (nodes.size === 0) {
       return;
     }
@@ -549,7 +549,7 @@ export default class FileTreeController {
     orientation: atom$PaneSplitOrientation,
     side: atom$PaneSplitSide,
   ): void {
-    const singleSelectedNode = this._store.getSingleSelectedNode();
+    const singleSelectedNode = this._store.getSingleTargetNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
       // for: is this feature used enough to justify uncollapsing?
