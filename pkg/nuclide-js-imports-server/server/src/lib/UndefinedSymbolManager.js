@@ -120,12 +120,13 @@ function findUndefinedTypes(
   undefinedSymbols: Array<UndefinedSymbol>,
   globals: Set<string>,
 ) {
-  const {node} = path;
+  const {node, scope} = path;
 
   if (
     globals.has(node.id.name) ||
     path.parent.type === 'TypeAlias' ||
-    path.parent.type === 'TypeofTypeAnnotation'
+    path.parent.type === 'TypeofTypeAnnotation' ||
+    scope.hasBinding(node.id.name)
   ) {
     return;
   }

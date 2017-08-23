@@ -46,6 +46,14 @@ describe('UndefinedSymbolManager', () => {
     expect(undefinedSymbols).toBeDefined();
     expect(undefinedSymbols.length).toBe(0);
   });
+  it('Should not declare as undefined if declared after', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'export type Y = { f(x: X): void }; class X extends Y {}';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(0);
+  });
   it('Should find undefined object', () => {
     const manager = new UndefinedSymbolManager([]);
     const program = 'myFunc.doSomething();';
@@ -92,6 +100,30 @@ describe('UndefinedSymbolManager', () => {
     const manager = new UndefinedSymbolManager([]);
     const program =
       "import type MyType from 'module'; const val : MyType = 10;";
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should not declare as undefined if declared as var', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const x = {}; function myFunc(): x {}';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should not declare as undefined if declared as object destructure', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const {x} = {}; function myFunc(): x {}';
+    const ast = babylon.parse(program, babylonOptions);
+    const undefinedSymbols = manager.findUndefined(ast);
+    expect(undefinedSymbols).toBeDefined();
+    expect(undefinedSymbols.length).toBe(0);
+  });
+  it('Should not declare as undefined if declared as array destructure', () => {
+    const manager = new UndefinedSymbolManager([]);
+    const program = 'const [x] = []; function myFunc(): x {}';
     const ast = babylon.parse(program, babylonOptions);
     const undefinedSymbols = manager.findUndefined(ast);
     expect(undefinedSymbols).toBeDefined();
