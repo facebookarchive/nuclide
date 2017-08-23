@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.247.0
+
+### Hotfix Release
+
+* Fixes the issue where flow diagnostics would not show up for flow >= v0.53.0
+
 ## v0.246.0
 
 ### General
