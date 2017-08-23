@@ -1,57 +1,88 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import React from 'react';
-import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
-import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeToolBar = consumeToolBar;
 
-let subscriptions: UniversalDisposable = (null: any);
+var _viewableFromReactElement;
 
-export function activate(state: ?Object): void {
-  subscriptions = new UniversalDisposable(registerCommandAndOpener());
+function _load_viewableFromReactElement() {
+  return _viewableFromReactElement = require('../../commons-atom/viewableFromReactElement');
 }
 
-export function deactivate(): void {
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+var _SettingsPaneItem;
+
+function _load_SettingsPaneItem() {
+  return _SettingsPaneItem = _interopRequireDefault(require('./SettingsPaneItem'));
+}
+
+var _SettingsPaneItem2;
+
+function _load_SettingsPaneItem2() {
+  return _SettingsPaneItem2 = require('./SettingsPaneItem');
+}
+
+var _destroyItemWhere;
+
+function _load_destroyItemWhere() {
+  return _destroyItemWhere = require('nuclide-commons-atom/destroyItemWhere');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+let subscriptions = null; /**
+                           * Copyright (c) 2015-present, Facebook, Inc.
+                           * All rights reserved.
+                           *
+                           * This source code is licensed under the license found in the LICENSE file in
+                           * the root directory of this source tree.
+                           *
+                           * 
+                           * @format
+                           */
+
+function activate(state) {
+  subscriptions = new (_UniversalDisposable || _load_UniversalDisposable()).default(registerCommandAndOpener());
+}
+
+function deactivate() {
   subscriptions.dispose();
-  subscriptions = (null: any);
+  subscriptions = null;
 }
 
-function registerCommandAndOpener(): UniversalDisposable {
-  return new UniversalDisposable(
-    atom.workspace.addOpener(uri => {
-      if (uri === WORKSPACE_VIEW_URI) {
-        return viewableFromReactElement(<SettingsPaneItem />);
-      }
-    }),
-    () => destroyItemWhere(item => item instanceof SettingsPaneItem),
-    atom.commands.add('atom-workspace', 'nuclide-settings:toggle', () => {
-      atom.workspace.toggle(WORKSPACE_VIEW_URI);
-    }),
-  );
+function registerCommandAndOpener() {
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(atom.workspace.addOpener(uri => {
+    if (uri === (_SettingsPaneItem2 || _load_SettingsPaneItem2()).WORKSPACE_VIEW_URI) {
+      return (0, (_viewableFromReactElement || _load_viewableFromReactElement()).viewableFromReactElement)(_react.default.createElement((_SettingsPaneItem || _load_SettingsPaneItem()).default, null));
+    }
+  }), () => (0, (_destroyItemWhere || _load_destroyItemWhere()).destroyItemWhere)(item => item instanceof (_SettingsPaneItem || _load_SettingsPaneItem()).default), atom.commands.add('atom-workspace', 'nuclide-settings:toggle', () => {
+    atom.workspace.toggle((_SettingsPaneItem2 || _load_SettingsPaneItem2()).WORKSPACE_VIEW_URI);
+  }));
 }
 
-export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+function consumeToolBar(getToolBar) {
   const toolBar = getToolBar('nuclide-home');
   toolBar.addSpacer({
-    priority: -501,
+    priority: -501
   });
   toolBar.addButton({
     icon: 'gear',
     callback: 'nuclide-settings:toggle',
     tooltip: 'Open Nuclide Settings',
-    priority: -500,
+    priority: -500
   });
-  const disposable = new UniversalDisposable(() => {
+  const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
     toolBar.removeItems();
   });
   subscriptions.add(disposable);

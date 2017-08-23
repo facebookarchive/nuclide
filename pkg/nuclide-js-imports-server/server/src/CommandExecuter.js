@@ -1,202 +1,158 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {JSExport} from './lib/types';
-import type TextDocuments from './TextDocuments';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CommandExecuter = undefined;
 
-import {IConnection, WorkspaceEdit, TextEdit} from 'vscode-languageserver';
-import {ImportFormatter} from './lib/ImportFormatter';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {parseFile} from './lib/AutoImportsManager';
-import {babelLocationToAtomRange, atomRangeToLSPRange} from './utils/util';
-import {Range} from 'simple-text-buffer';
+var _vscodeLanguageserver;
 
-export type AddImportCommandParams = [string, JSExport, NuclideUri];
+function _load_vscodeLanguageserver() {
+  return _vscodeLanguageserver = require('vscode-languageserver');
+}
 
-type ExportPosition = {
-  row: number,
-  newLinesBefore: number,
-  newLinesAfter: number,
-};
+var _ImportFormatter;
 
-export class CommandExecuter {
-  static COMMANDS = {
-    addImport,
-  };
-  connection: IConnection;
-  importFormatter: ImportFormatter;
-  documents: TextDocuments;
+function _load_ImportFormatter() {
+  return _ImportFormatter = require('./lib/ImportFormatter');
+}
 
-  constructor(
-    connection: IConnection,
-    importFormatter: ImportFormatter,
-    documents: TextDocuments,
-  ) {
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _AutoImportsManager;
+
+function _load_AutoImportsManager() {
+  return _AutoImportsManager = require('./lib/AutoImportsManager');
+}
+
+var _util;
+
+function _load_util() {
+  return _util = require('./utils/util');
+}
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class CommandExecuter {
+
+  constructor(connection, importFormatter, documents) {
     this.connection = connection;
     this.importFormatter = importFormatter;
     this.documents = documents;
   }
 
-  executeCommand(command: string, args: any) {
+  executeCommand(command, args) {
     switch (command) {
       case 'addImport':
-        return addImport(
-          (args: AddImportCommandParams),
-          this.connection,
-          this.importFormatter,
-          this.documents,
-        );
+        return addImport(args, this.connection, this.importFormatter, this.documents);
       default:
         throw new Error('Unexpected Command');
     }
   }
 }
 
-function addImport(
-  args: AddImportCommandParams,
-  connection: IConnection,
-  importFormatter: ImportFormatter,
-  documents: TextDocuments,
-) {
+exports.CommandExecuter = CommandExecuter; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            * @format
+                                            */
+
+CommandExecuter.COMMANDS = {
+  addImport
+};
+function addImport(args, connection, importFormatter, documents) {
   const [id, missingImport, fileMissingImport] = args;
-  const ast = parseFile(
-    documents.get(nuclideUri.nuclideUriToUri(fileMissingImport)).getText(),
-  );
+  const ast = (0, (_AutoImportsManager || _load_AutoImportsManager()).parseFile)(documents.get((_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(fileMissingImport)).getText());
   if (ast == null || ast.program == null || ast.program.body == null) {
     // File could not be parsed. If this is reached, we shouldn't be applying
     // addImport anyways since the file must have changed from when we computed
     // the CodeAction.
     return;
   }
-  const {body} = ast.program;
-  connection.workspace.applyEdit(
-    getImportWorkspaceEdit(
-      fileMissingImport,
-      missingImport,
-      id,
-      importFormatter,
-      body,
-      documents,
-    ),
-  );
+  const { body } = ast.program;
+  connection.workspace.applyEdit(getImportWorkspaceEdit(fileMissingImport, missingImport, id, importFormatter, body, documents));
 }
 
-function getImportWorkspaceEdit(
-  fileMissingImport: NuclideUri,
-  missingImport: JSExport,
-  id: string,
-  importFormatter: ImportFormatter,
-  programBody: Array<Object>,
-  documents: TextDocuments,
-): WorkspaceEdit {
-  const {row, newLinesBefore, newLinesAfter} = findPositionForImport(
-    missingImport,
-    programBody,
-  );
-  const edits = [
-    getEditForFile(
-      row,
-      newLinesBefore,
-      importFormatter,
-      fileMissingImport,
-      missingImport,
-      newLinesAfter,
-    ),
-  ];
-  const lspUri = nuclideUri.nuclideUriToUri(fileMissingImport);
+function getImportWorkspaceEdit(fileMissingImport, missingImport, id, importFormatter, programBody, documents) {
+  const { row, newLinesBefore, newLinesAfter } = findPositionForImport(missingImport, programBody);
+  const edits = [getEditForFile(row, newLinesBefore, importFormatter, fileMissingImport, missingImport, newLinesAfter)];
+  const lspUri = (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(fileMissingImport);
   // Version 2.0 LSP
   const changes = {};
   changes[lspUri] = edits;
 
   // Version 3.0 LSP
-  const documentChanges = [
-    {
-      textDocument: {
-        uri: lspUri,
-        version: documents.get(lspUri).version,
-      },
-      edits,
+  const documentChanges = [{
+    textDocument: {
+      uri: lspUri,
+      version: documents.get(lspUri).version
     },
-  ];
+    edits
+  }];
 
-  return {changes, documentChanges};
+  return { changes, documentChanges };
 }
 
-function getEditForFile(
-  row: number,
-  newLinesBefore: number,
-  importFormatter: ImportFormatter,
-  fileMissingImport: NuclideUri,
-  missingImport: JSExport,
-  newLinesAfter: number,
-): TextEdit {
+function getEditForFile(row, newLinesBefore, importFormatter, fileMissingImport, missingImport, newLinesAfter) {
   return {
     range: emptyRangeAtRow(row),
-    newText: `${'\n'.repeat(newLinesBefore)}${importFormatter.formatImport(
-      fileMissingImport,
-      missingImport,
-    )};${'\n'.repeat(newLinesAfter)}`,
+    newText: `${'\n'.repeat(newLinesBefore)}${importFormatter.formatImport(fileMissingImport, missingImport)};${'\n'.repeat(newLinesAfter)}`
   };
 }
 
-function emptyRangeAtRow(row: number) {
-  return atomRangeToLSPRange(new Range([row, 0], [row, 0]));
+function emptyRangeAtRow(row) {
+  return (0, (_util || _load_util()).atomRangeToLSPRange)(new (_simpleTextBuffer || _load_simpleTextBuffer()).Range([row, 0], [row, 0]));
 }
 
-function findPositionForImport(
-  missingImport: JSExport,
-  programBody: Array<Object>,
-): ExportPosition {
+function findPositionForImport(missingImport, programBody) {
   // For now, we consider two types of imports: value import and type imports.
   // TODO: integrate with nuclide-format-js or replace this with a more
-  // specific ordering that is easily configurable.
-
-  const [
-    lastTypeImport,
-    lastValueImport,
-  ] = findLastTopLevelNodeSatisfying(programBody, [
-    node => node.type === 'ImportDeclaration' && node.importKind === 'type',
-    node => node.type === 'ImportDeclaration' && node.importKind === 'value',
-  ]);
+  const [lastTypeImport, lastValueImport] = findLastTopLevelNodeSatisfying(programBody, [node => node.type === 'ImportDeclaration' && node.importKind === 'type', node => node.type === 'ImportDeclaration' && node.importKind === 'value']);
 
   let row;
   let newLinesAfter = 1;
   let newLinesBefore = 0;
   if (missingImport.isTypeExport && lastTypeImport) {
-    row = rowAfterRange(babelLocationToAtomRange(lastTypeImport.loc));
+    row = rowAfterRange((0, (_util || _load_util()).babelLocationToAtomRange)(lastTypeImport.loc));
   } else if (!missingImport.isTypeExport && lastValueImport) {
-    row = rowAfterRange(babelLocationToAtomRange(lastValueImport.loc));
+    row = rowAfterRange((0, (_util || _load_util()).babelLocationToAtomRange)(lastValueImport.loc));
   } else if (!missingImport.isTypeExport && lastTypeImport) {
     // If we are adding the first import of this kind, we should at least be
     // consistent. For now, we will have type imports come before value imports.
-    row = rowAfterRange(babelLocationToAtomRange(lastTypeImport.loc));
+    row = rowAfterRange((0, (_util || _load_util()).babelLocationToAtomRange)(lastTypeImport.loc));
     newLinesBefore += 1;
   } else {
-    row = rowBeforeRange(babelLocationToAtomRange(programBody[0].loc), 0);
+    row = rowBeforeRange((0, (_util || _load_util()).babelLocationToAtomRange)(programBody[0].loc), 0);
     newLinesAfter += 1;
   }
 
   return {
     row,
     newLinesAfter,
-    newLinesBefore,
+    newLinesBefore
   };
 }
 
-function rowBeforeRange(range: atom$Range, rows?: number = 1) {
+function rowBeforeRange(range, rows = 1) {
   return range.start.row - rows;
 }
 
-function rowAfterRange(range: atom$Range, rows?: number = 1) {
+function rowAfterRange(range, rows = 1) {
   return range.end.row + rows;
 }
 
@@ -208,10 +164,7 @@ function rowAfterRange(range: atom$Range, rows?: number = 1) {
  * element of the output array corresponds to the last node that returned true
  * for the i-th predicate function.
  */
-function findLastTopLevelNodeSatisfying(
-  programBody: Array<Object>,
-  predicates: Array<(node: Object) => boolean>,
-): Array<?Object> {
+function findLastTopLevelNodeSatisfying(programBody, predicates) {
   const reversed = [...programBody].reverse();
   return predicates.map(predicate => reversed.find(x => predicate(x)));
 }

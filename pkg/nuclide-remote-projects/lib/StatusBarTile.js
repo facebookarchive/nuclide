@@ -1,39 +1,57 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import ConnectionState from './ConnectionState';
-import {
-  notifyLocalDiskFile,
-  notifyConnectedRemoteFile,
-  notifyDisconnectedRemoteFile,
-} from './notification';
-import React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  connectionState: number,
-  fileUri?: string,
-};
+var _ConnectionState;
 
-export default class StatusBarTile extends React.Component {
-  props: Props;
+function _load_ConnectionState() {
+  return _ConnectionState = _interopRequireDefault(require('./ConnectionState'));
+}
 
-  render(): ?React.Element<any> {
+var _notification;
+
+function _load_notification() {
+  return _notification = require('./notification');
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class StatusBarTile extends _react.default.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this._onStatusBarTileClicked = () => {
+      // flowlint-next-line sketchy-null-string:off
+      if (!this.props.fileUri) {
+        return;
+      }
+      switch (this.props.connectionState) {
+        case (_ConnectionState || _load_ConnectionState()).default.LOCAL:
+          (0, (_notification || _load_notification()).notifyLocalDiskFile)(this.props.fileUri);
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.CONNECTED:
+          (0, (_notification || _load_notification()).notifyConnectedRemoteFile)(this.props.fileUri);
+          break;
+        case (_ConnectionState || _load_ConnectionState()).default.DISCONNECTED:
+          (0, (_notification || _load_notification()).notifyDisconnectedRemoteFile)(this.props.fileUri);
+          break;
+      }
+    }, _temp;
+  }
+
+  render() {
     let iconName = null;
     switch (this.props.connectionState) {
-      case ConnectionState.NONE:
+      case (_ConnectionState || _load_ConnectionState()).default.NONE:
         break;
-      case ConnectionState.CONNECTED:
+      case (_ConnectionState || _load_ConnectionState()).default.CONNECTED:
         iconName = 'cloud-upload';
         break;
-      case ConnectionState.DISCONNECTED:
+      case (_ConnectionState || _load_ConnectionState()).default.DISCONNECTED:
         iconName = 'alert';
         break;
     }
@@ -42,29 +60,20 @@ export default class StatusBarTile extends React.Component {
     if (!iconName) {
       return null;
     }
-    return (
-      <span
-        className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
-        onClick={this._onStatusBarTileClicked}
-      />
-    );
+    return _react.default.createElement('span', {
+      className: `icon icon-${iconName} nuclide-remote-projects-status-icon`,
+      onClick: this._onStatusBarTileClicked
+    });
   }
 
-  _onStatusBarTileClicked = (): void => {
-    // flowlint-next-line sketchy-null-string:off
-    if (!this.props.fileUri) {
-      return;
-    }
-    switch (this.props.connectionState) {
-      case ConnectionState.LOCAL:
-        notifyLocalDiskFile(this.props.fileUri);
-        break;
-      case ConnectionState.CONNECTED:
-        notifyConnectedRemoteFile(this.props.fileUri);
-        break;
-      case ConnectionState.DISCONNECTED:
-        notifyDisconnectedRemoteFile(this.props.fileUri);
-        break;
-    }
-  };
 }
+exports.default = StatusBarTile; /**
+                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the license found in the LICENSE file in
+                                  * the root directory of this source tree.
+                                  *
+                                  * 
+                                  * @format
+                                  */

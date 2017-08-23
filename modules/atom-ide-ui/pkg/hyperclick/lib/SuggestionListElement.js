@@ -1,43 +1,40 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-/* global HTMLElement */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import type SuggestionListType from './SuggestionList';
+var _atom = require('atom');
 
-import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import invariant from 'assert';
-import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
+var _react = _interopRequireDefault(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _scrollIntoView;
+
+function _load_scrollIntoView() {
+  return _scrollIntoView = require('nuclide-commons-ui/scrollIntoView');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * We need to create this custom HTML element so we can hook into the view
  * registry. The overlay decoration only works through the view registry.
  */
 class SuggestionListElement extends HTMLElement {
-  _model: SuggestionListType;
 
-  initialize(model: SuggestionListType) {
+  initialize(model) {
     this._model = model;
     return this;
   }
 
-  attachedCallback(): mixed {
-    ReactDOM.render(<SuggestionList suggestionList={this._model} />, this);
+  attachedCallback() {
+    _reactDom.default.render(_react.default.createElement(SuggestionList, { suggestionList: this._model }), this);
   }
 
-  detachedCallback(): mixed {
-    ReactDOM.unmountComponentAtNode(this);
+  detachedCallback() {
+    _reactDom.default.unmountComponentAtNode(this);
   }
 
   dispose() {
@@ -45,59 +42,62 @@ class SuggestionListElement extends HTMLElement {
       this.parentNode.removeChild(this);
     }
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-type Props = {
-  suggestionList: SuggestionListType,
-};
+/* global HTMLElement */
 
-type State = {
-  selectedIndex: number,
-};
+class SuggestionList extends _react.default.Component {
 
-class SuggestionList extends React.Component {
-  props: Props;
-  state: State;
-
-  _items: Array<{rightLabel?: string, title: string, callback: () => mixed}>;
-  _textEditor: ?atom$TextEditor;
-  _subscriptions: atom$CompositeDisposable;
-  _boundConfirm: () => void;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
-      selectedIndex: 0,
+      selectedIndex: 0
     };
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new _atom.CompositeDisposable();
     this._boundConfirm = this._confirm.bind(this);
   }
 
   componentWillMount() {
-    const {suggestionList} = this.props;
+    const { suggestionList } = this.props;
     const suggestion = suggestionList.getSuggestion();
     // TODO(nmote): This is assuming `suggestion.callback` is always an Array, which is not true
     //   according to hyperclick/lib/types. It can also be a function.
-    invariant(suggestion != null && Array.isArray(suggestion.callback));
+
+    if (!(suggestion != null && Array.isArray(suggestion.callback))) {
+      throw new Error('Invariant violation: "suggestion != null && Array.isArray(suggestion.callback)"');
+    }
+
     this._items = suggestion.callback;
     this._textEditor = suggestionList.getTextEditor();
   }
 
   componentDidMount() {
     const textEditor = this._textEditor;
-    invariant(textEditor);
+
+    if (!textEditor) {
+      throw new Error('Invariant violation: "textEditor"');
+    }
+
     const textEditorView = atom.views.getView(textEditor);
     const boundClose = this._close.bind(this);
-    this._subscriptions.add(
-      atom.commands.add(textEditorView, {
-        'core:move-up': this._moveSelectionUp.bind(this),
-        'core:move-down': this._moveSelectionDown.bind(this),
-        'core:move-to-top': this._moveSelectionToTop.bind(this),
-        'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
-        'core:cancel': boundClose,
-        'editor:newline': this._boundConfirm,
-      }),
-    );
+    this._subscriptions.add(atom.commands.add(textEditorView, {
+      'core:move-up': this._moveSelectionUp.bind(this),
+      'core:move-down': this._moveSelectionDown.bind(this),
+      'core:move-to-top': this._moveSelectionToTop.bind(this),
+      'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
+      'core:cancel': boundClose,
+      'editor:newline': this._boundConfirm
+    }));
 
     this._subscriptions.add(textEditor.onDidChange(boundClose));
     this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
@@ -105,21 +105,13 @@ class SuggestionList extends React.Component {
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = event => event.stopPropagation();
     // $FlowFixMe
-    ReactDOM.findDOMNode(this.refs.scroller).addEventListener(
-      'mousewheel',
-      stopPropagation,
-    );
-    this._subscriptions.add(
-      new Disposable(() => {
-        // $FlowFixMe
-        ReactDOM.findDOMNode(this.refs.scroller).removeEventListener(
-          'mousewheel',
-          stopPropagation,
-        );
-      }),
-    );
+    _reactDom.default.findDOMNode(this.refs.scroller).addEventListener('mousewheel', stopPropagation);
+    this._subscriptions.add(new _atom.Disposable(() => {
+      // $FlowFixMe
+      _reactDom.default.findDOMNode(this.refs.scroller).removeEventListener('mousewheel', stopPropagation);
+    }));
 
-    const keydown = (event: KeyboardEvent) => {
+    const keydown = event => {
       // If the user presses the enter key, confirm the selection.
       if (event.keyCode === 13) {
         event.stopImmediatePropagation();
@@ -127,11 +119,9 @@ class SuggestionList extends React.Component {
       }
     };
     textEditorView.addEventListener('keydown', keydown);
-    this._subscriptions.add(
-      new Disposable(() => {
-        textEditorView.removeEventListener('keydown', keydown);
-      }),
-    );
+    this._subscriptions.add(new _atom.Disposable(() => {
+      textEditorView.removeEventListener('keydown', keydown);
+    }));
   }
 
   render() {
@@ -140,32 +130,36 @@ class SuggestionList extends React.Component {
       if (index === this.state.selectedIndex) {
         className += ' selected';
       }
-      return (
-        <li
-          className={className}
-          key={index}
-          onMouseDown={this._boundConfirm}
-          onMouseEnter={this._setSelectedIndex.bind(this, index)}>
-          {item.title}
-          <span className="right-label">
-            {item.rightLabel}
-          </span>
-        </li>
+      return _react.default.createElement(
+        'li',
+        {
+          className: className,
+          key: index,
+          onMouseDown: this._boundConfirm,
+          onMouseEnter: this._setSelectedIndex.bind(this, index) },
+        item.title,
+        _react.default.createElement(
+          'span',
+          { className: 'right-label' },
+          item.rightLabel
+        )
       );
     });
 
-    return (
-      <div
-        className="popover-list select-list hyperclick-suggestion-list-scroller"
-        ref="scroller">
-        <ol className="list-group" ref="selectionList">
-          {itemComponents}
-        </ol>
-      </div>
+    return _react.default.createElement(
+      'div',
+      {
+        className: 'popover-list select-list hyperclick-suggestion-list-scroller',
+        ref: 'scroller' },
+      _react.default.createElement(
+        'ol',
+        { className: 'list-group', ref: 'selectionList' },
+        itemComponents
+      )
     );
   }
 
-  componentDidUpdate(prevProps: Object, prevState: Object) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevState.selectedIndex !== this.state.selectedIndex) {
       this._updateScrollPosition();
     }
@@ -184,15 +178,15 @@ class SuggestionList extends React.Component {
     this.props.suggestionList.hide();
   }
 
-  _setSelectedIndex(index: number) {
+  _setSelectedIndex(index) {
     this.setState({
-      selectedIndex: index,
+      selectedIndex: index
     });
   }
 
   _moveSelectionDown(event) {
     if (this.state.selectedIndex < this._items.length - 1) {
-      this.setState({selectedIndex: this.state.selectedIndex + 1});
+      this.setState({ selectedIndex: this.state.selectedIndex + 1 });
     } else {
       this._moveSelectionToTop();
     }
@@ -203,7 +197,7 @@ class SuggestionList extends React.Component {
 
   _moveSelectionUp(event) {
     if (this.state.selectedIndex > 0) {
-      this.setState({selectedIndex: this.state.selectedIndex - 1});
+      this.setState({ selectedIndex: this.state.selectedIndex - 1 });
     } else {
       this._moveSelectionToBottom();
     }
@@ -213,27 +207,27 @@ class SuggestionList extends React.Component {
   }
 
   _moveSelectionToBottom(event) {
-    this.setState({selectedIndex: Math.max(this._items.length - 1, 0)});
+    this.setState({ selectedIndex: Math.max(this._items.length - 1, 0) });
     if (event) {
       event.stopImmediatePropagation();
     }
   }
 
   _moveSelectionToTop(event) {
-    this.setState({selectedIndex: 0});
+    this.setState({ selectedIndex: 0 });
     if (event) {
       event.stopImmediatePropagation();
     }
   }
 
   _updateScrollPosition() {
-    const listNode = ReactDOM.findDOMNode(this.refs.selectionList);
+    const listNode = _reactDom.default.findDOMNode(this.refs.selectionList);
     // $FlowFixMe
     const selectedNode = listNode.getElementsByClassName('selected')[0];
-    scrollIntoViewIfNeeded(selectedNode, false);
+    (0, (_scrollIntoView || _load_scrollIntoView()).scrollIntoViewIfNeeded)(selectedNode, false);
   }
 }
 
-export default document.registerElement('hyperclick-suggestion-list', {
-  prototype: SuggestionListElement.prototype,
+exports.default = document.registerElement('hyperclick-suggestion-list', {
+  prototype: SuggestionListElement.prototype
 });

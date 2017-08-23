@@ -1,59 +1,91 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
-import FullWidthProgressBar from './FullWidthProgressBar';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FullWidthProgressBarExamples = undefined;
 
-const Wrapper = ({children}: {children: React.Element<any>}) =>
-  <div style={{position: 'relative', paddingBottom: 5}}>
-    {children}
-  </div>;
+var _react = _interopRequireDefault(require('react'));
 
-const FullWidthProgressBarExample = (): React.Element<any> =>
-  <div>
-    0%:
-    <Block>
-      <Wrapper>
-        <FullWidthProgressBar progress={0} visible={true} />
-      </Wrapper>
-    </Block>
-    50%:
-    <Block>
-      <Wrapper>
-        <FullWidthProgressBar progress={0.5} visible={true} />
-      </Wrapper>
-    </Block>
-    100%:
-    <Block>
-      <Wrapper>
-        <FullWidthProgressBar progress={1} visible={true} />
-      </Wrapper>
-    </Block>
-    Indeterminate (progress=null):
-    <Block>
-      <Wrapper>
-        <FullWidthProgressBar progress={null} visible={true} />
-      </Wrapper>
-    </Block>
-  </div>;
+var _Block;
 
-export const FullWidthProgressBarExamples = {
+function _load_Block() {
+  return _Block = require('nuclide-commons-ui/Block');
+}
+
+var _FullWidthProgressBar;
+
+function _load_FullWidthProgressBar() {
+  return _FullWidthProgressBar = _interopRequireDefault(require('./FullWidthProgressBar'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const Wrapper = ({ children }) => _react.default.createElement(
+  'div',
+  { style: { position: 'relative', paddingBottom: 5 } },
+  children
+); /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
+
+const FullWidthProgressBarExample = () => _react.default.createElement(
+  'div',
+  null,
+  '0%:',
+  _react.default.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _react.default.createElement(
+      Wrapper,
+      null,
+      _react.default.createElement((_FullWidthProgressBar || _load_FullWidthProgressBar()).default, { progress: 0, visible: true })
+    )
+  ),
+  '50%:',
+  _react.default.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _react.default.createElement(
+      Wrapper,
+      null,
+      _react.default.createElement((_FullWidthProgressBar || _load_FullWidthProgressBar()).default, { progress: 0.5, visible: true })
+    )
+  ),
+  '100%:',
+  _react.default.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _react.default.createElement(
+      Wrapper,
+      null,
+      _react.default.createElement((_FullWidthProgressBar || _load_FullWidthProgressBar()).default, { progress: 1, visible: true })
+    )
+  ),
+  'Indeterminate (progress=null):',
+  _react.default.createElement(
+    (_Block || _load_Block()).Block,
+    null,
+    _react.default.createElement(
+      Wrapper,
+      null,
+      _react.default.createElement((_FullWidthProgressBar || _load_FullWidthProgressBar()).default, { progress: null, visible: true })
+    )
+  )
+);
+
+const FullWidthProgressBarExamples = exports.FullWidthProgressBarExamples = {
   sectionName: 'FullWidthProgressBar',
-  description:
-    'A subtle progress indicator that stretches across an entire pane or panel, indicating general progress.',
-  examples: [
-    {
-      title: 'FullWidthProgressBar',
-      component: FullWidthProgressBarExample,
-    },
-  ],
+  description: 'A subtle progress indicator that stretches across an entire pane or panel, indicating general progress.',
+  examples: [{
+    title: 'FullWidthProgressBar',
+    component: FullWidthProgressBarExample
+  }]
 };

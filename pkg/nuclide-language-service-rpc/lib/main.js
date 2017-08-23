@@ -1,23 +1,63 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-export type {SingleFileLanguageService} from './ServerLanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export {
-  ServerLanguageService,
-  ensureInvalidations,
-} from './ServerLanguageService';
+var _ServerLanguageService;
 
-export {NullLanguageService} from './NullLanguageService';
+function _load_ServerLanguageService() {
+  return _ServerLanguageService = require('./ServerLanguageService');
+}
 
-export {MultiProjectLanguageService} from './MultiProjectLanguageService';
+Object.defineProperty(exports, 'ServerLanguageService', {
+  enumerable: true,
+  get: function () {
+    return (_ServerLanguageService || _load_ServerLanguageService()).ServerLanguageService;
+  }
+});
+Object.defineProperty(exports, 'ensureInvalidations', {
+  enumerable: true,
+  get: function () {
+    return (_ServerLanguageService || _load_ServerLanguageService()).ensureInvalidations;
+  }
+});
 
-export {forkHostServices} from './HostServicesAggregator';
+var _NullLanguageService;
+
+function _load_NullLanguageService() {
+  return _NullLanguageService = require('./NullLanguageService');
+}
+
+Object.defineProperty(exports, 'NullLanguageService', {
+  enumerable: true,
+  get: function () {
+    return (_NullLanguageService || _load_NullLanguageService()).NullLanguageService;
+  }
+});
+
+var _MultiProjectLanguageService;
+
+function _load_MultiProjectLanguageService() {
+  return _MultiProjectLanguageService = require('./MultiProjectLanguageService');
+}
+
+Object.defineProperty(exports, 'MultiProjectLanguageService', {
+  enumerable: true,
+  get: function () {
+    return (_MultiProjectLanguageService || _load_MultiProjectLanguageService()).MultiProjectLanguageService;
+  }
+});
+
+var _HostServicesAggregator;
+
+function _load_HostServicesAggregator() {
+  return _HostServicesAggregator = require('./HostServicesAggregator');
+}
+
+Object.defineProperty(exports, 'forkHostServices', {
+  enumerable: true,
+  get: function () {
+    return (_HostServicesAggregator || _load_HostServicesAggregator()).forkHostServices;
+  }
+});

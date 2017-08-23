@@ -1,31 +1,57 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = trackStalls;
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _electron = require('electron');
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+if (!(_electron.remote != null)) {
+  throw new Error('Invariant violation: "remote != null"');
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
 /* eslint-env browser */
 /* global PerformanceObserver */
 
-import invariant from 'assert';
-import nullthrows from 'nullthrows';
-import {remote} from 'electron';
-import {getLogger} from 'log4js';
-import {Observable} from 'rxjs';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {HistogramTracker} from '../../nuclide-analytics';
-
-invariant(remote != null);
-
-const CHROME_VERSION = Number(
-  nullthrows(process.versions.chrome).split('.')[0],
-);
+const CHROME_VERSION = Number((0, (_nullthrows || _load_nullthrows()).default)(process.versions.chrome).split('.')[0]);
 
 // The startup period naturally causes many event loop blockages.
 // Don't start checking blockages until some time has passed.
@@ -39,8 +65,8 @@ const BLOCKED_MAX = 600000;
 // we consider it intentional.
 const BLOCKED_RANGE_PADDING = 15;
 
-export default function trackStalls(): IDisposable {
-  const disposables = new UniversalDisposable();
+function trackStalls() {
+  const disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
   let blockedDelay = setTimeout(() => {
     disposables.add(trackStallsImpl());
@@ -56,17 +82,15 @@ export default function trackStalls(): IDisposable {
   return disposables;
 }
 
-function trackStallsImpl(): IDisposable {
+function trackStallsImpl() {
   if (!supportsPerformanceObserversWithLongTasks()) {
-    return new UniversalDisposable();
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  const browserWindow = remote.getCurrentWindow();
-  const histogram = new HistogramTracker(
-    'event-loop-blocked',
-    /* max */ 1000,
-    /* buckets */ 10,
-  );
+  const browserWindow = _electron.remote.getCurrentWindow();
+  const histogram = new (_nuclideAnalytics || _load_nuclideAnalytics()).HistogramTracker('event-loop-blocked',
+  /* max */1000,
+  /* buckets */10);
 
   let intentionalBlockTime = 0;
   const onIntentionalBlock = () => {
@@ -94,26 +118,21 @@ function trackStallsImpl(): IDisposable {
         startTime = entry.startTime;
       }
 
-      const withinReasonableWindow =
-        duration > BLOCKED_MIN && duration < BLOCKED_MAX;
+      const withinReasonableWindow = duration > BLOCKED_MIN && duration < BLOCKED_MAX;
 
       // did the intentionalblocktime occur between the start and end,
       // accounting for some extra padding?
-      const wasBlockedIntentionally =
-        intentionalBlockTime > startTime - BLOCKED_RANGE_PADDING &&
-        intentionalBlockTime < startTime + duration + BLOCKED_RANGE_PADDING;
+      const wasBlockedIntentionally = intentionalBlockTime > startTime - BLOCKED_RANGE_PADDING && intentionalBlockTime < startTime + duration + BLOCKED_RANGE_PADDING;
 
       if (withinReasonableWindow && !wasBlockedIntentionally) {
         histogram.track(entry.duration);
-        getLogger('nuclide-health').warn(
-          `Event loop was blocked for ${duration} ms`,
-        );
+        (0, (_log4js || _load_log4js()).getLogger)('nuclide-health').warn(`Event loop was blocked for ${duration} ms`);
       }
     }
   });
 
   function startBlockedCheck() {
-    longTaskObserver.observe({entryTypes: ['longtask']});
+    longTaskObserver.observe({ entryTypes: ['longtask'] });
   }
 
   function stopBlockedCheck() {
@@ -124,23 +143,17 @@ function trackStallsImpl(): IDisposable {
     startBlockedCheck();
   }
 
-  return new UniversalDisposable(
-    histogram,
-    // Confirmation dialogs also block the event loop.
-    // This typically happens when you're about to close an unsaved file.
-    atom.workspace.onWillDestroyPaneItem(onIntentionalBlock),
-    // Electron context menus block the event loop.
-    Observable.fromEvent(browserWindow, 'context-menu')
-      // There appears to be an race with browser window shutdown where
-      // the 'context-menu' event fires after window destruction.
-      // Try to prevent this by removing the event on close.
-      // https://github.com/facebook/nuclide/issues/1246
-      .takeUntil(Observable.fromEvent(browserWindow, 'close'))
-      .subscribe(onIntentionalBlock),
-    Observable.fromEvent(browserWindow, 'focus').subscribe(startBlockedCheck),
-    Observable.fromEvent(browserWindow, 'blur').subscribe(stopBlockedCheck),
-    () => stopBlockedCheck(),
-  );
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(histogram,
+  // Confirmation dialogs also block the event loop.
+  // This typically happens when you're about to close an unsaved file.
+  atom.workspace.onWillDestroyPaneItem(onIntentionalBlock),
+  // Electron context menus block the event loop.
+  _rxjsBundlesRxMinJs.Observable.fromEvent(browserWindow, 'context-menu')
+  // There appears to be an race with browser window shutdown where
+  // the 'context-menu' event fires after window destruction.
+  // Try to prevent this by removing the event on close.
+  // https://github.com/facebook/nuclide/issues/1246
+  .takeUntil(_rxjsBundlesRxMinJs.Observable.fromEvent(browserWindow, 'close')).subscribe(onIntentionalBlock), _rxjsBundlesRxMinJs.Observable.fromEvent(browserWindow, 'focus').subscribe(startBlockedCheck), _rxjsBundlesRxMinJs.Observable.fromEvent(browserWindow, 'blur').subscribe(stopBlockedCheck), () => stopBlockedCheck());
 }
 
 function supportsPerformanceObserversWithLongTasks() {
@@ -150,7 +163,7 @@ function supportsPerformanceObserversWithLongTasks() {
   try {
     // $FlowFixMe No definition for PerformanceObserver
     testObserver = new PerformanceObserver(() => {});
-    testObserver.observe({entryTypes: ['longtask']});
+    testObserver.observe({ entryTypes: ['longtask'] });
   } catch (e) {
     failed = true;
   } finally {
