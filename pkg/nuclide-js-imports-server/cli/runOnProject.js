@@ -22,7 +22,7 @@ import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-const DEFAULT_PROJECT_PATH = nuclideUri.join(__dirname, '..', '..', '..', '..');
+const DEFAULT_PROJECT_PATH = nuclideUri.join(__dirname, '..', '..', '..');
 const ENVS = ['builtin', 'node', 'jasmine', 'browser', 'atomtest', 'es6'];
 const shouldIndexNodeModules = true;
 

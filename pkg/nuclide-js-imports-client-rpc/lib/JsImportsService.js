@@ -32,11 +32,7 @@ export async function initializeLsp(
     'jsimports',
     // TODO(hansonw): Add a flag to properly fork the Node process.
     require.resolve('../../commons-node/fb-node-run.sh'),
-    [
-      require.resolve(
-        '../../nuclide-js-imports-server/server/src/index-entry.js',
-      ),
-    ],
+    [require.resolve('../../nuclide-js-imports-server/src/index-entry.js')],
     {
       fileNotifier,
       host,

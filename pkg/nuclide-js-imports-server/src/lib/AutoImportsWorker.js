@@ -17,7 +17,7 @@ import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
 import {initializeLoggerForWorker} from '../../logging/initializeLogging';
-import {WatchmanClient} from '../../../../nuclide-watchman-helpers/lib/main';
+import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getConfigFromFlow} from '../getConfig';
 import {Settings} from '../Settings';
@@ -26,8 +26,8 @@ import invariant from 'assert';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JSExport} from './types';
-import type {FileChange} from '../../../../nuclide-watchman-helpers/lib/WatchmanClient';
-import type {WatchmanSubscriptionOptions} from '../../../../nuclide-watchman-helpers/lib/WatchmanSubscription';
+import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {WatchmanSubscriptionOptions} from '../../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 
 // TODO(seansegal) Change 'DEBUG' to 'WARN' when development is complete
 const logger = initializeLoggerForWorker('DEBUG');

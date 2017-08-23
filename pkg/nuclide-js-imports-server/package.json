@@ -1,7 +1,7 @@
 {
   "name": "nuclide-js-imports-server",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./server/src/index.js",
+  "main": "./src/index.js",
   "version": "0.0.0",
   "description": "A server for providing diagnostics for JS auto-imports",
   "nuclide": {
@@ -9,7 +9,7 @@
     "testRunner": "npm"
   },
   "scripts": {
-    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled server/spec",
-    "onProject": "node server/cli/runOnProject-entry.js"
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec",
+    "onProject": "node cli/runOnProject-entry.js"
   }
 }

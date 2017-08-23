@@ -22,4 +22,4 @@ if (__DEV__) {
   require('../../../nuclide-node-transpiler');
 }
 
-module.exports = require('./runOnProject');
+module.exports = require('./AutoImportsWorker');

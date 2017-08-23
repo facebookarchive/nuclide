@@ -16,10 +16,10 @@
   nuclide-internal/no-commonjs: 0,
   */
 
-const {__DEV__} = require('../../../nuclide-node-transpiler/lib/env');
+const {__DEV__} = require('../../nuclide-node-transpiler/lib/env');
 
 if (__DEV__) {
-  require('../../../nuclide-node-transpiler');
+  require('../../nuclide-node-transpiler');
 }
 
 module.exports = require('./index');
