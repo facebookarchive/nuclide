@@ -456,15 +456,10 @@ async function handleNodeModule(
   try {
     const fileContents = await fsPromise.readFile(file, 'utf8');
     const packageJson = JSON.parse(fileContents);
-    const entryPoint = nuclideUri.join(
-      nuclideUri.dirname(packageJsonFile),
-      packageJson.main || 'index.js',
+    const entryPoint = require.resolve(
+      nuclideUri.join(nuclideUri.dirname(file), packageJson.main || ''),
     );
-    const fileName = entryPoint.endsWith('.js')
-      ? entryPoint
-      : `${entryPoint}.js`;
-
-    const update = await getExportsForFile(nuclideUri.join(root, fileName));
+    const update = await getExportsForFile(entryPoint);
     return update
       ? decorateExportUpdateWithMainDirectory(
           update,
@@ -472,7 +467,10 @@ async function handleNodeModule(
         )
       : update;
   } catch (error) {
-    logger.debug(`Couldn't index ${file}`, error);
+    // Some modules just can't be required; that's perfectly normal.
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      logger.debug(`Couldn't index ${file}`, error);
+    }
     return null;
   }
 }
@@ -516,7 +514,10 @@ async function send(message: mixed) {
 
 function getWatchmanMatchesFromIgnoredFiles() {
   return TO_IGNORE.map(patternToIgnore => {
-    return ['not', ['match', patternToIgnore, 'wholename']];
+    return [
+      'not',
+      ['match', patternToIgnore, 'wholename', {includedotfiles: true}],
+    ];
   });
 }
 

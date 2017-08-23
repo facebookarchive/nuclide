@@ -205,25 +205,28 @@ describe('AutoImportsWorker node_modules indexer', () => {
             'node_modules/log4js/lib/log4js.js',
             'module.exports = {getLogger: () => {}}',
           ],
+          ['node_modules/left-pad/package.json', '{"main": "./lib"}'],
+          ['node_modules/left-pad/lib/index.js', 'module.exports = {};'],
         ]),
       );
     });
   });
 
   it('Should index node_modules correctly', () => {
-    let found = false;
-    indexNodeModules(dirPath).subscribe(exportsForFile => {
-      if (
-        exportsForFile &&
-        // TODO: mark as node_module
-        exportsForFile.file ===
-          nuclideUri.join(dirPath, 'node_modules/log4js/lib/log4js.js')
-      ) {
-        found = true;
-      }
-    });
-    waitsFor(() => {
-      return found;
+    waitsForPromise(async () => {
+      const files = await indexNodeModules(dirPath)
+        .map(data => data && data.file)
+        .toArray()
+        .toPromise();
+      files.sort();
+      expect(files).toEqual([
+        require.resolve(
+          nuclideUri.join(dirPath, 'node_modules/left-pad/lib/index.js'),
+        ),
+        require.resolve(
+          nuclideUri.join(dirPath, 'node_modules/log4js/lib/log4js.js'),
+        ),
+      ]);
     });
   });
 });
