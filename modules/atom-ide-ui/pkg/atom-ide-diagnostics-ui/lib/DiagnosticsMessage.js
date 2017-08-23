@@ -22,6 +22,7 @@ type DiagnosticsMessageProps = {
   message: FileDiagnosticMessage,
   goToLocation: (path: string, line: number) => mixed,
   fixer: (message: FileDiagnosticMessage) => void,
+  children?: Array<React.Element<any>>,
 };
 
 const PROVIDER_CLASS_NAME = {
@@ -48,7 +49,7 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
     );
   }
   return (
-    <div className="nuclide-diagnostics-gutter-ui-popup-header">
+    <div className="diagnostics-popup-header">
       <ButtonGroup>
         {fixButton}
       </ButtonGroup>
@@ -61,35 +62,32 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
 
 function traceElements(props: DiagnosticsMessageProps) {
   const {message, goToLocation} = props;
-  return message.trace
-    ? message.trace.map((traceItem, i) =>
-        <DiagnosticsTraceItem
-          key={i}
-          trace={traceItem}
-          goToLocation={goToLocation}
-        />,
-      )
+  return message.trace && message.trace.length
+    ? <div className="diagnostics-popup-trace">
+        {message.trace.map((traceItem, i) =>
+          <DiagnosticsTraceItem
+            key={i}
+            trace={traceItem}
+            goToLocation={goToLocation}
+          />,
+        )}
+      </div>
     : null;
 }
 
-/**
- * Visually groups Buttons passed in as children.
- */
 export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {
   return (
     <div>
       {diagnosticHeader(props)}
-      <div className="nuclide-diagnostics-gutter-ui-popup-message">
+      <div className="diagnostics-popup-message">
         <DiagnosticsMessageText message={props.message} />
       </div>
       {traceElements(props)}
+      {props.children}
     </div>
   );
 };
 
-/**
- * Visually groups Buttons passed in as children.
- */
 export const DiagnosticsMessageNoHeader = (props: DiagnosticsMessageProps) => {
   return (
     <div>

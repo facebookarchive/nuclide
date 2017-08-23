@@ -70,7 +70,7 @@ function getGutterElement(): ?HTMLElement {
 }
 
 function getPopupElement(): ?HTMLElement {
-  return document.querySelector('.nuclide-diagnostics-gutter-ui-popup');
+  return document.querySelector('.diagnostics-popup');
 }
 
 // Returns the parent element of .nuclide-diagnostics-ui, which is helpful for determining

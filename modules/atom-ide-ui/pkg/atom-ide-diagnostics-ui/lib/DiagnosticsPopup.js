@@ -10,61 +10,63 @@
  * @format
  */
 
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
+import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
 
 import React from 'react';
 import classnames from 'classnames';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
+import DiagnosticsCodeActions from './DiagnosticsCodeActions';
 
 type DiagnosticsPopupProps = {
   messages: Array<FileDiagnosticMessage>,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
   fixer: (message: FileDiagnosticMessage) => void,
-  left: number,
-  top: number,
+  codeActionsForMessage?: Map<FileDiagnosticMessage, Map<string, CodeAction>>,
 };
 
 function renderMessage(
   fixer: (message: FileDiagnosticMessage) => void,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
+  codeActionsForMessage: ?Map<FileDiagnosticMessage, Map<string, CodeAction>>,
   message: FileDiagnosticMessage,
   index: number,
 ): React.Element<any> {
   const className = classnames(
     // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
     'native-key-bindings',
-    'nuclide-diagnostics-gutter-ui-popup-diagnostic',
+    'diagnostics-popup-diagnostic',
     {
-      'nuclide-diagnostics-gutter-ui-popup-error': message.type === 'Error',
-      'nuclide-diagnostics-gutter-ui-popup-warning': message.type === 'Warning',
-      'nuclide-diagnostics-gutter-ui-popup-info': message.type === 'Info',
+      'diagnostics-popup-error': message.type === 'Error',
+      'diagnostics-popup-warning': message.type === 'Warning',
+      'diagnostics-popup-info': message.type === 'Info',
     },
   );
+  const codeActions =
+    codeActionsForMessage && codeActionsForMessage.get(message);
   return (
     <div className={className} key={index} tabIndex={-1}>
       <DiagnosticsMessage
         fixer={fixer}
         goToLocation={goToLocation}
-        key={index}
-        message={message}
-      />
+        message={message}>
+        {codeActions && codeActions.size
+          ? <DiagnosticsCodeActions codeActions={codeActions} />
+          : null}
+      </DiagnosticsMessage>
     </div>
   );
 }
 
 // TODO move LESS styles to nuclide-ui
 export const DiagnosticsPopup = (props: DiagnosticsPopupProps) => {
-  const {fixer, goToLocation, left, messages, top, ...rest} = props;
+  const {fixer, goToLocation, codeActionsForMessage, messages, ...rest} = props;
   return (
-    <div
-      className="nuclide-diagnostics-gutter-ui-popup"
-      style={{
-        left,
-        top,
-      }}
-      {...rest}>
-      {messages.map(renderMessage.bind(null, fixer, goToLocation))}
+    <div className="diagnostics-popup" {...rest}>
+      {messages.map(
+        renderMessage.bind(null, fixer, goToLocation, codeActionsForMessage),
+      )}
     </div>
   );
 };

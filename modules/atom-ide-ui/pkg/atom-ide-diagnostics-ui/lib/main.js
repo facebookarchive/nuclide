@@ -11,13 +11,11 @@
  */
 
 import type {
-  Datatip,
   DatatipProvider,
   DatatipService,
 } from '../../atom-ide-datatip/lib/types';
 
 import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
-import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
 
 import type {
   DiagnosticMessage,
@@ -38,7 +36,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
 import StatusBarTile from './StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
-import {makeDiagnosticsDatatipComponent} from './DiagnosticsDatatipComponent';
+import getDiagnosticDatatip from './getDiagnosticDatatip';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
@@ -95,55 +93,31 @@ class Activation {
   consumeDatatipService(service: DatatipService): IDisposable {
     const datatipProvider: DatatipProvider = {
       // show this datatip for every type of file
-      providerName: 'nuclide-diagnostics-datatip',
-      priority: 1,
-      datatip: this._datatip.bind(this),
+      providerName: 'diagnostics-datatip',
+      // Diagnostic datatips should have higher priority than most other datatips.
+      priority: 10,
+      datatip: (editor, position) => {
+        const messagesForFile = this._fileDiagnostics.get(editor);
+        if (messagesForFile == null) {
+          return Promise.resolve(null);
+        }
+        return getDiagnosticDatatip(
+          editor,
+          position,
+          messagesForFile,
+          message => {
+            const updater = this._diagnosticUpdaters.getValue();
+            if (updater != null) {
+              updater.applyFix(message);
+            }
+          },
+          this._codeActionFetcher,
+        );
+      },
     };
     const disposable = service.addProvider(datatipProvider);
     this._subscriptions.add(disposable);
     return disposable;
-  }
-
-  async _datatip(editor: TextEditor, position: atom$Point): Promise<?Datatip> {
-    const messagesForFile = this._fileDiagnostics.get(editor);
-    if (messagesForFile == null) {
-      return null;
-    }
-    const messagesAtPosition = messagesForFile.filter(
-      message => message.range != null && message.range.containsPoint(position),
-    );
-    if (messagesAtPosition.length === 0) {
-      return null;
-    }
-    const codeActions = await Promise.all(
-      messagesAtPosition.map(async message => {
-        return [
-          message,
-          this._codeActionFetcher != null
-            ? await getCodeActionsForDiagnostic(
-                this._codeActionFetcher,
-                message,
-                editor,
-              )
-            : new Map(),
-        ];
-      }),
-    );
-    // TODO(matthewwithanm) Explore displaying multiple diagnostics in datatips.
-    // If a message has a code action, it should be shown first.
-    const [messageToShow, codeActionsForMessage] =
-      codeActions.find(([message, codeAction]) => codeAction.size > 0) ||
-      codeActions[0];
-    const {range} = messageToShow;
-    invariant(range);
-    return {
-      component: makeDiagnosticsDatatipComponent(
-        messageToShow,
-        codeActionsForMessage,
-      ),
-      pinnable: false,
-      range,
-    };
   }
 
   consumeDiagnosticUpdates(
@@ -528,26 +502,6 @@ function observeLinterPackageEnabled(): Observable<boolean> {
     )
       .filter(pkg => pkg.name === LINTER_PACKAGE)
       .mapTo(false),
-  );
-}
-
-async function getCodeActionsForDiagnostic(
-  codeActionFetcher: CodeActionFetcher,
-  message: FileDiagnosticMessage,
-  editor: atom$TextEditor,
-): Promise<Map<string, CodeAction>> {
-  const codeActions = await codeActionFetcher.getCodeActionForDiagnostic(
-    message,
-    editor,
-  );
-  // For RPC reasons, the getTitle function of a CodeAction is async. Therefore,
-  // we immediately request the title after we have each CodeAction.
-  return new Map(
-    await Promise.all(
-      codeActions.map(async codeAction =>
-        Promise.resolve([await codeAction.getTitle(), codeAction]),
-      ),
-    ),
   );
 }
 

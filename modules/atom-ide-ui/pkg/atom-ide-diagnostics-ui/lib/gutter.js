@@ -268,6 +268,7 @@ function showPopupFor(
   // on top of everything.
   const workspaceElement = atom.views.getView((atom.workspace: Object));
   const hostElement = document.createElement('div');
+  hostElement.classList.add('diagnostics-gutter-popup');
   // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
@@ -285,8 +286,7 @@ function showPopupFor(
 
   ReactDOM.render(
     <DiagnosticsPopup
-      left={left}
-      top={top}
+      style={{left, top, position: 'absolute'}}
       messages={messages}
       fixer={trackedFixer}
       goToLocation={trackedGoToLocation}
