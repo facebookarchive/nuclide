@@ -1953,7 +1953,7 @@ class JsonRpcTraceLogger {
   }
 
   log(message: string, data: ?string): void {
-    this._logger.info(
+    this._logger.trace(
       `LSP.trace: ${message} ${(data || '').substring(0, 800)}`,
     );
   }
