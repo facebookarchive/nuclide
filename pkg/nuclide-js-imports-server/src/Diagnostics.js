@@ -31,8 +31,13 @@ export class Diagnostics {
   }
 
   findDiagnosticsForFile(text: string, uri: NuclideUri) {
+    // Note: Don't return diagnostics for types.
+    // It's too hard to match Flow's knowledge of types, particularly flow libs & flow builtins.
+    // Instead, we'll rely on returning code actions for Flow's diagnostics.
+    // (Of course, this is a much slower user experience, but being wrong is even worse.)
     return this.autoImportsManager
       .findMissingImports(uri, text)
+      .filter(missingImport => missingImport.symbol.type === 'value')
       .map(missingImport =>
         missingImportToDiagnostic(this.importFormatter, missingImport, uri),
       );
@@ -46,7 +51,7 @@ function missingImportToDiagnostic(
 ) {
   const {symbol} = importSuggestion;
   return {
-    severity: DiagnosticSeverity.Warning,
+    severity: DiagnosticSeverity.Information,
     range: {
       start: {
         character: symbol.location.start.col,

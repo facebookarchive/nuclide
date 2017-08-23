@@ -17,6 +17,9 @@ import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {DIAGNOSTIC_SOURCE} from './Diagnostics';
+import {babelLocationToAtomRange, lspRangeToAtomRange} from './utils/util';
+
+const FLOW_DIAGNOSTIC_SOURCE = 'Flow';
 
 export class CodeActions {
   autoImportsManager: AutoImportsManager;
@@ -53,12 +56,24 @@ function diagnosticToCommands(
   diagnostic: Diagnostic,
   fileWithDiagnostic: NuclideUri,
 ): Array<Command> {
-  // For now, only offer CodeActions for this server's Diagnostics. In the future,
-  // we can provide CodeActions for Flow or the Linter.
-  if (diagnostic.source === DIAGNOSTIC_SOURCE) {
+  if (
+    diagnostic.source === DIAGNOSTIC_SOURCE ||
+    diagnostic.source === FLOW_DIAGNOSTIC_SOURCE
+  ) {
     return arrayFlatten(
       autoImportsManager
         .getSuggestedImportsForRange(fileWithDiagnostic, diagnostic.range)
+        .filter(suggestedImport => {
+          // For Flow's diagnostics, only fire for missing types (exact match)
+          if (diagnostic.source === FLOW_DIAGNOSTIC_SOURCE) {
+            const range = babelLocationToAtomRange(
+              suggestedImport.symbol.location,
+            );
+            const diagnosticRange = lspRangeToAtomRange(diagnostic.range);
+            return range.isEqual(diagnosticRange);
+          }
+          return true;
+        })
         // Create a CodeAction for each file with an export.
         .map(missingImport =>
           missingImport.filesWithExport.map(fileWithExport => {
