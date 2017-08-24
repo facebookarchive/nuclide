@@ -12,6 +12,7 @@
 
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
+import type {Props} from './DiagnosticsView';
 
 import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
@@ -25,17 +26,6 @@ import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-type PanelProps = {
-  +diagnostics: Array<DiagnosticMessage>,
-  +pathToActiveTextEditor: ?string,
-  +filterByActiveTextEditor: boolean,
-  +onFilterByActiveTextEditorChange: (isChecked: boolean) => void,
-  +warnAboutLinter: boolean,
-  +showTraces: boolean,
-  +disableLinter: () => void,
-  +onShowTracesChange: (isChecked: boolean) => void,
-};
-
 type SerializedDiagnosticsViewModel = {
   deserializer: 'atom-ide-ui.DiagnosticsViewModel',
 };
@@ -46,7 +36,7 @@ const RENDER_DEBOUNCE_TIME = 100;
 
 export class DiagnosticsViewModel {
   _element: ?HTMLElement;
-  _props: Observable<PanelProps>;
+  _props: Observable<Props>;
   _visibility: Observable<boolean>;
   _visibilitySubscription: rxjs$ISubscription;
 
@@ -132,7 +122,7 @@ function getPropsStream(
   disableLinter: () => void,
   initialfilterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-): Observable<PanelProps> {
+): Observable<Props> {
   const center = atom.workspace.getCenter();
   const activeTextEditorPaths = observableFromSubscribeFunction(
     center.observeActivePaneItem.bind(center),

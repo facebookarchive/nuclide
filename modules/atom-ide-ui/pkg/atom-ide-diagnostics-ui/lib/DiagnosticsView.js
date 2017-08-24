@@ -23,7 +23,7 @@ import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
-type Props = {
+export type Props = {
   diagnostics: Array<DiagnosticMessage>,
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
