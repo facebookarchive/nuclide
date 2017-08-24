@@ -24,6 +24,7 @@ import {ConnectableObservable} from 'rxjs';
 import {Adb} from './bridges/Adb';
 import {Processes} from './common/Processes';
 import {Devices} from './common/Devices';
+import {runCommand} from 'nuclide-commons/process';
 
 const ADB = 'adb';
 
@@ -127,9 +128,8 @@ export async function launchMainActivity(
   device: DeviceId,
   packageName: string,
   debug: boolean,
-  parameters: ?Map<string, string>,
 ): Promise<string> {
-  return new Adb(device).launchMainActivity(packageName, debug, parameters);
+  return new Adb(device).launchMainActivity(packageName, debug);
 }
 
 export async function activityExists(
@@ -183,4 +183,8 @@ export function removeAdbPort(port: number): void {
 
 export function getAdbPorts(): Promise<Array<number>> {
   return Promise.resolve(getStore('adb').getPorts());
+}
+
+export function getApkManifest(apkPath: string): Promise<string> {
+  return runCommand('aapt', ['dump', 'badging', apkPath]).toPromise();
 }

@@ -195,13 +195,19 @@ export class Adb extends DebugBridge {
     return result;
   }
 
-  launchActivity(
+  async launchActivity(
     packageName: string,
     activity: string,
     debug: boolean,
     action: ?string,
     parameters: ?Map<string, string>,
   ): Promise<string> {
+    if (debug) {
+      // Enable "wait for debugger" semantics for the next launch of
+      // the specified package.
+      await this.setDebugApp(packageName, false);
+    }
+
     const args = ['shell', 'am', 'start'];
     if (action != null) {
       args.push('-a', action);
@@ -211,31 +217,39 @@ export class Adb extends DebugBridge {
         args.push('-e', key, parameter);
       }
     }
-    if (debug) {
-      args.push('-N', '-D');
-    }
     args.push('-W', '-n');
     args.push(`${packageName}/${activity}`);
     return this.runShortCommand(...args).toPromise();
   }
 
-  launchMainActivity(
+  async launchMainActivity(
     packageName: string,
     debug: boolean,
-    parameters: ?Map<string, string>,
   ): Promise<string> {
-    const args = ['shell', 'am', 'start'];
-    args.push('-W', '-n');
-    if (parameters != null) {
-      for (const [key, parameter] of parameters) {
-        args.push('-e', key, parameter);
-      }
-    }
     if (debug) {
-      args.push('-N', '-D');
+      // Enable "wait for debugger" semantics for the next launch of
+      // the specified package.
+      await this.setDebugApp(packageName, false);
     }
-    args.push('-a', 'android.intent.action.MAIN');
-    args.push('-c', 'android.intent.category.LAUNCHER');
+
+    const args = [
+      'shell',
+      'monkey',
+      '-p',
+      `${packageName}`,
+      '-c',
+      'android.intent.category.LAUNCHER',
+      '1',
+    ];
+    return this.runShortCommand(...args).toPromise();
+  }
+
+  setDebugApp(packageName: string, persist: boolean): Promise<string> {
+    const args = ['shell', 'am', 'set-debug-app', '-w'];
+
+    if (persist) {
+      args.push('--persistent');
+    }
     args.push(`${packageName}`);
     return this.runShortCommand(...args).toPromise();
   }
