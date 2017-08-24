@@ -66,7 +66,7 @@ export function getProjectMessages(
   * Gets all current diagnostic messages.
   * Prefer to get updates via ::onAllMessagesDidUpdate.
   */
-export function getAllMessages(state: AppState): Array<DiagnosticMessage> {
+export function getMessages(state: AppState): Array<DiagnosticMessage> {
   const messages = [];
 
   // Get all file messages.

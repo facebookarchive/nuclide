@@ -190,7 +190,7 @@ class Activation {
           updater =>
             updater == null
               ? Observable.of([])
-              : observableFromSubscribeFunction(updater.onAllMessagesDidUpdate),
+              : observableFromSubscribeFunction(updater.observeMessages),
         )
         .debounceTime(100)
         // FIXME: It's not good for UX or perf that we're providing a default sort here (that users
@@ -317,7 +317,7 @@ function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): IDisposable {
 
   const openAllFilesWithErrors = () => {
     analytics.track('diagnostics-panel-open-all-files-with-errors');
-    observableFromSubscribeFunction(diagnosticUpdater.onAllMessagesDidUpdate)
+    observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
       .first()
       .subscribe((messages: Array<DiagnosticMessage>) => {
         const errorsToOpen = getTopMostErrorLocationsByFilePath(messages);
@@ -405,7 +405,7 @@ function getEditorDiagnosticUpdates(
       filePath =>
         filePath != null
           ? observableFromSubscribeFunction(cb =>
-              diagnosticUpdater.onFileMessagesDidUpdate(cb, filePath),
+              diagnosticUpdater.observeFileMessages(filePath, cb),
             )
           : Observable.empty(),
     )

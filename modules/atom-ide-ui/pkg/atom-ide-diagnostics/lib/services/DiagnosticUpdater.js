@@ -47,12 +47,12 @@ export default class DiagnosticUpdater {
         (a, b) =>
           a.messages === b.messages && a.projectMessages === b.projectMessages,
       )
-      .map(Selectors.getAllMessages)
+      .map(Selectors.getMessages)
       .distinctUntilChanged();
   }
 
-  getAllMessages = (): Array<DiagnosticMessage> => {
-    return Selectors.getAllMessages(this._store.getState());
+  getMessages = (): Array<DiagnosticMessage> => {
+    return Selectors.getMessages(this._store.getState());
   };
 
   getProjectMessages = (): Array<ProjectDiagnosticMessage> => {
@@ -63,7 +63,7 @@ export default class DiagnosticUpdater {
     return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
   };
 
-  onProjectMessagesDidUpdate = (
+  observeProjectMessages = (
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(
@@ -71,15 +71,15 @@ export default class DiagnosticUpdater {
     );
   };
 
-  onAllMessagesDidUpdate = (
+  observeMessages = (
     callback: (messages: Array<DiagnosticMessage>) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
   };
 
-  onFileMessagesDidUpdate = (
-    callback: (update: FileDiagnosticMessages) => mixed,
+  observeFileMessages = (
     filePath: NuclideUri,
+    callback: (update: FileDiagnosticMessages) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(
       // TODO: As a potential perf improvement, we could cache so the mapping only happens once.

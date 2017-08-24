@@ -62,7 +62,7 @@ export default class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      observableFromSubscribeFunction(diagnosticUpdater.onAllMessagesDidUpdate)
+      observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
         .debounceTime(RENDER_DEBOUNCE_TIME)
         .subscribe(
           this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),

@@ -94,18 +94,10 @@ describe('createStore', () => {
     spy_project = jasmine.createSpy();
     spy_allMessages = jasmine.createSpy();
 
-    spy_fileA_subscription = updater.onFileMessagesDidUpdate(
-      spy_fileA,
-      'fileA',
-    );
-    spy_fileB_subscription = updater.onFileMessagesDidUpdate(
-      spy_fileB,
-      'fileB',
-    );
-    spy_project_subscription = updater.onProjectMessagesDidUpdate(spy_project);
-    spy_allMessages_subscription = updater.onAllMessagesDidUpdate(
-      spy_allMessages,
-    );
+    spy_fileA_subscription = updater.observeFileMessages('fileA', spy_fileA);
+    spy_fileB_subscription = updater.observeFileMessages('fileB', spy_fileB);
+    spy_project_subscription = updater.observeProjectMessages(spy_project);
+    spy_allMessages_subscription = updater.observeMessages(spy_allMessages);
   };
 
   const addUpdateA = () => {
@@ -186,7 +178,7 @@ describe('createStore', () => {
     expect(Selectors.getProjectMessages(store.getState())).toEqual([
       projectMessageA,
     ]);
-    const allMessages = Selectors.getAllMessages(store.getState());
+    const allMessages = Selectors.getMessages(store.getState());
     expect(allMessages.length).toBe(2);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -254,7 +246,7 @@ describe('createStore', () => {
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA);
       expect(projectMessages).toContain(projectMessageB);
-      const allMessages = Selectors.getAllMessages(store.getState());
+      const allMessages = Selectors.getMessages(store.getState());
       expect(allMessages.length).toBe(4);
       expect(allMessages).toContain(fileMessageA);
       expect(allMessages).toContain(projectMessageA);
@@ -313,7 +305,7 @@ describe('createStore', () => {
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA2);
       expect(projectMessages).toContain(projectMessageB);
-      const allMessages = Selectors.getAllMessages(store.getState());
+      const allMessages = Selectors.getMessages(store.getState());
       expect(allMessages.length).toBe(4);
       expect(allMessages).toContain(fileMessageA2);
       expect(allMessages).toContain(projectMessageA2);
@@ -374,7 +366,7 @@ describe('createStore', () => {
         expect(projectMessages.length).toBe(2);
         expect(projectMessages).toContain(projectMessageA2);
         expect(projectMessages).toContain(projectMessageB);
-        const allMessages = Selectors.getAllMessages(store.getState());
+        const allMessages = Selectors.getMessages(store.getState());
         expect(allMessages.length).toBe(3);
         expect(allMessages).toContain(projectMessageA2);
         expect(allMessages).toContain(fileMessageB);
@@ -438,7 +430,7 @@ describe('createStore', () => {
         const projectMessages = Selectors.getProjectMessages(store.getState());
         expect(projectMessages.length).toBe(1);
         expect(projectMessages).toContain(projectMessageB);
-        const allMessages = Selectors.getAllMessages(store.getState());
+        const allMessages = Selectors.getMessages(store.getState());
         expect(allMessages.length).toBe(2);
         expect(allMessages).toContain(fileMessageB);
         expect(allMessages).toContain(projectMessageB);
@@ -483,7 +475,7 @@ describe('createStore', () => {
     expect(Selectors.getFileMessages(store.getState(), 'fileA')).toEqual([]);
     expect(Selectors.getFileMessages(store.getState(), 'fileB')).toEqual([]);
     expect(Selectors.getProjectMessages(store.getState()).length).toBe(0);
-    expect(Selectors.getAllMessages(store.getState()).length).toBe(0);
+    expect(Selectors.getMessages(store.getState()).length).toBe(0);
   });
 
   describe('autofix', () => {

@@ -38,7 +38,7 @@ export default class KeyboardShortcuts {
     const last = () => this.setIndex(this._diagnostics.length - 1);
     this._subscriptions.add(
       observableFromSubscribeFunction(
-        diagnosticUpdater.onAllMessagesDidUpdate,
+        diagnosticUpdater.observeMessages,
       ).subscribe(diagnostics => {
         this._diagnostics = (diagnostics.filter(
           diagnostic => diagnostic.scope === 'file',
