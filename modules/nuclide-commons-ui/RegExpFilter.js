@@ -55,6 +55,7 @@ export default class RegExpFilter extends React.Component {
   props: Props;
   state: State;
   _currentValue: Value;
+  _input: ?AtomInput;
 
   constructor(props: Props) {
     super(props);
@@ -81,6 +82,9 @@ export default class RegExpFilter extends React.Component {
     return (
       <ButtonGroup className="inline-block">
         <AtomInput
+          ref={el => {
+            this._input = el;
+          }}
           className={inputClassName}
           size={size}
           width={inputWidth}
@@ -98,6 +102,13 @@ export default class RegExpFilter extends React.Component {
         </Button>
       </ButtonGroup>
     );
+  }
+
+  focus(): void {
+    if (this._input == null) {
+      return;
+    }
+    this._input.focus();
   }
 
   _handleReToggleButtonClick = (): void => {
