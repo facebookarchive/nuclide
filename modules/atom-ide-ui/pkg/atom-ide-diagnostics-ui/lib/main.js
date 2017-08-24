@@ -54,12 +54,16 @@ const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
 
 type ActivationState = {|
   filterByActiveTextEditor: boolean,
+|};
+
+type DiagnosticsState = {|
+  ...ActivationState,
   diagnosticUpdater: ?DiagnosticUpdater,
 |};
 
 class Activation {
   _subscriptions: UniversalDisposable;
-  _model: Model<ActivationState>;
+  _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
   _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
   _codeActionFetcher: ?CodeActionFetcher;
@@ -166,7 +170,10 @@ class Activation {
   }
 
   serialize(): ActivationState {
-    return this._model.state;
+    const {filterByActiveTextEditor} = this._model.state;
+    return {
+      filterByActiveTextEditor,
+    };
   }
 
   _createDiagnosticsViewModel(): DiagnosticsViewModel {
