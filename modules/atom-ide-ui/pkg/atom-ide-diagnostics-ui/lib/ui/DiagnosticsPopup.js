@@ -11,8 +11,8 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
+import type {FileDiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import React from 'react';
 import classnames from 'classnames';

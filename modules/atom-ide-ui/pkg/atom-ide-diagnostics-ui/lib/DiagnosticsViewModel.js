@@ -11,10 +11,10 @@
  */
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {Props} from './DiagnosticsView';
+import type {Props} from './ui/DiagnosticsView';
 
 import React from 'react';
-import DiagnosticsView from './DiagnosticsView';
+import DiagnosticsView from './ui/DiagnosticsView';
 import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {CodeAction} from '../../atom-ide-code-actions/lib/types';
+import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';

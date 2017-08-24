@@ -24,7 +24,7 @@ import ReactDOM from 'react-dom';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons-atom/analytics';
-import {DiagnosticsPopup} from './DiagnosticsPopup';
+import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
 

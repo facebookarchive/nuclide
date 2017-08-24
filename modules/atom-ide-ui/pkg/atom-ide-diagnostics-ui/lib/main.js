@@ -39,7 +39,7 @@ import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
-import StatusBarTile from './StatusBarTile';
+import StatusBarTile from './ui/StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import getDiagnosticDatatip from './getDiagnosticDatatip';
 import {compareMessagesByFile} from './paneUtils';

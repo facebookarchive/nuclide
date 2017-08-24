@@ -11,7 +11,7 @@
  */
 
 import type {Row} from 'nuclide-commons-ui/Table';
-import type {DisplayDiagnostic} from './DiagnosticsTable';
+import type {DisplayDiagnostic} from './ui/DiagnosticsTable';
 
 /*
  * Sorts the diagnostics according to given column and sort direction

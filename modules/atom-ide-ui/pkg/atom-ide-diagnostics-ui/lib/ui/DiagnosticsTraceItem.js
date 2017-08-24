@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {DiagnosticTrace} from '../../atom-ide-diagnostics/lib/types';
+import type {DiagnosticTrace} from '../../../atom-ide-diagnostics/lib/types';
 
 import React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
+import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
 import type {Column} from 'nuclide-commons-ui/Table';
 
 import analytics from 'nuclide-commons-atom/analytics';
@@ -19,8 +19,8 @@ import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
-import {sortDiagnostics} from './DiagnosticsSorter';
-import {getProjectRelativePathOfDiagnostic} from './paneUtils';
+import {sortDiagnostics} from '../DiagnosticsSorter';
+import {getProjectRelativePathOfDiagnostic} from '../paneUtils';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 

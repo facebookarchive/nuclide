@@ -20,7 +20,7 @@ import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import invariant from 'assert';
 import React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {DiagnosticsPopup} from './DiagnosticsPopup';
+import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
 async function getCodeActionsForDiagnostic(
   codeActionFetcher: CodeActionFetcher,
