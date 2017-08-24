@@ -47,7 +47,7 @@ const RENDER_DEBOUNCE_TIME = 100;
 export class DiagnosticsViewModel {
   _element: ?HTMLElement;
   _props: Observable<PanelProps>;
-  _visibility: BehaviorSubject<boolean>;
+  _visibility: Observable<boolean>;
   _visibilitySubscription: rxjs$ISubscription;
 
   constructor(
@@ -61,14 +61,7 @@ export class DiagnosticsViewModel {
       filterByActiveTextEditor: boolean,
     ) => void,
   ) {
-    // TODO(T17495163)
-    this._visibilitySubscription = observePaneItemVisibility(
-      this,
-    ).subscribe(visible => {
-      this.didChangeVisibility(visible);
-    });
-    this._visibility = new BehaviorSubject(true);
-
+    this._visibility = observePaneItemVisibility(this).distinctUntilChanged();
     this._visibilitySubscription = this._visibility
       .debounceTime(1000)
       .distinctUntilChanged()
@@ -90,7 +83,7 @@ export class DiagnosticsViewModel {
       )
         .publishReplay(1)
         .refCount(),
-      this._visibility.distinctUntilChanged(),
+      this._visibility,
     );
   }
 
@@ -118,10 +111,6 @@ export class DiagnosticsViewModel {
     return {
       deserializer: 'atom-ide-ui.DiagnosticsViewModel',
     };
-  }
-
-  didChangeVisibility(visible: boolean): void {
-    this._visibility.next(visible);
   }
 
   getElement(): HTMLElement {
