@@ -10,49 +10,37 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Props} from './DiagnosticsView';
 
-import {compareMessagesByFile} from './paneUtils';
 import React from 'react';
 import DiagnosticsView from './DiagnosticsView';
 import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 
 type SerializedDiagnosticsViewModel = {
   deserializer: 'atom-ide-ui.DiagnosticsViewModel',
 };
 
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
+// The shape of the state that's shared between views (if there are multiple). Right now, this is
+// the same as the component's Props, but that could change if we want to support multiple instances
+// of the Diagnostics view each with different filters, for example.
+export type GlobalViewState = Props;
 
-const RENDER_DEBOUNCE_TIME = 100;
+export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
 
 export class DiagnosticsViewModel {
   _element: ?HTMLElement;
   _props: Observable<Props>;
-  _visibility: Observable<boolean>;
   _visibilitySubscription: rxjs$ISubscription;
 
-  constructor(
-    diagnostics: Observable<Array<DiagnosticMessage>>,
-    showTracesStream: Observable<boolean>,
-    onShowTracesChange: (showTraces: boolean) => void,
-    disableLinter: () => void,
-    warnAboutLinterStream: Observable<boolean>,
-    initialfilterByActiveTextEditor: boolean,
-    onFilterByActiveTextEditorChange: (
-      filterByActiveTextEditor: boolean,
-    ) => void,
-  ) {
-    this._visibility = observePaneItemVisibility(this).distinctUntilChanged();
-    this._visibilitySubscription = this._visibility
+  constructor(states: Observable<GlobalViewState>) {
+    const visibility = observePaneItemVisibility(this).distinctUntilChanged();
+    this._visibilitySubscription = visibility
       .debounceTime(1000)
       .distinctUntilChanged()
       .filter(Boolean)
@@ -60,21 +48,8 @@ export class DiagnosticsViewModel {
         analytics.track('diagnostics-show-table');
       });
 
-    // A stream that contains the props, but is "muted" when the panel's not visible.
-    this._props = toggle(
-      getPropsStream(
-        diagnostics,
-        warnAboutLinterStream,
-        showTracesStream,
-        onShowTracesChange,
-        disableLinter,
-        initialfilterByActiveTextEditor,
-        onFilterByActiveTextEditorChange,
-      )
-        .publishReplay(1)
-        .refCount(),
-      this._visibility,
-    );
+    // "Mute" the props stream when the view is hidden so we don't do unnecessary updates.
+    this._props = toggle(states, visibility);
   }
 
   destroy(): void {
@@ -112,73 +87,4 @@ export class DiagnosticsViewModel {
     }
     return this._element;
   }
-}
-
-function getPropsStream(
-  diagnosticsStream: Observable<Array<DiagnosticMessage>>,
-  warnAboutLinterStream: Observable<boolean>,
-  showTracesStream: Observable<boolean>,
-  onShowTracesChange: (showTraces: boolean) => void,
-  disableLinter: () => void,
-  initialfilterByActiveTextEditor: boolean,
-  onFilterByActiveTextEditorChange: (filterByActiveTextEditor: boolean) => void,
-): Observable<Props> {
-  const center = atom.workspace.getCenter();
-  const activeTextEditorPaths = observableFromSubscribeFunction(
-    center.observeActivePaneItem.bind(center),
-  )
-    .filter(paneItem => isValidTextEditor(paneItem))
-    .switchMap(textEditor_ => {
-      const textEditor: atom$TextEditor = (textEditor_: any);
-      // An observable that emits the editor path and then, when the editor's destroyed, null.
-      return Observable.concat(
-        Observable.of(textEditor.getPath()),
-        observableFromSubscribeFunction(
-          textEditor.onDidDestroy.bind(textEditor),
-        )
-          .take(1)
-          .mapTo(null),
-      );
-    })
-    .distinctUntilChanged();
-
-  const sortedDiagnostics = Observable.concat(
-    Observable.of([]),
-    diagnosticsStream
-      .debounceTime(RENDER_DEBOUNCE_TIME)
-      .map(diagnostics => diagnostics.slice().sort(compareMessagesByFile)),
-    // If the diagnostics stream ever terminates, clear all messages.
-    Observable.of([]),
-  );
-
-  const filterByActiveTextEditorStream = new BehaviorSubject(
-    initialfilterByActiveTextEditor,
-  );
-  const handleFilterByActiveTextEditorChange = (
-    filterByActiveTextEditor: boolean,
-  ) => {
-    filterByActiveTextEditorStream.next(filterByActiveTextEditor);
-    onFilterByActiveTextEditorChange(filterByActiveTextEditor);
-  };
-
-  return Observable.combineLatest(
-    activeTextEditorPaths,
-    sortedDiagnostics,
-    warnAboutLinterStream,
-    filterByActiveTextEditorStream,
-    showTracesStream,
-  ).map(
-    (
-      [pathToActiveTextEditor, diagnostics, warnAboutLinter, filter, traces],
-    ) => ({
-      pathToActiveTextEditor,
-      diagnostics,
-      warnAboutLinter,
-      showTraces: traces,
-      onShowTracesChange,
-      disableLinter,
-      filterByActiveTextEditor: filter,
-      onFilterByActiveTextEditorChange: handleFilterByActiveTextEditorChange,
-    }),
-  );
 }
