@@ -29,6 +29,7 @@ import invariant from 'assert';
 
 import analytics from 'nuclide-commons-atom/analytics';
 
+import * as AtomLinter from './AtomLinter';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {observeTextEditors} from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -42,16 +43,11 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-const LINTER_PACKAGE = 'linter';
 const MAX_OPEN_ALL_FILES = 20;
 
 type ActivationState = {
   filterByActiveTextEditor: boolean,
 };
-
-function disableLinter() {
-  atom.packages.disablePackage(LINTER_PACKAGE);
-}
 
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
@@ -199,8 +195,10 @@ class Activation {
           showTraces,
         );
       },
-      disableLinter,
-      observeLinterPackageEnabled(),
+      () => {
+        AtomLinter.disable();
+      },
+      AtomLinter.observePackageIsEnabled(),
       this._state.filterByActiveTextEditor,
       filterByActiveTextEditor => {
         if (this._state != null) {
@@ -487,22 +485,6 @@ class KeyboardShortcuts {
   dispose(): void {
     this._subscriptions.dispose();
   }
-}
-
-function observeLinterPackageEnabled(): Observable<boolean> {
-  return Observable.merge(
-    Observable.of(atom.packages.isPackageActive(LINTER_PACKAGE)),
-    observableFromSubscribeFunction(
-      atom.packages.onDidActivatePackage.bind(atom.packages),
-    )
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(true),
-    observableFromSubscribeFunction(
-      atom.packages.onDidDeactivatePackage.bind(atom.packages),
-    )
-      .filter(pkg => pkg.name === LINTER_PACKAGE)
-      .mapTo(false),
-  );
 }
 
 createPackage(module.exports, Activation);
