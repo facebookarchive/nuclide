@@ -38,15 +38,10 @@ export default class DiagnosticUpdater {
     this._states = Observable.from(store);
 
     this._projectMessageUpdates = this._states
-      .distinctUntilChanged((a, b) => a.projectMessages === b.projectMessages)
       .map(Selectors.getProjectMessages)
       .distinctUntilChanged();
 
     this._allMessageUpdates = this._states
-      .distinctUntilChanged(
-        (a, b) =>
-          a.messages === b.messages && a.projectMessages === b.projectMessages,
-      )
       .map(Selectors.getMessages)
       .distinctUntilChanged();
   }

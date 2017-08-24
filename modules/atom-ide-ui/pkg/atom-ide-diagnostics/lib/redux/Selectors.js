@@ -19,6 +19,11 @@ import type {
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import {createSelector} from 'reselect';
+
+const getMessagesState = state => state.messages;
+const getProjectMessagesState = state => state.projectMessages;
+
 /**
   * Gets the current diagnostic messages for the file.
   * Prefer to get updates via ::onFileMessagesDidUpdate.
@@ -52,32 +57,36 @@ export function getFileMessageUpdates(
   * Gets the current project-scope diagnostic messages.
   * Prefer to get updates via ::onProjectMessagesDidUpdate.
   */
-export function getProjectMessages(
-  state: AppState,
-): Array<ProjectDiagnosticMessage> {
-  const messages = [];
-  for (const providerMessages of state.projectMessages.values()) {
-    messages.push(...providerMessages);
-  }
-  return messages;
-}
+export const getProjectMessages = createSelector(
+  [getProjectMessagesState],
+  (projectMessagesState): Array<ProjectDiagnosticMessage> => {
+    const messages = [];
+    for (const providerMessages of projectMessagesState.values()) {
+      messages.push(...providerMessages);
+    }
+    return messages;
+  },
+);
 
 /**
   * Gets all current diagnostic messages.
   * Prefer to get updates via ::onAllMessagesDidUpdate.
   */
-export function getMessages(state: AppState): Array<DiagnosticMessage> {
-  const messages = [];
+export const getMessages = createSelector(
+  [getMessagesState, getProjectMessages],
+  (messagesState, projectMessages): Array<DiagnosticMessage> => {
+    const messages = [];
 
-  // Get all file messages.
-  for (const providerMessages of state.messages.values()) {
-    for (const fileMessages of providerMessages.values()) {
-      messages.push(...fileMessages);
+    // Get all file messages.
+    for (const providerMessages of messagesState.values()) {
+      for (const fileMessages of providerMessages.values()) {
+        messages.push(...fileMessages);
+      }
     }
-  }
 
-  // Get all project messages.
-  messages.push(...getProjectMessages(state));
+    // Get all project messages.
+    messages.push(...projectMessages);
 
-  return messages;
-}
+    return messages;
+  },
+);
