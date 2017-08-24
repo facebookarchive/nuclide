@@ -26,7 +26,6 @@ import MessageRangeTracker from './MessageRangeTracker';
 import DiagnosticUpdater from './services/DiagnosticUpdater';
 import IndieLinterRegistry from './services/IndieLinterRegistry';
 import {createAdapters} from './services/LinterAdapterFactory';
-import ObservableDiagnosticUpdater from './services/ObservableDiagnosticUpdater';
 import * as Actions from './redux/Actions';
 import createStore from './redux/createStore';
 
@@ -56,10 +55,6 @@ class Activation {
    */
   provideDiagnosticUpdates(): DiagnosticUpdater {
     return new DiagnosticUpdater(this._store);
-  }
-
-  provideObservableDiagnosticUpdates(): ObservableDiagnosticUpdater {
-    return new ObservableDiagnosticUpdater(this._store);
   }
 
   provideIndie(): RegisterIndieLinter {

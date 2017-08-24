@@ -115,9 +115,7 @@ export type DiagnosticMessage =
   | FileDiagnosticMessage
   | ProjectDiagnosticMessage;
 
-export type {
-  default as ObservableDiagnosticUpdater,
-} from './services/ObservableDiagnosticUpdater';
+export type {default as DiagnosticUpdater} from './services/DiagnosticUpdater';
 
 //
 //

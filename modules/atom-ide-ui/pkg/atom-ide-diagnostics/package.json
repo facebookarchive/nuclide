@@ -32,8 +32,7 @@
   "providedServices": {
     "diagnostics-store": {
       "versions": {
-        "0.0.0": "provideDiagnosticUpdates",
-        "0.2.0": "provideObservableDiagnosticUpdates"
+        "0.3.0": "provideDiagnosticUpdates"
       }
     },
     "linter-indie": {

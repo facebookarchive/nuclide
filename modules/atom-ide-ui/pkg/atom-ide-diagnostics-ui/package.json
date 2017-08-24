@@ -33,7 +33,7 @@
     },
     "diagnostics-store": {
       "versions": {
-        "0.2.0": "consumeDiagnosticUpdates"
+        "0.3.0": "consumeDiagnosticUpdates"
       }
     },
     "status-bar": {

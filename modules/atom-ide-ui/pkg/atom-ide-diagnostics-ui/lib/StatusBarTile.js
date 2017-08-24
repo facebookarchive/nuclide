@@ -11,7 +11,7 @@
  */
 
 import type {
-  ObservableDiagnosticUpdater,
+  DiagnosticUpdater,
   DiagnosticMessage,
 } from '../../atom-ide-diagnostics/lib/types';
 
@@ -23,6 +23,7 @@ import ReactDOM from 'react-dom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 type DiagnosticCount = {
   errorCount: number,
@@ -35,7 +36,7 @@ const STATUS_BAR_PRIORITY = -99.5;
 const RENDER_DEBOUNCE_TIME = 100;
 
 export default class StatusBarTile {
-  _diagnosticUpdaters: Map<ObservableDiagnosticUpdater, DiagnosticCount>;
+  _diagnosticUpdaters: Map<DiagnosticUpdater, DiagnosticCount>;
   _totalDiagnosticCount: DiagnosticCount;
   _subscriptions: UniversalDisposable;
   _tile: ?atom$StatusBarTile;
@@ -50,9 +51,7 @@ export default class StatusBarTile {
     this._subscriptions = new UniversalDisposable();
   }
 
-  consumeDiagnosticUpdates(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
-  ): void {
+  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
     if (this._diagnosticUpdaters.has(diagnosticUpdater)) {
       return;
     }
@@ -63,7 +62,7 @@ export default class StatusBarTile {
     };
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
-      diagnosticUpdater.allMessageUpdates
+      observableFromSubscribeFunction(diagnosticUpdater.onAllMessagesDidUpdate)
         .debounceTime(RENDER_DEBOUNCE_TIME)
         .subscribe(
           this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
@@ -90,7 +89,7 @@ export default class StatusBarTile {
   }
 
   _onAllMessagesDidUpdate(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
+    diagnosticUpdater: DiagnosticUpdater,
     messages: Array<DiagnosticMessage>,
   ): void {
     // Update the DiagnosticCount for the updater.

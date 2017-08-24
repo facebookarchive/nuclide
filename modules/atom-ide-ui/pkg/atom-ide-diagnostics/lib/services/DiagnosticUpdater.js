@@ -11,6 +11,7 @@
  */
 
 import type {
+  AppState,
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
@@ -19,48 +20,83 @@ import type {
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import ObservableDiagnosticUpdater from './ObservableDiagnosticUpdater';
+import * as Actions from '../redux/Actions';
+import * as Selectors from '../redux/Selectors';
+import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {Observable} from 'rxjs';
 
 export default class DiagnosticUpdater {
-  _observableUpdater: ObservableDiagnosticUpdater;
+  _store: Store;
+  _states: Observable<AppState>;
+  _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
+  _projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
 
   constructor(store: Store) {
-    this._observableUpdater = new ObservableDiagnosticUpdater(store);
+    this._store = store;
+    // $FlowIgnore: Flow doesn't know about Symbol.observable
+    this._states = Observable.from(store);
+
+    this._projectMessageUpdates = this._states
+      .distinctUntilChanged((a, b) => a.projectMessages === b.projectMessages)
+      .map(Selectors.getProjectMessages)
+      .distinctUntilChanged();
+
+    this._allMessageUpdates = this._states
+      .distinctUntilChanged(
+        (a, b) =>
+          a.messages === b.messages && a.projectMessages === b.projectMessages,
+      )
+      .map(Selectors.getAllMessages)
+      .distinctUntilChanged();
   }
 
-  onFileMessagesDidUpdate(
+  getAllMessages = (): Array<DiagnosticMessage> => {
+    return Selectors.getAllMessages(this._store.getState());
+  };
+
+  getProjectMessages = (): Array<ProjectDiagnosticMessage> => {
+    return Selectors.getProjectMessages(this._store.getState());
+  };
+
+  getFileMessageUpdates = (filePath: NuclideUri): FileDiagnosticMessages => {
+    return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
+  };
+
+  onProjectMessagesDidUpdate = (
+    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      this._projectMessageUpdates.subscribe(callback),
+    );
+  };
+
+  onAllMessagesDidUpdate = (
+    callback: (messages: Array<DiagnosticMessage>) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
+  };
+
+  onFileMessagesDidUpdate = (
     callback: (update: FileDiagnosticMessages) => mixed,
     filePath: NuclideUri,
-  ): IDisposable {
+  ): IDisposable => {
     return new UniversalDisposable(
-      this._observableUpdater
-        .getFileMessageUpdates(filePath)
+      // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
+      // Whether that's worth it depends on how often this is actually called with the same path.
+      this._states
+        .distinctUntilChanged((a, b) => a.messages === b.messages)
+        .map(state => Selectors.getFileMessageUpdates(state, filePath))
+        .distinctUntilChanged((a, b) => arrayEqual(a.messages, b.messages))
         .subscribe(callback),
     );
-  }
+  };
 
-  onProjectMessagesDidUpdate(
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observableUpdater.projectMessageUpdates.subscribe(callback),
-    );
-  }
+  applyFix = (message: FileDiagnosticMessage): void => {
+    this._store.dispatch(Actions.applyFix(message));
+  };
 
-  onAllMessagesDidUpdate(
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ): IDisposable {
-    return new UniversalDisposable(
-      this._observableUpdater.allMessageUpdates.subscribe(callback),
-    );
-  }
-
-  applyFix(message: FileDiagnosticMessage): void {
-    this._observableUpdater.applyFix(message);
-  }
-
-  applyFixesForFile(file: NuclideUri): void {
-    this._observableUpdater.applyFixesForFile(file);
-  }
+  applyFixesForFile = (file: NuclideUri): void => {
+    this._store.dispatch(Actions.applyFixesForFile(file));
+  };
 }

@@ -21,7 +21,7 @@ import type {
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
-  ObservableDiagnosticUpdater,
+  DiagnosticUpdater,
 } from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {GlobalViewState} from './DiagnosticsViewModel';
@@ -54,7 +54,7 @@ const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
 
 type ActivationState = {|
   filterByActiveTextEditor: boolean,
-  diagnosticUpdater: ?ObservableDiagnosticUpdater,
+  diagnosticUpdater: ?DiagnosticUpdater,
 |};
 
 class Activation {
@@ -107,9 +107,7 @@ class Activation {
     return disposable;
   }
 
-  consumeDiagnosticUpdates(
-    diagnosticUpdater: ObservableDiagnosticUpdater,
-  ): IDisposable {
+  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): IDisposable {
     this._getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
     this._subscriptions.add(gutterConsumeDiagnosticUpdates(diagnosticUpdater));
 
@@ -190,7 +188,9 @@ class Activation {
         .distinctUntilChanged()
         .switchMap(
           updater =>
-            updater == null ? Observable.of([]) : updater.allMessageUpdates,
+            updater == null
+              ? Observable.of([])
+              : observableFromSubscribeFunction(updater.onAllMessagesDidUpdate),
         )
         .debounceTime(100)
         // FIXME: It's not good for UX or perf that we're providing a default sort here (that users
@@ -277,7 +277,7 @@ class Activation {
 }
 
 function gutterConsumeDiagnosticUpdates(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
+  diagnosticUpdater: DiagnosticUpdater,
 ): IDisposable {
   const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
   const subscriptions = new UniversalDisposable();
@@ -301,9 +301,7 @@ function gutterConsumeDiagnosticUpdates(
   return subscriptions;
 }
 
-function addAtomCommands(
-  diagnosticUpdater: ObservableDiagnosticUpdater,
-): IDisposable {
+function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): IDisposable {
   const fixAllInCurrentFile = () => {
     const editor = atom.workspace.getActiveTextEditor();
     if (editor == null) {
@@ -319,7 +317,7 @@ function addAtomCommands(
 
   const openAllFilesWithErrors = () => {
     analytics.track('diagnostics-panel-open-all-files-with-errors');
-    diagnosticUpdater.allMessageUpdates
+    observableFromSubscribeFunction(diagnosticUpdater.onAllMessagesDidUpdate)
       .first()
       .subscribe((messages: Array<DiagnosticMessage>) => {
         const errorsToOpen = getTopMostErrorLocationsByFilePath(messages);
@@ -399,14 +397,16 @@ function getActiveEditorPaths(): Observable<?NuclideUri> {
 
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
-  diagnosticUpdater: ObservableDiagnosticUpdater,
+  diagnosticUpdater: DiagnosticUpdater,
 ): Observable<FileDiagnosticMessages> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
     .switchMap(
       filePath =>
         filePath != null
-          ? diagnosticUpdater.getFileMessageUpdates(filePath)
+          ? observableFromSubscribeFunction(cb =>
+              diagnosticUpdater.onFileMessagesDidUpdate(cb, filePath),
+            )
           : Observable.empty(),
     )
     .takeUntil(

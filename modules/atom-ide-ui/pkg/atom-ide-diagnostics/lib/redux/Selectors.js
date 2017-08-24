@@ -14,6 +14,7 @@ import type {
   AppState,
   DiagnosticMessage,
   FileDiagnosticMessage,
+  FileDiagnosticMessages,
   ProjectDiagnosticMessage,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -35,6 +36,16 @@ export function getFileMessages(
     messages.push(...messagesForFile);
   }
   return messages;
+}
+
+export function getFileMessageUpdates(
+  state: AppState,
+  filePath: NuclideUri,
+): FileDiagnosticMessages {
+  return {
+    filePath,
+    messages: getFileMessages(state, filePath),
+  };
 }
 
 /**
