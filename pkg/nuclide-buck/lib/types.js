@@ -46,7 +46,9 @@ export type AppState = {
   taskSettings: TaskSettings,
   platformProviderUi: ?PlatformProviderUi,
 
+  lastSessionPlatformGroupName: ?string,
   lastSessionPlatformName: ?string,
+  lastSessionDeviceGroupName: ?string,
   lastSessionDeviceName: ?string,
 };
 
@@ -58,7 +60,9 @@ export type Store = {
 export type SerializedState = {
   buildTarget: ?string,
   taskSettings?: ?TaskSettings,
+  selectedPlatformGroupName: ?string,
   selectedPlatformName: ?string,
+  selectedDeviceGroupName: ?string,
   selectedDeviceName: ?string,
 };
 
@@ -120,7 +124,7 @@ export type DesktopPlatform = {
 export type Platform = MobilePlatform | DesktopPlatform;
 
 export type DeviceGroup = {
-  name: ?string,
+  name: string,
   devices: Array<Device>,
 };
 
@@ -129,7 +133,9 @@ export type Device = {
 };
 
 export type DeploymentTarget = {
+  platformGroup: PlatformGroup,
   platform: Platform,
+  deviceGroup: ?DeviceGroup,
   device: ?Device,
 };
 

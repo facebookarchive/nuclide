@@ -193,7 +193,11 @@ export default class BuckToolbar extends React.Component {
   ): Array<Option> {
     return platformGroups.reduce((options, platformGroup) => {
       let dropdownGroup = null;
-      if (platformGroup.platforms.length === 1) {
+      if (
+        platformGroup.platforms.length === 1 &&
+        platformGroup.platforms[0].isMobile &&
+        platformGroup.platforms[0].deviceGroups.length < 2
+      ) {
         dropdownGroup = this._turnDevicesIntoSelectableOptions(platformGroup);
       } else {
         dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
@@ -223,7 +227,7 @@ export default class BuckToolbar extends React.Component {
         {
           label: `  ${platform.name}`,
           selectedLabel: headerLabel,
-          value: {platform, device: null},
+          value: {platformGroup, platform, deviceGroup: null, device: null},
         },
       ];
     } else {
@@ -232,11 +236,12 @@ export default class BuckToolbar extends React.Component {
         value: platform.name,
         disabled: true,
       };
-      selectableOptions = platform.deviceGroups[0].devices.map(device => {
+      const deviceGroup = platform.deviceGroups[0];
+      selectableOptions = deviceGroup.devices.map(device => {
         return {
           label: `  ${device.name}`,
           selectedLabel: `${headerLabel}: ${device.name}`,
-          value: {platform, device},
+          value: {platformGroup, platform, deviceGroup, device},
         };
       });
     }
@@ -259,7 +264,7 @@ export default class BuckToolbar extends React.Component {
         const submenu = [];
 
         for (const deviceGroup of platform.deviceGroups) {
-          if (deviceGroup.name != null) {
+          if (deviceGroup.name !== '') {
             submenu.push({
               label: deviceGroup.name,
               value: deviceGroup.name,
@@ -271,11 +276,11 @@ export default class BuckToolbar extends React.Component {
             submenu.push({
               label: `  ${device.name}`,
               selectedLabel: `${headerLabel}: ${device.name}`,
-              value: {platform, device},
+              value: {platformGroup, platform, deviceGroup, device},
             });
           }
 
-          if (deviceGroup.name == null) {
+          if (deviceGroup.name === '') {
             submenu.push({type: 'separator'});
           }
         }
@@ -289,7 +294,7 @@ export default class BuckToolbar extends React.Component {
         selectableOptions.push({
           label: `  ${platform.name}`,
           selectedLabel: headerLabel,
-          value: {platform, device: null},
+          value: {platformGroup, platform, deviceGroup: null, device: null},
         });
       }
     }

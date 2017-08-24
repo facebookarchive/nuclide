@@ -221,7 +221,11 @@ export class BuckTaskRunner {
         selectedDeploymentTarget: null,
         taskSettings: this._serializedState.taskSettings || {},
         platformProviderUi: null,
+        lastSessionPlatformGroupName: this._serializedState
+          .selectedPlatformGroupName,
         lastSessionPlatformName: this._serializedState.selectedPlatformName,
+        lastSessionDeviceGroupName: this._serializedState
+          .selectedDeviceGroupName,
         lastSessionDeviceName: this._serializedState.selectedDeviceName,
       };
       const epics = Object.keys(Epics)
@@ -334,34 +338,46 @@ export class BuckTaskRunner {
       return;
     }
     const state = this._store.getState();
-    const {buildTarget, taskSettings, selectedDeploymentTarget} = state;
+    const {buildTarget, taskSettings} = state;
+    const target = state.selectedDeploymentTarget;
+    let selectedPlatformGroupName;
     let selectedPlatformName;
+    let selectedDeviceGroupName;
     let selectedDeviceName;
-    if (selectedDeploymentTarget) {
-      selectedPlatformName = selectedDeploymentTarget.platform.name;
-      selectedDeviceName = selectedDeploymentTarget.device
-        ? selectedDeploymentTarget.device.name
-        : null;
+    if (target != null) {
+      selectedPlatformGroupName = target.platformGroup.name;
+      selectedPlatformName = target.platform.name;
+      selectedDeviceGroupName =
+        target.deviceGroup != null ? target.deviceGroup.name : null;
+      selectedDeviceName = target.device != null ? target.device.name : null;
     } else {
       // In case the user quits before the session is restored, forward the session restoration.
+      selectedPlatformGroupName = state.lastSessionPlatformGroupName;
       selectedPlatformName = state.lastSessionPlatformName;
+      selectedDeviceGroupName = state.lastSessionDeviceGroupName;
       selectedDeviceName = state.lastSessionDeviceName;
     }
 
     return {
       buildTarget,
       taskSettings,
+      selectedPlatformGroupName,
       selectedPlatformName,
+      selectedDeviceGroupName,
       selectedDeviceName,
     };
   }
 }
 
 function formatDeploymentTarget(deploymentTarget: ?DeploymentTarget): string {
-  if (!deploymentTarget) {
+  if (deploymentTarget == null) {
     return '';
   }
-  const {device, platform} = deploymentTarget;
-  const deviceString = device ? `: ${device.name}` : '';
-  return ` on "${platform.name}${deviceString}"`;
+  const {device, deviceGroup, platform, platformGroup} = deploymentTarget;
+  const deviceString = device != null ? `: ${device.name}` : '';
+  const deviceGroupString =
+    deviceGroup != null && deviceGroup.name != null
+      ? ` (${deviceGroup.name})`
+      : '';
+  return ` on "${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}"`;
 }
