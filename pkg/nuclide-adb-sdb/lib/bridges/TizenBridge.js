@@ -23,7 +23,7 @@ import {Observable} from 'rxjs';
 
 export class TizenBridge {
   debugBridge: 'sdb' = 'sdb';
-  name: 'tizen' = 'tizen';
+  name: 'Tizen' = 'Tizen';
 
   _store: Store;
 

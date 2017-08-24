@@ -33,7 +33,7 @@ class DevicePoller {
   }
 
   _getPlatform(): string {
-    return this._type === 'adb' ? 'android' : 'tizen';
+    return this._type === 'adb' ? 'Android' : 'Tizen';
   }
 
   observe(_host: NuclideUri): Observable<Expected<Device[]>> {

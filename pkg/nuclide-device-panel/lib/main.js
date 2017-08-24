@@ -81,7 +81,9 @@ class Activation {
   _refreshDeviceTypes(): void {
     this._store.dispatch(
       Actions.setDeviceTypes(
-        Array.from(getProviders().deviceList).map(p => p.getType()),
+        Array.from(getProviders().deviceList)
+          .map(p => p.getType())
+          .sort((a, b) => a.localeCompare(b)),
       ),
     );
   }

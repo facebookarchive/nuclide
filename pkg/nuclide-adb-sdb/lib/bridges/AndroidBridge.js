@@ -23,7 +23,7 @@ import {Observable} from 'rxjs';
 
 export class AndroidBridge {
   debugBridge: 'adb' = 'adb';
-  name: 'android' = 'android';
+  name: 'Android' = 'Android';
 
   _store: Store;
 
