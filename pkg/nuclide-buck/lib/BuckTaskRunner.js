@@ -119,7 +119,9 @@ export class BuckTaskRunner {
       };
       this._extraUi = bindObservableAsProps(
         // $FlowFixMe: type symbol-observable
-        Observable.from(store).map(appState => ({appState, ...boundActions})),
+        Observable.from(store)
+          .map(appState => ({appState, ...boundActions}))
+          .filter(props => props.appState.buckRoot != null),
         BuckToolbar,
       );
     }
