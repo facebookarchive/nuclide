@@ -51,5 +51,11 @@ export type DefinitionProvider = {
 };
 
 export type DefinitionPreviewProvider = {
-  getDefinitionPreview(definition: Definition): Promise<string>,
+  getDefinitionPreview(
+    definition: Definition,
+  ): Promise<?{
+    mime: string,
+    contents: string,
+    encoding: string,
+  }>,
 };

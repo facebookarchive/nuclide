@@ -13,6 +13,7 @@
 import analytics from 'nuclide-commons-atom/analytics';
 import {getDefinitionPreview as getLocalFileDefinitionPreview} from 'nuclide-commons/symbol-definition-preview';
 
+import React from 'react';
 import type {Datatip} from '../../atom-ide-datatip/lib/types';
 
 import type {
@@ -39,11 +40,27 @@ export default (async function getPreviewDatatipFromDefinition(
       definition,
       definitionPreviewProvider,
     );
+
+    if (definitionPreview == null) {
+      return null;
+    }
+
+    // if mimetype is image return image component with base-64 encoded
+    //  image contents, otherwise use markedStrings
+    if (definitionPreview.mime.startsWith('image/')) {
+      return {
+        component: () =>
+          <img
+            src={`data:${definitionPreview.mime};${definitionPreview.encoding},${definitionPreview.contents}`}
+          />,
+        range: queryRange[0],
+      };
+    }
     return {
       markedStrings: [
         {
           type: 'snippet',
-          value: definitionPreview,
+          value: definitionPreview.contents,
           grammar,
         },
       ],
