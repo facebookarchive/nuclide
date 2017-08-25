@@ -24,7 +24,7 @@ export function app(state: AppState, action: Action): AppState {
         deviceType: null,
         device: null,
         devices: Expect.pendingValue([]),
-        infoTables: new Map(),
+        infoTables: Expect.pendingValue(new Map()),
         processes: [],
         actions: [],
         processTasks: [],
@@ -39,7 +39,7 @@ export function app(state: AppState, action: Action): AppState {
         deviceType,
         device: null,
         devices: Expect.pendingValue([]),
-        infoTables: new Map(),
+        infoTables: Expect.pendingValue(new Map()),
         processes: [],
         actions: [],
         processTasks: [],
@@ -73,7 +73,7 @@ export function app(state: AppState, action: Action): AppState {
       const {infoTables} = action.payload;
       return {
         ...state,
-        infoTables,
+        infoTables: Expect.value(infoTables),
       };
 
     case Actions.SET_PROCESSES:

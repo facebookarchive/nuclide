@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {Expected} from '../../../commons-node/expected';
 import type {Process, ProcessTask} from '../types';
 import type {Props as TaskButtonPropsType} from './TaskButton';
 import type {TaskEvent} from 'nuclide-commons/process';
@@ -20,11 +21,12 @@ import React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {|
   toggleProcessPolling: (isActive: boolean) => void,
   goToRootPanel: () => void,
-  infoTables: Map<string, Map<string, string>>,
+  infoTables: Expected<Map<string, Map<string, string>>>,
   processes: Process[],
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],
@@ -35,13 +37,23 @@ export class DevicePanel extends React.Component {
   props: Props;
 
   _createInfoTables(): React.Element<any>[] {
-    return Array.from(
-      this.props.infoTables.entries(),
-    ).map(([title, infoTable]) =>
-      <div className="block" key={title}>
-        <InfoTable title={title} table={infoTable} />
-      </div>,
-    );
+    if (this.props.infoTables.isError) {
+      return [
+        <div className="block" key="infoTableError">
+          {this.props.infoTables.error}
+        </div>,
+      ];
+    } else if (this.props.infoTables.isPending) {
+      return [<LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />];
+    } else {
+      return Array.from(
+        this.props.infoTables.value.entries(),
+      ).map(([title, infoTable]) =>
+        <div className="block" key={title}>
+          <InfoTable title={title} table={infoTable} />
+        </div>,
+      );
+    }
   }
 
   _createProcessTable(): React.Element<any> {

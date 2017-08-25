@@ -101,7 +101,7 @@ export type AppState = {
   deviceType: ?string,
   deviceTypes: string[],
   device: ?Device,
-  infoTables: Map<string, Map<string, string>>,
+  infoTables: Expected<Map<string, Map<string, string>>>,
   processes: Process[],
   processTasks: ProcessTask[],
   deviceTasks: DeviceTask[],

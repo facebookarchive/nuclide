@@ -22,7 +22,7 @@ export function createEmptyAppState(): AppState {
     deviceTypes: [],
     device: null,
     deviceTasks: [],
-    infoTables: new Map(),
+    infoTables: Expect.pendingValue(new Map()),
     processes: [],
     processTasks: [],
     isDeviceConnected: false,
