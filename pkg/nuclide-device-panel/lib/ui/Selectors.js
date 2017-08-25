@@ -86,13 +86,26 @@ export class Selectors extends React.Component {
     );
   }
 
+  _updateDeviceType(): void {
+    if (this.props.deviceTypes.length > 0) {
+      this._setDeviceType(
+        this.props.deviceType != null
+          ? this.props.deviceType
+          : this.props.deviceTypes[0],
+      );
+    }
+  }
+
   render(): React.Element<any> {
     return (
       <div>
         <div className="nuclide-device-panel-host-selector">
           <Dropdown
             options={this._getHostOptions()}
-            onChange={this.props.setHost}
+            onChange={host => {
+              this.props.setHost(host);
+              this._updateDeviceType();
+            }}
             value={this.props.host}
             key="connection"
           />
