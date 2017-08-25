@@ -110,7 +110,7 @@ class Activation {
 
     const availableActions = new Set(['build', 'run', 'test', 'debug']);
     return Observable.of({
-      name: 'LLDB',
+      name: 'Native',
       platforms: [
         {
           isMobile: false,
