@@ -377,7 +377,7 @@ function formatDeploymentTarget(deploymentTarget: ?DeploymentTarget): string {
   const {device, deviceGroup, platform, platformGroup} = deploymentTarget;
   const deviceString = device != null ? `: ${device.name}` : '';
   const deviceGroupString =
-    deviceGroup != null && deviceGroup.name != null
+    deviceGroup != null && deviceGroup.name !== ''
       ? ` (${deviceGroup.name})`
       : '';
   return ` on "${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}"`;
