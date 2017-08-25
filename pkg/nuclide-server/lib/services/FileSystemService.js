@@ -218,6 +218,35 @@ export async function copy(
 }
 
 /**
+ * Runs the equivalent of `cp -R sourcePath destinationPath`.
+ * @return true if the operation was successful; false if it wasn't.
+ */
+export async function copyDir(
+  sourcePath: NuclideUri,
+  destinationPath: NuclideUri,
+): Promise<boolean> {
+  const oldContents = (await Promise.all([
+    mkdir(destinationPath),
+    readdir(sourcePath),
+  ]))[1];
+
+  const didCopyAll = await Promise.all(
+    oldContents.map(([file, isFile]) => {
+      const oldItem = nuclideUri.join(sourcePath, file);
+      const newItem = nuclideUri.join(destinationPath, file);
+      if (isFile) {
+        // it's a file, copy it
+        return copy(oldItem, newItem);
+      }
+      // it's a directory, copy it
+      return copyDir(oldItem, newItem);
+    }),
+  );
+  // Are all the resulting booleans true?
+  return didCopyAll.every(b => b);
+}
+
+/**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
 export function rmdir(path: NuclideUri): Promise<void> {

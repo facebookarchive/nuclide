@@ -21,6 +21,7 @@ import {
   OPEN_FILES_MENU_SELECTOR,
   COMMANDS_SELECTOR,
 } from './FileTreeConstants';
+import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -282,6 +283,43 @@ export default class FileTreeContextMenu {
         shouldDisplay: () => {
           const node = this.getSingleSelectedNode();
           return node != null && !node.isContainer;
+        },
+      },
+      {
+        label: 'Copy',
+        command: 'nuclide-file-tree:copy-selection',
+        shouldDisplay: () => {
+          const nodes = this.getSelectedNodes();
+          if (nodes.isEmpty()) {
+            return false;
+          }
+          const dirKey = FileTreeHelpers.getParentKey(nodes.first().uri);
+          return nodes.every(
+            n => FileTreeHelpers.getParentKey(n.uri) === dirKey,
+          );
+        },
+      },
+      {
+        label: 'Paste',
+        command: 'nuclide-file-tree:paste-selection',
+        shouldDisplay: () => {
+          const cbMeta = atom.clipboard.readWithMetadata().metadata;
+          if (
+            cbMeta == null ||
+            typeof cbMeta !== 'object' ||
+            cbMeta.directory == null
+          ) {
+            return false;
+          }
+          const oldDir = cbMeta.directory;
+          const node = this.getSingleSelectedNode();
+          return (
+            typeof oldDir === 'string' &&
+            node != null &&
+            // only offer paste to same filesystem
+            nuclideUri.getHostnameOpt(node.uri) ===
+              nuclideUri.getHostnameOpt(oldDir)
+          );
         },
       },
       {

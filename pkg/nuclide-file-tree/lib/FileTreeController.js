@@ -179,9 +179,14 @@ export default class FileTreeController {
           FileSystemActions.openRenameDialog(),
         'nuclide-file-tree:duplicate-selection': () => {
           FileSystemActions.openDuplicateDialog(
-            this._openAndRevealFilePath.bind(this),
+            this._openAndRevealFilePaths.bind(this),
           );
         },
+        'nuclide-file-tree:copy-selection': this._copyFilenamesWithDir.bind(
+          this,
+        ),
+        'nuclide-file-tree:paste-selection': () =>
+          FileSystemActions.openPasteDialog(),
         'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(
           this,
         ),
@@ -258,6 +263,15 @@ export default class FileTreeController {
     if (filePath != null) {
       goToLocation(filePath);
       this.revealNodeKey(filePath);
+    }
+  }
+
+  _openAndRevealFilePaths(filePaths: Array<string>): void {
+    for (let i = 0; i < filePaths.length; i++) {
+      goToLocation(filePaths[i]);
+    }
+    if (filePaths.length !== 0) {
+      this.revealNodeKey(filePaths[filePaths.length - 1]);
     }
   }
 
@@ -672,6 +686,43 @@ export default class FileTreeController {
       return;
     }
     shell.showItemInFolder(path);
+  }
+
+  _copyFilenamesWithDir(event: Event): void {
+    const nodes = this._store.getSelectedNodes();
+    const dirs = [];
+    const files = [];
+    for (const node of nodes) {
+      const file = FileTreeHelpers.getFileByKey(node.uri);
+      if (file != null) {
+        files.push(file);
+      }
+      const dir = FileTreeHelpers.getDirectoryByKey(node.uri);
+      if (dir != null) {
+        dirs.push(dir);
+      }
+    }
+    const entries = dirs.concat(files);
+    if (entries.length === 0) {
+      // no valid files or directories found
+      return;
+    }
+    const dirPath = entries[0].getParent().getPath();
+    if (!entries.every(e => e.getParent().getPath() === dirPath)) {
+      // only copy if all selected files are in the same directory
+      return;
+    }
+
+    // copy this text in case user pastes into a text area
+    const copyNames = entries
+      .map(e => encodeURIComponent(e.getBaseName()))
+      .join();
+
+    atom.clipboard.write(copyNames, {
+      directory: FileTreeHelpers.dirPathToKey(dirPath),
+      filenames: files.map(f => f.getBaseName()),
+      dirnames: dirs.map(f => f.getBaseName()),
+    });
   }
 
   _copyFullPath(event: Event): void {

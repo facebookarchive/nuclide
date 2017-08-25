@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {Directory} from './FileTreeHelpers';
 import type {FileTreeNode} from './FileTreeNode';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -27,6 +28,11 @@ import {repositoryForPath} from '../../nuclide-vcs-base';
 
 let atomPanel: ?Object;
 let dialogComponent: ?React.Component<any, any, any>;
+
+type CopyPath = {
+  old: NuclideUri,
+  new: NuclideUri,
+};
 
 class FileSystemActions {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
@@ -189,37 +195,106 @@ class FileSystemActions {
     file: File | RemoteFile,
     newBasename: string,
     addToVCS: boolean,
-    onDidConfirm: (filePath: ?string) => mixed,
+    onDidConfirm: (filePaths: Array<string>) => mixed,
   ): Promise<void> {
     const directory = file.getParent();
     const newFile = directory.getFile(newBasename);
-    const newPath = newFile.getPath();
-    const service = getFileSystemServiceByNuclideUri(newPath);
-    const exists = !await service.copy(file.getPath(), newPath);
-    if (exists) {
-      atom.notifications.addError(`'${newPath}' already exists.`);
-      onDidConfirm(null);
+    return this._doCopy(
+      [{old: file.getPath(), new: newFile.getPath()}],
+      addToVCS,
+      onDidConfirm,
+    );
+  }
+
+  getDirectoryFromMetadata(cbMeta: ?mixed): ?Directory {
+    if (
+      cbMeta == null ||
+      typeof cbMeta !== 'object' ||
+      cbMeta.directory == null ||
+      typeof cbMeta.directory !== 'string'
+    ) {
+      return null;
+    }
+    return FileTreeHelpers.getDirectoryByKey(cbMeta.directory);
+  }
+
+  async _onConfirmPaste(
+    newDirPath: string,
+    addToVCS: boolean,
+    onDidConfirm: (filePath: Array<string>) => mixed = () => {},
+  ): Promise<void> {
+    const newDir = FileTreeHelpers.getDirectoryByKey(newDirPath);
+    if (newDir == null) {
+      // bad target
       return;
     }
-    const hgRepository = this._getHgRepositoryForPath(newPath);
-    if (hgRepository != null && addToVCS) {
-      try {
-        // We are not recording the copy in mercurial on purpose, because most of the time
-        // it's either templates or files that have greatly changed since duplicating.
-        await hgRepository.addAll([newPath]);
-      } catch (e) {
-        const message =
-          newPath +
-          ' was duplicated, but there was an error adding it to ' +
-          'version control.  Error: ' +
-          e.toString();
-        atom.notifications.addError(message);
-        onDidConfirm(null);
-        return;
+
+    const cb = atom.clipboard.readWithMetadata();
+    const oldDir = this.getDirectoryFromMetadata(cb.metadata);
+    if (oldDir == null) {
+      // bad source
+      return;
+    }
+
+    const copyPaths = [];
+    cb.text.split(',').forEach(encodedFilename => {
+      const filename = decodeURIComponent(encodedFilename);
+      const oldPath = oldDir.getFile(filename).getPath();
+      const newPath = newDir.getFile(filename).getPath();
+      copyPaths.push({old: oldPath, new: newPath});
+    });
+
+    await this._doCopy(copyPaths, addToVCS, onDidConfirm);
+  }
+
+  async _doCopy(
+    copyPaths: Array<CopyPath>,
+    addToVCS: boolean,
+    onDidConfirm: (filePaths: Array<string>) => mixed,
+  ): Promise<void> {
+    const copiedPaths = await Promise.all(
+      copyPaths
+        .filter(
+          ({old: oldPath, new: newPath}) =>
+            nuclideUri.getHostnameOpt(oldPath) ===
+            nuclideUri.getHostnameOpt(newPath),
+        )
+        .map(async ({old: oldPath, new: newPath}) => {
+          const service = getFileSystemServiceByNuclideUri(newPath);
+          const isFile = (await service.stat(oldPath)).isFile();
+          const exists = isFile
+            ? !await service.copy(oldPath, newPath)
+            : !await service.copyDir(oldPath, newPath);
+          if (exists) {
+            atom.notifications.addError(`'${newPath}' already exists.`);
+            return [];
+          } else {
+            return [newPath];
+          }
+        }),
+    );
+
+    const successfulPaths = [].concat(...copiedPaths);
+    if (successfulPaths.length !== 0) {
+      const hgRepository = this._getHgRepositoryForPath(successfulPaths[0]);
+      if (hgRepository != null && addToVCS) {
+        try {
+          // We are not recording the copy in mercurial on purpose, because most of the time
+          // it's either templates or files that have greatly changed since duplicating.
+          await hgRepository.addAll(successfulPaths);
+        } catch (e) {
+          const message =
+            'Paths were duplicated, but there was an error adding them to ' +
+            'version control.  Error: ' +
+            e.toString();
+          atom.notifications.addError(message);
+          onDidConfirm([]);
+          return;
+        }
       }
     }
 
-    onDidConfirm(newPath);
+    onDidConfirm(successfulPaths);
   }
 
   openRenameDialog(): void {
@@ -250,7 +325,7 @@ class FileSystemActions {
     });
   }
 
-  openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
+  openDuplicateDialog(onDidConfirm: (filePaths: Array<string>) => mixed): void {
     const store = FileTreeStore.getInstance();
     const targetNodes = store.getTargetNodes();
     if (targetNodes.size !== 1) {
@@ -292,6 +367,47 @@ class FileSystemActions {
       },
       onClose: this._closeDialog,
       selectBasename: true,
+      additionalOptions,
+    });
+  }
+
+  openPasteDialog(): void {
+    const store = FileTreeStore.getInstance();
+    const node = store.getSingleSelectedNode();
+    if (node == null) {
+      // don't paste if unselected
+      return;
+    }
+    let newDir = FileTreeHelpers.getDirectoryByKey(node.uri);
+    if (newDir == null) {
+      // maybe it's a file?
+      const file = FileTreeHelpers.getFileByKey(node.uri);
+      if (file == null) {
+        // nope! do nothing if we can't find an entry
+        return;
+      }
+      newDir = file.getParent();
+    }
+
+    const additionalOptions = {};
+    if (FileTreeHgHelpers.getHgRepositoryForNode(node) !== null) {
+      additionalOptions.addToVCS = 'Add the new file(s) to version control.';
+    }
+    this._openDialog({
+      iconClassName: 'icon-arrow-right',
+      initialValue: FileTreeHelpers.dirPathToKey(newDir.getPath()),
+      message: <span>Paste file(s) from clipboard into</span>,
+      onConfirm: (pasteDirPath: string, options: {addToVCS?: boolean}) => {
+        this._onConfirmPaste(
+          pasteDirPath.trim(),
+          Boolean(options.addToVCS),
+        ).catch(error => {
+          atom.notifications.addError(
+            `Failed to paste into '${pasteDirPath}': ${error}`,
+          );
+        });
+      },
+      onClose: this._closeDialog,
       additionalOptions,
     });
   }
