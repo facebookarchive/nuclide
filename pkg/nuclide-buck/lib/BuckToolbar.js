@@ -22,7 +22,6 @@ import shallowequal from 'shallowequal';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
-import {maybeToString} from 'nuclide-commons/string';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
@@ -69,10 +68,10 @@ export default class BuckToolbar extends React.Component {
       isLoadingPlatforms,
       platformGroups,
       platformProviderUi,
-      projectRoot,
       selectedDeploymentTarget,
       taskSettings,
     } = this.props.appState;
+    invariant(buckRoot != null);
     const extraToolbarUi =
       platformProviderUi != null ? platformProviderUi.toolbar : null;
     const extraSettings =
@@ -92,25 +91,15 @@ export default class BuckToolbar extends React.Component {
         </div>
       );
     } else if (buildTarget && buildRuleType == null) {
-      let title;
-      if (buckRoot == null) {
-        if (projectRoot != null) {
-          title = `No Buck project found in the Current Working Root:<br />${projectRoot}`;
-        } else {
-          title = 'No Current Working Root.';
-        }
-      } else {
-        title =
-          `Rule "${buildTarget}" could not be found in ${buckRoot}.<br />` +
-          `Check your Current Working Root: ${maybeToString(projectRoot)}`;
-      }
-
-      title += '<br />Click icon to retry';
-
       status = (
         <span
           className="icon icon-alert"
-          ref={addTooltip({title, delay: 0})}
+          ref={addTooltip({
+            title:
+              `'${buildTarget}' could not be found in ${buckRoot}.<br />` +
+              'Check your Current Working Root or click to retry',
+            delay: 0,
+          })}
           onClick={() => this.props.setBuildTarget(buildTarget)}
         />
       );
@@ -160,7 +149,7 @@ export default class BuckToolbar extends React.Component {
         {widgets}
         {this.state.settingsVisible
           ? <BuckToolbarSettings
-              currentBuckRoot={buckRoot}
+              buckRoot={buckRoot}
               settings={taskSettings}
               platformProviderSettings={extraSettings}
               onDismiss={() => this._hideSettings()}

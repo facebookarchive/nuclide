@@ -20,7 +20,7 @@ import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Modal} from '../../../nuclide-ui/Modal';
 
 type Props = {
-  currentBuckRoot: ?string,
+  buckRoot: string,
   settings: TaskSettings,
   platformProviderSettings: ?PlatformProviderSettings,
   onDismiss: () => void,
@@ -57,8 +57,7 @@ export default class BuckToolbarSettings extends React.Component {
             <label>Current Buck root:</label>
             <p>
               <code>
-                {// flowlint-next-line sketchy-null-string:off
-                this.props.currentBuckRoot || 'No Buck project found.'}
+                {this.props.buckRoot}
               </code>
             </p>
             <label>Build Arguments:</label>
