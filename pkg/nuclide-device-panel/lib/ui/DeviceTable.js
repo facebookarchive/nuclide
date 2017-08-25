@@ -16,6 +16,7 @@ import React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 import {getProviders} from '../providers';
 import {DeviceTaskButton} from './DeviceTaskButton';
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 
 type Props = {|
   setDevice: (?Device) => void,
@@ -37,7 +38,13 @@ export class DeviceTable extends React.Component {
           </div>
         );
       }
-      return <div className="padded">No devices connected</div>;
+      return (
+        <div className="padded">
+          {this.props.devices.isPending
+            ? <LoadingSpinner size="EXTRA_SMALL" />
+            : 'No devices connected'}
+        </div>
+      );
     };
   }
 

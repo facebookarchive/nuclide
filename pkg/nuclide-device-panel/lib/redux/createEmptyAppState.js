@@ -17,7 +17,7 @@ export function createEmptyAppState(): AppState {
   return {
     hosts: [''],
     host: '',
-    devices: Expect.value([]),
+    devices: Expect.pendingValue([]),
     deviceType: null,
     deviceTypes: [],
     device: null,
