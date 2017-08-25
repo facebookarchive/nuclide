@@ -111,6 +111,13 @@ export function app(state: AppState, action: Action): AppState {
         deviceTypeTasks,
       };
 
+    case Actions.TOGGLE_DEVICE_POLLING:
+      const {isActive} = action.payload;
+      return {
+        ...state,
+        isPollingDevices: isActive,
+      };
+
     default:
       return state;
   }

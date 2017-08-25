@@ -107,6 +107,7 @@ export type AppState = {
   deviceTasks: DeviceTask[],
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
+  isPollingDevices: boolean,
 };
 
 export type Store = {

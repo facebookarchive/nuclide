@@ -28,5 +28,6 @@ export function createEmptyAppState(): AppState {
     isDeviceConnected: false,
     supportedPidsPerTask: new Map(),
     deviceTypeTasks: [],
+    isPollingDevices: false,
   };
 }

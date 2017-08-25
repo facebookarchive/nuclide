@@ -134,6 +134,7 @@ class Activation {
       ),
       registerDeviceTypeTaskProvider: this._createProviderRegistration(
         providers.deviceTypeTask,
+        () => this._refreshDeviceTypes(),
       ),
       registerDeviceActionProvider: this._createProviderRegistration(
         providers.deviceAction,

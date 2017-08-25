@@ -106,6 +106,22 @@ export function setDeviceEpic(
   });
 }
 
+export function setDeviceTypesEpic(
+  actions: ActionsObservable<Action>,
+  store: Store,
+): Observable<Action> {
+  return actions.ofType(Actions.SET_DEVICE_TYPES).switchMap(action => {
+    invariant(action.type === Actions.SET_DEVICE_TYPES);
+    const state = store.getState();
+    const deviceType =
+      state.deviceType != null ? state.deviceType : state.deviceTypes[0];
+    return Observable.merge(
+      Observable.of(Actions.setDeviceType(deviceType)),
+      Observable.of(Actions.toggleDevicePolling(state.isPollingDevices)),
+    );
+  });
+}
+
 const deviceTypeTaskCache = new Cache({
   keyFactory: ([state: AppState, providerName: string]) =>
     JSON.stringify([state.host, state.deviceType, providerName]),
