@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.249.0
+
+### Hotfix Release
+
+* Fixes bug that prevents saving after renaming a remote file from the file tree on Atom 1.19+
+
 ## v0.248.0
 
 * Hotfix for Facebook users
