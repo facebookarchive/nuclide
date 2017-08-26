@@ -1,3 +1,23 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ButtonToolbar = undefined;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Visually groups Buttons passed in as children.
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,26 +26,15 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import classnames from 'classnames';
-import React from 'react';
-
-type Props = {
-  className?: string,
-  children?: mixed,
-};
-
-/**
- * Visually groups Buttons passed in as children.
- */
-export const ButtonToolbar = (props: Props) => {
-  const {children, className} = props;
-  return (
-    <div className={classnames('btn-toolbar', className)}>
-      {children}
-    </div>
+const ButtonToolbar = exports.ButtonToolbar = props => {
+  const { children, className } = props;
+  return _react.default.createElement(
+    'div',
+    { className: (0, (_classnames || _load_classnames()).default)('btn-toolbar', className) },
+    children
   );
 };

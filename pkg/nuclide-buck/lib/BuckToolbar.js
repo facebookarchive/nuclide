@@ -1,3 +1,55 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireDefault(require('react'));
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _BuckToolbarSettings;
+
+function _load_BuckToolbarSettings() {
+  return _BuckToolbarSettings = _interopRequireDefault(require('./ui/BuckToolbarSettings'));
+}
+
+var _BuckToolbarTargetSelector;
+
+function _load_BuckToolbarTargetSelector() {
+  return _BuckToolbarTargetSelector = _interopRequireDefault(require('./ui/BuckToolbarTargetSelector'));
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _Dropdown;
+
+function _load_Dropdown() {
+  return _Dropdown = require('../../nuclide-ui/Dropdown');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('nuclide-commons-ui/addTooltip'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,61 +57,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AppState,
-  DeploymentTarget,
-  PlatformGroup,
-  TaskSettings,
-} from './types';
-import type {Option} from '../../nuclide-ui/Dropdown';
-
-import React from 'react';
-import shallowequal from 'shallowequal';
-
-import BuckToolbarSettings from './ui/BuckToolbarSettings';
-import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import addTooltip from 'nuclide-commons-ui/addTooltip';
-import invariant from 'assert';
-
-type Props = {
-  appState: AppState,
-  setBuildTarget(buildTarget: string): void,
-  setDeploymentTarget(deploymentTarget: DeploymentTarget): void,
-  setTaskSettings(settings: TaskSettings): void,
-};
-
-type State = {
-  settingsVisible: boolean,
-};
-
-type DropdownGroup = {
-  header: Option,
-  selectableOptions: Array<Option>,
-};
-
-function hasMobilePlatform(platformGroups: Array<PlatformGroup>): boolean {
-  return platformGroups.some(platformGroup =>
-    platformGroup.platforms.some(platform => platform.isMobile),
-  );
+function hasMobilePlatform(platformGroups) {
+  return platformGroups.some(platformGroup => platformGroup.platforms.some(platform => platform.isMobile));
 }
 
-export default class BuckToolbar extends React.Component {
-  props: Props;
-  state: State;
+class BuckToolbar extends _react.default.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    this.state = {settingsVisible: false};
+
+    this._handleDeploymentTargetChange = deploymentTarget => {
+      this.props.setDeploymentTarget(deploymentTarget);
+    };
+
+    this.state = { settingsVisible: false };
   }
 
-  render(): React.Element<any> {
+  render() {
     const {
       buildRuleType,
       buildTarget,
@@ -69,124 +87,106 @@ export default class BuckToolbar extends React.Component {
       platformGroups,
       platformProviderUi,
       selectedDeploymentTarget,
-      taskSettings,
+      taskSettings
     } = this.props.appState;
-    invariant(buckRoot != null);
-    const extraToolbarUi =
-      platformProviderUi != null ? platformProviderUi.toolbar : null;
-    const extraSettings =
-      platformProviderUi != null ? platformProviderUi.settings : null;
+
+    if (!(buckRoot != null)) {
+      throw new Error('Invariant violation: "buckRoot != null"');
+    }
+
+    const extraToolbarUi = platformProviderUi != null ? platformProviderUi.toolbar : null;
+    const extraSettings = platformProviderUi != null ? platformProviderUi.settings : null;
 
     let status;
     if (isLoadingRule || isLoadingPlatforms) {
-      const title = isLoadingRule
-        ? 'Loading target build rule...'
-        : 'Loading available platforms...';
-      status = (
-        <div ref={addTooltip({title, delay: 0})}>
-          <LoadingSpinner
-            className="inline-block buck-spinner"
-            size="EXTRA_SMALL"
-          />
-        </div>
+      const title = isLoadingRule ? 'Loading target build rule...' : 'Loading available platforms...';
+      status = _react.default.createElement(
+        'div',
+        { ref: (0, (_addTooltip || _load_addTooltip()).default)({ title, delay: 0 }) },
+        _react.default.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, {
+          className: 'inline-block buck-spinner',
+          size: 'EXTRA_SMALL'
+        })
       );
     } else if (buildTarget && buildRuleType == null) {
-      status = (
-        <span
-          className="icon icon-alert"
-          ref={addTooltip({
-            title:
-              `'${buildTarget}' could not be found in ${buckRoot}.<br />` +
-              'Check your Current Working Root or click to retry',
-            delay: 0,
-          })}
-          onClick={() => this.props.setBuildTarget(buildTarget)}
-        />
-      );
+      status = _react.default.createElement('span', {
+        className: 'icon icon-alert',
+        ref: (0, (_addTooltip || _load_addTooltip()).default)({
+          title: `'${buildTarget}' could not be found in ${buckRoot}.<br />` + 'Check your Current Working Root or click to retry',
+          delay: 0
+        }),
+        onClick: () => this.props.setBuildTarget(buildTarget)
+      });
     }
 
     const widgets = [];
     if (status != null) {
-      widgets.push(
-        <div
-          key="status"
-          className="nuclide-buck-status inline-block text-center">
-          {status}
-        </div>,
-      );
+      widgets.push(_react.default.createElement(
+        'div',
+        {
+          key: 'status',
+          className: 'nuclide-buck-status inline-block text-center' },
+        status
+      ));
     } else if (hasMobilePlatform(platformGroups)) {
       const options = this._optionsFromPlatformGroups(platformGroups);
 
-      widgets.push(
-        <Dropdown
-          key="simulator-dropdown"
-          className="inline-block"
-          value={selectedDeploymentTarget}
-          options={options}
-          onChange={this._handleDeploymentTargetChange}
-          size="sm"
-          title="Choose a device"
-          selectionComparator={shallowequal}
-        />,
-      );
+      widgets.push(_react.default.createElement((_Dropdown || _load_Dropdown()).Dropdown, {
+        key: 'simulator-dropdown',
+        className: 'inline-block',
+        value: selectedDeploymentTarget,
+        options: options,
+        onChange: this._handleDeploymentTargetChange,
+        size: 'sm',
+        title: 'Choose a device',
+        selectionComparator: (_shallowequal || _load_shallowequal()).default
+      }));
 
       if (extraToolbarUi) {
         widgets.push(extraToolbarUi);
       }
     }
 
-    return (
-      <div className="nuclide-buck-toolbar">
-        <BuckToolbarTargetSelector
-          appState={this.props.appState}
-          setBuildTarget={this.props.setBuildTarget}
-        />
-        <Button
-          className="nuclide-buck-settings icon icon-gear"
-          size={ButtonSizes.SMALL}
-          onClick={() => this._showSettings()}
-        />
-        {widgets}
-        {this.state.settingsVisible
-          ? <BuckToolbarSettings
-              buckRoot={buckRoot}
-              settings={taskSettings}
-              platformProviderSettings={extraSettings}
-              onDismiss={() => this._hideSettings()}
-              onSave={settings => this._saveSettings(settings)}
-            />
-          : null}
-      </div>
+    return _react.default.createElement(
+      'div',
+      { className: 'nuclide-buck-toolbar' },
+      _react.default.createElement((_BuckToolbarTargetSelector || _load_BuckToolbarTargetSelector()).default, {
+        appState: this.props.appState,
+        setBuildTarget: this.props.setBuildTarget
+      }),
+      _react.default.createElement((_Button || _load_Button()).Button, {
+        className: 'nuclide-buck-settings icon icon-gear',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        onClick: () => this._showSettings()
+      }),
+      widgets,
+      this.state.settingsVisible ? _react.default.createElement((_BuckToolbarSettings || _load_BuckToolbarSettings()).default, {
+        buckRoot: buckRoot,
+        settings: taskSettings,
+        platformProviderSettings: extraSettings,
+        onDismiss: () => this._hideSettings(),
+        onSave: settings => this._saveSettings(settings)
+      }) : null
     );
   }
 
-  _handleDeploymentTargetChange = (deploymentTarget: DeploymentTarget) => {
-    this.props.setDeploymentTarget(deploymentTarget);
-  };
-
   _showSettings() {
-    this.setState({settingsVisible: true});
+    this.setState({ settingsVisible: true });
   }
 
   _hideSettings() {
-    this.setState({settingsVisible: false});
+    this.setState({ settingsVisible: false });
   }
 
-  _saveSettings(settings: TaskSettings) {
+  _saveSettings(settings) {
     this.props.setTaskSettings(settings);
     this._hideSettings();
   }
 
-  _optionsFromPlatformGroups(
-    platformGroups: Array<PlatformGroup>,
-  ): Array<Option> {
+  _optionsFromPlatformGroups(platformGroups) {
     return platformGroups.reduce((options, platformGroup) => {
       let dropdownGroup = null;
-      if (
-        platformGroup.platforms.length === 1 &&
-        platformGroup.platforms[0].isMobile &&
-        platformGroup.platforms[0].deviceGroups.length < 2
-      ) {
+      if (platformGroup.platforms.length === 1 && platformGroup.platforms[0].isMobile && platformGroup.platforms[0].deviceGroups.length < 2) {
         dropdownGroup = this._turnDevicesIntoSelectableOptions(platformGroup);
       } else {
         dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
@@ -197,52 +197,51 @@ export default class BuckToolbar extends React.Component {
     }, []);
   }
 
-  _turnDevicesIntoSelectableOptions(
-    platformGroup: PlatformGroup,
-  ): DropdownGroup {
+  _turnDevicesIntoSelectableOptions(platformGroup) {
     const platform = platformGroup.platforms[0];
     let selectableOptions;
     let header;
-    invariant(platform.isMobile);
+
+    if (!platform.isMobile) {
+      throw new Error('Invariant violation: "platform.isMobile"');
+    }
 
     const headerLabel = `${platformGroup.name} ${platform.name}`;
     if (platform.deviceGroups.length === 0) {
       header = {
         label: platformGroup.name,
         value: platformGroup.name,
-        disabled: true,
+        disabled: true
       };
-      selectableOptions = [
-        {
-          label: `  ${platform.name}`,
-          selectedLabel: headerLabel,
-          value: {platformGroup, platform, deviceGroup: null, device: null},
-        },
-      ];
+      selectableOptions = [{
+        label: `  ${platform.name}`,
+        selectedLabel: headerLabel,
+        value: { platformGroup, platform, deviceGroup: null, device: null }
+      }];
     } else {
       header = {
         label: headerLabel,
         value: platform.name,
-        disabled: true,
+        disabled: true
       };
       const deviceGroup = platform.deviceGroups[0];
       selectableOptions = deviceGroup.devices.map(device => {
         return {
           label: `  ${device.name}`,
           selectedLabel: `${headerLabel}: ${device.name}`,
-          value: {platformGroup, platform, deviceGroup, device},
+          value: { platformGroup, platform, deviceGroup, device }
         };
       });
     }
 
-    return {header, selectableOptions};
+    return { header, selectableOptions };
   }
 
-  _putDevicesIntoSubmenus(platformGroup: PlatformGroup): DropdownGroup {
+  _putDevicesIntoSubmenus(platformGroup) {
     const header = {
       label: platformGroup.name,
       value: platformGroup.name,
-      disabled: true,
+      disabled: true
     };
 
     const selectableOptions = [];
@@ -257,7 +256,7 @@ export default class BuckToolbar extends React.Component {
             submenu.push({
               label: deviceGroup.name,
               value: deviceGroup.name,
-              disabled: true,
+              disabled: true
             });
           }
 
@@ -265,29 +264,30 @@ export default class BuckToolbar extends React.Component {
             submenu.push({
               label: `  ${device.name}`,
               selectedLabel: `${headerLabel}: ${device.name}`,
-              value: {platformGroup, platform, deviceGroup, device},
+              value: { platformGroup, platform, deviceGroup, device }
             });
           }
 
           if (deviceGroup.name === '') {
-            submenu.push({type: 'separator'});
+            submenu.push({ type: 'separator' });
           }
         }
 
         selectableOptions.push({
           type: 'submenu',
           label: `  ${platform.name}`,
-          submenu,
+          submenu
         });
       } else {
         selectableOptions.push({
           label: `  ${platform.name}`,
           selectedLabel: headerLabel,
-          value: {platformGroup, platform, deviceGroup: null, device: null},
+          value: { platformGroup, platform, deviceGroup: null, device: null }
         });
       }
     }
 
-    return {header, selectableOptions};
+    return { header, selectableOptions };
   }
 }
+exports.default = BuckToolbar;

@@ -1,150 +1,157 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
-import type React from 'react';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileTreeStore = exports.DEFAULT_CONF = undefined;
 
-import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
-import FileTreeHelpers from './FileTreeHelpers';
-import FileTreeHgHelpers from './FileTreeHgHelpers';
-import {FileTreeNode} from './FileTreeNode';
-import Immutable from 'immutable';
-import {Emitter} from 'atom';
-import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
-import {matchesFilter} from './FileTreeFilterHelper';
-import {Minimatch} from 'minimatch';
-import {repositoryForPath} from '../../nuclide-vcs-base';
-import {nextAnimationFrame} from 'nuclide-commons/observable';
-import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
-import {getLogger} from 'log4js';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import {track} from '../../nuclide-analytics';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _FileTreeDispatcher;
+
+function _load_FileTreeDispatcher() {
+  return _FileTreeDispatcher = _interopRequireDefault(require('./FileTreeDispatcher'));
+}
+
+var _FileTreeDispatcher2;
+
+function _load_FileTreeDispatcher2() {
+  return _FileTreeDispatcher2 = require('./FileTreeDispatcher');
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('./FileTreeHelpers'));
+}
+
+var _FileTreeHgHelpers;
+
+function _load_FileTreeHgHelpers() {
+  return _FileTreeHgHelpers = _interopRequireDefault(require('./FileTreeHgHelpers'));
+}
+
+var _FileTreeNode;
+
+function _load_FileTreeNode() {
+  return _FileTreeNode = require('./FileTreeNode');
+}
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+var _atom = require('atom');
+
+var _nuclideVcsBase;
+
+function _load_nuclideVcsBase() {
+  return _nuclideVcsBase = require('../../nuclide-vcs-base');
+}
+
+var _FileTreeFilterHelper;
+
+function _load_FileTreeFilterHelper() {
+  return _FileTreeFilterHelper = require('./FileTreeFilterHelper');
+}
+
+var _minimatch;
+
+function _load_minimatch() {
+  return _minimatch = require('minimatch');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _hgConstants;
+
+function _load_hgConstants() {
+  return _hgConstants = require('../../nuclide-hg-rpc/lib/hg-constants');
+}
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _nuclideWorkingSetsCommon;
+
+function _load_nuclideWorkingSetsCommon() {
+  return _nuclideWorkingSetsCommon = require('../../nuclide-working-sets-common');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _FileTreeSelectionRange;
+
+function _load_FileTreeSelectionRange() {
+  return _FileTreeSelectionRange = require('./FileTreeSelectionRange');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // Used to ensure the version we serialized is the same version we are deserializing.
-const VERSION = 1;
+const VERSION = 1; /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    * @format
+                    */
 
-import type {FileTreeAction} from './FileTreeDispatcher';
-import type {Directory} from './FileTreeHelpers';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
-import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
-
-type ChangeListener = () => mixed;
-
-type TargetNodeKeys = {
-  rootKey: NuclideUri,
-  nodeKey: NuclideUri,
-};
-
-export type ExportStoreData = {
-  childKeyMap: {[key: string]: Array<string>},
-  expandedKeysByRoot: {[key: string]: Array<string>},
-  rootKeys: Array<string>,
-  selectedKeysByRoot: {[key: string]: Array<string>},
-  version: number,
-  openFilesExpanded?: boolean,
-  uncommittedChangesExpanded?: boolean,
-  foldersExpanded?: boolean,
-};
-
-export type StoreConfigData = {
-  vcsStatuses: Immutable.Map<
-    NuclideUri,
-    {[path: NuclideUri]: StatusCodeNumberValue},
-  >,
-  workingSet: WorkingSet,
-  hideIgnoredNames: boolean,
-  isCalculatingChanges: boolean,
-  excludeVcsIgnoredPaths: boolean,
-  ignoredPatterns: Immutable.Set<Minimatch>,
-  usePreviewTabs: boolean,
-  isEditingWorkingSet: boolean,
-  openFilesWorkingSet: WorkingSet,
-  reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
-  editedWorkingSet: WorkingSet,
-  fileChanges: Immutable.Map<
-    NuclideUri,
-    Immutable.Map<NuclideUri, FileChangeStatusValue>,
-  >,
-};
-
-export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
-
-export const DEFAULT_CONF = {
-  vcsStatuses: new Immutable.Map(),
-  workingSet: new WorkingSet(),
-  editedWorkingSet: new WorkingSet(),
+const DEFAULT_CONF = exports.DEFAULT_CONF = {
+  vcsStatuses: new (_immutable || _load_immutable()).default.Map(),
+  workingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
+  editedWorkingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
   hideIgnoredNames: true,
   isCalculatingChanges: false,
   excludeVcsIgnoredPaths: true,
-  ignoredPatterns: new Immutable.Set(),
+  ignoredPatterns: new (_immutable || _load_immutable()).default.Set(),
   usePreviewTabs: false,
   isEditingWorkingSet: false,
-  openFilesWorkingSet: new WorkingSet(),
+  openFilesWorkingSet: new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(),
   reposByRoot: {},
-  fileChanges: new Immutable.Map(),
+  fileChanges: new (_immutable || _load_immutable()).default.Map()
 };
 
-export type ReorderPreviewStatus = ?{
-  source: NuclideUri,
-  sourceIdx: number,
-  target?: NuclideUri,
-  targetIdx?: number,
-};
-
-let instance: ?Object;
+let instance;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
  */
-export class FileTreeStore {
-  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>;
-  openFilesExpanded: boolean;
-  uncommittedChangesExpanded: boolean;
-  foldersExpanded: boolean;
-  reorderPreviewStatus: ReorderPreviewStatus;
+class FileTreeStore {
 
-  _conf: StoreConfigData; // The configuration for the file-tree. Avoid direct writing.
-  _workingSetsStore: ?WorkingSetsStore;
-  _usePrefixNav: boolean;
-  _autoExpandSingleChild: boolean;
-  _isLoadingMap: Immutable.Map<NuclideUri, Promise<void>>;
-  _repositories: Immutable.Set<atom$Repository>;
-  _fileChanges: Immutable.Map<
-    NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>,
-  >;
-
-  _dispatcher: FileTreeDispatcher;
-  _emitter: Emitter;
-  _logger: any;
-  _animationFrameRequestSubscription: ?rxjs$Subscription;
-  _cwdKey: ?NuclideUri;
-  _filter: string;
-  _extraProjectSelectionContent: Immutable.List<React.Element<any>>;
-  _selectionRange: ?SelectionRange;
-  _targetNodeKeys: ?TargetNodeKeys;
-
-  static getInstance(): FileTreeStore {
+  static getInstance() {
     if (!instance) {
       instance = new FileTreeStore();
     }
     return instance;
-  }
+  } // The configuration for the file-tree. Avoid direct writing.
 
-  static dispose(): void {
+
+  static dispose() {
     if (instance != null) {
       instance.dispose();
     }
@@ -153,22 +160,22 @@ export class FileTreeStore {
   }
 
   constructor() {
-    this.roots = new Immutable.OrderedMap();
-    this._dispatcher = FileTreeDispatcher.getInstance();
-    this._emitter = new Emitter();
+    this.roots = new (_immutable || _load_immutable()).default.OrderedMap();
+    this._dispatcher = (_FileTreeDispatcher || _load_FileTreeDispatcher()).default.getInstance();
+    this._emitter = new _atom.Emitter();
     this._dispatcher.register(this._onDispatch.bind(this));
-    this._logger = getLogger('nuclide-file-tree');
-    this._fileChanges = new Immutable.Map();
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)('nuclide-file-tree');
+    this._fileChanges = new (_immutable || _load_immutable()).default.Map();
     this.reorderPreviewStatus = null;
 
     this._usePrefixNav = false;
     this._autoExpandSingleChild = true;
-    this._isLoadingMap = new Immutable.Map();
-    this._repositories = new Immutable.Set();
+    this._isLoadingMap = new (_immutable || _load_immutable()).default.Map();
+    this._repositories = new (_immutable || _load_immutable()).default.Set();
 
     this._conf = DEFAULT_CONF;
     this._filter = '';
-    this._extraProjectSelectionContent = new Immutable.List();
+    this._extraProjectSelectionContent = new (_immutable || _load_immutable()).default.List();
     this.foldersExpanded = true;
     this.openFilesExpanded = true;
     this.uncommittedChangesExpanded = true;
@@ -182,7 +189,7 @@ export class FileTreeStore {
    *
    * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
    */
-  exportData(): ExportStoreData {
+  exportData() {
     const childKeyMap = {};
     const expandedKeysByRoot = {};
     const selectedKeysByRoot = {};
@@ -204,9 +211,7 @@ export class FileTreeStore {
         expandedKeys.push(node.uri);
 
         if (!node.children.isEmpty()) {
-          childKeyMap[node.uri] = node.children
-            .map(child => child.uri)
-            .toArray();
+          childKeyMap[node.uri] = node.children.map(child => child.uri).toArray();
         }
 
         return true;
@@ -226,49 +231,44 @@ export class FileTreeStore {
       selectedKeysByRoot,
       openFilesExpanded: this.openFilesExpanded,
       uncommittedChangesExpanded: this.uncommittedChangesExpanded,
-      foldersExpanded: this.foldersExpanded,
+      foldersExpanded: this.foldersExpanded
     };
   }
 
   /**
    * Imports store data from a previous export.
    */
-  loadData(data: ExportStoreData): void {
+  loadData(data) {
     // Ensure we are not trying to load data from an earlier version of this package.
     if (data.version !== VERSION) {
       return;
     }
 
-    const buildNode = (rootUri: string, uri: string) => {
+    const buildNode = (rootUri, uri) => {
       const rootExpandedKeys = data.expandedKeysByRoot[rootUri] || [];
       const rootSelectedKeys = data.selectedKeysByRoot[rootUri] || [];
       const childrenUris = data.childKeyMap[uri] || [];
-      const children = FileTreeNode.childrenFromArray(
-        childrenUris.map(childUri => buildNode(rootUri, childUri)),
-      );
+      const children = (_FileTreeNode || _load_FileTreeNode()).FileTreeNode.childrenFromArray(childrenUris.map(childUri => buildNode(rootUri, childUri)));
 
       const isExpanded = rootExpandedKeys.indexOf(uri) >= 0;
       let isLoading = false;
 
-      if (isExpanded && FileTreeHelpers.isDirKey(uri)) {
+      if (isExpanded && (_FileTreeHelpers || _load_FileTreeHelpers()).default.isDirKey(uri)) {
         this._fetchChildKeys(uri);
         isLoading = true;
       }
 
-      return new FileTreeNode(
-        {
-          uri,
-          rootUri,
-          isExpanded,
-          isSelected: rootSelectedKeys.indexOf(uri) >= 0,
-          isLoading,
-          isTracked: false,
-          children,
-          isCwd: false,
-          connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-        },
-        this._conf,
-      );
+      return new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode({
+        uri,
+        rootUri,
+        isExpanded,
+        isSelected: rootSelectedKeys.indexOf(uri) >= 0,
+        isLoading,
+        isTracked: false,
+        children,
+        isCwd: false,
+        connectionTitle: (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDisplayTitle(rootUri) || ''
+      }, this._conf);
     };
 
     if (data.openFilesExpanded != null) {
@@ -283,41 +283,27 @@ export class FileTreeStore {
       this.foldersExpanded = data.foldersExpanded;
     }
 
-    const normalizedAtomPaths = atom.project
-      .getPaths()
-      .map(nuclideUri.ensureTrailingSeparator);
-    const normalizedDataPaths = data.rootKeys
-      .map(nuclideUri.ensureTrailingSeparator)
-      .filter(
-        rootUri =>
-          nuclideUri.isRemote(rootUri) ||
-          normalizedAtomPaths.indexOf(rootUri) >= 0,
-      );
-    const pathsMissingInData = normalizedAtomPaths.filter(
-      rootUri => normalizedDataPaths.indexOf(rootUri) === -1,
-    );
+    const normalizedAtomPaths = atom.project.getPaths().map((_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator);
+    const normalizedDataPaths = data.rootKeys.map((_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator).filter(rootUri => (_nuclideUri || _load_nuclideUri()).default.isRemote(rootUri) || normalizedAtomPaths.indexOf(rootUri) >= 0);
+    const pathsMissingInData = normalizedAtomPaths.filter(rootUri => normalizedDataPaths.indexOf(rootUri) === -1);
     const combinedPaths = normalizedDataPaths.concat(pathsMissingInData);
 
-    this._setRoots(
-      new Immutable.OrderedMap(
-        combinedPaths.map(rootUri => [rootUri, buildNode(rootUri, rootUri)]),
-      ),
-    );
+    this._setRoots(new (_immutable || _load_immutable()).default.OrderedMap(combinedPaths.map(rootUri => [rootUri, buildNode(rootUri, rootUri)])));
   }
 
-  _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+  _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths) {
     this._updateConf(conf => {
       conf.excludeVcsIgnoredPaths = excludeVcsIgnoredPaths;
     });
   }
 
-  _setHideIgnoredNames(hideIgnoredNames: boolean): void {
+  _setHideIgnoredNames(hideIgnoredNames) {
     this._updateConf(conf => {
       conf.hideIgnoredNames = hideIgnoredNames;
     });
   }
 
-  _setIsCalculatingChanges(isCalculatingChanges: boolean): void {
+  _setIsCalculatingChanges(isCalculatingChanges) {
     this._updateConf(conf => {
       conf.isCalculatingChanges = isCalculatingChanges;
     });
@@ -327,188 +313,183 @@ export class FileTreeStore {
    * Given a list of names to ignore, compile them into minimatch patterns and
    * update the store with them.
    */
-  _setIgnoredNames(ignoredNames: Array<string>) {
-    const ignoredPatterns = Immutable.Set(ignoredNames)
-      .map(ignoredName => {
-        if (ignoredName === '') {
-          return null;
-        }
-        try {
-          return new Minimatch(ignoredName, {matchBase: true, dot: true});
-        } catch (error) {
-          atom.notifications.addWarning(
-            `Error parsing pattern '${ignoredName}' from "Settings" > "Ignored Names"`,
-            {detail: error.message},
-          );
-          return null;
-        }
-      })
-      .filter(pattern => pattern != null);
+  _setIgnoredNames(ignoredNames) {
+    const ignoredPatterns = (_immutable || _load_immutable()).default.Set(ignoredNames).map(ignoredName => {
+      if (ignoredName === '') {
+        return null;
+      }
+      try {
+        return new (_minimatch || _load_minimatch()).Minimatch(ignoredName, { matchBase: true, dot: true });
+      } catch (error) {
+        atom.notifications.addWarning(`Error parsing pattern '${ignoredName}' from "Settings" > "Ignored Names"`, { detail: error.message });
+        return null;
+      }
+    }).filter(pattern => pattern != null);
     this._updateConf(conf => {
       conf.ignoredPatterns = ignoredPatterns;
     });
   }
 
-  _onDispatch(payload: FileTreeAction): void {
+  _onDispatch(payload) {
     switch (payload.actionType) {
-      case ActionTypes.DELETE_SELECTED_NODES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.DELETE_SELECTED_NODES:
         this._deleteSelectedNodes();
         break;
-      case ActionTypes.SET_CWD:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_CWD:
         this._setCwdKey(payload.rootKey);
         break;
-      case ActionTypes.SET_TRACKED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_TRACKED_NODE:
         this._setTrackedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.CLEAR_TRACKED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_TRACKED_NODE:
         this._clearTrackedNode();
         break;
-      case ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_TRACKED_NODE_IF_NOT_LOADING:
         this._clearTrackedNodeIfNotLoading();
         break;
-      case ActionTypes.START_REORDER_DRAG:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.START_REORDER_DRAG:
         this._startReorderDrag(payload.draggedRootKey);
         break;
-      case ActionTypes.END_REORDER_DRAG:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.END_REORDER_DRAG:
         this._endReorderDrag();
         break;
-      case ActionTypes.REORDER_DRAG_INTO:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REORDER_DRAG_INTO:
         this._reorderDragInto(payload.dragTargetNodeKey);
         break;
-      case ActionTypes.REORDER_ROOTS:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REORDER_ROOTS:
         this._doReorderRoots();
         break;
-      case ActionTypes.MOVE_TO_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_TO_NODE:
         this._moveToNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.SET_ROOT_KEYS:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
         break;
-      case ActionTypes.EXPAND_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.EXPAND_NODE:
         this._expandNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.EXPAND_NODE_DEEP:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.EXPAND_NODE_DEEP:
         this._expandNodeDeep(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.COLLAPSE_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_EXCLUDE_VCS_IGNORED_PATHS:
         this._setExcludeVcsIgnoredPaths(payload.excludeVcsIgnoredPaths);
         break;
-      case ActionTypes.SET_USE_PREVIEW_TABS:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_USE_PREVIEW_TABS:
         this._setUsePreviewTabs(payload.usePreviewTabs);
         break;
-      case ActionTypes.SET_USE_PREFIX_NAV:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_USE_PREFIX_NAV:
         this._setUsePrefixNav(payload.usePrefixNav);
         break;
-      case ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_AUTO_EXPAND_SINGLE_CHILD:
         this._setAutoExpandSingleChild(payload.autoExpandSingleChild);
         break;
-      case ActionTypes.COLLAPSE_NODE_DEEP:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.COLLAPSE_NODE_DEEP:
         this._collapseNodeDeep(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.SET_HIDE_IGNORED_NAMES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
         break;
-      case ActionTypes.SET_IS_CALCULATING_CHANGES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_IS_CALCULATING_CHANGES:
         this._setIsCalculatingChanges(payload.isCalculatingChanges);
         break;
-      case ActionTypes.SET_IGNORED_NAMES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_IGNORED_NAMES:
         this._setIgnoredNames(payload.ignoredNames);
         break;
-      case ActionTypes.SET_VCS_STATUSES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_VCS_STATUSES:
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
-      case ActionTypes.SET_REPOSITORIES:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_REPOSITORIES:
         this._setRepositories(payload.repositories);
         break;
-      case ActionTypes.SET_WORKING_SET:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_WORKING_SET:
         this._setWorkingSet(payload.workingSet);
         break;
-      case ActionTypes.SET_OPEN_FILES_WORKING_SET:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_OPEN_FILES_WORKING_SET:
         this._setOpenFilesWorkingSet(payload.openFilesWorkingSet);
         break;
-      case ActionTypes.SET_WORKING_SETS_STORE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_WORKING_SETS_STORE:
         this._setWorkingSetsStore(payload.workingSetsStore);
         break;
-      case ActionTypes.START_EDITING_WORKING_SET:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.START_EDITING_WORKING_SET:
         this._startEditingWorkingSet(payload.editedWorkingSet);
         break;
-      case ActionTypes.FINISH_EDITING_WORKING_SET:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.FINISH_EDITING_WORKING_SET:
         this._finishEditingWorkingSet();
         break;
-      case ActionTypes.CHECK_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CHECK_NODE:
         this._checkNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.UNCHECK_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNCHECK_NODE:
         this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
 
-      case ActionTypes.SET_DRAG_HOVERED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_DRAG_HOVERED_NODE:
         this._setDragHoveredNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.UNHOVER_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNHOVER_NODE:
         this._unhoverNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.SET_SELECTED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_SELECTED_NODE:
         this._setSelectedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.SET_FOCUSED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_FOCUSED_NODE:
         this._setFocusedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.ADD_SELECTED_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ADD_SELECTED_NODE:
         this._addSelectedNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.UNSELECT_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.UNSELECT_NODE:
         this._unselectNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.MOVE_SELECTION_UP:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_UP:
         this._moveSelectionUp();
         break;
-      case ActionTypes.RANGE_SELECT_TO_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_TO_NODE:
         this._rangeSelectToNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionTypes.RANGE_SELECT_UP:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_UP:
         this._rangeSelectUp();
         break;
-      case ActionTypes.RANGE_SELECT_DOWN:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.RANGE_SELECT_DOWN:
         this._rangeSelectDown();
         break;
-      case ActionTypes.MOVE_SELECTION_DOWN:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_DOWN:
         this._moveSelectionDown();
         break;
-      case ActionTypes.MOVE_SELECTION_TO_TOP:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_TO_TOP:
         this._moveSelectionToTop();
         break;
-      case ActionTypes.MOVE_SELECTION_TO_BOTTOM:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.MOVE_SELECTION_TO_BOTTOM:
         this._moveSelectionToBottom();
         break;
-      case ActionTypes.ENSURE_CHILD_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ENSURE_CHILD_NODE:
         this._ensureChildNode(payload.nodeKey);
         break;
-      case ActionTypes.CLEAR_FILTER:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.CLEAR_FILTER:
         this.clearFilter();
         break;
-      case ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.ADD_EXTRA_PROJECT_SELECTION_CONTENT:
         this.addExtraProjectSelectionContent(payload.content);
         break;
-      case ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.REMOVE_EXTRA_PROJECT_SELECTION_CONTENT:
         this.removeExtraProjectSelectionContent(payload.content);
         break;
-      case ActionTypes.SET_OPEN_FILES_EXPANDED:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_OPEN_FILES_EXPANDED:
         this._setOpenFilesExpanded(payload.openFilesExpanded);
         break;
-      case ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_UNCOMMITTED_CHANGES_EXPANDED:
         this._setUncommittedChangesExpanded(payload.uncommittedChangesExpanded);
         break;
-      case ActionTypes.SET_FOLDERS_EXPANDED:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_FOLDERS_EXPANDED:
         this._setFoldersExpanded(payload.foldersExpanded);
         break;
-      case ActionTypes.INVALIDATE_REMOVED_FOLDER:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.INVALIDATE_REMOVED_FOLDER:
         this._invalidateRemovedFolder();
         break;
-      case ActionTypes.SET_TARGET_NODE:
+      case (_FileTreeDispatcher2 || _load_FileTreeDispatcher2()).ActionTypes.SET_TARGET_NODE:
         this._setTargetNode(payload.rootKey, payload.nodeKey);
     }
   }
@@ -516,18 +497,14 @@ export class FileTreeStore {
   /**
   * Use the predicate function to update one or more of the roots in the file tree
   */
-  _updateRoots(predicate: (root: FileTreeNode) => FileTreeNode): void {
+  _updateRoots(predicate) {
     this._setRoots(this.roots.map(predicate));
   }
 
   /**
   * Use the predicate to update a node (or a branch) of the file-tree
   */
-  _updateNodeAtRoot(
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-    predicate: (node: FileTreeNode) => FileTreeNode,
-  ): void {
+  _updateNodeAtRoot(rootKey, nodeKey, predicate) {
     const root = this.roots.get(rootKey);
     if (root == null) {
       return;
@@ -538,10 +515,7 @@ export class FileTreeStore {
       return;
     }
 
-    const roots = this.roots.set(
-      rootKey,
-      this._bubbleUp(node, predicate(node)),
-    );
+    const roots = this.roots.set(rootKey, this._bubbleUp(node, predicate(node)));
 
     this._setRoots(roots);
   }
@@ -549,10 +523,7 @@ export class FileTreeStore {
   /**
    * Update a node by calling the predicate, returns the new node.
    */
-  _updateNode(
-    node: FileTreeNode,
-    predicate: (node: FileTreeNode) => FileTreeNode,
-  ): FileTreeNode {
+  _updateNode(node, predicate) {
     const newNode = predicate(node);
     const roots = this.roots.set(node.rootUri, this._bubbleUp(node, newNode));
     this._setRoots(roots);
@@ -562,10 +533,7 @@ export class FileTreeStore {
   /**
   * Update a node or a branch under any of the roots it was found at
   */
-  _updateNodeAtAllRoots(
-    nodeKey: NuclideUri,
-    predicate: (node: FileTreeNode) => FileTreeNode,
-  ): void {
+  _updateNodeAtAllRoots(nodeKey, predicate) {
     const roots = this.roots.map(root => {
       const node = root.find(nodeKey);
       if (node == null) {
@@ -589,11 +557,7 @@ export class FileTreeStore {
   * optional predicate is also being applied to each newly created parent to support more complex
   * change patterns.
   */
-  _bubbleUp(
-    prevNode: FileTreeNode,
-    newNode: FileTreeNode,
-    postPredicate: (node: FileTreeNode) => FileTreeNode = node => node,
-  ): FileTreeNode {
+  _bubbleUp(prevNode, newNode, postPredicate = node => node) {
     const parent = prevNode.parent;
     if (parent == null) {
       return newNode;
@@ -606,10 +570,10 @@ export class FileTreeStore {
   /**
   * Updates the roots, maintains their sibling relationships and fires the change event.
   */
-  _setRoots(roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>): void {
+  _setRoots(roots) {
     // Explicitly test for the empty case, otherwise configuration changes with an empty
     // tree will not emit changes.
-    const changed = !Immutable.is(roots, this.roots) || roots.isEmpty();
+    const changed = !(_immutable || _load_immutable()).default.is(roots, this.roots) || roots.isEmpty();
     if (changed) {
       this.roots = roots;
       let prevRoot = null;
@@ -629,58 +593,48 @@ export class FileTreeStore {
     }
   }
 
-  _emitChange(): void {
+  _emitChange() {
     if (this._animationFrameRequestSubscription != null) {
       this._animationFrameRequestSubscription.unsubscribe();
     }
 
-    this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(
-      () => {
-        const {performance} = global;
-        const renderStart = performance.now();
-        const childrenCount = this.roots.reduce(
-          (sum, root) => sum + root.shownChildrenCount,
-          0,
-        );
+    this._animationFrameRequestSubscription = (_observable || _load_observable()).nextAnimationFrame.subscribe(() => {
+      const { performance } = global;
+      const renderStart = performance.now();
+      const childrenCount = this.roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 
-        this._emitter.emit('change');
-        this._animationFrameRequestSubscription = null;
+      this._emitter.emit('change');
+      this._animationFrameRequestSubscription = null;
 
-        const duration = (performance.now() - renderStart).toString();
-        track('filetree-root-node-component-render', {
-          'filetree-root-node-component-render-duration': duration,
-          'filetree-root-node-component-rendered-child-count': childrenCount,
-        });
-      },
-    );
+      const duration = (performance.now() - renderStart).toString();
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)('filetree-root-node-component-render', {
+        'filetree-root-node-component-render-duration': duration,
+        'filetree-root-node-component-rendered-child-count': childrenCount
+      });
+    });
   }
 
   /**
   * Update the configuration for the file-tree. The direct writing to the this._conf should be
   * avoided.
   */
-  _updateConf(predicate: (conf: StoreConfigData) => void): void {
+  _updateConf(predicate) {
     predicate(this._conf);
     this._updateRoots(root => {
       return root.updateConf().setRecursive(
-        // Remove selection from hidden nodes under this root
-        node => (node.containsSelection && node.containsHidden ? null : node),
-        node => {
-          if (node.shouldBeShown) {
-            return node;
-          }
+      // Remove selection from hidden nodes under this root
+      node => node.containsSelection && node.containsHidden ? null : node, node => {
+        if (node.shouldBeShown) {
+          return node;
+        }
 
-          // The node is hidden - unselect all nodes under it if there are any
-          return node.setRecursive(
-            subNode => (subNode.containsSelection ? null : subNode),
-            subNode => subNode.setIsSelected(false),
-          );
-        },
-      );
+        // The node is hidden - unselect all nodes under it if there are any
+        return node.setRecursive(subNode => subNode.containsSelection ? null : subNode, subNode => subNode.setIsSelected(false));
+      });
     });
   }
 
-  getTrackedNode(): ?FileTreeNode {
+  getTrackedNode() {
     // Locate the root containing the tracked node efficiently by using the child-derived
     // containsTrackedNode property
     const trackedRoot = this.roots.find(root => root.containsTrackedNode);
@@ -701,48 +655,45 @@ export class FileTreeStore {
     return trackedNode;
   }
 
-  getRepositories(): Immutable.Set<atom$Repository> {
+  getRepositories() {
     return this._repositories;
   }
 
-  getWorkingSet(): WorkingSet {
+  getWorkingSet() {
     return this._conf.workingSet;
   }
 
-  getWorkingSetsStore(): ?WorkingSetsStore {
+  getWorkingSetsStore() {
     return this._workingSetsStore;
   }
 
-  getRootKeys(): Array<NuclideUri> {
+  getRootKeys() {
     return this.roots.toArray().map(root => root.uri);
   }
 
-  getCwdKey(): ?string {
+  getCwdKey() {
     return this._cwdKey;
   }
 
   /**
    * Returns true if the store has no data, i.e. no roots, no children.
    */
-  isEmpty(): boolean {
+  isEmpty() {
     return this.roots.isEmpty();
   }
 
-  getFileChanges(): Immutable.Map<
-    NuclideUri,
-    Map<NuclideUri, FileChangeStatusValue>,
-  > {
+  getFileChanges() {
     return this._fileChanges;
   }
 
-  getIsCalculatingChanges(): boolean {
+  getIsCalculatingChanges() {
     return this._conf.isCalculatingChanges;
   }
 
-  _invalidateRemovedFolder(): void {
+  _invalidateRemovedFolder() {
     const updatedFileChanges = new Map();
     atom.project.getPaths().forEach(projectPath => {
-      const standardizedPath = nuclideUri.ensureTrailingSeparator(projectPath);
+      const standardizedPath = (_nuclideUri || _load_nuclideUri()).default.ensureTrailingSeparator(projectPath);
       // Atom sometimes tells you a repo exists briefly even after it has been removed
       // This causes the map to first flush out the repo and then again try to add the
       // repo but the files now don't exist causing an undefined value to be added.
@@ -753,26 +704,20 @@ export class FileTreeStore {
       }
     });
 
-    this._fileChanges = new Immutable.Map(updatedFileChanges);
+    this._fileChanges = new (_immutable || _load_immutable()).default.Map(updatedFileChanges);
   }
 
-  _setFileChanges(
-    rootKey: NuclideUri,
-    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
-  ): void {
+  _setFileChanges(rootKey, vcsStatuses) {
     const fileChanges = new Map();
     Object.keys(vcsStatuses).forEach(filePath => {
       const statusCode = vcsStatuses[filePath];
-      fileChanges.set(filePath, HgStatusToFileChangeStatus[statusCode]);
+      fileChanges.set(filePath, (_nuclideVcsBase || _load_nuclideVcsBase()).HgStatusToFileChangeStatus[statusCode]);
     });
 
     this._fileChanges = this._fileChanges.set(rootKey, fileChanges);
   }
 
-  _setVcsStatuses(
-    rootKey: NuclideUri,
-    vcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
-  ): void {
+  _setVcsStatuses(rootKey, vcsStatuses) {
     // We use file changes for populating the uncommitted list, this is different as compared
     // to what is computed in the vcsStatuses in that it does not need the exact path but just
     // the root folder present in atom and the file name and its status. Another difference is
@@ -784,7 +729,7 @@ export class FileTreeStore {
     // tree, since the reported VCS status may be for a node that is not yet present in the
     // fetched tree, and so it it can't affect its parents statuses. To have the roots colored
     // consistently we manually add all parents of all of the modified nodes up till the root
-    const enrichedVcsStatuses = {...vcsStatuses};
+    const enrichedVcsStatuses = Object.assign({}, vcsStatuses);
 
     const ensurePresentParents = uri => {
       if (uri === rootKey) {
@@ -793,23 +738,19 @@ export class FileTreeStore {
 
       let current = uri;
       while (current !== rootKey) {
-        current = FileTreeHelpers.getParentKey(current);
+        current = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getParentKey(current);
 
         if (enrichedVcsStatuses[current] != null) {
           return;
         }
 
-        enrichedVcsStatuses[current] = StatusCodeNumber.MODIFIED;
+        enrichedVcsStatuses[current] = (_hgConstants || _load_hgConstants()).StatusCodeNumber.MODIFIED;
       }
     };
 
     Object.keys(vcsStatuses).forEach(uri => {
       const status = vcsStatuses[uri];
-      if (
-        status === StatusCodeNumber.MODIFIED ||
-        status === StatusCodeNumber.ADDED ||
-        status === StatusCodeNumber.REMOVED
-      ) {
+      if (status === (_hgConstants || _load_hgConstants()).StatusCodeNumber.MODIFIED || status === (_hgConstants || _load_hgConstants()).StatusCodeNumber.ADDED || status === (_hgConstants || _load_hgConstants()).StatusCodeNumber.REMOVED) {
         try {
           // An invalid URI might cause an exception to be thrown
           ensurePresentParents(uri);
@@ -826,10 +767,7 @@ export class FileTreeStore {
     }
   }
 
-  _vcsStatusesAreDifferent(
-    rootKey: NuclideUri,
-    newVcsStatuses: {[path: NuclideUri]: StatusCodeNumberValue},
-  ): boolean {
+  _vcsStatusesAreDifferent(rootKey, newVcsStatuses) {
     const currentStatuses = this._conf.vcsStatuses.get(rootKey);
     if (currentStatuses == null || newVcsStatuses == null) {
       if (currentStatuses !== newVcsStatuses) {
@@ -846,21 +784,21 @@ export class FileTreeStore {
     return newKeys.some(key => currentStatuses[key] !== newVcsStatuses[key]);
   }
 
-  _setUsePreviewTabs(usePreviewTabs: boolean): void {
+  _setUsePreviewTabs(usePreviewTabs) {
     this._updateConf(conf => {
       conf.usePreviewTabs = usePreviewTabs;
     });
   }
 
-  _setUsePrefixNav(usePrefixNav: boolean) {
+  _setUsePrefixNav(usePrefixNav) {
     this._usePrefixNav = usePrefixNav;
   }
 
-  usePrefixNav(): boolean {
+  usePrefixNav() {
     return this._usePrefixNav;
   }
 
-  _setAutoExpandSingleChild(autoExpandSingleChild: boolean) {
+  _setAutoExpandSingleChild(autoExpandSingleChild) {
     this._autoExpandSingleChild = autoExpandSingleChild;
   }
 
@@ -870,35 +808,37 @@ export class FileTreeStore {
    * return as promise, to make the caller oblivious to the way children were
    * fetched.
    */
-  async promiseNodeChildKeys(
-    rootKey: string,
-    nodeKey: string,
-  ): Promise<Array<NuclideUri>> {
-    const shownChildrenUris = node => {
-      return node.children
-        .toArray()
-        .filter(n => n.shouldBeShown)
-        .map(n => n.uri);
-    };
+  promiseNodeChildKeys(rootKey, nodeKey) {
+    var _this = this;
 
-    const node = this.getNode(rootKey, nodeKey);
-    if (node == null) {
-      return [];
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const shownChildrenUris = function (node) {
+        return node.children.toArray().filter(function (n) {
+          return n.shouldBeShown;
+        }).map(function (n) {
+          return n.uri;
+        });
+      };
 
-    if (!node.isLoading) {
-      return shownChildrenUris(node);
-    }
+      const node = _this.getNode(rootKey, nodeKey);
+      if (node == null) {
+        return [];
+      }
 
-    await this._fetchChildKeys(nodeKey);
-    return this.promiseNodeChildKeys(rootKey, nodeKey);
+      if (!node.isLoading) {
+        return shownChildrenUris(node);
+      }
+
+      yield _this._fetchChildKeys(nodeKey);
+      return _this.promiseNodeChildKeys(rootKey, nodeKey);
+    })();
   }
 
   /**
   * Uses the .containsSelection child-derived property to efficiently build the list of the
   * currently selected nodes
   */
-  getSelectedNodes(): Immutable.List<FileTreeNode> {
+  getSelectedNodes() {
     const selectedNodes = [];
     this.roots.forEach(root => {
       root.traverse(node => {
@@ -908,19 +848,16 @@ export class FileTreeStore {
         return node.containsSelection;
       });
     });
-    return new Immutable.List(selectedNodes);
+    return new (_immutable || _load_immutable()).default.List(selectedNodes);
   }
 
   // Retrieves target node in an immutable list if it's set, or all selected
   // nodes otherwise
-  getTargetNodes(): Immutable.List<FileTreeNode> {
+  getTargetNodes() {
     if (this._targetNodeKeys) {
-      const targetNode = this.getNode(
-        this._targetNodeKeys.rootKey,
-        this._targetNodeKeys.nodeKey,
-      );
+      const targetNode = this.getNode(this._targetNodeKeys.rootKey, this._targetNodeKeys.nodeKey);
       if (targetNode) {
-        return new Immutable.List([targetNode]);
+        return new (_immutable || _load_immutable()).default.List([targetNode]);
       }
     }
     return this.getSelectedNodes();
@@ -929,7 +866,7 @@ export class FileTreeStore {
   /**
   * Returns a node if it is the only one selected, or null otherwise
   */
-  getSingleSelectedNode(): ?FileTreeNode {
+  getSingleSelectedNode() {
     const selectedNodes = this.getSelectedNodes();
 
     if (selectedNodes.isEmpty() || selectedNodes.size > 1) {
@@ -940,12 +877,9 @@ export class FileTreeStore {
   }
 
   // Retrieves the target node, if it's set, or the first selected node otherwise
-  getSingleTargetNode(): ?FileTreeNode {
+  getSingleTargetNode() {
     if (this._targetNodeKeys) {
-      const targetNode = this.getNode(
-        this._targetNodeKeys.rootKey,
-        this._targetNodeKeys.nodeKey,
-      );
+      const targetNode = this.getNode(this._targetNodeKeys.rootKey, this._targetNodeKeys.nodeKey);
       if (targetNode) {
         return targetNode;
       }
@@ -953,7 +887,7 @@ export class FileTreeStore {
     return this.getSingleSelectedNode();
   }
 
-  getNode(rootKey: NuclideUri, nodeKey: NuclideUri): ?FileTreeNode {
+  getNode(rootKey, nodeKey) {
     const rootNode = this.roots.get(rootKey);
 
     if (rootNode == null) {
@@ -963,27 +897,27 @@ export class FileTreeStore {
     return rootNode.find(nodeKey);
   }
 
-  getRootForPath(nodeKey: NuclideUri): ?FileTreeNode {
+  getRootForPath(nodeKey) {
     const rootNode = this.roots.find(root => nodeKey.startsWith(root.uri));
     return rootNode || null;
   }
 
-  isEditingWorkingSet(): boolean {
+  isEditingWorkingSet() {
     return this._conf.isEditingWorkingSet;
   }
 
   /**
   * Builds the edited working set from the partially-child-derived .checkedStatus property
   */
-  getEditedWorkingSet(): WorkingSet {
+  getEditedWorkingSet() {
     return this._conf.editedWorkingSet;
   }
 
-  isEditedWorkingSetEmpty(): boolean {
+  isEditedWorkingSetEmpty() {
     return this.roots.every(root => root.checkedStatus === 'clear');
   }
 
-  getOpenFilesWorkingSet(): WorkingSet {
+  getOpenFilesWorkingSet() {
     return this._conf.openFilesWorkingSet;
   }
 
@@ -994,45 +928,42 @@ export class FileTreeStore {
    * node's children out of the fetched children URIs and a change subscription is created
    * for the node to monitor future changes.
    */
-  _fetchChildKeys(nodeKey: NuclideUri): Promise<void> {
+  _fetchChildKeys(nodeKey) {
     const existingPromise = this._getLoading(nodeKey);
     if (existingPromise != null) {
       return existingPromise;
     }
 
-    const promise = FileTreeHelpers.fetchChildren(nodeKey).then(
-      childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
-      error => {
-        this._logger.error(`Unable to fetch children for "${nodeKey}".`);
-        this._logger.error('Original error: ', error);
+    const promise = (_FileTreeHelpers || _load_FileTreeHelpers()).default.fetchChildren(nodeKey).then(childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys), error => {
+      this._logger.error(`Unable to fetch children for "${nodeKey}".`);
+      this._logger.error('Original error: ', error);
 
-        // Unless the contents were already fetched in the past
-        // collapse the node and clear its loading state on error so the
-        // user can retry expanding it.
-        this._updateNodeAtAllRoots(nodeKey, node => {
-          if (node.wasFetched) {
-            return node.setIsLoading(false);
-          }
+      // Unless the contents were already fetched in the past
+      // collapse the node and clear its loading state on error so the
+      // user can retry expanding it.
+      this._updateNodeAtAllRoots(nodeKey, node => {
+        if (node.wasFetched) {
+          return node.setIsLoading(false);
+        }
 
-          return node.set({
-            isExpanded: false,
-            isLoading: false,
-            children: new Immutable.OrderedMap(),
-          });
+        return node.set({
+          isExpanded: false,
+          isLoading: false,
+          children: new (_immutable || _load_immutable()).default.OrderedMap()
         });
+      });
 
-        this._clearLoading(nodeKey);
-      },
-    );
+      this._clearLoading(nodeKey);
+    });
 
     this._setLoading(nodeKey, promise);
     return promise;
   }
 
-  _setFetchedKeys(nodeKey: NuclideUri, childrenKeys: Array<string> = []): void {
-    const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
+  _setFetchedKeys(nodeKey, childrenKeys = []) {
+    const directory = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDirectoryByKey(nodeKey);
 
-    const nodesToAutoExpand: Array<FileTreeNode> = [];
+    const nodesToAutoExpand = [];
 
     // The node with URI === nodeKey might be present at several roots - update them all
     this._updateNodeAtAllRoots(nodeKey, node => {
@@ -1044,27 +975,19 @@ export class FileTreeStore {
           return prevNode;
         }
 
-        return new FileTreeNode(
-          {
-            uri,
-            rootUri: node.rootUri,
-            isCwd: uri === this._cwdKey,
-          },
-          this._conf,
-        );
+        return new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode({
+          uri,
+          rootUri: node.rootUri,
+          isCwd: uri === this._cwdKey
+        }, this._conf);
       });
 
-      if (
-        this._autoExpandSingleChild &&
-        childrenNodes.length === 1 &&
-        childrenNodes[0].isContainer
-      ) {
+      if (this._autoExpandSingleChild && childrenNodes.length === 1 && childrenNodes[0].isContainer) {
         nodesToAutoExpand.push(childrenNodes[0]);
       }
 
-      const children = FileTreeNode.childrenFromArray(childrenNodes);
-      const subscription =
-        node.subscription || this._makeSubscription(nodeKey, directory);
+      const children = (_FileTreeNode || _load_FileTreeNode()).FileTreeNode.childrenFromArray(childrenNodes);
+      const subscription = node.subscription || this._makeSubscription(nodeKey, directory);
 
       // If the fetch indicated that some children were removed - dispose of all
       // their subscriptions
@@ -1083,7 +1006,7 @@ export class FileTreeStore {
         isLoading: false,
         wasFetched: true,
         children,
-        subscription,
+        subscription
       });
     });
 
@@ -1093,7 +1016,7 @@ export class FileTreeStore {
     });
   }
 
-  _makeSubscription(nodeKey: NuclideUri, directory: ?Directory): ?IDisposable {
+  _makeSubscription(nodeKey, directory) {
     if (directory == null) {
       return null;
     }
@@ -1138,19 +1061,19 @@ export class FileTreeStore {
     }
   }
 
-  _getLoading(nodeKey: NuclideUri): ?Promise<void> {
+  _getLoading(nodeKey) {
     return this._isLoadingMap.get(nodeKey);
   }
 
-  _setLoading(nodeKey: NuclideUri, value: Promise<void>): void {
+  _setLoading(nodeKey, value) {
     this._isLoadingMap = this._isLoadingMap.set(nodeKey, value);
   }
 
-  hasCwd(): boolean {
+  hasCwd() {
     return this._cwdKey != null;
   }
 
-  _setCwdKey(cwdKey: ?NuclideUri): void {
+  _setCwdKey(cwdKey) {
     if (this._cwdKey != null) {
       this._updateNodeAtAllRoots(this._cwdKey, node => node.setIsCwd(false));
     }
@@ -1160,55 +1083,42 @@ export class FileTreeStore {
     }
   }
 
-  getFilter(): string {
+  getFilter() {
     return this._filter;
   }
 
-  addFilterLetter(letter: string): void {
+  addFilterLetter(letter) {
     this._filter = this._filter + letter;
     this._updateRoots(root => {
-      return root.setRecursive(
-        node => (node.containsFilterMatches ? null : node),
-        node => {
-          return matchesFilter(node.name, this._filter)
-            ? node.set({
-                highlightedText: this._filter,
-                matchesFilter: true,
-              })
-            : node.set({highlightedText: '', matchesFilter: false});
-        },
-      );
+      return root.setRecursive(node => node.containsFilterMatches ? null : node, node => {
+        return (0, (_FileTreeFilterHelper || _load_FileTreeFilterHelper()).matchesFilter)(node.name, this._filter) ? node.set({
+          highlightedText: this._filter,
+          matchesFilter: true
+        }) : node.set({ highlightedText: '', matchesFilter: false });
+      });
     });
     this._selectFirstFilter();
     this._emitChange();
   }
 
-  clearFilter(): void {
+  clearFilter() {
     this._filter = '';
     this._updateRoots(root => {
-      return root.setRecursive(
-        node => null,
-        node => node.set({highlightedText: '', matchesFilter: true}),
-      );
+      return root.setRecursive(node => null, node => node.set({ highlightedText: '', matchesFilter: true }));
     });
   }
 
-  removeFilterLetter(): void {
+  removeFilterLetter() {
     const oldLength = this._filter.length;
     this._filter = this._filter.substr(0, this._filter.length - 1);
     if (oldLength > 1) {
       this._updateRoots(root => {
-        return root.setRecursive(
-          node => null,
-          node => {
-            return matchesFilter(node.name, this._filter)
-              ? node.set({
-                  highlightedText: this._filter,
-                  matchesFilter: true,
-                })
-              : node.set({highlightedText: '', matchesFilter: false});
-          },
-        );
+        return root.setRecursive(node => null, node => {
+          return (0, (_FileTreeFilterHelper || _load_FileTreeFilterHelper()).matchesFilter)(node.name, this._filter) ? node.set({
+            highlightedText: this._filter,
+            matchesFilter: true
+          }) : node.set({ highlightedText: '', matchesFilter: false });
+        });
       });
       this._emitChange();
     } else if (oldLength === 1) {
@@ -1216,29 +1126,25 @@ export class FileTreeStore {
     }
   }
 
-  getExtraProjectSelectionContent(): Immutable.List<React.Element<any>> {
+  getExtraProjectSelectionContent() {
     return this._extraProjectSelectionContent;
   }
 
-  addExtraProjectSelectionContent(content: React.Element<any>) {
-    this._extraProjectSelectionContent = this._extraProjectSelectionContent.push(
-      content,
-    );
+  addExtraProjectSelectionContent(content) {
+    this._extraProjectSelectionContent = this._extraProjectSelectionContent.push(content);
     this._emitChange();
   }
 
-  removeExtraProjectSelectionContent(content: React.Element<any>) {
+  removeExtraProjectSelectionContent(content) {
     const index = this._extraProjectSelectionContent.indexOf(content);
     if (index === -1) {
       return;
     }
-    this._extraProjectSelectionContent = this._extraProjectSelectionContent.remove(
-      index,
-    );
+    this._extraProjectSelectionContent = this._extraProjectSelectionContent.remove(index);
     this._emitChange();
   }
 
-  getFilterFound(): boolean {
+  getFilterFound() {
     return this.roots.some(root => root.containsFilterMatches);
   }
 
@@ -1249,57 +1155,50 @@ export class FileTreeStore {
   * nodes otherwise.
   * This value gets cleared everytime a selection is set
   */
-  _setTargetNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._targetNodeKeys = {rootKey, nodeKey};
+  _setTargetNode(rootKey, nodeKey) {
+    this._targetNodeKeys = { rootKey, nodeKey };
   }
 
   /**
    * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
    * because it only changes state if a node is being tracked.
    */
-  _clearTrackedNodeIfNotLoading(): void {
+  _clearTrackedNodeIfNotLoading() {
     if (
-      /*
-       * The loading map being empty is a heuristic for when loading has completed. It is inexact
-       * because the loading might be unrelated to the tracked node, however it is cheap and false
-       * positives will only last until loading is complete or until the user clicks another node in
-       * the tree.
-       */
-      this._isLoadingMap.isEmpty()
-    ) {
+    /*
+     * The loading map being empty is a heuristic for when loading has completed. It is inexact
+     * because the loading might be unrelated to the tracked node, however it is cheap and false
+     * positives will only last until loading is complete or until the user clicks another node in
+     * the tree.
+     */
+    this._isLoadingMap.isEmpty()) {
       // Loading has completed. Allow scrolling to proceed as usual.
       this._clearTrackedNode();
     }
   }
 
-  _clearLoading(nodeKey: NuclideUri): void {
+  _clearLoading(nodeKey) {
     this._isLoadingMap = this._isLoadingMap.delete(nodeKey);
   }
 
-  _startReorderDrag(draggedRootKey: NuclideUri): void {
+  _startReorderDrag(draggedRootKey) {
     const rootIdx = this.getRootKeys().indexOf(draggedRootKey);
     if (rootIdx === -1) {
       return;
     }
-    this._updateNodeAtRoot(draggedRootKey, draggedRootKey, node =>
-      node.setIsBeingReordered(true),
-    );
+    this._updateNodeAtRoot(draggedRootKey, draggedRootKey, node => node.setIsBeingReordered(true));
     this.reorderPreviewStatus = {
       source: draggedRootKey,
-      sourceIdx: rootIdx,
+      sourceIdx: rootIdx
     };
     this._emitChange();
   }
 
-  _reorderDragInto(targetRootKey: NuclideUri): void {
+  _reorderDragInto(targetRootKey) {
     const reorderPreviewStatus = this.reorderPreviewStatus;
     const targetIdx = this.getRootKeys().indexOf(targetRootKey);
     const targetRootNode = this.getNode(targetRootKey, targetRootKey);
-    if (
-      reorderPreviewStatus == null ||
-      targetIdx === -1 ||
-      targetRootNode == null
-    ) {
+    if (reorderPreviewStatus == null || targetIdx === -1 || targetRootNode == null) {
       return;
     }
 
@@ -1310,15 +1209,14 @@ export class FileTreeStore {
       targetNode = targetRootNode.findLastRecursiveChild();
     }
 
-    this.reorderPreviewStatus = {
-      ...this.reorderPreviewStatus,
+    this.reorderPreviewStatus = Object.assign({}, this.reorderPreviewStatus, {
       target: targetNode == null ? undefined : targetNode.uri,
-      targetIdx,
-    };
+      targetIdx
+    });
     this._emitChange();
   }
 
-  _doReorderRoots(): void {
+  _doReorderRoots() {
     const rootKeys = this.getRootKeys();
     const rps = this.reorderPreviewStatus;
     if (rps == null) {
@@ -1335,71 +1233,74 @@ export class FileTreeStore {
     this._setRootKeys(rootKeys);
   }
 
-  _endReorderDrag(): void {
+  _endReorderDrag() {
     if (this.reorderPreviewStatus != null) {
       const sourceRootKey = this.reorderPreviewStatus.source;
-      this._updateNodeAtRoot(sourceRootKey, sourceRootKey, node =>
-        node.setIsBeingReordered(false),
-      );
+      this._updateNodeAtRoot(sourceRootKey, sourceRootKey, node => node.setIsBeingReordered(false));
       this.reorderPreviewStatus = null;
       this._emitChange();
     }
   }
 
-  async _moveToNode(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
-    const targetNode = this.getNode(rootKey, nodeKey);
-    if (targetNode == null || !targetNode.isContainer) {
-      return;
-    }
+  _moveToNode(rootKey, nodeKey) {
+    var _this2 = this;
 
-    const selectedNodes = this.getSelectedNodes();
-    this._clearDragHover();
-    this._clearSelection();
+    return (0, _asyncToGenerator.default)(function* () {
+      const targetNode = _this2.getNode(rootKey, nodeKey);
+      if (targetNode == null || !targetNode.isContainer) {
+        return;
+      }
 
-    try {
-      await FileTreeHgHelpers.moveNodes(selectedNodes.toJS(), targetNode.uri);
-    } catch (e) {
-      atom.notifications.addError('Failed to move entries: ' + e.message);
-    }
+      const selectedNodes = _this2.getSelectedNodes();
+      _this2._clearDragHover();
+      _this2._clearSelection();
+
+      try {
+        yield (_FileTreeHgHelpers || _load_FileTreeHgHelpers()).default.moveNodes(selectedNodes.toJS(), targetNode.uri);
+      } catch (e) {
+        atom.notifications.addError('Failed to move entries: ' + e.message);
+      }
+    })();
   }
 
-  async _deleteSelectedNodes(): Promise<void> {
-    const selectedNodes = this.getSelectedNodes();
-    try {
-      await FileTreeHgHelpers.deleteNodes(selectedNodes.toJS());
-      this._clearSelectionRange();
-    } catch (e) {
-      atom.notifications.addError('Failed to delete entries: ' + e.message);
-    }
+  _deleteSelectedNodes() {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const selectedNodes = _this3.getSelectedNodes();
+      try {
+        yield (_FileTreeHgHelpers || _load_FileTreeHgHelpers()).default.deleteNodes(selectedNodes.toJS());
+        _this3._clearSelectionRange();
+      } catch (e) {
+        atom.notifications.addError('Failed to delete entries: ' + e.message);
+      }
+    })();
   }
 
-  _expandNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    const recursivelyExpandNode = (node: FileTreeNode) => {
-      return node.setIsExpanded(true).setRecursive(
-        n => {
-          if (!n.isContainer) {
-            return n;
-          }
-
-          if (this._autoExpandSingleChild && n.children.size === 1) {
-            if (!n.isExpanded) {
-              return recursivelyExpandNode(n);
-            }
-
-            return null;
-          }
-
-          return !n.isExpanded ? n : null;
-        },
-        n => {
-          if (n.isContainer && n.isExpanded) {
-            this._fetchChildKeys(n.uri);
-            return n.setIsLoading(true);
-          }
-
+  _expandNode(rootKey, nodeKey) {
+    const recursivelyExpandNode = node => {
+      return node.setIsExpanded(true).setRecursive(n => {
+        if (!n.isContainer) {
           return n;
-        },
-      );
+        }
+
+        if (this._autoExpandSingleChild && n.children.size === 1) {
+          if (!n.isExpanded) {
+            return recursivelyExpandNode(n);
+          }
+
+          return null;
+        }
+
+        return !n.isExpanded ? n : null;
+      }, n => {
+        if (n.isContainer && n.isExpanded) {
+          this._fetchChildKeys(n.uri);
+          return n.setIsLoading(true);
+        }
+
+        return n;
+      });
     };
 
     this._updateNodeAtRoot(rootKey, nodeKey, recursivelyExpandNode);
@@ -1409,14 +1310,10 @@ export class FileTreeStore {
    * Performes a deep BFS scanning expand of contained nodes.
    * returns - a promise fulfilled when the expand operation is finished
    */
-  _expandNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): Promise<void> {
+  _expandNodeDeep(rootKey, nodeKey) {
     // Stop the traversal after 100 nodes were added to the tree
-    const itNodes = new FileTreeStoreBfsIterator(
-      this,
-      rootKey,
-      nodeKey,
-      /* limit */ 100,
-    );
+    const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey,
+    /* limit */100);
     const promise = new Promise(resolve => {
       const expand = () => {
         const traversedNodeKey = itNodes.traversedNode();
@@ -1439,34 +1336,31 @@ export class FileTreeStore {
     return promise;
   }
 
-  _collapseNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _collapseNode(rootKey, nodeKey) {
     this._updateNodeAtRoot(rootKey, nodeKey, node => {
       // Clear all selected nodes under the node being collapsed and dispose their subscriptions
-      return node.setRecursive(
-        childNode => {
-          if (childNode.isExpanded) {
-            return null;
-          }
-          return childNode;
-        },
-        childNode => {
-          if (childNode.subscription != null) {
-            childNode.subscription.dispose();
-          }
+      return node.setRecursive(childNode => {
+        if (childNode.isExpanded) {
+          return null;
+        }
+        return childNode;
+      }, childNode => {
+        if (childNode.subscription != null) {
+          childNode.subscription.dispose();
+        }
 
-          if (childNode.uri === node.uri) {
-            return childNode.set({isExpanded: false, subscription: null});
-          } else {
-            return childNode.set({isSelected: false, subscription: null});
-          }
-        },
-      );
+        if (childNode.uri === node.uri) {
+          return childNode.set({ isExpanded: false, subscription: null });
+        } else {
+          return childNode.set({ isSelected: false, subscription: null });
+        }
+      });
     });
   }
 
-  _collapseNodeDeep(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _collapseNodeDeep(rootKey, nodeKey) {
     this._updateNodeAtRoot(rootKey, nodeKey, node => {
-      return node.setRecursive(/* prePredicate */ null, childNode => {
+      return node.setRecursive( /* prePredicate */null, childNode => {
         if (childNode.subscription != null) {
           childNode.subscription.dispose();
         }
@@ -1475,80 +1369,66 @@ export class FileTreeStore {
           return childNode.set({
             isExpanded: false,
             isSelected: false,
-            subscription: null,
+            subscription: null
           });
         } else {
-          return childNode.set({isExpanded: false, subscription: null});
+          return childNode.set({ isExpanded: false, subscription: null });
         }
       });
     });
   }
 
-  _setDragHoveredNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _setDragHoveredNode(rootKey, nodeKey) {
     this._clearDragHover();
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.setIsDragHovered(true),
-    );
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsDragHovered(true));
   }
 
-  _unhoverNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.setIsDragHovered(false),
-    );
+  _unhoverNode(rootKey, nodeKey) {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsDragHovered(false));
   }
 
   /**
   * Selects a single node and tracks it.
   */
-  _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _setSelectedNode(rootKey, nodeKey) {
     this._clearSelection(rootKey, nodeKey);
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
     this._setTrackedNode(rootKey, nodeKey);
-    this._setSelectionRange(
-      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
-    );
+    this._setSelectionRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).SelectionRange.ofSingleItem(new (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey(rootKey, nodeKey)));
   }
 
   /**
    * Mark a node that has been focused, similar to selected, but only true after mouseup.
    */
-  _setFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _setFocusedNode(rootKey, nodeKey) {
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsFocused(true));
   }
 
   /**
    * Selects and focuses a node in one pass.
    */
-  _setSelectedAndFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _setSelectedAndFocusedNode(rootKey, nodeKey) {
     this._clearSelection(rootKey, nodeKey);
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: true, isFocused: true}),
-    );
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.set({ isSelected: true, isFocused: true }));
     this._setTrackedNode(rootKey, nodeKey);
-    this._setSelectionRange(
-      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
-    );
+    this._setSelectionRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).SelectionRange.ofSingleItem(new (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey(rootKey, nodeKey)));
   }
 
-  _addSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _addSelectedNode(rootKey, nodeKey) {
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
-    this._setSelectionRange(
-      SelectionRange.ofSingleItem(new RangeKey(rootKey, nodeKey)),
-    );
+    this._setSelectionRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).SelectionRange.ofSingleItem(new (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey(rootKey, nodeKey)));
   }
 
-  _unselectNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._updateNodeAtRoot(rootKey, nodeKey, node =>
-      node.set({isSelected: false, isFocused: false}),
-    );
+  _unselectNode(rootKey, nodeKey) {
+    this._updateNodeAtRoot(rootKey, nodeKey, node => node.set({ isSelected: false, isFocused: false }));
   }
 
-  _setSelectionRange(selectionRange: SelectionRange): void {
+  _setSelectionRange(selectionRange) {
     this._selectionRange = selectionRange;
     this._targetNodeKeys = null;
   }
 
-  _clearSelectionRange(): void {
+  _clearSelectionRange() {
     this._selectionRange = null;
     this._targetNodeKeys = null;
   }
@@ -1560,14 +1440,7 @@ export class FileTreeStore {
    * - if these two nodes are not selected, and there is no nearby node to fall back to.
    * When this function returns, the selection range always contains valid data.
    */
-  _refreshSelectionRange(): ?{
-    selectionRange: SelectionRange,
-    anchorNode: FileTreeNode,
-    rangeNode: FileTreeNode,
-    anchorIndex: number,
-    rangeIndex: number,
-    direction: 'up' | 'down' | 'none',
-  } {
+  _refreshSelectionRange() {
     const invalidate = () => {
       this._clearSelectionRange();
       return null;
@@ -1585,22 +1458,16 @@ export class FileTreeStore {
       return invalidate();
     }
 
-    anchorNode = RangeUtil.findSelectedNode(anchorNode);
-    rangeNode = RangeUtil.findSelectedNode(rangeNode);
+    anchorNode = (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeUtil.findSelectedNode(anchorNode);
+    rangeNode = (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeUtil.findSelectedNode(rangeNode);
     if (anchorNode == null || rangeNode == null) {
       return invalidate();
     }
     const anchorIndex = anchorNode.calculateVisualIndex();
     const rangeIndex = rangeNode.calculateVisualIndex();
-    const direction =
-      rangeIndex > anchorIndex
-        ? 'down'
-        : rangeIndex === anchorIndex ? 'none' : 'up';
+    const direction = rangeIndex > anchorIndex ? 'down' : rangeIndex === anchorIndex ? 'none' : 'up';
 
-    selectionRange = new SelectionRange(
-      RangeKey.of(anchorNode),
-      RangeKey.of(rangeNode),
-    );
+    selectionRange = new (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).SelectionRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(anchorNode), (_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(rangeNode));
     this._setSelectionRange(selectionRange);
     return {
       selectionRange,
@@ -1608,19 +1475,19 @@ export class FileTreeStore {
       rangeNode,
       anchorIndex,
       rangeIndex,
-      direction,
+      direction
     };
   }
 
   /**
    * Bulk selection based on the range.
    */
-  _rangeSelectToNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _rangeSelectToNode(rootKey, nodeKey) {
     const data = this._refreshSelectionRange();
     if (data == null) {
       return;
     }
-    const {selectionRange, anchorIndex, rangeIndex} = data;
+    const { selectionRange, anchorIndex, rangeIndex } = data;
 
     let nextRangeNode = this.getNode(rootKey, nodeKey);
     if (nextRangeNode == null) {
@@ -1637,76 +1504,63 @@ export class FileTreeStore {
     let beginIndex = 1;
 
     // traversing the tree, flip the isSelected flag when applicable.
-    const roots = this.roots.map((rootNode: FileTreeNode): FileTreeNode =>
-      rootNode.setRecursive(
-        // keep traversing the sub-tree,
-        // - if the node is shown, has children, and in the applicable range.
-        (node: FileTreeNode): ?FileTreeNode => {
-          if (!node.shouldBeShown) {
-            return node;
-          }
-          if (node.shownChildrenCount === 1) {
-            beginIndex++;
-            return node;
-          }
-          const endIndex = beginIndex + node.shownChildrenCount - 1;
-          if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
-            beginIndex++;
-            return null;
-          }
-          beginIndex += node.shownChildrenCount;
-          return node;
-        },
-        // flip the isSelected flag accordingly, based on previous and current range.
-        (node: FileTreeNode): FileTreeNode => {
-          if (!node.shouldBeShown) {
-            return node;
-          }
-          const curIndex = beginIndex - node.shownChildrenCount;
-          const inOldRange =
-            Math.sign(curIndex - anchorIndex) *
-              Math.sign(curIndex - rangeIndex) !==
-            1;
-          const inNewRange =
-            Math.sign(curIndex - anchorIndex) *
-              Math.sign(curIndex - nextRangeIndex) !==
-            1;
-          if ((inOldRange && inNewRange) || (!inOldRange && !inNewRange)) {
-            return node;
-          } else if (inOldRange && !inNewRange) {
-            return node.set({isSelected: false, isFocused: false});
-          } else {
-            return node.set({isSelected: true, isFocused: true});
-          }
-        },
-      ),
-    );
+    const roots = this.roots.map(rootNode => rootNode.setRecursive(
+    // keep traversing the sub-tree,
+    // - if the node is shown, has children, and in the applicable range.
+    node => {
+      if (!node.shouldBeShown) {
+        return node;
+      }
+      if (node.shownChildrenCount === 1) {
+        beginIndex++;
+        return node;
+      }
+      const endIndex = beginIndex + node.shownChildrenCount - 1;
+      if (beginIndex <= modMaxIndex && modMinIndex <= endIndex) {
+        beginIndex++;
+        return null;
+      }
+      beginIndex += node.shownChildrenCount;
+      return node;
+    },
+    // flip the isSelected flag accordingly, based on previous and current range.
+    node => {
+      if (!node.shouldBeShown) {
+        return node;
+      }
+      const curIndex = beginIndex - node.shownChildrenCount;
+      const inOldRange = Math.sign(curIndex - anchorIndex) * Math.sign(curIndex - rangeIndex) !== 1;
+      const inNewRange = Math.sign(curIndex - anchorIndex) * Math.sign(curIndex - nextRangeIndex) !== 1;
+      if (inOldRange && inNewRange || !inOldRange && !inNewRange) {
+        return node;
+      } else if (inOldRange && !inNewRange) {
+        return node.set({ isSelected: false, isFocused: false });
+      } else {
+        return node.set({ isSelected: true, isFocused: true });
+      }
+    }));
     this._setRoots(roots);
 
     // expand the range to merge existing selected nodes.
-    const getNextNode = (cur: FileTreeNode) =>
-      nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
+    const getNextNode = cur => nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
     let probe = getNextNode(nextRangeNode);
     while (probe != null && probe.isSelected) {
       nextRangeNode = probe;
       probe = getNextNode(nextRangeNode);
     }
-    this._setSelectionRange(
-      selectionRange.withNewRange(RangeKey.of(nextRangeNode)),
-    );
+    this._setSelectionRange(selectionRange.withNewRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(nextRangeNode)));
   }
 
   /**
    * Move the range of selections by one step.
    */
-  _rangeSelectMove(move: 'up' | 'down'): void {
+  _rangeSelectMove(move) {
     const data = this._refreshSelectionRange();
     if (data == null) {
       return;
     }
-    const {selectionRange, anchorNode, rangeNode, direction} = data;
-    const getNextNode = (cur: FileTreeNode) =>
-      move === 'up' ? cur.findPrevious() : cur.findNext();
+    const { selectionRange, anchorNode, rangeNode, direction } = data;
+    const getNextNode = cur => move === 'up' ? cur.findPrevious() : cur.findNext();
 
     const isExpanding = direction === move || direction === 'none';
 
@@ -1718,55 +1572,41 @@ export class FileTreeStore {
       if (nextNode == null) {
         return;
       }
-      nextNode = this._updateNode(nextNode, n =>
-        n.set({isSelected: true, isFocused: true}),
-      );
+      nextNode = this._updateNode(nextNode, n => n.set({ isSelected: true, isFocused: true }));
       let probe = getNextNode(nextNode);
       while (probe != null && probe.isSelected) {
         nextNode = probe;
         probe = getNextNode(nextNode);
       }
-      this._setSelectionRange(
-        selectionRange.withNewRange(RangeKey.of(nextNode)),
-      );
+      this._setSelectionRange(selectionRange.withNewRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(nextNode)));
       this._setTrackedNode(nextNode.rootUri, nextNode.uri);
     } else {
       let nextNode = rangeNode;
-      while (
-        nextNode != null &&
-        nextNode !== anchorNode &&
-        nextNode.isSelected === false
-      ) {
+      while (nextNode != null && nextNode !== anchorNode && nextNode.isSelected === false) {
         nextNode = getNextNode(nextNode);
       }
       if (nextNode == null) {
         return;
       }
       if (nextNode === anchorNode) {
-        this._setSelectionRange(
-          selectionRange.withNewRange(RangeKey.of(nextNode)),
-        );
+        this._setSelectionRange(selectionRange.withNewRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(nextNode)));
         return;
       }
-      nextNode = this._updateNode(nextNode, n =>
-        n.set({isSelected: false, isFocused: false}),
-      );
-      this._setSelectionRange(
-        selectionRange.withNewRange(RangeKey.of(nextNode)),
-      );
+      nextNode = this._updateNode(nextNode, n => n.set({ isSelected: false, isFocused: false }));
+      this._setSelectionRange(selectionRange.withNewRange((_FileTreeSelectionRange || _load_FileTreeSelectionRange()).RangeKey.of(nextNode)));
       this._setTrackedNode(nextNode.rootUri, nextNode.uri);
     }
   }
 
-  _rangeSelectUp(): void {
+  _rangeSelectUp() {
     this._rangeSelectMove('up');
   }
 
-  _rangeSelectDown(): void {
+  _rangeSelectDown() {
     this._rangeSelectMove('down');
   }
 
-  _selectFirstFilter(): void {
+  _selectFirstFilter() {
     let node = this.getSingleSelectedNode();
     // if the current node matches the filter do nothing
     if (node != null && node.matchesFilter) {
@@ -1785,7 +1625,7 @@ export class FileTreeStore {
   * Moves the selection one node down. In case several nodes were selected, the topmost (first in
   * the natural visual order) is considered to be the reference point for the move.
   */
-  _moveSelectionDown(): void {
+  _moveSelectionDown() {
     if (this.roots.isEmpty()) {
       return;
     }
@@ -1813,7 +1653,7 @@ export class FileTreeStore {
   * Moves the selection one node up. In case several nodes were selected, the topmost (first in
   * the natural visual order) is considered to be the reference point for the move.
   */
-  _moveSelectionUp(): void {
+  _moveSelectionUp() {
     if (this.roots.isEmpty()) {
       return;
     }
@@ -1837,7 +1677,7 @@ export class FileTreeStore {
     }
   }
 
-  _moveSelectionToTop(): void {
+  _moveSelectionToTop() {
     if (this.roots.isEmpty()) {
       return;
     }
@@ -1852,7 +1692,7 @@ export class FileTreeStore {
     }
   }
 
-  _moveSelectionToBottom(): void {
+  _moveSelectionToBottom() {
     if (this.roots.isEmpty()) {
       return;
     }
@@ -1862,62 +1702,44 @@ export class FileTreeStore {
     this._setSelectedAndFocusedNode(lastChild.rootUri, lastChild.uri);
   }
 
-  _clearDragHover(): void {
+  _clearDragHover() {
     this._updateRoots(root => {
-      return root.setRecursive(
-        node => (node.containsDragHover ? null : node),
-        node => node.setIsDragHovered(false),
-      );
+      return root.setRecursive(node => node.containsDragHover ? null : node, node => node.setIsDragHovered(false));
     });
   }
 
   // Clear selections and focuses on all nodes except an optionally specified
   // current node.
-  _clearSelection(currRootKey?: NuclideUri, currNodeKey?: NuclideUri): void {
+  _clearSelection(currRootKey, currNodeKey) {
     this._updateRoots(root => {
-      return root.setRecursive(
-        node => (node.containsSelection ? null : node),
-        node => {
-          return node.rootUri === currRootKey && node.uri === currNodeKey
-            ? node
-            : node.set({isSelected: false, isFocused: false});
-        },
-      );
+      return root.setRecursive(node => node.containsSelection ? null : node, node => {
+        return node.rootUri === currRootKey && node.uri === currNodeKey ? node : node.set({ isSelected: false, isFocused: false });
+      });
     });
     this._clearSelectionRange();
   }
 
-  _setRootKeys(rootKeys: Array<NuclideUri>): void {
+  _setRootKeys(rootKeys) {
     const rootNodes = rootKeys.map(rootUri => {
       const root = this.roots.get(rootUri);
       if (root != null) {
         return root;
       }
 
-      return new FileTreeNode(
-        {
-          uri: rootUri,
-          rootUri,
-          connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
-        },
-        this._conf,
-      );
+      return new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode({
+        uri: rootUri,
+        rootUri,
+        connectionTitle: (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDisplayTitle(rootUri) || ''
+      }, this._conf);
     });
 
-    const roots = new Immutable.OrderedMap(
-      rootNodes.map(root => [root.uri, root]),
-    );
+    const roots = new (_immutable || _load_immutable()).default.OrderedMap(rootNodes.map(root => [root.uri, root]));
     const removedRoots = this.roots.filter(root => !roots.has(root.uri));
-    removedRoots.forEach(root =>
-      root.traverse(
-        node => node.isExpanded,
-        node => {
-          if (node.subscription != null) {
-            node.subscription.dispose();
-          }
-        },
-      ),
-    );
+    removedRoots.forEach(root => root.traverse(node => node.isExpanded, node => {
+      if (node.subscription != null) {
+        node.subscription.dispose();
+      }
+    }));
     this._setRoots(roots);
 
     // Just in case there's a race between the update of the root keys and the cwdKey and the cwdKey
@@ -1929,7 +1751,7 @@ export class FileTreeStore {
   * Makes sure a certain child node is present in the file tree, creating all its ancestors, if
   * needed and scheduling a child key fetch. Used by the reveal active file functionality.
   */
-  _ensureChildNode(nodeKey: NuclideUri): void {
+  _ensureChildNode(nodeKey) {
     let firstRootUri;
 
     const expandNode = node => {
@@ -1941,9 +1763,9 @@ export class FileTreeStore {
         node.subscription.dispose();
       }
 
-      const directory = FileTreeHelpers.getDirectoryByKey(node.uri);
+      const directory = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getDirectoryByKey(node.uri);
       const subscription = this._makeSubscription(node.uri, directory);
-      return node.set({subscription, isExpanded: true});
+      return node.set({ subscription, isExpanded: true });
     };
 
     this._updateRoots(root => {
@@ -1965,42 +1787,35 @@ export class FileTreeStore {
       }
 
       const parents = [];
-      let currentParentUri = FileTreeHelpers.getParentKey(nodeKey);
+      let currentParentUri = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getParentKey(nodeKey);
       const rootUri = root.uri;
       while (currentParentUri !== deepest.uri) {
         parents.push(currentParentUri);
-        currentParentUri = FileTreeHelpers.getParentKey(currentParentUri);
+        currentParentUri = (_FileTreeHelpers || _load_FileTreeHelpers()).default.getParentKey(currentParentUri);
       }
 
-      let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, this._conf);
+      let currentChild = new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode({ uri: nodeKey, rootUri }, this._conf);
 
       parents.forEach(currentUri => {
         this._fetchChildKeys(currentUri);
-        const parent = new FileTreeNode(
-          {
-            uri: currentUri,
-            rootUri,
-            isLoading: true,
-            isExpanded: true,
-            children: FileTreeNode.childrenFromArray([currentChild]),
-          },
-          this._conf,
-        );
+        const parent = new (_FileTreeNode || _load_FileTreeNode()).FileTreeNode({
+          uri: currentUri,
+          rootUri,
+          isLoading: true,
+          isExpanded: true,
+          children: (_FileTreeNode || _load_FileTreeNode()).FileTreeNode.childrenFromArray([currentChild])
+        }, this._conf);
 
         currentChild = parent;
       });
 
       this._fetchChildKeys(deepest.uri);
-      return this._bubbleUp(
-        deepest,
-        deepest.set({
-          isLoading: true,
-          isExpanded: true,
-          isPendingLoad: true,
-          children: deepest.children.set(currentChild.name, currentChild),
-        }),
-        expandNode,
-      );
+      return this._bubbleUp(deepest, deepest.set({
+        isLoading: true,
+        isExpanded: true,
+        isPendingLoad: true,
+        children: deepest.children.set(currentChild.name, currentChild)
+      }), expandNode);
     });
 
     if (firstRootUri != null) {
@@ -2008,42 +1823,39 @@ export class FileTreeStore {
     }
   }
 
-  _clearTrackedNode(): void {
+  _clearTrackedNode() {
     this._updateRoots(root => {
       if (!root.containsTrackedNode) {
         return root;
       }
 
-      return root.setRecursive(
-        node => (node.containsTrackedNode ? null : node),
-        node => node.setIsTracked(false),
-      );
+      return root.setRecursive(node => node.containsTrackedNode ? null : node, node => node.setIsTracked(false));
     });
   }
 
-  _setTrackedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _setTrackedNode(rootKey, nodeKey) {
     this._clearTrackedNode();
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsTracked(true));
   }
 
-  _setRepositories(repositories: Immutable.Set<atom$Repository>): void {
+  _setRepositories(repositories) {
     this._repositories = repositories;
     this._updateConf(conf => {
       const reposByRoot = {};
       this.roots.forEach(root => {
-        reposByRoot[root.uri] = repositoryForPath(root.uri);
+        reposByRoot[root.uri] = (0, (_nuclideVcsBase || _load_nuclideVcsBase()).repositoryForPath)(root.uri);
       });
       conf.reposByRoot = reposByRoot;
     });
   }
 
-  _setWorkingSet(workingSet: WorkingSet): void {
+  _setWorkingSet(workingSet) {
     this._updateConf(conf => {
       conf.workingSet = workingSet;
     });
   }
 
-  _setOpenFilesWorkingSet(openFilesWorkingSet: WorkingSet): void {
+  _setOpenFilesWorkingSet(openFilesWorkingSet) {
     // Optimization: with an empty working set, we don't need a full tree refresh.
     if (this._conf.workingSet.isEmpty()) {
       this._conf.openFilesWorkingSet = openFilesWorkingSet;
@@ -2055,25 +1867,25 @@ export class FileTreeStore {
     });
   }
 
-  _setWorkingSetsStore(workingSetsStore: ?WorkingSetsStore): void {
+  _setWorkingSetsStore(workingSetsStore) {
     this._workingSetsStore = workingSetsStore;
   }
 
-  _startEditingWorkingSet(editedWorkingSet: WorkingSet): void {
+  _startEditingWorkingSet(editedWorkingSet) {
     this._updateConf(conf => {
       conf.editedWorkingSet = editedWorkingSet;
       conf.isEditingWorkingSet = true;
     });
   }
 
-  _finishEditingWorkingSet(): void {
+  _finishEditingWorkingSet() {
     this._updateConf(conf => {
       conf.isEditingWorkingSet = false;
-      conf.editedWorkingSet = new WorkingSet();
+      conf.editedWorkingSet = new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet();
     });
   }
 
-  _checkNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _checkNode(rootKey, nodeKey) {
     if (!this._conf.isEditingWorkingSet) {
       return;
     }
@@ -2101,7 +1913,7 @@ export class FileTreeStore {
     });
   }
 
-  _uncheckNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
+  _uncheckNode(rootKey, nodeKey) {
     if (!this._conf.isEditingWorkingSet) {
       return;
     }
@@ -2128,28 +1940,26 @@ export class FileTreeStore {
 
     this._updateConf(conf => {
       const urisToAppend = nodesToAppend.map(n => n.uri);
-      conf.editedWorkingSet = conf.editedWorkingSet
-        .remove(uriToRemove)
-        .append(...urisToAppend);
+      conf.editedWorkingSet = conf.editedWorkingSet.remove(uriToRemove).append(...urisToAppend);
     });
   }
 
-  _setOpenFilesExpanded(openFilesExpanded: boolean): void {
+  _setOpenFilesExpanded(openFilesExpanded) {
     this.openFilesExpanded = openFilesExpanded;
     this._emitChange();
   }
 
-  _setUncommittedChangesExpanded(uncommittedChangesExpanded: boolean): void {
+  _setUncommittedChangesExpanded(uncommittedChangesExpanded) {
     this.uncommittedChangesExpanded = uncommittedChangesExpanded;
     this._emitChange();
   }
 
-  _setFoldersExpanded(foldersExpanded: boolean): void {
+  _setFoldersExpanded(foldersExpanded) {
     this.foldersExpanded = foldersExpanded;
     this._emitChange();
   }
 
-  reset(): void {
+  reset() {
     this.roots.forEach(root => {
       root.traverse(n => {
         if (n.subscription != null) {
@@ -2162,38 +1972,26 @@ export class FileTreeStore {
 
     // Reset data store.
     this._conf = DEFAULT_CONF;
-    this._setRoots(new Immutable.OrderedMap());
+    this._setRoots(new (_immutable || _load_immutable()).default.OrderedMap());
   }
 
-  subscribe(listener: ChangeListener): IDisposable {
+  subscribe(listener) {
     return this._emitter.on('change', listener);
   }
 }
 
-/**
- * Performs a breadth-first iteration over the directories of the tree starting
- * with a given node. The iteration stops once a given limit of nodes (both directories
- * and files) were traversed.
- * The node being currently traversed can be obtained by calling .traversedNode()
- * .next() returns a promise that is fulfilled when the traversal moves on to
- * the next directory.
- */
-class FileTreeStoreBfsIterator {
-  _fileTreeStore: FileTreeStore;
-  _rootKey: NuclideUri;
-  _nodesToTraverse: Array<NuclideUri>;
-  _currentlyTraversedNode: ?NuclideUri;
-  _limit: number;
-  _numNodesTraversed: number;
-  _promise: ?Promise<void>;
-  _count: number;
+exports.FileTreeStore = FileTreeStore; /**
+                                        * Performs a breadth-first iteration over the directories of the tree starting
+                                        * with a given node. The iteration stops once a given limit of nodes (both directories
+                                        * and files) were traversed.
+                                        * The node being currently traversed can be obtained by calling .traversedNode()
+                                        * .next() returns a promise that is fulfilled when the traversal moves on to
+                                        * the next directory.
+                                        */
 
-  constructor(
-    fileTreeStore: FileTreeStore,
-    rootKey: NuclideUri,
-    nodeKey: NuclideUri,
-    limit: number,
-  ) {
+class FileTreeStoreBfsIterator {
+
+  constructor(fileTreeStore, rootKey, nodeKey, limit) {
     this._fileTreeStore = fileTreeStore;
     this._rootKey = rootKey;
     this._nodesToTraverse = [];
@@ -2204,12 +2002,10 @@ class FileTreeStoreBfsIterator {
     this._count = 0;
   }
 
-  _handlePromiseResolution(childrenKeys: Array<NuclideUri>): void {
+  _handlePromiseResolution(childrenKeys) {
     this._numNodesTraversed += childrenKeys.length;
     if (this._numNodesTraversed < this._limit) {
-      const nextLevelNodes = childrenKeys.filter(childKey =>
-        FileTreeHelpers.isDirKey(childKey),
-      );
+      const nextLevelNodes = childrenKeys.filter(childKey => (_FileTreeHelpers || _load_FileTreeHelpers()).default.isDirKey(childKey));
       this._nodesToTraverse = this._nodesToTraverse.concat(nextLevelNodes);
 
       this._currentlyTraversedNode = this._nodesToTraverse.splice(0, 1)[0];
@@ -2222,18 +2018,16 @@ class FileTreeStoreBfsIterator {
     return;
   }
 
-  next(): ?Promise<void> {
+  next() {
     const currentlyTraversedNode = this._currentlyTraversedNode;
     // flowlint-next-line sketchy-null-string:off
     if (!this._promise && currentlyTraversedNode) {
-      this._promise = this._fileTreeStore
-        .promiseNodeChildKeys(this._rootKey, currentlyTraversedNode)
-        .then(this._handlePromiseResolution.bind(this));
+      this._promise = this._fileTreeStore.promiseNodeChildKeys(this._rootKey, currentlyTraversedNode).then(this._handlePromiseResolution.bind(this));
     }
     return this._promise;
   }
 
-  traversedNode(): ?string {
+  traversedNode() {
     return this._currentlyTraversedNode;
   }
 }

@@ -1,59 +1,64 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
-import {splitStream} from 'nuclide-commons/observable';
-import {observeStream} from 'nuclide-commons/stream';
-import invariant from 'assert';
-import type {MessageLogger} from './index';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StreamTransport = undefined;
 
-export class StreamTransport {
-  _output: stream$Writable;
-  _messages: Observable<string>;
-  _messageLogger: MessageLogger;
-  _isClosed: boolean;
+var _observable;
 
-  constructor(
-    output: stream$Writable,
-    input: stream$Readable,
-    messageLogger: MessageLogger = (direction, message) => {
-      return;
-    },
-  ) {
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _stream;
+
+function _load_stream() {
+  return _stream = require('nuclide-commons/stream');
+}
+
+class StreamTransport {
+
+  constructor(output, input, messageLogger = (direction, message) => {
+    return;
+  }) {
     this._isClosed = false;
     this._messageLogger = messageLogger;
     this._output = output;
-    this._messages = splitStream(observeStream(input)).do(message => {
+    this._messages = (0, (_observable || _load_observable()).splitStream)((0, (_stream || _load_stream()).observeStream)(input)).do(message => {
       this._messageLogger('receive', message);
     });
   }
 
-  send(message: string): void {
+  send(message) {
     this._messageLogger('send', message);
-    invariant(
-      message.indexOf('\n') === -1,
-      'StreamTransport.send - unexpected newline in JSON message',
-    );
+
+    if (!(message.indexOf('\n') === -1)) {
+      throw new Error('StreamTransport.send - unexpected newline in JSON message');
+    }
+
     this._output.write(message + '\n');
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     return this._messages;
   }
 
-  close(): void {
+  close() {
     this._isClosed = true;
   }
 
-  isClosed(): boolean {
+  isClosed() {
     return this._isClosed;
   }
 }
+exports.StreamTransport = StreamTransport; /**
+                                            * Copyright (c) 2015-present, Facebook, Inc.
+                                            * All rights reserved.
+                                            *
+                                            * This source code is licensed under the license found in the LICENSE file in
+                                            * the root directory of this source tree.
+                                            *
+                                            * 
+                                            * @format
+                                            */

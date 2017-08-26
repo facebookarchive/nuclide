@@ -1,3 +1,27 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = DiagnosticsCodeActions;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Maximum number of CodeActions to show for a given Diagnostic.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,51 +30,45 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
-
-import React from 'react';
-import {Button} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-
-// Maximum number of CodeActions to show for a given Diagnostic.
 const MAX_CODE_ACTIONS = 4;
 
-export default function DiagnosticsCodeActions(props: {
-  codeActions: Map<string, CodeAction>,
-}): React.Element<*> {
-  return (
-    <div className="diagnostics-code-actions">
-      {Array.from(props.codeActions.entries())
-        .splice(0, MAX_CODE_ACTIONS)
-        // TODO: (seansegal) T21130259 Display a "more" indicator when there are many CodeActions.
-        .map(([title, codeAction], i) => {
-          return (
-            <ButtonGroup key={i}>
-              <Button
-                className="diagnostics-code-action-button"
-                size="EXTRA_SMALL"
-                onClick={() => {
-                  // TODO: (seansegal) T21130332 Display CodeAction status indicators
-                  codeAction.apply().catch(handleCodeActionFailure);
-                }}>
-                <span className="inline-block highlight">
-                  {title}
-                </span>
-              </Button>
-            </ButtonGroup>
-          );
-        })}
-    </div>
+function DiagnosticsCodeActions(props) {
+  return _react.default.createElement(
+    'div',
+    { className: 'diagnostics-code-actions' },
+    Array.from(props.codeActions.entries()).splice(0, MAX_CODE_ACTIONS)
+    // TODO: (seansegal) T21130259 Display a "more" indicator when there are many CodeActions.
+    .map(([title, codeAction], i) => {
+      return _react.default.createElement(
+        (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+        { key: i },
+        _react.default.createElement(
+          (_Button || _load_Button()).Button,
+          {
+            className: 'diagnostics-code-action-button',
+            size: 'EXTRA_SMALL',
+            onClick: () => {
+              // TODO: (seansegal) T21130332 Display CodeAction status indicators
+              codeAction.apply().catch(handleCodeActionFailure);
+            } },
+          _react.default.createElement(
+            'span',
+            { className: 'inline-block highlight' },
+            title
+          )
+        )
+      );
+    })
   );
 }
 
-function handleCodeActionFailure(error: ?Error) {
+function handleCodeActionFailure(error) {
   atom.notifications.addWarning('Code action could not be applied', {
     description: error ? error.message : '',
-    dismissable: true,
+    dismissable: true
   });
 }

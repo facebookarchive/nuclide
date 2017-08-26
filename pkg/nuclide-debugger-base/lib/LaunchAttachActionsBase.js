@@ -1,98 +1,94 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DebuggerProcessInfo} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchAttachActionsBase = undefined;
 
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000;
+var _consumeFirstProvider;
 
-export class LaunchAttachActionsBase {
-  _targetUri: NuclideUri;
-  _refreshTimerId: ?number;
-  _parentUIVisible: boolean;
-  _attachUIVisible: boolean;
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
 
-  constructor(targetUri: NuclideUri) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ATTACH_TARGET_LIST_REFRESH_INTERVAL = 2000; /**
+                                                   * Copyright (c) 2015-present, Facebook, Inc.
+                                                   * All rights reserved.
+                                                   *
+                                                   * This source code is licensed under the license found in the LICENSE file in
+                                                   * the root directory of this source tree.
+                                                   *
+                                                   * 
+                                                   * @format
+                                                   */
+
+class LaunchAttachActionsBase {
+
+  constructor(targetUri) {
     this._targetUri = targetUri;
     this._refreshTimerId = null;
     this._parentUIVisible = true; // Visible by default.
     this._attachUIVisible = false;
-    (this: any).updateAttachUIVisibility = this.updateAttachUIVisibility.bind(
-      this,
-    );
-    (this: any).updateParentUIVisibility = this.updateParentUIVisibility.bind(
-      this,
-    );
+    this.updateAttachUIVisibility = this.updateAttachUIVisibility.bind(this);
+    this.updateParentUIVisibility = this.updateParentUIVisibility.bind(this);
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  updateParentUIVisibility(visible: boolean): void {
+  updateParentUIVisibility(visible) {
     this._parentUIVisible = visible;
     this._updateAutoRefresh();
   }
 
-  updateAttachUIVisibility(visible: boolean): void {
+  updateAttachUIVisibility(visible) {
     this._attachUIVisible = visible;
     this._updateAutoRefresh();
   }
 
-  _updateAutoRefresh(): void {
+  _updateAutoRefresh() {
     this._killAutoRefreshTimer();
     if (this._parentUIVisible && this._attachUIVisible) {
       this.updateAttachTargetList();
-      this._refreshTimerId = setInterval(
-        this.updateAttachTargetList,
-        ATTACH_TARGET_LIST_REFRESH_INTERVAL,
-      );
+      this._refreshTimerId = setInterval(this.updateAttachTargetList, ATTACH_TARGET_LIST_REFRESH_INTERVAL);
     }
   }
 
-  async updateAttachTargetList(): Promise<void> {
-    throw Error('Not implemented');
+  updateAttachTargetList() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw Error('Not implemented');
+    })();
   }
 
-  _killAutoRefreshTimer(): void {
+  _killAutoRefreshTimer() {
     if (this._refreshTimerId != null) {
       clearTimeout(this._refreshTimerId);
       this._refreshTimerId = null;
     }
   }
 
-  toggleLaunchAttachDialog(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:toggle-launch-attach',
-    );
+  toggleLaunchAttachDialog() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle-launch-attach');
   }
 
-  showDebuggerPanel(): void {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:show',
-    );
+  showDebuggerPanel() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
   }
 
-  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const debuggerService = await consumeFirstProvider(
-      'nuclide-debugger.remote',
-    );
-    await debuggerService.startDebugging(processInfo);
+  startDebugging(processInfo) {
+    return (0, _asyncToGenerator.default)(function* () {
+      const debuggerService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+      yield debuggerService.startDebugging(processInfo);
+    })();
   }
 
-  dispose(): void {
+  dispose() {
     this._killAutoRefreshTimer();
   }
 }
+exports.LaunchAttachActionsBase = LaunchAttachActionsBase;

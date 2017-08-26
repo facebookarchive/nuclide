@@ -1,18 +1,13 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.bindObservableAsProps = bindObservableAsProps;
 
-import React from 'react';
+var _react = _interopRequireDefault(require('react'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Injects any key/value pairs from the given Observable value into the component as named props.
@@ -23,16 +18,21 @@ import React from 'react';
  * The wrapped component is guaranteed to render only if the observable has resolved;
  * otherwise, the wrapper component renders `null`.
  */
-export function bindObservableAsProps<T: ReactClass<any>, U: T>(
-  stream: Observable<{+[key: string]: any}>,
-  ComposedComponent: T,
-): U {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+function bindObservableAsProps(stream, ComposedComponent) {
   // $FlowIssue The return type is guaranteed to be the same as the type of ComposedComponent.
-  return class extends React.Component {
-    _subscription: ?rxjs$ISubscription;
-    state: {[key: string]: any};
-    _resolved: boolean;
-    _wrappedComponent: ?T;
+  return class extends _react.default.Component {
 
     constructor(props) {
       super(props);
@@ -41,37 +41,31 @@ export function bindObservableAsProps<T: ReactClass<any>, U: T>(
       this._resolved = false;
     }
 
-    getWrappedComponent(): ?T {
+    getWrappedComponent() {
       return this._wrappedComponent;
     }
 
-    componentDidMount(): void {
+    componentDidMount() {
       this._subscription = stream.subscribe(newState => {
         this._resolved = true;
         this.setState(newState);
       });
     }
 
-    componentWillUnmount(): void {
+    componentWillUnmount() {
       if (this._subscription != null) {
         this._subscription.unsubscribe();
       }
     }
 
-    render(): ?React.Element<any> {
+    render() {
       if (!this._resolved) {
         return null;
       }
-      const props = {
-        ...this.props,
-        ...this.state,
-      };
-      return (
-        <ComposedComponent
-          ref={component => (this._wrappedComponent = component)}
-          {...props}
-        />
-      );
+      const props = Object.assign({}, this.props, this.state);
+      return _react.default.createElement(ComposedComponent, Object.assign({
+        ref: component => this._wrappedComponent = component
+      }, props));
     }
   };
 }

@@ -1,3 +1,55 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DiagnosticsViewModel = exports.WORKSPACE_VIEW_URI = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _DiagnosticsView;
+
+function _load_DiagnosticsView() {
+  return _DiagnosticsView = _interopRequireDefault(require('./ui/DiagnosticsView'));
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _observePaneItemVisibility;
+
+function _load_observePaneItemVisibility() {
+  return _observePaneItemVisibility = _interopRequireDefault(require('nuclide-commons-atom/observePaneItemVisibility'));
+}
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('nuclide-commons-ui/renderReactRoot');
+}
+
+var _observable;
+
+function _load_observable() {
+  return _observable = require('nuclide-commons/observable');
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// The shape of the state that's shared between views (if there are multiple). Right now, this is
+// the same as the component's Props, but that could change if we want to support multiple instances
+// of the Diagnostics view each with different filters, for example.
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,85 +58,58 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {Props} from './ui/DiagnosticsView';
+const WORKSPACE_VIEW_URI = exports.WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
 
-import React from 'react';
-import DiagnosticsView from './ui/DiagnosticsView';
-import analytics from 'nuclide-commons-atom/analytics';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {toggle} from 'nuclide-commons/observable';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {Observable} from 'rxjs';
+class DiagnosticsViewModel {
 
-type SerializedDiagnosticsViewModel = {
-  deserializer: 'atom-ide-ui.DiagnosticsViewModel',
-};
-
-// The shape of the state that's shared between views (if there are multiple). Right now, this is
-// the same as the component's Props, but that could change if we want to support multiple instances
-// of the Diagnostics view each with different filters, for example.
-export type GlobalViewState = Props;
-
-export const WORKSPACE_VIEW_URI = 'atom://nuclide/diagnostics';
-
-export class DiagnosticsViewModel {
-  _element: ?HTMLElement;
-  _props: Observable<Props>;
-  _visibilitySubscription: rxjs$ISubscription;
-
-  constructor(states: Observable<GlobalViewState>) {
-    const visibility = observePaneItemVisibility(this).distinctUntilChanged();
-    this._visibilitySubscription = visibility
-      .debounceTime(1000)
-      .distinctUntilChanged()
-      .filter(Boolean)
-      .subscribe(() => {
-        analytics.track('diagnostics-show-table');
-      });
+  constructor(states) {
+    const visibility = (0, (_observePaneItemVisibility || _load_observePaneItemVisibility()).default)(this).distinctUntilChanged();
+    this._visibilitySubscription = visibility.debounceTime(1000).distinctUntilChanged().filter(Boolean).subscribe(() => {
+      (_analytics || _load_analytics()).default.track('diagnostics-show-table');
+    });
 
     // "Mute" the props stream when the view is hidden so we don't do unnecessary updates.
-    this._props = toggle(states, visibility);
+    this._props = (0, (_observable || _load_observable()).toggle)(states, visibility);
   }
 
-  destroy(): void {
+  destroy() {
     this._visibilitySubscription.unsubscribe();
   }
 
-  getTitle(): string {
+  getTitle() {
     return 'Diagnostics';
   }
 
-  getIconName(): IconName {
+  getIconName() {
     return 'law';
   }
 
-  getURI(): string {
+  getURI() {
     return WORKSPACE_VIEW_URI;
   }
 
-  getDefaultLocation(): string {
+  getDefaultLocation() {
     return 'bottom';
   }
 
-  serialize(): SerializedDiagnosticsViewModel {
+  serialize() {
     return {
-      deserializer: 'atom-ide-ui.DiagnosticsViewModel',
+      deserializer: 'atom-ide-ui.DiagnosticsViewModel'
     };
   }
 
-  getElement(): HTMLElement {
+  getElement() {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsView);
-      const element = renderReactRoot(<Component />);
+      const Component = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)(this._props, (_DiagnosticsView || _load_DiagnosticsView()).default);
+      const element = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(_react.default.createElement(Component, null));
       element.classList.add('nuclide-diagnostics-ui');
       this._element = element;
     }
     return this._element;
   }
 }
+exports.DiagnosticsViewModel = DiagnosticsViewModel;

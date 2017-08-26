@@ -1,35 +1,58 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import React from 'react';
-import {findDOMNode} from 'react-dom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-type Props = {
-  onClickOutside: () => void,
-  children: ?React.Element<any>,
-};
+var _react = _interopRequireDefault(require('react'));
 
-export default class ClickOutsideBoundary extends React.Component {
-  _lastInternalEvent: ?MouseEvent;
-  _node: null | Element | Text;
+var _reactDom = require('react-dom');
 
-  constructor(props: Props) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
+
+class ClickOutsideBoundary extends _react.default.Component {
+
+  constructor(props) {
     super(props);
+
+    this._handleDocumentClick = e => {
+      // A more straight-forward approach would be to use
+      // `this._node.contains(e.target)`, however that fails in the edge case were
+      // some other event handler causes the target to be removed from the DOM
+      // before the event reaches the document root. So instead, we use this
+      // reference comparison approach which works for all cases where an event
+      // passed trough the boundary node, and makes it all the way to the document
+      // root.
+      if (e !== this._lastInternalEvent) {
+        if (this.props.onClickOutside != null) {
+          this.props.onClickOutside();
+        }
+      }
+      this._lastInternalEvent = null;
+    };
+
+    this._handleInternalClick = e => {
+      this._lastInternalEvent = e;
+    };
+
     this._lastInternalEvent = null;
     this._node = null;
   }
 
   componentDidMount() {
-    const node = (this._node = findDOMNode(this));
+    const node = this._node = (0, _reactDom.findDOMNode)(this);
     if (node == null) {
       return;
     }
@@ -41,26 +64,6 @@ export default class ClickOutsideBoundary extends React.Component {
     node.addEventListener('click', this._handleInternalClick);
   }
 
-  _handleDocumentClick = (e: MouseEvent) => {
-    // A more straight-forward approach would be to use
-    // `this._node.contains(e.target)`, however that fails in the edge case were
-    // some other event handler causes the target to be removed from the DOM
-    // before the event reaches the document root. So instead, we use this
-    // reference comparison approach which works for all cases where an event
-    // passed trough the boundary node, and makes it all the way to the document
-    // root.
-    if (e !== this._lastInternalEvent) {
-      if (this.props.onClickOutside != null) {
-        this.props.onClickOutside();
-      }
-    }
-    this._lastInternalEvent = null;
-  };
-
-  _handleInternalClick = (e: MouseEvent) => {
-    this._lastInternalEvent = e;
-  };
-
   componentWillUnmount() {
     window.document.removeEventListener('click', this._handleDocumentClick);
     if (this._node != null) {
@@ -69,7 +72,10 @@ export default class ClickOutsideBoundary extends React.Component {
   }
 
   render() {
-    const {onClickOutside, ...passThroughProps} = this.props;
-    return <div {...passThroughProps} />;
+    const _props = this.props,
+          { onClickOutside } = _props,
+          passThroughProps = _objectWithoutProperties(_props, ['onClickOutside']);
+    return _react.default.createElement('div', passThroughProps);
   }
 }
+exports.default = ClickOutsideBoundary;

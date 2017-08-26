@@ -1,3 +1,69 @@
+'use strict';
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _DefinitionCache;
+
+function _load_DefinitionCache() {
+  return _DefinitionCache = _interopRequireDefault(require('./DefinitionCache'));
+}
+
+var _getPreviewDatatipFromDefinitionResult;
+
+function _load_getPreviewDatatipFromDefinitionResult() {
+  return _getPreviewDatatipFromDefinitionResult = _interopRequireDefault(require('./getPreviewDatatipFromDefinitionResult'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,205 +72,149 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
 // This package provides Hyperclick results for any language which provides a
 // DefinitionProvider.
 
-import type {
-  HyperclickProvider,
-  HyperclickSuggestion,
-} from '../../hyperclick/lib/types';
-
-import type {
-  Datatip,
-  DatatipService,
-  ModifierDatatipProvider,
-  ModifierKey,
-} from '../../atom-ide-datatip/lib/types';
-
-import type {
-  DefinitionQueryResult,
-  DefinitionProvider,
-  DefinitionPreviewProvider,
-} from './types';
-
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-
-import analytics from 'nuclide-commons-atom/analytics';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import FeatureConfig from 'nuclide-commons-atom/feature-config';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-
-import DefinitionCache from './DefinitionCache';
-import getPreviewDatatipFromDefinitionResult from './getPreviewDatatipFromDefinitionResult';
-
 class Activation {
-  _providers: ProviderRegistry<DefinitionProvider>;
-  _definitionPreviewProvider: ?DefinitionPreviewProvider;
-  _definitionCache: DefinitionCache;
-  _disposables: UniversalDisposable;
-  _triggerKeys: Set<ModifierKey>;
 
   constructor() {
-    this._providers = new ProviderRegistry();
-    this._definitionCache = new DefinitionCache();
+    this._providers = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._definitionCache = new (_DefinitionCache || _load_DefinitionCache()).default();
     this._triggerKeys = new Set();
 
-    this._disposables = new UniversalDisposable(
-      FeatureConfig.observe(
-        getPlatformKeys(process.platform),
-        (newValue: ?string) => {
-          this._triggerKeys = (new Set(
-            // flowlint-next-line sketchy-null-string:off
-            newValue ? newValue.split(',') : null,
-          ): Set<any>);
-        },
-      ),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default((_featureConfig || _load_featureConfig()).default.observe(getPlatformKeys(process.platform), newValue => {
+      this._triggerKeys = new Set(
+      // flowlint-next-line sketchy-null-string:off
+      newValue ? newValue.split(',') : null);
+    }));
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  async _getDefinition(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?DefinitionQueryResult> {
-    for (const provider of this._providers.getAllProvidersForEditor(editor)) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const result = await provider.getDefinition(editor, position);
-        if (result != null) {
-          return result;
+  _getDefinition(editor, position) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      for (const provider of _this._providers.getAllProvidersForEditor(editor)) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const result = yield provider.getDefinition(editor, position);
+          if (result != null) {
+            return result;
+          }
+        } catch (err) {
+          (0, (_log4js || _load_log4js()).getLogger)('atom-ide-definitions').error(`Error getting definition for ${String(editor.getPath())}`, err);
         }
-      } catch (err) {
-        getLogger('atom-ide-definitions').error(
-          `Error getting definition for ${String(editor.getPath())}`,
-          err,
-        );
       }
-    }
-    return null;
+      return null;
+    })();
   }
 
-  async getSuggestion(
-    editor: atom$TextEditor,
-    position: atom$Point,
-  ): Promise<?HyperclickSuggestion> {
-    const result = await this._definitionCache.get(editor, position, () =>
-      this._getDefinition(editor, position),
-    );
+  getSuggestion(editor, position) {
+    var _this2 = this;
 
-    if (result == null) {
-      return null;
-    }
-
-    const {definitions} = result;
-    invariant(definitions.length > 0);
-
-    function createCallback(definition) {
-      return () => {
-        goToLocation(
-          definition.path,
-          definition.position.row,
-          definition.position.column,
-        );
-      };
-    }
-
-    function createTitle(definition) {
-      const filePath =
-        definition.projectRoot == null
-          ? definition.path
-          : nuclideUri.relative(definition.projectRoot, definition.path);
-      if (definition.name == null) {
-        // Fall back to just displaying the path:line.
-        return `${filePath}:${definition.position.row + 1}`;
-      }
-      return `${definition.name} (${filePath})`;
-    }
-
-    if (definitions.length === 1) {
-      return {
-        range: result.queryRange,
-        callback: createCallback(definitions[0]),
-      };
-    } else {
-      return {
-        range: result.queryRange,
-        callback: definitions.map(definition => {
-          return {
-            title: createTitle(definition),
-            callback: createCallback(definition),
-          };
-        }),
-      };
-    }
-  }
-
-  async getPreview(
-    editor: atom$TextEditor,
-    position: atom$Point,
-    heldKeys: Set<ModifierKey>,
-  ): Promise<?Datatip> {
-    if (
-      !this._triggerKeys ||
-      // are the required keys held down?
-      !Array.from(this._triggerKeys).every(key => heldKeys.has(key))
-    ) {
-      return;
-    }
-
-    const result = await this._getDefinition(editor, position);
-    if (result == null) {
-      return null;
-    }
-
-    const grammar = editor.getGrammar();
-    const previewDatatip = getPreviewDatatipFromDefinitionResult(
-      result,
-      this._definitionPreviewProvider,
-      grammar,
-    );
-
-    // flowlint-next-line sketchy-null-mixed:off
-    if (previewDatatip != null && previewDatatip.markedStrings) {
-      analytics.track('hyperclick-preview-popup', {
-        grammar: grammar.name,
-        definitionCount: result.definitions.length,
+    return (0, _asyncToGenerator.default)(function* () {
+      const result = yield _this2._definitionCache.get(editor, position, function () {
+        return _this2._getDefinition(editor, position);
       });
-    }
 
-    return previewDatatip;
+      if (result == null) {
+        return null;
+      }
+
+      const { definitions } = result;
+
+      if (!(definitions.length > 0)) {
+        throw new Error('Invariant violation: "definitions.length > 0"');
+      }
+
+      function createCallback(definition) {
+        return () => {
+          (0, (_goToLocation || _load_goToLocation()).goToLocation)(definition.path, definition.position.row, definition.position.column);
+        };
+      }
+
+      function createTitle(definition) {
+        const filePath = definition.projectRoot == null ? definition.path : (_nuclideUri || _load_nuclideUri()).default.relative(definition.projectRoot, definition.path);
+        if (definition.name == null) {
+          // Fall back to just displaying the path:line.
+          return `${filePath}:${definition.position.row + 1}`;
+        }
+        return `${definition.name} (${filePath})`;
+      }
+
+      if (definitions.length === 1) {
+        return {
+          range: result.queryRange,
+          callback: createCallback(definitions[0])
+        };
+      } else {
+        return {
+          range: result.queryRange,
+          callback: definitions.map(function (definition) {
+            return {
+              title: createTitle(definition),
+              callback: createCallback(definition)
+            };
+          })
+        };
+      }
+    })();
   }
 
-  consumeDefinitionProvider(provider: DefinitionProvider): IDisposable {
+  getPreview(editor, position, heldKeys) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!_this3._triggerKeys ||
+      // are the required keys held down?
+      !Array.from(_this3._triggerKeys).every(function (key) {
+        return heldKeys.has(key);
+      })) {
+        return;
+      }
+
+      const result = yield _this3._getDefinition(editor, position);
+      if (result == null) {
+        return null;
+      }
+
+      const grammar = editor.getGrammar();
+      const previewDatatip = (0, (_getPreviewDatatipFromDefinitionResult || _load_getPreviewDatatipFromDefinitionResult()).default)(result, _this3._definitionPreviewProvider, grammar);
+
+      // flowlint-next-line sketchy-null-mixed:off
+      if (previewDatatip != null && previewDatatip.markedStrings) {
+        (_analytics || _load_analytics()).default.track('hyperclick-preview-popup', {
+          grammar: grammar.name,
+          definitionCount: result.definitions.length
+        });
+      }
+
+      return previewDatatip;
+    })();
+  }
+
+  consumeDefinitionProvider(provider) {
     const disposable = this._providers.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 
-  consumeDefinitionPreviewProvider(provider: DefinitionPreviewProvider) {
+  consumeDefinitionPreviewProvider(provider) {
     this._definitionPreviewProvider = provider;
   }
 
-  consumeDatatipService(service: DatatipService): IDisposable {
-    const datatipProvider: ModifierDatatipProvider = {
+  consumeDatatipService(service) {
+    const datatipProvider = {
       providerName: 'hyperclick-preview',
       priority: 1,
-      modifierDatatip: (
-        editor: atom$TextEditor,
-        bufferPosition: atom$Point,
-        heldKeys: Set<ModifierKey>,
-      ) => this.getPreview(editor, bufferPosition, heldKeys),
+      modifierDatatip: (editor, bufferPosition, heldKeys) => this.getPreview(editor, bufferPosition, heldKeys)
     };
 
     const disposable = service.addModifierProvider(datatipProvider);
@@ -212,11 +222,11 @@ class Activation {
     return disposable;
   }
 
-  getHyperclickProvider(): HyperclickProvider {
+  getHyperclickProvider() {
     return {
       priority: 20,
       providerName: 'atom-ide-definitions',
-      getSuggestion: (editor, position) => this.getSuggestion(editor, position),
+      getSuggestion: (editor, position) => this.getSuggestion(editor, position)
     };
   }
 }
@@ -230,4 +240,4 @@ function getPlatformKeys(platform) {
   return 'hyperclick.linuxTriggerKeys';
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

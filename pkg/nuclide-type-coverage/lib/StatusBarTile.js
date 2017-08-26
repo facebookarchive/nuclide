@@ -1,108 +1,74 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StatusBarTile = undefined;
 
-import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
-import type {IconName} from 'nuclide-commons-ui/Icon';
+var _react = _interopRequireDefault(require('react'));
 
-import type {CoverageProvider} from './types';
-import type {CoverageResult} from './rpc-types';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import invariant from 'assert';
-import React from 'react';
-import {Subscription} from 'rxjs';
+var _StatusBarTileComponent;
 
-import {StatusBarTileComponent} from './StatusBarTileComponent';
+function _load_StatusBarTileComponent() {
+  return _StatusBarTileComponent = require('./StatusBarTileComponent');
+}
 
-type Props = {
-  results: Observable<Result<CoverageProvider, ?CoverageResult>>,
-  isActive: Observable<boolean>,
-  onClick: Function,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-type State = {
-  result: ?{
-    percentage: number,
-    providerName: string,
-    icon?: IconName,
-  },
-  pending: boolean,
-  isActive: boolean,
-};
+class StatusBarTile extends _react.default.Component {
 
-export class StatusBarTile extends React.Component {
-  _item: ?HTMLElement;
-  _tile: ?atom$StatusBarTile;
-
-  _percentage: ?number;
-
-  state: State;
-  props: Props;
-
-  subscription: ?rxjs$ISubscription;
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
       result: null,
       pending: false,
-      isActive: false,
+      isActive: false
     };
   }
 
-  componentDidMount(): void {
-    invariant(this.subscription == null);
-    const subscription = (this.subscription = new Subscription());
-    subscription.add(
-      this.props.results.subscribe(result => this._consumeResult(result)),
-    );
-    subscription.add(
-      this.props.isActive.subscribe(isActive =>
-        this._consumeIsActive(isActive),
-      ),
-    );
+  componentDidMount() {
+    if (!(this.subscription == null)) {
+      throw new Error('Invariant violation: "this.subscription == null"');
+    }
+
+    const subscription = this.subscription = new _rxjsBundlesRxMinJs.Subscription();
+    subscription.add(this.props.results.subscribe(result => this._consumeResult(result)));
+    subscription.add(this.props.isActive.subscribe(isActive => this._consumeIsActive(isActive)));
   }
 
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
+  componentWillUnmount() {
+    if (!(this.subscription != null)) {
+      throw new Error('Invariant violation: "this.subscription != null"');
+    }
+
     this.subscription.unsubscribe();
     this.subscription = null;
-    this.setState({result: null});
+    this.setState({ result: null });
   }
 
-  _consumeResult(result: Result<CoverageProvider, ?CoverageResult>): void {
+  _consumeResult(result) {
     switch (result.kind) {
       case 'not-text-editor':
       case 'no-provider':
       case 'provider-error':
-        this.setState({result: null});
+        this.setState({ result: null });
         break;
       case 'pane-change':
       case 'edit':
       case 'save':
-        this.setState({pending: true});
+        this.setState({ pending: true });
         break;
       case 'result':
         const coverageResult = result.result;
         this.setState({
-          result:
-            coverageResult == null
-              ? null
-              : {
-                  percentage: coverageResult.percentage,
-                  providerName: result.provider.displayName,
-                  icon: result.provider.icon,
-                },
-          pending: false,
+          result: coverageResult == null ? null : {
+            percentage: coverageResult.percentage,
+            providerName: result.provider.displayName,
+            icon: result.provider.icon
+          },
+          pending: false
         });
         break;
       default:
@@ -110,13 +76,21 @@ export class StatusBarTile extends React.Component {
     }
   }
 
-  _consumeIsActive(isActive: boolean): void {
-    this.setState({isActive});
+  _consumeIsActive(isActive) {
+    this.setState({ isActive });
   }
 
-  render(): React.Element<any> {
-    return (
-      <StatusBarTileComponent {...this.state} onClick={this.props.onClick} />
-    );
+  render() {
+    return _react.default.createElement((_StatusBarTileComponent || _load_StatusBarTileComponent()).StatusBarTileComponent, Object.assign({}, this.state, { onClick: this.props.onClick }));
   }
 }
+exports.StatusBarTile = StatusBarTile; /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        * @format
+                                        */
