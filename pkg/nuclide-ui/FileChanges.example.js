@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import parse from 'diffparser';
 import FileChanges from './FileChanges';
 
@@ -65,8 +65,8 @@ index abc123..cde456 100644
    // end of hunk
 `;
 
-class FileChangesExample extends React.Component {
-  render(): React.Element<any> {
+class FileChangesExample extends React.Component<{}> {
+  render(): React.Node {
     const diff = parse(sampleUnifiedDiff);
     const changes = diff.map(file =>
       <FileChanges diff={file} key={`${file.from}:${file.to}`} />,

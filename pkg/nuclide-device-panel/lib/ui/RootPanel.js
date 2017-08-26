@@ -18,7 +18,7 @@ import type {Props as TaskButtonPropsType} from './TaskButton';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {TaskButton} from './TaskButton';
 import {DeviceTask} from '../DeviceTask';
-import React from 'react';
+import * as React from 'react';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import invariant from 'invariant';
 import {Selectors} from './Selectors';
@@ -45,9 +45,7 @@ export type Props = {|
   deviceTypeTasks: DeviceTask[],
 |};
 
-export class RootPanel extends React.Component {
-  props: Props;
-
+export class RootPanel extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
     invariant(props.hosts.length > 0);
@@ -146,7 +144,7 @@ export class RootPanel extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <PanelComponentScroller>
         <div className="nuclide-device-panel-container">

@@ -12,7 +12,7 @@
 
 import type {FileReferences} from '../types';
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
@@ -34,10 +34,7 @@ type State = {
   references: Array<FileReferences>,
 };
 
-export default class FindReferencesView extends React.Component {
-  props: Props;
-  state: State;
-
+export default class FindReferencesView extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -87,7 +84,7 @@ export default class FindReferencesView extends React.Component {
     this.setState({selected: this.state.selected === i ? -1 : i});
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}

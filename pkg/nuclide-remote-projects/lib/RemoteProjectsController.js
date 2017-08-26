@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {ServerConnection} from '../../nuclide-remote-connection';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {CompositeDisposable, Disposable} from 'atom';
 import StatusBarTile from './StatusBarTile';

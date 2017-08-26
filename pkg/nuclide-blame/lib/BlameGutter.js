@@ -19,7 +19,7 @@ import {CompositeDisposable} from 'atom';
 import {shell} from 'electron';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 
@@ -318,10 +318,8 @@ type Props = {
   newest: number,
 };
 
-class GutterElement extends React.Component {
-  props: Props;
-
-  render(): React.Element<any> {
+class GutterElement extends React.Component<Props> {
+  render(): React.Node {
     const {oldest, newest, revision, isLastLine, isFirstLine} = this.props;
     const date = Number(revision.date);
 
@@ -344,6 +342,7 @@ class GutterElement extends React.Component {
       return (
         <div
           className="nuclide-blame-row nuclide-blame-content"
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip(tooltip)}>
           {!isLastLine
             ? <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />

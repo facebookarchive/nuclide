@@ -10,6 +10,7 @@
  */
 
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
+// $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';

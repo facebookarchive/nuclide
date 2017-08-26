@@ -12,7 +12,7 @@
 import type {ThreadData} from '../../lib/types';
 
 import NuclideBridge from './NuclideBridge';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import WebInspector from '../../lib/WebInspector';
 import {scrollIntoView} from 'nuclide-commons-ui/scrollIntoView';
@@ -21,7 +21,7 @@ type StateType = {
   threadData: ?ThreadData,
 };
 
-class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
+class ThreadsWindowComponent extends React.Component<mixed, StateType> {
   props: mixed;
   state: StateType;
   _stoppedThread: ?Element;
@@ -154,6 +154,7 @@ class ThreadsWindowComponent extends React.Component<void, mixed, StateType> {
             <tr
               onDoubleClick={this._handleDoubleClick.bind(this, thread)}
               style={rowStyle}
+              // $FlowFixMe(>=0.53.0) Flow suppress
               ref={ref => this._setStoppedThread(ref)}>
               <td>
                 {indicator}

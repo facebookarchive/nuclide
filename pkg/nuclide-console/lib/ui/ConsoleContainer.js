@@ -30,7 +30,7 @@ import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
 import getCurrentExecutorId from '../getCurrentExecutorId';
 import * as Actions from '../redux/Actions';
 import Console from './Console';
-import React from 'react';
+import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
 
 type Props = {
@@ -77,10 +77,7 @@ export const WORKSPACE_VIEW_URI = 'atom://nuclide/console';
 const INITIAL_RECORD_HEIGHT = 21;
 
 // NOTE: We're not accounting for the "store" prop being changed.
-export class ConsoleContainer extends React.Component {
-  props: Props;
-  state: State;
-
+export class ConsoleContainer extends React.Component<Props, State> {
   _actionCreators: BoundActionCreators;
 
   // Associates Records with their display state (height, expansionStateId).
@@ -295,7 +292,7 @@ export class ConsoleContainer extends React.Component {
     };
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     if (!this.state.ready) {
       return <span />;
     }

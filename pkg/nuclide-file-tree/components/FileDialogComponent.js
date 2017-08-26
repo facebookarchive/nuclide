@@ -12,7 +12,7 @@
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -42,20 +42,19 @@ type Props = {
 /**
  * Component that displays UI to create a new file.
  */
-export default class FileDialogComponent extends React.Component {
+export default class FileDialogComponent extends React.Component<
+  Props,
+  {
+    options: Options,
+  },
+> {
   _disposables: UniversalDisposable;
   _isClosed: boolean;
-
-  props: Props;
 
   static defaultProps: {
     additionalOptions: AdditionalOptions,
   } = {
     additionalOptions: {},
-  };
-
-  state: {
-    options: Options,
   };
 
   constructor(props: Props) {
@@ -101,7 +100,7 @@ export default class FileDialogComponent extends React.Component {
     document.removeEventListener('mousedown', this._handleDocumentMouseDown);
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     let labelClassName;
     if (this.props.iconClassName != null) {
       labelClassName = `icon ${this.props.iconClassName}`;

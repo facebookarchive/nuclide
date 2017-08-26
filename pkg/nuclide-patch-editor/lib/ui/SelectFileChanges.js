@@ -15,7 +15,7 @@ import type {ExtraFileChangesData, FileData} from '../types';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import FileChanges from '../../../nuclide-ui/FileChanges';
 import {SelectHunkChanges} from './SelectHunkChanges';
-import React from 'react';
+import * as React from 'react';
 import {SelectedState} from '../constants';
 
 type Props = {
@@ -24,14 +24,12 @@ type Props = {
   patchId: string,
 };
 
-export class SelectFileChanges extends React.Component {
-  props: Props;
-
+export class SelectFileChanges extends React.Component<Props> {
   shouldComponentUpdate(nextProps: Props): boolean {
     return this.props.fileData !== nextProps.fileData;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {actionCreators, fileData, patchId} = this.props;
     const {selected, fileDiff} = fileData;
 

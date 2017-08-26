@@ -12,7 +12,7 @@
 const STATUS_BAR_PRIORITY = 500;
 
 // TODO: Allow the user to toggle this feature.
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

@@ -11,22 +11,20 @@
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {normalizeIdentifier} from './settings-utils';
-import React from 'react';
+import * as React from 'react';
 import type {SettingsPropsDefault} from './types';
 
 type Props = SettingsPropsDefault & {
   value: number,
 };
 
-export default class SettingsSelect extends React.Component {
-  props: Props;
-
-  _handleChange = (event: SyntheticEvent) => {
+export default class SettingsSelect extends React.Component<Props> {
+  _handleChange = (event: SyntheticEvent<>) => {
     const value = ((event.target: any): HTMLInputElement).value;
     this.props.onChange(value);
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
     const title = this.props.title;
@@ -39,6 +37,7 @@ export default class SettingsSelect extends React.Component {
     if (options.enum) {
       options.enum.forEach((option, i) => {
         optionElements.push(
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <option value={option} key={i}>
             {option}
           </option>,

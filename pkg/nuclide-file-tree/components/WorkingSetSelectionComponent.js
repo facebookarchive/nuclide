@@ -15,7 +15,7 @@ import type {
 } from '../../nuclide-working-sets/lib/types';
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Button} from 'nuclide-commons-ui/Button';
@@ -34,10 +34,11 @@ type State = {
   notApplicableDefinitions: Array<WorkingSetDefinition>,
 };
 
-export class WorkingSetSelectionComponent extends React.Component {
+export class WorkingSetSelectionComponent extends React.Component<
+  Props,
+  State,
+> {
   _disposables: UniversalDisposable;
-  props: Props;
-  state: State;
 
   constructor(props: Props) {
     super(props);
@@ -111,7 +112,7 @@ export class WorkingSetSelectionComponent extends React.Component {
     node.focus();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const applicableDefinitions = this.state.applicableDefinitions.map(
       (def, index) => {
         return (
@@ -175,7 +176,7 @@ export class WorkingSetSelectionComponent extends React.Component {
     this.setState({selectionIndex});
   };
 
-  _checkFocus = (event: SyntheticFocusEvent): void => {
+  _checkFocus = (event: SyntheticFocusEvent<>): void => {
     const node = ReactDOM.findDOMNode(this);
     // If the next active element (`event.relatedTarget`) is not a descendant of this modal, close
     // the modal.  In the case of a canceled _deleteWorkingSet, relatedTarget is null
@@ -215,10 +216,10 @@ type ApplicableDefinitionLineProps = {
   onEditWorkingSet: (name: string, uris: Array<string>) => void,
 };
 
-class ApplicableDefinitionLine extends React.Component {
-  props: ApplicableDefinitionLineProps;
-
-  render(): React.Element<any> {
+class ApplicableDefinitionLine extends React.Component<
+  ApplicableDefinitionLineProps,
+> {
+  render(): React.Node {
     const classes = {
       active: this.props.def.active,
       selected: this.props.selected,
@@ -271,16 +272,16 @@ type NonApplicableDefinitionLineProps = {
   onDeleteWorkingSet: (name: string) => void,
 };
 
-class NonApplicableDefinitionLine extends React.Component {
-  props: NonApplicableDefinitionLineProps;
-
+class NonApplicableDefinitionLine extends React.Component<
+  NonApplicableDefinitionLineProps,
+> {
   constructor(props: NonApplicableDefinitionLineProps) {
     super(props);
 
     (this: any)._deleteButtonOnClick = this._deleteButtonOnClick.bind(this);
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <li className="clearfix">
         <Button

@@ -23,6 +23,7 @@ import {Observable} from 'rxjs';
 import {objectFromMap} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+// $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';

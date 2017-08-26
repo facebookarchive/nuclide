@@ -20,7 +20,7 @@ import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import React from 'react';
+import * as React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
 export type Props = {
@@ -37,9 +37,7 @@ export type Props = {
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
-export default class DiagnosticsView extends React.Component {
-  props: Props;
-
+export default class DiagnosticsView extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
     (this: any)._onShowTracesChange = this._onShowTracesChange.bind(this);
@@ -51,7 +49,7 @@ export default class DiagnosticsView extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     let warningCount: number = 0;
     let errorCount = 0;
     let {diagnostics} = this.props;

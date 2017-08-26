@@ -16,7 +16,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Portal} from './Portal';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
@@ -68,10 +68,7 @@ type State = {
  * TODO use generic search provider
  * TODO move combobox to separate package.
  */
-export class Combobox extends React.Component {
-  props: Props;
-  state: State;
-
+export class Combobox extends React.Component<Props, State> {
   _optionsElement: HTMLElement;
   _updateSubscription: ?rxjs$ISubscription;
   _subscriptions: UniversalDisposable;
@@ -374,7 +371,7 @@ export class Combobox extends React.Component {
     }
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     let optionsContainer;
     const options = [];
 

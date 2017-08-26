@@ -13,7 +13,7 @@ import type {ThreadItem, NuclideThreadData, DebuggerModeType} from './types';
 import type {DatatipService} from 'atom-ide-ui';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import {Disposable, CompositeDisposable, Emitter} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
@@ -208,7 +208,7 @@ export default class ThreadStore {
     return this._emitter.on('change', callback);
   }
 
-  _createAlertComponentClass(message: string): ReactClass<any> {
+  _createAlertComponentClass(message: string): React.ComponentType<any> {
     return () =>
       <div className="nuclide-debugger-thread-switch-alert">
         <Icon icon="alert" />

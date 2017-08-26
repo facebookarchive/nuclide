@@ -12,7 +12,7 @@
 import type {SettingsPropsDefault} from './types';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import React from 'react';
+import * as React from 'react';
 import {
   isDefaultConfigValue,
   getDefaultConfigValueString,
@@ -26,8 +26,7 @@ type Props = SettingsPropsDefault & {
   value: number | string | Array<any>,
 };
 
-export default class SettingsInput extends React.Component {
-  props: Props;
+export default class SettingsInput extends React.Component<Props> {
   _ignoreInputCallback: boolean;
 
   constructor(props: Object) {
@@ -84,8 +83,7 @@ export default class SettingsInput extends React.Component {
     return defaultValue ? 'Default: ' + defaultValue : '';
   }
 
-  // $FlowIgnore: This method requires declaring State's type
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
+  componentDidUpdate(prevProps: Props): void {
     const input = this.refs[this.props.keyPath];
     const value = this._getValue();
     if (input.getText() !== value) {
@@ -93,7 +91,7 @@ export default class SettingsInput extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
     const title = this.props.title;

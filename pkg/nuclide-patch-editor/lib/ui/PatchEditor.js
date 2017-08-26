@@ -12,7 +12,7 @@
 import typeof * as BoundActionCreators from '../redux/Actions';
 import type {PatchData} from '../types';
 
-import React from 'react';
+import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {patchToString} from '../utils';
@@ -27,11 +27,10 @@ type Props = {
   patchData: PatchData,
 };
 
-export default class PatchEditor extends React.Component {
-  props: Props;
+export default class PatchEditor extends React.Component<Props> {
   _patch: Array<diffparser$FileDiff>;
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const files = Array.from(this.props.patchData.files.values());
     return (
       <div className="nuclide-patch-editor">

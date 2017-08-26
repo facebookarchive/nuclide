@@ -32,8 +32,8 @@ export class TaskRunner {
     this._taskLists = new Subject();
   }
 
-  getIcon(): ReactClass<any> {
-    return ((null: any): ReactClass<any>);
+  getIcon(): React$ComponentType<any> {
+    return ((null: any): React$ComponentType<any>);
   }
 
   setProjectRoot(

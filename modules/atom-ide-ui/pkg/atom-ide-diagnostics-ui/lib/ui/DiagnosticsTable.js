@@ -15,7 +15,7 @@ import type {Column} from 'nuclide-commons-ui/Table';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Table} from 'nuclide-commons-ui/Table';
 import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
@@ -60,6 +60,7 @@ function TypeComponent(props: {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
   return (
+    // $FlowFixMe(>=0.53.0) Flow suppress
     <Highlight color={highlightColor}>
       {text}
     </Highlight>
@@ -144,13 +145,13 @@ type DiagnosticsTableProps = {
   showTraces: boolean,
 };
 
-export default class DiagnosticsTable extends React.Component {
-  props: DiagnosticsTableProps;
-  state: {
+export default class DiagnosticsTable extends React.Component<
+  DiagnosticsTableProps,
+  {
     sortDescending: boolean,
     sortedColumn: ?string,
-  };
-
+  },
+> {
   constructor(props: DiagnosticsTableProps) {
     super(props);
     (this: any)._handleSort = this._handleSort.bind(this);
@@ -215,7 +216,7 @@ export default class DiagnosticsTable extends React.Component {
     ];
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {diagnostics, showTraces} = this.props;
     const {sortedColumn, sortDescending} = this.state;
     const diagnosticRows = diagnostics.map(diagnostic => {

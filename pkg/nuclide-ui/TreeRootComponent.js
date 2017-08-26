@@ -16,7 +16,7 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {LazyTreeNode} from './LazyTreeNode';
 import {TreeNodeComponent} from './TreeNodeComponent';
 import {forEachCachedNode} from './tree-node-traversals';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
@@ -98,10 +98,7 @@ type State = {
 /**
  * Generic tree component that operates on LazyTreeNodes.
  */
-export class TreeRootComponent extends React.Component {
-  props: Props;
-  state: State;
-
+export class TreeRootComponent extends React.Component<Props, State> {
   _allKeys: ?Array<string>;
   _emitter: ?Emitter;
   _isMounted: boolean;
@@ -208,7 +205,7 @@ export class TreeRootComponent extends React.Component {
     this.setState({selectedKeys});
   }
 
-  _onClickNode = (event: SyntheticMouseEvent, node: LazyTreeNode): void => {
+  _onClickNode = (event: SyntheticMouseEvent<>, node: LazyTreeNode): void => {
     if (event.metaKey) {
       this._toggleNodeSelected(node);
       return;
@@ -227,12 +224,12 @@ export class TreeRootComponent extends React.Component {
     this._confirmNode(node);
   };
 
-  _onClickNodeArrow = (event: SyntheticEvent, node: LazyTreeNode): void => {
+  _onClickNodeArrow = (event: SyntheticEvent<>, node: LazyTreeNode): void => {
     this._toggleNodeExpanded(node);
   };
 
   _onDoubleClickNode = (
-    event: SyntheticMouseEvent,
+    event: SyntheticMouseEvent<>,
     node: LazyTreeNode,
   ): void => {
     // Double clicking a non-directory will keep the created tab open.
@@ -241,7 +238,7 @@ export class TreeRootComponent extends React.Component {
     }
   };
 
-  _onMouseDown = (event: SyntheticMouseEvent, node: LazyTreeNode): void => {
+  _onMouseDown = (event: SyntheticMouseEvent<>, node: LazyTreeNode): void => {
     // Select the node on right-click.
     if (event.button === 2 || (event.button === 0 && event.ctrlKey === true)) {
       if (!this._isNodeSelected(node)) {
@@ -285,7 +282,7 @@ export class TreeRootComponent extends React.Component {
     atom.contextMenu.add(contextMenuObj);
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     if (this.state.roots.length === 0) {
       return this.props.elementToRenderWhenEmpty;
     }

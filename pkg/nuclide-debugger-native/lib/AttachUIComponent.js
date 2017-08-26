@@ -15,7 +15,7 @@ import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {AttachTargetInfo} from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type {Column} from 'nuclide-commons-ui/Table';
 
-import React from 'react';
+import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Table} from 'nuclide-commons-ui/Table';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -91,11 +91,7 @@ function getCompareFunction(
   return () => 0;
 }
 
-export class AttachUIComponent extends React.Component<
-  void,
-  PropsType,
-  StateType,
-> {
+export class AttachUIComponent extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType;
   _targetListUpdating: boolean;
@@ -212,7 +208,7 @@ export class AttachUIComponent extends React.Component<
     });
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const {attachTargetInfos, sortedColumn, sortDescending} = this.state;
     const compareFn = getCompareFunction(sortedColumn, sortDescending);

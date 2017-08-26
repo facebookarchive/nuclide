@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import addTooltip from './addTooltip';
@@ -21,8 +21,8 @@ type DefaultProps = {
   disabled: boolean,
   indeterminate: boolean,
   label: string,
-  onClick: (event: SyntheticMouseEvent) => mixed,
-  onMouseDown: (event: SyntheticMouseEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent<>) => mixed,
+  onMouseDown: (event: SyntheticMouseEvent<>) => mixed,
 };
 
 type Props = {
@@ -32,19 +32,17 @@ type Props = {
   indeterminate: boolean,
   label: string,
   onChange: (isChecked: boolean) => mixed,
-  onClick: (event: SyntheticMouseEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent<>) => mixed,
   tooltip?: atom$TooltipsAddOptions,
   title?: ?string,
-  onMouseDown: (event: SyntheticMouseEvent) => mixed,
+  onMouseDown: (event: SyntheticMouseEvent<>) => mixed,
 };
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Checkbox extends React.PureComponent {
-  props: Props;
-
+export class Checkbox extends React.PureComponent<Props> {
   static defaultProps: DefaultProps = {
     disabled: false,
     indeterminate: false,
@@ -66,7 +64,7 @@ export class Checkbox extends React.PureComponent {
     this._setIndeterminate();
   }
 
-  _onChange(event: SyntheticEvent) {
+  _onChange(event: SyntheticEvent<>) {
     const isChecked = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange.call(null, isChecked);
   }
@@ -84,7 +82,7 @@ export class Checkbox extends React.PureComponent {
     ).indeterminate = this.props.indeterminate;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       checked,
       className,
@@ -110,6 +108,7 @@ export class Checkbox extends React.PureComponent {
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
+        // $FlowFixMe(>=0.53.0) Flow suppress
         ref={ref}
         onClick={onClick && ignoreTextSelectionEvents(onClick)}
         title={title}>

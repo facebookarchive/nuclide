@@ -17,7 +17,7 @@ import type {
 } from './types';
 import type {Option} from '../../nuclide-ui/Dropdown';
 
-import React from 'react';
+import * as React from 'react';
 import shallowequal from 'shallowequal';
 
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
@@ -50,16 +50,10 @@ function hasMobilePlatform(platformGroups: Array<PlatformGroup>): boolean {
   );
 }
 
-export default class BuckToolbar extends React.Component {
-  props: Props;
-  state: State;
+export default class BuckToolbar extends React.Component<Props, State> {
+  state = {settingsVisible: false};
 
-  constructor(props: Props) {
-    super(props);
-    this.state = {settingsVisible: false};
-  }
-
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       buildRuleType,
       buildTarget,
@@ -83,6 +77,7 @@ export default class BuckToolbar extends React.Component {
         ? 'Loading target build rule...'
         : 'Loading available platforms...';
       status = (
+        // $FlowFixMe(>=0.53.0) Flow suppress
         <div ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
             className="inline-block buck-spinner"
@@ -94,7 +89,8 @@ export default class BuckToolbar extends React.Component {
       status = (
         <span
           className="icon icon-alert"
-          ref={addTooltip({
+          ref={// $FlowFixMe(v>=0.53.0)
+          addTooltip({
             title:
               `'${buildTarget}' could not be found in ${buckRoot}.<br />` +
               'Check your Current Working Root or click to retry',

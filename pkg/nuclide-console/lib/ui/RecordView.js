@@ -18,7 +18,7 @@ import type {
 } from '../types';
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import {LazyNestedValueComponent} from '../../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../../nuclide-ui/SimpleValueComponent';
 import shallowEqual from 'shallowequal';
@@ -38,8 +38,7 @@ type Props = {
 };
 
 const ONE_DAY = 1000 * 60 * 60 * 24;
-export default class RecordView extends React.Component {
-  props: Props;
+export default class RecordView extends React.Component<Props> {
   _wrapper: ?HTMLElement;
   _debouncedMeasureAndNotifyHeight: () => void;
   _rafDisposable: ?rxjs$Subscription;
@@ -120,7 +119,7 @@ export default class RecordView extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {displayableRecord} = this.props;
     const {record} = displayableRecord;
     const {level, kind, timestamp, sourceId} = record;
@@ -160,6 +159,7 @@ export default class RecordView extends React.Component {
     return (
       <MeasuredComponent
         onMeasurementsChanged={this._debouncedMeasureAndNotifyHeight}>
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <div ref={this._handleRecordWrapper} className={classNames}>
           {icon}
           <div className="nuclide-console-record-content-wrapper">
@@ -198,7 +198,7 @@ export default class RecordView extends React.Component {
   };
 }
 
-function getComponent(type: ?string): ReactClass<any> {
+function getComponent(type: ?string): React.ComponentType<any> {
   switch (type) {
     case 'text':
       return props => TextRenderer(props.evaluationResult);

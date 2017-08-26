@@ -16,7 +16,7 @@ import {repositoryForPath} from '../nuclide-vcs-base';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import React from 'react';
+import * as React from 'react';
 import ChangedFile from './ChangedFile';
 
 function isHgPath(path: NuclideUri): boolean {
@@ -58,10 +58,7 @@ type State = {
   visiblePagesCount: number,
 };
 
-export default class ChangedFilesList extends React.Component {
-  props: Props;
-  state: State;
-
+export default class ChangedFilesList extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -70,7 +67,7 @@ export default class ChangedFilesList extends React.Component {
     };
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {
       checkedFiles,
       commandPrefix,
@@ -109,6 +106,7 @@ export default class ChangedFilesList extends React.Component {
       fileStatuses.size > filesToShow
         ? <div
             className="icon icon-ellipsis"
+            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title: 'Show more files with uncommitted changes',
               delay: 300,

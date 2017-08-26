@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
 export const HR = () => {
   return <hr className="nuclide-ui-hr" />;

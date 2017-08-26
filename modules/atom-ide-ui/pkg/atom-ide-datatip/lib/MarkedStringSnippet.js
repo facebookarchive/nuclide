@@ -11,22 +11,27 @@
  */
 
 import {TextBuffer} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 
 // Complex types can end up being super long. Truncate them.
 const MAX_LENGTH = 100;
 
-export default class MarkedStringSnippet extends React.Component {
-  props: {
-    value: string,
-    grammar: atom$Grammar,
-  };
+type Props = {
+  value: string,
+  grammar: atom$Grammar,
+};
+
+type State = {
+  isExpanded: boolean,
+};
+
+export default class MarkedStringSnippet extends React.Component<Props, State> {
   state = {
     isExpanded: false,
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {value} = this.props;
     const shouldTruncate = value.length > MAX_LENGTH && !this.state.isExpanded;
     const buffer = new TextBuffer(
@@ -41,7 +46,7 @@ export default class MarkedStringSnippet extends React.Component {
     return (
       <div
         className="nuclide-datatip-marked-text-editor-container"
-        onClick={(e: SyntheticEvent) => {
+        onClick={(e: SyntheticEvent<>) => {
           this.setState({isExpanded: !this.state.isExpanded});
           e.stopPropagation();
         }}>

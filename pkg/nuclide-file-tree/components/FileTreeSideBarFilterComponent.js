@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 
 type Props = {
@@ -17,9 +17,9 @@ type Props = {
   found: boolean,
 };
 
-export default class FileTreeSidebarFilterComponent extends React.Component {
-  props: Props;
-
+export default class FileTreeSidebarFilterComponent extends React.Component<
+  Props,
+> {
   render() {
     const {filter, found} = this.props;
 

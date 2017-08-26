@@ -12,7 +12,7 @@
 
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
-import React from 'react';
+import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 
@@ -21,7 +21,7 @@ const MAX_CODE_ACTIONS = 4;
 
 export default function DiagnosticsCodeActions(props: {
   codeActions: Map<string, CodeAction>,
-}): React.Element<*> {
+}): React.Element<any> {
   return (
     <div className="diagnostics-code-actions">
       {Array.from(props.codeActions.entries())

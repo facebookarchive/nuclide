@@ -9,10 +9,10 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
-export default class ExtraUi extends React.Component {
-  render(): React.Element<any> {
+export default class ExtraUi extends React.Component<{}> {
+  render(): React.Node {
     return <div>Extra UI!</div>;
   }
 }

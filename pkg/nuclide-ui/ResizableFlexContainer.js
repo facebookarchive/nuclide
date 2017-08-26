@@ -12,7 +12,7 @@
 import {arrayCompact, arrayEqual} from 'nuclide-commons/collection';
 import classnames from 'classnames';
 import createPaneContainer from '../commons-atom/create-pane-container';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 type Props = {
@@ -44,10 +44,9 @@ function getChildrenFlexScales(children: ?React.Element<any>): Array<number> {
   );
 }
 
-export class ResizableFlexContainer extends React.Component {
+export class ResizableFlexContainer extends React.Component<Props> {
   _paneContainer: Object;
   _panes: Array<atom$Pane>;
-  props: Props;
 
   componentDidMount(): void {
     this._setupPanes(this.props);
@@ -126,7 +125,7 @@ export class ResizableFlexContainer extends React.Component {
     return atom.views.getView(pane).querySelector('.item-views');
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {className} = this.props;
     const containerClassName = classnames(
       'nuclide-ui-resizable-flex-container',
@@ -141,10 +140,8 @@ type ResizableFlexItemProps = {
   children?: ?React.Element<any>,
 };
 
-export class ResizableFlexItem extends React.Component {
-  props: ResizableFlexItemProps;
-
-  render(): React.Element<any> {
+export class ResizableFlexItem extends React.Component<ResizableFlexItemProps> {
+  render(): React.Node {
     return (
       <div className="nuclide-ui-resizable-flex-item">
         {this.props.children}

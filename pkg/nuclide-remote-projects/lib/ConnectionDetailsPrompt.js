@@ -24,7 +24,7 @@ import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import {HR} from '../../nuclide-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   // The initial list of connection profiles that will be displayed.
@@ -62,10 +62,10 @@ type State = {
  * 'profiles'. Clicking on a 'profile' in the NuclideListSelector auto-fills
  * the form with the information associated with that profile.
  */
-export default class ConnectionDetailsPrompt extends React.Component {
-  props: Props;
-  state: State;
-
+export default class ConnectionDetailsPrompt extends React.Component<
+  Props,
+  State,
+> {
   _settingFormFieldsLock: boolean;
 
   constructor(props: Props) {
@@ -209,7 +209,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};
@@ -234,6 +234,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
               onDoubleClick={this.props.onConfirm}>
               <span
                 className="icon icon-info pull-right connection-details-icon-info"
+                // $FlowFixMe(>=0.53.0) Flow suppress
                 ref={addTooltip({
                   // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
                   // context to the Tooltip instance.
@@ -285,6 +286,7 @@ export default class ConnectionDetailsPrompt extends React.Component {
         <span
           style={{paddingLeft: 10}}
           className="icon icon-info pull-right nuclide-remote-projects-tooltip-warning"
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip

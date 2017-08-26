@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
 
 import {Emitter} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
@@ -87,7 +87,10 @@ type State = {
   isFileTreeHovered: boolean,
 };
 
-export default class FileTreeSidebarComponent extends React.Component {
+export default class FileTreeSidebarComponent extends React.Component<
+  mixed,
+  State,
+> {
   _actions: FileTreeActions;
   _store: FileTreeStore;
   _emitter: Emitter;
@@ -96,7 +99,6 @@ export default class FileTreeSidebarComponent extends React.Component {
   _showUncommittedConfigValue: Observable<boolean>;
   _showUncommittedKindConfigValue: Observable<ShowUncommittedChangesKindValue>;
   _scrollWasTriggeredProgrammatically: boolean;
-  state: State;
 
   constructor() {
     super();
@@ -244,7 +246,7 @@ export default class FileTreeSidebarComponent extends React.Component {
     }
   }
 
-  _handleFocus = (event: SyntheticEvent): void => {
+  _handleFocus = (event: SyntheticEvent<>): void => {
     if (event.target === ReactDOM.findDOMNode(this)) {
       this.focus();
     }
@@ -332,6 +334,7 @@ All the changes across your entire stacked diff.
             </span>;
 
         uncommittedChangesHeadline = (
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <span ref={addTooltip({title: dropdownTooltip})}>
             <span className="nuclide-dropdown-label-text-wrapper">
               {this.state.showUncommittedChangesKind.toUpperCase()}
@@ -371,6 +374,7 @@ All the changes across your entire stacked diff.
       }
       openFilesSection = (
         <LockableHeight isLocked={this.state.isFileTreeHovered}>
+          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <Section
             className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
             collapsable={true}
@@ -487,7 +491,7 @@ All the changes across your entire stacked diff.
   };
 
   _handleUncommittedChangesKindDownArrow = (
-    event: SyntheticMouseEvent,
+    event: SyntheticMouseEvent<>,
   ): void => {
     invariant(remote != null);
     const menu = new remote.Menu();

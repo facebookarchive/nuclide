@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import React from 'react';
+import * as React from 'react';
 
 export type FileResult = {
   path: NuclideUri,

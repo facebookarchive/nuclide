@@ -17,7 +17,7 @@ import {
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
 
-import React from 'react';
+import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
@@ -93,9 +93,10 @@ function SVGButton(props: {
   );
 }
 
-export class DebuggerSteppingComponent extends React.Component {
-  props: DebuggerSteppingComponentProps;
-  state: DebuggerSteppingComponentState;
+export class DebuggerSteppingComponent extends React.Component<
+  DebuggerSteppingComponentProps,
+  DebuggerSteppingComponentState,
+> {
   _disposables: UniversalDisposable;
 
   constructor(props: DebuggerSteppingComponentProps) {
@@ -164,7 +165,7 @@ export class DebuggerSteppingComponent extends React.Component {
     this.props.actions.triggerDebuggerAction(actionId);
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {
       debuggerMode,
       pauseOnException,

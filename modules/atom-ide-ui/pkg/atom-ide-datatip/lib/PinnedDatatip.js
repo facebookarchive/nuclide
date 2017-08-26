@@ -18,7 +18,7 @@ type Position = {
 };
 
 import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
@@ -178,7 +178,7 @@ export class PinnedDatatip {
       );
   }
 
-  handleCapturedClick(event: SyntheticEvent): void {
+  handleCapturedClick(event: SyntheticEvent<>): void {
     if (this._isDragging) {
       event.stopPropagation();
     }

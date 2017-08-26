@@ -13,7 +13,7 @@
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Props} from './ui/DiagnosticsView';
 
-import React from 'react';
+import * as React from 'react';
 import DiagnosticsView from './ui/DiagnosticsView';
 import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';

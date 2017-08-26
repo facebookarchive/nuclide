@@ -13,7 +13,7 @@
 import classNames from 'classnames';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import {maybeToString} from 'nuclide-commons/string';
@@ -24,7 +24,7 @@ type DefaultProps = {
   startSelected: boolean,
   initialValue: string,
   tabIndex: string,
-  onClick: (event: SyntheticMouseEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent<>) => mixed,
   onDidChange: (text: string) => mixed,
   onFocus: () => mixed,
   onBlur: (blurEvent: Event) => mixed,
@@ -41,7 +41,7 @@ type Props = {
   placeholderText?: string,
   tabIndex: string,
   onFocus: () => mixed,
-  onClick: (event: SyntheticMouseEvent) => mixed,
+  onClick: (event: SyntheticMouseEvent<>) => mixed,
   onDidChange: (text: string) => mixed,
   onConfirm?: () => mixed,
   onCancel?: () => mixed,
@@ -62,10 +62,7 @@ type State = {
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-export class AtomInput extends React.Component {
-  props: Props;
-  state: State;
-
+export class AtomInput extends React.Component<Props, State> {
   _disposables: ?CompositeDisposable;
 
   static defaultProps: DefaultProps = {
@@ -192,7 +189,7 @@ export class AtomInput extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
       [`atom-text-editor-${maybeToString(this.props.size)}`]:

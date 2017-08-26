@@ -12,6 +12,7 @@
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {ExportStoreData} from './FileTreeStore';
+// $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 
 import {COMMANDS_SELECTOR} from './FileTreeConstants';

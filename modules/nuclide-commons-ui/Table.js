@@ -11,7 +11,7 @@
  */
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Disposable} from 'atom';
 import {Icon} from './Icon';
@@ -28,7 +28,7 @@ export type Column = {
   width?: number,
   // Optional React component for rendering cell contents.
   // The component receives the cell value via `props.data`.
-  component?: ReactClass<any>,
+  component?: React.ComponentType<any>,
   shouldRightAlign?: boolean,
 };
 export type Row = {
@@ -86,13 +86,13 @@ type Props = {
   onWillSelect?: (
     selectedItem: any,
     selectedIndex: number,
-    event: SyntheticMouseEvent,
+    event: SyntheticMouseEvent<>,
   ) => boolean,
   /**
    * Optional React Component to override the default message when zero rows are provided.
    * Useful for showing loading spinners and custom messages.
    */
-  emptyComponent?: ReactClass<any>,
+  emptyComponent?: React.ComponentType<any>,
   /**
    * Whether a table row will be collapsed if its content is too large
    */
@@ -107,9 +107,7 @@ type State = {
   columnWidthRatios: WidthMap,
 };
 
-export class Table extends React.Component {
-  props: Props;
-  state: State;
+export class Table extends React.Component<Props, State> {
   _globalEventsDisposable: ?Disposable;
   _resizeStartX: ?number;
   _tableWidth: ?number;
@@ -190,7 +188,7 @@ export class Table extends React.Component {
     return true;
   }
 
-  _handleResizerMouseDown(key: ColumnKey, event: SyntheticMouseEvent): void {
+  _handleResizerMouseDown(key: ColumnKey, event: SyntheticMouseEvent<>): void {
     if (this._globalEventsDisposable != null) {
       this._unsubscribeFromGlobalEvents();
     }
@@ -274,7 +272,7 @@ export class Table extends React.Component {
     );
   }
 
-  _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent): void {
+  _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent<>): void {
     const {onSelect, onWillSelect, rows} = this.props;
     if (onSelect == null) {
       return;
@@ -292,7 +290,7 @@ export class Table extends React.Component {
     return <div />;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       alternateBackground,
       className,
@@ -319,7 +317,7 @@ export class Table extends React.Component {
                 : <div
                     className="nuclide-ui-table-header-resize-handle"
                     onMouseDown={this._handleResizerMouseDown.bind(this, key)}
-                    onClick={(e: SyntheticMouseEvent) => {
+                    onClick={(e: SyntheticMouseEvent<>) => {
                       // Prevent sortable column header click event from firing.
                       e.stopPropagation();
                     }}
@@ -381,6 +379,7 @@ export class Table extends React.Component {
           cellStyle.width = width * 100 + '%';
         }
         return (
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <div
             className={classnames({
               'nuclide-ui-table-body-cell': true,

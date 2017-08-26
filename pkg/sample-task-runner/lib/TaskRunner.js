@@ -23,11 +23,11 @@ export default class TaskRunner {
   id = 'my-awesome-task-runner';
   name = 'Awesome Stuff';
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi(): React$ComponentType<any> {
     return ExtraUi;
   }
 
-  getIcon(): ReactClass<any> {
+  getIcon(): React$ComponentType<any> {
     return Icon;
   }
 

@@ -9,13 +9,11 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {Modal} from './Modal';
 
-class ModalExample extends React.Component {
-  state: {isModalShown: boolean};
-
+class ModalExample extends React.Component<void, {isModalShown: boolean}> {
   constructor(props: void) {
     super(props);
     this.state = {isModalShown: false};
@@ -29,7 +27,7 @@ class ModalExample extends React.Component {
     this.setState({isModalShown: false});
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {isModalShown} = this.state;
     const modal = isModalShown
       ? <Modal onDismiss={this._hideModal}>

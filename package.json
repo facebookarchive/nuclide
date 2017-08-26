@@ -137,7 +137,7 @@
     "eslint-plugin-prefer-object-spread": "1.1.0",
     "eslint-plugin-prettier": "2.1.0",
     "eslint-plugin-react": "6.8.0",
-    "flow-bin": "0.52.0",
+    "flow-bin": "0.53.1",
     "fs-extra": "2.0.0",
     "jasmine-node": "1.14.5",
     "mock-spawn": "0.2.6",

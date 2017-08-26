@@ -9,14 +9,14 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 
 import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 
 type DefaultProps = {
   disabled: boolean,
-  onClick: (event: SyntheticEvent) => mixed,
+  onClick: (event: SyntheticEvent<>) => mixed,
 };
 
 type Props = {
@@ -25,27 +25,25 @@ type Props = {
   disabled: boolean,
   label: ?string,
   onChange: (isToggled: boolean) => mixed,
-  onClick: (event: SyntheticEvent) => mixed,
+  onClick: (event: SyntheticEvent<>) => mixed,
 };
 
 /**
  * A toggle component with an input toggle and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Toggle extends React.Component {
-  props: Props;
-
+export class Toggle extends React.Component<Props> {
   static defaultProps: DefaultProps = {
     disabled: false,
     onClick(event) {},
   };
 
-  _onChange = (event: SyntheticEvent) => {
+  _onChange = (event: SyntheticEvent<>) => {
     const isToggled = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange.call(null, isToggled);
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {className, disabled, label, onClick, toggled} = this.props;
     const text =
       label === ''

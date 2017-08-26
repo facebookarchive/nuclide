@@ -13,7 +13,7 @@ import type {HomeFragments} from './types';
 import type {Observable, BehaviorSubject} from 'rxjs';
 
 import Immutable from 'immutable';
-import React from 'react';
+import * as React from 'react';
 import HomeFeatureComponent from './HomeFeatureComponent';
 import NuclideLogo from './NuclideLogo';
 import createUtmUrl from './createUtmUrl';
@@ -53,13 +53,13 @@ type Props = {
   allHomeFragmentsStream: BehaviorSubject<Immutable.Set<HomeFragments>>,
 };
 
-export default class HomePaneItem extends React.Component {
-  props: Props;
-  state: {
+export default class HomePaneItem extends React.Component<
+  Props,
+  {
     allHomeFragments: Immutable.Set<string, React.Element<any>>,
     showOnStartup: boolean,
-  };
-
+  },
+> {
   _disposables: ?UniversalDisposable;
 
   constructor(props: Props) {

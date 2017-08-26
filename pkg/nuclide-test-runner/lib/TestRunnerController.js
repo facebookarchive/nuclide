@@ -16,7 +16,7 @@ import type {Observable} from 'rxjs';
 import invariant from 'assert';
 import Ansi from './Ansi';
 import {TextBuffer} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestRunModel from './TestRunModel';
 import TestRunnerPanel from './ui/TestRunnerPanel';
@@ -205,7 +205,7 @@ export class TestRunnerController {
     this._renderPanel();
   };
 
-  _handleClickRun = (event: SyntheticMouseEvent): void => {
+  _handleClickRun = (event: SyntheticMouseEvent<>): void => {
     // Don't pass a reference to `runTests` directly because the callback receives a mouse event as
     // its argument. `runTests` needs to be called with no arguments.
     this.runTests();

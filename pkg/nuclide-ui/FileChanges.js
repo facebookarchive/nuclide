@@ -15,7 +15,7 @@ import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import nullthrows from 'nullthrows';
 import {pluralize} from 'nuclide-commons/string';
 import {Range, TextBuffer} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Section} from './Section';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -25,14 +25,14 @@ type Props = {
   collapsable?: boolean,
   diff: diffparser$FileDiff,
   extraData?: mixed,
-  hunkComponentClass?: ReactClass<HunkProps>,
+  hunkComponentClass?: React.ComponentType<HunkProps>,
   fullPath?: NuclideUri,
   collapsable?: boolean,
   collapsedByDefault?: boolean,
 };
 
 type DefaultProps = {
-  hunkComponentClass: ReactClass<HunkProps>,
+  hunkComponentClass: React.ComponentType<HunkProps>,
 };
 
 export type HunkProps = {
@@ -71,9 +71,8 @@ const GutterElement = (props: {
   );
 };
 
-export class HunkDiff extends React.Component {
+export class HunkDiff extends React.Component<HunkProps> {
   editor: atom$TextEditor;
-  props: HunkProps;
   _disposables: UniversalDisposable;
 
   constructor(props: HunkProps) {
@@ -205,7 +204,7 @@ export class HunkDiff extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {hunk, grammar} = this.props;
     const {changes} = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
@@ -222,6 +221,7 @@ export class HunkDiff extends React.Component {
         gutterHidden={true}
         readOnly={true}
         ref={editorRef => {
+          // $FlowFixMe(>=0.53.0) Flow suppress
           this.editor = editorRef && editorRef.getModel();
         }}
         textBuffer={textBuffer}
@@ -231,14 +231,12 @@ export class HunkDiff extends React.Component {
 }
 
 /* Renders changes to a single file. */
-export default class FileChanges extends React.Component {
-  props: Props;
-
+export default class FileChanges extends React.Component<Props> {
   static defaultProps: DefaultProps = {
     hunkComponentClass: HunkDiff,
   };
 
-  _handleFilenameClick = (event: SyntheticMouseEvent): void => {
+  _handleFilenameClick = (event: SyntheticMouseEvent<>): void => {
     const {fullPath} = this.props;
     if (fullPath == null) {
       return;
@@ -247,7 +245,7 @@ export default class FileChanges extends React.Component {
     event.stopPropagation();
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {diff, fullPath, collapsable, collapsedByDefault} = this.props;
     const {additions, annotation, chunks, deletions, to: fileName} = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
@@ -260,6 +258,7 @@ export default class FileChanges extends React.Component {
         );
       }
       hunks.push(
+        // $FlowFixMe(>=0.53.0) Flow suppress
         <this.props.hunkComponentClass
           extraData={this.props.extraData}
           key={chunk.oldStart}
@@ -305,6 +304,7 @@ export default class FileChanges extends React.Component {
     );
 
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <Section
         collapsable={collapsable}
         collapsedByDefault={collapsedByDefault}

@@ -19,7 +19,7 @@ import classnames from 'classnames';
 
 import {Range} from 'atom';
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';

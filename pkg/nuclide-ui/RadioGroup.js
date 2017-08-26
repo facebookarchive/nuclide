@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
 // Globally unique ID used as the "name" attribute to group radio inputs.
 let uid = 0;
@@ -28,10 +28,7 @@ type State = {
 /**
  * A managed radio group component. Accepts arbitrary React elements as labels.
  */
-export default class RadioGroup extends React.Component {
-  props: Props;
-  state: State;
-
+export default class RadioGroup extends React.Component<Props, State> {
   static defaultProps = {
     optionLabels: [],
     onSelectedChange: (selectedIndex: number) => {},
@@ -45,7 +42,7 @@ export default class RadioGroup extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       className,
       onSelectedChange,

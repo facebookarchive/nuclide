@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import BreakpointStore from './BreakpointStore.js';
 import DebuggerInspector from './DebuggerInspector';
 import {DebuggerStore} from './DebuggerStore';
@@ -36,10 +36,10 @@ function getStateFromStore(store: DebuggerStore): State {
   };
 }
 
-export default class DebuggerControllerView extends React.Component {
-  props: Props;
-  state: State;
-
+export default class DebuggerControllerView extends React.Component<
+  Props,
+  State,
+> {
   constructor(props: Props) {
     super(props);
     this.state = getStateFromStore(props.store);
@@ -74,7 +74,7 @@ export default class DebuggerControllerView extends React.Component {
     this._updateStateFromStore(nextProps.store);
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     // flowlint-next-line sketchy-null-string:off
     if (this.state.processSocket && __DEV__) {
       return (

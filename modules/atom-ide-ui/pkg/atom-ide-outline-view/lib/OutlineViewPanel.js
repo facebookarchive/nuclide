@@ -12,7 +12,7 @@
 
 import type {OutlineForUi} from './createOutlines';
 
-import React from 'react';
+import * as React from 'react';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';

@@ -48,7 +48,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
 import {throttle, microtask} from 'nuclide-commons/observable';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -100,10 +100,10 @@ type State = {
   initialQuery: string,
 };
 
-export default class QuickSelectionComponent extends React.Component {
-  props: Props;
-  state: State;
-
+export default class QuickSelectionComponent extends React.Component<
+  Props,
+  State,
+> {
   _subscriptions: UniversalDisposable;
 
   constructor(props: Props) {
@@ -281,7 +281,7 @@ export default class QuickSelectionComponent extends React.Component {
     }
   };
 
-  _handleKeyPress = (e: SyntheticKeyboardEvent): void => {
+  _handleKeyPress = (e: SyntheticKeyboardEvent<>): void => {
     if (e.shiftKey && e.key === 'Enter') {
       if (this.state.activeTab.canOpenAll) {
         this._openAll();
@@ -721,7 +721,7 @@ export default class QuickSelectionComponent extends React.Component {
     this.props.onSelection(selections, providerName, query);
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     let numTotalResultsRendered = 0;
     const isOmniSearchActive =
       this.state.activeTab.name === 'OmniSearchResultProvider';

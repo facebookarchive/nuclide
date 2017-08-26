@@ -11,7 +11,7 @@
 
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Portal} from '../../../nuclide-ui/Portal';
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   checked: boolean,
@@ -22,8 +22,7 @@ type Props = {
 
 const GUTTER_NAME = 'nuclide-patch-editor-checkbox-gutter';
 
-export class GutterCheckbox extends React.Component {
-  props: Props;
+export class GutterCheckbox extends React.Component<Props> {
   _gutter: atom$Gutter;
   _marker: atom$Marker;
   _node: HTMLElement;
@@ -54,7 +53,7 @@ export class GutterCheckbox extends React.Component {
     this._marker.destroy();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <Portal container={this._node}>
         <Checkbox

@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   children?: mixed,
@@ -18,6 +18,7 @@ type Props = {
 
 /** A Block. */
 export const Block = (props: Props) =>
+  // $FlowFixMe(>=0.53.0) Flow suppress
   <div className="block">
     {props.children}
   </div>;

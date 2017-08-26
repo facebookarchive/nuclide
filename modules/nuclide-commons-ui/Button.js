@@ -13,7 +13,7 @@
 import type {IconName} from './Icon';
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {maybeToString} from 'nuclide-commons/string';
 import addTooltip from './addTooltip';
@@ -69,9 +69,7 @@ const ButtonTypeClassnames = Object.freeze({
 /**
  * Generic Button wrapper.
  */
-export class Button extends React.Component {
-  props: Props;
-
+export class Button extends React.Component<Props> {
   focus(): void {
     const node = ReactDOM.findDOMNode(this);
     if (node == null) {
@@ -81,7 +79,7 @@ export class Button extends React.Component {
     node.focus();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       icon,
       buttonType,
@@ -105,6 +103,7 @@ export class Button extends React.Component {
     });
     const Wrapper = wrapperElement == null ? 'button' : wrapperElement;
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <Wrapper className={newClassName} ref={ref} {...remainingProps}>
         {children}
       </Wrapper>

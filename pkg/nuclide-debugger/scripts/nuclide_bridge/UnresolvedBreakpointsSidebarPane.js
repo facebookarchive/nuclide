@@ -10,7 +10,7 @@
  */
 
 import NuclideBridge from './NuclideBridge';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import url from 'url';
@@ -23,10 +23,7 @@ type State = {
   breakpoints: Array<{url: string, line: number}>,
 };
 
-class UnresolvedBreakpointsComponent extends React.Component {
-  props: Props;
-  state: State;
-
+class UnresolvedBreakpointsComponent extends React.Component<Props, State> {
   _changeHandler: ?IDisposable;
 
   constructor(props: Props) {

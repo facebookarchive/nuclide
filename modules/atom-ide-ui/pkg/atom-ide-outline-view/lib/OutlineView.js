@@ -15,7 +15,7 @@ import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import React from 'react';
+import * as React from 'react';
 import invariant from 'assert';
 import classnames from 'classnames';
 
@@ -55,10 +55,7 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   type: 'syntax--support syntax--type',
 };
 
-export class OutlineView extends React.PureComponent {
-  state: State;
-  props: Props;
-
+export class OutlineView extends React.PureComponent<Props, State> {
   subscription: ?UniversalDisposable;
 
   constructor(props: Props) {
@@ -98,7 +95,7 @@ export class OutlineView extends React.PureComponent {
     this.subscription = null;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div className="nuclide-outline-view">
         <OutlineViewComponent
@@ -115,14 +112,14 @@ type OutlineViewComponentProps = {
   searchEnabled: boolean,
 };
 
-class OutlineViewComponent extends React.PureComponent {
-  props: OutlineViewComponentProps;
-
+class OutlineViewComponent extends React.PureComponent<
+  OutlineViewComponentProps,
+> {
   constructor(props: OutlineViewComponentProps) {
     super(props);
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {outline, searchEnabled} = this.props;
 
     switch (outline.kind) {
@@ -182,8 +179,12 @@ type OutlineViewCoreProps = {
 /**
  * Contains both the search field and the scrollable outline tree
  */
-class OutlineViewCore extends React.PureComponent {
-  props: OutlineViewCoreProps;
+class OutlineViewCore extends React.PureComponent<
+  OutlineViewCoreProps,
+  {
+    searchResults: Map<OutlineTreeForUi, SearchResult>,
+  },
+> {
   state: {
     searchResults: Map<OutlineTreeForUi, SearchResult>,
   } = {
@@ -219,13 +220,11 @@ class OutlineViewCore extends React.PureComponent {
   }
 }
 
-class OutlineTree extends React.PureComponent {
-  props: {
-    editor: atom$TextEditor,
-    outline: OutlineTreeForUi,
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  };
-
+class OutlineTree extends React.PureComponent<{
+  editor: atom$TextEditor,
+  outline: OutlineTreeForUi,
+  searchResults: Map<OutlineTreeForUi, SearchResult>,
+}> {
   onClick = () => {
     const {editor, outline} = this.props;
     const pane = atom.workspace.paneForItem(editor);
@@ -253,7 +252,7 @@ class OutlineTree extends React.PureComponent {
     }
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {editor, outline, searchResults} = this.props;
 
     const classNames = ['list-nested-item'];

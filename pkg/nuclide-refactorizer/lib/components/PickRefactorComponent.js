@@ -13,19 +13,17 @@ import type {Store, PickPhase} from '../types';
 
 import type {AvailableRefactoring} from '../..';
 
-import React from 'react';
+import * as React from 'react';
 
 import {Button} from 'nuclide-commons-ui/Button';
 
 import * as Actions from '../refactorActions';
 
-export class PickRefactorComponent extends React.Component {
-  props: {
-    pickPhase: PickPhase,
-    store: Store,
-  };
-
-  render(): React.Element<any> {
+export class PickRefactorComponent extends React.Component<{
+  pickPhase: PickPhase,
+  store: Store,
+}> {
+  render(): React.Node {
     const {availableRefactorings} = this.props.pickPhase;
     if (availableRefactorings.length === 0) {
       return <div>No refactorings available at this location</div>;

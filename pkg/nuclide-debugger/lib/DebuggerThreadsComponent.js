@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import type {ThreadItem} from './types';
 import type Bridge from './Bridge';
@@ -48,9 +48,10 @@ const activeThreadIndicatorComponent = (props: {cellData: boolean}) =>
       : null}
   </div>;
 
-export class DebuggerThreadsComponent extends React.Component {
-  props: DebuggerThreadsComponentProps;
-  state: DebuggerThreadsComponentState;
+export class DebuggerThreadsComponent extends React.Component<
+  DebuggerThreadsComponentProps,
+  DebuggerThreadsComponentState,
+> {
   _disposables: UniversalDisposable;
 
   constructor(props: DebuggerThreadsComponentProps) {
@@ -144,7 +145,7 @@ export class DebuggerThreadsComponent extends React.Component {
     });
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {threadList, selectedThreadId} = this.state;
     const activeThreadCol = {
       component: activeThreadIndicatorComponent,

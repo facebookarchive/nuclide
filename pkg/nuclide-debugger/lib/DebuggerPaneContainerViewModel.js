@@ -12,7 +12,7 @@
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';
 import DebuggerModel from './DebuggerModel';
 import invariant from 'invariant';
-import React from 'react';
+import * as React from 'react';
 import TabBarView from '../../nuclide-ui/VendorLib/atom-tabs/lib/tab-bar-view';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {View} from '../../nuclide-ui/View';

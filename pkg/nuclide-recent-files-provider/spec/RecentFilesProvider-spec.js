@@ -16,7 +16,7 @@ import {
   RecentFilesProvider,
   setRecentFilesService,
 } from '../lib/RecentFilesProvider';
-import React from 'react';
+import * as React from 'react';
 import TestUtils from 'react-addons-test-utils';
 
 let provider: Provider = (null: any);
@@ -46,11 +46,10 @@ let fakeGetProjectPathsImpl = () => [];
 const fakeGetProjectPaths = () => fakeGetProjectPathsImpl();
 
 // Per https://github.com/facebook/react/issues/4692#issuecomment-163029873
-class Wrapper extends React.Component {
-  props: {
-    children?: any,
-  };
-  render(): React.Element<any> {
+class Wrapper extends React.Component<{
+  children?: any,
+}> {
+  render(): React.Node {
     return (
       <div>
         {this.props.children}

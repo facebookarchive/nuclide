@@ -12,7 +12,7 @@
 import type {DebuggerConfigAction} from '../../../nuclide-debugger-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import React from 'react';
+import * as React from 'react';
 import {AttachUIComponent} from '../AttachUIComponent';
 import {LaunchAttachActions} from '../LaunchAttachActions';
 import {LaunchAttachStore} from '../LaunchAttachStore';

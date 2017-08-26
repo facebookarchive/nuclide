@@ -41,7 +41,7 @@ import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
 import BuckToolbar from './BuckToolbar';
 import observeBuildCommands from './observeBuildCommands';
-import React from 'react';
+import * as React from 'react';
 import {arrayEqual} from 'nuclide-commons/collection';
 import shallowequal from 'shallowequal';
 
@@ -90,7 +90,7 @@ function shouldEnableTask(taskType: TaskType, ruleType: string): boolean {
 export class BuckTaskRunner {
   _store: Store;
   _disposables: UniversalDisposable;
-  _extraUi: ?ReactClass<any>;
+  _extraUi: ?React.ComponentType<any>;
   id: string;
   name: string;
   _serializedState: ?SerializedState;
@@ -106,7 +106,7 @@ export class BuckTaskRunner {
     this._platformService = new PlatformService();
   }
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi(): React.ComponentType<any> {
     if (this._extraUi == null) {
       const store = this._getStore();
       const boundActions = {
@@ -128,7 +128,7 @@ export class BuckTaskRunner {
     return this._extraUi;
   }
 
-  getIcon(): ReactClass<any> {
+  getIcon(): React.ComponentType<any> {
     return () =>
       <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />;
   }

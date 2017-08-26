@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {ScopesComponent} from './ScopesComponent';
 import type {DebuggerModeType} from './types';
@@ -23,12 +23,13 @@ type Props = {
   model: DebuggerModel,
 };
 
-export class ScopesView extends React.PureComponent {
-  props: Props;
-  state: {
+export class ScopesView extends React.PureComponent<
+  Props,
+  {
     mode: DebuggerModeType,
-  };
-  _scopesComponentWrapped: ReactClass<any>;
+  },
+> {
+  _scopesComponentWrapped: React.ComponentType<any>;
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -63,7 +64,7 @@ export class ScopesView extends React.PureComponent {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     const {mode} = this.state;
     const ScopesComponentWrapped = this._scopesComponentWrapped;

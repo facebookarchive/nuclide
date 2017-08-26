@@ -13,7 +13,7 @@ import type {FileTreeNode} from '../lib/FileTreeNode';
 
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
@@ -43,9 +43,7 @@ const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
 const INDENT_LEVEL = 17;
 
-export class FileTreeEntryComponent extends React.Component {
-  state: State;
-  props: Props;
+export class FileTreeEntryComponent extends React.Component<Props, State> {
   // Keep track of the # of dragenter/dragleave events in order to properly decide
   // when an entry is truly hovered/unhovered, since these fire many times over
   // the duration of one user interaction.
@@ -118,7 +116,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const node = this.props.node;
 
     const outerClassName = classnames('entry', {
@@ -179,6 +177,7 @@ export class FileTreeEntryComponent extends React.Component {
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}>
         <div className={listItemClassName} ref="arrowContainer">
+          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
               'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,
@@ -188,7 +187,9 @@ export class FileTreeEntryComponent extends React.Component {
             isFolder={node.isContainer}
             path={node.uri}
             ref={elem => {
+              // $FlowFixMe(>=0.53.0) Flow suppress
               this._pathContainer = elem;
+              // $FlowFixMe(>=0.53.0) Flow suppress
               tooltip && tooltip(elem);
             }}
             data-name={node.name}
@@ -234,7 +235,7 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
-  _isToggleNodeExpand(event: SyntheticMouseEvent) {
+  _isToggleNodeExpand(event: SyntheticMouseEvent<>) {
     if (!this._pathContainer) {
       return;
     }
@@ -250,7 +251,7 @@ export class FileTreeEntryComponent extends React.Component {
     );
   }
 
-  _onMouseDown = (event: SyntheticMouseEvent) => {
+  _onMouseDown = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
     if (this._isToggleNodeExpand(event)) {
       return;
@@ -268,7 +269,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   };
 
-  _onClick = (event: SyntheticMouseEvent) => {
+  _onClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
     const node = this.props.node;
 
@@ -314,7 +315,7 @@ export class FileTreeEntryComponent extends React.Component {
     }
   };
 
-  _onDoubleClick = (event: SyntheticMouseEvent) => {
+  _onDoubleClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
 
     if (this.props.node.isContainer) {
@@ -457,11 +458,11 @@ export class FileTreeEntryComponent extends React.Component {
     }
   };
 
-  _checkboxOnClick = (event: SyntheticEvent): void => {
+  _checkboxOnClick = (event: SyntheticEvent<>): void => {
     event.stopPropagation();
   };
 
-  _checkboxOnMouseDown = (event: SyntheticMouseEvent): void => {
+  _checkboxOnMouseDown = (event: SyntheticMouseEvent<>): void => {
     // Chrome messes with scrolling if a focused input is being scrolled out of view
     // so we'll just prevent the checkbox from receiving the focus
     event.preventDefault();

@@ -11,7 +11,7 @@
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import React from 'react';
+import * as React from 'react';
 
 import {Icon} from 'nuclide-commons-ui/Icon';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
@@ -34,14 +34,12 @@ const REALLY_BAD_THRESHOLD = 50;
 const NOT_GREAT_THRESHOLD = 80;
 const COLOR_DISPLAY_SETTING = 'nuclide-type-coverage.colorizeStatusBar';
 
-export class StatusBarTileComponent extends React.Component {
-  props: Props;
-
+export class StatusBarTileComponent extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const result = this.props.result;
     if (result != null) {
       const percentage = result.percentage;
@@ -71,6 +69,7 @@ export class StatusBarTileComponent extends React.Component {
           style={{cursor: 'pointer'}}
           onClick={this.props.onClick}
           className={classes}
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: tooltipString,
             delay: 0,

@@ -18,7 +18,7 @@ import type {Datatip} from '../../atom-ide-datatip/lib/types';
 import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
@@ -46,7 +46,7 @@ function makeDatatipComponent(
   messages: Array<FileDiagnosticMessage>,
   fixer: (message: FileDiagnosticMessage) => void,
   codeActionsForMessage: Map<FileDiagnosticMessage, Map<string, CodeAction>>,
-): React.Element<*> {
+): React.Element<any> {
   return (
     <DiagnosticsPopup
       messages={messages}

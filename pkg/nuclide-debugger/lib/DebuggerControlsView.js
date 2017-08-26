@@ -11,7 +11,7 @@
 
 import type DebuggerModel from './DebuggerModel';
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 import {DebuggerSteppingComponent} from './DebuggerSteppingComponent';
 import type {DebuggerModeType} from './types';
@@ -25,11 +25,12 @@ type Props = {
   model: DebuggerModel,
 };
 
-export class DebuggerControlsView extends React.PureComponent {
-  props: Props;
-  state: {
+export class DebuggerControlsView extends React.PureComponent<
+  Props,
+  {
     mode: DebuggerModeType,
-  };
+  },
+> {
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -61,7 +62,7 @@ export class DebuggerControlsView extends React.PureComponent {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     const actions = model.getActions();
     const {mode} = this.state;

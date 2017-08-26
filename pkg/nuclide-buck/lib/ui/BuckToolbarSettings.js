@@ -11,7 +11,7 @@
 
 import type {PlatformProviderSettings, TaskSettings} from '../types';
 
-import React from 'react';
+import * as React from 'react';
 
 import {shellParse, shellQuote} from 'nuclide-commons/string';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -32,10 +32,7 @@ type State = {
   runArguments: string,
 };
 
-export default class BuckToolbarSettings extends React.Component {
-  props: Props;
-  state: State;
-
+export default class BuckToolbarSettings extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     const {buildArguments, runArguments} = props.settings;
@@ -45,7 +42,7 @@ export default class BuckToolbarSettings extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const extraSettingsUi =
       this.props.platformProviderSettings != null
         ? this.props.platformProviderSettings.ui

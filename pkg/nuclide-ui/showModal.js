@@ -12,7 +12,7 @@
 /* global HTMLElement */
 
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -21,7 +21,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
  * Given a function to dismiss the modal, return a React element for the content.
  * Call the function when e.g. the user clicks a Cancel or Submit button.
  */
-type ContentFactory = (dismiss: () => void) => React$Element<any>;
+type ContentFactory = (dismiss: () => void) => React.Element<any>;
 
 /** Wrap options in an object so we can add new ones later without an explosion of params */
 type Options = {|
@@ -105,10 +105,8 @@ type Props = {
  * Just exists to provide a div that we can focus on mount. This ensures we steal focus from any
  * editors or other panes while the modal is present.
  */
-class ModalContainer extends React.Component {
-  props: Props;
-
-  render(): React.Element<any> {
+class ModalContainer extends React.Component<Props> {
+  render(): React.Node {
     return (
       <div tabIndex="-1">
         {this.props.children}

@@ -13,9 +13,11 @@
  * A message view to be shown in Context View.
  */
 
-import React from 'react';
+import * as React from 'react';
 
-export default class ContextViewMessage extends React.Component {
+export default class ContextViewMessage extends React.Component<{
+  message: string | React.Element<any>,
+}> {
   static NO_DEFINITION = 'No definition selected.';
   static LOADING = 'Loading...';
   static NOT_LOGGED_IN = (
@@ -24,11 +26,7 @@ export default class ContextViewMessage extends React.Component {
     </div>
   );
 
-  props: {
-    message: string | React.Element<any>,
-  };
-
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div>
         {this.props.message}

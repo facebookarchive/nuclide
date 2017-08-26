@@ -23,7 +23,7 @@ import {CompositeDisposable} from 'atom';
 import {getIPsForHosts} from './connection-profile-utils';
 import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
 import RadioGroup from '../../nuclide-ui/RadioGroup';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {SshHandshake} from '../../nuclide-remote-connection';
 
@@ -64,10 +64,10 @@ type State = {
 };
 
 /** Component to prompt the user for connection details. */
-export default class ConnectionDetailsForm extends React.Component {
-  props: Props;
-  state: State;
-
+export default class ConnectionDetailsForm extends React.Component<
+  Props,
+  State,
+> {
   _disposables: ?CompositeDisposable;
   _promptChanged: boolean;
 
@@ -89,7 +89,7 @@ export default class ConnectionDetailsForm extends React.Component {
     };
   }
 
-  _onKeyPress(e: SyntheticKeyboardEvent): void {
+  _onKeyPress(e: SyntheticKeyboardEvent<>): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
@@ -120,7 +120,7 @@ export default class ConnectionDetailsForm extends React.Component {
     this._promptChanged = false;
   };
 
-  _handleKeyFileInputClick = (event: SyntheticEvent): void => {
+  _handleKeyFileInputClick = (event: SyntheticEvent<>): void => {
     const privateKeyAuthMethodIndex = authMethods.indexOf(
       SupportedMethods.PRIVATE_KEY,
     );
@@ -138,7 +138,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
   };
 
-  _handlePasswordInputClick = (event: SyntheticEvent): void => {
+  _handlePasswordInputClick = (event: SyntheticEvent<>): void => {
     const passwordAuthMethodIndex = authMethods.indexOf(
       SupportedMethods.PASSWORD,
     );
@@ -181,7 +181,7 @@ export default class ConnectionDetailsForm extends React.Component {
     }
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {className} = this.props;
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
@@ -230,6 +230,7 @@ export default class ConnectionDetailsForm extends React.Component {
           className={
             'icon icon-info pull-right nuclide-remote-projects-tooltip-warning'
           }
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip

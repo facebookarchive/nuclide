@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -36,10 +36,9 @@ type State = {
   event: ?Event,
 };
 
-export default class KeyBindingHint extends React.Component {
+export default class KeyBindingHint extends React.Component<any, State> {
   _areProcessingUserEvent: boolean;
   _disposables: UniversalDisposable;
-  state: State;
 
   constructor(props: any) {
     super(props);
@@ -51,7 +50,7 @@ export default class KeyBindingHint extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {event} = this.state;
     if (event == null) {
       return <div />;
@@ -73,7 +72,9 @@ export default class KeyBindingHint extends React.Component {
     });
 
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <div ref={tooltip}>
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Icon icon="keyboard">
           <span style={{paddingLeft: '5px'}}>
             {firstBinding}

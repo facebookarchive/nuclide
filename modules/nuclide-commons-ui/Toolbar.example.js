@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Block} from './Block';
 import {Toolbar} from './Toolbar';
 import {ToolbarCenter} from './ToolbarCenter';

@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {findDOMNode} from 'react-dom';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
   children: ?React.Element<any>,
 };
 
-export default class ClickOutsideBoundary extends React.Component {
+export default class ClickOutsideBoundary extends React.Component<Props> {
   _lastInternalEvent: ?MouseEvent;
   _node: null | Element | Text;
 

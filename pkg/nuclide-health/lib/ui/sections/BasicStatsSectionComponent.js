@@ -11,7 +11,7 @@
 
 import type {HandlesByType} from '../../types';
 
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   toolbarJewel: string,
@@ -26,14 +26,12 @@ type Props = {
 
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
-export default class BasicStatsSectionComponent extends React.Component {
-  props: Props;
-
+export default class BasicStatsSectionComponent extends React.Component<Props> {
   updateToolbarJewel(value: string): void {
     this.props.updateToolbarJewel(value);
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const stats = [
       {
         name: 'CPU',

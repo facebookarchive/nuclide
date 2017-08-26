@@ -24,7 +24,7 @@ import HomePaneItem, {WORKSPACE_VIEW_URI} from './HomePaneItem';
 import Immutable from 'immutable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import React from 'react';
+import * as React from 'react';
 import {BehaviorSubject} from 'rxjs';
 import {shell} from 'electron';
 

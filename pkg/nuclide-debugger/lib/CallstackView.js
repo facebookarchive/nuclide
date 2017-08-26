@@ -12,7 +12,7 @@
 import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {DebuggerCallstackComponent} from './DebuggerCallstackComponent';
 import type {DebuggerModeType} from './types';
 import {DebuggerMode} from './DebuggerStore';
@@ -21,11 +21,12 @@ type Props = {
   model: DebuggerModel,
 };
 
-export class CallstackView extends React.PureComponent {
-  props: Props;
-  state: {
+export class CallstackView extends React.PureComponent<
+  Props,
+  {
     mode: DebuggerModeType,
-  };
+  },
+> {
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -56,7 +57,7 @@ export class CallstackView extends React.PureComponent {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     const actions = model.getActions();
     const {mode} = this.state;

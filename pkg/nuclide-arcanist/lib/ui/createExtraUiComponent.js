@@ -12,7 +12,7 @@
 import type {ArcToolbarModel} from '../ArcToolbarModel';
 
 import ArcToolbarSection from '../ArcToolbarSection';
-import React from 'react';
+import * as React from 'react';
 
 /**
  * Create a component for the extra UI in the toolbar. We use a component
@@ -22,9 +22,9 @@ import React from 'react';
  */
 export function createExtraUiComponent(
   model: ArcToolbarModel,
-): ReactClass<any> {
-  return class ExtraUi extends React.Component {
-    render(): React.Element<any> {
+): React.ComponentType<any> {
+  return class ExtraUi extends React.Component<{}> {
+    render(): React.Node {
       return <ArcToolbarSection model={model} />;
     }
   };

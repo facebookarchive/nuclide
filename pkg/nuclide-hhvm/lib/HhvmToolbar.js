@@ -18,7 +18,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import {Button} from 'nuclide-commons-ui/Button';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import React from 'react';
+import * as React from 'react';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
 const SCRIPT_OPTION = {label: 'Launch Script', value: 'script'};
@@ -35,10 +35,7 @@ type State = {
   stickyScript: boolean,
 };
 
-export default class HhvmToolbar extends React.Component {
-  props: Props;
-  state: State;
-
+export default class HhvmToolbar extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -99,7 +96,7 @@ export default class HhvmToolbar extends React.Component {
     this.refs.debugTarget.setText(store.getDebugTarget());
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const store = this.props.projectStore;
     const isDebugScript = store.getDebugMode() !== 'webserver';
     const isDisabled = !isDebugScript;
@@ -107,6 +104,7 @@ export default class HhvmToolbar extends React.Component {
 
     return (
       <div className="hhvm-toolbar">
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Dropdown
           className="inline-block"
           options={this._getMenuItems()}

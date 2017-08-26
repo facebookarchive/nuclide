@@ -11,7 +11,7 @@
 
 /* global localStorage */
 
-import React from 'react';
+import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {LaunchProcessInfo} from './LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -38,11 +38,7 @@ type StateType = {
   recentlyLaunchedScript: ?string,
 };
 
-export class LaunchUiComponent extends React.Component<
-  void,
-  PropsType,
-  StateType,
-> {
+export class LaunchUiComponent extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -105,10 +101,11 @@ export class LaunchUiComponent extends React.Component<
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div className="block">
         <label>Recently launched commands: </label>
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Dropdown
           className="inline-block nuclide-debugger-recently-launched"
           options={[

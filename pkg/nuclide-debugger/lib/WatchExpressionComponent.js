@@ -17,7 +17,7 @@ import type {
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 import debounce from 'nuclide-commons/debounce';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -36,11 +36,12 @@ type WatchExpressionComponentProps = {
 
 const EDIT_WATCH_EXPRESSION_BLUR_DEBOUNCE_MS = 50;
 
-export class WatchExpressionComponent extends React.PureComponent {
-  props: WatchExpressionComponentProps;
-  state: {
+export class WatchExpressionComponent extends React.PureComponent<
+  WatchExpressionComponentProps,
+  {
     rowBeingEdited: ?number,
-  };
+  },
+> {
   coreCancelDisposable: ?IDisposable;
   _expansionStates: Map<
     string /* expression */,
@@ -187,7 +188,7 @@ export class WatchExpressionComponent extends React.PureComponent {
     );
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {watchExpressions, watchExpressionStore} = this.props;
     const fetchChildren = watchExpressionStore.getProperties.bind(
       watchExpressionStore,

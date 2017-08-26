@@ -16,8 +16,8 @@ declare module 'nuclide-prebuilt-libs/pty' {
     +[key: string]: string;
   }
 
-  declare export interface ITerminal
-      extends EventEmitterEvents<TerminalEvents, ITerminal> {
+  // $FlowFixMe
+  declare export interface ITerminal extends EventEmitterEvents<TerminalEvents, ITerminal> {
     +process: string;
     +pid: number;
     write(data: string): void;

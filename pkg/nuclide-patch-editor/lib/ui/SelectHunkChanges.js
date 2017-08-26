@@ -16,7 +16,7 @@ import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {GutterCheckbox} from './GutterCheckbox';
 import {HunkDiff} from '../../../nuclide-ui/FileChanges';
 import nullthrows from 'nullthrows';
-import React from 'react';
+import * as React from 'react';
 import {SelectedState} from '../constants';
 
 type Props = HunkProps;
@@ -36,9 +36,7 @@ function getHunkData(props: Props): HunkData {
   return nullthrows(hunks.get(props.hunk.oldStart));
 }
 
-export class SelectHunkChanges extends React.Component {
-  props: Props;
-  state: State;
+export class SelectHunkChanges extends React.Component<Props, State> {
   _onToggleHunk: () => mixed;
 
   constructor(props: Props) {
@@ -75,7 +73,7 @@ export class SelectHunkChanges extends React.Component {
     return false;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {actionCreators, fileData: {id: fileId}, patchId} = getExtraData(
       this.props,
     );

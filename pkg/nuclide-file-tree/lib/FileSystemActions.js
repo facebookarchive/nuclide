@@ -19,7 +19,7 @@ import FileDialogComponent from '../components/FileDialogComponent';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeStore} from './FileTreeStore';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {File} from 'atom';
@@ -27,7 +27,7 @@ import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection'
 import {repositoryForPath} from '../../nuclide-vcs-base';
 
 let atomPanel: ?Object;
-let dialogComponent: ?React.Component<any, any, any>;
+let dialogComponent: ?React.Component<any, any>;
 
 type CopyPath = {
   old: NuclideUri,

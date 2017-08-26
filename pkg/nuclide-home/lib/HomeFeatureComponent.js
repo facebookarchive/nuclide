@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 
 type Props = {
@@ -19,9 +19,7 @@ type Props = {
   command: ?(string | (() => void)),
 };
 
-export default class HomeFeatureComponent extends React.Component {
-  props: Props;
-
+export default class HomeFeatureComponent extends React.Component<Props> {
   _tryIt = (): void => {
     const {command} = this.props;
     if (command == null) {
@@ -39,7 +37,7 @@ export default class HomeFeatureComponent extends React.Component {
     }
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {title, command} = this.props;
     return (
       <details className="nuclide-home-card">

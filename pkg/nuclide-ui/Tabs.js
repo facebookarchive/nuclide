@@ -12,7 +12,7 @@
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {Icon} from 'nuclide-commons-ui/Icon';
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 import nullthrows from 'nullthrows';
 
@@ -31,9 +31,7 @@ type Props = {
   triggeringEvent: string,
 };
 
-export default class Tabs extends React.Component {
-  props: Props;
-
+export default class Tabs extends React.Component<Props> {
   static defaultProps = {
     closeable: false,
     triggeringEvent: 'onClick',
@@ -81,7 +79,7 @@ export default class Tabs extends React.Component {
     );
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div className="nuclide-tabs">
         {this._renderTabMenu()}

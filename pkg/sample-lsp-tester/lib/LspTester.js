@@ -20,7 +20,7 @@ import {spawn, getOutputStream} from 'nuclide-commons/process';
 import Model from 'nuclide-commons/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {PanelView} from './PanelView';
-import React from 'react';
+import * as React from 'react';
 import * as rpc from 'vscode-jsonrpc';
 import invariant from 'assert';
 import {Observable, ReplaySubject, Scheduler} from 'rxjs';

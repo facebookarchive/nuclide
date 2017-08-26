@@ -37,7 +37,7 @@ import * as Epics from './redux/Epics';
 import Reducers from './redux/Reducers';
 import {ConsoleContainer, WORKSPACE_VIEW_URI} from './ui/ConsoleContainer';
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import {applyMiddleware, createStore} from 'redux';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =

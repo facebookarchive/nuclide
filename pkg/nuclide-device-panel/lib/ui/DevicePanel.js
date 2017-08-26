@@ -17,7 +17,7 @@ import type {TaskEvent} from 'nuclide-commons/process';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DeviceTask} from '../DeviceTask';
 import {Icon} from 'nuclide-commons-ui/Icon';
-import React from 'react';
+import * as React from 'react';
 import {InfoTable} from './InfoTable';
 import {ProcessTable} from './ProcessTable';
 import {TaskButton} from './TaskButton';
@@ -33,14 +33,15 @@ type Props = {|
   isDeviceConnected: boolean,
 |};
 
-export class DevicePanel extends React.Component {
-  props: Props;
-
+export class DevicePanel extends React.Component<Props> {
   _createInfoTables(): React.Element<any>[] {
     if (this.props.infoTables.isError) {
       return [
         <div className="block" key="infoTableError">
-          {this.props.infoTables.error}
+          {
+            // $FlowFixMe
+            this.props.infoTables.error
+          }
         </div>,
       ];
     } else if (this.props.infoTables.isPending) {
@@ -126,7 +127,7 @@ export class DevicePanel extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div>
         {this._getBackButton()}

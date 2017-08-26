@@ -41,7 +41,7 @@ import {track} from '../../nuclide-analytics';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import {debuggerDatatip} from './DebuggerDatatip';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
 import {DebuggerLaunchAttachConnectionChooser} from './DebuggerLaunchAttachConnectionChooser';

@@ -9,15 +9,13 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
 import RadioGroup from './RadioGroup';
 
 const labels = ['choose', 'from', 'one of', 'several', 'options'];
 
-class RadioGroupExample extends React.Component {
-  state: {selectedIndex: number};
-
+class RadioGroupExample extends React.Component<any, {selectedIndex: number}> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -31,9 +29,10 @@ class RadioGroupExample extends React.Component {
     });
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <Block>
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <RadioGroup
           selectedIndex={this.state.selectedIndex}
           optionLabels={labels}

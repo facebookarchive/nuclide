@@ -11,7 +11,7 @@
 
 import type {Option} from '../../nuclide-ui/Dropdown';
 
-import React from 'react';
+import * as React from 'react';
 import {ArcToolbarModel} from './ArcToolbarModel';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -22,9 +22,7 @@ type Props = {
   model: ArcToolbarModel,
 };
 
-export default class ArcToolbarSection extends React.Component {
-  props: Props;
-
+export default class ArcToolbarSection extends React.Component<Props> {
   componentDidMount(): void {
     this.props.model.viewActivated();
   }
@@ -68,7 +66,7 @@ export default class ArcToolbarSection extends React.Component {
     );
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     if (!model.isArcSupported()) {
       return null;

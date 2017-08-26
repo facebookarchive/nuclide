@@ -22,7 +22,7 @@ import type {SshConnectionConfiguration} from '../../nuclide-remote-connection/l
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
 import ConnectionDialog from './ConnectionDialog';
 import CreateConnectionProfileForm from './CreateConnectionProfileForm';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 type Screen = 'connect' | 'create-connection';
@@ -53,9 +53,9 @@ export type Props = {
   onProfileCreated: (profile: NuclideRemoteConnectionProfile) => mixed,
 };
 
-export default class RemoteProjectConnectionModal extends React.Component {
-  props: Props;
-
+export default class RemoteProjectConnectionModal extends React.Component<
+  Props,
+> {
   componentDidMount(): void {
     this._updatePanelClass();
   }
@@ -89,7 +89,7 @@ export default class RemoteProjectConnectionModal extends React.Component {
     panelEl.classList.add(`nuclide-remote-projects-panel-${this.props.screen}`);
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     switch (this.props.screen) {
       case 'connect':
         return (

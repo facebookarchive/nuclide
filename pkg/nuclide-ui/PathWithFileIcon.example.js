@@ -9,12 +9,13 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
 import PathWithFileIcon, {DecorationIcons} from './PathWithFileIcon';
 
 function ListItem(props: {children?: mixed}): React.Element<any> {
   return (
+    // $FlowFixMe(>=0.53.0) Flow suppress
     <div className="list-item">
       {props.children}
     </div>

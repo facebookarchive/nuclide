@@ -18,7 +18,7 @@ import type {
 } from '../types';
 
 import Hasher from 'nuclide-commons/Hasher';
-import React from 'react';
+import * as React from 'react';
 import {List} from 'react-virtualized';
 import RecordView from './RecordView';
 import recordsChanged from '../recordsChanged';
@@ -62,10 +62,7 @@ type OnScrollParams = {
 // The number of extra rows to render beyond what is visible
 const OVERSCAN_COUNT = 5;
 
-export default class OutputTable extends React.Component {
-  props: Props;
-  state: State;
-
+export default class OutputTable extends React.Component<Props, State> {
   _hasher: Hasher<Record>;
   // This is a <List> from react-virtualized (untyped library)
   _list: ?React.Element<any>;
@@ -101,14 +98,16 @@ export default class OutputTable extends React.Component {
     }
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <ResizeSensitiveContainer
         className="nuclide-console-table-wrapper native-key-bindings"
         onResize={this._handleResize}
         tabIndex="1">
         {this._containerRendered()
           ? <List
+              // $FlowFixMe(>=0.53.0) Flow suppress
               ref={this._handleListRef}
               height={this.state.height}
               width={this.state.width}

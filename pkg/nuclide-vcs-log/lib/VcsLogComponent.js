@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {VcsLogEntry} from '../../nuclide-hg-rpc/lib/HgService';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client/lib/HgRepositoryClient.js';
 
-import React from 'react';
+import * as React from 'react';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {shell} from 'electron';
 import {shortNameForAuthor} from './util';
@@ -39,9 +39,7 @@ type State = {
   diffIndex: number,
 };
 
-export default class VcsLogComponent extends React.Component {
-  props: Props;
-  state: State;
+export default class VcsLogComponent extends React.Component<Props, State> {
   _files: Array<string>;
 
   constructor(props: Props) {
@@ -60,7 +58,7 @@ export default class VcsLogComponent extends React.Component {
     };
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {logEntries} = this.props;
     if (logEntries != null) {
       // Even if the "Show Differential Revision" preference is enabled, only show the column if
@@ -186,6 +184,7 @@ export default class VcsLogComponent extends React.Component {
         const {oldContent, newContent} = this.props;
         const props = {filePath, oldContent, newContent};
         return (
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <ResizableFlexContainer
             direction={FlexDirections.VERTICAL}
             className={'nuclide-vcs-log-container'}>

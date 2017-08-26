@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {MultiSelectList} from '../../nuclide-ui/MultiSelectList';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -23,7 +23,6 @@ type PropsType = {
 };
 
 export class DebuggerLaunchAttachConnectionChooser extends React.Component<
-  void,
   PropsType,
   void,
 > {
@@ -43,12 +42,13 @@ export class DebuggerLaunchAttachConnectionChooser extends React.Component<
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div className="padded nuclide-debugger-launch-attach-container">
         <h1 className="nuclide-debugger-launch-attach-header">
           Change debugger connection:
         </h1>
+        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <MultiSelectList
           commandScope={atom.views.getView(atom.workspace)}
           value={[this.props.selectedConnection]}

@@ -14,7 +14,7 @@ import type {Provider, FileResult} from '../../nuclide-quick-open/lib/types';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getCodeSearchServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {Observable} from 'rxjs';
-import React from 'react';
+import * as React from 'react';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 

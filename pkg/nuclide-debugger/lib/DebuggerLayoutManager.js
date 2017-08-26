@@ -10,7 +10,7 @@
  */
 /* global localStorage */
 
-import React from 'react';
+import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {DebuggerModeType} from './types';
 import {DebuggerPaneViewModel} from './DebuggerPaneViewModel';

@@ -18,7 +18,7 @@ import type {
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -151,9 +151,7 @@ type Props = {
   warningCount: number,
 };
 
-class StatusBarTileComponent extends React.Component {
-  props: Props;
-
+class StatusBarTileComponent extends React.Component<Props> {
   constructor(props: Props) {
     super(props);
     (this: any)._onClick = this._onClick.bind(this);
@@ -186,6 +184,7 @@ class StatusBarTileComponent extends React.Component {
         <a
           className={errorClassName}
           onClick={this._onClick}
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: `${errorLabel} error${errorSuffix}`,
             placement: 'top',
@@ -196,6 +195,7 @@ class StatusBarTileComponent extends React.Component {
         <a
           className={warningClassName}
           onClick={this._onClick}
+          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: `${warningLabel} warning${warningSuffix}`,
             placement: 'top',

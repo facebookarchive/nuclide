@@ -9,6 +9,7 @@
  * @format
  */
 
+// $FlowFixMe(>=0.53.0) Flow suppress
 import type React from 'react';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';

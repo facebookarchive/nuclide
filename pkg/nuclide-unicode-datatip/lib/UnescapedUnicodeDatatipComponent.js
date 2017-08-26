@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {zeroPaddedHex} from './Unicode';
 
 type DatatipComponentProps = {
@@ -18,7 +18,7 @@ type DatatipComponentProps = {
 
 export default function makeUnescapedUnicodeDatatipComponent(
   codePoints: Array<number>,
-): ReactClass<any> {
+): React.ComponentType<any> {
   return () => <UnescapedUnicodeDatatipComponent codePoints={codePoints} />;
 }
 

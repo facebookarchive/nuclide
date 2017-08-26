@@ -14,7 +14,7 @@ import type {DefinitionProvider} from 'atom-ide-ui';
 
 import {CompositeDisposable} from 'atom';
 import {ContextViewManager} from '../lib/ContextViewManager';
-import React from 'react';
+import * as React from 'react';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import invariant from 'assert';
 

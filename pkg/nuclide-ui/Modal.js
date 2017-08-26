@@ -11,7 +11,7 @@
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Portal} from './Portal';
-import React from 'react';
+import * as React from 'react';
 import {Observable} from 'rxjs';
 
 type Props = {
@@ -22,8 +22,7 @@ type Props = {
 /**
  * Shows a modal dialog when rendered, using Atom's APIs (atom.workspace.addModalPanel).
  */
-export class Modal extends React.Component {
-  props: Props;
+export class Modal extends React.Component<Props> {
   _container: HTMLElement;
   _cancelDisposable: ?IDisposable;
   _innerElement: ?HTMLElement;
@@ -38,7 +37,7 @@ export class Modal extends React.Component {
     this._panel.destroy();
   }
 
-  _handleWindowClick = (event: SyntheticMouseEvent): void => {
+  _handleWindowClick = (event: SyntheticMouseEvent<>): void => {
     // If the user clicks outside of the modal, close it.
     if (
       this._innerElement &&

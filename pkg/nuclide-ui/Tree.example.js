@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Block} from 'nuclide-commons-ui/Block';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';

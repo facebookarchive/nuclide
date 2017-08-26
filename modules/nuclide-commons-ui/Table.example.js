@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {Block} from './Block';
 import {Table} from './Table';
 
@@ -80,14 +80,14 @@ const TableExample = (): React.Element<any> => {
   );
 };
 
-class SortableTableExample extends React.Component {
-  props: mixed;
-  state: {
+class SortableTableExample extends React.Component<
+  mixed,
+  {
     rows: Array<Object>,
     sortDescending: boolean,
     sortedColumn: ?string,
-  };
-
+  },
+> {
   constructor(props: mixed) {
     super(props);
     const rows = [
@@ -134,7 +134,7 @@ class SortableTableExample extends React.Component {
     });
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const columns = [
       {
         title: 'first',

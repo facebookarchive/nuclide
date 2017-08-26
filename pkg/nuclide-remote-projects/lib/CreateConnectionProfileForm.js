@@ -17,7 +17,7 @@ import type {
 } from './connection-types';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -50,7 +50,6 @@ const emptyFunction = () => {};
  * A form that is used to create a new connection profile.
  */
 export default class CreateConnectionProfileForm extends React.Component<
-  void,
   Props,
   void,
 > {
@@ -85,7 +84,7 @@ export default class CreateConnectionProfileForm extends React.Component<
    * remote server command. The remote server command will only be saved if the
    * user changes it from this default.
    */
-  render(): React.Element<any> {
+  render(): React.Node {
     const initialFields = this.props.initialFormFields;
 
     return (

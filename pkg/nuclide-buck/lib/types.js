@@ -21,7 +21,7 @@ import type {
   ResolvedRuleType,
 } from '../../nuclide-buck-rpc/lib/types';
 
-import React from 'react';
+import * as React from 'react';
 
 export type TaskType = 'build' | 'run' | 'test' | 'debug';
 

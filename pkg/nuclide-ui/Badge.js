@@ -12,7 +12,7 @@
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 
 import {maybeToString} from 'nuclide-commons/string';
 

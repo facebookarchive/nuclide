@@ -10,17 +10,15 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   title: string,
   message: string,
 };
 
-export class EmptyState extends React.Component {
-  props: Props;
-
-  render(): React.Element<any> {
+export class EmptyState extends React.Component<Props> {
+  render(): React.Node {
     return (
       <div className="nuclide-ui-empty-state-container">
         <div className="nuclide-ui-empty-state-message">

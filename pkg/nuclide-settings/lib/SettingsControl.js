@@ -13,7 +13,7 @@ import SettingsCheckbox from './SettingsCheckbox';
 import SettingsInput from './SettingsInput';
 import SettingsSelect from './SettingsSelect';
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 
 type Props = {
   keyPath: string,
@@ -29,6 +29,7 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
   if (schema) {
     if (schema.enum) {
       return (
+        // $FlowFixMe(>=0.53.0) Flow suppress
         <SettingsSelect
           description={description}
           keyPath={keyPath}
@@ -41,6 +42,7 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
       invariant(false); // Not implemented.
     } else if (isBoolean(value) || schema.type === 'boolean') {
       return (
+        // $FlowFixMe(>=0.53.0) Flow suppress
         <SettingsCheckbox
           description={description}
           keyPath={keyPath}
@@ -52,6 +54,7 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
     } else if (Array.isArray(value) || schema.type === 'array') {
       if (isEditableArray(value)) {
         return (
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <SettingsInput
             description={description}
             keyPath={keyPath}
@@ -67,6 +70,7 @@ export default function SettingsControl(props: Props): ?React.Element<any> {
     } else {
       const type = isNumber(value) ? 'number' : 'string';
       return (
+        // $FlowFixMe(>=0.53.0) Flow suppress
         <SettingsInput
           description={description}
           keyPath={keyPath}

@@ -15,7 +15,7 @@ import type {Directory} from '../../../nuclide-remote-connection';
 import type {SwiftPMTaskRunnerStoreState} from './SwiftPMTaskRunnerStoreState';
 
 import {Observable, Subject} from 'rxjs';
-import React from 'react';
+import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {observeProcess, exitEventToMessage} from 'nuclide-commons/process';
@@ -89,16 +89,16 @@ export class SwiftPMTaskRunner {
     return this._getFlux().store.serialize();
   }
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi(): React.ComponentType<any> {
     const {store, actions} = this._getFlux();
-    return class ExtraUi extends React.Component {
-      render(): React.Element<any> {
+    return class ExtraUi extends React.Component<{}> {
+      render(): React.Node {
         return <SwiftPMTaskRunnerToolbar store={store} actions={actions} />;
       }
     };
   }
 
-  getIcon(): ReactClass<any> {
+  getIcon(): React.ComponentType<any> {
     return () =>
       <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
   }

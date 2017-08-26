@@ -15,7 +15,7 @@
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
@@ -55,10 +55,7 @@ type State = {
   selectedIndex: number,
 };
 
-class SuggestionList extends React.Component {
-  props: Props;
-  state: State;
-
+class SuggestionList extends React.Component<Props, State> {
   _items: Array<{rightLabel?: string, title: string, callback: () => mixed}>;
   _textEditor: ?atom$TextEditor;
   _subscriptions: atom$CompositeDisposable;

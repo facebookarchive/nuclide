@@ -12,21 +12,19 @@
 import type {SettingsPropsDefault} from './types';
 
 import {normalizeIdentifier} from './settings-utils';
-import React from 'react';
+import * as React from 'react';
 
 type Props = SettingsPropsDefault & {
   value: boolean,
 };
 
-export default class SettingsCheckbox extends React.Component {
-  props: Props;
-
-  _handleChange = (event: SyntheticEvent) => {
+export default class SettingsCheckbox extends React.Component<Props> {
+  _handleChange = (event: SyntheticEvent<>) => {
     const isChecked = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange(isChecked);
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const keyPath = this.props.keyPath;
     const id = normalizeIdentifier(keyPath);
     const title = this.props.title;

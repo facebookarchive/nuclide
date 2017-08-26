@@ -10,7 +10,7 @@
  */
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonExamples} from 'nuclide-commons-ui/Button.example';
@@ -72,7 +72,7 @@ type ComponentSpec = {
   description: string,
   examples: Array<{
     title: string,
-    component: ReactClass<any> | (() => React.Element<any>),
+    component: React.ComponentType<any> | (() => React.Element<any>),
   }>,
 };
 
@@ -82,9 +82,7 @@ type State = {
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/ui-playground';
 
-export class Playground extends React.Component {
-  state: State;
-
+export class Playground extends React.Component<any, State> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -178,7 +176,7 @@ export class Playground extends React.Component {
     );
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const renderedExamples = playgroundComponents.map(
       this.renderExampleForComponent,
     );

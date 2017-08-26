@@ -12,7 +12,7 @@
 import type {Device, DeviceAction, DeviceActionProvider} from '../types';
 import type {Expected} from '../../../commons-node/expected';
 
-import React from 'react';
+import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 import {getProviders} from '../providers';
 import {DeviceTaskButton} from './DeviceTaskButton';
@@ -24,8 +24,7 @@ type Props = {|
   device: ?Device,
 |};
 
-export class DeviceTable extends React.Component {
-  props: Props;
+export class DeviceTable extends React.Component<Props> {
   _emptyComponent: () => React.Element<any>;
 
   constructor(props: Props) {
@@ -62,7 +61,7 @@ export class DeviceTable extends React.Component {
     return actions;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const devices = this.props.devices.getOrDefault([]);
 
     const actionProviders = getProviders().deviceAction;
@@ -127,7 +126,7 @@ export class DeviceTable extends React.Component {
   _handleDeviceWillSelect = (
     item: any,
     selectedIndex: number,
-    event: SyntheticMouseEvent,
+    event: SyntheticMouseEvent<>,
   ): boolean => {
     let element = ((event.target: any): HTMLElement);
     while (element != null) {

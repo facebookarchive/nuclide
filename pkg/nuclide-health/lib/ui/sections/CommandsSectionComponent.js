@@ -11,9 +11,9 @@
 
 import {loggedCalls} from 'nuclide-commons/process';
 
-import React from 'react';
+import * as React from 'react';
 
-export default class CommandsSectionComponent extends React.Component {
+export default class CommandsSectionComponent extends React.Component<{}> {
   _lastRenderCount: number;
 
   shouldComponentUpdate() {

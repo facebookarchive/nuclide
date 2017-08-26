@@ -13,7 +13,7 @@ import type {Store, BoundActionCreators, PartialAppState} from './types';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {RequestEditDialog} from './RequestEditDialog';
 import {applyMiddleware, bindActionCreators, createStore} from 'redux';

@@ -391,7 +391,7 @@ module.exports = {
     'react/prefer-es6-class': 0,
     'react/prefer-stateless-function': 0,
     // 'react/prefer-stateless-function': 1,
-    'react/prop-types': 1,
+    // 'react/prop-types': 1,
     'react/react-in-jsx-scope': 1,
     'react/require-default-props': 0,
     'react/require-optimization': 0,

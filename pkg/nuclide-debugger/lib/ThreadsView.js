@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {DebuggerThreadsComponent} from './DebuggerThreadsComponent';
 import type {ThreadColumn} from '../../nuclide-debugger-base/lib/types';
 import type {DebuggerModeType} from './types';
@@ -23,13 +23,14 @@ type Props = {
   model: DebuggerModel,
 };
 
-export class ThreadsView extends React.PureComponent {
-  props: Props;
-  state: {
+export class ThreadsView extends React.PureComponent<
+  Props,
+  {
     customThreadColumns: Array<ThreadColumn>,
     mode: DebuggerModeType,
     threadsComponentTitle: string,
-  };
+  },
+> {
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -70,7 +71,7 @@ export class ThreadsView extends React.PureComponent {
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     const {mode, threadsComponentTitle, customThreadColumns} = this.state;
     const disabledClass =

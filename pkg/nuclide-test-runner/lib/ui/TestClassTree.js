@@ -12,7 +12,7 @@
 import type {LazyTreeNode} from '../../../nuclide-ui/LazyTreeNode';
 import type TestSuiteModel from '../TestSuiteModel';
 
-import React from 'react';
+import * as React from 'react';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import TestClassTreeNode from './TestClassTreeNode';
 import {TreeRootComponent} from '../../../nuclide-ui/TreeRootComponent';
@@ -26,9 +26,7 @@ type Props = {
   testSuiteModel: ?TestSuiteModel,
 };
 
-export default class TestClassTree extends React.Component {
-  props: Props;
-
+export default class TestClassTree extends React.Component<Props> {
   componentDidUpdate(prevProps: Object) {
     const {testSuiteModel} = this.props;
     if (testSuiteModel !== prevProps.testSuiteModel) {

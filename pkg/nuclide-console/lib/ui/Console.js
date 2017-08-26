@@ -20,7 +20,7 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import debounce from 'nuclide-commons/debounce';
-import React from 'react';
+import * as React from 'react';
 import FilteredMessagesReminder from './FilteredMessagesReminder';
 import OutputTable from './OutputTable';
 import ConsoleHeader from './ConsoleHeader';
@@ -57,9 +57,7 @@ type State = {
   unseenMessages: boolean,
 };
 
-export default class Console extends React.Component {
-  props: Props;
-  state: State;
+export default class Console extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
   _isScrolledNearBottom: boolean;
   _outputTable: ?OutputTable;
@@ -162,7 +160,7 @@ export default class Console extends React.Component {
     return this.props.getProvider(id);
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     return (
       <div className="nuclide-console">
         <ConsoleHeader
@@ -187,6 +185,7 @@ export default class Console extends React.Component {
               onReset={this.props.resetAllFilters}
             />
             <OutputTable
+              // $FlowFixMe(>=0.53.0) Flow suppress
               ref={this._handleOutputTable}
               displayableRecords={this.props.displayableRecords}
               showSourceLabels={this.props.selectedSourceIds.length > 1}

@@ -17,7 +17,7 @@ import type {Bridge} from '../types';
 import showModal from '../../../nuclide-ui/showModal';
 import {ATCustomDBPathModal} from './ui/ATCustomDBPathModal';
 import {Observable} from 'rxjs';
-import React from 'react';
+import * as React from 'react';
 
 export class ATConfigurePathTaskProvider implements DeviceTypeTaskProvider {
   _bridge: Bridge;

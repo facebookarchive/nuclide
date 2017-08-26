@@ -12,7 +12,7 @@
 
 import invariant from 'assert';
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
 import {
@@ -104,7 +104,7 @@ type Props = {
   softWrapped: boolean,
 };
 
-export class AtomTextEditor extends React.Component {
+export class AtomTextEditor extends React.Component<Props, void> {
   static defaultProps: DefaultProps = {
     correctContainerWidth: true,
     disabled: false,
@@ -117,7 +117,6 @@ export class AtomTextEditor extends React.Component {
     softWrapped: false,
   };
 
-  props: Props;
   _textEditorElement: ?atom$TextEditorElement;
   _editorDisposables: UniversalDisposable;
 
@@ -259,7 +258,7 @@ export class AtomTextEditor extends React.Component {
     return this._textEditorElement;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const className = classnames(
       this.props.className,
       'nuclide-text-editor-container',

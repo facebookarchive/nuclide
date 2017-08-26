@@ -11,7 +11,7 @@
  */
 
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 
 type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
 

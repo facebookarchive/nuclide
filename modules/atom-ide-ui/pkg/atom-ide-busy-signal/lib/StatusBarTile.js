@@ -13,7 +13,7 @@
 import type {Observable} from 'rxjs';
 
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {arrayCompact} from 'nuclide-commons/collection';

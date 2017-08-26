@@ -22,7 +22,7 @@ import type {
 import {getHackLanguageForUri} from './HackLanguage';
 import {collect, arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import React from 'react';
+import * as React from 'react';
 
 async function getHackDirectoriesByService(
   directories: Array<atom$Directory>, // top-level project directories

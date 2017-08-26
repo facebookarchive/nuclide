@@ -16,7 +16,7 @@ import {Icon} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
 import invariant from 'assert';
 import electron from 'electron';
-import React from 'react';
+import * as React from 'react';
 
 const {remote} = electron;
 invariant(remote != null);
@@ -62,7 +62,8 @@ type Props = {
   // If provided, this will be rendered as the label if the value is null.
   // Otherwise, we'll display the first option as selected by default.
   placeholder?: string,
-  buttonComponent?: ReactClass<any>,
+  buttonComponent?: React.ComponentType<any>,
+  // $FlowFixMe(>=0.53.0) Flow suppress
   options: Array<Option>,
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
@@ -73,9 +74,7 @@ type Props = {
   selectionComparator?: (dropdownValue: any, optionValue: any) => boolean,
 };
 
-export class Dropdown extends React.Component {
-  props: Props;
-
+export class Dropdown extends React.Component<Props> {
   static defaultProps = {
     className: '',
     disabled: false,
@@ -85,7 +84,7 @@ export class Dropdown extends React.Component {
     title: '',
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const selectedOption = this._findSelectedOption(this.props.options);
 
     let selectedLabel;
@@ -130,7 +129,7 @@ export class Dropdown extends React.Component {
     return text;
   }
 
-  _handleDropdownClick = (event: SyntheticMouseEvent): void => {
+  _handleDropdownClick = (event: SyntheticMouseEvent<>): void => {
     const currentWindow = remote.getCurrentWindow();
     const menu = this._menuFromOptions(this.props.options);
     menu.popup(currentWindow, event.clientX, event.clientY);
@@ -197,7 +196,7 @@ export class Dropdown extends React.Component {
 }
 
 type DropdownButtonProps = {
-  buttonComponent?: ReactClass<any>,
+  buttonComponent?: React.ComponentType<any>,
   children?: any,
   className: string,
   disabled?: boolean,
@@ -205,7 +204,7 @@ type DropdownButtonProps = {
   title?: string,
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
-  onExpand?: (event: SyntheticMouseEvent) => void,
+  onExpand?: (event: SyntheticMouseEvent<>) => void,
 };
 
 const noop = () => {};

@@ -22,7 +22,7 @@ import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Button, ButtonSizes, ButtonTypes} from 'nuclide-commons-ui/Button';
 import createPaneContainer from '../../../commons-atom/create-pane-container';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestClassTree from './TestClassTree';
 
@@ -30,9 +30,9 @@ type Props = {
   attachDebuggerBeforeRunning: ?boolean,
   buffer: Object,
   executionState: number,
-  onClickClear: (event: SyntheticMouseEvent) => mixed,
-  onClickRun: (event: SyntheticMouseEvent) => mixed,
-  onClickStop: (event: SyntheticMouseEvent) => mixed,
+  onClickClear: (event: SyntheticMouseEvent<>) => mixed,
+  onClickRun: (event: SyntheticMouseEvent<>) => mixed,
+  onClickStop: (event: SyntheticMouseEvent<>) => mixed,
   onDebuggerCheckboxChanged: (isChecked: boolean) => mixed,
   path: ?string,
   progressValue: ?number,
@@ -45,9 +45,7 @@ type State = {
   selectedTestRunnerIndex: number,
 };
 
-export default class TestRunnerPanel extends React.Component {
-  props: Props;
-  state: State;
+export default class TestRunnerPanel extends React.Component<Props, State> {
   _paneContainer: Object;
   _leftPane: atom$Pane;
   _rightPane: atom$Pane;

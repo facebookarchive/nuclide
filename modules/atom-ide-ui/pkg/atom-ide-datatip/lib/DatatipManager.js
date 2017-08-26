@@ -20,7 +20,7 @@ import type {
   ModifierKey,
 } from './types';
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -160,6 +160,7 @@ function PinnableDatatip({
   }
 
   return (
+    // $FlowFixMe(>=0.53.0) Flow suppress
     <DatatipComponent
       action={action}
       actionTitle={actionTitle}
@@ -527,7 +528,7 @@ class DatatipManagerForEditor {
     position: atom$Point,
   ): Promise<?{
     range: atom$Range,
-    renderedProviders: React$Element<*>,
+    renderedProviders: React.Element<any>,
   }> {
     const datatipsAndProviders = await this._fetch(position);
     if (datatipsAndProviders.length === 0) {

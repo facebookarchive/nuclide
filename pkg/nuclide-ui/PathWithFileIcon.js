@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import {getLogger} from 'log4js';
@@ -70,8 +70,7 @@ type Props = {
   path: string,
 };
 
-export default class PathWithFileIcon extends React.Component {
-  props: Props;
+export default class PathWithFileIcon extends React.Component<Props> {
   _disposables: UniversalDisposable;
   _fileIconsDisposable: ?IDisposable;
   _addItemToElement: ?FileIconsAddItemToElementFn;
@@ -185,7 +184,7 @@ export default class PathWithFileIcon extends React.Component {
     this._mounted = false;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       className,
       children,

@@ -12,7 +12,7 @@
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {FileTreeStore} from '../lib/FileTreeStore';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {FileTreeEntryComponent} from './FileTreeEntryComponent';
 import {ProjectSelection} from './ProjectSelection';
@@ -31,15 +31,13 @@ type Props = {
   containerHeight: number,
   containerScrollTop: number,
   scrollToPosition: (top: number, height: number, approximate: boolean) => void,
-  onMouseEnter: (event: SyntheticMouseEvent) => mixed,
-  onMouseLeave: (event: SyntheticMouseEvent) => mixed,
+  onMouseEnter: (event: SyntheticMouseEvent<>) => mixed,
+  onMouseLeave: (event: SyntheticMouseEvent<>) => mixed,
 };
 
 const BUFFER_ELEMENTS = 15;
 
-export class FileTree extends React.Component {
-  state: State;
-  props: Props;
+export class FileTree extends React.Component<Props, State> {
   _store: FileTreeStore;
   _disposables: UniversalDisposable;
 
@@ -124,7 +122,7 @@ export class FileTree extends React.Component {
     }
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,

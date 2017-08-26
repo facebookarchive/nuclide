@@ -12,7 +12,7 @@
 // TODO @jxg export debugger typedefs from main module. (t11406963)
 import type {EvaluationResult} from '../nuclide-debugger/lib/types';
 
-import React from 'react';
+import * as React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TextRenderer} from './TextRenderer';
 
@@ -76,10 +76,10 @@ const valueRenderers = [
   renderDefault,
 ];
 
-export default class SimpleValueComponent extends React.Component {
-  props: SimpleValueComponentProps;
-
-  render(): ?React.Element<any> {
+export default class SimpleValueComponent extends React.Component<
+  SimpleValueComponentProps,
+> {
+  render(): React.Node {
     const {expression, evaluationResult} = this.props;
     let displayValue;
     for (const renderer of valueRenderers) {

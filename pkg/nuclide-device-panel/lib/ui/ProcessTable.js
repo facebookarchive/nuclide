@@ -12,7 +12,7 @@
 import type {Process, ProcessTask} from '../types';
 
 import {ProcessTaskButton} from './ProcessTaskButton';
-import React from 'react';
+import * as React from 'react';
 import {Table} from 'nuclide-commons-ui/Table';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 
@@ -28,10 +28,7 @@ type State = {
   sortDescending: boolean,
 };
 
-export class ProcessTable extends React.Component {
-  props: Props;
-  state: State;
-
+export class ProcessTable extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -96,7 +93,7 @@ export class ProcessTable extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const filterRegex = new RegExp(this.state.filterText, 'i');
     const rows = this._sortProcesses(
       this.props.processes.filter(

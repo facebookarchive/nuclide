@@ -11,15 +11,17 @@
 
 import {CompositeDisposable} from 'atom';
 import classnames from 'classnames';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 type Option = {
+  // $FlowFixMe(>=0.53.0) Flow suppress
   label: React.Children,
   value: any,
 };
 
 type Props = {
+  // $FlowFixMe(>=0.53.0) Flow suppress
   optionComponent?: (props: OptionComponentProps) => React.Element<any>,
   className?: string,
   options: Array<Option>,
@@ -34,14 +36,12 @@ type State = {
 
 type DefaultProps = {
   onChange: (value: Array<any>) => void,
-  optionComponent: ReactClass<OptionComponentProps>,
+  optionComponent: React.ComponentType<OptionComponentProps>,
   value: Array<any>,
   options: Array<Option>,
 };
 
-export class MultiSelectList extends React.Component {
-  props: Props;
-  state: State;
+export class MultiSelectList extends React.Component<Props, State> {
   _commandsDisposables: CompositeDisposable;
 
   static defaultProps: DefaultProps = {
@@ -122,7 +122,7 @@ export class MultiSelectList extends React.Component {
     this.props.onChange(activeValues);
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     return (
       <div className="nuclide-multi-select-list select-list block" tabIndex="0">
         <ol className="list-group mark-active">

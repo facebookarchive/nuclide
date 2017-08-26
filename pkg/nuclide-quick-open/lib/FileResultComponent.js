@@ -11,7 +11,7 @@
 
 import type {FileResult} from './types';
 
-import React from 'react';
+import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
 import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';

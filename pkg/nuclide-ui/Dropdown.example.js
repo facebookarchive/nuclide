@@ -11,7 +11,7 @@
 
 /* global alert */
 
-import React from 'react';
+import * as React from 'react';
 import {Dropdown} from './Dropdown';
 import {ModalMultiSelect} from './ModalMultiSelect';
 import {SplitButtonDropdown} from './SplitButtonDropdown';
@@ -49,15 +49,16 @@ const SplitButtonDropdownExample = (() => {
     </div>;
 })();
 
-class ModalMultiSelectExample extends React.Component {
-  state: {value: Array<number>};
-
+class ModalMultiSelectExample extends React.Component<
+  void,
+  {value: Array<number>},
+> {
   constructor(props: void) {
     super(props);
     this.state = {value: [2]};
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const options = [
       {value: 1, label: 'One'},
       {value: 2, label: 'Two'},

@@ -12,7 +12,7 @@
 import type {FileResult} from '../../nuclide-quick-open/lib/types';
 import type {CtagsResult, CtagsService} from '../../nuclide-ctags-rpc';
 
-import React from 'react';
+import * as React from 'react';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 // eslint-disable-next-line nuclide-internal/no-cross-atom-imports

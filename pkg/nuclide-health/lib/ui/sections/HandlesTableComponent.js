@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 
 type Props<T> = {
   title: string,
@@ -23,7 +23,6 @@ type Props<T> = {
 };
 
 export default class HandlesTableComponent<T: Object> extends React.Component<
-  void,
   Props<T>,
   void,
 > {
@@ -48,7 +47,7 @@ export default class HandlesTableComponent<T: Object> extends React.Component<
     return handleSummaries;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     if (this.props.handles.length === 0) {
       return <div />;
     }

@@ -20,7 +20,7 @@ import type {QuickSelectionAction} from './QuickSelectionDispatcher';
 import type {SelectionIndex} from './QuickSelectionComponent';
 
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import featureConfig from 'nuclide-commons-atom/feature-config';

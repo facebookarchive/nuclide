@@ -16,7 +16,7 @@ import type {
 } from '../../nuclide-debugger-base';
 import type DebuggerActions from './DebuggerActions';
 
-import React from 'react';
+import * as React from 'react';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {
@@ -49,7 +49,6 @@ type StateType = {
 };
 
 export class DebuggerLaunchAttachUI extends React.Component<
-  void,
   PropsType,
   StateType,
 > {
@@ -164,7 +163,7 @@ export class DebuggerLaunchAttachUI extends React.Component<
     });
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const displayName = nuclideUri.isRemote(this.props.connection)
       ? nuclideUri.getHostname(this.props.connection)
       : 'localhost';

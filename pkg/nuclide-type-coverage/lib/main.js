@@ -13,7 +13,7 @@ import type {CoverageProvider} from './types';
 import type {CoverageResult} from './rpc-types';
 import type {ObservableDiagnosticProvider} from 'atom-ide-ui';
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 
 import {Disposable} from 'atom';

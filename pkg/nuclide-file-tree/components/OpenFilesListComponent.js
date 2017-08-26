@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import FileTreeActions from '../lib/FileTreeActions';
@@ -42,10 +42,7 @@ type State = {
   hoveredUri: ?NuclideUri,
 };
 
-export class OpenFilesListComponent extends React.PureComponent {
-  props: Props;
-  state: State;
-
+export class OpenFilesListComponent extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -63,7 +60,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     }
   }
 
-  _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent) {
+  _onMouseDown(entry: OpenFileEntry, event: SyntheticMouseEvent<>) {
     event.stopPropagation();
     const rootNode = store.getRootForPath(entry.uri);
     if (
@@ -75,7 +72,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     }
   }
 
-  _onClick(entry: OpenFileEntry, event: SyntheticMouseEvent): void {
+  _onClick(entry: OpenFileEntry, event: SyntheticMouseEvent<>): void {
     if (event.defaultPrevented) {
       return;
     }
@@ -91,7 +88,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     goToLocation(uri);
   }
 
-  _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent): void {
+  _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent<>): void {
     const uri = entry.uri;
     event.preventDefault();
     this._closeFile(uri);
@@ -121,7 +118,7 @@ export class OpenFilesListComponent extends React.PureComponent {
     });
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const sortedEntries = propsToEntries(this.props);
 
     return (

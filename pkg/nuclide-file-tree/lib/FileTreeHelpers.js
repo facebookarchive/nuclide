@@ -160,7 +160,7 @@ function isLocalEntry(entry: Entry): boolean {
   return !('getLocalPath' in entry);
 }
 
-function isContextClick(event: SyntheticMouseEvent): boolean {
+function isContextClick(event: SyntheticMouseEvent<>): boolean {
   return (
     event.button === 2 ||
     (event.button === 0 &&
@@ -233,7 +233,7 @@ function areStackChangesEnabled(): Promise<boolean> {
   return passesGK('nuclide_file_tree_stack_changes');
 }
 
-function getSelectionMode(event: SyntheticMouseEvent): SelectionMode {
+function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
   if (
     (os.platform() === 'darwin' && event.metaKey && event.button === 0) ||
     (os.platform() !== 'darwin' && event.ctrlKey && event.button === 0)

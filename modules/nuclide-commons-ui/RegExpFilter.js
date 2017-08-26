@@ -17,7 +17,7 @@ import classnames from 'classnames';
 import {Button, ButtonSizes} from './Button';
 import {ButtonGroup} from './ButtonGroup';
 import escapeStringRegexp from 'escape-string-regexp';
-import React from 'react';
+import * as React from 'react';
 
 type Size = 'xs' | 'sm' | 'lg';
 
@@ -51,9 +51,7 @@ export type RegExpFilterChange = {
   isRegExp: boolean,
 };
 
-export default class RegExpFilter extends React.Component {
-  props: Props;
-  state: State;
+export default class RegExpFilter extends React.Component<Props, State> {
   _currentValue: Value;
   _input: ?AtomInput;
 
@@ -67,7 +65,7 @@ export default class RegExpFilter extends React.Component {
     this._currentValue = props.value;
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {value: {text, isRegExp, invalid}} = this.props;
     const size = this.props.size || 'sm';
     const buttonSize = getButtonSize(size);

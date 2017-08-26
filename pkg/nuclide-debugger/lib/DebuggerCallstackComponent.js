@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import type {Callstack, CallstackItem} from './types';
 import type DebuggerActions from './DebuggerActions';
 import type CallstackStore from './CallstackStore';
@@ -32,9 +32,10 @@ type DebuggerCallstackComponentState = {
   selectedCallFrameIndex: number,
 };
 
-export class DebuggerCallstackComponent extends React.Component {
-  props: DebuggerCallstackComponentProps;
-  state: DebuggerCallstackComponentState;
+export class DebuggerCallstackComponent extends React.Component<
+  DebuggerCallstackComponentProps,
+  DebuggerCallstackComponentState,
+> {
   _disposables: UniversalDisposable;
 
   constructor(props: DebuggerCallstackComponentProps) {
@@ -60,6 +61,7 @@ export class DebuggerCallstackComponent extends React.Component {
         ? <span
             className={classnames('text-error', 'icon', 'icon-alert')}
             onClick={() => this.props.actions.configureSourcePaths()}
+            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title:
                 'Source file not found! Some debugger features will not work without source.' +
@@ -112,7 +114,7 @@ export class DebuggerCallstackComponent extends React.Component {
     this.props.actions.setSelectedCallFrameIndex(callFrameIndex);
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {callstack} = this.state;
     const rows =
       callstack == null

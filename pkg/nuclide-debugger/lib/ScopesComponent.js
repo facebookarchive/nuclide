@@ -13,7 +13,7 @@ import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 
-import React from 'react';
+import * as React from 'react';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';
@@ -27,8 +27,7 @@ function isLocalScopeName(scopeName: string): boolean {
   return ['Local', 'Locals'].indexOf(scopeName) !== -1;
 }
 
-export class ScopesComponent extends React.Component {
-  props: ScopesComponentProps;
+export class ScopesComponent extends React.Component<ScopesComponentProps> {
   _expansionStates: Map<
     string /* expression */,
     /* unique reference for expression */ Object,
@@ -92,6 +91,7 @@ export class ScopesComponent extends React.Component {
           </div>;
 
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <Section
         collapsable={true}
         headline={scope.name}
@@ -105,7 +105,7 @@ export class ScopesComponent extends React.Component {
     );
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {watchExpressionStore, scopes} = this.props;
     if (scopes == null || scopes.length === 0) {
       return <span>(no variables)</span>;

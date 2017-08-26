@@ -10,7 +10,7 @@
  */
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import React from 'react';
+import * as React from 'react';
 
 import type {FileResult, Provider} from '../../nuclide-quick-open/lib/types';
 
@@ -137,6 +137,7 @@ export const RecentFilesProvider: Provider = {
         style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
         title={datetime}>
         <div className="recent-files-provider-filepath-container">
+          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <PathWithFileIcon
             className="recent-files-provider-file-path"
             path={filename}>

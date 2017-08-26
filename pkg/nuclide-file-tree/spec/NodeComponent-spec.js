@@ -15,7 +15,7 @@ import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import Immutable from 'immutable';
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
 

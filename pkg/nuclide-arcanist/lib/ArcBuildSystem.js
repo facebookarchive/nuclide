@@ -19,12 +19,12 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {taskFromObservable} from '../../commons-node/tasks';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {createExtraUiComponent} from './ui/createExtraUiComponent';
-import React from 'react';
+import * as React from 'react';
 import {Observable} from 'rxjs';
 
 export default class ArcBuildSystem {
   _model: ArcToolbarModelType;
-  _extraUi: ?ReactClass<any>;
+  _extraUi: ?React.ComponentType<any>;
   id: string;
   name: string;
 
@@ -77,14 +77,14 @@ export default class ArcBuildSystem {
     return new ArcToolbarModel();
   }
 
-  getExtraUi(): ReactClass<any> {
+  getExtraUi(): React.ComponentType<any> {
     if (this._extraUi == null) {
       this._extraUi = createExtraUiComponent(this._model);
     }
     return this._extraUi;
   }
 
-  getIcon(): ReactClass<any> {
+  getIcon(): React.ComponentType<any> {
     return ArcIcon;
   }
 

@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
@@ -40,10 +40,8 @@ type State = {
   currentQuery: string,
 };
 
-export class OutlineViewSearchComponent extends React.Component {
+export class OutlineViewSearchComponent extends React.Component<Props, State> {
   searchResults: Map<OutlineTreeForUi, SearchResult>;
-  props: Props;
-  state: State;
 
   constructor(props: Props) {
     super(props);
@@ -137,7 +135,7 @@ export class OutlineViewSearchComponent extends React.Component {
     this.setState({currentQuery: ''});
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div className="atom-ide-outline-view-search-bar">
         <Icon icon="search" className="atom-ide-outline-view-search-icon" />

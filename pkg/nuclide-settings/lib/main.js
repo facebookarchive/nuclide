@@ -11,7 +11,7 @@
 
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import React from 'react';
+import * as React from 'react';
 import SettingsPaneItem, {WORKSPACE_VIEW_URI} from './SettingsPaneItem';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 

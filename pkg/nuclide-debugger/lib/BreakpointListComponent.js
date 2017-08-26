@@ -15,7 +15,7 @@ import type {FileLineBreakpoints, FileLineBreakpoint} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-import React from 'react';
+import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
@@ -30,9 +30,10 @@ type BreakpointListComponentState = {
   breakpoints: ?FileLineBreakpoints,
 };
 
-export class BreakpointListComponent extends React.Component {
-  props: BreakpointListComponentProps;
-  state: BreakpointListComponentState;
+export class BreakpointListComponent extends React.Component<
+  BreakpointListComponentProps,
+  BreakpointListComponentState,
+> {
   _disposables: UniversalDisposable;
 
   constructor(props: BreakpointListComponentProps) {
@@ -84,7 +85,7 @@ export class BreakpointListComponent extends React.Component {
     return this.props.breakpointStore.breakpointSupportsConditions(breakpoint);
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {breakpoints} = this.state;
     if (breakpoints == null || breakpoints.length === 0) {
       return <span>(no breakpoints)</span>;
@@ -156,7 +157,7 @@ export class BreakpointListComponent extends React.Component {
                   this,
                   breakpoint,
                 )}
-                onClick={(event: SyntheticEvent) => event.stopPropagation()}
+                onClick={(event: SyntheticEvent<>) => event.stopPropagation()}
                 title={title}
                 className={classnames(
                   resolved ? '' : 'nuclide-debugger-breakpoint-unresolved',
@@ -171,6 +172,7 @@ export class BreakpointListComponent extends React.Component {
           </div>
         );
         return (
+          // $FlowFixMe(>=0.53.0) Flow suppress
           <ListViewItem
             key={label}
             value={breakpoint}
@@ -183,6 +185,7 @@ export class BreakpointListComponent extends React.Component {
         );
       });
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <ListView
         alternateBackground={true}
         onSelect={this._handleBreakpointClick}

@@ -27,7 +27,7 @@ import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import invariant from 'assert';
 import {notifySshHandshakeError} from './notification';
-import React from 'react';
+import * as React from 'react';
 import electron from 'electron';
 import {
   SshHandshake,
@@ -83,10 +83,7 @@ const WAITING_FOR_AUTHENTICATION = 4;
 /**
  * Component that manages the state transitions as the user connects to a server.
  */
-export default class ConnectionDialog extends React.Component {
-  props: Props;
-  state: State;
-
+export default class ConnectionDialog extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -208,7 +205,7 @@ export default class ConnectionDialog extends React.Component {
     return path !== '/';
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const mode = this.state.mode;
     let content;
     let isOkDisabled;

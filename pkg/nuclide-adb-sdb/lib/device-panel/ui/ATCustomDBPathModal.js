@@ -13,7 +13,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../../../nuclide-ui/Dropdown';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import React from 'react';
+import * as React from 'react';
 
 type Props = {|
   type: 'adb' | 'sdb',
@@ -29,10 +29,7 @@ type State = {|
   customPath: ?string,
 |};
 
-export class ATCustomDBPathModal extends React.Component {
-  props: Props;
-  state: State;
-
+export class ATCustomDBPathModal extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {customPath: this.props.currentCustomPath};
@@ -129,7 +126,7 @@ export class ATCustomDBPathModal extends React.Component {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     return (
       <div>
         <div className="block">

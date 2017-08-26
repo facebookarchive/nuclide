@@ -14,7 +14,7 @@ import type {Definition} from 'atom-ide-ui';
 
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Block} from 'nuclide-commons-ui/Block';
-import React from 'react';
+import * as React from 'react';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bufferForUri} from '../../nuclide-remote-connection';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
@@ -31,9 +31,10 @@ type State = {
   editorHeight: number, // Height in ems to render the AtomTextEditor.
 };
 
-export class DefinitionPreviewView extends React.Component {
-  props: ContextElementProps;
-  state: State;
+export class DefinitionPreviewView extends React.Component<
+  ContextElementProps,
+  State,
+> {
   _settingsChangeDisposable: IDisposable;
 
   constructor(props: ContextElementProps) {
@@ -109,7 +110,7 @@ export class DefinitionPreviewView extends React.Component {
     });
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {ContextViewMessage, definition} = this.props;
     const atMinHeight =
       this.state.editorHeight - EDITOR_HEIGHT_DELTA < MINIMUM_EDITOR_HEIGHT;

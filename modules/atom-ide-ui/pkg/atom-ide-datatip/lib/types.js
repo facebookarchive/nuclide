@@ -48,7 +48,7 @@ export type AnyDatatipProvider = DatatipProvider | ModifierDatatipProvider;
 
 export type Datatip =
   | {|
-      component: ReactClass<any>,
+      component: React$ComponentType<any>,
       range: atom$Range,
       pinnable?: boolean,
     |}

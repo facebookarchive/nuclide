@@ -43,7 +43,7 @@ type ResultRenderer = (
 import invariant from 'assert';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
-import React from 'react';
+import * as React from 'react';
 import {Subject} from 'rxjs';
 import {CompositeDisposable, Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';

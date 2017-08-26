@@ -411,7 +411,7 @@ export default class HyperclickForTextEditor {
   /**
    * Returns whether an event should be handled by hyperclick or not.
    */
-  _isHyperclickEvent(event: SyntheticKeyboardEvent | MouseEvent): boolean {
+  _isHyperclickEvent(event: SyntheticKeyboardEvent<> | MouseEvent): boolean {
     return (
       event.shiftKey === this._triggerKeys.has('shiftKey') &&
       event.ctrlKey === this._triggerKeys.has('ctrlKey') &&

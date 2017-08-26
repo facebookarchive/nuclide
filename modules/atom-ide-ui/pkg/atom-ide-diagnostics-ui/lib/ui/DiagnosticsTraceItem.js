@@ -12,7 +12,7 @@
 
 import type {DiagnosticTrace} from '../../../atom-ide-diagnostics/lib/types';
 
-import React from 'react';
+import * as React from 'react';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
 type DiagnosticsTraceItemProps = {
@@ -33,7 +33,7 @@ export const DiagnosticsTraceItem = (props: DiagnosticsTraceItemProps) => {
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
-    const onClick = (event: SyntheticMouseEvent) => {
+    const onClick = (event: SyntheticMouseEvent<>) => {
       event.stopPropagation();
       goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };

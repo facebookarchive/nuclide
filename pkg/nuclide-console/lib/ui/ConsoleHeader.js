@@ -12,7 +12,7 @@
 import type {Source} from '../types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
-import React from 'react';
+import * as React from 'react';
 import {ModalMultiSelect} from '../../../nuclide-ui/ModalMultiSelect';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
@@ -36,14 +36,12 @@ type Props = {
   filterText: string,
 };
 
-export default class ConsoleHeader extends React.Component {
-  props: Props;
-
-  _handleClearButtonClick = (event: SyntheticMouseEvent): void => {
+export default class ConsoleHeader extends React.Component<Props> {
+  _handleClearButtonClick = (event: SyntheticMouseEvent<>): void => {
     this.props.clear();
   };
 
-  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent): void => {
+  _handleCreatePasteButtonClick = (event: SyntheticMouseEvent<>): void => {
     if (this.props.createPaste != null) {
       this.props.createPaste();
     }
@@ -104,7 +102,7 @@ export default class ConsoleHeader extends React.Component {
     );
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const options = this.props.sources
       .slice()
       .sort((a, b) => sortAlpha(a.name, b.name))
@@ -121,6 +119,7 @@ export default class ConsoleHeader extends React.Component {
             className="inline-block"
             size={ButtonSizes.SMALL}
             onClick={this._handleCreatePasteButtonClick}
+            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title: 'Creates a Paste from the current contents of the console',
             })}>

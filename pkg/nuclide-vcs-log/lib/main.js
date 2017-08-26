@@ -28,7 +28,7 @@ import {repositoryForPath} from '../../nuclide-vcs-base';
 import {shortNameForAuthor as shortNameForAuthorFn} from './util';
 import {track} from '../../nuclide-analytics';
 import url from 'url';
-import React from 'react';
+import * as React from 'react';
 import {viewableFromReactElement} from '../../commons-atom/viewableFromReactElement';
 
 const SHOW_LOG_FILE_TREE_CONTEXT_MENU_PRIORITY = 500;

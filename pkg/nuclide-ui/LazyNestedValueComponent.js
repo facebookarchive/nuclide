@@ -16,7 +16,7 @@ import type {
 } from '../nuclide-debugger/lib/types';
 import type {Observable} from 'rxjs';
 
-import React from 'react';
+import * as React from 'react';
 import invariant from 'assert';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';
@@ -47,7 +47,7 @@ type LoadableValueComponentProps = {
   path: string,
   expandedValuePaths: Map<string, NodeData>,
   onExpandedStateChange: (path: string, isExpanded: boolean) => void,
-  simpleValueComponent: ReactClass<any>,
+  simpleValueComponent: React.ComponentType<any>,
   shouldCacheChildren: boolean,
   getCachedChildren: (path: string) => ?ExpansionResult,
   setCachedChildren: (path: string, children: ExpansionResult) => void,
@@ -129,7 +129,7 @@ type LazyNestedValueComponentProps = {
   expandedValuePaths: Map<string, NodeData>,
   onExpandedStateChange: (path: string, expanded: boolean) => void,
   path: string,
-  simpleValueComponent: ReactClass<any>,
+  simpleValueComponent: React.ComponentType<any>,
   shouldCacheChildren: boolean,
   getCachedChildren: (path: string) => ?ExpansionResult,
   setCachedChildren: (path: string, children: ExpansionResult) => void,
@@ -144,11 +144,11 @@ type LazyNestedValueComponentState = {
  * A component that knows how to render recursive, interactive expression/evaluationResult pairs.
  * The rendering of non-expandable "leaf" values is delegated to the SimpleValueComponent.
  */
-class ValueComponent extends React.Component {
-  props: LazyNestedValueComponentProps;
-  state: LazyNestedValueComponentState;
-
-  _toggleExpandFiltered: (e: SyntheticMouseEvent) => void;
+class ValueComponent extends React.Component<
+  LazyNestedValueComponentProps,
+  LazyNestedValueComponentState,
+> {
+  _toggleExpandFiltered: (e: SyntheticMouseEvent<>) => void;
 
   constructor(props: LazyNestedValueComponentProps) {
     super(props);
@@ -169,7 +169,7 @@ class ValueComponent extends React.Component {
     this.setState(this._getNextState(nextProps));
   }
 
-  _toggleExpand(event: SyntheticMouseEvent): void {
+  _toggleExpand(event: SyntheticMouseEvent<>): void {
     const {onExpandedStateChange, path} = this.props;
     const newState = this._getNextState(this.props, true /* toggleExpansion */);
     onExpandedStateChange(path, newState.isExpanded);
@@ -222,7 +222,7 @@ class ValueComponent extends React.Component {
     return {isExpanded, children};
   }
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const {
       evaluationResult,
       expression,
@@ -336,7 +336,7 @@ type TopLevelValueComponentProps = {
   evaluationResult: ?EvaluationResult,
   fetchChildren: ?(objectId: string) => Observable<?ExpansionResult>,
   expression?: string,
-  simpleValueComponent: ReactClass<any>,
+  simpleValueComponent: React.ComponentType<any>,
   shouldCacheChildren?: boolean,
   // An (arbitrary) reference object used to track expansion state of the component's
   // children across multiple re-renders. To ensure persistent re-use of the  expansion state,
@@ -357,8 +357,9 @@ const expansionStates: WeakMap<Object, Map<string, NodeData>> = new WeakMap();
  * is necessary to preserve the expansion state while the values are temporarily unavailable, such
  * as after stepping in the debugger, which triggers a recursive re-fetch.
  */
-class TopLevelLazyNestedValueComponent extends React.PureComponent {
-  props: TopLevelValueComponentProps;
+class TopLevelLazyNestedValueComponent extends React.PureComponent<
+  TopLevelValueComponentProps,
+> {
   shouldCacheChildren: boolean;
 
   constructor(props: TopLevelValueComponentProps) {
@@ -420,7 +421,7 @@ class TopLevelLazyNestedValueComponent extends React.PureComponent {
     }
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const className = classnames(this.props.className, {
       'native-key-bindings': true,
       // Note(vjeux): the following line should probably be `: true`

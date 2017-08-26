@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
 import {Observable} from 'rxjs';
@@ -29,10 +29,7 @@ const ENTER_KEY_CODE = 13;
 const UP_KEY_CODE = 38;
 const DOWN_KEY_CODE = 40;
 
-export default class OutputTable extends React.Component {
-  props: Props;
-  state: State;
-
+export default class OutputTable extends React.Component<Props, State> {
   _keySubscription: ?rxjs$ISubscription;
   _textEditorModel: ?atom$TextEditor;
 
@@ -118,7 +115,7 @@ export default class OutputTable extends React.Component {
     }
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const grammar =
       this.props.scopeName == null
         ? null

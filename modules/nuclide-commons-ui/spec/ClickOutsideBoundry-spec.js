@@ -10,7 +10,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import invariant from 'assert';
 import {render} from 'react-dom';
 import ClickOutsideBoundary from '../ClickOutsideBoundary';
@@ -22,7 +22,8 @@ const clickId = (id: string) => {
 };
 
 // A component which removes itself from the DOM when clicked.
-class ClickAway extends React.Component {
+// $FlowFixMe(>=0.53.0) Flow suppress
+class ClickAway extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
   constructor(props) {
     super(props);
     this.state = {visible: true};

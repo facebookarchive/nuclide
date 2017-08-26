@@ -13,7 +13,7 @@ import type {Device, DeviceAction} from '../types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import {Dropdown} from '../../../nuclide-ui/Dropdown';
-import React from 'react';
+import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 
 type Props = {|
@@ -23,10 +23,8 @@ type Props = {|
   title: string,
 |};
 
-export class DeviceTaskButton extends React.Component {
-  props: Props;
-
-  render(): React.Element<any> {
+export class DeviceTaskButton extends React.Component<Props> {
+  render(): React.Node {
     const options = this.props.actions;
     if (options.length === 0) {
       return <span />;

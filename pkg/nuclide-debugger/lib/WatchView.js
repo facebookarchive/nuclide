@@ -14,7 +14,7 @@ import type DebuggerModel from './DebuggerModel';
 import type {WatchExpressionListStore} from './WatchExpressionListStore';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react';
+import * as React from 'react';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {WatchExpressionComponent} from './WatchExpressionComponent';
 
@@ -23,9 +23,8 @@ type Props = {
   watchExpressionListStore: WatchExpressionListStore,
 };
 
-export class WatchView extends React.PureComponent {
-  props: Props;
-  _watchExpressionComponentWrapped: ReactClass<any>;
+export class WatchView extends React.PureComponent<Props> {
+  _watchExpressionComponentWrapped: React.ComponentType<any>;
   _disposables: CompositeDisposable;
 
   constructor(props: Props) {
@@ -39,7 +38,7 @@ export class WatchView extends React.PureComponent {
     );
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {model} = this.props;
     const actions = model.getActions();
     const WatchExpressionComponentWrapped = this

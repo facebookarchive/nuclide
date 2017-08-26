@@ -15,7 +15,7 @@ import type {LaunchAttachStore} from './LaunchAttachStore';
 import type {LaunchAttachActions} from './LaunchAttachActions';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-import React from 'react';
+import * as React from 'react';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -41,11 +41,7 @@ type StateType = {
   coreDump: string,
 };
 
-export class LaunchUIComponent extends React.Component<
-  void,
-  PropsType,
-  StateType,
-> {
+export class LaunchUIComponent extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType;
   _disposables: UniversalDisposable;
@@ -118,7 +114,7 @@ export class LaunchUIComponent extends React.Component<
     this._disposables.dispose();
   }
 
-  render(): React.Element<any> {
+  render(): React.Node {
     // TODO: smart fill the working directory textbox.
     // TODO: make tab stop between textbox work.
     // Reserve tabIndex [1~10] to header portion of the UI so we start from "11" here.

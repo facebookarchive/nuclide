@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import featureConfig from 'nuclide-commons-atom/feature-config';
-import React from 'react';
+import * as React from 'react';
 import SettingsCategory from './SettingsCategory';
 
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
@@ -21,9 +21,11 @@ import {matchesFilter} from './settings-utils';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/settings';
 
-export default class NuclideSettingsPaneItem extends React.Component {
+export default class NuclideSettingsPaneItem extends React.Component<
+  Object,
+  Object,
+> {
   _disposables: CompositeDisposable;
-  state: Object;
 
   constructor(props: Object) {
     super(props);
@@ -148,7 +150,7 @@ export default class NuclideSettingsPaneItem extends React.Component {
     featureConfig.set(keyPath, value);
   };
 
-  render(): ?React.Element<any> {
+  render(): React.Node {
     const elements = [];
 
     const configData = this._getConfigData();

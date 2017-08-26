@@ -9,7 +9,7 @@
  * @format
  */
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 import {scrollIntoView} from 'nuclide-commons-ui/scrollIntoView';
 
@@ -19,8 +19,7 @@ type TreeItemProps = {
   selected?: boolean,
 };
 
-export class TreeItem extends React.Component {
-  props: TreeItemProps;
+export class TreeItem extends React.Component<TreeItemProps> {
   _liNode: ?Element;
 
   scrollIntoView() {
@@ -32,6 +31,7 @@ export class TreeItem extends React.Component {
   render() {
     const {className, selected, children, ...remainingProps} = this.props;
     return (
+      // $FlowFixMe(>=0.53.0) Flow suppress
       <li
         className={classnames(
           className,
@@ -102,6 +102,7 @@ type TreeListProps = {
   hasFlatChildren?: boolean,
 };
 export const TreeList = (props: TreeListProps) =>
+  // $FlowFixMe(>=0.53.0) Flow suppress
   <ul
     className={classnames(
       props.className,

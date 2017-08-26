@@ -22,7 +22,7 @@ import {
   FileChangeStatusToTextColor,
 } from '../nuclide-vcs-base';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import React from 'react';
+import * as React from 'react';
 import {FileChangeStatus} from '../nuclide-vcs-base';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import PathWithFileIcon from './PathWithFileIcon';
@@ -62,9 +62,7 @@ type Props = {
   rootPath: NuclideUri,
 };
 
-export default class ChangedFile extends React.Component {
-  props: Props;
-
+export default class ChangedFile extends React.Component<Props> {
   _getFileClassname(): string {
     const {commandPrefix, fileStatus, isHgPath, isSelected} = this.props;
     return classnames(
@@ -89,6 +87,7 @@ export default class ChangedFile extends React.Component {
         className="nuclide-changed-file-action"
         key={key}
         onClick={onClick}
+        // $FlowFixMe(>=0.53.0) Flow suppress
         ref={addTooltip({
           delay: 300,
           placement: 'top',
@@ -178,7 +177,7 @@ export default class ChangedFile extends React.Component {
     this.props.onFileChecked(this.props.filePath);
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       enableInlineActions,
       isChecked,

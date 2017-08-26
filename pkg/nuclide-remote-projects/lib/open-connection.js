@@ -29,7 +29,7 @@ import RemoteProjectConnectionModal from './RemoteProjectConnectionModal';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getLogger as getLogger_} from 'log4js';
-import React from 'react';
+import * as React from 'react';
 import {Observable} from 'rxjs';
 
 export type OpenConnectionDialogOptions = {

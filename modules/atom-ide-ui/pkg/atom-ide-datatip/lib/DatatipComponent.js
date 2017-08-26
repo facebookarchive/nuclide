@@ -12,7 +12,7 @@
 
 import type {Datatip} from './types';
 
-import React from 'react';
+import * as React from 'react';
 
 import {maybeToString} from 'nuclide-commons/string';
 import MarkedStringDatatip from './MarkedStringDatatip';
@@ -35,14 +35,12 @@ type DatatipComponentProps = {
   onActionClick: Function,
 };
 
-export class DatatipComponent extends React.Component {
-  props: DatatipComponentProps;
-
-  handleActionClick = (event: SyntheticEvent) => {
+export class DatatipComponent extends React.Component<DatatipComponentProps> {
+  handleActionClick = (event: SyntheticEvent<>) => {
     this.props.onActionClick();
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {
       className,
       action,

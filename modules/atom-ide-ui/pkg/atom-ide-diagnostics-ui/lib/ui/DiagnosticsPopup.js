@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {FileDiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
-import React from 'react';
+import * as React from 'react';
 import classnames from 'classnames';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 import DiagnosticsCodeActions from './DiagnosticsCodeActions';
@@ -47,6 +47,7 @@ function renderMessage(
     codeActionsForMessage && codeActionsForMessage.get(message);
   return (
     <div className={className} key={index} tabIndex={-1}>
+      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <DiagnosticsMessage
         fixer={fixer}
         goToLocation={goToLocation}

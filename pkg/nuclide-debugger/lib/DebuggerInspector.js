@@ -10,7 +10,7 @@
  */
 
 import BreakpointStore from './BreakpointStore';
-import React from 'react';
+import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 
 type Props = {
@@ -22,10 +22,8 @@ type Props = {
 /**
  * Wrapper for Chrome Devtools frontend view.
  */
-export default class DebuggerInspector extends React.PureComponent {
-  props: Props;
-
-  render(): React.Element<any> {
+export default class DebuggerInspector extends React.PureComponent<Props> {
+  render(): React.Node {
     return (
       <div className="inspector" style={{'text-align': 'right'}}>
         <div className="control-bar">

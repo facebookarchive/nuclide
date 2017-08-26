@@ -11,7 +11,7 @@
 
 import type {Store, ConfirmPhase} from '../types';
 
-import React from 'react';
+import * as React from 'react';
 
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {pluralize} from 'nuclide-commons/string';
@@ -26,14 +26,12 @@ type Props = {
   store: Store,
 };
 
-export class ConfirmRefactorComponent extends React.PureComponent {
-  props: Props;
-
+export class ConfirmRefactorComponent extends React.PureComponent<Props> {
   _execute = () => {
     this.props.store.dispatch(Actions.apply(this.props.phase.response));
   };
 
-  render(): React.Element<any> {
+  render(): React.Node {
     const {response} = this.props.phase;
     const editCount = new Map();
     for (const [path, edits] of response.edits) {
@@ -50,6 +48,7 @@ export class ConfirmRefactorComponent extends React.PureComponent {
           <TreeList>
             {Array.from(editCount).map(([path, count]) =>
               <TreeItem key={path}>
+                {/* $FlowFixMe(>=0.53.0) Flow suppress */}
                 <PathWithFileIcon path={path}>
                   <span className="nuclide-refactorizer-confirm-list-path">
                     {getAtomProjectRelativePath(path)}
