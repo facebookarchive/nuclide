@@ -104,7 +104,7 @@ function trackStallsImpl(): IDisposable {
         intentionalBlockTime < startTime + duration + BLOCKED_RANGE_PADDING;
 
       if (withinReasonableWindow && !wasBlockedIntentionally) {
-        histogram.track(entry.duration);
+        histogram.track(duration);
         getLogger('nuclide-health').warn(
           `Event loop was blocked for ${duration} ms`,
         );
