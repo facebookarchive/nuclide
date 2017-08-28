@@ -60,7 +60,6 @@ function TypeComponent(props: {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
   return (
-    // $FlowFixMe(>=0.53.0) Flow suppress
     <Highlight color={highlightColor}>
       {text}
     </Highlight>

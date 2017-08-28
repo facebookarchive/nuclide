@@ -23,7 +23,7 @@ export type HighlightColor =
 type Props = {
   className?: string,
   color?: HighlightColor,
-  children?: ?React.Element<any>,
+  children: React.Node,
 };
 
 export const HighlightColors = Object.freeze({

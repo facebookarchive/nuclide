@@ -17,23 +17,18 @@ import {Highlight, HighlightColors} from './Highlight';
 const HighlightExample = (): React.Element<any> =>
   <div>
     <Block>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <Highlight>Default</Highlight>
     </Block>
     <Block>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <Highlight color={HighlightColors.info}>Info</Highlight>
     </Block>
     <Block>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <Highlight color={HighlightColors.success}>Success</Highlight>
     </Block>
     <Block>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <Highlight color={HighlightColors.warning}>Warning</Highlight>
     </Block>
     <Block>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <Highlight color={HighlightColors.error}>Error</Highlight>
     </Block>
   </div>;
