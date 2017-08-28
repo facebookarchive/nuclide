@@ -2683,9 +2683,9 @@ nth-check@~1.0.1:
   dependencies:
     boolbase "~1.0.0"
 
-nuclide-prebuilt-libs@0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.0.8.tgz#ae8b27152f87da331d91354a3a462b39638c68ad"
+nuclide-prebuilt-libs@0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/nuclide-prebuilt-libs/-/nuclide-prebuilt-libs-0.0.9.tgz#babff59fe266c20a91499fe5de1066bd3d0568c2"
 
 nullthrows@1.0.0, nullthrows@^1.0.0:
   version "1.0.0"
