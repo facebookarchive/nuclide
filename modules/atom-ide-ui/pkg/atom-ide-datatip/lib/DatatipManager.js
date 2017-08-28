@@ -358,6 +358,11 @@ class DatatipManagerForEditor {
           this._setState(DatatipState.HIDDEN);
         }
       }),
+      this._editor.getBuffer().onDidChangeText(() => {
+        if (this._datatipState === DatatipState.VISIBLE) {
+          this._setState(DatatipState.HIDDEN);
+        }
+      }),
       atom.commands.add(
         'atom-text-editor',
         'datatip:toggle',

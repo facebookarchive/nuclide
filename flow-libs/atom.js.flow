@@ -1555,6 +1555,10 @@ type atom$TextEditEvent = {
   newText: string,
 };
 
+type atom$AggregatedTextEditEvent = {
+  changes: Array<atom$TextEditEvent>,
+};
+
 declare class atom$TextBuffer {
   constructor(text?: string): atom$TextBuffer,
   constructor(params?: {
@@ -1570,6 +1574,7 @@ declare class atom$TextBuffer {
   // Events
   onWillChange(callback: (event: atom$TextEditEvent) => mixed): IDisposable,
   onDidChange(callback: (event: atom$TextEditEvent) => mixed): IDisposable,
+  onDidChangeText(callback: (event: atom$AggregatedTextEditEvent) => mixed): IDisposable,
   onDidStopChanging(callback: () => mixed): IDisposable,
   onDidConflict(callback: () => mixed): IDisposable,
   onDidChangeModified(callback: () => mixed): IDisposable,
