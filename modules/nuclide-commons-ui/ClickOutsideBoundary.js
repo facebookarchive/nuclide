@@ -14,7 +14,7 @@ import * as React from 'react';
 import {findDOMNode} from 'react-dom';
 
 type Props = {
-  onClickOutside: () => void,
+  onClickOutside: ?() => void,
   children: ?React.Element<any>,
 };
 

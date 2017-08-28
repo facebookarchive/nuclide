@@ -177,7 +177,6 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}>
         <div className={listItemClassName} ref="arrowContainer">
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
           <PathWithFileIcon
             className={classnames('name', 'nuclide-file-tree-path', {
               'icon-nuclicon-file-directory': node.isContainer && !node.isCwd,

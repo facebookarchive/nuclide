@@ -48,7 +48,6 @@ export class ConfirmRefactorComponent extends React.PureComponent<Props> {
           <TreeList>
             {Array.from(editCount).map(([path, count]) =>
               <TreeItem key={path}>
-                {/* $FlowFixMe(>=0.53.0) Flow suppress */}
                 <PathWithFileIcon path={path}>
                   <span className="nuclide-refactorizer-confirm-list-path">
                     {getAtomProjectRelativePath(path)}

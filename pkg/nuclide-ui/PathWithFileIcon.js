@@ -62,7 +62,7 @@ type FileIconsAddItemToElementFn = (
 
 type Props = {
   className?: string,
-  children?: React.Element<any> | Array<?React.Element<any>>,
+  children?: React.Node,
   // Optional <Icon /> element. If set, will render a small version of
   // the decorationIcon on top of the file icon.
   decorationIcon?: WarningIconWithShadow | ErrorIconWithShadow,
