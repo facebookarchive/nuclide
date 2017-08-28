@@ -12,13 +12,15 @@
 import type {ConfigEntry} from '../../nuclide-rpc';
 
 import invariant from 'assert';
+import {getLogger} from 'log4js';
 import WS from 'ws';
 import {attachEvent} from 'nuclide-commons/event';
-import {getLogger} from 'log4js';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import blocked from './blocked';
 import {CLIENTINFO_CHANNEL, HEARTBEAT_CHANNEL} from './config';
 import {deserializeArgs, sendJsonResponse, sendTextResponse} from './utils';
+import {HistogramTracker} from '../../nuclide-analytics';
 import {getVersion} from '../../nuclide-version';
 import {flushLogsAndExit} from '../../nuclide-logging';
 import {RpcConnection, ServiceRegistry} from '../../nuclide-rpc';
@@ -54,6 +56,7 @@ export default class NuclideServer {
   _xhrServiceRegistry: {[serviceName: string]: () => any};
   _version: string;
   _rpcServiceRegistry: ServiceRegistry;
+  _disposables: UniversalDisposable = new UniversalDisposable();
 
   constructor(options: NuclideServerOptions, services: Array<ConfigEntry>) {
     invariant(NuclideServer._theServer == null);
@@ -91,9 +94,18 @@ export default class NuclideServer {
     this._setupServices(); // Setup 1.0 and 2.0 services.
 
     if (trackEventLoop) {
-      blocked((ms: number) => {
-        logger.info('NuclideServer event loop blocked for ' + ms + 'ms');
-      });
+      const stallTracker = new HistogramTracker(
+        'server-event-loop-blocked',
+        /* max */ 1000,
+        /* buckets */ 10,
+      );
+      this._disposables.add(
+        stallTracker,
+        blocked((ms: number) => {
+          stallTracker.track(ms);
+          logger.info('NuclideServer event loop blocked for ' + ms + 'ms');
+        }),
+      );
     }
 
     this._rpcServiceRegistry = new ServiceRegistry(
@@ -312,6 +324,7 @@ export default class NuclideServer {
     invariant(NuclideServer._theServer === this);
     NuclideServer._theServer = null;
 
+    this._disposables.dispose();
     this._webSocketServer.close();
     this._webServer.close();
   }
