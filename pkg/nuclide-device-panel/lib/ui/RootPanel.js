@@ -40,7 +40,7 @@ export type Props = {|
   deviceTasks: DeviceTask[],
   device: ?Device,
   infoTables: Expected<Map<string, Map<string, string>>>,
-  processes: Process[],
+  processes: Expected<Process[]>,
   isDeviceConnected: boolean,
   deviceTypeTasks: DeviceTask[],
 |};

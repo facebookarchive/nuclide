@@ -213,8 +213,9 @@ function getProcessTasks(state: AppState): Observable<ProcessTask[]> {
     ...Array.from(getProviders().processTask)
       .filter(provider => provider.getType() === state.deviceType)
       .map(provider => {
+        const processes = state.processes.isError ? [] : state.processes.value;
         return provider
-          .getSupportedPIDs(state.host, device, state.processes)
+          .getSupportedPIDs(state.host, device, processes)
           .map(supportedSet => {
             return {
               type: provider.getTaskType(),
