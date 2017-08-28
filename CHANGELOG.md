@@ -1,5 +1,16 @@
 # Nuclide Changelog
 
+## v0.250.0
+
+### General
+
+* Open Files section in the file tree now has a context menu.
+* Project roots in the file tree can now be rearranged.
+* Copy and paste is now supported in the file tree.
+* Datatip styling is now consistent with the syntax theme.
+* Diagnostic tooltips now have priority over other tooltips, and will display all diagnostics at the cursor location.
+* Fixed fuzzy filename search to prioritize shorter matches when there are multiple exact matches.
+
 ## v0.249.0
 
 ### Hotfix Release
