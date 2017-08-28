@@ -32,6 +32,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
   const textBuffer = props.textBuffer || new TextBuffer();
   // flowlint-next-line sketchy-null-string:off
   if (props.path) {
+    // $FlowIgnore
     textBuffer.setPath(props.path);
   }
 
@@ -198,6 +199,7 @@ export class AtomTextEditor extends React.Component<Props, void> {
       }
     }
     if (nextProps.path !== this.props.path) {
+      // $FlowIgnore
       this.getTextBuffer().setPath(nextProps.path || '');
     }
     if (nextProps.gutterHidden !== this.props.gutterHidden) {

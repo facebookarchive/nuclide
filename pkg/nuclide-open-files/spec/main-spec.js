@@ -198,6 +198,7 @@ describe('nuclide-open-files', () => {
       });
       waitsFor(() => eventCount >= 1);
       runs(() => {
+        // $FlowIgnore: spec
         buffer.setPath('f2');
         // Wait one turn before destroying the text buffer, which calls `setText('')`.
         setImmediate(() => {
@@ -245,6 +246,7 @@ describe('nuclide-open-files', () => {
       runs(() => {
         atom.project.addBuffer(buffer);
 
+        // $FlowIgnore: spec
         buffer.setPath('f2');
         // Wait one turn before destroying the text buffer, which calls `setText('')`.
         setImmediate(() => {

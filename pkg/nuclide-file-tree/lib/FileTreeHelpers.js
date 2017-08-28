@@ -223,6 +223,7 @@ function updatePathInOpenedEditors(
       } else {
         // setPath will append the hostname when given the local path, so we
         // strip off the hostname here to avoid including it twice in the path.
+        // $FlowIgnore
         buffer.setPath(nuclideUri.getPath(newBufferPath));
       }
     }

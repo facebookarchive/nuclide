@@ -765,7 +765,8 @@ declare class atom$TextEditor extends atom$Model {
 
   // File Operations
   save(): void,
-  saveAs(filePath: string): void,
+  // DO NOT USE: Doesn't work with remote text buffers!
+  // saveAs(filePath: string): void,
 
   // Reading Text
   getText(): string,
@@ -1585,7 +1586,8 @@ declare class atom$TextBuffer {
   onWillThrowWatchError(callback: () => mixed): IDisposable,
 
   // File Details
-  setPath(filePath: string): void,
+  // DO NOT USE (T21363106): Doesn't work with remote text buffers!
+  // setPath(filePath: string): void,
   getPath(): ?string,
   setEncoding(encoding: string): void,
   getEncoding(): string,
