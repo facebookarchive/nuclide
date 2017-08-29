@@ -1,67 +1,83 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import analytics from 'nuclide-commons-atom/analytics';
-import DiagnosticsTable from './DiagnosticsTable';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
-import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
-import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
-import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
-import * as React from 'react';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+var _analytics;
 
-export type Props = {
-  diagnostics: Array<DiagnosticMessage>,
-  pathToActiveTextEditor: ?NuclideUri,
-  filterByActiveTextEditor: boolean,
-  onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
-  warnAboutLinter: boolean,
-  disableLinter: () => mixed,
-  showTraces: boolean,
-  onShowTracesChange: (isChecked: boolean) => mixed,
-};
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _DiagnosticsTable;
+
+function _load_DiagnosticsTable() {
+  return _DiagnosticsTable = _interopRequireDefault(require('./DiagnosticsTable'));
+}
+
+var _Checkbox;
+
+function _load_Checkbox() {
+  return _Checkbox = require('nuclide-commons-ui/Checkbox');
+}
+
+var _Toolbar;
+
+function _load_Toolbar() {
+  return _Toolbar = require('nuclide-commons-ui/Toolbar');
+}
+
+var _ToolbarCenter;
+
+function _load_ToolbarCenter() {
+  return _ToolbarCenter = require('nuclide-commons-ui/ToolbarCenter');
+}
+
+var _ToolbarLeft;
+
+function _load_ToolbarLeft() {
+  return _ToolbarLeft = require('nuclide-commons-ui/ToolbarLeft');
+}
+
+var _ToolbarRight;
+
+function _load_ToolbarRight() {
+  return _ToolbarRight = require('nuclide-commons-ui/ToolbarRight');
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
-export default class DiagnosticsView extends React.Component<Props> {
-  constructor(props: Props) {
+class DiagnosticsView extends _react.Component {
+  constructor(props) {
     super(props);
-    (this: any)._onShowTracesChange = this._onShowTracesChange.bind(this);
-    (this: any)._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(
-      this,
-    );
-    (this: any)._openAllFilesWithErrors = this._openAllFilesWithErrors.bind(
-      this,
-    );
+    this._onShowTracesChange = this._onShowTracesChange.bind(this);
+    this._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(this);
+    this._openAllFilesWithErrors = this._openAllFilesWithErrors.bind(this);
   }
 
-  render(): React.Node {
-    let warningCount: number = 0;
+  render() {
+    let warningCount = 0;
     let errorCount = 0;
-    let {diagnostics} = this.props;
-    const {showTraces} = this.props;
+    let { diagnostics } = this.props;
+    const { showTraces } = this.props;
     if (this.props.filterByActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
       if (pathToFilterBy !== null) {
-        diagnostics = diagnostics.filter(
-          diagnostic =>
-            diagnostic.scope === 'file' &&
-            diagnostic.filePath === pathToFilterBy,
-        );
+        diagnostics = diagnostics.filter(diagnostic => diagnostic.scope === 'file' && diagnostic.filePath === pathToFilterBy);
       } else {
         // Current pane is not a text editor; do not show diagnostics.
         diagnostics = [];
@@ -75,112 +91,138 @@ export default class DiagnosticsView extends React.Component<Props> {
         ++warningCount;
       }
     });
-    const isExpandable = diagnostics.find(
-      diagnostic =>
-        // flowlint-next-line sketchy-null-string:off
-        diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
-    );
+    const isExpandable = diagnostics.find(diagnostic =>
+    // flowlint-next-line sketchy-null-string:off
+    diagnostic.trace || diagnostic.text && diagnostic.text.includes('\n'));
 
     let linterWarning = null;
     if (this.props.warnAboutLinter) {
-      linterWarning = (
-        <Toolbar>
-          <ToolbarCenter>
-            <span className="inline-block highlight-info">
-              nuclide-diagnostics is not compatible with the linter package. We
-              recommend that you&nbsp;
-              <a onClick={this.props.disableLinter}>
-                disable the linter package
-              </a>
-              .&nbsp;
-              <a href="http://nuclide.io/docs/advanced-topics/linter-package-compatibility/">
-                Learn More
-              </a>.
-            </span>
-          </ToolbarCenter>
-        </Toolbar>
+      linterWarning = _react.createElement(
+        (_Toolbar || _load_Toolbar()).Toolbar,
+        null,
+        _react.createElement(
+          (_ToolbarCenter || _load_ToolbarCenter()).ToolbarCenter,
+          null,
+          _react.createElement(
+            'span',
+            { className: 'inline-block highlight-info' },
+            'nuclide-diagnostics is not compatible with the linter package. We recommend that you\xA0',
+            _react.createElement(
+              'a',
+              { onClick: this.props.disableLinter },
+              'disable the linter package'
+            ),
+            '.\xA0',
+            _react.createElement(
+              'a',
+              { href: 'http://nuclide.io/docs/advanced-topics/linter-package-compatibility/' },
+              'Learn More'
+            ),
+            '.'
+          )
+        )
       );
     }
 
-    const errorSpanClassName = `inline-block ${errorCount > 0
-      ? 'text-error'
-      : ''}`;
-    const warningSpanClassName = `inline-block ${warningCount > 0
-      ? 'text-warning'
-      : ''}`;
+    const errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
+    const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
-    return (
-      <div
-        style={{
+    return _react.createElement(
+      'div',
+      {
+        style: {
           display: 'flex',
           flex: 1,
           flexDirection: 'column',
-          width: '100%',
-        }}>
-        {linterWarning}
-        <Toolbar location="top">
-          <ToolbarLeft>
-            <span className={errorSpanClassName}>
-              Errors: {errorCount}
-            </span>
-            <span className={warningSpanClassName}>
-              Warnings: {warningCount}
-            </span>
-          </ToolbarLeft>
-          <ToolbarRight>
-            {isExpandable
-              ? <span className="inline-block">
-                  <Checkbox
-                    checked={this.props.showTraces}
-                    label="Full description"
-                    onChange={this._onShowTracesChange}
-                  />
-                </span>
-              : null}
-            <span className="inline-block">
-              <Checkbox
-                checked={this.props.filterByActiveTextEditor}
-                label="Current file only"
-                onChange={this._onFilterByActiveTextEditorChange}
-              />
-            </span>
-            <Button
-              onClick={this._openAllFilesWithErrors}
-              size={ButtonSizes.SMALL}
-              disabled={diagnostics.length === 0}
-              className="inline-block"
-              title="Open All">
-              Open All
-            </Button>
-          </ToolbarRight>
-        </Toolbar>
-        <DiagnosticsTable
-          showFileName={!this.props.filterByActiveTextEditor}
-          diagnostics={diagnostics}
-          showTraces={showTraces}
-        />
-      </div>
+          width: '100%'
+        } },
+      linterWarning,
+      _react.createElement(
+        (_Toolbar || _load_Toolbar()).Toolbar,
+        { location: 'top' },
+        _react.createElement(
+          (_ToolbarLeft || _load_ToolbarLeft()).ToolbarLeft,
+          null,
+          _react.createElement(
+            'span',
+            { className: errorSpanClassName },
+            'Errors: ',
+            errorCount
+          ),
+          _react.createElement(
+            'span',
+            { className: warningSpanClassName },
+            'Warnings: ',
+            warningCount
+          )
+        ),
+        _react.createElement(
+          (_ToolbarRight || _load_ToolbarRight()).ToolbarRight,
+          null,
+          isExpandable ? _react.createElement(
+            'span',
+            { className: 'inline-block' },
+            _react.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+              checked: this.props.showTraces,
+              label: 'Full description',
+              onChange: this._onShowTracesChange
+            })
+          ) : null,
+          _react.createElement(
+            'span',
+            { className: 'inline-block' },
+            _react.createElement((_Checkbox || _load_Checkbox()).Checkbox, {
+              checked: this.props.filterByActiveTextEditor,
+              label: 'Current file only',
+              onChange: this._onFilterByActiveTextEditorChange
+            })
+          ),
+          _react.createElement(
+            (_Button || _load_Button()).Button,
+            {
+              onClick: this._openAllFilesWithErrors,
+              size: (_Button || _load_Button()).ButtonSizes.SMALL,
+              disabled: diagnostics.length === 0,
+              className: 'inline-block',
+              title: 'Open All' },
+            'Open All'
+          )
+        )
+      ),
+      _react.createElement((_DiagnosticsTable || _load_DiagnosticsTable()).default, {
+        showFileName: !this.props.filterByActiveTextEditor,
+        diagnostics: diagnostics,
+        showTraces: showTraces
+      })
     );
   }
 
-  _onShowTracesChange(isChecked: boolean) {
-    analytics.track('diagnostics-panel-toggle-show-traces', {
-      isChecked: isChecked.toString(),
+  _onShowTracesChange(isChecked) {
+    (_analytics || _load_analytics()).default.track('diagnostics-panel-toggle-show-traces', {
+      isChecked: isChecked.toString()
     });
     this.props.onShowTracesChange.call(null, isChecked);
   }
 
-  _onFilterByActiveTextEditorChange(isChecked: boolean) {
-    analytics.track('diagnostics-panel-toggle-current-file', {
-      isChecked: isChecked.toString(),
+  _onFilterByActiveTextEditorChange(isChecked) {
+    (_analytics || _load_analytics()).default.track('diagnostics-panel-toggle-current-file', {
+      isChecked: isChecked.toString()
     });
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 
   _openAllFilesWithErrors() {
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'diagnostics:open-all-files-with-errors',
-    );
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'diagnostics:open-all-files-with-errors');
   }
 }
+exports.default = DiagnosticsView; /**
+                                    * Copyright (c) 2017-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the BSD-style license found in the
+                                    * LICENSE file in the root directory of this source tree. An additional grant
+                                    * of patent rights can be found in the PATENTS file in the same directory.
+                                    *
+                                    * 
+                                    * @format
+                                    */

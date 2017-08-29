@@ -1,78 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {AutocompleteCacherConfig} from '../../commons-atom/AutocompleteCacher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AutocompleteProvider = undefined;
 
-import type {
-  AutocompleteResult,
-  Completion,
-  LanguageService,
-} from './LanguageService';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import invariant from 'assert';
-import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import {Point, Range} from 'simple-text-buffer';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
-import {ConnectionCache} from '../../nuclide-remote-connection';
-import {trackTiming, track} from '../../nuclide-analytics';
-import {getFileVersionOfEditor} from '../../nuclide-open-files';
-import AutocompleteCacher from '../../commons-atom/AutocompleteCacher';
+exports.updateAutocompleteResults = updateAutocompleteResults;
+exports.updateAutocompleteFirstResults = updateAutocompleteFirstResults;
 
-export type OnDidInsertSuggestionArgument = {
-  editor: atom$TextEditor,
-  triggerPosition: atom$Point,
-  suggestion: Completion,
-};
+var _fuzzaldrinPlus;
 
-export type OnDidInsertSuggestionCallback = (
-  arg: OnDidInsertSuggestionArgument,
-) => mixed;
+function _load_fuzzaldrinPlus() {
+  return _fuzzaldrinPlus = _interopRequireDefault(require('fuzzaldrin-plus'));
+}
 
-export type AutocompleteConfig = {|
-  inclusionPriority: number,
-  suggestionPriority: number,
-  disableForSelector: ?string,
-  excludeLowerPriority: boolean,
-  version: '2.0.0',
-  analyticsEventName: string,
-  onDidInsertSuggestionAnalyticsEventName: string,
-  autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
-|};
+var _simpleTextBuffer;
 
-export class AutocompleteProvider<T: LanguageService> {
-  name: string;
-  selector: string;
-  inclusionPriority: number;
-  suggestionPriority: number;
-  disableForSelector: ?string;
-  excludeLowerPriority: boolean;
-  _onDidInsertSuggestion: ?OnDidInsertSuggestionCallback;
-  onDidInsertSuggestion: OnDidInsertSuggestionCallback;
-  _analyticsEventName: string;
-  _connectionToLanguageService: ConnectionCache<T>;
-  _autocompleteCacher: ?AutocompleteCacher<AutocompleteResult>;
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
 
-  constructor(
-    name: string,
-    selector: string,
-    inclusionPriority: number,
-    suggestionPriority: number,
-    disableForSelector: ?string,
-    excludeLowerPriority: boolean,
-    analyticsEventName: string,
-    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    onDidInsertSuggestionAnalyticsEventName: string,
-    autocompleteCacherConfig: ?AutocompleteCacherConfig<AutocompleteResult>,
-    connectionToLanguageService: ConnectionCache<T>,
-  ) {
+var _range;
+
+function _load_range() {
+  return _range = require('nuclide-commons-atom/range');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _AutocompleteCacher;
+
+function _load_AutocompleteCacher() {
+  return _AutocompleteCacher = _interopRequireDefault(require('../../commons-atom/AutocompleteCacher'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class AutocompleteProvider {
+
+  constructor(name, selector, inclusionPriority, suggestionPriority, disableForSelector, excludeLowerPriority, analyticsEventName, onDidInsertSuggestion, onDidInsertSuggestionAnalyticsEventName, autocompleteCacherConfig, connectionToLanguageService) {
     this.name = name;
     this.selector = selector;
     this.inclusionPriority = inclusionPriority;
@@ -83,188 +67,157 @@ export class AutocompleteProvider<T: LanguageService> {
     this._connectionToLanguageService = connectionToLanguageService;
 
     if (autocompleteCacherConfig != null) {
-      this._autocompleteCacher = new AutocompleteCacher(
-        request => this._getSuggestionsFromLanguageService(request),
-        autocompleteCacherConfig,
-      );
+      this._autocompleteCacher = new (_AutocompleteCacher || _load_AutocompleteCacher()).default(request => this._getSuggestionsFromLanguageService(request), autocompleteCacherConfig);
     }
 
     this._onDidInsertSuggestion = onDidInsertSuggestion;
 
     this.onDidInsertSuggestion = arg => {
-      track(onDidInsertSuggestionAnalyticsEventName);
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).track)(onDidInsertSuggestionAnalyticsEventName);
       if (this._onDidInsertSuggestion != null) {
         this._onDidInsertSuggestion(arg);
       }
     };
   }
 
-  static register(
-    name: string,
-    grammars: Array<string>,
-    config: AutocompleteConfig,
-    onDidInsertSuggestion: ?OnDidInsertSuggestionCallback,
-    connectionToLanguageService: ConnectionCache<T>,
-  ): IDisposable {
-    return atom.packages.serviceHub.provide(
-      'autocomplete.provider',
-      config.version,
-      new AutocompleteProvider(
-        name,
-        grammars.map(grammar => '.' + grammar).join(', '),
-        config.inclusionPriority,
-        config.suggestionPriority,
-        config.disableForSelector,
-        config.excludeLowerPriority,
-        config.analyticsEventName,
-        onDidInsertSuggestion,
-        config.onDidInsertSuggestionAnalyticsEventName,
-        config.autocompleteCacherConfig,
-        connectionToLanguageService,
-      ),
-    );
+  static register(name, grammars, config, onDidInsertSuggestion, connectionToLanguageService) {
+    return atom.packages.serviceHub.provide('autocomplete.provider', config.version, new AutocompleteProvider(name, grammars.map(grammar => '.' + grammar).join(', '), config.inclusionPriority, config.suggestionPriority, config.disableForSelector, config.excludeLowerPriority, config.analyticsEventName, onDidInsertSuggestion, config.onDidInsertSuggestionAnalyticsEventName, config.autocompleteCacherConfig, connectionToLanguageService));
   }
 
-  getSuggestions(
-    request: atom$AutocompleteRequest,
-  ): Promise<?Array<Completion>> {
-    return trackTiming(this._analyticsEventName, async () => {
+  getSuggestions(request) {
+    var _this = this;
+
+    return (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)(this._analyticsEventName, (0, _asyncToGenerator.default)(function* () {
       let result;
-      if (this._autocompleteCacher != null) {
-        result = await this._autocompleteCacher.getSuggestions(request);
+      if (_this._autocompleteCacher != null) {
+        result = yield _this._autocompleteCacher.getSuggestions(request);
       } else {
-        result = await this._getSuggestionsFromLanguageService(request);
+        result = yield _this._getSuggestionsFromLanguageService(request);
       }
       return result != null ? result.items : null;
-    });
+    }));
   }
 
-  async _getSuggestionsFromLanguageService(
-    request: atom$AutocompleteRequest,
-  ): Promise<?AutocompleteResult> {
-    const {editor, activatedManually, prefix} = request;
-    // TODO(ljw): the following line uses the position of the cursor --
-    // shouldn't it be using request.bufferPosition instead?
-    const position = editor.getLastCursor().getBufferPosition();
+  _getSuggestionsFromLanguageService(request) {
+    var _this2 = this;
 
-    // In case of automatic requests, we'd like to know what character triggered
-    // the autocomplete request. That information isn't provided to us, so the
-    // best we can do is find the character to the left of the position.
-    let triggerCharacter;
-    if (activatedManually != null && activatedManually) {
-      triggerCharacter = null;
-    } else if (position.column === 0) {
-      triggerCharacter = '\n';
-    } else {
-      const range = new Range([position.row, position.column - 1], position);
-      triggerCharacter = editor.getTextInBufferRange(range);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const { editor, activatedManually, prefix } = request;
+      // TODO(ljw): the following line uses the position of the cursor --
+      // shouldn't it be using request.bufferPosition instead?
+      const position = editor.getLastCursor().getBufferPosition();
 
-    // 'prefix' has to do with what's replaced when the user accepts an
-    // autocomplete suggestion. It's based on the current word. For instance,
-    //  '$c|'      => suggestion '$compare'  => hopefully replace '$c'
-    //  'Vec\com|' => suggestion 'compare'   => hopefully replace 'com'
-    // The way autocomplete works is: the language service might say what prefix
-    // its suggestion will replace; and if it doesn't, then autocomplete will
-    // replace whatever prefix was part of the 'request' object.
-    //
-    // Atom has its own way of computing the current word (to support gestures
-    // like cursor-past-word). It bases this on 'editor.nonWordCharacters', by
-    // default roughly [a-zA-Z0-9_]. But language packages can and do override
-    // this -- e.g. PHP allows '$' in identifiers.
-    //
-    // Autocomplete doesn't use Atom's technique (I suspect because the html and
-    // css and xml packages never bothered overriding it). Instead autocomplete
-    // has its own regex, roughly the same but allowing '-' as well. It uses
-    // this to populate 'prefix'.
-    //
-    // Autocomplete's suggestion is wrong for languages like PHP which have
-    // their own regex, is right for languages like HTML which should but don't,
-    // and is wrong for languages like Java which don't provide their own
-    // regex and which don't allow hyphens.
-    //
-    // What we'll do is work around this mess right here as best we can:
-    // if the language-package provides its own regex which gives a different
-    // prefix from Autocomplete's, then we'll suggest that to the language
-    // service, and we'll patch the output of the language service to reflect
-    // this.
+      // In case of automatic requests, we'd like to know what character triggered
+      // the autocomplete request. That information isn't provided to us, so the
+      // best we can do is find the character to the left of the position.
+      let triggerCharacter;
+      if (activatedManually != null && activatedManually) {
+        triggerCharacter = null;
+      } else if (position.column === 0) {
+        triggerCharacter = '\n';
+      } else {
+        const range = new (_simpleTextBuffer || _load_simpleTextBuffer()).Range([position.row, position.column - 1], position);
+        triggerCharacter = editor.getTextInBufferRange(range);
+      }
 
-    let langSpecificPrefix = prefix;
-    const defaultWordRules = editor.getNonWordCharacters();
-    const scope = editor.scopeDescriptorForBufferPosition(position);
-    const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
-    if (defaultWordRules !== langWordRules) {
-      langSpecificPrefix = findAtomWordPrefix(editor, position);
-    }
+      // 'prefix' has to do with what's replaced when the user accepts an
+      // autocomplete suggestion. It's based on the current word. For instance,
+      //  '$c|'      => suggestion '$compare'  => hopefully replace '$c'
+      //  'Vec\com|' => suggestion 'compare'   => hopefully replace 'com'
+      // The way autocomplete works is: the language service might say what prefix
+      // its suggestion will replace; and if it doesn't, then autocomplete will
+      // replace whatever prefix was part of the 'request' object.
+      //
+      // Atom has its own way of computing the current word (to support gestures
+      // like cursor-past-word). It bases this on 'editor.nonWordCharacters', by
+      // default roughly [a-zA-Z0-9_]. But language packages can and do override
+      // this -- e.g. PHP allows '$' in identifiers.
+      //
+      // Autocomplete doesn't use Atom's technique (I suspect because the html and
+      // css and xml packages never bothered overriding it). Instead autocomplete
+      // has its own regex, roughly the same but allowing '-' as well. It uses
+      // this to populate 'prefix'.
+      //
+      // Autocomplete's suggestion is wrong for languages like PHP which have
+      // their own regex, is right for languages like HTML which should but don't,
+      // and is wrong for languages like Java which don't provide their own
+      // regex and which don't allow hyphens.
+      //
+      // What we'll do is work around this mess right here as best we can:
+      // if the language-package provides its own regex which gives a different
+      // prefix from Autocomplete's, then we'll suggest that to the language
+      // service, and we'll patch the output of the language service to reflect
+      // this.
 
-    const path = editor.getPath();
-    const fileVersion = await getFileVersionOfEditor(editor);
+      let langSpecificPrefix = prefix;
+      const defaultWordRules = editor.getNonWordCharacters();
+      const scope = editor.scopeDescriptorForBufferPosition(position);
+      const langWordRules = editor.getNonWordCharacters(scope); // {scope} ?
+      if (defaultWordRules !== langWordRules) {
+        langSpecificPrefix = findAtomWordPrefix(editor, position);
+      }
 
-    const languageService = this._connectionToLanguageService.getForUri(path);
-    if (languageService == null || fileVersion == null) {
-      return {isIncomplete: false, items: []};
-    }
+      const path = editor.getPath();
+      const fileVersion = yield (0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getFileVersionOfEditor)(editor);
 
-    const results = await (await languageService).getAutocompleteSuggestions(
-      fileVersion,
-      position,
-      {
-        activatedManually:
-          activatedManually == null ? false : activatedManually,
+      const languageService = _this2._connectionToLanguageService.getForUri(path);
+      if (languageService == null || fileVersion == null) {
+        return { isIncomplete: false, items: [] };
+      }
+
+      const results = yield (yield languageService).getAutocompleteSuggestions(fileVersion, position, {
+        activatedManually: activatedManually == null ? false : activatedManually,
         triggerCharacter,
-        prefix: langSpecificPrefix,
-      },
-    );
-
-    // Here's where we patch up the prefix in the results, if necessary
-    if (langSpecificPrefix !== prefix && results != null) {
-      results.items = results.items.map((c: Completion) => {
-        return c.replacementPrefix == null
-          ? {replacementPrefix: langSpecificPrefix, ...c}
-          : c;
+        prefix: langSpecificPrefix
       });
-    }
-    return results;
+
+      // Here's where we patch up the prefix in the results, if necessary
+      if (langSpecificPrefix !== prefix && results != null) {
+        results.items = results.items.map(function (c) {
+          return c.replacementPrefix == null ? Object.assign({ replacementPrefix: langSpecificPrefix }, c) : c;
+        });
+      }
+      return results;
+    })();
   }
 }
 
-function findAtomWordPrefix(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): string {
-  const positionOneCharBefore = new Point(
-    position.row,
-    Math.max(0, position.column - 1),
-  );
-  const match = wordAtPosition(editor, positionOneCharBefore, {
-    includeNonWordCharacters: false,
+exports.AutocompleteProvider = AutocompleteProvider; /**
+                                                      * Copyright (c) 2015-present, Facebook, Inc.
+                                                      * All rights reserved.
+                                                      *
+                                                      * This source code is licensed under the license found in the LICENSE file in
+                                                      * the root directory of this source tree.
+                                                      *
+                                                      * 
+                                                      * @format
+                                                      */
+
+function findAtomWordPrefix(editor, position) {
+  const positionOneCharBefore = new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(position.row, Math.max(0, position.column - 1));
+  const match = (0, (_range || _load_range()).wordAtPosition)(editor, positionOneCharBefore, {
+    includeNonWordCharacters: false
   });
   if (match == null) {
     return '';
   } else {
-    return editor.getTextInBufferRange(new Range(match.range.start, position));
+    return editor.getTextInBufferRange(new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(match.range.start, position));
   }
 }
 
-function padEnd(s: string, targetLength: number, padString: string): string {
+function padEnd(s, targetLength, padString) {
   const padLength = Math.max(targetLength - s.length, 0);
   return s + padString.repeat(padLength);
 }
 
-export function updateAutocompleteResults(
-  request: atom$AutocompleteRequest,
-  firstResult: AutocompleteResult,
-): ?AutocompleteResult {
+function updateAutocompleteResults(request, firstResult) {
   if (firstResult.isIncomplete) {
     return null;
   }
   return updateAutocompleteFirstResults(request, firstResult);
 }
 
-export function updateAutocompleteFirstResults(
-  request: atom$AutocompleteRequest,
-  firstResult: AutocompleteResult,
-): AutocompleteResult {
+function updateAutocompleteFirstResults(request, firstResult) {
   // This function is sometimes called because the user invoked autocomplete
   // manually, e.g. pressing ctrl+space at "x.|" or "x.f|". Or it's invoked
   // from updateAutocompleteResults because there was it had previously
@@ -295,26 +248,24 @@ export function updateAutocompleteFirstResults(
   // This 'reduce' takes ~25ms for 1000 items, largely in the scoring. The rest
   // of the function takes negligible time.
 
-  const items: Array<{filterScore: number, completion: Completion}> = [];
+  const items = [];
   for (const item of firstResult.items) {
     // flowlint-next-line sketchy-null-string:off
     const text = item.displayText || item.snippet || item.text || '';
     // flowlint-next-line sketchy-null-string:off
     const filterText = padEnd(item.filterText || text, 40, ' ');
     // If no prefix, then include all items and avoid doing work to score.
-    const filterScore: number =
-      prefix === '' ? 1 : fuzzaldrinPlus.score(filterText, prefix);
+    const filterScore = prefix === '' ? 1 : (_fuzzaldrinPlus || _load_fuzzaldrinPlus()).default.score(filterText, prefix);
     // Score of 0 means the item fails the filter.
     if (filterScore === 0) {
       continue;
     }
-    const completion: Completion = {
-      ...item,
+    const completion = Object.assign({}, item, {
       replacementPrefix: prefix,
       // flowlint-next-line sketchy-null-string:off
-      sortText: item.sortText || text,
-    };
-    items.push({filterScore, completion});
+      sortText: item.sortText || text
+    });
+    items.push({ filterScore, completion });
   }
 
   // Step [2+3]: sort by filterScore, and within that by sortText. We do a sort
@@ -329,7 +280,11 @@ export function updateAutocompleteFirstResults(
     } else {
       const a = itemA.completion.sortText;
       const b = itemB.completion.sortText;
-      invariant(a != null && b != null);
+
+      if (!(a != null && b != null)) {
+        throw new Error('Invariant violation: "a != null && b != null"');
+      }
+
       if (a.startsWith('_') === b.startsWith('_')) {
         return a.localeCompare(b);
       } else if (a.startsWith('_')) {
@@ -340,5 +295,5 @@ export function updateAutocompleteFirstResults(
     }
   });
 
-  return {...firstResult, items: items.map(item => item.completion)};
+  return Object.assign({}, firstResult, { items: items.map(item => item.completion) });
 }

@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _BasicStatsSectionComponent;
+
+function _load_BasicStatsSectionComponent() {
+  return _BasicStatsSectionComponent = _interopRequireDefault(require('./sections/BasicStatsSectionComponent'));
+}
+
+var _ActiveHandlesSectionComponent;
+
+function _load_ActiveHandlesSectionComponent() {
+  return _ActiveHandlesSectionComponent = _interopRequireDefault(require('./sections/ActiveHandlesSectionComponent'));
+}
+
+var _ChildProcessTreeComponent;
+
+function _load_ChildProcessTreeComponent() {
+  return _ChildProcessTreeComponent = _interopRequireDefault(require('./sections/ChildProcessTreeComponent'));
+}
+
+var _CommandsSectionComponent;
+
+function _load_CommandsSectionComponent() {
+  return _CommandsSectionComponent = _interopRequireDefault(require('./sections/CommandsSectionComponent'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,61 +41,42 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {HandlesByType, ChildProcessInfo} from '../types';
-
-import * as React from 'react';
-import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
-import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
-import ChildProcessTreeComponent from './sections/ChildProcessTreeComponent';
-import CommandsSectionComponent from './sections/CommandsSectionComponent';
-
-type Props = {
-  toolbarJewel: string,
-  updateToolbarJewel: (value: string) => void,
-  cpuPercentage: number,
-  memory: number,
-  heapPercentage: number,
-  activeHandles: number,
-  activeRequests: number,
-  activeHandlesByType: HandlesByType,
-  childProcessesTree: ?ChildProcessInfo,
-};
-
-export default class HealthPaneItemComponent extends React.Component<Props> {
-  render(): React.Node {
+class HealthPaneItemComponent extends _react.Component {
+  render() {
     const sections = {
-      Stats: <BasicStatsSectionComponent {...this.props} />,
-      Subprocesses: (
-        <ChildProcessTreeComponent
-          childProcessesTree={this.props.childProcessesTree}
-        />
-      ),
-      Handles: (
-        <ActiveHandlesSectionComponent
-          activeHandlesByType={this.props.activeHandlesByType}
-        />
-      ),
-      Commands: <CommandsSectionComponent />,
+      Stats: _react.createElement((_BasicStatsSectionComponent || _load_BasicStatsSectionComponent()).default, this.props),
+      Subprocesses: _react.createElement((_ChildProcessTreeComponent || _load_ChildProcessTreeComponent()).default, {
+        childProcessesTree: this.props.childProcessesTree
+      }),
+      Handles: _react.createElement((_ActiveHandlesSectionComponent || _load_ActiveHandlesSectionComponent()).default, {
+        activeHandlesByType: this.props.activeHandlesByType
+      }),
+      Commands: _react.createElement((_CommandsSectionComponent || _load_CommandsSectionComponent()).default, null)
     };
 
     // For each section, we use settings-view to get a familiar look for table cells.
-    return (
-      <div>
-        {Object.keys(sections).map((title, s) =>
-          <div className="nuclide-health-pane-item-section" key={s}>
-            <h2>
-              {title}
-            </h2>
-            <div className="settings-view">
-              {sections[title]}
-            </div>
-          </div>,
-        )}
-      </div>
+    return _react.createElement(
+      'div',
+      null,
+      Object.keys(sections).map((title, s) => _react.createElement(
+        'div',
+        { className: 'nuclide-health-pane-item-section', key: s },
+        _react.createElement(
+          'h2',
+          null,
+          title
+        ),
+        _react.createElement(
+          'div',
+          { className: 'settings-view' },
+          sections[title]
+        )
+      ))
     );
   }
 }
+exports.default = HealthPaneItemComponent;

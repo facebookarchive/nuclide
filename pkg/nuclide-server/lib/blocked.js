@@ -1,15 +1,17 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = blocked;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Copy of the npm package: blocked, but without the unref, because that doesn't work in apm tests.
@@ -19,14 +21,10 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
  * @return the interval handler.
  * To cancel, call clearInterval on the returned interval handler.
  */
-export default function blocked(
-  fn: (ms: number) => void,
-  intervalMs: number = 100,
-  thresholdMs: number = 50,
-): IDisposable {
+function blocked(fn, intervalMs = 100, thresholdMs = 50) {
   let start = Date.now();
 
-  const interval: any = setInterval(() => {
+  const interval = setInterval(() => {
     const deltaMs = Date.now() - start;
     const blockTimeMs = deltaMs - intervalMs;
     if (blockTimeMs > thresholdMs) {
@@ -35,5 +33,14 @@ export default function blocked(
     start = Date.now();
   }, intervalMs);
 
-  return new UniversalDisposable(() => clearInterval(interval));
-}
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => clearInterval(interval));
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
