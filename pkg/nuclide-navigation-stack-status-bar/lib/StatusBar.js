@@ -9,15 +9,23 @@
  * @format
  */
 
-import type {NavigationStackController} from './NavigationStackController';
-import type {Observable} from 'rxjs';
+import type {NavigationStackService} from '../../nuclide-navigation-stack';
 
 import * as React from 'react';
+import {Observable} from 'rxjs';
 import {Disposable} from 'atom';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+
+type Props = {
+  enableBack: boolean,
+  enableForward: boolean,
+  onBack: () => mixed,
+  onForward: () => mixed,
+};
 
 // Since this is a button which can change the current file, place it where
 // it won't change position when the current file name changes, which means way left.
@@ -25,15 +33,15 @@ const STATUS_BAR_PRIORITY = -100;
 
 export function consumeStatusBar(
   statusBar: atom$StatusBar,
-  controller: NavigationStackController,
+  navigationStack: NavigationStackService,
 ): IDisposable {
-  const onBack = () => controller.navigateBackwards();
-  const onForward = () => controller.navigateForwards();
-  const props: Observable<
-    Props,
-  > = controller.observeStackChanges().map(stack => ({
-    enableBack: stack.hasPrevious(),
-    enableForward: stack.hasNext(),
+  const onBack = navigationStack.navigateBackwards;
+  const onForward = navigationStack.navigateForwards;
+  const props: Observable<Props> = observableFromSubscribeFunction(
+    navigationStack.subscribe,
+  ).map(stack => ({
+    enableBack: stack.hasPrevious,
+    enableForward: stack.hasNext,
     onBack,
     onForward,
   }));
@@ -50,13 +58,6 @@ export function consumeStatusBar(
     statusBarTile.destroy();
   });
 }
-
-type Props = {
-  enableBack: boolean,
-  enableForward: boolean,
-  onBack: () => mixed,
-  onForward: () => mixed,
-};
 
 function NavStackStatusBarTile(props: Props): React.Element<any> {
   return (
