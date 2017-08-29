@@ -15,8 +15,6 @@ import type {
   DatatipService,
 } from '../../atom-ide-datatip/lib/types';
 
-import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
-
 import type {
   DiagnosticMessage,
   FileDiagnosticMessage,
@@ -66,7 +64,6 @@ class Activation {
   _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
   _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
-  _codeActionFetcher: ?CodeActionFetcher;
   _globalViewStates: ?Observable<GlobalViewState>;
 
   constructor(state: ?Object): void {
@@ -89,20 +86,15 @@ class Activation {
       priority: 10,
       datatip: (editor, position) => {
         const messagesForFile = this._fileDiagnostics.get(editor);
-        if (messagesForFile == null) {
+        const {diagnosticUpdater} = this._model.state;
+        if (messagesForFile == null || diagnosticUpdater == null) {
           return Promise.resolve(null);
         }
         return getDiagnosticDatatip(
           editor,
           position,
           messagesForFile,
-          message => {
-            const updater = this._model.state.diagnosticUpdater;
-            if (updater != null) {
-              updater.applyFix(message);
-            }
-          },
-          this._codeActionFetcher,
+          diagnosticUpdater,
         );
       },
     };
@@ -147,10 +139,6 @@ class Activation {
       invariant(this._model.state.diagnosticUpdater === diagnosticUpdater);
       this._model.setState({diagnosticUpdater: null});
     });
-  }
-
-  consumeCodeActionFetcher(fetcher: CodeActionFetcher) {
-    this._codeActionFetcher = fetcher;
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): void {
