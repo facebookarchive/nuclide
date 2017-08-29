@@ -37,7 +37,7 @@ export default function DiagnosticsCodeActions(props: {
                   // TODO: (seansegal) T21130332 Display CodeAction status indicators
                   codeAction.apply().catch(handleCodeActionFailure);
                 }}>
-                <span className="inline-block highlight">
+                <span className="inline-block">
                   {title}
                 </span>
               </Button>

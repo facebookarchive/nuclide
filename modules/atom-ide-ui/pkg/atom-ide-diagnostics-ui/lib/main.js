@@ -274,7 +274,6 @@ class Activation {
 function gutterConsumeDiagnosticUpdates(
   diagnosticUpdater: DiagnosticUpdater,
 ): IDisposable {
-  const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
   const subscriptions = new UniversalDisposable();
   subscriptions.add(
     observeTextEditors((editor: TextEditor) => {
@@ -287,7 +286,7 @@ function gutterConsumeDiagnosticUpdates(
           // the very act of destroying the editor can trigger diagnostic updates.
           // Thus this callback can still be triggered after the editor is destroyed.
           if (!editor.isDestroyed()) {
-            applyUpdateToEditor(editor, update, fixer);
+            applyUpdateToEditor(editor, update, diagnosticUpdater);
           }
         });
       subscriptions.add(subscription);

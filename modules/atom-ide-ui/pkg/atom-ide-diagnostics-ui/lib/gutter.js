@@ -11,6 +11,7 @@
  */
 
 import type {
+  DiagnosticUpdater,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
 } from '../../atom-ide-diagnostics/lib/types';
@@ -21,9 +22,11 @@ import {Range} from 'atom';
 import invariant from 'assert';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
+import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import analytics from 'nuclide-commons-atom/analytics';
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
@@ -63,7 +66,7 @@ const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 export function applyUpdateToEditor(
   editor: TextEditor,
   update: FileDiagnosticMessages,
-  fixer: (message: FileDiagnosticMessage) => void,
+  diagnosticUpdater: DiagnosticUpdater,
 ): void {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
@@ -182,7 +185,7 @@ export function applyUpdateToEditor(
     const {item, dispose} = createGutterItem(
       messages,
       gutterMarkerCssClass,
-      fixer,
+      diagnosticUpdater,
     );
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
@@ -203,7 +206,7 @@ export function applyUpdateToEditor(
 function createGutterItem(
   messages: Array<FileDiagnosticMessage>,
   gutterMarkerCssClass: string,
-  fixer: (message: FileDiagnosticMessage) => void,
+  diagnosticUpdater: DiagnosticUpdater,
 ): {item: HTMLElement, dispose: () => void} {
   const item = document.createElement('a');
   item.className = gutterMarkerCssClass;
@@ -239,7 +242,12 @@ function createGutterItem(
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the
     // user manages to scroll and escape disposal.
     dispose();
-    popupElement = showPopupFor(messages, item, goToLocation, fixer);
+    popupElement = showPopupFor(
+      messages,
+      item,
+      goToLocation,
+      diagnosticUpdater,
+    );
     popupElement.addEventListener('mouseleave', dispose);
     popupElement.addEventListener('mouseenter', clearDisposeTimeout);
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
@@ -262,7 +270,7 @@ function showPopupFor(
   messages: Array<FileDiagnosticMessage>,
   item: HTMLElement,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  fixer: (message: FileDiagnosticMessage) => void,
+  diagnosticUpdater: DiagnosticUpdater,
 ): HTMLElement {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
@@ -276,7 +284,7 @@ function showPopupFor(
   const {top, left} = item.getBoundingClientRect();
 
   const trackedFixer = (...args) => {
-    fixer(...args);
+    diagnosticUpdater.applyFix(...args);
     analytics.track('diagnostics-gutter-autofix');
   };
   const trackedGoToLocation = (filePath: NuclideUri, line: number) => {
@@ -284,19 +292,26 @@ function showPopupFor(
     analytics.track('diagnostics-gutter-goto-location');
   };
 
-  ReactDOM.render(
-    <DiagnosticsPopup
-      style={{left, top, position: 'absolute'}}
-      messages={messages}
-      fixer={trackedFixer}
-      goToLocation={trackedGoToLocation}
-    />,
-    hostElement,
-  );
-  // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
-  // the glyph rather than below it.
   const editor = itemToEditor.get(item);
   invariant(editor != null);
+  diagnosticUpdater.fetchCodeActions(editor, messages);
+
+  const BoundPopup = bindObservableAsProps(
+    observableFromSubscribeFunction(cb =>
+      diagnosticUpdater.observeCodeActionsForMessage(cb),
+    ).map(codeActionsForMessage => ({
+      style: {left, top, position: 'absolute'},
+      messages,
+      fixer: trackedFixer,
+      goToLocation: trackedGoToLocation,
+      codeActionsForMessage,
+    })),
+    DiagnosticsPopup,
+  );
+  ReactDOM.render(<BoundPopup />, hostElement);
+
+  // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
+  // the glyph rather than below it.
   const editorElement = atom.views.getView(editor);
   const {
     top: editorTop,
