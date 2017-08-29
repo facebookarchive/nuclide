@@ -14,6 +14,7 @@ import type {Observable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {IndieLinterDelegate} from './services/IndieLinterRegistry';
+import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
 
 export type DiagnosticProvider =
   | CallbackDiagnosticProvider
@@ -216,6 +217,7 @@ export type {IndieLinterDelegate} from './services/IndieLinterRegistry';
 export type AppState = {
   messages: MessagesState,
   projectMessages: ProjectMessagesState,
+  codeActionFetcher: ?CodeActionFetcher,
 };
 
 export type MessagesState = Map<
@@ -242,6 +244,10 @@ export type Action =
   | {
     type: 'REMOVE_PROVIDER',
     payload: {provider: ObservableDiagnosticProvider},
+  }
+  | {
+    type: 'SET_CODE_ACTION_FETCHER',
+    payload: {codeActionFetcher: ?CodeActionFetcher},
   }
 
   // Fixes

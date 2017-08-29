@@ -11,6 +11,7 @@
  */
 
 import type {Action, MessagesState, ProjectMessagesState} from '../types';
+import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 
 import * as Actions from './Actions';
 
@@ -156,6 +157,16 @@ export function projectMessages(
     }
   }
 
+  return state;
+}
+
+export function codeActionFetcher(
+  state: ?CodeActionFetcher = null,
+  action: Action,
+): ?CodeActionFetcher {
+  if (action.type === 'SET_CODE_ACTION_FETCHER') {
+    return action.payload.codeActionFetcher;
+  }
   return state;
 }
 

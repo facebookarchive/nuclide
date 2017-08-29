@@ -18,9 +18,11 @@ import type {
   FileDiagnosticMessage,
   ObservableDiagnosticProvider,
 } from '../types';
+import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 
 export const ADD_PROVIDER = 'ADD_PROVIDER';
 export const REMOVE_PROVIDER = 'REMOVE_PROVIDER';
+export const SET_CODE_ACTION_FETCHER = 'SET_CODE_ACTION_FETCHER';
 export const UPDATE_MESSAGES = 'UPDATE_MESSAGES';
 export const INVALIDATE_MESSAGES = 'INVALIDATE_MESSAGES';
 export const APPLY_FIX = 'APPLY_FIX';
@@ -39,6 +41,15 @@ export function removeProvider(provider: ObservableDiagnosticProvider): Action {
   return {
     type: REMOVE_PROVIDER,
     payload: {provider},
+  };
+}
+
+export function setCodeActionFetcher(
+  codeActionFetcher: ?CodeActionFetcher,
+): Action {
+  return {
+    type: SET_CODE_ACTION_FETCHER,
+    payload: {codeActionFetcher},
   };
 }
 

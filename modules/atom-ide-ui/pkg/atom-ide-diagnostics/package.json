@@ -11,6 +11,11 @@
   },
   "activationCommands": {},
   "consumedServices": {
+    "code-actions-fetcher": {
+      "versions": {
+        "0.1.0": "consumeCodeActionFetcher"
+      }
+    },
     "linter": {
       "versions": {
         "^1.0.0 || ^2.0.0": "consumeLinterProvider"

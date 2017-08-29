@@ -68,6 +68,7 @@ export default function createStore(
 const INITIAL_STATE = {
   messages: new Map(),
   projectMessages: new Map(),
+  codeActionFetcher: null,
 };
 
 function getFileMessages(store: Store): Observable<Set<FileDiagnosticMessage>> {

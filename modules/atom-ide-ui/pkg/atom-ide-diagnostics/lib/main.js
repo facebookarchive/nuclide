@@ -18,7 +18,9 @@ import type {
   Store,
 } from './types';
 import type {LinterAdapter} from './services/LinterAdapter';
+import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
 
+import invariant from 'assert';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
@@ -68,6 +70,14 @@ class Activation {
       });
       return delegate;
     };
+  }
+
+  consumeCodeActionFetcher(fetcher: CodeActionFetcher): IDisposable {
+    this._store.dispatch(Actions.setCodeActionFetcher(fetcher));
+    return new UniversalDisposable(() => {
+      invariant(this._store.getState().codeActionFetcher === fetcher);
+      this._store.dispatch(Actions.setCodeActionFetcher(null));
+    });
   }
 
   consumeLinterProvider(
