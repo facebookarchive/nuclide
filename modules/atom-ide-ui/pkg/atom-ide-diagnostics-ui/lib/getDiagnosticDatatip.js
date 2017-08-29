@@ -44,15 +44,9 @@ function makeDatatipComponent(
 export default (async function getDiagnosticDatatip(
   editor: TextEditor,
   position: atom$Point,
-  messagesForFile: Array<FileDiagnosticMessage>,
+  messagesAtPosition: Array<FileDiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
 ): Promise<?Datatip> {
-  const messagesAtPosition = messagesForFile.filter(
-    message => message.range != null && message.range.containsPoint(position),
-  );
-  if (messagesAtPosition.length === 0) {
-    return null;
-  }
   let range = null;
   for (const message of messagesAtPosition) {
     if (message.range != null) {

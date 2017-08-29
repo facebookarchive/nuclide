@@ -46,6 +46,7 @@ import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {Observable} from 'rxjs';
+import showActionsMenu from './showActionsMenu';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -69,6 +70,7 @@ class Activation {
   constructor(state: ?Object): void {
     this._subscriptions = new UniversalDisposable(
       this.registerOpenerAndCommand(),
+      this._registerActionsMenu(),
     );
     this._model = new Model({
       filterByActiveTextEditor:
@@ -85,15 +87,18 @@ class Activation {
       // Diagnostic datatips should have higher priority than most other datatips.
       priority: 10,
       datatip: (editor, position) => {
-        const messagesForFile = this._fileDiagnostics.get(editor);
+        const messagesAtPosition = this._getMessagesAtPosition(
+          editor,
+          position,
+        );
         const {diagnosticUpdater} = this._model.state;
-        if (messagesForFile == null || diagnosticUpdater == null) {
+        if (messagesAtPosition.length === 0 || diagnosticUpdater == null) {
           return Promise.resolve(null);
         }
         return getDiagnosticDatatip(
           editor,
           position,
-          messagesForFile,
+          messagesAtPosition,
           diagnosticUpdater,
         );
       },
@@ -263,11 +268,52 @@ class Activation {
     );
   }
 
+  _registerActionsMenu(): IDisposable {
+    return atom.commands.add(
+      'atom-text-editor',
+      'diagnostics:show-actions-at-position',
+      () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        const {diagnosticUpdater} = this._model.state;
+        if (editor == null || diagnosticUpdater == null) {
+          return;
+        }
+        const position = editor.getCursorBufferPosition();
+        const messagesAtPosition = this._getMessagesAtPosition(
+          editor,
+          position,
+        );
+        if (messagesAtPosition.length === 0) {
+          return;
+        }
+        showActionsMenu(
+          editor,
+          position,
+          messagesAtPosition,
+          diagnosticUpdater,
+        );
+      },
+    );
+  }
+
   _getStatusBarTile(): StatusBarTile {
     if (!this._statusBarTile) {
       this._statusBarTile = new StatusBarTile();
     }
     return this._statusBarTile;
+  }
+
+  _getMessagesAtPosition(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Array<FileDiagnosticMessage> {
+    const messagesForFile = this._fileDiagnostics.get(editor);
+    if (messagesForFile == null) {
+      return [];
+    }
+    return messagesForFile.filter(
+      message => message.range != null && message.range.containsPoint(position),
+    );
   }
 }
 
