@@ -24,10 +24,11 @@ import {getProjectRelativePathOfDiagnostic} from '../paneUtils';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 
-// text is always used for sorting, while we render the element.
 type DescriptionField = {
+  diagnostic: DiagnosticMessage,
+  showTraces: boolean,
   text: string,
-  element: React.Element<any>,
+  isPlainText: boolean,
 };
 
 export type DisplayDiagnostic = {
@@ -66,11 +67,10 @@ function TypeComponent(props: {
   );
 }
 
-/** @return text and a boolean indicating whether it is plaintext or HTML. */
 function getMessageContent(
-  showTraces: boolean,
   diagnostic: DiagnosticMessage,
-): DescriptionField {
+  showTraces: boolean,
+): {text: string, isPlainText: boolean} {
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
@@ -89,38 +89,23 @@ function getMessageContent(
       throw new Error('Neither text nor html property defined on message');
     }
   }
-  text = text.trim();
-  return {
-    text,
-    element:
-      showTraces && diagnostic.scope === 'file'
-        ? DiagnosticsMessageNoHeader({
-            message: diagnostic,
-            goToLocation,
-            fixer: () => {},
-          })
-        : DiagnosticsMessageText({
-            preserveNewlines: showTraces,
-            message: {text, html: isPlainText ? undefined : text},
-          }),
-  };
+  return {text: text.trim(), isPlainText};
 }
 
 function DescriptionComponent(props: {
   data: DescriptionField,
 }): React.Element<any> {
-  const message = props.data;
-  if (message.element != null) {
-    return message.element;
-  } else if (message.html != null) {
-    return <span dangerouslySetInnerHTML={{__html: message.text}} />;
-  } else {
-    return (
-      <span>
-        {message.text}
-      </span>
-    );
-  }
+  const {showTraces, diagnostic, text, isPlainText} = props.data;
+  return showTraces && diagnostic.scope === 'file'
+    ? DiagnosticsMessageNoHeader({
+        message: diagnostic,
+        goToLocation,
+        fixer: () => {},
+      })
+    : DiagnosticsMessageText({
+        preserveNewlines: showTraces,
+        message: {text, html: isPlainText ? undefined : text},
+      });
 }
 
 function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
@@ -219,14 +204,17 @@ export default class DiagnosticsTable extends React.Component<
     const {diagnostics, showTraces} = this.props;
     const {sortedColumn, sortDescending} = this.state;
     const diagnosticRows = diagnostics.map(diagnostic => {
-      const messageContent = getMessageContent(showTraces, diagnostic);
       return {
         data: {
           type: diagnostic.type,
           providerName: diagnostic.providerName,
           filePath: getProjectRelativePathOfDiagnostic(diagnostic),
           range: diagnostic.range ? diagnostic.range.start.row + 1 : 0,
-          description: messageContent,
+          description: {
+            showTraces,
+            diagnostic,
+            ...getMessageContent(diagnostic, showTraces),
+          },
           diagnostic,
         },
       };
