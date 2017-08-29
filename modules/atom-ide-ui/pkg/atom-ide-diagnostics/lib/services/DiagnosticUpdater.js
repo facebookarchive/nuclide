@@ -12,6 +12,7 @@
 
 import type {
   AppState,
+  CodeActionsState,
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
@@ -87,11 +88,29 @@ export default class DiagnosticUpdater {
     );
   };
 
+  observeCodeActionsForMessage = (
+    callback: (update: CodeActionsState) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      this._states
+        .map(state => state.codeActionsForMessage)
+        .distinctUntilChanged()
+        .subscribe(callback),
+    );
+  };
+
   applyFix = (message: FileDiagnosticMessage): void => {
     this._store.dispatch(Actions.applyFix(message));
   };
 
   applyFixesForFile = (file: NuclideUri): void => {
     this._store.dispatch(Actions.applyFixesForFile(file));
+  };
+
+  fetchCodeActions = (
+    editor: atom$TextEditor,
+    messages: Array<FileDiagnosticMessage>,
+  ): void => {
+    this._store.dispatch(Actions.fetchCodeActions(editor, messages));
   };
 }

@@ -13,6 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   Action,
+  CodeActionsState,
   DiagnosticInvalidationMessage,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
@@ -23,6 +24,8 @@ import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 export const ADD_PROVIDER = 'ADD_PROVIDER';
 export const REMOVE_PROVIDER = 'REMOVE_PROVIDER';
 export const SET_CODE_ACTION_FETCHER = 'SET_CODE_ACTION_FETCHER';
+export const FETCH_CODE_ACTIONS = 'FETCH_CODE_ACTIONS';
+export const SET_CODE_ACTIONS = 'SET_CODE_ACTIONS';
 export const UPDATE_MESSAGES = 'UPDATE_MESSAGES';
 export const INVALIDATE_MESSAGES = 'INVALIDATE_MESSAGES';
 export const APPLY_FIX = 'APPLY_FIX';
@@ -50,6 +53,25 @@ export function setCodeActionFetcher(
   return {
     type: SET_CODE_ACTION_FETCHER,
     payload: {codeActionFetcher},
+  };
+}
+
+export function fetchCodeActions(
+  editor: atom$TextEditor,
+  messages: Array<FileDiagnosticMessage>,
+): Action {
+  return {
+    type: FETCH_CODE_ACTIONS,
+    payload: {editor, messages},
+  };
+}
+
+export function setCodeActions(
+  codeActionsForMessage: CodeActionsState,
+): Action {
+  return {
+    type: SET_CODE_ACTIONS,
+    payload: {codeActionsForMessage},
   };
 }
 
