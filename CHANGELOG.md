@@ -4,7 +4,7 @@
 
 ### General
 
-* Open Files section in the file tree now has a context menu.
+* "Open Files" section in the file tree now has a context menu.
 * Project roots in the file tree can now be rearranged.
 * Copy and paste is now supported in the file tree.
 * Datatip styling is now consistent with the syntax theme.
