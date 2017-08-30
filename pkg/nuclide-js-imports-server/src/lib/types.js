@@ -28,6 +28,11 @@ export type ImportSuggestion = {
   filesWithExport: Array<JSExport>,
 };
 
+export type JSImport = {
+  type: 'require' | 'import' | 'importType',
+  importPath: string,
+};
+
 export type JSExport = {
   id: string,
   uri: NuclideUri,

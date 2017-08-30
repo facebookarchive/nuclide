@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {JSExport} from './lib/types';
+import type {JSExport, JSImport} from './lib/types';
 import type TextDocuments from './TextDocuments';
 import type {
   WorkspaceEdit,
@@ -21,9 +21,12 @@ import {IConnection} from 'vscode-languageserver';
 import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {parseFile} from './lib/AutoImportsManager';
-import {babelLocationToAtomRange, atomRangeToLSPRange} from './utils/util';
 import {Range} from 'simple-text-buffer';
-import {getRequiredModule} from './utils/util';
+import {
+  atomRangeToLSPRange,
+  compareForInsertion,
+  getRequiredModule,
+} from './utils/util';
 
 export type AddImportCommandParams = [string, JSExport, NuclideUri];
 
@@ -128,7 +131,7 @@ export function getEditsForImport(
   return [
     createEdit(
       importFormatter.formatImport(fileMissingImport, missingImport),
-      createNewImport(missingImport, programBody),
+      createNewImport(missingImport, programBody, importPath),
     ),
   ];
 }
@@ -160,33 +163,22 @@ function insertIntoExistingImport(
     return null;
   }
   for (const node of programBody) {
-    switch (node.type) {
-      // const {X} = require('..');
-      case 'VariableDeclaration':
-        if (node.kind === 'const' && !missingImport.isTypeExport) {
-          for (const declaration of node.declarations) {
-            if (declaration.id.type !== 'ObjectPattern') {
-              continue;
-            }
-            const required = getRequiredModule(declaration.init);
-            if (required != null && required === importPath) {
-              const {properties} = declaration.id;
-              return positionAfterNode(node, properties[properties.length - 1]);
-            }
-          }
-        }
-        break;
-      case 'ImportDeclaration':
-        const isTypeImport = node.importKind === 'type';
-        if (
-          isTypeImport === missingImport.isTypeExport &&
-          node.source.type === 'StringLiteral' &&
-          node.source.value === importPath
-        ) {
-          const {specifiers} = node;
-          return positionAfterNode(node, specifiers[specifiers.length - 1]);
-        }
-        break;
+    const jsImport = getJSImport(node);
+    if (jsImport == null || jsImport.importPath !== importPath) {
+      continue;
+    }
+    if (jsImport.type === 'require') {
+      const declaration = node.declarations[0];
+      if (declaration.id.type === 'ObjectPattern') {
+        const {properties} = declaration.id;
+        return positionAfterNode(node, properties[properties.length - 1]);
+      }
+    } else {
+      const isTypeImport = jsImport.type === 'importType';
+      if (isTypeImport === missingImport.isTypeExport) {
+        const {specifiers} = node;
+        return positionAfterNode(node, specifiers[specifiers.length - 1]);
+      }
     }
   }
 }
@@ -205,67 +197,105 @@ function positionAfterNode(importNode, afterNode) {
   };
 }
 
+function getJSImport(node: Object): ?JSImport {
+  switch (node.type) {
+    // const {X} = require('..');
+    case 'VariableDeclaration':
+      if (node.kind === 'const' && node.declarations.length === 1) {
+        const importPath = getRequiredModule(node.declarations[0].init);
+        if (importPath != null) {
+          return {
+            type: 'require',
+            importPath,
+          };
+        }
+      }
+      break;
+    case 'ImportDeclaration':
+      return {
+        type: node.importKind === 'type' ? 'importType' : 'import',
+        importPath: node.source.value,
+      };
+  }
+}
+
 function createNewImport(
   missingImport: JSExport,
   programBody: Array<Object>,
+  importPath: string,
 ): EditParams {
-  // For now, we consider two types of imports: value import and type imports.
-  // TODO: integrate with nuclide-format-js or replace this with a more
-  // specific ordering that is easily configurable.
+  const nodesByType = {
+    require: [],
+    import: [],
+    importType: [],
+  };
+  programBody.forEach(node => {
+    const jsImport = getJSImport(node);
+    if (jsImport != null) {
+      nodesByType[jsImport.type].push({
+        node,
+        importPath: jsImport.importPath,
+      });
+    }
+  });
 
-  const [
-    lastTypeImport,
-    lastValueImport,
-  ] = findLastTopLevelNodeSatisfying(programBody, [
-    node => node.type === 'ImportDeclaration' && node.importKind === 'type',
-    node => node.type === 'ImportDeclaration' && node.importKind === 'value',
-  ]);
-
-  let row;
-  let newLinesAfter = 1;
-  let newLinesBefore = 0;
-  if (missingImport.isTypeExport && lastTypeImport) {
-    row = rowAfterRange(babelLocationToAtomRange(lastTypeImport.loc));
-  } else if (!missingImport.isTypeExport && lastValueImport) {
-    row = rowAfterRange(babelLocationToAtomRange(lastValueImport.loc));
-  } else if (!missingImport.isTypeExport && lastTypeImport) {
-    // If we are adding the first import of this kind, we should at least be
-    // consistent. For now, we will have type imports come before value imports.
-    row = rowAfterRange(babelLocationToAtomRange(lastTypeImport.loc));
-    newLinesBefore += 1;
+  if (missingImport.isTypeExport) {
+    if (nodesByType.importType.length > 0) {
+      return insertInto(nodesByType.importType, importPath);
+    } else {
+      const firstImport = nodesByType.import[0] || nodesByType.require[0];
+      if (firstImport != null) {
+        return insertBefore(firstImport.node, 1);
+      }
+    }
   } else {
-    row = rowBeforeRange(babelLocationToAtomRange(programBody[0].loc), 0);
-    newLinesAfter += 1;
+    if (nodesByType.import.length > 0) {
+      return insertInto(nodesByType.import, importPath);
+    } else if (nodesByType.require.length > 0) {
+      return insertInto(nodesByType.require, importPath);
+    } else if (nodesByType.importType.length > 0) {
+      return insertAfter(
+        nodesByType.importType[nodesByType.importType.length - 1].node,
+        1,
+      );
+    }
   }
+  return insertBefore(programBody[0], 1);
+}
 
+function insertInto(
+  imports: Array<{node: Object, importPath: string}>,
+  importPath: string,
+): EditParams {
+  for (const importNode of imports) {
+    // Find the first import that we can be inserted before.
+    if (compareForInsertion(importPath, importNode.importPath) < 0) {
+      return insertBefore(importNode.node);
+    }
+  }
+  // Failing that, just insert it after the last one.
+  return insertAfter(imports[imports.length - 1].node);
+}
+
+// Insert at the start of the next line:
+// <node>
+// <text\n>
+function insertAfter(node: Object, spacing: number = 0): EditParams {
   return {
-    row,
+    row: node.loc.end.line, // 1-based
     column: 0,
-    newLinesAfter,
-    newLinesBefore,
+    newLinesAfter: 1,
+    newLinesBefore: spacing,
   };
 }
 
-function rowBeforeRange(range: atom$Range, rows?: number = 1) {
-  return range.start.row - rows;
-}
-
-function rowAfterRange(range: atom$Range, rows?: number = 1) {
-  return range.end.row + rows;
-}
-
-/**
- * Traverses top-level nodes of an AST, checking each predicate
- * function on every node.
- *
- * The output array corresponds 1:1 to the input predicate array. The i-th
- * element of the output array corresponds to the last node that returned true
- * for the i-th predicate function.
- */
-function findLastTopLevelNodeSatisfying(
-  programBody: Array<Object>,
-  predicates: Array<(node: Object) => boolean>,
-): Array<?Object> {
-  const reversed = [...programBody].reverse();
-  return predicates.map(predicate => reversed.find(x => predicate(x)));
+// Insert at the start of the line:
+// <\ntext\n><node>
+function insertBefore(node: Object, spacing: number = 0): EditParams {
+  return {
+    row: node.loc.start.line - 1, // 1-based
+    column: 0,
+    newLinesAfter: 1 + spacing,
+    newLinesBefore: 0,
+  };
 }

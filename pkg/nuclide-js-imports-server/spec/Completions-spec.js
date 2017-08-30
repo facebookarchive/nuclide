@@ -249,9 +249,9 @@ describe('Completion Functions', () => {
       // 1) IDs need to be ordered by relevance.
       // 2) For the same ID, prefer node modules -> same directory -> other directories.
       expect(completions.map(getCompletionText)).toEqual([
-        "import {test} from 'module';",
         "import {test} from './test3';",
         "import {test} from '../above';",
+        "import {test} from 'module';",
         "import {test2} from './test2';",
         "import {testAbove} from '../above';",
       ]);
@@ -289,9 +289,9 @@ describe('Completion Functions', () => {
         false,
       );
       expect(singleCompletions.map(getCompletionText)).toEqual([
-        "import {test} from 'module';",
         "import {test} from './test3';",
         "import {test} from '../above';",
+        "import {test} from 'module';",
       ]);
     });
   });

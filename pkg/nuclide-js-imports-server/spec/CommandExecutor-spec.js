@@ -85,6 +85,92 @@ describe('CommandExecutor', () => {
     ]);
   });
 
+  it('preserves ordering of imports', () => {
+    const sourceFile = `
+import type {x} from 'def';
+
+import {x} from 'abc';
+import {y} from 'def';
+import {z} from '../relative';
+import {w} from './local';
+`;
+
+    const importFormatter = new ImportFormatter(['node_modules'], false);
+    function getExport(id, uri, isTypeExport = false, isDefault = false) {
+      return {id, uri, isTypeExport, isDefault};
+    }
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', 'node_modules/abc', true),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 1, character: 0}, end: {line: 1, character: 0}},
+        newText: "import type {test} from 'abc';\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', 'node_modules/ghi', true),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 2, character: 0}, end: {line: 2, character: 0}},
+        newText: "import type {test} from 'ghi';\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', '/abc.js'),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 5, character: 0}, end: {line: 5, character: 0}},
+        newText: "import {test} from '../abc';\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', '/a/abc.js'),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 6, character: 0}, end: {line: 6, character: 0}},
+        newText: "import {test} from './abc';\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        getExport('test', '/a/xyz.js'),
+        getProgramBody(sourceFile),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 7, character: 0}, end: {line: 7, character: 0}},
+        newText: "import {test} from './xyz';\n",
+      },
+    ]);
+  });
+
   it('can insert into existing imports', () => {
     const importFormatter = new ImportFormatter([], false);
     expect(

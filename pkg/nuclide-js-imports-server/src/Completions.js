@@ -19,7 +19,7 @@ import type {ImportType} from './lib/ImportFormatter';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter, createImportStatement} from './lib/ImportFormatter';
-import {compareImportPaths} from './utils/util';
+import {compareForSuggestion} from './utils/util';
 import {setIntersect} from 'nuclide-commons/collection';
 
 import type TextDocuments from './TextDocuments';
@@ -149,7 +149,7 @@ export function provideFullImportCompletions(
       .map(suggestion =>
         importsFormatter.formatImportFile(nuclideFormattedUri, suggestion),
       )
-      .sort(compareImportPaths);
+      .sort(compareForSuggestion);
     return results.concat(
       importPaths.slice(0, needed).map(importPath => {
         return {
@@ -189,7 +189,7 @@ export function provideImportFileCompletions(
     .map(suggestion =>
       importsFormatter.formatImportFile(nuclideFormattedUri, suggestion),
     )
-    .sort(compareImportPaths)
+    .sort(compareForSuggestion)
     .slice(0, MAX_RESULTS)
     .map(importPath => {
       return {

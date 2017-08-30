@@ -18,7 +18,7 @@ import {ImportFormatter} from './lib/ImportFormatter';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {DIAGNOSTIC_SOURCE} from './Diagnostics';
 import {babelLocationToAtomRange, lspRangeToAtomRange} from './utils/util';
-import {compareImportPaths} from './utils/util';
+import {compareForSuggestion} from './utils/util';
 
 const CODE_ACTIONS_LIMIT = 10;
 const FLOW_DIAGNOSTIC_SOURCE = 'Flow';
@@ -89,7 +89,7 @@ function diagnosticToCommands(
           fileWithExport,
         ),
       }))
-      .sort((a, b) => compareImportPaths(a.importPath, b.importPath))
+      .sort((a, b) => compareForSuggestion(a.importPath, b.importPath))
       .slice(0, CODE_ACTIONS_LIMIT)
       .map(({fileWithExport, importPath}) => {
         const addImportArgs: AddImportCommandParams = [

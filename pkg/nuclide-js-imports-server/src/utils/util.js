@@ -56,28 +56,61 @@ export function compareLspRange(a: IRange, b: IRange): number {
   );
 }
 
-function importPathToPriority(path: string): number {
-  /* For now, sort in the following order: (TODO: explore other sorting options)
-        - Modules
-        - Local paths (./*)
-        - Relative paths in other directories (../*)
-  */
+/**
+ * Sort in decreasing order of 'globality':
+ * - Modules
+ * - Relative paths in other directories (../*)
+ * - Local paths (./*)
+ */
+const MODULES_PRIORITY = -1;
+const RELATIVE_PRIORITY = 0;
+const LOCAL_PRIORITY = 1;
+
+export function importPathToPriority(path: string): number {
   if (path.startsWith('..')) {
-    return 1;
+    return RELATIVE_PRIORITY;
   }
   if (path.startsWith('.')) {
-    return 0;
+    return LOCAL_PRIORITY;
   }
-  return -1;
+  return MODULES_PRIORITY;
 }
 
-export function compareImportPaths(path1: string, path2: string): number {
-  const diff = importPathToPriority(path1) - importPathToPriority(path2);
-  if (diff !== 0) {
-    return diff;
+function isLowerCase(s: string) {
+  return s.toLowerCase() === s;
+}
+
+export function compareForInsertion(path1: string, path2: string): number {
+  const p1 = importPathToPriority(path1);
+  const p2 = importPathToPriority(path2);
+  if (p1 !== p2) {
+    // Typically the highest-priority imports are at the end.
+    return p1 - p2;
+  }
+  if (p1 === MODULES_PRIORITY) {
+    // Order uppercase modules before lowercased modules.
+    // (Mostly a Facebook-friendly convention).
+    const lc1 = isLowerCase(path1[0]);
+    const lc2 = isLowerCase(path2[0]);
+    if (lc1 !== lc2) {
+      return Number(lc1) - Number(lc2);
+    }
+  }
+  return path1.localeCompare(path2);
+}
+
+export function compareForSuggestion(path1: string, path2: string): number {
+  const p1 = importPathToPriority(path1);
+  const p2 = importPathToPriority(path2);
+  if (p1 !== p2) {
+    // Provide highest-priority matches first.
+    return p2 - p1;
   }
   // Prefer shorter paths.
-  return path1.length - path2.length;
+  if (path1.length !== path2.length) {
+    return path1.length - path2.length;
+  }
+  return path1.localeCompare(path2);
 }
 
 // Check if an AST node is a require call, and returns the literal value.
