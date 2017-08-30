@@ -275,14 +275,14 @@ function filterSuggestions(
     case 'defaultType':
       return suggestions.filter(
         exp =>
-          exp.isTypeExport || (exp.isDefault && isClassOrUnknownExport(exp)),
+          exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
       );
     case 'namedValue':
       return suggestions.filter(exp => !exp.isDefault && !exp.isTypeExport);
     case 'namedType':
       return suggestions.filter(
         exp =>
-          exp.isTypeExport || (!exp.isDefault && isClassOrUnknownExport(exp)),
+          !exp.isDefault && (exp.isTypeExport || isClassOrUnknownExport(exp)),
       );
     case 'requireImport':
       return suggestions.filter(exp => exp.isDefault && !exp.isTypeExport);

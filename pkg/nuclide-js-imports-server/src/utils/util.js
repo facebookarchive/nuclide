@@ -55,3 +55,27 @@ export function compareLspRange(a: IRange, b: IRange): number {
     compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end)
   );
 }
+
+function importPathToPriority(path: string): number {
+  /* For now, sort in the following order: (TODO: explore other sorting options)
+        - Modules
+        - Local paths (./*)
+        - Relative paths in other directories (../*)
+  */
+  if (path.startsWith('..')) {
+    return 1;
+  }
+  if (path.startsWith('.')) {
+    return 0;
+  }
+  return -1;
+}
+
+export function compareImportPaths(path1: string, path2: string): number {
+  const diff = importPathToPriority(path1) - importPathToPriority(path2);
+  if (diff !== 0) {
+    return diff;
+  }
+  // Prefer shorter paths.
+  return path1.length - path2.length;
+}

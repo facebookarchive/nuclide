@@ -18,7 +18,9 @@ import {ImportFormatter} from './lib/ImportFormatter';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {DIAGNOSTIC_SOURCE} from './Diagnostics';
 import {babelLocationToAtomRange, lspRangeToAtomRange} from './utils/util';
+import {compareImportPaths} from './utils/util';
 
+const CODE_ACTIONS_LIMIT = 10;
 const FLOW_DIAGNOSTIC_SOURCE = 'Flow';
 
 export class CodeActions {
@@ -66,6 +68,9 @@ function diagnosticToCommands(
         .filter(suggestedImport => {
           // For Flow's diagnostics, only fire for missing types (exact match)
           if (diagnostic.source === FLOW_DIAGNOSTIC_SOURCE) {
+            if (suggestedImport.symbol.type !== 'type') {
+              return false;
+            }
             const range = babelLocationToAtomRange(
               suggestedImport.symbol.location,
             );
@@ -75,24 +80,29 @@ function diagnosticToCommands(
           return true;
         })
         // Create a CodeAction for each file with an export.
-        .map(missingImport =>
-          missingImport.filesWithExport.map(fileWithExport => {
-            const addImportArgs: AddImportCommandParams = [
-              missingImport.symbol.id,
-              fileWithExport,
-              fileWithDiagnostic,
-            ];
-            return {
-              title: `Import from ${importFormatter.formatImportFile(
-                fileWithDiagnostic,
-                fileWithExport,
-              )}`,
-              command: 'addImport',
-              arguments: addImportArgs,
-            };
-          }),
+        .map(missingImport => missingImport.filesWithExport),
+    )
+      .map(fileWithExport => ({
+        fileWithExport,
+        importPath: importFormatter.formatImportFile(
+          fileWithDiagnostic,
+          fileWithExport,
         ),
-    );
+      }))
+      .sort((a, b) => compareImportPaths(a.importPath, b.importPath))
+      .slice(0, CODE_ACTIONS_LIMIT)
+      .map(({fileWithExport, importPath}) => {
+        const addImportArgs: AddImportCommandParams = [
+          fileWithExport.id,
+          fileWithExport,
+          fileWithDiagnostic,
+        ];
+        return {
+          title: `Import from ${importPath}`,
+          command: 'addImport',
+          arguments: addImportArgs,
+        };
+      });
   }
   return [];
 }
