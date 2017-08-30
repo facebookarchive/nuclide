@@ -15,23 +15,16 @@ import {
   type TextEdit,
   CompletionItemKind,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+import type {ImportType} from './lib/ImportFormatter';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
-import {ImportFormatter} from './lib/ImportFormatter';
+import {ImportFormatter, createImportStatement} from './lib/ImportFormatter';
 import {compareImportPaths} from './utils/util';
 import {setIntersect} from 'nuclide-commons/collection';
 
 import type TextDocuments from './TextDocuments';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JSExport} from './lib/types';
-
-type ImportType =
-  | 'namedType'
-  | 'namedValue'
-  | 'defaultType'
-  | 'defaultValue'
-  | 'requireImport'
-  | 'requireDestructured';
 
 type ImportInformation = {
   ids: Array<string>,
@@ -163,41 +156,15 @@ export function provideFullImportCompletions(
           label: id,
           kind: CompletionItemKind.Module,
           inlineDetail: importsFormatter.stripLeadingDots(importPath),
-          textEdit: getTextEditForImport(
-            importPath,
-            importType,
-            [id],
-            line,
+          textEdit: createLineEdit(
             lineNum,
+            line,
+            createImportStatement(id, importPath, importType),
           ),
         };
       }),
     );
   }, []);
-}
-
-function getInsertTextForCompleteImport(
-  importType: ImportType,
-  id: string,
-  formattedFileToImport: string,
-) {
-  switch (importType) {
-    case 'namedValue':
-      return `import {${id}} from '${formattedFileToImport}';`;
-    case 'namedType':
-      return `import type {${id}} from '${formattedFileToImport}';`;
-    case 'requireImport':
-      return `const ${id} = require('${formattedFileToImport}');`;
-    case 'requireDestructured':
-      return `const {${id}} = require('${formattedFileToImport}');`;
-    case 'defaultValue':
-      return `import ${id} from '${formattedFileToImport}';`;
-    case 'defaultType':
-      return `import type ${id} from '${formattedFileToImport}';`;
-    default:
-      (importType: empty);
-      throw new Error(`Invalid import type ${importType}`);
-  }
 }
 
 // Given a list of IDs that are already typed, provide autocompletion for
@@ -231,12 +198,10 @@ export function provideImportFileCompletions(
             ? `= require('${importPath}');`
             : `from '${importPath}';`,
         kind: CompletionItemKind.Module,
-        textEdit: getTextEditForImport(
-          importPath,
-          importType,
-          ids,
-          line,
+        textEdit: createLineEdit(
           lineNum,
+          line,
+          createImportStatement(ids.join(', '), importPath, importType),
         ),
       };
     });
@@ -327,23 +292,17 @@ export function getImportInformation(line: string): ?ImportInformation {
   return null;
 }
 
-function getTextEditForImport(
-  fileImport: string,
-  importType: ImportType,
-  ids: Array<string>,
-  lineText: string,
+function createLineEdit(
   lineNum: number,
+  lineText: string,
+  newText: string,
 ): TextEdit {
   return {
     range: {
       start: {line: lineNum, character: 0},
       end: {line: lineNum, character: lineText.length},
     },
-    newText: getInsertTextForCompleteImport(
-      importType,
-      ids.join(', '),
-      fileImport,
-    ),
+    newText,
   };
 }
 

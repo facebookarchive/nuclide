@@ -44,6 +44,47 @@ describe('CommandExecutor', () => {
     ]);
   });
 
+  it('can create new requires', () => {
+    const importFormatter = new ImportFormatter([], true);
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        {
+          id: 'test',
+          uri: '/a/test2.js',
+          isTypeExport: false,
+          isDefault: true,
+        },
+        getProgramBody('function f() {}'),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 0, character: 0}, end: {line: 0, character: 0}},
+        newText: "const test = require('test2');\n\n",
+      },
+    ]);
+
+    expect(
+      getEditsForImport(
+        importFormatter,
+        '/a/test.js',
+        {
+          id: 'test',
+          uri: '/a/test2.js',
+          isTypeExport: false,
+          isDefault: false,
+        },
+        getProgramBody('function f() {}'),
+      ),
+    ).toEqual([
+      {
+        range: {start: {line: 0, character: 0}, end: {line: 0, character: 0}},
+        newText: "const {test} = require('test2');\n\n",
+      },
+    ]);
+  });
+
   it('can insert into existing imports', () => {
     const importFormatter = new ImportFormatter([], false);
     expect(
