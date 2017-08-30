@@ -105,38 +105,11 @@ describe('Completion', () => {
     );
     expect(importInformation && importInformation.isComplete).toBe(true);
   });
-  it('Should correctly parse extra text with default imports', () => {
-    const importInformation = getImportInformation(
-      'import type TextDocuments someExtraText ',
-    );
-    expect(importInformation).toBeDefined();
-    expect(importInformation && importInformation.ids.length).toBe(1);
-    expect(importInformation && importInformation.ids[0]).toBe('TextDocuments');
-    expect(importInformation && importInformation.extraText).toBe(
-      'someExtraText ',
-    );
-    expect(importInformation && importInformation.importType).toBe(
-      'defaultType',
-    );
-    expect(importInformation && importInformation.isComplete).toBe(true);
-  });
-  it('Should correctly parse extra text with named imports', () => {
-    const importInformation = getImportInformation(
-      'import type {A, B , C    } from ',
-    );
-    expect(importInformation).toBeDefined();
-    expect(importInformation && importInformation.ids.length).toBe(3);
-    expect(importInformation && importInformation.ids[0]).toBe('A');
-    expect(importInformation && importInformation.extraText).toBe('from ');
-    expect(importInformation && importInformation.importType).toBe('namedType');
-    expect(importInformation && importInformation.isComplete).toBe(true);
-  });
   it('Should correctly parse incomplete default import', () => {
     const importInformation = getImportInformation('import TextDoc');
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('TextDoc');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'defaultValue',
     );
@@ -147,7 +120,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('TextDoc');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'defaultType',
     );
@@ -158,7 +130,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('AutoImpor');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'namedValue',
     );
@@ -169,7 +140,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('AutoImpor');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe('namedType');
     expect(importInformation && importInformation.isComplete).toBe(false);
   });
@@ -178,7 +148,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('CSS');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'requireImport',
     );
@@ -189,18 +158,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('CSS');
-    expect(importInformation && importInformation.extraText).toBe('');
-    expect(importInformation && importInformation.importType).toBe(
-      'requireImport',
-    );
-    expect(importInformation && importInformation.isComplete).toBe(true);
-  });
-  it('Should correctly parse the equals sign as extraText', () => {
-    const importInformation = getImportInformation('const CSS = ');
-    expect(importInformation).toBeDefined();
-    expect(importInformation && importInformation.ids.length).toBe(1);
-    expect(importInformation && importInformation.ids[0]).toBe('CSS');
-    expect(importInformation && importInformation.extraText).toBe('= ');
     expect(importInformation && importInformation.importType).toBe(
       'requireImport',
     );
@@ -222,7 +179,6 @@ describe('Completion', () => {
     expect(importInformation && importInformation.ids.length).toBe(2);
     expect(importInformation && importInformation.ids[0]).toBe('someId');
     expect(importInformation && importInformation.ids[1]).toBe('someOtherType');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'requireDestructured',
     );
@@ -233,7 +189,6 @@ describe('Completion', () => {
     expect(importInformation).toBeDefined();
     expect(importInformation && importInformation.ids.length).toBe(1);
     expect(importInformation && importInformation.ids[0]).toBe('some');
-    expect(importInformation && importInformation.extraText).toBe('');
     expect(importInformation && importInformation.importType).toBe(
       'requireDestructured',
     );

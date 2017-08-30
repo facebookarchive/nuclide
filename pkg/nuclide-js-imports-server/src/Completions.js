@@ -10,10 +10,10 @@
  */
 
 import {
+  type TextDocumentPositionParams,
+  type CompletionItem,
   CompletionItemKind,
-  TextDocumentPositionParams,
-  CompletionItem,
-} from 'vscode-languageserver';
+} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
@@ -35,7 +35,6 @@ type ImportType =
 type ImportInformation = {
   ids: Array<string>,
   importType: ImportType,
-  extraText: string,
   isComplete: boolean,
 };
 
@@ -94,7 +93,8 @@ export class Completions {
       isImportStatement(line) &&
       line.indexOf(';') < 0
     ) {
-      const importInformation = getImportInformation(line);
+      const prefix = line.substr(0, position.character);
+      const importInformation = getImportInformation(prefix);
       if (importInformation) {
         return importInformation.isComplete
           ? provideImportFileCompletions(
@@ -164,7 +164,13 @@ function provideFullImportCompletions(
       kind: CompletionItemKind.Module,
       data: i,
       inlineDetail: importsFormatter.stripLeadingDots(fileToImport),
-      insertText,
+      textEdit: {
+        range: {
+          start: {line: lineNum, character: 0},
+          end: {line: lineNum, character: line.length},
+        },
+        newText: insertText,
+      },
     };
   });
 }
@@ -176,14 +182,20 @@ function getInsertTextForCompleteImport(
 ) {
   switch (importType) {
     case 'namedValue':
+      return `import {${id}} from '${formattedFileToImport}';`;
     case 'namedType':
-      return `${id}} from '${formattedFileToImport}';`;
+      return `import type {${id}} from '${formattedFileToImport}';`;
     case 'requireImport':
-      return `${id} = require('${formattedFileToImport}');`;
+      return `const ${id} = require('${formattedFileToImport}');`;
     case 'requireDestructured':
-      return `${id}} = require('${formattedFileToImport}');`;
+      return `const {${id}} = require('${formattedFileToImport}');`;
+    case 'defaultValue':
+      return `import ${id} from '${formattedFileToImport}';`;
+    case 'defaultType':
+      return `import type ${id} from '${formattedFileToImport}';`;
     default:
-      return `${id} from '${formattedFileToImport}';`;
+      (importType: empty);
+      throw new Error(`Invalid import type ${importType}`);
   }
 }
 
@@ -198,10 +210,7 @@ function provideImportFileCompletions(
   lineNum: number,
   isHaste: boolean,
 ): Array<CompletionItem> {
-  const {ids, importType, extraText} = importInformation;
-  if (!shouldProvideCompletions(extraText, importType)) {
-    return [];
-  }
+  const {ids, importType} = importInformation;
   return filterSuggestions(
     ids.map(id => autoImportsManager.findFilesWithSymbol(id)),
     importType,
@@ -218,23 +227,9 @@ function provideImportFileCompletions(
         line,
         lineNum,
         importType,
-        isHaste,
+        ids,
       );
     });
-}
-
-function shouldProvideCompletions(
-  extraText: string,
-  importType: ImportType,
-): boolean {
-  return (
-    // For now, if there is any trailing extra text including whitespace
-    // then don't offer autocomplete suggestions. Eventually, this problem
-    // can be better solved by sending a TextEdit to replace extraText.
-    extraText.indexOf(' ') < 0 ||
-    (importType !== 'requireImport' && extraText.trim() === 'from') ||
-    (importType === 'requireImport' && extraText.trim() === '=')
-  );
 }
 
 function filterSuggestions(
@@ -305,7 +300,6 @@ export function getImportInformation(line: string): ?ImportInformation {
           .split(',')
           .map(id => id.trim())
           .filter(id => id.length > 0),
-        extraText: importStatement.length > 2 ? importStatement[2] : '',
         isComplete: true,
         importType,
       };
@@ -316,7 +310,6 @@ export function getImportInformation(line: string): ?ImportInformation {
     if (importStatement && importStatement.length > 1) {
       return {
         ids: [importStatement[1]],
-        extraText: '',
         isComplete: false,
         importType,
       };
@@ -333,34 +326,33 @@ function importsToCompletionItems(
   lineText: string,
   lineNum: number,
   importType: ImportType,
-  isHaste: boolean,
+  ids: Array<string>,
 ): CompletionItem {
   const fileImport = importsFormatter.formatImportFile(
     currentFile,
     exportSuggestion,
   );
 
-  // autocomplete-plus will replace everything until there is whitespace. If the
-  // user writes "import Foo from " we should no longer include "from" in the
-  // completion to avoid two "from"s.
-  const fromIsAlreadyTyped = new RegExp(
-    IMPORT_STATEMENT_REGEXES[importType].source + /\s*from\s+/.source,
-  ).test(lineText);
-
-  const equalIsAlreadyTyped = new RegExp(
-    IMPORT_STATEMENT_REGEXES[importType].source + /\s*=\s*/.source,
-  ).test(lineText);
-
   const label =
     importType === 'requireImport' || importType === 'requireDestructured'
-      ? `${equalIsAlreadyTyped ? '' : '='} require('${fileImport}');`
-      : `${fromIsAlreadyTyped ? '' : 'from'} '${fileImport}';`;
+      ? `= require('${fileImport}');`
+      : `from '${fileImport}';`;
 
   return {
     label,
     kind: CompletionItemKind.Module,
     data: dataNum,
-    insertText: label,
+    textEdit: {
+      range: {
+        start: {line: lineNum, character: 0},
+        end: {line: lineNum, character: lineText.length},
+      },
+      newText: getInsertTextForCompleteImport(
+        importType,
+        ids.join(', '),
+        fileImport,
+      ),
+    },
   };
 }
 
@@ -382,11 +374,13 @@ function isClassOrUnknownExport(exp: JSExport): boolean {
 }
 
 function positionIsAtLineEnd(line: string, position: Object): boolean {
-  return (
-    line.length === position.character ||
-    // Still provide autocomplete if there is trailing whitespace.
-    line.substr(position.character).trim() === ''
-  );
+  if (line.length === position.character) {
+    return true;
+  }
+  const remainder = line.substr(position.character).trim();
+  // Still provide autocomplete if there is trailing whitespace.
+  // Editor bracket matchers often insert a trailing "}", which should also be ignored.
+  return remainder === '' || remainder === '}';
 }
 
 function uriToSortNumber(uri: NuclideUri): number {
