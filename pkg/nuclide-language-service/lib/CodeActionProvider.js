@@ -88,12 +88,17 @@ export class CodeActionProvider<T: LanguageService> {
       );
 
       return codeActions.map(action => ({
-        ...action,
         apply: () => {
           return trackTiming(
             this._applyAnalyticsEventName,
             action.apply.bind(action),
           );
+        },
+        getTitle() {
+          return action.getTitle();
+        },
+        dispose() {
+          return action.dispose();
         },
       }));
     });
