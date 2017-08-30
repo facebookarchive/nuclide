@@ -77,6 +77,7 @@ async function createLanguageService(): Promise<
     version: '0.1.0',
     priority: 0,
     analyticsEventName: 'jsimports.codeAction',
+    applyAnalyticsEventName: 'jsimports.applyCodeAction',
   };
 
   const atomConfig: AtomLanguageServiceConfig = {
