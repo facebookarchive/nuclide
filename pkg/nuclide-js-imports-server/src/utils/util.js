@@ -79,3 +79,16 @@ export function compareImportPaths(path1: string, path2: string): number {
   // Prefer shorter paths.
   return path1.length - path2.length;
 }
+
+// Check if an AST node is a require call, and returns the literal value.
+export function getRequiredModule(node: Object): ?string {
+  if (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'Identifier' &&
+    node.callee.name === 'require' &&
+    node.arguments[0] &&
+    node.arguments[0].type === 'StringLiteral'
+  ) {
+    return node.arguments[0].value;
+  }
+}

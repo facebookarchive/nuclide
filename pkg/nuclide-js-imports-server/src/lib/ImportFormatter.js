@@ -29,10 +29,10 @@ export class ImportFormatter {
     const {isTypeExport, id, isDefault} = exp;
 
     return isDefault
-      ? `import ${id} from '${this.formatImportFile(file, exp)}'`
+      ? `import ${id} from '${this.formatImportFile(file, exp)}';`
       : `import ${isTypeExport
           ? 'type '
-          : ''}{${id}} from '${this.formatImportFile(file, exp)}'`;
+          : ''}{${id}} from '${this.formatImportFile(file, exp)}';`;
   }
 
   _formatHasteImportFile(file: NuclideUri, exp: JSExport): string {
