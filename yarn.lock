@@ -430,7 +430,7 @@ babel-template@^6.24.1:
     babylon "^6.11.0"
     lodash "^4.2.0"
 
-babel-traverse@^6.23.1, babel-traverse@^6.24.1:
+babel-traverse@6.24.1, babel-traverse@^6.23.1, babel-traverse@^6.24.1:
   version "6.24.1"
   resolved "https://registry.yarnpkg.com/babel-traverse/-/babel-traverse-6.24.1.tgz#ab36673fd356f9a0948659e7b338d5feadb31695"
   dependencies:
@@ -1614,7 +1614,7 @@ graphql-language-service-types@^0.1.12:
   dependencies:
     graphql "^0.10.5"
 
-graphql-language-service-utils@^0.1.12:
+graphql-language-service-utils@0.1.12, graphql-language-service-utils@^0.1.12:
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/graphql-language-service-utils/-/graphql-language-service-utils-0.1.12.tgz#1cb86fbaa3183acdd242e31d4ff4a91f11dfee44"
   dependencies:
@@ -1915,7 +1915,7 @@ interpret@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.0.1.tgz#d579fb7f693b858004947af39fa0db49f795602c"
 
-invariant@^2.0.0, invariant@^2.2.0:
+invariant@2.2.2, invariant@^2.0.0, invariant@^2.2.0:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/invariant/-/invariant-2.2.2.tgz#9e1f56ac0acdb6bf303306f338be3b204ae60360"
   dependencies:
@@ -3923,7 +3923,7 @@ vscode-debugadapter@1.21.0:
   dependencies:
     vscode-debugprotocol "^1.21.0"
 
-vscode-debugprotocol@^1.21.0:
+vscode-debugprotocol@1.21.0, vscode-debugprotocol@^1.21.0:
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/vscode-debugprotocol/-/vscode-debugprotocol-1.21.0.tgz#e6da3bbb1481db458447a02b19b25efd15066e8f"
 
