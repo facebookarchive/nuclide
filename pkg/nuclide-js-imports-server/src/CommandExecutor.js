@@ -12,8 +12,12 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {JSExport} from './lib/types';
 import type TextDocuments from './TextDocuments';
+import type {
+  WorkspaceEdit,
+  TextEdit,
+} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-import {IConnection, WorkspaceEdit, TextEdit} from 'vscode-languageserver';
+import {IConnection} from 'vscode-languageserver';
 import {ImportFormatter} from './lib/ImportFormatter';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {parseFile} from './lib/AutoImportsManager';
@@ -28,10 +32,11 @@ type ExportPosition = {
   newLinesAfter: number,
 };
 
-export class CommandExecuter {
+export class CommandExecutor {
   static COMMANDS = {
-    addImport,
+    addImport: true,
   };
+
   connection: IConnection;
   importFormatter: ImportFormatter;
   documents: TextDocuments;
@@ -46,58 +51,65 @@ export class CommandExecuter {
     this.documents = documents;
   }
 
-  executeCommand(command: string, args: any) {
+  executeCommand(command: $Keys<typeof CommandExecutor.COMMANDS>, args: any) {
     switch (command) {
       case 'addImport':
-        return addImport(
-          (args: AddImportCommandParams),
-          this.connection,
-          this.importFormatter,
-          this.documents,
-        );
+        return this._addImport((args: AddImportCommandParams));
       default:
+        (command: empty);
         throw new Error('Unexpected Command');
     }
   }
-}
 
-function addImport(
-  args: AddImportCommandParams,
-  connection: IConnection,
-  importFormatter: ImportFormatter,
-  documents: TextDocuments,
-) {
-  const [id, missingImport, fileMissingImport] = args;
-  const ast = parseFile(
-    documents.get(nuclideUri.nuclideUriToUri(fileMissingImport)).getText(),
-  );
-  if (ast == null || ast.program == null || ast.program.body == null) {
-    // File could not be parsed. If this is reached, we shouldn't be applying
-    // addImport anyways since the file must have changed from when we computed
-    // the CodeAction.
-    return;
-  }
-  const {body} = ast.program;
-  connection.workspace.applyEdit(
-    getImportWorkspaceEdit(
+  _addImport(args: AddImportCommandParams) {
+    const [, missingImport, fileMissingImport] = args;
+    const ast = parseFile(
+      this.documents
+        .get(nuclideUri.nuclideUriToUri(fileMissingImport))
+        .getText(),
+    );
+    if (ast == null || ast.program == null || ast.program.body == null) {
+      // File could not be parsed. If this is reached, we shouldn't be applying
+      // addImport anyways since the file must have changed from when we computed
+      // the CodeAction.
+      return;
+    }
+    const {body} = ast.program;
+    const edits = getEditsForImport(
+      this.importFormatter,
       fileMissingImport,
       missingImport,
-      id,
-      importFormatter,
       body,
-      documents,
-    ),
-  );
+    );
+
+    const lspUri = nuclideUri.nuclideUriToUri(fileMissingImport);
+    // Version 2.0 LSP
+    const changes = {};
+    changes[lspUri] = edits;
+
+    // Version 3.0 LSP
+    const documentChanges = [
+      {
+        textDocument: {
+          uri: lspUri,
+          version: this.documents.get(lspUri).version,
+        },
+        edits,
+      },
+    ];
+
+    this.connection.workspace.applyEdit(
+      ({changes, documentChanges}: WorkspaceEdit),
+    );
+  }
 }
 
-function getImportWorkspaceEdit(
+function getEditsForImport(
+  importFormatter: ImportFormatter,
   fileMissingImport: NuclideUri,
   missingImport: JSExport,
-  id: string,
-  importFormatter: ImportFormatter,
   programBody: Array<Object>,
-  documents: TextDocuments,
-): WorkspaceEdit {
+): Array<TextEdit> {
   const {row, newLinesBefore, newLinesAfter} = findPositionForImport(
     missingImport,
     programBody,
@@ -112,23 +124,7 @@ function getImportWorkspaceEdit(
       newLinesAfter,
     ),
   ];
-  const lspUri = nuclideUri.nuclideUriToUri(fileMissingImport);
-  // Version 2.0 LSP
-  const changes = {};
-  changes[lspUri] = edits;
-
-  // Version 3.0 LSP
-  const documentChanges = [
-    {
-      textDocument: {
-        uri: lspUri,
-        version: documents.get(lspUri).version,
-      },
-      edits,
-    },
-  ];
-
-  return {changes, documentChanges};
+  return edits;
 }
 
 function getEditForFile(

@@ -30,7 +30,7 @@ import {Completions} from './Completions';
 import {Diagnostics} from './Diagnostics';
 import {Settings} from './Settings';
 import {CodeActions} from './CodeActions';
-import {CommandExecuter} from './CommandExecuter';
+import {CommandExecutor} from './CommandExecutor';
 
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintEnvs, getConfigFromFlow} from './getConfig';
@@ -64,7 +64,7 @@ let completion = new Completions(
 );
 let diagnostics = new Diagnostics(autoImportsManager, importFormatter);
 let codeActions = new CodeActions(autoImportsManager, importFormatter);
-let commandExecuter = new CommandExecuter(
+let commandExecuter = new CommandExecutor(
   connection,
   importFormatter,
   documents,
@@ -102,7 +102,7 @@ connection.onInitialize((params): InitializeResult => {
   );
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);
   codeActions = new CodeActions(autoImportsManager, importFormatter);
-  commandExecuter = new CommandExecuter(connection, importFormatter, documents);
+  commandExecuter = new CommandExecutor(connection, importFormatter, documents);
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
@@ -111,7 +111,7 @@ connection.onInitialize((params): InitializeResult => {
         triggerCharacters: getAllTriggerCharacters(),
       },
       codeActionProvider: true,
-      executeCommandProvider: Array.from(Object.keys(CommandExecuter.COMMANDS)),
+      executeCommandProvider: Array.from(Object.keys(CommandExecutor.COMMANDS)),
     },
   };
 });

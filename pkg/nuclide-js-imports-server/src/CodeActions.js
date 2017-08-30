@@ -11,7 +11,7 @@
 
 import {Command, Diagnostic} from 'vscode-languageserver';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {AddImportCommandParams} from './CommandExecuter';
+import type {AddImportCommandParams} from './CommandExecutor';
 
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import {ImportFormatter} from './lib/ImportFormatter';
