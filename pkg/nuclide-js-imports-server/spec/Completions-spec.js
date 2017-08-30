@@ -9,9 +9,15 @@
  * @format
  */
 
-import {getImportInformation} from '../src/Completions';
+import {ImportFormatter} from '../src/lib/ImportFormatter';
+import {
+  getImportInformation,
+  provideFullImportCompletions,
+  provideImportFileCompletions,
+} from '../src/Completions';
+import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 
-describe('Completion', () => {
+describe('getImportInformation', () => {
   it('Should correctly parse value imports', () => {
     const importInformation = getImportInformation('import {something}');
     expect(importInformation).toBeDefined();
@@ -193,5 +199,100 @@ describe('Completion', () => {
       'requireDestructured',
     );
     expect(importInformation && importInformation.isComplete).toBe(false);
+  });
+});
+
+describe('Completion Functions', () => {
+  let autoImportsManager;
+  let importsFormatter;
+
+  beforeEach(() => {
+    autoImportsManager = new AutoImportsManager([]);
+    importsFormatter = new ImportFormatter(['/a/node_modules'], false);
+
+    autoImportsManager.indexFile('/a/b/test2.js', 'export function test2() {}');
+    autoImportsManager.indexFile(
+      '/a/above.js',
+      'export function test() {}\nexport function testAbove() {}',
+    );
+    autoImportsManager.indexFile('/a/b/test3.js', 'export function test() {}');
+    autoImportsManager.indexFile(
+      '/a/node_modules/module',
+      'export function test() {}',
+    );
+  });
+
+  function getCompletionText(completion) {
+    const {textEdit} = completion;
+    if (textEdit == null) {
+      return '';
+    }
+    return textEdit.newText;
+  }
+
+  describe('provideFullImportCompletions', () => {
+    it('returns completions in order', () => {
+      const importInformation = {
+        ids: ['test'],
+        importType: 'namedValue',
+        isComplete: false,
+      };
+      const completions = provideFullImportCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test.js',
+        '',
+        0,
+        false,
+      );
+      // 1) IDs need to be ordered by relevance.
+      // 2) For the same ID, prefer node modules -> same directory -> other directories.
+      expect(completions.map(getCompletionText)).toEqual([
+        "import {test} from 'module';",
+        "import {test} from './test3';",
+        "import {test} from '../above';",
+        "import {test2} from './test2';",
+        "import {testAbove} from '../above';",
+      ]);
+    });
+  });
+
+  describe('provideImportFileCompletions', () => {
+    it('provides exact matches', () => {
+      const importInformation = {
+        ids: ['test', 'testAbove'],
+        importType: 'namedValue',
+        isComplete: false,
+      };
+      const completions = provideImportFileCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test.js',
+        '',
+        0,
+        false,
+      );
+      expect(completions.map(getCompletionText)).toEqual([
+        "import {test, testAbove} from '../above';",
+      ]);
+
+      importInformation.ids = ['test'];
+      const singleCompletions = provideImportFileCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test.js',
+        '',
+        0,
+        false,
+      );
+      expect(singleCompletions.map(getCompletionText)).toEqual([
+        "import {test} from 'module';",
+        "import {test} from './test3';",
+        "import {test} from '../above';",
+      ]);
+    });
   });
 });
