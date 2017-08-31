@@ -14,6 +14,7 @@ import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import Immutable from 'immutable';
+import {track} from '../../nuclide-analytics';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {hgConstants} from '../../nuclide-hg-rpc';
 import {getLogger} from 'log4js';
@@ -272,6 +273,7 @@ export default class FileTreeActions {
         });
       }
     } else {
+      track('file-tree-open-file', {uri: nodeKey});
       // goToLocation doesn't support pending panes
       // eslint-disable-next-line rulesdir/atom-apis
       atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
