@@ -1,9 +1,10 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
  */
@@ -27,15 +28,8 @@ describe('path-rules', () => {
 
       expect(includedFiles.includes(__filename)).toBe(true);
 
-      // If this file ever moves, just pick anything else that's a ".js" in a VendorLib dir.
-      const pathToVendorLibFile =
-        require.resolve('../../nuclide-ui/VendorLib/atom-tabs/lib/main.js');
-      expect(!includedFiles.includes(pathToVendorLibFile)).toBe(true);
-
-      // If this file ever moves, just pick anything else that's a homegrown ".js" file.
-      const pathToNuclideFile =
-        require.resolve('../../nuclide-fuzzy-native/lib/main.js');
-      expect(includedFiles.includes(pathToNuclideFile)).toBe(true);
+      const pathToNodeModulesFile = require.resolve('babel-core');
+      expect(!includedFiles.includes(pathToNodeModulesFile)).toBe(true);
     });
   });
 

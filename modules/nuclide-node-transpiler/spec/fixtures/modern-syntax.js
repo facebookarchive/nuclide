@@ -6,17 +6,10 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @noflow
+ * @flow
+ * @format
  */
-'use strict';
 
-/* eslint
-  comma-dangle: [1, always-multiline],
-  prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
-  */
-
-// eslint-disable-next-line nuclide-internal/modules-dependencies
-require('../../nuclide-node-transpiler');
-
-require('./cli');
+export class Foo {
+  static bar = 'qux';
+}
