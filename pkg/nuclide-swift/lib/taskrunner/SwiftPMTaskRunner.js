@@ -128,7 +128,7 @@ export class SwiftPMTaskRunner {
         throw new Error(`Unknown task name: ${taskName}`);
     }
 
-    // eslint-disable-next-line nuclide-internal/atom-apis
+    // eslint-disable-next-line rulesdir/atom-apis
     atom.workspace.open(CONSOLE_VIEW_URI, {searchAllPanes: true});
 
     const observable = createMessage(

@@ -70,7 +70,7 @@ async function getClangRequestSettings(
 
 const clangServices = new WeakSet();
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
+// eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
   registerClangProvider(provider: ClangConfigurationProvider): Disposable {
     clangProviders.add(provider);

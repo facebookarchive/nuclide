@@ -10,10 +10,10 @@
  * @format
  */
 
-/* eslint-disable nuclide-internal/no-commonjs */
+/* eslint-disable rulesdir/no-commonjs */
 
 import fs from 'fs';
-// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import FeatureLoader from 'nuclide-commons-atom/FeatureLoader';

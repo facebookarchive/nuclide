@@ -55,7 +55,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     if (selectedRow != null && prevProps.activeUri !== this.props.activeUri) {
       // Our lint rule isn't smart enough to recognize that this is a custom method and not the one
       // on HTMLElements, so we just have to squelch the error.
-      // eslint-disable-next-line nuclide-internal/dom-apis
+      // eslint-disable-next-line rulesdir/dom-apis
       selectedRow.scrollIntoView();
     }
   }

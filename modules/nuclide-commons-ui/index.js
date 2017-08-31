@@ -15,7 +15,7 @@
 
 import {CompositeDisposable} from 'atom';
 import fs from 'fs';
-// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import path from 'path';
 
 const styleDir = path.join(__dirname, 'styles');
@@ -26,4 +26,4 @@ const styleDisposables = new CompositeDisposable(
     .map(file => atom.themes.requireStylesheet(path.join(styleDir, file))),
 );
 
-module.exports = styleDisposables; // eslint-disable-line nuclide-internal/no-commonjs
+module.exports = styleDisposables; // eslint-disable-line rulesdir/no-commonjs

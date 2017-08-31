@@ -364,7 +364,7 @@ class Activation {
       }),
     );
     if (!this._restored) {
-      // eslint-disable-next-line nuclide-internal/atom-apis
+      // eslint-disable-next-line rulesdir/atom-apis
       atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
     }
     return disposable;

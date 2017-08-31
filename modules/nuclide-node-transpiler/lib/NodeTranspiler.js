@@ -13,7 +13,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
+  rulesdir/no-commonjs: 0,
   */
 
 /* eslint-disable no-console */
@@ -99,9 +99,9 @@ class NodeTranspiler {
 
   constructor() {
     // This code won't run in production.
-    // eslint-disable-next-line nuclide-internal/modules-dependencies
+    // eslint-disable-next-line rulesdir/modules-dependencies
     this._babelVersion = require('babel-core/package.json').version;
-    // eslint-disable-next-line nuclide-internal/modules-dependencies
+    // eslint-disable-next-line rulesdir/modules-dependencies
     this._getBabel = () => require('babel-core');
     this._babel = null;
     this._cacheDir = null;

@@ -24,7 +24,7 @@ import {generateHgRepo1Fixture} from '../pkg/nuclide-test-helpers';
 import {describeRemotableTest} from './utils/remotable-tests';
 import {repositoryForPath} from '../pkg/nuclide-vcs-base';
 import {waitsForRepositoryReady} from './utils/diff-view-utils';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {
   SHOW_UNCOMMITTED_CHANGES_KIND_CONFIG_KEY,
   ShowUncommittedChangesKind,

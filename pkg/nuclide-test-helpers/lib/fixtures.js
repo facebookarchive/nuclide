@@ -11,7 +11,7 @@
 
 import fs from 'fs';
 // This is in devDependencies. This file should only be used in tests.
-// eslint-disable-next-line nuclide-internal/no-unresolved
+// eslint-disable-next-line rulesdir/no-unresolved
 import fse from 'fs-extra';
 import temp from 'temp';
 import invariant from 'assert';

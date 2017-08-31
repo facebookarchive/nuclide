@@ -14,7 +14,7 @@ import type {OutputService} from '../../nuclide-console/lib/types';
 import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
 import {createProcessStream} from './createProcessStream';
 import createMessageStream from './createMessageStream';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {CompositeDisposable, Disposable} from 'atom';
 import {Observable} from 'rxjs';

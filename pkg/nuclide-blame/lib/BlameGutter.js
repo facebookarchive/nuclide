@@ -17,7 +17,7 @@ import hideAllTooltips from '../../nuclide-ui/hide-all-tooltips';
 import {track, trackTiming} from '../../nuclide-analytics';
 import {CompositeDisposable} from 'atom';
 import {shell} from 'electron';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {shortNameForAuthor} from '../../nuclide-vcs-log';
 import * as React from 'react';
 import ReactDOM from 'react-dom';

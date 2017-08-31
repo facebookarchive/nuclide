@@ -231,7 +231,7 @@ class Activation {
                     new UniversalDisposable(
                       atom.commands.add(
                         'atom-workspace',
-                        // eslint-disable-next-line nuclide-internal/atom-apis
+                        // eslint-disable-next-line rulesdir/atom-apis
                         'nuclide-task-runner:stop-task',
                         () => {
                           this._actionCreators.stopTask();

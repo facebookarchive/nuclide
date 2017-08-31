@@ -139,7 +139,7 @@ class Activation {
               }
             });
             // not a file URI
-            // eslint-disable-next-line nuclide-internal/atom-apis
+            // eslint-disable-next-line rulesdir/atom-apis
             atom.workspace.open(view.getURI());
             // The new tab opens instantly, so this is no longer needed.
             disposable.dispose();

@@ -14,7 +14,7 @@ import type {DebugMode} from './types';
 import {Emitter} from 'atom';
 import {BehaviorSubject} from 'rxjs';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {isFileInHackProject} from '../../nuclide-hack/lib/HackLanguage';
 import {trackTiming} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';

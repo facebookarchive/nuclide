@@ -69,7 +69,7 @@ export function* getOpenFileEditorForRemoteProject(
     const paneItems = pane.getItems();
     for (const paneItem of paneItems) {
       // Here, we're explicitly looking for broken nuclide:/ editors.
-      // eslint-disable-next-line nuclide-internal/atom-apis
+      // eslint-disable-next-line rulesdir/atom-apis
       if (!atom.workspace.isTextEditor(paneItem) || !paneItem.getURI()) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;

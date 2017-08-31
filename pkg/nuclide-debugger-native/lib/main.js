@@ -35,9 +35,9 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'invariant';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcessInfo';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';

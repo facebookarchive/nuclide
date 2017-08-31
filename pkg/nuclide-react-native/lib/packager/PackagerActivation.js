@@ -13,7 +13,7 @@ import type {OutputService} from '../../../nuclide-console/lib/types';
 import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
 import type {PackagerEvent} from './types';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
 import {getCommandInfo} from '../../../nuclide-react-native-base';
 import {observeProcess} from 'nuclide-commons/process';

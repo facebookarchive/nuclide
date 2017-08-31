@@ -36,7 +36,7 @@ type ParsedPath = {
 };
 
 import invariant from 'assert';
-// eslint-disable-next-line nuclide-internal/prefer-nuclide-uri
+// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import pathModule from 'path';
 
 import url from 'url';

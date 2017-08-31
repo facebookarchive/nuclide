@@ -12,7 +12,7 @@
 import type {OutputService} from '../../nuclide-console/lib/types';
 
 import formatEnoentNotification from '../../commons-atom/format-enoent-notification';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LogTailer} from '../../nuclide-console/lib/LogTailer';
 import {createMessageStream} from './createMessageStream';
 import {createProcessStream} from './createProcessStream';

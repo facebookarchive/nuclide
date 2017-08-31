@@ -90,7 +90,7 @@ class Activation {
         description:
           'Displays major components of the current file (classes, methods, etc.)',
         command: () => {
-          // eslint-disable-next-line nuclide-internal/atom-apis
+          // eslint-disable-next-line rulesdir/atom-apis
           atom.workspace.open(WORKSPACE_VIEW_URI, {searchAllPanes: true});
         },
       },

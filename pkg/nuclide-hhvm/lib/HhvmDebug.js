@@ -13,9 +13,9 @@ import type {DebugMode} from './types';
 
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-php/lib/LaunchProcessInfo';
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';
 import invariant from 'assert';
 

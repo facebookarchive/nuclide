@@ -176,7 +176,7 @@ export default class ThreadStore {
     if (datatipService != null && path != null && atom.workspace != null) {
       // This should be goToLocation instead but since the searchAllPanes option is correctly
       // provided it's not urgent.
-      // eslint-disable-next-line nuclide-internal/atom-apis
+      // eslint-disable-next-line rulesdir/atom-apis
       atom.workspace.open(path, {searchAllPanes: true}).then(editor => {
         const buffer = editor.getBuffer();
         const rowRange = buffer.rangeForRow(notificationLineNumber);

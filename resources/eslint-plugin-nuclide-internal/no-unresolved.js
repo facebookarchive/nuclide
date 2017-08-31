@@ -12,7 +12,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
+  rulesdir/no-commonjs: 0,
   */
 
 const path = require('path');
@@ -32,6 +32,7 @@ module.exports = function(context) {
       (!filename.includes('/spec/') ||
         !pkgJson.devDependencies.hasOwnProperty(id)) &&
       !filename.includes('/scripts/') &&
+      !filename.includes('.eslintrc.js') &&
       resolveFrom(path.dirname(filename), id) !== id
     ) {
       context.report({

@@ -27,7 +27,7 @@ export async function isEligibleForDirectory(
 
   try {
     // $FlowFB
-    const bigGrep = require('../../commons-atom/fb-biggrep-query'); // eslint-disable-line nuclide-internal/no-cross-atom-imports
+    const bigGrep = require('../../commons-atom/fb-biggrep-query'); // eslint-disable-line rulesdir/no-cross-atom-imports
     const corpus = bigGrep.ARC_PROJECT_CORPUS[projectId];
     if (corpus != null) {
       return false;

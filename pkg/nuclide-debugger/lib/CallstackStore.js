@@ -97,7 +97,7 @@ export default class CallstackStore {
   }
 
   _openPathInEditor(path: string): Promise<atom$TextEditor> {
-    // eslint-disable-next-line nuclide-internal/atom-apis
+    // eslint-disable-next-line rulesdir/atom-apis
     return atom.workspace.open(path, {
       searchAllPanes: true,
       pending: true,

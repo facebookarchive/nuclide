@@ -134,7 +134,7 @@ export default class NuclideTextBuffer extends TextBuffer {
       if (this.destroyed) {
         message += '<br><br>Opening a new tab with your unsaved changes.';
         // goToLocation does not support opening an untitled editor
-        // eslint-disable-next-line nuclide-internal/atom-apis
+        // eslint-disable-next-line rulesdir/atom-apis
         atom.workspace.open().then(editor => editor.setText(toSaveContents));
       }
       atom.notifications.addError(

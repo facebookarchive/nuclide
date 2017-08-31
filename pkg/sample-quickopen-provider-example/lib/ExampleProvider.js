@@ -176,5 +176,5 @@ const ExampleProvider: Provider = {
   // };
 };
 
-// eslint-disable-next-line nuclide-internal/no-commonjs
+// eslint-disable-next-line rulesdir/no-commonjs
 module.exports = ExampleProvider;

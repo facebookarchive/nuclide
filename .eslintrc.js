@@ -12,7 +12,7 @@
 /* eslint
   comma-dangle: [1, always-multiline],
   prefer-object-spread/prefer-object-spread: 0,
-  nuclide-internal/no-commonjs: 0,
+  rulesdir/no-commonjs: 0,
   */
 /* eslint-disable max-len */
 
@@ -347,20 +347,20 @@ module.exports = {
     'jasmine/valid-expect': 0,
 
     // nuclide-internal (https://github.com/facebook/nuclide/tree/master/resources/eslint-plugin-nuclide-internal)
-    'nuclide-internal/atom-apis': 1,
-    'nuclide-internal/consistent-import-name': 1,
-    'nuclide-internal/dom-apis': 1,
-    'nuclide-internal/flow-fb-oss': 1,
-    'nuclide-internal/import-type-style': 1,
-    'nuclide-internal/license-header': 1,
-    'nuclide-internal/modules-dependencies': 1,
-    'nuclide-internal/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
-    'nuclide-internal/no-shell-quote': 1,
-    'nuclide-internal/no-unnecessary-disposable-wrapping': 1,
-    'nuclide-internal/no-unresolved': 1,
-    'nuclide-internal/prefer-nuclide-uri': 1,
-    'nuclide-internal/use-nuclide-ui-components': 1,
-    'nuclide-internal/no-commonjs': 1,
+    'rulesdir/atom-apis': 1,
+    'rulesdir/consistent-import-name': 1,
+    'rulesdir/dom-apis': 1,
+    'rulesdir/flow-fb-oss': 1,
+    'rulesdir/import-type-style': 1,
+    'rulesdir/license-header': 1,
+    'rulesdir/modules-dependencies': 1,
+    'rulesdir/no-cross-atom-imports': [1, {whitelist: ['nuclide-ui']}],
+    'rulesdir/no-shell-quote': 1,
+    'rulesdir/no-unnecessary-disposable-wrapping': 1,
+    'rulesdir/no-unresolved': 1,
+    'rulesdir/prefer-nuclide-uri': 1,
+    'rulesdir/use-nuclide-ui-components': 1,
+    'rulesdir/no-commonjs': 1,
 
     // prefer-object-spread (https://github.com/bryanrsmith/eslint-plugin-prefer-object-spread)
     'prefer-object-spread/prefer-object-spread': 1,
@@ -508,14 +508,12 @@ module.exports = {
     'flowtype',
     'jasmine',
     'jsx-a11y',
-    'nuclide-internal',
     'prefer-object-spread',
     'prettier',
     'react',
+    'rulesdir',
   ],
 };
 
-// Register our custom rules as a plugin to avoid needing `--rulesdir` or
-// `node_modules` trickery.
-const Plugins = require('eslint/lib/config/plugins');
-Plugins.define('nuclide-internal', require('./resources/eslint-plugin-nuclide-internal'));
+const rulesDirPlugin = require('eslint-plugin-rulesdir');
+rulesDirPlugin.RULES_DIR = 'resources/eslint-plugin-nuclide-internal';

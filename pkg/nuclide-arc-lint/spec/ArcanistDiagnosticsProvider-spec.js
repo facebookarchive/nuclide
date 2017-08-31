@@ -9,7 +9,7 @@
  * @format
  */
 
-// eslint-disable-next-line nuclide-internal/no-cross-atom-imports
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {__testing__} from '../lib/ArcanistDiagnosticsProvider';
 import {Range} from 'atom';
 import invariant from 'assert';
