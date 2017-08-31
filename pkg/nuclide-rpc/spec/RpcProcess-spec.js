@@ -138,6 +138,7 @@ describe('RpcProcess', () => {
       expect(response).toEqual({
         hello: 'Hello World',
       });
+      expect(server.isDisposed()).toBe(false);
     });
   });
 
