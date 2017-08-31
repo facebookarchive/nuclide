@@ -66,3 +66,5 @@ export function getRuntimeInformation(): RuntimeInformation {
   };
   return runtimeInformation;
 }
+
+export {__DEV__};
