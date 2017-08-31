@@ -416,23 +416,29 @@ function getTopMostErrorLocationsByFilePath(
 
 function getActiveEditorPaths(): Observable<?NuclideUri> {
   const center = atom.workspace.getCenter();
-  return observableFromSubscribeFunction(
-    center.observeActivePaneItem.bind(center),
-  )
-    .filter(paneItem => isValidTextEditor(paneItem))
-    .switchMap(textEditor_ => {
-      const textEditor: atom$TextEditor = (textEditor_: any);
-      // An observable that emits the editor path and then, when the editor's destroyed, null.
-      return Observable.concat(
-        Observable.of(textEditor.getPath()),
-        observableFromSubscribeFunction(
-          textEditor.onDidDestroy.bind(textEditor),
-        )
-          .take(1)
-          .mapTo(null),
-      );
-    })
-    .distinctUntilChanged();
+  return (
+    observableFromSubscribeFunction(center.observeActivePaneItem.bind(center))
+      .map(paneItem => (isValidTextEditor(paneItem) ? paneItem : null))
+      // We want the stream to contain the last valid text editor. Normally that means just ignoring
+      // non-editors, except initially, when there hasn't been an active editor yet.
+      .filter((paneItem, index) => paneItem != null || index === 0)
+      .switchMap(textEditor_ => {
+        const textEditor: ?atom$TextEditor = (textEditor_: any);
+        if (textEditor == null) {
+          return Observable.of(null);
+        }
+        // An observable that emits the editor path and then, when the editor's destroyed, null.
+        return Observable.concat(
+          Observable.of(textEditor.getPath()),
+          observableFromSubscribeFunction(
+            textEditor.onDidDestroy.bind(textEditor),
+          )
+            .take(1)
+            .mapTo(null),
+        );
+      })
+      .distinctUntilChanged()
+  );
 }
 
 function getEditorDiagnosticUpdates(
