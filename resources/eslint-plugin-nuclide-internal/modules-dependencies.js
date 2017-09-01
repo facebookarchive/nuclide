@@ -15,6 +15,7 @@
   rulesdir/no-commonjs: 0,
   */
 
+const idx = require('idx');
 const path = require('path');
 const resolveFrom = require('resolve-from');
 
@@ -39,6 +40,10 @@ module.exports = function(context) {
   const moduleName = relativePath.split(path.sep)[0];
   const moduleDir = path.join(MODULES_DIR, moduleName);
   const modulePkg = getPackage(moduleDir);
+  const allowDevDependencies = idx(
+    context,
+    _ => _.options[0].allowDevDependencies
+  );
 
   function checkDependency(node, dep) {
     // Relative imports must be within the root.
@@ -69,7 +74,11 @@ module.exports = function(context) {
     }
 
     const depName = dep.split('/')[0];
-    if (!Object.hasOwnProperty.call(modulePkg.dependencies, depName)) {
+    if (
+      !Object.hasOwnProperty.call(modulePkg.dependencies, depName) &&
+      (!allowDevDependencies ||
+        !Object.hasOwnProperty.call(modulePkg.devDependencies, depName))
+    ) {
       context.report({
         node,
         data: {dep: depName, pkg: modulePkg.name},

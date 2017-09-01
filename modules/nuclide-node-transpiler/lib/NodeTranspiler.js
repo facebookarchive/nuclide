@@ -98,10 +98,7 @@ class NodeTranspiler {
   }
 
   constructor() {
-    // This code won't run in production.
-    // eslint-disable-next-line rulesdir/modules-dependencies
     this._babelVersion = require('babel-core/package.json').version;
-    // eslint-disable-next-line rulesdir/modules-dependencies
     this._getBabel = () => require('babel-core');
     this._babel = null;
     this._cacheDir = null;
