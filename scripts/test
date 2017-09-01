@@ -89,11 +89,6 @@ def lint_py_headers():
     if errors:
         raise utils.TestFailureError('FAILED: Python file license header lint.')
 
-def test_eslint_plugin_nuclide_internal():
-    run('lint_eslint-plugin-nuclide-internal',
-        ['npm', 'test'],
-        os.path.join(NUCLIDE_PATH, 'resources/eslint-plugin-nuclide-internal'))
-
 def test_modules():
     for root, dirs, _ in os.walk(os.path.join(NUCLIDE_PATH, 'modules')):
         for module in dirs:
@@ -139,7 +134,6 @@ try:
         run('lint_packages', ['scripts/lint-packages'])
         run('flow', ['flow', 'check', '--show-all-errors'])
         run('eslint', ['scripts/lint-eslint.js'])
-        test_eslint_plugin_nuclide_internal()
         lint_py_headers()
         if not options.no_module_cycle_check:
             run('module_cycle_check', ['scripts/module-cycle-check.sh'])
