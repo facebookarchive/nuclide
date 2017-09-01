@@ -15,6 +15,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Disposable} from 'atom';
 import {Icon} from './Icon';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const DefaultEmptyComponent = () =>
   <div className="nuclide-ui-table-empty-message">Empty table</div>;
@@ -112,6 +113,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   _resizeStartX: ?number;
   _tableWidth: ?number;
   _columnBeingResized: ?$Keys<T>;
+  _disposables: UniversalDisposable;
 
   constructor(props: Props<T>) {
     super(props);
@@ -128,6 +130,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this.state = {
       columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns),
     };
+    this._disposables = new UniversalDisposable(() => {
+      this._unsubscribeFromGlobalEvents();
+    });
   }
 
   _getInitialWidthsForColumns(columns: Array<Column<T>>): WidthMap<T> {
@@ -251,12 +256,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     }
   }
 
-  _dispose(): void {
-    this._unsubscribeFromGlobalEvents();
-  }
-
   componentWillUnmount(): void {
-    this._dispose();
+    this._disposables.dispose();
   }
 
   _handleSortByColumn(sortedBy: $Keys<T>): void {
