@@ -50,7 +50,12 @@ function shouldDisplayActionTreeItem(
     }
   } else if (action === 'Add') {
     const nodes = contextMenu.getSelectedNodes();
-    return nodes.every(node => node.repo.isStatusUntracked(node.vcsStatusCode));
+    return nodes.every(node => {
+      if (node.repo == null || node.repo.getType() !== 'hg') {
+        return false;
+      }
+      return node.repo.isStatusUntracked(node.vcsStatusCode);
+    });
   } else {
     return false;
   }
