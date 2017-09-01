@@ -12,6 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   BusySignalService,
+  CodeActionProvider,
   CodeFormatProvider,
   DefinitionProvider,
   DefinitionQueryResult,
@@ -31,6 +32,7 @@ import SharedObservableCache from '../../commons-node/SharedObservableCache';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {CompositeDisposable, Disposable} from 'atom';
 import AutocompleteHelpers from './AutocompleteHelpers';
+import CodeActions from './CodeActions';
 import CodeFormatHelpers from './CodeFormatHelpers';
 import DefinitionHelpers from './DefinitionHelpers';
 import OutlineViewHelpers from './OutlineViewHelpers';
@@ -67,6 +69,8 @@ export function activate() {
           return;
         }
         await resetForSource(editor);
+        // Save the file to trigger compilation.
+        await editor.save();
       },
     ),
   );
@@ -204,6 +208,16 @@ export function consumeClangConfigurationProvider(
   provider: ClangConfigurationProvider,
 ): Disposable {
   return registerClangProvider(provider);
+}
+
+export function provideCodeActions(): CodeActionProvider {
+  return {
+    grammarScopes: Array.from(GRAMMAR_SET),
+    priority: 1,
+    getCodeActions(editor, range, diagnostics) {
+      return CodeActions.getCodeActions(editor, range, diagnostics);
+    },
+  };
 }
 
 export function deactivate() {

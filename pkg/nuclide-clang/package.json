@@ -81,6 +81,11 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
+    "code-actions": {
+      "versions": {
+        "0.1.0": "provideCodeActions"
+      }
+    },
     "code-format.file": {
       "versions": {
         "0.1.0": "provideCodeFormat"
