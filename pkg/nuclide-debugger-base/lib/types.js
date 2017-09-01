@@ -29,6 +29,7 @@ export type ThreadColumn = {
   // The component receives the cell value via `props.data`.
   component?: any,
   shouldRightAlign?: boolean,
+  cellClassName?: string,
 };
 
 // Indicates which of various optional features that this debugger supports.

@@ -28,6 +28,10 @@ export type Column<T: Object> = {
   // The component receives the cell value via `props.data`.
   component?: React.ComponentType<any>,
   shouldRightAlign?: boolean,
+  // A class to add to the cell. This will be added to both the header and body; you can
+  // differentiate between them with `.nuclide-ui-table-header-cell` and
+  // `.nuclide-ui-table-body-cell`.
+  cellClassName?: string,
 };
 export type Row<T: Object> = {
   +className?: string,
@@ -306,7 +310,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             {headerTitle}
           </div>
         : columns.map((column, i) => {
-            const {title, key, shouldRightAlign} = column;
+            const {title, key, shouldRightAlign, cellClassName} = column;
             const resizeHandle =
               i === columns.length - 1
                 ? null
@@ -345,7 +349,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             }
             return (
               <div
-                className={classnames({
+                className={classnames(cellClassName, {
                   'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
                   'nuclide-ui-table-header-cell': true,
                   'nuclide-ui-table-header-cell-sortable': sortable,
@@ -362,7 +366,12 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     let body = rows.map((row, i) => {
       const {className: rowClassName, data} = row;
       const renderedRow = columns.map((column, j) => {
-        const {key, component: Component, shouldRightAlign} = column;
+        const {
+          key,
+          cellClassName,
+          component: Component,
+          shouldRightAlign,
+        } = column;
         let datum = data[key];
         if (Component != null) {
           datum = <Component data={datum} />;
@@ -376,7 +385,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         }
         return (
           <div
-            className={classnames({
+            className={classnames(cellClassName, {
               'nuclide-ui-table-body-cell': true,
               'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
             })}
