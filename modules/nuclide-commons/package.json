@@ -7,7 +7,7 @@
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-commons",
   "scripts": {
     "prepublish": "../../scripts/modules-prepublish.sh",
-    "test": "node ../../pkg/nuclide-jasmine/bin/jasmine-node-transpiled spec"
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
