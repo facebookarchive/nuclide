@@ -34,29 +34,20 @@ type DescriptionField = {
 };
 
 export type DisplayDiagnostic = {
-  +type: string,
+  +type: DiagnosticMessageType,
   +providerName: string,
-  +filePath: string,
+  +filePath: NuclideUri,
   +range: number,
-  +description: DescriptionField,
-  +diagnostic: DiagnosticMessage,
-};
-
-type TableData = {
-  type: DiagnosticMessageType,
-  providerName: string,
-  filePath: NuclideUri,
-  range: atom$Range,
-  description: {
+  +description: {
     showTraces: boolean,
     diagnostic: DiagnosticMessage,
     text: string,
     isPlainText: boolean,
   },
-  diagnostic: DiagnosticMessage,
+  +diagnostic: DiagnosticMessage,
 };
 
-type ColumnName = $Keys<TableData>;
+type ColumnName = $Keys<DisplayDiagnostic>;
 
 // Maximum number of results to render in the table before truncating and displaying a "Max results
 // reached" message.
@@ -180,7 +171,7 @@ export default class DiagnosticsTable extends React.Component<
     goToDiagnosticLocation(item.diagnostic);
   }
 
-  _getColumns(): Array<Column<TableData>> {
+  _getColumns(): Array<Column<DisplayDiagnostic>> {
     const {showFileName} = this.props;
     const filePathColumnWidth = 0.2;
     const filePathColumn = showFileName
