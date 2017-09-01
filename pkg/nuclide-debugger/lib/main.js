@@ -63,6 +63,8 @@ import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
+  showDebugger: boolean,
+  workspaceDocksVisibility: Array<boolean>,
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
@@ -165,7 +167,7 @@ class Activation {
     this._visibleLaunchAttachDialogMode = null;
     this._lauchAttachDialogCloser = null;
     this._connectionProviders = new Map();
-    this._layoutManager = new DebuggerLayoutManager(this._model);
+    this._layoutManager = new DebuggerLayoutManager(this._model, state);
     this._disposables = new UniversalDisposable(
       this._model,
       this._layoutManager,
@@ -457,6 +459,8 @@ class Activation {
       breakpoints: this.getModel()
         .getBreakpointStore()
         .getSerializedBreakpoints(),
+      showDebugger: this._layoutManager.isDebuggerVisible(),
+      workspaceDocksVisibility: this._layoutManager.getWorkspaceDocksVisibility(),
     };
     return state;
   }
@@ -877,6 +881,8 @@ export function serialize(): SerializedState {
   } else {
     return {
       breakpoints: null,
+      showDebugger: false,
+      workspaceDocksVisibility: [false, false, false, false],
     };
   }
 }

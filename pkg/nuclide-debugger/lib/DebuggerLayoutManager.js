@@ -30,6 +30,8 @@ import {BreakpointsView} from './BreakpointsView';
 import {ScopesView} from './ScopesView';
 import {WatchView} from './WatchView';
 
+import type {SerializedState} from '..';
+
 export type DebuggerPaneLocation = {
   dock: string,
   layoutIndex: number,
@@ -79,7 +81,7 @@ export class DebuggerLayoutManager {
   _rightPaneContainerModel: ?DebuggerPaneContainerViewModel;
   _debuggerVisible: boolean;
 
-  constructor(model: DebuggerModel) {
+  constructor(model: DebuggerModel, state: ?SerializedState) {
     this._disposables = new UniversalDisposable();
     this._model = model;
     this._previousDebuggerMode = DebuggerMode.STOPPED;
@@ -88,6 +90,8 @@ export class DebuggerLayoutManager {
     this._rightPaneContainerModel = null;
     this._debuggerVisible = false;
     this._initializeDebuggerPanes();
+    this._reshowDebuggerPanes(state);
+
     this._disposables.add(() => {
       if (this._leftPaneContainerModel != null) {
         this._leftPaneContainerModel.dispose();
@@ -265,6 +269,23 @@ export class DebuggerLayoutManager {
     ];
 
     this._restoreDebuggerPaneLocations();
+  }
+
+  _reshowDebuggerPanes(state: ?SerializedState): void {
+    if (state && state.showDebugger) {
+      this.showDebuggerViews();
+      this._getWorkspaceDocks().forEach((dock, index) => {
+        if (
+          dock.dock.isVisible != null &&
+          state.workspaceDocksVisibility != null &&
+          !state.workspaceDocksVisibility[index] &&
+          dock.dock.isVisible() &&
+          dock.dock.hide != null
+        ) {
+          dock.dock.hide();
+        }
+      });
+    }
   }
 
   showHiddenDebuggerPane(uri: string): void {
@@ -508,7 +529,7 @@ export class DebuggerLayoutManager {
       }
 
       const key = this._getPaneStorageKey('dock-size' + name);
-      if (dockContainsDebuggerItem) {
+      if (dockContainsDebuggerItem && dock.state != null) {
         // Save the size of a dock only if it contains a debugger item.
         const sizeInfo = JSON.stringify(dock.state.size);
         localStorage.setItem(key, sizeInfo);
@@ -857,5 +878,12 @@ export class DebuggerLayoutManager {
 
   isDebuggerVisible(): boolean {
     return this._debuggerVisible;
+  }
+
+  getWorkspaceDocksVisibility(): Array<boolean> {
+    this._saveDebuggerPaneLocations();
+    return this._getWorkspaceDocks().map(dock => {
+      return dock.dock.isVisible != null && dock.dock.isVisible();
+    });
   }
 }
