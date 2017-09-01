@@ -30,7 +30,8 @@
     "babel-plugin-transform-react-display-name": "6.23.0",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "babel-plugin-transform-strict-mode": "6.24.1",
-    "jasmine-node": "1.14.5"
+    "jasmine-node": "1.14.5",
+    "yargs": "3.32.0"
   },
   "private": true
 }

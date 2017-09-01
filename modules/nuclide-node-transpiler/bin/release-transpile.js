@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @noflow
  */
@@ -40,9 +41,9 @@ function runParent() {
   const os = require('os');
   const path = require('path');
 
-  const pathRules = require('../modules/nuclide-node-transpiler/lib/path-rules');
+  const pathRules = require('../lib/path-rules');
 
-  const developmentFilePath = path.join(__dirname, '../DEVELOPMENT');
+  const developmentFilePath = path.join(__dirname, '../../../DEVELOPMENT');
 
   const numWorkers = Math.max(os.cpus().length - 1, 1);
 
@@ -101,7 +102,7 @@ function runParent() {
 function runChild() {
   const fs = require('fs');
 
-  const NodeTranspiler = require('../modules/nuclide-node-transpiler/lib/NodeTranspiler');
+  const NodeTranspiler = require('../lib/NodeTranspiler');
   const nodeTranspiler = new NodeTranspiler();
 
   let overwrite;

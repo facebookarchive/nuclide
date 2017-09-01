@@ -103,10 +103,10 @@ def run_compile_steps(destructive_compile=False):
         run('generate_proxies',
             ['scripts/release-generate-proxies.js', '--save'])
         run('transpile',
-            ['scripts/release-transpile.js', '--overwrite'])
+            ['npm', 'run', 'release-transpile', '--', '--overwrite'])
     else:
         # This only warms up the transpile cache.
-        run('transpile', ['scripts/release-transpile.js'])
+        run('transpile', ['npm', 'run', 'release-transpile'])
 
 # Some tests compare created files and all their properties to an oracle. If
 # they are created with a different umask, then the permissions are different

@@ -6,7 +6,7 @@
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/nuclide-commons-atom",
   "scripts": {
-    "prepublish": "../../scripts/modules-prepublish.sh",
+    "prepublish": "../scripts/prepublish.sh",
     "test": "atom --dev --test spec"
   },
   "atomTestRunner": "../scripts/atom-test-runner.js",
