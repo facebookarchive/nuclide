@@ -16,7 +16,7 @@ import type {Connection as ConnectionType} from '../lib/Connection';
 import type {BreakpointStore as BreakpointStoreType} from '../lib/BreakpointStore';
 import type {ConnectionMultiplexer as ConnectionMultiplexerType} from '../lib/ConnectionMultiplexer';
 import {ConnectionMultiplexerStatus} from '../lib/ConnectionMultiplexer';
-import {uncachedRequire, clearRequireCache} from '../../nuclide-test-helpers';
+import {uncachedRequire, clearRequireCache} from 'nuclide-commons/test-helpers';
 import {updateSettings} from '../lib/settings';
 
 import {ConnectionStatus, COMMAND_RUN} from '../lib/DbgpSocket';

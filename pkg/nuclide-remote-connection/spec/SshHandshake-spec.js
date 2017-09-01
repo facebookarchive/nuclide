@@ -13,7 +13,7 @@ import type {SshConnectionConfiguration} from '../lib/SshHandshake';
 
 import EventEmitter from 'events';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
+import {clearRequireCache, uncachedRequire} from 'nuclide-commons/test-helpers';
 import {SshHandshake} from '../lib/SshHandshake';
 
 const pathToFakePk = nuclideUri.join(__dirname, 'fakepk');

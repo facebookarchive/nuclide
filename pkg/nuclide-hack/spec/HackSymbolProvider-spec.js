@@ -15,7 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
-import {clearRequireCache, uncachedRequire} from '../../nuclide-test-helpers';
+import {clearRequireCache, uncachedRequire} from 'nuclide-commons/test-helpers';
 import invariant from 'assert';
 
 describe('HackSymbolProvider', () => {

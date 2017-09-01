@@ -13,7 +13,7 @@ import type {WatchResult} from '..';
 import {Emitter} from 'event-kit';
 import fsPromise from 'nuclide-commons/fsPromise';
 import * as watchmanHelpers from '../../nuclide-watchman-helpers';
-import {generateFixture} from '../../nuclide-test-helpers';
+import {generateFixture} from 'nuclide-commons/test-helpers';
 import fs from 'fs';
 import log4js from 'log4js';
 import {

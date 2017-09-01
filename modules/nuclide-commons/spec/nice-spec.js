@@ -12,7 +12,7 @@
 
 import typeof {niceSafeSpawn as niceSafeSpawnType} from 'nuclide-commons/nice';
 
-import {uncachedRequire} from '../../../pkg/nuclide-test-helpers';
+import {uncachedRequire} from '../test-helpers';
 import {Observable} from 'rxjs';
 
 describe('nice', () => {

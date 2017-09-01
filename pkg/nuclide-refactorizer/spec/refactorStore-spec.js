@@ -27,7 +27,7 @@ import invariant from 'assert';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Deferred, nextTick} from 'nuclide-commons/promise';
-import {expectObservableToStartWith} from '../../nuclide-test-helpers';
+import {expectObservableToStartWith} from 'nuclide-commons/test-helpers';
 
 import {getStore, getErrors} from '../lib/refactorStore';
 import * as Actions from '../lib/refactorActions';

@@ -9,9 +9,9 @@
  * @format
  */
 
+import {generateFixture} from 'nuclide-commons/test-helpers';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {generateFixture} from '../../nuclide-test-helpers/lib/fixtures';
 
 describe('AutoImportsWorker', () => {
   it('Should index imports in a directory asynchronously', () => {
