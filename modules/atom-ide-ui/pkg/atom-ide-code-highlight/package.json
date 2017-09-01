@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Provides a code-highlighting provider API",
-  "atomTestRunner": "../../../../lib/test-runner-entry.js",
+  "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "consumedServices": {
     "code-highlight": {
       "versions": {

@@ -98,7 +98,8 @@ def test_modules():
     for root, dirs, _ in os.walk(os.path.join(NUCLIDE_PATH, 'modules')):
         for module in dirs:
             module_path = os.path.join(root, module)
-            run('test_module_%s' % module, ['npm', 'test'], module_path)
+            if os.path.exists(os.path.join(module_path, 'package.json')):
+                run('test_module_%s' % module, ['npm', 'test'], module_path)
         break
 
 def run_compile_steps(destructive_compile=False):

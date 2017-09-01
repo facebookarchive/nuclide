@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Consumes definition providers and provides services for them.",
-  "atomTestRunner": "../../../../lib/test-runner-entry.js",
+  "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "consumedServices": {
     "nuclide-definition-provider": {
       "versions": {

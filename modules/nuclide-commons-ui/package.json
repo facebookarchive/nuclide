@@ -9,7 +9,7 @@
     "prepublish": "../../scripts/modules-prepublish.sh",
     "test": "atom --dev --test spec"
   },
-  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "atomTestRunner": "../scripts/atom-test-runner.js",
   "dependencies": {
     "async-to-generator": "1.1.0",
     "classnames": "2.2.5",

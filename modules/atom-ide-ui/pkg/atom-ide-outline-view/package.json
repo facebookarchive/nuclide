@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Extensible UI to display an outline of the current file",
-  "atomTestRunner": "../../../../lib/test-runner-entry.js",
+  "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "atomConfig": {
     "nameOnly": {
       "title": "Display only the element name in outline view",

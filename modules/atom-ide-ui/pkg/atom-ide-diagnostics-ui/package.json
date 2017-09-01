@@ -4,7 +4,7 @@
   "main": "./lib/main.js",
   "version": "0.0.0",
   "description": "Displays diagnostics in context in a TextEditor",
-  "atomTestRunner": "../../../../lib/test-runner-entry.js",
+  "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "deserializers": {
     "nuclide.DiagnosticsPanelModel": "deserializeDiagnosticsViewModel",
     "atom-ide-ui.DiagnosticsViewModel": "deserializeDiagnosticsViewModel"

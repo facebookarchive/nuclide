@@ -19,6 +19,13 @@ import {jasmineAttachWorkspace} from 'nuclide-commons-atom/test-helpers';
 import Hyperclick from '../lib/Hyperclick';
 import showTriggerConflictWarning from '../lib/showTriggerConflictWarning';
 import invariant from 'assert';
+import {atomConfig} from '../package.json';
+
+beforeEach(() => {
+  Object.keys(atomConfig).forEach(key =>
+    atom.config.setSchema(`hyperclick.${key}`, atomConfig[key]),
+  );
+});
 
 describe('Hyperclick', () => {
   let textEditor: atom$TextEditor = (null: any);

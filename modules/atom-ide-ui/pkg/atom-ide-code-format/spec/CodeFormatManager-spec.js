@@ -71,6 +71,7 @@ describe('CodeFormatManager', () => {
 
   it('formats an editor on type', () => {
     waitsForPromise(async () => {
+      spyOn(config, 'getFormatOnType').andReturn(true);
       const manager = new CodeFormatManager();
       const provider = {
         grammarScopes: ['text.plain.null-grammar'],
