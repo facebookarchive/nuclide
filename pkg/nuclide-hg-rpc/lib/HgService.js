@@ -63,6 +63,8 @@ const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARKS =
 const WATCHMAN_HG_DIR_STATE = 'hg-repository-watchman-subscription-dirstate';
 const WATCHMAN_SUBSCRIPTION_NAME_CONFLICTS =
   'hg-repository-watchman-subscription-conflicts';
+const WATCHMAN_SUBSCRIPTION_NAME_PROGRESS =
+  'hg-repository-watchman-subscription-progress';
 
 const CHECK_CONFLICT_DELAY_MS = 2000;
 const COMMIT_CHANGE_DEBOUNCE_MS = 1000;
@@ -228,6 +230,21 @@ export type CheckoutOptions = {
   clean?: true,
 };
 
+export type OperationProgressState = {
+  topic: string,
+  pos: number,
+  total: number,
+  unit: string,
+  active: boolean,
+  // speed and estimate only available if active is true
+  speed?: string,
+  estimate?: string,
+};
+export type OperationProgress = {
+  topics: Array<string>,
+  state: {[key: string]: OperationProgressState},
+};
+
 async function logWhenSubscriptionEstablished(
   sub: Promise<mixed>,
   subName: string,
@@ -276,6 +293,7 @@ export class HgService {
   _hgRepoCommitsDidChangeObserver: Subject<void>;
   _watchmanSubscriptionPromise: Promise<void>;
   _hgConflictStateDidChangeObserver: Subject<boolean>;
+  _hgOperationProgressDidChangeObserver: Subject<void>;
   _debouncedCheckConflictChange: () => void;
   _hgStoreDirWatcher: ?fs.FSWatcher;
 
@@ -287,6 +305,7 @@ export class HgService {
     this._hgRepoStateDidChangeObserver = new Subject();
     this._hgConflictStateDidChangeObserver = new Subject();
     this._hgRepoCommitsDidChangeObserver = new Subject();
+    this._hgOperationProgressDidChangeObserver = new Subject();
     this._isInConflict = false;
     this._debouncedCheckConflictChange = debounce(() => {
       this._checkConflictChange();
@@ -496,6 +515,21 @@ export class HgService {
       WATCHMAN_HG_DIR_STATE,
     );
 
+    const progressSubscriptionPromise = watchmanClient.watchDirectoryRecursive(
+      workingDirectory,
+      WATCHMAN_SUBSCRIPTION_NAME_PROGRESS,
+      {
+        fields: ['name'],
+        expression: ['name', '.hg/progress', 'wholename'],
+        empty_on_fresh_instance: true,
+        defer_vcs: false,
+      },
+    );
+    logWhenSubscriptionEstablished(
+      progressSubscriptionPromise,
+      WATCHMAN_SUBSCRIPTION_NAME_PROGRESS,
+    );
+
     // Those files' changes indicate a commit-changing action has been applied to the repository,
     // Watchman currently (v4.7) ignores `.hg/store` file updates.
     // Hence, we here use node's filesystem watchers instead.
@@ -524,12 +558,14 @@ export class HgService {
       hgBookmarksSubscription,
       dirStateSubscription,
       conflictStateSubscription,
+      progressSubscription,
     ] = await Promise.all([
       primarySubscriptionPromise,
       hgActiveBookmarkSubscriptionPromise,
       hgBookmarksSubscriptionPromise,
       dirStateSubscriptionPromise,
       conflictStateSubscriptionPromise,
+      progressSubscriptionPromise,
     ]);
 
     primarySubscription.on('change', this._filesDidChange.bind(this));
@@ -540,6 +576,10 @@ export class HgService {
     hgBookmarksSubscription.on('change', this._hgBookmarksDidChange.bind(this));
     dirStateSubscription.on('change', this._emitHgRepoStateChanged.bind(this));
     conflictStateSubscription.on('change', this._debouncedCheckConflictChange);
+    progressSubscription.on(
+      'change',
+      this._hgOperationProgressDidChange.bind(this),
+    );
   }
 
   async _cleanUpWatchman(): Promise<void> {
@@ -609,6 +649,10 @@ export class HgService {
     this._hgBookmarksDidChangeObserver.next();
   }
 
+  _hgOperationProgressDidChange(): void {
+    this._hgOperationProgressDidChangeObserver.next();
+  }
+
   /**
    * Observes one of more files has changed. Applies to all files except
    * .hgignore files. (See ::onHgIgnoreFileDidChange.)
@@ -646,6 +690,37 @@ export class HgService {
   observeHgConflictStateDidChange(): ConnectableObservable<boolean> {
     this._checkConflictChange();
     return this._hgConflictStateDidChangeObserver.publish();
+  }
+
+  /**
+   * Observes when the Mercurial operation progress has changed
+   */
+  observeHgOperationProgressDidChange(): ConnectableObservable<
+    OperationProgress,
+  > {
+    return this._hgOperationProgressDidChangeObserver
+      .switchMap(() =>
+        Observable.fromPromise(
+          fsPromise.readFile(
+            nuclideUri.join(this._workingDirectory, '.hg', 'progress'),
+            'utf8',
+          ),
+        )
+          .catch(() => {
+            getLogger('nuclide-hg-rpc').error(
+              '.hg/progress changed but could not be read',
+            );
+            return Observable.empty();
+          })
+          .map(content => JSON.parse(content))
+          .catch(() => {
+            getLogger('nuclide-hg-rpc').error(
+              '.hg/progress changed but its contents could not be parsed as JSON',
+            );
+            return Observable.empty();
+          }),
+      )
+      .publish();
   }
 
   /**

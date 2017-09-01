@@ -16,6 +16,7 @@ import type {
   HgService,
   DiffInfo,
   LineDiff,
+  OperationProgress,
   RevisionInfo,
   RevisionShowInfo,
   MergeConflicts,
@@ -451,6 +452,10 @@ export class HgRepositoryClient {
 
   _observePaneItemVisibility(item: Object): Observable<boolean> {
     return observePaneItemVisibility(item);
+  }
+
+  observeOperationProgressChanges(): Observable<OperationProgress> {
+    return this._service.observeHgOperationProgressDidChange().refCount();
   }
 
   onDidChangeStatuses(callback: () => mixed): IDisposable {
