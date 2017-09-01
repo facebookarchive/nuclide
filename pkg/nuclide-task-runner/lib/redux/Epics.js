@@ -563,7 +563,11 @@ function createTaskObservable(
       taskFailedNotification.dismiss();
     }
     const task = taskMeta.taskRunner.runTask(taskMeta.type);
-    const taskStatus = {metadata: taskMeta, task};
+    const taskStatus = {
+      metadata: taskMeta,
+      task,
+      startDate: new Date(),
+    };
     const events = observableFromTask(task);
 
     return Observable.of({
