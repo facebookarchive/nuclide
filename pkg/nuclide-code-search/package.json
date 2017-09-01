@@ -28,7 +28,7 @@
         "title": "Maximum number of results per project folder",
         "type": "integer",
         "default": 30,
-        "description": "A much higher number might affect the CPU usage and the rendering of Quick-Open"
+        "description": "A much higher number might affect the CPU usage and the rendering of Quick Open"
       }
     }
   },
