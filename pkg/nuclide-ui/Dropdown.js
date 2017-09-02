@@ -63,8 +63,7 @@ type Props = {
   // Otherwise, we'll display the first option as selected by default.
   placeholder?: string,
   buttonComponent?: React.ComponentType<any>,
-  // $FlowFixMe(>=0.53.0) Flow suppress
-  options: Array<Option>,
+  options: $ReadOnlyArray<Option>,
   onChange?: (value: any) => mixed,
   size?: ShortButtonSize,
   tooltip?: atom$TooltipsAddOptions,
@@ -135,7 +134,7 @@ export class Dropdown extends React.Component<Props> {
     menu.popup(currentWindow, event.clientX, event.clientY);
   };
 
-  _menuFromOptions(options: Array<Option>): remote.Menu {
+  _menuFromOptions(options: $ReadOnlyArray<Option>): remote.Menu {
     const menu = new remote.Menu();
     options.forEach(option => {
       if (option.type === 'separator') {
@@ -175,7 +174,7 @@ export class Dropdown extends React.Component<Props> {
       : dropdownValue === optionValue;
   }
 
-  _findSelectedOption(options: Array<Option>): ?Option {
+  _findSelectedOption(options: $ReadOnlyArray<Option>): ?Option {
     let result = null;
     for (const option of options) {
       if (option.type === 'separator') {
