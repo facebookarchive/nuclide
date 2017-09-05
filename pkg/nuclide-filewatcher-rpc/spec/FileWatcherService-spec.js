@@ -18,7 +18,7 @@ import fs from 'fs';
 import log4js from 'log4js';
 import {
   watchFile,
-  watchFileWithNode,
+  watchWithNode,
   watchDirectory,
   watchDirectoryRecursive,
 } from '../lib/FileWatcherService';
@@ -37,7 +37,7 @@ describe('FileWatcherService', () => {
   const createNodeTestFile = callback => {
     waitsForPromise(async () => {
       nodeTestDirPath = await generateFixture(
-        'watchFileWithNodeTest',
+        'watchWithNodeTest',
         new Map([[NODE_TEST_FILE, null]]),
       );
       nodeTestFilePath = `${nodeTestDirPath}/${NODE_TEST_FILE}`;
@@ -93,7 +93,7 @@ describe('FileWatcherService', () => {
         .refCount()
         .subscribe({next: nextMock, complete: completeMock});
       watchDirectory(TEST_DIR).refCount().subscribe({next: parentNextMock});
-      watchFileWithNode(nodeTestFilePath)
+      watchWithNode(nodeTestFilePath)
         .refCount()
         .subscribe({next: nextMockWithNode});
     });
@@ -138,7 +138,7 @@ describe('FileWatcherService', () => {
         },
       ]);
 
-      // Write to watchFileWithNode test file
+      // Write to watcWithNode test file
       fs.writeFileSync(nodeTestFilePath, 'These are words.');
     });
 
@@ -190,7 +190,7 @@ describe('FileWatcherService', () => {
     runs(() => {
       watchFile(TEST_FILE).refCount().subscribe({complete: completeMock2});
       createNodeTestFile(() => {
-        watchFileWithNode(nodeTestFilePath)
+        watchWithNode(nodeTestFilePath)
           .refCount()
           .subscribe({next: nextMockWithNode2});
       });
@@ -291,9 +291,7 @@ describe('FileWatcherService', () => {
       fs.unlinkSync(nodeTestFilePath);
       watchFile(TEST_FILE).refCount().subscribe({error: errorMock});
       try {
-        watchFileWithNode(nodeTestFilePath)
-          .refCount()
-          .subscribe({next: x => x});
+        watchWithNode(nodeTestFilePath).refCount().subscribe({next: x => x});
       } catch (err) {
         errorMockWithNode();
       }
