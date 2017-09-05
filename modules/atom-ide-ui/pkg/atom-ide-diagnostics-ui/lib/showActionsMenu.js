@@ -46,8 +46,6 @@ export default function showActionsMenu(
       })
       .take(1)
       .race(Observable.of(new WeakMap()).delay(CODE_ACTIONS_TIMEOUT))
-      // Force a small delay to give the command palette some time to hide.
-      .delay(100)
       .subscribe(codeActionsForMessage => {
         const currentWindow = remote.getCurrentWindow();
         const menu = new remote.Menu();
