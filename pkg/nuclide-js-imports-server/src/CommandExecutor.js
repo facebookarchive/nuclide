@@ -28,7 +28,7 @@ import {
   getRequiredModule,
 } from './utils/util';
 
-export type AddImportCommandParams = [string, JSExport, NuclideUri];
+export type AddImportCommandParams = [JSExport, NuclideUri];
 
 type EditParams = {
   row: number,
@@ -68,7 +68,7 @@ export class CommandExecutor {
   }
 
   _addImport(args: AddImportCommandParams) {
-    const [, missingImport, fileMissingImport] = args;
+    const [missingImport, fileMissingImport] = args;
     const ast = parseFile(
       this.documents
         .get(nuclideUri.nuclideUriToUri(fileMissingImport))

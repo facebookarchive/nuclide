@@ -80,7 +80,13 @@ function diagnosticToCommands(
           return true;
         })
         // Create a CodeAction for each file with an export.
-        .map(missingImport => missingImport.filesWithExport),
+        .map(missingImport =>
+          missingImport.filesWithExport.map(jsExport => ({
+            ...jsExport,
+            // Force this to be imported as a type/value depending on the context.
+            isTypeExport: missingImport.symbol.type === 'type',
+          })),
+        ),
     )
       .map(fileWithExport => ({
         fileWithExport,
@@ -93,12 +99,19 @@ function diagnosticToCommands(
       .slice(0, CODE_ACTIONS_LIMIT)
       .map(({fileWithExport, importPath}) => {
         const addImportArgs: AddImportCommandParams = [
-          fileWithExport.id,
           fileWithExport,
           fileWithDiagnostic,
         ];
+        let verb;
+        if (fileWithExport.isTypeExport) {
+          verb = 'Import type';
+        } else if (importFormatter.isHaste) {
+          verb = 'Require';
+        } else {
+          verb = 'Import';
+        }
         return {
-          title: `Import from ${importPath}`,
+          title: `${verb} from ${importPath}`,
           command: 'addImport',
           arguments: addImportArgs,
         };
