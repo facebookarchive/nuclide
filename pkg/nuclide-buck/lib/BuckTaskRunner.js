@@ -215,6 +215,7 @@ export class BuckTaskRunner {
         platformService: this._platformService,
         projectRoot: null,
         buckRoot: null,
+        buckversionFileContents: null,
         isLoadingBuckProject: false,
         isLoadingRule: false,
         isLoadingPlatforms: false,

@@ -58,6 +58,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
       buildRuleType,
       buildTarget,
       buckRoot,
+      buckversionFileContents,
       isLoadingRule,
       isLoadingPlatforms,
       platformGroups,
@@ -146,6 +147,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
         {this.state.settingsVisible
           ? <BuckToolbarSettings
               buckRoot={buckRoot}
+              buckversionFileContents={buckversionFileContents}
               settings={taskSettings}
               platformProviderSettings={extraSettings}
               onDismiss={() => this._hideSettings()}
