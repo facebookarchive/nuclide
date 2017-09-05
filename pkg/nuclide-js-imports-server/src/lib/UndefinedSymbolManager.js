@@ -19,13 +19,13 @@ traverse.Scope.prototype.warnOnFlowBinding = x => x;
 
 import type {UndefinedSymbol} from './types';
 
-const BUILT_IN_FLOW_TYPES = ['Iterator'];
+const BUILT_INS = ['Iterator', '__DEV__'];
 
 export class UndefinedSymbolManager {
   globals: Set<string>;
 
   constructor(envs: Array<string>) {
-    this.globals = new Set(BUILT_IN_FLOW_TYPES);
+    this.globals = new Set(BUILT_INS);
     envs.forEach(env => {
       Object.keys(globalsJSON[env]).forEach(globalVar => {
         this.globals.add(globalVar);
