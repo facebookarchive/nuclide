@@ -187,7 +187,7 @@ InspectorBackendClass.prototype = {
         var domain = eventName.split(".")[0];
         this._dispatcherPrototype(domain).registerEvent(eventName, params);
         this._initialized = true;
-    },
+    }, 
 
     /**
      * @param {string} jsonUrl
