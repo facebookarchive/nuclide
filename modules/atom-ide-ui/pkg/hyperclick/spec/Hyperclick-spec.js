@@ -22,9 +22,14 @@ import invariant from 'assert';
 import {atomConfig} from '../package.json';
 
 beforeEach(() => {
-  Object.keys(atomConfig).forEach(key =>
-    atom.config.setSchema(`hyperclick.${key}`, atomConfig[key]),
-  );
+  Object.keys(atomConfig).forEach(key => {
+    const config = atomConfig[key];
+    atom.config.setSchema(`hyperclick.${key}`, {
+      ...config,
+      // To make testing easier, use metaKey on all platforms.
+      default: 'metaKey',
+    });
+  });
 });
 
 describe('Hyperclick', () => {
