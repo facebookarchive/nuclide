@@ -1793,6 +1793,7 @@ type AtomGlobal = {
   // Event Subscription
   onWillThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): IDisposable,
   onDidThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): IDisposable,
+  whenShellEnvironmentLoaded(callback: () => mixed): IDisposable,
 
   // Atom Details
   inDevMode(): boolean,

@@ -62,9 +62,6 @@ import {observeStream} from './stream';
 import {splitStream, takeWhileInclusive} from './observable';
 import {shellQuote} from './string';
 
-// TODO(T17266325): Replace this in favor of `atom.whenShellEnvironmentLoaded()` when it lands
-import atomWhenShellEnvironmentLoaded from './whenShellEnvironmentLoaded';
-
 /**
  * Run a command, accumulate the output. Errors are surfaced as stream errors and unsubscribing will
  * kill the process. In addition to the options accepted by Node's [`child_process.spawn()`][1]
@@ -770,10 +767,8 @@ const PREVERVED_HISTORY_CALLS = 50;
 
 const noopDisposable = {dispose: () => {}};
 const whenShellEnvironmentLoaded =
-  typeof atom !== 'undefined' &&
-  atomWhenShellEnvironmentLoaded &&
-  !atom.inSpecMode()
-    ? atomWhenShellEnvironmentLoaded
+  typeof atom !== 'undefined' && !atom.inSpecMode()
+    ? atom.whenShellEnvironmentLoaded.bind(atom)
     : cb => {
         cb();
         return noopDisposable;
