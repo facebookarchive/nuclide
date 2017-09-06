@@ -68,6 +68,7 @@ import typeof * as FileSystemService from '../../nuclide-server/lib/services/Fil
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import typeof * as FlowService from '../../nuclide-flow-rpc';
 import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
+import typeof * as GeneratedFileService from '../../nuclide-generated-files-rpc';
 import typeof * as GrepService from '../../nuclide-grep-rpc';
 import typeof * as HackService from '../../nuclide-hack-rpc';
 import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
@@ -138,6 +139,12 @@ export function getFuzzyFileSearchServiceByNuclideUri(
   uri: NuclideUri,
 ): FuzzyFileSearchService {
   return nullthrows(getServiceByNuclideUri('FuzzyFileSearchService', uri));
+}
+
+export function getGeneratedFileServiceByNuclideUri(
+  uri: NuclideUri,
+): GeneratedFileService {
+  return nullthrows(getServiceByNuclideUri('GeneratedFileService', uri));
 }
 
 export function getGrepServiceByNuclideUri(uri: NuclideUri): GrepService {
