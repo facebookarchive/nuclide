@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.252.0
+
+### C++
+
+* Added an inline action for running the “Clean & Rebuild” command from the “missing compilation database” warning.
+
 ## v0.251.0
 
 **Hotfix from 0.250.0**
