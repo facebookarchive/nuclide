@@ -282,7 +282,7 @@ export default class HyperclickForTextEditor {
     // we might be able to reuse it below.
     if (
       !this._lastPosition ||
-      !this._lastSuggestionAtMouse ||
+      !this._lastSuggestionAtMousePromise ||
       position.compare(this._lastPosition) !== 0
     ) {
       this._isLoading = true;
