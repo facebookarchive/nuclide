@@ -36,10 +36,12 @@ export default class SettingsSelect extends React.Component<Props> {
     const optionElements = [];
     if (options.enum) {
       options.enum.forEach((option, i) => {
+        const optionValue = typeof option === 'string' ? option : option.value;
+        const optionDescription =
+          typeof option === 'string' ? option : option.description;
         optionElements.push(
-          // $FlowFixMe(>=0.53.0) Flow suppress
-          <option value={option} key={i}>
-            {option}
+          <option value={optionValue} key={i}>
+            {optionDescription}
           </option>,
         );
       });

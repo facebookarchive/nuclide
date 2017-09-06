@@ -111,7 +111,7 @@ type atom$ConfigType =
 type atom$ConfigSchema = {
   default?: mixed,
   description?: string,
-  enum?: Array<mixed>,
+  enum?: Array<string | {value: string, description: string}>,
   maximum?: number,
   minimum?: number,
   properties?: Object,

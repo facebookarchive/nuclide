@@ -199,6 +199,14 @@
       ]
     }
   },
+  "nuclide": {
+    "configMetadata": {
+      "pathComponents": [
+        "IDE",
+        "Hyperclick"
+      ]
+    }
+  },
   "consumedServices": {
     "hyperclick.provider": {
       "versions": {
