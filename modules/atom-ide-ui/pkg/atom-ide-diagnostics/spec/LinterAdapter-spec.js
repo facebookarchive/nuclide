@@ -298,6 +298,7 @@ describe('message transformation functions', () => {
         trace: [
           {
             type: 'Trace',
+            text: 'Reference',
             filePath: 'ref.txt',
             range: new Range([1, 1], [1, 1]),
           },

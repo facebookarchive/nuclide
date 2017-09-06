@@ -99,6 +99,7 @@ export function linterMessageV2ToDiagnosticMessage(
     trace = [
       {
         type: 'Trace',
+        text: 'Reference',
         filePath: msg.reference.file,
         range: point ? new Range(point, point) : undefined,
       },

@@ -69,6 +69,7 @@ export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info';
 
 export type DiagnosticTrace = {
   type: 'Trace',
+  // At least one of text/html must be provided.
   text?: string,
   html?: string,
   filePath?: NuclideUri,
