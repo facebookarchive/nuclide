@@ -388,9 +388,8 @@ export function scriptifyCommand<T>(
     return ['script', ['-q', '/dev/null', command].concat(args), options];
   } else {
     // On Linux, script takes the command to run as the -c parameter so we have to combine all of
-    // the arguments into a single string. Apparently, because of how `script` works, however, we
-    // wind up with double escapes. So we just strip one level of them.
-    const joined = shellQuote([command, ...args]).replace(/\\\\/g, '\\');
+    // the arguments into a single string.
+    const joined = shellQuote([command, ...args]);
     // flowlint-next-line sketchy-null-mixed:off
     const opts = options || {};
     // flowlint-next-line sketchy-null-mixed:off

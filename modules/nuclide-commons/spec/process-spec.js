@@ -767,7 +767,7 @@ describe('commons-node/process', () => {
               'one   two',
             ]),
           ).toPromise();
-          expect(output).toBe(
+          expect(output.trim()).toBe(
             'a\\b c\\\\d e\\\\\\f g\\\\\\\\h "dubs" \'singles\' one   two',
           );
         });

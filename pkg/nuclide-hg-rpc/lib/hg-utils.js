@@ -76,15 +76,17 @@ export function hgObserveExecution(
 ): Observable<LegacyProcessMessage> {
   // TODO(T17463635)
   return Observable.fromPromise(
-    getHgExecParams(args_, options_),
+    getHgExecParams(args_, {
+      ...(options_: any),
+      // Ensure that the hg command gets scriptified.
+      TTY_OUTPUT: true,
+    }),
   ).switchMap(({command, args, options}) => {
-    return observeProcess(
-      ...scriptifyCommand(command, args, {
-        ...options,
-        killTreeWhenDone: true,
-        /* TODO(T17353599) */ isExitError: () => false,
-      }),
-    ).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
+    return observeProcess(command, args, {
+      ...options,
+      killTreeWhenDone: true,
+      /* TODO(T17353599) */ isExitError: () => false,
+    }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
   });
 }
 
@@ -191,6 +193,9 @@ async function getHgExecParams(
   let command;
   if (options.TTY_OUTPUT) {
     [command, args, options] = scriptifyCommand('hg', args, options);
+    // HG commit/amend have unconventional ways of escaping slashes from messages.
+    // We have to 'unescape' to make it work correctly.
+    args = args.map(arg => arg.replace(/\\\\/g, '\\'));
   } else {
     command = 'hg';
   }
