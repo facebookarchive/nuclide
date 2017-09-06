@@ -30,6 +30,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
+import {getGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -1001,30 +1002,32 @@ export class FileTreeStore {
       return existingPromise;
     }
 
-    const promise = FileTreeHelpers.fetchChildren(nodeKey).then(
-      childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
-      error => {
-        this._logger.error(`Unable to fetch children for "${nodeKey}".`);
-        this._logger.error('Original error: ', error);
+    const promise = FileTreeHelpers.fetchChildren(nodeKey)
+      .then(
+        childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
+        error => {
+          this._logger.error(`Unable to fetch children for "${nodeKey}".`);
+          this._logger.error('Original error: ', error);
 
-        // Unless the contents were already fetched in the past
-        // collapse the node and clear its loading state on error so the
-        // user can retry expanding it.
-        this._updateNodeAtAllRoots(nodeKey, node => {
-          if (node.wasFetched) {
-            return node.setIsLoading(false);
-          }
+          // Unless the contents were already fetched in the past
+          // collapse the node and clear its loading state on error so the
+          // user can retry expanding it.
+          this._updateNodeAtAllRoots(nodeKey, node => {
+            if (node.wasFetched) {
+              return node.setIsLoading(false);
+            }
 
-          return node.set({
-            isExpanded: false,
-            isLoading: false,
-            children: new Immutable.OrderedMap(),
+            return node.set({
+              isExpanded: false,
+              isLoading: false,
+              children: new Immutable.OrderedMap(),
+            });
           });
-        });
 
-        this._clearLoading(nodeKey);
-      },
-    );
+          this._clearLoading(nodeKey);
+        },
+      )
+      .then(() => this._setGeneratedChildren(nodeKey));
 
     this._setLoading(nodeKey, promise);
     return promise;
@@ -1159,6 +1162,23 @@ export class FileTreeStore {
     if (cwdKey != null) {
       this._updateNodeAtAllRoots(cwdKey, node => node.setIsCwd(true));
     }
+  }
+
+  async _setGeneratedChildren(nodeKey: NuclideUri): Promise<void> {
+    const generatedFileService = getGeneratedFileServiceByNuclideUri(nodeKey);
+    const generatedFileTypes = await generatedFileService.getGeneratedFileTypes(
+      nodeKey,
+    );
+    this._updateNodeAtAllRoots(nodeKey, node => {
+      const children = node.children.map(childNode => {
+        const generatedType = generatedFileTypes.get(childNode.uri);
+        if (generatedType != null) {
+          return childNode.setGeneratedStatus(generatedType);
+        }
+        return childNode;
+      });
+      return node.set({children});
+    });
   }
 
   getFilter(): string {

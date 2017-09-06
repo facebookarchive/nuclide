@@ -52,6 +52,10 @@
     "name": "GrepService"
   },
   {
+    "implementation": "../nuclide-generated-files-rpc/lib/GeneratedFileService.js",
+    "name": "GeneratedFileService"
+  },
+  {
     "implementation": "../nuclide-hack-rpc/lib/HackService.js",
     "name": "HackService"
   },

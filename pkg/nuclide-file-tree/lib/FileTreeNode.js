@@ -16,6 +16,7 @@ import Immutable from 'immutable';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {StoreConfigData, NodeCheckedStatus} from './FileTreeStore';
 import type {StatusCodeNumberValue} from '../../nuclide-hg-rpc/lib/HgService';
+import type {GeneratedFileType} from '../../nuclide-generated-files-rpc/lib/GeneratedFileService';
 
 export type FileTreeNodeOptions = {
   uri: NuclideUri,
@@ -36,6 +37,7 @@ export type FileTreeNodeOptions = {
   highlightedText?: string,
   matchesFilter?: boolean,
   isPendingLoad?: boolean,
+  generatedStatus?: ?GeneratedFileType,
 };
 
 type DefaultFileTreeNodeOptions = {
@@ -54,6 +56,7 @@ type DefaultFileTreeNodeOptions = {
   highlightedText: string,
   matchesFilter: boolean,
   isPendingLoad: boolean,
+  generatedStatus: ?GeneratedFileType,
 };
 
 const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
@@ -72,6 +75,7 @@ const DEFAULT_OPTIONS: DefaultFileTreeNodeOptions = {
   highlightedText: '',
   matchesFilter: true,
   isPendingLoad: false,
+  generatedStatus: null,
 };
 
 export type ImmutableNodeSettableFields = {
@@ -89,6 +93,7 @@ export type ImmutableNodeSettableFields = {
   highlightedText?: string,
   matchesFilter?: boolean,
   isPendingLoad?: boolean,
+  generatedStatus?: ?GeneratedFileType,
 };
 
 /**
@@ -164,6 +169,7 @@ export class FileTreeNode {
   highlightedText: string;
   matchesFilter: boolean;
   isPendingLoad: boolean;
+  generatedStatus: ?GeneratedFileType;
 
   // Derived
   isRoot: boolean;
@@ -329,6 +335,8 @@ export class FileTreeNode {
       o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
     this.isPendingLoad =
       o.isPendingLoad !== undefined ? o.isPendingLoad : D.isPendingLoad;
+    this.generatedStatus =
+      o.generatedStatus !== undefined ? o.generatedStatus : D.generatedStatus;
   }
 
   /**
@@ -375,6 +383,7 @@ export class FileTreeNode {
       highlightedText: this.highlightedText,
       matchesFilter: this.matchesFilter,
       isPendingLoad: this.isPendingLoad,
+      generatedStatus: this.generatedStatus,
     };
   }
 
@@ -415,6 +424,10 @@ export class FileTreeNode {
 
   setChildren(children: Immutable.List<FileTreeNode>): FileTreeNode {
     return this.set({children});
+  }
+
+  setGeneratedStatus(generatedStatus: GeneratedFileType): FileTreeNode {
+    return this.set({generatedStatus});
   }
 
   /**
@@ -722,6 +735,13 @@ export class FileTreeNode {
     if (
       props.isPendingLoad !== undefined &&
       props.isPendingLoad !== this.isPendingLoad
+    ) {
+      return false;
+    }
+
+    if (
+      props.generatedStatus !== undefined &&
+      props.generatedStatus !== this.generatedStatus
     ) {
       return false;
     }

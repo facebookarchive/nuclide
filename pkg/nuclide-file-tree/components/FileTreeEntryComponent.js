@@ -161,6 +161,15 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       }
     }
 
+    let generatedClass;
+    if (node.generatedStatus === 'generated') {
+      generatedClass = 'generated-fully';
+    } else if (node.generatedStatus === 'partial') {
+      generatedClass = 'generated-partly';
+    } else {
+      generatedClass = '';
+    }
+
     let tooltip;
     if (node.isContainer) {
       if (node.isCwd) {
@@ -170,7 +179,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
     return (
       <li
-        className={`${outerClassName} ${statusClass}`}
+        className={`${outerClassName} ${statusClass} ${generatedClass}`}
         style={{paddingLeft: this.props.node.getDepth() * INDENT_LEVEL}}
         draggable={true}
         onMouseDown={this._onMouseDown}

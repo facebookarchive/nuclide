@@ -197,3 +197,11 @@
 .nuclide-file-tree .list-item::before {
   vertical-align: middle;
 }
+
+.nuclide-file-tree .list-item.generated-fully {
+  color: mix(@text-color, @tree-view-background-color, 33%);
+}
+
+.nuclide-file-tree .list-item.generated-partly {
+  color: mix(@text-color, @tree-view-background-color, 66%);
+}
