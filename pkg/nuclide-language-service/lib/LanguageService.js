@@ -25,6 +25,9 @@ import type {
 } from 'atom-ide-ui';
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
+import type {SymbolResult} from '../../nuclide-quick-open/lib/types';
+
+export type {SymbolResult} from '../../nuclide-quick-open/lib/types';
 
 // Subtype of atom$AutocompleteSuggestion.
 export type Completion = {
@@ -60,16 +63,6 @@ export type Completion = {
 export type AutocompleteResult = {
   isIncomplete: boolean,
   items: Array<Completion>,
-};
-
-export type SymbolResult = {
-  path: NuclideUri,
-  line: number,
-  column: number,
-  name: string,
-  containerName: ?string,
-  icon: ?string, // from https://github.com/atom/atom/blob/master/static/octicons.less
-  hoverText: ?string, // sometimes used to explain the icon in words
 };
 
 export type FormatOptions = {

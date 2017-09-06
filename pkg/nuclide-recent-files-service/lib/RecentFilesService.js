@@ -55,6 +55,7 @@ export default class RecentFilesService {
    */
   getRecentFiles(): FileList {
     return Array.from(this._fileList).reverse().map(pair => ({
+      resultType: 'FILE',
       path: pair[0],
       timestamp: pair[1],
     }));

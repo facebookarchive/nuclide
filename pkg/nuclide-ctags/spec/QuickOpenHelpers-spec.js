@@ -40,6 +40,7 @@ describe('QuickOpenHelpers', () => {
           async findTags(path, query): Promise<Array<CtagsResult>> {
             return [
               {
+                resultType: 'FILE',
                 name: 'A',
                 file: '/path1/a',
                 lineNumber: 1,
@@ -47,6 +48,7 @@ describe('QuickOpenHelpers', () => {
                 pattern: '/^class A$/',
               },
               {
+                resultType: 'FILE',
                 name: 'test::A',
                 file: '/test/a',
                 lineNumber: 2,
@@ -86,6 +88,7 @@ describe('QuickOpenHelpers', () => {
         }),
       ).toEqual([
         {
+          resultType: 'FILE',
           name: 'A',
           file: '/path1/a',
           lineNumber: 1,
@@ -95,6 +98,7 @@ describe('QuickOpenHelpers', () => {
           dir: TEST_DIR,
         },
         {
+          resultType: 'FILE',
           name: 'test::A',
           file: '/test/a',
           lineNumber: 2,

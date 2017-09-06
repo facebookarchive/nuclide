@@ -13,7 +13,7 @@
 
 import type {Directory} from '../../nuclide-remote-connection';
 import type {
-  FileResult,
+  ProviderResult,
   Provider,
   GlobalProviderType,
   DirectoryProviderType,
@@ -21,7 +21,7 @@ import type {
 import type {
   GroupedResult,
   GroupedResults,
-  ProviderResult,
+  ProviderResults,
 } from './searchResultHelpers';
 import type QuickOpenProviderRegistry from './QuickOpenProviderRegistry';
 
@@ -34,8 +34,8 @@ export type ProviderSpec = {
   priority: number,
 };
 
-type ResultRenderer = (
-  item: FileResult,
+type ResultRenderer<T> = (
+  item: T,
   serviceName: string,
   dirName: string,
 ) => React.Element<any>;
@@ -67,7 +67,7 @@ const OMNISEARCH_PROVIDER = {
 const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 const GLOBAL_KEY = 'global';
 
-function getQueryDebounceDelay(provider: Provider) {
+function getQueryDebounceDelay(provider: Provider<ProviderResult>) {
   return provider.debounceDelay != null
     ? provider.debounceDelay
     : DEFAULT_QUERY_DEBOUNCE_DELAY;
@@ -78,9 +78,12 @@ function getQueryDebounceDelay(provider: Provider) {
  */
 export default class SearchResultManager {
   _quickOpenProviderRegistry: QuickOpenProviderRegistry;
-  _directoryEligibleProviders: Map<atom$Directory, Set<DirectoryProviderType>>;
-  _globalEligibleProviders: Set<GlobalProviderType>;
-  _providerSubscriptions: Map<Provider, IDisposable>;
+  _directoryEligibleProviders: Map<
+    atom$Directory,
+    Set<DirectoryProviderType<*>>,
+  >;
+  _globalEligibleProviders: Set<GlobalProviderType<*>>;
+  _providerSubscriptions: Map<Provider<ProviderResult>, IDisposable>;
   _directories: Array<atom$Directory>;
   _resultCache: ResultCache;
   _currentWorkingRoot: ?Directory;
@@ -158,11 +161,17 @@ export default class SearchResultManager {
     return this._lastRawQuery;
   }
 
-  getRendererForProvider(providerName: string): ResultRenderer {
+  getRendererForProvider<T: ProviderResult>(
+    providerName: string,
+    item: T,
+  ): ResultRenderer<any> {
     const provider = this._getProviderByName(providerName);
-    return provider.getComponentForItem != null
-      ? provider.getComponentForItem
-      : FileResultComponent.getComponentForItem;
+    if (provider.getComponentForItem != null) {
+      return provider.getComponentForItem;
+    } else if (item.resultType === 'FILE') {
+      return FileResultComponent.getComponentForItem;
+    }
+    throw new Error('Unable to get renderer for provider');
   }
 
   dispose(): void {
@@ -305,7 +314,7 @@ export default class SearchResultManager {
     return directories;
   }
 
-  _registerProvider(service: Provider): void {
+  _registerProvider(service: Provider<ProviderResult>): void {
     if (this._providerSubscriptions.get(service)) {
       throw new Error(`${service.name} has already been registered.`);
     }
@@ -316,7 +325,7 @@ export default class SearchResultManager {
     this._debouncedUpdateDirectories();
   }
 
-  _deregisterProvider(service: Provider): void {
+  _deregisterProvider(service: Provider<ProviderResult>): void {
     const subscriptions = this._providerSubscriptions.get(service);
     if (subscriptions == null) {
       throw new Error(`${service.name} has already been deregistered.`);
@@ -343,9 +352,9 @@ export default class SearchResultManager {
 
   _cacheResult(
     query: string,
-    result: Array<FileResult>,
+    result: Array<ProviderResult>,
     directory: string,
-    provider: Provider,
+    provider: Provider<ProviderResult>,
   ): void {
     this._resultCache.setCacheResult(
       provider.name,
@@ -357,7 +366,11 @@ export default class SearchResultManager {
     );
   }
 
-  _setLoading(query: string, directory: string, provider: Provider): void {
+  _setLoading(
+    query: string,
+    directory: string,
+    provider: Provider<ProviderResult>,
+  ): void {
     const previousResult = this._resultCache.getCacheResult(
       provider.name,
       directory,
@@ -375,9 +388,9 @@ export default class SearchResultManager {
 
   _processResult(
     query: string,
-    result: Array<FileResult>,
+    result: Array<ProviderResult>,
     directory: string,
-    provider: Provider,
+    provider: Provider<ProviderResult>,
   ): void {
     this._cacheResult(query, result, directory, provider);
     this._emitter.emit('results-changed');
@@ -387,7 +400,7 @@ export default class SearchResultManager {
     return query.trim();
   }
 
-  _executeGlobalQuery(provider: GlobalProviderType, query: string): void {
+  _executeGlobalQuery(provider: GlobalProviderType<*>, query: string): void {
     for (const globalProvider of this._globalEligibleProviders) {
       const startTime = performance.now();
       const loadingFn = () => {
@@ -412,7 +425,7 @@ export default class SearchResultManager {
 
   _executeDirectoryQuery(
     directory: atom$Directory,
-    provider: DirectoryProviderType,
+    provider: DirectoryProviderType<*>,
     query: string,
   ) {
     const path = directory.getPath();
@@ -435,7 +448,7 @@ export default class SearchResultManager {
     });
   }
 
-  _getProviderByName(providerName: string): Provider {
+  _getProviderByName(providerName: string): Provider<ProviderResult> {
     const provider = this._quickOpenProviderRegistry.getProviderByName(
       providerName,
     );
@@ -488,7 +501,7 @@ export default class SearchResultManager {
             }
           }
         }
-        const defaultResult: ProviderResult = {
+        const defaultResult: ProviderResults = {
           error: null,
           loading: false,
           results: [],
@@ -556,7 +569,7 @@ export default class SearchResultManager {
   /**
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
-  _bakeProvider(provider: Provider): ProviderSpec {
+  _bakeProvider(provider: Provider<ProviderResult>): ProviderSpec {
     const {display} = provider;
     const providerSpec = {
       name: provider.name,

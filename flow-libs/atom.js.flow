@@ -83,6 +83,13 @@ declare type atom$CustomEvent  = CustomEvent & {
 
 type atom$CommandCallback = (event: atom$CustomEvent) => mixed;
 
+type atom$CommandDescriptor = {
+  name: string,
+  displayName: string,
+  description?: string,
+  tags?: Array<string>,
+};
+
 declare class atom$CommandRegistry {
   // Methods
   add(
@@ -93,6 +100,7 @@ declare class atom$CommandRegistry {
   dispatch(target: HTMLElement, commandName: string, detail?: Object): void,
   onDidDispatch(callback: (event: atom$CustomEvent) => mixed): IDisposable,
   onWillDispatch(callback: (event: atom$CustomEvent) => mixed): IDisposable,
+  findCommands(opts: {target: Node}): Array<atom$CommandDescriptor>,
 }
 
 declare class atom$CompositeDisposable {

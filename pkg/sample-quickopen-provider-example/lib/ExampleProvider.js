@@ -67,7 +67,7 @@ const FIXTURE = [
   'vitae',
 ];
 
-const ExampleProvider: Provider = {
+const ExampleProvider: Provider<FileResult> = {
   /**
    * One of 'GLOBAL', 'DIRECTORY'.
    * DIRECTORY providers work in the context of a mounted directory (e.g. Hack symbol search).
@@ -149,6 +149,7 @@ const ExampleProvider: Provider = {
       return Promise.resolve([]);
     }
     const results = FIXTURE.filter(f => f.indexOf(query) !== -1).map(str => ({
+      resultType: 'FILE',
       path: '/foo/bar/' + str + '.js',
     }));
     return new Promise((resolve, reject) => {

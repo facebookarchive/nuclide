@@ -33,7 +33,7 @@ type NuclideCodeSearchConfig = {
   maxResults: number,
 };
 
-export const CodeSearchProvider: Provider = {
+export const CodeSearchProvider: Provider<FileResult> = {
   name: 'CodeSearchProvider',
   providerType: 'DIRECTORY',
   debounceDelay: 250,

@@ -366,6 +366,7 @@ export function lspSymbolInformation_atomSymbolResult(
     }
   }
   return {
+    resultType: 'SYMBOL',
     path: lspUri_localPath(info.location.uri),
     line: info.location.range.start.line,
     column: info.location.range.start.character,

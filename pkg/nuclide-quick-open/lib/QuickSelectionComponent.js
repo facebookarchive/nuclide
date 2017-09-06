@@ -13,10 +13,10 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Tab} from '../../nuclide-ui/Tabs';
 import type QuickSelectionActions from './QuickSelectionActions';
 
-import type {FileResult} from './types';
+import type {FileResult, ProviderResult} from './types';
 import type SearchResultManager, {ProviderSpec} from './SearchResultManager';
 import type {
-  ProviderResult,
+  ProviderResults,
   GroupedResult,
   GroupedResults,
 } from './searchResultHelpers';
@@ -28,7 +28,7 @@ type ResultContext = {
   currentService: GroupedResult,
   directoryNames: Array<NuclideUri>,
   currentDirectoryIndex: number,
-  currentDirectory: ProviderResult,
+  currentDirectory: ProviderResults,
 };
 
 export type SelectionIndex = {
@@ -77,7 +77,7 @@ type Props = {|
   quickSelectionActions: QuickSelectionActions,
   onCancellation: () => void,
   onSelection: (
-    selections: Array<FileResult>,
+    selections: Array<ProviderResult>,
     providerName: string,
     query: string,
   ) => void,
@@ -600,7 +600,7 @@ export default class QuickSelectionComponent extends React.Component<
     serviceName: string,
     directory: string,
     itemIndex: number,
-  ): ?FileResult {
+  ): ?ProviderResult {
     if (
       itemIndex === -1 ||
       !this.state.resultsByService[serviceName] ||
@@ -617,15 +617,21 @@ export default class QuickSelectionComponent extends React.Component<
   }
 
   _componentForItem(
-    item: any,
+    item: ProviderResult,
     serviceName: string,
     dirName: string,
   ): React.Element<any> {
-    return this.props.searchResultManager.getRendererForProvider(serviceName)(
-      item,
+    if (item.resultType === 'FILE') {
+      (item: FileResult);
+      return this.props.searchResultManager.getRendererForProvider(
+        serviceName,
+        item,
+      )(item, serviceName, dirName);
+    }
+    return this.props.searchResultManager.getRendererForProvider(
       serviceName,
-      dirName,
-    );
+      item,
+    )(item, serviceName, dirName);
   }
 
   _getSelectedIndex(): SelectionIndex {

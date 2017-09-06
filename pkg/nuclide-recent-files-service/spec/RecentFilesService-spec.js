@@ -63,7 +63,7 @@ describe('RecentFilesService', () => {
         advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         const recentFiles = recentFilesService.getRecentFiles();
         const mostRecentFile = recentFiles[0];
-        expect(Object.keys(mostRecentFile).length).toEqual(2);
+        expect(Object.keys(mostRecentFile).length).toEqual(3);
         expect(typeof mostRecentFile.timestamp === 'number').toBe(true);
         expect(mostRecentFile.path.endsWith(FILE_PATH_1)).toBe(true);
       });
@@ -107,9 +107,9 @@ describe('RecentFilesService', () => {
     it('correctly restores itself from serialized state', () => {
       const serializedState = {
         filelist: [
-          {path: FILE_PATH_1, timestamp: 100},
-          {path: FILE_PATH_2, timestamp: 200},
-          {path: FILE_PATH_3, timestamp: 300},
+          {resultType: 'FILE', path: FILE_PATH_1, timestamp: 100},
+          {resultType: 'FILE', path: FILE_PATH_2, timestamp: 200},
+          {resultType: 'FILE', path: FILE_PATH_3, timestamp: 300},
         ],
       };
       const restoredRecentFilesService = new RecentFilesService(

@@ -243,6 +243,7 @@ describe('HackSymbolProvider', () => {
   describe('Result rendering', () => {
     it('should work', () => {
       const mockResult = {
+        resultType: 'SYMBOL',
         path: '/some/arbitrary/path',
         name: 'IExampleSymbolInterface',
         icon: 'puzzle',

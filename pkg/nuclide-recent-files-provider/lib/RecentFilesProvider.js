@@ -60,6 +60,7 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
     matcher
       .match(query, {recordMatchIndexes: true})
       .map(result => ({
+        resultType: 'FILE',
         path: result.value,
         score: result.score,
         matchIndexes: result.matchIndexes,
@@ -102,7 +103,7 @@ function opacityForTimestamp(timestamp: number): number {
   );
 }
 
-export const RecentFilesProvider: Provider = {
+export const RecentFilesProvider: Provider<FileResult> = {
   providerType: 'GLOBAL',
   name: 'RecentFilesProvider',
   debounceDelay: 0,

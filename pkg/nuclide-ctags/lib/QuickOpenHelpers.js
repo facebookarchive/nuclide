@@ -110,6 +110,7 @@ export default class QuickOpenHelpers {
         .map(tag => {
           return {
             ...tag,
+            resultType: 'FILE',
             path: tag.file,
             dir,
             async callback() {

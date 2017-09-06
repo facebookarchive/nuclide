@@ -9,10 +9,10 @@
  * @format
  */
 
-import type {Provider} from '../lib/types';
+import type {GlobalProviderType, FileResult, Provider} from '../lib/types';
 import type {ProviderSpec} from '../lib/SearchResultManager';
 import type {
-  ProviderResult,
+  ProviderResults,
   GroupedResult,
   GroupedResults,
 } from '../lib/searchResultHelpers';
@@ -32,7 +32,7 @@ const PROJECT_ROOT1 = nuclideUri.join(__dirname, 'fixtures/root1');
 const PROJECT_ROOT2 = nuclideUri.join(__dirname, 'fixtures/root2');
 const PROJECT_ROOT3 = nuclideUri.join(__dirname, 'fixtures/root3');
 
-const FakeProvider: Provider = {
+const FakeProvider: GlobalProviderType<FileResult> = {
   providerType: 'GLOBAL',
   name: 'FakeProvider',
   display: {
@@ -55,7 +55,7 @@ const FakeProviderSpec: ProviderSpec = Object.freeze({
 });
 
 const TEST_STRINGS = ['yolo', 'foo', 'bar'];
-const ExactStringMatchProvider: Provider = Object.freeze({
+const ExactStringMatchProvider: Provider<FileResult> = Object.freeze({
   providerType: 'GLOBAL',
   name: 'ExactStringMatchProvider',
   display: {
@@ -65,7 +65,10 @@ const ExactStringMatchProvider: Provider = Object.freeze({
   isEligibleForDirectories: directories => Promise.resolve(true),
   executeQuery: (query, directories) =>
     Promise.resolve(
-      TEST_STRINGS.filter(s => s === query).map(s => ({path: s})),
+      TEST_STRINGS.filter(s => s === query).map(s => ({
+        resultType: 'FILE',
+        path: s,
+      })),
     ),
 });
 
@@ -103,8 +106,8 @@ function queryOmniSearchProvider(
 
 // Helper to construct expected result objects for a global provider.
 function constructSingleProviderResult(
-  provider: Provider,
-  result: ProviderResult,
+  provider: Provider<any>,
+  result: ProviderResults,
 ): GroupedResults {
   const groupResult: GroupedResult = {
     priority:
@@ -201,6 +204,7 @@ describe('SearchResultManager', () => {
           constructSingleProviderResult(ExactStringMatchProvider, {
             results: [
               {
+                resultType: 'FILE',
                 path: 'yolo',
                 sourceProvider: 'ExactStringMatchProvider',
               },
@@ -228,6 +232,7 @@ describe('SearchResultManager', () => {
               constructSingleProviderResult(ExactStringMatchProvider, {
                 results: [
                   {
+                    resultType: 'FILE',
                     path: query.trim(),
                     sourceProvider: 'ExactStringMatchProvider',
                   },
@@ -243,21 +248,21 @@ describe('SearchResultManager', () => {
   });
 
   describe('OmniSearch provider sorting', () => {
-    const FirstProvider: Provider = {
+    const FirstProvider: Provider<FileResult> = {
       providerType: 'GLOBAL',
       name: 'FirstProvider',
       priority: 1,
       isEligibleForDirectories: directories => Promise.resolve(true),
       executeQuery: (query, directories) => Promise.resolve([]),
     };
-    const SecondProvider: Provider = {
+    const SecondProvider: Provider<FileResult> = {
       providerType: 'GLOBAL',
       name: 'SecondProvider',
       priority: 2,
       isEligibleForDirectories: directories => Promise.resolve(true),
       executeQuery: (query, directories) => Promise.resolve([]),
     };
-    const ThirdProvider: Provider = {
+    const ThirdProvider: Provider<FileResult> = {
       providerType: 'GLOBAL',
       name: 'ThirdProvider',
       priority: 3,
