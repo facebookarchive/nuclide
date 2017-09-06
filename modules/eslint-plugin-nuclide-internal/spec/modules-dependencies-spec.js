@@ -27,6 +27,7 @@ const ruleTester = new RuleTester({
 
 // This actually ends up checking the root package.json, but that's OK.
 const TEST_PATH = path.join(__dirname, '..', '..', '..', 'modules', 'test', 'index.js');
+// eslint-disable-next-line rulesdir/modules-dependencies
 const PKG_NAME = require('../../../package.json').name;
 
 ruleTester.run('modules-dependencies', rule, {
@@ -41,6 +42,10 @@ ruleTester.run('modules-dependencies', rule, {
     },
     {
       code: 'require("./test");',
+      filename: TEST_PATH,
+    },
+    {
+      code: 'require("../test");',
       filename: TEST_PATH,
     },
   ],
@@ -66,7 +71,7 @@ ruleTester.run('modules-dependencies', rule, {
       ],
     },
     {
-      code: 'import {test} from "../test"',
+      code: 'import {test} from "../test2"',
       filename: TEST_PATH,
       errors: [
         {

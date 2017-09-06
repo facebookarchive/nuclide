@@ -19,5 +19,8 @@
     "react": "15.3.1",
     "react-dom": "15.3.1",
     "rxjs": "5.3.1"
+  },
+  "devDependencies": {
+    "react-addons-test-utils": "15.3.1"
   }
 }

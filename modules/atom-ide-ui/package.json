@@ -31,5 +31,8 @@
     "reselect": "3.0.1",
     "rxjs": "5.3.1",
     "semver": "5.3.0"
+  },
+  "devDependencies": {
+    "temp": "0.8.3"
   }
 }

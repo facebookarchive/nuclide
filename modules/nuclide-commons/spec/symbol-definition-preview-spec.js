@@ -10,7 +10,7 @@
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+import nuclideUri from '../nuclideUri';
 import dedent from 'dedent';
 import {Point} from 'simple-text-buffer';
 import {getDefinitionPreview} from '../symbol-definition-preview';

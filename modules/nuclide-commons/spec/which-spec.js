@@ -10,7 +10,7 @@
  * @format
  */
 
-import which from 'nuclide-commons/which';
+import which from '../which';
 import {Observable} from 'rxjs';
 
 describe('which', () => {
@@ -19,14 +19,13 @@ describe('which', () => {
 
   beforeEach(() => {
     runCommandReturn = '';
-    runCommand = spyOn(
-      require('nuclide-commons/process'),
-      'runCommand',
-    ).andCallFake(() => Observable.of(runCommandReturn));
+    runCommand = spyOn(require('../process'), 'runCommand').andCallFake(() =>
+      Observable.of(runCommandReturn),
+    );
   });
 
   afterEach(() => {
-    jasmine.unspy(require('nuclide-commons/process'), 'runCommand');
+    jasmine.unspy(require('../process'), 'runCommand');
   });
 
   describe('on windows', () => {

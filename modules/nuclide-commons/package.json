@@ -23,5 +23,10 @@
     "rxjs": "5.3.1",
     "shell-quote": "1.6.1",
     "temp": "0.8.3"
+  },
+  "devDependencies": {
+    "dedent": "0.6.0",
+    "invariant": "2.2.2",
+    "simple-text-buffer": "9.2.11"
   }
 }

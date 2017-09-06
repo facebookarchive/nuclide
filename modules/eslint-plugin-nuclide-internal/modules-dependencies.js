@@ -27,11 +27,6 @@ const ASYNC_TO_GENERATOR = 'async-to-generator';
 
 module.exports = function(context) {
   const filename = context.getFilename();
-  // Root devDependencies are still shared.
-  if (!filename.startsWith(MODULES_DIR) || filename.indexOf('/spec/') !== -1) {
-    return {};
-  }
-
   const relativePath = path.relative(MODULES_DIR, filename);
   if (relativePath[0] === '.') {
     return {};
@@ -41,7 +36,8 @@ module.exports = function(context) {
   const moduleName = relativePath.split(path.sep)[0];
   const moduleDir = path.join(MODULES_DIR, moduleName);
   const modulePkg = getPackage(moduleDir);
-  const allowDevDependencies = idx(
+  const isSpec = filename.indexOf('/spec/') !== -1;
+  const allowDevDependencies = isSpec || idx(
     context,
     _ => _.options[0].allowDevDependencies
   );
@@ -50,7 +46,7 @@ module.exports = function(context) {
     // Relative imports must be within the root.
     if (dep[0] === '.') {
       const depPath = path.join(dirname, dep);
-      if (!depPath.startsWith(moduleDir + path.sep)) {
+      if (depPath !== moduleDir && !depPath.startsWith(moduleDir + path.sep)) {
         context.report({
           node,
           message: 'modules/ cannot have external relative dependencies.',
@@ -78,7 +74,7 @@ module.exports = function(context) {
     if (
       !Object.hasOwnProperty.call(modulePkg.dependencies, depName) &&
       (!allowDevDependencies ||
-        !Object.hasOwnProperty.call(modulePkg.devDependencies, depName))
+        !Object.hasOwnProperty.call(modulePkg.devDependencies || {}, depName))
     ) {
       context.report({
         node,

@@ -10,10 +10,10 @@
  * @format
  */
 
-import type {ProcessExitMessage} from 'nuclide-commons/process';
+import type {ProcessExitMessage} from '../process';
 
 import EventEmitter from 'events';
-import {sleep} from 'nuclide-commons/promise';
+import {sleep} from '../promise';
 import child_process from 'child_process';
 import invariant from 'assert';
 import {Observable, Scheduler, Subject} from 'rxjs';
@@ -33,7 +33,7 @@ import {
   runCommandDetailed,
   scriptifyCommand,
   exitEventToMessage,
-} from 'nuclide-commons/process';
+} from '../process';
 
 describe('commons-node/process', () => {
   let origPlatform;

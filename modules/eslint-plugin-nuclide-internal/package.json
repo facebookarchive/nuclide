@@ -12,5 +12,10 @@
     "idx": "1.2.0",
     "resolve-from": "2.0.0"
   },
+  "devDependencies": {
+    "babel-eslint": "7.2.3",
+    "eslint": "3.15.0",
+    "temp": "0.8.3"
+  },
   "private": true
 }

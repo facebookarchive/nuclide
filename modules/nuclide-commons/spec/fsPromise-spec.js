@@ -10,8 +10,8 @@
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from '../nuclideUri';
+import fsPromise from '../fsPromise';
 import {generateFixture} from '../test-helpers';
 
 describe('fsPromise test suite', () => {
