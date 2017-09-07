@@ -188,7 +188,6 @@ export class AtomLanguageService<T: LanguageService> {
           this._config.grammars,
           codeFormatConfig,
           this._connectionToLanguageService,
-          busySignalProvider,
         ),
       );
     }
