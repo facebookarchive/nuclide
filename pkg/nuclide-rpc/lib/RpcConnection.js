@@ -181,6 +181,7 @@ export type RpcConnectionOptions = {
 
 export class RpcConnection<TransportType: Transport> {
   _rpcRequestId: number;
+  _rpcResponseId: number;
   _transport: TransportType;
   _serviceRegistry: ServiceRegistry;
   _objectRegistry: ObjectRegistry;
@@ -517,13 +518,25 @@ export class RpcConnection<TransportType: Transport> {
     returnVal.then(
       result => {
         this._transport.send(
-          JSON.stringify(createPromiseMessage(this._getProtocol(), id, result)),
+          JSON.stringify(
+            createPromiseMessage(
+              this._getProtocol(),
+              id,
+              this._generateResponseId(),
+              result,
+            ),
+          ),
         );
       },
       error => {
         this._transport.send(
           JSON.stringify(
-            createErrorResponseMessage(this._getProtocol(), id, error),
+            createErrorResponseMessage(
+              this._getProtocol(),
+              id,
+              this._generateResponseId(),
+              error,
+            ),
           ),
         );
       },
@@ -556,20 +569,38 @@ export class RpcConnection<TransportType: Transport> {
       .subscribe(
         data => {
           this._transport.send(
-            JSON.stringify(createNextMessage(this._getProtocol(), id, data)),
+            JSON.stringify(
+              createNextMessage(
+                this._getProtocol(),
+                id,
+                this._generateResponseId(),
+                data,
+              ),
+            ),
           );
         },
         error => {
           this._transport.send(
             JSON.stringify(
-              createObserveErrorMessage(this._getProtocol(), id, error),
+              createObserveErrorMessage(
+                this._getProtocol(),
+                id,
+                this._generateResponseId(),
+                error,
+              ),
             ),
           );
           this._objectRegistry.removeSubscription(id);
         },
         completed => {
           this._transport.send(
-            JSON.stringify(createCompleteMessage(this._getProtocol(), id)),
+            JSON.stringify(
+              createCompleteMessage(
+                this._getProtocol(),
+                id,
+                this._generateResponseId(),
+              ),
+            ),
           );
           this._objectRegistry.removeSubscription(id);
         },
@@ -828,7 +859,14 @@ export class RpcConnection<TransportType: Transport> {
     } catch (e) {
       logger.error(`Error handling RPC ${message.type} message`, e);
       this._transport.send(
-        JSON.stringify(createErrorResponseMessage(this._getProtocol(), id, e)),
+        JSON.stringify(
+          createErrorResponseMessage(
+            this._getProtocol(),
+            id,
+            this._generateResponseId(),
+            e,
+          ),
+        ),
       );
     }
   }
@@ -843,6 +881,10 @@ export class RpcConnection<TransportType: Transport> {
 
   _generateRequestId(): number {
     return this._rpcRequestId++;
+  }
+
+  _generateResponseId(): number {
+    return this._rpcResponseId++;
   }
 
   _getTypeRegistry(): TypeRegistry {
