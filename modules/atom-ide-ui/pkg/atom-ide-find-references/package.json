@@ -28,6 +28,11 @@
     }
   },
   "consumedServices": {
+    "atom-ide-busy-signal": {
+      "versions": {
+        "0.1.0": "consumeBusySignal"
+      }
+    },
     "nuclide-find-references.provider": {
       "versions": {
         "0.0.0": "consumeProvider"
