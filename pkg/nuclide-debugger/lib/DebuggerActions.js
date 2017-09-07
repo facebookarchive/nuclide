@@ -41,13 +41,10 @@ import {
 } from './AnalyticsHelper';
 import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
-import passesGK from '../../commons-node/passesGK';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
-
-const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
 const CONSOLE_VIEW_URI = 'atom://nuclide/console';
@@ -105,16 +102,12 @@ export default class DebuggerActions {
         .getSettings()
         .set('SingleThreadStepping', singleThreadStepping);
       this.toggleSingleThreadStepping(singleThreadStepping);
-      if (
-        processInfo.getServiceName() !== 'hhvm' ||
-        (await passesGK(GK_DEBUGGER_REQUEST_SENDER))
-      ) {
-        const customControlButtons = debuggerProps.customControlButtons;
-        if (customControlButtons.length > 0) {
-          this.updateControlButtons(customControlButtons);
-        } else {
-          this.updateControlButtons([]);
-        }
+
+      const customControlButtons = debuggerProps.customControlButtons;
+      if (customControlButtons.length > 0) {
+        this.updateControlButtons(customControlButtons);
+      } else {
+        this.updateControlButtons([]);
       }
 
       if (debuggerCapabilities.customSourcePaths) {
