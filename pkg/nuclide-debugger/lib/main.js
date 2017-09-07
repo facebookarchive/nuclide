@@ -20,7 +20,6 @@ import type {
 } from '../../nuclide-console/lib/types';
 import type {EvaluationResult, SerializedBreakpoint} from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
-import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {
@@ -68,9 +67,6 @@ export type SerializedState = {
 };
 
 const DATATIP_PACKAGE_NAME = 'nuclide-debugger-datatip';
-const NUX_NEW_DEBUGGER_UI_ID = 4377;
-const GK_NEW_DEBUGGER_UI_NUX = 'mp_nuclide_new_debugger_ui';
-const NUX_NEW_DEBUGGER_UI_NAME = 'nuclide_new_debugger_ui';
 const SCREEN_ROW_ATTRIBUTE_NAME = 'data-screen-row';
 
 function getGutterLineNumber(target: HTMLElement): ?number {
@@ -474,8 +470,8 @@ class Activation {
   }
 
   consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {
-    const disposable = addNewNux(createDebuggerNuxTourModel());
-    this._disposables.add(disposable);
+    // TODO: No NUX at this time. Add NUX here.
+    const disposable = new Disposable();
     return disposable;
   }
 
@@ -1028,25 +1024,6 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
   activation.getModel().getThreadStore().setDatatipService(service);
   activation._disposables.add(disposable);
   return disposable;
-}
-
-function createDebuggerNuxTourModel(): NuxTourModel {
-  const welcomeToNewUiNux = {
-    content:
-      'Welcome to the new Nuclide debugger UI!</br>' +
-      'We are evolving the debugger to integrate more closely with Nuclide.',
-    selector: '.nuclide-debugger-container-new',
-    position: 'left',
-  };
-
-  const newDebuggerUINuxTour = {
-    id: NUX_NEW_DEBUGGER_UI_ID,
-    name: NUX_NEW_DEBUGGER_UI_NAME,
-    nuxList: [welcomeToNewUiNux],
-    gatekeeperID: GK_NEW_DEBUGGER_UI_NUX,
-  };
-
-  return newDebuggerUINuxTour;
 }
 
 export function consumeRegisterNuxService(addNewNux: RegisterNux): Disposable {

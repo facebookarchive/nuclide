@@ -47,7 +47,6 @@ import {getLogger} from 'log4js';
 const logger = getLogger('nuclide-debugger');
 import ChromeActionRegistryActions from './ChromeActionRegistryActions';
 
-const GK_DEBUGGER_REQUEST_WINDOW = 'nuclide_debugger_php_request_window';
 const GK_DEBUGGER_REQUEST_SENDER = 'nuclide_debugger_request_sender';
 
 // This must match URI defined in ../../nuclide-console/lib/ui/ConsoleContainer
@@ -89,9 +88,7 @@ export default class DebuggerActions {
       const debuggerInstance = await processInfo.debug();
       await this._store.getBridge().setupNuclideChannel(debuggerInstance);
       this._registerConsole();
-      const supportThreadsWindow =
-        debuggerCapabilities.threads &&
-        (await this._allowThreadsForPhp(processInfo));
+      const supportThreadsWindow = debuggerCapabilities.threads;
       this._store
         .getSettings()
         .set('SupportThreadsWindow', supportThreadsWindow);
@@ -137,15 +134,6 @@ export default class DebuggerActions {
       atom.notifications.addError(errorMessage);
       this.stopDebugging();
     }
-  }
-
-  async _allowThreadsForPhp(
-    processInfo: DebuggerProcessInfo,
-  ): Promise<boolean> {
-    if (processInfo.getServiceName() === 'hhvm') {
-      return passesGK(GK_DEBUGGER_REQUEST_WINDOW);
-    }
-    return true;
   }
 
   setDebuggerMode(debuggerMode: DebuggerModeType): void {
