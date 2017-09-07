@@ -36,7 +36,8 @@ type Props = {
 
 type State = {
   showDiffContainer: boolean,
-  diffIndex: number,
+  baseDiffIndex: ?number,
+  targetDiffIndex: ?number,
 };
 
 export default class VcsLogComponent extends React.Component<Props, State> {
@@ -54,7 +55,8 @@ export default class VcsLogComponent extends React.Component<Props, State> {
 
     this.state = {
       showDiffContainer: false,
-      diffIndex: -1,
+      baseDiffIndex: null,
+      targetDiffIndex: null,
     };
   }
 
@@ -80,75 +82,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
       }
 
       const rows = logEntries.map((logEntry: VcsLogEntry, index: number) => {
-        let differentialCell;
-        if (showDifferentialRevision) {
-          const url = differentialUrls[index];
-          let revision;
-          let onClick;
-          if (url != null) {
-            revision = url.substring(url.lastIndexOf('/') + 1);
-            onClick = () => shell.openExternal(url);
-          } else {
-            revision = null;
-            onClick = null;
-          }
-          differentialCell = (
-            <td className="nuclide-vcs-log-differential-cell">
-              <span
-                className="nuclide-vcs-log-differential-cell-text"
-                onClick={onClick}>
-                {revision}
-              </span>
-            </td>
-          );
-        } else {
-          differentialCell = null;
-        }
-
-        let showDiffCell = null;
-        if (this.props.files.length === 1) {
-          const newContentNode = logEntries[index]
-            ? logEntries[index].node
-            : '';
-          const oldContentNode = logEntries[index + 1]
-            ? logEntries[index + 1].node
-            : '';
-          showDiffCell = (
-            <input
-              className="input-radio"
-              type="radio"
-              checked={index === this.state.diffIndex}
-              onChange={() => {
-                this.setState({
-                  showDiffContainer: true,
-                  diffIndex: index,
-                });
-                this.props.onDiffClick(oldContentNode, newContentNode);
-              }}
-            />
-          );
-        }
-
-        return (
-          <tr key={logEntry.node}>
-            <td className="nuclide-vcs-log-date-cell">
-              {this._toDateString(logEntry.date[0])}
-            </td>
-            <td className="nuclide-vcs-log-id-cell">
-              {logEntry.node.substring(0, 8)}
-            </td>
-            {differentialCell}
-            <td className="nuclide-vcs-log-author-cell">
-              {shortNameForAuthor(logEntry.user)}
-            </td>
-            <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
-              {parseFirstLine(logEntry.desc)}
-            </td>
-            <td className="nuclide-vcs-log-show-diff-cell">
-              {showDiffCell}
-            </td>
-          </tr>
-        );
+        return this._renderRow(logEntries, index, differentialUrls);
       });
 
       // Note that we use the native-key-bindings/tabIndex=-1 trick to make it possible to
@@ -213,6 +147,114 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         </div>
       );
     }
+  }
+
+  _renderRow(
+    logEntries: Array<VcsLogEntry>,
+    index: number,
+    differentialUrls: Array<string>,
+  ): React.Element<any> {
+    const showDifferentialRevision =
+      this.props.showDifferentialRevision && differentialUrls.length > 0;
+    let differentialCell;
+    if (showDifferentialRevision) {
+      const url = differentialUrls[index];
+      let revision;
+      let onClick;
+      if (url != null) {
+        revision = url.substring(url.lastIndexOf('/') + 1);
+        onClick = () => shell.openExternal(url);
+      } else {
+        revision = null;
+        onClick = null;
+      }
+      differentialCell = (
+        <td className="nuclide-vcs-log-differential-cell">
+          <span
+            className="nuclide-vcs-log-differential-cell-text"
+            onClick={onClick}>
+            {revision}
+          </span>
+        </td>
+      );
+    } else {
+      differentialCell = null;
+    }
+
+    const nodeAtIndex = (nodeIndex: number) =>
+      logEntries[nodeIndex] ? logEntries[nodeIndex].node : '';
+    const {baseDiffIndex, targetDiffIndex} = this.state;
+    let showDiffCell = null;
+    if (this.props.files.length === 1) {
+      showDiffCell = (
+        <span className="input-radio-container">
+          {index !== 0
+            ? <input
+                className="input-radio"
+                type="radio"
+                checked={index === baseDiffIndex}
+                disabled={targetDiffIndex != null && index <= targetDiffIndex}
+                onChange={() => {
+                  const newTargetDiffIndex =
+                    targetDiffIndex != null ? targetDiffIndex : index - 1;
+                  this.setState({
+                    showDiffContainer: true,
+                    baseDiffIndex: index,
+                    targetDiffIndex: newTargetDiffIndex,
+                  });
+                  this.props.onDiffClick(
+                    nodeAtIndex(index),
+                    nodeAtIndex(newTargetDiffIndex),
+                  );
+                }}
+              />
+            : null}
+          {index !== logEntries.length - 1 || index === 0
+            ? <input
+                className="input-radio right-align"
+                type="radio"
+                checked={index === targetDiffIndex}
+                disabled={baseDiffIndex != null && index >= baseDiffIndex}
+                onChange={() => {
+                  const newBaseDiffIndex =
+                    baseDiffIndex != null ? baseDiffIndex : index + 1;
+                  this.setState({
+                    showDiffContainer: true,
+                    baseDiffIndex: newBaseDiffIndex,
+                    targetDiffIndex: index,
+                  });
+                  this.props.onDiffClick(
+                    nodeAtIndex(newBaseDiffIndex),
+                    nodeAtIndex(index),
+                  );
+                }}
+              />
+            : null}
+        </span>
+      );
+    }
+
+    const logEntry = logEntries[index];
+    return (
+      <tr key={logEntry.node}>
+        <td className="nuclide-vcs-log-date-cell">
+          {this._toDateString(logEntry.date[0])}
+        </td>
+        <td className="nuclide-vcs-log-id-cell">
+          {logEntry.node.substring(0, 8)}
+        </td>
+        {differentialCell}
+        <td className="nuclide-vcs-log-author-cell">
+          {shortNameForAuthor(logEntry.user)}
+        </td>
+        <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
+          {parseFirstLine(logEntry.desc)}
+        </td>
+        <td className="nuclide-vcs-log-show-diff-cell">
+          {showDiffCell}
+        </td>
+      </tr>
+    );
   }
 
   _toDateString(secondsSince1970: number): string {
