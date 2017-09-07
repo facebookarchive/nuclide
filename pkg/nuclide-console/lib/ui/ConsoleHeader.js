@@ -119,7 +119,6 @@ export default class ConsoleHeader extends React.Component<Props> {
             className="inline-block"
             size={ButtonSizes.SMALL}
             onClick={this._handleCreatePasteButtonClick}
-            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title: 'Creates a Paste from the current contents of the console',
             })}>

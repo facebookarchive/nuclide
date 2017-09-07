@@ -184,7 +184,6 @@ class StatusBarTileComponent extends React.Component<Props> {
         <a
           className={errorClassName}
           onClick={this._onClick}
-          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: `${errorLabel} error${errorSuffix}`,
             placement: 'top',
@@ -195,7 +194,6 @@ class StatusBarTileComponent extends React.Component<Props> {
         <a
           className={warningClassName}
           onClick={this._onClick}
-          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: `${warningLabel} warning${warningSuffix}`,
             placement: 'top',

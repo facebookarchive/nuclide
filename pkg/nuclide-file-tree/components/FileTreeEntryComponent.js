@@ -197,7 +197,6 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
             ref={elem => {
               // $FlowFixMe(>=0.53.0) Flow suppress
               this._pathContainer = elem;
-              // $FlowFixMe(>=0.53.0) Flow suppress
               tooltip && tooltip(elem);
             }}
             data-name={node.name}

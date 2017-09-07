@@ -87,7 +87,6 @@ export default class ChangedFile extends React.Component<Props> {
         className="nuclide-changed-file-action"
         key={key}
         onClick={onClick}
-        // $FlowFixMe(>=0.53.0) Flow suppress
         ref={addTooltip({
           delay: 300,
           placement: 'top',

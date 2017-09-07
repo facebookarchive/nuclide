@@ -78,7 +78,6 @@ export default class BuckToolbar extends React.Component<Props, State> {
         ? 'Loading target build rule...'
         : 'Loading available platforms...';
       status = (
-        // $FlowFixMe(>=0.53.0) Flow suppress
         <div ref={addTooltip({title, delay: 0})}>
           <LoadingSpinner
             className="inline-block buck-spinner"
@@ -90,8 +89,7 @@ export default class BuckToolbar extends React.Component<Props, State> {
       status = (
         <span
           className="icon icon-alert"
-          ref={// $FlowFixMe(v>=0.53.0)
-          addTooltip({
+          ref={addTooltip({
             title:
               `'${buildTarget}' could not be found in ${buckRoot}.<br />` +
               'Check your Current Working Root or click to retry',

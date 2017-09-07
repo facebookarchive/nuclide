@@ -69,7 +69,6 @@ export class StatusBarTileComponent extends React.Component<Props> {
           style={{cursor: 'pointer'}}
           onClick={this.props.onClick}
           className={classes}
-          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             title: tooltipString,
             delay: 0,

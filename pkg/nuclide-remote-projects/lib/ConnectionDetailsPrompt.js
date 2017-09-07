@@ -234,7 +234,6 @@ export default class ConnectionDetailsPrompt extends React.Component<
               onDoubleClick={this.props.onConfirm}>
               <span
                 className="icon icon-info pull-right connection-details-icon-info"
-                // $FlowFixMe(>=0.53.0) Flow suppress
                 ref={addTooltip({
                   // Intentionally *not* an arrow function so the jQuery Tooltip plugin can set the
                   // context to the Tooltip instance.
@@ -286,7 +285,6 @@ export default class ConnectionDetailsPrompt extends React.Component<
         <span
           style={{paddingLeft: 10}}
           className="icon icon-info pull-right nuclide-remote-projects-tooltip-warning"
-          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip({
             // Intentionally *not* an arrow function so the jQuery
             // Tooltip plugin can set the context to the Tooltip

@@ -61,7 +61,6 @@ export class DebuggerCallstackComponent extends React.Component<
         ? <span
             className={classnames('text-error', 'icon', 'icon-alert')}
             onClick={() => this.props.actions.configureSourcePaths()}
-            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title:
                 'Source file not found! Some debugger features will not work without source.' +

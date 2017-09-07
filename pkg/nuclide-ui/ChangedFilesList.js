@@ -106,7 +106,6 @@ export default class ChangedFilesList extends React.Component<Props, State> {
       fileStatuses.size > filesToShow
         ? <div
             className="icon icon-ellipsis"
-            // $FlowFixMe(>=0.53.0) Flow suppress
             ref={addTooltip({
               title: 'Show more files with uncommitted changes',
               delay: 300,

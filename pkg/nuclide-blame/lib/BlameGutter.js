@@ -342,7 +342,6 @@ class GutterElement extends React.Component<Props> {
       return (
         <div
           className="nuclide-blame-row nuclide-blame-content"
-          // $FlowFixMe(>=0.53.0) Flow suppress
           ref={addTooltip(tooltip)}>
           {!isLastLine
             ? <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />

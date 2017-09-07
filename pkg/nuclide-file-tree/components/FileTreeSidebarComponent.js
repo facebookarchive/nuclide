@@ -334,7 +334,6 @@ All the changes across your entire stacked diff.
             </span>;
 
         uncommittedChangesHeadline = (
-          // $FlowFixMe(>=0.53.0) Flow suppress
           <span ref={addTooltip({title: dropdownTooltip})}>
             <span className="nuclide-dropdown-label-text-wrapper">
               {this.state.showUncommittedChangesKind.toUpperCase()}

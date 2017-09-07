@@ -26,7 +26,7 @@ import ReactDOM from 'react-dom';
 */
 export default function addTooltip(
   options: atom$TooltipsAddOptions,
-): (elementRef: React.Element<any>) => void {
+): (elementRef: React.ElementRef<any>) => void {
   let prevRefDisposable;
 
   let immediate = null;
@@ -38,7 +38,6 @@ export default function addTooltip(
     }
 
     if (elementRef != null) {
-      // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
       const node = ReactDOM.findDOMNode(elementRef);
 
       const initializeTooltip = () => {

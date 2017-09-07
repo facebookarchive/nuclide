@@ -108,7 +108,6 @@ export class Checkbox extends React.PureComponent<Props> {
         className={classnames(className, 'nuclide-ui-checkbox-label', {
           'nuclide-ui-checkbox-disabled': disabled,
         })}
-        // $FlowFixMe(>=0.53.0) Flow suppress
         ref={ref}
         onClick={onClick && ignoreTextSelectionEvents(onClick)}
         title={title}>
