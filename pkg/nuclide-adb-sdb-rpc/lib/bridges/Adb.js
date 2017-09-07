@@ -244,6 +244,26 @@ export class Adb extends DebugBridge {
     return this.runShortCommand(...args).toPromise();
   }
 
+  async launchService(
+    packageName: string,
+    serviceName: string,
+    debug: boolean,
+  ): Promise<string> {
+    if (debug) {
+      // Enable "wait for debugger" semantics for the next launch of
+      // the specified package.
+      await this.setDebugApp(packageName, false);
+    }
+
+    const args = [
+      'shell',
+      'am',
+      'startservice',
+      `${packageName}/${serviceName}`,
+    ];
+    return this.runShortCommand(...args).toPromise();
+  }
+
   setDebugApp(packageName: string, persist: boolean): Promise<string> {
     const args = ['shell', 'am', 'set-debug-app', '-w'];
 
