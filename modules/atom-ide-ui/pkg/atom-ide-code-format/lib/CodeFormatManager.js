@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {BusySignalService} from '../../atom-ide-busy-signal/lib/types';
 import type {
   RangeCodeFormatProvider,
   FileCodeFormatProvider,
@@ -21,6 +22,7 @@ import {Range} from 'atom';
 import semver from 'semver';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
@@ -52,6 +54,7 @@ export default class CodeFormatManager {
   _fileProviders: ProviderRegistry<FileCodeFormatProvider>;
   _onTypeProviders: ProviderRegistry<OnTypeCodeFormatProvider>;
   _onSaveProviders: ProviderRegistry<OnSaveCodeFormatProvider>;
+  _busySignalService: ?BusySignalService;
 
   constructor() {
     this._subscriptions = new UniversalDisposable(this._subscribeToEvents());
@@ -234,7 +237,7 @@ export default class CodeFormatManager {
       const buffer = editor.getBuffer();
       const selectionRange = range || editor.getSelectedBufferRange();
       const {start: selectionStart, end: selectionEnd} = selectionRange;
-      let formatRange = null;
+      let formatRange: atom$Range;
       if (selectionRange.isEmpty()) {
         // If no selection is done, then, the whole file is wanted to be formatted.
         formatRange = buffer.getRange();
@@ -259,8 +262,11 @@ export default class CodeFormatManager {
         // When formatting the entire file, prefer file-based providers.
         (!formatRange.isEqual(buffer.getRange()) || fileProvider == null)
       ) {
-        return Observable.fromPromise(
-          rangeProvider.formatCode(editor, formatRange),
+        return Observable.defer(() =>
+          this._reportBusy(
+            editor,
+            rangeProvider.formatCode(editor, formatRange),
+          ),
         ).map(edits => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
@@ -270,8 +276,11 @@ export default class CodeFormatManager {
           return true;
         });
       } else if (fileProvider != null) {
-        return Observable.fromPromise(
-          fileProvider.formatEntireFile(editor, formatRange),
+        return Observable.defer(() =>
+          this._reportBusy(
+            editor,
+            fileProvider.formatEntireFile(editor, formatRange),
+          ),
         ).map(({newCursor, formatted}) => {
           // Throws if contents have changed since the time of triggering format code.
           this._checkContentsAreSame(contents, editor.getText());
@@ -361,8 +370,8 @@ export default class CodeFormatManager {
   _formatCodeOnSaveInTextEditor(editor: atom$TextEditor): Observable<void> {
     const saveProvider = this._onSaveProviders.getProviderForEditor(editor);
     if (saveProvider != null) {
-      return Observable.fromPromise(
-        saveProvider.formatOnSave(editor),
+      return Observable.defer(() =>
+        this._reportBusy(editor, saveProvider.formatOnSave(editor)),
       ).map(edits => {
         applyTextEditsToBuffer(editor.getBuffer(), edits);
       });
@@ -373,6 +382,20 @@ export default class CodeFormatManager {
       ).ignoreElements();
     }
     return Observable.empty();
+  }
+
+  _reportBusy<T>(editor: atom$TextEditor, promise: Promise<T>): Promise<T> {
+    const busySignalService = this._busySignalService;
+    if (busySignalService != null) {
+      const path = editor.getPath();
+      const displayPath =
+        path != null ? nuclideUri.basename(path) : '<untitled>';
+      return busySignalService.reportBusyWhile(
+        `Formatting code in ${displayPath}`,
+        () => promise,
+      );
+    }
+    return promise;
   }
 
   addRangeProvider(provider: RangeCodeFormatProvider): IDisposable {
@@ -389,6 +412,13 @@ export default class CodeFormatManager {
 
   addOnSaveProvider(provider: OnSaveCodeFormatProvider): IDisposable {
     return this._onSaveProviders.addProvider(provider);
+  }
+
+  consumeBusySignal(busySignalService: BusySignalService): IDisposable {
+    this._busySignalService = busySignalService;
+    return new UniversalDisposable(() => {
+      this._busySignalService = null;
+    });
   }
 
   dispose() {
