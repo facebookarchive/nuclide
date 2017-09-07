@@ -78,6 +78,11 @@ export default class DebuggerActions {
     this._handleDebugModeStart();
     this.setDebuggerMode(DebuggerMode.STARTING);
     this.setDebugProcessInfo(processInfo);
+    atom.commands.dispatch(
+      atom.views.getView(atom.workspace),
+      'nuclide-debugger:show',
+    );
+
     try {
       const debuggerCapabilities = processInfo.getDebuggerCapabilities();
       const debuggerProps = processInfo.getDebuggerProps();
@@ -122,11 +127,6 @@ export default class DebuggerActions {
       } else {
         this.updateConfigureSourcePathsCallback(null);
       }
-
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-debugger:show',
-      );
 
       await this._waitForChromeConnection(debuggerInstance);
     } catch (err) {
