@@ -41,18 +41,22 @@ class Activation {
             ),
           );
         } else {
-          return getDevices().map(devices =>
-            Expect.value(
-              devices.map(device => ({
-                name: device.udid,
-                port: 0,
-                displayName: device.name,
-                architecture: devicePanelArchitecture(device.arch),
-                rawArchitecture: device.arch,
-                ignoresSelection: true,
-              })),
-            ),
-          );
+          return getDevices().map(devices => {
+            if (devices instanceof Error) {
+              return Expect.error(devices);
+            } else {
+              return Expect.value(
+                devices.map(device => ({
+                  name: device.udid,
+                  port: 0,
+                  displayName: device.name,
+                  architecture: devicePanelArchitecture(device.arch),
+                  rawArchitecture: device.arch,
+                  ignoresSelection: true,
+                })),
+              );
+            }
+          });
         }
       },
       getType: () => this._type,
