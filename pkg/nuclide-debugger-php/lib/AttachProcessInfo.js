@@ -53,21 +53,19 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
     };
   }
 
-  preAttachActions(): Promise<void> {
+  preAttachActions(): void {
     try {
       // TODO(t18124539) @nmote This should require FlowFB but when used flow
       // complains that it is an unused supression.
       // eslint-disable-next-line rulesdir/flow-fb-oss
       const services = require('./fb/services');
-      return services.startSlog();
-    } catch (_) {
-      return Promise.resolve();
-    }
+      services.startSlog();
+    } catch (_) {}
   }
 
   async debug(): Promise<PhpDebuggerInstance> {
     logger.info('Connecting to: ' + this.getTargetUri());
-    await this.preAttachActions();
+    this.preAttachActions();
 
     const rpcService = this._getRpcService();
     const sessionConfig = getSessionConfig(
