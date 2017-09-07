@@ -320,7 +320,7 @@ export class Adb extends DebugBridge {
           }
         });
       })
-      .timeout(500)
+      .timeout(1000)
       .catch(error => Observable.of([]))
       .switchMap(() => {
         return Promise.resolve(Array.from(jdwpProcesses));
