@@ -137,6 +137,12 @@ export class DeviceTable extends React.Component<Props> {
       }
       element = element.parentElement;
     }
+    if (
+      !this.props.devices.isError &&
+      this.props.devices.value[selectedIndex].ignoresSelection
+    ) {
+      return false;
+    }
     return true;
   };
 
