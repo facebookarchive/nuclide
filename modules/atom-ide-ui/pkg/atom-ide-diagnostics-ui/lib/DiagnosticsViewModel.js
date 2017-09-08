@@ -82,7 +82,7 @@ export class DiagnosticsViewModel {
     if (this._element == null) {
       const Component = bindObservableAsProps(this._props, DiagnosticsView);
       const element = renderReactRoot(<Component />);
-      element.classList.add('nuclide-diagnostics-ui');
+      element.classList.add('diagnostics-ui');
       this._element = element;
     }
     return this._element;

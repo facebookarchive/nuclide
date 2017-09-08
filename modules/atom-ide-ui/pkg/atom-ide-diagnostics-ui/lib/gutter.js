@@ -29,7 +29,7 @@ import analytics from 'nuclide-commons-atom/analytics';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
-const GUTTER_ID = 'nuclide-diagnostics-gutter';
+const GUTTER_ID = 'diagnostics-gutter';
 
 // Needs to be the same as glyph-height in gutter.atom-text-editor.less.
 const GLYPH_HEIGHT = 15; // px
@@ -46,18 +46,18 @@ const POPUP_DISPOSE_TIMEOUT = 100;
 // might have to listen for mouseover events on TextEditor and then use its own APIs, such as
 // decorationsForScreenRowRange(), to see if there is a hit target instead. Since this will be
 // happening onmousemove, we also have to be careful to make sure this is not expensive.
-const HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
+const HIGHLIGHT_CSS = 'diagnostics-gutter-ui-highlight';
 
 const HIGHLIGHT_CSS_LEVELS = {
-  Error: 'nuclide-diagnostics-gutter-ui-highlight-error',
-  Warning: 'nuclide-diagnostics-gutter-ui-highlight-warning',
-  Info: 'nuclide-diagnostics-gutter-ui-highlight-info',
+  Error: 'diagnostics-gutter-ui-highlight-error',
+  Warning: 'diagnostics-gutter-ui-highlight-warning',
+  Info: 'diagnostics-gutter-ui-highlight-info',
 };
 
 const GUTTER_CSS_LEVELS = {
-  Error: 'nuclide-diagnostics-gutter-ui-gutter-error',
-  Warning: 'nuclide-diagnostics-gutter-ui-gutter-warning',
-  Info: 'nuclide-diagnostics-gutter-ui-gutter-info',
+  Error: 'diagnostics-gutter-ui-gutter-error',
+  Warning: 'diagnostics-gutter-ui-gutter-warning',
+  Info: 'diagnostics-gutter-ui-gutter-info',
 };
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();

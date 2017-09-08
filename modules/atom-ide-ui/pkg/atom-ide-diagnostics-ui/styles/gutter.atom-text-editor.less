@@ -4,14 +4,14 @@
 
 // Styles for gutter glyphs.
 
-.gutter[gutter-name=nuclide-diagnostics-gutter] {
+.gutter[gutter-name=diagnostics-gutter] {
   min-width: 0.5em;
 }
 
-.nuclide-diagnostics-gutter-ui-gutter-error,
-.nuclide-diagnostics-gutter-ui-gutter-warning,
-.nuclide-diagnostics-gutter-ui-gutter-info {
-  // Needs to match .nuclide-debugger-breakpoint-icon
+.diagnostics-gutter-ui-gutter-error,
+.diagnostics-gutter-ui-gutter-warning,
+.diagnostics-gutter-ui-gutter-info {
+  // Needs to match .debugger-breakpoint-icon
   .octicon(triangle-right, @size: 130%);
   text-align: left;
   display: block;
@@ -22,14 +22,14 @@
   transform-origin: left;
 }
 
-.nuclide-diagnostics-gutter-ui-gutter-error {
+.diagnostics-gutter-ui-gutter-error {
   color: @text-color-error;
 }
 
-.nuclide-diagnostics-gutter-ui-gutter-warning {
+.diagnostics-gutter-ui-gutter-warning {
   color: @text-color-warning;
 }
 
-.nuclide-diagnostics-gutter-ui-gutter-info {
+.diagnostics-gutter-ui-gutter-info {
   color: @text-color-info;
 }

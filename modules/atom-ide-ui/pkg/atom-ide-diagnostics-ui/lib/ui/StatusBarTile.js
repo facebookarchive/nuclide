@@ -162,18 +162,12 @@ class StatusBarTileComponent extends React.Component<Props> {
     const warningCount = this.props.warningCount;
     const hasErrors = errorCount > 0;
     const hasWarnings = warningCount > 0;
-    const errorClassName = classnames(
-      'nuclide-diagnostics-status-bar-highlight',
-      {
-        'text-error': hasErrors,
-      },
-    );
-    const warningClassName = classnames(
-      'nuclide-diagnostics-status-bar-highlight',
-      {
-        'text-warning': hasWarnings,
-      },
-    );
+    const errorClassName = classnames('diagnostics-status-bar-highlight', {
+      'text-error': hasErrors,
+    });
+    const warningClassName = classnames('diagnostics-status-bar-highlight', {
+      'text-warning': hasWarnings,
+    });
     const errorLabel = hasErrors ? errorCount : 'No';
     const errorSuffix = errorCount !== 1 ? 's' : '';
     const warningLabel = hasWarnings ? warningCount : 'No';

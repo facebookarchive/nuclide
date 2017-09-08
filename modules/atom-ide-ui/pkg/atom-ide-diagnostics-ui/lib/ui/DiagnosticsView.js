@@ -35,7 +35,7 @@ export type Props = {
 };
 
 /**
- * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
+ * Dismissable panel that displays the diagnostics from diagnostics-store.
  */
 export default class DiagnosticsView extends React.Component<Props> {
   constructor(props: Props) {
@@ -87,7 +87,7 @@ export default class DiagnosticsView extends React.Component<Props> {
         <Toolbar>
           <ToolbarCenter>
             <span className="inline-block highlight-info">
-              nuclide-diagnostics is not compatible with the linter package. We
+              diagnostics is not compatible with the linter package. We
               recommend that you&nbsp;
               <a onClick={this.props.disableLinter}>
                 disable the linter package

@@ -106,7 +106,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     waitsFor('error to show up in diagnostics', 10000, () => {
       const errors = atom.views
         .getView(atom.workspace)
-        .querySelector('.nuclide-diagnostics-status-bar-highlight');
+        .querySelector('.diagnostics-status-bar-highlight');
       if (errors instanceof HTMLElement) {
         const innerText = errors.innerText;
         invariant(innerText != null);

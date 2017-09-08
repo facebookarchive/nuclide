@@ -54,9 +54,7 @@ type ColumnName = $Keys<DisplayDiagnostic>;
 const MAX_RESULTS_COUNT = 1000;
 
 const EmptyComponent = () =>
-  <div className="nuclide-diagnostics-ui-empty-component">
-    No diagnostic messages
-  </div>;
+  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>;
 
 const TypeToHighlightColor = Object.freeze({
   ERROR: HighlightColors.error,
@@ -239,7 +237,7 @@ export default class DiagnosticsTable extends React.Component<
     if (sortedRows.length > MAX_RESULTS_COUNT) {
       sortedRows = sortedRows.slice(0, MAX_RESULTS_COUNT);
       maxResultsMessage = (
-        <div className="highlight-warning nuclide-diagnostics-ui-table-message">
+        <div className="highlight-warning diagnostics-ui-table-message">
           Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show
           only diagnostics for the current file to view more.
         </div>
@@ -248,9 +246,8 @@ export default class DiagnosticsTable extends React.Component<
     return (
       <div
         className={classnames({
-          'nuclide-diagnostics-ui-table-container': true,
-          'nuclide-diagnostics-ui-table-container-empty':
-            sortedRows.length === 0,
+          'diagnostics-ui-table-container': true,
+          'diagnostics-ui-table-container-empty': sortedRows.length === 0,
         })}>
         <Table
           collapsable={true}
