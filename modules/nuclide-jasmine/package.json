@@ -1,6 +1,6 @@
 {
   "name": "nuclide-jasmine",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "description": "Atom-compatible Jasmine runner that runs outside of Atom",
   "license": "BSD-3-Clause",
   "homepage": "https://nuclide.io/",
@@ -9,7 +9,7 @@
     "test": "node bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
-    "nuclide-node-transpiler": "0.1.11",
+    "nuclide-node-transpiler": "0.2.0",
     "temp": "0.8.3"
   },
   "devDependencies": {

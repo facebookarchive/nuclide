@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "async-to-generator": "1.1.0",
-    "big-dig": "0.0.6",
+    "big-dig": "0.0.7",
     "log4js": "1.1.1",
     "yargs": "3.32.0"
   }
