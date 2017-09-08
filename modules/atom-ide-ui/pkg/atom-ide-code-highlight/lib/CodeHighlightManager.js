@@ -105,7 +105,7 @@ export default class CodeHighlightManager {
     this._markers.forEach(marker => {
       editor.decorateMarker(marker, {
         type: 'highlight',
-        class: 'atom-ide-code-highlight-marker',
+        class: 'code-highlight-marker',
       });
     });
   }

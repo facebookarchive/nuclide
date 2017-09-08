@@ -33,13 +33,9 @@ type Props = {
 function StatusBarTileComponent(props: Props) {
   let element;
   if (props.waitingForUser) {
-    element = (
-      <Icon className="atom-ide-busy-signal-status-bar" icon="unverified" />
-    );
+    element = <Icon className="busy-signal-status-bar" icon="unverified" />;
   } else if (props.waitingForComputer) {
-    element = (
-      <div className="atom-ide-busy-signal-status-bar loading-spinner-tiny" />
-    );
+    element = <div className="busy-signal-status-bar loading-spinner-tiny" />;
   } else {
     element = null;
   }
