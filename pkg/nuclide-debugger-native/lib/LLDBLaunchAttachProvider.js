@@ -39,13 +39,6 @@ export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
     this._uiProviderMap = new Map();
     this._enabledProviderNames = new Map();
     this._loadAction(new NativeActionUIProvider(targetUri));
-    try {
-      // $FlowFB
-      const module = require('./actions/fb-omActionUIProvider');
-      if (module != null) {
-        this._loadAction(new module.omActionUIProvider(targetUri));
-      }
-    } catch (_) {}
   }
 
   _loadAction(actionProvider: ?DebuggerActionUIProvider): void {
