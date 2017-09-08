@@ -17,6 +17,7 @@ import {
   arrayFindLastIndex,
   mapUnion,
   isEmpty,
+  isIterable,
   keyMirror,
   setFilter,
   setIntersect,
@@ -162,6 +163,39 @@ describe('isEmpty', () => {
     expect(isEmpty({a: 1})).toEqual(false);
     expect(isEmpty(objWithOwnProperties)).toEqual(false);
     expect(isEmpty(objWithoutOwnProperties)).toEqual(false);
+  });
+});
+
+describe('isIterable', () => {
+  it('detects arrays are iterable', () => {
+    expect(isIterable(['foo', 'bar'])).toBe(true);
+  });
+
+  it('detects strings are iterable', () => {
+    expect(isIterable('foo')).toBe(true);
+  });
+
+  it('detects Sets are iterable', () => {
+    expect(isIterable(new Set(['foo', 'bar']))).toBe(true);
+  });
+
+  it('detects iterable objects are iterable', () => {
+    const anIterable = {
+      *[Symbol.iterator]() {
+        yield 1;
+        yield 42;
+      },
+    };
+
+    expect(isIterable(anIterable)).toBe(true);
+  });
+
+  it('detects plain objects are not iterable', () => {
+    expect(isIterable({foo: 'bar', baz: 42})).toBe(false);
+  });
+
+  it('detects numbers are not iterable', () => {
+    expect(isIterable(42)).toBe(false);
   });
 });
 

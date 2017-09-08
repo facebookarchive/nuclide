@@ -14,8 +14,8 @@
 
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
-import {setDifference} from './collection';
 import {Observable, ReplaySubject} from 'rxjs';
+import {setDifference} from './collection';
 
 /**
  * Splits a stream of strings on newlines.

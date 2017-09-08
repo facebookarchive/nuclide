@@ -483,3 +483,7 @@ export function count<T>(iterable: Iterable<T>): number {
   }
   return size;
 }
+
+export function isIterable(obj: any): boolean {
+  return typeof obj[Symbol.iterator] === 'function';
+}
