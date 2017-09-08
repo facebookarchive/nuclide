@@ -1,5 +1,5 @@
-// flow-typed signature: c8bc4e52b567bd25846c483ca35697ec
-// flow-typed version: fae52b2ca3/rxjs_v5.0.x/flow_>=v0.34.x
+// flow-typed signature: 0723ec09e223e3f8a0a66ef5ab1fa253
+// flow-typed version: 96963f4e58/rxjs_v5.0.x/flow_>=v0.34.x
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
@@ -159,6 +159,12 @@ declare class rxjs$Observable<+T> {
   distinctUntilKeyChanged(key: string, compare?: (x: mixed, y: mixed) => boolean): rxjs$Observable<T>;
 
   elementAt(index: number, defaultValue?: T): rxjs$Observable<T>;
+
+  expand(
+    project: (value: T, index: number) => rxjs$Observable<T>,
+    concurrent?: number,
+    scheduler?: rxjs$SchedulerClass,
+  ): rxjs$Observable<T>;
 
   filter(predicate: (value: T, index: number) => boolean, thisArg?: any): rxjs$Observable<T>;
 
