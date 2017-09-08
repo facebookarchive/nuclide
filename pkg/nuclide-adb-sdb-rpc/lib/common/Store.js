@@ -19,7 +19,6 @@ import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
-import {DEFAULT_ADB_PORT} from './DebugBridge';
 
 export type DBPath = {path: string, priority: number};
 
@@ -28,7 +27,7 @@ class DebugBridgePathStore {
   _sortedPaths: string[] = [];
   _lastWorkingPath: ?string = null;
   _customPath: ?string = null;
-  _ports: Array<number> = [DEFAULT_ADB_PORT];
+  _ports: Array<number> = [];
 
   registerPath(id: string, dbPath: DBPath): void {
     this._registeredPaths.set(id, dbPath);

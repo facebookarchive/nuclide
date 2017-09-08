@@ -333,4 +333,11 @@ export class Adb extends DebugBridge {
     }
     return this.runShortCommand('shell', 'dumpsys', 'package', pkg).toPromise();
   }
+
+  getDeviceArgs(): Array<string> {
+    const portArg =
+      this._device.port != null ? ['-P', String(this._device.port)] : [];
+    const deviceArg = this._device.name !== '' ? ['-s', this._device.name] : [];
+    return deviceArg.concat(portArg);
+  }
 }

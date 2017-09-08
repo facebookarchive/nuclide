@@ -19,6 +19,7 @@ import type {
   DebugBridgeFullConfig,
 } from './types';
 
+import {DEFAULT_ADB_PORT} from './common/DebugBridge';
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
 import {Adb} from './bridges/Adb';
@@ -34,6 +35,7 @@ export async function registerAdbPath(
   priority: number = -1,
 ): Promise<void> {
   getStore(ADB).registerPath(id, {path, priority});
+  getStore(ADB).addPort(DEFAULT_ADB_PORT);
 }
 
 export async function getFullConfig(): Promise<DebugBridgeFullConfig> {

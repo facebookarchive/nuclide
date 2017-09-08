@@ -90,4 +90,8 @@ export class Sdb extends DebugBridge {
     // TODO(T17463635)
     return this.runLongCommand('uninstall', packageName);
   }
+
+  getDeviceArgs(): Array<string> {
+    return this._device.name !== '' ? ['-s', this._device.name] : [];
+  }
 }
