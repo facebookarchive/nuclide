@@ -21,6 +21,7 @@ import {getLogger} from 'log4js';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {track, trackTiming} from '../../nuclide-analytics';
+import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 
 const PACKAGES_MISSING_MESSAGE =
   'Could not open blame. Missing at least one blame provider.';
@@ -49,7 +50,8 @@ class Activation {
                 label: 'Toggle Blame',
                 command: 'nuclide-blame:toggle-blame',
                 shouldDisplay: (event: MouseEvent) =>
-                  this._canShowBlame() || this._canHideBlame(),
+                  this._canShowBlame(true /* fromContextMenu */) ||
+                  this._canHideBlame(true /* fromContextMenu */),
               },
             ],
           },
@@ -57,18 +59,15 @@ class Activation {
       }),
     );
     this._packageDisposables.add(
-      atom.commands.add(
-        'atom-text-editor',
-        'nuclide-blame:toggle-blame',
-        () => {
-          if (this._canShowBlame()) {
-            this._showBlame();
-          } else if (this._canHideBlame()) {
-            this._hideBlame();
-          }
-        },
-      ),
-      atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', () => {
+      atom.commands.add('atom-workspace', 'nuclide-blame:toggle-blame', () => {
+        if (this._canShowBlame()) {
+          this._showBlame();
+        } else if (this._canHideBlame()) {
+          this._hideBlame();
+        }
+      }),
+      // eslint-disable-next-line
+      atom.commands.add('atom-workspace', 'nuclide-blame:hide-blame', () => {
         if (this._canHideBlame()) {
           this._hideBlame();
         }
@@ -157,7 +156,7 @@ class Activation {
 
   _showBlame(event): void {
     return trackTiming('blame.showBlame', () => {
-      const editor = atom.workspace.getActiveTextEditor();
+      const editor = getMostRelevantEditor();
       if (editor != null) {
         this._showBlameGutterForEditor(editor);
       }
@@ -166,20 +165,20 @@ class Activation {
 
   _hideBlame(event): void {
     return trackTiming('blame.hideBlame', () => {
-      const editor = atom.workspace.getActiveTextEditor();
+      const editor = getMostRelevantEditor();
       if (editor != null) {
         this._removeBlameGutterForEditor(editor);
       }
     });
   }
 
-  _canShowBlame(): boolean {
-    const editor = atom.workspace.getActiveTextEditor();
-    return !(editor != null && this._textEditorToBlameGutter.has(editor));
+  _canShowBlame(fromContextMenu: boolean = false): boolean {
+    const editor = getMostRelevantEditor(fromContextMenu);
+    return editor != null && !this._textEditorToBlameGutter.has(editor);
   }
 
-  _canHideBlame(): boolean {
-    const editor = atom.workspace.getActiveTextEditor();
+  _canHideBlame(fromContextMenu: boolean = false): boolean {
+    const editor = getMostRelevantEditor(fromContextMenu);
     return editor != null && this._textEditorToBlameGutter.has(editor);
   }
 
@@ -270,4 +269,15 @@ export function addItemsToFileTreeContextMenu(
 ): IDisposable {
   invariant(activation);
   return activation.addItemsToFileTreeContextMenu(contextMenu);
+}
+
+function getMostRelevantEditor(
+  fromContextMenu: boolean = false,
+): ?atom$TextEditor {
+  const editor = atom.workspace.getActiveTextEditor();
+  if (fromContextMenu || editor != null) {
+    return editor;
+  }
+  const item = atom.workspace.getCenter().getActivePane().getActiveItem();
+  return isValidTextEditor(item) ? item : null;
 }
