@@ -97,7 +97,7 @@ export class OutlineView extends React.PureComponent<Props, State> {
 
   render(): React.Node {
     return (
-      <div className="nuclide-outline-view">
+      <div className="outline-view">
         <OutlineViewComponent
           outline={this.state.outline}
           searchEnabled={this.state.searchEnabled}
@@ -133,7 +133,7 @@ class OutlineViewComponent extends React.PureComponent<
         );
       case 'loading':
         return (
-          <div className="nuclide-outline-view-loading">
+          <div className="outline-view-loading">
             <LoadingSpinner
               className="inline-block"
               size={LoadingSpinnerSizes.MEDIUM}
@@ -196,7 +196,7 @@ class OutlineViewCore extends React.PureComponent<
     invariant(outline.kind === 'outline');
 
     return (
-      <div className="nuclide-outline-view-core">
+      <div className="outline-view-core">
         {searchEnabled
           ? <OutlineViewSearchComponent
               outlineTrees={outline.outlineTrees}
@@ -206,8 +206,8 @@ class OutlineViewCore extends React.PureComponent<
               }}
             />
           : null}
-        <div className="nuclide-outline-view-trees-scroller">
-          <div className="nuclide-outline-view-trees">
+        <div className="outline-view-trees-scroller">
+          <div className="outline-view-trees">
             {renderTrees(
               outline.editor,
               outline.outlineTrees,
@@ -265,7 +265,7 @@ class OutlineTree extends React.PureComponent<{
     return (
       <li className={classes}>
         <div
-          className="list-item nuclide-outline-view-item"
+          className="list-item outline-view-item"
           onClick={this.onClick}
           onDoubleClick={this.onDoubleClick}>
           {renderItem(outline, searchResults.get(outline))}

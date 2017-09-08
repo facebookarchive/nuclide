@@ -116,7 +116,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     if (pane == null) {
       return;
     }
-    analytics.track('atom-ide-outline-view:search-enter');
+    analytics.track('outline-view:search-enter');
     pane.activate();
     pane.activateItem(this.props.editor);
     goToLocationInEditor(
@@ -137,10 +137,10 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
 
   render(): React.Node {
     return (
-      <div className="atom-ide-outline-view-search-bar">
-        <Icon icon="search" className="atom-ide-outline-view-search-icon" />
+      <div className="outline-view-search-bar">
+        <Icon icon="search" className="outline-view-search-icon" />
         <AtomInput
-          className="atom-ide-outline-view-search-pane"
+          className="outline-view-search-pane"
           onConfirm={this._onConfirm}
           onCancel={this._onDidClear}
           onDidChange={this._onDidChange}
@@ -151,7 +151,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
         {this.state.currentQuery.length > 0
           ? <Icon
               icon="x"
-              className="atom-ide-outline-view-search-clear"
+              className="outline-view-search-clear"
               onClick={this._onDidClear}
             />
           : null}

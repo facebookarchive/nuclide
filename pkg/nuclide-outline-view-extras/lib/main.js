@@ -32,15 +32,15 @@ class Activation {
   _createOutlineViewNuxTourModel(): NuxTourModel {
     const outlineViewToolbarIconNux = {
       content: 'Check out the new Outline View!',
-      selector: '.nuclide-outline-view-toolbar-button',
+      selector: '.outline-view-toolbar-button',
       position: 'auto',
       completionPredicate: () =>
-        document.querySelector('div.nuclide-outline-view') != null,
+        document.querySelector('div.outline-view') != null,
     };
 
     const outlineViewPanelNux = {
       content: 'Click on a symbol to jump to its definition.',
-      selector: 'div.pane-item.nuclide-outline-view',
+      selector: 'div.outline-view',
       position: 'left',
     };
 
@@ -56,7 +56,7 @@ class Activation {
     };
 
     const isOutlineViewClosed = () =>
-      document.querySelector('.nuclide-outline-view') == null;
+      document.querySelector('div.outline-view') == null;
     const triggerCallback = editor =>
       isOutlineViewClosed() && isValidFileTypeForNux(editor);
 

@@ -116,7 +116,7 @@ describe('Clang Integration Test (objc)', () => {
     waitsFor('outline view to load', 10000, () => {
       names = atom.views
         .getView(atom.workspace)
-        .querySelectorAll('.nuclide-outline-view-item .syntax--name');
+        .querySelectorAll('.outline-view-item .syntax--name');
       return names.length > 0;
     });
 

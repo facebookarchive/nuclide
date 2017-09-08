@@ -129,7 +129,7 @@ function highlightedOutlines(
   outline: Outline,
   editor: atom$TextEditor,
 ): Observable<OutlineForUi> {
-  const nameOnly = featureConfig.get('nuclide-outline-view.nameOnly');
+  const nameOnly = featureConfig.get('atom-ide-outline-view.nameOnly');
   const outlineForUi = {
     kind: 'outline',
     outlineTrees: outline.outlineTrees.map(outlineTree =>
