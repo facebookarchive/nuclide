@@ -157,7 +157,7 @@ describeRemotableTest('Clang Integration Test (C++)', context => {
     waitsFor('datatip to appear for TestClass', () => {
       datatip = atom.views
         .getView(atom.workspace)
-        .querySelector('.nuclide-datatip-content atom-text-editor');
+        .querySelector('.datatip-content atom-text-editor');
       return datatip;
     });
 

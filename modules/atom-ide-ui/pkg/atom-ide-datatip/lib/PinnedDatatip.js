@@ -79,7 +79,7 @@ export class PinnedDatatip {
     this._marker = null;
     this._rangeDecoration = null;
     this._hostElement = document.createElement('div');
-    this._hostElement.className = 'nuclide-datatip-overlay';
+    this._hostElement.className = 'datatip-overlay';
     this._boundDispose = this.dispose.bind(this);
     this._boundHandleMouseDown = this.handleMouseDown.bind(this);
     this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
@@ -208,8 +208,8 @@ export class PinnedDatatip {
         action={DATATIP_ACTIONS.CLOSE}
         actionTitle="Close this datatip"
         className={classnames(
-          _isDragging ? 'nuclide-datatip-dragging' : '',
-          'nuclide-datatip-pinned',
+          _isDragging ? 'datatip-dragging' : '',
+          'datatip-pinned',
         )}
         datatip={_datatip}
         onActionClick={this._boundDispose}
@@ -219,9 +219,9 @@ export class PinnedDatatip {
       _hostElement,
     );
 
-    let rangeClassname = 'nuclide-datatip-highlight-region';
+    let rangeClassname = 'datatip-highlight-region';
     if (_isHovering) {
-      rangeClassname += ' nuclide-datatip-highlight-region-active';
+      rangeClassname += ' datatip-highlight-region-active';
     }
 
     if (this._marker == null) {

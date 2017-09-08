@@ -197,7 +197,7 @@ function mountDatatipWithMarker(
 
   editor.decorateMarker(marker, {
     type: 'highlight',
-    class: 'nuclide-datatip-highlight-region',
+    class: 'datatip-highlight-region',
   });
 
   return marker;
@@ -254,7 +254,7 @@ class DatatipManagerForEditor {
     this._datatipProviders = datatipProviders;
     this._modifierDatatipProviders = modifierDatatipProviders;
     this._datatipElement = document.createElement('div');
-    this._datatipElement.className = 'nuclide-datatip-overlay';
+    this._datatipElement.className = 'datatip-overlay';
     this._datatipState = DatatipState.HIDDEN;
     this._heldKeys = new Set();
     this._interactedWith = false;

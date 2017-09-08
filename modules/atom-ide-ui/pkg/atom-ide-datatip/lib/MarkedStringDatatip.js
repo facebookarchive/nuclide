@@ -27,7 +27,7 @@ export default class MarkedStringDatatip extends React.PureComponent<Props> {
       if (chunk.type === 'markdown') {
         return (
           <div
-            className="nuclide-datatip-marked-container"
+            className="datatip-marked-container"
             dangerouslySetInnerHTML={{
               __html: marked(chunk.value, {sanitize: true}),
             }}
@@ -40,7 +40,7 @@ export default class MarkedStringDatatip extends React.PureComponent<Props> {
     });
 
     return (
-      <div className="nuclide-datatip-marked">
+      <div className="datatip-marked">
         {elements}
       </div>
     );
