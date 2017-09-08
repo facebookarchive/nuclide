@@ -155,6 +155,7 @@ export class LspLanguageService {
   // still potentially have multiple outstanding requests of the same type.
   _hoverCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
   _highlightCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
+  _definitionCancellation: CancellationTokenSource = new rpc.CancellationTokenSource();
 
   constructor(
     logger: log4js$Logger,
@@ -1271,7 +1272,12 @@ export class LspLanguageService {
 
     let response;
     try {
-      response = await this._lspConnection.gotoDefinition(params);
+      this._definitionCancellation.cancel();
+      this._definitionCancellation = new rpc.CancellationTokenSource();
+      response = await this._lspConnection.gotoDefinition(
+        params,
+        this._definitionCancellation.token,
+      );
       invariant(response != null, 'null textDocument/definition');
     } catch (e) {
       this._logLspException(e);

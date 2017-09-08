@@ -138,10 +138,12 @@ export class LspConnection {
 
   gotoDefinition(
     params: p.TextDocumentPositionParams,
+    token: CancellationToken,
   ): Promise<p.Location | Array<p.Location>> {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/definition',
       params,
+      token,
     );
   }
 
