@@ -161,6 +161,7 @@ export class LspConnection {
     return this._jsonRpcConnection.sendRequest(
       'textDocument/documentHighlight',
       params,
+      token,
     );
   }
 
