@@ -360,7 +360,7 @@ function renderMatchedSubsequence(
 ): React.Element<any> {
   return renderSubsequence(seq, {
     key,
-    className: 'atom-ide-outline-view-match',
+    className: 'outline-view-match',
   });
 }
 
