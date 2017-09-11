@@ -1,5 +1,18 @@
 # Nuclide Changelog
 
+## v0.253.0
+
+### General
+
+* This release drops support for Atom 1.18 and below.
+* Find References and Code Formatting now use the busy signal to indicate that they're waiting on results.
+* Many CSS classes have been renamed. If you had custom stylesheets, they'll have to be updated accordingly.
+    + Affected classes: nuclide-datatip*, nuclide-outline-view*, nuclide-find-references*, nuclide-busy-signal*, nuclide-code-highlight*, nuclide-diagnostics*
+
+### Debugger
+
+* Fixed bug causing PHP debugger to display “EISDIR” error messages while debugging
+
 ## v0.252.0
 
 ### C++
