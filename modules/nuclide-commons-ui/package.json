@@ -17,6 +17,7 @@
     "invariant": "2.2.2",
     "nuclide-commons": "0.2.0",
     "nuclide-commons-atom": "0.2.0",
+    "nullthrows": "1.0.0",
     "react": "15.3.1",
     "react-dom": "15.3.1",
     "rxjs": "5.3.1",

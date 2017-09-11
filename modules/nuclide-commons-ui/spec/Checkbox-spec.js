@@ -11,6 +11,7 @@
  */
 
 import {Checkbox} from '../Checkbox';
+import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
@@ -39,9 +40,8 @@ describe('Checkbox', () => {
       onChange,
     });
 
-    const inputEl = TestUtils.findRenderedDOMComponentWithTag(
-      reactElement,
-      'input',
+    const inputEl = nullthrows(
+      TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input'),
     );
     // Unfortunately, TestUtils does not seem to turn a click into a change event for a checkbox.
     TestUtils.Simulate.change(inputEl);
@@ -60,10 +60,10 @@ describe('Checkbox', () => {
       onChange() {},
     });
 
-    const inputEl = TestUtils.findRenderedDOMComponentWithTag(
-      reactElement,
-      'input',
+    const inputEl = nullthrows(
+      TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input'),
     );
+    // $FlowFixMe
     expect(inputEl.indeterminate).toBe(true);
   });
 });

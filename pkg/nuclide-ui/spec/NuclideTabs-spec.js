@@ -16,6 +16,7 @@ import TestUtils from 'react-addons-test-utils';
 
 const {
   Simulate,
+  // $FlowFixMe
   SimulateNative,
   renderIntoDocument,
   scryRenderedDOMComponentsWithClass,

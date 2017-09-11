@@ -9,6 +9,9 @@
  * @format
  */
 
+/* global Element */
+
+import invariant from 'assert';
 import RadioGroup from '../RadioGroup';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -73,8 +76,12 @@ describe('RadioGroup', () => {
     // $FlowFixMe(>=0.53.0) Flow suppress
     const component = renderIntoDocument(<RadioGroup {...props} />);
     const radioInputs = scryRenderedDOMComponentsWithTag(component, 'input');
+    const secondRadioElement = radioInputs[1];
+    invariant(secondRadioElement instanceof Element);
 
-    Simulate.change(ReactDOM.findDOMNode(radioInputs[1]));
+    const foundRadio = ReactDOM.findDOMNode(secondRadioElement);
+    invariant(foundRadio instanceof Element);
+    Simulate.change(foundRadio);
     expect(onSelectedChange.mostRecentCall.args[0]).toEqual(1);
   });
 });

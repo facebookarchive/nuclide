@@ -9,12 +9,15 @@
  * @format
  */
 
+/* global Element */
+
 import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeNode} from '../lib/FileTreeNode';
 import {FileTreeEntryComponent} from '../components/FileTreeEntryComponent';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import Immutable from 'immutable';
 
+import invariant from 'assert';
+import Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
@@ -100,6 +103,7 @@ describe('File FileTreeEntryComponent', () => {
         },
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
+      invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).not.toHaveBeenCalled();
     });
@@ -122,6 +126,7 @@ describe('File FileTreeEntryComponent', () => {
         },
       );
       const domNode = ReactDOM.findDOMNode(nodeComponent);
+      invariant(domNode instanceof Element);
       TestUtils.Simulate.click(domNode);
       expect(actions.confirmNode).toHaveBeenCalled();
     });
