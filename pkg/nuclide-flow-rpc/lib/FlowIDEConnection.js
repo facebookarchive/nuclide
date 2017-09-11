@@ -138,6 +138,9 @@ export class FlowIDEConnection {
             case FileEventKind.EDIT:
               // TODO: errors-as-you-type
               break;
+            case FileEventKind.SAVE:
+              // TODO: handle saves correctly
+              break;
             default:
               (fileEvent.kind: empty);
           }

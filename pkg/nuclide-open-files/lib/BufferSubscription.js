@@ -95,6 +95,33 @@ export class BufferSubscription {
       }),
     );
 
+    subscriptions.add(
+      buffer.onDidSave(async () => {
+        if (this._notifier == null) {
+          return;
+        }
+
+        const filePath = this._buffer.getPath();
+        invariant(filePath != null);
+
+        invariant(this._notifier != null);
+        const notifier = await this._notifier;
+        const version = this._changeCount;
+        if (this._sentOpen) {
+          this.sendEvent({
+            kind: FileEventKind.SAVE,
+            fileVersion: {
+              notifier,
+              filePath,
+              version,
+            },
+          });
+        } else {
+          this._sendOpenByNotifier(notifier, version);
+        }
+      }),
+    );
+
     this._subscriptions = subscriptions;
 
     this._oldPath = this._buffer.getPath();

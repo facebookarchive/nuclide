@@ -15,6 +15,7 @@ import type {
   FileOpenEvent,
   FileCloseEvent,
   FileEditEvent,
+  FileSaveEvent,
 } from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -52,6 +53,7 @@ import type {
   ProgressParams,
   ActionRequiredParams,
   DidOpenTextDocumentParams,
+  DidSaveTextDocumentParams,
   DidCloseTextDocumentParams,
   DidChangeTextDocumentParams,
   TextDocumentContentChangeEvent,
@@ -670,7 +672,7 @@ export class LspLanguageService {
     // The _lspFileVersionNotifier tracks which fileversion we've sent downstream to LSP so far.
     //
     // The _fileCache tracks our upstream connection to the Nuclide editor, and from that
-    // synthesizes a sequential consistent stream of Open/Edit/Close events.
+    // synthesizes a sequential consistent stream of Open/Edit/Close/Save events.
     // If the (potentially flakey) connection temporarily goes down, the _fileCache
     // recovers, resyncs, and synthesizes for us an appropriate whole-document Edit event.
     // Therefore, it's okay for us to simply send _fileCache's sequential stream of edits
@@ -709,6 +711,9 @@ export class LspLanguageService {
               break;
             case FileEventKind.EDIT:
               this._fileEdit(fileEvent);
+              break;
+            case FileEventKind.SAVE:
+              this._fileSave(fileEvent);
               break;
             default:
               this._logger.error(
@@ -1167,7 +1172,7 @@ export class LspLanguageService {
         };
         break;
       case 'full':
-        const buffer = this._fileCache.getBufferForFileEdit(fileEvent);
+        const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
         contentChange = {
           text: buffer.getText(),
         };
@@ -1186,6 +1191,32 @@ export class LspLanguageService {
       contentChanges: [contentChange],
     };
     this._lspConnection.didChangeTextDocument(params);
+  }
+
+  _fileSave(fileEvent: FileSaveEvent): void {
+    invariant(this._state === 'Running');
+    invariant(this._lspConnection != null);
+    let text;
+    switch (this._derivedServerCapabilities.serverWantsDidSave) {
+      case 'excludeText':
+        text = null;
+        break;
+      case 'includeText':
+        const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
+        text = buffer.getText();
+        break;
+      case 'none':
+        return;
+      default:
+        (this._derivedServerCapabilities.serverWantsDidSave: empty);
+    }
+    const params: DidSaveTextDocumentParams = {
+      textDocument: {
+        uri: convert.localPath_lspUri(fileEvent.fileVersion.filePath),
+      },
+      text,
+    };
+    this._lspConnection.didSaveTextDocument(params);
   }
 
   getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
@@ -1858,25 +1889,38 @@ export class LspLanguageService {
 class DerivedServerCapabilities {
   serverWantsOpenClose: boolean;
   serverWantsChange: 'full' | 'incremental' | 'none';
-
+  serverWantsDidSave: 'excludeText' | 'includeText' | 'none';
   onTypeFormattingTriggerCharacters: Set<string>;
   completionTriggerCharacters: Set<string>;
 
   constructor(capabilities: ServerCapabilities, logger: log4js$Logger) {
     let syncKind;
-
     // capabilities.textDocumentSync is either a number (protocol v2)
     // or an object (protocol v3) or absent (indicating no capabilities).
     const sync = capabilities.textDocumentSync;
     if (typeof sync === 'number') {
       this.serverWantsOpenClose = true;
       syncKind = sync;
+      this.serverWantsDidSave = 'none';
     } else if (typeof sync === 'object') {
       this.serverWantsOpenClose = Boolean(sync.openClose);
       syncKind = Number(sync.change);
+
+      if (sync.save != null) {
+        if (sync.save.includeText == null) {
+          this.serverWantsDidSave = 'none';
+        } else if (sync.save.includeText) {
+          this.serverWantsDidSave = 'includeText';
+        } else {
+          this.serverWantsDidSave = 'excludeText';
+        }
+      } else {
+        this.serverWantsDidSave = 'none';
+      }
     } else {
       this.serverWantsOpenClose = false;
       syncKind = TextDocumentSyncKind.None;
+      this.serverWantsDidSave = 'none';
       if (sync != null) {
         logger.error(
           'LSP - invalid capabilities.textDocumentSync from server: ' +
