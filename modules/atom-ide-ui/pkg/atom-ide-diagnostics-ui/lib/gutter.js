@@ -1,3 +1,62 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.applyUpdateToEditor = applyUpdateToEditor;
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _atom = require('atom');
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _range;
+
+function _load_range() {
+  return _range = require('nuclide-commons-atom/range');
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _bindObservableAsProps;
+
+function _load_bindObservableAsProps() {
+  return _bindObservableAsProps = require('nuclide-commons-ui/bindObservableAsProps');
+}
+
+var _DiagnosticsPopup;
+
+function _load_DiagnosticsPopup() {
+  return _DiagnosticsPopup = require('./ui/DiagnosticsPopup');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,28 +65,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {
-  DiagnosticUpdater,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
-} from '../../atom-ide-diagnostics/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import classnames from 'classnames';
-
-import {Range} from 'atom';
-import invariant from 'assert';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {goToLocation as atomGoToLocation} from 'nuclide-commons-atom/go-to-location';
-import {wordAtPosition} from 'nuclide-commons-atom/range';
-import analytics from 'nuclide-commons-atom/analytics';
-import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
-import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
 
@@ -51,23 +91,19 @@ const HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
 const HIGHLIGHT_CSS_LEVELS = {
   Error: 'nuclide-diagnostics-gutter-ui-highlight-error',
   Warning: 'nuclide-diagnostics-gutter-ui-highlight-warning',
-  Info: 'nuclide-diagnostics-gutter-ui-highlight-info',
+  Info: 'nuclide-diagnostics-gutter-ui-highlight-info'
 };
 
 const GUTTER_CSS_LEVELS = {
   Error: 'nuclide-diagnostics-gutter-ui-gutter-error',
   Warning: 'nuclide-diagnostics-gutter-ui-gutter-warning',
-  Info: 'nuclide-diagnostics-gutter-ui-gutter-info',
+  Info: 'nuclide-diagnostics-gutter-ui-gutter-info'
 };
 
-const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
-const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
+const editorToMarkers = new WeakMap();
+const itemToEditor = new WeakMap();
 
-export function applyUpdateToEditor(
-  editor: TextEditor,
-  update: FileDiagnosticMessages,
-  diagnosticUpdater: DiagnosticUpdater,
-): void {
+function applyUpdateToEditor(editor, update, diagnosticUpdater) {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
     // TODO(jessicalin): Determine an appropriate priority so that the gutter:
@@ -81,7 +117,7 @@ export function applyUpdateToEditor(
       name: GUTTER_ID,
       visible: false,
       // Priority is -200 by default and 0 is the line number
-      priority: -1000,
+      priority: -1000
     });
   }
 
@@ -99,8 +135,8 @@ export function applyUpdateToEditor(
     markers = new Set();
   }
 
-  const rowToMessage: Map<number, Array<FileDiagnosticMessage>> = new Map();
-  function addMessageForRow(message: FileDiagnosticMessage, row: number) {
+  const rowToMessage = new Map();
+  function addMessageForRow(message, row) {
     let messages = rowToMessage.get(row);
     if (!messages) {
       messages = [];
@@ -110,16 +146,10 @@ export function applyUpdateToEditor(
   }
 
   for (const message of update.messages) {
-    const wordRange =
-      message.range != null && message.range.isEmpty()
-        ? wordAtPosition(editor, message.range.start)
-        : null;
+    const wordRange = message.range != null && message.range.isEmpty() ? (0, (_range || _load_range()).wordAtPosition)(editor, message.range.start) : null;
     const range = wordRange != null ? wordRange.range : message.range;
 
-    const highlightCssClass = classnames(
-      HIGHLIGHT_CSS,
-      HIGHLIGHT_CSS_LEVELS[message.type],
-    );
+    const highlightCssClass = (0, (_classnames || _load_classnames()).default)(HIGHLIGHT_CSS, HIGHLIGHT_CSS_LEVELS[message.type]);
 
     let highlightMarker;
     if (range) {
@@ -138,9 +168,7 @@ export function applyUpdateToEditor(
       for (let line = range.start.row; line <= range.end.row; line++) {
         let start;
         let end;
-        const lineText = editor.getTextInBufferRange(
-          new Range([line, 0], [line + 1, 0]),
-        );
+        const lineText = editor.getTextInBufferRange(new _atom.Range([line, 0], [line + 1, 0]));
 
         if (line === range.start.row) {
           start = range.start.column;
@@ -157,12 +185,10 @@ export function applyUpdateToEditor(
           end = lineText.length;
         }
 
-        highlightMarker = editor.markBufferRange(
-          new Range([line, start], [line, end]),
-        );
+        highlightMarker = editor.markBufferRange(new _atom.Range([line, start], [line, end]));
         editor.decorateMarker(highlightMarker, {
           type: 'highlight',
-          class: highlightCssClass,
+          class: highlightCssClass
         });
         markers.add(highlightMarker);
       }
@@ -176,20 +202,14 @@ export function applyUpdateToEditor(
     // Show the highest priority marker (note the ordering of GUTTER_CSS).
     const messageTypes = new Set();
     messages.forEach(msg => messageTypes.add(msg.type));
-    const firstType = Object.keys(GUTTER_CSS_LEVELS).find(type =>
-      messageTypes.has(type),
-    );
+    const firstType = Object.keys(GUTTER_CSS_LEVELS).find(type => messageTypes.has(type));
     const gutterMarkerCssClass = GUTTER_CSS_LEVELS[firstType || 'Error'];
 
     // This marker adds some UI to the gutter.
-    const {item, dispose} = createGutterItem(
-      messages,
-      gutterMarkerCssClass,
-      diagnosticUpdater,
-    );
+    const { item, dispose } = createGutterItem(messages, gutterMarkerCssClass, diagnosticUpdater);
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
-    gutter.decorateMarker(gutterMarker, {item});
+    gutter.decorateMarker(gutterMarker, { item });
     gutterMarker.onDidDestroy(dispose);
     markers.add(gutterMarker);
   }
@@ -203,11 +223,7 @@ export function applyUpdateToEditor(
   }
 }
 
-function createGutterItem(
-  messages: Array<FileDiagnosticMessage>,
-  gutterMarkerCssClass: string,
-  diagnosticUpdater: DiagnosticUpdater,
-): {item: HTMLElement, dispose: () => void} {
+function createGutterItem(messages, gutterMarkerCssClass, diagnosticUpdater) {
   const item = document.createElement('a');
   item.className = gutterMarkerCssClass;
   let popupElement = null;
@@ -221,8 +237,12 @@ function createGutterItem(
   };
   const dispose = () => {
     if (popupElement) {
-      ReactDOM.unmountComponentAtNode(popupElement);
-      invariant(popupElement.parentNode != null);
+      _reactDom.default.unmountComponentAtNode(popupElement);
+
+      if (!(popupElement.parentNode != null)) {
+        throw new Error('Invariant violation: "popupElement.parentNode != null"');
+      }
+
       popupElement.parentNode.removeChild(popupElement);
       popupElement = null;
     }
@@ -232,111 +252,103 @@ function createGutterItem(
     }
     clearDisposeTimeout();
   };
-  const goToLocation = (path: string, line: number) => {
+  const goToLocation = (path, line) => {
     // Before we jump to the location, we want to close the popup.
     dispose();
     const column = 0;
-    atomGoToLocation(path, line, column);
+    (0, (_goToLocation || _load_goToLocation()).goToLocation)(path, line, column);
   };
-  item.addEventListener('mouseenter', (event: MouseEvent) => {
+  item.addEventListener('mouseenter', event => {
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the
     // user manages to scroll and escape disposal.
     dispose();
-    popupElement = showPopupFor(
-      messages,
-      item,
-      goToLocation,
-      diagnosticUpdater,
-    );
+    popupElement = showPopupFor(messages, item, goToLocation, diagnosticUpdater);
     popupElement.addEventListener('mouseleave', dispose);
     popupElement.addEventListener('mouseenter', clearDisposeTimeout);
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
     paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
   });
-  item.addEventListener('mouseleave', (event: MouseEvent) => {
+  item.addEventListener('mouseleave', event => {
     // When the popup is shown, we want to dispose it if the user manages to move the cursor off of
     // the gutter glyph without moving it onto the popup. Even though the popup appears above (as in
     // Z-index above) the gutter glyph, if you move the cursor such that it is only above the glyph
     // for one frame you can cause the popup to appear without the mouse ever entering it.
     disposeTimeout = setTimeout(dispose, POPUP_DISPOSE_TIMEOUT);
   });
-  return {item, dispose};
+  return { item, dispose };
 }
 
 /**
  * Shows a popup for the diagnostic just below the specified item.
  */
-function showPopupFor(
-  messages: Array<FileDiagnosticMessage>,
-  item: HTMLElement,
-  goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  diagnosticUpdater: DiagnosticUpdater,
-): HTMLElement {
+function showPopupFor(messages, item, goToLocation, diagnosticUpdater) {
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
-  const workspaceElement = atom.views.getView((atom.workspace: Object));
+  const workspaceElement = atom.views.getView(atom.workspace);
   const hostElement = document.createElement('div');
   hostElement.classList.add('diagnostics-gutter-popup');
   // $FlowFixMe check parentNode for null
   workspaceElement.parentNode.appendChild(hostElement);
 
   // Move it down vertically so it does not end up under the mouse pointer.
-  const {top, left} = item.getBoundingClientRect();
+  const { top, left } = item.getBoundingClientRect();
 
   const trackedFixer = (...args) => {
     diagnosticUpdater.applyFix(...args);
-    analytics.track('diagnostics-gutter-autofix');
+    (_analytics || _load_analytics()).default.track('diagnostics-gutter-autofix');
   };
-  const trackedGoToLocation = (filePath: NuclideUri, line: number) => {
+  const trackedGoToLocation = (filePath, line) => {
     goToLocation(filePath, line);
-    analytics.track('diagnostics-gutter-goto-location');
+    (_analytics || _load_analytics()).default.track('diagnostics-gutter-goto-location');
   };
 
   const editor = itemToEditor.get(item);
-  invariant(editor != null);
+
+  if (!(editor != null)) {
+    throw new Error('Invariant violation: "editor != null"');
+  }
+
   diagnosticUpdater.fetchCodeActions(editor, messages);
 
-  const BoundPopup = bindObservableAsProps(
-    observableFromSubscribeFunction(cb =>
-      diagnosticUpdater.observeCodeActionsForMessage(cb),
-    ).map(codeActionsForMessage => ({
-      style: {left, top, position: 'absolute'},
-      messages,
-      fixer: trackedFixer,
-      goToLocation: trackedGoToLocation,
-      codeActionsForMessage,
-    })),
-    DiagnosticsPopup,
-  );
-  ReactDOM.render(<BoundPopup />, hostElement);
+  const BoundPopup = (0, (_bindObservableAsProps || _load_bindObservableAsProps()).bindObservableAsProps)((0, (_event || _load_event()).observableFromSubscribeFunction)(cb => diagnosticUpdater.observeCodeActionsForMessage(cb)).map(codeActionsForMessage => ({
+    style: { left, top, position: 'absolute' },
+    messages,
+    fixer: trackedFixer,
+    goToLocation: trackedGoToLocation,
+    codeActionsForMessage
+  })), (_DiagnosticsPopup || _load_DiagnosticsPopup()).DiagnosticsPopup);
+  _reactDom.default.render(_react.createElement(BoundPopup, null), hostElement);
 
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.
   const editorElement = atom.views.getView(editor);
   const {
     top: editorTop,
-    height: editorHeight,
+    height: editorHeight
   } = editorElement.getBoundingClientRect();
-  const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
+  const { top: itemTop, height: itemHeight } = item.getBoundingClientRect();
   const popupElement = hostElement.firstElementChild;
-  invariant(popupElement instanceof HTMLElement);
+
+  if (!(popupElement instanceof HTMLElement)) {
+    throw new Error('Invariant violation: "popupElement instanceof HTMLElement"');
+  }
+
   const popupHeight = popupElement.clientHeight;
   if (itemTop + itemHeight + popupHeight > editorTop + editorHeight) {
     // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
     // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
     // below. I don't know why.
-    popupElement.style.top =
-      String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
+    popupElement.style.top = String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
   }
 
   try {
     return hostElement;
   } finally {
     messages.forEach(message => {
-      analytics.track('diagnostics-gutter-show-popup', {
+      (_analytics || _load_analytics()).default.track('diagnostics-gutter-show-popup', {
         'diagnostics-provider': message.providerName,
         // flowlint-next-line sketchy-null-string:off
-        'diagnostics-message': message.text || message.html || '',
+        'diagnostics-message': message.text || message.html || ''
       });
     });
   }

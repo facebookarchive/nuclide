@@ -1,94 +1,47 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import classNames from 'classnames';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.AtomInput = undefined;
 
-import {CompositeDisposable} from 'atom';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
+var _classnames;
 
-import {maybeToString} from 'nuclide-commons/string';
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-type DefaultProps = {
-  disabled: boolean,
-  autofocus: boolean,
-  startSelected: boolean,
-  initialValue: string,
-  tabIndex: string,
-  onClick: (event: SyntheticMouseEvent<>) => mixed,
-  onDidChange: (text: string) => mixed,
-  onFocus: () => mixed,
-  onBlur: (blurEvent: Event) => mixed,
-  unstyled: boolean,
-  style: ?Object,
-};
+var _atom = require('atom');
 
-type Props = {
-  className?: string,
-  disabled: boolean,
-  autofocus: boolean,
-  startSelected: boolean,
-  initialValue: string,
-  placeholderText?: string,
-  tabIndex: string,
-  onFocus: () => mixed,
-  onClick: (event: SyntheticMouseEvent<>) => mixed,
-  onDidChange: (text: string) => mixed,
-  onConfirm?: () => mixed,
-  onCancel?: () => mixed,
-  onBlur: (blurEvent: Event) => mixed,
-  size?: 'xs' | 'sm' | 'lg',
-  unstyled: boolean,
-  width?: ?number,
-  // If the `value` prop is specified, then the component's displayed text is controlled by this
-  // prop.  Otherwise its displayed text must be imperatively set on the instance.
-  value?: string,
-  style: ?Object,
-};
+var _react = _interopRequireWildcard(require('react'));
 
-type State = {
-  value: string,
-};
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-export class AtomInput extends React.Component<Props, State> {
-  _disposables: ?CompositeDisposable;
+class AtomInput extends _react.Component {
 
-  static defaultProps: DefaultProps = {
-    disabled: false,
-    autofocus: false,
-    startSelected: false,
-    initialValue: '',
-    tabIndex: '0', // Default to all <AtomInput /> components being in tab order
-    onClick: event => {},
-    onDidChange: text => {},
-    onFocus: () => {},
-    onBlur: () => {},
-    unstyled: false,
-    style: null,
-  };
-
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     const value = props.value == null ? props.initialValue : props.value;
     this.state = {
-      value,
+      value
     };
   }
 
-  componentDidMount(): void {
-    const disposables = (this._disposables = new CompositeDisposable());
+  componentDidMount() {
+    const disposables = this._disposables = new _atom.CompositeDisposable();
 
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change
@@ -106,20 +59,18 @@ export class AtomInput extends React.Component<Props, State> {
         }
       });
     }
-    disposables.add(
-      atom.commands.add(textEditorElement, {
-        'core:confirm': () => {
-          if (this.props.onConfirm != null) {
-            this.props.onConfirm();
-          }
-        },
-        'core:cancel': () => {
-          if (this.props.onCancel != null) {
-            this.props.onCancel();
-          }
-        },
-      }),
-    );
+    disposables.add(atom.commands.add(textEditorElement, {
+      'core:confirm': () => {
+        if (this.props.onConfirm != null) {
+          this.props.onConfirm();
+        }
+      },
+      'core:cancel': () => {
+        if (this.props.onCancel != null) {
+          this.props.onCancel();
+        }
+      }
+    }));
     const placeholderText = this.props.placeholderText;
     if (placeholderText != null) {
       textEditor.setPlaceholderText(placeholderText);
@@ -136,25 +87,23 @@ export class AtomInput extends React.Component<Props, State> {
     this.getTextEditor().moveToBeginningOfLine();
 
     // Begin listening for changes only after initial value is set.
-    disposables.add(
-      textEditor.onDidChange(() => {
-        this.setState({value: textEditor.getText()});
-        this.props.onDidChange.call(null, textEditor.getText());
-      }),
-    );
+    disposables.add(textEditor.onDidChange(() => {
+      this.setState({ value: textEditor.getText() });
+      this.props.onDidChange.call(null, textEditor.getText());
+    }));
 
     this._updateWidth();
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
     }
-    const {value, placeholderText} = nextProps;
+    const { value, placeholderText } = nextProps;
     if (typeof value === 'string' && value !== this.props.value) {
       // If the `value` prop is specified, then we must update the input area when there is new
       // text, and this includes maintaining the correct cursor position.
-      this.setState({value});
+      this.setState({ value });
       const editor = this.getTextEditor();
       const cursorPosition = editor.getCursorBufferPosition();
       this.setText(value);
@@ -166,11 +115,11 @@ export class AtomInput extends React.Component<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps: Object, prevState: Object): void {
+  componentDidUpdate(prevProps, prevState) {
     this._updateWidth(prevProps.width);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     // Note that destroy() is not part of TextEditor's public API.
     this.getTextEditor().destroy();
 
@@ -180,7 +129,7 @@ export class AtomInput extends React.Component<Props, State> {
     }
   }
 
-  _updateDisabledState(isDisabled: boolean): void {
+  _updateDisabledState(isDisabled) {
     // Hack to set TextEditor to read-only mode, per https://github.com/atom/atom/issues/6880
     if (isDisabled) {
       this.getTextEditorElement().removeAttribute('tabindex');
@@ -189,11 +138,10 @@ export class AtomInput extends React.Component<Props, State> {
     }
   }
 
-  render(): React.Node {
-    const className = classNames(this.props.className, {
+  render() {
+    const className = (0, (_classnames || _load_classnames()).default)(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
-      [`atom-text-editor-${maybeToString(this.props.size)}`]:
-        this.props.size != null,
+      [`atom-text-editor-${(0, (_string || _load_string()).maybeToString)(this.props.size)}`]: this.props.size != null
     });
 
     return (
@@ -201,47 +149,72 @@ export class AtomInput extends React.Component<Props, State> {
       // component class when "Use Shadow DOM" is disabled, this element should never have children.
       // If an element has no children, React guarantees it will never re-render the element (which
       // would wipe out the web component's work in this case).
-      <atom-text-editor
-        class={className}
-        mini
-        onClick={this.props.onClick}
-        onFocus={this.props.onFocus}
-        onBlur={this.props.onBlur}
-        style={this.props.style}
-      />
+      _react.createElement('atom-text-editor', {
+        'class': className,
+        mini: true,
+        onClick: this.props.onClick,
+        onFocus: this.props.onFocus,
+        onBlur: this.props.onBlur,
+        style: this.props.style
+      })
     );
   }
 
-  getText(): string {
+  getText() {
     return this.state.value;
   }
 
-  setText(text: string) {
+  setText(text) {
     this.getTextEditor().setText(text);
   }
 
-  getTextEditor(): TextEditor {
+  getTextEditor() {
     return this.getTextEditorElement().getModel();
   }
 
-  onDidChange(callback: () => any): IDisposable {
+  onDidChange(callback) {
     return this.getTextEditor().onDidChange(callback);
   }
 
-  getTextEditorElement(): atom$TextEditorElement {
+  getTextEditorElement() {
     // $FlowFixMe
-    return ReactDOM.findDOMNode(this);
+    return _reactDom.default.findDOMNode(this);
   }
 
-  _updateWidth(prevWidth?: number): void {
+  _updateWidth(prevWidth) {
     if (this.props.width !== prevWidth) {
       const width = this.props.width == null ? undefined : this.props.width;
       this.getTextEditorElement().setWidth(width);
     }
   }
 
-  focus(): void {
+  focus() {
     this.getTextEditor().moveToEndOfLine();
     this.getTextEditorElement().focus();
   }
 }
+exports.AtomInput = AtomInput; /**
+                                * Copyright (c) 2017-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the BSD-style license found in the
+                                * LICENSE file in the root directory of this source tree. An additional grant
+                                * of patent rights can be found in the PATENTS file in the same directory.
+                                *
+                                * 
+                                * @format
+                                */
+
+AtomInput.defaultProps = {
+  disabled: false,
+  autofocus: false,
+  startSelected: false,
+  initialValue: '',
+  tabIndex: '0', // Default to all <AtomInput /> components being in tab order
+  onClick: event => {},
+  onDidChange: text => {},
+  onFocus: () => {},
+  onBlur: () => {},
+  unstyled: false,
+  style: null
+};

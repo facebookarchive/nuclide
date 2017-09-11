@@ -1,3 +1,34 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PopoutView = undefined;
+
+var _electron = require('electron');
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _renderReactRoot;
+
+function _load_renderReactRoot() {
+  return _renderReactRoot = require('nuclide-commons-ui/renderReactRoot');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+// Unique ID for each popout window instance so that the target of IPC
+// messages can be identified.
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,75 +36,44 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 /* global MutationObserver */
 
-import invariant from 'invariant';
-import {remote, ipcRenderer} from 'electron';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-type Props = {
-  children: React.Element<any>,
-  width: number,
-  height: number,
-  title?: string,
-  allowPopIn?: boolean,
-  onPopoutClosed?: () => void,
-  onPopoutOpened?: (popoutView: PopoutView) => void,
-};
-
-type State = {
-  isPoppedOut: boolean,
-};
-
-// Unique ID for each popout window instance so that the target of IPC
-// messages can be identified.
 let popoutWindowId = 1;
 
-export class PopoutView extends React.Component<Props, State> {
-  props: Props;
-  state: State;
-  _popoutPane: ?electron$BrowserWindow;
-  _disposables: UniversalDisposable;
-  _prepared: boolean;
-  _popoutWindowId: string;
+class PopoutView extends _react.Component {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
 
     this._popoutPane = null;
     this._prepared = false;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-    (this: any).togglePopout = this.togglePopout.bind(this);
-    (this: any)._destroyPopOutPane = this._destroyPopOutPane.bind(this);
-    (this: any)._update = this._update.bind(this);
-    (this: any)._ipcMessageHandler = this._ipcMessageHandler.bind(this);
+    this.togglePopout = this.togglePopout.bind(this);
+    this._destroyPopOutPane = this._destroyPopOutPane.bind(this);
+    this._update = this._update.bind(this);
+    this._ipcMessageHandler = this._ipcMessageHandler.bind(this);
 
     this._popoutWindowId = 'nuclide-msg-' + popoutWindowId++;
-    invariant(ipcRenderer != null);
-    ipcRenderer.on(this._popoutWindowId, this._ipcMessageHandler);
 
-    this._disposables.add(
-      () => {
-        this._destroyPopOutPane();
-      },
-      () => {
-        ipcRenderer.removeListener(
-          this._popoutWindowId,
-          this._ipcMessageHandler,
-        );
-      },
-    );
+    if (!(_electron.ipcRenderer != null)) {
+      throw new Error('Invariant violation: "ipcRenderer != null"');
+    }
+
+    _electron.ipcRenderer.on(this._popoutWindowId, this._ipcMessageHandler);
+
+    this._disposables.add(() => {
+      this._destroyPopOutPane();
+    }, () => {
+      _electron.ipcRenderer.removeListener(this._popoutWindowId, this._ipcMessageHandler);
+    });
 
     this.state = {
-      isPoppedOut: true,
+      isPoppedOut: true
     };
   }
 
@@ -81,9 +81,9 @@ export class PopoutView extends React.Component<Props, State> {
     this._disposables.dispose();
   }
 
-  togglePopout(isPoppedOut: boolean) {
+  togglePopout(isPoppedOut) {
     this.setState({
-      isPoppedOut,
+      isPoppedOut
     });
   }
 
@@ -94,24 +94,28 @@ export class PopoutView extends React.Component<Props, State> {
     }
   }
 
-  componentDidMount(): void {
+  componentDidMount() {
     this._update();
 
     const observer = new MutationObserver((mutations, obs) => {
       // TODO: be more efficent by computing delta and only updating what actually changed.
-      const container = ReactDOM.findDOMNode(this);
-      invariant(container != null && container.innerHTML != null);
+      const container = _reactDom.default.findDOMNode(this);
 
-      this._callJsFunctionInPopoutWindow(
-        this._updateContent,
-        container.innerHTML,
-      );
+      if (!(container != null && container.innerHTML != null)) {
+        throw new Error('Invariant violation: "container != null && container.innerHTML != null"');
+      }
+
+      this._callJsFunctionInPopoutWindow(this._updateContent, container.innerHTML);
     });
-    const node = ReactDOM.findDOMNode(this);
-    invariant(node != null);
+    const node = _reactDom.default.findDOMNode(this);
+
+    if (!(node != null)) {
+      throw new Error('Invariant violation: "node != null"');
+    }
+
     observer.observe(node, {
       childList: true,
-      subtree: true,
+      subtree: true
     });
     this._disposables.add(() => observer.disconnect());
   }
@@ -120,18 +124,21 @@ export class PopoutView extends React.Component<Props, State> {
     this.dispose();
   }
 
-  _update(): void {
+  _update() {
     // Remove the current children.
     if (this._prepared && this._popoutPane != null) {
-      const container = ReactDOM.findDOMNode(this);
-      invariant(container != null);
+      const container = _reactDom.default.findDOMNode(this);
+
+      if (!(container != null)) {
+        throw new Error('Invariant violation: "container != null"');
+      }
 
       while (container.lastChild != null) {
         container.removeChild(container.lastChild);
       }
 
       // Render children into a host element.
-      const el = renderReactRoot(this.props.children);
+      const el = (0, (_renderReactRoot || _load_renderReactRoot()).renderReactRoot)(this.props.children);
       el.style.width = '100%';
       el.style.height = '100%';
       el.style.overflow = 'auto';
@@ -148,7 +155,7 @@ export class PopoutView extends React.Component<Props, State> {
     }
   }
 
-  render(): React.Element<any> {
+  render() {
     if (this.state.isPoppedOut) {
       if (this._popoutPane == null) {
         this._createPopOutPane();
@@ -159,21 +166,19 @@ export class PopoutView extends React.Component<Props, State> {
       }
     }
 
-    const display = this.state.isPoppedOut
-      ? 'none'
-      : this.props.allowPopIn ? 'block' : 'none';
+    const display = this.state.isPoppedOut ? 'none' : this.props.allowPopIn ? 'block' : 'none';
 
-    return (
-      <div style={{display}}>
-        {this.props.children}
-      </div>
+    return _react.createElement(
+      'div',
+      { style: { display } },
+      this.props.children
     );
   }
 
   /**
    * Receives IPC messages from Electron for the child window.
    */
-  _ipcMessageHandler(e: any, ipcArgs: any) {
+  _ipcMessageHandler(e, ipcArgs) {
     const messageType = ipcArgs[0];
     switch (messageType) {
       case 'child-window-ready':
@@ -182,7 +187,10 @@ export class PopoutView extends React.Component<Props, State> {
         this._prepareContainer();
         this._update();
 
-        invariant(this._popoutPane != null);
+        if (!(this._popoutPane != null)) {
+          throw new Error('Invariant violation: "this._popoutPane != null"');
+        }
+
         this._popoutPane.show();
         break;
     }
@@ -193,8 +201,11 @@ export class PopoutView extends React.Component<Props, State> {
       this._destroyPopOutPane();
     }
 
-    invariant(remote != null);
-    this._popoutPane = new remote.BrowserWindow({
+    if (!(_electron.remote != null)) {
+      throw new Error('Invariant violation: "remote != null"');
+    }
+
+    this._popoutPane = new _electron.remote.BrowserWindow({
       titleBarStyle: 'hidden',
       toolbar: false,
       title: this.props.title != null ? this.props.title : 'Nuclide',
@@ -202,29 +213,32 @@ export class PopoutView extends React.Component<Props, State> {
       height: this.props.height,
       show: false,
       webPreferences: {
-        devTools: false,
-      },
+        devTools: false
+      }
     });
 
-    invariant(this._popoutPane != null);
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
     this._popoutPane.setMenuBarVisibility(false);
 
-    invariant(this._popoutPane != null);
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
     this._popoutPane.loadURL(document.URL);
 
-    invariant(this._popoutPane != null);
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
     this._popoutPane.on('closed', () => {
       this._destroyPopOutPane();
       this.togglePopout(false);
     });
 
-    this._wrapAndInjectFunctions([
-      this._addContainer,
-      this._updateContent,
-      this._sendToMainWindow,
-      this._addStyles,
-      this._notifyReady,
-    ]);
+    this._wrapAndInjectFunctions([this._addContainer, this._updateContent, this._sendToMainWindow, this._addStyles, this._notifyReady]);
   }
 
   /**
@@ -247,7 +261,11 @@ export class PopoutView extends React.Component<Props, State> {
     if (this._popoutPane != null) {
       try {
         this._popoutPane.close();
-        invariant(this._popoutPane != null);
+
+        if (!(this._popoutPane != null)) {
+          throw new Error('Invariant violation: "this._popoutPane != null"');
+        }
+
         this._popoutPane.destroy();
       } catch (_) {
         // It may not be possible to call close or destroy on the browser object
@@ -268,7 +286,7 @@ export class PopoutView extends React.Component<Props, State> {
    * Marshals a function call and its arguments and invokes a corresponding JS
    * routine in the child window.
    */
-  _callJsFunctionInPopoutWindow(func: Function, ...args: Array<mixed>) {
+  _callJsFunctionInPopoutWindow(func, ...args) {
     if (this._popoutPane != null) {
       try {
         const ipcArgs = args != null ? [func.name].concat(args) : [func.name];
@@ -284,32 +302,44 @@ export class PopoutView extends React.Component<Props, State> {
    * bootstrap and then rely on normal looking JS functions (with flow typing) for
    * the rest of our operations.
    */
-  _wrapAndInjectFunctions(functions: Array<Function>) {
+  _wrapAndInjectFunctions(functions) {
     // Set up some globals in the remote window so it knows how to find the main window to communicate.
-    invariant(this._popoutPane != null);
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
     this._popoutPane.webContents.executeJavaScript('window.nuclideIpc = {};');
 
-    invariant(this._popoutPane != null);
-    invariant(remote != null);
-    this._popoutPane.webContents.executeJavaScript(
-      `window.nuclideIpc.parentWindowId = ${remote.getCurrentWindow().id}`,
-    );
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
 
-    invariant(this._popoutPane != null);
-    this._popoutPane.webContents.executeJavaScript(
-      `window.nuclideIpc.ipcId = '${this._popoutWindowId}'`,
-    );
+    if (!(_electron.remote != null)) {
+      throw new Error('Invariant violation: "remote != null"');
+    }
 
-    invariant(this._popoutPane != null);
-    this._popoutPane.webContents.executeJavaScript(
-      'window.nuclideIpc.helperFuncs = {};',
-    );
+    this._popoutPane.webContents.executeJavaScript(`window.nuclideIpc.parentWindowId = ${_electron.remote.getCurrentWindow().id}`);
+
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
+    this._popoutPane.webContents.executeJavaScript(`window.nuclideIpc.ipcId = '${this._popoutWindowId}'`);
+
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
+    this._popoutPane.webContents.executeJavaScript('window.nuclideIpc.helperFuncs = {};');
 
     // Hook up the IPC channel listener for the renderer.
-    invariant(this._popoutPane != null);
+
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
     this._popoutPane.webContents.executeJavaScript(`
-      require('electron').ipcRenderer.on('${this
-        ._popoutWindowId}', function(e, ipcArgs) {
+      require('electron').ipcRenderer.on('${this._popoutWindowId}', function(e, ipcArgs) {
         try {
           if (ipcArgs != null) {
             const funcName = ipcArgs[0];
@@ -328,29 +358,35 @@ export class PopoutView extends React.Component<Props, State> {
     for (const func of functions) {
       // Func.toString() gets the transpiled source of the JS routine we want. Convert it to
       // the correct form "function foo(args) {...}" and inject it into the child window.
-      const funcLambda = func
-        .toString()
-        .replace(/\n/g, ' ')
-        .replace(/^[^()]+(\([^)]*\))(.*)$/, 'function $1 $2; ');
-      invariant(this._popoutPane != null);
-      this._popoutPane.webContents.executeJavaScript(
-        `window.nuclideIpc.helperFuncs['${func.name}'] = ${funcLambda}`,
-      );
+      const funcLambda = func.toString().replace(/\n/g, ' ').replace(/^[^()]+(\([^)]*\))(.*)$/, 'function $1 $2; ');
+
+      if (!(this._popoutPane != null)) {
+        throw new Error('Invariant violation: "this._popoutPane != null"');
+      }
+
+      this._popoutPane.webContents.executeJavaScript(`window.nuclideIpc.helperFuncs['${func.name}'] = ${funcLambda}`);
     }
 
     // Have the child window correct its size, loading the Atom document URL overrides
     // the window size passed to the constructor of BrowserWindow.
-    invariant(this.props.width != null && this.props.height != null);
-    invariant(this._popoutPane != null);
-    this._popoutPane.webContents.executeJavaScript(
-      `window.resizeTo(${this.props.width}, ${this.props.height})`,
-    );
+
+    if (!(this.props.width != null && this.props.height != null)) {
+      throw new Error('Invariant violation: "this.props.width != null && this.props.height != null"');
+    }
+
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
+    this._popoutPane.webContents.executeJavaScript(`window.resizeTo(${this.props.width}, ${this.props.height})`);
 
     // Have the child window signal via IPC that its finished initializing.
-    invariant(this._popoutPane != null);
-    this._popoutPane.webContents.executeJavaScript(
-      "window.nuclideIpc.helperFuncs['_notifyReady']();",
-    );
+
+    if (!(this._popoutPane != null)) {
+      throw new Error('Invariant violation: "this._popoutPane != null"');
+    }
+
+    this._popoutPane.webContents.executeJavaScript("window.nuclideIpc.helperFuncs['_notifyReady']();");
   }
 
   // ////////////////////////////////////////
@@ -361,12 +397,11 @@ export class PopoutView extends React.Component<Props, State> {
    * Adds a container div to the child window. All of the contents will become children
    * of this container.
    */
-  _addContainer(): void {
+  _addContainer() {
     const host = document.createElement('div');
     host.id = 'nuclide-popout-container-root';
     /* $FlowFixMe */
-    host.style =
-      'padding: 0px; width: 100%; height: 100%; margin: 0px; border: 0px;';
+    host.style = 'padding: 0px; width: 100%; height: 100%; margin: 0px; border: 0px;';
     if (document.body != null) {
       document.body.appendChild(host);
     }
@@ -376,7 +411,7 @@ export class PopoutView extends React.Component<Props, State> {
    * Replaces the contents of the container in the child window wiht the specified
    * innerHTML.
    */
-  _updateContent(content: string): void {
+  _updateContent(content) {
     const elem = document.getElementById('nuclide-popout-container-root');
     if (elem != null) {
       elem.innerHTML = content;
@@ -387,22 +422,20 @@ export class PopoutView extends React.Component<Props, State> {
    * Sends a notification to the parent window that the child window has loaded
    * and finished initializing its IPC globals.
    */
-  _notifyReady(): void {
+  _notifyReady() {
     window.nuclideIpc.helperFuncs._sendToMainWindow('child-window-ready');
   }
 
   /**
    * Helper routine to send an event to the main window from the child window.
    */
-  _sendToMainWindow(eventName: string, ...args: Array<mixed>): void {
+  _sendToMainWindow(eventName, ...args) {
     const ipcId = window.nuclideIpc.ipcId;
     if (window.nuclideIpc.mainWindowWebContents == null) {
       const rem = require('electron').remote;
       if (rem != null) {
-        const {webContents} = rem;
-        window.nuclideIpc.mainWindowWebContents = webContents.fromId(
-          window.nuclideIpc.parentWindowId,
-        );
+        const { webContents } = rem;
+        window.nuclideIpc.mainWindowWebContents = webContents.fromId(window.nuclideIpc.parentWindowId);
       }
     }
 
@@ -414,7 +447,7 @@ export class PopoutView extends React.Component<Props, State> {
   /**
    * Adds the specified CSS to the child window's style sheets.
    */
-  _addStyles(styles: string) {
+  _addStyles(styles) {
     const styleElement = document.createElement('style');
     styleElement.innerHTML = styles;
     if (document.head != null) {
@@ -422,3 +455,4 @@ export class PopoutView extends React.Component<Props, State> {
     }
   }
 }
+exports.PopoutView = PopoutView;

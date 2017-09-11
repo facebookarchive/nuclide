@@ -1,221 +1,250 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Directory as LocalDirectoryType} from 'atom';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.saveBuffer = exports.loadBufferForUri = exports.existingBufferForUri = exports.bufferForUri = exports.getlocalService = exports.getServiceByNuclideUri = exports.getServiceByConnection = exports.getService = exports.decorateSshConnectionDelegateWithTracking = exports.NuclideTextBuffer = exports.SshHandshake = exports.ConnectionCache = exports.ServerConnection = exports.RemoteFile = exports.RemoteDirectory = exports.RemoteConnection = undefined;
 
-import nullthrows from 'nullthrows';
+var _remoteTextBuffer;
 
-import {RemoteConnection} from './RemoteConnection';
-import {RemoteDirectory} from './RemoteDirectory';
-import {RemoteFile} from './RemoteFile';
-import {ServerConnection} from './ServerConnection';
-import {ConnectionCache} from './ConnectionCache';
-import NuclideTextBuffer from './NuclideTextBuffer';
-
-import {
-  SshHandshake,
-  decorateSshConnectionDelegateWithTracking,
-} from './SshHandshake';
-
-import {
-  getService,
-  getServiceByConnection,
-  getServiceByNuclideUri,
-  getlocalService,
-} from './service-manager';
-
-export type Directory = LocalDirectoryType | RemoteDirectory;
-
-export {
-  RemoteConnection,
-  RemoteDirectory,
-  RemoteFile,
-  ServerConnection,
-  ConnectionCache,
-  SshHandshake,
-  NuclideTextBuffer,
-  decorateSshConnectionDelegateWithTracking,
-  getService,
-  getServiceByConnection,
-  getServiceByNuclideUri,
-  getlocalService,
-};
-
-export {
-  bufferForUri,
-  existingBufferForUri,
-  loadBufferForUri,
-  saveBuffer,
-} from './remote-text-buffer';
-
-import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
-import typeof * as BuckService from '../../nuclide-buck-rpc';
-import typeof * as ClangService from '../../nuclide-clang-rpc';
-import typeof * as CodeSearchService from '../../nuclide-code-search-rpc/lib/CodeSearchService';
-import typeof * as CtagsService from '../../nuclide-ctags-rpc';
-import typeof * as DefinitionPreviewService from '../../nuclide-definition-preview-rpc';
-import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
-import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
-import typeof * as FlowService from '../../nuclide-flow-rpc';
-import typeof * as FuzzyFileSearchService from '../../nuclide-fuzzy-file-search-rpc';
-import typeof * as GrepService from '../../nuclide-grep-rpc';
-import typeof * as HackService from '../../nuclide-hack-rpc';
-import typeof * as HgService from '../../nuclide-hg-rpc/lib/HgService';
-import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
-import typeof * as MerlinService from '../../nuclide-ocaml-rpc/lib/MerlinService';
-import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc';
-import typeof * as OpenFilesService from '../../nuclide-open-files-rpc/lib/OpenFilesService';
-import typeof * as PhpDebuggerService from '../../nuclide-debugger-php-rpc';
-import typeof * as PythonService from '../../nuclide-python-rpc';
-import typeof * as ReasonService from '../../nuclide-ocaml-rpc/lib/ReasonService';
-import typeof * as RemoteCommandService from '../../nuclide-remote-atom-rpc';
-import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
-import typeof * as SocketService from '../../nuclide-socket-rpc';
-import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
-import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
-
-export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
-  return nullthrows(getServiceByNuclideUri('AdbService', uri));
+function _load_remoteTextBuffer() {
+  return _remoteTextBuffer = require('./remote-text-buffer');
 }
 
-export function getArcanistServiceByNuclideUri(
-  uri: NuclideUri,
-): ArcanistService {
-  return nullthrows(getServiceByNuclideUri('ArcanistService', uri));
+Object.defineProperty(exports, 'bufferForUri', {
+  enumerable: true,
+  get: function () {
+    return (_remoteTextBuffer || _load_remoteTextBuffer()).bufferForUri;
+  }
+});
+Object.defineProperty(exports, 'existingBufferForUri', {
+  enumerable: true,
+  get: function () {
+    return (_remoteTextBuffer || _load_remoteTextBuffer()).existingBufferForUri;
+  }
+});
+Object.defineProperty(exports, 'loadBufferForUri', {
+  enumerable: true,
+  get: function () {
+    return (_remoteTextBuffer || _load_remoteTextBuffer()).loadBufferForUri;
+  }
+});
+Object.defineProperty(exports, 'saveBuffer', {
+  enumerable: true,
+  get: function () {
+    return (_remoteTextBuffer || _load_remoteTextBuffer()).saveBuffer;
+  }
+});
+exports.getAdbServiceByNuclideUri = getAdbServiceByNuclideUri;
+exports.getArcanistServiceByNuclideUri = getArcanistServiceByNuclideUri;
+exports.getBuckServiceByNuclideUri = getBuckServiceByNuclideUri;
+exports.getClangServiceByNuclideUri = getClangServiceByNuclideUri;
+exports.getCodeSearchServiceByNuclideUri = getCodeSearchServiceByNuclideUri;
+exports.getCtagsServiceByNuclideUri = getCtagsServiceByNuclideUri;
+exports.getDefinitionPreviewServiceByNuclideUri = getDefinitionPreviewServiceByNuclideUri;
+exports.getFileSystemServiceByNuclideUri = getFileSystemServiceByNuclideUri;
+exports.getFileWatcherServiceByNuclideUri = getFileWatcherServiceByNuclideUri;
+exports.getFlowServiceByNuclideUri = getFlowServiceByNuclideUri;
+exports.getFuzzyFileSearchServiceByNuclideUri = getFuzzyFileSearchServiceByNuclideUri;
+exports.getGrepServiceByNuclideUri = getGrepServiceByNuclideUri;
+exports.getHackLanguageForUri = getHackLanguageForUri;
+exports.getHgServiceByNuclideUri = getHgServiceByNuclideUri;
+exports.getInfoServiceByNuclideUri = getInfoServiceByNuclideUri;
+exports.getMerlinServiceByNuclideUri = getMerlinServiceByNuclideUri;
+exports.getNativeDebuggerServiceByNuclideUri = getNativeDebuggerServiceByNuclideUri;
+exports.getOpenFilesServiceByNuclideUri = getOpenFilesServiceByNuclideUri;
+exports.getPhpDebuggerServiceByNuclideUri = getPhpDebuggerServiceByNuclideUri;
+exports.getPythonServiceByNuclideUri = getPythonServiceByNuclideUri;
+exports.getReasonServiceByNuclideUri = getReasonServiceByNuclideUri;
+exports.getRemoteCommandServiceByNuclideUri = getRemoteCommandServiceByNuclideUri;
+exports.getSdbServiceByNuclideUri = getSdbServiceByNuclideUri;
+exports.getSocketServiceByNuclideUri = getSocketServiceByNuclideUri;
+exports.getSourceControlServiceByNuclideUri = getSourceControlServiceByNuclideUri;
+exports.getVSCodeLanguageServiceByConnection = getVSCodeLanguageServiceByConnection;
+exports.getVSCodeLanguageServiceByNuclideUri = getVSCodeLanguageServiceByNuclideUri;
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
 }
 
-export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {
-  return nullthrows(getServiceByNuclideUri('BuckService', uri));
+var _RemoteConnection;
+
+function _load_RemoteConnection() {
+  return _RemoteConnection = require('./RemoteConnection');
 }
 
-export function getClangServiceByNuclideUri(uri: NuclideUri): ClangService {
-  return nullthrows(getServiceByNuclideUri('ClangService', uri));
+var _RemoteDirectory;
+
+function _load_RemoteDirectory() {
+  return _RemoteDirectory = require('./RemoteDirectory');
 }
 
-export function getCodeSearchServiceByNuclideUri(
-  uri: NuclideUri,
-): CodeSearchService {
-  return nullthrows(getServiceByNuclideUri('CodeSearchService', uri));
+var _RemoteFile;
+
+function _load_RemoteFile() {
+  return _RemoteFile = require('./RemoteFile');
 }
 
-export function getCtagsServiceByNuclideUri(uri: NuclideUri): CtagsService {
-  return nullthrows(getServiceByNuclideUri('CtagsService', uri));
+var _ServerConnection;
+
+function _load_ServerConnection() {
+  return _ServerConnection = require('./ServerConnection');
 }
 
-export function getDefinitionPreviewServiceByNuclideUri(
-  uri: NuclideUri,
-): DefinitionPreviewService {
-  return nullthrows(getServiceByNuclideUri('DefinitionPreviewService', uri));
+var _ConnectionCache;
+
+function _load_ConnectionCache() {
+  return _ConnectionCache = require('./ConnectionCache');
 }
 
-export function getFileSystemServiceByNuclideUri(
-  uri: NuclideUri,
-): FileSystemService {
-  return nullthrows(getServiceByNuclideUri('FileSystemService', uri));
+var _NuclideTextBuffer;
+
+function _load_NuclideTextBuffer() {
+  return _NuclideTextBuffer = _interopRequireDefault(require('./NuclideTextBuffer'));
 }
 
-export function getFileWatcherServiceByNuclideUri(
-  uri: NuclideUri,
-): FileWatcherService {
-  return nullthrows(getServiceByNuclideUri('FileWatcherService', uri));
+var _SshHandshake;
+
+function _load_SshHandshake() {
+  return _SshHandshake = require('./SshHandshake');
 }
 
-export function getFlowServiceByNuclideUri(uri: NuclideUri): FlowService {
-  return nullthrows(getServiceByNuclideUri('FlowService', uri));
+var _serviceManager;
+
+function _load_serviceManager() {
+  return _serviceManager = require('./service-manager');
 }
 
-export function getFuzzyFileSearchServiceByNuclideUri(
-  uri: NuclideUri,
-): FuzzyFileSearchService {
-  return nullthrows(getServiceByNuclideUri('FuzzyFileSearchService', uri));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.RemoteConnection = (_RemoteConnection || _load_RemoteConnection()).RemoteConnection;
+exports.RemoteDirectory = (_RemoteDirectory || _load_RemoteDirectory()).RemoteDirectory;
+exports.RemoteFile = (_RemoteFile || _load_RemoteFile()).RemoteFile;
+exports.ServerConnection = (_ServerConnection || _load_ServerConnection()).ServerConnection;
+exports.ConnectionCache = (_ConnectionCache || _load_ConnectionCache()).ConnectionCache;
+exports.SshHandshake = (_SshHandshake || _load_SshHandshake()).SshHandshake;
+exports.NuclideTextBuffer = (_NuclideTextBuffer || _load_NuclideTextBuffer()).default;
+exports.decorateSshConnectionDelegateWithTracking = (_SshHandshake || _load_SshHandshake()).decorateSshConnectionDelegateWithTracking;
+exports.getService = (_serviceManager || _load_serviceManager()).getService;
+exports.getServiceByConnection = (_serviceManager || _load_serviceManager()).getServiceByConnection;
+exports.getServiceByNuclideUri = (_serviceManager || _load_serviceManager()).getServiceByNuclideUri;
+exports.getlocalService = (_serviceManager || _load_serviceManager()).getlocalService; /**
+                                                                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                        * All rights reserved.
+                                                                                        *
+                                                                                        * This source code is licensed under the license found in the LICENSE file in
+                                                                                        * the root directory of this source tree.
+                                                                                        *
+                                                                                        * 
+                                                                                        * @format
+                                                                                        */
+
+function getAdbServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('AdbService', uri));
 }
 
-export function getGrepServiceByNuclideUri(uri: NuclideUri): GrepService {
-  return nullthrows(getServiceByNuclideUri('GrepService', uri));
+function getArcanistServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('ArcanistService', uri));
 }
 
-export function getHackLanguageForUri(uri: NuclideUri): HackService {
-  return nullthrows(getServiceByNuclideUri('HackService', uri));
+function getBuckServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('BuckService', uri));
 }
 
-export function getHgServiceByNuclideUri(uri: NuclideUri): HgService {
-  return nullthrows(getServiceByNuclideUri('HgService', uri));
+function getClangServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('ClangService', uri));
 }
 
-export function getInfoServiceByNuclideUri(uri: NuclideUri): InfoService {
-  return nullthrows(getServiceByNuclideUri('InfoService', uri));
+function getCodeSearchServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('CodeSearchService', uri));
 }
 
-export function getMerlinServiceByNuclideUri(uri: NuclideUri): MerlinService {
-  return nullthrows(getServiceByNuclideUri('MerlinService', uri));
+function getCtagsServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('CtagsService', uri));
 }
 
-export function getNativeDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): NativeDebuggerService {
-  return nullthrows(getServiceByNuclideUri('NativeDebuggerService', uri));
+function getDefinitionPreviewServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('DefinitionPreviewService', uri));
 }
 
-export function getOpenFilesServiceByNuclideUri(
-  uri: NuclideUri,
-): OpenFilesService {
-  return nullthrows(getServiceByNuclideUri('OpenFilesService', uri));
+function getFileSystemServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('FileSystemService', uri));
 }
 
-export function getPhpDebuggerServiceByNuclideUri(
-  uri: NuclideUri,
-): PhpDebuggerService {
-  return nullthrows(getServiceByNuclideUri('PhpDebuggerService', uri));
+function getFileWatcherServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('FileWatcherService', uri));
 }
 
-export function getPythonServiceByNuclideUri(uri: NuclideUri): PythonService {
-  return nullthrows(getServiceByNuclideUri('PythonService', uri));
+function getFlowServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('FlowService', uri));
 }
 
-export function getReasonServiceByNuclideUri(uri: NuclideUri): ReasonService {
-  return nullthrows(getServiceByNuclideUri('ReasonService', uri));
+function getFuzzyFileSearchServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('FuzzyFileSearchService', uri));
 }
 
-export function getRemoteCommandServiceByNuclideUri(
-  uri: NuclideUri,
-): RemoteCommandService {
-  return nullthrows(getServiceByNuclideUri('RemoteCommandService', uri));
+function getGrepServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('GrepService', uri));
 }
 
-export function getSdbServiceByNuclideUri(uri: NuclideUri): SdbService {
-  return nullthrows(getServiceByNuclideUri('SdbService', uri));
+function getHackLanguageForUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('HackService', uri));
 }
 
-export function getSocketServiceByNuclideUri(uri: NuclideUri): SocketService {
-  return nullthrows(getServiceByNuclideUri('SocketService', uri));
+function getHgServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('HgService', uri));
 }
 
-export function getSourceControlServiceByNuclideUri(
-  uri: NuclideUri,
-): SourceControlService {
-  return nullthrows(getServiceByNuclideUri('SourceControlService', uri));
+function getInfoServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('InfoService', uri));
 }
 
-export function getVSCodeLanguageServiceByConnection(
-  connection: ?ServerConnection,
-): VSCodeLanguageService {
-  return nullthrows(
-    getServiceByConnection('VSCodeLanguageService', connection),
-  );
+function getMerlinServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('MerlinService', uri));
 }
 
-export function getVSCodeLanguageServiceByNuclideUri(
-  uri: NuclideUri,
-): VSCodeLanguageService {
-  return nullthrows(getServiceByNuclideUri('VSCodeLanguageService', uri));
+function getNativeDebuggerServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('NativeDebuggerService', uri));
+}
+
+function getOpenFilesServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('OpenFilesService', uri));
+}
+
+function getPhpDebuggerServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('PhpDebuggerService', uri));
+}
+
+function getPythonServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('PythonService', uri));
+}
+
+function getReasonServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('ReasonService', uri));
+}
+
+function getRemoteCommandServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('RemoteCommandService', uri));
+}
+
+function getSdbServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('SdbService', uri));
+}
+
+function getSocketServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('SocketService', uri));
+}
+
+function getSourceControlServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('SourceControlService', uri));
+}
+
+function getVSCodeLanguageServiceByConnection(connection) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByConnection)('VSCodeLanguageService', connection));
+}
+
+function getVSCodeLanguageServiceByNuclideUri(uri) {
+  return (0, (_nullthrows || _load_nullthrows()).default)((0, (_serviceManager || _load_serviceManager()).getServiceByNuclideUri)('VSCodeLanguageService', uri));
 }

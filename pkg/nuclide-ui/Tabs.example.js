@@ -1,83 +1,116 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import {Block} from 'nuclide-commons-ui/Block';
-import Tabs from './Tabs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TabExamples = undefined;
 
-const tabs = [
-  {
-    name: 'one',
-    tabContent: <div>One</div>,
-  },
-  {
-    name: 'two',
-    tabContent: <div>Two</div>,
-  },
-  {
-    name: 'three',
-    tabContent: <div>Three</div>,
-  },
-  {
-    name: 'four',
-    tabContent: <div>Four</div>,
-  },
-  {
-    name: 'five',
-    tabContent: <div>Five</div>,
-  },
-];
+var _react = _interopRequireWildcard(require('react'));
 
-class TabExample extends React.Component<any, {activeTabName: string}> {
-  constructor(props: any) {
+var _Block;
+
+function _load_Block() {
+  return _Block = require('nuclide-commons-ui/Block');
+}
+
+var _Tabs;
+
+function _load_Tabs() {
+  return _Tabs = _interopRequireDefault(require('./Tabs'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const tabs = [{
+  name: 'one',
+  tabContent: _react.createElement(
+    'div',
+    null,
+    'One'
+  )
+}, {
+  name: 'two',
+  tabContent: _react.createElement(
+    'div',
+    null,
+    'Two'
+  )
+}, {
+  name: 'three',
+  tabContent: _react.createElement(
+    'div',
+    null,
+    'Three'
+  )
+}, {
+  name: 'four',
+  tabContent: _react.createElement(
+    'div',
+    null,
+    'Four'
+  )
+}, {
+  name: 'five',
+  tabContent: _react.createElement(
+    'div',
+    null,
+    'Five'
+  )
+}]; /**
+     * Copyright (c) 2015-present, Facebook, Inc.
+     * All rights reserved.
+     *
+     * This source code is licensed under the license found in the LICENSE file in
+     * the root directory of this source tree.
+     *
+     * 
+     * @format
+     */
+
+class TabExample extends _react.Component {
+  constructor(props) {
     super(props);
+
+    this.handleTabChange = newTabName => {
+      this.setState({
+        activeTabName: newTabName.name
+      });
+    };
+
     this.state = {
-      activeTabName: 'one',
+      activeTabName: 'one'
     };
   }
 
-  handleTabChange = (newTabName: {
-    name: string,
-    tabContent: React.Element<any>,
-  }): void => {
-    this.setState({
-      activeTabName: newTabName.name,
-    });
-  };
-
-  render(): React.Node {
-    const {activeTabName} = this.state;
-    return (
-      <Block>
-        <Tabs
-          tabs={tabs}
-          activeTabName={activeTabName}
-          triggeringEvent="onClick"
-          onActiveTabChange={this.handleTabChange}
-        />
-        <div style={{padding: '2em 0 2em 0'}}>
-          Showing content for tab "{activeTabName}".
-        </div>
-      </Block>
+  render() {
+    const { activeTabName } = this.state;
+    return _react.createElement(
+      (_Block || _load_Block()).Block,
+      null,
+      _react.createElement((_Tabs || _load_Tabs()).default, {
+        tabs: tabs,
+        activeTabName: activeTabName,
+        triggeringEvent: 'onClick',
+        onActiveTabChange: this.handleTabChange
+      }),
+      _react.createElement(
+        'div',
+        { style: { padding: '2em 0 2em 0' } },
+        'Showing content for tab "',
+        activeTabName,
+        '".'
+      )
     );
   }
 }
 
-export const TabExamples = {
+const TabExamples = exports.TabExamples = {
   sectionName: 'Tabs',
   description: '',
-  examples: [
-    {
-      title: '',
-      component: TabExample,
-    },
-  ],
+  examples: [{
+    title: '',
+    component: TabExample
+  }]
 };

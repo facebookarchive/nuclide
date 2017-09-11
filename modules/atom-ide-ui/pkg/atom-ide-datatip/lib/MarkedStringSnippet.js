@@ -1,65 +1,70 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {TextBuffer} from 'atom';
-import * as React from 'react';
-import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _atom = require('atom');
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _AtomTextEditor;
+
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('nuclide-commons-ui/AtomTextEditor');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 // Complex types can end up being super long. Truncate them.
-const MAX_LENGTH = 100;
+const MAX_LENGTH = 100; /**
+                         * Copyright (c) 2017-present, Facebook, Inc.
+                         * All rights reserved.
+                         *
+                         * This source code is licensed under the BSD-style license found in the
+                         * LICENSE file in the root directory of this source tree. An additional grant
+                         * of patent rights can be found in the PATENTS file in the same directory.
+                         *
+                         * 
+                         * @format
+                         */
 
-type Props = {
-  value: string,
-  grammar: atom$Grammar,
-};
+class MarkedStringSnippet extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-type State = {
-  isExpanded: boolean,
-};
+    return _temp = super(...args), this.state = {
+      isExpanded: false
+    }, _temp;
+  }
 
-export default class MarkedStringSnippet extends React.Component<Props, State> {
-  state = {
-    isExpanded: false,
-  };
-
-  render(): React.Node {
-    const {value} = this.props;
+  render() {
+    const { value } = this.props;
     const shouldTruncate = value.length > MAX_LENGTH && !this.state.isExpanded;
-    const buffer = new TextBuffer(
-      shouldTruncate ? value.substr(0, MAX_LENGTH) + '...' : value,
-    );
+    const buffer = new _atom.TextBuffer(shouldTruncate ? value.substr(0, MAX_LENGTH) + '...' : value);
     // Improve the display of Hack snippets.
-    let {grammar} = this.props;
+    let { grammar } = this.props;
     if (grammar.scopeName === 'text.html.hack') {
-      grammar =
-        atom.grammars.grammarForScopeName('source.hackfragment') || grammar;
+      grammar = atom.grammars.grammarForScopeName('source.hackfragment') || grammar;
     }
-    return (
-      <div
-        className="nuclide-datatip-marked-text-editor-container"
-        onClick={(e: SyntheticEvent<>) => {
-          this.setState({isExpanded: !this.state.isExpanded});
+    return _react.createElement(
+      'div',
+      {
+        className: 'nuclide-datatip-marked-text-editor-container',
+        onClick: e => {
+          this.setState({ isExpanded: !this.state.isExpanded });
           e.stopPropagation();
-        }}>
-        <AtomTextEditor
-          className="nuclide-datatip-marked-text-editor"
-          gutterHidden={true}
-          readOnly={true}
-          syncTextContents={false}
-          autoGrow={true}
-          grammar={grammar}
-          textBuffer={buffer}
-        />
-      </div>
+        } },
+      _react.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+        className: 'nuclide-datatip-marked-text-editor',
+        gutterHidden: true,
+        readOnly: true,
+        syncTextContents: false,
+        autoGrow: true,
+        grammar: grammar,
+        textBuffer: buffer
+      })
     );
   }
 }
+exports.default = MarkedStringSnippet;

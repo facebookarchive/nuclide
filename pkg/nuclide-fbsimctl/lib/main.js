@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.observeDevices = observeDevices;
+exports.getDevices = getDevices;
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,50 +41,28 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Device, DeviceType} from './types';
-
-import {runCommand} from 'nuclide-commons/process';
-import {Observable} from 'rxjs';
-import {arrayEqual} from 'nuclide-commons/collection';
-import shallowEqual from 'shallowequal';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 const poller = createPoller();
 
 // Callback version
-export function observeDevices(callback: (Array<Device>) => void): IDisposable {
+function observeDevices(callback) {
   const subscription = poller.subscribe(devices => callback(devices));
-  return new UniversalDisposable(() => subscription.unsubscribe());
+  return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => subscription.unsubscribe());
 }
 
 // Observable version
-export function getDevices(): Observable<Array<Device>> {
+function getDevices() {
   return poller;
 }
 
-function createPoller(): Observable<Array<Device>> {
-  return Observable.interval(2000)
-    .startWith(0)
-    .switchMap(() =>
-      runCommand('fbsimctl', ['--json', '--format=%n%u%s%o%a', 'list']).map(
-        parseFbsimctlJsonOutput,
-      ),
-    )
-    .distinctUntilChanged((a, b) => arrayEqual(a, b, shallowEqual))
-    .catch(() =>
-      Observable.throw(
-        "Can't fetch iOS devices. Make sure that fbsimctl is in your $PATH and that it works properly.",
-      ),
-    )
-    .publishReplay(1)
-    .refCount();
+function createPoller() {
+  return _rxjsBundlesRxMinJs.Observable.interval(2000).startWith(0).switchMap(() => (0, (_process || _load_process()).runCommand)('fbsimctl', ['--json', '--format=%n%u%s%o%a', 'list']).map(parseFbsimctlJsonOutput)).distinctUntilChanged((a, b) => (0, (_collection || _load_collection()).arrayEqual)(a, b, (_shallowequal || _load_shallowequal()).default)).catch(() => _rxjsBundlesRxMinJs.Observable.throw("Can't fetch iOS devices. Make sure that fbsimctl is in your $PATH and that it works properly.")).publishReplay(1).refCount();
 }
 
-function parseFbsimctlJsonOutput(output: string): Array<Device> {
+function parseFbsimctlJsonOutput(output) {
   const devices = [];
 
   output.split('\n').forEach(line => {
@@ -58,16 +72,11 @@ function parseFbsimctlJsonOutput(output: string): Array<Device> {
     } catch (e) {
       return;
     }
-    if (
-      !event ||
-      !event.event_name ||
-      event.event_name !== 'list' ||
-      !event.subject
-    ) {
+    if (!event || !event.event_name || event.event_name !== 'list' || !event.subject) {
       return;
     }
     const device = event.subject;
-    const {state, os, name, udid, arch} = device;
+    const { state, os, name, udid, arch } = device;
     if (!state || !os || !name || !udid || !arch) {
       return;
     }
@@ -86,14 +95,14 @@ function parseFbsimctlJsonOutput(output: string): Array<Device> {
       state,
       os,
       arch,
-      type,
+      type
     });
   });
 
   return devices;
 }
 
-function typeFromArch(arch: string): ?DeviceType {
+function typeFromArch(arch) {
   switch (arch) {
     case 'x86_64':
     case 'i386':

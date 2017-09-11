@@ -1,59 +1,45 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-import addTooltip from './addTooltip';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Checkbox = undefined;
 
-import ignoreTextSelectionEvents from './ignoreTextSelectionEvents';
+var _react = _interopRequireWildcard(require('react'));
 
-type DefaultProps = {
-  disabled: boolean,
-  indeterminate: boolean,
-  label: string,
-  onClick: (event: SyntheticMouseEvent<>) => mixed,
-  onMouseDown: (event: SyntheticMouseEvent<>) => mixed,
-};
+var _reactDom = _interopRequireDefault(require('react-dom'));
 
-type Props = {
-  className?: string,
-  checked: boolean,
-  disabled: boolean,
-  indeterminate: boolean,
-  label: string,
-  onChange: (isChecked: boolean) => mixed,
-  onClick: (event: SyntheticMouseEvent<>) => mixed,
-  tooltip?: atom$TooltipsAddOptions,
-  title?: ?string,
-  onMouseDown: (event: SyntheticMouseEvent<>) => mixed,
-};
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _addTooltip;
+
+function _load_addTooltip() {
+  return _addTooltip = _interopRequireDefault(require('./addTooltip'));
+}
+
+var _ignoreTextSelectionEvents;
+
+function _load_ignoreTextSelectionEvents() {
+  return _ignoreTextSelectionEvents = _interopRequireDefault(require('./ignoreTextSelectionEvents'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
  * to ensure this component is pure.
  */
-export class Checkbox extends React.PureComponent<Props> {
-  static defaultProps: DefaultProps = {
-    disabled: false,
-    indeterminate: false,
-    label: '',
-    onClick(event) {},
-    onMouseDown(event) {},
-  };
+class Checkbox extends _react.PureComponent {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
-    (this: any)._onChange = this._onChange.bind(this);
+    this._onChange = this._onChange.bind(this);
   }
 
   componentDidMount() {
@@ -64,8 +50,8 @@ export class Checkbox extends React.PureComponent<Props> {
     this._setIndeterminate();
   }
 
-  _onChange(event: SyntheticEvent<>) {
-    const isChecked = ((event.target: any): HTMLInputElement).checked;
+  _onChange(event) {
+    const isChecked = event.target.checked;
     this.props.onChange.call(null, isChecked);
   }
 
@@ -75,14 +61,12 @@ export class Checkbox extends React.PureComponent<Props> {
    *
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
-  _setIndeterminate(): void {
+  _setIndeterminate() {
     // $FlowFixMe
-    ReactDOM.findDOMNode(
-      this.refs.input,
-    ).indeterminate = this.props.indeterminate;
+    _reactDom.default.findDOMNode(this.refs.input).indeterminate = this.props.indeterminate;
   }
 
-  render(): React.Node {
+  render() {
     const {
       checked,
       className,
@@ -93,36 +77,55 @@ export class Checkbox extends React.PureComponent<Props> {
       onClick,
       tooltip,
       title,
-      onMouseDown,
+      onMouseDown
     } = this.props;
 
-    const ref = tooltip ? addTooltip(tooltip) : null;
-    const text =
-      label === ''
-        ? null
-        : <span className="nuclide-ui-checkbox-label-text">
-            {' '}{label}
-          </span>;
-    return (
-      <label
-        className={classnames(className, 'nuclide-ui-checkbox-label', {
-          'nuclide-ui-checkbox-disabled': disabled,
-        })}
+    const ref = tooltip ? (0, (_addTooltip || _load_addTooltip()).default)(tooltip) : null;
+    const text = label === '' ? null : _react.createElement(
+      'span',
+      { className: 'nuclide-ui-checkbox-label-text' },
+      ' ',
+      label
+    );
+    return _react.createElement(
+      'label',
+      {
+        className: (0, (_classnames || _load_classnames()).default)(className, 'nuclide-ui-checkbox-label', {
+          'nuclide-ui-checkbox-disabled': disabled
+        })
         // $FlowFixMe(>=0.53.0) Flow suppress
-        ref={ref}
-        onClick={onClick && ignoreTextSelectionEvents(onClick)}
-        title={title}>
-        <input
-          checked={checked}
-          className="input-checkbox nuclide-ui-checkbox"
-          disabled={disabled}
-          onChange={this._onChange}
-          onMouseDown={onMouseDown}
-          ref="input"
-          type="checkbox"
-        />
-        {text}
-      </label>
+        , ref: ref,
+        onClick: onClick && (0, (_ignoreTextSelectionEvents || _load_ignoreTextSelectionEvents()).default)(onClick),
+        title: title },
+      _react.createElement('input', {
+        checked: checked,
+        className: 'input-checkbox nuclide-ui-checkbox',
+        disabled: disabled,
+        onChange: this._onChange,
+        onMouseDown: onMouseDown,
+        ref: 'input',
+        type: 'checkbox'
+      }),
+      text
     );
   }
 }
+exports.Checkbox = Checkbox; /**
+                              * Copyright (c) 2017-present, Facebook, Inc.
+                              * All rights reserved.
+                              *
+                              * This source code is licensed under the BSD-style license found in the
+                              * LICENSE file in the root directory of this source tree. An additional grant
+                              * of patent rights can be found in the PATENTS file in the same directory.
+                              *
+                              * 
+                              * @format
+                              */
+
+Checkbox.defaultProps = {
+  disabled: false,
+  indeterminate: false,
+  label: '',
+  onClick(event) {},
+  onMouseDown(event) {}
+};

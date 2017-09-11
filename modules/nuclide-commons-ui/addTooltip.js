@@ -1,17 +1,17 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = addTooltip;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 /**
 * Adds a self-disposing Atom's tooltip to a react element.
@@ -24,9 +24,19 @@ import ReactDOM from 'react-dom';
 *   this._myDiv = c;
 * }} />
 */
-export default function addTooltip(
-  options: atom$TooltipsAddOptions,
-): (elementRef: React.Element<any>) => void {
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
+
+function addTooltip(options) {
   let prevRefDisposable;
 
   let immediate = null;
@@ -39,18 +49,16 @@ export default function addTooltip(
 
     if (elementRef != null) {
       // $FlowFixMe -- findDOMNode takes a React.Component or an HTMLElement.
-      const node = ReactDOM.findDOMNode(elementRef);
+      const node = _reactDom.default.findDOMNode(elementRef);
 
       const initializeTooltip = () => {
         prevRefDisposable = atom.tooltips.add(
-          // $FlowFixMe
-          node,
-          // $FlowFixMe
-          {
-            keyBindingTarget: node,
-            ...options,
-          },
-        );
+        // $FlowFixMe
+        node,
+        // $FlowFixMe
+        Object.assign({
+          keyBindingTarget: node
+        }, options));
       };
 
       if (options.keyBindingTarget) {
