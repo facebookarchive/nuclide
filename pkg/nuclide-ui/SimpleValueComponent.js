@@ -16,10 +16,13 @@ import * as React from 'react';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TextRenderer} from './TextRenderer';
 
-type SimpleValueComponentProps = {
+type Props = {
   expression: ?string,
   evaluationResult: EvaluationResult,
 };
+
+const booleanRegex = /^true|false$/i;
+const stringRegex = /^(['"]).*\1$/;
 
 function renderNullish(
   evaluationResult: EvaluationResult,
@@ -34,7 +37,10 @@ function renderNullish(
 
 function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {type, value} = evaluationResult;
-  return type === 'string'
+  if (value == null) {
+    return null;
+  }
+  return type === 'string' || stringRegex.test(value)
     ? <span className={ValueComponentClassNames.string}>
         <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
         {value}
@@ -45,7 +51,10 @@ function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
 
 function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   const {type, value} = evaluationResult;
-  return type === 'number'
+  if (value == null) {
+    return null;
+  }
+  return type === 'number' || !isNaN(Number(value))
     ? <span className={ValueComponentClassNames.number}>
         {String(value)}
       </span>
@@ -56,7 +65,10 @@ function renderBoolean(
   evaluationResult: EvaluationResult,
 ): ?React.Element<any> {
   const {type, value} = evaluationResult;
-  return type === 'boolean'
+  if (value == null) {
+    return null;
+  }
+  return type === 'boolean' || booleanRegex.test(value)
     ? <span className={ValueComponentClassNames.boolean}>
         {String(value)}
       </span>
@@ -76,9 +88,7 @@ const valueRenderers = [
   renderDefault,
 ];
 
-export default class SimpleValueComponent extends React.Component<
-  SimpleValueComponentProps,
-> {
+export default class SimpleValueComponent extends React.PureComponent<Props> {
   render(): React.Node {
     const {expression, evaluationResult} = this.props;
     let displayValue;

@@ -81,6 +81,9 @@ export class WatchExpressionListStore {
   }
 
   _addWatchExpression(expression: Expression): void {
+    if (expression === '') {
+      return;
+    }
     this._watchExpressions.next([
       ...this._watchExpressions.getValue(),
       this._getExpressionEvaluationFor(expression),
@@ -94,6 +97,9 @@ export class WatchExpressionListStore {
   }
 
   _updateWatchExpression(index: number, newExpression: Expression): void {
+    if (newExpression === '') {
+      return this._removeWatchExpression(index);
+    }
     const watchExpressions = this._watchExpressions.getValue().slice();
     watchExpressions[index] = this._getExpressionEvaluationFor(newExpression);
     this._watchExpressions.next(watchExpressions);
