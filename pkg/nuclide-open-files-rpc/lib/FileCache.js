@@ -98,6 +98,7 @@ export class FileCache {
         }
         break;
       default:
+        (event.kind: empty);
         throw new Error(`Unexpected FileEvent.kind: ${event.kind}`);
     }
     return Promise.resolve(undefined);

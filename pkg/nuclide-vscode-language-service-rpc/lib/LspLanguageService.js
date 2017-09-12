@@ -716,6 +716,7 @@ export class LspLanguageService {
               this._fileSave(fileEvent);
               break;
             default:
+              (fileEvent.kind: empty);
               this._logger.error(
                 'Unrecognized fileEvent ' + JSON.stringify(fileEvent),
               );
