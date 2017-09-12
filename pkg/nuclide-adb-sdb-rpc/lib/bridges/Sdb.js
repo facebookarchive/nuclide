@@ -63,7 +63,7 @@ export class Sdb extends DebugBridge {
   }
 
   getDebuggableProcesses(): Observable<Array<SimpleProcess>> {
-    throw new Error('not implemented');
+    return Observable.of([]);
   }
 
   getAPIVersion(): Observable<string> {
@@ -93,5 +93,17 @@ export class Sdb extends DebugBridge {
 
   getDeviceArgs(): Array<string> {
     return this._device.name !== '' ? ['-s', this._device.name] : [];
+  }
+
+  getProcesses(): Observable<Array<SimpleProcess>> {
+    return this.runShortCommand(
+      'shell',
+      'for file in /proc/[0-9]*/stat; do cat "$file" 2>/dev/null || true; done',
+    ).map(stdout =>
+      stdout.split(/\n/).map(line => {
+        const info = line.trim().split(/\s+/);
+        return {user: 'n/a', pid: info[0], name: info[1]};
+      }),
+    );
   }
 }

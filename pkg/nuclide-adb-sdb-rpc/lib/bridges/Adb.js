@@ -340,4 +340,13 @@ export class Adb extends DebugBridge {
     const deviceArg = this._device.name !== '' ? ['-s', this._device.name] : [];
     return deviceArg.concat(portArg);
   }
+
+  getProcesses(): Observable<Array<SimpleProcess>> {
+    return this.runShortCommand('shell', 'ps').map(stdout =>
+      stdout.split(/\n/).map(line => {
+        const info = line.trim().split(/\s+/);
+        return {user: info[0], pid: info[1], name: info[info.length - 1]};
+      }),
+    );
+  }
 }

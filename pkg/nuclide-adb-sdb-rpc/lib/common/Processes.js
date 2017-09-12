@@ -29,12 +29,6 @@ export class Processes {
     this._db = db;
   }
 
-  getProcesses(): Observable<Array<string>> {
-    return this._db
-      .runShortCommand('shell', 'ps')
-      .map(stdout => stdout.split(/\n/));
-  }
-
   _getGlobalProcessStat(): Observable<string> {
     return this._db
       .runShortCommand('shell', 'cat', '/proc/stat')
@@ -56,7 +50,7 @@ export class Processes {
 
   fetch(): Observable<Process[]> {
     return Observable.forkJoin(
-      this.getProcesses().catch(() => Observable.of([])),
+      this._db.getProcesses().catch(() => Observable.of([])),
       this._db.getDebuggableProcesses().catch(() => Observable.of([])),
       this._getProcessAndMemoryUsage().catch(() => Observable.of(new Map())),
     ).map(([processes, javaProcesses, cpuAndMemUsage]) => {
@@ -64,9 +58,8 @@ export class Processes {
         javaProcesses.map(javaProc => Number(javaProc.pid)),
       );
       return arrayCompact(
-        processes.map(x => {
-          const info = x.trim().split(/\s+/);
-          const pid = parseInt(info[1], 10);
+        processes.map(simpleProcess => {
+          const pid = parseInt(simpleProcess.pid, 10);
           if (!Number.isInteger(pid)) {
             return null;
           }
@@ -79,9 +72,9 @@ export class Processes {
           }
           const isJava = javaPids.has(pid);
           return {
-            user: info[0],
+            user: simpleProcess.user,
             pid,
-            name: info[info.length - 1],
+            name: simpleProcess.name,
             cpuUsage: cpu,
             memUsage: mem,
             isJava, // TODO(wallace) rename this to debuggable or make this a list of possible debugger types
@@ -92,7 +85,7 @@ export class Processes {
   }
 
   _getProcessAndMemoryUsage(): Observable<Map<number, CPU_MEM>> {
-    return Observable.interval(500)
+    return Observable.interval(2000)
       .startWith(0)
       .switchMap(() => {
         return Observable.forkJoin(

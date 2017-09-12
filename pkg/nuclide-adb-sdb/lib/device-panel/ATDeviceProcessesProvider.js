@@ -15,14 +15,14 @@ import type {
   Process,
 } from '../../../nuclide-device-panel/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Bridge} from '../types';
 
-import {AndroidBridge} from '../bridges/AndroidBridge';
 import {Observable} from 'rxjs';
 
 export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
-  _bridge: AndroidBridge;
+  _bridge: Bridge;
 
-  constructor(bridge: AndroidBridge) {
+  constructor(bridge: Bridge) {
     this._bridge = bridge;
   }
 
