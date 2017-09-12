@@ -478,6 +478,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const majorMinor = version.split('.').slice(0, 2).join('.');
   switch (majorMinor) {
     case '2.5':
+    case '3.0':
       merlinProcessInstance = new MerlinProcessV2_5(process);
       break;
     case '2.3':
