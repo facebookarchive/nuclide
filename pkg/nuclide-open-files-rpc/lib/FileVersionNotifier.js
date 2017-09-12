@@ -43,6 +43,7 @@ export class FileVersionNotifier {
       case FileEventKind.SAVE:
         break;
       default:
+        (event.kind: empty);
         throw new Error(`Unexpected LocalFileEvent.kind: ${event.kind}`);
     }
     this._checkRequests(filePath);
