@@ -189,8 +189,9 @@ export class RpcConnection<TransportType: Transport> {
   _calls: Map<number, Call>;
   _options: RpcConnectionOptions;
 
-  // Used to track if the request ID is incrementing atomically
+  // Used to track if the IDs are incrementing atomically
   _lastRequestId: number;
+  _lastResponseId: number;
 
   // Do not call this directly, use factory methods below.
   constructor(
@@ -202,6 +203,7 @@ export class RpcConnection<TransportType: Transport> {
     this._transport = transport;
     this._options = options;
     this._rpcRequestId = 1;
+    this._rpcResponseId = 1;
     this._serviceRegistry = serviceRegistry;
     this._objectRegistry = new ObjectRegistry(
       kind,
@@ -214,6 +216,7 @@ export class RpcConnection<TransportType: Transport> {
     this._subscriptions = new Map();
     this._calls = new Map();
     this._lastRequestId = -1;
+    this._lastResponseId = -1;
   }
 
   // Creates a connection on the server side.
@@ -748,12 +751,17 @@ export class RpcConnection<TransportType: Transport> {
   // Handles the response and returns the originating request message (if possible).
   _handleResponseMessage(message: ResponseMessage, rawMessage: string): void {
     const id = message.id;
+    // Keep track of the request message for logging
+    let requestMessage = null;
+
+    // Here's the main message handler ...
     switch (message.type) {
       case 'response': {
         const call = this._calls.get(id);
         if (call != null) {
           const {result} = message;
           call.resolve(result);
+          requestMessage = call._message;
           if (rawMessage.length >= LARGE_RESPONSE_SIZE) {
             this._trackLargeResponse(call._message, rawMessage.length);
           }
@@ -765,6 +773,7 @@ export class RpcConnection<TransportType: Transport> {
         if (call != null) {
           const {error} = message;
           call.reject(error);
+          requestMessage = call._message;
         }
         break;
       }
@@ -774,6 +783,7 @@ export class RpcConnection<TransportType: Transport> {
           const {value} = message;
           const prevBytes = subscription.getBytes();
           subscription.next(value, rawMessage.length);
+          requestMessage = subscription._message;
           if (prevBytes < LARGE_RESPONSE_SIZE) {
             const bytes = subscription.getBytes();
             if (bytes >= LARGE_RESPONSE_SIZE) {
@@ -788,6 +798,7 @@ export class RpcConnection<TransportType: Transport> {
         if (subscription != null) {
           subscription.complete();
           this._subscriptions.delete(id);
+          requestMessage = subscription._message;
         }
         break;
       }
@@ -797,11 +808,41 @@ export class RpcConnection<TransportType: Transport> {
           const {error} = message;
           subscription.error(error);
           this._subscriptions.delete(id);
+          requestMessage = subscription._message;
         }
         break;
       }
       default:
         throw new Error(`Unexpected message type ${JSON.stringify(message)}`);
+    }
+    // end main handler
+
+    const responseId = message.responseId;
+    if (
+      responseId !== this._lastResponseId + 1 &&
+      this._lastResponseId !== -1 &&
+      requestMessage != null &&
+      this._options.trackSampleRate != null
+    ) {
+      const eventName = trackingIdOfMessage(
+        this._objectRegistry,
+        requestMessage,
+      );
+
+      logger.warn(
+        `Out-of-order response received, responseId === ${responseId},` +
+          `_lastResponseId === ${this._lastResponseId}`,
+      );
+
+      track('response-message-id-mismatch', {
+        eventName,
+        responseId,
+        lastResponseId: this._lastResponseId,
+      });
+    }
+
+    if (responseId > this._lastResponseId) {
+      this._lastResponseId = responseId;
     }
   }
 
