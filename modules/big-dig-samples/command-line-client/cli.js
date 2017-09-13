@@ -14,6 +14,7 @@ import type {BigDigClient} from 'big-dig/src/client/BigDigClient';
 import type {
   SshHandshakeErrorType,
   SshConnectionConfiguration,
+  Prompt,
 } from 'big-dig/src/client/SshHandshake';
 
 import invariant from 'assert';
@@ -56,7 +57,7 @@ function parseArgsAndRunMain(): Promise<void> {
         name,
         instructions,
         instructionsLang,
-        prompts: Array<{echo: boolean, prompt: string}>,
+        prompts: Array<Prompt>,
         finish: (answers: Array<string>) => void,
       ) {
         invariant(prompts.length > 0);

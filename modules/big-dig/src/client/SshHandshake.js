@@ -15,13 +15,17 @@ import type {BigDigClient} from './BigDigClient';
 import net from 'net';
 import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
+import {SshClient} from './SshClient';
+import type {KeyboardInteractiveEvent, Prompt} from './SshClient';
 import fs from '../common/fs';
-import {sleep} from 'nuclide-commons/promise';
+import {sleep, timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import {shellQuote} from 'nuclide-commons/string';
 import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigClient from './createBigDigClient';
+
+export type {Prompt} from './SshClient';
 
 // TODO
 function restoreBigDigClient(address: string) {}
@@ -111,7 +115,7 @@ export type KeyboardInteractiveCallback = (
   name: string,
   instructions: string,
   instructionsLang: string,
-  prompts: Array<{prompt: string, echo: boolean}>,
+  prompts: Array<Prompt>,
   finish: (answers: Array<string>) => void,
 ) => void;
 
@@ -150,7 +154,7 @@ export class SshHandshake {
   static SupportedMethods: typeof SupportedMethods = SupportedMethods;
 
   _delegate: SshConnectionDelegate;
-  _connection: SshConnection;
+  _connection: SshClient;
   _config: SshConnectionConfiguration;
   _forwardingServer: net.Server;
   _remoteHost: ?string;
@@ -164,14 +168,16 @@ export class SshHandshake {
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
     this._cancelled = false;
     this._delegate = delegate;
-    this._connection = connection ? connection : new SshConnection();
-    // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
-    this._connection.on('ready', () => this._onSshConnectionIsReady());
-    this._connection.on('error', this._onSshConnectionError.bind(this));
-    this._connection.on(
-      'keyboard-interactive',
-      this._onKeyboardInteractive.bind(this),
+    this._connection = new SshClient(
+      connection ? connection : new SshConnection(),
     );
+    this._connection
+      .onReady()
+      .subscribe(this._onSshConnectionIsReady.bind(this));
+    this._connection.onError().subscribe(this._onSshConnectionError.bind(this));
+    this._connection
+      .onKeyboardInteractive()
+      .subscribe(this._onKeyboardInteractive.bind(this));
   }
 
   _willConnect(): void {
@@ -361,39 +367,37 @@ export class SshHandshake {
     this._connection.end();
   }
 
-  _onKeyboardInteractive(
-    name: string,
-    instructions: string,
-    instructionsLang: string,
-    prompts: Array<{prompt: string, echo: boolean}>,
-    finish: (answers: Array<string>) => void,
-  ): void {
+  _onKeyboardInteractive(event: KeyboardInteractiveEvent): void {
     this._delegate.onKeyboardInteractive(
-      name,
-      instructions,
-      instructionsLang,
-      prompts,
-      finish,
+      event.name,
+      event.instructions,
+      event.instructionsLang,
+      event.prompts,
+      event.finish,
     );
   }
 
   _forwardSocket(socket: net.Socket): void {
     invariant(socket.remoteAddress != null);
-    this._connection.forwardOut(
-      socket.remoteAddress,
-      socket.remotePort,
-      'localhost',
-      this._remotePort,
-      (err, stream) => {
-        if (err) {
+    invariant(this._remotePort != null);
+
+    this._connection
+      .forwardOut(
+        socket.remoteAddress,
+        socket.remotePort,
+        'localhost',
+        this._remotePort,
+      )
+      .then(
+        stream => {
+          socket.pipe(stream);
+          stream.pipe(socket);
+        },
+        err => {
           socket.end();
           console.error(err); // eslint-disable-line no-console
-          return;
-        }
-        socket.pipe(stream);
-        stream.pipe(socket);
-      },
-    );
+        },
+      );
   }
 
   _updateServerInfo(serverInfo: {}) {
@@ -429,7 +433,6 @@ export class SshHandshake {
   }
 
   _startRemoteServer(): Promise<boolean> {
-    let sftpTimer = null;
     return new Promise((resolve, reject) => {
       let stdOut = '';
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
@@ -445,111 +448,110 @@ export class SshHandshake {
         JSON.stringify(params),
       ])}`;
 
-      this._connection.exec(cmd, {pty: {term: 'nuclide'}}, (err, stream) => {
-        if (err) {
-          this._onSshConnectionError(err);
-          return resolve(false);
-        }
-        // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
-        stream
-          .on('close', async (code, signal) => {
-            // Note: this code is probably the code from the child shell if one
-            // is in use.
-            if (code === 0) {
-              // Some servers have max channels set to 1, so add a delay to ensure
-              // the old channel has been cleaned up on the server.
-              // TODO(hansonw): Implement a proper retry mechanism.
-              // But first, we have to clean up this callback hell.
-              await sleep(100);
-              sftpTimer = setTimeout(() => {
-                this._error(
-                  'Failed to start sftp connection',
-                  SshHandshake.ErrorType.SFTP_TIMEOUT,
-                  new Error(),
-                );
-                sftpTimer = null;
-                this._connection.end();
-                resolve(false);
-              }, SFTP_TIMEOUT_MS);
-              this._connection.sftp(async (error, sftp) => {
-                if (sftpTimer != null) {
-                  // Clear the sftp timer once we get a response.
-                  clearTimeout(sftpTimer);
-                } else {
-                  // If the timer already triggered, we timed out. Just exit.
-                  return;
-                }
-                if (error) {
-                  this._error(
-                    'Failed to start sftp connection',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    error,
-                  );
-                  return resolve(false);
-                }
-                const localTempFile = await tempfile();
-                sftp.fastGet(remoteTempFile, localTempFile, async sftpError => {
-                  sftp.end();
-                  if (sftpError) {
-                    this._error(
-                      'Failed to transfer server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      sftpError,
-                    );
-                    return resolve(false);
-                  }
+      this._connection.exec(cmd, {pty: {term: 'nuclide'}}).then(
+        stream => {
+          // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
+          stream
+            .on('close', async (code, signal) => {
+              // Note: this code is probably the code from the child shell if one
+              // is in use.
+              if (code === 0) {
+                // Some servers have max channels set to 1, so add a delay to ensure
+                // the old channel has been cleaned up on the server.
+                // TODO(hansonw): Implement a proper retry mechanism.
+                // But first, we have to clean up this callback hell.
+                await sleep(100);
 
-                  let serverInfo: any = null;
-                  const serverInfoJson = await fs.readFileAsString(
-                    localTempFile,
-                    'utf8',
-                  );
-                  try {
-                    serverInfo = JSON.parse(serverInfoJson);
-                  } catch (e) {
-                    this._error(
-                      'Malformed server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfoJson),
-                    );
-                    return resolve(false);
-                  }
+                timeoutPromise(this._connection.sftp(), SFTP_TIMEOUT_MS).then(
+                  async sftp => {
+                    const localTempFile = await tempfile();
+                    sftp.fastGet(remoteTempFile, localTempFile).then(
+                      async () => {
+                        sftp.end();
+                        let serverInfo: any = null;
+                        const serverInfoJson = await fs.readFileAsString(
+                          localTempFile,
+                          'utf8',
+                        );
+                        try {
+                          serverInfo = JSON.parse(serverInfoJson);
+                        } catch (e) {
+                          this._error(
+                            'Malformed server start information',
+                            SshHandshake.ErrorType.SERVER_START_FAILED,
+                            new Error(serverInfoJson),
+                          );
+                          return resolve(false);
+                        }
 
-                  if (!serverInfo.success) {
-                    this._error(
-                      'Remote server failed to start',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
+                        if (!serverInfo.success) {
+                          this._error(
+                            'Remote server failed to start',
+                            SshHandshake.ErrorType.SERVER_START_FAILED,
+                            new Error(serverInfo.logs),
+                          );
+                          return resolve(false);
+                        }
 
-                  // Update server info that is needed for setting up client.
-                  this._updateServerInfo(serverInfo);
-                  return resolve(true);
-                });
-              });
-            } else {
-              if (this._cancelled) {
-                this._error(
-                  'Cancelled by user',
-                  SshHandshake.ErrorType.USER_CANCELLED,
-                  new Error(stdOut),
+                        // Update server info that is needed for setting up client.
+                        this._updateServerInfo(serverInfo);
+                        return resolve(true);
+                      },
+                      async sftpError => {
+                        sftp.end();
+                        this._error(
+                          'Failed to transfer server start information',
+                          SshHandshake.ErrorType.SERVER_START_FAILED,
+                          sftpError,
+                        );
+                        return resolve(false);
+                      },
+                    );
+                  },
+                  error => {
+                    if (error instanceof TimedOutError) {
+                      this._error(
+                        'Failed to start sftp connection',
+                        SshHandshake.ErrorType.SFTP_TIMEOUT,
+                        new Error(),
+                      );
+                      this._connection.end();
+                    } else {
+                      this._error(
+                        'Failed to start sftp connection',
+                        SshHandshake.ErrorType.SERVER_START_FAILED,
+                        error,
+                      );
+                    }
+                    return resolve(false);
+                  },
                 );
               } else {
-                this._error(
-                  'Remote shell execution failed',
-                  SshHandshake.ErrorType.UNKNOWN,
-                  new Error(stdOut),
-                );
+                if (this._cancelled) {
+                  this._error(
+                    'Cancelled by user',
+                    SshHandshake.ErrorType.USER_CANCELLED,
+                    new Error(stdOut),
+                  );
+                } else {
+                  this._error(
+                    'Remote shell execution failed',
+                    SshHandshake.ErrorType.UNKNOWN,
+                    new Error(stdOut),
+                  );
+                }
+                return resolve(false);
               }
-              return resolve(false);
-            }
-          })
-          .on('data', data => {
-            stdOut += data;
-          });
-      });
+            })
+            .on('data', data => {
+              stdOut += data;
+            });
+        },
+        err => {
+          this._onSshConnectionError(err);
+          return resolve(false);
+        },
+      );
     });
   }
 
@@ -638,7 +640,7 @@ export function decorateSshConnectionDelegateWithTracking(
       name: string,
       instructions: string,
       instructionsLang: string,
-      prompts: Array<{prompt: string, echo: boolean}>,
+      prompts: Array<Prompt>,
       finish: (answers: Array<string>) => void,
     ) => {
       invariant(connectionTracker);
