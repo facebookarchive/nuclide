@@ -11,7 +11,7 @@
  */
 
 import type {BigDigClient} from './BigDigClient';
-import type {Prompt} from './SshClient';
+import type {ClientErrorExtensions, ConnectConfig, Prompt} from './SshClient';
 
 import net from 'net';
 import invariant from 'assert';
@@ -60,10 +60,11 @@ export type SshConnectionConfiguration = {
   remoteServerCommand: string, // Command to use to start server
   remoteServerPort?: number, // Port remote server should run on (defaults to 0)
   remoteServerCustomParams?: Object, // JSON-serializable params.
-  authMethod: string, // Which of the authentication methods in `SupportedMethods` to use.
+  authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
   password: string, // for simple password-based authentication
 };
 
+export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
 const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
@@ -81,6 +82,7 @@ const ErrorType = Object.freeze({
   SERVER_START_FAILED: 'SERVER_START_FAILED',
   SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
+  UNSUPPORTED_AUTH_METHOD: 'UNSUPPORTED_AUTH_METHOD',
   USER_CANCELLED: 'USER_CANCELLED',
 });
 
@@ -95,6 +97,7 @@ export type SshHandshakeErrorType =
   | 'SERVER_START_FAILED'
   | 'SERVER_CANNOT_CONNECT'
   | 'SFTP_TIMEOUT'
+  | 'UNSUPPORTED_AUTH_METHOD'
   | 'USER_CANCELLED';
 
 type SshConnectionErrorLevel =
@@ -154,6 +157,28 @@ const SshConnectionErrorLevelMap: Map<
   ['client-dns', ErrorType.SSH_AUTHENTICATION],
 ]);
 
+/**
+ * The output of the server bootstrapping process. In case we're not using a secure connection, we
+ * cannot make any assumptions about its format. The intent of this interface is to document what
+ * valid server info should look like. The type of each property is `T | any` for some `T`, which
+ * means that we want it to be `T`, but must verify first.
+ */
+interface ServerInfo {
+  success?: boolean | any,
+  hostname?: string | any,
+  // TODO(siegebell): `port` should probably be `any` in case we're in "insecure" mode.
+  //   See: `_updateServerInfo`.
+  port?: number,
+  /** Certificate authority. */
+  ca?: string | any,
+  /** Client certificate. */
+  cert?: string | any,
+  /** Client key. */
+  key?: string | any,
+  /** Logging info, which we report if there was an error. */
+  logs?: any,
+}
+
 class SshHandshakeError extends Error {
   message: string;
   errorType: SshHandshakeErrorType;
@@ -170,6 +195,30 @@ class SshHandshakeError extends Error {
   }
 }
 
+/**
+ * Represents a connection failure due to a client-authentication error.
+ */
+class SshAuthError extends Error {
+  /** The error thrown by `SshClient::connect` */
+  innerError: Error & ClientErrorExtensions;
+  /** If we have determined that the cause of the error was that a private key needs a password. */
+  needsPrivateKeyPassword: boolean;
+  errorType: SshHandshakeErrorType;
+
+  constructor(
+    innerError: Error & ClientErrorExtensions,
+    options: {needsPrivateKeyPassword: boolean},
+  ) {
+    super(innerError.message);
+    this.innerError = innerError;
+    this.needsPrivateKeyPassword = options.needsPrivateKeyPassword;
+    const errorLevel = ((innerError: Object).level: SshConnectionErrorLevel);
+    this.errorType =
+      SshConnectionErrorLevelMap.get(errorLevel) ||
+      SshHandshake.ErrorType.UNKNOWN;
+  }
+}
+
 export class SshHandshake {
   static ErrorType = ErrorType;
   static SupportedMethods: typeof SupportedMethods = SupportedMethods;
@@ -183,7 +232,6 @@ export class SshHandshake {
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
-  _passwordRetryCount: number;
   _cancelled: boolean;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
@@ -193,10 +241,6 @@ export class SshHandshake {
       connection ? connection : new SshConnection(),
       this._onKeyboardInteractive.bind(this),
     );
-    this._connection
-      .onReady()
-      .subscribe(this._onSshConnectionIsReady.bind(this));
-    this._connection.onError().subscribe(this._onSshConnectionError.bind(this));
   }
 
   _willConnect(): void {
@@ -207,6 +251,9 @@ export class SshHandshake {
     this._delegate.onDidConnect(connection, this._config);
   }
 
+  /**
+   * Log an error
+   */
   _error(
     message: string,
     errorType: SshHandshakeErrorType,
@@ -215,6 +262,22 @@ export class SshHandshake {
     // eslint-disable-next-line no-console
     console.error(`SshHandshake failed: ${errorType}, ${message}`, error);
     this._delegate.onError(errorType, error, this._config);
+  }
+
+  /**
+   * Log an `Error`
+   * TODO(siegebell): overhaul error reporting/handling.
+   */
+  _reportError(error: Error, options: ?{unknownMessage?: string}) {
+    const opts = options || {};
+    const unknownMessage =
+      opts.unknownMessage != null ? opts.unknownMessage : 'Unknown error';
+
+    if (error instanceof SshHandshakeError) {
+      this._error(error.message, error.errorType, error.innerError);
+    } else {
+      this._error(unknownMessage, SshHandshake.ErrorType.UNKNOWN, error);
+    }
   }
 
   async _getPassword(prompt: string): Promise<string> {
@@ -229,64 +292,10 @@ export class SshHandshake {
     return password;
   }
 
-  _onSshConnectionError(error: Error): void {
-    const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
-    // Upon authentication failure, fall back to using a password.
-    if (
-      errorLevel === 'client-authentication' &&
-      this._passwordRetryCount < PASSWORD_RETRIES
-    ) {
-      const config = this._config;
-      const retryText = this._passwordRetryCount ? ' again' : '';
-      this._getPassword(
-        `Authentication failed. Try entering your password${retryText}: `,
-      ).then(password => {
-        this._connection.connect({
-          host: config.host,
-          port: config.sshPort,
-          username: config.username,
-          password,
-          tryKeyboard: true,
-          readyTimeout: READY_TIMEOUT_MS,
-        });
-      });
-      this._passwordRetryCount++;
-      return;
-    }
-    const errorType =
-      SshConnectionErrorLevelMap.get(errorLevel) ||
-      SshHandshake.ErrorType.UNKNOWN;
-    this._error('Ssh connection failed.', errorType, error);
-  }
-
-  async connect(config: SshConnectionConfiguration): Promise<void> {
-    this._config = config;
-    this._passwordRetryCount = 0;
-    this._cancelled = false;
-    this._willConnect();
-
-    let address;
-    try {
-      address = await lookupPreferIpv6(config.host);
-    } catch (e) {
-      return this._error(
-        'Failed to resolve DNS.',
-        SshHandshake.ErrorType.HOST_NOT_FOUND,
-        e,
-      );
-    }
-
-    const connection =
-      (await restoreBigDigClient(this._config.host)) ||
-      // We save connections by their IP address as well, in case a different hostname
-      // was used for the same server.
-      (await restoreBigDigClient(address));
-
-    if (connection) {
-      this._didConnect(connection);
-      return;
-    }
-
+  async _getConnectConfig(
+    address: string,
+    config: SshConnectionConfiguration,
+  ): Promise<ConnectConfig> {
     if (config.authMethod === SupportedMethods.SSL_AGENT) {
       // Point to ssh-agent's socket for ssh-agent-based authentication.
       let agent = process.env.SSH_AUTH_SOCK;
@@ -295,28 +304,26 @@ export class SshHandshake {
         // #100: On Windows, fall back to pageant.
         agent = 'pageant';
       }
-      this._connection.connect({
+      return {
         host: address,
         port: config.sshPort,
         username: config.username,
         agent,
         tryKeyboard: true,
         readyTimeout: READY_TIMEOUT_MS,
-      });
+      };
     } else if (config.authMethod === SupportedMethods.PASSWORD) {
-      // The user has already entered the password once.
-      this._passwordRetryCount++;
       // When the user chooses password-based authentication, we specify
       // the config as follows so that it tries simple password auth and
       // failing that it falls through to the keyboard interactive path
-      this._connection.connect({
+      return {
         host: address,
         port: config.sshPort,
         username: config.username,
         password: config.password,
         tryKeyboard: true,
         readyTimeout: READY_TIMEOUT_MS,
-      });
+      };
     } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
       // Note that if the path the user entered contains a ~, the calling function is responsible
       // for doing the expansion before it is passed in.
@@ -324,54 +331,181 @@ export class SshHandshake {
       let privateKey;
       try {
         privateKey = await fs.readFileAsBuffer(expandedPath);
-      } catch (e) {
-        this._error(
+      } catch (error) {
+        throw new SshHandshakeError(
           `Failed to read private key at ${expandedPath}.`,
           SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          e,
+          error,
         );
-        return;
       }
 
-      try {
-        this._connection.connect({
-          host: address,
-          port: config.sshPort,
-          username: config.username,
-          privateKey,
-          tryKeyboard: true,
-          readyTimeout: READY_TIMEOUT_MS,
-        });
-      } catch (e) {
-        if (
-          e.message ===
-          'Encrypted private key detected, but no passphrase given'
-        ) {
-          this._getPassword(
-            'Encrypted private key detected, but no passphrase given.\n' +
-              `Enter passphrase for ${config.pathToPrivateKey}: `,
-          ).then(passphrase => {
-            this._connection.connect({
-              host: config.host,
-              port: config.sshPort,
-              username: config.username,
-              privateKey,
-              passphrase,
-              tryKeyboard: true,
-              readyTimeout: READY_TIMEOUT_MS,
-            });
-          });
-          this._passwordRetryCount++;
-          return;
-        }
+      return {
+        host: address,
+        port: config.sshPort,
+        username: config.username,
+        privateKey,
+        tryKeyboard: true,
+        readyTimeout: READY_TIMEOUT_MS,
+      };
+    } else {
+      throw new SshHandshakeError(
+        `Unsupported authentication method: ${config.authMethod}.`,
+        SshHandshake.ErrorType.UNSUPPORTED_AUTH_METHOD,
+        new Error(),
+      );
+    }
+  }
 
-        this._error(
-          'Failed to read private key',
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          e,
-        );
+  /**
+   * Attempts to make an SSH connection. If it fails due to an authentication error, this returns
+   * the error. If it succeeds, then this returns `null`. Other errors will raise an exception.
+   * The distinction between auth errors and other kinds of errors is due to auth errors being
+   * intrinsic to the connection process: we want to give the user several attempts to reenter their
+   * password. Whereas other errors will cause the entire connection process to fail immediately.
+   * @param {*} config - connection configuration parameters.
+   * @returns the authentication error, or `null` if successful.
+   */
+  async _connectOrNeedsAuth(config: ConnectConfig): Promise<?SshAuthError> {
+    try {
+      await this._connection.connect(config);
+      return null;
+    } catch (error) {
+      if (
+        error.message ===
+        'Encrypted private key detected, but no passphrase given'
+      ) {
+        return new SshAuthError(error, {needsPrivateKeyPassword: true});
+      } else if (error.level === 'client-authentication') {
+        return new SshAuthError(error, {needsPrivateKeyPassword: false});
+      } else {
+        throw error;
       }
     }
+  }
+
+  /**
+   * Called when initial authentication fails and we want to give the user several attempts to enter
+   * a password manually. Throws if unsuccessful.
+   * @param {*} error - the authentication error thrown by `SshClient::connect`.
+   * @param {*} connectConfig - the connection configuration; this function will add in the user's
+   *  password.
+   * @param {*} config - the base configuration information.
+   */
+  async _connectFallbackViaPassword(
+    error: SshAuthError,
+    connectConfig: ConnectConfig,
+    config: SshConnectionConfiguration,
+  ): Promise<void> {
+    let attempts = 0;
+    let authError: ?SshAuthError = error;
+
+    // If the user has already provided a password, count it against their retry count.
+    // flowlint-next-line sketchy-null-string:off
+    if (connectConfig.password) {
+      ++attempts;
+    }
+
+    // Using a private key, but no password was provided:
+    if (error.needsPrivateKeyPassword) {
+      const prompt =
+        'Encrypted private key detected, but no passphrase given.\n' +
+        `Enter passphrase for ${config.pathToPrivateKey}: `;
+      const password = await this._getPassword(prompt);
+      authError = await this._connectOrNeedsAuth({
+        ...connectConfig,
+        password,
+      });
+      ++attempts;
+    }
+
+    // Keep asking the user for the correct password until they run out of attempts or the
+    // connection fails for a reason other than the password being wrong.
+    while (authError != null && attempts < PASSWORD_RETRIES) {
+      const retryText = attempts > 0 ? ' again' : '';
+      const prompt = `Authentication failed. Try entering your password${retryText}: `;
+      ++attempts;
+
+      // eslint-disable-next-line no-await-in-loop
+      const password = await this._getPassword(prompt);
+      // eslint-disable-next-line no-await-in-loop
+      authError = await this._connectOrNeedsAuth({
+        ...connectConfig,
+        password,
+      });
+    }
+
+    if (authError != null) {
+      // Exceeded retries
+      throw new SshHandshakeError(
+        'Ssh connection failed.',
+        authError.errorType,
+        authError.innerError,
+      );
+    }
+    // Success.
+  }
+
+  /**
+   * Starts a remote connection by initiating an ssh connection, starting up the remote server, and
+   * configuring certificates for a secure connection.
+   * @param {*} config
+   */
+  async connect(config: SshConnectionConfiguration): Promise<boolean> {
+    this._config = config;
+    this._cancelled = false;
+    this._willConnect();
+
+    let address;
+    try {
+      address = await lookupPreferIpv6(config.host);
+    } catch (error) {
+      this._error(
+        'Failed to resolve DNS.',
+        SshHandshake.ErrorType.HOST_NOT_FOUND,
+        error,
+      );
+      return false;
+    }
+
+    const connection =
+      (await restoreBigDigClient(config.host)) ||
+      // We save connections by their IP address as well, in case a different hostname
+      // was used for the same server.
+      (await restoreBigDigClient(address));
+
+    if (connection) {
+      this._didConnect(connection);
+      return true;
+    }
+
+    let connectConfig: ConnectConfig;
+    try {
+      connectConfig = await this._getConnectConfig(address, config);
+      const authError = await this._connectOrNeedsAuth(connectConfig);
+      if (authError) {
+        await this._connectFallbackViaPassword(
+          authError,
+          connectConfig,
+          config,
+        );
+      }
+    } catch (error) {
+      if (this._cancelled) {
+        this._error(
+          'Cancelled by user',
+          SshHandshake.ErrorType.USER_CANCELLED,
+          error,
+        );
+      } else {
+        this._reportError(error, {
+          unknownMessage: 'Unknown error while connecting',
+        });
+      }
+      return false;
+    }
+
+    await this._onSshConnectionIsReady();
+    return true;
   }
 
   cancel() {
@@ -416,7 +550,7 @@ export class SshHandshake {
       );
   }
 
-  _updateServerInfo(serverInfo: {}) {
+  _updateServerInfo(serverInfo: ServerInfo) {
     // TODO(siegebell): `serverInfo` may not define `port` if in "insecure" mode.
     invariant(typeof serverInfo.port === 'number');
     this._remotePort = serverInfo.port || 0;
@@ -449,8 +583,8 @@ export class SshHandshake {
     );
   }
 
-  async _parseServerStartInfo(serverInfoJson: string): Promise<any> {
-    let serverInfo: {success?: boolean | any};
+  _parseServerStartInfo(serverInfoJson: string): ServerInfo {
+    let serverInfo: ServerInfo;
     try {
       serverInfo = JSON.parse(serverInfoJson);
     } catch (error) {
@@ -514,20 +648,15 @@ export class SshHandshake {
       const serverInfoJson = await lastly(getServerStartInfo(sftp), () =>
         sftp.end(),
       );
-      const serverInfo = await this._parseServerStartInfo(serverInfoJson);
+      const serverInfo = this._parseServerStartInfo(serverInfoJson);
       // Update server info that is needed for setting up client.
       this._updateServerInfo(serverInfo);
       return true;
     } catch (error) {
-      if (error instanceof SshHandshakeError) {
-        this._error(error.message, error.errorType, error.innerError);
-      } else {
-        this._error(
+      this._reportError(error, {
+        unknownMessage:
           'Unknown error while acquiring server start information',
-          SshHandshake.ErrorType.UNKNOWN,
-          error,
-        );
-      }
+      });
       return false;
     }
   }
@@ -586,8 +715,11 @@ export class SshHandshake {
       await sleep(100);
 
       return this._loadServerStartInformation(remoteTempFile);
-    } catch (err) {
-      this._onSshConnectionError(err);
+    } catch (error) {
+      const errorType =
+        (error.level && SshConnectionErrorLevelMap.get(error.level)) ||
+        SshHandshake.ErrorType.UNKNOWN;
+      this._error('Ssh connection failed.', errorType, error);
       return false;
     }
   }

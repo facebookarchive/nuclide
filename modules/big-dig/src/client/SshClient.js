@@ -17,6 +17,7 @@ import type {
   Prompt,
 } from 'ssh2';
 
+import {lastly, Deferred} from 'nuclide-commons/promise';
 import {Client, ClientChannel} from 'ssh2';
 import {Observable} from 'rxjs';
 import {SftpClient} from './SftpClient';
@@ -47,6 +48,12 @@ export type KeyboardInteractiveHandler = (
   prompts: Prompt[],
 ) => Promise<Array<string>>;
 
+export class SshClosedError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 /**
  * Represents an SSH connection. This wraps the `Client` class from ssh2, but reinterprets the
  * API using promises instead of callbacks. The methods of this class generally correspond to the
@@ -55,7 +62,6 @@ export type KeyboardInteractiveHandler = (
 export class SshClient {
   _client: Client;
   _continue: boolean;
-  _onReady: Observable<void>;
   _onError: Observable<Error & ClientErrorExtensions>;
   _onClose: Observable<{hadError: boolean}>;
 
@@ -67,7 +73,6 @@ export class SshClient {
   constructor(client?: Client, onKeyboard: KeyboardInteractiveHandler) {
     this._client = client || new Client();
     this._continue = true;
-    this._onReady = Observable.fromEvent(this._client, 'ready');
     this._onError = Observable.fromEvent(this._client, 'error');
     this._onClose = Observable.fromEvent(
       this._client,
@@ -87,13 +92,6 @@ export class SshClient {
         finish: (responses: Array<string>) => void,
       ) => onKeyboard(name, instructions, lang, prompts).then(finish),
     );
-  }
-
-  /**
-   * Emitted when authentication was successful.
-   */
-  onReady(): Observable<void> {
-    return this._onReady;
   }
 
   /**
@@ -121,9 +119,26 @@ export class SshClient {
 
   /**
    * Attempts a connection to a server.
+   *
+   * @throws `Error & ClientErrorExtensions` if the connection failed
    */
-  connect(config: ConnectConfig): void {
+  connect(config: ConnectConfig): Promise<void> {
+    const {promise, resolve, reject} = new Deferred();
+    function onClose() {
+      reject(new SshClosedError('Connection closed before completion'));
+    }
+    this._client
+      .once('ready', resolve)
+      .once('close', onClose)
+      .once('error', reject);
     this._client.connect(config);
+
+    return lastly(promise, () => {
+      this._client
+        .removeListener('ready', resolve)
+        .removeListener('close', onClose)
+        .removeListener('error', reject);
+    });
   }
 
   /**
