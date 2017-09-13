@@ -1,5 +1,10 @@
 # Nuclide Changelog
 
+## v0.254.0
+
+* Hotfix to unbreak Hack language services.
+* Enable OCaml services with ocamlmerlin 3.0.
+
 ## v0.253.0
 
 ### General
