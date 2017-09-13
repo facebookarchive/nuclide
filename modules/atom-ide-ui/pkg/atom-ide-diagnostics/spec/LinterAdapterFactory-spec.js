@@ -85,4 +85,10 @@ describe('validateLinter', () => {
     linter.lint = [];
     expect(validateLinter(linter)).toEqual(['lint must be a function']);
   });
+
+  it('it should use a default name if not provided', () => {
+    linter.name = null;
+    expect(validateLinter(linter).length).toBe(0);
+    expect(linter.name).toBe('Linter');
+  });
 });

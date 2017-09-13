@@ -20,7 +20,7 @@ function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {
   } else {
     const nameString = provider.name;
     let message =
-      `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
+      `nuclide-diagnostics-store found problems with the linter \`${nameString}\`. ` +
       'Diagnostic messages from that linter will be unavailable.\n';
     message += validationErrors.map(error => `- ${error}\n`).join('');
     atom.notifications.addError(message, {dismissable: true});
@@ -86,6 +86,11 @@ export function validateLinter(provider: LinterProvider): Array<string> {
       errors,
     );
 
+    // Older LinterV1 providers didn't have to provide a name.
+    // We'll tolerate this, since there's still a few out there.
+    if (provider.name == null) {
+      provider.name = 'Linter';
+    }
     validate(
       typeof provider.name === 'string',
       'provider must have a name',
