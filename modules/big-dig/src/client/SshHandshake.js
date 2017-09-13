@@ -179,10 +179,11 @@ interface ServerInfo {
   logs?: any,
 }
 
-class SshHandshakeError extends Error {
+export class SshHandshakeError extends Error {
   message: string;
   errorType: SshHandshakeErrorType;
   innerError: Error;
+  isCancellation: boolean;
   constructor(
     message: string,
     errorType: SshHandshakeErrorType,
@@ -192,6 +193,7 @@ class SshHandshakeError extends Error {
     this.message = message;
     this.errorType = errorType;
     this.innerError = innerError;
+    this.isCancellation = errorType === SshHandshake.ErrorType.USER_CANCELLED;
   }
 }
 
@@ -249,35 +251,6 @@ export class SshHandshake {
 
   _didConnect(connection: BigDigClient): void {
     this._delegate.onDidConnect(connection, this._config);
-  }
-
-  /**
-   * Log an error
-   */
-  _error(
-    message: string,
-    errorType: SshHandshakeErrorType,
-    error: Error,
-  ): void {
-    // eslint-disable-next-line no-console
-    console.error(`SshHandshake failed: ${errorType}, ${message}`, error);
-    this._delegate.onError(errorType, error, this._config);
-  }
-
-  /**
-   * Log an `Error`
-   * TODO(siegebell): overhaul error reporting/handling.
-   */
-  _reportError(error: Error, options: ?{unknownMessage?: string}) {
-    const opts = options || {};
-    const unknownMessage =
-      opts.unknownMessage != null ? opts.unknownMessage : 'Unknown error';
-
-    if (error instanceof SshHandshakeError) {
-      this._error(error.message, error.errorType, error.innerError);
-    } else {
-      this._error(unknownMessage, SshHandshake.ErrorType.UNKNOWN, error);
-    }
   }
 
   async _getPassword(prompt: string): Promise<string> {
@@ -446,41 +419,63 @@ export class SshHandshake {
   }
 
   /**
+   * Makes sure that the given error is wrapped in `SshHandshakeError`. If the connection is being
+   * cancelled, then wrap the error again by a `USER_CANCELLED` error. Otherwise, if the error is
+   * already an `SshHandshakeError`, then just return it. Finally, if not being cancelled and it is
+   * not an `SshHandshakeError`, then wrap it with `UNKNOWN`.
+   */
+  _wrapError(error: any): SshHandshakeError {
+    if (this._cancelled) {
+      return new SshHandshakeError(
+        'Cancelled by user',
+        SshHandshake.ErrorType.USER_CANCELLED,
+        error,
+      );
+    } else if (error instanceof SshHandshakeError) {
+      return error;
+    } else {
+      return new SshHandshakeError(
+        'Unknown error',
+        SshHandshake.ErrorType.UNKNOWN,
+        error,
+      );
+    }
+  }
+
+  /**
    * Starts a remote connection by initiating an ssh connection, starting up the remote server, and
    * configuring certificates for a secure connection.
    * @param {*} config
    */
-  async connect(config: SshConnectionConfiguration): Promise<boolean> {
-    this._config = config;
-    this._cancelled = false;
-    this._willConnect();
-
-    let address;
+  async connect(config: SshConnectionConfiguration): Promise<void> {
     try {
-      address = await lookupPreferIpv6(config.host);
-    } catch (error) {
-      this._error(
-        'Failed to resolve DNS.',
-        SshHandshake.ErrorType.HOST_NOT_FOUND,
-        error,
-      );
-      return false;
-    }
+      this._config = config;
+      this._cancelled = false;
+      this._willConnect();
 
-    const connection =
-      (await restoreBigDigClient(config.host)) ||
-      // We save connections by their IP address as well, in case a different hostname
-      // was used for the same server.
-      (await restoreBigDigClient(address));
+      let address;
+      try {
+        address = await lookupPreferIpv6(config.host);
+      } catch (error) {
+        throw new SshHandshakeError(
+          'Failed to resolve DNS.',
+          SshHandshake.ErrorType.HOST_NOT_FOUND,
+          error,
+        );
+      }
 
-    if (connection) {
-      this._didConnect(connection);
-      return true;
-    }
+      const connection =
+        (await restoreBigDigClient(config.host)) ||
+        // We save connections by their IP address as well, in case a different hostname
+        // was used for the same server.
+        (await restoreBigDigClient(address));
 
-    let connectConfig: ConnectConfig;
-    try {
-      connectConfig = await this._getConnectConfig(address, config);
+      if (connection) {
+        this._didConnect(connection);
+        return;
+      }
+
+      const connectConfig = await this._getConnectConfig(address, config);
       const authError = await this._connectOrNeedsAuth(connectConfig);
       if (authError) {
         await this._connectFallbackViaPassword(
@@ -489,23 +484,20 @@ export class SshHandshake {
           config,
         );
       }
-    } catch (error) {
-      if (this._cancelled) {
-        this._error(
-          'Cancelled by user',
-          SshHandshake.ErrorType.USER_CANCELLED,
-          error,
-        );
-      } else {
-        this._reportError(error, {
-          unknownMessage: 'Unknown error while connecting',
-        });
-      }
-      return false;
-    }
 
-    await this._onSshConnectionIsReady();
-    return true;
+      await this._onSshConnectionIsReady();
+    } catch (innerError) {
+      const error = this._wrapError(innerError);
+
+      // eslint-disable-next-line no-console
+      console.error(
+        `SshHandshake failed: ${error.errorType}, ${error.message}`,
+        error.innerError,
+      );
+      this._delegate.onError(error.errorType, error.innerError, this._config);
+
+      throw error;
+    }
   }
 
   cancel() {
@@ -611,7 +603,7 @@ export class SshHandshake {
    * written to `remoteTempFile`.
    * @param {*} remoteTempFile - where the server bootstrap wrote start info.
    */
-  async _loadServerStartInformation(remoteTempFile: string): Promise<boolean> {
+  async _loadServerStartInformation(remoteTempFile: string): Promise<void> {
     const createSftp = async (): Promise<SftpClient> => {
       try {
         return await timeoutPromise(this._connection.sftp(), SFTP_TIMEOUT_MS);
@@ -651,20 +643,19 @@ export class SshHandshake {
       const serverInfo = this._parseServerStartInfo(serverInfoJson);
       // Update server info that is needed for setting up client.
       this._updateServerInfo(serverInfo);
-      return true;
     } catch (error) {
-      this._reportError(error, {
-        unknownMessage:
-          'Unknown error while acquiring server start information',
-      });
-      return false;
+      throw new SshHandshakeError(
+        'Unknown error while acquiring server start information',
+        SshHandshake.ErrorType.UNKNOWN,
+        error,
+      );
     }
   }
 
   /**
    * Invokes the remote server and updates the server info via `_updateServerInfo`.
    */
-  async _startRemoteServer(): Promise<boolean> {
+  async _startRemoteServer(): Promise<void> {
     const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
     const params = {
       cname: this._config.host,
@@ -693,20 +684,11 @@ export class SshHandshake {
 
       // Note: this code is probably the code from the child shell if one is in use.
       if (code !== 0) {
-        if (this._cancelled) {
-          this._error(
-            'Cancelled by user',
-            SshHandshake.ErrorType.USER_CANCELLED,
-            new Error(stdOut),
-          );
-        } else {
-          this._error(
-            'Remote shell execution failed',
-            SshHandshake.ErrorType.UNKNOWN,
-            new Error(stdOut),
-          );
-        }
-        return false;
+        throw new SshHandshakeError(
+          'Remote shell execution failed',
+          SshHandshake.ErrorType.UNKNOWN,
+          new Error(stdOut),
+        );
       }
 
       // Some servers have max channels set to 1, so add a delay to ensure
@@ -719,8 +701,7 @@ export class SshHandshake {
       const errorType =
         (error.level && SshConnectionErrorLevelMap.get(error.level)) ||
         SshHandshake.ErrorType.UNKNOWN;
-      this._error('Ssh connection failed.', errorType, error);
-      return false;
+      throw new SshHandshakeError('Ssh connection failed.', errorType, error);
     }
   }
 
@@ -728,9 +709,7 @@ export class SshHandshake {
    * This is called when the SshConnection is ready.
    */
   async _onSshConnectionIsReady(): Promise<void> {
-    if (!await this._startRemoteServer()) {
-      return;
-    }
+    await this._startRemoteServer();
 
     // Use an ssh tunnel if server is not secure
     if (this._isSecure()) {
@@ -771,11 +750,11 @@ export class SshHandshake {
     let bigDigClient = null;
     try {
       bigDigClient = await createBigDigClient(config);
-    } catch (e) {
-      this._error(
+    } catch (error) {
+      throw new SshHandshakeError(
         'Connection check failed',
         SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
-        e,
+        error,
       );
     }
 
