@@ -11,13 +11,13 @@
  */
 
 import type {BigDigClient} from './BigDigClient';
+import type {Prompt} from './SshClient';
 
 import net from 'net';
 import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
 import {SftpClient} from './SftpClient';
 import {SshClient} from './SshClient';
-import type {KeyboardInteractiveEvent, Prompt} from './SshClient';
 import fs from '../common/fs';
 import {
   lastly,
@@ -114,17 +114,15 @@ type SshConnectionErrorLevel =
  * @param prompts is an array of { prompt: 'Password: ',
  *     echo: false } style objects (here echo indicates whether user input
  *     should be displayed on the screen).
- * @param finish: The answers for all prompts must be provided as an
- *     array of strings and passed to finish when you are ready to continue. Note:
- *     It's possible for the server to come back and ask more questions.
+ * @return The answers for all prompts must be returned as an array of strings.
+ *     Note: It's possible for the server to come back and ask more questions.
  */
 export type KeyboardInteractiveCallback = (
   name: string,
   instructions: string,
   instructionsLang: string,
   prompts: Array<Prompt>,
-  finish: (answers: Array<string>) => void,
-) => void;
+) => Promise<Array<string>>;
 
 export type SshConnectionDelegate = {
   /** Invoked when server requests keyboard interaction */
@@ -193,14 +191,12 @@ export class SshHandshake {
     this._delegate = delegate;
     this._connection = new SshClient(
       connection ? connection : new SshConnection(),
+      this._onKeyboardInteractive.bind(this),
     );
     this._connection
       .onReady()
       .subscribe(this._onSshConnectionIsReady.bind(this));
     this._connection.onError().subscribe(this._onSshConnectionError.bind(this));
-    this._connection
-      .onKeyboardInteractive()
-      .subscribe(this._onKeyboardInteractive.bind(this));
   }
 
   _willConnect(): void {
@@ -221,6 +217,18 @@ export class SshHandshake {
     this._delegate.onError(errorType, error, this._config);
   }
 
+  async _getPassword(prompt: string): Promise<string> {
+    const [
+      password,
+    ] = await this._delegate.onKeyboardInteractive(
+      '' /* name */,
+      '' /* instructions */,
+      '' /* instructionsLang */,
+      [{prompt, echo: false}],
+    );
+    return password;
+  }
+
   _onSshConnectionError(error: Error): void {
     const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
     // Upon authentication failure, fall back to using a password.
@@ -230,27 +238,18 @@ export class SshHandshake {
     ) {
       const config = this._config;
       const retryText = this._passwordRetryCount ? ' again' : '';
-      this._delegate.onKeyboardInteractive(
-        '',
-        '',
-        '', // ignored
-        [
-          {
-            prompt: `Authentication failed. Try entering your password${retryText}: `,
-            echo: false,
-          },
-        ],
-        ([password]) => {
-          this._connection.connect({
-            host: config.host,
-            port: config.sshPort,
-            username: config.username,
-            password,
-            tryKeyboard: true,
-            readyTimeout: READY_TIMEOUT_MS,
-          });
-        },
-      );
+      this._getPassword(
+        `Authentication failed. Try entering your password${retryText}: `,
+      ).then(password => {
+        this._connection.connect({
+          host: config.host,
+          port: config.sshPort,
+          username: config.username,
+          password,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS,
+        });
+      });
       this._passwordRetryCount++;
       return;
     }
@@ -348,30 +347,20 @@ export class SshHandshake {
           e.message ===
           'Encrypted private key detected, but no passphrase given'
         ) {
-          this._delegate.onKeyboardInteractive(
-            '',
-            '',
-            '', // ignored
-            [
-              {
-                prompt:
-                  'Encrypted private key detected, but no passphrase given.\n' +
-                  `Enter passphrase for ${config.pathToPrivateKey}: `,
-                echo: false,
-              },
-            ],
-            ([passphrase]) => {
-              this._connection.connect({
-                host: config.host,
-                port: config.sshPort,
-                username: config.username,
-                privateKey,
-                passphrase,
-                tryKeyboard: true,
-                readyTimeout: READY_TIMEOUT_MS,
-              });
-            },
-          );
+          this._getPassword(
+            'Encrypted private key detected, but no passphrase given.\n' +
+              `Enter passphrase for ${config.pathToPrivateKey}: `,
+          ).then(passphrase => {
+            this._connection.connect({
+              host: config.host,
+              port: config.sshPort,
+              username: config.username,
+              privateKey,
+              passphrase,
+              tryKeyboard: true,
+              readyTimeout: READY_TIMEOUT_MS,
+            });
+          });
           this._passwordRetryCount++;
           return;
         }
@@ -390,13 +379,17 @@ export class SshHandshake {
     this._connection.end();
   }
 
-  _onKeyboardInteractive(event: KeyboardInteractiveEvent): void {
-    this._delegate.onKeyboardInteractive(
-      event.name,
-      event.instructions,
-      event.instructionsLang,
-      event.prompts,
-      event.finish,
+  _onKeyboardInteractive(
+    name: string,
+    instructions: string,
+    instructionsLang: string,
+    prompts: Array<Prompt>,
+  ): Promise<Array<string>> {
+    return this._delegate.onKeyboardInteractive(
+      name,
+      instructions,
+      instructionsLang,
+      prompts,
     );
   }
 
@@ -680,26 +673,23 @@ export function decorateSshConnectionDelegateWithTracking(
   let connectionTracker;
 
   return {
-    onKeyboardInteractive: (
+    async onKeyboardInteractive(
       name: string,
       instructions: string,
       instructionsLang: string,
       prompts: Array<Prompt>,
-      finish: (answers: Array<string>) => void,
-    ) => {
+    ) {
       invariant(connectionTracker);
       connectionTracker.trackPromptYubikeyInput();
-      delegate.onKeyboardInteractive(
+      const answers = await delegate.onKeyboardInteractive(
         name,
         instructions,
         instructionsLang,
         prompts,
-        answers => {
-          invariant(connectionTracker);
-          connectionTracker.trackFinishYubikeyInput();
-          finish(answers);
-        },
       );
+      invariant(connectionTracker);
+      connectionTracker.trackFinishYubikeyInput();
+      return answers;
     },
     onWillConnect: (config: SshConnectionConfiguration) => {
       connectionTracker = new ConnectionTracker(config);

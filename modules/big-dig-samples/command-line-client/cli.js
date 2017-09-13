@@ -53,18 +53,16 @@ function parseArgsAndRunMain(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     const sshHandshake = new SshHandshake({
-      onKeyboardInteractive(
+      async onKeyboardInteractive(
         name,
         instructions,
         instructionsLang,
         prompts: Array<Prompt>,
-        finish: (answers: Array<string>) => void,
-      ) {
+      ): Promise<Array<string>> {
         invariant(prompts.length > 0);
         const {prompt, echo} = prompts[0];
-        question(prompt, !echo).then(answer => {
-          finish([answer]);
-        });
+        const answer = await question(prompt, !echo);
+        return [answer];
       },
 
       onWillConnect() {
