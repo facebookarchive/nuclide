@@ -145,7 +145,7 @@ export class SshHandshake {
   _config: SshConnectionConfiguration;
   _forwardingServer: net.Server;
   _remoteHost: ?string;
-  _remotePort: ?number;
+  _remotePort: number;
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
@@ -344,6 +344,7 @@ export class SshHandshake {
   }
 
   _forwardSocket(socket: net.Socket): void {
+    invariant(socket.remoteAddress != null);
     this._connection.forwardOut(
       socket.remoteAddress,
       socket.remotePort,
@@ -363,7 +364,7 @@ export class SshHandshake {
 
   _updateServerInfo(serverInfo: {}) {
     invariant(typeof serverInfo.port === 'number');
-    this._remotePort = serverInfo.port;
+    this._remotePort = serverInfo.port || 0;
     this._remoteHost =
       typeof serverInfo.hostname === 'string'
         ? serverInfo.hostname
@@ -416,6 +417,7 @@ export class SshHandshake {
           this._onSshConnectionError(err);
           return resolve(false);
         }
+        // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
         stream
           .on('close', async (code, signal) => {
             // Note: this code is probably the code from the child shell if one
@@ -556,8 +558,6 @@ export class SshHandshake {
     if (this._isSecure()) {
       // flowlint-next-line sketchy-null-string:off
       invariant(this._remoteHost);
-      // flowlint-next-line sketchy-null-number:off
-      invariant(this._remotePort);
       connect({
         host: this._remoteHost,
         port: this._remotePort,
