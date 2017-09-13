@@ -79,7 +79,7 @@ export function hgObserveExecution(
     getHgExecParams(args_, {
       ...(options_: any),
       // Ensure that the hg command gets scriptified.
-      TTY_OUTPUT: true,
+      TTY_OUTPUT: process.platform !== 'win32',
     }),
   ).switchMap(({command, args, options}) => {
     return observeProcess(command, args, {
