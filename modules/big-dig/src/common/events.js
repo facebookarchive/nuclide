@@ -10,8 +10,17 @@
  * @format
  */
 
+import {lastly, Deferred} from 'nuclide-commons/promise';
+
 type EventOnce<E, T> = {
   +once: (event: E, listener: (arg: T) => mixed) => mixed,
+};
+
+type EventOnceOrError<E, T> = {
+  +once: ((event: E, listener: (arg: T) => mixed) => mixed) &
+    ((event: 'error', listener: (arg: Error) => mixed) => mixed),
+  +removeListener: ((event: E, listener: (arg: T) => mixed) => mixed) &
+    ((event: 'error', listener: (arg: Error) => mixed) => mixed),
 };
 
 type EventOnceArray<E, T: Array<any>> = {
@@ -28,6 +37,23 @@ export function onceEvent<E, T>(
 ): Promise<T> {
   return new Promise(resolve => {
     emitter.once(event, resolve);
+  });
+}
+
+/**
+ * Creates a promise to await a single firing of `event` from `emitter`. This function only returns
+ * the first argument from the event.
+ */
+export function onceEventOrError<E, T>(
+  emitter: EventOnceOrError<E, T>,
+  event: E,
+): Promise<T> {
+  const {promise, resolve, reject} = new Deferred();
+  emitter.once(event, resolve);
+  emitter.once('error', reject);
+  return lastly(promise, () => {
+    emitter.removeListener(event, resolve);
+    emitter.removeListener('error', reject);
   });
 }
 

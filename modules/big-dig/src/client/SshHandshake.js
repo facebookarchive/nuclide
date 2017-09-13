@@ -30,7 +30,7 @@ import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigClient from './createBigDigClient';
-import {onceEventArray} from '../common/events';
+import {onceEventArray, onceEventOrError} from '../common/events';
 
 export type {Prompt} from './SshClient';
 
@@ -447,7 +447,9 @@ export class SshHandshake {
    * configuring certificates for a secure connection.
    * @param {*} config
    */
-  async connect(config: SshConnectionConfiguration): Promise<void> {
+  async connect(
+    config: SshConnectionConfiguration,
+  ): Promise<[BigDigClient, SshConnectionConfiguration]> {
     try {
       this._config = config;
       this._cancelled = false;
@@ -472,7 +474,7 @@ export class SshHandshake {
 
       if (connection) {
         this._didConnect(connection);
-        return;
+        return [connection, this._config];
       }
 
       const connectConfig = await this._getConnectConfig(address, config);
@@ -485,7 +487,7 @@ export class SshHandshake {
         );
       }
 
-      await this._onSshConnectionIsReady();
+      return [await this._onSshConnectionIsReady(), this._config];
     } catch (innerError) {
       const error = this._wrapError(innerError);
 
@@ -708,14 +710,14 @@ export class SshHandshake {
   /**
    * This is called when the SshConnection is ready.
    */
-  async _onSshConnectionIsReady(): Promise<void> {
+  async _onSshConnectionIsReady(): Promise<BigDigClient> {
     await this._startRemoteServer();
 
     // Use an ssh tunnel if server is not secure
     if (this._isSecure()) {
       // flowlint-next-line sketchy-null-string:off
       invariant(this._remoteHost);
-      this._establishBigDigClient({
+      return this._establishBigDigClient({
         host: this._remoteHost,
         port: this._remotePort,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
@@ -723,20 +725,19 @@ export class SshHandshake {
         clientKey: this._clientKey,
       });
     } else {
-      /* $FlowIssue t9212378 */
-      this._forwardingServer = net
-        .createServer(sock => {
-          this._forwardSocket(sock);
-        })
-        .listen(0, 'localhost', () => {
-          const localPort = this._getLocalPort();
-          // flowlint-next-line sketchy-null-number:off
-          invariant(localPort);
-          this._establishBigDigClient({
-            host: 'localhost',
-            port: localPort,
-          });
-        });
+      this._forwardingServer = net.createServer(sock => {
+        this._forwardSocket(sock);
+      });
+      const listening = onceEventOrError(this._forwardingServer, 'listening');
+      this._forwardingServer.listen(0, 'localhost');
+      await listening;
+      const localPort = this._getLocalPort();
+      // flowlint-next-line sketchy-null-number:off
+      invariant(localPort);
+      return this._establishBigDigClient({
+        host: 'localhost',
+        port: localPort,
+      });
     }
   }
 
@@ -746,7 +747,7 @@ export class SshHandshake {
    */
   async _establishBigDigClient(
     config: RemoteConnectionConfiguration,
-  ): Promise<void> {
+  ): Promise<BigDigClient> {
     let bigDigClient = null;
     try {
       bigDigClient = await createBigDigClient(config);
@@ -758,13 +759,13 @@ export class SshHandshake {
       );
     }
 
-    if (bigDigClient != null) {
-      this._didConnect(bigDigClient);
-      // If we are secure then we don't need the ssh tunnel.
-      if (this._isSecure()) {
-        this._connection.end();
-      }
+    this._didConnect(bigDigClient);
+    // If we are secure then we don't need the ssh tunnel.
+    if (this._isSecure()) {
+      this._connection.end();
     }
+
+    return bigDigClient;
   }
 
   _getLocalPort(): ?number {
