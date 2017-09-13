@@ -190,6 +190,7 @@ Use flexbox cross-axis stretch to fill the vertical space.
   justify-content: space-between;
   min-height: 23px; // Match height of AtomInput to prevent list items from jumping around.
   overflow: visible;
+  position: relative;
 }
 
 .nuclide-debugger-expression-value-content {
@@ -208,8 +209,7 @@ Use flexbox cross-axis stretch to fill the vertical space.
   opacity: 0;
   position: absolute;
   right: 0;
-  top: 0.8em;
-  line-height: 2em;
+  top: 0;
   background-color: @background-color-highlight;
   padding-left: 4px;
   padding-right: 4px;
