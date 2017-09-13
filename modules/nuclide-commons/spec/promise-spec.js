@@ -23,6 +23,7 @@ import {
   lastly,
   retryLimit,
   RequestSerializer,
+  TimedOutError,
   timeoutPromise,
 } from '../promise';
 import invariant from 'assert';
@@ -629,9 +630,7 @@ describe('timeoutPromise', () => {
         value => value,
       );
       advanceClock(1500);
-      expect(await outputPromise).toEqual(
-        new Error('Promise timed out after 1000 ms'),
-      );
+      expect(await outputPromise).toEqual(new TimedOutError(1000));
     });
   });
 });

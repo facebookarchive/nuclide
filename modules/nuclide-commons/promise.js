@@ -149,8 +149,19 @@ export async function triggerAfterWait<T>(
 }
 
 /**
- * Returns a Promise that resolves to the same value as the given promise, or rejects if it takes
- * longer than `milliseconds` milliseconds
+ * Thrown by `timeoutPromise` if the timer fires before the promise resolves/rejects.
+ */
+export class TimedOutError extends Error {
+  timeout: number;
+  constructor(milliseconds: number) {
+    super(`Timed out after ${String(milliseconds)} ms`);
+    this.timeout = milliseconds;
+  }
+}
+
+/**
+ * Returns a Promise that resolves to the same value as the given promise, or rejects with
+ * `TimedOutError` if it takes longer than `milliseconds` milliseconds.
  */
 export function timeoutPromise<T>(
   promise: Promise<T>,
@@ -159,7 +170,7 @@ export function timeoutPromise<T>(
   return new Promise((resolve, reject) => {
     let timeout = setTimeout(() => {
       timeout = null;
-      reject(new Error(`Promise timed out after ${String(milliseconds)} ms`));
+      reject(new TimedOutError(milliseconds));
     }, milliseconds);
     promise
       .then(value => {
