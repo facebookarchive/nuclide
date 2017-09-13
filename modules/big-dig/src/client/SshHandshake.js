@@ -15,15 +15,22 @@ import type {BigDigClient} from './BigDigClient';
 import net from 'net';
 import invariant from 'assert';
 import {Client as SshConnection} from 'ssh2';
+import {SftpClient} from './SftpClient';
 import {SshClient} from './SshClient';
 import type {KeyboardInteractiveEvent, Prompt} from './SshClient';
 import fs from '../common/fs';
-import {sleep, timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
+import {
+  lastly,
+  sleep,
+  timeoutPromise,
+  TimedOutError,
+} from 'nuclide-commons/promise';
 import {shellQuote} from 'nuclide-commons/string';
 import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigClient from './createBigDigClient';
+import {onceEventArray} from '../common/events';
 
 export type {Prompt} from './SshClient';
 
@@ -148,6 +155,22 @@ const SshConnectionErrorLevelMap: Map<
   ['agent', ErrorType.SSH_AUTHENTICATION],
   ['client-dns', ErrorType.SSH_AUTHENTICATION],
 ]);
+
+class SshHandshakeError extends Error {
+  message: string;
+  errorType: SshHandshakeErrorType;
+  innerError: Error;
+  constructor(
+    message: string,
+    errorType: SshHandshakeErrorType,
+    innerError: Error,
+  ) {
+    super(`SshHandshake failed: ${errorType}, ${message}`);
+    this.message = message;
+    this.errorType = errorType;
+    this.innerError = innerError;
+  }
+}
 
 export class SshHandshake {
   static ErrorType = ErrorType;
@@ -401,6 +424,7 @@ export class SshHandshake {
   }
 
   _updateServerInfo(serverInfo: {}) {
+    // TODO(siegebell): `serverInfo` may not define `port` if in "insecure" mode.
     invariant(typeof serverInfo.port === 'number');
     this._remotePort = serverInfo.port || 0;
     this._remoteHost =
@@ -432,127 +456,147 @@ export class SshHandshake {
     );
   }
 
-  _startRemoteServer(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      let stdOut = '';
-      const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
-      const params = {
-        cname: this._config.host,
-        jsonOutputFile: remoteTempFile,
-        timeout: '60s', // Currently unused and not configurable.
-        expiration: '7d',
-        serverParams: this._config.remoteServerCustomParams,
-        port: this._config.remoteServerPort,
-      };
-      const cmd = `${this._config.remoteServerCommand} ${shellQuote([
-        JSON.stringify(params),
-      ])}`;
-
-      this._connection.exec(cmd, {pty: {term: 'nuclide'}}).then(
-        stream => {
-          // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
-          stream
-            .on('close', async (code, signal) => {
-              // Note: this code is probably the code from the child shell if one
-              // is in use.
-              if (code === 0) {
-                // Some servers have max channels set to 1, so add a delay to ensure
-                // the old channel has been cleaned up on the server.
-                // TODO(hansonw): Implement a proper retry mechanism.
-                // But first, we have to clean up this callback hell.
-                await sleep(100);
-
-                timeoutPromise(this._connection.sftp(), SFTP_TIMEOUT_MS).then(
-                  async sftp => {
-                    const localTempFile = await tempfile();
-                    sftp.fastGet(remoteTempFile, localTempFile).then(
-                      async () => {
-                        sftp.end();
-                        let serverInfo: any = null;
-                        const serverInfoJson = await fs.readFileAsString(
-                          localTempFile,
-                          'utf8',
-                        );
-                        try {
-                          serverInfo = JSON.parse(serverInfoJson);
-                        } catch (e) {
-                          this._error(
-                            'Malformed server start information',
-                            SshHandshake.ErrorType.SERVER_START_FAILED,
-                            new Error(serverInfoJson),
-                          );
-                          return resolve(false);
-                        }
-
-                        if (!serverInfo.success) {
-                          this._error(
-                            'Remote server failed to start',
-                            SshHandshake.ErrorType.SERVER_START_FAILED,
-                            new Error(serverInfo.logs),
-                          );
-                          return resolve(false);
-                        }
-
-                        // Update server info that is needed for setting up client.
-                        this._updateServerInfo(serverInfo);
-                        return resolve(true);
-                      },
-                      async sftpError => {
-                        sftp.end();
-                        this._error(
-                          'Failed to transfer server start information',
-                          SshHandshake.ErrorType.SERVER_START_FAILED,
-                          sftpError,
-                        );
-                        return resolve(false);
-                      },
-                    );
-                  },
-                  error => {
-                    if (error instanceof TimedOutError) {
-                      this._error(
-                        'Failed to start sftp connection',
-                        SshHandshake.ErrorType.SFTP_TIMEOUT,
-                        new Error(),
-                      );
-                      this._connection.end();
-                    } else {
-                      this._error(
-                        'Failed to start sftp connection',
-                        SshHandshake.ErrorType.SERVER_START_FAILED,
-                        error,
-                      );
-                    }
-                    return resolve(false);
-                  },
-                );
-              } else {
-                if (this._cancelled) {
-                  this._error(
-                    'Cancelled by user',
-                    SshHandshake.ErrorType.USER_CANCELLED,
-                    new Error(stdOut),
-                  );
-                } else {
-                  this._error(
-                    'Remote shell execution failed',
-                    SshHandshake.ErrorType.UNKNOWN,
-                    new Error(stdOut),
-                  );
-                }
-                return resolve(false);
-              }
-            })
-            .on('data', data => {
-              stdOut += data;
-            });
-        },
-        err => {
-          this._onSshConnectionError(err);
-          return resolve(false);
-        },
+  async _parseServerStartInfo(serverInfoJson: string): Promise<any> {
+    let serverInfo: {success?: boolean | any};
+    try {
+      serverInfo = JSON.parse(serverInfoJson);
+    } catch (error) {
+      throw new SshHandshakeError(
+        'Malformed server start information',
+        SshHandshake.ErrorType.SERVER_START_FAILED,
+        new Error(serverInfoJson),
       );
-    });
+    }
+
+    if (serverInfo.success) {
+      return serverInfo;
+    } else {
+      throw new SshHandshakeError(
+        'Remote server failed to start',
+        SshHandshake.ErrorType.SERVER_START_FAILED,
+        new Error(serverInfo.logs),
+      );
+    }
+  }
+
+  /**
+   * After the server bootstrap completes, this function loads the server start info that was
+   * written to `remoteTempFile`.
+   * @param {*} remoteTempFile - where the server bootstrap wrote start info.
+   */
+  async _loadServerStartInformation(remoteTempFile: string): Promise<boolean> {
+    const createSftp = async (): Promise<SftpClient> => {
+      try {
+        return await timeoutPromise(this._connection.sftp(), SFTP_TIMEOUT_MS);
+      } catch (error) {
+        const reason =
+          error instanceof TimedOutError
+            ? SshHandshake.ErrorType.SFTP_TIMEOUT
+            : SshHandshake.ErrorType.SERVER_START_FAILED;
+        throw new SshHandshakeError(
+          'Failed to start sftp connection',
+          reason,
+          error,
+        );
+      }
+    };
+    const getServerStartInfo = async (sftp: SftpClient): Promise<string> => {
+      const localTempFile = await tempfile();
+      try {
+        await sftp.fastGet(remoteTempFile, localTempFile);
+        return await fs.readFileAsString(localTempFile, 'utf8');
+      } catch (sftpError) {
+        throw new SshHandshakeError(
+          'Failed to transfer server start information',
+          SshHandshake.ErrorType.SERVER_START_FAILED,
+          sftpError,
+        );
+      } finally {
+        fs.unlink(localTempFile);
+      }
+    };
+
+    try {
+      const sftp = await createSftp();
+      const serverInfoJson = await lastly(getServerStartInfo(sftp), () =>
+        sftp.end(),
+      );
+      const serverInfo = await this._parseServerStartInfo(serverInfoJson);
+      // Update server info that is needed for setting up client.
+      this._updateServerInfo(serverInfo);
+      return true;
+    } catch (error) {
+      if (error instanceof SshHandshakeError) {
+        this._error(error.message, error.errorType, error.innerError);
+      } else {
+        this._error(
+          'Unknown error while acquiring server start information',
+          SshHandshake.ErrorType.UNKNOWN,
+          error,
+        );
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Invokes the remote server and updates the server info via `_updateServerInfo`.
+   */
+  async _startRemoteServer(): Promise<boolean> {
+    const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
+    const params = {
+      cname: this._config.host,
+      jsonOutputFile: remoteTempFile,
+      timeout: '60s', // Currently unused and not configurable.
+      expiration: '7d',
+      serverParams: this._config.remoteServerCustomParams,
+      port: this._config.remoteServerPort,
+    };
+    const cmd = `${this._config.remoteServerCommand} ${shellQuote([
+      JSON.stringify(params),
+    ])}`;
+
+    try {
+      // Run the server bootstrapper: this will create a server process, output the process info
+      // to `remoteTempFile`, and then exit.
+      const stream = await this._connection.exec(cmd, {pty: {term: 'nuclide'}});
+      // Collect any stdout in case there is an error.
+      let stdOut = '';
+      stream.on('data', data => {
+        stdOut += data;
+      });
+
+      // Wait for the bootstrapper to finish
+      const [code] = await onceEventArray(stream, 'close');
+
+      // Note: this code is probably the code from the child shell if one is in use.
+      if (code !== 0) {
+        if (this._cancelled) {
+          this._error(
+            'Cancelled by user',
+            SshHandshake.ErrorType.USER_CANCELLED,
+            new Error(stdOut),
+          );
+        } else {
+          this._error(
+            'Remote shell execution failed',
+            SshHandshake.ErrorType.UNKNOWN,
+            new Error(stdOut),
+          );
+        }
+        return false;
+      }
+
+      // Some servers have max channels set to 1, so add a delay to ensure
+      // the old channel has been cleaned up on the server.
+      // TODO(hansonw): Implement a proper retry mechanism.
+      await sleep(100);
+
+      return this._loadServerStartInformation(remoteTempFile);
+    } catch (err) {
+      this._onSshConnectionError(err);
+      return false;
+    }
   }
 
   /**
