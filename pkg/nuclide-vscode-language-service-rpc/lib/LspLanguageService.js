@@ -138,9 +138,9 @@ export class LspLanguageService {
     UniversalDisposable,
   > = new Map();
   _recentRestarts: Array<number> = [];
-  _diagnosticUpdates: Subject<
+  _diagnosticUpdates: BehaviorSubject<
     Observable<PublishDiagnosticsParams>,
-  > = new Subject();
+  > = new BehaviorSubject(Observable.empty());
   _supportsSymbolSearch: BehaviorSubject<?boolean> = new BehaviorSubject(null);
   // Fields which become live inside start(), when we spawn the LSP process.
   // Disposing of the _lspConnection will dispose of all of them.
@@ -1230,7 +1230,7 @@ export class LspLanguageService {
     // we reach state 'Running'.
 
     return this._diagnosticUpdates
-      .mergeMap(perConnectionUpdates =>
+      .switchMap(perConnectionUpdates =>
         ensureInvalidations(
           this._logger,
           perConnectionUpdates.map(convert.lspDiagnostics_atomDiagnostics),

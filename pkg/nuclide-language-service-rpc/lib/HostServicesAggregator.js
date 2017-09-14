@@ -136,6 +136,11 @@ class HostServicesAggregator {
 
   // Call 'dispose' to dispose of the aggregate and all its children
   dispose(): void {
+    // Guard against double-disposal (see below).
+    if (this._childRelays == null) {
+      return;
+    }
+
     // We'll explicitly dispose of everything that our own self relay keeps
     // track of (e.g. outstanding busy signals, notifications, ...)
     this._selfRelay()._disposables.dispose();
