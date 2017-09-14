@@ -687,12 +687,14 @@ export class LspLanguageService {
         .observeFileEvents()
         // The "observeFileEvents" will first send an 'open' event for every
         // already-open file, and after that it will give live updates.
-        // TODO: Filter on projectRoot
         .filter(fileEvent => {
           const fileExtension = nuclideUri.extname(
             fileEvent.fileVersion.filePath,
           );
-          return this._fileExtensions.indexOf(fileExtension) !== -1;
+          return (
+            this._fileExtensions.indexOf(fileExtension) !== -1 &&
+            this._isFileInProject(fileEvent.fileVersion.filePath)
+          );
         })
         .subscribe(fileEvent => {
           invariant(fileEvent.fileVersion.notifier === this._fileCache);
@@ -1881,9 +1883,12 @@ export class LspLanguageService {
     return Promise.resolve(null);
   }
 
+  _isFileInProject(file: string): boolean {
+    return nuclideUri.contains(this._projectRoot, file);
+  }
+
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
-    this._logger.error('NYI: isFileInProject');
-    return Promise.resolve(false);
+    return Promise.resolve(this._isFileInProject(fileUri));
   }
 }
 
