@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {Props} from './DiagnosticsView';
+import type {Props} from './ExperimentalDiagnosticsView';
 
 import * as React from 'react';
 import featureConfig from 'nuclide-commons-atom/feature-config';
