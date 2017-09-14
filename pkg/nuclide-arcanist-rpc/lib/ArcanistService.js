@@ -182,7 +182,7 @@ async function getArcExecOptions(cwd: string): Promise<Object> {
     cwd,
     env: {
       ...(await getOriginalEnvironment()),
-      // Setting the editor to a non-existant tool to prevent operations that rely
+      // Setting the editor to a non-existent tool to prevent operations that rely
       // on the user's default editor from attempting to open up when needed.
       HGEDITOR: 'true',
     },

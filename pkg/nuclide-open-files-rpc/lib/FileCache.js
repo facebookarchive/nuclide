@@ -54,7 +54,7 @@ export class FileCache {
     this._requests.onEvent(event);
 
     // invariant: because the above two lines have updated both _buffers and _requests,
-    // then getBufferAtVersion will necessarily return immediately and succesfully.
+    // then getBufferAtVersion will necessarily return immediately and successfully.
     // And getBufferForFileEvent will also succeed.
     invariant(event.kind !== 'edit' || this.getBufferForFileEvent(event));
 

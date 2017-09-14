@@ -669,7 +669,7 @@ export default class VsDebugSessionTranslator {
             this._mainThreadId = null;
           }
         } else {
-          this._logger.error('Unkown thread event:', body);
+          this._logger.error('Unknown thread event:', body);
         }
         const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
         this._sendMessageToClient({
@@ -737,7 +737,7 @@ export default class VsDebugSessionTranslator {
             },
           });
         } else {
-          this._logger.warn('Unkown breakpoint event', body);
+          this._logger.warn('Unknown breakpoint event', body);
         }
       }),
       this._session

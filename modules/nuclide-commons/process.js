@@ -30,9 +30,9 @@
 //
 // ## Why observables?
 //
-// Unlike Promises, observables have a standardized, composable cancelation mechanism _today_.
+// Unlike Promises, observables have a standardized, composable cancellation mechanism _today_.
 // Moreover, observables integrate nicely with Atom's callback + IDisposable formula for cancelable,
-// async APIs. Along with React, [RxJS] is one of the core libaries utilized by Nuclide.
+// async APIs. Along with React, [RxJS] is one of the core libraries utilized by Nuclide.
 //
 // ## Why errors?
 //
@@ -359,7 +359,7 @@ export function getOutputStream(
 //
 // # Miscellaneous Utilities
 //
-// The following utilites don't spawn processes or necessarily use observables. Instead, they're
+// The following utilities don't spawn processes or necessarily use observables. Instead, they're
 // used to format arguments to the above functions or for acting on already-spawned processes.
 //
 
@@ -842,7 +842,7 @@ function createProcessStream(
       const proc = child_process[type](
         nuclideUri.expandHomeDir(commandOrModulePath),
         args,
-        // $FlowFixMe: child_process$spawnOpts and child_process$forkOpts have incompatable stdio types.
+        // $FlowFixMe: child_process$spawnOpts and child_process$forkOpts have incompatible stdio types.
         {...options},
       );
 

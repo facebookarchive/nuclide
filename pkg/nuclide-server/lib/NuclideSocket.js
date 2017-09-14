@@ -41,7 +41,7 @@ const MAX_RECONNECT_TIME_MS = 5000;
 // Can be in one of the following states:
 //   - Connected - everything healthy
 //   - Disconnected - Was connected, but connection died. Will attempt to reconnect.
-//   - Closed - No longer connected. May not send/recieve messages. Cannot be resurected.
+//   - Closed - No longer connected. May not send/receive messages. Cannot be resurected.
 //
 // Publishes the following events:
 //   - status(boolean): on connect/disconnect

@@ -3,7 +3,7 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Device panel suport for iOS devices",
+  "description": "Device panel support for iOS devices",
   "atomTestRunner": "../../lib/test-runner.js",
   "nuclide": {
     "packageType": "Atom",

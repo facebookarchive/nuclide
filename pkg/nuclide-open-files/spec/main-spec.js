@@ -576,14 +576,14 @@ describe('nuclide-open-files', () => {
         invariant(serverBuffer != null);
         expect(serverBuffer.getText()).toEqual('contents3');
 
-        const recievedClose = (await getFileCache())
+        const receivedClose = (await getFileCache())
           .observeFileEvents()
           .filter(event => event.kind === 'close')
           .take(1)
           .toArray()
           .toPromise();
         buffer.destroy();
-        await recievedClose;
+        await receivedClose;
 
         const buffer2 = new TextBuffer({filePath: 'f3', text: 'contents4'});
         atom.project.addBuffer(buffer2);

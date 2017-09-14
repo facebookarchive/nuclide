@@ -60,7 +60,7 @@ type Props<T> = {
   /**
    * Whether column widths can be resized interactively via drag&drop. Default behavior is `true`.
    */
-  resizeable?: boolean,
+  resizable?: boolean,
   children?: React.Element<any>,
   /**
    * Whether columns can be sorted.

@@ -408,7 +408,7 @@ export default class DebuggerActions {
         track(AnalyticsEvents.DEBUGGER_STEP_OUT);
         break;
       default:
-        logger.error('Unkown debugger action type', actionId);
+        logger.error('Unknown debugger action type', actionId);
         break;
     }
     this._dispatcher.dispatch({

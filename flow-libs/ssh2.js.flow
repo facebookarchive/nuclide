@@ -26,7 +26,7 @@ declare module 'ssh2' {
       WriteStreamOptions,
       FileEntry
   } from 'ssh2-streams';
-  
+
   // TODO(siegebell): made a class to allow returning `this` type, but is possibly an interface
   declare class Channel extends stream$Duplex {
     /** If `true` only sends `EOF` when `end()` is called. */
@@ -689,7 +689,7 @@ declare module 'ssh2' {
      *          the operating system will define a random port which can be retrieved later
      *          using `server.address().port`.
      * @param hostname The hostname to bind. If `hostname` is omitted, the server will accept
-     *          conections on any IPv6 address (`::`) when IPv6 is availble, or any IPv4
+     *          conections on any IPv6 address (`::`) when IPv6 is available, or any IPv4
      *          address (`0.0.0.0`) otherwise.
      * @param backlog The maximum length of the queue of pending connections.
      * @param callback An optional callback to add to the `listening` event of the server.
@@ -710,7 +710,7 @@ declare module 'ssh2' {
      *          the operating system will define a random port which can be retrieved later
      *          using `server.address().port`.
      * @param hostname The hostname to bind. If `hostname` is omitted, the server will accept
-     *          conections on any IPv6 address (`::`) when IPv6 is availble, or any IPv4
+     *          conections on any IPv6 address (`::`) when IPv6 is available, or any IPv4
      *          address (`0.0.0.0`) otherwise.
      * @param callback An optional callback to add to the `listening` event of the server.
      */

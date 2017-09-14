@@ -28,7 +28,7 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def canSetScriptSource(self, params):
-        # Return False, becuase we don't support
+        # Return False, because we don't support
         # changing source at runtime.
         return {"result": False}
 

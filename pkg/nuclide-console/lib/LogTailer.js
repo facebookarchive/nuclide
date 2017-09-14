@@ -164,7 +164,7 @@ export class LogTailer {
   }
 
   stop(): void {
-    // If the process is explicitly stopped, call all of the running callbacks with a cancelation
+    // If the process is explicitly stopped, call all of the running callbacks with a cancellation
     // error.
     this._startCount = 0;
     this._runningCallbacks.forEach(cb => {

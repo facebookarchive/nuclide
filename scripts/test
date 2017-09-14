@@ -25,7 +25,7 @@ from lib.js_test_runner import JsTestRunner
 from lib.lint_py_headers import LintPyHeaders
 from lib.package_manager import PackageManager, NUCLIDE_PATH
 
-# Supress stack traces when stopped by CTRL+C.
+# Suppress stack traces when stopped by CTRL+C.
 def keyboard_interrupt(exctype, value, traceback):
     if exctype == KeyboardInterrupt:
         print()

@@ -69,7 +69,7 @@ If your project contains [Hack](/docs/languages/hack) code, you will get Hack la
 search options. Here you can search based on function (`@function-name`), class (`#class-name`), or
 constant (`%constant-name`) symbols in your project.
 
-To access this feature, click on the **Hack Symbols** tab in the **Quick Open** window.  
+To access this feature, click on the **Hack Symbols** tab in the **Quick Open** window.
 
 ![](/static/images/docs/feature-quick-open-toggle-hack-symbols.png)
 

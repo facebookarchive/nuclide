@@ -102,7 +102,7 @@ export class NuxView {
       // will execute outside of the parent scope's execution and cannot be caught.
       const error =
         `NuxView #${this._index} for NUX#"${this._tourId}" ` +
-        'failed to succesfully attach to the DOM.';
+        'failed to successfully attach to the DOM.';
       logger.error(`ERROR: ${error}`);
       this._track(error, error);
       return;
@@ -268,7 +268,7 @@ export class NuxView {
     }
 
     // Record the NUX as dismissed iff it is not the last NUX in the tour.
-    // Clicking "Complete Tour" on the last NUX should be tracked as succesful completion.
+    // Clicking "Complete Tour" on the last NUX should be tracked as successful completion.
     const dismissElementClickListener = !this._finalNuxInTour
       ? this._handleDisposableClick.bind(
           this,

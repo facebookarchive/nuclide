@@ -458,7 +458,7 @@ function generateUnmarshalResult(
         [],
       );
     default:
-      throw new Error(`Unkown return type ${returnType.kind}.`);
+      throw new Error(`Unknown return type ${returnType.kind}.`);
   }
 }
 

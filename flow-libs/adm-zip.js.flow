@@ -263,4 +263,3 @@ declare module 'adm-zip' {
 
   declare export default (data?: Buffer | string) => AdmZip;
 }
-

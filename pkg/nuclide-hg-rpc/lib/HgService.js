@@ -1480,7 +1480,7 @@ export class HgService {
     }
     const execOptions = {
       cwd: this._workingDirectory,
-      // Setting the editor to a non-existant tool to prevent operations that rely
+      // Setting the editor to a non-existent tool to prevent operations that rely
       // on the user's default editor from attempting to open up when needed.
     };
     return this._hgObserveExecution(args, execOptions).publish();

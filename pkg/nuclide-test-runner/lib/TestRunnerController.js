@@ -82,7 +82,7 @@ export class TestRunnerController {
   }
 
   /**
-   * @return A Promise that resolves when testing has succesfully started.
+   * @return A Promise that resolves when testing has successfully started.
    */
   async runTests(path?: string): Promise<void> {
     this._runningTest = true;

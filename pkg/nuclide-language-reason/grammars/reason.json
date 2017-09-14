@@ -101,7 +101,7 @@
       "name": "comment",
       "patterns": [
         { "include": "#comment-block-doc" },
-        {	"include": "#comment-block"	}
+        { "include": "#comment-block" }
       ]
     },
     "comment-block": {

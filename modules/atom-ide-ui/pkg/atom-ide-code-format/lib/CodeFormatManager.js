@@ -242,7 +242,7 @@ export default class CodeFormatManager {
         // If no selection is done, then, the whole file is wanted to be formatted.
         formatRange = buffer.getRange();
       } else {
-        // Format selections should start at the begining of the line,
+        // Format selections should start at the beginning of the line,
         // and include the last selected line end.
         // (If the user has already selected complete rows, then depending on how they
         // did it, their caret might be either (1) at the end of their last selected line

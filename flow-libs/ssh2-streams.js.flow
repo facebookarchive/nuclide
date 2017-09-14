@@ -1204,12 +1204,12 @@ declare module 'ssh2-streams' {
      * Creates and returns a new SFTPStream instance.
      */
     constructor(remoteIdentRaw: string): void,
-  
+
     /**
      * Creates and returns a new SFTPStream instance.
      */
     constructor(cfg?: SFTPStreamConfig, remoteIdentRaw?: string): void,
-  
+
     /**
      * Converts string flags (e.g. `'r'`, `'a+'`, etc.) to the appropriate
      * `SFTPStream.OPEN_MODE` flag mask.
@@ -1217,7 +1217,7 @@ declare module 'ssh2-streams' {
      * Returns `null` if conversion failed.
      */
     static stringToFlags(flagsStr: string): number,
-  
+
     /**
      * Converts flag mask (e.g. number containing `SFTPStream.OPEN_MODE` values) to the
      * appropriate string value.
@@ -1225,7 +1225,7 @@ declare module 'ssh2-streams' {
      * Returns `null` if conversion failed.
      */
     static flagsToString(flagsMask: number): string,
-  
+
     /**
      * (Client-only)
      * Downloads a file at `remotePath` to `localPath` using parallel reads for faster throughput.
@@ -1236,7 +1236,7 @@ declare module 'ssh2-streams' {
       options: TransferOptions,
       callback: (err: any) => void | Promise<void>
     ): void,
-  
+
     /**
      * (Client-only)
      * Downloads a file at `remotePath` to `localPath` using parallel reads for faster throughput.
@@ -1246,7 +1246,7 @@ declare module 'ssh2-streams' {
       localPath: string,
       callback: (err: any) => void | Promise<void>
     ): void,
-  
+
     /**
      * (Client-only)
      * Uploads a file from `localPath` to `remotePath` using parallel reads for faster throughput.
@@ -1257,7 +1257,7 @@ declare module 'ssh2-streams' {
       options: TransferOptions,
       callback: (err: any) => void | Promise<void>
     ): void,
-  
+
     /**
      * (Client-only)
      * Uploads a file from `localPath` to `remotePath` using parallel reads for faster throughput.
@@ -1267,13 +1267,13 @@ declare module 'ssh2-streams' {
       remotePath: string,
       callback: (err: any) => void | Promise<void>
     ): void,
-  
+
     /**
      * (Client-only)
      * Returns a new readable stream for `path`.
      */
     createReadStream(path: string, options?: ReadStreamOptions): stream$Readable,
-  
+
     /**
      * (Client-only)
      * Returns a new writable stream for `path`.
@@ -1282,7 +1282,7 @@ declare module 'ssh2-streams' {
       path: string,
       options?: WriteStreamOptions
     ): stream$Writable,
-  
+
     /**
      * (Client-only)
      * Opens a file `filename` for `mode` with optional `attributes`.
@@ -1295,7 +1295,7 @@ declare module 'ssh2-streams' {
       attributes: InputAttributes,
       callback: (err: any, handle: Buffer) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Opens a file `filename` for `mode`.
@@ -1307,7 +1307,7 @@ declare module 'ssh2-streams' {
       mode: string,
       callback: (err: any, handle: Buffer) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Closes the resource associated with `handle` given by `open()` or `opendir()`.
@@ -1315,7 +1315,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     close(handle: Buffer, callback: (err: any) => void | Promise<void>): boolean,
-  
+
     /**
      * (Client-only)
      * Reads `length` bytes from the resource associated with `handle` starting at `position`
@@ -1336,7 +1336,7 @@ declare module 'ssh2-streams' {
         position: number
       ) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
@@ -1349,7 +1349,7 @@ declare module 'ssh2-streams' {
       position: number,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Retrieves attributes for the resource associated with `handle`.
@@ -1360,7 +1360,7 @@ declare module 'ssh2-streams' {
       handle: Buffer,
       callback: (err: any, stats: Stats) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the attributes defined in `attributes` for the resource associated with `handle`.
@@ -1372,7 +1372,7 @@ declare module 'ssh2-streams' {
       attributes: InputAttributes,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the access time and modified time for the resource associated with `handle`.
@@ -1385,7 +1385,7 @@ declare module 'ssh2-streams' {
       mtime: number | Date,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the owner for the resource associated with `handle`.
@@ -1398,7 +1398,7 @@ declare module 'ssh2-streams' {
       gid: number,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the mode for the resource associated with `handle`.
@@ -1410,7 +1410,7 @@ declare module 'ssh2-streams' {
       mode: number | string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Opens a directory `path`.
@@ -1421,7 +1421,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, handle: Buffer) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Retrieves a directory listing.
@@ -1432,7 +1432,7 @@ declare module 'ssh2-streams' {
       location: string | Buffer,
       callback: (err: any, list: FileEntry[]) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Removes the file/symlink at `path`.
@@ -1440,7 +1440,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     unlink(path: string, callback: (err: any) => void | Promise<void>): boolean,
-  
+
     /**
      * (Client-only)
      * Renames/moves `srcPath` to `destPath`.
@@ -1452,7 +1452,7 @@ declare module 'ssh2-streams' {
       destPath: string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Creates a new directory `path`.
@@ -1464,7 +1464,7 @@ declare module 'ssh2-streams' {
       attributes: InputAttributes,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Creates a new directory `path`.
@@ -1472,7 +1472,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     mkdir(path: string, callback: (err: any) => void | Promise<void>): boolean,
-  
+
     /**
      * (Client-only)
      * Removes the directory at `path`.
@@ -1480,7 +1480,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     rmdir(path: string, callback: (err: any) => void | Promise<void>): boolean,
-  
+
     /**
      * (Client-only)
      * Retrieves attributes for `path`.
@@ -1491,7 +1491,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, stats: Stats) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Retrieves attributes for `path`. If `path` is a symlink, the link itself is stat'ed
@@ -1503,7 +1503,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, stats: Stats) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the attributes defined in `attributes` for `path`.
@@ -1515,7 +1515,7 @@ declare module 'ssh2-streams' {
       attributes: InputAttributes,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the access time and modified time for `path`.
@@ -1528,7 +1528,7 @@ declare module 'ssh2-streams' {
       mtime: number | Date,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the owner for `path`.
@@ -1541,7 +1541,7 @@ declare module 'ssh2-streams' {
       gid: number,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Sets the mode for `path`.
@@ -1553,7 +1553,7 @@ declare module 'ssh2-streams' {
       mode: number | string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Retrieves the target for a symlink at `path`.
@@ -1564,7 +1564,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, target: string) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Creates a symlink at `linkPath` to `targetPath`.
@@ -1576,7 +1576,7 @@ declare module 'ssh2-streams' {
       linkPath: string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only)
      * Resolves `path` to an absolute path.
@@ -1587,7 +1587,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, absPath: string) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only, OpenSSH extension)
      * Performs POSIX rename(3) from `srcPath` to `destPath`.
@@ -1599,7 +1599,7 @@ declare module 'ssh2-streams' {
       destPath: string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only, OpenSSH extension)
      * Performs POSIX statvfs(2) on `path`.
@@ -1610,7 +1610,7 @@ declare module 'ssh2-streams' {
       path: string,
       callback: (err: any, fsInfo: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only, OpenSSH extension)
      * Performs POSIX fstatvfs(2) on open handle `handle`.
@@ -1621,7 +1621,7 @@ declare module 'ssh2-streams' {
       handle: Buffer,
       callback: (err: any, fsInfo: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only, OpenSSH extension)
      * Performs POSIX link(2) to create a hard link to `targetPath` at `linkPath`.
@@ -1633,7 +1633,7 @@ declare module 'ssh2-streams' {
       linkPath: string,
       callback: (err: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Client-only, OpenSSH extension)
      * Performs POSIX fsync(3) on the open handle `handle`.
@@ -1644,7 +1644,7 @@ declare module 'ssh2-streams' {
       handle: Buffer,
       callback: (err: any, fsInfo: any) => void | Promise<void>
     ): boolean,
-  
+
     /**
      * (Server-only)
      * Sends a status response for the request identified by `id`.
@@ -1652,7 +1652,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     status(reqID: number, statusCode: number, message?: string): boolean,
-  
+
     /**
      * (Server-only)
      * Sends a handle response for the request identified by `id`.
@@ -1664,7 +1664,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     handle(reqID: number, handle: Buffer): boolean,
-  
+
     /**
      * (Server-only)
      * Sends a data response for the request identified by `id`.
@@ -1672,7 +1672,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     data(reqID: number, data: string | Buffer, encoding?: string): boolean,
-  
+
     /**
      * (Server-only)
      * Sends a name response for the request identified by `id`.
@@ -1680,7 +1680,7 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     name(reqID: number, names: FileEntry[]): boolean,
-  
+
     /**
      * (Server-only)
      * Sends an attrs response for the request identified by `id`.
@@ -1688,13 +1688,13 @@ declare module 'ssh2-streams' {
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
     attrs(reqID: number, attrs: Attributes): boolean,
-  
+
     /**
      * (Client/Server)
      * Emitted after initial protocol version check has passed.
      */
     on(event: 'ready', listener: () => void | Promise<void>): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to open a file.
@@ -1712,7 +1712,7 @@ declare module 'ssh2-streams' {
         attrs: InputAttributes
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to read data from a file handle.
@@ -1730,7 +1730,7 @@ declare module 'ssh2-streams' {
         length: number
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to write data to a file handle.
@@ -1747,7 +1747,7 @@ declare module 'ssh2-streams' {
         data: Buffer
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests attributes for the resource associated with `handle`.
@@ -1760,7 +1760,7 @@ declare module 'ssh2-streams' {
       event: 'FSTAT',
       listener: (reqID: number, handle: Buffer) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to write attributes for the resource associated with `handle`.
@@ -1776,7 +1776,7 @@ declare module 'ssh2-streams' {
         attrs: InputAttributes
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to close a handle.
@@ -1788,7 +1788,7 @@ declare module 'ssh2-streams' {
       event: 'CLOSE',
       listener: (reqID: number, handle: Buffer) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to open a directory.
@@ -1801,7 +1801,7 @@ declare module 'ssh2-streams' {
       event: 'OPENDIR',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to read the contents of a directory.
@@ -1814,7 +1814,7 @@ declare module 'ssh2-streams' {
       event: 'READDIR',
       listener: (reqID: number, handle: Buffer) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests attributes for a path. If `path` is a symlink, the
@@ -1828,7 +1828,7 @@ declare module 'ssh2-streams' {
       event: 'LSTAT',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests attributes for a path.
@@ -1841,7 +1841,7 @@ declare module 'ssh2-streams' {
       event: 'STAT',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to delete a file or symlink.
@@ -1853,7 +1853,7 @@ declare module 'ssh2-streams' {
       event: 'REMOVE',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to remove a directory.
@@ -1865,7 +1865,7 @@ declare module 'ssh2-streams' {
       event: 'RMDIR',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests the absolute path for a path.
@@ -1878,7 +1878,7 @@ declare module 'ssh2-streams' {
       event: 'REALPATH',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests the target for a symlink at `path`.
@@ -1891,7 +1891,7 @@ declare module 'ssh2-streams' {
       event: 'READLINK',
       listener: (reqID: number, path: string) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests to set the attributes defined in `attrs` for `path`.
@@ -1907,7 +1907,7 @@ declare module 'ssh2-streams' {
         attrs: InputAttributes
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests a new directory be created.
@@ -1923,7 +1923,7 @@ declare module 'ssh2-streams' {
         attrs: InputAttributes
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests a path be renamed.
@@ -1939,7 +1939,7 @@ declare module 'ssh2-streams' {
         newPath: string
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * (Server-only)
      * Emitted when the client requests a new symlink be created for a path.
@@ -1955,27 +1955,27 @@ declare module 'ssh2-streams' {
         targetPath: string
       ) => void | Promise<void>
     ): this,
-  
+
     /**
      * Emitted when the socket has disconnected.
      */
     on(event: 'end', listener: () => void | Promise<void>): this,
-  
+
     /**
      * Emitted when the client socket was closed.
      */
     on(event: 'close', listener: () => void | Promise<void>): this,
-  
+
     /**
      * Emitted when more requests/data can be sent to the stream.
      */
     on(event: 'continue', listener: () => void | Promise<void>): this,
-  
+
     /**
      * Emitted when an error occurred.
      */
     on(event: 'error', listener: (err: any) => void | Promise<void>): this,
-  
+
     on(event: string, listener: Function): this
   }
 

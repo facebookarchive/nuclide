@@ -66,13 +66,13 @@ export class WebSocketTransport {
       if (this._socket != null) {
         invariant(this._socket === socket);
         logger.info(
-          'Client #%s socket close recieved on open socket!',
+          'Client #%s socket close received on open socket!',
           this.id,
         );
         this._setClosed();
       } else {
         logger.info(
-          'Client #%s recieved socket close on already closed socket!',
+          'Client #%s received socket close on already closed socket!',
           this.id,
         );
       }

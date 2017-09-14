@@ -27,4 +27,3 @@ const createBigDigClient = require('./createBigDigClient').default;
 
 module.exports.SshHandshake = SshHandshake;
 module.exports.createBigDigClient = createBigDigClient;
-

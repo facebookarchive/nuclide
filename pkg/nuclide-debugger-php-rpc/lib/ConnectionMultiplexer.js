@@ -371,7 +371,7 @@ export class ConnectionMultiplexer {
       case ConnectionStatus.Break:
         // Send the preloading complete message after the dummy connection hits its first
         // breakpoint. This means all of the preloading done by the 'require' commands
-        // preceeding the first xdebug_break() call has completed.
+        // preceding the first xdebug_break() call has completed.
         if (
           connection.isDummyConnection() &&
           connection.getBreakCount() === 1

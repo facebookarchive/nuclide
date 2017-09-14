@@ -79,7 +79,7 @@ class Activation {
 
   constructor(state: ?any): void {
     this._subscriptions = new UniversalDisposable();
-    // Add this seperately as registerOpenerAndCommand requires
+    // Add this separately as registerOpenerAndCommand requires
     // this._subscriptions to be initialized for observeTextEditors function.
     this._subscriptions.add(this.registerOpenerAndCommand());
   }

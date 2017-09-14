@@ -299,7 +299,7 @@ export function validateDefinitions(definitions: Definitions): void {
         }
         break;
       case 'named':
-        // No need to recurse, as the target alias definition will get validated seperately.
+        // No need to recurse, as the target alias definition will get validated separately.
         break;
       default:
         validateType(type);

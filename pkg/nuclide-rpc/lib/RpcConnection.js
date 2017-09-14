@@ -496,7 +496,7 @@ export class RpcConnection<TransportType: Transport> {
         return observable;
       }
       default:
-        throw new Error(`Unkown return type: ${returnType}.`);
+        throw new Error(`Unknown return type: ${returnType}.`);
     }
   }
 
@@ -705,13 +705,13 @@ export class RpcConnection<TransportType: Transport> {
       }
       /* TODO: Uncomment this when the Hack service updates their protocol.
       if (result.protocol !== this._getProtocol()) {
-        logger.error(`Recieved message with unexpected protocol: '${value}'`);
+        logger.error(`Received message with unexpected protocol: '${value}'`);
         return null;
       }
       */
       return result;
     } catch (e) {
-      logger.error(`Recieved invalid JSON message: '${value}'`);
+      logger.error(`Received invalid JSON message: '${value}'`);
       return null;
     }
   }

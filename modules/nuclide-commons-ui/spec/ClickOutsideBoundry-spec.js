@@ -84,7 +84,7 @@ describe('ClickOutsideBoundary - onClickOutside handler', () => {
       expect(onClickOutside).toHaveBeenCalled();
     });
 
-    it('on a sibling that dissapears after render', () => {
+    it('on a sibling that disappears after render', () => {
       // This would fail if we tool the approach of ignoring all
       // clicks on elements that were not in the DOM.
       render(
