@@ -38,6 +38,8 @@ type FeatureLoaderParams = {
   features: Array<Feature>,
 };
 
+const {devMode} = atom.getLoadSettings();
+
 export default class FeatureLoader {
   _activationDisposable: ?UniversalDisposable;
   _loadDisposable: UniversalDisposable;
@@ -108,14 +110,18 @@ export default class FeatureLoader {
         type: 'boolean',
         default: enabled,
       };
-      if (featurePkg.providedServices) {
-        const provides = Object.keys(featurePkg.providedServices).join(', ');
-        setting.description += `<br/>**Provides:** _${provides}_`;
+
+      if (devMode) {
+        if (featurePkg.providedServices) {
+          const provides = Object.keys(featurePkg.providedServices).join(', ');
+          setting.description += `<br/>**Provides:** _${provides}_`;
+        }
+        if (featurePkg.consumedServices) {
+          const consumes = Object.keys(featurePkg.consumedServices).join(', ');
+          setting.description += `<br/>**Consumes:** _${consumes}_`;
+        }
       }
-      if (featurePkg.consumedServices) {
-        const consumes = Object.keys(featurePkg.consumedServices).join(', ');
-        setting.description += `<br/>**Consumes:** _${consumes}_`;
-      }
+
       this._config.use.properties[name] = setting;
 
       // Merge in the feature's config
