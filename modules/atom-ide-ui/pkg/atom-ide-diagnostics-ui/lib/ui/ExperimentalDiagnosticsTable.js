@@ -53,83 +53,6 @@ type ColumnName = $Keys<DisplayDiagnostic>;
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
-const EmptyComponent = () =>
-  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>;
-
-const TypeToHighlightColor = Object.freeze({
-  ERROR: HighlightColors.error,
-  WARNING: HighlightColors.warning,
-  INFO: HighlightColors.info,
-});
-
-function TypeComponent(props: {
-  data: 'Warning' | 'Error' | 'Info',
-}): React.Element<any> {
-  const text = props.data;
-  const highlightColor = TypeToHighlightColor[text.toUpperCase()];
-  return (
-    <Highlight color={highlightColor}>
-      {text}
-    </Highlight>
-  );
-}
-
-function getMessageContent(
-  diagnostic: DiagnosticMessage,
-  showTraces: boolean,
-): {text: string, isPlainText: boolean} {
-  let text = '';
-  let isPlainText = true;
-  const traces = diagnostic.trace || [];
-  const allMessages: Array<{html?: string, text?: string}> = [
-    diagnostic,
-    ...traces,
-  ];
-  for (const message of allMessages) {
-    // TODO: A mix of html and text diagnostics will yield a wonky sort ordering.
-    if (message.html != null) {
-      text += message.html + ' ';
-      isPlainText = false;
-    } else if (message.text != null) {
-      text += message.text + ' ';
-    } else {
-      throw new Error('Neither text nor html property defined on message');
-    }
-  }
-  return {text: text.trim(), isPlainText};
-}
-
-function DescriptionComponent(props: {
-  data: DescriptionField,
-}): React.Element<any> {
-  const {showTraces, diagnostic, text, isPlainText} = props.data;
-  return showTraces && diagnostic.scope === 'file'
-    ? DiagnosticsMessageNoHeader({
-        message: diagnostic,
-        goToLocation,
-        fixer: () => {},
-      })
-    : DiagnosticsMessageText({
-        preserveNewlines: showTraces,
-        message: {text, html: isPlainText ? undefined : text},
-      });
-}
-
-function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
-  if (rowData.scope !== 'file' || rowData.filePath == null) {
-    return;
-  }
-
-  analytics.track('diagnostics-panel-goto-location');
-
-  const uri = rowData.filePath;
-  // If initialLine is N, Atom will navigate to line N+1.
-  // Flow sometimes reports a row of -1, so this ensures the line is at least one.
-  const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
-  const column = 0;
-  goToLocation(uri, line, column);
-}
-
 type DiagnosticsTableProps = {
   diagnostics: Array<DiagnosticMessage>,
   showFileName: ?boolean,
@@ -267,4 +190,81 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
       </div>
     );
   }
+}
+
+const EmptyComponent = () =>
+  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>;
+
+const TypeToHighlightColor = Object.freeze({
+  ERROR: HighlightColors.error,
+  WARNING: HighlightColors.warning,
+  INFO: HighlightColors.info,
+});
+
+function TypeComponent(props: {
+  data: 'Warning' | 'Error' | 'Info',
+}): React.Element<any> {
+  const text = props.data;
+  const highlightColor = TypeToHighlightColor[text.toUpperCase()];
+  return (
+    <Highlight color={highlightColor}>
+      {text}
+    </Highlight>
+  );
+}
+
+function getMessageContent(
+  diagnostic: DiagnosticMessage,
+  showTraces: boolean,
+): {text: string, isPlainText: boolean} {
+  let text = '';
+  let isPlainText = true;
+  const traces = diagnostic.trace || [];
+  const allMessages: Array<{html?: string, text?: string}> = [
+    diagnostic,
+    ...traces,
+  ];
+  for (const message of allMessages) {
+    // TODO: A mix of html and text diagnostics will yield a wonky sort ordering.
+    if (message.html != null) {
+      text += message.html + ' ';
+      isPlainText = false;
+    } else if (message.text != null) {
+      text += message.text + ' ';
+    } else {
+      throw new Error('Neither text nor html property defined on message');
+    }
+  }
+  return {text: text.trim(), isPlainText};
+}
+
+function DescriptionComponent(props: {
+  data: DescriptionField,
+}): React.Element<any> {
+  const {showTraces, diagnostic, text, isPlainText} = props.data;
+  return showTraces && diagnostic.scope === 'file'
+    ? DiagnosticsMessageNoHeader({
+        message: diagnostic,
+        goToLocation,
+        fixer: () => {},
+      })
+    : DiagnosticsMessageText({
+        preserveNewlines: showTraces,
+        message: {text, html: isPlainText ? undefined : text},
+      });
+}
+
+function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
+  if (rowData.scope !== 'file' || rowData.filePath == null) {
+    return;
+  }
+
+  analytics.track('diagnostics-panel-goto-location');
+
+  const uri = rowData.filePath;
+  // If initialLine is N, Atom will navigate to line N+1.
+  // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+  const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
+  const column = 0;
+  goToLocation(uri, line, column);
 }
