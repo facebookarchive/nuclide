@@ -65,12 +65,13 @@ const MAX_RESULTS_COUNT = 1000;
 
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
+  selectedMessage: ?DiagnosticMessage,
+  gotoMessageLocation: (message: DiagnosticMessage) => void,
   showFileName: ?boolean,
   showTraces: boolean,
 };
 
 type State = {
-  selectedMessage: ?DiagnosticMessage,
   sortDescending: boolean,
   sortedColumn: ColumnName,
 };
@@ -84,7 +85,6 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
     (this: any)._handleSort = this._handleSort.bind(this);
     (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     this.state = {
-      selectedMessage: null,
       sortDescending: true,
       sortedColumn: 'classification',
     };
@@ -98,13 +98,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
   }
 
   _handleSelectTableRow(item: {diagnostic: DiagnosticMessage}): void {
-    // We store the message instead of the index to keep it independent of sorting.
-    this.setState({selectedMessage: item.diagnostic});
-  }
-
-  componentWillReceiveProps(nextProps: Props): void {
-    // Clear the selected message. We could try to find the same one, but that seems error prone.
-    this.setState({selectedMessage: null});
+    this.props.gotoMessageLocation(item.diagnostic);
   }
 
   _getColumns(): Array<Column<DisplayDiagnostic>> {
@@ -164,7 +158,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
   }
 
   render(): React.Node {
-    const {diagnostics, showTraces} = this.props;
+    const {diagnostics, selectedMessage, showTraces} = this.props;
     const {sortedColumn, sortDescending} = this.state;
     const diagnosticRows = this._getRows(diagnostics, showTraces);
     let sortedRows = this._sortRows(
@@ -183,7 +177,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
       );
     }
     const selectedIndex = sortedRows.findIndex(
-      row => row.data.description.diagnostic === this.state.selectedMessage,
+      row => row.data.description.diagnostic === selectedMessage,
     );
     return (
       <div

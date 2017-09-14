@@ -39,6 +39,8 @@ export type Props = {
   disableLinter: () => mixed,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
+  gotoMessageLocation: (message: DiagnosticMessage) => void,
+  selectedMessage: ?DiagnosticMessage,
 
   hiddenTypes: Set<FilterType>,
   onTypeFilterChange: (type: FilterType) => mixed,
@@ -144,6 +146,8 @@ export default class ExperimentalDiagnosticsView extends React.Component<
           showFileName={!this.props.filterByActiveTextEditor}
           diagnostics={diagnostics}
           showTraces={showTraces}
+          selectedMessage={this.props.selectedMessage}
+          gotoMessageLocation={this.props.gotoMessageLocation}
         />
       </div>
     );

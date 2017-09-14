@@ -16,6 +16,7 @@ import type {FilterType, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import DiagnosticsUi from './ui/DiagnosticsUi';
@@ -37,6 +38,7 @@ type SerializedDiagnosticsViewModel = {
 
 type State = {|
   hiddenTypes: Set<FilterType>,
+  selectedMessage: ?DiagnosticMessage,
   textFilter: {|
     text: string,
     isRegExp: boolean,
@@ -59,6 +61,7 @@ export class DiagnosticsViewModel {
       // TODO: Get this from constructor/serialization.
       hiddenTypes: new Set(),
       textFilter: {text: '', isRegExp: false, pattern, invalid},
+      selectedMessage: null,
     });
     const visibility = observePaneItemVisibility(this).distinctUntilChanged();
     this._disposables = new UniversalDisposable(
@@ -86,6 +89,7 @@ export class DiagnosticsViewModel {
         ),
         onTypeFilterChange: this._handleTypeFilterChange,
         onTextFilterChange: this._handleTextFilterChange,
+        gotoMessageLocation: this._gotoMessageLocation,
       }),
     );
 
@@ -178,6 +182,11 @@ export class DiagnosticsViewModel {
       );
     });
   }
+
+  _gotoMessageLocation = (message: DiagnosticMessage): void => {
+    this._model.setState({selectedMessage: message});
+    goToDiagnosticLocation(message);
+  };
 }
 
 function getMessageFilterType(message: DiagnosticMessage): FilterType {
@@ -201,4 +210,19 @@ function getMessageFilterType(message: DiagnosticMessage): FilterType {
     default:
       throw new Error(`Invalid message kind: ${message.kind}`);
   }
+}
+
+function goToDiagnosticLocation(message: DiagnosticMessage): void {
+  if (message.scope !== 'file' || message.filePath == null) {
+    return;
+  }
+
+  analytics.track('diagnostics-panel-goto-location');
+
+  const uri = message.filePath;
+  // If initialLine is N, Atom will navigate to line N+1.
+  // Flow sometimes reports a row of -1, so this ensures the line is at least one.
+  const line = Math.max(message.range ? message.range.start.row : 0, 0);
+  const column = 0;
+  goToLocation(uri, line, column);
 }
