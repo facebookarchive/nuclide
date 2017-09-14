@@ -12,16 +12,23 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+import type {FilterType} from '../types';
+import type {
+  RegExpFilterChange,
+  RegExpFilterValue,
+} from 'nuclide-commons-ui/RegExpFilter';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import ExperimentalDiagnosticsTable from './ExperimentalDiagnosticsTable';
-import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import * as React from 'react';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
+import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
+import FilterButton from './FilterButton';
+import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
 
 export type Props = {
   diagnostics: Array<DiagnosticMessage>,
@@ -32,6 +39,11 @@ export type Props = {
   disableLinter: () => mixed,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
+
+  hiddenTypes: Set<FilterType>,
+  onTypeFilterChange: (type: FilterType) => mixed,
+  textFilter: RegExpFilterValue,
+  onTextFilterChange: (change: RegExpFilterChange) => mixed,
 };
 
 /**
@@ -51,9 +63,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
     );
   }
 
-  render(): React.Node {
-    let warningCount: number = 0;
-    let errorCount = 0;
+  render(): React.Element<any> {
     let {diagnostics} = this.props;
     const {showTraces} = this.props;
     if (this.props.filterByActiveTextEditor) {
@@ -69,19 +79,6 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         diagnostics = [];
       }
     }
-    diagnostics.forEach(diagnostic => {
-      if (diagnostic.type === 'Error') {
-        ++errorCount;
-      } else if (diagnostic.type === 'Warning' || diagnostic.type === 'Info') {
-        // TODO: should "Info" messages have their own category?
-        ++warningCount;
-      }
-    });
-    const isExpandable = diagnostics.find(
-      diagnostic =>
-        // flowlint-next-line sketchy-null-string:off
-        diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
-    );
 
     let linterWarning = null;
     if (this.props.warnAboutLinter) {
@@ -104,13 +101,6 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       );
     }
 
-    const errorSpanClassName = `inline-block ${errorCount > 0
-      ? 'text-error'
-      : ''}`;
-    const warningSpanClassName = `inline-block ${warningCount > 0
-      ? 'text-warning'
-      : ''}`;
-
     return (
       <div
         style={{
@@ -122,30 +112,24 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         {linterWarning}
         <Toolbar location="top">
           <ToolbarLeft>
-            <span className={errorSpanClassName}>
-              Errors: {errorCount}
-            </span>
-            <span className={warningSpanClassName}>
-              Warnings: {warningCount}
-            </span>
+            <ButtonGroup>
+              {['errors', 'warnings', 'feedback'].map(type =>
+                <FilterButton
+                  key={type}
+                  type={type}
+                  selected={!this.props.hiddenTypes.has(type)}
+                  onClick={() => {
+                    this.props.onTypeFilterChange(type);
+                  }}
+                />,
+              )}
+            </ButtonGroup>
           </ToolbarLeft>
           <ToolbarRight>
-            {isExpandable
-              ? <span className="inline-block">
-                  <Checkbox
-                    checked={this.props.showTraces}
-                    label="Full description"
-                    onChange={this._onShowTracesChange}
-                  />
-                </span>
-              : null}
-            <span className="inline-block">
-              <Checkbox
-                checked={this.props.filterByActiveTextEditor}
-                label="Current file only"
-                onChange={this._onFilterByActiveTextEditorChange}
-              />
-            </span>
+            <RegExpFilter
+              value={this.props.textFilter}
+              onChange={this.props.onTextFilterChange}
+            />
             <Button
               onClick={this._openAllFilesWithErrors}
               size={ButtonSizes.SMALL}

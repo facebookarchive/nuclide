@@ -22,7 +22,7 @@ import type {
   DiagnosticUpdater,
 } from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {GlobalViewState} from './DiagnosticsViewModel';
+import type {GlobalViewState} from './types';
 
 import invariant from 'assert';
 
