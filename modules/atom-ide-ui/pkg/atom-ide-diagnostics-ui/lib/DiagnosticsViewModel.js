@@ -13,8 +13,8 @@
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Props} from './ui/DiagnosticsView';
 
-import * as React from 'react';
-import DiagnosticsView from './ui/DiagnosticsView';
+import React from 'react';
+import DiagnosticsUi from './ui/DiagnosticsUi';
 import analytics from 'nuclide-commons-atom/analytics';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
@@ -80,7 +80,7 @@ export class DiagnosticsViewModel {
 
   getElement(): HTMLElement {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsView);
+      const Component = bindObservableAsProps(this._props, DiagnosticsUi);
       const element = renderReactRoot(<Component />);
       element.classList.add('diagnostics-ui');
       this._element = element;
