@@ -16,9 +16,9 @@ import type {ParentDirectory} from './common';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getParentDir, rejectWrite, rejectWriteSync} from './common';
-import {ArchiveFileStream} from './ArchiveFileStream';
+import Stream from 'stream';
 
-export class ArchiveFile {
+export class ArchiveFile implements atom$Fileish {
   _fs: ArchiveFileSystem;
   _path: NuclideUri;
   _encoding: string;
@@ -69,6 +69,10 @@ export class ArchiveFile {
     return new UniversalDisposable();
   }
 
+  onWillThrowWatchError(callback: () => mixed): IDisposable {
+    return new UniversalDisposable();
+  }
+
   getPath(): NuclideUri {
     return this._path;
   }
@@ -81,11 +85,38 @@ export class ArchiveFile {
     return getParentDir(this._fs, this._path);
   }
 
-  createReadStream(): ArchiveFileStream {
-    return new ArchiveFileStream(this._path, this._fs);
+  createReadStream(): stream$Readable {
+    let started = false;
+    const createStream = () => this._fs.createReadStream(this._path);
+    const stream = new Stream.Readable({
+      read(size) {
+        if (!started) {
+          started = true;
+          const disposer = new UniversalDisposable();
+          const inner = createStream();
+          disposer.add(
+            inner.subscribe(
+              buffer => {
+                stream.push(buffer);
+              },
+              err => {
+                stream.emit('error', err);
+                disposer.dispose();
+              },
+              () => {
+                stream.push(null);
+                disposer.dispose();
+              },
+            ),
+            inner.connect(),
+          );
+        }
+      },
+    });
+    return stream;
   }
 
-  createWriteStream(): void {
+  createWriteStream(): stream$Writable {
     throw new Error('Archive files do not support writing.');
   }
 

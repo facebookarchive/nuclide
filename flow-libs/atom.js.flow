@@ -1369,6 +1369,24 @@ declare class atom$Directory {
   contains(path: string): boolean,
 }
 
+// These are the methods called on a file by atom-text-buffer
+interface atom$Fileish {
+  existsSync(): boolean,
+  setEncoding(encoding: string): void,
+  getEncoding(): ?string,
+
+  onDidRename(callback: () => void): IDisposable,
+  onDidDelete(callback: () => void): IDisposable,
+  onDidChange(callback: () => void): IDisposable,
+  onWillThrowWatchError(callback: () => mixed): IDisposable,
+
+  getPath(): string,
+  getBaseName(): string,
+
+  createReadStream(): stream$Readable,
+  createWriteStream(): stream$Writable,
+}
+
 declare class atom$File {
   constructor(filePath?: string, symlink?: boolean): atom$File,
 
@@ -1575,6 +1593,9 @@ declare class atom$TextBuffer {
 
   // Mixin
   static deserialize: (state: Object, params: Object) => mixed,
+  static load: (file: string | atom$Fileish, params: Object) => Promise<atom$TextBuffer>,
+
+  setFile(file: atom$Fileish): void,
 
   // Events
   onWillChange(callback: (event: atom$TextEditEvent) => mixed): IDisposable,
