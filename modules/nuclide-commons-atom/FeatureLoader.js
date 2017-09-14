@@ -51,6 +51,8 @@ export default class FeatureLoader {
     this._pkgName = pkgName;
     this._config = {
       use: {
+        title: 'Enabled Features',
+        description: 'Enable and disable individual features',
         type: 'object',
         collapsed: true,
         properties: {},
