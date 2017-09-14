@@ -11,16 +11,170 @@
  */
 
 import type {Row} from 'nuclide-commons-ui/Table';
+import type {
+  DiagnosticMessageKind,
+  DiagnosticMessageType,
+} from '../../atom-ide-diagnostics/lib/types';
 import type {DisplayDiagnostic} from './ui/ExperimentalDiagnosticsTable';
+
+import invariant from 'assert';
+
+type DiagnosticsComparison = (
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+) => number;
 
 /*
  * Sorts the diagnostics according to given column and sort direction
  */
 export default function sortDiagnostics(
-  diagnostics: Array<Row<*>>,
-  sortedColumnName: ?string,
+  diagnostics: Array<Row<DisplayDiagnostic>>,
+  sortedColumnName: $Keys<DisplayDiagnostic>,
   sortDescending: boolean,
 ): Array<Row<DisplayDiagnostic>> {
-  // TODO: Implement this.
-  return diagnostics;
+  const compare = SORT_FUNCTIONS[sortedColumnName];
+  invariant(compare != null);
+  const sorted = diagnostics.sort(compare);
+  // We can't just reverse the sign of the comparison function because that would maintain the
+  // ordering of "equal" items with respect to eachother.
+  return sortDescending ? sorted.reverse() : sorted;
+}
+
+const SORT_FUNCTIONS = {
+  classification: compose(
+    compareClassification,
+    compareSource,
+    comparePath,
+    compareDescription,
+  ),
+  providerName: compose(
+    compareSource,
+    compareClassification,
+    compareDescription,
+    comparePath,
+  ),
+  description: compose(
+    compareDescription,
+    compareSource,
+    compareClassification,
+    comparePath,
+  ),
+  dir: compose(
+    comparePath,
+    compareSource,
+    compareClassification,
+    compareDescription,
+  ),
+  location: compose(
+    compareBasename,
+    compareDir,
+    compareClassification,
+    compareSource,
+    compareDescription,
+  ),
+};
+
+/**
+ * Compose comparison functions so that, when one identifies the items as equal, the subsequent
+ * functions are used to resolve the abiguity.
+ */
+function compose(
+  ...comparisons: Array<DiagnosticsComparison>
+): DiagnosticsComparison {
+  return (a, b) => {
+    for (const compare of comparisons) {
+      const val = compare(a, b);
+      if (val !== 0) {
+        return val;
+      }
+    }
+    return 0;
+  };
+}
+
+function compareClassification(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  return (
+    compareClassificationKind(
+      a.data.classification.kind,
+      b.data.classification.kind,
+    ) ||
+    compareClassificationSeverity(
+      a.data.classification.severity,
+      b.data.classification.severity,
+    )
+  );
+}
+
+const KIND_ORDER = ['feedback', 'lint'];
+
+function compareClassificationKind(
+  a: ?DiagnosticMessageKind,
+  b: ?DiagnosticMessageKind,
+): number {
+  const aKind = a || 'lint';
+  const bKind = b || 'lint';
+  return KIND_ORDER.indexOf(aKind) - KIND_ORDER.indexOf(bKind);
+}
+
+const SEVERITY_ORDER = ['Info', 'Warning', 'Error'];
+
+function compareClassificationSeverity(
+  a: DiagnosticMessageType,
+  b: DiagnosticMessageType,
+): number {
+  return SEVERITY_ORDER.indexOf(a) - SEVERITY_ORDER.indexOf(b);
+}
+
+function compareSource(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  return compareStrings(a.data.providerName, b.data.providerName);
+}
+
+function compareDescription(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  return compareStrings(a.data.description.text, b.data.description.text);
+}
+
+function comparePath(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  const aPath = `${a.data.dir}/${a.data.location.basename}`;
+  const bPath = `${b.data.dir}/${b.data.location.basename}`;
+  return (
+    compareStrings(aPath, bPath) ||
+    compareNumbers(a.data.location.line, b.data.location.line)
+  );
+}
+
+function compareBasename(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  return (
+    compareStrings(a.data.location.basename, b.data.location.basename) ||
+    compareNumbers(a.data.location.line, b.data.location.line)
+  );
+}
+
+function compareDir(
+  a: Row<DisplayDiagnostic>,
+  b: Row<DisplayDiagnostic>,
+): number {
+  return compareStrings(a.data.dir, b.data.dir);
+}
+
+function compareStrings(a: string, b: string): number {
+  return a.toLowerCase().localeCompare(b.toLowerCase());
+}
+
+function compareNumbers(a: number, b: number): number {
+  return a - b;
 }
