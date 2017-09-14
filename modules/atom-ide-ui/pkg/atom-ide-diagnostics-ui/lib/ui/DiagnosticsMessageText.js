@@ -88,9 +88,11 @@ function renderRowWithLinks(
   });
 
   return (
-    <div key={rowIndex}>
+    // We need to use a span here instead of a div so that `text-overflow: ellipsis` works.
+    <span key={rowIndex}>
       {parts}
-    </div>
+      <br />
+    </span>
   );
 }
 
