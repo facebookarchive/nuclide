@@ -16,6 +16,7 @@ import type {FilterType, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import DiagnosticsUi from './ui/DiagnosticsUi';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -50,7 +51,7 @@ export class DiagnosticsViewModel {
   _element: ?HTMLElement;
   _model: Model<State>;
   _props: Observable<Props>;
-  _visibilitySubscription: rxjs$ISubscription;
+  _disposables: IDisposable;
 
   constructor(globalStates: Observable<GlobalViewState>) {
     const {pattern, invalid} = getFilterPattern('', false);
@@ -60,13 +61,15 @@ export class DiagnosticsViewModel {
       textFilter: {text: '', isRegExp: false, pattern, invalid},
     });
     const visibility = observePaneItemVisibility(this).distinctUntilChanged();
-    this._visibilitySubscription = visibility
-      .debounceTime(1000)
-      .distinctUntilChanged()
-      .filter(Boolean)
-      .subscribe(() => {
-        analytics.track('diagnostics-show-table');
-      });
+    this._disposables = new UniversalDisposable(
+      visibility
+        .debounceTime(1000)
+        .distinctUntilChanged()
+        .filter(Boolean)
+        .subscribe(() => {
+          analytics.track('diagnostics-show-table');
+        }),
+    );
 
     // Combine the state that's shared between instances, the state that's unique to this instance,
     // and unchanging callbacks, to get the props for our component.
@@ -91,7 +94,7 @@ export class DiagnosticsViewModel {
   }
 
   destroy(): void {
-    this._visibilitySubscription.unsubscribe();
+    this._disposables.dispose();
   }
 
   getTitle(): string {
