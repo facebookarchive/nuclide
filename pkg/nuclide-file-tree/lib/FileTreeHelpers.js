@@ -35,6 +35,7 @@ import invariant from 'assert';
 import crypto from 'crypto';
 import semver from 'semver';
 import os from 'os';
+import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
 
 export type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
@@ -52,8 +53,11 @@ function dirPathToKey(path: string): string {
   );
 }
 
-function isDirKey(key: string): boolean {
-  return nuclideUri.endsWithSeparator(key);
+function isDirOrArchiveKey(key: string): boolean {
+  return (
+    nuclideUri.endsWithSeparator(key) ||
+    nuclideUri.hasKnownArchiveExtension(key)
+  );
 }
 
 function keyToName(key: string): string {
@@ -90,7 +94,11 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
       entries = entries || [];
       const keys = entries.map(entry => {
         const path = entry.getPath();
-        return entry.isDirectory() ? dirPathToKey(path) : path;
+        if (entry.isDirectory()) {
+          return dirPathToKey(path);
+        } else {
+          return path;
+        }
       });
       resolve(keys);
     });
@@ -99,7 +107,7 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
 
 function getDirectoryByKey(key: string): ?Directory {
   const path = keyToPath(key);
-  if (!isDirKey(key)) {
+  if (!isDirOrArchiveKey(key)) {
     return null;
   } else if (nuclideUri.isRemote(path)) {
     const connection = ServerConnection.getForUri(path);
@@ -107,14 +115,18 @@ function getDirectoryByKey(key: string): ?Directory {
       return null;
     }
     return connection.createDirectory(path);
-  } else {
+  } else if (nuclideUri.hasKnownArchiveExtension(key)) {
+    return ROOT_ARCHIVE_FS.newArchiveFileAsDirectory(path);
+  } else if (!nuclideUri.isInArchive(path)) {
     return new LocalDirectory(path);
+  } else {
+    return ROOT_ARCHIVE_FS.newArchiveDirectory(path);
   }
 }
 
 function getFileByKey(key: string): ?File {
   const path = keyToPath(key);
-  if (isDirKey(key)) {
+  if (isDirOrArchiveKey(key)) {
     return null;
   } else if (nuclideUri.isRemote(path)) {
     const connection = ServerConnection.getForUri(path);
@@ -122,8 +134,10 @@ function getFileByKey(key: string): ?File {
       return null;
     }
     return connection.createFile(path);
-  } else {
+  } else if (!nuclideUri.isInArchive(path)) {
     return new LocalFile(path);
+  } else {
+    return ROOT_ARCHIVE_FS.newArchiveFile(path);
   }
 }
 
@@ -255,7 +269,7 @@ function getSelectionMode(event: SyntheticMouseEvent<>): SelectionMode {
 
 export default {
   dirPathToKey,
-  isDirKey,
+  isDirOrArchiveKey,
   keyToName,
   keyToPath,
   getParentKey,

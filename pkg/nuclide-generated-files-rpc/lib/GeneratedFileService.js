@@ -57,16 +57,21 @@ export async function getGeneratedFileType(
 export async function getGeneratedFileTypes(
   dirPath: NuclideUri,
 ): Promise<Map<NuclideUri, GeneratedFileType>> {
-  const files = await fsPromise.readdir(dirPath);
   const fileTypes: Map<NuclideUri, GeneratedFileType> = new Map();
   const uncheckedFiles = [];
-  for (const file of files) {
-    const filePath = nuclideUri.join(dirPath, file);
-    const cachedType = cache.get(filePath);
-    if (cachedType != null) {
-      fileTypes.set(filePath, cachedType);
-    } else {
-      uncheckedFiles.push(file);
+  if (
+    !nuclideUri.isInArchive(dirPath) &&
+    !nuclideUri.hasKnownArchiveExtension(dirPath)
+  ) {
+    const files = await fsPromise.readdir(dirPath);
+    for (const file of files) {
+      const filePath = nuclideUri.join(dirPath, file);
+      const cachedType = cache.get(filePath);
+      if (cachedType != null) {
+        fileTypes.set(filePath, cachedType);
+      } else {
+        uncheckedFiles.push(file);
+      }
     }
   }
 

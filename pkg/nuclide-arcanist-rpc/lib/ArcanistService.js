@@ -131,6 +131,9 @@ export function findDiagnostics(
   path: NuclideUri,
   skip: Array<string>,
 ): ConnectableObservable<ArcDiagnostic> {
+  if (nuclideUri.isInArchive(path)) {
+    return Observable.of().publish();
+  }
   return Observable.fromPromise(findArcConfigDirectory(path))
     .switchMap(arcDir => {
       if (arcDir == null) {

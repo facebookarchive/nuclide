@@ -17,6 +17,7 @@ import semver from 'semver';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
+import {ArchiveFile} from '../../nuclide-fs-atom';
 import NuclideTextBuffer from './NuclideTextBuffer';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
@@ -56,8 +57,13 @@ export async function loadBufferForUri(
 
 function loadBufferForUriStatic(uri: NuclideUri): Promise<atom$TextBuffer> {
   if (nuclideUri.isLocal(uri)) {
-    // $FlowFixMe: Add after 1.19
-    return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
+    if (nuclideUri.isInArchive(uri)) {
+      // $FlowFixMe: Add after 1.19
+      return TextBuffer.load(new ArchiveFile(uri), TEXT_BUFFER_PARAMS);
+    } else {
+      // $FlowFixMe: Add after 1.19
+      return TextBuffer.load(uri, TEXT_BUFFER_PARAMS);
+    }
   }
   const connection = ServerConnection.getForUri(uri);
   if (connection == null) {
@@ -86,6 +92,10 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
   };
   if (nuclideUri.isLocal(uri)) {
     buffer = new TextBuffer(params);
+    if (nuclideUri.isInArchive(uri)) {
+      // $FlowFixMe: Add after 1.19
+      buffer.setFile(new ArchiveFile(uri));
+    }
   } else {
     const connection = ServerConnection.getForUri(uri);
     if (connection == null) {

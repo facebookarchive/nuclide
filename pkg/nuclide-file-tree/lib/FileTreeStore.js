@@ -252,7 +252,7 @@ export class FileTreeStore {
       const isExpanded = rootExpandedKeys.indexOf(uri) >= 0;
       let isLoading = false;
 
-      if (isExpanded && FileTreeHelpers.isDirKey(uri)) {
+      if (isExpanded && FileTreeHelpers.isDirOrArchiveKey(uri)) {
         this._fetchChildKeys(uri);
         isLoading = true;
       }
@@ -2229,7 +2229,7 @@ class FileTreeStoreBfsIterator {
     this._numNodesTraversed += childrenKeys.length;
     if (this._numNodesTraversed < this._limit) {
       const nextLevelNodes = childrenKeys.filter(childKey =>
-        FileTreeHelpers.isDirKey(childKey),
+        FileTreeHelpers.isDirOrArchiveKey(childKey),
       );
       this._nodesToTraverse = this._nodesToTraverse.concat(nextLevelNodes);
 
