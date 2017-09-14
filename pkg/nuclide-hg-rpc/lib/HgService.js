@@ -231,14 +231,16 @@ export type CheckoutOptions = {
 };
 
 export type OperationProgressState = {
-  topic: string,
-  pos: number,
-  total: number,
-  unit: string,
   active: boolean,
-  // speed and estimate only available if active is true
-  speed?: string,
-  estimate?: string,
+  estimate_sec: ?number,
+  estimate_str: ?string,
+  item: ?string,
+  pos: number,
+  speed_str: ?string,
+  topic: string,
+  total: ?number,
+  unit: ?string,
+  units_per_sec: ?number,
 };
 export type OperationProgress = {
   topics: Array<string>,
