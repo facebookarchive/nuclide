@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {BusySignalService, LinterProvider} from 'atom-ide-ui';
+import type {LinterProvider} from 'atom-ide-ui';
 import type {PlatformService} from '../../nuclide-buck/lib/PlatformService';
 import typeof * as PythonService from '../../nuclide-python-rpc/lib/PythonService';
 import type {ServerConnection} from '../../nuclide-remote-connection';
@@ -93,7 +93,6 @@ const atomConfig: AtomLanguageServiceConfig = {
 };
 
 class Activation {
-  _busySignalService: ?BusySignalService = null;
   _pythonLanguageService: AtomLanguageService<LanguageService>;
   _subscriptions: UniversalDisposable;
 
@@ -106,28 +105,13 @@ class Activation {
     this._subscriptions = new UniversalDisposable(this._pythonLanguageService);
   }
 
-  consumeBusySignal(service: BusySignalService): IDisposable {
-    this._busySignalService = service;
-    return new UniversalDisposable(() => {
-      this._busySignalService = null;
-    });
-  }
-
   provideLint(): LinterProvider {
     return {
       grammarScopes: Array.from(GRAMMAR_SET),
       scope: 'file',
       lintOnFly: getLintOnFly(),
-      name: 'nuclide-python',
-      lint(editor) {
-        if (this._busySignalService == null) {
-          return LintHelpers.lint(editor);
-        }
-        return this._busySignalService.reportBusyWhile(
-          `Python: Waiting for flake8 lint results for \`${editor.getTitle()}\``,
-          () => LintHelpers.lint(editor),
-        );
-      },
+      name: 'flake8',
+      lint: editor => LintHelpers.lint(editor),
     };
   }
 

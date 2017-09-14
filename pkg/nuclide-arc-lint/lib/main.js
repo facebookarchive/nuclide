@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {BusySignalService, LinterProvider} from 'atom-ide-ui';
+import type {LinterProvider} from 'atom-ide-ui';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -17,7 +17,6 @@ import * as ArcanistDiagnosticsProvider from './ArcanistDiagnosticsProvider';
 
 class Activation {
   _disposables: UniversalDisposable;
-  _busySignalService: ?BusySignalService;
 
   constructor() {
     this._disposables = new UniversalDisposable();
@@ -27,32 +26,12 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeBusySignal(service: BusySignalService): IDisposable {
-    this._busySignalService = service;
-    return new UniversalDisposable(() => {
-      this._busySignalService = null;
-    });
-  }
-
   provideLinter(): LinterProvider {
     return {
-      name: 'Arc',
+      name: 'Arc lint',
       grammarScopes: ['*'],
       scope: 'file',
-      lint: editor => {
-        const path = editor.getPath();
-        if (path == null) {
-          return null;
-        }
-        if (this._busySignalService == null) {
-          return ArcanistDiagnosticsProvider.lint(editor);
-        }
-        return this._busySignalService.reportBusyWhile(
-          `Waiting for arc lint results for \`${editor.getTitle()}\``,
-          () => ArcanistDiagnosticsProvider.lint(editor),
-          {onlyForFile: path},
-        );
-      },
+      lint: editor => ArcanistDiagnosticsProvider.lint(editor),
     };
   }
 }

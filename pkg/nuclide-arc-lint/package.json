@@ -33,13 +33,6 @@
     "testRunner": "apm"
   },
   "activationCommands": {},
-  "consumedServices": {
-    "atom-ide-busy-signal": {
-      "versions": {
-        "0.1.0": "consumeBusySignal"
-      }
-    }
-  },
   "providedServices": {
     "linter": {
       "versions": {
