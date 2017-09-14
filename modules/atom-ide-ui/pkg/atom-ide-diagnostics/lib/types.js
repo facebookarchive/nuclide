@@ -65,6 +65,7 @@ export type DiagnosticProviderUpdate = {
   projectMessages?: Array<ProjectDiagnosticMessage>,
 };
 
+export type DiagnosticMessageKind = 'lint' | 'feedback';
 export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info';
 
 export type DiagnosticTrace = {
@@ -86,9 +87,10 @@ export type DiagnosticFix = TextEdit & {
 };
 
 export type FileDiagnosticMessage = {
+  kind?: DiagnosticMessageKind,
   scope: 'file',
   providerName: string,
-  type: DiagnosticMessageType,
+  type: DiagnosticMessageType, // TODO: Rename to severity.
   filePath: NuclideUri,
   text?: string,
   html?: string,
@@ -101,6 +103,7 @@ export type FileDiagnosticMessage = {
 };
 
 export type ProjectDiagnosticMessage = {
+  kind?: DiagnosticMessageKind,
   scope: 'project',
   providerName: string,
   type: DiagnosticMessageType,

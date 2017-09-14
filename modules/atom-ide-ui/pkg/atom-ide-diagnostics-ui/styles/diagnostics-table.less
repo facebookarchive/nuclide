@@ -45,3 +45,36 @@
   padding: 1em;
   text-align: center;
 }
+
+.nuclide-diagnostics-ui-path-cell {
+  direction: rtl;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.nuclide-diagnostics-ui-cell-dir.nuclide-ui-table-body-cell {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.nuclide-diagnostics-ui-cell-filename.nuclide-ui-table-body-cell {
+  font-weight: 600;
+}
+
+.nuclide-diagnostics-ui-line-number {
+  opacity: 0.5;
+  font-weight: normal;
+}
+
+.nuclide-diagnostics-ui-cell-classification {
+  text-align: center;
+  .icon::before {
+    margin-right: 0;
+  }
+}
+
+.nuclide-diagnostics-ui-description-cell {
+  overflow: hidden;
+}
