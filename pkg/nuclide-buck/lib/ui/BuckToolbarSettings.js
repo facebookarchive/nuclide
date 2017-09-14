@@ -1,117 +1,167 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {PlatformProviderSettings, TaskSettings} from '../types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import * as React from 'react';
+var _react = _interopRequireWildcard(require('react'));
 
-import {shellParse, shellQuote} from 'nuclide-commons/string';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
-import {Modal} from '../../../nuclide-ui/Modal';
-import {Icon} from 'nuclide-commons-ui/Icon';
+var _string;
 
-type Props = {
-  buckRoot: string,
-  buckversionFileContents: ?(string | Error),
-  settings: TaskSettings,
-  platformProviderSettings: ?PlatformProviderSettings,
-  onDismiss: () => void,
-  onSave: (settings: TaskSettings) => void,
-};
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
 
-type State = {
-  buildArguments: string,
-  runArguments: string,
-};
+var _AtomInput;
 
-export default class BuckToolbarSettings extends React.Component<Props, State> {
-  constructor(props: Props) {
+function _load_AtomInput() {
+  return _AtomInput = require('nuclide-commons-ui/AtomInput');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
+
+var _Modal;
+
+function _load_Modal() {
+  return _Modal = require('../../../nuclide-ui/Modal');
+}
+
+var _Icon;
+
+function _load_Icon() {
+  return _Icon = require('nuclide-commons-ui/Icon');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class BuckToolbarSettings extends _react.Component {
+  constructor(props) {
     super(props);
-    const {buildArguments, runArguments} = props.settings;
+    const { buildArguments, runArguments } = props.settings;
     this.state = {
-      buildArguments: buildArguments == null ? '' : shellQuote(buildArguments),
-      runArguments: runArguments == null ? '' : shellQuote(runArguments),
+      buildArguments: buildArguments == null ? '' : (0, (_string || _load_string()).shellQuote)(buildArguments),
+      runArguments: runArguments == null ? '' : (0, (_string || _load_string()).shellQuote)(runArguments)
     };
   }
 
-  render(): React.Node {
-    const extraSettingsUi =
-      this.props.platformProviderSettings != null
-        ? this.props.platformProviderSettings.ui
-        : null;
+  render() {
+    const extraSettingsUi = this.props.platformProviderSettings != null ? this.props.platformProviderSettings.ui : null;
 
-    return (
-      <Modal onDismiss={this.props.onDismiss}>
-        <div className="block">
-          <div className="block">
-            <label>Current Buck root:</label>
-            <p>
-              <code>
-                {this.props.buckRoot}
-              </code>
-            </p>
-            <div>
-              <label>Buck version:</label>
-              {this._getBuckversionFileComponent()}
-            </div>
-            <label>Build Arguments:</label>
-            <AtomInput
-              tabIndex="0"
-              initialValue={this.state.buildArguments}
-              placeholderText="Extra arguments to Buck itself (e.g. --num-threads 4)"
-              onDidChange={this._onBuildArgsChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-            <label>Run Arguments:</label>
-            <AtomInput
-              tabIndex="0"
-              initialValue={this.state.runArguments}
-              placeholderText="Custom command-line arguments to pass to the app/binary"
-              onDidChange={this._onRunArgsChange.bind(this)}
-              onConfirm={this._onSave.bind(this)}
-            />
-            {extraSettingsUi}
-          </div>
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <ButtonGroup>
-              <Button onClick={this.props.onDismiss}>Cancel</Button>
-              <Button
-                buttonType={ButtonTypes.PRIMARY}
-                onClick={this._onSave.bind(this)}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </div>
-        </div>
-      </Modal>
+    return _react.createElement(
+      (_Modal || _load_Modal()).Modal,
+      { onDismiss: this.props.onDismiss },
+      _react.createElement(
+        'div',
+        { className: 'block' },
+        _react.createElement(
+          'div',
+          { className: 'block' },
+          _react.createElement(
+            'label',
+            null,
+            'Current Buck root:'
+          ),
+          _react.createElement(
+            'p',
+            null,
+            _react.createElement(
+              'code',
+              null,
+              this.props.buckRoot
+            )
+          ),
+          _react.createElement(
+            'div',
+            null,
+            _react.createElement(
+              'label',
+              null,
+              'Buck version:'
+            ),
+            this._getBuckversionFileComponent()
+          ),
+          _react.createElement(
+            'label',
+            null,
+            'Build Arguments:'
+          ),
+          _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            tabIndex: '0',
+            initialValue: this.state.buildArguments,
+            placeholderText: 'Extra arguments to Buck itself (e.g. --num-threads 4)',
+            onDidChange: this._onBuildArgsChange.bind(this),
+            onConfirm: this._onSave.bind(this)
+          }),
+          _react.createElement(
+            'label',
+            null,
+            'Run Arguments:'
+          ),
+          _react.createElement((_AtomInput || _load_AtomInput()).AtomInput, {
+            tabIndex: '0',
+            initialValue: this.state.runArguments,
+            placeholderText: 'Custom command-line arguments to pass to the app/binary',
+            onDidChange: this._onRunArgsChange.bind(this),
+            onConfirm: this._onSave.bind(this)
+          }),
+          extraSettingsUi
+        ),
+        _react.createElement(
+          'div',
+          { style: { display: 'flex', justifyContent: 'flex-end' } },
+          _react.createElement(
+            (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+            null,
+            _react.createElement(
+              (_Button || _load_Button()).Button,
+              { onClick: this.props.onDismiss },
+              'Cancel'
+            ),
+            _react.createElement(
+              (_Button || _load_Button()).Button,
+              {
+                buttonType: (_Button || _load_Button()).ButtonTypes.PRIMARY,
+                onClick: this._onSave.bind(this) },
+              'Save'
+            )
+          )
+        )
+      )
     );
   }
 
-  _getBuckversionFileComponent(): React.Node {
+  _getBuckversionFileComponent() {
     const label = ' .buckversion file:';
-    const {buckversionFileContents} = this.props;
+    const { buckversionFileContents } = this.props;
     if (buckversionFileContents == null) {
-      return (
-        <p>
-          <div className="inline-block">
-            <LoadingSpinner
-              size="EXTRA_SMALL"
-              className="nuclide-buck-buckversion-file-spinner"
-            />
-          </div>
-          {label}
-        </p>
+      return _react.createElement(
+        'p',
+        null,
+        _react.createElement(
+          'div',
+          { className: 'inline-block' },
+          _react.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, {
+            size: 'EXTRA_SMALL',
+            className: 'nuclide-buck-buckversion-file-spinner'
+          })
+        ),
+        label
       );
     } else if (buckversionFileContents instanceof Error) {
       let errorMessage;
@@ -120,39 +170,47 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
       } else {
         errorMessage = buckversionFileContents.message;
       }
-      return (
-        <p>
-          <Icon icon="x" className="inline-block" />
-          {label} {errorMessage}
-        </p>
+      return _react.createElement(
+        'p',
+        null,
+        _react.createElement((_Icon || _load_Icon()).Icon, { icon: 'x', className: 'inline-block' }),
+        label,
+        ' ',
+        errorMessage
       );
     } else {
-      return (
-        <p>
-          <Icon icon="check" className="inline-block" />
-          {label} <code>{buckversionFileContents}</code>
-        </p>
+      return _react.createElement(
+        'p',
+        null,
+        _react.createElement((_Icon || _load_Icon()).Icon, { icon: 'check', className: 'inline-block' }),
+        label,
+        ' ',
+        _react.createElement(
+          'code',
+          null,
+          buckversionFileContents
+        )
       );
     }
   }
 
-  _onBuildArgsChange(args: string) {
-    this.setState({buildArguments: args});
+  _onBuildArgsChange(args) {
+    this.setState({ buildArguments: args });
   }
 
-  _onRunArgsChange(args: string) {
-    this.setState({runArguments: args});
+  _onRunArgsChange(args) {
+    this.setState({ runArguments: args });
   }
 
   _onSave() {
     try {
       this.props.onSave({
-        buildArguments: shellParse(this.state.buildArguments),
-        runArguments: shellParse(this.state.runArguments),
+        buildArguments: (0, (_string || _load_string()).shellParse)(this.state.buildArguments),
+        runArguments: (0, (_string || _load_string()).shellParse)(this.state.runArguments)
       });
     } catch (err) {
       atom.notifications.addError('Could not parse arguments', {
-        detail: err.stack,
+        detail: err.stack
       });
     }
     if (this.props.platformProviderSettings != null) {
@@ -160,3 +218,13 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
     }
   }
 }
+exports.default = BuckToolbarSettings; /**
+                                        * Copyright (c) 2015-present, Facebook, Inc.
+                                        * All rights reserved.
+                                        *
+                                        * This source code is licensed under the license found in the LICENSE file in
+                                        * the root directory of this source tree.
+                                        *
+                                        * 
+                                        * @format
+                                        */

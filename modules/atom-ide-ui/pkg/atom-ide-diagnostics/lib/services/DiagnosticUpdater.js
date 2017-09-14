@@ -1,116 +1,103 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  AppState,
-  CodeActionsState,
-  DiagnosticMessage,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
-  ProjectDiagnosticMessage,
-  Store,
-} from '../types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import * as Actions from '../redux/Actions';
-import * as Selectors from '../redux/Selectors';
-import {arrayEqual} from 'nuclide-commons/collection';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {Observable} from 'rxjs';
+var _Actions;
 
-export default class DiagnosticUpdater {
-  _store: Store;
-  _states: Observable<AppState>;
-  _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
-  _projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('../redux/Actions'));
+}
 
-  constructor(store: Store) {
-    this._store = store;
-    // $FlowIgnore: Flow doesn't know about Symbol.observable
-    this._states = Observable.from(store);
+var _Selectors;
 
-    this._projectMessageUpdates = this._states
-      .map(Selectors.getProjectMessages)
-      .distinctUntilChanged();
+function _load_Selectors() {
+  return _Selectors = _interopRequireWildcard(require('../redux/Selectors'));
+}
 
-    this._allMessageUpdates = this._states
-      .map(Selectors.getMessages)
-      .distinctUntilChanged();
-  }
+var _collection;
 
-  getMessages = (): Array<DiagnosticMessage> => {
-    return Selectors.getMessages(this._store.getState());
-  };
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
 
-  getProjectMessages = (): Array<ProjectDiagnosticMessage> => {
-    return Selectors.getProjectMessages(this._store.getState());
-  };
+var _UniversalDisposable;
 
-  getFileMessageUpdates = (filePath: NuclideUri): FileDiagnosticMessages => {
-    return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
-  };
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
 
-  observeProjectMessages = (
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._projectMessageUpdates.subscribe(callback),
-    );
-  };
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-  observeMessages = (
-    callback: (messages: Array<DiagnosticMessage>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(this._allMessageUpdates.subscribe(callback));
-  };
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-  observeFileMessages = (
-    filePath: NuclideUri,
-    callback: (update: FileDiagnosticMessages) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class DiagnosticUpdater {
+
+  constructor(store) {
+    this.getMessages = () => {
+      return (_Selectors || _load_Selectors()).getMessages(this._store.getState());
+    };
+
+    this.getProjectMessages = () => {
+      return (_Selectors || _load_Selectors()).getProjectMessages(this._store.getState());
+    };
+
+    this.getFileMessageUpdates = filePath => {
+      return (_Selectors || _load_Selectors()).getFileMessageUpdates(this._store.getState(), filePath);
+    };
+
+    this.observeProjectMessages = callback => {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._projectMessageUpdates.subscribe(callback));
+    };
+
+    this.observeMessages = callback => {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._allMessageUpdates.subscribe(callback));
+    };
+
+    this.observeFileMessages = (filePath, callback) => {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(
       // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
       // Whether that's worth it depends on how often this is actually called with the same path.
-      this._states
-        .distinctUntilChanged((a, b) => a.messages === b.messages)
-        .map(state => Selectors.getFileMessageUpdates(state, filePath))
-        .distinctUntilChanged((a, b) => arrayEqual(a.messages, b.messages))
-        .subscribe(callback),
-    );
-  };
+      this._states.distinctUntilChanged((a, b) => a.messages === b.messages).map(state => (_Selectors || _load_Selectors()).getFileMessageUpdates(state, filePath)).distinctUntilChanged((a, b) => (0, (_collection || _load_collection()).arrayEqual)(a.messages, b.messages)).subscribe(callback));
+    };
 
-  observeCodeActionsForMessage = (
-    callback: (update: CodeActionsState) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._states
-        .map(state => state.codeActionsForMessage)
-        .distinctUntilChanged()
-        .subscribe(callback),
-    );
-  };
+    this.observeCodeActionsForMessage = callback => {
+      return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._states.map(state => state.codeActionsForMessage).distinctUntilChanged().subscribe(callback));
+    };
 
-  applyFix = (message: FileDiagnosticMessage): void => {
-    this._store.dispatch(Actions.applyFix(message));
-  };
+    this.applyFix = message => {
+      this._store.dispatch((_Actions || _load_Actions()).applyFix(message));
+    };
 
-  applyFixesForFile = (file: NuclideUri): void => {
-    this._store.dispatch(Actions.applyFixesForFile(file));
-  };
+    this.applyFixesForFile = file => {
+      this._store.dispatch((_Actions || _load_Actions()).applyFixesForFile(file));
+    };
 
-  fetchCodeActions = (
-    editor: atom$TextEditor,
-    messages: Array<FileDiagnosticMessage>,
-  ): void => {
-    this._store.dispatch(Actions.fetchCodeActions(editor, messages));
-  };
+    this.fetchCodeActions = (editor, messages) => {
+      this._store.dispatch((_Actions || _load_Actions()).fetchCodeActions(editor, messages));
+    };
+
+    this._store = store;
+    // $FlowIgnore: Flow doesn't know about Symbol.observable
+    this._states = _rxjsBundlesRxMinJs.Observable.from(store);
+
+    this._projectMessageUpdates = this._states.map((_Selectors || _load_Selectors()).getProjectMessages).distinctUntilChanged();
+
+    this._allMessageUpdates = this._states.map((_Selectors || _load_Selectors()).getMessages).distinctUntilChanged();
+  }
+
 }
+exports.default = DiagnosticUpdater; /**
+                                      * Copyright (c) 2017-present, Facebook, Inc.
+                                      * All rights reserved.
+                                      *
+                                      * This source code is licensed under the BSD-style license found in the
+                                      * LICENSE file in the root directory of this source tree. An additional grant
+                                      * of patent rights can be found in the PATENTS file in the same directory.
+                                      *
+                                      * 
+                                      * @format
+                                      */
