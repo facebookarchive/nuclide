@@ -67,7 +67,7 @@ const SORT_FUNCTIONS = {
   ),
   location: compose(
     compareBasename,
-    compareDir,
+    comparePath,
     compareClassification,
     compareSource,
     compareDescription,
@@ -146,29 +146,47 @@ function comparePath(
   a: Row<DisplayDiagnostic>,
   b: Row<DisplayDiagnostic>,
 ): number {
-  const aPath = `${a.data.dir}/${a.data.location.basename}`;
-  const bPath = `${b.data.dir}/${b.data.location.basename}`;
-  return (
-    compareStrings(aPath, bPath) ||
-    compareNumbers(a.data.location.line, b.data.location.line)
-  );
+  const aLocation = a.data.location;
+  const bLocation = b.data.location;
+  if (aLocation == null && bLocation == null) {
+    return 0;
+  }
+  if (aLocation == null) {
+    return -1;
+  }
+  if (bLocation == null) {
+    return 1;
+  }
+  const pathComparison = compareStrings(aLocation.fullPath, bLocation.fullPath);
+  if (pathComparison !== 0) {
+    return pathComparison;
+  }
+  const aLine =
+    aLocation.locationInFile == null ? 0 : aLocation.locationInFile.line;
+  const bLine =
+    bLocation.locationInFile == null ? 0 : bLocation.locationInFile.line;
+  return compareNumbers(aLine, bLine);
 }
 
 function compareBasename(
   a: Row<DisplayDiagnostic>,
   b: Row<DisplayDiagnostic>,
 ): number {
+  const aLocationInFile = a.data.location && a.data.location.locationInFile;
+  const bLocationInFile = b.data.location && b.data.location.locationInFile;
+  if (aLocationInFile == null && bLocationInFile == null) {
+    return 0;
+  }
+  if (aLocationInFile == null) {
+    return -1;
+  }
+  if (bLocationInFile == null) {
+    return 1;
+  }
   return (
-    compareStrings(a.data.location.basename, b.data.location.basename) ||
-    compareNumbers(a.data.location.line, b.data.location.line)
+    compareStrings(aLocationInFile.basename, bLocationInFile.basename) ||
+    compareNumbers(aLocationInFile.line, bLocationInFile.line)
   );
-}
-
-function compareDir(
-  a: Row<DisplayDiagnostic>,
-  b: Row<DisplayDiagnostic>,
-): number {
-  return compareStrings(a.data.dir, b.data.dir);
 }
 
 function compareStrings(a: string, b: string): number {

@@ -10,22 +10,22 @@
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
   DiagnosticMessageType,
 } from '../../../atom-ide-diagnostics/lib/types';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Column, Row} from 'nuclide-commons-ui/Table';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
+import humanizePath from 'nuclide-commons-atom/humanizePath';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Table} from 'nuclide-commons-ui/Table';
 import sortDiagnostics from '../sortDiagnostics';
-import {getProjectRelativePathOfDiagnostic} from '../paneUtils';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {Icon} from 'nuclide-commons-ui/Icon';
@@ -37,6 +37,14 @@ type DescriptionField = {
   text: string,
   isPlainText: boolean,
 };
+
+type Location = {|
+  fullPath: NuclideUri,
+  locationInFile: ?{|
+    basename: string,
+    line: number,
+  |},
+|};
 
 export type DisplayDiagnostic = {
   +classification: {
@@ -50,11 +58,8 @@ export type DisplayDiagnostic = {
     text: string,
     isPlainText: boolean,
   },
-  +dir: NuclideUri,
-  +location: {
-    basename: string,
-    line: number,
-  },
+  +dir: string,
+  +location: ?Location,
 };
 
 type ColumnName = $Keys<DisplayDiagnostic>;
@@ -211,8 +216,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
     showTraces: boolean,
   ): Array<Row<DisplayDiagnostic>> {
     return diagnostics.map(diagnostic => {
-      const fullPath = getProjectRelativePathOfDiagnostic(diagnostic);
-      const {dir, base} = nuclideUri.parsePath(fullPath);
+      const {dir, location} = getLocation(diagnostic);
       return {
         data: {
           classification: {
@@ -226,10 +230,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
             ...getMessageContent(diagnostic, showTraces),
           },
           dir,
-          location: {
-            basename: base,
-            line: diagnostic.range ? diagnostic.range.start.row + 1 : 0,
-          },
+          location,
           diagnostic,
         },
       };
@@ -318,22 +319,22 @@ function DescriptionComponent(props: {
       });
 }
 
-type FileLocation = {
-  basename: string,
-  line: number,
-};
-
 function DirComponent(props: {data: string}): React.Element<any> {
   return (
     // We're abusing `direction: rtl` here so we need the LRM to keep the slash on the right.
     <div className="nuclide-diagnostics-ui-path-cell">
-      &lrm;{props.data}/&lrm;
+      &lrm;{humanizePath(props.data, {isDirectory: true})}&lrm;
     </div>
   );
 }
 
-function FilenameComponent(props: {data: FileLocation}): React.Element<any> {
-  const {basename, line} = props.data;
+function FilenameComponent(props: {data: ?Location}): React.Element<any> {
+  const locationInFile = props.data && props.data.locationInFile;
+  if (locationInFile == null) {
+    // This is a project diagnostic.
+    return <span>&mdash;</span>;
+  }
+  const {basename, line} = locationInFile;
   return (
     <span>
       {basename}
@@ -342,4 +343,40 @@ function FilenameComponent(props: {data: FileLocation}): React.Element<any> {
       </span>
     </span>
   );
+}
+
+function getLocation(
+  diagnostic: DiagnosticMessage,
+): {dir: string, location: ?Location} {
+  const filePath =
+    typeof diagnostic.filePath === 'string' ? diagnostic.filePath : null;
+  const line = diagnostic.range ? diagnostic.range.start.row + 1 : 0;
+
+  if (filePath == null) {
+    return {
+      dir: '', // TODO: Use current working root?
+      location: null,
+    };
+  }
+
+  const humanized = humanizePath(filePath);
+  if (humanized.endsWith('/')) {
+    // It's a directory.
+    return {
+      dir: humanized,
+      location: {
+        fullPath: filePath,
+        locationInFile: null,
+      },
+    };
+  }
+
+  const {dir, base: basename} = nuclideUri.parsePath(humanized);
+  return {
+    dir,
+    location: {
+      fullPath: filePath,
+      locationInFile: {basename, line},
+    },
+  };
 }
