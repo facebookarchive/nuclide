@@ -41,11 +41,6 @@
       "versions": {
         "0.1.0": "consumeOutlineProvider"
       }
-    },
-    "tool-bar": {
-      "versions": {
-        "^1.0.0": "consumeToolBar"
-      }
     }
   },
   "providedServices": {

@@ -29,6 +29,23 @@ class Activation {
     this._disposables = new UniversalDisposable();
   }
 
+  consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
+    const toolBar = getToolBar('outline-view');
+    const {element} = toolBar.addButton({
+      icon: 'list-unordered',
+      callback: 'outline-view:toggle',
+      tooltip: 'Toggle Outline View',
+      priority: 200,
+    });
+    // Class added is not defined elsewhere, and is just used to mark the toolbar button
+    element.classList.add('outline-view-toolbar-button');
+    const disposable = new UniversalDisposable(() => {
+      toolBar.removeItems();
+    });
+    this._disposables.add(disposable);
+    return disposable;
+  }
+
   _createOutlineViewNuxTourModel(): NuxTourModel {
     const outlineViewToolbarIconNux = {
       content: 'Check out the new Outline View!',
