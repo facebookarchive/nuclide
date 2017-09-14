@@ -29,6 +29,7 @@ import {Observable, Subject} from 'rxjs';
 import {observeTextEditorEvents} from 'nuclide-commons-atom/text-event';
 import {getLogger} from 'log4js';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 // Exported for testing.
@@ -193,7 +194,7 @@ export class LinterAdapter {
   _updates: Subject<DiagnosticProviderUpdate>;
   _invalidations: Subject<DiagnosticInvalidationMessage>;
 
-  constructor(provider: LinterProvider) {
+  constructor(provider: LinterProvider, busyReporter: string => IDisposable) {
     this._provider = provider;
     this._updates = new Subject();
     this._invalidations = new Subject();
@@ -226,10 +227,23 @@ export class LinterAdapter {
             Observable.of(null),
           )
             // switchMap ensures that earlier lints are overridden by later ones.
-            .switchMap(
-              editor =>
-                editor == null ? Observable.of(null) : this._runLint(editor),
-            )
+            .switchMap(editor => {
+              if (editor == null) {
+                return Observable.of(null);
+              }
+              const path = editor.getPath();
+              const basename =
+                path == null ? '(untitled)' : nuclideUri.basename(path);
+              return Observable.using(
+                () =>
+                  new UniversalDisposable(
+                    busyReporter(
+                      `${this._provider.name}: running on "${basename}"`,
+                    ),
+                  ),
+                () => this._runLint(editor),
+              );
+            })
             // Track the previous update so we can invalidate its results.
             // (Prevents dangling diagnostics when a linter affects multiple files).
             .scan((acc, update) => ({update, lastUpdate: acc.update}), {

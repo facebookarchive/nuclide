@@ -13,10 +13,15 @@
 import type {LinterProvider} from '../types';
 import {LinterAdapter} from './LinterAdapter';
 
-function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {
+type BusyReporter = (title: string) => IDisposable;
+
+function createSingleAdapter(
+  provider: LinterProvider,
+  busyReporter: BusyReporter,
+): ?LinterAdapter {
   const validationErrors = validateLinter(provider);
   if (validationErrors.length === 0) {
-    return new LinterAdapter(provider);
+    return new LinterAdapter(provider, busyReporter);
   } else {
     const nameString = provider.name;
     let message =
@@ -31,8 +36,9 @@ function createSingleAdapter(provider: LinterProvider): ?LinterAdapter {
 function addSingleAdapter(
   adapters: Set<LinterAdapter>,
   provider: LinterProvider,
+  busyReporter: BusyReporter,
 ): void {
-  const adapter: ?LinterAdapter = createSingleAdapter(provider);
+  const adapter: ?LinterAdapter = createSingleAdapter(provider, busyReporter);
   if (adapter) {
     adapters.add(adapter);
   }
@@ -40,14 +46,15 @@ function addSingleAdapter(
 
 export function createAdapters(
   providers: LinterProvider | Array<LinterProvider>,
+  busyReporter: BusyReporter,
 ): Set<LinterAdapter> {
   const adapters = new Set();
   if (Array.isArray(providers)) {
     for (const provider of providers) {
-      addSingleAdapter(adapters, provider);
+      addSingleAdapter(adapters, provider, busyReporter);
     }
   } else {
-    addSingleAdapter(adapters, providers);
+    addSingleAdapter(adapters, providers, busyReporter);
   }
   return adapters;
 }

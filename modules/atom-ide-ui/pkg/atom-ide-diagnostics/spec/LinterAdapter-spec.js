@@ -41,9 +41,11 @@ describe('LinterAdapter', () => {
   let bufferDestroyCallback: any;
   let textEventSubject;
   let textEventSpy;
+  let busySpy;
+  let busyDisposeSpy;
 
   function newLinterAdapter(linter: LinterProvider) {
-    return new LinterAdapter(linter);
+    return new LinterAdapter(linter, busySpy);
   }
 
   beforeEach(() => {
@@ -80,6 +82,10 @@ describe('LinterAdapter', () => {
       lint: () => linterReturn,
     };
     spyOn(fakeLinter, 'lint').andCallThrough();
+    busyDisposeSpy = jasmine.createSpy('busyDispose');
+    busySpy = jasmine.createSpy('reportBusy').andReturn({
+      dispose: busyDisposeSpy,
+    });
     linterAdapter = newLinterAdapter(fakeLinter);
   });
 
@@ -90,6 +96,10 @@ describe('LinterAdapter', () => {
   it('should dispatch the linter on an event', () => {
     textEventSubject.next(fakeEditor);
     expect(fakeLinter.lint).toHaveBeenCalled();
+    expect(busySpy).toHaveBeenCalledWith('fakeLinter: running on "foo"');
+    // `lint` is a promise, so the busy signal should stay active.
+    expect(busyDisposeSpy).not.toHaveBeenCalled();
+    waitsFor(() => busyDisposeSpy.wasCalled, 'busy signal to be disposed');
   });
 
   it("should subscribe to 'all' when * is in grammarScopes", () => {
@@ -109,6 +119,8 @@ describe('LinterAdapter', () => {
       textEventSubject.next(fakeEditor);
       const message = await linterAdapter.getUpdates().take(1).toPromise();
       expect(message.filePathToMessages.has('foo')).toBe(true);
+      expect(busySpy).toHaveBeenCalledWith('fakeLinter: running on "foo"');
+      expect(busyDisposeSpy).toHaveBeenCalled();
     });
   });
 

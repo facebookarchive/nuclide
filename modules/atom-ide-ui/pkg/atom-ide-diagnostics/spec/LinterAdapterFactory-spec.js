@@ -19,7 +19,7 @@ const grammar = 'testgrammar';
 
 describe('createAdapters', () => {
   function createAdaptersWithMock(linterProviders) {
-    return createAdapters(linterProviders);
+    return createAdapters(linterProviders, jasmine.createSpy());
   }
 
   let fakeLinter: any;

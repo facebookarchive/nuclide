@@ -11,6 +11,11 @@
   },
   "activationCommands": {},
   "consumedServices": {
+    "atom-ide-busy-signal": {
+      "versions": {
+        "0.1.0": "consumeBusySignal"
+      }
+    },
     "code-action-fetcher": {
       "versions": {
         "0.1.0": "consumeCodeActionFetcher"

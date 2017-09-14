@@ -18,6 +18,7 @@ import type {
   Store,
 } from './types';
 import type {LinterAdapter} from './services/LinterAdapter';
+import type {BusySignalService} from '../../atom-ide-busy-signal/lib/types';
 import type {CodeActionFetcher} from '../../atom-ide-code-actions/lib/types';
 
 import invariant from 'assert';
@@ -35,6 +36,7 @@ class Activation {
   _disposables: UniversalDisposable;
   _allLinterAdapters: Set<LinterAdapter>;
   _store: Store;
+  _busySignalService: ?BusySignalService;
 
   constructor() {
     this._allLinterAdapters = new Set();
@@ -72,6 +74,20 @@ class Activation {
     };
   }
 
+  consumeBusySignal(service: BusySignalService): IDisposable {
+    this._busySignalService = service;
+    return new UniversalDisposable(() => {
+      this._busySignalService = null;
+    });
+  }
+
+  _reportBusy(title: string): IDisposable {
+    if (this._busySignalService != null) {
+      return this._busySignalService.reportBusy(title);
+    }
+    return new UniversalDisposable();
+  }
+
   consumeCodeActionFetcher(fetcher: CodeActionFetcher): IDisposable {
     this._store.dispatch(Actions.setCodeActionFetcher(fetcher));
     return new UniversalDisposable(() => {
@@ -83,7 +99,9 @@ class Activation {
   consumeLinterProvider(
     provider: LinterProvider | Array<LinterProvider>,
   ): IDisposable {
-    const newAdapters = createAdapters(provider);
+    const newAdapters = createAdapters(provider, title =>
+      this._reportBusy(title),
+    );
     const adapterDisposables = new UniversalDisposable();
     for (const adapter of newAdapters) {
       this._allLinterAdapters.add(adapter);
