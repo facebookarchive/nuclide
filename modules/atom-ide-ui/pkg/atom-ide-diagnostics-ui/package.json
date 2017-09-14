@@ -1,9 +1,10 @@
 {
   "name": "atom-ide-diagnostics-ui",
+  "displayName": "Diagnostics",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Displays diagnostics in context in a TextEditor",
+  "description": "Displays linter results, useful information, and problems with your code",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "deserializers": {
     "nuclide.DiagnosticsPanelModel": "deserializeDiagnosticsViewModel",

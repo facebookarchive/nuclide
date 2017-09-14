@@ -1,9 +1,10 @@
 {
   "name": "atom-ide-busy-signal",
+  "displayName": "Busy Signal",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Provides a UI for packages to indicate that they are busy working on a request.",
+  "description": "Provides a UI for packages to indicate that they are busy",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "activationCommands": {},
   "consumedServices": {

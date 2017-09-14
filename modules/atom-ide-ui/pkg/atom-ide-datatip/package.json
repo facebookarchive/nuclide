@@ -1,9 +1,10 @@
 {
   "name": "atom-ide-datatip",
+  "displayName": "Datatips",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Provides a datatip service for rendering persistent overlays in the editor.",
+  "description": "Provides persistent tooltips and overlays",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "nuclide": {
     "configMetadata": {

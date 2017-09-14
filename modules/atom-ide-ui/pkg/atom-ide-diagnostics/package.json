@@ -1,9 +1,10 @@
 {
   "name": "atom-ide-diagnostics",
+  "displayName": "Diagnostics Services",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Provides an API to consume diagnostics.",
+  "description": "Provides an API to consume diagnostics. **Required to use Diagnostics functionality**",
   "atomTestRunner": "../../../scripts/atom-test-runner.js",
   "nuclide": {
     "packageType": "Atom",

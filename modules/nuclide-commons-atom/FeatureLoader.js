@@ -20,6 +20,7 @@ type FeaturePkg = {
   atomConfig?: Object,
   consumedServices?: Object,
   description?: string,
+  displayName?: string,
   name: string,
   nuclide?: {
     config?: Object,
@@ -99,7 +100,10 @@ export default class FeatureLoader {
 
       // Entry for enabling/disabling the feature
       const setting = {
-        title: `Enable the "${name}" feature`,
+        title:
+          featurePkg.displayName == null
+            ? `Enable the "${name}" feature`
+            : `Enable ${featurePkg.displayName}`,
         description: featurePkg.description || '',
         type: 'boolean',
         default: enabled,
@@ -122,6 +126,8 @@ export default class FeatureLoader {
       if (featurePkgConfig) {
         this._config[name] = {
           type: 'object',
+          title: featurePkg.displayName,
+          description: featurePkg.description,
           collapsed: true,
           properties: {},
         };
