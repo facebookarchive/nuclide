@@ -61,11 +61,11 @@ export default class HhvmToolbar extends React.Component<Props, State> {
       additionalOptions.push(...helpers.getAdditionalLaunchOptions());
     } catch (e) {}
 
-    return (this._isTargetLaunchable(
+    return this._isTargetLaunchable(
       this.props.projectStore.getCurrentFilePath(),
     )
-      ? DEBUG_OPTIONS
-      : NO_LAUNCH_DEBUG_OPTIONS).concat(additionalOptions);
+      ? DEBUG_OPTIONS.concat(additionalOptions)
+      : NO_LAUNCH_DEBUG_OPTIONS;
   }
 
   _isTargetLaunchable(targetFilePath: string): boolean {
@@ -88,6 +88,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
     const store = this.props.projectStore;
     if (
       store.getDebugMode() === 'script' &&
+      !this.state.stickyScript &&
       !this._isTargetLaunchable(store.getCurrentFilePath())
     ) {
       store.setDebugMode('webserver');
