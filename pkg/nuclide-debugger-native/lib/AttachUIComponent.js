@@ -38,6 +38,7 @@ type StateType = {
   filterText: string,
   sortDescending: boolean,
   sortedColumn: ?ColumnName,
+  attachSourcePath: string,
 };
 
 type ColumnName = 'process' | 'pid' | 'command';
@@ -116,6 +117,7 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
       filterText: '',
       sortDescending: false,
       sortedColumn: null,
+      attachSourcePath: '',
     };
   }
 
@@ -176,6 +178,9 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
               target.name === transientSettings.attachName,
           );
           filterText = transientSettings.filterText;
+          this.setState({
+            attachSourcePath: savedSettings.attachSourcePath || '',
+          });
         },
       );
     }
@@ -263,6 +268,13 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
           onSelect={this._handleSelectTableRow}
           collapsable={true}
         />
+        <label>Source path: </label>
+        <AtomInput
+          ref="attachSourcePath"
+          placeholderText="Optional base path for sources"
+          value={this.state.attachSourcePath}
+          onDidChange={value => this.setState({attachSourcePath: value})}
+        />
       </div>
     );
   }
@@ -303,10 +315,15 @@ export class AttachUIComponent extends React.Component<PropsType, StateType> {
     const attachTarget = this.state.selectedAttachTarget;
     if (attachTarget != null) {
       // Fire and forget.
+      if (this.state.attachSourcePath !== '') {
+        attachTarget.basepath = this.state.attachSourcePath;
+      }
       this.props.actions.attachDebugger(attachTarget);
       serializeDebuggerConfig(
         ...this._getSerializationArgs(),
-        {},
+        {
+          attachSourcePath: this.state.attachSourcePath,
+        },
         {
           attachPid: attachTarget.pid,
           attachName: attachTarget.name,
