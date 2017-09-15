@@ -14,6 +14,7 @@ import socket
 import ssl
 import subprocess
 import sys
+import traceback
 
 logger = logging.getLogger('utils')
 
@@ -85,10 +86,7 @@ def http_get(host, port, method, url, key_file=None, cert_file=None, ca_cert=Non
         else:
             return None
     except ssl.SSLError as e:
-        if sys.version_info < (2, 7, 9):
-            logger.error("An SSL Error occurred")
-        else:
-            logger.error("An SSL Error occurred: %s" % e.reason)
+        logger.error('An SSL Error occurred: %s' % traceback.format_exc())
         return None
     except socket.error:
         return None
