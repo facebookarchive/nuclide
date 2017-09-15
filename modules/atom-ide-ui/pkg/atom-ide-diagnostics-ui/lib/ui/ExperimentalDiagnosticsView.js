@@ -21,7 +21,6 @@ import type {
 import analytics from 'nuclide-commons-atom/analytics';
 import ExperimentalDiagnosticsTable from './ExperimentalDiagnosticsTable';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
-import {ToolbarCenter} from 'nuclide-commons-ui/ToolbarCenter';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
 import * as React from 'react';
@@ -35,8 +34,6 @@ export type Props = {
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
-  warnAboutLinter: boolean,
-  disableLinter: () => mixed,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   gotoMessageLocation: (message: DiagnosticMessage) => void,
@@ -82,27 +79,6 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       }
     }
 
-    let linterWarning = null;
-    if (this.props.warnAboutLinter) {
-      linterWarning = (
-        <Toolbar>
-          <ToolbarCenter>
-            <span className="inline-block highlight-info">
-              nuclide-diagnostics is not compatible with the linter package. We
-              recommend that you&nbsp;
-              <a onClick={this.props.disableLinter}>
-                disable the linter package
-              </a>
-              .&nbsp;
-              <a href="http://nuclide.io/docs/advanced-topics/linter-package-compatibility/">
-                Learn More
-              </a>.
-            </span>
-          </ToolbarCenter>
-        </Toolbar>
-      );
-    }
-
     return (
       <div
         style={{
@@ -111,7 +87,6 @@ export default class ExperimentalDiagnosticsView extends React.Component<
           flexDirection: 'column',
           width: '100%',
         }}>
-        {linterWarning}
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup>

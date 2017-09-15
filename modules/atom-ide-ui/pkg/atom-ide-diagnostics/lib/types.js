@@ -140,7 +140,8 @@ export type LinterTrace = {
 };
 
 export type LinterMessageV1 = {
-  type: 'Error' | 'Warning' | 'Info',
+  // Should be Error / Warning / Info, but no guarantees.
+  type: string,
   text?: string,
   html?: string,
   /*

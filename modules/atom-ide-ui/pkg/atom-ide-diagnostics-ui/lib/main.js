@@ -29,7 +29,6 @@ import invariant from 'assert';
 import analytics from 'nuclide-commons-atom/analytics';
 
 import idx from 'idx';
-import * as AtomLinter from './AtomLinter';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -47,6 +46,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import showActionsMenu from './showActionsMenu';
+import showAtomLinterWarning from './showAtomLinterWarning';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -71,6 +71,7 @@ class Activation {
     this._subscriptions = new UniversalDisposable(
       this.registerOpenerAndCommand(),
       this._registerActionsMenu(),
+      showAtomLinterWarning(),
     );
     this._model = new Model({
       filterByActiveTextEditor:
@@ -206,11 +207,6 @@ class Activation {
         featureConfig.set(SHOW_TRACES_SETTING, showTraces);
       };
 
-      const warnAboutLinterStream = AtomLinter.observePackageIsEnabled();
-      const disableLinter = () => {
-        AtomLinter.disable();
-      };
-
       const pathToActiveTextEditorStream = getActiveEditorPaths();
 
       const filterByActiveTextEditorStream = packageStates
@@ -224,22 +220,18 @@ class Activation {
         diagnosticsStream,
         filterByActiveTextEditorStream,
         pathToActiveTextEditorStream,
-        warnAboutLinterStream,
         showTracesStream,
         (
           diagnostics,
           filterByActiveTextEditor,
           pathToActiveTextEditor,
-          warnAboutLinter,
           showTraces,
         ) => ({
           diagnostics,
           filterByActiveTextEditor,
           pathToActiveTextEditor,
-          warnAboutLinter,
           showTraces,
           onShowTracesChange: setShowTraces,
-          disableLinter,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
         }),
       );

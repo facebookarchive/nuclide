@@ -15,6 +15,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticInvalidationMessage,
   DiagnosticMessage,
+  DiagnosticMessageType,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
   LinterMessage,
@@ -44,13 +45,14 @@ export function linterMessageToDiagnosticMessage(
   const trace = msg.trace
     ? msg.trace.map(component => ({...component}))
     : undefined;
+  const type = convertLinterType(msg.type);
   // flowlint-next-line sketchy-null-string:off
   if (msg.filePath) {
     const {fix} = msg;
     return ({
       scope: 'file',
       providerName: msg.name != null ? msg.name : providerName,
-      type: msg.type,
+      type,
       filePath: msg.filePath,
       text: msg.text,
       html: msg.html,
@@ -69,7 +71,7 @@ export function linterMessageToDiagnosticMessage(
     return ({
       scope: 'project',
       providerName: msg.name != null ? msg.name : providerName,
-      type: msg.type,
+      type,
       text: msg.text,
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
@@ -78,11 +80,21 @@ export function linterMessageToDiagnosticMessage(
   }
 }
 
-const LinterSeverityMap = {
-  error: 'Error',
-  warning: 'Warning',
-  info: 'Info',
-};
+// Be flexible in accepting various linter types/severities.
+function convertLinterType(type: string): DiagnosticMessageType {
+  switch (type) {
+    case 'Error':
+    case 'error':
+      return 'Error';
+    case 'Warning':
+    case 'warning':
+      return 'Warning';
+    case 'Info':
+    case 'info':
+      return 'Info';
+  }
+  return 'Error';
+}
 
 // Version 2 only handles file-level diagnostics.
 export function linterMessageV2ToDiagnosticMessage(
@@ -109,7 +121,7 @@ export function linterMessageV2ToDiagnosticMessage(
   // TODO: handle multiple solutions and priority.
   let fix;
   const {solutions} = msg;
-  if (solutions != null) {
+  if (solutions != null && solutions.length > 0) {
     const solution = solutions[0];
     if (solution.replaceWith !== undefined) {
       fix = {
@@ -130,7 +142,7 @@ export function linterMessageV2ToDiagnosticMessage(
     scope: 'file',
     // flowlint-next-line sketchy-null-string:off
     providerName: msg.linterName || providerName,
-    type: LinterSeverityMap[msg.severity],
+    type: convertLinterType(msg.severity),
     filePath: msg.location.file,
     text,
     range: Range.fromObject(msg.location.position),

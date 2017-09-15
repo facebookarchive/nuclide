@@ -260,6 +260,18 @@ describe('message transformation functions', () => {
         filePath: fileMessage.filePath,
         text: fileMessage.text,
       });
+
+      // Invalid types are automatically turned into "Error".
+      checkMessage(
+        {...fileMessage, type: 'blah'},
+        {
+          scope: 'file',
+          providerName,
+          type: 'Error',
+          filePath: fileMessage.filePath,
+          text: fileMessage.text,
+        },
+      );
     });
 
     it('should turn a message without a filePath into a project scope diagnostic', () => {

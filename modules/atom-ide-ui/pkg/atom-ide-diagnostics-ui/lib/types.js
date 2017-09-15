@@ -21,8 +21,6 @@ export type GlobalViewState = {
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
-  warnAboutLinter: boolean,
-  disableLinter: () => mixed,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
 };
