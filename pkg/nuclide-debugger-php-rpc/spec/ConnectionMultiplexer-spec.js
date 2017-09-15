@@ -278,7 +278,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       require('../lib/Connection'),
       'Connection',
     ).andCallFake((...args) => {
-      const isDummy = args[3];
+      const isDummy = args[4];
       return createConnectionSpy(isDummy);
     }): any): () => ConnectionType);
   });

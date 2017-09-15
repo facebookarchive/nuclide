@@ -279,6 +279,7 @@ export class ConnectionMultiplexer {
       socket,
       this._connectionOnStatus.bind(this),
       this._handleNotification.bind(this),
+      this._sendOutputMessage.bind(this),
       isDummyConnection(message),
     );
     this._connections.set(connection.getId(), connection);

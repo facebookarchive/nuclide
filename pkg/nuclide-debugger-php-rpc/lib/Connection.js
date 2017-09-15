@@ -20,6 +20,7 @@ import {ConnectionStatus} from './DbgpSocket';
 
 import {CompositeDisposable} from 'event-kit';
 
+import type {MessageSender} from './types';
 import type {Socket} from 'net';
 import type {DbgpBreakpoint, FileLineBreakpointInfo} from './DbgpSocket';
 
@@ -52,11 +53,13 @@ export class Connection {
   _isDummyConnection: boolean;
   _isDummyViewable: boolean;
   _breakCount: number;
+  _onUserOutputCallback: MessageSender;
 
   constructor(
     socket: Socket,
     onStatusCallback: StatusCallback,
     onNotificationCallback: NotificationCallback,
+    onUserOutputCallback: MessageSender,
     isDummyConnection: boolean,
   ) {
     const dbgpSocket = new DbgpSocket(socket);
@@ -68,6 +71,7 @@ export class Connection {
     this._isDummyViewable = false;
     this._disposables = new CompositeDisposable();
     this._breakCount = 0;
+    this._onUserOutputCallback = onUserOutputCallback;
 
     if (onStatusCallback != null) {
       this._disposables.add(
@@ -120,6 +124,13 @@ export class Connection {
           // TODO(dbonafilia): investigate why we sometimes receive two BREAK_MESSAGES
           const [file, line, exception] = args;
           this._stopReason = exception == null ? BREAKPOINT : EXCEPTION;
+          if (this._stopReason === EXCEPTION) {
+            this._onUserOutputCallback(
+              `Request ${this
+                ._id} has been paused to do an exception: ${exception}`,
+              'info',
+            );
+          }
           if (file != null && line != null) {
             this._stopBreakpointLocation = {
               filename: file,
