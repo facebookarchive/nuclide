@@ -202,6 +202,7 @@ export function runCommandDetailed(
               acc.stdout,
             );
           default:
+            (event.kind: empty);
             throw new Error(`Invalid event kind: ${event.kind}`);
         }
       },

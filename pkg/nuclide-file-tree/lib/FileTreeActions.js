@@ -9,7 +9,6 @@
  * @format
  */
 
-import {ShowUncommittedChangesKind} from './Constants';
 import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import {FileTreeStore} from './FileTreeStore';
@@ -587,13 +586,14 @@ export default class FileTreeActions {
       const hgChanges = FileTreeHelpers.observeUncommittedChangesKindConfigKey()
         .map(kind => {
           switch (kind) {
-            case ShowUncommittedChangesKind.UNCOMMITTED:
+            case 'Uncommitted changes':
               return hgRepo.observeUncommittedStatusChanges();
-            case ShowUncommittedChangesKind.HEAD:
+            case 'Head changes':
               return hgRepo.observeHeadStatusChanges();
-            case ShowUncommittedChangesKind.STACK:
+            case 'Stack changes':
               return hgRepo.observeStackStatusChanges();
             default:
+              (kind: empty);
               const error = Observable.throw(
                 new Error('Unrecognized ShowUncommittedChangesKind config'),
               );

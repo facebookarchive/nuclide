@@ -126,6 +126,7 @@ export function validateDefinitions(definitions: Definitions): void {
         }
         break;
       default:
+        (type: empty);
         throw new Error(JSON.stringify(type));
     }
   }

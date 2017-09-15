@@ -81,6 +81,7 @@ export function registerDiagnostics<T: LanguageService>(
       );
       break;
     default:
+      (config.version: empty);
       throw new Error('Unexpected diagnostics version');
   }
   result.add(

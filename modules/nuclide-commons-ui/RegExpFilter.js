@@ -136,6 +136,7 @@ function getButtonSize(size: Size): ButtonSize {
     case 'lg':
       return ButtonSizes.LARGE;
     default:
+      (size: empty);
       throw new Error(`Invalid size: ${size}`);
   }
 }

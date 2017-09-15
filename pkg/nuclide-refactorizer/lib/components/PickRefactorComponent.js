@@ -88,6 +88,7 @@ export class PickRefactorComponent extends React.Component<{
           </div>
         );
       default:
+        (refactoring.kind: empty);
         throw new Error(`Unknown refactoring kind ${refactoring.kind}`);
     }
   }

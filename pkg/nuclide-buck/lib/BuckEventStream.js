@@ -184,6 +184,7 @@ export function getEventsFromProcess(
           };
         }
       default:
+        (message: empty);
         throw new Error('impossible');
     }
   });

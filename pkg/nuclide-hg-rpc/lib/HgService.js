@@ -18,7 +18,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
-import {AmendMode, MergeConflictStatus} from './hg-constants';
+import {MergeConflictStatus} from './hg-constants';
 import {Subject} from 'rxjs';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
@@ -1093,15 +1093,16 @@ export class HgService {
     // TODO(T17463635)
     const args = ['amend', ...filePaths];
     switch (amendMode) {
-      case AmendMode.CLEAN:
+      case 'Clean':
         break;
-      case AmendMode.REBASE:
+      case 'Rebase':
         args.push('--rebase');
         break;
-      case AmendMode.FIXUP:
+      case 'Fixup':
         args.push('--fixup');
         break;
       default:
+        (amendMode: empty);
         throw new Error('Unexpected AmendMode');
     }
     return this._commitCode(message, args).publish();
