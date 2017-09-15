@@ -14,7 +14,7 @@ import * as React from 'react';
 import {findDOMNode} from 'react-dom';
 
 type Props = {
-  onClickOutside: ?() => void,
+  onClickOutside: ?() => mixed,
   children: ?React.Element<any>,
 };
 
