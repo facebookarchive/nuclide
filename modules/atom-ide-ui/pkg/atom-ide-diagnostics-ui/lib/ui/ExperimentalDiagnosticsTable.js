@@ -323,7 +323,7 @@ function DirComponent(props: {data: string}): React.Element<any> {
   return (
     // We're abusing `direction: rtl` here so we need the LRM to keep the slash on the right.
     <div className="nuclide-diagnostics-ui-path-cell">
-      &lrm;{humanizePath(props.data, {isDirectory: true})}&lrm;
+      &lrm;{nuclideUri.normalizeDir(props.data)}&lrm;
     </div>
   );
 }
