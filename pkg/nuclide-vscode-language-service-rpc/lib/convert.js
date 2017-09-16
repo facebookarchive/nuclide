@@ -449,11 +449,13 @@ function lspDiagnostic_atomDiagnostic(
   diagnostic: Diagnostic,
   filePath: NuclideUri, // has already been converted for us
 ): FileDiagnosticMessage {
-  // TODO: pass the LSP diagnostic.code to Atom somehow
+  let providerName = diagnostic.source != null ? diagnostic.source : 'LSP';
+  if (diagnostic.code !== null) {
+    providerName = providerName + ': ' + String(diagnostic.code);
+  }
   return {
     scope: 'file',
-    // flowlint-next-line sketchy-null-string:off
-    providerName: diagnostic.source || 'LSP', // TODO
+    providerName,
     type: lspSeverity_atomDiagnosticMessageType(diagnostic.severity),
     filePath,
     text: diagnostic.message,
