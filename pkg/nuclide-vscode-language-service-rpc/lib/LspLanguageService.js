@@ -1488,6 +1488,7 @@ export class LspLanguageService {
       symbol,
       {
         icon: convert.lspSymbolKind_atomIcon(symbol.kind),
+        representativeName: symbol.name,
         tokenizedText: convert.lspSymbolInformation_atomTokenizedText(symbol),
         startPosition: convert.lspPosition_atomPoint(
           symbol.location.range.start,
