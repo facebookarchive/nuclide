@@ -770,7 +770,7 @@ declare class atom$TextEditor extends atom$Model {
   getSoftTabs(): boolean,
 
   // File Operations
-  save(): void,
+  save(): Promise<void>,
   // DO NOT USE: Doesn't work with remote text buffers!
   // saveAs(filePath: string): void,
 
@@ -1057,6 +1057,9 @@ declare class atom$TextEditorElement extends HTMLElement {
   onDidDetach(callback: () => mixed): IDisposable,
 
   // Undocumented Methods
+
+  // Returns a promise that resolves after the next update.
+  getNextUpdatePromise(): Promise<void>,
 
   // `undefined` means no explicit width. `null` sets a zero width (which is almost certainly a
   // mistake) so we don't allow it.
@@ -1387,7 +1390,7 @@ interface atom$Fileish {
   createWriteStream(): stream$Writable,
 }
 
-declare class atom$File {
+declare class atom$File /* implements atom$Fileish */ {
   constructor(filePath?: string, symlink?: boolean): atom$File,
 
   symlink: boolean,
@@ -1399,6 +1402,7 @@ declare class atom$File {
   isFile(): boolean,
   isDirectory(): boolean,
   exists(): Promise<boolean>,
+  existsSync(): boolean,
   setEncoding(encoding: string): void,
   getEncoding(): string,
 
@@ -1406,6 +1410,7 @@ declare class atom$File {
   onDidRename(callback: () => void): IDisposable,
   onDidDelete(callback: () => void): IDisposable,
   onDidChange(callback: () => void): IDisposable,
+  onWillThrowWatchError(callback: () => mixed): IDisposable,
 
   // Managing Paths
   getPath(): string,
@@ -1418,6 +1423,8 @@ declare class atom$File {
   read(flushCache?: boolean): Promise<string>,
   write(text: string): Promise<void>,
   writeSync(text: string): void,
+  createReadStream(): stream$Readable,
+  createWriteStream(): stream$Writable,
 }
 
 declare class atom$GitRepository extends atom$Repository {
@@ -1687,7 +1694,7 @@ declare class atom$TextBuffer {
   // Buffer Operations
   reload(): void,
   load(): Promise<void>,
-  save(): void,
+  save(): Promise<void>,
 
   isInConflict(): boolean,
   isModified(): boolean,

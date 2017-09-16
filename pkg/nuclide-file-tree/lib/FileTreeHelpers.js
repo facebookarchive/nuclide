@@ -33,7 +33,6 @@ import {Observable} from 'rxjs';
 import passesGK from '../../commons-node/passesGK';
 import invariant from 'assert';
 import crypto from 'crypto';
-import semver from 'semver';
 import os from 'os';
 import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
 
@@ -223,23 +222,14 @@ function updatePathInOpenedEditors(
     if (nuclideUri.contains(oldPath, bufferPath)) {
       const relativeToOld = nuclideUri.relative(oldPath, bufferPath);
       const newBufferPath = nuclideUri.join(newPath, relativeToOld);
-      // TODO(19829039): clean up after 1.19
-      if (semver.gte(atom.getVersion(), '1.19.0-beta0')) {
-        // setPath() doesn't work correctly with remote files.
-        // We need to create a new remote file and reset the underlying file.
-        const file = getFileByKey(newBufferPath);
-        invariant(
-          file != null,
-          `Could not update open file ${oldPath} to ${newBufferPath}`,
-        );
-        // $FlowFixMe: add to TextBuffer
-        buffer.setFile(file);
-      } else {
-        // setPath will append the hostname when given the local path, so we
-        // strip off the hostname here to avoid including it twice in the path.
-        // $FlowIgnore
-        buffer.setPath(nuclideUri.getPath(newBufferPath));
-      }
+      // setPath() doesn't work correctly with remote files.
+      // We need to create a new remote file and reset the underlying file.
+      const file = getFileByKey(newBufferPath);
+      invariant(
+        file != null,
+        `Could not update open file ${oldPath} to ${newBufferPath}`,
+      );
+      buffer.setFile(file);
     }
   });
 }

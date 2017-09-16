@@ -104,19 +104,10 @@ export default class HyperclickForTextEditor {
   }
 
   _setupMouseListeners(): void {
-    const getLinesDomNode = (): ?HTMLElement => {
-      const {component} = this._textEditorView;
-      invariant(component);
-      if (component.refs != null) {
-        return component.refs.lineTiles;
-      } else {
-        return component.linesComponent.getDomNode();
-      }
-    };
     const addMouseListeners = () => {
       const {component} = this._textEditorView;
       invariant(component);
-      const linesDomNode = getLinesDomNode();
+      const linesDomNode = component.refs.lineTiles;
       if (linesDomNode == null) {
         return;
       }

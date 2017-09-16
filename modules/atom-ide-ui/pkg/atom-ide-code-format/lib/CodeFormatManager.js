@@ -19,7 +19,6 @@ import type {
 } from './types';
 
 import {Range} from 'atom';
-import semver from 'semver';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -139,18 +138,11 @@ export default class CodeFormatManager {
       // it's a poor user experience (and also races the text buffer's reload).
       const editor_ = (editor: any);
       editor_.save = () => {
-        // TODO(19829039): remove check
-        if (semver.gte(atom.getVersion(), '1.19.0-beta0')) {
-          // In 1.19, TextEditor.save() is async (and the promise is used).
-          // We can just directly format + save here.
-          newSaves.next('new-save');
-          return this._safeFormatCodeOnSave(editor)
-            .takeUntil(newSaves)
-            .toPromise()
-            .then(() => realSave.call(editor));
-        } else {
-          observer.next('save');
-        }
+        newSaves.next('new-save');
+        return this._safeFormatCodeOnSave(editor)
+          .takeUntil(newSaves)
+          .toPromise()
+          .then(() => realSave.call(editor));
       };
       const subscription = newSaves.subscribe(observer);
       return () => {
