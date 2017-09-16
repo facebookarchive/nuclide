@@ -201,11 +201,78 @@ function lspCompletionItemKind_atomCompletionType(kind: ?number): ?string {
   }
 }
 
+function lspCompletionItemKind_atomIcon(kind: ?number): ?string {
+  // returns null if there should be no icon
+  // returns 'DEFAULT' for the default icon provided by AutocompletePlus
+  // returns anything else for an Atom icon
+
+  // Unfortunately, LSP doesn't yet have CompletionItemKinds for all the
+  // possible SymbolKinds (e.g. CompletionItemKind is missing namespace).
+  // So LSP servers will presumably be returning an alternative, e.g. maybe
+  // CompletionItemKind.Module for their namespaces.
+  // https://github.com/Microsoft/language-server-protocol/issues/155
+
+  // Unfortunately, Atom only provides a thematically unified 'type-*' icon set
+  // for SymbolKind icons (e.g. it has no icon for Value or Keyword).
+  // In such cases we try to fall back to the icons provided by AutocompletePlus
+  switch (kind) {
+    case null:
+      return null;
+    case CompletionItemKind.Text:
+      return null; // no Atom icon, and no good AutocompletePlus fallback
+    case CompletionItemKind.Method:
+      return 'type-method';
+    case CompletionItemKind.Function:
+      return 'type-function';
+    case CompletionItemKind.Constructor:
+      return 'type-constructor';
+    case CompletionItemKind.Field:
+      return 'type-field';
+    case CompletionItemKind.Variable:
+      return 'type-variable';
+    case CompletionItemKind.Class:
+      return 'type-class';
+    case CompletionItemKind.Interface:
+      return 'type-interface';
+    case CompletionItemKind.Module:
+      return 'type-module';
+    case CompletionItemKind.Property:
+      return 'type-property';
+    case CompletionItemKind.Unit:
+      return null; // not even sure what this is supposed to be
+    case CompletionItemKind.Value:
+      return 'DEFAULT'; // this has a good fallback in AutocompletePlus
+    case CompletionItemKind.Enum:
+      return 'type-enum';
+    case CompletionItemKind.Keyword:
+      return 'DEFAULT'; // this has a good fallback in AutocompletePlus
+    case CompletionItemKind.Snippet:
+      return 'DEFAULT'; // this has a good fallback in AutocompletePlus
+    case CompletionItemKind.Color:
+      return null; // no Atom icon, and no suitable fallback in AutocompletePlus
+    case CompletionItemKind.File:
+      return 'type-file';
+    case CompletionItemKind.Reference:
+      return null; // not even sure what this is supposed to be
+    default:
+      return null;
+  }
+}
+
 export function lspCompletionItem_atomCompletion(
   item: CompletionItem,
 ): Completion {
   const useSnippet = item.insertTextFormat === InsertTextFormat.Snippet;
   const lspTextEdits = getCompletionTextEdits(item);
+  const icon = lspCompletionItemKind_atomIcon(item.kind);
+  let iconHTML;
+  if (icon == null) {
+    iconHTML = ''; // no icon at all
+  } else if (icon === 'DEFAULT') {
+    iconHTML = undefined; // fall through to the default AutocompletePlus icon
+  } else {
+    iconHTML = `<span class="icon-${icon}"></span>`;
+  }
   return {
     // LSP: label is what should be displayed in the autocomplete list
     // Atom: displayText is what's displayed
@@ -225,7 +292,9 @@ export function lspCompletionItem_atomCompletion(
     rightLabel: item.inlineDetail,
     // LSP: kind indicates what icon should be used
     // ATOM: type is to indicate icon and its background color
+    // ATOM: iconHTML can be used to override the icon
     type: lspCompletionItemKind_atomCompletionType(item.kind),
+    iconHTML,
     // LSP detail is the thing's signature
     // Atom: description is displayed in the footer of the autocomplete tab
     description: item.detail,
@@ -271,41 +340,41 @@ export function lspSymbolKind_atomIcon(kind: number): string {
   // for reference, hack: https://github.com/facebook/nuclide/blob/20cf17dca439e02a64f4365f3a52b0f26cf53726/pkg/nuclide-hack-rpc/lib/SymbolSearch.js#L120
   switch (kind) {
     case SymbolKind.File:
-      return 'file';
+      return 'type-file';
     case SymbolKind.Module:
-      return 'file-submodule';
+      return 'type-module';
     case SymbolKind.Namespace:
-      return 'file-submodule';
+      return 'type-namespace';
     case SymbolKind.Package:
-      return 'package';
+      return 'type-package';
     case SymbolKind.Class:
-      return 'code';
+      return 'type-class';
     case SymbolKind.Method:
-      return 'zap';
+      return 'type-method';
     case SymbolKind.Property:
-      return 'key';
+      return 'type-property';
     case SymbolKind.Field:
-      return 'key';
+      return 'type-field';
     case SymbolKind.Constructor:
-      return 'zap';
+      return 'type-constructor';
     case SymbolKind.Enum:
-      return 'file-binary';
+      return 'type-enum';
     case SymbolKind.Interface:
-      return 'puzzle';
+      return 'type-interface';
     case SymbolKind.Function:
-      return 'zap';
+      return 'type-function';
     case SymbolKind.Variable:
-      return 'pencil';
+      return 'type-variable';
     case SymbolKind.Constant:
-      return 'quote';
+      return 'type-constant';
     case SymbolKind.String:
-      return 'quote';
+      return 'type-string';
     case SymbolKind.Number:
-      return 'quote';
+      return 'type-number';
     case SymbolKind.Boolean:
-      return 'quote';
+      return 'type-boolean';
     case SymbolKind.Array:
-      return 'list-ordered';
+      return 'type-array';
     default:
       return 'question';
   }
