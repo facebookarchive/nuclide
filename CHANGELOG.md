@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## v0.255.0
+
+### General
+
+* Archive files (.zip and .jar) can be expanded directly in the file tree, and files inside can be opened locally or remotely in separate first-class editor tabs.
+
+### Debugger
+
+* C++ debugger: Added an option to the Native Launch and Attach dialog to specify an alternate source file path. This will allow you to debug a native binary that has been moved to a location other than the directory in which it was built when the binary contains only relative source file paths.
+* Values are now colored/highlighted depending on their type.
+* PHP Debugger: added message in the console indicating what exception was hit when breaking due to an exception in PHP
+* PHP Debugger: fixed a bug where the action (Attach to Web Server vs Launch Script) in the HHVM toolbar doesn't persist when switching active editor tabs, even if the “Sticky” option is checked
+* PHP Debugger: will now sort locals and object members alphabetically in the Scopes pane
+
 ## v0.254.0
 
 * Hotfix to unbreak Hack language services.
