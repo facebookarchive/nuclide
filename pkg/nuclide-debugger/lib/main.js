@@ -491,8 +491,13 @@ class Activation {
         this._layoutManager.hideDebuggerViews(false);
       },
       atom.commands.add('atom-workspace', {
-        'nuclide-debugger:show': () => {
-          if (!this._layoutManager.isDebuggerVisible()) {
+        'nuclide-debugger:show': event => {
+          const detail = event.detail;
+          const show =
+            detail == null ||
+            Boolean(detail.showOnlyIfHidden) === false ||
+            !this._layoutManager.isDebuggerVisible();
+          if (show) {
             this._layoutManager.showDebuggerViews();
           }
         },

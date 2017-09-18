@@ -164,6 +164,9 @@ export default class BreakpointStore {
       atom.commands.dispatch(
         atom.views.getView(atom.workspace),
         'nuclide-debugger:show',
+        {
+          showOnlyIfHidden: true,
+        },
       );
     }
   }
