@@ -95,6 +95,8 @@ export type BreakpointUserChangeArgType = {
   breakpoint: FileLineBreakpoint,
 };
 
+export type SerializedWatchExpression = string;
+
 export type SerializedBreakpoint = {
   line: number,
   sourceURL: string,

@@ -26,7 +26,7 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponen
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Icon} from 'nuclide-commons-ui/Icon';
 
-type WatchExpressionComponentProps = {
+type Props = {
   watchExpressions: EvaluatedExpressionList,
   onAddWatchExpression: (expression: string) => void,
   onRemoveWatchExpression: (index: number) => void,
@@ -34,13 +34,15 @@ type WatchExpressionComponentProps = {
   watchExpressionStore: WatchExpressionStore,
 };
 
+type State = {
+  rowBeingEdited: ?number,
+};
+
 const EDIT_WATCH_EXPRESSION_BLUR_DEBOUNCE_MS = 50;
 
 export class WatchExpressionComponent extends React.PureComponent<
-  WatchExpressionComponentProps,
-  {
-    rowBeingEdited: ?number,
-  },
+  Props,
+  State,
 > {
   coreCancelDisposable: ?IDisposable;
   _expansionStates: Map<
@@ -49,7 +51,7 @@ export class WatchExpressionComponent extends React.PureComponent<
   >;
   _debouncedEditorBlur: () => void;
 
-  constructor(props: WatchExpressionComponentProps) {
+  constructor(props: Props) {
     super(props);
     this._debouncedEditorBlur = debounce(
       this._onEditorBlur.bind(this),

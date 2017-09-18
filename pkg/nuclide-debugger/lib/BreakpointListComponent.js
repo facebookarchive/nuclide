@@ -21,22 +21,19 @@ import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import classnames from 'classnames';
 
-type BreakpointListComponentProps = {
+type Props = {
   actions: DebuggerActions,
   breakpointStore: BreakpointStore,
 };
 
-type BreakpointListComponentState = {
+type State = {
   breakpoints: ?FileLineBreakpoints,
 };
 
-export class BreakpointListComponent extends React.Component<
-  BreakpointListComponentProps,
-  BreakpointListComponentState,
-> {
+export class BreakpointListComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
 
-  constructor(props: BreakpointListComponentProps) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       breakpoints: this.props.breakpointStore.getAllBreakpoints(),

@@ -243,11 +243,7 @@ export class DebuggerLayoutManager {
         isLifetimeView: false,
         title: () => 'Watch Expressions',
         isEnabled: () => true,
-        createView: () =>
-          <WatchView
-            model={this._model}
-            watchExpressionListStore={this._model.getWatchExpressionListStore()}
-          />,
+        createView: () => <WatchView model={this._model} />,
       },
       {
         uri: debuggerUriBase + 'threads',

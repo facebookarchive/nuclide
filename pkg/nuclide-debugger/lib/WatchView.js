@@ -11,7 +11,6 @@
 
 import classnames from 'classnames';
 import type DebuggerModel from './DebuggerModel';
-import type {WatchExpressionListStore} from './WatchExpressionListStore';
 
 import {CompositeDisposable} from 'atom';
 import * as React from 'react';
@@ -20,7 +19,6 @@ import {WatchExpressionComponent} from './WatchExpressionComponent';
 
 type Props = {
   model: DebuggerModel,
-  watchExpressionListStore: WatchExpressionListStore,
 };
 
 export class WatchView extends React.PureComponent<Props> {

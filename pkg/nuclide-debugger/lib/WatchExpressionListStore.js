@@ -13,6 +13,7 @@ import type {
   Expression,
   EvaluatedExpression,
   EvaluatedExpressionList,
+  SerializedWatchExpression,
 } from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
@@ -34,6 +35,7 @@ export class WatchExpressionListStore {
   constructor(
     watchExpressionStore: WatchExpressionStore,
     dispatcher: DebuggerDispatcher,
+    initialWatchExpressions: ?Array<SerializedWatchExpression>,
   ) {
     this._watchExpressionStore = watchExpressionStore;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
@@ -43,6 +45,19 @@ export class WatchExpressionListStore {
       }),
     );
     this._watchExpressions = new BehaviorSubject([]);
+    if (initialWatchExpressions) {
+      this._deserializeWatchExpressions(initialWatchExpressions);
+    }
+  }
+
+  _deserializeWatchExpressions(
+    watchExpressions: Array<SerializedWatchExpression>,
+  ): void {
+    this._watchExpressions.next(
+      watchExpressions.map(expression =>
+        this._getExpressionEvaluationFor(expression),
+      ),
+    );
   }
 
   _handlePayload(payload: DebuggerAction) {
@@ -78,6 +93,12 @@ export class WatchExpressionListStore {
 
   getWatchExpressions(): Observable<EvaluatedExpressionList> {
     return this._watchExpressions.asObservable();
+  }
+
+  getSerializedWatchExpressions(): Array<SerializedWatchExpression> {
+    return this._watchExpressions
+      .getValue()
+      .map(evaluatedExpression => evaluatedExpression.expression);
   }
 
   _addWatchExpression(expression: Expression): void {

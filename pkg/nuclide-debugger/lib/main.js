@@ -18,7 +18,11 @@ import type {
   RegisterExecutorFunction,
   OutputService,
 } from '../../nuclide-console/lib/types';
-import type {EvaluationResult, SerializedBreakpoint} from './types';
+import type {
+  EvaluationResult,
+  SerializedBreakpoint,
+  SerializedWatchExpression,
+} from './types';
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
@@ -62,6 +66,7 @@ import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
+  watchExpressions: ?Array<SerializedWatchExpression>,
   showDebugger: boolean,
   workspaceDocksVisibility: Array<boolean>,
 };
@@ -451,10 +456,12 @@ class Activation {
   }
 
   serialize(): SerializedState {
+    const model = this.getModel();
     const state = {
-      breakpoints: this.getModel()
-        .getBreakpointStore()
-        .getSerializedBreakpoints(),
+      breakpoints: model.getBreakpointStore().getSerializedBreakpoints(),
+      watchExpressions: model
+        .getWatchExpressionListStore()
+        .getSerializedWatchExpressions(),
       showDebugger: this._layoutManager.isDebuggerVisible(),
       workspaceDocksVisibility: this._layoutManager.getWorkspaceDocksVisibility(),
     };
@@ -879,6 +886,7 @@ export function serialize(): SerializedState {
   } else {
     return {
       breakpoints: null,
+      watchExpressions: null,
       showDebugger: false,
       workspaceDocksVisibility: [false, false, false, false],
     };
