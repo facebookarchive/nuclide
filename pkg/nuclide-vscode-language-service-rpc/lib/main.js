@@ -12,10 +12,12 @@
 import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {LspLanguageService} from './LspLanguageService';
+import passesGK from '../../commons-node/passesGK';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/main';
 import {
   MultiProjectLanguageService,
@@ -40,12 +42,19 @@ export async function createMultiLspLanguageService(
     projectFileNames: Array<string>,
     fileExtensions: Array<string>,
     logCategory: string,
-    logLevel: string,
+    logLevel: LogLevel,
   },
 ): Promise<LanguageService> {
   const result = new MultiProjectLanguageService();
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
+  // There's a centralized way to override logging:
+  if (
+    (await passesGK('nuclide_lsp_verbose')) &&
+    !logger.isLevelEnabled('TRACE')
+  ) {
+    logger.setLevel('TRACE');
+  }
 
   const fileCache = params.fileNotifier;
   invariant(fileCache instanceof FileCache);
