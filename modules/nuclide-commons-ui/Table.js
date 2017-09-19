@@ -13,7 +13,7 @@
 import classnames from 'classnames';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import {Disposable} from 'atom';
+import {Observable} from 'rxjs';
 import {Icon} from './Icon';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
@@ -121,9 +121,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._resizeStartX = null;
     this._tableWidth = null;
     this._columnBeingResized = null;
-    (this: any)._handleResizerGlobalMouseUp = this._handleResizerGlobalMouseUp.bind(
-      this,
-    );
     (this: any)._handleResizerGlobalMouseMove = this._handleResizerGlobalMouseMove.bind(
       this,
     );
@@ -202,24 +199,25 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (selection != null) {
       selection.removeAllRanges();
     }
-    document.addEventListener('mousemove', this._handleResizerGlobalMouseMove);
-    document.addEventListener('mouseup', this._handleResizerGlobalMouseUp);
     this._resizeStartX = event.pageX;
     // $FlowFixMe
     this._tableWidth = ReactDOM.findDOMNode(
       this.refs.table,
     ).getBoundingClientRect().width;
     this._columnBeingResized = key;
-    this._resizingDisposable = new Disposable(() => {
-      document.removeEventListener(
-        'mousemove',
+    this._resizingDisposable = new UniversalDisposable(
+      Observable.fromEvent(document, 'mousemove').subscribe(
         this._handleResizerGlobalMouseMove,
-      );
-      document.removeEventListener('mouseup', this._handleResizerGlobalMouseUp);
-      this._resizeStartX = null;
-      this._tableWidth = null;
-      this._columnBeingResized = null;
-    });
+      ),
+      Observable.fromEvent(document, 'mouseup').subscribe(() => {
+        this._stopResizing();
+      }),
+      () => {
+        this._resizeStartX = null;
+        this._tableWidth = null;
+        this._columnBeingResized = null;
+      },
+    );
   }
 
   _stopResizing(): void {
@@ -228,10 +226,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     }
     this._resizingDisposable.dispose();
     this._resizingDisposable = null;
-  }
-
-  _handleResizerGlobalMouseUp(event: MouseEvent): void {
-    this._stopResizing();
   }
 
   _handleResizerGlobalMouseMove(event: MouseEvent): void {
