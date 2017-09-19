@@ -261,7 +261,6 @@ export default class HyperclickForTextEditor {
 
     if (this._lastSuggestionAtMouse != null) {
       const {range} = this._lastSuggestionAtMouse;
-      invariant(range, 'Hyperclick result must have a valid Range');
       if (isPositionInRange(position, range)) {
         return;
       }
@@ -338,7 +337,6 @@ export default class HyperclickForTextEditor {
       return false;
     }
     const {range} = this._lastSuggestionAtMouse;
-    invariant(range, 'Hyperclick result must have a valid Range');
     return isPositionInRange(this._getMousePositionAsBufferPosition(), range);
   }
 
