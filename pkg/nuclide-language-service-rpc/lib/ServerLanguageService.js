@@ -131,6 +131,19 @@ export type SingleFileLanguageService = {
 
   isFileInProject(fileUri: NuclideUri): Promise<boolean>,
 
+  getExpandedSelectionRange(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range>,
+
+  getCollapsedSelectionRange(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range>,
+
   dispose(): void,
 };
 
@@ -336,6 +349,42 @@ export class ServerLanguageService<
 
   async isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     return this._service.isFileInProject(fileUri);
+  }
+
+  async getExpandedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+
+    return this._service.getExpandedSelectionRange(
+      filePath,
+      buffer,
+      currentSelection,
+    );
+  }
+
+  async getCollapsedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range> {
+    const filePath = fileVersion.filePath;
+    const buffer = await getBufferAtVersion(fileVersion);
+    if (buffer == null) {
+      return null;
+    }
+
+    return this._service.getCollapsedSelectionRange(
+      filePath,
+      buffer,
+      currentSelection,
+      originalCursorPosition,
+    );
   }
 
   dispose(): void {

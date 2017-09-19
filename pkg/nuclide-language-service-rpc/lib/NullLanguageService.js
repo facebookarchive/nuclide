@@ -149,6 +149,21 @@ export class NullLanguageService {
     return Promise.resolve(false);
   }
 
+  getExpandedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range> {
+    return Promise.resolve(null);
+  }
+
+  getCollapsedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range> {
+    return Promise.resolve(null);
+  }
+
   dispose(): void {}
 }
 

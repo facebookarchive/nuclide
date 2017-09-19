@@ -257,6 +257,17 @@ export interface FlowLanguageServiceType {
 
   allowServerRestart(): Promise<void>,
 
+  getExpandedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range>,
+
+  getCollapsedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range>,
+
   dispose(): void,
 }
 

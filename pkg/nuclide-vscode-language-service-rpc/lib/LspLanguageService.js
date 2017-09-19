@@ -1887,6 +1887,23 @@ export class LspLanguageService {
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     return Promise.resolve(this._isFileInProject(fileUri));
   }
+
+  getExpandedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range> {
+    this._logger.error('NYI: getExpandedSelectionRange');
+    return Promise.resolve(null);
+  }
+
+  getCollapsedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range> {
+    this._logger.error('NYI: getCollapsedSelectionRange');
+    return Promise.resolve(null);
+  }
 }
 
 class DerivedServerCapabilities {

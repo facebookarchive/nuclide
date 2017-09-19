@@ -26,6 +26,7 @@ import type {
   OnDidInsertSuggestionCallback,
 } from './AutocompleteProvider';
 import type {DiagnosticsConfig} from './DiagnosticsProvider';
+import type {SyntacticSelectionConfig} from './SyntacticSelectionProvider';
 import type {BusySignalService} from 'atom-ide-ui';
 
 import {ConnectionCache} from '../../nuclide-remote-connection';
@@ -42,6 +43,7 @@ import {EvaluationExpressionProvider} from './EvaluationExpressionProvider';
 import {AutocompleteProvider} from './AutocompleteProvider';
 import {registerDiagnostics} from './DiagnosticsProvider';
 import {CodeActionProvider} from './CodeActionProvider';
+import {SyntacticSelectionProvider} from './SyntacticSelectionProvider';
 import {getLogger} from 'log4js';
 
 export type BusySignalProvider = {
@@ -62,6 +64,7 @@ export type AtomLanguageServiceConfig = {|
   autocomplete?: AutocompleteConfig,
   diagnostics?: DiagnosticsConfig,
   codeAction?: CodeActionConfig,
+  syntacticSelection?: SyntacticSelectionConfig,
 |};
 
 export class AtomLanguageService<T: LanguageService> {
@@ -250,6 +253,18 @@ export class AtomLanguageService<T: LanguageService> {
           this._config.name,
           this._config.grammars,
           codeActionConfig,
+          this._connectionToLanguageService,
+        ),
+      );
+    }
+
+    const syntacticSelection = this._config.syntacticSelection;
+    if (syntacticSelection != null) {
+      this._subscriptions.add(
+        SyntacticSelectionProvider.register(
+          this._config.name,
+          this._config.grammars,
+          syntacticSelection,
           this._connectionToLanguageService,
         ),
       );

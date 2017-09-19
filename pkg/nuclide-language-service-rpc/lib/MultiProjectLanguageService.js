@@ -381,6 +381,29 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     );
   }
 
+  async getExpandedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).getExpandedSelectionRange(fileVersion, currentSelection);
+  }
+
+  async getCollapsedSelectionRange(
+    fileVersion: FileVersion,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range> {
+    return (await this._getLanguageServiceForFile(
+      fileVersion.filePath,
+    )).getCollapsedSelectionRange(
+      fileVersion,
+      currentSelection,
+      originalCursorPosition,
+    );
+  }
+
   dispose(): void {
     this._resources.dispose();
   }

@@ -732,6 +732,14 @@ type MarkerOptions = {|
   exclusive?: boolean,
 |};
 
+type ChangeSelectionRangeEvent = {|
+  oldBufferRange: atom$Range,
+  oldScreenRange: atom$Range,
+  newBufferRange: atom$Range,
+  newScreenRange: atom$Range,
+  selection: atom$Selection,
+|};
+
 declare class atom$TextEditor extends atom$Model {
   id: number,
 
@@ -750,6 +758,8 @@ declare class atom$TextEditor extends atom$Model {
   // Note that the range property of the event is undocumented.
   onDidInsertText(callback: (event: {text: string, range: atom$Range}) => mixed): IDisposable,
   onDidChangeSoftWrapped(callback: (softWrapped: boolean) => mixed): IDisposable,
+  onDidChangeSelectionRange(callback: (event: ChangeSelectionRangeEvent) => mixed): IDisposable,
+  observeSelections(callback: (selection: atom$Selection) => mixed): IDisposable,
 
   // File Details
   getTitle: () => string,

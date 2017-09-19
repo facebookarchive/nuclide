@@ -607,6 +607,23 @@ export class FlowSingleProjectLanguageService {
   isFileInProject(fileUri: NuclideUri): Promise<boolean> {
     throw new Error('Not Yet Implemented');
   }
+
+  getExpandedSelectionRange(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    currentSelection: atom$Range,
+  ): Promise<?atom$Range> {
+    throw new Error('Not Yet Implemented');
+  }
+
+  getCollapsedSelectionRange(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    currentSelection: atom$Range,
+    originalCursorPosition: atom$Point,
+  ): Promise<?atom$Range> {
+    throw new Error('Not Yet Implemented');
+  }
 }
 
 // FlowSingleProjectLanguageService should satisfy the SingleFileLanguageService interface
