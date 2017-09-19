@@ -122,31 +122,11 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._tableWidth = null;
     this._columnBeingResized = null;
     this.state = {
-      columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns),
+      columnWidthRatios: getInitialPercentageWidths(this.props.columns),
     };
     this._disposables = new UniversalDisposable(() => {
       this._stopResizing();
     });
-  }
-
-  _getInitialWidthsForColumns(columns: Array<Column<T>>): WidthMap<T> {
-    const columnWidthRatios = {};
-    let assignedWidth = 0;
-    const unresolvedColumns = [];
-    columns.forEach(column => {
-      const {key, width} = column;
-      if (width != null) {
-        columnWidthRatios[key] = width;
-        assignedWidth += width;
-      } else {
-        unresolvedColumns.push(column);
-      }
-    });
-    const residualColumnWidth = (1 - assignedWidth) / unresolvedColumns.length;
-    unresolvedColumns.forEach(column => {
-      columnWidthRatios[column.key] = residualColumnWidth;
-    });
-    return columnWidthRatios;
   }
 
   /* Applies sizing constraints, and returns whether the column width actually changed. */
@@ -439,4 +419,29 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       </div>
     );
   }
+}
+
+/**
+ * Get the initial size of each column as a percentage of the total.
+ */
+function getInitialPercentageWidths<T: Object>(
+  columns: Array<Column<T>>,
+): WidthMap<T> {
+  const columnWidthRatios = {};
+  let assignedWidth = 0;
+  const unresolvedColumns = [];
+  columns.forEach(column => {
+    const {key, width} = column;
+    if (width != null) {
+      columnWidthRatios[key] = width;
+      assignedWidth += width;
+    } else {
+      unresolvedColumns.push(column);
+    }
+  });
+  const residualColumnWidth = (1 - assignedWidth) / unresolvedColumns.length;
+  unresolvedColumns.forEach(column => {
+    columnWidthRatios[column.key] = residualColumnWidth;
+  });
+  return columnWidthRatios;
 }
