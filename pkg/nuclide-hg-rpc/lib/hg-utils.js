@@ -141,7 +141,7 @@ async function getHgExecParams(
   args_: Array<string>,
   options_: HgExecOptions,
 ): Promise<{command: string, args: Array<string>, options: Object}> {
-  let args = args_;
+  let args = [...args_, '--noninteractive'];
   let sshCommand;
   // expandHomeDir is not supported on windows
   if (process.platform !== 'win32') {
@@ -149,28 +149,25 @@ async function getHgExecParams(
     const doesSSHConfigExist = await fsPromise.exists(pathToSSHConfig);
     if (doesSSHConfigExist) {
       sshCommand = pathToSSHConfig;
+    } else {
+      // Disabling ssh keyboard input so all commands that prompt for interaction
+      // fail instantly rather than just wait for an input that will never arrive
+      sshCommand = 'ssh -oBatchMode=yes -oControlMaster=no';
     }
+    args.push(
+      '--config',
+      `ui.ssh=${sshCommand}`,
+      // enable the progressfile extension
+      '--config',
+      'extensions.progressfile=',
+      // have the progressfile extension write to 'progress' in the repo's .hg directory
+      '--config',
+      `progress.statefile=${options_.cwd}/.hg/progress`,
+      // Without assuming hg is being run in a tty, the progress extension won't get used
+      '--config',
+      'progress.assume-tty=1',
+    );
   }
-
-  if (sshCommand == null) {
-    // Disabling ssh keyboard input so all commands that prompt for interaction
-    // fail instantly rather than just wait for an input that will never arrive
-    sshCommand = 'ssh -oBatchMode=yes -oControlMaster=no';
-  }
-  args.push(
-    '--noninteractive',
-    '--config',
-    `ui.ssh=${sshCommand}`,
-    // enable the progressfile extension
-    '--config',
-    'extensions.progressfile=',
-    // have the progressfile extension write to 'progress' in the repo's .hg directory
-    '--config',
-    `progress.statefile=${options_.cwd}/.hg/progress`,
-    // Without assuming hg is being run in a tty, the progress extension won't get used
-    '--config',
-    'progress.assume-tty=1',
-  );
   const [hgCommandName] = args;
   if (EXCLUDE_FROM_HG_BLACKBOX_COMMANDS.has(hgCommandName)) {
     args.push('--config', 'extensions.blackbox=!');
