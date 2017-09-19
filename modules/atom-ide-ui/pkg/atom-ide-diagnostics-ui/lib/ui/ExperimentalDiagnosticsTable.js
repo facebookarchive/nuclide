@@ -145,12 +145,14 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
         key: 'classification',
         title: 'Type',
         width: TYPE_WIDTH,
+        minWidth: 55,
         cellClassName: 'nuclide-diagnostics-ui-cell-classification',
       },
       {
         key: 'providerName',
         title: 'Source',
         width: SOURCE_WIDTH,
+        minWidth: 70,
       },
       {
         component: DescriptionComponent,
