@@ -993,17 +993,10 @@ export default class VsDebugSessionTranslator {
   }
 
   _observeTerminatedDebugeeEvents(): Observable<mixed> {
-    const debugeeTerminated = this._session.observeTerminateDebugeeEvents();
-    if (this._adapterType === VsAdapterTypes.PYTHON) {
-      // The python adapter normally it sends one terminated event on exit.
-      // However, in program crashes, it sends two terminated events:
-      // One immediatelly, followed by the output events with the stack trace
-      // & then the real terminated event.
-      // TODO(t19793170): Remove the extra `TerminatedEvent` from `pythonVSCode`
-      return debugeeTerminated.delay(1000);
-    } else {
-      return debugeeTerminated;
-    }
+    // The service framework doesn't flush the last output messages
+    // if the observables and session are eagerly terminated.
+    // Hence, delaying 1 second.
+    return this._session.observeTerminateDebugeeEvents().delay(1000);
   }
 
   dispose(): void {

@@ -258,16 +258,16 @@ export class DebuggerHandler {
     );
   }
 
-  _sendContinuationCommand(command: string): void {
+  _sendContinuationCommand(command: string): Promise<void> {
     logger.debug('Sending continuation command: ' + command);
-    this._connectionMultiplexer.sendContinuationCommand(command);
+    return this._connectionMultiplexer.sendContinuationCommand(command);
   }
 
-  pause(): void {
-    this._connectionMultiplexer.pause();
+  pause(): Promise<void> {
+    return this._connectionMultiplexer.pause();
   }
 
-  resume(): void {
+  async resume(): Promise<void> {
     if (!this._hadFirstContinuationCommand) {
       this._hadFirstContinuationCommand = true;
       this._subscriptions.add(
@@ -275,7 +275,7 @@ export class DebuggerHandler {
       );
       return;
     }
-    this._connectionMultiplexer.resume();
+    await this._connectionMultiplexer.resume();
   }
 
   _updateBreakpointHitCount() {
@@ -345,16 +345,16 @@ export class DebuggerHandler {
     this.resume();
   }
 
-  stepOver(): void {
-    this._sendContinuationCommand(COMMAND_STEP_OVER);
+  stepOver(): Promise<void> {
+    return this._sendContinuationCommand(COMMAND_STEP_OVER);
   }
 
-  stepInto(): void {
-    this._sendContinuationCommand(COMMAND_STEP_INTO);
+  stepInto(): Promise<void> {
+    return this._sendContinuationCommand(COMMAND_STEP_INTO);
   }
 
-  stepOut(): void {
-    this._sendContinuationCommand(COMMAND_STEP_OUT);
+  stepOut(): Promise<void> {
+    return this._sendContinuationCommand(COMMAND_STEP_OUT);
   }
 
   async _onStatusChanged(status: string): Promise<void> {

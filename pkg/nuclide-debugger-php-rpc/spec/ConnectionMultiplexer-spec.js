@@ -825,7 +825,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await doEnable();
 
-      connectionMultiplexer.sendContinuationCommand('step_into');
+      await connectionMultiplexer.sendContinuationCommand('step_into');
       expect(connections[0].sendContinuationCommand).toHaveBeenCalledWith(
         'step_into',
       );
