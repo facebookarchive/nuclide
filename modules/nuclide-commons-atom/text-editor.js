@@ -110,23 +110,28 @@ export function observeEditorDestroy(
 // is to create an ordinary TextEditor and then override any methods that would allow it to
 // change its contents.
 // TODO: https://github.com/atom/atom/issues/9237.
-export function enforceReadOnly(textEditor: atom$TextEditor): void {
-  const noop = () => {};
-
+export function enforceReadOnlyEditor(
+  textEditor: atom$TextEditor,
+  readOnlyExceptions?: Array<string> = ['append', 'setText'],
+): void {
   // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
   textEditor.onWillInsertText(event => {
     event.cancel();
   });
+  // `setText` & `append` are the only exceptions that's used to set the read-only text.
+  enforceReadOnlyBuffer(textEditor.getBuffer(), readOnlyExceptions);
+}
 
-  const textBuffer = textEditor.getBuffer();
-
+function enforceReadOnlyBuffer(
+  textBuffer: atom$TextBuffer,
+  readOnlyExceptions?: Array<string> = [],
+): void {
+  const noop = () => {};
   // All user edits use `transact` - so, mocking this will effectively make the editor read-only.
   const originalApplyChange = textBuffer.applyChange;
   textBuffer.applyChange = noop;
 
-  // `setText` & `append` are the only exceptions that's used to set the read-only text.
-  passReadOnlyException('append');
-  passReadOnlyException('setText');
+  readOnlyExceptions.forEach(passReadOnlyException);
 
   function passReadOnlyException(functionName: string) {
     const buffer: any = textBuffer;

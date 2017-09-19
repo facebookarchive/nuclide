@@ -16,7 +16,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
 import {
-  enforceReadOnly,
+  enforceReadOnlyEditor,
   enforceSoftWrap,
 } from 'nuclide-commons-atom/text-editor';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -62,7 +62,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
   }
 
   if (props.readOnly) {
-    enforceReadOnly(textEditor);
+    enforceReadOnlyEditor(textEditor);
 
     // Remove the cursor line decorations because that's distracting in read-only mode.
     textEditor.getDecorations({class: 'cursor-line'}).forEach(decoration => {
