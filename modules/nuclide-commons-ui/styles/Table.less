@@ -60,8 +60,21 @@
 }
 
 .nuclide-ui-table-sort-indicator {
-  position: absolute;
+  // We want the icon to take up horizontal space so that it's taken into
+  // account when centering the heading, but NOT add any height. In order to
+  // accomplish this, we give a width and height to the the container and then
+  // absolutely position the icon within it.
+  position: relative;
+  display: inline-block;
   transform: scale(0.6);
+  width: 1em;
+  height: 1em;
+
+  .icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 }
 
 .nuclide-ui-table-header-resize-handle {
