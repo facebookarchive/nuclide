@@ -8,6 +8,7 @@
  * @flow
  * @format
  */
+/* global HTMLElement */
 
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -47,6 +48,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
+import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 import {
   nextAnimationFrame,
   toggle,
@@ -141,16 +143,10 @@ export default class FileTreeSidebarComponent extends React.Component<
   }
 
   componentDidMount(): void {
-    this._processExternalUpdate();
+    const componentDOMNode = ReactDOM.findDOMNode(this);
+    invariant(componentDOMNode instanceof HTMLElement);
 
-    const remeasureEvents = Observable.merge(
-      Observable.of(null),
-      Observable.fromEvent(window, 'resize'),
-      observableFromSubscribeFunction(
-        atom.commands.onDidDispatch.bind(atom.commands),
-      ).filter(event => event.type === 'nuclide-file-tree:toggle'),
-      Observable.interval(2000), // We poll because lots of things can change the height :(
-    );
+    this._processExternalUpdate();
 
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
@@ -175,17 +171,9 @@ export default class FileTreeSidebarComponent extends React.Component<
         showUncommittedChangesKind =>
           this.setState({showUncommittedChangesKind}),
       ),
-      compact(
-        throttle(remeasureEvents, () => nextAnimationFrame).map(() =>
-          this._getScrollerHeight(),
-        ),
-      )
-        .distinctUntilChanged()
-        .subscribe(scrollerHeight => {
-          this.setState({scrollerHeight});
-        }),
+      this._subscribeToResizeEvent(componentDOMNode),
       // Customize the context menu to remove items that match the 'atom-pane' selector.
-      Observable.fromEvent(ReactDOM.findDOMNode(this), 'contextmenu')
+      Observable.fromEvent(componentDOMNode, 'contextmenu')
         .switchMap(event => {
           if (event.button !== 2) {
             return Observable.never();
@@ -245,6 +233,23 @@ export default class FileTreeSidebarComponent extends React.Component<
       node.scrollTop = this.state.scrollerScrollTop;
     }
   }
+
+  _subscribeToResizeEvent = (
+    resizableElement: HTMLElement,
+  ): rxjs$Subscription => {
+    const remeasureEvents = Observable.merge(
+      new ResizeObservable(resizableElement),
+      observableFromSubscribeFunction(
+        atom.commands.onDidDispatch.bind(atom.commands),
+      ).filter(event => event.type === 'nuclide-file-tree:toggle'),
+    );
+    return remeasureEvents
+      .let(obs => throttle(obs, () => nextAnimationFrame))
+      .map(() => this._getScrollerHeight())
+      .let(compact)
+      .distinctUntilChanged()
+      .subscribe(scrollerHeight => this.setState({scrollerHeight}));
+  };
 
   _handleFocus = (event: SyntheticEvent<>): void => {
     if (event.target === ReactDOM.findDOMNode(this)) {
