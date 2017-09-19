@@ -1325,8 +1325,7 @@ export class LspLanguageService {
     const responseArray = Array.isArray(response) ? response : [response];
 
     return {
-      // TODO: use wordAtPos to determine queryrange
-      queryRange: [new atom$Range(position, position)],
+      queryRange: null, // editor uses wordAtPos to determine current identifier
       definitions: responseArray.map(d =>
         convert.lspLocation_atomDefinition(d, this._projectRoot),
       ),

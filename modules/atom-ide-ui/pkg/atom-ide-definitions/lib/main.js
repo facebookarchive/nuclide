@@ -33,10 +33,12 @@ import type {
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import {Range} from 'atom';
 
 import analytics from 'nuclide-commons-atom/analytics';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import FeatureConfig from 'nuclide-commons-atom/feature-config';
+import {wordAtPosition} from 'nuclide-commons-atom/range';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -83,6 +85,14 @@ class Activation {
         // eslint-disable-next-line no-await-in-loop
         const result = await provider.getDefinition(editor, position);
         if (result != null) {
+          if (result.queryRange == null) {
+            const match = wordAtPosition(editor, position, {
+              includeNonWordCharacters: false,
+            });
+            result.queryRange = [
+              match != null ? match.range : new Range(position, position),
+            ];
+          }
           return result;
         }
       } catch (err) {
@@ -107,8 +117,11 @@ class Activation {
       return null;
     }
 
-    const {definitions} = result;
+    const {queryRange, definitions} = result;
     invariant(definitions.length > 0);
+    // queryRange might be null coming out of the provider, but the output
+    // of _getDefinition has ensured it's not null.
+    invariant(queryRange != null);
 
     function createCallback(definition) {
       return () => {
@@ -134,12 +147,12 @@ class Activation {
 
     if (definitions.length === 1) {
       return {
-        range: result.queryRange,
+        range: queryRange,
         callback: createCallback(definitions[0]),
       };
     } else {
       return {
-        range: result.queryRange,
+        range: queryRange,
         callback: definitions.map(definition => {
           return {
             title: createTitle(definition),
@@ -167,10 +180,15 @@ class Activation {
     if (result == null) {
       return null;
     }
+    const queryRange = result.queryRange;
+    // queryRange might be null coming out of the provider, but the output
+    // of _getDefinition has ensured it's not null.
+    invariant(queryRange != null);
 
     const grammar = editor.getGrammar();
     const previewDatatip = getPreviewDatatipFromDefinitionResult(
-      result,
+      queryRange[0],
+      result.definitions,
       this._definitionPreviewProvider,
       grammar,
     );
