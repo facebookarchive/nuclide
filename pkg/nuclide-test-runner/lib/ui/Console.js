@@ -1,32 +1,36 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {TextBuffer} from 'atom';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
-import * as React from 'react';
+var _AtomTextEditor;
 
-type Props = {
-  textBuffer: TextBuffer,
-};
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('nuclide-commons-ui/AtomTextEditor');
+}
 
-export default class Console extends React.Component<Props> {
+var _react = _interopRequireWildcard(require('react'));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class Console extends _react.Component {
   render() {
-    return (
-      <AtomTextEditor
-        gutterHidden={true}
-        path=".ansi"
-        readOnly={true}
-        textBuffer={this.props.textBuffer}
-      />
-    );
+    return _react.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+      gutterHidden: true,
+      path: '.ansi',
+      readOnly: true,
+      textBuffer: this.props.textBuffer
+    });
   }
 }
+exports.default = Console; /**
+                            * Copyright (c) 2015-present, Facebook, Inc.
+                            * All rights reserved.
+                            *
+                            * This source code is licensed under the license found in the LICENSE file in
+                            * the root directory of this source tree.
+                            *
+                            * 
+                            * @format
+                            */

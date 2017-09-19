@@ -1,28 +1,11 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {FileNotifier} from '../../nuclide-open-files-rpc/lib/rpc-types';
-import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createMultiLspLanguageService = undefined;
 
-import invariant from 'assert';
-import {getLogger} from 'log4js';
-import {LspLanguageService} from './LspLanguageService';
-import passesGK from '../../commons-node/passesGK';
-import {FileCache} from '../../nuclide-open-files-rpc/lib/main';
-import {
-  MultiProjectLanguageService,
-  forkHostServices,
-} from '../../nuclide-language-service-rpc';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
 /**
  * Creates a language service capable of connecting to an LSP server.
@@ -30,83 +13,104 @@ import {
  *
  * TODO: Document all of the fields below.
  */
-export async function createMultiLspLanguageService(
-  languageId: string,
-  command: string,
-  args: Array<string>,
-  params: {
-    spawnOptions?: Object,
-    initializationOptions?: Object,
-    fileNotifier: FileNotifier,
-    host: HostServices,
-    projectFileNames: Array<string>,
-    fileExtensions: Array<string>,
-    logCategory: string,
-    logLevel: LogLevel,
-  },
-): Promise<LanguageService> {
-  const result = new MultiProjectLanguageService();
-  const logger = getLogger(params.logCategory);
-  logger.setLevel(params.logLevel);
-  // There's a centralized way to override logging:
-  if (
-    (await passesGK('nuclide_lsp_verbose')) &&
-    !logger.isLevelEnabled('TRACE')
-  ) {
-    logger.setLevel('TRACE');
-  }
+let createMultiLspLanguageService = exports.createMultiLspLanguageService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (languageId, command, args, params) {
+    const result = new (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).MultiProjectLanguageService();
+    const logger = (0, (_log4js || _load_log4js()).getLogger)(params.logCategory);
+    logger.setLevel(params.logLevel);
+    // There's a centralized way to override logging:
+    if ((yield (0, (_passesGK || _load_passesGK()).default)('nuclide_lsp_verbose')) && !logger.isLevelEnabled('TRACE')) {
+      logger.setLevel('TRACE');
+    }
 
-  const fileCache = params.fileNotifier;
-  invariant(fileCache instanceof FileCache);
+    const fileCache = params.fileNotifier;
 
-  // This MultiProjectLanguageService stores LspLanguageServices, lazily
-  // created upon demand, one per project root. Demand is usually "when the
-  // user opens a file" or "when the user requests project-wide symbol search".
+    if (!(fileCache instanceof (_main || _load_main()).FileCache)) {
+      throw new Error('Invariant violation: "fileCache instanceof FileCache"');
+    }
 
-  // What state is the each LspLanguageService in? ...
-  // * 'Initializing' state, still spawning the LSP server and negotiating with
-  //    it, or inviting the user via a dialog box to retry initialization.
-  // * 'Ready' state, able to handle LanguageService requests properly.
-  // * 'Stopped' state, meaning that the LspConnection died and will not be
-  //   restarted, but we can still respond to those LanguageServiceRequests
-  //   that don't require an LspConnection).
+    // This MultiProjectLanguageService stores LspLanguageServices, lazily
+    // created upon demand, one per project root. Demand is usually "when the
+    // user opens a file" or "when the user requests project-wide symbol search".
 
-  const languageServiceFactory = async (projectDir: string) => {
-    await result.hasObservedDiagnostics();
-    // We're awaiting until AtomLanguageService has observed diagnostics (to
-    // prevent race condition: see below).
+    // What state is the each LspLanguageService in? ...
+    // * 'Initializing' state, still spawning the LSP server and negotiating with
+    //    it, or inviting the user via a dialog box to retry initialization.
+    // * 'Ready' state, able to handle LanguageService requests properly.
+    // * 'Stopped' state, meaning that the LspConnection died and will not be
+    //   restarted, but we can still respond to those LanguageServiceRequests
+    //   that don't require an LspConnection).
 
-    const lsp = new LspLanguageService(
-      logger,
-      fileCache,
-      await forkHostServices(params.host, logger),
-      languageId,
-      command,
-      args,
-      params.spawnOptions,
-      projectDir,
-      params.fileExtensions,
-      params.initializationOptions || {},
-    );
+    const languageServiceFactory = (() => {
+      var _ref2 = (0, _asyncToGenerator.default)(function* (projectDir) {
+        yield result.hasObservedDiagnostics();
+        // We're awaiting until AtomLanguageService has observed diagnostics (to
+        // prevent race condition: see below).
 
-    lsp.start(); // Kick off 'Initializing'...
-    return lsp;
+        const lsp = new (_LspLanguageService || _load_LspLanguageService()).LspLanguageService(logger, fileCache, (yield (0, (_nuclideLanguageServiceRpc || _load_nuclideLanguageServiceRpc()).forkHostServices)(params.host, logger)), languageId, command, args, params.spawnOptions, projectDir, params.fileExtensions, params.initializationOptions || {});
 
-    // CARE! We want to avoid a race condition where LSP starts producing
-    // diagnostics before AtomLanguageService has yet had a chance to observe
-    // them (and we don't want to have to buffer the diagnostics indefinitely).
-    // We rely on the fact that LSP won't produce them before start() has
-    // returned. As soon as we ourselves return, MultiProjectLanguageService
-    // will hook up observeDiagnostics into the LSP process, so it'll be ready.
+        lsp.start(); // Kick off 'Initializing'...
+        return lsp;
+
+        // CARE! We want to avoid a race condition where LSP starts producing
+        // diagnostics before AtomLanguageService has yet had a chance to observe
+        // them (and we don't want to have to buffer the diagnostics indefinitely).
+        // We rely on the fact that LSP won't produce them before start() has
+        // returned. As soon as we ourselves return, MultiProjectLanguageService
+        // will hook up observeDiagnostics into the LSP process, so it'll be ready.
+      });
+
+      return function languageServiceFactory(_x5) {
+        return _ref2.apply(this, arguments);
+      };
+    })();
+
+    result.initialize(logger, fileCache, params.host, params.projectFileNames, params.fileExtensions, languageServiceFactory);
+    return result;
+  });
+
+  return function createMultiLspLanguageService(_x, _x2, _x3, _x4) {
+    return _ref.apply(this, arguments);
   };
+})(); /**
+       * Copyright (c) 2015-present, Facebook, Inc.
+       * All rights reserved.
+       *
+       * This source code is licensed under the license found in the LICENSE file in
+       * the root directory of this source tree.
+       *
+       * 
+       * @format
+       */
 
-  result.initialize(
-    logger,
-    fileCache,
-    params.host,
-    params.projectFileNames,
-    params.fileExtensions,
-    languageServiceFactory,
-  );
-  return result;
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
 }
+
+var _LspLanguageService;
+
+function _load_LspLanguageService() {
+  return _LspLanguageService = require('./LspLanguageService');
+}
+
+var _passesGK;
+
+function _load_passesGK() {
+  return _passesGK = _interopRequireDefault(require('../../commons-node/passesGK'));
+}
+
+var _main;
+
+function _load_main() {
+  return _main = require('../../nuclide-open-files-rpc/lib/main');
+}
+
+var _nuclideLanguageServiceRpc;
+
+function _load_nuclideLanguageServiceRpc() {
+  return _nuclideLanguageServiceRpc = require('../../nuclide-language-service-rpc');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }

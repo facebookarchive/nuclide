@@ -1,52 +1,47 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ImportFormatter = undefined;
+exports.createImportStatement = createImportStatement;
 
-import type {JSExport} from './types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+var _nuclideUri;
 
-const EXTENTIONS_TO_REMOVE = ['.js'];
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-export type ImportType =
-  | 'namedType'
-  | 'namedValue'
-  | 'defaultType'
-  | 'defaultValue'
-  | 'requireImport'
-  | 'requireDestructured';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-export class ImportFormatter {
-  moduleDirs: Array<string>;
-  isHaste: boolean;
+const EXTENTIONS_TO_REMOVE = ['.js']; /**
+                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                       * All rights reserved.
+                                       *
+                                       * This source code is licensed under the license found in the LICENSE file in
+                                       * the root directory of this source tree.
+                                       *
+                                       * 
+                                       * @format
+                                       */
 
-  constructor(dirs: Array<string>, isHaste: boolean) {
+class ImportFormatter {
+
+  constructor(dirs, isHaste) {
     this.moduleDirs = dirs;
     this.isHaste = isHaste;
   }
 
-  formatImport(file: NuclideUri, exp: JSExport): string {
+  formatImport(file, exp) {
     const importPath = this.formatImportFile(file, exp);
-    return createImportStatement(
-      exp.id,
-      importPath,
-      getImportType(exp, this.isHaste),
-    );
+    return createImportStatement(exp.id, importPath, getImportType(exp, this.isHaste));
   }
 
-  _formatHasteImportFile(file: NuclideUri, exp: JSExport): string {
-    return nuclideUri.basename(nuclideUri.stripExtension(exp.uri));
+  _formatHasteImportFile(file, exp) {
+    return (_nuclideUri || _load_nuclideUri()).default.basename((_nuclideUri || _load_nuclideUri()).default.stripExtension(exp.uri));
   }
 
-  formatImportFile(file: NuclideUri, exp: JSExport): string {
+  formatImportFile(file, exp) {
     if (this.isHaste) {
       return this._formatHasteImportFile(file, exp);
     }
@@ -57,27 +52,21 @@ export class ImportFormatter {
       return removeFileExtensions(pathRelativeToModules);
     }
 
-    let pathRelativeToFile = nuclideUri.relative(nuclideUri.dirname(file), uri);
+    let pathRelativeToFile = (_nuclideUri || _load_nuclideUri()).default.relative((_nuclideUri || _load_nuclideUri()).default.dirname(file), uri);
 
     // Convert types.js => ./types.js
-    pathRelativeToFile = pathRelativeToFile.startsWith('.')
-      ? pathRelativeToFile
-      : './' + pathRelativeToFile;
+    pathRelativeToFile = pathRelativeToFile.startsWith('.') ? pathRelativeToFile : './' + pathRelativeToFile;
 
     return removeFileExtensions(pathRelativeToFile);
   }
 
-  stripLeadingDots(file: NuclideUri): NuclideUri {
-    return file.startsWith('..')
-      ? nuclideUri.join('', ...nuclideUri.split(file).filter(e => e !== '..'))
-      : file;
+  stripLeadingDots(file) {
+    return file.startsWith('..') ? (_nuclideUri || _load_nuclideUri()).default.join('', ...(_nuclideUri || _load_nuclideUri()).default.split(file).filter(e => e !== '..')) : file;
   }
 }
 
-function getImportType(
-  {isDefault, isTypeExport}: JSExport,
-  isHaste: boolean,
-): ImportType {
+exports.ImportFormatter = ImportFormatter;
+function getImportType({ isDefault, isTypeExport }, isHaste) {
   if (isTypeExport) {
     return isDefault ? 'defaultType' : 'namedType';
   } else if (isHaste) {
@@ -86,11 +75,7 @@ function getImportType(
   return isDefault ? 'defaultValue' : 'namedValue';
 }
 
-export function createImportStatement(
-  id: string,
-  importPath: string,
-  importType: ImportType,
-): string {
+function createImportStatement(id, importPath, importType) {
   switch (importType) {
     case 'namedValue':
       return `import {${id}} from '${importPath}';`;
@@ -105,16 +90,12 @@ export function createImportStatement(
     case 'defaultType':
       return `import type ${id} from '${importPath}';`;
     default:
-      (importType: empty);
+      importType;
       throw new Error(`Invalid import type ${importType}`);
   }
 }
 
-function handleModules(
-  fileWithExport: NuclideUri,
-  fileMissingImport: NuclideUri,
-  moduleDirs: Array<string>,
-): ?string {
+function handleModules(fileWithExport, fileMissingImport, moduleDirs) {
   const moduleDirOfExport = getFileModuleDirectory(fileWithExport, moduleDirs);
 
   // flowlint-next-line sketchy-null-string:off
@@ -124,30 +105,22 @@ function handleModules(
 
   // If the export is from a module, we need to check if we are importing the
   // file from that same module. If so, the import must be relative.
-  const moduleDirOfImport = getFileModuleDirectory(
-    fileMissingImport,
-    moduleDirs,
-  );
-  if (
-    moduleDirOfImport != null &&
-    moduleDirOfImport === moduleDirOfExport &&
-    getModule(fileMissingImport, moduleDirOfImport) ===
-      getModule(fileWithExport, moduleDirOfExport)
-  ) {
+  const moduleDirOfImport = getFileModuleDirectory(fileMissingImport, moduleDirs);
+  if (moduleDirOfImport != null && moduleDirOfImport === moduleDirOfExport && getModule(fileMissingImport, moduleDirOfImport) === getModule(fileWithExport, moduleDirOfExport)) {
     // Import should be relative to the file we are importing from, so return null.
     return null;
   }
 
   // Import should be relative to the module.
-  return nuclideUri.relative(moduleDirOfExport, fileWithExport);
+  return (_nuclideUri || _load_nuclideUri()).default.relative(moduleDirOfExport, fileWithExport);
 }
 
-function abbreviateMainFiles(exp: JSExport): string {
+function abbreviateMainFiles(exp) {
   // flowlint-next-line sketchy-null-string:off
   return exp.directoryForMainFile || exp.uri;
 }
 
-function removeFileExtensions(file: NuclideUri): string {
+function removeFileExtensions(file) {
   for (const extension of EXTENTIONS_TO_REMOVE) {
     if (file.endsWith(extension)) {
       return file.substring(0, file.length - extension.length);
@@ -156,13 +129,10 @@ function removeFileExtensions(file: NuclideUri): string {
   return file;
 }
 
-function getFileModuleDirectory(
-  file: NuclideUri,
-  moduleDirs: Array<string>,
-): ?string {
-  return moduleDirs.find(moduleDir => nuclideUri.contains(moduleDir, file));
+function getFileModuleDirectory(file, moduleDirs) {
+  return moduleDirs.find(moduleDir => (_nuclideUri || _load_nuclideUri()).default.contains(moduleDir, file));
 }
 
-function getModule(file: NuclideUri, moduleDirectory: string): ?string {
-  return nuclideUri.split(nuclideUri.relative(moduleDirectory, file))[0];
+function getModule(file, moduleDirectory) {
+  return (_nuclideUri || _load_nuclideUri()).default.split((_nuclideUri || _load_nuclideUri()).default.relative(moduleDirectory, file))[0];
 }

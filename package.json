@@ -36,7 +36,9 @@
     "release-transpile": "./modules/nuclide-node-transpiler/bin/release-transpile.js",
     "test": "npm run lint-all && npm run flow"
   },
-  "workspaces": ["modules/*"],
+  "workspaces": [
+    "modules/*"
+  ],
   "dependencies": {
     "adm-zip": "0.4.7",
     "async-to-generator": "1.1.0",
@@ -159,7 +161,6 @@
     "atom": ">=1.19.2",
     "node": ">=7.4.0"
   },
-  "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
     "file-icons",

@@ -1,93 +1,107 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {CodeActionConfig} from '../../nuclide-language-service/lib/CodeActionProvider';
-import type {ServerConnection} from '../../nuclide-remote-connection';
-import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
-import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import typeof * as JsService from '../../nuclide-js-imports-client-rpc/lib/JsImportsService';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import {
-  AtomLanguageService,
-  getHostServices,
-} from '../../nuclide-language-service';
-import {getNotifierByConnection} from '../../nuclide-open-files';
-import {getServiceByConnection} from '../../nuclide-remote-connection';
-import featureConfig from 'nuclide-commons-atom/feature-config';
+let connectToJSImportsService = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (connection) {
+    const jsService = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getServiceByConnection)(JS_IMPORTS_SERVICE_NAME, connection);
 
-const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
+    const [fileNotifier, host] = yield Promise.all([(0, (_nuclideOpenFiles || _load_nuclideOpenFiles()).getNotifierByConnection)(connection), (0, (_nuclideLanguageService || _load_nuclideLanguageService()).getHostServices)()]);
 
-export function activate() {
+    return jsService.initializeLsp(['.flowconfig'], ['.js'], 'INFO', fileNotifier, host, getAutoImportSettings());
+  });
+
+  return function connectToJSImportsService(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let createLanguageService = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    const diagnosticsConfig = {
+      version: '0.2.0',
+      analyticsEventName: 'jsimports.observe-diagnostics'
+    };
+
+    const autocompleteConfig = {
+      version: '2.0.0',
+      inclusionPriority: 1,
+      suggestionPriority: 3,
+      excludeLowerPriority: false,
+      analyticsEventName: 'jsimports.getAutocompleteSuggestions',
+      disableForSelector: null,
+      autocompleteCacherConfig: null,
+      onDidInsertSuggestionAnalyticsEventName: 'jsimports.autocomplete-chosen'
+    };
+
+    const codeActionConfig = {
+      version: '0.1.0',
+      priority: 0,
+      analyticsEventName: 'jsimports.codeAction',
+      applyAnalyticsEventName: 'jsimports.applyCodeAction'
+    };
+
+    const atomConfig = {
+      name: 'JSAutoImports',
+      grammars: ['source.js.jsx', 'source.js'],
+      diagnostics: diagnosticsConfig,
+      autocomplete: autocompleteConfig,
+      codeAction: codeActionConfig
+    };
+    return new (_nuclideLanguageService || _load_nuclideLanguageService()).AtomLanguageService(connectToJSImportsService, atomConfig);
+  });
+
+  return function createLanguageService() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+exports.activate = activate;
+
+var _nuclideLanguageService;
+
+function _load_nuclideLanguageService() {
+  return _nuclideLanguageService = require('../../nuclide-language-service');
+}
+
+var _nuclideOpenFiles;
+
+function _load_nuclideOpenFiles() {
+  return _nuclideOpenFiles = require('../../nuclide-open-files');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService'; /**
+                                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                                         * All rights reserved.
+                                                         *
+                                                         * This source code is licensed under the license found in the LICENSE file in
+                                                         * the root directory of this source tree.
+                                                         *
+                                                         * 
+                                                         * @format
+                                                         */
+
+function activate() {
   const jsImportLanguageService = createLanguageService();
   jsImportLanguageService.then(value => value.activate());
-}
-
-async function connectToJSImportsService(
-  connection: ?ServerConnection,
-): Promise<LanguageService> {
-  const jsService: JsService = getServiceByConnection(
-    JS_IMPORTS_SERVICE_NAME,
-    connection,
-  );
-
-  const [fileNotifier, host] = await Promise.all([
-    getNotifierByConnection(connection),
-    getHostServices(),
-  ]);
-
-  return jsService.initializeLsp(
-    ['.flowconfig'],
-    ['.js'],
-    'INFO',
-    fileNotifier,
-    host,
-    getAutoImportSettings(),
-  );
-}
-
-async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>,
-> {
-  const diagnosticsConfig = {
-    version: '0.2.0',
-    analyticsEventName: 'jsimports.observe-diagnostics',
-  };
-
-  const autocompleteConfig = {
-    version: '2.0.0',
-    inclusionPriority: 1,
-    suggestionPriority: 3,
-    excludeLowerPriority: false,
-    analyticsEventName: 'jsimports.getAutocompleteSuggestions',
-    disableForSelector: null,
-    autocompleteCacherConfig: null,
-    onDidInsertSuggestionAnalyticsEventName: 'jsimports.autocomplete-chosen',
-  };
-
-  const codeActionConfig: CodeActionConfig = {
-    version: '0.1.0',
-    priority: 0,
-    analyticsEventName: 'jsimports.codeAction',
-    applyAnalyticsEventName: 'jsimports.applyCodeAction',
-  };
-
-  const atomConfig: AtomLanguageServiceConfig = {
-    name: 'JSAutoImports',
-    grammars: ['source.js.jsx', 'source.js'],
-    diagnostics: diagnosticsConfig,
-    autocomplete: autocompleteConfig,
-    codeAction: codeActionConfig,
-  };
-  return new AtomLanguageService(connectToJSImportsService, atomConfig);
 }
 
 function getAutoImportSettings() {
@@ -97,8 +111,6 @@ function getAutoImportSettings() {
   // their settings and send DidChangeConfiguration requests to the server.
   // TODO: Observe settings changes + send to the server.
   return {
-    diagnosticsWhitelist: featureConfig.get(
-      'nuclide-js-imports-client.diagnosticsWhitelist',
-    ),
+    diagnosticsWhitelist: (_featureConfig || _load_featureConfig()).default.get('nuclide-js-imports-client.diagnosticsWhitelist')
   };
 }

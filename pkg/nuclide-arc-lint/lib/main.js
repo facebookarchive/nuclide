@@ -1,3 +1,27 @@
+'use strict';
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _ArcanistDiagnosticsProvider;
+
+function _load_ArcanistDiagnosticsProvider() {
+  return _ArcanistDiagnosticsProvider = _interopRequireWildcard(require('./ArcanistDiagnosticsProvider'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +29,28 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {LinterProvider} from 'atom-ide-ui';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import createPackage from 'nuclide-commons-atom/createPackage';
-import * as ArcanistDiagnosticsProvider from './ArcanistDiagnosticsProvider';
-
 class Activation {
-  _disposables: UniversalDisposable;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  provideLinter(): LinterProvider {
+  provideLinter() {
     return {
       name: 'Arc lint',
       grammarScopes: ['*'],
       scope: 'file',
-      lint: editor => ArcanistDiagnosticsProvider.lint(editor),
+      lint: editor => (_ArcanistDiagnosticsProvider || _load_ArcanistDiagnosticsProvider()).lint(editor)
     };
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);
