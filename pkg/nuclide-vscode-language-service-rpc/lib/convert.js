@@ -519,7 +519,7 @@ function lspDiagnostic_atomDiagnostic(
   filePath: NuclideUri, // has already been converted for us
 ): FileDiagnosticMessage {
   let providerName = diagnostic.source != null ? diagnostic.source : 'LSP';
-  if (diagnostic.code !== null) {
+  if (diagnostic.code != null) {
     providerName = providerName + ': ' + String(diagnostic.code);
   }
   return {
