@@ -109,7 +109,7 @@ type State<T> = {
 };
 
 export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
-  _globalEventsDisposable: ?Disposable;
+  _resizingDisposable: ?IDisposable; // Active while resizing.
   _resizeStartX: ?number;
   _tableWidth: ?number;
   _columnBeingResized: ?$Keys<T>;
@@ -117,7 +117,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
   constructor(props: Props<T>) {
     super(props);
-    this._globalEventsDisposable = null;
+    this._resizingDisposable = null;
     this._resizeStartX = null;
     this._tableWidth = null;
     this._columnBeingResized = null;
@@ -131,7 +131,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns),
     };
     this._disposables = new UniversalDisposable(() => {
-      this._unsubscribeFromGlobalEvents();
+      this._stopResizing();
     });
   }
 
@@ -194,8 +194,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   }
 
   _handleResizerMouseDown(key: $Keys<T>, event: SyntheticMouseEvent<>): void {
-    if (this._globalEventsDisposable != null) {
-      this._unsubscribeFromGlobalEvents();
+    if (this._resizingDisposable != null) {
+      this._stopResizing();
     }
     // Prevent browser from initiating drag events on accidentally selected elements.
     const selection = document.getSelection();
@@ -210,7 +210,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       this.refs.table,
     ).getBoundingClientRect().width;
     this._columnBeingResized = key;
-    this._globalEventsDisposable = new Disposable(() => {
+    this._resizingDisposable = new Disposable(() => {
       document.removeEventListener(
         'mousemove',
         this._handleResizerGlobalMouseMove,
@@ -222,16 +222,16 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     });
   }
 
-  _unsubscribeFromGlobalEvents(): void {
-    if (this._globalEventsDisposable == null) {
+  _stopResizing(): void {
+    if (this._resizingDisposable == null) {
       return;
     }
-    this._globalEventsDisposable.dispose();
-    this._globalEventsDisposable = null;
+    this._resizingDisposable.dispose();
+    this._resizingDisposable = null;
   }
 
   _handleResizerGlobalMouseUp(event: MouseEvent): void {
-    this._unsubscribeFromGlobalEvents();
+    this._stopResizing();
   }
 
   _handleResizerGlobalMouseMove(event: MouseEvent): void {
