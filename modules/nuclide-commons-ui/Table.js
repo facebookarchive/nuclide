@@ -121,9 +121,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._resizeStartX = null;
     this._tableWidth = null;
     this._columnBeingResized = null;
-    (this: any)._handleResizerGlobalMouseMove = this._handleResizerGlobalMouseMove.bind(
-      this,
-    );
     this.state = {
       columnWidthRatios: this._getInitialWidthsForColumns(this.props.columns),
     };
@@ -228,7 +225,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._resizingDisposable = null;
   }
 
-  _handleResizerGlobalMouseMove(event: MouseEvent): void {
+  _handleResizerGlobalMouseMove = (event: MouseEvent): void => {
     if (
       this._resizeStartX == null ||
       this._tableWidth == null ||
@@ -248,7 +245,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (didUpdate) {
       this._resizeStartX = pageX;
     }
-  }
+  };
 
   componentWillUnmount(): void {
     this._disposables.dispose();
@@ -311,7 +308,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
                 ? null
                 : <div
                     className="nuclide-ui-table-header-resize-handle"
-                    onMouseDown={this._handleResizerMouseDown.bind(this, key)}
+                    onMouseDown={event => {
+                      this._handleResizerMouseDown(key, event);
+                    }}
                     onClick={(e: SyntheticMouseEvent<>) => {
                       // Prevent sortable column header click event from firing.
                       e.stopPropagation();
@@ -327,10 +326,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             let sortIndicator;
             let titleOverlay = title;
             if (sortable) {
-              optionalHeaderCellProps.onClick = this._handleSortByColumn.bind(
-                this,
-                key,
-              );
+              optionalHeaderCellProps.onClick = () => {
+                this._handleSortByColumn(key);
+              };
               titleOverlay += ' – click to sort';
               if (sortedColumn === key) {
                 sortIndicator = (
@@ -393,7 +391,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       });
       const rowProps = {};
       if (selectable) {
-        rowProps.onClick = this._handleRowClick.bind(this, i);
+        rowProps.onClick = event => {
+          this._handleRowClick(i, event);
+        };
       }
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
       return (
