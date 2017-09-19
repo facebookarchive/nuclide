@@ -30,6 +30,7 @@ export type ThreadColumn = {
   component?: any,
   shouldRightAlign?: boolean,
   cellClassName?: string,
+  minWidth?: number,
 };
 
 // Indicates which of various optional features that this debugger supports.
