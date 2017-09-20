@@ -14,12 +14,14 @@ import {Point} from 'atom';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation, observeNavigatingEditors} from '../go-to-location';
+import {jasmineAttachWorkspace} from '../test-helpers';
 
 const FILE1_PATH = nuclideUri.join(__dirname, 'fixtures/file1.txt');
 const FILE2_PATH = nuclideUri.join(__dirname, 'fixtures/file2.txt');
 
 describe('goToLocation', () => {
   beforeEach(() => {
+    jasmineAttachWorkspace();
     atom.workspace.getTextEditors().forEach(editor => {
       editor.destroy();
     });
@@ -85,6 +87,18 @@ describe('goToLocation', () => {
       const editor2 = await goToLocation(FILE1_PATH, 1, 3);
       expect(editor2).toBe(editor1);
       expect(editor1.getCursorBufferPosition()).toEqual(new Point(1, 3));
+    });
+  });
+
+  it('focuses the editor', () => {
+    waitsForPromise(async () => {
+      const editor1 = await atom.workspace.open(FILE1_PATH);
+      const dock = atom.workspace.getLeftDock();
+      dock.activate();
+      expect(dock.getElement().contains(document.activeElement)).toBe(true);
+      const editor2 = await goToLocation(FILE1_PATH, 0, 0);
+      expect(editor2).toBe(editor1);
+      expect(editor1.getElement().contains(document.activeElement)).toBe(true);
     });
   });
 

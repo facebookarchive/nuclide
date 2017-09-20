@@ -47,6 +47,9 @@ export async function goToLocation(
   // Prefer going to the current editor rather than the leftmost editor.
   const currentEditor = atom.workspace.getActiveTextEditor();
   if (currentEditor != null && currentEditor.getPath() === file) {
+    const paneContainer = atom.workspace.paneContainerForItem(currentEditor);
+    invariant(paneContainer != null);
+    paneContainer.activate();
     if (line != null) {
       goToLocationInEditor(
         currentEditor,
