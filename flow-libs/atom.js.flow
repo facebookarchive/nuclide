@@ -475,6 +475,8 @@ declare class atom$PaneAxis {
 }
 
 // Undocumented class
+// Note that this is not the same object returned by `atom.workspace.getPaneContainers()`. (Those
+// are typed here as AbstractPaneContainers and, in the current implementation, wrap these.)
 declare class atom$PaneContainer {
   constructor({
     config: atom$Config,
@@ -1183,8 +1185,8 @@ declare class atom$Workspace {
   toggle(uriOrItem: string | Object): void,
 
   // Pane Containers
-  getPaneContainers(): Array<atom$PaneContainer>,
-  paneContainerForItem(item: ?mixed): ?atom$PaneContainer,
+  getPaneContainers(): Array<atom$AbstractPaneContainer>,
+  paneContainerForItem(item: ?mixed): ?atom$AbstractPaneContainer,
 
   // Pane Items
   getPaneItems(): Array<Object>,
@@ -1248,12 +1250,16 @@ declare class atom$Workspace {
 }
 
 declare class atom$AbstractPaneContainer {
+  activate(): void,
+  getLocation(): atom$PaneLocation,
+  getElement(): HTMLElement,
   isVisible(): boolean,
   show(): void,
   hide(): void,
   getActivePane(): atom$Pane,
   getPanes(): Array<atom$Pane>,
   onDidAddPaneItem((item: {item: Object}) => void): IDisposable,
+  observePanes(cb: (pane: atom$Pane) => void): IDisposable,
   state: {
     size: number,
   }
