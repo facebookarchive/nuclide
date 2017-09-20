@@ -317,13 +317,14 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (onSelect == null) {
       return;
     }
-    const selectedItem = rows[selectedIndex];
+    const selectedRow = rows[selectedIndex];
+    const selectedItem = selectedRow.data;
     if (onWillSelect != null) {
       if (onWillSelect(selectedItem, selectedIndex, event) === false) {
         return;
       }
     }
-    onSelect(selectedItem.data, selectedIndex);
+    onSelect(selectedItem, selectedIndex);
   }
 
   _renderEmptyCellContent(): React.Element<any> {
