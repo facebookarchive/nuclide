@@ -612,9 +612,7 @@ declare class atom$TextEditorRegistry {
   add(editor: atom$TextEditor): IDisposable,
   remove(editor: atom$TextEditor): boolean,
   observe(callback: (editor: atom$TextEditor) => void): IDisposable,
-
-  // Added in 1.11.0 (These are typed optional until older Atoms are dropped)
-  build?: (params: atom$TextEditorParams) => atom$TextEditor,
+  build: (params: atom$TextEditorParams) => atom$TextEditor,
 
   // Private
   editors: Set<atom$TextEditor>,

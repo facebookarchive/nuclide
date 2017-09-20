@@ -25,6 +25,7 @@ import {CompositeDisposable} from 'atom';
 import {
   RemoteConnection,
   RemoteDirectory,
+  RemoteFile,
   ServerConnection,
   getGrepServiceByNuclideUri,
 } from '../../nuclide-remote-connection';
@@ -232,49 +233,16 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
     // Atom does this for local files.
     // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L547
     const largeFileMode = buffer.getText().length > 2 * 1024 * 1024; // 2MB
-
-    // In Atom 1.11.0, `buildTextEditor` will call `textEditorRegistry.maintainGrammar`
-    // and `textEditorRegistry.maintainConfig` with the new editor. Since
-    // `createEditorForNuclide` is called via `openURIInPane` -> `addOpener`,
-    // that process will also call `maintainGrammar` and `maintainConfig`. This
-    // results in `undefined` disposables created in `Workspace.subscribeToAddedItems`.
-    // So when a pane is closed, the call to a non-existent `dispose` throws.
-    if (typeof atom.textEditors.build === 'function') {
-      // https://github.com/atom/atom/blob/v1.11.0-beta5/src/workspace.coffee#L564
-      const editor = atom.textEditors.build({
-        buffer,
-        largeFileMode,
-        autoHeight: false,
-      });
-      return editor;
-    } else {
-      const editor = atom.workspace.buildTextEditor({buffer, largeFileMode});
-      if (!atom.textEditors.editors.has(editor)) {
-        // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L559-L562
-        const disposable = atom.textEditors.add(editor);
-        editor.onDidDestroy(() => {
-          disposable.dispose();
-        });
-      }
-      return editor;
-    }
+    return atom.textEditors.build({
+      buffer,
+      largeFileMode,
+      autoHeight: false,
+    });
   } catch (err) {
     logger.warn('buffer load issue:', err);
     atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
     throw err;
   }
-}
-
-/**
- * Check if the remote buffer has already been initialized in editor.
- * This checks if the buffer is instance of NuclideTextBuffer.
- */
-function isRemoteBufferInitialized(editor: TextEditor): boolean {
-  const buffer = editor.getBuffer();
-  if (buffer && buffer.constructor.name === 'NuclideTextBuffer') {
-    return true;
-  }
-  return false;
 }
 
 async function reloadRemoteProjects(
@@ -385,34 +353,13 @@ export function activate(
       const config = connection.getConfig();
       const openInstances = getOpenFileEditorForRemoteProject(config);
       for (const openInstance of openInstances) {
-        // Keep the original open editor item with a unique name until the remote buffer is loaded,
-        // Then, we are ready to replace it with the remote tab in the same pane.
-        const {pane, editor, uri, filePath} = openInstance;
-
-        // Skip restoring the editer who has remote content loaded.
-        if (isRemoteBufferInitialized(editor)) {
-          continue;
-        }
-
-        // Atom ensures that each pane only has one item per unique URI.
-        // Null out the existing pane item's URI so we can insert the new one
-        // without closing the pane.
-        editor.getURI = () => null;
-        // Cleanup the old pane item on successful opening or when no connection could be
-        // established.
-        const cleanupBuffer = () => {
-          pane.removeItem(editor);
-          editor.destroy();
-        };
-        if (filePath === config.cwd) {
-          cleanupBuffer();
-        } else {
-          // If we clean up the buffer before the `openUriInPane` finishes,
-          // the pane will be closed, because it could have no other items.
-          // So we must clean up after.
-          atom.workspace
-            .openURIInPane(uri, pane)
-            .then(cleanupBuffer, cleanupBuffer);
+        const {editor, uri} = openInstance;
+        // Set the buffer to use a remote file, unless we've done that already.
+        // (Ideally this would be done during deserialization, but that's hard).
+        const buffer = editor.getBuffer();
+        if (!(buffer.file instanceof RemoteFile)) {
+          buffer.setFile(new RemoteFile(connection.getConnection(), uri));
+          buffer.reload();
         }
       }
     }),
