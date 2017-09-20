@@ -279,6 +279,7 @@ async function checkIfMain(
       return null;
     }
     const cachedMain = mainFilesCache.get(currDir);
+    // eslint-disable-next-line eqeqeq
     if (cachedMain === null) {
       // The directory doesn't have a package.json with a main.
       continue;

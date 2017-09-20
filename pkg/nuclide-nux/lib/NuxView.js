@@ -115,6 +115,7 @@ export class NuxView {
       );
       this._disposables.add(
         new Disposable(() => {
+          // eslint-disable-next-line eqeqeq
           if (attachmentTimeout !== null) {
             clearTimeout(attachmentTimeout);
           }
@@ -151,6 +152,7 @@ export class NuxView {
       // so try and avoid it if possible.
       let isHidden;
       if (element.style.position !== 'fixed') {
+        // eslint-disable-next-line eqeqeq
         isHidden = element.offsetParent === null;
       } else {
         isHidden = getComputedStyle(element).display === 'none';
@@ -170,6 +172,7 @@ export class NuxView {
     );
     this._disposables.add(
       new Disposable(() => {
+        // eslint-disable-next-line eqeqeq
         if (pollElementTimeout !== null) {
           clearTimeout(pollElementTimeout);
         }

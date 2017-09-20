@@ -534,6 +534,7 @@ function objectToLiteral(obj: any): any {
     return t.numericLiteral(obj);
   } else if (typeof obj === 'boolean') {
     return t.booleanLiteral(obj);
+    // eslint-disable-next-line eqeqeq
   } else if (obj === null) {
     return t.nullLiteral();
   } else if (obj === undefined) {

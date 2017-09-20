@@ -204,6 +204,7 @@ export class IntersectionObservable extends DOMObserverObservable<
 > {
   constructor(target: HTMLElement) {
     invariant(
+      // eslint-disable-next-line eqeqeq
       global.IntersectionObserver !== null,
       'environment must contain IntersectionObserver',
     );
@@ -222,6 +223,7 @@ export class MutationObservable extends DOMObserverObservable<
 > {
   constructor(target: Node, options?: MutationObserverInit) {
     invariant(
+      // eslint-disable-next-line eqeqeq
       global.MutationObserver !== null,
       'environment must contain MutationObserver',
     );
@@ -239,6 +241,7 @@ export class PerformanceObservable extends DOMObserverObservable<
 > {
   constructor(options: PerformanceObserverInit) {
     invariant(
+      // eslint-disable-next-line eqeqeq
       global.PerformanceObserver !== null,
       'environment must contain PerformanceObserver',
     );
@@ -256,6 +259,7 @@ export class ResizeObservable extends DOMObserverObservable<
 > {
   constructor(target: HTMLElement) {
     invariant(
+      // eslint-disable-next-line eqeqeq
       global.ResizeObserver !== null,
       'environment must contain ResizeObserver',
     );

@@ -60,6 +60,7 @@ export class RootPanel extends React.Component<Props> {
   }
 
   _createDeviceTable(): ?React.Element<any> {
+    // eslint-disable-next-line eqeqeq
     if (this.props.deviceType === null) {
       return null;
     }

@@ -36,6 +36,7 @@ export type RuntimeInformation = {
 let cachedInformation = null;
 
 function getCacheableRuntimeInformation(): RuntimeInformation {
+  // eslint-disable-next-line eqeqeq
   if (cachedInformation !== null) {
     return cachedInformation;
   }

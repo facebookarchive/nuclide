@@ -53,7 +53,7 @@ export default class DiagnosticsView extends React.Component<Props> {
     const {showTraces} = this.props;
     if (this.props.filterByActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
-      if (pathToFilterBy !== null) {
+      if (pathToFilterBy != null) {
         diagnostics = diagnostics.filter(
           diagnostic =>
             diagnostic.scope === 'file' &&

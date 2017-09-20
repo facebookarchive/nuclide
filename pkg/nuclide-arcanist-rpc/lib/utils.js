@@ -23,6 +23,7 @@ export function getPhabricatorRevisionFromCommitMessage(
   commitMessage: string,
 ): ?PhabricatorRevisionInfo {
   const match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
+  // eslint-disable-next-line eqeqeq
   if (match === null) {
     return null;
   }
@@ -34,6 +35,7 @@ export function getPhabricatorRevisionFromUrl(
   diffUrl: string,
 ): ?PhabricatorRevisionInfo {
   const match = DIFFERENTIAL_ID_REGEX.exec(diffUrl);
+  // eslint-disable-next-line eqeqeq
   if (match === null) {
     return null;
   }
@@ -47,6 +49,7 @@ export function getPhabricatorRevisionFromUrl(
 
 export function getCommitAuthorFromAuthorEmail(author: string): ?string {
   const match = COMMIT_AUTHOR_REGEX.exec(author);
+  // eslint-disable-next-line eqeqeq
   if (match === null) {
     return null;
   } else {

@@ -130,6 +130,7 @@ export const RecentFilesProvider: Provider<FileResult> = {
     const filename = nuclideUri.basename(item.path);
     const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);
+    // eslint-disable-next-line eqeqeq
     const datetime = date === null ? '' : date.toLocaleString();
     return (
       <div
@@ -149,7 +150,7 @@ export const RecentFilesProvider: Provider<FileResult> = {
         </div>
         <div className="recent-files-provider-datetime-container">
           <span className="recent-files-provider-datetime-label">
-            {date === null ? 'At some point' : relativeDate(date)}
+            {date == null ? 'At some point' : relativeDate(date)}
           </span>
         </div>
       </div>

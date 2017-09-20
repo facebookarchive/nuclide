@@ -318,6 +318,7 @@ describe('HgService', () => {
       spyOn(hgService, '_hgObserveExecution').andCallFake((_args, options) => {
         const args = _args;
         expect(expectedArgs).not.toBeNull();
+        // eslint-disable-next-line eqeqeq
         invariant(expectedArgs !== null);
         expect(args.length).toBe(
           expectedArgs.length,

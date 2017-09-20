@@ -344,6 +344,7 @@ class FileSystemActions {
       initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
     const hgRepository = FileTreeHgHelpers.getHgRepositoryForNode(node);
     const additionalOptions = {};
+    // eslint-disable-next-line eqeqeq
     if (hgRepository !== null) {
       additionalOptions.addToVCS = 'Add the new file to version control.';
     }
@@ -401,6 +402,7 @@ class FileSystemActions {
     }
 
     const additionalOptions = {};
+    // eslint-disable-next-line eqeqeq
     if (FileTreeHgHelpers.getHgRepositoryForNode(node) !== null) {
       additionalOptions.addToVCS = 'Add the new file(s) to version control.';
     }

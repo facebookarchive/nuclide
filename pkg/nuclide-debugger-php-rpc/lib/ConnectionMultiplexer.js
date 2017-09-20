@@ -459,6 +459,7 @@ export class ConnectionMultiplexer {
           this._status === ConnectionMultiplexerStatus.UserAsyncBreakSent) &&
         // Don't switch threads unnecessarily in single thread stepping mode.
         (!getSettings().singleThreadStepping ||
+          // eslint-disable-next-line eqeqeq
           this._lastEnabledConnection === null ||
           connection === this._lastEnabledConnection) &&
         // Respect the visibility of the dummy connection.

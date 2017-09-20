@@ -171,14 +171,14 @@ export class TypeRegistry {
       'nullable',
       (value: any, type: Type, context: ObjectRegistry) => {
         invariant(type.kind === 'nullable');
-        if (value === null || value === undefined) {
+        if (value == null) {
           return value;
         }
         return this._marshal(context, value, type.type);
       },
       (value: any, type: Type, context: ObjectRegistry) => {
         invariant(type.kind === 'nullable');
-        if (value === null || value === undefined) {
+        if (value == null) {
           return value;
         }
         return this._unmarshal(context, value, type.type);

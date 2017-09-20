@@ -301,6 +301,7 @@ export default class BreakpointManager {
 
   handleBreakpointResolved(params: BreakpointResolvedEvent): void {
     const {breakpointId, location} = params;
+    // eslint-disable-next-line eqeqeq
     if (this._getBreakpointFromId(breakpointId) !== null && location != null) {
       this._sendBreakpointResolved(breakpointId, location);
     } else {
@@ -311,6 +312,7 @@ export default class BreakpointManager {
 
   handleBreakpointHitCountChanged(params: BreakpointHitCountEvent): void {
     const {breakpointId, hitCount} = params;
+    // eslint-disable-next-line eqeqeq
     if (this._getBreakpointFromId(breakpointId) !== null) {
       this._sendBreakpointHitCountChanged(breakpointId, hitCount);
     } else {

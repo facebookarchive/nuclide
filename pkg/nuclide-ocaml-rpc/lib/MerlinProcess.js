@@ -452,6 +452,7 @@ export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
   const flags = getMerlinFlags();
 
   const version = await getMerlinVersion(merlinPath);
+  // eslint-disable-next-line eqeqeq
   if (version === null) {
     return null;
   }

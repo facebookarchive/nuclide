@@ -88,6 +88,7 @@ export default class HhvmBuildSystem {
       .map(() => this._projectStore)
       .filter(
         store =>
+          // eslint-disable-next-line eqeqeq
           store.getProjectRoot() === path && store.isHHVMProject() !== null,
       )
       .map(store => store.isHHVMProject() === true)

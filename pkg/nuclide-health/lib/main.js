@@ -174,7 +174,7 @@ class Activation {
       );
       Object.keys(aggregates).forEach(aggregatesKey => {
         const value = aggregates[aggregatesKey];
-        if (value !== null && value !== undefined) {
+        if (value != null) {
           aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
         }
       });

@@ -273,6 +273,7 @@ export default class ConnectionDetailsPrompt extends React.Component<
       this.props.selectedProfileIndex == null
         ? null
         : this.props.selectedProfileIndex - 1;
+    // eslint-disable-next-line eqeqeq
     if (idOfSelectedItem === null || idOfSelectedItem < 0) {
       idOfSelectedItem = null;
     } else {

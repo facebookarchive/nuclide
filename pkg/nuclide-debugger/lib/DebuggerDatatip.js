@@ -34,6 +34,7 @@ function getEvaluationExpression(
       break;
     }
   }
+  // eslint-disable-next-line eqeqeq
   return matchingProvider === null
     ? Promise.resolve(getDefaultEvaluationExpression(editor, position))
     : matchingProvider.getEvaluationExpression(editor, position);
@@ -69,6 +70,7 @@ export async function debuggerDatatip(
   const evaluationResult: ?EvaluationResult = await evaluation
     .take(1)
     .toPromise();
+  // eslint-disable-next-line eqeqeq
   if (evaluationResult === null) {
     return null;
   }

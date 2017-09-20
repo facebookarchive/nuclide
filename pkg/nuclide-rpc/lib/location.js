@@ -46,7 +46,7 @@ export function stripLocationsFileName(obj: any): any {
   function inspect(key: ?string, value: any): void {
     if (
       key === 'location' &&
-      value !== null &&
+      value != null &&
       typeof value.fileName === 'string'
     ) {
       value.fileName = nuclideUri.basename(value.fileName);

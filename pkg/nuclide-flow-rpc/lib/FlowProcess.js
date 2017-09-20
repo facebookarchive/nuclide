@@ -394,6 +394,7 @@ export class FlowProcess {
       // is null. So, let's blacklist conservatively for now and we can
       // add cases later if we observe Flow crashes that do not fit this
       // pattern.
+      // eslint-disable-next-line eqeqeq
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
         this._setServerStatus(ServerStatus.FAILED);

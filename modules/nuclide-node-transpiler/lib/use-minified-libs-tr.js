@@ -65,7 +65,7 @@ module.exports = context => {
       },
       'ExportAllDeclaration|ExportNamedDeclaration'(path) {
         const node = path.node;
-        if (node.exportKind !== 'type' && node.source !== null) {
+        if (node.exportKind !== 'type' && node.source != null) {
           const source = path.get('source');
           replaceModuleId(this, source);
         }

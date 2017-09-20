@@ -253,6 +253,7 @@ export function toggleToolbarVisibilityEpic(
       const currentlyVisible = state.visible;
       const {visible, taskRunner} = action.payload;
 
+      // eslint-disable-next-line eqeqeq
       if (visible === true || (visible === null && !currentlyVisible)) {
         if (projectRoot == null) {
           atom.notifications.addError(

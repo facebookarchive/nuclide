@@ -189,7 +189,7 @@ module.exports = function(context) {
         }
       });
       checkLiterals(commands, context);
-    } else if (resolveValue(args[1], context) !== null) {
+    } else if (resolveValue(args[1], context) != null) {
       context.report({
         node: args[1],
         message: COMMAND_LITERAL_ERROR,

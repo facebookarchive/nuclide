@@ -48,6 +48,7 @@ export default class ArcBuildSystem {
       .startWith(this._model)
       .filter(
         model =>
+          // eslint-disable-next-line eqeqeq
           model.isArcSupported() !== null &&
           model.getActiveProjectPath() === path,
       );
