@@ -309,7 +309,11 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
         }
       } else {
         if (node.conf.usePreviewTabs) {
-          getActions().confirmNode(node.rootUri, node.uri);
+          getActions().confirmNode(
+            node.rootUri,
+            node.uri,
+            true, // pending
+          );
         }
       }
       // Set selected node to clear any other selected nodes (i.e. in the case of
@@ -329,11 +333,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       return;
     }
 
-    if (this.props.node.conf.usePreviewTabs) {
-      getActions().keepPreviewTab();
-    } else {
-      getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
-    }
+    getActions().confirmNode(this.props.node.rootUri, this.props.node.uri);
   };
 
   _onDragEnter = (event: DragEvent) => {

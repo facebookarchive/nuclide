@@ -70,6 +70,7 @@ export type StoreConfigData = {
   excludeVcsIgnoredPaths: boolean,
   ignoredPatterns: Immutable.Set<Minimatch>,
   usePreviewTabs: boolean,
+  focusEditorOnFileSelection: boolean,
   isEditingWorkingSet: boolean,
   openFilesWorkingSet: WorkingSet,
   reposByRoot: {[rootUri: NuclideUri]: atom$Repository},
@@ -91,6 +92,7 @@ export const DEFAULT_CONF = {
   excludeVcsIgnoredPaths: true,
   ignoredPatterns: new Immutable.Set(),
   usePreviewTabs: false,
+  focusEditorOnFileSelection: true,
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},
@@ -400,6 +402,9 @@ export class FileTreeStore {
         break;
       case ActionTypes.SET_USE_PREVIEW_TABS:
         this._setUsePreviewTabs(payload.usePreviewTabs);
+        break;
+      case ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION:
+        this._setFocusEditorOnFileSelection(payload.focusEditorOnFileSelection);
         break;
       case ActionTypes.SET_USE_PREFIX_NAV:
         this._setUsePrefixNav(payload.usePrefixNav);
@@ -851,6 +856,12 @@ export class FileTreeStore {
   _setUsePreviewTabs(usePreviewTabs: boolean): void {
     this._updateConf(conf => {
       conf.usePreviewTabs = usePreviewTabs;
+    });
+  }
+
+  _setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
+    this._updateConf(conf => {
+      conf.focusEditorOnFileSelection = focusEditorOnFileSelection;
     });
   }
 

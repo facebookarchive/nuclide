@@ -408,6 +408,10 @@ export default class FileTreeController {
     this._store._setAutoExpandSingleChild(autoExpandSingleChild);
   }
 
+  setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
+    this._actions.setFocusEditorOnFileSelection(focusEditorOnFileSelection);
+  }
+
   updateWorkingSet(workingSet: WorkingSet): void {
     this._actions.updateWorkingSet(workingSet);
   }

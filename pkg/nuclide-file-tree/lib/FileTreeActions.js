@@ -234,6 +234,13 @@ export default class FileTreeActions {
     });
   }
 
+  setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionTypes.SET_FOCUS_EDITOR_ON_FILE_SELECTION,
+      focusEditorOnFileSelection,
+    });
+  }
+
   setUsePrefixNav(usePrefixNav: boolean): void {
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_USE_PREFIX_NAV,
@@ -276,9 +283,10 @@ export default class FileTreeActions {
       // goToLocation doesn't support pending panes
       // eslint-disable-next-line rulesdir/atom-apis
       atom.workspace.open(FileTreeHelpers.keyToPath(nodeKey), {
-        activatePane: true,
+        activatePane:
+          (pending && node.conf.focusEditorOnFileSelection) || !pending,
         searchAllPanes: true,
-        pending: true,
+        pending,
       });
     }
   }

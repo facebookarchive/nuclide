@@ -24,6 +24,7 @@ const CONF = {
   ignoredPatterns: new Immutable.Set(),
   repositories: new Immutable.Set(),
   usePreviewTabs: true,
+  focusEditorOnFileSelection: false,
   isEditingWorkingSet: false,
   openFilesWorkingSet: new WorkingSet(),
   reposByRoot: {},

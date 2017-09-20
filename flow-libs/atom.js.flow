@@ -1156,7 +1156,7 @@ declare class atom$Workspace {
   open(
     uri?: string,
     options?: {
-      activePane?: boolean,
+      activatePane?: boolean,
       initialLine?: number,
       initialColumn?: number,
       pending?: boolean,

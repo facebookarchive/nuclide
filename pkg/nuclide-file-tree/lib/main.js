@@ -109,6 +109,8 @@ class Activation {
       'nuclide-file-tree.allowKeyboardPrefixNavigation';
     const allowPendingPaneItems = 'core.allowPendingPaneItems';
     const autoExpandSingleChild = 'nuclide-file-tree.autoExpandSingleChild';
+    const focusEditorOnFileSelection =
+      'nuclide-file-tree.focusEditorOnFileSelection';
 
     this._disposables.add(
       this._fixContextMenuHighlight(),
@@ -145,6 +147,10 @@ class Activation {
       featureConfig.observe(
         autoExpandSingleChild,
         this._setAutoExpandSingleChild.bind(this),
+      ),
+      featureConfig.observe(
+        focusEditorOnFileSelection,
+        this._setFocusEditorOnFileSelection.bind(this),
       ),
       atom.commands.add(
         'atom-workspace',
@@ -330,6 +336,12 @@ class Activation {
   _setAutoExpandSingleChild(autoExpandSingleChild: mixed): void {
     this._fileTreeController.setAutoExpandSingleChild(
       autoExpandSingleChild === true,
+    );
+  }
+
+  _setFocusEditorOnFileSelection(focusEditorOnFileSelection: boolean) {
+    this._fileTreeController.setFocusEditorOnFileSelection(
+      focusEditorOnFileSelection,
     );
   }
 
