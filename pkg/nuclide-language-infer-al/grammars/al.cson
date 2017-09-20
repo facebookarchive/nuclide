@@ -11,7 +11,7 @@
     'include': '#keyword_arguments'
   }
   {
-    'match': '\\b(message|suggestion|report_when|severity|doc_url|mode|name)\\b'
+    'match': '\\b(message|suggestion|report_when|severity|doc_url|mode|name|whitelist_path|blacklist_path)\\b'
     'name': 'constant'
   }
   {
