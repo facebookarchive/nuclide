@@ -18,8 +18,8 @@ import {runCommand} from 'nuclide-commons/process';
 import fsPromise from 'nuclide-commons/fsPromise';
 import {config} from './config';
 
-// the first group will be greedy, so best not to use ':' in generated file tags
-const GREP_PARSE_PATTERN = /^(.*):(.*)$/;
+// assumes that filenames do not contain ':'
+const GREP_PARSE_PATTERN = /^([^:]*):(.*)$/;
 
 export type GeneratedFileType = 'manual' | 'partial' | 'generated';
 
@@ -103,16 +103,31 @@ function findTaggedFiles(
   dirPath: NuclideUri,
   filenames: Array<string>,
 ): Promise<Map<string, GeneratedFileType>> {
-  const command = 'grep';
-  const pattern = config.generatedTag + '\\|' + config.partialGeneratedTag;
-  const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
-  const args = ['-HId', 'skip', pattern, ...filesToGrep];
-  const options = {
-    cwd: dirPath,
-    isExitError: ({exitCode, signal}) => {
-      return signal != null && (exitCode == null || exitCode > 1);
-    },
-  };
+  let command: string;
+  let args: Array<string>;
+  let options;
+  if (process.platform === 'win32') {
+    command = 'findstr';
+    const pattern = config.generatedTag + ' ' + config.partialGeneratedTag;
+    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
+    // ignore "files with nonprintable characters"
+    args = ['-p', pattern, ...filesToGrep];
+    options = {
+      cwd: dirPath,
+    };
+  } else {
+    command = 'grep';
+    const pattern = config.generatedTag + '\\|' + config.partialGeneratedTag;
+    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
+    // print with filename, ignore binary files and skip directories
+    args = ['-HId', 'skip', pattern, ...filesToGrep];
+    options = {
+      cwd: dirPath,
+      isExitError: ({exitCode, signal}) => {
+        return signal != null && (exitCode == null || exitCode > 1);
+      },
+    };
+  }
   return runCommand(command, args, options)
     .map(stdout => {
       const fileTags: Map<string, GeneratedFileType> = new Map();
@@ -120,11 +135,11 @@ function findTaggedFiles(
         const match = line.match(GREP_PARSE_PATTERN);
         if (match != null && match.length === 3) {
           const filename = match[1];
-          const tag = match[2];
-          if (tag === config.generatedTag) {
+          const matchedLine = match[2].trim();
+          if (matchedLine.includes(config.generatedTag)) {
             fileTags.set(filename, 'generated');
           } else if (
-            tag === config.partialGeneratedTag &&
+            matchedLine.includes(config.partialGeneratedTag) &&
             fileTags.get(filename) !== 'generated'
           ) {
             fileTags.set(filename, 'partial');
