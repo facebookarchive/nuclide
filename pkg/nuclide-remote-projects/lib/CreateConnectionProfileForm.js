@@ -21,6 +21,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import {TabbableContainer} from '../../nuclide-ui/TabbableContainer';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
@@ -88,41 +89,45 @@ export default class CreateConnectionProfileForm extends React.Component<
     const initialFields = this.props.initialFormFields;
 
     return (
-      <div>
-        <div className="form-group">
-          <label>
-            {PROFILE_NAME_LABEL}:
-          </label>
-          <AtomInput initialValue="" ref="profile-name" unstyled={true} />
+      <TabbableContainer contained={true}>
+        <div>
+          <div className="form-group">
+            <label>
+              {PROFILE_NAME_LABEL}:
+            </label>
+            <AtomInput initialValue="" ref="profile-name" unstyled={true} />
+          </div>
+          <ConnectionDetailsForm
+            initialUsername={initialFields.username}
+            initialServer={initialFields.server}
+            initialCwd={initialFields.cwd}
+            initialRemoteServerCommand={
+              // flowlint-next-line sketchy-null-string:off
+              initialFields.remoteServerCommand ||
+              DEFAULT_SERVER_COMMAND_PLACEHOLDER
+            }
+            initialSshPort={initialFields.sshPort}
+            initialPathToPrivateKey={initialFields.pathToPrivateKey}
+            initialAuthMethod={initialFields.authMethod}
+            initialDisplayTitle={initialFields.displayTitle}
+            profileHosts={this.props.profileHosts}
+            onCancel={emptyFunction}
+            onConfirm={this._clickSave}
+            onDidChange={emptyFunction}
+            ref="connection-details"
+          />
+          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+            <ButtonGroup>
+              <Button onClick={this._clickCancel}>Cancel</Button>
+              <Button
+                buttonType={ButtonTypes.PRIMARY}
+                onClick={this._clickSave}>
+                Save
+              </Button>
+            </ButtonGroup>
+          </div>
         </div>
-        <ConnectionDetailsForm
-          initialUsername={initialFields.username}
-          initialServer={initialFields.server}
-          initialCwd={initialFields.cwd}
-          initialRemoteServerCommand={
-            // flowlint-next-line sketchy-null-string:off
-            initialFields.remoteServerCommand ||
-            DEFAULT_SERVER_COMMAND_PLACEHOLDER
-          }
-          initialSshPort={initialFields.sshPort}
-          initialPathToPrivateKey={initialFields.pathToPrivateKey}
-          initialAuthMethod={initialFields.authMethod}
-          initialDisplayTitle={initialFields.displayTitle}
-          profileHosts={this.props.profileHosts}
-          onCancel={emptyFunction}
-          onConfirm={this._clickSave}
-          onDidChange={emptyFunction}
-          ref="connection-details"
-        />
-        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-          <ButtonGroup>
-            <Button onClick={this._clickCancel}>Cancel</Button>
-            <Button buttonType={ButtonTypes.PRIMARY} onClick={this._clickSave}>
-              Save
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+      </TabbableContainer>
     );
   }
 

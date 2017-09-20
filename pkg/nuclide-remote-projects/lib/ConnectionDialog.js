@@ -20,6 +20,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
+import {TabbableContainer} from '../../nuclide-ui/TabbableContainer';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -270,26 +271,28 @@ export default class ConnectionDialog extends React.Component<Props, State> {
     }
 
     return (
-      <div>
-        <div className="block">
-          {content}
+      <TabbableContainer contained={true}>
+        <div>
+          <div className="block">
+            {content}
+          </div>
+          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+            {saveButtonGroup}
+            <ButtonGroup>
+              <Button onClick={this.cancel} ref="cancelButton">
+                Cancel
+              </Button>
+              <Button
+                buttonType={ButtonTypes.PRIMARY}
+                disabled={isOkDisabled}
+                onClick={this.ok}
+                ref="okButton">
+                {okButtonText}
+              </Button>
+            </ButtonGroup>
+          </div>
         </div>
-        <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-          {saveButtonGroup}
-          <ButtonGroup>
-            <Button onClick={this.cancel} ref="cancelButton">
-              Cancel
-            </Button>
-            <Button
-              buttonType={ButtonTypes.PRIMARY}
-              disabled={isOkDisabled}
-              onClick={this.ok}
-              ref="okButton">
-              {okButtonText}
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
+      </TabbableContainer>
     );
   }
 
