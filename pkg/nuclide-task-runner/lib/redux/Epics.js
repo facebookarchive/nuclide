@@ -21,7 +21,6 @@ import type {
 import type {Directory} from '../../../nuclide-remote-connection';
 import type {ActionsObservable} from 'nuclide-commons/redux-observable';
 
-import {saveBuffer} from '../../../nuclide-remote-connection';
 import {observableFromTask} from '../../../commons-node/tasks';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getLogger} from 'log4js';
@@ -371,7 +370,7 @@ export function verifySavedBeforeRunningTaskEpic(
             return Promise.all(
               unsavedEditors
                 .filter(editor => stillUnsaved.indexOf(editor) !== -1)
-                .map(editor => saveBuffer(editor.getBuffer())),
+                .map(editor => editor.save()),
             );
           });
           return Observable.concat(

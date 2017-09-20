@@ -14,10 +14,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import invariant from 'assert';
 import {TextBuffer} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 
 import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
-import NuclideTextBuffer from './NuclideTextBuffer';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
 
@@ -105,23 +103,4 @@ function createBufferForUri(uri: NuclideUri): atom$TextBuffer {
  */
 export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
   return atom.project.findBufferForPath(uri);
-}
-
-/**
- * Provides an asynchronous interface for saving a buffer, regardless of whether it's an Atom
- * TextBuffer or NuclideTextBuffer.
- */
-export async function saveBuffer(
-  buffer: atom$TextBuffer | NuclideTextBuffer,
-): Promise<void> {
-  const expectedPath = buffer.getPath();
-  const promise = observableFromSubscribeFunction(buffer.onDidSave.bind(buffer))
-    .filter(({path}) => path === expectedPath)
-    .take(1)
-    .ignoreElements()
-    .toPromise();
-  // `buffer.save` returns a promise in the case of a NuclideTextBuffer. We'll await it to make sure
-  // we catch any async errors too.
-  await Promise.resolve(buffer.save());
-  return promise;
 }

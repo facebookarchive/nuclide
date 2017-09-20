@@ -19,7 +19,6 @@ import {RemoteDirectory} from './RemoteDirectory';
 import {RemoteFile} from './RemoteFile';
 import {ServerConnection} from './ServerConnection';
 import {ConnectionCache} from './ConnectionCache';
-import NuclideTextBuffer from './NuclideTextBuffer';
 
 import {
   SshHandshake,
@@ -42,7 +41,6 @@ export {
   ServerConnection,
   ConnectionCache,
   SshHandshake,
-  NuclideTextBuffer,
   decorateSshConnectionDelegateWithTracking,
   getService,
   getServiceByConnection,
@@ -54,7 +52,6 @@ export {
   bufferForUri,
   existingBufferForUri,
   loadBufferForUri,
-  saveBuffer,
 } from './remote-text-buffer';
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
