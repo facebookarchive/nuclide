@@ -37,6 +37,7 @@ import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
 import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
 import {setNotificationService} from './AtomNotifications';
+import windowsBufferSerializeHack from './windowsBufferSerializeHack';
 
 export type RemoteProjectsService = {
   /**
@@ -473,7 +474,7 @@ export function activate(
     }),
   );
 
-  subscriptions.add(patchAtomWorkspaceReplace());
+  subscriptions.add(patchAtomWorkspaceReplace(), windowsBufferSerializeHack());
 
   // If RemoteDirectoryProvider is called before this, and it failed
   // to provide a RemoteDirectory for a
