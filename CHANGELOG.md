@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.256.0
+
+**Hotfix from 0.255.0**
+
+* [Windows] Fix Atom failing to reopen with remote files
+* Fix inline JavaScript import suggestions
+
 ## v0.255.0
 
 ### General
