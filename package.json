@@ -116,7 +116,7 @@
     "vscode-languageserver": "3.3.0",
     "ws": "2.0.3",
     "xml2js": "0.4.17",
-    "xterm": "2.8.1",
+    "xterm": "2.9.2",
     "yargs": "3.32.0"
   },
   "devDependencies": {
