@@ -28,7 +28,7 @@ import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import MessageRangeTracker from './MessageRangeTracker';
 import DiagnosticUpdater from './services/DiagnosticUpdater';
 import IndieLinterRegistry from './services/IndieLinterRegistry';
-import {createAdapters} from './services/LinterAdapterFactory';
+import {createAdapter} from './services/LinterAdapterFactory';
 import * as Actions from './redux/Actions';
 import createStore from './redux/createStore';
 
@@ -97,13 +97,15 @@ class Activation {
   }
 
   consumeLinterProvider(
-    provider: LinterProvider | Array<LinterProvider>,
+    providers_: LinterProvider | Array<LinterProvider>,
   ): IDisposable {
-    const newAdapters = createAdapters(provider, title =>
-      this._reportBusy(title),
-    );
+    const providers = Array.isArray(providers_) ? providers_ : [providers_];
     const adapterDisposables = new UniversalDisposable();
-    for (const adapter of newAdapters) {
+    for (const provider of providers) {
+      const adapter = createAdapter(provider, title => this._reportBusy(title));
+      if (adapter == null) {
+        continue;
+      }
       this._allLinterAdapters.add(adapter);
       const diagnosticDisposable = this.consumeDiagnosticsProviderV2({
         updates: adapter.getUpdates(),

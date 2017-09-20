@@ -15,7 +15,7 @@ import {LinterAdapter} from './LinterAdapter';
 
 type BusyReporter = (title: string) => IDisposable;
 
-function createSingleAdapter(
+export function createAdapter(
   provider: LinterProvider,
   busyReporter: BusyReporter,
 ): ?LinterAdapter {
@@ -31,32 +31,6 @@ function createSingleAdapter(
     atom.notifications.addError(message, {dismissable: true});
     return null;
   }
-}
-
-function addSingleAdapter(
-  adapters: Set<LinterAdapter>,
-  provider: LinterProvider,
-  busyReporter: BusyReporter,
-): void {
-  const adapter: ?LinterAdapter = createSingleAdapter(provider, busyReporter);
-  if (adapter) {
-    adapters.add(adapter);
-  }
-}
-
-export function createAdapters(
-  providers: LinterProvider | Array<LinterProvider>,
-  busyReporter: BusyReporter,
-): Set<LinterAdapter> {
-  const adapters = new Set();
-  if (Array.isArray(providers)) {
-    for (const provider of providers) {
-      addSingleAdapter(adapters, provider, busyReporter);
-    }
-  } else {
-    addSingleAdapter(adapters, providers, busyReporter);
-  }
-  return adapters;
 }
 
 export function validateLinter(provider: LinterProvider): Array<string> {
