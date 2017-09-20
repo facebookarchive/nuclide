@@ -15,8 +15,8 @@ import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connectio
 import invariant from 'assert';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
-const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
-const NUCLIDE_PROTOCOL_PREFIX_WIN = 'nuclide:\\';
+export const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
+export const NUCLIDE_PROTOCOL_PREFIX_WIN = 'nuclide_\\';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 export type OpenFileEditorInstance = {
