@@ -229,12 +229,18 @@ export default class Console extends React.Component<Props, State> {
         {this._renderPromptButton()}
         <InputArea
           scopeName={currentExecutor.scopeName}
-          onSubmit={this.props.execute}
+          onSubmit={this._executePrompt}
           history={this.props.history}
         />
       </div>
     );
   }
+
+  _executePrompt = (code: string): void => {
+    this.props.execute(code);
+    // Makes the console to scroll to the bottom.
+    this._isScrolledNearBottom = true;
+  };
 
   _handleScroll = (
     offsetHeight: number,
@@ -290,8 +296,9 @@ export default class Console extends React.Component<Props, State> {
       ).subscribe(() => {
         this._isScrollingToBottom = false;
       });
-      this._scrollToBottom();
     }
+
+    this._scrollToBottom();
   };
 
   _stopScrollToBottom = (): void => {
