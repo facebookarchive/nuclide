@@ -95,7 +95,7 @@ declare module 'ssh2' {
     /**
      * Emitted once the channel is completely closed on both the client and the server.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this;
+    on(event: 'close', listener: () => mixed): this;
 
     /**
      * An `exit` event *may* (the SSH2 spec says it is optional) be emitted when the process
@@ -109,7 +109,7 @@ declare module 'ssh2' {
         signalName?: string,
         didCoreDump?: boolean,
         description?: string
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     on(event: string, listener: Function): this;
@@ -138,7 +138,7 @@ declare module 'ssh2' {
       /**
        * Emitted once the channel is completely closed on both the client and the server.
        */
-      on(event: 'close', listener: () => void | Promise<void>): this;
+      on(event: 'close', listener: () => mixed): this;
 
       on(event: string, listener: Function): this;
   }
@@ -149,12 +149,12 @@ declare module 'ssh2' {
       /**
        * Emitted when a notice was sent by the server upon connection.
        */
-      on(event: 'banner', listener: (message: string) => void | Promise<void>): this;
+      on(event: 'banner', listener: (message: string) => mixed): this;
 
       /**
        * Emitted when authentication was successful.
        */
-      on(event: 'ready', listener: () => void | Promise<void>): this;
+      on(event: 'ready', listener: () => mixed): this;
 
       /**
        * Emitted when an incoming forwarded TCP connection is being requested.
@@ -167,8 +167,8 @@ declare module 'ssh2' {
         listener: (
           details: TcpConnectionDetails,
           accept: () => ClientChannel,
-          reject: () => void | Promise<void>
-        ) => void | Promise<void>
+          reject: () => mixed
+        ) => mixed
       ): this;
 
       /**
@@ -182,8 +182,8 @@ declare module 'ssh2' {
         listener: (
           details: X11Details,
           accept: () => ClientChannel,
-          reject: () => void | Promise<void>
-        ) => void | Promise<void>
+          reject: () => mixed
+        ) => mixed
       ): this;
 
       /**
@@ -205,8 +205,8 @@ declare module 'ssh2' {
           instructions: string,
           lang: string,
           prompts: Prompt[],
-          finish: (responses: string[]) => void | Promise<void>
-        ) => void | Promise<void>
+          finish: (responses: string[]) => mixed
+        ) => mixed
       ): this;
 
       /**
@@ -220,53 +220,53 @@ declare module 'ssh2' {
         listener: (
           message: string,
           lang: string,
-          done: (password: string) => void | Promise<void>
-        ) => void | Promise<void>
+          done: (password: string) => mixed
+        ) => mixed
       ): this;
 
       /**
        * Emitted when more requests/data can be sent to the server (after a `Client` method
        * returned `false`).
        */
-      on(event: 'continue', listener: () => void | Promise<void>): this;
+      on(event: 'continue', listener: () => mixed): this;
 
       /**
        * Emitted when an error occurred.
        */
       on(
         event: 'error',
-        listener: (err: Error & ClientErrorExtensions) => void | Promise<void>
+        listener: (err: Error & ClientErrorExtensions) => mixed
       ): this;
 
       /**
        * Emitted when the socket was disconnected.
        */
-      on(event: 'end', listener: () => void | Promise<void>): this;
+      on(event: 'end', listener: () => mixed): this;
 
       /**
        * Emitted when the socket was closed.
        */
       on(
         event: 'close',
-        listener: (hadError: boolean) => void | Promise<void>
+        listener: (hadError: boolean) => mixed
       ): this;
 
       /**
        * Emitted when the socket has timed out.
        */
-      on(event: 'timeout', listener: () => void | Promise<void>): this;
+      on(event: 'timeout', listener: () => mixed): this;
 
       /**
        * Emitted when the socket has connected.
        */
-      on(event: 'connect', listener: () => void | Promise<void>): this;
+      on(event: 'connect', listener: () => mixed): this;
 
       /**
        * Emitted when the server responds with a greeting message.
        */
       on(
         event: 'greeting',
-        listener: (greeting: string) => void | Promise<void>
+        listener: (greeting: string) => mixed
       ): this;
 
       on(event: string, listener: Function): this;
@@ -295,7 +295,7 @@ declare module 'ssh2' {
       exec(
         command: string,
         options?: ExecOptions,
-        callback: (err: Error, channel: ClientChannel) => void | Promise<void>
+        callback: (err: Error, channel: ClientChannel) => mixed
       ): boolean;
 
       /**
@@ -310,7 +310,7 @@ declare module 'ssh2' {
       shell(
         window?: PseudoTtyOptions | false,
         options?: ShellOptions,
-        callback: (err: Error, channel: ClientChannel) => void | Promise<void>
+        callback: (err: Error, channel: ClientChannel) => mixed
       ): boolean;
 
       /**
@@ -335,7 +335,7 @@ declare module 'ssh2' {
       forwardIn(
         remoteAddr: string,
         remotePort: number,
-        callback?: (err: Error, bindPort: number) => void | Promise<void>
+        callback?: (err: Error, bindPort: number) => mixed
       ): boolean;
 
       /**
@@ -351,7 +351,7 @@ declare module 'ssh2' {
       unforwardIn(
         remoteAddr: string,
         remotePort: number,
-        callback?: (err: Error) => void | Promise<void>
+        callback?: (err: Error) => mixed
       ): boolean;
 
       /**
@@ -371,7 +371,7 @@ declare module 'ssh2' {
         srcPort: number,
         dstIP: string,
         dstPort: number,
-        callback: (err: Error, channel: ClientChannel) => void | Promise<void>
+        callback: (err: Error, channel: ClientChannel) => mixed
       ): boolean;
 
       /**
@@ -381,7 +381,7 @@ declare module 'ssh2' {
        *
        * @param callback The callback that is invoked when the SFTP session has started.
        */
-      sftp(callback: (err: Error, sftp: SFTPWrapper) => void | Promise<void>): boolean;
+      sftp(callback: (err: Error, sftp: SFTPWrapper) => mixed): boolean;
 
       /**
        * Invokes `subsystem` on the server.
@@ -393,7 +393,7 @@ declare module 'ssh2' {
        */
       subsys(
         subsystem: string,
-        callback: (err: Error, channel: ClientChannel) => void | Promise<void>
+        callback: (err: Error, channel: ClientChannel) => mixed
       ): boolean;
 
       /**
@@ -412,7 +412,7 @@ declare module 'ssh2' {
        *
        * Returns `false` if you should wait for the `continue` event before sending any more traffic.
        */
-      openssh_noMoreSessions(callback?: (err: Error) => void | Promise<void>): boolean;
+      openssh_noMoreSessions(callback?: (err: Error) => mixed): boolean;
 
       /**
        * OpenSSH extension that binds to a UNIX domain socket at `socketPath` on the server and
@@ -422,7 +422,7 @@ declare module 'ssh2' {
        */
       openssh_forwardInStreamLocal(
         socketPath: string,
-        callback?: (err: Error) => void | Promise<void>
+        callback?: (err: Error) => mixed
       ): boolean;
 
       /**
@@ -433,7 +433,7 @@ declare module 'ssh2' {
        */
       openssh_unforwardInStreamLocal(
         socketPath: string,
-        callback?: (err: Error) => void | Promise<void>
+        callback?: (err: Error) => mixed
       ): boolean;
 
       /**
@@ -444,7 +444,7 @@ declare module 'ssh2' {
        */
       openssh_forwardOutStreamLocal(
         socketPath: string,
-        callback?: (err: Error, channel: ClientChannel) => void | Promise<void>
+        callback?: (err: Error, channel: ClientChannel) => mixed
       ): boolean;
   }
 
@@ -566,23 +566,23 @@ declare module 'ssh2' {
      */
     on(
       event: 'connection',
-      listener: (client: Connection, info: ClientInfo) => void | Promise<void>
+      listener: (client: Connection, info: ClientInfo) => mixed
     ): this;
 
     /**
      * Emitted when an error occurs.
      */
-    on(event: 'error', listener: (err: Error) => void | Promise<void>): this;
+    on(event: 'error', listener: (err: Error) => mixed): this;
 
     /**
      * Emitted when the server has been bound after calling `server.listen()`.
      */
-    on(event: 'listening', listener: () => void | Promise<void>): this;
+    on(event: 'listening', listener: () => mixed): this;
 
     /**
      * Emitted when the server closes. Note that if connections exist, this event is not emitted until all connections are ended.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this;
+    on(event: 'close', listener: () => mixed): this;
 
     on(event: string, listener: Function): this;
 
@@ -596,7 +596,7 @@ declare module 'ssh2' {
      */
     constructor(
       config: ServerConfig,
-      connectionListener?: (client: Connection, info: ClientInfo) => void | Promise<void>
+      connectionListener?: (client: Connection, info: ClientInfo) => mixed
     ): void;
 
     /**
@@ -607,7 +607,7 @@ declare module 'ssh2' {
      */
     static createServer(
       config: ServerConfig,
-      connectionListener?: (client: Connection, info: ClientInfo) => void | Promise<void>
+      connectionListener?: (client: Connection, info: ClientInfo) => mixed
     ): Server;
 
     /**
@@ -622,7 +622,7 @@ declare module 'ssh2' {
     listen(
       path: string,
       backlog?: number,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -633,7 +633,7 @@ declare module 'ssh2' {
      * @param path A UNIX domain socket path.
      * @param callback An optional callback to add to the `listening` event of the server.
      */
-    listen(path: string, callback?: () => void | Promise<void>): this;
+    listen(path: string, callback?: () => mixed): this;
 
     /**
      * This will cause the server to accept connections on the specified handle, but it is
@@ -649,7 +649,7 @@ declare module 'ssh2' {
     listen(
       handle: net$Server | net$Socket | { fd: number },
       backlog?: number,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -664,7 +664,7 @@ declare module 'ssh2' {
      */
     listen(
       handle: net$Server | net$Socket | { fd: number },
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -677,7 +677,7 @@ declare module 'ssh2' {
      */
     listen(
       options: net$ListenOptions,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -698,7 +698,7 @@ declare module 'ssh2' {
       port: number,
       hostname?: string,
       backlog?: number,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -717,7 +717,7 @@ declare module 'ssh2' {
     listen(
       port: number,
       hostname?: string,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -734,7 +734,7 @@ declare module 'ssh2' {
     listen(
       port: number,
       backlog?: number,
-      callback?: () => void | Promise<void>
+      callback?: () => mixed
     ): this;
 
     /**
@@ -747,7 +747,7 @@ declare module 'ssh2' {
      *          using `server.address().port`.
      * @param callback An optional callback to add to the `listening` event of the server.
      */
-    listen(port: number, callback?: () => void | Promise<void>): this;
+    listen(port: number, callback?: () => mixed): this;
 
     /**
      * Begin accepting connections on a random port.
@@ -756,7 +756,7 @@ declare module 'ssh2' {
      *
      * @param callback An optional callback to add to the `listening` event of the server.
      */
-    listen(callback?: () => void | Promise<void>): this;
+    listen(callback?: () => mixed): this;
 
     /**
      * Returns the bound address, the address family name, and port of the server as reported
@@ -768,7 +768,7 @@ declare module 'ssh2' {
      * Asynchronously get the number of concurrent connections on the server.
      */
     getConnections(
-      callback: (err: Error, count: number) => void | Promise<void>
+      callback: (err: Error, count: number) => mixed
     ): void;
 
     /**
@@ -780,7 +780,7 @@ declare module 'ssh2' {
      *      Unlike that event, it will be called with an `Error` as its only argument if the
      *      server was not open when it was closed.
      */
-    close(callback?: (err: Error) => void | Promise<void>): this;
+    close(callback?: (err: Error) => mixed): this;
 
     /**
      * Opposite of `unref`, calling `ref` on a previously unrefd server will not let the
@@ -836,12 +836,12 @@ declare module 'ssh2' {
      * Emitted when the client has requested authentication.
      */
     on(event: 'authentication',
-      listener: (authCtx: AuthContext) => void | Promise<void>): this;
+      listener: (authCtx: AuthContext) => mixed): this;
 
     /**
      * Emitted when the client has been successfully authenticated.
      */
-    on(event: 'ready', listener: () => void | Promise<void>): this;
+    on(event: 'ready', listener: () => mixed): this;
 
     /**
      * Emitted when the client has requested a new session.
@@ -849,7 +849,7 @@ declare module 'ssh2' {
      */
     on(event: 'session',
       listener: (accept: () => Session,
-      reject: () => boolean) => void | Promise<void>): this;
+      reject: () => boolean) => mixed): this;
 
     /**
      * Emitted when the client has requested an outbound (TCP) connection.
@@ -857,7 +857,7 @@ declare module 'ssh2' {
     on(event: 'tcpip',
       listener: (accept: () => ServerChannel,
       reject: () => boolean,
-      info: TcpipRequestInfo) => void | Promise<void>): this;
+      info: TcpipRequestInfo) => mixed): this;
 
     /**
      * Emitted when the client has requested a connection to a UNIX domain socket.
@@ -868,7 +868,7 @@ declare module 'ssh2' {
         accept: () => ServerChannel,
         reject: () => boolean,
         info: SocketRequestInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -878,11 +878,11 @@ declare module 'ssh2' {
     on(
       event: 'request',
       listener: (
-        accept: (chosenPort?: number) => void | Promise<void>,
-        reject: () => void | Promise<void>,
+        accept: (chosenPort?: number) => mixed,
+        reject: () => mixed,
         name: 'tcpip-forward' | 'cancel-tcpip-forward',
         info: TcpipBindInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -891,11 +891,11 @@ declare module 'ssh2' {
     on(
       event: 'request',
       listener: (
-        accept: () => void | Promise<void>,
-        reject: () => void | Promise<void>,
+        accept: () => mixed,
+        reject: () => mixed,
         name: 'streamlocal-forward@openssh.com' | 'cancel-streamlocal-forward@openssh.com',
         info: SocketBindInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -905,37 +905,37 @@ declare module 'ssh2' {
     on(
       event: 'request',
       listener: (
-        accept: (chosenPort?: number) => void | Promise<void>,
-        reject: () => void | Promise<void>,
+        accept: (chosenPort?: number) => mixed,
+        reject: () => mixed,
         name: string,
         info: TcpipBindInfo | SocketBindInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
      * Emitted when the client has finished rekeying (either client or server initiated).
      */
-    on(event: 'rekey', listener: () => void | Promise<void>): this;
+    on(event: 'rekey', listener: () => mixed): this;
 
     /**
      * Emitted when more requests/data can be sent to the client (after a Connection method returned false).
      */
-    on(event: 'continue', listener: () => void | Promise<void>): this;
+    on(event: 'continue', listener: () => mixed): this;
 
     /**
      * Emitted when an error occurrs.
      */
-    on(event: 'error', listener: (err: Error) => void | Promise<void>): this;
+    on(event: 'error', listener: (err: Error) => mixed): this;
 
     /**
      * Emitted when the socket has disconnected.
      */
-    on(event: 'end', listener: () => void | Promise<void>): this;
+    on(event: 'end', listener: () => mixed): this;
 
     /**
      * Emitted when the client socket was closed.
      */
-    on(event: 'close', listener: (hadError: boolean) => void | Promise<void>): this;
+    on(event: 'close', listener: (hadError: boolean) => mixed): this;
 
     on(event: string, listener: Function): this;
 
@@ -959,7 +959,7 @@ declare module 'ssh2' {
     x11(
       originAddr: string,
       originPort: number,
-      callback: (err: Error, channel: ServerChannel) => void | Promise<void>
+      callback: (err: Error, channel: ServerChannel) => mixed
     ): boolean;
 
     /**
@@ -973,7 +973,7 @@ declare module 'ssh2' {
       boundPort: number,
       remoteAddr: string,
       remotePort: number,
-      callback: (err: Error, channel: ServerChannel) => void | Promise<void>
+      callback: (err: Error, channel: ServerChannel) => mixed
     ): boolean;
 
     /**
@@ -983,7 +983,7 @@ declare module 'ssh2' {
      *
      * @param callback An optional callback added as a one-time handler for the `rekey` event.
      */
-    rekey(callback?: (err: Error) => void | Promise<void>): boolean;
+    rekey(callback?: (err: Error) => mixed): boolean;
 
     /**
      * Alert the client of an incoming UNIX domain socket connection on socketPath.
@@ -992,7 +992,7 @@ declare module 'ssh2' {
      */
     openssh_forwardOutStreamLocal(
       socketPath: string,
-      callback: (err: Error, channel: ServerChannel) => void | Promise<void>
+      callback: (err: Error, channel: ServerChannel) => mixed
     ): boolean;
   }
 
@@ -1028,7 +1028,7 @@ declare module 'ssh2' {
     /**
      * Emitted when the client aborts the authentication request.
      */
-    on(event: 'abort', listener: (err: Error) => void | Promise<void>): this;
+    on(event: 'abort', listener: (err: Error) => mixed): this;
 
     on(event: string, listener: Function): this;
   }
@@ -1047,7 +1047,7 @@ declare module 'ssh2' {
      */
     prompt(
       prompts: string | Prompt | (string | Prompt)[],
-      callback: () => void | Promise<void>
+      callback: () => mixed
     ): void;
 
     /**
@@ -1059,7 +1059,7 @@ declare module 'ssh2' {
     prompt(
       prompts: string | Prompt | (string | Prompt)[],
       title: string,
-      callback: () => void | Promise<void>
+      callback: () => mixed
     ): void;
 
     /**
@@ -1073,7 +1073,7 @@ declare module 'ssh2' {
       prompts: string | Prompt | (string | Prompt)[],
       title: string,
       instructions: string,
-      callback: () => void | Promise<void>
+      callback: () => mixed
     ): void;
   }
 
@@ -1173,7 +1173,7 @@ declare module 'ssh2' {
         accept: () => boolean,
         reject: () => boolean,
         info: PseudoTtyInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1181,7 +1181,7 @@ declare module 'ssh2' {
      */
     on(
       event: 'window-change',
-      listener: (accept: () => boolean, reject: () => boolean, info: WindowChangeInfo) => void | Promise<void>
+      listener: (accept: () => boolean, reject: () => boolean, info: WindowChangeInfo) => mixed
     ): this;
 
     /**
@@ -1193,7 +1193,7 @@ declare module 'ssh2' {
         accept: () => boolean,
         reject: () => boolean,
         info: X11Info
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1205,7 +1205,7 @@ declare module 'ssh2' {
         accept: () => boolean,
         reject: () => boolean,
         info: SetEnvInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1217,7 +1217,7 @@ declare module 'ssh2' {
         accept: () => boolean,
         reject: () => boolean,
         info: SignalInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1228,7 +1228,7 @@ declare module 'ssh2' {
       listener: (
         accept: () => boolean,
         reject: () => boolean
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1239,7 +1239,7 @@ declare module 'ssh2' {
       listener: (
         accept: () => ServerChannel,
         reject: () => boolean
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1251,7 +1251,7 @@ declare module 'ssh2' {
         accept: () => ServerChannel,
         reject: () => boolean,
         info: ExecInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1262,7 +1262,7 @@ declare module 'ssh2' {
       listener: (
         accept: () => SFTPStream,
         reject: () => boolean
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -1274,13 +1274,13 @@ declare module 'ssh2' {
         accept: () => ServerChannel,
         reject: () => boolean,
         info: SubsystemInfo
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
      * Emitted when the session has closed.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this;
+    on(event: 'close', listener: () => mixed): this;
 
     on(event: string, listener: Function): this;
   }
@@ -1466,7 +1466,7 @@ declare module 'ssh2' {
       remotePath: string,
       localPath: string,
       options: TransferOptions,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void;
 
     /**
@@ -1476,7 +1476,7 @@ declare module 'ssh2' {
     fastGet(
       remotePath: string,
       localPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void;
 
     /**
@@ -1487,7 +1487,7 @@ declare module 'ssh2' {
       localPath: string,
       remotePath: string,
       options: TransferOptions,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void;
 
     /**
@@ -1497,7 +1497,7 @@ declare module 'ssh2' {
     fastPut(
       localPath: string,
       remotePath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void;
 
     /**
@@ -1525,7 +1525,7 @@ declare module 'ssh2' {
       filename: string,
       mode: string,
       attributes: InputAttributes,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean;
 
     /**
@@ -1537,7 +1537,7 @@ declare module 'ssh2' {
     open(
       filename: string,
       mode: string,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean;
 
     /**
@@ -1546,7 +1546,7 @@ declare module 'ssh2' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    close(handle: Buffer, callback: (err: any) => void | Promise<void>): boolean;
+    close(handle: Buffer, callback: (err: any) => mixed): boolean;
 
     /**
      * (Client-only)
@@ -1566,7 +1566,7 @@ declare module 'ssh2' {
         bytesRead: number,
         buffer: Buffer,
         position: number
-      ) => void | Promise<void>
+      ) => mixed
     ): boolean;
 
     /**
@@ -1579,7 +1579,7 @@ declare module 'ssh2' {
       offset: number,
       length: number,
       position: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1590,7 +1590,7 @@ declare module 'ssh2' {
      */
     fstat(
       handle: Buffer,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean;
 
     /**
@@ -1602,7 +1602,7 @@ declare module 'ssh2' {
     fsetstat(
       handle: Buffer,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1615,7 +1615,7 @@ declare module 'ssh2' {
       handle: Buffer,
       atime: number | Date,
       mtime: number | Date,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1628,7 +1628,7 @@ declare module 'ssh2' {
       handle: Buffer,
       uid: number,
       gid: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1640,7 +1640,7 @@ declare module 'ssh2' {
     fchmod(
       handle: Buffer,
       mode: number | string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1651,7 +1651,7 @@ declare module 'ssh2' {
      */
     opendir(
       path: string,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean;
 
     /**
@@ -1662,7 +1662,7 @@ declare module 'ssh2' {
      */
     readdir(
       location: string | Buffer,
-      callback: (err: any, list: FileEntry[]) => void | Promise<void>
+      callback: (err: any, list: FileEntry[]) => mixed
     ): boolean;
 
     /**
@@ -1671,7 +1671,7 @@ declare module 'ssh2' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    unlink(path: string, callback: (err: any) => void | Promise<void>): boolean;
+    unlink(path: string, callback: (err: any) => mixed): boolean;
 
     /**
      * (Client-only)
@@ -1682,7 +1682,7 @@ declare module 'ssh2' {
     rename(
       srcPath: string,
       destPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1694,7 +1694,7 @@ declare module 'ssh2' {
     mkdir(
       path: string,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1703,7 +1703,7 @@ declare module 'ssh2' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    mkdir(path: string, callback: (err: any) => void | Promise<void>): boolean;
+    mkdir(path: string, callback: (err: any) => mixed): boolean;
 
     /**
      * (Client-only)
@@ -1711,7 +1711,7 @@ declare module 'ssh2' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    rmdir(path: string, callback: (err: any) => void | Promise<void>): boolean;
+    rmdir(path: string, callback: (err: any) => mixed): boolean;
 
     /**
      * (Client-only)
@@ -1721,7 +1721,7 @@ declare module 'ssh2' {
      */
     stat(
       path: string,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean;
 
     /**
@@ -1733,7 +1733,7 @@ declare module 'ssh2' {
      */
     lstat(
       path: string,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean;
 
     /**
@@ -1745,7 +1745,7 @@ declare module 'ssh2' {
     setstat(
       path: string,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1758,7 +1758,7 @@ declare module 'ssh2' {
       path: string,
       atime: number | Date,
       mtime: number | Date,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1771,7 +1771,7 @@ declare module 'ssh2' {
       path: string,
       uid: number,
       gid: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1783,7 +1783,7 @@ declare module 'ssh2' {
     chmod(
       path: string,
       mode: number | string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1794,7 +1794,7 @@ declare module 'ssh2' {
      */
     readlink(
       path: string,
-      callback: (err: any, target: string) => void | Promise<void>
+      callback: (err: any, target: string) => mixed
     ): boolean;
 
     /**
@@ -1806,7 +1806,7 @@ declare module 'ssh2' {
     symlink(
       targetPath: string,
       linkPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1817,7 +1817,7 @@ declare module 'ssh2' {
      */
     realpath(
       path: string,
-      callback: (err: any, absPath: string) => void | Promise<void>
+      callback: (err: any, absPath: string) => mixed
     ): boolean;
 
     /**
@@ -1829,7 +1829,7 @@ declare module 'ssh2' {
     ext_openssh_rename(
       srcPath: string,
       destPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1840,7 +1840,7 @@ declare module 'ssh2' {
      */
     ext_openssh_statvfs(
       path: string,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean;
 
     /**
@@ -1851,7 +1851,7 @@ declare module 'ssh2' {
      */
     ext_openssh_fstatvfs(
       handle: Buffer,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean;
 
     /**
@@ -1863,7 +1863,7 @@ declare module 'ssh2' {
     ext_openssh_hardlink(
       targetPath: string,
       linkPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean;
 
     /**
@@ -1874,7 +1874,7 @@ declare module 'ssh2' {
      */
     ext_openssh_fsync(
       handle: Buffer,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean;
 
     /**
@@ -1885,22 +1885,22 @@ declare module 'ssh2' {
     /**
      * Emitted when an error occurred.
      */
-    on(event: 'error', listener: (err: any) => void | Promise<void>): this;
+    on(event: 'error', listener: (err: any) => mixed): this;
 
     /**
      * Emitted when the session has ended.
      */
-    on(event: 'end', listener: () => void | Promise<void>): this;
+    on(event: 'end', listener: () => mixed): this;
 
     /**
      * Emitted when the session has closed.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this;
+    on(event: 'close', listener: () => mixed): this;
 
     /**
      * Emitted when more requests/data can be sent to the stream.
      */
-    on(event: 'continue', listener: () => void | Promise<void>): this;
+    on(event: 'continue', listener: () => mixed): this;
 
     on(event: string, listener: Function): this;
   }

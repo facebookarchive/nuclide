@@ -222,8 +222,8 @@ declare module 'ssh2-streams' {
       pubKey: ParsedKey,
       cbSign?: (
         blob: Buffer,
-        callback: (signedBlob: Buffer) => void | Promise<void>
-      ) => void | Promise<void>
+        callback: (signedBlob: Buffer) => mixed
+      ) => mixed
     ): boolean;
 
     /**
@@ -242,8 +242,8 @@ declare module 'ssh2-streams' {
       localUsername: string,
       cbSign?: (
         blob: Buffer,
-        callback: (signedBlob: Buffer) => void | Promise<void>
-      ) => void | Promise<void>
+        callback: (signedBlob: Buffer) => mixed
+      ) => mixed
     ): boolean;
 
     /**
@@ -542,7 +542,7 @@ declare module 'ssh2-streams' {
      * (Client/Server)
      * Emitted when the protocol header is seen.
      */
-    on(event: 'header', listener: (header: Header) => void | Promise<void>): this;
+    on(event: 'header', listener: (header: Header) => mixed): this;
 
     /**
      * (Client/Server)
@@ -553,7 +553,7 @@ declare module 'ssh2-streams' {
         reqName: string,
         wantReply: boolean,
         request: ?(GlobalRequest | Buffer)
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -565,38 +565,38 @@ declare module 'ssh2-streams' {
         reason: string,
         reasonCode: number,
         description: string
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'DEBUG', listener: (message: string) => void | Promise<void>): this;
+    on(event: 'DEBUG', listener: (message: string) => mixed): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'NEWKEYS', listener: () => void | Promise<void>): this;
+    on(event: 'NEWKEYS', listener: () => mixed): this;
 
     /**
      * (Client/Server)
      */
     on(
       event: 'REQUEST_SUCCESS',
-      listener: (resData: Buffer) => void | Promise<void>
+      listener: (resData: Buffer) => mixed
     ): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'REQUEST_FAILURE', listener: () => void | Promise<void>): this;
+    on(event: 'REQUEST_FAILURE', listener: () => mixed): this;
 
     /**
      * (Client/Server)
      */
     on(
       event: 'CHANNEL_OPEN',
-      listener: (channelInfo: ChannelOpenInfo) => void | Promise<void>
+      listener: (channelInfo: ChannelOpenInfo) => mixed
     ): this;
 
     /**
@@ -604,7 +604,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_OPEN_CONFIRMATION:0',
-      listener: (channelInfo: ChannelOpenConfirmationInfo) => void | Promise<void>
+      listener: (channelInfo: ChannelOpenConfirmationInfo) => mixed
     ): this;
 
     /**
@@ -612,7 +612,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_OPEN_FAILURE:0',
-      listener: (failInfo: ChannelOpenFailureInfo) => void | Promise<void>
+      listener: (failInfo: ChannelOpenFailureInfo) => mixed
     ): this;
 
     /**
@@ -620,7 +620,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_REQUEST:0',
-      listener: (request: ChannelRequest) => void | Promise<void>
+      listener: (request: ChannelRequest) => mixed
     ): this;
 
     /**
@@ -628,7 +628,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_DATA:0',
-      listener: (data: Buffer) => void | Promise<void>
+      listener: (data: Buffer) => mixed
     ): this;
 
     /**
@@ -636,7 +636,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_EXTENDED_DATA:0',
-      listener: (type: number, data: Buffer) => void | Promise<void>
+      listener: (type: number, data: Buffer) => mixed
     ): this;
 
     /**
@@ -644,28 +644,28 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CHANNEL_WINDOW_ADJUST:0',
-      listener: (bytesToAdd: number) => void | Promise<void>
+      listener: (bytesToAdd: number) => mixed
     ): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'CHANNEL_SUCCESS:0', listener: () => void | Promise<void>): this;
+    on(event: 'CHANNEL_SUCCESS:0', listener: () => mixed): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'CHANNEL_FAILURE:0', listener: () => void | Promise<void>): this;
+    on(event: 'CHANNEL_FAILURE:0', listener: () => mixed): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'CHANNEL_EOF:0', listener: () => void | Promise<void>): this;
+    on(event: 'CHANNEL_EOF:0', listener: () => mixed): this;
 
     /**
      * (Client/Server)
      */
-    on(event: 'CHANNEL_CLOSE:0', listener: () => void | Promise<void>): this;
+    on(event: 'CHANNEL_CLOSE:0', listener: () => mixed): this;
 
     /**
      * (Client-only)
@@ -678,8 +678,8 @@ declare module 'ssh2-streams' {
       event: 'fingerprint',
       listener: (
         hostKey: Buffer,
-        callback: (success: boolean) => void | Promise<void>
-      ) => void | Promise<void>
+        callback: (success: boolean) => mixed
+      ) => mixed
     ): this;
 
     /**
@@ -687,7 +687,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'SERVICE_ACCEPT',
-      listener: (serviceName: string) => void | Promise<void>
+      listener: (serviceName: string) => mixed
     ): this;
 
     /**
@@ -695,7 +695,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'USERAUTH_PASSWD_CHANGEREQ',
-      listener: (message: string) => void | Promise<void>
+      listener: (message: string) => mixed
     ): this;
 
     /**
@@ -708,18 +708,18 @@ declare module 'ssh2-streams' {
         instructions: string,
         lang: string,
         prompts: Prompt[]
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
      * (Client-only)
      */
-    on(event: 'USERAUTH_PK_OK', listener: () => void | Promise<void>): this;
+    on(event: 'USERAUTH_PK_OK', listener: () => mixed): this;
 
     /**
      * (Client-only)
      */
-    on(event: 'USERAUTH_SUCCESS', listener: () => void | Promise<void>): this;
+    on(event: 'USERAUTH_SUCCESS', listener: () => mixed): this;
 
     /**
      * (Client-only)
@@ -729,7 +729,7 @@ declare module 'ssh2-streams' {
       listener: (
         methodsContinue: string[],
         partialSuccess: boolean
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -737,7 +737,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'USERAUTH_BANNER',
-      listener: (message: string) => void | Promise<void>
+      listener: (message: string) => mixed
     ): this;
 
     /**
@@ -745,7 +745,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'SERVICE_REQUEST',
-      listener: (serviceName: string) => void | Promise<void>
+      listener: (serviceName: string) => mixed
     ): this;
 
     /**
@@ -758,7 +758,7 @@ declare module 'ssh2-streams' {
         serviceName: string,
         authMethod: string,
         authMethodData: AuthMethodData
-      ) => void | Promise<void>
+      ) => mixed
     ): this;
 
     /**
@@ -766,33 +766,33 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'USERAUTH_INFO_RESPONSE',
-      listener: (responses: string[]) => void | Promise<void>
+      listener: (responses: string[]) => mixed
     ): this;
 
     /**
      * Emitted when the connection has authenticated.
      */
-    on(event: 'ready', listener: () => void | Promise<void>): this;
+    on(event: 'ready', listener: () => mixed): this;
 
     /**
      * Emitted when the socket has disconnected.
      */
-    on(event: 'end', listener: () => void | Promise<void>): this;
+    on(event: 'end', listener: () => mixed): this;
 
     /**
      * Emitted when the client socket was closed.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this;
+    on(event: 'close', listener: () => mixed): this;
 
     /**
      * Emitted when more requests/data can be sent to the stream.
      */
-    on(event: 'continue', listener: () => void | Promise<void>): this;
+    on(event: 'continue', listener: () => mixed): this;
 
     /**
      * Emitted when an error occurred.
      */
-    on(event: 'error', listener: (err: any) => void | Promise<void>): this;
+    on(event: 'error', listener: (err: any) => mixed): this;
 
     on(event: string, listener: Function): this
   }
@@ -1234,7 +1234,7 @@ declare module 'ssh2-streams' {
       remotePath: string,
       localPath: string,
       options: TransferOptions,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void,
 
     /**
@@ -1244,7 +1244,7 @@ declare module 'ssh2-streams' {
     fastGet(
       remotePath: string,
       localPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void,
 
     /**
@@ -1255,7 +1255,7 @@ declare module 'ssh2-streams' {
       localPath: string,
       remotePath: string,
       options: TransferOptions,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void,
 
     /**
@@ -1265,7 +1265,7 @@ declare module 'ssh2-streams' {
     fastPut(
       localPath: string,
       remotePath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): void,
 
     /**
@@ -1293,7 +1293,7 @@ declare module 'ssh2-streams' {
       filename: string,
       mode: string,
       attributes: InputAttributes,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean,
 
     /**
@@ -1305,7 +1305,7 @@ declare module 'ssh2-streams' {
     open(
       filename: string,
       mode: string,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean,
 
     /**
@@ -1314,7 +1314,7 @@ declare module 'ssh2-streams' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    close(handle: Buffer, callback: (err: any) => void | Promise<void>): boolean,
+    close(handle: Buffer, callback: (err: any) => mixed): boolean,
 
     /**
      * (Client-only)
@@ -1334,7 +1334,7 @@ declare module 'ssh2-streams' {
         bytesRead: number,
         buffer: Buffer,
         position: number
-      ) => void | Promise<void>
+      ) => mixed
     ): boolean,
 
     /**
@@ -1347,7 +1347,7 @@ declare module 'ssh2-streams' {
       offset: number,
       length: number,
       position: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1358,7 +1358,7 @@ declare module 'ssh2-streams' {
      */
     fstat(
       handle: Buffer,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean,
 
     /**
@@ -1370,7 +1370,7 @@ declare module 'ssh2-streams' {
     fsetstat(
       handle: Buffer,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1383,7 +1383,7 @@ declare module 'ssh2-streams' {
       handle: Buffer,
       atime: number | Date,
       mtime: number | Date,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1396,7 +1396,7 @@ declare module 'ssh2-streams' {
       handle: Buffer,
       uid: number,
       gid: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1408,7 +1408,7 @@ declare module 'ssh2-streams' {
     fchmod(
       handle: Buffer,
       mode: number | string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1419,7 +1419,7 @@ declare module 'ssh2-streams' {
      */
     opendir(
       path: string,
-      callback: (err: any, handle: Buffer) => void | Promise<void>
+      callback: (err: any, handle: Buffer) => mixed
     ): boolean,
 
     /**
@@ -1430,7 +1430,7 @@ declare module 'ssh2-streams' {
      */
     readdir(
       location: string | Buffer,
-      callback: (err: any, list: FileEntry[]) => void | Promise<void>
+      callback: (err: any, list: FileEntry[]) => mixed
     ): boolean,
 
     /**
@@ -1439,7 +1439,7 @@ declare module 'ssh2-streams' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    unlink(path: string, callback: (err: any) => void | Promise<void>): boolean,
+    unlink(path: string, callback: (err: any) => mixed): boolean,
 
     /**
      * (Client-only)
@@ -1450,7 +1450,7 @@ declare module 'ssh2-streams' {
     rename(
       srcPath: string,
       destPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1462,7 +1462,7 @@ declare module 'ssh2-streams' {
     mkdir(
       path: string,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1471,7 +1471,7 @@ declare module 'ssh2-streams' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    mkdir(path: string, callback: (err: any) => void | Promise<void>): boolean,
+    mkdir(path: string, callback: (err: any) => mixed): boolean,
 
     /**
      * (Client-only)
@@ -1479,7 +1479,7 @@ declare module 'ssh2-streams' {
      *
      * Returns `false` if you should wait for the `continue` event before sending any more traffic.
      */
-    rmdir(path: string, callback: (err: any) => void | Promise<void>): boolean,
+    rmdir(path: string, callback: (err: any) => mixed): boolean,
 
     /**
      * (Client-only)
@@ -1489,7 +1489,7 @@ declare module 'ssh2-streams' {
      */
     stat(
       path: string,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean,
 
     /**
@@ -1501,7 +1501,7 @@ declare module 'ssh2-streams' {
      */
     lstat(
       path: string,
-      callback: (err: any, stats: Stats) => void | Promise<void>
+      callback: (err: any, stats: Stats) => mixed
     ): boolean,
 
     /**
@@ -1513,7 +1513,7 @@ declare module 'ssh2-streams' {
     setstat(
       path: string,
       attributes: InputAttributes,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1526,7 +1526,7 @@ declare module 'ssh2-streams' {
       path: string,
       atime: number | Date,
       mtime: number | Date,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1539,7 +1539,7 @@ declare module 'ssh2-streams' {
       path: string,
       uid: number,
       gid: number,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1551,7 +1551,7 @@ declare module 'ssh2-streams' {
     chmod(
       path: string,
       mode: number | string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1562,7 +1562,7 @@ declare module 'ssh2-streams' {
      */
     readlink(
       path: string,
-      callback: (err: any, target: string) => void | Promise<void>
+      callback: (err: any, target: string) => mixed
     ): boolean,
 
     /**
@@ -1574,7 +1574,7 @@ declare module 'ssh2-streams' {
     symlink(
       targetPath: string,
       linkPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1585,7 +1585,7 @@ declare module 'ssh2-streams' {
      */
     realpath(
       path: string,
-      callback: (err: any, absPath: string) => void | Promise<void>
+      callback: (err: any, absPath: string) => mixed
     ): boolean,
 
     /**
@@ -1597,7 +1597,7 @@ declare module 'ssh2-streams' {
     ext_openssh_rename(
       srcPath: string,
       destPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1608,7 +1608,7 @@ declare module 'ssh2-streams' {
      */
     ext_openssh_statvfs(
       path: string,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean,
 
     /**
@@ -1619,7 +1619,7 @@ declare module 'ssh2-streams' {
      */
     ext_openssh_fstatvfs(
       handle: Buffer,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean,
 
     /**
@@ -1631,7 +1631,7 @@ declare module 'ssh2-streams' {
     ext_openssh_hardlink(
       targetPath: string,
       linkPath: string,
-      callback: (err: any) => void | Promise<void>
+      callback: (err: any) => mixed
     ): boolean,
 
     /**
@@ -1642,7 +1642,7 @@ declare module 'ssh2-streams' {
      */
     ext_openssh_fsync(
       handle: Buffer,
-      callback: (err: any, fsInfo: any) => void | Promise<void>
+      callback: (err: any, fsInfo: any) => mixed
     ): boolean,
 
     /**
@@ -1693,7 +1693,7 @@ declare module 'ssh2-streams' {
      * (Client/Server)
      * Emitted after initial protocol version check has passed.
      */
-    on(event: 'ready', listener: () => void | Promise<void>): this,
+    on(event: 'ready', listener: () => mixed): this,
 
     /**
      * (Server-only)
@@ -1710,7 +1710,7 @@ declare module 'ssh2-streams' {
         filename: string,
         flags: number,
         attrs: InputAttributes
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1728,7 +1728,7 @@ declare module 'ssh2-streams' {
         handle: Buffer,
         offset: number,
         length: number
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1745,7 +1745,7 @@ declare module 'ssh2-streams' {
         handle: Buffer,
         offset: number,
         data: Buffer
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1758,7 +1758,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'FSTAT',
-      listener: (reqID: number, handle: Buffer) => void | Promise<void>
+      listener: (reqID: number, handle: Buffer) => mixed
     ): this,
 
     /**
@@ -1774,7 +1774,7 @@ declare module 'ssh2-streams' {
         reqID: number,
         handle: Buffer,
         attrs: InputAttributes
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1786,7 +1786,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'CLOSE',
-      listener: (reqID: number, handle: Buffer) => void | Promise<void>
+      listener: (reqID: number, handle: Buffer) => mixed
     ): this,
 
     /**
@@ -1799,7 +1799,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'OPENDIR',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1812,7 +1812,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'READDIR',
-      listener: (reqID: number, handle: Buffer) => void | Promise<void>
+      listener: (reqID: number, handle: Buffer) => mixed
     ): this,
 
     /**
@@ -1826,7 +1826,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'LSTAT',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1839,7 +1839,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'STAT',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1851,7 +1851,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'REMOVE',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1863,7 +1863,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'RMDIR',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1876,7 +1876,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'REALPATH',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1889,7 +1889,7 @@ declare module 'ssh2-streams' {
      */
     on(
       event: 'READLINK',
-      listener: (reqID: number, path: string) => void | Promise<void>
+      listener: (reqID: number, path: string) => mixed
     ): this,
 
     /**
@@ -1905,7 +1905,7 @@ declare module 'ssh2-streams' {
         reqID: number,
         path: string,
         attrs: InputAttributes
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1921,7 +1921,7 @@ declare module 'ssh2-streams' {
         reqID: number,
         path: string,
         attrs: InputAttributes
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1937,7 +1937,7 @@ declare module 'ssh2-streams' {
         reqID: number,
         oldPath: string,
         newPath: string
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
@@ -1953,28 +1953,28 @@ declare module 'ssh2-streams' {
         reqID: number,
         linkPath: string,
         targetPath: string
-      ) => void | Promise<void>
+      ) => mixed
     ): this,
 
     /**
      * Emitted when the socket has disconnected.
      */
-    on(event: 'end', listener: () => void | Promise<void>): this,
+    on(event: 'end', listener: () => mixed): this,
 
     /**
      * Emitted when the client socket was closed.
      */
-    on(event: 'close', listener: () => void | Promise<void>): this,
+    on(event: 'close', listener: () => mixed): this,
 
     /**
      * Emitted when more requests/data can be sent to the stream.
      */
-    on(event: 'continue', listener: () => void | Promise<void>): this,
+    on(event: 'continue', listener: () => mixed): this,
 
     /**
      * Emitted when an error occurred.
      */
-    on(event: 'error', listener: (err: any) => void | Promise<void>): this,
+    on(event: 'error', listener: (err: any) => mixed): this,
 
     on(event: string, listener: Function): this
   }
@@ -2050,7 +2050,7 @@ declare module 'ssh2-streams' {
     /**
      * Called every time a part of a file was transferred
      */
-    step?: (total_transferred: number, chunk: number, total: number) => void | Promise<void>;
+    step?: (total_transferred: number, chunk: number, total: number) => mixed;
   }
 
   declare type ReadStreamOptions = {
