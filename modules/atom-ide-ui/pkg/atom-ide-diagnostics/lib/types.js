@@ -65,7 +65,7 @@ export type DiagnosticProviderUpdate = {
   projectMessages?: Array<ProjectDiagnosticMessage>,
 };
 
-export type DiagnosticMessageKind = 'lint' | 'feedback';
+export type DiagnosticMessageKind = 'lint' | 'review';
 export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info';
 
 export type DiagnosticTrace = {

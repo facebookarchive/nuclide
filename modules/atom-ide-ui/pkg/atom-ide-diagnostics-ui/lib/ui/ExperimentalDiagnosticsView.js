@@ -95,7 +95,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup>
-              {['errors', 'warnings', 'feedback'].map(type =>
+              {['errors', 'warnings', 'review'].map(type =>
                 <FilterButton
                   key={type}
                   type={type}

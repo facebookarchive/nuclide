@@ -283,7 +283,7 @@ function TypeComponent(props: {data: Classification}): React.Element<any> {
 
 function getIconName(classification: Classification): IconName {
   const {kind, severity} = classification;
-  if (kind === 'feedback') {
+  if (kind === 'review') {
     return 'nuclicon-comment-discussion';
   }
   switch (severity) {

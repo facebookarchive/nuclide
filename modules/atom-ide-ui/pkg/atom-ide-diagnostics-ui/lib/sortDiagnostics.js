@@ -108,7 +108,7 @@ function compareClassification(
   );
 }
 
-const KIND_ORDER = ['feedback', 'lint'];
+const KIND_ORDER = ['review', 'lint'];
 
 function compareClassificationKind(
   a: ?DiagnosticMessageKind,

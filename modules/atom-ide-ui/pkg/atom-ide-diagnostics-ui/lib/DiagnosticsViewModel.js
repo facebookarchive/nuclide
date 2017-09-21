@@ -205,8 +205,8 @@ function getMessageFilterType(message: DiagnosticMessage): FilterType {
         default:
           throw new Error(`Invalid message severity: ${message.type}`);
       }
-    case 'feedback':
-      return 'feedback';
+    case 'review':
+      return 'review';
     default:
       throw new Error(`Invalid message kind: ${message.kind}`);
   }

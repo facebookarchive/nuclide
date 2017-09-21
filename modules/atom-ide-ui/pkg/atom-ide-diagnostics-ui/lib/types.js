@@ -13,7 +13,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 
-export type FilterType = 'errors' | 'warnings' | 'feedback';
+export type FilterType = 'errors' | 'warnings' | 'review';
 
 // State that's shared between every diagnostics panel instance.
 export type GlobalViewState = {

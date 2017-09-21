@@ -43,8 +43,8 @@ function getFilterTypeDisplayName(type: FilterType): string {
       return 'Errors';
     case 'warnings':
       return 'Warnings & Info';
-    case 'feedback':
-      return 'Feedback';
+    case 'review':
+      return 'Review';
     default:
       throw new Error(`Invalid filter type: ${type}`);
   }
@@ -56,7 +56,7 @@ function getIcon(type: FilterType): IconName {
       return 'nuclicon-stop';
     case 'warnings':
       return 'alert';
-    case 'feedback':
+    case 'review':
       return 'nuclicon-comment-discussion';
     default:
       throw new Error(`Invalid filter type: ${type}`);
