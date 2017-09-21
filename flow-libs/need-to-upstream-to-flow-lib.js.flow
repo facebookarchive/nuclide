@@ -133,3 +133,5 @@ declare interface net$ListenOptions {
   path?: string,
   exclusive?: boolean,
 }
+
+declare export var module: module$Module;
