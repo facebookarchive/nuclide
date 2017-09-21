@@ -172,7 +172,7 @@ declare module 'adm-zip' {
      *
      * @param localPath
      */
-    addLocalFile(localPath: string, zipPath: string, zipName: string): void,
+    addLocalFile(localPath: string, zipPath?: string, zipName?: string): void,
 
     /**
      * Adds a local directory and all its nested files and directories to the archive
