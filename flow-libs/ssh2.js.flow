@@ -101,7 +101,16 @@ declare module 'ssh2' {
     /**
      * Emitted once the channel is completely closed on both the client and the server.
      */
-    on(event: 'close', listener: () => mixed): this;
+    on(
+      event: 'close',
+      listener: (
+        exitCode: number | null,
+        exitSignal?: string,
+        exitDump?: string,
+        description?: string,
+        language?: string,
+      ) => mixed,
+    ): this;
 
     /**
      * An `exit` event *may* (the SSH2 spec says it is optional) be emitted when the process
@@ -114,8 +123,9 @@ declare module 'ssh2' {
         exitCode: number | null,
         signalName?: string,
         didCoreDump?: boolean,
-        description?: string
-      ) => mixed
+        description?: string,
+        language?: string,
+      ) => mixed,
     ): this;
 
     on(event: string, listener: Function): this;
