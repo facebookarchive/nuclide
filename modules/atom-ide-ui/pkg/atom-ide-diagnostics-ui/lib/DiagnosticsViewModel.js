@@ -91,6 +91,7 @@ export class DiagnosticsViewModel {
         onTextFilterChange: this._handleTextFilterChange,
         selectMessage: this._selectMessage,
         gotoMessageLocation: goToDiagnosticLocation,
+        supportedMessageKinds: globalState.supportedMessageKinds,
       }),
     );
 

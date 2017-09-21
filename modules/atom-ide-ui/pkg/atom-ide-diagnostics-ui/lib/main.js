@@ -29,6 +29,7 @@ import invariant from 'assert';
 import analytics from 'nuclide-commons-atom/analytics';
 
 import idx from 'idx';
+import {areSetsEqual} from 'nuclide-commons/collection';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -216,16 +217,30 @@ class Activation {
         this._model.setState({filterByActiveTextEditor});
       };
 
+      const supportedMessageKindsStream = packageStates
+        .map(state => state.diagnosticUpdater)
+        .switchMap(
+          updater =>
+            updater == null
+              ? Observable.of(new Set(['lint']))
+              : observableFromSubscribeFunction(
+                  updater.observeSupportedMessageKinds.bind(updater),
+                ),
+        )
+        .distinctUntilChanged(areSetsEqual);
+
       this._globalViewStates = Observable.combineLatest(
         diagnosticsStream,
         filterByActiveTextEditorStream,
         pathToActiveTextEditorStream,
         showTracesStream,
+        supportedMessageKindsStream,
         (
           diagnostics,
           filterByActiveTextEditor,
           pathToActiveTextEditor,
           showTraces,
+          supportedMessageKinds,
         ) => ({
           diagnostics,
           filterByActiveTextEditor,
@@ -233,6 +248,7 @@ class Activation {
           showTraces,
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
+          supportedMessageKinds,
         }),
       );
     }

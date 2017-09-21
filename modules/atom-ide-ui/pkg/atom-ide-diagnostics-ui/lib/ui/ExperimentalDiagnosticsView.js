@@ -11,7 +11,10 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+import type {
+  DiagnosticMessage,
+  DiagnosticMessageKind,
+} from '../../../atom-ide-diagnostics/lib/types';
 import type {FilterType} from '../types';
 import type {
   RegExpFilterChange,
@@ -39,6 +42,7 @@ export type Props = {
   gotoMessageLocation: (message: DiagnosticMessage) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   selectedMessage: ?DiagnosticMessage,
+  supportedMessageKinds: Set<DiagnosticMessageKind>,
 
   hiddenTypes: Set<FilterType>,
   onTypeFilterChange: (type: FilterType) => mixed,
@@ -82,6 +86,11 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       }
     }
 
+    const filterTypes = ['errors', 'warnings'];
+    if (this.props.supportedMessageKinds.has('review')) {
+      filterTypes.push('review');
+    }
+
     return (
       <div
         onFocus={this._handleFocus}
@@ -95,7 +104,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup>
-              {['errors', 'warnings', 'review'].map(type =>
+              {filterTypes.map(type =>
                 <FilterButton
                   key={type}
                   type={type}
