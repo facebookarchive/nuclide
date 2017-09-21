@@ -61,9 +61,9 @@ export class SshClosedError extends Error {
  */
 export class SshClient {
   _client: Client;
-  _continue: boolean;
   _onError: Observable<Error & ClientErrorExtensions>;
   _onClose: Observable<{hadError: boolean}>;
+  _deferredContinue: ?Deferred<void> = null;
 
   /**
    * Wraps and takes ownership of the ssh2 Client.
@@ -72,7 +72,6 @@ export class SshClient {
    */
   constructor(client?: Client, onKeyboard: KeyboardInteractiveHandler) {
     this._client = client || new Client();
-    this._continue = true;
     this._onError = Observable.fromEvent(this._client, 'error');
     this._onClose = Observable.fromEvent(
       this._client,
@@ -82,6 +81,10 @@ export class SshClient {
       }),
     );
 
+    this._client.on('continue', () => this._resolveContinue());
+    this._client.on('close', (hadError: boolean) => {
+      this._resolveContinue();
+    });
     this._client.on(
       'keyboard-interactive',
       (
@@ -114,7 +117,7 @@ export class SshClient {
    * asynchronous call (i.e. when a Promise is returned; before it is necessarily resolved).
    */
   continue(): boolean {
-    return this._continue;
+    return this._deferredContinue == null;
   }
 
   /**
@@ -191,7 +194,8 @@ export class SshClient {
   /**
    * Disconnects the socket.
    */
-  end() {
+  async end(): Promise<void> {
+    await this._readyForData();
     this._client.end();
   }
 
@@ -202,8 +206,33 @@ export class SshClient {
     this._client.destroy();
   }
 
+  _resolveContinue() {
+    if (this._deferredContinue != null) {
+      const {resolve} = this._deferredContinue;
+      this._deferredContinue = null;
+      resolve();
+    }
+  }
+
+  async _readyForData() {
+    while (this._deferredContinue != null) {
+      // eslint-disable-next-line no-await-in-loop
+      await this._deferredContinue.promise;
+    }
+  }
+
   _clientToPromiseContinue(func: Function, ...args: any): Promise<any> {
     return new Promise((resolve, reject) => {
+      const self = this;
+      function doOperation() {
+        self._readyForData().then(() => {
+          const readyForData = func.apply(self._client, args);
+          if (!readyForData && this._deferredContinue == null) {
+            self._deferredContinue = new Deferred();
+          }
+        });
+      }
+
       args.push((err, result) => {
         if (err != null) {
           return reject(err);
@@ -211,7 +240,7 @@ export class SshClient {
         resolve(result);
       });
 
-      this._continue = func.apply(this._client, args);
+      doOperation();
     });
   }
 }

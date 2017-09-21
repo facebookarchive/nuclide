@@ -12,6 +12,7 @@
 
 import {SFTPWrapper} from 'ssh2';
 import {Observable} from 'rxjs';
+import {Deferred} from 'nuclide-commons/promise';
 
 import type {TransferOptions} from 'ssh2';
 export type {TransferOptions} from 'ssh2';
@@ -28,6 +29,7 @@ export class SftpClient {
   _onEnd: Observable<void>;
   _onClose: Observable<void>;
   _onContinue: Observable<void>;
+  _deferredContinue: ?Deferred<void> = null;
 
   /**
    * Wraps and takes ownership of the `SFTPWrapper`.
@@ -38,6 +40,20 @@ export class SftpClient {
     this._onEnd = Observable.fromEvent(this._sftp, 'end');
     this._onClose = Observable.fromEvent(this._sftp, 'close');
     this._onContinue = Observable.fromEvent(this._sftp, 'continue');
+
+    this._sftp.on('continue', () => this._resolveContinue());
+    this._sftp.on('close', () => {
+      this._resolveContinue();
+    });
+  }
+
+  /**
+   * @return `true` if the channel is ready for more data; `false` if the caller should wait for
+   * the 'continue' event before sending more data. This variable is updated immediately after each
+   * asynchronous call (i.e. when a Promise is returned; before it is necessarily resolved).
+   */
+  get continue(): boolean {
+    return this._deferredContinue == null;
   }
 
   /** Emitted when an error occurred. */
@@ -81,11 +97,45 @@ export class SftpClient {
   /**
    * Ends the stream.
    */
-  end(): void {
+  async end(): Promise<void> {
+    await this._readyForData();
     this._sftp.end();
   }
 
-  _sftpToPromise(func: any, ...args: any): Promise<any> {
+  _resolveContinue() {
+    if (this._deferredContinue != null) {
+      const {resolve} = this._deferredContinue;
+      this._deferredContinue = null;
+      resolve();
+    }
+  }
+
+  async _readyForData() {
+    while (this._deferredContinue != null) {
+      // eslint-disable-next-line no-await-in-loop
+      await this._deferredContinue.promise;
+    }
+  }
+
+  async _sftpToPromiseContinue(func: Function, ...args: any): Promise<any> {
+    await this._readyForData();
+    return new Promise((resolve, reject) => {
+      args.push((err, result) => {
+        if (err != null) {
+          return reject(err);
+        }
+        resolve(result);
+      });
+
+      const readyForData = func.apply(this._sftp, args);
+      if (!readyForData && this._deferredContinue == null) {
+        this._deferredContinue = new Deferred();
+      }
+    });
+  }
+
+  async _sftpToPromise(func: any, ...args: any): Promise<any> {
+    await this._readyForData();
     return new Promise((resolve, reject) => {
       args.push((err, result) => {
         if (err != null) {
