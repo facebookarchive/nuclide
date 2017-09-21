@@ -26,7 +26,8 @@
       "description": "Shows full trace information in diagnostics."
     },
     "useExperimentalUi": {
-      "title": "We're working on some UI improvements. Wanna follow our progress?",
+      "title": "Use Experimental UI",
+      "description": "We're working on some UI improvements. Wanna follow our progress?",
       "type": "boolean",
       "default": false
     }
