@@ -16,6 +16,7 @@ import type {
   FileDiagnosticMessage,
   FileDiagnosticMessages,
   ProjectDiagnosticMessage,
+  DiagnosticMessageKind,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -23,6 +24,7 @@ import {createSelector} from 'reselect';
 
 const getMessagesState = state => state.messages;
 const getProjectMessagesState = state => state.projectMessages;
+const getProviders = state => state.providers;
 
 /**
   * Gets the current diagnostic messages for the file.
@@ -88,5 +90,20 @@ export const getMessages = createSelector(
     messages.push(...projectMessages);
 
     return messages;
+  },
+);
+
+export const getSupportedMessageKinds = createSelector(
+  [getProviders],
+  (providers): Set<DiagnosticMessageKind> => {
+    const kinds = new Set(['lint']); // Lint is always supported.
+    providers.forEach(provider => {
+      if (provider.supportedMessageKinds != null) {
+        provider.supportedMessageKinds.forEach(kind => {
+          kinds.add(kind);
+        });
+      }
+    });
+    return kinds;
   },
 );

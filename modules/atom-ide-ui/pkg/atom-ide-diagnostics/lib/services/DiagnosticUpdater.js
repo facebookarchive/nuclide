@@ -18,6 +18,7 @@ import type {
   FileDiagnosticMessages,
   ProjectDiagnosticMessage,
   Store,
+  DiagnosticMessageKind,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -96,6 +97,14 @@ export default class DiagnosticUpdater {
         .map(state => state.codeActionsForMessage)
         .distinctUntilChanged()
         .subscribe(callback),
+    );
+  };
+
+  observeSupportedMessageKinds = (
+    callback: (kinds: Set<DiagnosticMessageKind>) => mixed,
+  ): IDisposable => {
+    return new UniversalDisposable(
+      this._states.map(Selectors.getSupportedMessageKinds).subscribe(callback),
     );
   };
 

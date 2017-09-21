@@ -70,6 +70,7 @@ const INITIAL_STATE = {
   projectMessages: new Map(),
   codeActionFetcher: null,
   codeActionsForMessage: new Map(),
+  providers: new Set(),
 };
 
 function getFileMessages(store: Store): Observable<Set<FileDiagnosticMessage>> {

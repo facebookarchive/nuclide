@@ -39,6 +39,7 @@ export type DiagnosticInvalidationCallback = (
 export type ObservableDiagnosticProvider = {
   updates: Observable<DiagnosticProviderUpdate>,
   invalidations: Observable<DiagnosticInvalidationMessage>,
+  +supportedMessageKinds?: Array<DiagnosticMessageKind>,
 };
 
 export type DiagnosticInvalidationMessage =
@@ -213,7 +214,17 @@ export type LinterProvider = {
   lint: (textEditor: TextEditor) => ?Promise<?Array<LinterMessage>>,
 };
 
-export type RegisterIndieLinter = ({name: string}) => IndieLinterDelegate;
+export type LinterConfig = {
+  name: string,
+
+  // Optional, extended fields.
+
+  // What kinds of messages can this provider emit? This helps as when creating the UI as we won't,
+  // for example, show the "review" filter button unless there's a provider that supports review
+  // messages.
+  supportedMessageKinds?: Array<DiagnosticMessageKind>,
+};
+export type RegisterIndieLinter = (config: LinterConfig) => IndieLinterDelegate;
 export type {IndieLinterDelegate} from './services/IndieLinterRegistry';
 
 //
@@ -227,6 +238,7 @@ export type AppState = {
   projectMessages: ProjectMessagesState,
   codeActionFetcher: ?CodeActionFetcher,
   codeActionsForMessage: CodeActionsState,
+  providers: Set<ObservableDiagnosticProvider>,
 };
 
 export type MessagesState = Map<

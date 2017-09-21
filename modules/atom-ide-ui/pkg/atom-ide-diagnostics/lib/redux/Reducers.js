@@ -15,6 +15,7 @@ import type {
   CodeActionsState,
   MessagesState,
   ProjectMessagesState,
+  ObservableDiagnosticProvider,
 } from '../types';
 import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
 
@@ -184,6 +185,25 @@ export function codeActionsForMessage(
       codeActions.forEach(codeAction => codeAction.dispose());
     });
     return action.payload.codeActionsForMessage;
+  }
+  return state;
+}
+
+export function providers(
+  state: Set<ObservableDiagnosticProvider> = new Set(),
+  action: Action,
+): Set<ObservableDiagnosticProvider> {
+  switch (action.type) {
+    case Actions.ADD_PROVIDER: {
+      const nextState = new Set(state);
+      nextState.add(action.payload.provider);
+      return nextState;
+    }
+    case Actions.REMOVE_PROVIDER: {
+      const nextState = new Set(state);
+      nextState.delete(action.payload.provider);
+      return nextState;
+    }
   }
   return state;
 }
