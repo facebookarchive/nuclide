@@ -182,12 +182,12 @@ interface ServerInfo {
 export class SshHandshakeError extends Error {
   message: string;
   errorType: SshHandshakeErrorType;
-  innerError: Error;
+  innerError: ?Error;
   isCancellation: boolean;
   constructor(
     message: string,
     errorType: SshHandshakeErrorType,
-    innerError: Error,
+    innerError?: Error,
   ) {
     super(`SshHandshake failed: ${errorType}, ${message}`);
     this.message = message;
@@ -324,7 +324,6 @@ export class SshHandshake {
       throw new SshHandshakeError(
         `Unsupported authentication method: ${config.authMethod}.`,
         SshHandshake.ErrorType.UNSUPPORTED_AUTH_METHOD,
-        new Error(),
       );
     }
   }
@@ -496,7 +495,7 @@ export class SshHandshake {
         `SshHandshake failed: ${error.errorType}, ${error.message}`,
         error.innerError,
       );
-      this._delegate.onError(error.errorType, error.innerError, this._config);
+      this._delegate.onError(error.errorType, innerError, this._config);
 
       throw error;
     }
@@ -633,7 +632,7 @@ export class SshHandshake {
           sftpError,
         );
       } finally {
-        fs.unlink(localTempFile);
+        fs.unlink(localTempFile).catch(() => {});
       }
     };
 
