@@ -83,6 +83,7 @@ export function messages(
           return nextState;
         }
         default:
+          (invalidation.scope: empty);
           throw new Error(`Invalid scope: ${invalidation.scope}`);
       }
     }

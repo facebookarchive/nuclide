@@ -46,6 +46,7 @@ function getFilterTypeDisplayName(type: FilterType): string {
     case 'review':
       return 'Review';
     default:
+      (type: empty);
       throw new Error(`Invalid filter type: ${type}`);
   }
 }
@@ -59,6 +60,7 @@ function getIcon(type: FilterType): IconName {
     case 'review':
       return 'nuclicon-comment-discussion';
     default:
+      (type: empty);
       throw new Error(`Invalid filter type: ${type}`);
   }
 }

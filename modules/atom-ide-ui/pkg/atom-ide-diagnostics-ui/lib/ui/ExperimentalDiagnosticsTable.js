@@ -294,6 +294,7 @@ function getIconName(classification: Classification): IconName {
     case 'Info':
       return 'info';
     default:
+      (severity: empty);
       throw new Error(`Invalid severity: ${severity}`);
   }
 }

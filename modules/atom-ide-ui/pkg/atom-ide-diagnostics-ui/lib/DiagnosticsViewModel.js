@@ -191,7 +191,8 @@ export class DiagnosticsViewModel {
 }
 
 function getMessageFilterType(message: DiagnosticMessage): FilterType {
-  switch (message.kind) {
+  const {kind} = message;
+  switch (kind) {
     case 'lint':
     case null:
     case undefined:
@@ -204,12 +205,14 @@ function getMessageFilterType(message: DiagnosticMessage): FilterType {
         case 'Info':
           return 'warnings';
         default:
+          (message.type: empty);
           throw new Error(`Invalid message severity: ${message.type}`);
       }
     case 'review':
       return 'review';
     default:
-      throw new Error(`Invalid message kind: ${message.kind}`);
+      (kind: empty);
+      throw new Error(`Invalid message kind: ${kind}`);
   }
 }
 
