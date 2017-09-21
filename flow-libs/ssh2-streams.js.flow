@@ -1284,6 +1284,24 @@ declare module 'ssh2-streams' {
     ): stream$Writable,
 
     /**
+     * Reads a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    readFile(path: string, options?: string | ReadFileOptions, callback?: (error: any, data: string | Buffer) => mixed): void;
+
+    /**
+     * Writes to a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    writeFile(path: string, data: string | Buffer, options?: string | WriteFileOptions, callback?: (error: any) => mixed): void;
+
+    /**
+     * Appends to a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    appendFile(path: string, data: string | Buffer, options?: string | AppendFileOptions, callback?: (error: any) => mixed): void;
+
+    /**
      * (Client-only)
      * Opens a file `filename` for `mode` with optional `attributes`.
      *
@@ -1291,7 +1309,7 @@ declare module 'ssh2-streams' {
      */
     open(
       filename: string,
-      mode: string,
+      flags: ReadFlags | WriteFlags | AppendFlags,
       attributes: InputAttributes,
       callback: (err: any, handle: Buffer) => mixed
     ): boolean,
@@ -1304,7 +1322,7 @@ declare module 'ssh2-streams' {
      */
     open(
       filename: string,
-      mode: string,
+      flags: ReadFlags | WriteFlags | AppendFlags,
       callback: (err: any, handle: Buffer) => mixed
     ): boolean,
 
@@ -1434,6 +1452,12 @@ declare module 'ssh2-streams' {
     ): boolean,
 
     /**
+     * (Client-only)
+     * Checks whether the given file or path exists.
+     */
+    exists(path: string, callback: (exists: boolean) => mixed): void,
+
+      /**
      * (Client-only)
      * Removes the file/symlink at `path`.
      *
@@ -2069,6 +2093,27 @@ declare module 'ssh2-streams' {
     mode?: number;
   }
 
+  declare type ReadFlags = 'r' | 'r+';
+  declare type WriteFlags = 'w' | 'wx' | 'xw' | 'w+' | 'wx+' | 'xw+';
+  declare type AppendFlags = 'a' | 'ax' | 'xa' | 'a+' | 'ax+' | 'xa+';
+
+  declare type ReadFileOptions = {
+    flag?: ReadFlags;
+    encoding?: ?string;
+  }
+
+  declare type WriteFileOptions = {
+    flag?: WriteFlags | AppendFlags;
+    encoding?: ?string;
+    mode?: number;
+  }
+
+  declare type AppendFileOptions = {
+    flag?: WriteFlags;
+    encoding?: ?string;
+    mode?: number;
+  }
+
   declare type FileEntry = {
     filename: string;
     longname: string;
@@ -2091,7 +2136,7 @@ declare module 'ssh2-streams' {
     size: number;
     atime: number;
     mtime: number;
-  };
+  }
 
   declare type Stats = Attributes & {
     isDirectory(): boolean;
@@ -2101,7 +2146,7 @@ declare module 'ssh2-streams' {
     isSymbolicLink(): boolean;
     isFIFO(): boolean;
     isSocket(): boolean;
-  };
+  }
 
   declare function utils$parseKey(keyData: string | Buffer): ParsedKey | Error;
   declare function utils$genPublicKey(privKeyInfo: ParsedKey): ParsedKey;

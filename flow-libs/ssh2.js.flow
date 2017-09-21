@@ -15,6 +15,8 @@
 declare module 'ssh2' {
   import type {
       Algorithms,
+      AppendFileOptions,
+      AppendFlags,
       Header,
       Prompt,
       SFTPStream,
@@ -22,7 +24,11 @@ declare module 'ssh2' {
       Attributes,
       Stats,
       TransferOptions,
+      ReadFlags,
+      ReadFileOptions,
       ReadStreamOptions,
+      WriteFlags,
+      WriteFileOptions,
       WriteStreamOptions,
       FileEntry
   } from 'ssh2-streams';
@@ -1664,6 +1670,30 @@ declare module 'ssh2' {
       location: string | Buffer,
       callback: (err: any, list: FileEntry[]) => mixed
     ): boolean;
+
+    /**
+     * Reads a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    readFile(path: string, options?: string | ReadFileOptions, callback?: (error: any, data: string | Buffer) => mixed): void;
+
+    /**
+     * Writes to a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    writeFile(path: string, data: string | Buffer, options?: string | WriteFileOptions, callback?: (error: any) => mixed): void;
+
+    /**
+     * Appends to a file
+     * @param options either the encoding (string) or a bag of options
+     */
+    appendFile(path: string, data: string | Buffer, options?: string | AppendFileOptions, callback?: (error: any) => mixed): void;
+
+    /**
+     * (Client-only)
+     * Checks whether the given file or path exists.
+     */
+    exists(path: string, callback: (exists: boolean) => mixed): void;
 
     /**
      * (Client-only)
