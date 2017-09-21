@@ -37,6 +37,7 @@ export type Props = {
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   gotoMessageLocation: (message: DiagnosticMessage) => void,
+  selectMessage: (message: DiagnosticMessage) => void,
   selectedMessage: ?DiagnosticMessage,
 
   hiddenTypes: Set<FilterType>,
@@ -51,6 +52,8 @@ export type Props = {
 export default class ExperimentalDiagnosticsView extends React.Component<
   Props,
 > {
+  _table: ?ExperimentalDiagnosticsTable;
+
   constructor(props: Props) {
     super(props);
     (this: any)._onShowTracesChange = this._onShowTracesChange.bind(this);
@@ -81,6 +84,8 @@ export default class ExperimentalDiagnosticsView extends React.Component<
 
     return (
       <div
+        onFocus={this._handleFocus}
+        tabIndex={-1}
         style={{
           display: 'flex',
           flex: 1,
@@ -118,10 +123,14 @@ export default class ExperimentalDiagnosticsView extends React.Component<
           </ToolbarRight>
         </Toolbar>
         <ExperimentalDiagnosticsTable
+          ref={table => {
+            this._table = table;
+          }}
           showFileName={!this.props.filterByActiveTextEditor}
           diagnostics={diagnostics}
           showTraces={showTraces}
           selectedMessage={this.props.selectedMessage}
+          selectMessage={this.props.selectMessage}
           gotoMessageLocation={this.props.gotoMessageLocation}
         />
       </div>
@@ -148,4 +157,18 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       'diagnostics:open-all-files-with-errors',
     );
   }
+
+  _handleFocus = (event: SyntheticMouseEvent<*>): void => {
+    if (this._table == null) {
+      return;
+    }
+    let el = event.target;
+    while (el != null) {
+      if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+        return;
+      }
+      el = (el: any).parentElement;
+    }
+    this._table.focus();
+  };
 }

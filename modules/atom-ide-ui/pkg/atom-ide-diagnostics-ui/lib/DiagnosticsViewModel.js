@@ -89,7 +89,8 @@ export class DiagnosticsViewModel {
         ),
         onTypeFilterChange: this._handleTypeFilterChange,
         onTextFilterChange: this._handleTextFilterChange,
-        gotoMessageLocation: this._gotoMessageLocation,
+        selectMessage: this._selectMessage,
+        gotoMessageLocation: goToDiagnosticLocation,
       }),
     );
 
@@ -183,9 +184,8 @@ export class DiagnosticsViewModel {
     });
   }
 
-  _gotoMessageLocation = (message: DiagnosticMessage): void => {
+  _selectMessage = (message: DiagnosticMessage): void => {
     this._model.setState({selectedMessage: message});
-    goToDiagnosticLocation(message);
   };
 }
 
