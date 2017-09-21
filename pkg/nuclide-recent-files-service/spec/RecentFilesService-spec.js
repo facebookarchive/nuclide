@@ -13,7 +13,6 @@ import RecentFilesService from '../lib/RecentFilesService';
 
 import invariant from 'assert';
 
-const ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS = 101;
 const FILE_PATH_1 = 'foo/bar/foo.js';
 const FILE_PATH_2 = 'foo/bar/bar.js';
 const FILE_PATH_3 = 'foo/bar/baz.js';
@@ -29,38 +28,34 @@ describe('RecentFilesService', () => {
     it('returns a reverse-chronological list of recently opened files', () => {
       waitsForPromise(async () => {
         let mostRecentFiles;
-        let previousTimestamp = 0;
+        let previousTimestamp = Date.now();
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(1);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBeGreaterThan(previousTimestamp);
+        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
         previousTimestamp = mostRecentFiles[0].timestamp;
 
         await atom.workspace.open(FILE_PATH_2);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBeGreaterThan(previousTimestamp);
+        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
 
         previousTimestamp = mostRecentFiles[0].timestamp;
         await atom.workspace.open(FILE_PATH_3);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(3);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_3)).toBe(true);
-        expect(mostRecentFiles[0].timestamp).toBeGreaterThan(previousTimestamp);
+        expect(mostRecentFiles[0].timestamp).toBe(previousTimestamp);
       });
     });
 
     it('returns paths and timestamps of recently opened files', () => {
       waitsForPromise(async () => {
         await atom.workspace.open(FILE_PATH_1);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         const recentFiles = recentFilesService.getRecentFiles();
         const mostRecentFile = recentFiles[0];
         expect(Object.keys(mostRecentFile).length).toEqual(3);
@@ -75,26 +70,22 @@ describe('RecentFilesService', () => {
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(1);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_2);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_1);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
         expect(mostRecentFiles[1].path.endsWith(FILE_PATH_2)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_2);
-        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);

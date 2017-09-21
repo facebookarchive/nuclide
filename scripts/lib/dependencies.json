@@ -2,9 +2,9 @@
   "atom": {
     "clientOnly": true,
     "version-cmd": ["atom", "--version"],
-    "version-output": "Atom    : 1.19.4\nElectron: 1.6.9\nChrome  : 56.0.2924.87\nNode    : 7.4.0",
-    "url": "https://github.com/atom/atom/releases/download/v1.19.4/atom-mac.zip",
-    "shasum": "248cde2b5da069e8870d6ca52e37051c453cea740e2e9a79476d730c3e97e6c7"
+    "version-output": "Atom    : 1.20.1\nElectron: 1.6.9\nChrome  : 56.0.2924.87\nNode    : 7.4.0",
+    "url": "https://github.com/atom/atom/releases/download/v1.20.1/atom-mac.zip",
+    "shasum": "58db0b456477f3776b3e3390752e7f7812bf3791f3650de5f230bff18b517017"
   },
   "flow": {
     "clientOnly": false,
