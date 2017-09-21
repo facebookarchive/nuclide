@@ -135,6 +135,11 @@ type Props<T> = {
 
 type State<T> = {|
   columnWidths: ?WidthMap<T>,
+
+  // It's awkward to have hover styling when you're using keyboard navigation and the mouse just
+  // happens to be over a row. Therefore, we'll keep track of when you use keyboard navigation and
+  // will disable the hover state until you move the mouse again.
+  usingKeyboard: boolean,
 |};
 
 type ResizerLocation<T> = {
@@ -171,6 +176,7 @@ type ResizerLocation<T> = {
  */
 export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   _resizingDisposable: ?IDisposable; // Active while resizing.
+  _mouseMoveDisposable: ?IDisposable;
   _disposables: UniversalDisposable;
   _tableBody: ?HTMLElement;
 
@@ -179,6 +185,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._resizingDisposable = null;
     this.state = {
       columnWidths: null,
+      usingKeyboard: false,
     };
   }
 
@@ -306,12 +313,15 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       },
       atom.commands.add(el, {
         'core:move-up': () => {
+          this.setState({usingKeyboard: true});
           this._moveSelection(-1);
         },
         'core:move-down': () => {
+          this.setState({usingKeyboard: true});
           this._moveSelection(1);
         },
         'core:confirm': () => {
+          this.setState({usingKeyboard: true});
           const {rows, selectedIndex, onConfirm} = this.props;
           if (onConfirm == null || selectedIndex == null) {
             return;
@@ -323,6 +333,11 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
           }
         },
       }),
+      () => {
+        if (this._mouseMoveDisposable != null) {
+          this._mouseMoveDisposable.dispose();
+        }
+      },
     );
   }
 
@@ -338,7 +353,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     return minWidths;
   }
 
-  componentDidUpdate(prevProps: Props<T>): void {
+  componentDidUpdate(prevProps: Props<T>, prevState: State<T>): void {
     if (
       this._tableBody != null &&
       this.props.selectedIndex != null &&
@@ -347,6 +362,18 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       const selectedRow = this._tableBody.children[this.props.selectedIndex];
       if (selectedRow != null) {
         scrollIntoViewIfNeeded(selectedRow);
+      }
+    }
+    if (this.state.usingKeyboard !== prevState.usingKeyboard) {
+      if (this._mouseMoveDisposable != null) {
+        this._mouseMoveDisposable.dispose();
+      }
+      if (this.state.usingKeyboard) {
+        this._mouseMoveDisposable = new UniversalDisposable(
+          Observable.fromEvent(document, 'mousemove').take(1).subscribe(() => {
+            this.setState({usingKeyboard: false});
+          }),
+        );
       }
     }
   }
@@ -559,6 +586,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
           className={classnames(rowClassName, {
             'nuclide-ui-table-row': true,
             'nuclide-ui-table-row-selectable': selectable,
+            'nuclide-ui-table-row-using-keyboard-nav': this.state.usingKeyboard,
             'nuclide-ui-table-row-selected': isSelectedRow,
             'nuclide-ui-table-row-alternate':
               alternateBackground !== false && i % 2 === 1,
