@@ -21,6 +21,7 @@ import {Observable} from 'rxjs';
 import {Icon} from './Icon';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ResizeObservable} from './observable-dom';
+import {scrollIntoViewIfNeeded} from './scrollIntoView';
 
 const DEFAULT_MIN_COLUMN_WIDTH = 40;
 
@@ -96,8 +97,17 @@ type Props<T> = {
   onWillSelect?: (
     selectedItem: any,
     selectedIndex: number,
-    event: SyntheticMouseEvent<>,
+    event: ?SyntheticMouseEvent<>,
   ) => boolean,
+
+  /**
+   * Called when a row selection is confirmed. Currently, this is done either by triggering
+   * "core:confirm" while an item is selected or by single clicking (which selects and confirms).
+   * In the future, we may consider moving single click to select-only and requiring double click
+   * for confirmation.
+   */
+  onConfirm?: (selectedItem: any, selectedIndex: number) => mixed,
+
   /**
    * Optional React Component to override the default message when zero rows are provided.
    * Useful for showing loading spinners and custom messages.
@@ -112,6 +122,15 @@ type Props<T> = {
    * It disables the 'sortable' prop.
    */
   headerTitle?: string,
+
+  /**
+   * Should keyboard navigation be enabled? This option exists for historical purposes. Ideally it
+   * would always be enabled, however, some locations require the "native-key-bindings" class--
+   * usually to enable copying to the clipboard--which prevents Atom commands from firing.
+   * TODO: Find an alternative means of enabling copying in those locations, always enable keyboard
+   * navigation, and remove this prop.
+   */
+  enableKeyboardNavigation?: ?boolean,
 };
 
 type State<T> = {|
@@ -153,6 +172,7 @@ type ResizerLocation<T> = {
 export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   _resizingDisposable: ?IDisposable; // Active while resizing.
   _disposables: UniversalDisposable;
+  _tableBody: ?HTMLElement;
 
   constructor(props: Props<T>) {
     super(props);
@@ -284,6 +304,25 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       () => {
         this._stopResizing();
       },
+      atom.commands.add(el, {
+        'core:move-up': () => {
+          this._moveSelection(-1);
+        },
+        'core:move-down': () => {
+          this._moveSelection(1);
+        },
+        'core:confirm': () => {
+          const {rows, selectedIndex, onConfirm} = this.props;
+          if (onConfirm == null || selectedIndex == null) {
+            return;
+          }
+          const selectedRow = rows[selectedIndex];
+          const selectedItem = selectedRow && selectedRow.data;
+          if (selectedItem != null) {
+            onConfirm(selectedItem, selectedIndex);
+          }
+        },
+      }),
     );
   }
 
@@ -299,20 +338,56 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     return minWidths;
   }
 
-  _handleSortByColumn(sortedBy: $Keys<T>): void {
-    const {onSort, sortDescending, sortedColumn} = this.props;
-    if (onSort == null) {
-      return;
+  componentDidUpdate(prevProps: Props<T>): void {
+    if (
+      this._tableBody != null &&
+      this.props.selectedIndex != null &&
+      this.props.selectedIndex !== prevProps.selectedIndex
+    ) {
+      const selectedRow = this._tableBody.children[this.props.selectedIndex];
+      if (selectedRow != null) {
+        scrollIntoViewIfNeeded(selectedRow);
+      }
     }
-    onSort(
-      sortedBy,
-      sortDescending == null || sortedBy !== sortedColumn
-        ? false
-        : !sortDescending,
-    );
   }
 
-  _handleRowClick(selectedIndex: number, event: SyntheticMouseEvent<>): void {
+  focus(): void {
+    if (this._tableBody == null) {
+      return;
+    }
+    let el = document.activeElement;
+    while (el != null) {
+      if (el === this._tableBody) {
+        // Already focused!
+        return;
+      }
+      el = el.parentNode;
+    }
+    this._tableBody.focus();
+  }
+
+  _moveSelection(offset: -1 | 1): void {
+    const {selectedIndex} = this.props;
+    if (selectedIndex == null) {
+      return;
+    }
+    const nextSelectedIndex = selectedIndex + offset;
+    if (
+      nextSelectedIndex < 0 ||
+      nextSelectedIndex >= this.props.rows.length ||
+      nextSelectedIndex === selectedIndex
+    ) {
+      return;
+    }
+    this._selectRow({index: nextSelectedIndex});
+  }
+
+  _selectRow(options: {|
+    index: number,
+    event?: SyntheticMouseEvent<>,
+    confirm?: boolean,
+  |}): void {
+    const {index: selectedIndex, event, confirm} = options;
     const {onSelect, onWillSelect, rows} = this.props;
     if (onSelect == null) {
       return;
@@ -325,6 +400,22 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       }
     }
     onSelect(selectedItem, selectedIndex);
+    if (confirm && this.props.onConfirm != null) {
+      this.props.onConfirm(selectedItem, selectedIndex);
+    }
+  }
+
+  _handleSortByColumn(sortedBy: $Keys<T>): void {
+    const {onSort, sortDescending, sortedColumn} = this.props;
+    if (onSort == null) {
+      return;
+    }
+    onSort(
+      sortedBy,
+      sortDescending == null || sortedBy !== sortedColumn
+        ? false
+        : !sortDescending,
+    );
   }
 
   _renderEmptyCellContent(): React.Element<any> {
@@ -459,7 +550,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       const rowProps = {};
       if (selectable) {
         rowProps.onClick = event => {
-          this._handleRowClick(i, event);
+          this._selectRow({index: i, event, confirm: true});
         };
       }
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
@@ -489,6 +580,12 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       scrollableBodyStyle.maxHeight = maxBodyHeight;
       scrollableBodyStyle.overflowY = 'auto';
     }
+    const bodyClassNames = classnames(
+      'nuclide-ui-table',
+      'nuclide-ui-table-body',
+      // Using native-key-bindings prevents the up and down arrows from being captured.
+      {'native-key-bindings': !this.props.enableKeyboardNavigation},
+    );
     return [
       <div key="header" className="nuclide-ui-table" ref="table">
         <div className="nuclide-ui-table-header">
@@ -497,7 +594,10 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       </div>,
       <div key="body" style={scrollableBodyStyle}>
         <div
-          className="nuclide-ui-table nuclide-ui-table-body native-key-bindings"
+          ref={el => {
+            this._tableBody = el;
+          }}
+          className={bodyClassNames}
           tabIndex="-1">
           {body}
         </div>

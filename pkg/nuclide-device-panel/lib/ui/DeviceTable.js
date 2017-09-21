@@ -126,16 +126,20 @@ export class DeviceTable extends React.Component<Props> {
   _handleDeviceWillSelect = (
     item: any,
     selectedIndex: number,
-    event: SyntheticMouseEvent<>,
+    event: ?SyntheticMouseEvent<>,
   ): boolean => {
-    let element = ((event.target: any): HTMLElement);
-    while (element != null) {
-      if (
-        element.classList.contains('nuclide-device-panel-device-action-button')
-      ) {
-        return false;
+    if (event != null) {
+      let element = ((event.target: any): HTMLElement);
+      while (element != null) {
+        if (
+          element.classList.contains(
+            'nuclide-device-panel-device-action-button',
+          )
+        ) {
+          return false;
+        }
+        element = element.parentElement;
       }
-      element = element.parentElement;
     }
     if (
       !this.props.devices.isError &&
