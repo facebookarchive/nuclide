@@ -18,8 +18,11 @@ import invariant from 'assert';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
+import {track} from '../../nuclide-analytics';
 import {ListView, ListViewItem} from '../../nuclide-ui/ListView';
 import classnames from 'classnames';
+import {Icon} from 'nuclide-commons-ui/Icon';
+import {AnalyticsEvents} from './constants';
 
 type Props = {
   actions: DebuggerActions,
@@ -161,6 +164,19 @@ export class BreakpointListComponent extends React.Component<Props, State> {
                 )}
               />
               <span title={title} data-path={path} data-line={line}>
+                <div className="nuclide-debugger-breakpoint-condition-controls">
+                  <Icon
+                    icon="pencil"
+                    className="nuclide-debugger-breakpoint-condition-control"
+                    onClick={event => {
+                      track(AnalyticsEvents.DEBUGGER_EDIT_BREAKPOINT_FROM_ICON);
+                      atom.commands.dispatch(
+                        event.target,
+                        'nuclide-debugger:edit-breakpoint',
+                      );
+                    }}
+                  />
+                </div>
                 {label}
               </span>
               {conditionElement}
