@@ -23,6 +23,8 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ResizeObservable} from './observable-dom';
 import {scrollIntoViewIfNeeded} from './scrollIntoView';
 
+type SelectionEvent = SyntheticEvent<*> | Event;
+
 const DEFAULT_MIN_COLUMN_WIDTH = 40;
 
 const DefaultEmptyComponent = () =>
@@ -87,9 +89,17 @@ type Props<T> = {
   selectable?: boolean,
   selectedIndex?: ?number,
   /**
-   * Handler to be called upon selection. Called iff `selectable` is `true`.
+   * Handler to be called upon selection. Called iff `selectable` is `true`. We pass along the event
+   * because some consumers may want to take different action depending on it. For example, if you
+   * click on a row in the diagnostics table, we know you want to go to that diagnostic; if you
+   * select it with the keyboard, you may just be doing so incidentally while moving the selection
+   * to another row.
    */
-  onSelect?: (selectedItem: any, selectedIndex: number) => mixed,
+  onSelect?: (
+    selectedItem: any,
+    selectedIndex: number,
+    event: SelectionEvent,
+  ) => mixed,
   /**
    * Callback to be invoked before calling onSelect. Called iff `selectable` is `true`.
    * If this callback returns false, row selection is canceled.
@@ -97,7 +107,7 @@ type Props<T> = {
   onWillSelect?: (
     selectedItem: any,
     selectedIndex: number,
-    event: ?SyntheticMouseEvent<>,
+    event: SelectionEvent,
   ) => boolean,
 
   /**
@@ -312,15 +322,15 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         this._stopResizing();
       },
       atom.commands.add(el, {
-        'core:move-up': () => {
+        'core:move-up': event => {
           this.setState({usingKeyboard: true});
-          this._moveSelection(-1);
+          this._moveSelection(-1, event);
         },
-        'core:move-down': () => {
+        'core:move-down': event => {
           this.setState({usingKeyboard: true});
-          this._moveSelection(1);
+          this._moveSelection(1, event);
         },
-        'core:confirm': () => {
+        'core:confirm': event => {
           this.setState({usingKeyboard: true});
           const {rows, selectedIndex, onConfirm} = this.props;
           if (onConfirm == null || selectedIndex == null) {
@@ -393,7 +403,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     this._tableBody.focus();
   }
 
-  _moveSelection(offset: -1 | 1): void {
+  _moveSelection(offset: -1 | 1, event: SelectionEvent): void {
     const {selectedIndex} = this.props;
     if (selectedIndex == null) {
       return;
@@ -406,12 +416,12 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     ) {
       return;
     }
-    this._selectRow({index: nextSelectedIndex});
+    this._selectRow({index: nextSelectedIndex, event});
   }
 
   _selectRow(options: {|
     index: number,
-    event?: SyntheticMouseEvent<>,
+    event: SelectionEvent,
     confirm?: boolean,
   |}): void {
     const {index: selectedIndex, event, confirm} = options;
@@ -426,7 +436,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         return;
       }
     }
-    onSelect(selectedItem, selectedIndex);
+    onSelect(selectedItem, selectedIndex, event);
     if (confirm && this.props.onConfirm != null) {
       this.props.onConfirm(selectedItem, selectedIndex);
     }

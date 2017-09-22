@@ -126,7 +126,7 @@ export class DeviceTable extends React.Component<Props> {
   _handleDeviceWillSelect = (
     item: any,
     selectedIndex: number,
-    event: ?SyntheticMouseEvent<>,
+    event: Event | SyntheticEvent<*>,
   ): boolean => {
     if (event != null) {
       let element = ((event.target: any): HTMLElement);
