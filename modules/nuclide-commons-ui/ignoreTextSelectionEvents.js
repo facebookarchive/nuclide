@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +11,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -29,10 +34,8 @@
  *   onClick={ignoreTextSelectionEvents(this._onClick)}
  */
 
-const ignoreTextSelectionEvents = (
-  cb?: (e: SyntheticMouseEvent<>) => mixed,
-) => {
-  return (e: SyntheticMouseEvent<>) => {
+const ignoreTextSelectionEvents = cb => {
+  return e => {
     // Ignore text selection
     const selection = getSelection();
     if (selection != null && selection.type === 'Range') {
@@ -44,4 +47,4 @@ const ignoreTextSelectionEvents = (
   };
 };
 
-export default ignoreTextSelectionEvents;
+exports.default = ignoreTextSelectionEvents;

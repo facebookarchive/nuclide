@@ -1,3 +1,85 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SshHandshake = exports.SshHandshakeError = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.decorateSshConnectionDelegateWithTracking = decorateSshConnectionDelegateWithTracking;
+
+var _net = _interopRequireDefault(require('net'));
+
+var _ssh;
+
+function _load_ssh() {
+  return _ssh = require('ssh2');
+}
+
+var _SftpClient;
+
+function _load_SftpClient() {
+  return _SftpClient = require('./SftpClient');
+}
+
+var _SshClient;
+
+function _load_SshClient() {
+  return _SshClient = require('./SshClient');
+}
+
+var _fs;
+
+function _load_fs() {
+  return _fs = _interopRequireDefault(require('../common/fs'));
+}
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _temp;
+
+function _load_temp() {
+  return _temp = require('../common/temp');
+}
+
+var _ConnectionTracker;
+
+function _load_ConnectionTracker() {
+  return _ConnectionTracker = _interopRequireDefault(require('./ConnectionTracker'));
+}
+
+var _lookupPreferIpV;
+
+function _load_lookupPreferIpV() {
+  return _lookupPreferIpV = _interopRequireDefault(require('./lookup-prefer-ip-v6'));
+}
+
+var _createBigDigClient;
+
+function _load_createBigDigClient() {
+  return _createBigDigClient = _interopRequireDefault(require('./createBigDigClient'));
+}
+
+var _events;
+
+function _load_events() {
+  return _events = require('../common/events');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TODO
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +88,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {BigDigClient} from './BigDigClient';
-import type {ClientErrorExtensions, ConnectConfig, Prompt} from './SshClient';
-
-import net from 'net';
-import invariant from 'assert';
-import {Client as SshConnection} from 'ssh2';
-import {SftpClient} from './SftpClient';
-import {SshClient} from './SshClient';
-import fs from '../common/fs';
-import {
-  lastly,
-  sleep,
-  timeoutPromise,
-  TimedOutError,
-} from 'nuclide-commons/promise';
-import {shellQuote} from 'nuclide-commons/string';
-import {tempfile} from '../common/temp';
-import ConnectionTracker from './ConnectionTracker';
-import lookupPreferIpv6 from './lookup-prefer-ip-v6';
-import createBigDigClient from './createBigDigClient';
-import {onceEventArray, onceEventOrError} from '../common/events';
-
-export type {Prompt} from './SshClient';
-
-// TODO
-function restoreBigDigClient(address: string) {}
-
-export type RemoteConnectionConfiguration = {
-  host: string, // host nuclide server is running on.
-  port: number, // port to connect to.
-  certificateAuthorityCertificate?: Buffer, // certificate of certificate authority.
-  clientCertificate?: Buffer, // client certificate for https connection.
-  clientKey?: Buffer, // key for https connection.
-};
+function restoreBigDigClient(address) {}
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 120 * 1000;
@@ -52,23 +101,10 @@ const SFTP_TIMEOUT_MS = 20 * 1000;
 // Automatically retry with a password prompt if existing authentication methods fail.
 const PASSWORD_RETRIES = 3;
 
-export type SshConnectionConfiguration = {
-  host: string, // host nuclide server is running on
-  sshPort: number, // ssh port of host nuclide server is running on
-  username: string, // username to authenticate as
-  pathToPrivateKey: string, // The path to private key
-  remoteServerCommand: string, // Command to use to start server
-  remoteServerPort?: number, // Port remote server should run on (defaults to 0)
-  remoteServerCustomParams?: Object, // JSON-serializable params.
-  authMethod: SupportedMethodTypes, // Which of the authentication methods in `SupportedMethods` to use.
-  password: string, // for simple password-based authentication
-};
-
-export type SupportedMethodTypes = 'SSL_AGENT' | 'PASSWORD' | 'PRIVATE_KEY';
 const SupportedMethods = Object.freeze({
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
-  PRIVATE_KEY: 'PRIVATE_KEY',
+  PRIVATE_KEY: 'PRIVATE_KEY'
 });
 
 const ErrorType = Object.freeze({
@@ -83,30 +119,8 @@ const ErrorType = Object.freeze({
   SERVER_CANNOT_CONNECT: 'SERVER_CANNOT_CONNECT',
   SFTP_TIMEOUT: 'SFTP_TIMEOUT',
   UNSUPPORTED_AUTH_METHOD: 'UNSUPPORTED_AUTH_METHOD',
-  USER_CANCELLED: 'USER_CANCELLED',
+  USER_CANCELLED: 'USER_CANCELLED'
 });
-
-export type SshHandshakeErrorType =
-  | 'UNKNOWN'
-  | 'HOST_NOT_FOUND'
-  | 'CANT_READ_PRIVATE_KEY'
-  | 'SSH_CONNECT_TIMEOUT'
-  | 'SSH_CONNECT_FAILED'
-  | 'SSH_AUTHENTICATION'
-  | 'DIRECTORY_NOT_FOUND'
-  | 'SERVER_START_FAILED'
-  | 'SERVER_CANNOT_CONNECT'
-  | 'SFTP_TIMEOUT'
-  | 'UNSUPPORTED_AUTH_METHOD'
-  | 'USER_CANCELLED';
-
-type SshConnectionErrorLevel =
-  | 'client-timeout'
-  | 'client-socket'
-  | 'protocal'
-  | 'client-authentication'
-  | 'agent'
-  | 'client-dns';
 
 /**
  * The server is asking for replies to the given prompts for
@@ -120,42 +134,9 @@ type SshConnectionErrorLevel =
  * @return The answers for all prompts must be returned as an array of strings.
  *     Note: It's possible for the server to come back and ask more questions.
  */
-export type KeyboardInteractiveCallback = (
-  name: string,
-  instructions: string,
-  instructionsLang: string,
-  prompts: Array<Prompt>,
-) => Promise<Array<string>>;
 
-export type SshConnectionDelegate = {
-  /** Invoked when server requests keyboard interaction */
-  onKeyboardInteractive: KeyboardInteractiveCallback,
-  /** Invoked when trying to connect */
-  onWillConnect: (config: SshConnectionConfiguration) => void,
-  /** Invoked when connection is sucessful */
-  onDidConnect: (
-    connection: BigDigClient,
-    config: SshConnectionConfiguration,
-  ) => mixed,
-  /** Invoked when connection is fails */
-  onError: (
-    errorType: SshHandshakeErrorType,
-    error: Error,
-    config: SshConnectionConfiguration,
-  ) => void,
-};
 
-const SshConnectionErrorLevelMap: Map<
-  SshConnectionErrorLevel,
-  SshHandshakeErrorType,
-> = new Map([
-  ['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT],
-  ['client-socket', ErrorType.SSH_CONNECT_FAILED],
-  ['protocal', ErrorType.SSH_CONNECT_FAILED],
-  ['client-authentication', ErrorType.SSH_AUTHENTICATION],
-  ['agent', ErrorType.SSH_AUTHENTICATION],
-  ['client-dns', ErrorType.SSH_AUTHENTICATION],
-]);
+const SshConnectionErrorLevelMap = new Map([['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT], ['client-socket', ErrorType.SSH_CONNECT_FAILED], ['protocal', ErrorType.SSH_CONNECT_FAILED], ['client-authentication', ErrorType.SSH_AUTHENTICATION], ['agent', ErrorType.SSH_AUTHENTICATION], ['client-dns', ErrorType.SSH_AUTHENTICATION]]);
 
 /**
  * The output of the server bootstrapping process. In case we're not using a secure connection, we
@@ -163,32 +144,8 @@ const SshConnectionErrorLevelMap: Map<
  * valid server info should look like. The type of each property is `T | any` for some `T`, which
  * means that we want it to be `T`, but must verify first.
  */
-interface ServerInfo {
-  success?: boolean | any,
-  hostname?: string | any,
-  // TODO(siegebell): `port` should probably be `any` in case we're in "insecure" mode.
-  //   See: `_updateServerInfo`.
-  port?: number,
-  /** Certificate authority. */
-  ca?: string | any,
-  /** Client certificate. */
-  cert?: string | any,
-  /** Client key. */
-  key?: string | any,
-  /** Logging info, which we report if there was an error. */
-  logs?: any,
-}
-
-export class SshHandshakeError extends Error {
-  message: string;
-  errorType: SshHandshakeErrorType;
-  innerError: Error;
-  isCancellation: boolean;
-  constructor(
-    message: string,
-    errorType: SshHandshakeErrorType,
-    innerError: Error,
-  ) {
+class SshHandshakeError extends Error {
+  constructor(message, errorType, innerError) {
     super(`SshHandshake failed: ${errorType}, ${message}`);
     this.message = message;
     this.errorType = errorType;
@@ -197,136 +154,103 @@ export class SshHandshakeError extends Error {
   }
 }
 
-/**
- * Represents a connection failure due to a client-authentication error.
- */
-class SshAuthError extends Error {
-  /** The error thrown by `SshClient::connect` */
-  innerError: Error & ClientErrorExtensions;
-  /** If we have determined that the cause of the error was that a private key needs a password. */
-  needsPrivateKeyPassword: boolean;
-  errorType: SshHandshakeErrorType;
+exports.SshHandshakeError = SshHandshakeError; /**
+                                                * Represents a connection failure due to a client-authentication error.
+                                                */
 
-  constructor(
-    innerError: Error & ClientErrorExtensions,
-    options: {needsPrivateKeyPassword: boolean},
-  ) {
+class SshAuthError extends Error {
+  /** If we have determined that the cause of the error was that a private key needs a password. */
+  constructor(innerError, options) {
     super(innerError.message);
     this.innerError = innerError;
     this.needsPrivateKeyPassword = options.needsPrivateKeyPassword;
-    const errorLevel = ((innerError: Object).level: SshConnectionErrorLevel);
-    this.errorType =
-      SshConnectionErrorLevelMap.get(errorLevel) ||
-      SshHandshake.ErrorType.UNKNOWN;
+    const errorLevel = innerError.level;
+    this.errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
   }
+  /** The error thrown by `SshClient::connect` */
 }
 
-export class SshHandshake {
-  static ErrorType = ErrorType;
-  static SupportedMethods: typeof SupportedMethods = SupportedMethods;
+class SshHandshake {
 
-  _delegate: SshConnectionDelegate;
-  _connection: SshClient;
-  _config: SshConnectionConfiguration;
-  _forwardingServer: net.Server;
-  _remoteHost: ?string;
-  _remotePort: number;
-  _certificateAuthorityCertificate: Buffer;
-  _clientCertificate: Buffer;
-  _clientKey: Buffer;
-  _cancelled: boolean;
-
-  constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
+  constructor(delegate, connection) {
     this._cancelled = false;
     this._delegate = delegate;
-    this._connection = new SshClient(
-      connection ? connection : new SshConnection(),
-      this._onKeyboardInteractive.bind(this),
-    );
+    this._connection = new (_SshClient || _load_SshClient()).SshClient(connection ? connection : new (_ssh || _load_ssh()).Client(), this._onKeyboardInteractive.bind(this));
   }
 
-  _willConnect(): void {
+  _willConnect() {
     this._delegate.onWillConnect(this._config);
   }
 
-  _didConnect(connection: BigDigClient): void {
+  _didConnect(connection) {
     this._delegate.onDidConnect(connection, this._config);
   }
 
-  async _getPassword(prompt: string): Promise<string> {
-    const [
-      password,
-    ] = await this._delegate.onKeyboardInteractive(
-      '' /* name */,
-      '' /* instructions */,
-      '' /* instructionsLang */,
-      [{prompt, echo: false}],
-    );
-    return password;
+  _getPassword(prompt) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const [password] = yield _this._delegate.onKeyboardInteractive('' /* name */
+      , '' /* instructions */
+      , '' /* instructionsLang */
+      , [{ prompt, echo: false }]);
+      return password;
+    })();
   }
 
-  async _getConnectConfig(
-    address: string,
-    config: SshConnectionConfiguration,
-  ): Promise<ConnectConfig> {
-    if (config.authMethod === SupportedMethods.SSL_AGENT) {
-      // Point to ssh-agent's socket for ssh-agent-based authentication.
-      let agent = process.env.SSH_AUTH_SOCK;
-      // flowlint-next-line sketchy-null-string:off
-      if (!agent && /^win/.test(process.platform)) {
-        // #100: On Windows, fall back to pageant.
-        agent = 'pageant';
-      }
-      return {
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        agent,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      };
-    } else if (config.authMethod === SupportedMethods.PASSWORD) {
-      // When the user chooses password-based authentication, we specify
-      // the config as follows so that it tries simple password auth and
-      // failing that it falls through to the keyboard interactive path
-      return {
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        password: config.password,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      };
-    } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
-      // Note that if the path the user entered contains a ~, the calling function is responsible
-      // for doing the expansion before it is passed in.
-      const expandedPath = config.pathToPrivateKey;
-      let privateKey;
-      try {
-        privateKey = await fs.readFileAsBuffer(expandedPath);
-      } catch (error) {
-        throw new SshHandshakeError(
-          `Failed to read private key at ${expandedPath}.`,
-          SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY,
-          error,
-        );
-      }
+  _getConnectConfig(address, config) {
+    return (0, _asyncToGenerator.default)(function* () {
+      if (config.authMethod === SupportedMethods.SSL_AGENT) {
+        // Point to ssh-agent's socket for ssh-agent-based authentication.
+        let agent = process.env.SSH_AUTH_SOCK;
+        // flowlint-next-line sketchy-null-string:off
+        if (!agent && /^win/.test(process.platform)) {
+          // #100: On Windows, fall back to pageant.
+          agent = 'pageant';
+        }
+        return {
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          agent,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        };
+      } else if (config.authMethod === SupportedMethods.PASSWORD) {
+        // When the user chooses password-based authentication, we specify
+        // the config as follows so that it tries simple password auth and
+        // failing that it falls through to the keyboard interactive path
+        return {
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          password: config.password,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        };
+      } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
+        // Note that if the path the user entered contains a ~, the calling function is responsible
+        // for doing the expansion before it is passed in.
+        const expandedPath = config.pathToPrivateKey;
+        let privateKey;
+        try {
+          privateKey = yield (_fs || _load_fs()).default.readFileAsBuffer(expandedPath);
+        } catch (error) {
+          throw new SshHandshakeError(`Failed to read private key at ${expandedPath}.`, SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY, error);
+        }
 
-      return {
-        host: address,
-        port: config.sshPort,
-        username: config.username,
-        privateKey,
-        tryKeyboard: true,
-        readyTimeout: READY_TIMEOUT_MS,
-      };
-    } else {
-      throw new SshHandshakeError(
-        `Unsupported authentication method: ${config.authMethod}.`,
-        SshHandshake.ErrorType.UNSUPPORTED_AUTH_METHOD,
-        new Error(),
-      );
-    }
+        return {
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          privateKey,
+          tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT_MS
+        };
+      } else {
+        throw new SshHandshakeError(`Unsupported authentication method: ${config.authMethod}.`, SshHandshake.ErrorType.UNSUPPORTED_AUTH_METHOD, new Error());
+      }
+    })();
   }
 
   /**
@@ -338,22 +262,23 @@ export class SshHandshake {
    * @param {*} config - connection configuration parameters.
    * @returns the authentication error, or `null` if successful.
    */
-  async _connectOrNeedsAuth(config: ConnectConfig): Promise<?SshAuthError> {
-    try {
-      await this._connection.connect(config);
-      return null;
-    } catch (error) {
-      if (
-        error.message ===
-        'Encrypted private key detected, but no passphrase given'
-      ) {
-        return new SshAuthError(error, {needsPrivateKeyPassword: true});
-      } else if (error.level === 'client-authentication') {
-        return new SshAuthError(error, {needsPrivateKeyPassword: false});
-      } else {
-        throw error;
+  _connectOrNeedsAuth(config) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      try {
+        yield _this2._connection.connect(config);
+        return null;
+      } catch (error) {
+        if (error.message === 'Encrypted private key detected, but no passphrase given') {
+          return new SshAuthError(error, { needsPrivateKeyPassword: true });
+        } else if (error.level === 'client-authentication') {
+          return new SshAuthError(error, { needsPrivateKeyPassword: false });
+        } else {
+          throw error;
+        }
       }
-    }
+    })();
   }
 
   /**
@@ -364,58 +289,50 @@ export class SshHandshake {
    *  password.
    * @param {*} config - the base configuration information.
    */
-  async _connectFallbackViaPassword(
-    error: SshAuthError,
-    connectConfig: ConnectConfig,
-    config: SshConnectionConfiguration,
-  ): Promise<void> {
-    let attempts = 0;
-    let authError: ?SshAuthError = error;
+  _connectFallbackViaPassword(error, connectConfig, config) {
+    var _this3 = this;
 
-    // If the user has already provided a password, count it against their retry count.
-    // flowlint-next-line sketchy-null-string:off
-    if (connectConfig.password) {
-      ++attempts;
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      let attempts = 0;
+      let authError = error;
 
-    // Using a private key, but no password was provided:
-    if (error.needsPrivateKeyPassword) {
-      const prompt =
-        'Encrypted private key detected, but no passphrase given.\n' +
-        `Enter passphrase for ${config.pathToPrivateKey}: `;
-      const password = await this._getPassword(prompt);
-      authError = await this._connectOrNeedsAuth({
-        ...connectConfig,
-        password,
-      });
-      ++attempts;
-    }
+      // If the user has already provided a password, count it against their retry count.
+      // flowlint-next-line sketchy-null-string:off
+      if (connectConfig.password) {
+        ++attempts;
+      }
 
-    // Keep asking the user for the correct password until they run out of attempts or the
-    // connection fails for a reason other than the password being wrong.
-    while (authError != null && attempts < PASSWORD_RETRIES) {
-      const retryText = attempts > 0 ? ' again' : '';
-      const prompt = `Authentication failed. Try entering your password${retryText}: `;
-      ++attempts;
+      // Using a private key, but no password was provided:
+      if (error.needsPrivateKeyPassword) {
+        const prompt = 'Encrypted private key detected, but no passphrase given.\n' + `Enter passphrase for ${config.pathToPrivateKey}: `;
+        const password = yield _this3._getPassword(prompt);
+        authError = yield _this3._connectOrNeedsAuth(Object.assign({}, connectConfig, {
+          password
+        }));
+        ++attempts;
+      }
 
-      // eslint-disable-next-line no-await-in-loop
-      const password = await this._getPassword(prompt);
-      // eslint-disable-next-line no-await-in-loop
-      authError = await this._connectOrNeedsAuth({
-        ...connectConfig,
-        password,
-      });
-    }
+      // Keep asking the user for the correct password until they run out of attempts or the
+      // connection fails for a reason other than the password being wrong.
+      while (authError != null && attempts < PASSWORD_RETRIES) {
+        const retryText = attempts > 0 ? ' again' : '';
+        const prompt = `Authentication failed. Try entering your password${retryText}: `;
+        ++attempts;
 
-    if (authError != null) {
-      // Exceeded retries
-      throw new SshHandshakeError(
-        'Ssh connection failed.',
-        authError.errorType,
-        authError.innerError,
-      );
-    }
-    // Success.
+        // eslint-disable-next-line no-await-in-loop
+        const password = yield _this3._getPassword(prompt);
+        // eslint-disable-next-line no-await-in-loop
+        authError = yield _this3._connectOrNeedsAuth(Object.assign({}, connectConfig, {
+          password
+        }));
+      }
+
+      if (authError != null) {
+        // Exceeded retries
+        throw new SshHandshakeError('Ssh connection failed.', authError.errorType, authError.innerError);
+      }
+      // Success.
+    })();
   }
 
   /**
@@ -424,21 +341,13 @@ export class SshHandshake {
    * already an `SshHandshakeError`, then just return it. Finally, if not being cancelled and it is
    * not an `SshHandshakeError`, then wrap it with `UNKNOWN`.
    */
-  _wrapError(error: any): SshHandshakeError {
+  _wrapError(error) {
     if (this._cancelled) {
-      return new SshHandshakeError(
-        'Cancelled by user',
-        SshHandshake.ErrorType.USER_CANCELLED,
-        error,
-      );
+      return new SshHandshakeError('Cancelled by user', SshHandshake.ErrorType.USER_CANCELLED, error);
     } else if (error instanceof SshHandshakeError) {
       return error;
     } else {
-      return new SshHandshakeError(
-        'Unknown error',
-        SshHandshake.ErrorType.UNKNOWN,
-        error,
-      );
+      return new SshHandshakeError('Unknown error', SshHandshake.ErrorType.UNKNOWN, error);
     }
   }
 
@@ -447,59 +356,49 @@ export class SshHandshake {
    * configuring certificates for a secure connection.
    * @param {*} config
    */
-  async connect(
-    config: SshConnectionConfiguration,
-  ): Promise<[BigDigClient, SshConnectionConfiguration]> {
-    try {
-      this._config = config;
-      this._cancelled = false;
-      this._willConnect();
+  connect(config) {
+    var _this4 = this;
 
-      let address;
+    return (0, _asyncToGenerator.default)(function* () {
       try {
-        address = await lookupPreferIpv6(config.host);
-      } catch (error) {
-        throw new SshHandshakeError(
-          'Failed to resolve DNS.',
-          SshHandshake.ErrorType.HOST_NOT_FOUND,
-          error,
-        );
-      }
+        _this4._config = config;
+        _this4._cancelled = false;
+        _this4._willConnect();
 
-      const connection =
-        (await restoreBigDigClient(config.host)) ||
+        let address;
+        try {
+          address = yield (0, (_lookupPreferIpV || _load_lookupPreferIpV()).default)(config.host);
+        } catch (error) {
+          throw new SshHandshakeError('Failed to resolve DNS.', SshHandshake.ErrorType.HOST_NOT_FOUND, error);
+        }
+
+        const connection = (yield restoreBigDigClient(config.host)) || (
         // We save connections by their IP address as well, in case a different hostname
         // was used for the same server.
-        (await restoreBigDigClient(address));
+        yield restoreBigDigClient(address));
 
-      if (connection) {
-        this._didConnect(connection);
-        return [connection, this._config];
+        if (connection) {
+          _this4._didConnect(connection);
+          return [connection, _this4._config];
+        }
+
+        const connectConfig = yield _this4._getConnectConfig(address, config);
+        const authError = yield _this4._connectOrNeedsAuth(connectConfig);
+        if (authError) {
+          yield _this4._connectFallbackViaPassword(authError, connectConfig, config);
+        }
+
+        return [yield _this4._onSshConnectionIsReady(), _this4._config];
+      } catch (innerError) {
+        const error = _this4._wrapError(innerError);
+
+        // eslint-disable-next-line no-console
+        console.error(`SshHandshake failed: ${error.errorType}, ${error.message}`, error.innerError);
+        _this4._delegate.onError(error.errorType, error.innerError, _this4._config);
+
+        throw error;
       }
-
-      const connectConfig = await this._getConnectConfig(address, config);
-      const authError = await this._connectOrNeedsAuth(connectConfig);
-      if (authError) {
-        await this._connectFallbackViaPassword(
-          authError,
-          connectConfig,
-          config,
-        );
-      }
-
-      return [await this._onSshConnectionIsReady(), this._config];
-    } catch (innerError) {
-      const error = this._wrapError(innerError);
-
-      // eslint-disable-next-line no-console
-      console.error(
-        `SshHandshake failed: ${error.errorType}, ${error.message}`,
-        error.innerError,
-      );
-      this._delegate.onError(error.errorType, error.innerError, this._config);
-
-      throw error;
-    }
+    })();
   }
 
   cancel() {
@@ -507,51 +406,36 @@ export class SshHandshake {
     this._connection.end();
   }
 
-  _onKeyboardInteractive(
-    name: string,
-    instructions: string,
-    instructionsLang: string,
-    prompts: Array<Prompt>,
-  ): Promise<Array<string>> {
-    return this._delegate.onKeyboardInteractive(
-      name,
-      instructions,
-      instructionsLang,
-      prompts,
-    );
+  _onKeyboardInteractive(name, instructions, instructionsLang, prompts) {
+    return this._delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts);
   }
 
-  _forwardSocket(socket: net.Socket): void {
-    invariant(socket.remoteAddress != null);
-    invariant(this._remotePort != null);
+  _forwardSocket(socket) {
+    if (!(socket.remoteAddress != null)) {
+      throw new Error('Invariant violation: "socket.remoteAddress != null"');
+    }
 
-    this._connection
-      .forwardOut(
-        socket.remoteAddress,
-        socket.remotePort,
-        'localhost',
-        this._remotePort,
-      )
-      .then(
-        stream => {
-          socket.pipe(stream);
-          stream.pipe(socket);
-        },
-        err => {
-          socket.end();
-          console.error(err); // eslint-disable-line no-console
-        },
-      );
+    if (!(this._remotePort != null)) {
+      throw new Error('Invariant violation: "this._remotePort != null"');
+    }
+
+    this._connection.forwardOut(socket.remoteAddress, socket.remotePort, 'localhost', this._remotePort).then(stream => {
+      socket.pipe(stream);
+      stream.pipe(socket);
+    }, err => {
+      socket.end();
+      console.error(err); // eslint-disable-line no-console
+    });
   }
 
-  _updateServerInfo(serverInfo: ServerInfo) {
+  _updateServerInfo(serverInfo) {
     // TODO(siegebell): `serverInfo` may not define `port` if in "insecure" mode.
-    invariant(typeof serverInfo.port === 'number');
+    if (!(typeof serverInfo.port === 'number')) {
+      throw new Error('Invariant violation: "typeof serverInfo.port === \'number\'"');
+    }
+
     this._remotePort = serverInfo.port || 0;
-    this._remoteHost =
-      typeof serverInfo.hostname === 'string'
-        ? serverInfo.hostname
-        : this._config.host;
+    this._remoteHost = typeof serverInfo.hostname === 'string' ? serverInfo.hostname : this._config.host;
 
     // The following keys are optional in `RemoteConnectionConfiguration`.
     //
@@ -569,34 +453,22 @@ export class SshHandshake {
     }
   }
 
-  _isSecure(): boolean {
-    return Boolean(
-      this._certificateAuthorityCertificate &&
-        this._clientCertificate &&
-        this._clientKey,
-    );
+  _isSecure() {
+    return Boolean(this._certificateAuthorityCertificate && this._clientCertificate && this._clientKey);
   }
 
-  _parseServerStartInfo(serverInfoJson: string): ServerInfo {
-    let serverInfo: ServerInfo;
+  _parseServerStartInfo(serverInfoJson) {
+    let serverInfo;
     try {
       serverInfo = JSON.parse(serverInfoJson);
     } catch (error) {
-      throw new SshHandshakeError(
-        'Malformed server start information',
-        SshHandshake.ErrorType.SERVER_START_FAILED,
-        new Error(serverInfoJson),
-      );
+      throw new SshHandshakeError('Malformed server start information', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfoJson));
     }
 
     if (serverInfo.success) {
       return serverInfo;
     } else {
-      throw new SshHandshakeError(
-        'Remote server failed to start',
-        SshHandshake.ErrorType.SERVER_START_FAILED,
-        new Error(serverInfo.logs),
-      );
+      throw new SshHandshakeError('Remote server failed to start', SshHandshake.ErrorType.SERVER_START_FAILED, new Error(serverInfo.logs));
     }
   }
 
@@ -605,224 +477,227 @@ export class SshHandshake {
    * written to `remoteTempFile`.
    * @param {*} remoteTempFile - where the server bootstrap wrote start info.
    */
-  async _loadServerStartInformation(remoteTempFile: string): Promise<void> {
-    const createSftp = async (): Promise<SftpClient> => {
-      try {
-        return await timeoutPromise(this._connection.sftp(), SFTP_TIMEOUT_MS);
-      } catch (error) {
-        const reason =
-          error instanceof TimedOutError
-            ? SshHandshake.ErrorType.SFTP_TIMEOUT
-            : SshHandshake.ErrorType.SERVER_START_FAILED;
-        throw new SshHandshakeError(
-          'Failed to start sftp connection',
-          reason,
-          error,
-        );
-      }
-    };
-    const getServerStartInfo = async (sftp: SftpClient): Promise<string> => {
-      const localTempFile = await tempfile();
-      try {
-        await sftp.fastGet(remoteTempFile, localTempFile);
-        return await fs.readFileAsString(localTempFile, 'utf8');
-      } catch (sftpError) {
-        throw new SshHandshakeError(
-          'Failed to transfer server start information',
-          SshHandshake.ErrorType.SERVER_START_FAILED,
-          sftpError,
-        );
-      } finally {
-        fs.unlink(localTempFile);
-      }
-    };
+  _loadServerStartInformation(remoteTempFile) {
+    var _this5 = this;
 
-    try {
-      const sftp = await createSftp();
-      const serverInfoJson = await lastly(getServerStartInfo(sftp), () =>
-        sftp.end(),
-      );
-      const serverInfo = this._parseServerStartInfo(serverInfoJson);
-      // Update server info that is needed for setting up client.
-      this._updateServerInfo(serverInfo);
-    } catch (error) {
-      throw new SshHandshakeError(
-        'Unknown error while acquiring server start information',
-        SshHandshake.ErrorType.UNKNOWN,
-        error,
-      );
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      const createSftp = (() => {
+        var _ref = (0, _asyncToGenerator.default)(function* () {
+          try {
+            return yield (0, (_promise || _load_promise()).timeoutPromise)(_this5._connection.sftp(), SFTP_TIMEOUT_MS);
+          } catch (error) {
+            const reason = error instanceof (_promise || _load_promise()).TimedOutError ? SshHandshake.ErrorType.SFTP_TIMEOUT : SshHandshake.ErrorType.SERVER_START_FAILED;
+            throw new SshHandshakeError('Failed to start sftp connection', reason, error);
+          }
+        });
+
+        return function createSftp() {
+          return _ref.apply(this, arguments);
+        };
+      })();
+      const getServerStartInfo = (() => {
+        var _ref2 = (0, _asyncToGenerator.default)(function* (sftp) {
+          const localTempFile = yield (0, (_temp || _load_temp()).tempfile)();
+          try {
+            yield sftp.fastGet(remoteTempFile, localTempFile);
+            return yield (_fs || _load_fs()).default.readFileAsString(localTempFile, 'utf8');
+          } catch (sftpError) {
+            throw new SshHandshakeError('Failed to transfer server start information', SshHandshake.ErrorType.SERVER_START_FAILED, sftpError);
+          } finally {
+            (_fs || _load_fs()).default.unlink(localTempFile);
+          }
+        });
+
+        return function getServerStartInfo(_x) {
+          return _ref2.apply(this, arguments);
+        };
+      })();
+
+      try {
+        const sftp = yield createSftp();
+        const serverInfoJson = yield (0, (_promise || _load_promise()).lastly)(getServerStartInfo(sftp), function () {
+          return sftp.end();
+        });
+        const serverInfo = _this5._parseServerStartInfo(serverInfoJson);
+        // Update server info that is needed for setting up client.
+        _this5._updateServerInfo(serverInfo);
+      } catch (error) {
+        throw new SshHandshakeError('Unknown error while acquiring server start information', SshHandshake.ErrorType.UNKNOWN, error);
+      }
+    })();
   }
 
   /**
    * Invokes the remote server and updates the server info via `_updateServerInfo`.
    */
-  async _startRemoteServer(): Promise<void> {
-    const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
-    const params = {
-      cname: this._config.host,
-      jsonOutputFile: remoteTempFile,
-      timeout: '60s', // Currently unused and not configurable.
-      expiration: '7d',
-      serverParams: this._config.remoteServerCustomParams,
-      port: this._config.remoteServerPort,
-    };
-    const cmd = `${this._config.remoteServerCommand} ${shellQuote([
-      JSON.stringify(params),
-    ])}`;
+  _startRemoteServer() {
+    var _this6 = this;
 
-    try {
-      // Run the server bootstrapper: this will create a server process, output the process info
-      // to `remoteTempFile`, and then exit.
-      const stream = await this._connection.exec(cmd, {pty: {term: 'nuclide'}});
-      // Collect any stdout in case there is an error.
-      let stdOut = '';
-      stream.on('data', data => {
-        stdOut += data;
-      });
+    return (0, _asyncToGenerator.default)(function* () {
+      const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
+      const params = {
+        cname: _this6._config.host,
+        jsonOutputFile: remoteTempFile,
+        timeout: '60s', // Currently unused and not configurable.
+        expiration: '7d',
+        serverParams: _this6._config.remoteServerCustomParams,
+        port: _this6._config.remoteServerPort
+      };
+      const cmd = `${_this6._config.remoteServerCommand} ${(0, (_string || _load_string()).shellQuote)([JSON.stringify(params)])}`;
 
-      // Wait for the bootstrapper to finish
-      const [code] = await onceEventArray(stream, 'close');
+      try {
+        // Run the server bootstrapper: this will create a server process, output the process info
+        // to `remoteTempFile`, and then exit.
+        const stream = yield _this6._connection.exec(cmd, { pty: { term: 'nuclide' } });
+        // Collect any stdout in case there is an error.
+        let stdOut = '';
+        stream.on('data', function (data) {
+          stdOut += data;
+        });
 
-      // Note: this code is probably the code from the child shell if one is in use.
-      if (code !== 0) {
-        throw new SshHandshakeError(
-          'Remote shell execution failed',
-          SshHandshake.ErrorType.UNKNOWN,
-          new Error(stdOut),
-        );
+        // Wait for the bootstrapper to finish
+        const [code] = yield (0, (_events || _load_events()).onceEventArray)(stream, 'close');
+
+        // Note: this code is probably the code from the child shell if one is in use.
+        if (code !== 0) {
+          throw new SshHandshakeError('Remote shell execution failed', SshHandshake.ErrorType.UNKNOWN, new Error(stdOut));
+        }
+
+        // Some servers have max channels set to 1, so add a delay to ensure
+        // the old channel has been cleaned up on the server.
+        // TODO(hansonw): Implement a proper retry mechanism.
+        yield (0, (_promise || _load_promise()).sleep)(100);
+
+        return _this6._loadServerStartInformation(remoteTempFile);
+      } catch (error) {
+        const errorType = error.level && SshConnectionErrorLevelMap.get(error.level) || SshHandshake.ErrorType.UNKNOWN;
+        throw new SshHandshakeError('Ssh connection failed.', errorType, error);
       }
-
-      // Some servers have max channels set to 1, so add a delay to ensure
-      // the old channel has been cleaned up on the server.
-      // TODO(hansonw): Implement a proper retry mechanism.
-      await sleep(100);
-
-      return this._loadServerStartInformation(remoteTempFile);
-    } catch (error) {
-      const errorType =
-        (error.level && SshConnectionErrorLevelMap.get(error.level)) ||
-        SshHandshake.ErrorType.UNKNOWN;
-      throw new SshHandshakeError('Ssh connection failed.', errorType, error);
-    }
+    })();
   }
 
   /**
    * This is called when the SshConnection is ready.
    */
-  async _onSshConnectionIsReady(): Promise<BigDigClient> {
-    await this._startRemoteServer();
+  _onSshConnectionIsReady() {
+    var _this7 = this;
 
-    // Use an ssh tunnel if server is not secure
-    if (this._isSecure()) {
-      // flowlint-next-line sketchy-null-string:off
-      invariant(this._remoteHost);
-      return this._establishBigDigClient({
-        host: this._remoteHost,
-        port: this._remotePort,
-        certificateAuthorityCertificate: this._certificateAuthorityCertificate,
-        clientCertificate: this._clientCertificate,
-        clientKey: this._clientKey,
-      });
-    } else {
-      this._forwardingServer = net.createServer(sock => {
-        this._forwardSocket(sock);
-      });
-      const listening = onceEventOrError(this._forwardingServer, 'listening');
-      this._forwardingServer.listen(0, 'localhost');
-      await listening;
-      const localPort = this._getLocalPort();
-      // flowlint-next-line sketchy-null-number:off
-      invariant(localPort);
-      return this._establishBigDigClient({
-        host: 'localhost',
-        port: localPort,
-      });
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this7._startRemoteServer();
+
+      // Use an ssh tunnel if server is not secure
+      if (_this7._isSecure()) {
+        // flowlint-next-line sketchy-null-string:off
+        if (!_this7._remoteHost) {
+          throw new Error('Invariant violation: "this._remoteHost"');
+        }
+
+        return _this7._establishBigDigClient({
+          host: _this7._remoteHost,
+          port: _this7._remotePort,
+          certificateAuthorityCertificate: _this7._certificateAuthorityCertificate,
+          clientCertificate: _this7._clientCertificate,
+          clientKey: _this7._clientKey
+        });
+      } else {
+        _this7._forwardingServer = _net.default.createServer(function (sock) {
+          _this7._forwardSocket(sock);
+        });
+        const listening = (0, (_events || _load_events()).onceEventOrError)(_this7._forwardingServer, 'listening');
+        _this7._forwardingServer.listen(0, 'localhost');
+        yield listening;
+        const localPort = _this7._getLocalPort();
+        // flowlint-next-line sketchy-null-number:off
+
+        if (!localPort) {
+          throw new Error('Invariant violation: "localPort"');
+        }
+
+        return _this7._establishBigDigClient({
+          host: 'localhost',
+          port: localPort
+        });
+      }
+    })();
   }
 
   /**
    * Now that the remote server has been started, create the BigDigClient to talk to it and
    * pass it to the _didConnect() callback.
    */
-  async _establishBigDigClient(
-    config: RemoteConnectionConfiguration,
-  ): Promise<BigDigClient> {
-    let bigDigClient = null;
-    try {
-      bigDigClient = await createBigDigClient(config);
-    } catch (error) {
-      throw new SshHandshakeError(
-        'Connection check failed',
-        SshHandshake.ErrorType.SERVER_CANNOT_CONNECT,
-        error,
-      );
-    }
+  _establishBigDigClient(config) {
+    var _this8 = this;
 
-    this._didConnect(bigDigClient);
-    // If we are secure then we don't need the ssh tunnel.
-    if (this._isSecure()) {
-      this._connection.end();
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      let bigDigClient = null;
+      try {
+        bigDigClient = yield (0, (_createBigDigClient || _load_createBigDigClient()).default)(config);
+      } catch (error) {
+        throw new SshHandshakeError('Connection check failed', SshHandshake.ErrorType.SERVER_CANNOT_CONNECT, error);
+      }
 
-    return bigDigClient;
+      _this8._didConnect(bigDigClient);
+      // If we are secure then we don't need the ssh tunnel.
+      if (_this8._isSecure()) {
+        _this8._connection.end();
+      }
+
+      return bigDigClient;
+    })();
   }
 
-  _getLocalPort(): ?number {
-    return this._forwardingServer
-      ? this._forwardingServer.address().port
-      : null;
+  _getLocalPort() {
+    return this._forwardingServer ? this._forwardingServer.address().port : null;
   }
 
-  getConfig(): SshConnectionConfiguration {
+  getConfig() {
     return this._config;
   }
 }
 
-export function decorateSshConnectionDelegateWithTracking(
-  delegate: SshConnectionDelegate,
-): SshConnectionDelegate {
+exports.SshHandshake = SshHandshake;
+SshHandshake.ErrorType = ErrorType;
+SshHandshake.SupportedMethods = SupportedMethods;
+function decorateSshConnectionDelegateWithTracking(delegate) {
   let connectionTracker;
 
   return {
-    async onKeyboardInteractive(
-      name: string,
-      instructions: string,
-      instructionsLang: string,
-      prompts: Array<Prompt>,
-    ) {
-      invariant(connectionTracker);
-      connectionTracker.trackPromptYubikeyInput();
-      const answers = await delegate.onKeyboardInteractive(
-        name,
-        instructions,
-        instructionsLang,
-        prompts,
-      );
-      invariant(connectionTracker);
-      connectionTracker.trackFinishYubikeyInput();
-      return answers;
+    onKeyboardInteractive(name, instructions, instructionsLang, prompts) {
+      return (0, _asyncToGenerator.default)(function* () {
+        if (!connectionTracker) {
+          throw new Error('Invariant violation: "connectionTracker"');
+        }
+
+        connectionTracker.trackPromptYubikeyInput();
+        const answers = yield delegate.onKeyboardInteractive(name, instructions, instructionsLang, prompts);
+
+        if (!connectionTracker) {
+          throw new Error('Invariant violation: "connectionTracker"');
+        }
+
+        connectionTracker.trackFinishYubikeyInput();
+        return answers;
+      })();
     },
-    onWillConnect: (config: SshConnectionConfiguration) => {
-      connectionTracker = new ConnectionTracker(config);
+    onWillConnect: config => {
+      connectionTracker = new (_ConnectionTracker || _load_ConnectionTracker()).default(config);
       delegate.onWillConnect(config);
     },
-    onDidConnect: (
-      connection: BigDigClient,
-      config: SshConnectionConfiguration,
-    ) => {
-      invariant(connectionTracker);
+    onDidConnect: (connection, config) => {
+      if (!connectionTracker) {
+        throw new Error('Invariant violation: "connectionTracker"');
+      }
+
       connectionTracker.trackSuccess();
       delegate.onDidConnect(connection, config);
     },
-    onError: (
-      errorType: SshHandshakeErrorType,
-      error: Error,
-      config: SshConnectionConfiguration,
-    ) => {
-      invariant(connectionTracker);
+    onError: (errorType, error, config) => {
+      if (!connectionTracker) {
+        throw new Error('Invariant violation: "connectionTracker"');
+      }
+
       connectionTracker.trackFailure(errorType, error);
       delegate.onError(errorType, error, config);
-    },
+    }
   };
 }

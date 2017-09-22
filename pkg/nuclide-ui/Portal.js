@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Portal = undefined;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/**
+ * Renders a single React element into a different part of the DOM. This allows you to maintain the
+ * declarative nature of React components.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,52 +24,32 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
+class Portal extends _react.Component {
 
-type Props = {
-  container: HTMLElement,
-
-  // Must be a single React element. We do this (instead of wrapping in this component) to provide
-  // maximum control to the owner.
-  children?: any,
-};
-
-/**
- * Renders a single React element into a different part of the DOM. This allows you to maintain the
- * declarative nature of React components.
- */
-export class Portal extends React.Component<Props> {
-  _container: HTMLElement;
-  _renderedChildren: ?React.Element<any>;
-
-  componentDidMount(): void {
+  componentDidMount() {
     // Do the initial render.
     this._render(this.props.children, this.props.container);
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._render(null, this.props.container);
   }
 
-  componentDidUpdate(): void {
+  componentDidUpdate() {
     this._render(this.props.children, this.props.container);
   }
 
-  _render(element: ?React.Element<any>, container: HTMLElement): void {
-    if (
-      this._container != null &&
-      (container !== this._container || element == null)
-    ) {
-      ReactDOM.unmountComponentAtNode(this._container);
+  _render(element, container) {
+    if (this._container != null && (container !== this._container || element == null)) {
+      _reactDom.default.unmountComponentAtNode(this._container);
     }
 
     if (element != null) {
-      ReactDOM.render(React.Children.only(element), container);
+      _reactDom.default.render(_react.Children.only(element), container);
     }
 
     this._container = container;
@@ -62,3 +61,4 @@ export class Portal extends React.Component<Props> {
     return null;
   }
 }
+exports.Portal = Portal;

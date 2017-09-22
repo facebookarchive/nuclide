@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.activate = activate;
+exports.deactivate = deactivate;
+exports.consumeOutputService = consumeOutputService;
+exports.consumeCwdApi = consumeCwdApi;
+
+var _Activation;
+
+function _load_Activation() {
+  return _Activation = _interopRequireDefault(require('./Activation'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,35 +23,41 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
-import type {OutputService} from '../../nuclide-console/lib/types';
+let activation = null;
 
-import invariant from 'assert';
-import Activation from './Activation';
+function activate(state) {
+  if (!(activation == null)) {
+    throw new Error('Invariant violation: "activation == null"');
+  }
 
-let activation: ?Activation = null;
-
-export function activate(state: ?Object): void {
-  invariant(activation == null);
-  activation = new Activation(state);
+  activation = new (_Activation || _load_Activation()).default(state);
 }
 
-export function deactivate(): void {
-  invariant(activation != null);
+function deactivate() {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   activation.dispose();
   activation = null;
 }
 
-export function consumeOutputService(api: OutputService): void {
-  invariant(activation != null);
+function consumeOutputService(api) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeOutputService(api);
 }
 
-export function consumeCwdApi(api: CwdApi): void {
-  invariant(activation != null);
+function consumeCwdApi(api) {
+  if (!(activation != null)) {
+    throw new Error('Invariant violation: "activation != null"');
+  }
+
   return activation.consumeCwdApi(api);
 }

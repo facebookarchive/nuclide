@@ -1,3 +1,10 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.scrollIntoView = scrollIntoView;
+exports.scrollIntoViewIfNeeded = scrollIntoViewIfNeeded;
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +13,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -41,20 +48,20 @@
  * [2]: https://drafts.csswg.org/cssom-view/#scrolling-box
  */
 
-export function scrollIntoView(el: Element, alignToTop?: boolean): void {
+function scrollIntoView(el, alignToTop) {
   const scrollTops = getOverflowHiddenScrollTops(el);
   el.scrollIntoView(alignToTop); // eslint-disable-line rulesdir/dom-apis
   restoreScrollTops(scrollTops);
 }
 
-export function scrollIntoViewIfNeeded(el: Element, center?: boolean): void {
+function scrollIntoViewIfNeeded(el, center) {
   const scrollTops = getOverflowHiddenScrollTops(el);
   // $FlowIgnore: This should be added to the element type.
   el.scrollIntoViewIfNeeded(center); // eslint-disable-line rulesdir/dom-apis
   restoreScrollTops(scrollTops);
 }
 
-function getOverflowHiddenScrollTops(el_: Element): Map<Element, number> {
+function getOverflowHiddenScrollTops(el_) {
   let el = el_;
   const scrollTops = new Map();
   while (el != null) {
@@ -66,7 +73,7 @@ function getOverflowHiddenScrollTops(el_: Element): Map<Element, number> {
   return scrollTops;
 }
 
-function restoreScrollTops(scrollTops: Map<Element, number>): void {
+function restoreScrollTops(scrollTops) {
   scrollTops.forEach((scrollTop, el) => {
     el.scrollTop = scrollTop;
   });

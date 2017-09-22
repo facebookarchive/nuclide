@@ -1,3 +1,35 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _NuclideBridge;
+
+function _load_NuclideBridge() {
+  return _NuclideBridge = _interopRequireDefault(require('./NuclideBridge'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _WebInspector;
+
+function _load_WebInspector() {
+  return _WebInspector = _interopRequireDefault(require('../../lib/WebInspector'));
+}
+
+var _scrollIntoView;
+
+function _load_scrollIntoView() {
+  return _scrollIntoView = require('nuclide-commons-ui/scrollIntoView');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,32 +37,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {ThreadData} from '../../lib/types';
+class ThreadsWindowComponent extends _react.Component {
 
-import NuclideBridge from './NuclideBridge';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import WebInspector from '../../lib/WebInspector';
-import {scrollIntoView} from 'nuclide-commons-ui/scrollIntoView';
-
-type StateType = {
-  threadData: ?ThreadData,
-};
-
-class ThreadsWindowComponent extends React.Component<mixed, StateType> {
-  props: mixed;
-  state: StateType;
-  _stoppedThread: ?Element;
-
-  constructor(props: mixed) {
+  constructor(props) {
     super(props);
+
+    this._handleThreadsUpdated = event => {
+      this.setState(this._getState());
+    };
+
+    this._handleClearInterface = event => {
+      this.setState({ threadData: null });
+    };
+
     this._registerUpdate();
     this.state = {
-      threadData: null,
+      threadData: null
     };
     this._stoppedThread = null;
   }
@@ -47,67 +73,29 @@ class ThreadsWindowComponent extends React.Component<mixed, StateType> {
     this._scrollToStoppedThread();
   }
 
-  _handleThreadsUpdated = (event: WebInspector.Event): void => {
-    this.setState(this._getState());
-  };
-
-  _getState(): StateType {
+  _getState() {
     let threadData = null;
-    const mainTarget = WebInspector.targetManager.mainTarget();
+    const mainTarget = (_WebInspector || _load_WebInspector()).default.targetManager.mainTarget();
     if (mainTarget != null) {
       threadData = mainTarget.debuggerModel.threadStore.getData();
     }
-    return {threadData};
+    return { threadData };
   }
 
-  _registerUpdate(): void {
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.ThreadsUpdated,
-      this._handleThreadsUpdated,
-      this,
-    );
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.SelectedThreadChanged,
-      this._handleThreadsUpdated,
-      this,
-    );
-    WebInspector.targetManager.addModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.ClearInterface,
-      this._handleClearInterface,
-      this,
-    );
+  _registerUpdate() {
+    (_WebInspector || _load_WebInspector()).default.targetManager.addModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.ThreadsUpdated, this._handleThreadsUpdated, this);
+    (_WebInspector || _load_WebInspector()).default.targetManager.addModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.SelectedThreadChanged, this._handleThreadsUpdated, this);
+    (_WebInspector || _load_WebInspector()).default.targetManager.addModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.ClearInterface, this._handleClearInterface, this);
   }
 
-  _handleClearInterface = (event: WebInspector.Event): void => {
-    this.setState({threadData: null});
-  };
-
-  _unregisterUpdate(): void {
-    WebInspector.targetManager.removeModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.ThreadsUpdated,
-      this._handleThreadsUpdated,
-      this,
-    );
-    WebInspector.targetManager.removeModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.SelectedThreadChanged,
-      this._handleThreadsUpdated,
-      this,
-    );
-    WebInspector.targetManager.removeModelListener(
-      WebInspector.DebuggerModel,
-      WebInspector.DebuggerModel.Events.ClearInterface,
-      this._handleClearInterface,
-      this,
-    );
+  _unregisterUpdate() {
+    (_WebInspector || _load_WebInspector()).default.targetManager.removeModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.ThreadsUpdated, this._handleThreadsUpdated, this);
+    (_WebInspector || _load_WebInspector()).default.targetManager.removeModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.SelectedThreadChanged, this._handleThreadsUpdated, this);
+    (_WebInspector || _load_WebInspector()).default.targetManager.removeModelListener((_WebInspector || _load_WebInspector()).default.DebuggerModel, (_WebInspector || _load_WebInspector()).default.DebuggerModel.Events.ClearInterface, this._handleClearInterface, this);
   }
 
-  _handleDoubleClick(thread: Object): void {
-    NuclideBridge.selectThread(thread.id);
+  _handleDoubleClick(thread) {
+    (_NuclideBridge || _load_NuclideBridge()).default.selectThread(thread.id);
   }
 
   /**
@@ -115,126 +103,156 @@ class ThreadsWindowComponent extends React.Component<mixed, StateType> {
    * '*' means the current selected thread.
    * Empty space for other threads.
    */
-  _getIndicator(
-    thread: Object,
-    stopThreadId: number,
-    selectedThreadId: number,
-  ): string {
-    return thread.id === stopThreadId
-      ? '>'
-      : thread.id === selectedThreadId ? '*' : ' ';
+  _getIndicator(thread, stopThreadId, selectedThreadId) {
+    return thread.id === stopThreadId ? '>' : thread.id === selectedThreadId ? '*' : ' ';
   }
 
-  _setStoppedThread(ref: Element) {
+  _setStoppedThread(ref) {
     this._stoppedThread = ref;
   }
 
   _scrollToStoppedThread() {
     if (this._stoppedThread != null) {
-      scrollIntoView(this._stoppedThread);
+      (0, (_scrollIntoView || _load_scrollIntoView()).scrollIntoView)(this._stoppedThread);
     }
   }
 
   render() {
     const children = [];
-    const {threadData} = this.state;
+    const { threadData } = this.state;
     if (threadData && threadData.threadMap) {
       for (const thread of threadData.threadMap.values()) {
-        const indicator = this._getIndicator(
-          thread,
-          threadData.stopThreadId,
-          threadData.selectedThreadId,
-        );
+        const indicator = this._getIndicator(thread, threadData.stopThreadId, threadData.selectedThreadId);
         const rowStyle = {};
         if (thread.id === threadData.selectedThreadId) {
           rowStyle.backgroundColor = '#cfcfcf';
         }
         if (indicator === '>') {
-          children.push(
-            <tr
-              onDoubleClick={this._handleDoubleClick.bind(this, thread)}
-              style={rowStyle}
+          children.push(_react.createElement(
+            'tr',
+            {
+              onDoubleClick: this._handleDoubleClick.bind(this, thread),
+              style: rowStyle
               // $FlowFixMe(>=0.53.0) Flow suppress
-              ref={ref => this._setStoppedThread(ref)}>
-              <td>
-                {indicator}
-              </td>
-              <td>
-                {thread.id}
-              </td>
-              <td>
-                {thread.address}
-              </td>
-              <td>
-                {thread.stopReason}
-              </td>
-            </tr>,
-          );
+              , ref: ref => this._setStoppedThread(ref) },
+            _react.createElement(
+              'td',
+              null,
+              indicator
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.id
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.address
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.stopReason
+            )
+          ));
         } else {
-          children.push(
-            <tr
-              onDoubleClick={this._handleDoubleClick.bind(this, thread)}
-              style={rowStyle}>
-              <td>
-                {indicator}
-              </td>
-              <td>
-                {thread.id}
-              </td>
-              <td>
-                {thread.address}
-              </td>
-              <td>
-                {thread.stopReason}
-              </td>
-            </tr>,
-          );
+          children.push(_react.createElement(
+            'tr',
+            {
+              onDoubleClick: this._handleDoubleClick.bind(this, thread),
+              style: rowStyle },
+            _react.createElement(
+              'td',
+              null,
+              indicator
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.id
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.address
+            ),
+            _react.createElement(
+              'td',
+              null,
+              thread.stopReason
+            )
+          ));
         }
       }
     }
 
     const containerStyle = {
       maxHeight: '20em',
-      overflow: 'auto',
+      overflow: 'auto'
     };
 
     if (children.length > 0) {
-      return (
-        <div
-          style={containerStyle}
-          className="nuclide-chrome-debugger-data-grid">
-          <table width="100%">
-            <thead>
-              <tr key={0}>
-                <td />
-                <td>ID</td>
-                <td>Address</td>
-                <td>Stop Reason</td>
-              </tr>
-            </thead>
-            <tbody>
-              {children}
-            </tbody>
-          </table>
-        </div>
+      return _react.createElement(
+        'div',
+        {
+          style: containerStyle,
+          className: 'nuclide-chrome-debugger-data-grid' },
+        _react.createElement(
+          'table',
+          { width: '100%' },
+          _react.createElement(
+            'thead',
+            null,
+            _react.createElement(
+              'tr',
+              { key: 0 },
+              _react.createElement('td', null),
+              _react.createElement(
+                'td',
+                null,
+                'ID'
+              ),
+              _react.createElement(
+                'td',
+                null,
+                'Address'
+              ),
+              _react.createElement(
+                'td',
+                null,
+                'Stop Reason'
+              )
+            )
+          ),
+          _react.createElement(
+            'tbody',
+            null,
+            children
+          )
+        )
       );
     } else {
-      return <div className="info">No Threads</div>;
+      return _react.createElement(
+        'div',
+        { className: 'info' },
+        'No Threads'
+      );
     }
   }
 }
 
-export default class ThreadsWindowPane extends WebInspector.SidebarPane {
+class ThreadsWindowPane extends (_WebInspector || _load_WebInspector()).default.SidebarPane {
   constructor() {
     // WebInspector classes are not es6 classes, but babel forces a super call.
     super();
     // Actual super call.
-    WebInspector.SidebarPane.call(this, 'Threads');
+    (_WebInspector || _load_WebInspector()).default.SidebarPane.call(this, 'Threads');
 
     // TODO: change.
     this.registerRequiredCSS('components/breakpointsList.css');
 
-    ReactDOM.render(<ThreadsWindowComponent />, this.bodyElement);
+    _reactDom.default.render(_react.createElement(ThreadsWindowComponent, null), this.bodyElement);
 
     this.expand();
   }
@@ -244,3 +262,4 @@ export default class ThreadsWindowPane extends WebInspector.SidebarPane {
   // it's probably safer to have this.
   reset() {}
 }
+exports.default = ThreadsWindowPane;
