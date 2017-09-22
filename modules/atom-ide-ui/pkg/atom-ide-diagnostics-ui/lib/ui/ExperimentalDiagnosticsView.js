@@ -39,7 +39,10 @@ export type Props = {
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
-  gotoMessageLocation: (message: DiagnosticMessage) => void,
+  gotoMessageLocation: (
+    message: DiagnosticMessage,
+    options: {|focusEditor: boolean|},
+  ) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   selectedMessage: ?DiagnosticMessage,
   supportedMessageKinds: Set<DiagnosticMessageKind>,

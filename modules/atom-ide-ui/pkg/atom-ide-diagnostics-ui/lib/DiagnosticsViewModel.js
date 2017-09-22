@@ -216,7 +216,10 @@ function getMessageFilterType(message: DiagnosticMessage): FilterType {
   }
 }
 
-function goToDiagnosticLocation(message: DiagnosticMessage): void {
+function goToDiagnosticLocation(
+  message: DiagnosticMessage,
+  options: {|focusEditor: boolean|},
+): void {
   if (message.scope !== 'file' || message.filePath == null) {
     return;
   }
@@ -228,5 +231,10 @@ function goToDiagnosticLocation(message: DiagnosticMessage): void {
   // Flow sometimes reports a row of -1, so this ensures the line is at least one.
   const line = Math.max(message.range ? message.range.start.row : 0, 0);
   const column = 0;
-  goToLocation(uri, {line, column});
+  goToLocation(uri, {
+    line,
+    column,
+    activatePane: options.focusEditor,
+    pending: true,
+  });
 }

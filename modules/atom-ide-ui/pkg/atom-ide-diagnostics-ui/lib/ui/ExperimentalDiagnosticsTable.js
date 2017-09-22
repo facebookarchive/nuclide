@@ -71,7 +71,10 @@ const MAX_RESULTS_COUNT = 1000;
 type Props = {
   diagnostics: Array<DiagnosticMessage>,
   selectedMessage: ?DiagnosticMessage,
-  gotoMessageLocation: (message: DiagnosticMessage) => void,
+  gotoMessageLocation: (
+    message: DiagnosticMessage,
+    options: {|focusEditor: boolean|},
+  ) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   showFileName: ?boolean,
   showTraces: boolean,
@@ -105,12 +108,27 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
     });
   }
 
-  _handleSelectTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
+  _handleSelectTableRow = (
+    item: {diagnostic: DiagnosticMessage},
+    index: number,
+    event: Event | SyntheticEvent<*>,
+  ): void => {
     this.props.selectMessage(item.diagnostic);
+    // Users navigating with the keyboard may just be moving through items on their way to another.
+    // If they have pending pane items enabled, it's not a big deal if we open the editor anyway.
+    // But if they don't, we could wind up opening a ton of files they didn't even care about so,
+    // to be safe, we won't do anything in that case.
+    if (
+      event.type !== 'click' &&
+      !atom.config.get('core.allowPendingPaneItems')
+    ) {
+      return;
+    }
+    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: false});
   };
 
   _handleConfirmTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
-    this.props.gotoMessageLocation(item.diagnostic);
+    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: true});
   };
 
   _getColumns(): Array<Column<DisplayDiagnostic>> {
