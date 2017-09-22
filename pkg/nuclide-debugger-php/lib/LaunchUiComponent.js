@@ -198,7 +198,12 @@ export class LaunchUiComponent extends React.Component<PropsType, StateType> {
       this.state.recentlyLaunchedScripts,
     );
 
-    const processInfo = new LaunchProcessInfo(this.props.targetUri, scriptPath);
+    const processInfo = new LaunchProcessInfo(
+      this.props.targetUri,
+      scriptPath,
+      null,
+      false,
+    );
     consumeFirstProvider('nuclide-debugger.remote').then(debuggerService =>
       debuggerService.startDebugging(processInfo),
     );

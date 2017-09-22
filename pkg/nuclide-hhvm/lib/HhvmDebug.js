@@ -40,7 +40,12 @@ export async function debug(
 
   if (processInfo == null) {
     if (debugMode === 'script') {
-      processInfo = new LaunchProcessInfo(activeProjectRoot, target);
+      processInfo = new LaunchProcessInfo(
+        activeProjectRoot,
+        target,
+        null,
+        false,
+      );
     } else {
       processInfo = new AttachProcessInfo(activeProjectRoot);
     }
