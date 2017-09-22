@@ -15,20 +15,16 @@ import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteFile} from '../../nuclide-remote-connection';
 
-import FileDialogComponent from '../components/FileDialogComponent';
+import {openDialog, closeDialog} from '../../nuclide-ui/FileActionModal';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeStore} from './FileTreeStore';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {File} from 'atom';
 import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import Immutable from 'immutable';
-
-let atomPanel: ?Object;
-let dialogComponent: ?React.Component<any, any>;
 
 type CopyPath = {
   old: NuclideUri,
@@ -308,7 +304,7 @@ class FileSystemActions {
 
     const node = targetNodes.first();
     const nodePath = node.localPath;
-    this._openDialog({
+    openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: nuclideUri.basename(nodePath),
       message: node.isContainer
@@ -321,7 +317,7 @@ class FileSystemActions {
           );
         });
       },
-      onClose: this._closeDialog,
+      onClose: closeDialog,
       selectBasename: true,
     });
   }
@@ -374,13 +370,13 @@ class FileSystemActions {
         if (nodes.rest().count() > 0) {
           this.openNextDuplicateDialog(nodes.rest(), onDidConfirm);
         } else {
-          this._closeDialog();
+          closeDialog();
         }
       },
       selectBasename: true,
       additionalOptions,
     };
-    this._openDialog(dialogProps);
+    openDialog(dialogProps);
   }
 
   openPasteDialog(): void {
@@ -406,7 +402,7 @@ class FileSystemActions {
     if (FileTreeHgHelpers.getHgRepositoryForNode(node) !== null) {
       additionalOptions.addToVCS = 'Add the new file(s) to version control.';
     }
-    this._openDialog({
+    openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: FileTreeHelpers.dirPathToKey(newDir.getPath()),
       message: <span>Paste file(s) from clipboard into</span>,
@@ -420,7 +416,7 @@ class FileSystemActions {
           );
         });
       },
-      onClose: this._closeDialog,
+      onClose: closeDialog,
       additionalOptions,
     });
   }
@@ -446,7 +442,7 @@ class FileSystemActions {
     onConfirm: (filePath: string, options: Object) => mixed,
     additionalOptions?: Object = {},
   ) {
-    this._openDialog({
+    openDialog({
       iconClassName: 'icon-file-add',
       message: (
         <span>
@@ -455,31 +451,9 @@ class FileSystemActions {
         </span>
       ),
       onConfirm,
-      onClose: this._closeDialog,
+      onClose: closeDialog,
       additionalOptions,
     });
-  }
-
-  _openDialog(props: Object): void {
-    this._closeDialog();
-    const dialogHostElement = document.createElement('div');
-    atomPanel = atom.workspace.addModalPanel({item: dialogHostElement});
-    dialogComponent = ReactDOM.render(
-      <FileDialogComponent {...props} />,
-      dialogHostElement,
-    );
-  }
-
-  _closeDialog(): void {
-    if (atomPanel != null) {
-      if (dialogComponent != null) {
-        ReactDOM.unmountComponentAtNode(atomPanel.getItem());
-        dialogComponent = null;
-      }
-
-      atomPanel.destroy();
-      atomPanel = null;
-    }
   }
 }
 

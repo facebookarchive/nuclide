@@ -42,7 +42,7 @@ type Props = {
 /**
  * Component that displays UI to create a new file.
  */
-export default class FileDialogComponent extends React.Component<
+class FileDialogComponent extends React.Component<
   Props,
   {
     options: Options,
@@ -163,4 +163,29 @@ export default class FileDialogComponent extends React.Component<
       this.props.onClose();
     }
   };
+}
+
+let atomPanel: ?Object;
+let dialogComponent: ?React.Component<any, any>;
+
+export function openDialog(props: Object): void {
+  closeDialog();
+  const dialogHostElement = document.createElement('div');
+  atomPanel = atom.workspace.addModalPanel({item: dialogHostElement});
+  dialogComponent = ReactDOM.render(
+    <FileDialogComponent {...props} />,
+    dialogHostElement,
+  );
+}
+
+export function closeDialog(): void {
+  if (atomPanel != null) {
+    if (dialogComponent != null) {
+      ReactDOM.unmountComponentAtNode(atomPanel.getItem());
+      dialogComponent = null;
+    }
+
+    atomPanel.destroy();
+    atomPanel = null;
+  }
 }
