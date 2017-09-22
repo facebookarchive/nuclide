@@ -14,6 +14,14 @@ import type {
   DebuggerInstanceBase,
   DebuggerProcessInfo,
 } from '../../nuclide-debugger-base';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import invariant from 'invariant';
+import {DebuggerMode} from './DebuggerStore';
+import nullthrows from 'nullthrows';
 
 export default class RemoteControlService {
   _getModel: () => ?DebuggerModel;
@@ -77,5 +85,88 @@ export default class RemoteControlService {
       throw new Error('Package is not activated.');
     }
     model.getActions().stopDebugging();
+  }
+
+  canLaunchDebugTargetInTerminal(): boolean {
+    try {
+      // $FlowFB
+      const terminalUri = require('../../commons-node/fb-terminal-uri'); // eslint-disable-line no-unused-vars
+      return true;
+    } catch (_) {}
+    return false;
+  }
+
+  async launchDebugTargetInTerminal(
+    targetUri: NuclideUri,
+    command: string,
+    args: Array<string>,
+  ): Promise<boolean> {
+    let terminalUri;
+    try {
+      // $FlowFB
+      terminalUri = require('../../commons-node/fb-terminal-uri');
+    } catch (_) {
+      return false;
+    }
+
+    nullthrows(terminalUri);
+    const infoUri = terminalUri.uriFromInfo(
+      {
+        cwd: nuclideUri.dirname(targetUri),
+        title: 'Debug output: ' + nuclideUri.getPath(targetUri),
+        command: {
+          file: command,
+          args,
+        },
+        options: {
+          remainOnCleanExit: true,
+          icon: 'nuclicon-debugger',
+          defaultLocation: 'bottom',
+        },
+      },
+      true,
+    );
+
+    // Ensure any previous instances of this same target are closed before
+    // opening a new terminal tab. We don't want them to pile up if the
+    // user keeps running the same app over and over.
+    destroyItemWhere(item => item.getURI != null && item.getURI() === infoUri);
+    await goToLocation(infoUri);
+
+    const terminalPane = atom.workspace.paneForURI(infoUri);
+    nullthrows(terminalPane);
+
+    const terminal = terminalPane.itemForURI(infoUri);
+    nullthrows(terminal);
+
+    // Ensure the debugger is terminated if the process running inside the
+    // terminal exits, and that the terminal destroys if the debugger stops.
+    const model = this._getModel();
+    if (model == null) {
+      throw new Error('Package is not activated.');
+    }
+
+    const disposable = model.getStore().onDebuggerModeChange(() => {
+      const debuggerModel = this._getModel();
+
+      invariant(debuggerModel != null);
+      const debuggerMode = debuggerModel.getStore().getDebuggerMode();
+      if (debuggerMode === DebuggerMode.STOPPED) {
+        // This termination path is invoked if the debugger dies first, ensuring
+        // we terminate the target process. This can happen if the user hits stop,
+        // or if the debugger crashes.
+        terminal.setProcessExitCallback(null);
+        terminal.terminateProcess();
+        disposable.dispose();
+      }
+    });
+
+    terminal.setProcessExitCallback(() => {
+      // This callback is invoked if the target process dies first, ensuring
+      // we tear down the debugger.
+      disposable.dispose();
+      this.killDebugger();
+    });
+    return true;
   }
 }
