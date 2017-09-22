@@ -793,10 +793,18 @@ export class LspLanguageService {
   }
 
   _logLspException(e: Error): void {
+    // In case 'try {await p} catch (e) {logLspException(e);}', then e.stack is
+    // shows who rejected that promise. We also want a stack for who awaited...
+    const exceptionStack = e.stack;
+    const callStack = new Error().stack;
+    const remoteStack =
+      e.data != null && e.data.stack != null ? e.data.stack : null;
+
     track('lsp-exception', {
       message: e.message,
-      stack: e.stack,
-      remoteStack: e.data != null && e.data.stack != null ? e.data.stack : null,
+      exceptionStack,
+      callStack,
+      remoteStack,
       state: this._state,
       code: typeof e.code === 'number' ? e.code : null,
     });
@@ -810,10 +818,11 @@ export class LspLanguageService {
       return;
     }
     let msg = `${this._errorString(e)}\nSTATE=${this._state}`;
-    if (e.data != null && e.data.stack != null) {
-      msg += `\n  LSP STACK:\n${String(e.data.stack)}`;
+    if (remoteStack != null) {
+      msg += `\n  REMOTE STACK:\n${String(remoteStack)}`;
     }
-    msg += `\n  NUCLIDE STACK:\n${e.stack}`;
+    msg += `\n  EXCEPTION STACK:\n${exceptionStack}`;
+    msg += `\n  CALL STACK:\n${callStack}`;
     this._logger.error(msg);
   }
 
