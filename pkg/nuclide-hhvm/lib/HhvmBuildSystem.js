@@ -72,6 +72,7 @@ export default class HhvmBuildSystem {
           this._projectStore.getProjectRoot(),
           this._projectStore.getDebugTarget(),
           this._projectStore.getUseTerminal(),
+          this._projectStore.getScriptArguments(),
         ),
       ).ignoreElements(),
     );

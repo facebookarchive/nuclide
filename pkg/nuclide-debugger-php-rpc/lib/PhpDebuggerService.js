@@ -37,6 +37,7 @@ export type PhpDebuggerSessionConfig = {
   targetUri: string,
   phpRuntimePath: string,
   phpRuntimeArgs: string,
+  scriptArguments: Array<string>,
   dummyRequestFilePath: string,
   stopOneStopAll: boolean,
   launchWrapperCommand?: string,

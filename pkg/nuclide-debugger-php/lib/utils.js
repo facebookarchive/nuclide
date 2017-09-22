@@ -66,6 +66,7 @@ export function getSessionConfig(
     endDebugWhenNoRequests: false,
     phpRuntimePath: config.phpRuntimePath,
     phpRuntimeArgs: config.phpRuntimeArgs,
+    scriptArguments: [],
     dummyRequestFilePath: 'php_only_xdebug_request.php',
     stopOneStopAll: config.stopOneStopAll,
     attachScriptRegex: config.attachScriptRegex,

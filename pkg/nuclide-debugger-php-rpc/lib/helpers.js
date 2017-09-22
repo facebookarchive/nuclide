@@ -111,6 +111,7 @@ export function launchPhpScriptWithXDebugEnabled(
   const {
     phpRuntimePath,
     phpRuntimeArgs,
+    scriptArguments,
     dummyRequestFilePath,
     launchWrapperCommand,
   } = getConfig();
@@ -125,7 +126,7 @@ export function launchPhpScriptWithXDebugEnabled(
   }
 
   const scriptArgs = shellParse(scriptPath);
-  const args = [...runtimeArgs, ...scriptArgs];
+  const args = [...runtimeArgs, ...scriptArgs, ...scriptArguments];
   const proc = child_process.spawn(processPath, args, processOptions);
   logger.debug(
     dedent`

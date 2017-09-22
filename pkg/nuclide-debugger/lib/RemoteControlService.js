@@ -118,11 +118,9 @@ export default class RemoteControlService {
           file: command,
           args,
         },
-        options: {
-          remainOnCleanExit: true,
-          icon: 'nuclicon-debugger',
-          defaultLocation: 'bottom',
-        },
+        remainOnCleanExit: true,
+        icon: 'nuclicon-debugger',
+        defaultLocation: 'bottom',
       },
       true,
     );
@@ -133,11 +131,8 @@ export default class RemoteControlService {
     destroyItemWhere(item => item.getURI != null && item.getURI() === infoUri);
     await goToLocation(infoUri);
 
-    const terminalPane = atom.workspace.paneForURI(infoUri);
-    nullthrows(terminalPane);
-
-    const terminal = terminalPane.itemForURI(infoUri);
-    nullthrows(terminal);
+    const terminalPane = nullthrows(atom.workspace.paneForURI(infoUri));
+    const terminal = nullthrows(terminalPane.itemForURI(infoUri));
 
     // Ensure the debugger is terminated if the process running inside the
     // terminal exits, and that the terminal destroys if the debugger stops.
@@ -155,7 +150,7 @@ export default class RemoteControlService {
         // This termination path is invoked if the debugger dies first, ensuring
         // we terminate the target process. This can happen if the user hits stop,
         // or if the debugger crashes.
-        terminal.setProcessExitCallback(null);
+        terminal.setProcessExitCallback(() => {});
         terminal.terminateProcess();
         disposable.dispose();
       }

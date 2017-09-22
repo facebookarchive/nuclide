@@ -16,9 +16,10 @@ import {shell} from 'electron';
 import {HACK_GRAMMARS} from '../../nuclide-hack-common/lib/constants.js';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
-import {Button} from 'nuclide-commons-ui/Button';
+import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {Checkbox} from 'nuclide-commons-ui/Checkbox';
 import * as React from 'react';
+import {HhvmToolbarSettings} from './HhvmToolbarSettings';
 
 const WEB_SERVER_OPTION = {label: 'Attach to WebServer', value: 'webserver'};
 const SCRIPT_OPTION = {label: 'Launch Script', value: 'script'};
@@ -34,6 +35,7 @@ type Props = {
 type State = {
   stickyScript: boolean,
   useTerminal: boolean,
+  settingsVisible: boolean,
 };
 
 export default class HhvmToolbar extends React.Component<Props, State> {
@@ -42,6 +44,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
     this.state = {
       stickyScript: false,
       useTerminal: false,
+      settingsVisible: false,
     };
   }
 
@@ -134,63 +137,90 @@ export default class HhvmToolbar extends React.Component<Props, State> {
             size="sm"
           />
         </div>
-        {!isDebugScript
+        {store.getDebugMode() !== 'webserver'
           ? <Button
-              size="SMALL"
-              onClick={() => {
-                shell.openExternal('https://' + store.getDebugTarget());
-              }}>
-              Open
-            </Button>
-          : <Checkbox
-              checked={this.state.stickyScript}
-              label="Sticky"
-              onChange={isChecked => {
-                this.props.projectStore.setStickyCommand(
-                  this.refs.debugTarget.getText(),
-                  isChecked,
-                );
-                this.setState({stickyScript: isChecked});
-              }}
-              tooltip={{
-                title:
-                  'When checked, the target script will not change when switching to another editor tab',
-              }}
-            />}
-        {store.getDebugMode() === 'script'
-          ? <Checkbox
-              checked={this.state.useTerminal}
-              className="nuclide-hhvm-use-terminal-control"
-              label="Run in Terminal"
-              onChange={isChecked => {
-                this.props.projectStore.setUseTerminal(isChecked);
-                this.setState({useTerminal: isChecked});
-              }}
-              tooltip={{
-                title:
-                  "When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane",
-              }}
+              className="icon icon-gear"
+              size={ButtonSizes.SMALL}
+              title="Advanced settings"
+              style={{'margin-right': '3px'}}
+              onClick={() => this._showSettings()}
             />
           : null}
+        {this.state.settingsVisible
+          ? <HhvmToolbarSettings
+              projectStore={this.props.projectStore}
+              onDismiss={() => this._hideSettings()}
+            />
+          : null}
+        <div className="inline-block">
+          {!isDebugScript
+            ? <Button
+                size="SMALL"
+                onClick={() => {
+                  shell.openExternal('https://' + store.getDebugTarget());
+                }}>
+                Open
+              </Button>
+            : <Checkbox
+                checked={this.state.stickyScript}
+                label="Sticky"
+                onChange={isChecked => {
+                  this.props.projectStore.setStickyCommand(
+                    this.refs.debugTarget.getText(),
+                    isChecked,
+                  );
+                  this.setState({stickyScript: isChecked});
+                }}
+                tooltip={{
+                  title:
+                    'When checked, the target script will not change when switching to another editor tab',
+                }}
+              />}
+          {store.getDebugMode() === 'script'
+            ? <Checkbox
+                checked={this.state.useTerminal}
+                className="nuclide-hhvm-use-terminal-control"
+                label="Run in Terminal"
+                onChange={isChecked => {
+                  this.props.projectStore.setUseTerminal(isChecked);
+                  this.setState({useTerminal: isChecked});
+                }}
+                tooltip={{
+                  title:
+                    "When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane",
+                }}
+              />
+            : null}
+        </div>
       </div>
     );
   }
 
+  _showSettings(): void {
+    this.setState({settingsVisible: true});
+  }
+
+  _hideSettings(): void {
+    this.setState({settingsVisible: false});
+  }
+
   _suggestTargetIfCustomDebugMode(debugMode: DebugMode) {
+    const store = this.props.projectStore;
     // If a custom debug mode is selected, suggest a debug target for the user.
     if (DEBUG_OPTIONS.find(option => option.value === debugMode) == null) {
       try {
         // $FlowFB
         const helpers = require('./fb-hhvm');
-        const store = this.props.projectStore;
         const suggestedTarget = helpers.suggestDebugTargetName(
           debugMode,
           store.getCurrentFilePath(),
         );
-        if (suggestedTarget != null) {
-          store.updateLastScriptCommand(suggestedTarget);
-        }
+        store.updateLastScriptCommand(
+          suggestedTarget != null ? suggestedTarget : '',
+        );
       } catch (e) {}
+    } else {
+      store.updateLastScriptCommand('');
     }
   }
 

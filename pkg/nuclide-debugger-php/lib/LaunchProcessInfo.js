@@ -31,17 +31,20 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTarget: string;
   _launchWrapperCommand: ?string;
   _useTerminal: boolean;
+  _scriptArguments: string;
 
   constructor(
     targetUri: NuclideUri,
     launchTarget: string,
     launchWrapperCommand: ?string,
     useTerminal: boolean,
+    scriptArguments: ?string,
   ) {
     super('hhvm', targetUri);
     this._launchTarget = launchTarget;
     this._launchWrapperCommand = launchWrapperCommand;
     this._useTerminal = useTerminal;
+    this._scriptArguments = scriptArguments != null ? scriptArguments : '';
   }
 
   clone(): LaunchProcessInfo {
@@ -77,12 +80,17 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     sessionConfig.endDebugWhenNoRequests = true;
     sessionConfig.launchScriptPath = this._launchTarget;
 
+    if (this._scriptArguments !== '') {
+      sessionConfig.scriptArguments = shellParse(this._scriptArguments);
+    }
+
     if (this._launchWrapperCommand != null) {
       sessionConfig.launchWrapperCommand = this._launchWrapperCommand;
     }
 
     const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
-    const deferLaunch = (sessionConfig.deferLaunch = remoteService.canLaunchDebugTargetInTerminal());
+    const deferLaunch = (sessionConfig.deferLaunch =
+      this._useTerminal && remoteService.canLaunchDebugTargetInTerminal());
 
     logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 
@@ -104,7 +112,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
         sessionConfig.launchWrapperCommand != null
           ? sessionConfig.launchWrapperCommand
           : sessionConfig.phpRuntimePath,
-        [...runtimeArgs, ...scriptArgs],
+        [...runtimeArgs, ...scriptArgs, ...sessionConfig.scriptArguments],
       );
     }
 

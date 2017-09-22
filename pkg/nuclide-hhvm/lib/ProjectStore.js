@@ -30,6 +30,7 @@ export default class ProjectStore {
   _filePathsToScriptCommand: Map<string, string>;
   _stickyCommand: string;
   _useTerminal: boolean;
+  _scriptArguments: string;
 
   constructor() {
     this._emitter = new Emitter();
@@ -40,6 +41,7 @@ export default class ProjectStore {
     this._filePathsToScriptCommand = new Map();
     this._stickyCommand = '';
     this._useTerminal = false;
+    this._scriptArguments = '';
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);
     this._disposables = new UniversalDisposable(
@@ -126,6 +128,14 @@ export default class ProjectStore {
   setDebugMode(debugMode: DebugMode): void {
     this._debugMode = debugMode;
     this._emitter.emit('change');
+  }
+
+  setScriptArguments(args: string): void {
+    this._scriptArguments = args;
+  }
+
+  getScriptArguments(): string {
+    return this._scriptArguments;
   }
 
   setStickyCommand(command: string, sticky: boolean): void {
