@@ -116,7 +116,10 @@ function DescriptionComponent(props: {
       });
 }
 
-function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
+function goToDiagnosticLocation(
+  rowData: DiagnosticMessage,
+  options: {|focusEditor: boolean|},
+): void {
   if (rowData.scope !== 'file' || rowData.filePath == null) {
     return;
   }
@@ -128,7 +131,7 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
   // Flow sometimes reports a row of -1, so this ensures the line is at least one.
   const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
   const column = 0;
-  goToLocation(uri, {line, column});
+  goToLocation(uri, {line, column, activatePane: options.focusEditor});
 }
 
 type DiagnosticsTableProps = {
@@ -148,27 +151,33 @@ export default class DiagnosticsTable extends React.Component<
 > {
   constructor(props: DiagnosticsTableProps) {
     super(props);
-    (this: any)._handleSort = this._handleSort.bind(this);
-    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     this.state = {
       sortDescending: false,
       sortedColumn: null,
     };
   }
 
-  _handleSort(sortedColumn: ?ColumnName, sortDescending: boolean): void {
+  _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {
     this.setState({
       sortedColumn,
       sortDescending,
     });
-  }
+  };
 
-  _handleSelectTableRow(
+  _handleSelectTableRow = (
     item: {diagnostic: DiagnosticMessage},
     selectedIndex: number,
-  ): void {
-    goToDiagnosticLocation(item.diagnostic);
-  }
+  ): void => {
+    // This version of the table doesn't support keyboard navigation so we can just go to the
+    // location. If it did, we would only go if the selection was triggered by a mouse (as
+    // selections triggered by the keyboard may just be the user moving through the item to select
+    // another).
+    goToDiagnosticLocation(item.diagnostic, {focusEditor: false});
+  };
+
+  _handleConfirmTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
+    goToDiagnosticLocation(item.diagnostic, {focusEditor: true});
+  };
 
   _getColumns(): Array<Column<DisplayDiagnostic>> {
     const {showFileName} = this.props;
@@ -263,6 +272,7 @@ export default class DiagnosticsTable extends React.Component<
           sortDescending={sortDescending}
           selectable={true}
           onSelect={this._handleSelectTableRow}
+          onConfirm={this._handleConfirmTableRow}
         />
         {maxResultsMessage}
       </div>
