@@ -87,13 +87,14 @@ export default class RemoteControlService {
     model.getActions().stopDebugging();
   }
 
-  canLaunchDebugTargetInTerminal(): boolean {
+  getTerminal(): any {
     try {
       // $FlowFB
-      const terminalUri = require('../../commons-node/fb-terminal-uri'); // eslint-disable-line no-unused-vars
-      return true;
-    } catch (_) {}
-    return false;
+      const terminalUri = require('../../commons-node/fb-terminal-uri');
+      return terminalUri;
+    } catch (_) {
+      return null;
+    }
   }
 
   async launchDebugTargetInTerminal(
@@ -101,15 +102,10 @@ export default class RemoteControlService {
     command: string,
     args: Array<string>,
   ): Promise<boolean> {
-    let terminalUri;
-    try {
-      // $FlowFB
-      terminalUri = require('../../commons-node/fb-terminal-uri');
-    } catch (_) {
+    const terminalUri = this.getTerminal();
+    if (terminalUri == null) {
       return false;
     }
-
-    nullthrows(terminalUri);
     const infoUri = terminalUri.uriFromInfo(
       {
         cwd: nuclideUri.dirname(targetUri),

@@ -90,7 +90,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
 
     const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
     const deferLaunch = (sessionConfig.deferLaunch =
-      this._useTerminal && remoteService.canLaunchDebugTargetInTerminal());
+      this._useTerminal && remoteService.getTerminal() != null);
 
     logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 
