@@ -106,7 +106,7 @@ function findTaggedFiles(
   let command: string;
   let args: Array<string>;
   let options;
-  if (process.platform === 'win32') {
+  if (process.platform === 'win32' && nuclideUri.isLocal(dirPath)) {
     command = 'findstr';
     const pattern = config.generatedTag + ' ' + config.partialGeneratedTag;
     const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
