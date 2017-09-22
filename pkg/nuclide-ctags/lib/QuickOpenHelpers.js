@@ -115,7 +115,7 @@ export default class QuickOpenHelpers {
             dir,
             async callback() {
               const line = await getLineNumberForTag(tag);
-              goToLocation(tag.file, line);
+              goToLocation(tag.file, {line});
             },
           };
         });

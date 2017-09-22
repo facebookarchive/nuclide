@@ -1154,12 +1154,12 @@ declare class atom$Workspace {
   open(
     uri?: string,
     options?: {
-      activatePane?: boolean,
-      initialLine?: number,
-      initialColumn?: number,
-      pending?: boolean,
-      split?: string,
-      searchAllPanes?: boolean,
+      activatePane?: ?boolean,
+      initialLine?: ?number,
+      initialColumn?: ?number,
+      pending?: ?boolean,
+      split?: ?string,
+      searchAllPanes?: ?boolean,
     }
   ): Promise<atom$TextEditor>,
   openURIInPane(

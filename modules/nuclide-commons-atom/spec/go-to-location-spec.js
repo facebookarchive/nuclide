@@ -74,7 +74,7 @@ describe('goToLocation', () => {
 
   it('should correctly set the cursor position when opening a file', () => {
     waitsForPromise(async () => {
-      const editor = await goToLocation(FILE1_PATH, 1, 3);
+      const editor = await goToLocation(FILE1_PATH, {line: 1, column: 3});
       expect(editor.getCursorBufferPosition()).toEqual(new Point(1, 3));
     });
   });
@@ -84,7 +84,7 @@ describe('goToLocation', () => {
       const editor1 = await atom.workspace.open(FILE1_PATH);
       expect(editor1.getCursorBufferPosition()).toEqual(new Point(0, 0));
 
-      const editor2 = await goToLocation(FILE1_PATH, 1, 3);
+      const editor2 = await goToLocation(FILE1_PATH, {line: 1, column: 3});
       expect(editor2).toBe(editor1);
       expect(editor1.getCursorBufferPosition()).toEqual(new Point(1, 3));
     });
@@ -96,7 +96,7 @@ describe('goToLocation', () => {
       const dock = atom.workspace.getLeftDock();
       dock.activate();
       expect(dock.getElement().contains(document.activeElement)).toBe(true);
-      const editor2 = await goToLocation(FILE1_PATH, 0, 0);
+      const editor2 = await goToLocation(FILE1_PATH, {line: 0, column: 0});
       expect(editor2).toBe(editor1);
       expect(editor1.getElement().contains(document.activeElement)).toBe(true);
     });
@@ -118,7 +118,7 @@ describe('goToLocation', () => {
 
     it('should not publish when opening a new file', () => {
       waitsForPromise(async () => {
-        await goToLocation(FILE1_PATH, 1, 2);
+        await goToLocation(FILE1_PATH, {line: 1, column: 2});
         expect(navigatingEditorsArray).toEqual([]);
       });
     });
@@ -133,9 +133,9 @@ describe('goToLocation', () => {
 
     it('should publish when opening the current file with a position', () => {
       waitsForPromise(async () => {
-        const editor1 = await goToLocation(FILE1_PATH, 1, 2);
+        const editor1 = await goToLocation(FILE1_PATH, {line: 1, column: 2});
         expect(navigatingEditorsArray).toEqual([]);
-        const editor2 = await goToLocation(FILE1_PATH, 1, 2);
+        const editor2 = await goToLocation(FILE1_PATH, {line: 1, column: 2});
         expect(editor2).toBe(editor1);
         expect(navigatingEditorsArray).toEqual([editor1]);
         expect(editor1.getCursorBufferPosition()).toEqual(new Point(1, 2));
@@ -144,9 +144,9 @@ describe('goToLocation', () => {
 
     it('should not publish when opening a file that is already open but not focused', () => {
       waitsForPromise(async () => {
-        await goToLocation(FILE1_PATH, 1, 2);
-        await goToLocation(FILE2_PATH, 1, 2);
-        await goToLocation(FILE1_PATH, 1, 2);
+        await goToLocation(FILE1_PATH, {line: 1, column: 2});
+        await goToLocation(FILE2_PATH, {line: 1, column: 2});
+        await goToLocation(FILE1_PATH, {line: 1, column: 2});
         expect(navigatingEditorsArray).toEqual([]);
       });
     });

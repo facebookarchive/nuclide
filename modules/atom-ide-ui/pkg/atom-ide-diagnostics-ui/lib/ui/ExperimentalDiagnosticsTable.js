@@ -331,7 +331,8 @@ function DescriptionComponent(props: {
   return showTraces && diagnostic.scope === 'file'
     ? DiagnosticsMessageNoHeader({
         message: diagnostic,
-        goToLocation,
+        goToLocation: (file: string, line: number) =>
+          goToLocation(file, {line}),
         fixer: () => {},
       })
     : DiagnosticsMessageText({

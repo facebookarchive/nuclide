@@ -105,7 +105,10 @@ export default class KeyboardShortcuts {
     if (range == null) {
       goToLocation(diagnostic.filePath);
     } else {
-      goToLocation(diagnostic.filePath, range.start.row, range.start.column);
+      goToLocation(diagnostic.filePath, {
+        line: range.start.row,
+        column: range.start.column,
+      });
     }
   }
 
@@ -158,11 +161,10 @@ export default class KeyboardShortcuts {
     const trace = traces[traceIndex];
     if (trace.filePath != null && trace.range != null) {
       this._traceIndex = traceIndex;
-      goToLocation(
-        trace.filePath,
-        trace.range.start.row,
-        trace.range.start.column,
-      );
+      goToLocation(trace.filePath, {
+        line: trace.range.start.row,
+        column: trace.range.start.column,
+      });
       return true;
     }
     return false;

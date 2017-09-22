@@ -139,7 +139,7 @@ export async function openArcDeepLink(
       const intLine = lines == null ? undefined : parseInt(lines[i], 10) - 1;
       const intColumn =
         columns == null ? undefined : parseInt(columns[i], 10) - 1;
-      goToLocation(localPath, intLine, intColumn);
+      goToLocation(localPath, {line: intLine, column: intColumn});
     }
   } catch (err) {
     atom.notifications.addError(err.message, {dismissable: true});

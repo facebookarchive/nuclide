@@ -43,7 +43,10 @@ export default class FileReferencesView extends React.Component<Props, State> {
   }
 
   _onRefClick(evt: SyntheticEvent<>, ref: Reference) {
-    goToLocation(this.props.uri, ref.range.start.row, ref.range.start.column);
+    goToLocation(this.props.uri, {
+      line: ref.range.start.row,
+      column: ref.range.start.column,
+    });
     evt.stopPropagation();
   }
 
@@ -55,7 +58,7 @@ export default class FileReferencesView extends React.Component<Props, State> {
   }
 
   _onFileNameClick(evt: SyntheticEvent<>, line?: number) {
-    goToLocation(this.props.uri, line);
+    goToLocation(this.props.uri, {line});
     evt.stopPropagation();
   }
 

@@ -106,7 +106,8 @@ function DescriptionComponent(props: {
   return showTraces && diagnostic.scope === 'file'
     ? DiagnosticsMessageNoHeader({
         message: diagnostic,
-        goToLocation,
+        goToLocation: (file: string, line: number) =>
+          goToLocation(file, {line}),
         fixer: () => {},
       })
     : DiagnosticsMessageText({
@@ -127,7 +128,7 @@ function goToDiagnosticLocation(rowData: DiagnosticMessage): void {
   // Flow sometimes reports a row of -1, so this ensures the line is at least one.
   const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
   const column = 0;
-  goToLocation(uri, line, column);
+  goToLocation(uri, {line, column});
 }
 
 type DiagnosticsTableProps = {

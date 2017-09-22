@@ -234,11 +234,10 @@ class OutlineTree extends React.PureComponent<{
     analytics.track('atom-ide-outline-view:go-to-location');
     pane.activate();
     pane.activateItem(editor);
-    goToLocationInEditor(
-      editor,
-      outline.startPosition.row,
-      outline.startPosition.column,
-    );
+    goToLocationInEditor(editor, {
+      line: outline.startPosition.row,
+      column: outline.startPosition.column,
+    });
   };
 
   onDoubleClick = () => {

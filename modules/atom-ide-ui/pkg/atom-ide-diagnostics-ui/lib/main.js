@@ -378,7 +378,7 @@ function addAtomCommands(diagnosticUpdater: DiagnosticUpdater): IDisposable {
         }
 
         const column = 0;
-        errorsToOpen.forEach((line, uri) => goToLocation(uri, line, column));
+        errorsToOpen.forEach((line, uri) => goToLocation(uri, {line, column}));
       });
   };
 

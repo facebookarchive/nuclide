@@ -236,7 +236,7 @@ function createGutterItem(
     // Before we jump to the location, we want to close the popup.
     dispose();
     const column = 0;
-    atomGoToLocation(path, line, column);
+    atomGoToLocation(path, {line, column});
   };
   item.addEventListener('mouseenter', (event: MouseEvent) => {
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the

@@ -114,7 +114,10 @@ class Activation {
         selection.resultType === 'FILE' ||
         selection.resultType === 'SYMBOL'
       ) {
-        goToLocation(selection.path, selection.line, selection.column);
+        goToLocation(selection.path, {
+          line: selection.line,
+          column: selection.column,
+        });
         track('quickopen-select-file', {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,

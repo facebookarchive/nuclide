@@ -117,7 +117,7 @@ function openFile(
   isWaiting: boolean,
 ): ConnectableObservable<AtomFileEvent> {
   return Observable.fromPromise(
-    goToLocation(uri, line, column).then(editor => {
+    goToLocation(uri, {line, column}).then(editor => {
       atom.applicationDelegate.focusWindow();
 
       if (

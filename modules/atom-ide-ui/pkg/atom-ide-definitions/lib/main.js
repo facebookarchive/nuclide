@@ -125,11 +125,10 @@ class Activation {
 
     function createCallback(definition) {
       return () => {
-        goToLocation(
-          definition.path,
-          definition.position.row,
-          definition.position.column,
-        );
+        goToLocation(definition.path, {
+          line: definition.position.row,
+          column: definition.position.column,
+        });
       };
     }
 

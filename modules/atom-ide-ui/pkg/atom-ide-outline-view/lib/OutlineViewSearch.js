@@ -119,11 +119,10 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     analytics.track('outline-view:search-enter');
     pane.activate();
     pane.activateItem(this.props.editor);
-    goToLocationInEditor(
-      this.props.editor,
-      firstElement.startPosition.row,
-      firstElement.startPosition.column,
-    );
+    goToLocationInEditor(this.props.editor, {
+      line: firstElement.startPosition.row,
+      column: firstElement.startPosition.column,
+    });
     this.setState({currentQuery: ''});
   };
 

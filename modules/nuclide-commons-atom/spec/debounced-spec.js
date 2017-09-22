@@ -161,17 +161,17 @@ xdescribe('pane item change events', () => {
           .toArray()
           .toPromise();
         await sleep(SLEEP_INTERVAL_2);
-        goToLocationInEditor(editor1, 3, 4);
+        goToLocationInEditor(editor1, {line: 3, column: 4});
         await sleep(SLEEP_INTERVAL_2);
         pane.activateItem(nonEditor);
         await sleep(SLEEP_INTERVAL_2);
-        goToLocationInEditor(editor1, 0, 0);
+        goToLocationInEditor(editor1, {line: 0, column: 0});
         await sleep(SLEEP_INTERVAL_2);
         pane.activateItem(editor2);
         await sleep(SLEEP_INTERVAL_2);
-        goToLocationInEditor(editor1, 3, 4);
+        goToLocationInEditor(editor1, {line: 3, column: 4});
         await sleep(SLEEP_INTERVAL_2);
-        goToLocationInEditor(editor2, 1, 1);
+        goToLocationInEditor(editor2, {line: 1, column: 1});
         await sleep(SLEEP_INTERVAL_2);
 
         expect(await itemsPromise).toEqual([

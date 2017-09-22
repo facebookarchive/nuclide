@@ -153,7 +153,7 @@ class Activation {
       goToLocation(navUri);
     } else {
       // NOTE: line numbers start at 0, so subtract 1.
-      goToLocation(navUri, lineNumber - 1);
+      goToLocation(navUri, {line: lineNumber - 1});
     }
 
     // Debug the remote HHVM server!

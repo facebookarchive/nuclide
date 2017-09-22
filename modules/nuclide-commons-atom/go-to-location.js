@@ -10,9 +10,17 @@
  * @format
  */
 
-import {Subject} from 'rxjs';
 import type {Observable} from 'rxjs';
+
+import {Subject} from 'rxjs';
 import invariant from 'assert';
+import idx from 'idx';
+
+type Options = {|
+  line?: number,
+  column?: number,
+  center?: boolean,
+|};
 
 /**
  * Opens the given file.
@@ -40,10 +48,13 @@ import invariant from 'assert';
  */
 export async function goToLocation(
   file: string,
-  line?: number,
-  column?: number,
-  center?: boolean = true,
+  options?: ?Options,
 ): Promise<atom$TextEditor> {
+  const center_ = idx(options, _ => _.center);
+  const center = center_ == null ? true : center_;
+  const line = idx(options, _ => _.line);
+  const column = idx(options, _ => _.column);
+
   // Prefer going to the current editor rather than the leftmost editor.
   const currentEditor = atom.workspace.getActiveTextEditor();
   if (currentEditor != null && currentEditor.getPath() === file) {
@@ -51,12 +62,11 @@ export async function goToLocation(
     invariant(paneContainer != null);
     paneContainer.activate();
     if (line != null) {
-      goToLocationInEditor(
-        currentEditor,
+      goToLocationInEditor(currentEditor, {
         line,
-        column == null ? 0 : column,
+        column: column == null ? 0 : column,
         center,
-      );
+      });
     } else {
       invariant(column == null, 'goToLocation: Cannot specify just column');
     }
@@ -79,15 +89,22 @@ export async function goToLocation(
 
 const goToLocationSubject = new Subject();
 
+type GotoLocationInEditorOptions = {|
+  line: number,
+  column: number,
+  center?: boolean,
+|};
+
 // Scrolls to the given line/column at the given editor
 // broadcasts the editor instance on an observable (subject) available
 // through the getGoToLocation
 export function goToLocationInEditor(
   editor: atom$TextEditor,
-  line: number,
-  column: number,
-  center: boolean = true,
+  options: GotoLocationInEditorOptions,
 ): void {
+  const center = options.center == null ? true : options.center;
+  const {line, column} = options;
+
   editor.setCursorBufferPosition([line, column]);
   if (center) {
     editor.scrollToBufferPosition([line, column], {center: true});

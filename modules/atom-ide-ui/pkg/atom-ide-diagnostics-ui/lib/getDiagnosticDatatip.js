@@ -23,6 +23,8 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {DiagnosticsPopup} from './ui/DiagnosticsPopup';
 
+const gotoLine = (file: string, line: number) => goToLocation(file, {line});
+
 function makeDatatipComponent(
   messages: Array<FileDiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
@@ -34,7 +36,7 @@ function makeDatatipComponent(
     ).map(codeActionsForMessage => ({
       messages,
       fixer,
-      goToLocation,
+      goToLocation: gotoLine,
       codeActionsForMessage,
     })),
     DiagnosticsPopup,

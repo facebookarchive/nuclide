@@ -58,11 +58,10 @@ module.exports = {
         return {
           range,
           callback() {
-            return goToLocation(
-              location.file,
-              location.pos.line - 1,
-              location.pos.col,
-            );
+            return goToLocation(location.file, {
+              line: location.pos.line - 1,
+              column: location.pos.col,
+            });
           },
         };
       }
