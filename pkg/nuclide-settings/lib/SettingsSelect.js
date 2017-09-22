@@ -36,9 +36,9 @@ export default class SettingsSelect extends React.Component<Props> {
     const optionElements = [];
     if (options.enum) {
       options.enum.forEach((option, i) => {
-        const optionValue = typeof option === 'string' ? option : option.value;
+        const optionValue = typeof option === 'object' ? option.value : option;
         const optionDescription =
-          typeof option === 'string' ? option : option.description;
+          typeof option === 'object' ? option.description : option;
         optionElements.push(
           <option value={optionValue} key={i}>
             {optionDescription}
