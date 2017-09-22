@@ -58,7 +58,7 @@
     },
     "DEFINE-CHECKER": {
       "prefix": "DEFINE-CHECKER",
-      "body": "DEFINE-CHECKER ${1:checker_name} = {\n\tSET report_when = ${2:formula};\n\tSET message = \"${3:error message}\";\n\tSET suggestion = \"${4:optional suggestion}\";\n\tSET severity = \"${5:error severity, e.g. WARNING}\";\n}"
+      "body": "DEFINE-CHECKER ${1:checker_name} = {\n\tSET report_when = ${2:formula};\n\tSET message = \"${3:error message}\";\n\tSET suggestion = \"${4:optional suggestion}\";\n\tSET severity = \"${5:error severity, e.g. WARNING}\";\n};"
     }
   }
 }
