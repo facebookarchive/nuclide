@@ -20,6 +20,9 @@ type Options = {|
   line?: number,
   column?: number,
   center?: boolean,
+  activateItem?: boolean,
+  activatePane?: boolean,
+  pending?: boolean,
 |};
 
 /**
@@ -52,15 +55,21 @@ export async function goToLocation(
 ): Promise<atom$TextEditor> {
   const center_ = idx(options, _ => _.center);
   const center = center_ == null ? true : center_;
+  const activatePane_ = idx(options, _ => _.activatePane);
+  const activatePane = activatePane_ == null ? true : activatePane_;
+  const activateItem = idx(options, _ => _.activateItem);
   const line = idx(options, _ => _.line);
   const column = idx(options, _ => _.column);
+  const pending = idx(options, _ => _.pending);
 
   // Prefer going to the current editor rather than the leftmost editor.
   const currentEditor = atom.workspace.getActiveTextEditor();
   if (currentEditor != null && currentEditor.getPath() === file) {
     const paneContainer = atom.workspace.paneContainerForItem(currentEditor);
     invariant(paneContainer != null);
-    paneContainer.activate();
+    if (activatePane) {
+      paneContainer.activate();
+    }
     if (line != null) {
       goToLocationInEditor(currentEditor, {
         line,
@@ -78,6 +87,9 @@ export async function goToLocation(
       initialLine: line,
       initialColumn: column,
       searchAllPanes: true,
+      activatePane,
+      activateItem,
+      pending,
     });
 
     if (center && line != null) {
