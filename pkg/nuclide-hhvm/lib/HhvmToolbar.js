@@ -33,6 +33,7 @@ type Props = {
 
 type State = {
   stickyScript: boolean,
+  useTerminal: boolean,
 };
 
 export default class HhvmToolbar extends React.Component<Props, State> {
@@ -40,6 +41,7 @@ export default class HhvmToolbar extends React.Component<Props, State> {
     super(props);
     this.state = {
       stickyScript: false,
+      useTerminal: false,
     };
   }
 
@@ -155,6 +157,21 @@ export default class HhvmToolbar extends React.Component<Props, State> {
                   'When checked, the target script will not change when switching to another editor tab',
               }}
             />}
+        {store.getDebugMode() === 'script'
+          ? <Checkbox
+              checked={this.state.useTerminal}
+              className="nuclide-hhvm-use-terminal-control"
+              label="Run in Terminal"
+              onChange={isChecked => {
+                this.props.projectStore.setUseTerminal(isChecked);
+                this.setState({useTerminal: isChecked});
+              }}
+              tooltip={{
+                title:
+                  "When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane",
+              }}
+            />
+          : null}
       </div>
     );
   }

@@ -23,6 +23,7 @@ export async function debug(
   debugMode: DebugMode,
   activeProjectRoot: ?string,
   target: string,
+  useTerminal: boolean,
 ): Promise<void> {
   let processInfo = null;
   invariant(activeProjectRoot != null, 'Active project is null');
@@ -44,7 +45,7 @@ export async function debug(
         activeProjectRoot,
         target,
         null,
-        false,
+        useTerminal,
       );
     } else {
       processInfo = new AttachProcessInfo(activeProjectRoot);

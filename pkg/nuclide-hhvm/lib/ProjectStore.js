@@ -29,6 +29,7 @@ export default class ProjectStore {
   _debugMode: DebugMode;
   _filePathsToScriptCommand: Map<string, string>;
   _stickyCommand: string;
+  _useTerminal: boolean;
 
   constructor() {
     this._emitter = new Emitter();
@@ -38,6 +39,7 @@ export default class ProjectStore {
     this._debugMode = 'webserver';
     this._filePathsToScriptCommand = new Map();
     this._stickyCommand = '';
+    this._useTerminal = false;
 
     const onDidChange = this._onDidChangeActivePaneItem.bind(this);
     this._disposables = new UniversalDisposable(
@@ -136,6 +138,14 @@ export default class ProjectStore {
       }
       this._stickyCommand = '';
     }
+  }
+
+  setUseTerminal(useTerminal: boolean): void {
+    this._useTerminal = useTerminal;
+  }
+
+  getUseTerminal(): boolean {
+    return this._useTerminal;
   }
 
   getDebugTarget(): string {
