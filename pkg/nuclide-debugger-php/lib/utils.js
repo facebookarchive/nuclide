@@ -70,6 +70,7 @@ export function getSessionConfig(
     stopOneStopAll: config.stopOneStopAll,
     attachScriptRegex: config.attachScriptRegex,
     idekeyRegex: config.idekeyRegex,
+    deferLaunch: config.deferLaunch,
   };
   if (isLaunch) {
     sessionConfig.xdebugAttachPort = config.xdebugLaunchingPort;

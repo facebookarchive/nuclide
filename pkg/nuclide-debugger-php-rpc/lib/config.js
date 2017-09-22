@@ -21,6 +21,7 @@ const defaultConfig: PhpDebuggerSessionConfig = {
   phpRuntimeArgs: '',
   dummyRequestFilePath: 'php_only_xdebug_request.php',
   stopOneStopAll: false,
+  deferLaunch: false,
 };
 
 let config: PhpDebuggerSessionConfig = defaultConfig;

@@ -40,6 +40,7 @@ export type PhpDebuggerSessionConfig = {
   dummyRequestFilePath: string,
   stopOneStopAll: boolean,
   launchWrapperCommand?: string,
+  deferLaunch: boolean,
 };
 
 // Connection states

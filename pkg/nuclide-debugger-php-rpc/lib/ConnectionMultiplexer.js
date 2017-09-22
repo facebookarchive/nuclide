@@ -175,7 +175,7 @@ export class ConnectionMultiplexer {
       'warning',
     );
 
-    const {launchScriptPath} = getConfig();
+    const {launchScriptPath, deferLaunch} = getConfig();
     if (launchScriptPath != null) {
       this._launchModeListen();
     } else {
@@ -185,7 +185,7 @@ export class ConnectionMultiplexer {
     this._status = ConnectionMultiplexerStatus.Running;
     this._dummyRequestProcess = sendDummyRequest();
 
-    if (launchScriptPath != null) {
+    if (launchScriptPath != null && !deferLaunch) {
       const expandedScript = nuclideUri.expandHomeDir(launchScriptPath);
       this._launchedScriptProcessPromise = new Promise(resolve => {
         this._launchedScriptProcess = launchPhpScriptWithXDebugEnabled(
