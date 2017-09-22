@@ -584,12 +584,16 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
           </div>
         );
       });
-      const rowProps = {};
-      if (selectable) {
-        rowProps.onClick = event => {
-          this._selectRow({index: i, event, confirm: true});
-        };
-      }
+      const rowProps = selectable
+        ? {
+            onClick: event => {
+              this._selectRow({index: i, event});
+            },
+            onDoubleClick: event => {
+              this._selectRow({index: i, event, confirm: true});
+            },
+          }
+        : {};
       const isSelectedRow = selectedIndex != null && i === selectedIndex;
       return (
         <div
