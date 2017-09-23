@@ -73,7 +73,6 @@ export default class KeyBindingHint extends React.Component<any, State> {
 
     return (
       <div ref={tooltip}>
-        {/* $FlowFixMe(>=0.53.0) Flow suppress */}
         <Icon icon="keyboard">
           <span style={{paddingLeft: '5px'}}>
             {firstBinding}

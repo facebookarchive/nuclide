@@ -42,7 +42,7 @@ type Props = {
   icon: IconName,
   className?: string,
   /** Optional text content to render next to the icon. */
-  children?: string,
+  children?: React.Node,
 };
 
 /**
