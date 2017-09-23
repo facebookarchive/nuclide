@@ -17,7 +17,7 @@ type MessageType = 'default' | 'info' | 'success' | 'warning' | 'error';
 
 type Props = {
   className?: string,
-  children?: ?(React.Element<any> | Array<?React.Element<any>>),
+  children?: React.Node,
   type?: MessageType,
 };
 
