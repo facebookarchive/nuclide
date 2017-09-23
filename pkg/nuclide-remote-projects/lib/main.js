@@ -353,13 +353,34 @@ export function activate(
       const config = connection.getConfig();
       const openInstances = getOpenFileEditorForRemoteProject(config);
       for (const openInstance of openInstances) {
-        const {editor, uri} = openInstance;
-        // Set the buffer to use a remote file, unless we've done that already.
-        // (Ideally this would be done during deserialization, but that's hard).
-        const buffer = editor.getBuffer();
-        if (!(buffer.file instanceof RemoteFile)) {
-          buffer.setFile(new RemoteFile(connection.getConnection(), uri));
-          buffer.reload();
+        // Keep the original open editor item with a unique name until the remote buffer is loaded,
+        // Then, we are ready to replace it with the remote tab in the same pane.
+        const {pane, editor, uri, filePath} = openInstance;
+
+        // Skip restoring the editor who has remote content loaded.
+        if (editor.getBuffer().file instanceof RemoteFile) {
+          continue;
+        }
+
+        // Atom ensures that each pane only has one item per unique URI.
+        // Null out the existing pane item's URI so we can insert the new one
+        // without closing the pane.
+        editor.getURI = () => null;
+        // Cleanup the old pane item on successful opening or when no connection could be
+        // established.
+        const cleanupBuffer = () => {
+          pane.removeItem(editor);
+          editor.destroy();
+        };
+        if (filePath === config.cwd) {
+          cleanupBuffer();
+        } else {
+          // If we clean up the buffer before the `openUriInPane` finishes,
+          // the pane will be closed, because it could have no other items.
+          // So we must clean up after.
+          atom.workspace
+            .openURIInPane(uri, pane)
+            .then(cleanupBuffer, cleanupBuffer);
         }
       }
     }),
