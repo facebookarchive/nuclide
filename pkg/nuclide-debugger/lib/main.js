@@ -289,7 +289,7 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:run-to-location': this._runToLocation.bind(this),
       }),
-      atom.commands.add('.nuclide-debugger-root', {
+      atom.commands.add('.nuclide-debugger-expression-value-list', {
         'nuclide-debugger:copy-debugger-expression-value': this._copyDebuggerExpressionValue.bind(
           this,
         ),
@@ -821,7 +821,10 @@ class Activation {
 
   _copyDebuggerExpressionValue(event: Event) {
     const clickedElement: HTMLElement = (event.target: any);
-    atom.clipboard.write(clickedElement.textContent);
+    const copyElement = clickedElement.closest('.nuclide-ui-lazy-nested-value');
+    if (copyElement != null) {
+      atom.clipboard.write(copyElement.textContent);
+    }
   }
 
   _copyDebuggerCallstack(event: Event) {
