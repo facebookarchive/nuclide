@@ -103,6 +103,7 @@ type Props = {
   syncTextContents: boolean,
   tabIndex: string,
   softWrapped: boolean,
+  onConfirm?: () => mixed,
 };
 
 export class AtomTextEditor extends React.Component<Props, void> {
@@ -170,6 +171,17 @@ export class AtomTextEditor extends React.Component<Props, void> {
     container.innerHTML = '';
     // $FlowFixMe
     container.appendChild(textEditorElement);
+
+    if (this.props.onConfirm != null) {
+      this._editorDisposables.add(
+        atom.commands.add(textEditorElement, {
+          'core:confirm': () => {
+            invariant(this.props.onConfirm != null);
+            this.props.onConfirm();
+          },
+        }),
+      );
+    }
   }
 
   componentWillReceiveProps(nextProps: Props): void {

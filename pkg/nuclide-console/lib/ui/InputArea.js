@@ -41,6 +41,23 @@ export default class OutputTable extends React.Component<Props, State> {
     };
   }
 
+  _submit = (): void => {
+    // Clear the text and trigger the `onSubmit` callback
+    const editor = this._textEditorModel;
+    if (editor == null) {
+      return;
+    }
+
+    const text = editor.getText();
+    if (text === '') {
+      return;
+    }
+
+    editor.setText(''); // Clear the text field.
+    this.props.onSubmit(text);
+    this.setState({historyIndex: -1});
+  };
+
   _handleTextEditor = (component: ?AtomTextEditor): void => {
     if (this._keySubscription) {
       this._textEditorModel = null;
@@ -69,16 +86,7 @@ export default class OutputTable extends React.Component<Props, State> {
         return;
       }
 
-      // Clear the text and trigger the `onSubmit` callback
-      const text = editor.getText();
-
-      if (text === '') {
-        return;
-      }
-
-      editor.setText(''); // Clear the text field.
-      this.props.onSubmit(text);
-      this.setState({historyIndex: -1});
+      this._submit();
     } else if (event.which === UP_KEY_CODE) {
       if (this.props.history.length === 0) {
         return;
@@ -128,6 +136,7 @@ export default class OutputTable extends React.Component<Props, State> {
           gutterHidden
           autoGrow
           lineNumberGutterVisible={false}
+          onConfirm={this._submit}
         />
       </div>
     );
