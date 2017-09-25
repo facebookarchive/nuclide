@@ -1,5 +1,22 @@
 # Nuclide Changelog
 
+## v0.257.0
+
+### General
+* The "Add Remote Connection Profile" dialog now supports tab and shift-tab focusing between inputs.
+* File Tree: New setting to enable focusing the editor when previewing a file (after a single click). Defaults to `false`.
+* For performance reasons, the file tree option to "Reveal File on Switch" is now turned off by default.
+* Fixed bug where the console scroll would not be pinned to the bottom when many multiline comments are logged.
+* Fixed bug where clicking "new messages" in the console will not always scroll all the way to the bottom.
+
+### Debugger
+* PHP Debugger: Added ability to launch a PHP script in the Nuclide terminal - this will allow interacting with STDIN and STDOUT while debugging.
+* Watch Expressions now persist across reloads.
+* Console will now scroll to the bottom if a command is executed in the debugger prompt.
+* Fixed bug where "copy" command in scopes pane was not copying anything to the clipboard.
+* C++ Debugger: now automatically adds @mode/dbg (if supported) when starting a build + debug operation from the Task Runner Toolbar for a native target.
+
+
 ## v0.256.0
 
 **Hotfix from 0.255.0**
