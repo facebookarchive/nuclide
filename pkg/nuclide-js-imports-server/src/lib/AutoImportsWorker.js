@@ -34,7 +34,6 @@ const logger = initializeLoggerForWorker('DEBUG');
 
 // TODO: index the entry points of node_modules
 const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];
-let toIgnoreRegex = '';
 
 const CONCURRENCY = 1;
 
@@ -69,8 +68,6 @@ function main() {
   const shouldIndexDefaultExportForEachFile =
     hasteSettings.isHaste &&
     Settings.hasteSettings.shouldAddAllFilesAsDefaultExport;
-
-  toIgnoreRegex = hasteSettings.blacklistedDirs.join('|');
 
   // Listen for open files that should be indexed immediately
   setupParentMessagesHandler();
@@ -194,14 +191,6 @@ export function indexDirectory(
   return Observable.fromPromise(
     listFilesWithWatchman(root).catch(() => listFilesWithGlob(root)),
   )
-    .map(files =>
-      // Filter out blacklisted files
-      files.filter(
-        file =>
-          toIgnoreRegex.length === 0 ||
-          !nuclideUri.join(root, file).match(toIgnoreRegex),
-      ),
-    )
     .do(files => {
       logger.info(`Indexing ${files.length} files`);
     })
