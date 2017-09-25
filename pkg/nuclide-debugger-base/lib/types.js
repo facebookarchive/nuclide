@@ -38,8 +38,9 @@ export type DebuggerCapabilities = {
   +conditionalBreakpoints: boolean,
   +continueToLocation: boolean,
   +customSourcePaths: boolean,
-  +singleThreadStepping: boolean,
   +readOnlyTarget: boolean,
+  +setVariable: boolean,
+  +singleThreadStepping: boolean,
   +threads: boolean,
 };
 

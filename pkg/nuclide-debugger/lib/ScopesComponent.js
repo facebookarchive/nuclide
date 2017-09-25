@@ -18,7 +18,7 @@ import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponen
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 import {Section} from '../../nuclide-ui/Section';
 
-type ScopesComponentProps = {
+type Props = {
   scopes: Array<ScopeSection>,
   watchExpressionStore: WatchExpressionStore,
 };
@@ -27,13 +27,13 @@ function isLocalScopeName(scopeName: string): boolean {
   return ['Local', 'Locals'].indexOf(scopeName) !== -1;
 }
 
-export class ScopesComponent extends React.Component<ScopesComponentProps> {
+export class ScopesComponent extends React.Component<Props> {
   _expansionStates: Map<
     string /* expression */,
     /* unique reference for expression */ Object,
   >;
 
-  constructor(props: ScopesComponentProps) {
+  constructor(props: Props) {
     super(props);
     this._expansionStates = new Map();
   }

@@ -39,6 +39,7 @@ export default class DebuggerProcessInfo {
       continueToLocation: false,
       customSourcePaths: false,
       readOnlyTarget: false,
+      setVariable: false,
       singleThreadStepping: false,
       threads: false,
     };

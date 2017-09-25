@@ -22,13 +22,11 @@ import {DebuggerMode} from './DebuggerStore';
 type Props = {
   model: DebuggerModel,
 };
+type State = {
+  mode: DebuggerModeType,
+};
 
-export class ScopesView extends React.PureComponent<
-  Props,
-  {
-    mode: DebuggerModeType,
-  },
-> {
+export class ScopesView extends React.PureComponent<Props, State> {
   _scopesComponentWrapped: React.ComponentType<any>;
   _disposables: CompositeDisposable;
 

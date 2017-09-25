@@ -26,14 +26,14 @@ import {
 import debounce from 'nuclide-commons/debounce';
 import {scrollIntoViewIfNeeded} from 'nuclide-commons-ui/scrollIntoView';
 
-type DebuggerThreadsComponentProps = {
-  bridge: Bridge,
-  threadStore: ThreadStore,
-  customThreadColumns: Array<ThreadColumn>,
-  threadName: string,
-};
+type Props = {|
+  +bridge: Bridge,
+  +threadStore: ThreadStore,
+  +customThreadColumns: Array<ThreadColumn>,
+  +threadName: string,
+|};
 
-type DebuggerThreadsComponentState = {
+type State = {
   threadList: Array<ThreadItem>,
   selectedThreadId: number,
   sortedColumn: ?ColumnName,
@@ -51,13 +51,10 @@ const activeThreadIndicatorComponent = (props: {cellData: boolean}) =>
       : null}
   </div>;
 
-export class DebuggerThreadsComponent extends React.Component<
-  DebuggerThreadsComponentProps,
-  DebuggerThreadsComponentState,
-> {
+export class DebuggerThreadsComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
 
-  constructor(props: DebuggerThreadsComponentProps) {
+  constructor(props: Props) {
     super(props);
     (this: any)._handleThreadStoreChanged = debounce(
       this._handleThreadStoreChanged,
