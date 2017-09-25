@@ -15,6 +15,7 @@ import type {
   DebugBridgeConfig,
 } from '../types';
 
+import {DEFAULT_ADB_PORT} from './DebugBridge';
 import {runCommand} from 'nuclide-commons/process';
 import {asyncFind, lastly} from 'nuclide-commons/promise';
 import {arrayUnique} from 'nuclide-commons/collection';
@@ -28,6 +29,12 @@ class DebugBridgePathStore {
   _lastWorkingPath: ?string = null;
   _customPath: ?string = null;
   _ports: Array<number> = [];
+
+  constructor(defaultPort: ?number) {
+    if (defaultPort != null) {
+      this._ports.push(defaultPort);
+    }
+  }
 
   registerPath(id: string, dbPath: DBPath): void {
     this._registeredPaths.set(id, dbPath);
@@ -149,7 +156,7 @@ const pathStore = new Map();
 export function getStore(db: DebugBridgeType): DebugBridgePathStore {
   let cached = pathStore.get(db);
   if (cached == null) {
-    cached = new DebugBridgePathStore();
+    cached = new DebugBridgePathStore(db === 'adb' ? DEFAULT_ADB_PORT : null);
     cached.registerPath('default', {path: db, priority: -1});
     pathStore.set(db, cached);
   }
