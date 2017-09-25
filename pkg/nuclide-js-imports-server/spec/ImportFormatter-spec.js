@@ -151,6 +151,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/modules/somePackage/somePackage/AutoImportsManager.js',
+      hasteName: 'AutoImportsManagerHaste',
       isTypeExport: false,
       isDefault: true,
     };
@@ -160,21 +161,6 @@ describe('ImportFormatter', () => {
         '/Users/modules/somePackage/somePackage/AutoImportsManager.js',
         suggestedImport,
       ),
-    ).toBe('AutoImportsManager');
-  });
-  it('Should correctly handle haste formatting with React files', () => {
-    const suggestedImport: JSExport = {
-      id: 'SomeSymbol',
-      uri: '/Users/modules/somePackage/somePackage/AutoImportsManager.react.js',
-      isTypeExport: false,
-      isDefault: true,
-    };
-    const formatter = new ImportFormatter([], true);
-    expect(
-      formatter.formatImportFile(
-        '/Users/modules/somePackage/somePackage/AutoImportsManager.react.js',
-        suggestedImport,
-      ),
-    ).toBe('AutoImportsManager.react');
+    ).toBe('AutoImportsManagerHaste');
   });
 });

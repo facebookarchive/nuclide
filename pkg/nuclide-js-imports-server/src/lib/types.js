@@ -38,6 +38,7 @@ export type JSExport = {
   uri: NuclideUri,
   isTypeExport: boolean,
   isDefault: boolean,
+  hasteName?: string,
   directoryForMainFile?: NuclideUri,
   type?: ExportType,
 };

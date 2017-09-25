@@ -17,7 +17,7 @@ import {Observable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observeProcess} from 'nuclide-commons/process';
-import {getEslintEnvs} from '../src/getConfig';
+import {getEslintEnvs, getConfigFromFlow} from '../src/getConfig';
 import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 
@@ -35,8 +35,13 @@ function main() {
 
   const envs = getEslintEnvs(root);
   const autoImportsManager = new AutoImportsManager(envs);
+  const {hasteSettings} = getConfigFromFlow(root);
 
-  const indexDirStream = indexDirectory(root, false, os.cpus().length).do({
+  const indexDirStream = indexDirectory(
+    root,
+    hasteSettings,
+    os.cpus().length,
+  ).do({
     next: exportForFiles => {
       exportForFiles.forEach(exportForFile =>
         autoImportsManager.handleUpdateForFile(exportForFile),

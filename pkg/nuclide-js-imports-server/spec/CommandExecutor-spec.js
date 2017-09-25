@@ -53,6 +53,7 @@ describe('CommandExecutor', () => {
         {
           id: 'test',
           uri: '/a/test2.js',
+          hasteName: 'test2',
           isTypeExport: false,
           isDefault: true,
         },
@@ -72,6 +73,7 @@ describe('CommandExecutor', () => {
         {
           id: 'test',
           uri: '/a/test2.js',
+          hasteName: 'test2',
           isTypeExport: false,
           isDefault: false,
         },

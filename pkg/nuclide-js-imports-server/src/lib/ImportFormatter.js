@@ -42,13 +42,9 @@ export class ImportFormatter {
     );
   }
 
-  _formatHasteImportFile(file: NuclideUri, exp: JSExport): string {
-    return nuclideUri.basename(nuclideUri.stripExtension(exp.uri));
-  }
-
   formatImportFile(file: NuclideUri, exp: JSExport): string {
-    if (this.isHaste) {
-      return this._formatHasteImportFile(file, exp);
+    if (exp.hasteName != null) {
+      return exp.hasteName;
     }
     const uri = abbreviateMainFiles(exp);
     const pathRelativeToModules = handleModules(uri, file, this.moduleDirs);
