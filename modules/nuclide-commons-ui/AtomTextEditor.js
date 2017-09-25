@@ -13,7 +13,6 @@
 import invariant from 'assert';
 import classnames from 'classnames';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import {TextBuffer} from 'atom';
 import {
   enforceReadOnlyEditor,
@@ -119,6 +118,7 @@ export class AtomTextEditor extends React.Component<Props, void> {
     softWrapped: false,
   };
 
+  _rootElement: ?HTMLDivElement;
   _textEditorElement: ?atom$TextEditorElement;
   _editorDisposables: UniversalDisposable;
 
@@ -132,12 +132,16 @@ export class AtomTextEditor extends React.Component<Props, void> {
   }
 
   _updateTextEditor(setup: TextEditorSetup): void {
+    const container = this._rootElement;
+    if (container == null) {
+      return;
+    }
+
     this._editorDisposables.dispose();
     const {textEditor, disposables} = setup;
 
     this._editorDisposables = new UniversalDisposable(disposables);
 
-    const container = ReactDOM.findDOMNode(this);
     const textEditorElement: atom$TextEditorElement = (this._textEditorElement = (document.createElement(
       'atom-text-editor',
     ): any));
@@ -160,16 +164,13 @@ export class AtomTextEditor extends React.Component<Props, void> {
           if (correctlySizedElement == null) {
             return;
           }
-          // $FlowFixMe
           container.style.width = correctlySizedElement.style.width;
         }),
       );
     }
 
     // Attach to DOM.
-    // $FlowFixMe
     container.innerHTML = '';
-    // $FlowFixMe
     container.appendChild(textEditorElement);
 
     if (this.props.onConfirm != null) {
@@ -274,7 +275,12 @@ export class AtomTextEditor extends React.Component<Props, void> {
         'no-auto-grow': !this.props.autoGrow,
       },
     );
-    return <div className={className} />;
+    return (
+      <div
+        className={className}
+        ref={rootElement => (this._rootElement = rootElement)}
+      />
+    );
   }
 
   // This component wraps the imperative API of `<atom-text-editor>`, and so React's rendering
