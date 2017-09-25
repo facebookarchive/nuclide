@@ -9,6 +9,7 @@
  * @format
  */
 
+import idx from 'idx';
 import {
   createConnection,
   CompletionItem,
@@ -76,7 +77,7 @@ connection.onInitialize((params): InitializeResult => {
   shouldProvideFlags.diagnostics = shouldProvideDiagnostics(params, root);
   importFormatter = new ImportFormatter(
     flowConfig.moduleDirs,
-    flowConfig.hasteSettings.isHaste,
+    shouldUseRequires(params, root),
   );
   autoImportsManager = new AutoImportsManager(envs);
   autoImportsManager.indexAndWatchDirectory(root);
@@ -184,11 +185,15 @@ function getAllTriggerCharacters(): Array<string> {
 }
 
 function shouldProvideDiagnostics(params: Object, root: NuclideUri): boolean {
-  return params.initializationOptions != null &&
-  params.initializationOptions.diagnosticsWhitelist != null &&
-  params.initializationOptions.diagnosticsWhitelist.length !== 0
-    ? params.initializationOptions.diagnosticsWhitelist.some(regex =>
-        root.match(new RegExp(regex)),
-      )
+  const diagnosticsWhitelist =
+    idx(params, _ => _.initializationOptions.diagnosticsWhitelist) || [];
+  return diagnosticsWhitelist.length !== 0
+    ? diagnosticsWhitelist.some(regex => root.match(new RegExp(regex)))
     : Settings.shouldProvideDiagnosticsDefault;
+}
+
+function shouldUseRequires(params: Object, root: NuclideUri): boolean {
+  const requiresWhitelist =
+    idx(params, _ => _.initializationOptions.requiresWhitelist) || [];
+  return requiresWhitelist.some(regex => root.match(new RegExp(regex)));
 }

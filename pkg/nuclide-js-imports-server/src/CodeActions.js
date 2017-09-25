@@ -106,7 +106,7 @@ function diagnosticToCommands(
         let verb;
         if (fileWithExport.isTypeExport) {
           verb = 'Import type';
-        } else if (importFormatter.isHaste) {
+        } else if (importFormatter.useRequire) {
           verb = 'Require';
         } else {
           verb = 'Import';

@@ -13,9 +13,6 @@ export const Settings = {
   // If initializationOptions are not used or the whitelist is empty, this will
   // determine whether diagnostics + code actions are displayed.
   shouldProvideDiagnosticsDefault: true,
-  // If initializationOptions are not used or the whitelist is empty, this will
-  // determine whether autocompletion results will be provided.
-  shouldProvideAutocompleteDefault: true,
   hasteSettings: {
     // When true, we will assume that all JS files have a default export
     // with the same ID as the filename.

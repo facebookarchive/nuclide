@@ -100,5 +100,8 @@ function getAutoImportSettings() {
     diagnosticsWhitelist: featureConfig.get(
       'nuclide-js-imports-client.diagnosticsWhitelist',
     ),
+    requiresWhitelist: featureConfig.get(
+      'nuclide-js-imports-client.requiresWhitelist',
+    ),
   };
 }

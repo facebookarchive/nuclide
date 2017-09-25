@@ -26,6 +26,9 @@ When initialized, the server takes an optional `initializationOptions` object:
   // diagnostics and code actions will be provided. If this is not provided or
   // is an empty array, diagnostics will be provided for all directories.
   diagnosticsWhitelist: Array<string>,
+  // A list of regexes to determine if require() will be used instead of 'import'.
+  // The default settings is to use 'import'.
+  requiresWhitelist: Array<string>,
 }
 ```
 

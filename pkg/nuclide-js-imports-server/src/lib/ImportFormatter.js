@@ -26,11 +26,11 @@ export type ImportType =
 
 export class ImportFormatter {
   moduleDirs: Array<string>;
-  isHaste: boolean;
+  useRequire: boolean;
 
-  constructor(dirs: Array<string>, isHaste: boolean) {
+  constructor(dirs: Array<string>, useRequire: boolean) {
     this.moduleDirs = dirs;
-    this.isHaste = isHaste;
+    this.useRequire = useRequire;
   }
 
   formatImport(file: NuclideUri, exp: JSExport): string {
@@ -38,7 +38,7 @@ export class ImportFormatter {
     return createImportStatement(
       exp.id,
       importPath,
-      getImportType(exp, this.isHaste),
+      getImportType(exp, this.useRequire),
     );
   }
 
@@ -72,11 +72,11 @@ export class ImportFormatter {
 
 function getImportType(
   {isDefault, isTypeExport}: JSExport,
-  isHaste: boolean,
+  useRequire: boolean,
 ): ImportType {
   if (isTypeExport) {
     return isDefault ? 'defaultType' : 'namedType';
-  } else if (isHaste) {
+  } else if (useRequire) {
     return isDefault ? 'requireImport' : 'requireDestructured';
   }
   return isDefault ? 'defaultValue' : 'namedValue';
