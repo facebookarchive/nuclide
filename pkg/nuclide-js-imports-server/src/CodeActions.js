@@ -77,7 +77,8 @@ function diagnosticToCommands(
             const diagnosticRange = lspRangeToAtomRange(diagnostic.range);
             return range.isEqual(diagnosticRange);
           }
-          return true;
+          // Otherwise this has to be a value import.
+          return suggestedImport.symbol.type === 'value';
         })
         // Create a CodeAction for each file with an export.
         .map(missingImport =>

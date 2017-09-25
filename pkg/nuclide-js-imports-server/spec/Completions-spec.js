@@ -244,7 +244,6 @@ describe('Completion Functions', () => {
         '/a/b/test.js',
         '',
         0,
-        false,
       );
       // 1) IDs need to be ordered by relevance.
       // 2) For the same ID, prefer node modules -> same directory -> other directories.
@@ -272,7 +271,6 @@ describe('Completion Functions', () => {
         '/a/b/test.js',
         '',
         0,
-        false,
       );
       expect(completions.map(getCompletionText)).toEqual([
         "import {test, testAbove} from '../above';",
@@ -286,10 +284,29 @@ describe('Completion Functions', () => {
         '/a/b/test.js',
         '',
         0,
-        false,
       );
       expect(singleCompletions.map(getCompletionText)).toEqual([
         "import {test} from './test3';",
+        "import {test} from '../above';",
+        "import {test} from 'module';",
+      ]);
+    });
+    it('does not complete within the same file', () => {
+      const importInformation = {
+        ids: ['test'],
+        importType: 'namedValue',
+        isComplete: false,
+      };
+      const completions = provideImportFileCompletions(
+        importInformation,
+        importsFormatter,
+        autoImportsManager,
+        '/a/b/test3.js',
+        '',
+        0,
+      );
+      expect(completions.map(getCompletionText)).toEqual([
+        // Note the absence of test3.js.
         "import {test} from '../above';",
         "import {test} from 'module';",
       ]);

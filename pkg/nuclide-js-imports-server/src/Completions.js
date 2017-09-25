@@ -56,18 +56,15 @@ export class Completions {
   documents: TextDocuments;
   autoImportsManager: AutoImportsManager;
   importsFormatter: ImportFormatter;
-  isHaste: boolean;
 
   constructor(
     documents: TextDocuments,
     autoImportsManager: AutoImportsManager,
     importsFormatter: ImportFormatter,
-    isHaste: boolean,
   ) {
     this.documents = documents;
     this.autoImportsManager = autoImportsManager;
     this.importsFormatter = importsFormatter;
-    this.isHaste = isHaste;
   }
 
   provideCompletions(
@@ -98,7 +95,6 @@ export class Completions {
               nuclideFormattedUri,
               line,
               position.line,
-              this.isHaste,
             )
           : provideFullImportCompletions(
               importInformation,
@@ -107,7 +103,6 @@ export class Completions {
               nuclideFormattedUri,
               line,
               position.line,
-              this.isHaste,
             );
       }
     }
@@ -124,16 +119,8 @@ export function provideFullImportCompletions(
   nuclideFormattedUri: NuclideUri,
   line: string,
   lineNum: number,
-  isHaste: boolean,
 ): Array<CompletionItem> {
   const {ids, importType} = importInformation;
-  if (
-    isHaste &&
-    (importType === 'defaultValue' || importType === 'namedValue')
-  ) {
-    // Value imports should not be used with haste. Require is used instead.
-    return [];
-  }
   const exportsIndex = autoImportsManager.exportsManager.getExportsIndex();
   // 1) Find all IDs that fuzzily match the given string.
   const matchingIds = exportsIndex.getIdsMatching(ids[0], MAX_RESULTS);
@@ -146,6 +133,7 @@ export function provideFullImportCompletions(
     const exportsForId = exportsIndex.getExportsFromId(id);
     // 3) Filter and sort the exports, and add them to the return list of completions.
     const importPaths = filterSuggestions(exportsForId, importType)
+      .filter(jsExport => jsExport.uri !== nuclideFormattedUri)
       .map(suggestion =>
         importsFormatter.formatImportFile(nuclideFormattedUri, suggestion),
       )
@@ -176,7 +164,6 @@ export function provideImportFileCompletions(
   nuclideFormattedUri: NuclideUri,
   line: string,
   lineNum: number,
-  isHaste: boolean,
 ): Array<CompletionItem> {
   const {ids, importType} = importInformation;
   // Intersect all exports for `ids` and then filter/sort the result.
@@ -186,6 +173,7 @@ export function provideImportFileCompletions(
     importType,
   );
   return filterSuggestions(suggestions, importType)
+    .filter(jsExport => jsExport.uri !== nuclideFormattedUri)
     .map(suggestion =>
       importsFormatter.formatImportFile(nuclideFormattedUri, suggestion),
     )

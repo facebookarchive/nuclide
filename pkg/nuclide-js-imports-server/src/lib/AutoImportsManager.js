@@ -100,6 +100,7 @@ export class AutoImportsManager {
     }
 
     const missingImports = undefinedSymbolsToMissingImports(
+      fileUri,
       this.undefinedSymbolsManager.findUndefined(ast),
       this.exportsManager,
     );
@@ -150,21 +151,29 @@ export function parseFile(code: string): ?Object {
 }
 
 function undefinedSymbolsToMissingImports(
+  fileUri: NuclideUri,
   undefinedSymbols: Array<UndefinedSymbol>,
   exportsManager: ExportManager,
 ): Array<ImportSuggestion> {
   return undefinedSymbols
-    .filter(symbol => {
-      return exportsManager.hasExport(symbol.id);
-    })
     .map(symbol => {
+      const isValue = symbol.type === 'value';
       return {
         symbol,
         filesWithExport: exportsManager
           .getExportsIndex()
-          .getExportsFromId(symbol.id),
+          .getExportsFromId(symbol.id)
+          .filter(jsExport => {
+            // Value imports cannot use type exports.
+            if (isValue && jsExport.isTypeExport) {
+              return false;
+            }
+            // No self imports.
+            return jsExport.uri !== fileUri;
+          }),
       };
-    });
+    })
+    .filter(result => result.filesWithExport.length > 0);
 }
 
 function checkEslint(ast: Object): boolean {

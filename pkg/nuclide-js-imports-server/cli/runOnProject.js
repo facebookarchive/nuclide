@@ -17,23 +17,24 @@ import {Observable} from 'rxjs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {observeProcess} from 'nuclide-commons/process';
+import {getEslintEnvs} from '../src/getConfig';
 import {AutoImportsManager} from '../src/lib/AutoImportsManager';
 import {indexDirectory, indexNodeModules} from '../src/lib/AutoImportsWorker';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
 const DEFAULT_PROJECT_PATH = nuclideUri.join(__dirname, '..', '..', '..');
-const ENVS = ['builtin', 'node', 'jasmine', 'browser', 'atomtest', 'es6'];
 const shouldIndexNodeModules = true;
 
 let numErrors = 0;
 let numFiles = 0;
 
 function main() {
-  const autoImportsManager = new AutoImportsManager(ENVS);
-
   const root =
     process.argv.length === 3 ? toPath(process.argv[2]) : DEFAULT_PROJECT_PATH;
+
+  const envs = getEslintEnvs(root);
+  const autoImportsManager = new AutoImportsManager(envs);
 
   const indexDirStream = indexDirectory(root, false, os.cpus().length).do({
     next: exportForFiles => {
@@ -75,7 +76,7 @@ function main() {
         'ls',
         root,
         '--ignore',
-        '.*/\\(node_modules\\|VendorLib\\)/.*',
+        '.*/\\(node_modules\\|VendorLib\\|3rdParty\\)/.*',
       ])
         .filter(event => event.kind === 'stdout')
         .mergeMap(event => {

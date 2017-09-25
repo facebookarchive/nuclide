@@ -177,6 +177,17 @@ describe('ExportManager', () => {
     expect(exp[0].type).toBe('FunctionExpression');
     expect(exp[0].uri).toBe('testFile');
     expect(exp[0].isDefault).toBe(true);
+    // Treat the filename as a default export too.
+    const defaultExp = manager.getExportsIndex().getExportsFromId('testFile');
+    expect(defaultExp).toEqual([
+      {
+        id: 'testFile',
+        isTypeExport: false,
+        type: 'ObjectExpression',
+        uri: 'testFile',
+        isDefault: true,
+      },
+    ]);
   });
   it('Should index module.exports with object', () => {
     const program = "module.exports = {foo: 'foo', bar: 'bar'}";

@@ -59,7 +59,6 @@ let completion = new Completions(
   documents,
   autoImportsManager,
   importFormatter,
-  false,
 );
 let diagnostics = new Diagnostics(autoImportsManager, importFormatter);
 let codeActions = new CodeActions(autoImportsManager, importFormatter);
@@ -81,12 +80,7 @@ connection.onInitialize((params): InitializeResult => {
   );
   autoImportsManager = new AutoImportsManager(envs);
   autoImportsManager.indexAndWatchDirectory(root);
-  completion = new Completions(
-    documents,
-    autoImportsManager,
-    importFormatter,
-    flowConfig.hasteSettings.isHaste,
-  );
+  completion = new Completions(documents, autoImportsManager, importFormatter);
   diagnostics = new Diagnostics(autoImportsManager, importFormatter);
   codeActions = new CodeActions(autoImportsManager, importFormatter);
   commandExecuter = new CommandExecutor(connection, importFormatter, documents);

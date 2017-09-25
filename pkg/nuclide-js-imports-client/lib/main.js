@@ -47,7 +47,7 @@ async function connectToJSImportsService(
   return jsService.initializeLsp(
     ['.flowconfig'],
     ['.js'],
-    'INFO',
+    (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
     fileNotifier,
     host,
     getAutoImportSettings(),

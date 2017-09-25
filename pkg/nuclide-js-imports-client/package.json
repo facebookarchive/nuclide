@@ -12,6 +12,22 @@
       "items": {"type": "string"},
       "default": [],
       "description": "If the working directory matches any of these regexes, then diagnostics will be provided. If the array is empty, diagnostics will be provided for all directories."
+    },
+    "logLevel": {
+      "title": "Log Level",
+      "type": "string",
+      "default": "INFO",
+      "description": "Specify that level of logging.",
+      "enum": [
+        "ALL",
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+        "OFF"
+      ]
     }
   },
   "nuclide": {
