@@ -52,8 +52,9 @@ export function getDeviceInfo(
 
 export function getProcesses(
   device: DeviceId,
+  timeout: number,
 ): ConnectableObservable<Array<Process>> {
-  return new Processes(new Adb(device)).fetch().publish();
+  return new Processes(new Adb(device)).fetch(timeout).publish();
 }
 
 export async function stopPackage(

@@ -48,11 +48,20 @@ export class Processes {
       });
   }
 
-  fetch(): Observable<Process[]> {
+  fetch(timeout: number): Observable<Process[]> {
+    const internalTimeout = timeout * 2 / 3;
     return Observable.forkJoin(
-      this._db.getProcesses().catch(() => Observable.of([])),
-      this._db.getDebuggableProcesses().catch(() => Observable.of([])),
-      this._getProcessAndMemoryUsage().catch(() => Observable.of(new Map())),
+      this._db
+        .getProcesses()
+        .timeout(internalTimeout)
+        .catch(() => Observable.of([])),
+      this._db
+        .getDebuggableProcesses()
+        .timeout(internalTimeout)
+        .catch(() => Observable.of([])),
+      this._getProcessAndMemoryUsage()
+        .timeout(internalTimeout)
+        .catch(() => Observable.of(new Map())),
     ).map(([processes, javaProcesses, cpuAndMemUsage]) => {
       const javaPids = new Set(
         javaProcesses.map(javaProc => Number(javaProc.pid)),

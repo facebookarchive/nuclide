@@ -31,12 +31,13 @@ export class ATDeviceProcessesProvider implements DeviceProcessesProvider {
   }
 
   observe(host: NuclideUri, device: Device): Observable<Process[]> {
-    return Observable.interval(3000)
+    const intervalTime = 3000;
+    return Observable.interval(intervalTime)
       .startWith(0)
       .switchMap(() =>
         this._bridge
           .getService(host)
-          .getProcesses(device)
+          .getProcesses(device, intervalTime)
           .refCount()
           .catch(() => Observable.of([])),
       );

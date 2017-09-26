@@ -93,6 +93,7 @@ export function uninstallPackage(
 
 export function getProcesses(
   device: DeviceId,
+  timeout: number,
 ): ConnectableObservable<Array<Process>> {
-  return new Processes(new Sdb(device)).fetch().publish();
+  return new Processes(new Sdb(device)).fetch(timeout).publish();
 }
