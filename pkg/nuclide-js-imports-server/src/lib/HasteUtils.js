@@ -35,11 +35,11 @@ export function hasteReduceName(
       // The default name reducer.
       return nuclideUri.stripExtension(nuclideUri.basename(file));
     }
-    let hasteName = file;
-    for (const reducer of nameReducers) {
-      hasteName = hasteName.replace(reducer.regexp, reducer.replacement);
-    }
-    return hasteName;
+    return nameReducers.reduce(
+      (hasteName, reducer) =>
+        hasteName.replace(reducer.regexp, reducer.replacement),
+      file,
+    );
   }
 }
 
