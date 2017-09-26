@@ -15,6 +15,10 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {OpenConnectionDialogOptions} from './open-connection';
 import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
 
+import {
+  enforceReadOnlyEditor,
+  observeTextEditors,
+} from 'nuclide-commons-atom/text-editor';
 import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
 import {logger} from './constants';
 import {getOpenFileEditorForRemoteProject} from './utils';
@@ -438,6 +442,15 @@ export function activate(
         const removeFromCache = () => delete pendingFiles[uri];
         textEditorPromise.then(removeFromCache, removeFromCache);
         return textEditorPromise;
+      }
+    }),
+  );
+
+  subscriptions.add(
+    observeTextEditors(editor => {
+      const uri = editor.getURI();
+      if (uri != null && nuclideUri.isInArchive(uri)) {
+        enforceReadOnlyEditor(editor);
       }
     }),
   );
