@@ -272,6 +272,8 @@ class FileSystemActions {
     );
 
     const successfulPaths = [].concat(...copiedPaths);
+    onDidConfirm(successfulPaths);
+
     if (successfulPaths.length !== 0) {
       const hgRepository = this._getHgRepositoryForPath(successfulPaths[0]);
       if (hgRepository != null && addToVCS) {
@@ -285,13 +287,10 @@ class FileSystemActions {
             'version control.  Error: ' +
             e.toString();
           atom.notifications.addError(message);
-          onDidConfirm([]);
           return;
         }
       }
     }
-
-    onDidConfirm(successfulPaths);
   }
 
   openRenameDialog(): void {
