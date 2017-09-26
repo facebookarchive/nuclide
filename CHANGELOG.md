@@ -14,7 +14,6 @@
 * Watch Expressions now persist across reloads.
 * Console will now scroll to the bottom if a command is executed in the debugger prompt.
 * Fixed bug where "copy" command in scopes pane was not copying anything to the clipboard.
-* C++ Debugger: now automatically adds @mode/dbg (if supported) when starting a build + debug operation from the Task Runner Toolbar for a native target.
 
 
 ## v0.256.0
