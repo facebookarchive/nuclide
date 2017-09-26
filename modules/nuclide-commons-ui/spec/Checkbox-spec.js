@@ -14,7 +14,7 @@ import {Checkbox} from '../Checkbox';
 import nullthrows from 'nullthrows';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 
 let hostEl;
 
@@ -63,7 +63,6 @@ describe('Checkbox', () => {
     const inputEl = nullthrows(
       TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input'),
     );
-    // $FlowFixMe
     expect(inputEl.indeterminate).toBe(true);
   });
 });

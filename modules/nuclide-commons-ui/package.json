@@ -19,12 +19,9 @@
     "nuclide-commons": "0.2.0",
     "nuclide-commons-atom": "0.2.0",
     "nullthrows": "1.0.0",
-    "react": "15.3.1",
-    "react-dom": "15.3.1",
+    "react": "16.0.0",
+    "react-dom": "16.0.0",
     "rxjs": "5.3.1",
     "shallowequal": "0.2.2"
-  },
-  "devDependencies": {
-    "react-addons-test-utils": "15.3.1"
   }
 }

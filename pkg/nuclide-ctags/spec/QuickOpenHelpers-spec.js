@@ -13,7 +13,7 @@ import type {CtagsResult} from '../../nuclide-ctags-rpc';
 
 import invariant from 'assert';
 import ReactDOM from 'react-dom';
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import * as hackService from '../../nuclide-hack/lib/HackLanguage';
 import QuickOpenHelpers from '../lib/QuickOpenHelpers';

@@ -17,7 +17,7 @@ import {
   setRecentFilesService,
 } from '../lib/RecentFilesProvider';
 import * as React from 'react';
-import TestUtils from 'react-addons-test-utils';
+import TestUtils from 'react-dom/test-utils';
 
 let provider: ?Provider<FileResult> = null;
 
