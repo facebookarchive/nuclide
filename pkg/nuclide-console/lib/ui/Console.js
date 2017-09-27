@@ -59,7 +59,7 @@ type State = {
 };
 
 // Maximum time (ms) for the console to try scrolling to the bottom.
-const MAXIMUM_SCROLLING_TIME = 1000;
+const MAXIMUM_SCROLLING_TIME = 3000;
 
 export default class Console extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
