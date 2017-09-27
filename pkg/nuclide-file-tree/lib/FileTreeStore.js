@@ -645,7 +645,7 @@ export class FileTreeStore {
 
   _emitChange(): void {
     if (this._animationFrameRequestSubscription != null) {
-      this._animationFrameRequestSubscription.unsubscribe();
+      return;
     }
 
     this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(
