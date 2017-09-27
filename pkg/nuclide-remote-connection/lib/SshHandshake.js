@@ -403,7 +403,6 @@ export class SshHandshake {
   _startRemoteServer(): Promise<boolean> {
     let sftpTimer = null;
     return new Promise((resolve, reject) => {
-      let stdOut = '';
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
       // TODO: escape any single quotes
       // TODO: the timeout value shall be configurable using .json file too (t6904691).
@@ -417,6 +416,8 @@ export class SshHandshake {
           this._onSshConnectionError(err);
           return resolve(false);
         }
+
+        let stdOut = '';
         // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
         stream
           .on('close', async (exitCode, signal) => {
