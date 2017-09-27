@@ -1,3 +1,43 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _destroyItemWhere;
+
+function _load_destroyItemWhere() {
+  return _destroyItemWhere = require('nuclide-commons-atom/destroyItemWhere');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,26 +45,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type DebuggerModel from './DebuggerModel';
-import type {
-  DebuggerInstanceBase,
-  DebuggerProcessInfo,
-} from '../../nuclide-debugger-base';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'invariant';
-import {DebuggerMode} from './DebuggerStore';
-import nullthrows from 'nullthrows';
-
-export default class RemoteControlService {
-  _getModel: () => ?DebuggerModel;
+class RemoteControlService {
 
   /**
    * @param getModel function always returning the latest singleton model.
@@ -34,19 +59,23 @@ export default class RemoteControlService {
    * outside of any model, so objects vended early must still always manipulate
    * the latest model's state.
    */
-  constructor(getModel: () => ?DebuggerModel) {
+  constructor(getModel) {
     this._getModel = getModel;
   }
 
-  async startDebugging(processInfo: DebuggerProcessInfo): Promise<void> {
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-    await model.getActions().startDebugging(processInfo);
+  startDebugging(processInfo) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const model = _this._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
+      }
+      yield model.getActions().startDebugging(processInfo);
+    })();
   }
 
-  toggleBreakpoint(filePath: string, line: number): void {
+  toggleBreakpoint(filePath, line) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -54,7 +83,7 @@ export default class RemoteControlService {
     model.getActions().toggleBreakpoint(filePath, line);
   }
 
-  addBreakpoint(filePath: string, line: number): void {
+  addBreakpoint(filePath, line) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -62,7 +91,7 @@ export default class RemoteControlService {
     model.getActions().addBreakpoint(filePath, line);
   }
 
-  isInDebuggingMode(providerName: string): boolean {
+  isInDebuggingMode(providerName) {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -71,7 +100,7 @@ export default class RemoteControlService {
     return session != null && session.getProviderName() === providerName;
   }
 
-  getDebuggerInstance(): ?DebuggerInstanceBase {
+  getDebuggerInstance() {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -79,7 +108,7 @@ export default class RemoteControlService {
     return model.getStore().getDebuggerInstance();
   }
 
-  killDebugger(): void {
+  killDebugger() {
     const model = this._getModel();
     if (model == null) {
       throw new Error('Package is not activated.');
@@ -87,7 +116,7 @@ export default class RemoteControlService {
     model.getActions().stopDebugging();
   }
 
-  getTerminal(): any {
+  getTerminal() {
     try {
       // $FlowFB
       const terminalUri = require('../../commons-node/fb-terminal-uri');
@@ -97,67 +126,70 @@ export default class RemoteControlService {
     }
   }
 
-  async launchDebugTargetInTerminal(
-    targetUri: NuclideUri,
-    command: string,
-    args: Array<string>,
-  ): Promise<boolean> {
-    const terminalUri = this.getTerminal();
-    if (terminalUri == null) {
-      return false;
-    }
-    const infoUri = terminalUri.uriFromInfo(
-      {
-        cwd: nuclideUri.dirname(targetUri),
-        title: 'Debug output: ' + nuclideUri.getPath(targetUri),
+  launchDebugTargetInTerminal(targetUri, command, args) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const terminalUri = _this2.getTerminal();
+      if (terminalUri == null) {
+        return false;
+      }
+      const infoUri = terminalUri.uriFromInfo({
+        cwd: (_nuclideUri || _load_nuclideUri()).default.dirname(targetUri),
+        title: 'Debug output: ' + (_nuclideUri || _load_nuclideUri()).default.getPath(targetUri),
         command: {
           file: command,
-          args,
+          args
         },
         remainOnCleanExit: true,
         icon: 'nuclicon-debugger',
-        defaultLocation: 'bottom',
-      },
-      true,
-    );
+        defaultLocation: 'bottom'
+      }, true);
 
-    // Ensure any previous instances of this same target are closed before
-    // opening a new terminal tab. We don't want them to pile up if the
-    // user keeps running the same app over and over.
-    destroyItemWhere(item => item.getURI != null && item.getURI() === infoUri);
-    await goToLocation(infoUri);
+      // Ensure any previous instances of this same target are closed before
+      // opening a new terminal tab. We don't want them to pile up if the
+      // user keeps running the same app over and over.
+      (0, (_destroyItemWhere || _load_destroyItemWhere()).destroyItemWhere)(function (item) {
+        return item.getURI != null && item.getURI() === infoUri;
+      });
+      yield (0, (_goToLocation || _load_goToLocation()).goToLocation)(infoUri);
 
-    const terminalPane = nullthrows(atom.workspace.paneForURI(infoUri));
-    const terminal = nullthrows(terminalPane.itemForURI(infoUri));
+      const terminalPane = (0, (_nullthrows || _load_nullthrows()).default)(atom.workspace.paneForURI(infoUri));
+      const terminal = (0, (_nullthrows || _load_nullthrows()).default)(terminalPane.itemForURI(infoUri));
 
-    // Ensure the debugger is terminated if the process running inside the
-    // terminal exits, and that the terminal destroys if the debugger stops.
-    const model = this._getModel();
-    if (model == null) {
-      throw new Error('Package is not activated.');
-    }
-
-    const disposable = model.getStore().onDebuggerModeChange(() => {
-      const debuggerModel = this._getModel();
-
-      invariant(debuggerModel != null);
-      const debuggerMode = debuggerModel.getStore().getDebuggerMode();
-      if (debuggerMode === DebuggerMode.STOPPED) {
-        // This termination path is invoked if the debugger dies first, ensuring
-        // we terminate the target process. This can happen if the user hits stop,
-        // or if the debugger crashes.
-        terminal.setProcessExitCallback(() => {});
-        terminal.terminateProcess();
-        disposable.dispose();
+      // Ensure the debugger is terminated if the process running inside the
+      // terminal exits, and that the terminal destroys if the debugger stops.
+      const model = _this2._getModel();
+      if (model == null) {
+        throw new Error('Package is not activated.');
       }
-    });
 
-    terminal.setProcessExitCallback(() => {
-      // This callback is invoked if the target process dies first, ensuring
-      // we tear down the debugger.
-      disposable.dispose();
-      this.killDebugger();
-    });
-    return true;
+      const disposable = model.getStore().onDebuggerModeChange(function () {
+        const debuggerModel = _this2._getModel();
+
+        if (!(debuggerModel != null)) {
+          throw new Error('Invariant violation: "debuggerModel != null"');
+        }
+
+        const debuggerMode = debuggerModel.getStore().getDebuggerMode();
+        if (debuggerMode === (_DebuggerStore || _load_DebuggerStore()).DebuggerMode.STOPPED) {
+          // This termination path is invoked if the debugger dies first, ensuring
+          // we terminate the target process. This can happen if the user hits stop,
+          // or if the debugger crashes.
+          terminal.setProcessExitCallback(function () {});
+          terminal.terminateProcess();
+          disposable.dispose();
+        }
+      });
+
+      terminal.setProcessExitCallback(function () {
+        // This callback is invoked if the target process dies first, ensuring
+        // we tear down the debugger.
+        disposable.dispose();
+        _this2.killDebugger();
+      });
+      return true;
+    })();
   }
 }
+exports.default = RemoteControlService;

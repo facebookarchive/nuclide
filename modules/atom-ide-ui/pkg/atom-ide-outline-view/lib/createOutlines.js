@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createOutlines = createOutlines;
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('nuclide-commons-atom/feature-config'));
+}
+
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,183 +29,93 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  Outline,
-  OutlineProvider,
-  OutlineTree,
-  OutlineTreeKind,
-} from './types';
-import type {TokenizedText} from 'nuclide-commons/tokenized-text';
-import type ActiveEditorRegistry, {
-  Result,
-} from 'nuclide-commons-atom/ActiveEditorRegistry';
-
-import {Observable} from 'rxjs';
-import featureConfig from 'nuclide-commons-atom/feature-config';
-import invariant from 'assert';
-
-import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
-
 const LOADING_DELAY_MS = 500;
-
-export type OutlineTreeForUi = {
-  icon?: string, // from atom$Octicon, but we use string for convenience of remoting
-  kind?: OutlineTreeKind, // kind you can pass to the UI for theming
-  plainText?: string,
-  tokenizedText?: TokenizedText,
-
-  startPosition: atom$Point,
-  endPosition?: atom$Point,
-  children: Array<OutlineTreeForUi>,
-  highlighted: boolean,
-};
 
 /**
  * Includes additional information that is useful to the UI, but redundant or nonsensical for
  * providers to include in their responses.
  */
-export type OutlineForUi =
-  | {
-      // The initial state at startup.
-      kind: 'empty',
-    }
-  | {
-      // The thing that currently has focus is not a text editor.
-      kind: 'not-text-editor',
-    }
-  | {
-      // Currently awaiting results from a provider (for longer than a certain delay).
-      kind: 'loading',
-    }
-  | {
-      // Indicates that no provider is registered for the given grammar.
-      kind: 'no-provider',
-      // Human-readable name for the grammar.
-      grammar: string,
-    }
-  | {
-      // Indicates that a provider is registered but that it did not return an outline.
-      kind: 'provider-no-outline',
-    }
-  | {
-      kind: 'outline',
-      outlineTrees: Array<OutlineTreeForUi>,
-      /**
-   * Use a TextEditor instead of a path so that:
-   * - If there are multiple editors for a file, we always jump to outline item
-   *   locations in the correct editor.
-   * - Jumping to outline item locations works for new, unsaved files.
-   */
-      editor: atom$TextEditor,
-    };
-
-export function createOutlines(
-  editorService: ActiveEditorRegistry<OutlineProvider, ?Outline>,
-): Observable<OutlineForUi> {
+function createOutlines(editorService) {
   return outlinesForProviderResults(editorService.getResultsStream());
 }
 
-function outlinesForProviderResults(
-  providerResults: Observable<Result<OutlineProvider, ?Outline>>,
-): Observable<OutlineForUi> {
+function outlinesForProviderResults(providerResults) {
   return providerResults.switchMap(uiOutlinesForResult);
 }
 
-function uiOutlinesForResult(
-  result: Result<OutlineProvider, ?Outline>,
-): Observable<OutlineForUi> {
+function uiOutlinesForResult(result) {
   switch (result.kind) {
     case 'not-text-editor':
-      return Observable.of({kind: 'not-text-editor'});
+      return _rxjsBundlesRxMinJs.Observable.of({ kind: 'not-text-editor' });
     case 'no-provider':
-      return Observable.of({
+      return _rxjsBundlesRxMinJs.Observable.of({
         kind: 'no-provider',
-        grammar: result.grammar.name,
+        grammar: result.grammar.name
       });
     case 'pane-change':
       // Originally, we displayed a empty pane immediately, but this caused an undesireable
       // flickering effect so we prefer stale information for the first LOADING_DELAY_MS.
       // If we haven't received anything after LOADING_DELAY_MS, display a loading indicator.
-      return Observable.concat(
-        Observable.of({kind: 'loading'}).delay(LOADING_DELAY_MS),
-      );
+      return _rxjsBundlesRxMinJs.Observable.concat(_rxjsBundlesRxMinJs.Observable.of({ kind: 'loading' }).delay(LOADING_DELAY_MS));
     case 'result':
       const outline = result.result;
       if (outline == null) {
-        return Observable.of({kind: 'provider-no-outline'});
+        return _rxjsBundlesRxMinJs.Observable.of({ kind: 'provider-no-outline' });
       }
       return highlightedOutlines(outline, result.editor);
     case 'provider-error':
-      return Observable.of({kind: 'provider-no-outline'});
+      return _rxjsBundlesRxMinJs.Observable.of({ kind: 'provider-no-outline' });
     default:
       // Don't change the UI after 'edit' or 'save' events.
       // It's better to just leave the existing outline visible until the new results come in.
-      return Observable.empty();
+      return _rxjsBundlesRxMinJs.Observable.empty();
   }
 }
 
-function highlightedOutlines(
-  outline: Outline,
-  editor: atom$TextEditor,
-): Observable<OutlineForUi> {
-  const nameOnly = featureConfig.get('atom-ide-outline-view.nameOnly');
+function highlightedOutlines(outline, editor) {
+  const nameOnly = (_featureConfig || _load_featureConfig()).default.get('atom-ide-outline-view.nameOnly');
   const outlineForUi = {
     kind: 'outline',
-    outlineTrees: outline.outlineTrees.map(outlineTree =>
-      treeToUiTree(outlineTree, Boolean(nameOnly)),
-    ),
-    editor,
+    outlineTrees: outline.outlineTrees.map(outlineTree => treeToUiTree(outlineTree, Boolean(nameOnly))),
+    editor
   };
 
-  return getCursorPositions(editor).map(cursorLocation =>
-    highlightCurrentNode(outlineForUi, cursorLocation),
-  );
+  return (0, (_textEditor || _load_textEditor()).getCursorPositions)(editor).map(cursorLocation => highlightCurrentNode(outlineForUi, cursorLocation));
 }
 
-function treeToUiTree(
-  outlineTree: OutlineTree,
-  nameOnly: boolean,
-): OutlineTreeForUi {
+function treeToUiTree(outlineTree, nameOnly) {
   const shortName = nameOnly && outlineTree.representativeName != null;
   return {
     icon: nameOnly ? undefined : outlineTree.icon,
     kind: nameOnly ? undefined : outlineTree.kind,
-    plainText: shortName
-      ? outlineTree.representativeName
-      : outlineTree.plainText,
+    plainText: shortName ? outlineTree.representativeName : outlineTree.plainText,
     tokenizedText: shortName ? undefined : outlineTree.tokenizedText,
     startPosition: outlineTree.startPosition,
     endPosition: outlineTree.endPosition,
     highlighted: false,
-    children: outlineTree.children.map(tree => treeToUiTree(tree, nameOnly)),
+    children: outlineTree.children.map(tree => treeToUiTree(tree, nameOnly))
   };
 }
 
 // Return an outline object with the node under the cursor highlighted. Does not mutate the
 // original.
-function highlightCurrentNode(
-  outline: OutlineForUi,
-  cursorLocation: atom$Point,
-): OutlineForUi {
-  invariant(outline.kind === 'outline');
+function highlightCurrentNode(outline, cursorLocation) {
+  if (!(outline.kind === 'outline')) {
+    throw new Error('Invariant violation: "outline.kind === \'outline\'"');
+  }
   // $FlowIssue
-  return {
-    ...outline,
-    outlineTrees: highlightCurrentNodeInTrees(
-      outline.outlineTrees,
-      cursorLocation,
-    ),
-  };
+
+
+  return Object.assign({}, outline, {
+    outlineTrees: highlightCurrentNodeInTrees(outline.outlineTrees, cursorLocation)
+  });
 }
 
-function highlightCurrentNodeInTrees(
-  outlineTrees: Array<OutlineTreeForUi>,
-  cursorLocation: atom$Point,
-): Array<OutlineTreeForUi> {
+function highlightCurrentNodeInTrees(outlineTrees, cursorLocation) {
   // The corresponding UI component uses React.PureComponent.
   // Minimize the amount of re-rendering per keystroke by only copying on change.
   let changed = false;
@@ -193,19 +126,15 @@ function highlightCurrentNodeInTrees(
       return tree;
     }
     changed = true;
-    return {
-      ...tree,
+    return Object.assign({}, tree, {
       highlighted,
-      children,
-    };
+      children
+    });
   });
   return changed ? newTrees : outlineTrees;
 }
 
-function shouldHighlightNode(
-  outlineTree: OutlineTreeForUi,
-  cursorLocation: atom$Point,
-): boolean {
+function shouldHighlightNode(outlineTree, cursorLocation) {
   const startPosition = outlineTree.startPosition;
   const endPosition = outlineTree.endPosition;
   if (endPosition == null) {
@@ -216,13 +145,7 @@ function shouldHighlightNode(
     // Since the parent is rendered in the list above the children, it doesn't really make sense to
     // highlight it if you are below the start position of any child. However, if you are at the top
     // of a class it does seem desirable to highlight it.
-    return (
-      cursorLocation.isGreaterThanOrEqual(startPosition) &&
-      cursorLocation.isLessThan(childStartPosition)
-    );
+    return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThan(childStartPosition);
   }
-  return (
-    cursorLocation.isGreaterThanOrEqual(startPosition) &&
-    cursorLocation.isLessThanOrEqual(endPosition)
-  );
+  return cursorLocation.isGreaterThanOrEqual(startPosition) && cursorLocation.isLessThanOrEqual(endPosition);
 }

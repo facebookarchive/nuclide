@@ -1,13 +1,69 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDefaultEvaluationExpression = getDefaultEvaluationExpression;
+
+var _atom = require('atom');
+
+function getDefaultEvaluationExpression(editor, position) {
+  const lineContent = editor.lineTextForBufferRow(position.row);
+  let matchingExpression;
+  let startOffset = 0;
+
+  // Some example supported expressions: myVar.prop, a.b.c.d, myVar?.prop, myVar->prop, MyClass::StaticProp, *myVar
+  // Match any character except a set of characters which often break interesting sub-expressions
+  const expression = /([^()[\]{}<>\s+\-/%~#^;=|,`!]|->)+/g;
+  let result;
+
+  // First find the full expression under the cursor
+  while (result = expression.exec(lineContent)) {
+    const start = result.index + 1;
+    const end = start + result[0].length;
+
+    if (start <= position.column && end >= position.column) {
+      matchingExpression = result[0];
+      startOffset = start;
+      break;
+    }
+  }
+
+  // If there are non-word characters after the cursor, we want to truncate the expression then.
+  // For example in expression 'a.b.c.d', if the focus was under 'b', 'a.b' would be evaluated.
+  if (matchingExpression != null) {
+    const subExpression = /\w+/g;
+    let subExpressionResult;
+    while (subExpressionResult = subExpression.exec(matchingExpression)) {
+      const subEnd = subExpressionResult.index + 1 + startOffset + subExpressionResult[0].length;
+      if (subEnd >= position.column) {
+        break;
+      }
+    }
+
+    if (subExpressionResult) {
+      matchingExpression = matchingExpression.substring(0, subExpression.lastIndex);
+    }
+  }
+
+  if (matchingExpression == null) {
+    return null;
+  }
+
+  return {
+    expression: matchingExpression,
+    range: new _atom.Range([position.row, startOffset - 1], [position.row, startOffset + matchingExpression.length - 1])
+  };
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
 /**
 Originally copied from https://github.com/Microsoft/vscode/blob/b34f17350f2d20dbbbfdb26df91dd50bb9160900/src/vs/workbench/parts/debug/electron-browser/debugHover.ts#L125-L166
@@ -36,70 +92,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
-import {Range} from 'atom';
-
-export function getDefaultEvaluationExpression(
-  editor: atom$TextEditor,
-  position: atom$Point,
-): ?{
-  expression: string,
-  range: atom$Range,
-} {
-  const lineContent = editor.lineTextForBufferRow(position.row);
-  let matchingExpression: ?string;
-  let startOffset = 0;
-
-  // Some example supported expressions: myVar.prop, a.b.c.d, myVar?.prop, myVar->prop, MyClass::StaticProp, *myVar
-  // Match any character except a set of characters which often break interesting sub-expressions
-  const expression = /([^()[\]{}<>\s+\-/%~#^;=|,`!]|->)+/g;
-  let result;
-
-  // First find the full expression under the cursor
-  while ((result = expression.exec(lineContent))) {
-    const start = result.index + 1;
-    const end = start + result[0].length;
-
-    if (start <= position.column && end >= position.column) {
-      matchingExpression = result[0];
-      startOffset = start;
-      break;
-    }
-  }
-
-  // If there are non-word characters after the cursor, we want to truncate the expression then.
-  // For example in expression 'a.b.c.d', if the focus was under 'b', 'a.b' would be evaluated.
-  if (matchingExpression != null) {
-    const subExpression = /\w+/g;
-    let subExpressionResult;
-    while ((subExpressionResult = subExpression.exec(matchingExpression))) {
-      const subEnd =
-        subExpressionResult.index +
-        1 +
-        startOffset +
-        subExpressionResult[0].length;
-      if (subEnd >= position.column) {
-        break;
-      }
-    }
-
-    if (subExpressionResult) {
-      matchingExpression = matchingExpression.substring(
-        0,
-        subExpression.lastIndex,
-      );
-    }
-  }
-
-  if (matchingExpression == null) {
-    return null;
-  }
-
-  return {
-    expression: matchingExpression,
-    range: new Range(
-      [position.row, startOffset - 1],
-      [position.row, startOffset + matchingExpression.length - 1],
-    ),
-  };
-}

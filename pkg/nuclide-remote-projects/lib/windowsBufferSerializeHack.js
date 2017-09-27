@@ -1,17 +1,25 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {Disposable, TextBuffer} from 'atom';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {NUCLIDE_PROTOCOL_PREFIX, NUCLIDE_PROTOCOL_PREFIX_WIN} from './utils';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = windowsBufferSerializeHack;
+
+var _atom = require('atom');
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = require('./utils');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * On Windows, normalizing nuclide://a/b/c results in nuclide:\a\b\c.
@@ -24,27 +32,34 @@ import {NUCLIDE_PROTOCOL_PREFIX, NUCLIDE_PROTOCOL_PREFIX_WIN} from './utils';
  * Atom startup shouldn't be blocked by such errors, and we should fix that.
  * Until then, this is enough to unblock Windows users.
  */
-export default function windowsBufferSerializeHack(): IDisposable {
+function windowsBufferSerializeHack() {
   if (process.platform !== 'win32') {
-    return new Disposable();
+    return new _atom.Disposable();
   }
   let enabled = true;
   // $FlowIgnore: hacks
-  const realSerialize = TextBuffer.prototype.serialize;
+  const realSerialize = _atom.TextBuffer.prototype.serialize;
   // $FlowIgnore: hacks
-  TextBuffer.prototype.serialize = function() {
+  _atom.TextBuffer.prototype.serialize = function () {
     const state = realSerialize.call(this);
     if (enabled) {
-      const {filePath} = state;
-      if (filePath != null && nuclideUri.isRemote(filePath)) {
-        state.filePath =
-          NUCLIDE_PROTOCOL_PREFIX_WIN +
-          filePath.substr(NUCLIDE_PROTOCOL_PREFIX.length);
+      const { filePath } = state;
+      if (filePath != null && (_nuclideUri || _load_nuclideUri()).default.isRemote(filePath)) {
+        state.filePath = (_utils || _load_utils()).NUCLIDE_PROTOCOL_PREFIX_WIN + filePath.substr((_utils || _load_utils()).NUCLIDE_PROTOCOL_PREFIX.length);
       }
     }
     return state;
   };
-  return new Disposable(() => {
+  return new _atom.Disposable(() => {
     enabled = false;
   });
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */

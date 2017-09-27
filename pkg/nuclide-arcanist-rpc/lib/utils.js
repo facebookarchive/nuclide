@@ -1,27 +1,28 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+"use strict";
 
-export type PhabricatorRevisionInfo = {
-  url: string,
-  id: number,
-  name: string,
-};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPhabricatorRevisionFromCommitMessage = getPhabricatorRevisionFromCommitMessage;
+exports.getPhabricatorRevisionFromUrl = getPhabricatorRevisionFromUrl;
+exports.getCommitAuthorFromAuthorEmail = getCommitAuthorFromAuthorEmail;
 
-const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\S+)/im;
+
+const DIFFERENTIAL_REVISION_REGEX = /^Differential Revision:\s*(\S+)/im; /**
+                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                          * All rights reserved.
+                                                                          *
+                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                          * the root directory of this source tree.
+                                                                          *
+                                                                          * 
+                                                                          * @format
+                                                                          */
+
 const DIFFERENTIAL_ID_REGEX = /[dD]([1-9][0-9]{5,})/im;
 const COMMIT_AUTHOR_REGEX = /.*<(.*)@.*>/im;
 
-export function getPhabricatorRevisionFromCommitMessage(
-  commitMessage: string,
-): ?PhabricatorRevisionInfo {
+function getPhabricatorRevisionFromCommitMessage(commitMessage) {
   const match = DIFFERENTIAL_REVISION_REGEX.exec(commitMessage);
   // eslint-disable-next-line eqeqeq
   if (match === null) {
@@ -31,9 +32,7 @@ export function getPhabricatorRevisionFromCommitMessage(
   return getPhabricatorRevisionFromUrl(match[1]);
 }
 
-export function getPhabricatorRevisionFromUrl(
-  diffUrl: string,
-): ?PhabricatorRevisionInfo {
+function getPhabricatorRevisionFromUrl(diffUrl) {
   const match = DIFFERENTIAL_ID_REGEX.exec(diffUrl);
   // eslint-disable-next-line eqeqeq
   if (match === null) {
@@ -43,11 +42,11 @@ export function getPhabricatorRevisionFromUrl(
   return {
     url: diffUrl,
     id: parseInt(match[1], 10),
-    name: `D${match[1]}`,
+    name: `D${match[1]}`
   };
 }
 
-export function getCommitAuthorFromAuthorEmail(author: string): ?string {
+function getCommitAuthorFromAuthorEmail(author) {
   const match = COMMIT_AUTHOR_REGEX.exec(author);
   // eslint-disable-next-line eqeqeq
   if (match === null) {

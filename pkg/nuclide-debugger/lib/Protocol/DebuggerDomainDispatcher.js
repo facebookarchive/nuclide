@@ -1,67 +1,37 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {IPCBreakpoint, ObjectGroup} from '../types';
-import type {
-  ScriptId,
-  BreakpointId,
-  DebuggerEvent,
-  BreakpointHitCountEvent,
-  BreakpointResolvedEvent,
-  ThreadsUpdatedEvent,
-  ThreadUpdatedEvent,
-  PausedEvent,
-  ScriptParsedEvent,
-  Location,
-  CallFrameId,
-  SetDebuggerSettingsRequest,
-  SetPauseOnExceptionsRequest,
-} from '../../../nuclide-debugger-base/lib/protocol-types';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import {Subject, Observable} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _nuclideUri;
 
-type LoaderBreakpointEvent = {
-  method: 'Debugger.loaderBreakpoint',
-  params: PausedEvent,
-};
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-export type ProtocolDebugEvent = DebuggerEvent | LoaderBreakpointEvent;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Responsible for sending and receiving debugger domain protocols from
  * debug engine.
  */
 class DebuggerDomainDispatcher {
-  _agent: Object; // debugger agent from chrome protocol.
-  _parsedFiles: Map<ScriptId, NuclideUri>;
-  _debugEvent$: Subject<ProtocolDebugEvent>;
-  _pauseCount: number;
 
-  constructor(agent: Object) {
+  constructor(agent) {
     this._agent = agent;
     this._parsedFiles = new Map();
-    this._debugEvent$ = new Subject();
+    this._debugEvent$ = new _rxjsBundlesRxMinJs.Subject();
     this._pauseCount = 0;
-  }
+  } // debugger agent from chrome protocol.
 
-  setDebuggerSettings(settings: SetDebuggerSettingsRequest): void {
+
+  setDebuggerSettings(settings) {
     this._agent.setDebuggerSettings(settings.singleThreadStepping);
   }
 
-  getSourceUriFromUri(fileUri: NuclideUri): ?ScriptId {
+  getSourceUriFromUri(fileUri) {
     for (const uri of this._parsedFiles.values()) {
       // Strip file:// from the uri.
-      const strippedUri = nuclideUri.uriToNuclideUri(uri) || uri;
+      const strippedUri = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(uri) || uri;
       if (strippedUri === fileUri) {
         return uri;
       }
@@ -69,10 +39,10 @@ class DebuggerDomainDispatcher {
     return null;
   }
 
-  getScriptIdFromUri(fileUri: NuclideUri): ?ScriptId {
+  getScriptIdFromUri(fileUri) {
     for (const [scriptId, uri] of this._parsedFiles) {
       // Strip file:// from the uri.
-      const strippedUri = nuclideUri.uriToNuclideUri(uri) || uri;
+      const strippedUri = (_nuclideUri || _load_nuclideUri()).default.uriToNuclideUri(uri) || uri;
       if (strippedUri === fileUri) {
         return scriptId;
       }
@@ -80,147 +50,143 @@ class DebuggerDomainDispatcher {
     return null;
   }
 
-  enable(): void {
+  enable() {
     this._agent.enable();
   }
 
-  resume(): void {
+  resume() {
     this._agent.resume();
   }
 
-  pause(): void {
+  pause() {
     this._agent.pause();
   }
 
-  stepOver(): void {
+  stepOver() {
     this._agent.stepOver();
   }
 
-  stepInto(): void {
+  stepInto() {
     this._agent.stepInto();
   }
 
-  stepOut(): void {
+  stepOut() {
     this._agent.stepOut();
   }
 
-  continueToLocation(location: Location): void {
+  continueToLocation(location) {
     this._agent.continueToLocation(location);
   }
 
-  setPauseOnExceptions(request: SetPauseOnExceptionsRequest): void {
+  setPauseOnExceptions(request) {
     this._agent.setPauseOnExceptions(request.state);
   }
 
-  setBreakpointByUrl(breakpoint: IPCBreakpoint, callback: Function): void {
-    this._agent.setBreakpointByUrl(
-      breakpoint.lineNumber,
-      breakpoint.sourceURL,
-      undefined, // urlRegex. Not used.
-      0, // column. Not used yet.
-      breakpoint.condition,
-      callback,
-    );
+  setBreakpointByUrl(breakpoint, callback) {
+    this._agent.setBreakpointByUrl(breakpoint.lineNumber, breakpoint.sourceURL, undefined, // urlRegex. Not used.
+    0, // column. Not used yet.
+    breakpoint.condition, callback);
   }
 
-  removeBreakpoint(breakpointId: BreakpointId): void {
+  removeBreakpoint(breakpointId) {
     this._agent.removeBreakpoint(breakpointId);
   }
 
-  evaluateOnCallFrame(
-    callFrameId: CallFrameId,
-    expression: string,
-    objectGroup: ObjectGroup,
-    callback: Function,
-  ): void {
-    this._agent.evaluateOnCallFrame(
-      callFrameId,
-      expression,
-      objectGroup,
-      undefined, // includeCommandLineAPI
-      undefined, // silent
-      undefined, // returnByValue
-      undefined, // generatePreview
-      callback,
-    );
+  evaluateOnCallFrame(callFrameId, expression, objectGroup, callback) {
+    this._agent.evaluateOnCallFrame(callFrameId, expression, objectGroup, undefined, // includeCommandLineAPI
+    undefined, // silent
+    undefined, // returnByValue
+    undefined, // generatePreview
+    callback);
   }
 
-  selectThread(threadId: number): void {
+  selectThread(threadId) {
     this._agent.selectThread(threadId);
   }
 
-  getThreadStack(threadId: number, callback: Function): void {
+  getThreadStack(threadId, callback) {
     this._agent.getThreadStack(threadId, callback);
   }
 
-  getEventObservable(): Observable<ProtocolDebugEvent> {
+  getEventObservable() {
     return this._debugEvent$.asObservable();
   }
 
-  paused(params: PausedEvent): void {
+  paused(params) {
     ++this._pauseCount;
     // Convert the first Debugger.paused to Debugger.loaderBreakpoint.
     if (this._pauseCount === 1) {
       this._raiseProtocolEvent({
         method: 'Debugger.loaderBreakpoint',
-        params,
+        params
       });
     } else {
       this._raiseProtocolEvent({
         method: 'Debugger.paused',
-        params,
+        params
       });
     }
   }
 
-  resumed(): void {
+  resumed() {
     this._raiseProtocolEvent({
-      method: 'Debugger.resumed',
+      method: 'Debugger.resumed'
     });
   }
 
-  threadsUpdated(params: ThreadsUpdatedEvent): void {
+  threadsUpdated(params) {
     this._raiseProtocolEvent({
       method: 'Debugger.threadsUpdated',
-      params,
+      params
     });
   }
 
-  threadUpdated(params: ThreadUpdatedEvent): void {
+  threadUpdated(params) {
     this._raiseProtocolEvent({
       method: 'Debugger.threadUpdated',
-      params,
+      params
     });
   }
 
-  breakpointResolved(params: BreakpointResolvedEvent): void {
+  breakpointResolved(params) {
     this._raiseProtocolEvent({
       method: 'Debugger.breakpointResolved',
-      params,
+      params
     });
   }
 
-  breakpointHitCountChanged(params: BreakpointHitCountEvent): void {
+  breakpointHitCountChanged(params) {
     this._raiseProtocolEvent({
       method: 'Debugger.breakpointHitCountChanged',
-      params,
+      params
     });
   }
 
-  scriptParsed(params: ScriptParsedEvent): void {
+  scriptParsed(params) {
     this._parsedFiles.set(params.scriptId, params.url);
   }
 
-  getFileUriFromScriptId(scriptId: ScriptId): NuclideUri {
+  getFileUriFromScriptId(scriptId) {
     // Fallback to treat scriptId as url. Some engines(like MobileJS) uses
     // scriptId as file url.
     return this._parsedFiles.get(scriptId) || scriptId;
   }
 
-  _raiseProtocolEvent(event: ProtocolDebugEvent): void {
+  _raiseProtocolEvent(event) {
     this._debugEvent$.next(event);
   }
 }
 
 // Use old school export to allow legacy code to import it.
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
+
 module.exports = DebuggerDomainDispatcher; // eslint-disable-line rulesdir/no-commonjs

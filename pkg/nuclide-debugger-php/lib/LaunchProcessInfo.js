@@ -1,45 +1,65 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {PhpDebuggerService as PhpDebuggerServiceType} from '../../nuclide-debugger-php-rpc/lib/PhpDebuggerService';
-import type {
-  DebuggerCapabilities,
-  DebuggerProperties,
-} from '../../nuclide-debugger-base';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.LaunchProcessInfo = undefined;
 
-import {DebuggerProcessInfo} from '../../nuclide-debugger-base';
-import {PhpDebuggerInstance} from './PhpDebuggerInstance';
-import {getPhpDebuggerServiceByNuclideUri} from '../../nuclide-remote-connection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-import logger from './utils';
-import {getSessionConfig} from './utils';
-import invariant from 'invariant';
-import {shellParse} from 'nuclide-commons/string';
+var _nuclideDebuggerBase;
 
-export class LaunchProcessInfo extends DebuggerProcessInfo {
-  _launchTarget: string;
-  _launchWrapperCommand: ?string;
-  _useTerminal: boolean;
-  _scriptArguments: string;
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
 
-  constructor(
-    targetUri: NuclideUri,
-    launchTarget: string,
-    launchWrapperCommand: ?string,
-    useTerminal: boolean,
-    scriptArguments: ?string,
-  ) {
+var _PhpDebuggerInstance;
+
+function _load_PhpDebuggerInstance() {
+  return _PhpDebuggerInstance = require('./PhpDebuggerInstance');
+}
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _consumeFirstProvider;
+
+function _load_consumeFirstProvider() {
+  return _consumeFirstProvider = _interopRequireDefault(require('../../commons-atom/consumeFirstProvider'));
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _utils2;
+
+function _load_utils2() {
+  return _utils2 = require('./utils');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class LaunchProcessInfo extends (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).DebuggerProcessInfo {
+
+  constructor(targetUri, launchTarget, launchWrapperCommand, useTerminal, scriptArguments) {
     super('hhvm', targetUri);
     this._launchTarget = launchTarget;
     this._launchWrapperCommand = launchWrapperCommand;
@@ -47,80 +67,78 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     this._scriptArguments = scriptArguments != null ? scriptArguments : '';
   }
 
-  clone(): LaunchProcessInfo {
-    return new LaunchProcessInfo(
-      this._targetUri,
-      this._launchTarget,
-      this._launchWrapperCommand,
-      this._useTerminal,
-    );
+  clone() {
+    return new LaunchProcessInfo(this._targetUri, this._launchTarget, this._launchWrapperCommand, this._useTerminal);
   }
 
-  getDebuggerCapabilities(): DebuggerCapabilities {
-    return {
-      ...super.getDebuggerCapabilities(),
+  getDebuggerCapabilities() {
+    return Object.assign({}, super.getDebuggerCapabilities(), {
       conditionalBreakpoints: true,
       continueToLocation: true,
-      threads: true,
-    };
+      threads: true
+    });
   }
 
-  getDebuggerProps(): DebuggerProperties {
+  getDebuggerProps() {
     return super.getDebuggerProps();
   }
 
-  async debug(): Promise<PhpDebuggerInstance> {
-    const rpcService = this._getRpcService();
-    const sessionConfig = getSessionConfig(
-      nuclideUri.getPath(this.getTargetUri()),
-      true,
-    );
+  debug() {
+    var _this = this;
 
-    // Set config related to script launching.
-    sessionConfig.endDebugWhenNoRequests = true;
-    sessionConfig.launchScriptPath = this._launchTarget;
+    return (0, _asyncToGenerator.default)(function* () {
+      const rpcService = _this._getRpcService();
+      const sessionConfig = (0, (_utils2 || _load_utils2()).getSessionConfig)((_nuclideUri || _load_nuclideUri()).default.getPath(_this.getTargetUri()), true);
 
-    if (this._scriptArguments !== '') {
-      sessionConfig.scriptArguments = shellParse(this._scriptArguments);
-    }
+      // Set config related to script launching.
+      sessionConfig.endDebugWhenNoRequests = true;
+      sessionConfig.launchScriptPath = _this._launchTarget;
 
-    if (this._launchWrapperCommand != null) {
-      sessionConfig.launchWrapperCommand = this._launchWrapperCommand;
-    }
+      if (_this._scriptArguments !== '') {
+        sessionConfig.scriptArguments = (0, (_string || _load_string()).shellParse)(_this._scriptArguments);
+      }
 
-    const remoteService = await consumeFirstProvider('nuclide-debugger.remote');
-    const deferLaunch = (sessionConfig.deferLaunch =
-      this._useTerminal && remoteService.getTerminal() != null);
+      if (_this._launchWrapperCommand != null) {
+        sessionConfig.launchWrapperCommand = _this._launchWrapperCommand;
+      }
 
-    logger.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
+      const remoteService = yield (0, (_consumeFirstProvider || _load_consumeFirstProvider()).default)('nuclide-debugger.remote');
+      const deferLaunch = sessionConfig.deferLaunch = _this._useTerminal && remoteService.getTerminal() != null;
 
-    const result = await rpcService.debug(sessionConfig);
-    logger.info(`Launch process result: ${result}`);
+      (_utils || _load_utils()).default.info(`Connection session config: ${JSON.stringify(sessionConfig)}`);
 
-    if (deferLaunch) {
-      const hostname = nuclideUri.getHostname(this.getTargetUri());
-      const launchUri = nuclideUri.createRemoteUri(
-        hostname,
-        this._launchTarget,
-      );
-      const runtimeArgs = shellParse(sessionConfig.phpRuntimeArgs);
-      const scriptArgs = shellParse(this._launchTarget);
+      const result = yield rpcService.debug(sessionConfig);
+      (_utils || _load_utils()).default.info(`Launch process result: ${result}`);
 
-      invariant(remoteService != null);
-      await remoteService.launchDebugTargetInTerminal(
-        launchUri,
-        sessionConfig.launchWrapperCommand != null
-          ? sessionConfig.launchWrapperCommand
-          : sessionConfig.phpRuntimePath,
-        [...runtimeArgs, ...scriptArgs, ...sessionConfig.scriptArguments],
-      );
-    }
+      if (deferLaunch) {
+        const hostname = (_nuclideUri || _load_nuclideUri()).default.getHostname(_this.getTargetUri());
+        const launchUri = (_nuclideUri || _load_nuclideUri()).default.createRemoteUri(hostname, _this._launchTarget);
+        const runtimeArgs = (0, (_string || _load_string()).shellParse)(sessionConfig.phpRuntimeArgs);
+        const scriptArgs = (0, (_string || _load_string()).shellParse)(_this._launchTarget);
 
-    return new PhpDebuggerInstance(this, rpcService);
+        if (!(remoteService != null)) {
+          throw new Error('Invariant violation: "remoteService != null"');
+        }
+
+        yield remoteService.launchDebugTargetInTerminal(launchUri, sessionConfig.launchWrapperCommand != null ? sessionConfig.launchWrapperCommand : sessionConfig.phpRuntimePath, [...runtimeArgs, ...scriptArgs, ...sessionConfig.scriptArguments]);
+      }
+
+      return new (_PhpDebuggerInstance || _load_PhpDebuggerInstance()).PhpDebuggerInstance(_this, rpcService);
+    })();
   }
 
-  _getRpcService(): PhpDebuggerServiceType {
-    const service = getPhpDebuggerServiceByNuclideUri(this.getTargetUri());
+  _getRpcService() {
+    const service = (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getPhpDebuggerServiceByNuclideUri)(this.getTargetUri());
     return new service.PhpDebuggerService();
   }
 }
+exports.LaunchProcessInfo = LaunchProcessInfo; /**
+                                                * Copyright (c) 2015-present, Facebook, Inc.
+                                                * All rights reserved.
+                                                *
+                                                * This source code is licensed under the license found in the LICENSE file in
+                                                * the root directory of this source tree.
+                                                *
+                                                * 
+                                                * @format
+                                                */
