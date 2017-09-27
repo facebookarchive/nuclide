@@ -102,12 +102,8 @@ export default class SettingsInput extends React.Component<Props> {
     return (
       <div>
         <label className="control-label">
-          <div className="setting-title">
-            {title}
-          </div>
-          <div className="setting-description">
-            {description}
-          </div>
+          <div className="setting-title">{title}</div>
+          <div className="setting-description">{description}</div>
         </label>
         <div className="controls">
           <div className="editor-container">

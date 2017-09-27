@@ -217,22 +217,20 @@ export default class ChangedFile extends React.Component<Props> {
           break;
       }
       actions = (
-        <div className="nuclide-changed-file-actions">
-          {eligibleActions}
-        </div>
+        <div className="nuclide-changed-file-actions">{eligibleActions}</div>
       );
     }
     const statusName = FileChangeStatusToLabel[fileStatus];
     const projectRelativePath =
       getAtomProjectRelativePath(filePath) || filePath;
     const checkbox =
-      isChecked != null
-        ? <Checkbox
-            className="nuclide-changed-file-checkbox"
-            checked={isChecked}
-            onChange={this._onCheckboxChange}
-          />
-        : null;
+      isChecked != null ? (
+        <Checkbox
+          className="nuclide-changed-file-checkbox"
+          checked={isChecked}
+          onChange={this._onCheckboxChange}
+        />
+      ) : null;
     return (
       <li
         data-name={baseName}

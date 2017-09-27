@@ -272,12 +272,12 @@ export default class FileChanges extends React.Component<Props> {
     if (annotation != null) {
       annotationComponent = (
         <span>
-          {annotation.split('\n').map((line, index) =>
+          {annotation.split('\n').map((line, index) => (
             <span key={index}>
               {line}
               <br />
-            </span>,
-          )}
+            </span>
+          ))}
         </span>
       );
     }
@@ -291,11 +291,11 @@ export default class FileChanges extends React.Component<Props> {
     );
 
     const renderedFilename =
-      fullPath != null
-        ? <a onClick={this._handleFilenameClick}>
-            {fileName}
-          </a>
-        : fileName;
+      fullPath != null ? (
+        <a onClick={this._handleFilenameClick}>{fileName}</a>
+      ) : (
+        fileName
+      );
 
     const headline = (
       <span className="nuclide-ui-file-changes-item">

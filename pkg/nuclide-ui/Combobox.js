@@ -379,9 +379,7 @@ export class Combobox extends React.Component<Props, State> {
     if (this.props.loadingMessage && this.state.loadingOptions) {
       options.push(
         <li key="loading-text" className="loading">
-          <span className="loading-message">
-            {this.props.loadingMessage}
-          </span>
+          <span className="loading-message">{this.props.loadingMessage}</span>
         </li>,
       );
     }
@@ -425,9 +423,7 @@ export class Combobox extends React.Component<Props, State> {
               onMouseOver={this._setSelectedIndex.bind(this, i)}
               ref={isSelected ? 'selectedOption' : null}>
               {beforeMatch}
-              <strong className="text-highlight">
-                {highlightedMatch}
-              </strong>
+              <strong className="text-highlight">{highlightedMatch}</strong>
               {afterMatch}
             </li>
           );

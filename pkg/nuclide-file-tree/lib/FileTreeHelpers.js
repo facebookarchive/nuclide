@@ -183,7 +183,10 @@ function isContextClick(event: SyntheticMouseEvent<>): boolean {
 }
 
 function buildHashKey(nodeKey: string): string {
-  return crypto.createHash('MD5').update(nodeKey).digest('base64');
+  return crypto
+    .createHash('MD5')
+    .update(nodeKey)
+    .digest('base64');
 }
 
 function observeUncommittedChangesKindConfigKey(): Observable<

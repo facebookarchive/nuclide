@@ -219,11 +219,11 @@ export function DropdownButton(props: DropdownButtonProps): React.Element<any> {
   });
 
   const label =
-    props.children == null
-      ? null
-      : <span className="nuclide-dropdown-label-text-wrapper">
-          {props.children}
-        </span>;
+    props.children == null ? null : (
+      <span className="nuclide-dropdown-label-text-wrapper">
+        {props.children}
+      </span>
+    );
 
   return (
     <ButtonComponent

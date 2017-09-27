@@ -73,9 +73,7 @@ export class DatatipComponent extends React.Component<DatatipComponentProps> {
       <div
         className={`${maybeToString(className)} datatip-container`}
         {...props}>
-        <div className="datatip-content">
-          {content}
-        </div>
+        <div className="datatip-content">{content}</div>
         {actionButton}
       </div>
     );

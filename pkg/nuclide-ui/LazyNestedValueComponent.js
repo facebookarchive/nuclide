@@ -77,7 +77,7 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
   }
   return (
     <span>
-      {children.map(child =>
+      {children.map(child => (
         <TreeItem key={child.name}>
           <ValueComponent
             evaluationResult={child.value}
@@ -91,8 +91,8 @@ const LoadableValueComponent = (props: LoadableValueComponentProps) => {
             getCachedChildren={getCachedChildren}
             setCachedChildren={setCachedChildren}
           />
-        </TreeItem>,
-      )}
+        </TreeItem>
+      ))}
     </span>
   );
 };
@@ -104,9 +104,7 @@ function renderValueLine(
 ): React.Element<any> {
   if (expression == null) {
     return (
-      <div className="nuclide-ui-lazy-nested-value-container">
-        {value}
-      </div>
+      <div className="nuclide-ui-lazy-nested-value-container">{value}</div>
     );
   } else {
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions (t11408154)
@@ -247,11 +245,11 @@ class ValueComponent extends React.Component<
           simpleValueComponent={SimpleValueComponent}
         />
       );
-      return isRoot
-        ? simpleValueElement
-        : <TreeItem>
-            {simpleValueElement}
-          </TreeItem>;
+      return isRoot ? (
+        simpleValueElement
+      ) : (
+        <TreeItem>{simpleValueElement}</TreeItem>
+      );
     }
     const description =
       // flowlint-next-line sketchy-null-string:off

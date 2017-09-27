@@ -134,8 +134,9 @@ function eachTabIndexedElement(
   updateNextCandidate: (element: Element, tabIndex: number) => boolean,
   container: ?Element,
 ): void {
-  const elements = (container || document)
-    .querySelectorAll('a, input, button, [tabindex]');
+  const elements = (container || document).querySelectorAll(
+    'a, input, button, [tabindex]',
+  );
   let index = Array.from(elements).indexOf(currentElement);
   const increment = reverse ? -1 : 1;
   for (let i = 1; i < elements.length; ++i) {

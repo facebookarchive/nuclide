@@ -67,7 +67,10 @@ describe('refactorStore', () => {
   };
 
   const waitForClose = () => {
-    return currentState.filter(s => s.type === 'closed').first().toPromise();
+    return currentState
+      .filter(s => s.type === 'closed')
+      .first()
+      .toPromise();
   };
 
   beforeEach(() => {

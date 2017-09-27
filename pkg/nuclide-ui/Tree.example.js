@@ -14,7 +14,7 @@ import {Block} from 'nuclide-commons-ui/Block';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';
 
-const BasicTreeExample = (): React.Element<any> =>
+const BasicTreeExample = (): React.Element<any> => (
   <div>
     Trees
     <Block>
@@ -31,9 +31,10 @@ const BasicTreeExample = (): React.Element<any> =>
         />
       </TreeList>
     </Block>
-  </div>;
+  </div>
+);
 
-const AtomStyleguideTreeExample = (): React.Element<any> =>
+const AtomStyleguideTreeExample = (): React.Element<any> => (
   <Block>
     <TreeList showArrows={true}>
       <NestedTreeItem title={<Icon icon="file-directory">A Directory</Icon>}>
@@ -65,7 +66,8 @@ const AtomStyleguideTreeExample = (): React.Element<any> =>
         <Icon icon="file-symlink-file">.icon-file-symlink-file</Icon>
       </TreeItem>
     </TreeList>
-  </Block>;
+  </Block>
+);
 
 export const TreeExamples = {
   sectionName: 'Trees',

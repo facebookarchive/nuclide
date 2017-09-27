@@ -71,10 +71,6 @@ export default class RadioGroup extends React.Component<Props, State> {
         </div>
       );
     });
-    return (
-      <div className={className}>
-        {checkboxes}
-      </div>
-    );
+    return <div className={className}>{checkboxes}</div>;
   }
 }

@@ -98,9 +98,7 @@ export class RootPanel extends React.Component<Props> {
       return <StreamedTaskButton key={task.getName()} />;
     });
     return (
-      <div className="block nuclide-device-panel-tasks-container">
-        {tasks}
-      </div>
+      <div className="block nuclide-device-panel-tasks-container">{tasks}</div>
     );
   }
 
@@ -137,9 +135,7 @@ export class RootPanel extends React.Component<Props> {
             setHost={this.props.setHost}
           />
         </div>
-        <div className="block">
-          {this._createDeviceTable()}
-        </div>
+        <div className="block">{this._createDeviceTable()}</div>
         {this._getTasks()}
       </div>
     );

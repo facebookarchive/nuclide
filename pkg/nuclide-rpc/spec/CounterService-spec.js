@@ -41,10 +41,13 @@ describe('CounterService', () => {
       invariant(service);
 
       let watchedCounters = 0;
-      service.Counter.watchNewCounters().refCount().subscribe(async counter => {
-        await counter.getCount();
-        ++watchedCounters;
-      });
+      service.Counter
+        .watchNewCounters()
+        .refCount()
+        .subscribe(async counter => {
+          await counter.getCount();
+          ++watchedCounters;
+        });
 
       // Create two services.
       const counter1 = new service.Counter(3);
@@ -52,17 +55,20 @@ describe('CounterService', () => {
 
       // Subscribe to events from counter1.
       let completed1 = false;
-      counter1.watchChanges().refCount().subscribe(
-        event => {
-          expect(event.type).toBe('add');
-          expect(event.oldValue).toBe(3);
-          expect(event.newValue).toBe(4);
-        },
-        () => {},
-        () => {
-          completed1 = true;
-        },
-      );
+      counter1
+        .watchChanges()
+        .refCount()
+        .subscribe(
+          event => {
+            expect(event.type).toBe('add');
+            expect(event.oldValue).toBe(3);
+            expect(event.newValue).toBe(4);
+          },
+          () => {},
+          () => {
+            completed1 = true;
+          },
+        );
 
       // Confirm their initial value.
       expect(await counter1.getCount()).toBe(3);

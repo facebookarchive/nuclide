@@ -154,18 +154,20 @@ export default class NuclideSettingsPaneItem extends React.Component<
     const elements = [];
 
     const configData = this._getConfigData();
-    Object.keys(configData).sort().forEach(categoryName => {
-      const packages = configData[categoryName];
-      if (Object.keys(packages).length > 0) {
-        elements.push(
-          <SettingsCategory
-            key={categoryName}
-            name={categoryName}
-            packages={packages}
-          />,
-        );
-      }
-    });
+    Object.keys(configData)
+      .sort()
+      .forEach(categoryName => {
+        const packages = configData[categoryName];
+        if (Object.keys(packages).length > 0) {
+          elements.push(
+            <SettingsCategory
+              key={categoryName}
+              name={categoryName}
+              packages={packages}
+            />,
+          );
+        }
+      });
     const settings = elements.length === 0 ? null : elements;
     return (
       <div className="pane-item padded settings-gadgets-pane">

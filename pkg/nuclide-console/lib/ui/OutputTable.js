@@ -105,20 +105,20 @@ export default class OutputTable extends React.Component<Props, State> {
         className="nuclide-console-table-wrapper native-key-bindings"
         onResize={this._handleResize}
         tabIndex="1">
-        {this._containerRendered()
-          ? <List
-              // $FlowFixMe(>=0.53.0) Flow suppress
-              ref={this._handleListRef}
-              height={this.state.height}
-              width={this.state.width}
-              rowCount={this.props.displayableRecords.length}
-              rowHeight={this._getRowHeight}
-              rowRenderer={this._renderRow}
-              overscanRowCount={OVERSCAN_COUNT}
-              onScroll={this._onScroll}
-              onRowsRendered={this._handleListRender}
-            />
-          : null}
+        {this._containerRendered() ? (
+          <List
+            // $FlowFixMe(>=0.53.0) Flow suppress
+            ref={this._handleListRef}
+            height={this.state.height}
+            width={this.state.width}
+            rowCount={this.props.displayableRecords.length}
+            rowHeight={this._getRowHeight}
+            rowRenderer={this._renderRow}
+            overscanRowCount={OVERSCAN_COUNT}
+            onScroll={this._onScroll}
+            onRowsRendered={this._handleListRender}
+          />
+        ) : null}
       </ResizeSensitiveContainer>
     );
   }

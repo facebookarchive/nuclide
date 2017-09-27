@@ -149,9 +149,12 @@ export class Processes {
 
   _getGlobalCPUTime(): Observable<number> {
     return this._getGlobalProcessStat().map(stdout => {
-      return stdout.split(/\s+/).slice(1, -2).reduce((acc, current) => {
-        return acc + parseInt(current, 10);
-      }, 0);
+      return stdout
+        .split(/\s+/)
+        .slice(1, -2)
+        .reduce((acc, current) => {
+          return acc + parseInt(current, 10);
+        }, 0);
     });
   }
 

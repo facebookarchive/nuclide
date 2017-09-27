@@ -184,7 +184,9 @@ export class LspLanguageService {
   }
 
   dispose(): void {
-    this._stop().catch(_ => {}).then(_ => this._masterHost.dispose());
+    this._stop()
+      .catch(_ => {})
+      .then(_ => this._masterHost.dispose());
   }
 
   _setState(
@@ -565,7 +567,10 @@ export class LspLanguageService {
             ._languageId} server - ${this._errorString(e)}`;
           this._childOut = {stdout: '', stderr: ''};
           if (!offerRetry) {
-            this._host.dialogNotification('error', msg).refCount().subscribe();
+            this._host
+              .dialogNotification('error', msg)
+              .refCount()
+              .subscribe();
           } else {
             // eslint-disable-next-line no-await-in-loop
             const button = await this._host
@@ -1093,7 +1098,10 @@ export class LspLanguageService {
     }
     if (params.label != null) {
       const newIndicator = new UniversalDisposable(
-        this._host.showActionRequired(params.label).refCount().subscribe(),
+        this._host
+          .showActionRequired(params.label)
+          .refCount()
+          .subscribe(),
       );
       this._actionRequiredIndicators.set(params.id, newIndicator);
     }
@@ -1857,7 +1865,9 @@ export class LspLanguageService {
   }
 
   supportsSymbolSearch(directories: Array<NuclideUri>): Promise<boolean> {
-    return compact(this._supportsSymbolSearch).take(1).toPromise();
+    return compact(this._supportsSymbolSearch)
+      .take(1)
+      .toPromise();
   }
 
   async symbolSearch(

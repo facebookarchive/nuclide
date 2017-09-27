@@ -278,6 +278,9 @@ function getMostRelevantEditor(
   if (fromContextMenu || editor != null) {
     return editor;
   }
-  const item = atom.workspace.getCenter().getActivePane().getActiveItem();
+  const item = atom.workspace
+    .getCenter()
+    .getActivePane()
+    .getActiveItem();
   return isValidTextEditor(item) ? item : null;
 }

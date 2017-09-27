@@ -52,9 +52,9 @@ function renderMessage(
         fixer={fixer}
         goToLocation={goToLocation}
         message={message}>
-        {codeActions && codeActions.size
-          ? <DiagnosticsCodeActions codeActions={codeActions} />
-          : null}
+        {codeActions && codeActions.size ? (
+          <DiagnosticsCodeActions codeActions={codeActions} />
+        ) : null}
       </DiagnosticsMessage>
     </div>
   );

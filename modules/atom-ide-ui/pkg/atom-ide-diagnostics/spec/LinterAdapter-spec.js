@@ -117,7 +117,10 @@ describe('LinterAdapter', () => {
     waitsForPromise(async () => {
       linterReturn = [{type: 'Error', filePath: 'foo'}];
       textEventSubject.next(fakeEditor);
-      const message = await linterAdapter.getUpdates().take(1).toPromise();
+      const message = await linterAdapter
+        .getUpdates()
+        .take(1)
+        .toPromise();
       expect(message.filePathToMessages.has('foo')).toBe(true);
       expect(busySpy).toHaveBeenCalledWith('fakeLinter: running on "foo"');
       expect(busyDisposeSpy).toHaveBeenCalled();
@@ -129,7 +132,10 @@ describe('LinterAdapter', () => {
       const spy = jasmine.createSpy();
       linterAdapter.getInvalidations().subscribe(() => spy());
 
-      const promise = linterAdapter.getUpdates().take(1).toPromise();
+      const promise = linterAdapter
+        .getUpdates()
+        .take(1)
+        .toPromise();
 
       // Populate the result.
       linterReturn = [{type: 'Error', filePath: 'foo'}];
@@ -199,11 +205,17 @@ describe('LinterAdapter', () => {
     waitsFor(() => bufferDestroyCallback != null);
     waitsForPromise(async () => {
       // Wait for the first lint to finish.
-      await linterAdapter.getUpdates().take(1).toPromise();
+      await linterAdapter
+        .getUpdates()
+        .take(1)
+        .toPromise();
       // Start a pending lint.
       linterReturn = makePromise([], 10);
       textEventSubject.next(fakeEditor);
-      const promise = linterAdapter.getInvalidations().take(1).toPromise();
+      const promise = linterAdapter
+        .getInvalidations()
+        .take(1)
+        .toPromise();
       bufferDestroyCallback();
       const invalidation = await promise;
       expect(invalidation).toEqual({

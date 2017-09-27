@@ -117,7 +117,9 @@ describe('nuclide-commons/observable', () => {
     it('emits a diff for the first item', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source).toArray().toPromise();
+        const diffsPromise = diffSets(source)
+          .toArray()
+          .toPromise();
         source.next(new Set([1, 2, 3]));
         source.complete();
         const diffs = await diffsPromise;
@@ -134,7 +136,9 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies removed items', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source).toArray().toPromise();
+        const diffsPromise = diffSets(source)
+          .toArray()
+          .toPromise();
         source.next(new Set([1, 2, 3]));
         source.next(new Set([1, 2]));
         source.complete();
@@ -146,7 +150,9 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies removed items when a hash function is used', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+        const diffsPromise = diffSets(source, x => x.key)
+          .toArray()
+          .toPromise();
         const firstItems = [{key: 1}, {key: 2}, {key: 3}];
         const secondItems = [{key: 1}, {key: 2}];
         source.next(new Set(firstItems));
@@ -162,7 +168,9 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies added items', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source).toArray().toPromise();
+        const diffsPromise = diffSets(source)
+          .toArray()
+          .toPromise();
         source.next(new Set([1, 2]));
         source.next(new Set([1, 2, 3]));
         source.complete();
@@ -174,7 +182,9 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies added items when a hash function is used', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+        const diffsPromise = diffSets(source, x => x.key)
+          .toArray()
+          .toPromise();
         const firstItems = [{key: 1}, {key: 2}];
         const secondItems = [{key: 1}, {key: 2}, {key: 3}];
         source.next(new Set(firstItems));
@@ -190,7 +200,9 @@ describe('nuclide-commons/observable', () => {
     it("doesn't emit a diff when nothing changes", () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source).toArray().toPromise();
+        const diffsPromise = diffSets(source)
+          .toArray()
+          .toPromise();
         source.next(new Set([1, 2, 3]));
         source.next(new Set([1, 2, 3]));
         source.complete();
@@ -203,7 +215,9 @@ describe('nuclide-commons/observable', () => {
     it("doesn't emit a diff when nothing changes and a hash function is used", () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key).toArray().toPromise();
+        const diffsPromise = diffSets(source, x => x.key)
+          .toArray()
+          .toPromise();
         const firstItems = [{key: 1}, {key: 2}, {key: 3}];
         const secondItems = [{key: 1}, {key: 2}, {key: 3}];
         source.next(new Set(firstItems));
@@ -359,7 +373,9 @@ describe('nuclide-commons/observable', () => {
   describe('concatLatest', () => {
     it('should work with empty input', () => {
       waitsForPromise(async () => {
-        const output = await concatLatest().toArray().toPromise();
+        const output = await concatLatest()
+          .toArray()
+          .toPromise();
         expect(output).toEqual([]);
       });
     });

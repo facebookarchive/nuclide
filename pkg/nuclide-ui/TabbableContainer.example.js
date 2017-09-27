@@ -87,15 +87,17 @@ class FormExample extends React.Component<any, {selectedIndex: number}> {
   }
 }
 
-const ContainedTabbableContainerExample = (): React.Element<any> =>
+const ContainedTabbableContainerExample = (): React.Element<any> => (
   <TabbableContainer contained={true}>
     <FormExample />
-  </TabbableContainer>;
+  </TabbableContainer>
+);
 
-const UncontainedTabbableContainerExample = (): React.Element<any> =>
+const UncontainedTabbableContainerExample = (): React.Element<any> => (
   <TabbableContainer contained={false}>
     <FormExample />
-  </TabbableContainer>;
+  </TabbableContainer>
+);
 
 export const TabbableContainerExamples = {
   sectionName: 'TabbableContainer',

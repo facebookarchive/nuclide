@@ -59,19 +59,17 @@ export class ATCustomDBPathModal extends React.Component<Props, State> {
         <label>
           Active {this.props.type} path:{' '}
           <i>
-            <strong>
-              {this.props.activePath}
-            </strong>
+            <strong>{this.props.activePath}</strong>
           </i>
         </label>
-        {this.props.activePath == null
-          ? null
-          : <Button
-              onClick={this._handleCopyToClipboard}
-              size="SMALL"
-              className="nuclide-adb-sdb-copy-path-btn">
-              Copy path to clipboard
-            </Button>}
+        {this.props.activePath == null ? null : (
+          <Button
+            onClick={this._handleCopyToClipboard}
+            size="SMALL"
+            className="nuclide-adb-sdb-copy-path-btn">
+            Copy path to clipboard
+          </Button>
+        )}
       </div>
     );
   }
@@ -133,18 +131,10 @@ export class ATCustomDBPathModal extends React.Component<Props, State> {
   render(): React.Node {
     return (
       <div>
-        <div className="block">
-          {this._getActiveConfig()}
-        </div>
-        <div className="block">
-          {this._getPathSelector()}
-        </div>
-        <div className="block">
-          {this._getInfoBox()}
-        </div>
-        <div className="block">
-          {this._getFooter()}
-        </div>
+        <div className="block">{this._getActiveConfig()}</div>
+        <div className="block">{this._getPathSelector()}</div>
+        <div className="block">{this._getInfoBox()}</div>
+        <div className="block">{this._getFooter()}</div>
       </div>
     );
   }

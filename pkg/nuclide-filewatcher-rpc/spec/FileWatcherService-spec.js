@@ -92,7 +92,9 @@ describe('FileWatcherService', () => {
       watchFile(TEST_FILE)
         .refCount()
         .subscribe({next: nextMock, complete: completeMock});
-      watchDirectory(TEST_DIR).refCount().subscribe({next: parentNextMock});
+      watchDirectory(TEST_DIR)
+        .refCount()
+        .subscribe({next: parentNextMock});
       watchWithNode(nodeTestFilePath)
         .refCount()
         .subscribe({next: nextMockWithNode});
@@ -188,7 +190,9 @@ describe('FileWatcherService', () => {
     const nextMockWithNode2 = jasmine.createSpy('nextMock2WithNode');
 
     runs(() => {
-      watchFile(TEST_FILE).refCount().subscribe({complete: completeMock2});
+      watchFile(TEST_FILE)
+        .refCount()
+        .subscribe({complete: completeMock2});
       createNodeTestFile(() => {
         watchWithNode(nodeTestFilePath)
           .refCount()
@@ -226,12 +230,14 @@ describe('FileWatcherService', () => {
       watch.subscribe();
       await watch.take(1).toPromise();
 
-      watchFile(TEST_FILE).refCount().subscribe({
-        next: change => changes.push(change),
-        complete: () => {
-          completed = true;
-        },
-      });
+      watchFile(TEST_FILE)
+        .refCount()
+        .subscribe({
+          next: change => changes.push(change),
+          complete: () => {
+            completed = true;
+          },
+        });
     });
 
     waitsFor(() => realpathMock.callCount === 1);
@@ -289,9 +295,13 @@ describe('FileWatcherService', () => {
     const errorMockWithNode = jasmine.createSpy('errorMockWithNode');
     runs(() => {
       fs.unlinkSync(nodeTestFilePath);
-      watchFile(TEST_FILE).refCount().subscribe({error: errorMock});
+      watchFile(TEST_FILE)
+        .refCount()
+        .subscribe({error: errorMock});
       try {
-        watchWithNode(nodeTestFilePath).refCount().subscribe({next: x => x});
+        watchWithNode(nodeTestFilePath)
+          .refCount()
+          .subscribe({next: x => x});
       } catch (err) {
         errorMockWithNode();
       }

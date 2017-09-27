@@ -34,7 +34,10 @@ try {
 }
 
 function escapeHTML(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 function getHash(revision: ?RevisionInfo): ?string {
@@ -343,13 +346,11 @@ class GutterElement extends React.Component<Props> {
         <div
           className="nuclide-blame-row nuclide-blame-content"
           ref={addTooltip(tooltip)}>
-          {!isLastLine
-            ? <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
-            : null}
+          {!isLastLine ? (
+            <div className="nuclide-blame-vertical-bar nuclide-blame-vertical-bar-first" />
+          ) : null}
           {Avatar ? <Avatar size={16} unixname={unixname} /> : unixname + ': '}
-          <span>
-            {revision.title}
-          </span>
+          <span>{revision.title}</span>
           <div style={{opacity}} className="nuclide-blame-border-age" />
         </div>
       );

@@ -33,7 +33,10 @@ export class ScopesView extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this._scopesComponentWrapped = bindObservableAsProps(
-      props.model.getScopesStore().getScopes().map(scopes => ({scopes})),
+      props.model
+        .getScopesStore()
+        .getScopes()
+        .map(scopes => ({scopes})),
       ScopesComponent,
     );
     this._disposables = new CompositeDisposable();

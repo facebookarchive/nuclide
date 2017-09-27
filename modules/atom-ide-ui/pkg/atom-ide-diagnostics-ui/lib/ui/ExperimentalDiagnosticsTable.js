@@ -285,8 +285,9 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
   }
 }
 
-const EmptyComponent = () =>
-  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>;
+const EmptyComponent = () => (
+  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>
+);
 
 type Classification = {
   kind: DiagnosticMessageKind,
@@ -378,9 +379,7 @@ function FilenameComponent(props: {data: ?Location}): React.Element<any> {
   return (
     <span>
       {basename}
-      <span className="nuclide-diagnostics-ui-line-number">
-        :{line}
-      </span>
+      <span className="nuclide-diagnostics-ui-line-number">:{line}</span>
     </span>
   );
 }

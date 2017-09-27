@@ -505,7 +505,9 @@ export class FlowProcess {
   }
 
   _pingServerOnce(): Promise<void> {
-    return this._rawExecFlow(['status']).catch(() => {}).then(() => {});
+    return this._rawExecFlow(['status'])
+      .catch(() => {})
+      .then(() => {});
   }
 
   /**

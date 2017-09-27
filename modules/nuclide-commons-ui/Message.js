@@ -45,9 +45,5 @@ export const Message = (props: Props) => {
     'nuclide-ui-message',
     MessageTypeClassNames[resolvedType],
   );
-  return (
-    <div className={newClassName}>
-      {children}
-    </div>
-  );
+  return <div className={newClassName}>{children}</div>;
 };

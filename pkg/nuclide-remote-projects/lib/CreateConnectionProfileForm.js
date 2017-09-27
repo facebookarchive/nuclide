@@ -92,9 +92,7 @@ export default class CreateConnectionProfileForm extends React.Component<
       <TabbableContainer contained={true}>
         <div>
           <div className="form-group">
-            <label>
-              {PROFILE_NAME_LABEL}:
-            </label>
+            <label>{PROFILE_NAME_LABEL}:</label>
             <AtomInput initialValue="" ref="profile-name" unstyled={true} />
           </div>
           <ConnectionDetailsForm

@@ -131,7 +131,9 @@ describe('commons-node/process', () => {
           '-e',
           'console.error("stderr"); console.log("std out"); process.exit(0);',
         ]);
-        const results = await getOutputStream(child).toArray().toPromise();
+        const results = await getOutputStream(child)
+          .toArray()
+          .toPromise();
         expect(results).toEqual([
           {kind: 'stderr', data: 'stderr\n'},
           {kind: 'stdout', data: 'std out\n'},

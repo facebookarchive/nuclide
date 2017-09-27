@@ -165,7 +165,9 @@ export default class ClangServer {
       })
       .switchMap(flagsData => {
         if (flagsData != null && flagsData.flagsFile != null) {
-          return watchWithNode(flagsData.flagsFile).refCount().take(1);
+          return watchWithNode(flagsData.flagsFile)
+            .refCount()
+            .take(1);
         }
         return Observable.empty();
       })

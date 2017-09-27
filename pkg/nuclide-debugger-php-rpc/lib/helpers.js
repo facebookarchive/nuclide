@@ -46,11 +46,15 @@ export function base64Encode(value: string): string {
 // Returns true if hphpd might be attached according to some heuristics applied to the process list.
 export async function hphpdMightBeAttached(): Promise<boolean> {
   const processes = await runCommand('ps', ['aux'], {}).toPromise();
-  return processes.toString().split('\n').slice(1).some(line => {
-    return (
-      line.indexOf('m debug') >= 0 || line.indexOf('mode debug') >= 0 // hhvm -m debug
-    ); // hhvm --mode debug
-  });
+  return processes
+    .toString()
+    .split('\n')
+    .slice(1)
+    .some(line => {
+      return (
+        line.indexOf('m debug') >= 0 || line.indexOf('mode debug') >= 0 // hhvm -m debug
+      ); // hhvm --mode debug
+    });
 }
 
 export function makeDbgpMessage(message: string): string {

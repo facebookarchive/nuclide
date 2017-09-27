@@ -82,13 +82,13 @@ export class ScopesComponent extends React.Component<Props> {
     // Non-local scopes should be collapsed by default since users typically care less about them.
     const collapsedByDefault = !isLocalScopeName(scope.name);
     const noLocals =
-      collapsedByDefault || scope.scopeVariables.length > 0
-        ? null
-        : <div className="nuclide-debugger-expression-value-row">
-            <span className="nuclide-debugger-expression-value-content">
-              (no variables)
-            </span>
-          </div>;
+      collapsedByDefault || scope.scopeVariables.length > 0 ? null : (
+        <div className="nuclide-debugger-expression-value-row">
+          <span className="nuclide-debugger-expression-value-content">
+            (no variables)
+          </span>
+        </div>
+      );
 
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress

@@ -223,14 +223,14 @@ export default class TestRunnerPanel extends React.Component<Props, State> {
     const running =
       this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING;
 
-    const progressBar = running
-      ? <progress
-          className="inline-block"
-          max="100"
-          title="Test progress"
-          {...progressAttrs}
-        />
-      : null;
+    const progressBar = running ? (
+      <progress
+        className="inline-block"
+        max="100"
+        title="Test progress"
+        {...progressAttrs}
+      />
+    ) : null;
 
     return (
       <div className="nuclide-test-runner-panel">

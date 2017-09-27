@@ -398,18 +398,20 @@ export default class VsDebugSessionTranslator {
     return Observable.concat(
       setBreakpointsCommands
         .buffer(
-          this._commandsOfType('Debugger.resume').first().switchMap(() => {
-            if (this._session.isReadyForBreakpoints()) {
-              // Session is initialized and ready for breakpoint requests.
-              return Observable.of(null);
-            } else {
-              // Session initialization is pending launch.
-              startedDebugging = true;
-              return Observable.fromPromise(this._startDebugging())
-                .ignoreElements()
-                .concat(this._session.observeInitializeEvents());
-            }
-          }),
+          this._commandsOfType('Debugger.resume')
+            .first()
+            .switchMap(() => {
+              if (this._session.isReadyForBreakpoints()) {
+                // Session is initialized and ready for breakpoint requests.
+                return Observable.of(null);
+              } else {
+                // Session initialization is pending launch.
+                startedDebugging = true;
+                return Observable.fromPromise(this._startDebugging())
+                  .ignoreElements()
+                  .concat(this._session.observeInitializeEvents());
+              }
+            }),
         )
         .first()
         .flatMap(async commands => {

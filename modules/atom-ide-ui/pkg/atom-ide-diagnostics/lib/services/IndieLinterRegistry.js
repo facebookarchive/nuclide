@@ -93,7 +93,10 @@ export class IndieLinterDelegate {
 
   onDidDestroy(callback: () => mixed): IDisposable {
     return new UniversalDisposable(
-      this._destroyed.filter(Boolean).take(1).subscribe(callback),
+      this._destroyed
+        .filter(Boolean)
+        .take(1)
+        .subscribe(callback),
     );
   }
 

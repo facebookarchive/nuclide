@@ -64,14 +64,18 @@ export async function getAttachTargetInfoList(
     ['-e', '-o', 'pid,comm'],
     {},
   ).toPromise();
-  processes.toString().split('\n').slice(1).forEach(line => {
-    const words = line.trim().split(' ');
-    const pid = Number(words[0]);
-    const command = words.slice(1).join(' ');
-    const components = command.split('/');
-    const name = components[components.length - 1];
-    pidToName.set(pid, name);
-  });
+  processes
+    .toString()
+    .split('\n')
+    .slice(1)
+    .forEach(line => {
+      const words = line.trim().split(' ');
+      const pid = Number(words[0]);
+      const command = words.slice(1).join(' ');
+      const components = command.split('/');
+      const name = components[components.length - 1];
+      pidToName.set(pid, name);
+    });
   // Get processes list from ps utility.
   // -e: include all processes
   // -ww: provides unlimited width for output and prevents the truncating of command names by ps.
@@ -82,12 +86,16 @@ export async function getAttachTargetInfoList(
     ['-eww', '-o', 'pid,args'],
     {},
   ).toPromise();
-  commands.toString().split('\n').slice(1).forEach(line => {
-    const words = line.trim().split(' ');
-    const pid = Number(words[0]);
-    const command = words.slice(1).join(' ');
-    pidToCommand.set(pid, command);
-  });
+  commands
+    .toString()
+    .split('\n')
+    .slice(1)
+    .forEach(line => {
+      const words = line.trim().split(' ');
+      const pid = Number(words[0]);
+      const command = words.slice(1).join(' ');
+      pidToCommand.set(pid, command);
+    });
   // Filter out processes that have died in between ps calls and zombiue processes.
   // Place pid, process, and command info into AttachTargetInfo objects and return in an array.
   return Array.from(pidToName.entries())
@@ -297,22 +305,24 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
     // sending data.
     argumentsStream.write('init\n');
     this.getSubscriptions().add(
-      observeStream(argumentsStream).first().subscribe(
-        text => {
-          if (text.startsWith('ready')) {
-            const args_in_json = JSON.stringify(args);
-            this.getLogger().info(`Sending ${args_in_json} to child_process`);
-            argumentsStream.write(`${args_in_json}\n`);
-          } else {
-            this.getLogger().error(`Get unknown initial data: ${text}.`);
-            child.kill();
-          }
-        },
-        error =>
-          this.getLogger().error(
-            `argumentsStream error: ${JSON.stringify(error)}`,
-          ),
-      ),
+      observeStream(argumentsStream)
+        .first()
+        .subscribe(
+          text => {
+            if (text.startsWith('ready')) {
+              const args_in_json = JSON.stringify(args);
+              this.getLogger().info(`Sending ${args_in_json} to child_process`);
+              argumentsStream.write(`${args_in_json}\n`);
+            } else {
+              this.getLogger().error(`Get unknown initial data: ${text}.`);
+              child.kill();
+            }
+          },
+          error =>
+            this.getLogger().error(
+              `argumentsStream error: ${JSON.stringify(error)}`,
+            ),
+        ),
     );
   }
 

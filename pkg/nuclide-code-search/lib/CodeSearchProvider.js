@@ -97,18 +97,20 @@ export const CodeSearchProvider: Provider<FileResult> = {
     const context = replaceAndWrap(
       item.context || '',
       item.query,
-      (rest, i) =>
+      (rest, i) => (
         <span
           key={`rest-${i}`}
           className="code-search-provider-result-context-rest">
           {rest}
-        </span>,
-      (match, i) =>
+        </span>
+      ),
+      (match, i) => (
         <span
           key={`match-${i}`}
           className="code-search-provider-result-context-match">
           {match}
-        </span>,
+        </span>
+      ),
     );
     return (
       <div
@@ -117,15 +119,14 @@ export const CodeSearchProvider: Provider<FileResult> = {
             ? 'code-search-provider-result-first-result-for-path'
             : null
         }>
-        {item.isFirstResultForPath &&
+        {item.isFirstResultForPath && (
           <PathWithFileIcon
             className="code-search-provider-result-path"
             path={item.path}>
             {item.displayPath}
-          </PathWithFileIcon>}
-        <div className="code-search-provider-result-context">
-          {context}
-        </div>
+          </PathWithFileIcon>
+        )}
+        <div className="code-search-provider-result-context">{context}</div>
       </div>
     );
   },

@@ -137,60 +137,62 @@ export default class HhvmToolbar extends React.Component<Props, State> {
             size="sm"
           />
         </div>
-        {store.getDebugMode() !== 'webserver'
-          ? <Button
-              className="icon icon-gear"
-              size={ButtonSizes.SMALL}
-              title="Advanced settings"
-              style={{'margin-right': '3px'}}
-              onClick={() => this._showSettings()}
-            />
-          : null}
-        {this.state.settingsVisible
-          ? <HhvmToolbarSettings
-              projectStore={this.props.projectStore}
-              onDismiss={() => this._hideSettings()}
-            />
-          : null}
+        {store.getDebugMode() !== 'webserver' ? (
+          <Button
+            className="icon icon-gear"
+            size={ButtonSizes.SMALL}
+            title="Advanced settings"
+            style={{'margin-right': '3px'}}
+            onClick={() => this._showSettings()}
+          />
+        ) : null}
+        {this.state.settingsVisible ? (
+          <HhvmToolbarSettings
+            projectStore={this.props.projectStore}
+            onDismiss={() => this._hideSettings()}
+          />
+        ) : null}
         <div className="inline-block">
-          {!isDebugScript
-            ? <Button
-                size="SMALL"
-                onClick={() => {
-                  shell.openExternal('https://' + store.getDebugTarget());
-                }}>
-                Open
-              </Button>
-            : <Checkbox
-                checked={this.state.stickyScript}
-                label="Sticky"
-                onChange={isChecked => {
-                  this.props.projectStore.setStickyCommand(
-                    this.refs.debugTarget.getText(),
-                    isChecked,
-                  );
-                  this.setState({stickyScript: isChecked});
-                }}
-                tooltip={{
-                  title:
-                    'When checked, the target script will not change when switching to another editor tab',
-                }}
-              />}
-          {store.getDebugMode() === 'script'
-            ? <Checkbox
-                checked={this.state.useTerminal}
-                className="nuclide-hhvm-use-terminal-control"
-                label="Run in Terminal"
-                onChange={isChecked => {
-                  this.props.projectStore.setUseTerminal(isChecked);
-                  this.setState({useTerminal: isChecked});
-                }}
-                tooltip={{
-                  title:
-                    "When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane",
-                }}
-              />
-            : null}
+          {!isDebugScript ? (
+            <Button
+              size="SMALL"
+              onClick={() => {
+                shell.openExternal('https://' + store.getDebugTarget());
+              }}>
+              Open
+            </Button>
+          ) : (
+            <Checkbox
+              checked={this.state.stickyScript}
+              label="Sticky"
+              onChange={isChecked => {
+                this.props.projectStore.setStickyCommand(
+                  this.refs.debugTarget.getText(),
+                  isChecked,
+                );
+                this.setState({stickyScript: isChecked});
+              }}
+              tooltip={{
+                title:
+                  'When checked, the target script will not change when switching to another editor tab',
+              }}
+            />
+          )}
+          {store.getDebugMode() === 'script' ? (
+            <Checkbox
+              checked={this.state.useTerminal}
+              className="nuclide-hhvm-use-terminal-control"
+              label="Run in Terminal"
+              onChange={isChecked => {
+                this.props.projectStore.setUseTerminal(isChecked);
+                this.setState({useTerminal: isChecked});
+              }}
+              tooltip={{
+                title:
+                  "When checked, the target script's STDIN and STDOUT will be redirected to a new Nuclide Terminal pane",
+              }}
+            />
+          ) : null}
         </div>
       </div>
     );

@@ -98,11 +98,9 @@ export class Checkbox extends React.PureComponent<Props> {
 
     const ref = tooltip ? addTooltip(tooltip) : null;
     const text =
-      label === ''
-        ? null
-        : <span className="nuclide-ui-checkbox-label-text">
-            {' '}{label}
-          </span>;
+      label === '' ? null : (
+        <span className="nuclide-ui-checkbox-label-text"> {label}</span>
+      );
     return (
       <label
         className={classnames(className, 'nuclide-ui-checkbox-label', {

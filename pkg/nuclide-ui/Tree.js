@@ -42,12 +42,12 @@ export class TreeItem extends React.Component<TreeItemProps> {
         )}
         {...remainingProps}
         ref={liNode => (this._liNode = liNode)}>
-        {selected && typeof children === 'string'
-          ? // String children must be wrapped to receive correct styles when selected.
-            <span>
-              {children}
-            </span>
-          : children}
+        {selected && typeof children === 'string' ? (
+          // String children must be wrapped to receive correct styles when selected.
+          <span>{children}</span>
+        ) : (
+          children
+        )}
       </li>
     );
   }
@@ -82,14 +82,8 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
         'list-nested-item',
       )}
       {...remainingProps}>
-      {title
-        ? <div className="list-item">
-            {title}
-          </div>
-        : null}
-      <TreeList hasFlatChildren={hasFlatChildren}>
-        {children}
-      </TreeList>
+      {title ? <div className="list-item">{title}</div> : null}
+      <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
     </li>
   );
 };
@@ -101,7 +95,7 @@ type TreeListProps = {
   showArrows?: boolean,
   hasFlatChildren?: boolean,
 };
-export const TreeList = (props: TreeListProps) =>
+export const TreeList = (props: TreeListProps) => (
   // $FlowFixMe(>=0.53.0) Flow suppress
   <ul
     className={classnames(
@@ -113,4 +107,5 @@ export const TreeList = (props: TreeListProps) =>
       'list-tree',
     )}>
     {props.children}
-  </ul>;
+  </ul>
+);

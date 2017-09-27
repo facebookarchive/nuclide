@@ -53,8 +53,9 @@ type ColumnName = $Keys<DisplayDiagnostic>;
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
-const EmptyComponent = () =>
-  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>;
+const EmptyComponent = () => (
+  <div className="diagnostics-ui-empty-component">No diagnostic messages</div>
+);
 
 const TypeToHighlightColor = Object.freeze({
   ERROR: HighlightColors.error,
@@ -67,11 +68,7 @@ function TypeComponent(props: {
 }): React.Element<any> {
   const text = props.data;
   const highlightColor = TypeToHighlightColor[text.toUpperCase()];
-  return (
-    <Highlight color={highlightColor}>
-      {text}
-    </Highlight>
-  );
+  return <Highlight color={highlightColor}>{text}</Highlight>;
 }
 
 function getMessageContent(

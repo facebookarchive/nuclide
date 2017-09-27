@@ -129,8 +129,9 @@ export class BuckTaskRunner {
   }
 
   getIcon(): React.ComponentType<any> {
-    return () =>
-      <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />;
+    return () => (
+      <Icon icon="nuclicon-buck" className="nuclide-buck-task-runner-icon" />
+    );
   }
 
   getBuildSystem(): BuckBuildSystem {

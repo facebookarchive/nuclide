@@ -72,7 +72,8 @@ export default class FileReferencesView extends React.Component<Props, State> {
       if (firstRef.name && firstRef.name === lastRef.name) {
         caller = (
           <span>
-            {' '}in <code>{firstRef.name}</code>
+            {' '}
+            in <code>{firstRef.name}</code>
           </span>
         );
       }
@@ -122,9 +123,7 @@ export default class FileReferencesView extends React.Component<Props, State> {
             {groups.length}
           </span>
         </div>
-        <ul className="find-references-refs list-tree">
-          {groups}
-        </ul>
+        <ul className="find-references-refs list-tree">{groups}</ul>
       </li>
     );
   }

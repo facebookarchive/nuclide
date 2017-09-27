@@ -361,13 +361,15 @@ export class HgRepositoryClient {
     const statusChanges = cacheWhileSubscribed(
       triggers
         .switchMap(() =>
-          fetchStatuses().refCount().catch(error => {
-            getLogger('nuclide-hg-repository-client').error(
-              'HgService cannot fetch statuses',
-              error,
-            );
-            return Observable.empty();
-          }),
+          fetchStatuses()
+            .refCount()
+            .catch(error => {
+              getLogger('nuclide-hg-repository-client').error(
+                'HgService cannot fetch statuses',
+                error,
+              );
+              return Observable.empty();
+            }),
         )
         .map(uriToStatusIds =>
           mapTransform(uriToStatusIds, (v, k) => StatusCodeIdToNumber[v]),

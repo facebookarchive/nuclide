@@ -268,11 +268,12 @@ export default class FileTreeSidebarComponent extends React.Component<
             filter={this._store.getFilter()}
             found={this._store.getFilterFound()}
           />
-          {this._store.foldersExpanded &&
+          {this._store.foldersExpanded && (
             <FileTreeToolbarComponent
               key="toolbar"
               workingSetsStore={workingSetsStore}
-            />}
+            />
+          )}
         </div>
       );
     }
@@ -307,13 +308,13 @@ export default class FileTreeSidebarComponent extends React.Component<
           return repo != null && repo.getType() === 'hg';
         });
 
-        const dropdownIcon = !showDropdown
-          ? null
-          : <Icon
-              icon="triangle-down"
-              className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
-              onClick={this._handleUncommittedChangesKindDownArrow}
-            />;
+        const dropdownIcon = !showDropdown ? null : (
+          <Icon
+            icon="triangle-down"
+            className="nuclide-file-tree-toolbar-fader nuclide-ui-dropdown-icon"
+            onClick={this._handleUncommittedChangesKindDownArrow}
+          />
+        );
 
         const dropdownTooltip = `<div style="text-align: left;">
 This section shows the file changes you've made:<br />
@@ -328,15 +329,16 @@ Just the changes that you've already amended/committed.<br />
 All the changes across your entire stacked diff.
 </div>`;
 
-        const calculatingChangesSpinner = !this.state.isCalculatingChanges
-          ? null
-          : <span className="nuclide-file-tree-spinner">
-              &nbsp;
-              <LoadingSpinner
-                className="inline-block"
-                size={LoadingSpinnerSizes.EXTRA_SMALL}
-              />
-            </span>;
+        const calculatingChangesSpinner = !this.state
+          .isCalculatingChanges ? null : (
+          <span className="nuclide-file-tree-spinner">
+            &nbsp;
+            <LoadingSpinner
+              className="inline-block"
+              size={LoadingSpinnerSizes.EXTRA_SMALL}
+            />
+          </span>
+        );
 
         uncommittedChangesHeadline = (
           <span ref={addTooltip({title: dropdownTooltip})}>
@@ -416,7 +418,7 @@ All the changes across your entire stacked diff.
         {openFilesSection}
         {foldersCaption}
         {toolbar}
-        {this._store.foldersExpanded &&
+        {this._store.foldersExpanded && (
           <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
             <FileTree
               ref="fileTree"
@@ -426,7 +428,8 @@ All the changes across your entire stacked diff.
               onMouseEnter={this._handleFileTreeHovered}
               onMouseLeave={this._handleFileTreeUnhovered}
             />
-          </PanelComponentScroller>}
+          </PanelComponentScroller>
+        )}
       </div>
     );
   }

@@ -219,10 +219,13 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
         this._logger.trace('observeDiagnostics');
         return ensureInvalidations(
           this._logger,
-          process.observeDiagnostics().refCount().catch(error => {
-            this._logger.error('Error: observeDiagnostics', error);
-            return Observable.empty();
-          }),
+          process
+            .observeDiagnostics()
+            .refCount()
+            .catch(error => {
+              this._logger.error('Error: observeDiagnostics', error);
+              return Observable.empty();
+            }),
         );
       })
       .publish();

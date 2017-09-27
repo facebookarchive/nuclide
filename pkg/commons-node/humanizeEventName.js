@@ -20,7 +20,12 @@ function capitalize(word: string): string {
 }
 
 function undasherize(string: string): string {
-  return string ? string.split('-').map(capitalize).join(' ') : '';
+  return string
+    ? string
+        .split('-')
+        .map(capitalize)
+        .join(' ')
+    : '';
 }
 
 function humanizeEventName(eventName: string): string {

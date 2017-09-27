@@ -163,11 +163,7 @@ export class PopoutView extends React.Component<Props, State> {
       ? 'none'
       : this.props.allowPopIn ? 'block' : 'none';
 
-    return (
-      <div style={{display}}>
-        {this.props.children}
-      </div>
-    );
+    return <div style={{display}}>{this.props.children}</div>;
   }
 
   /**

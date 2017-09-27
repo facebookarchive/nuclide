@@ -248,7 +248,10 @@ describe('HgService', () => {
         return Observable.of(mockHgBookmarksOutput);
       });
       waitsForPromise(async () => {
-        await hgService.fetchBookmarks().refCount().toPromise();
+        await hgService
+          .fetchBookmarks()
+          .refCount()
+          .toPromise();
         expect(wasCalled).toBeTruthy();
       });
     });

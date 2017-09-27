@@ -44,38 +44,40 @@ function disableDiagnostics(): void {
 export default function showAtomLinterWarning(): IDisposable {
   const packageName = featureConfig.getPackageName();
   return new UniversalDisposable(
-    observePackageIsEnabled().filter(Boolean).subscribe(() => {
-      const notification = atom.notifications.addInfo('Choose a linter UI', {
-        description:
-          'You have both `linter` and `atom-ide-diagnostics` enabled, which will both ' +
-          'display lint results for Linter-based packages.\n\n' +
-          'To avoid duplicate results, please disable one of the packages.' +
-          (packageName === 'nuclide'
-            ? '\n\nNote that Flow and Hack errors are not compatible with `linter`.'
-            : ''),
-        dismissable: true,
-        buttons: [
-          {
-            text: 'Disable Linter',
-            onDidClick() {
-              notification.dismiss();
-              disableLinter();
+    observePackageIsEnabled()
+      .filter(Boolean)
+      .subscribe(() => {
+        const notification = atom.notifications.addInfo('Choose a linter UI', {
+          description:
+            'You have both `linter` and `atom-ide-diagnostics` enabled, which will both ' +
+            'display lint results for Linter-based packages.\n\n' +
+            'To avoid duplicate results, please disable one of the packages.' +
+            (packageName === 'nuclide'
+              ? '\n\nNote that Flow and Hack errors are not compatible with `linter`.'
+              : ''),
+          dismissable: true,
+          buttons: [
+            {
+              text: 'Disable Linter',
+              onDidClick() {
+                notification.dismiss();
+                disableLinter();
+              },
             },
-          },
-          {
-            text: 'Disable Diagnostics',
-            onDidClick() {
-              notification.dismiss();
-              disableDiagnostics();
-              atom.notifications.addInfo('Re-enabling Diagnostics', {
-                description:
-                  'To re-enable diagnostics, please enable "Diagnostics" under the "Enabled Features" ' +
-                  `section in \`${packageName}\` settings.`,
-              });
+            {
+              text: 'Disable Diagnostics',
+              onDidClick() {
+                notification.dismiss();
+                disableDiagnostics();
+                atom.notifications.addInfo('Re-enabling Diagnostics', {
+                  description:
+                    'To re-enable diagnostics, please enable "Diagnostics" under the "Enabled Features" ' +
+                    `section in \`${packageName}\` settings.`,
+                });
+              },
             },
-          },
-        ],
-      });
-    }),
+          ],
+        });
+      }),
   );
 }

@@ -417,7 +417,9 @@ class Activation {
                 shouldDisplay: event => {
                   const textEditor = atom.workspace.getActiveTextEditor();
                   if (
-                    !this.getModel().getStore().isDebugging() ||
+                    !this.getModel()
+                      .getStore()
+                      .isDebugging() ||
                     textEditor == null
                   ) {
                     return false;
@@ -973,11 +975,17 @@ export function consumeDebuggerProvider(
   provider: NuclideDebuggerProvider,
 ): IDisposable {
   if (activation) {
-    activation.getModel().getActions().addDebuggerProvider(provider);
+    activation
+      .getModel()
+      .getActions()
+      .addDebuggerProvider(provider);
   }
   return new Disposable(() => {
     if (activation) {
-      activation.getModel().getActions().removeDebuggerProvider(provider);
+      activation
+        .getModel()
+        .getActions()
+        .removeDebuggerProvider(provider);
     }
   });
 }
@@ -1039,7 +1047,10 @@ export function consumeDatatipService(service: DatatipService): IDisposable {
   const provider = createDatatipProvider();
   const disposable = service.addProvider(provider);
   invariant(activation);
-  activation.getModel().getThreadStore().setDatatipService(service);
+  activation
+    .getModel()
+    .getThreadStore()
+    .setDatatipService(service);
   activation._disposables.add(disposable);
   return disposable;
 }

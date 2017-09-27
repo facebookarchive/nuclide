@@ -54,11 +54,13 @@ export default class RecentFilesService {
    * Returns a reverse-chronological list of recently opened files.
    */
   getRecentFiles(): FileList {
-    return Array.from(this._fileList).reverse().map(pair => ({
-      resultType: 'FILE',
-      path: pair[0],
-      timestamp: pair[1],
-    }));
+    return Array.from(this._fileList)
+      .reverse()
+      .map(pair => ({
+        resultType: 'FILE',
+        path: pair[0],
+        timestamp: pair[1],
+      }));
   }
 
   dispose() {

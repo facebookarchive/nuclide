@@ -414,8 +414,8 @@ export default class SearchResultManager {
       ).then(result => {
         track('quickopen-query-source-provider', {
           'quickopen-source-provider': globalProvider.name,
-          'quickopen-query-duration': (performance.now() -
-            startTime).toString(),
+          'quickopen-query-duration': (performance.now() - startTime
+          ).toString(),
           'quickopen-result-count': result.length.toString(),
         });
         this._processResult(query, result, GLOBAL_KEY, globalProvider);

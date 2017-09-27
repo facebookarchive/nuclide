@@ -110,11 +110,7 @@ export const DiagnosticsMessageText = (props: DiagnosticsMessageTextProps) => {
       props.preserveNewlines !== false
         ? message.text.split('\n')
         : [message.text];
-    return (
-      <span title={message.text}>
-        {rows.map(renderRowWithLinks)}
-      </span>
-    );
+    return <span title={message.text}>{rows.map(renderRowWithLinks)}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
   }

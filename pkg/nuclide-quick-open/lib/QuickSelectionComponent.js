@@ -693,11 +693,7 @@ export default class QuickSelectionComponent extends React.Component<
         ? _findKeybindingForAction(tab.action, workspace)
         : '';
       if (humanizedKeybinding !== '') {
-        keyBinding = (
-          <kbd className="key-binding">
-            {humanizedKeybinding}
-          </kbd>
-        );
+        keyBinding = <kbd className="key-binding">{humanizedKeybinding}</kbd>;
       }
       return {
         name: tab.name,
@@ -822,9 +818,7 @@ export default class QuickSelectionComponent extends React.Component<
             key={dirName}>
             {directoryLabel}
             {message}
-            <ul className="list-tree">
-              {itemComponents}
-            </ul>
+            <ul className="list-tree">{itemComponents}</ul>
           </li>
         );
       });
@@ -848,9 +842,7 @@ export default class QuickSelectionComponent extends React.Component<
         return (
           <li className="list-nested-item" key={serviceName}>
             {serviceLabel}
-            <ul className="list-tree">
-              {directoriesForService}
-            </ul>
+            <ul className="list-tree">{directoriesForService}</ul>
           </li>
         );
       }

@@ -581,7 +581,9 @@ describe('Epics', () => {
             },
           },
         ];
-        await runActions(actions, state).toArray().toPromise();
+        await runActions(actions, state)
+          .toArray()
+          .toPromise();
         expect(task.cancel).toHaveBeenCalled();
       });
     });

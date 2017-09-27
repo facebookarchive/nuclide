@@ -37,7 +37,9 @@ export default function debounceDeletes(
         case 'change':
           return Observable.of(change);
         case 'delete':
-          return Observable.of(change).delay(DELETE_DELAY).takeUntil(shared);
+          return Observable.of(change)
+            .delay(DELETE_DELAY)
+            .takeUntil(shared);
       }
       throw new Error('unknown change type');
     }),

@@ -39,10 +39,6 @@ export default class MarkedStringDatatip extends React.PureComponent<Props> {
       }
     });
 
-    return (
-      <div className="datatip-marked">
-        {elements}
-      </div>
-    );
+    return <div className="datatip-marked">{elements}</div>;
   }
 }

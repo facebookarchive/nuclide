@@ -97,9 +97,9 @@ export default class VcsLogComponent extends React.Component<Props, State> {
                 <tr>
                   <th className="nuclide-vcs-log-header-cell">Date</th>
                   <th className="nuclide-vcs-log-header-cell">ID</th>
-                  {showDifferentialRevision
-                    ? <th className="nuclide-vcs-log-header-cell">Revision</th>
-                    : null}
+                  {showDifferentialRevision ? (
+                    <th className="nuclide-vcs-log-header-cell">Revision</th>
+                  ) : null}
                   <th className="nuclide-vcs-log-header-cell">Author</th>
                   <th className="nuclide-vcs-log-header-cell">Summary</th>
                   <th className="nuclide-vcs-log-header-cell">Show diff</th>
@@ -137,9 +137,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
       return (
         <div>
           <div>
-            <em>
-              Loading hg log {this._files.join(' ')}
-            </em>
+            <em>Loading hg log {this._files.join(' ')}</em>
           </div>
           <div className="nuclide-vcs-log-spinner">
             <div className="loading-spinner-large inline-block" />
@@ -188,48 +186,48 @@ export default class VcsLogComponent extends React.Component<Props, State> {
     if (this.props.files.length === 1) {
       showDiffCell = (
         <span className="input-radio-container">
-          {index !== 0
-            ? <input
-                className="input-radio"
-                type="radio"
-                checked={index === baseDiffIndex}
-                disabled={targetDiffIndex != null && index <= targetDiffIndex}
-                onChange={() => {
-                  const newTargetDiffIndex =
-                    targetDiffIndex != null ? targetDiffIndex : index - 1;
-                  this.setState({
-                    showDiffContainer: true,
-                    baseDiffIndex: index,
-                    targetDiffIndex: newTargetDiffIndex,
-                  });
-                  this.props.onDiffClick(
-                    nodeAtIndex(index),
-                    nodeAtIndex(newTargetDiffIndex),
-                  );
-                }}
-              />
-            : null}
-          {index !== logEntries.length - 1 || index === 0
-            ? <input
-                className="input-radio right-align"
-                type="radio"
-                checked={index === targetDiffIndex}
-                disabled={baseDiffIndex != null && index >= baseDiffIndex}
-                onChange={() => {
-                  const newBaseDiffIndex =
-                    baseDiffIndex != null ? baseDiffIndex : index + 1;
-                  this.setState({
-                    showDiffContainer: true,
-                    baseDiffIndex: newBaseDiffIndex,
-                    targetDiffIndex: index,
-                  });
-                  this.props.onDiffClick(
-                    nodeAtIndex(newBaseDiffIndex),
-                    nodeAtIndex(index),
-                  );
-                }}
-              />
-            : null}
+          {index !== 0 ? (
+            <input
+              className="input-radio"
+              type="radio"
+              checked={index === baseDiffIndex}
+              disabled={targetDiffIndex != null && index <= targetDiffIndex}
+              onChange={() => {
+                const newTargetDiffIndex =
+                  targetDiffIndex != null ? targetDiffIndex : index - 1;
+                this.setState({
+                  showDiffContainer: true,
+                  baseDiffIndex: index,
+                  targetDiffIndex: newTargetDiffIndex,
+                });
+                this.props.onDiffClick(
+                  nodeAtIndex(index),
+                  nodeAtIndex(newTargetDiffIndex),
+                );
+              }}
+            />
+          ) : null}
+          {index !== logEntries.length - 1 || index === 0 ? (
+            <input
+              className="input-radio right-align"
+              type="radio"
+              checked={index === targetDiffIndex}
+              disabled={baseDiffIndex != null && index >= baseDiffIndex}
+              onChange={() => {
+                const newBaseDiffIndex =
+                  baseDiffIndex != null ? baseDiffIndex : index + 1;
+                this.setState({
+                  showDiffContainer: true,
+                  baseDiffIndex: newBaseDiffIndex,
+                  targetDiffIndex: index,
+                });
+                this.props.onDiffClick(
+                  nodeAtIndex(newBaseDiffIndex),
+                  nodeAtIndex(index),
+                );
+              }}
+            />
+          ) : null}
         </span>
       );
     }
@@ -250,9 +248,7 @@ export default class VcsLogComponent extends React.Component<Props, State> {
         <td className="nuclide-vcs-log-summary-cell" title={logEntry.desc}>
           {parseFirstLine(logEntry.desc)}
         </td>
-        <td className="nuclide-vcs-log-show-diff-cell">
-          {showDiffCell}
-        </td>
+        <td className="nuclide-vcs-log-show-diff-cell">{showDiffCell}</td>
       </tr>
     );
   }

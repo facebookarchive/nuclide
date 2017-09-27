@@ -529,8 +529,9 @@ function lspDiagnostic_atomDiagnostic(
     filePath,
     text: diagnostic.message,
     range: lspRange_atomRange(diagnostic.range),
-    trace: (diagnostic.relatedLocations || [])
-      .map(lspRelatedLocation_atomTrace),
+    trace: (diagnostic.relatedLocations || []).map(
+      lspRelatedLocation_atomTrace,
+    ),
   };
 }
 

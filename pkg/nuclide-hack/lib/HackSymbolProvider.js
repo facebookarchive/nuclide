@@ -92,13 +92,9 @@ export const HackSymbolProvider: GlobalProviderType<SymbolResult> = {
     return (
       <div title={item.hoverText || ''}>
         <span className={symbolClasses}>
-          <code>
-            {name}
-          </code>
+          <code>{name}</code>
         </span>
-        <span className="omnisearch-symbol-result-filename">
-          {filename}
-        </span>
+        <span className="omnisearch-symbol-result-filename">{filename}</span>
       </div>
     );
   },

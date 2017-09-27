@@ -117,7 +117,10 @@ xdescribe('pane item change events', () => {
 
     it('should debounce', () => {
       waitsForPromise(async () => {
-        const itemsPromise = activePaneItems.take(2).toArray().toPromise();
+        const itemsPromise = activePaneItems
+          .take(2)
+          .toArray()
+          .toPromise();
 
         await sleep(SLEEP_INTERVAL);
 
@@ -137,7 +140,10 @@ xdescribe('pane item change events', () => {
 
     it('should return null if the item is not an editor', () => {
       waitsForPromise(async () => {
-        const itemsPromise = activeEditors.take(3).toArray().toPromise();
+        const itemsPromise = activeEditors
+          .take(3)
+          .toArray()
+          .toPromise();
 
         await sleep(SLEEP_INTERVAL);
         pane.activateItem(nonEditor);

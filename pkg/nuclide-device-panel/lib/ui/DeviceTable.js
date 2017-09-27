@@ -39,9 +39,11 @@ export class DeviceTable extends React.Component<Props> {
       }
       return (
         <div className="padded">
-          {this.props.devices.isPending
-            ? <LoadingSpinner size="EXTRA_SMALL" />
-            : 'No devices connected'}
+          {this.props.devices.isPending ? (
+            <LoadingSpinner size="EXTRA_SMALL" />
+          ) : (
+            'No devices connected'
+          )}
         </div>
       );
     };
@@ -76,14 +78,14 @@ export class DeviceTable extends React.Component<Props> {
         data: {
           name: _device.displayName,
           actions:
-            actions.length === 0
-              ? null
-              : <DeviceTaskButton
-                  actions={actions}
-                  device={_device}
-                  icon="device-mobile"
-                  title="Device actions"
-                />,
+            actions.length === 0 ? null : (
+              <DeviceTaskButton
+                actions={actions}
+                device={_device}
+                icon="device-mobile"
+                title="Device actions"
+              />
+            ),
         },
       };
     });

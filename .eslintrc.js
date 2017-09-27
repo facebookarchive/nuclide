@@ -39,9 +39,7 @@ module.exports = {
     node: true,
   },
 
-  extends: [
-    'plugin:jsx-a11y/recommended',
-  ],
+  extends: ['plugin:jsx-a11y/recommended'],
 
   globals: {
     atom: false,
@@ -88,13 +86,13 @@ module.exports = {
     'array-callback-return': 0,
     'block-scoped-var': 0,
     'class-methods-use-this': 0,
-    'complexity': 0,
+    complexity: 0,
     'consistent-return': 0,
-    'curly': 1,
+    curly: 1,
     'default-case': 0,
     'dot-location': [1, 'property'],
     'dot-notation': 1,
-    'eqeqeq': [1, 'always', {null: 'never'}],
+    eqeqeq: [1, 'always', {null: 'never'}],
     'guard-for-in': 0,
     'no-alert': 0,
     'no-caller': 1,
@@ -149,15 +147,15 @@ module.exports = {
     'no-warning-comments': 0,
     'no-with': 1,
     'prefer-promise-reject-errors': 1,
-    'radix': 1,
+    radix: 1,
     'require-await': 0,
     // 'require-await': 1,
     'vars-on-top': 0,
     'wrap-iife': [1, 'inside'],
-    'yoda': 1,
+    yoda: 1,
 
     // Strict Mode (http://eslint.org/docs/rules/#strict-mode)
-    'strict': 0,
+    strict: 0,
 
     // Variables (http://eslint.org/docs/rules/#variables)
     'init-declarations': 0,
@@ -189,9 +187,18 @@ module.exports = {
     'array-bracket-spacing': 1,
     'block-spacing': 1,
     'brace-style': [1, '1tbs', {allowSingleLine: true}],
-    'camelcase': 0,
+    camelcase: 0,
     'capitalized-comments': 0,
-    'comma-dangle': [1, {arrays: 'always-multiline', objects: 'always-multiline', imports: 'always-multiline', exports: 'always-multiline', functions: 'always-multiline'}],
+    'comma-dangle': [
+      1,
+      {
+        arrays: 'always-multiline',
+        objects: 'always-multiline',
+        imports: 'always-multiline',
+        exports: 'always-multiline',
+        functions: 'always-multiline',
+      },
+    ],
     'comma-spacing': 1,
     'comma-style': 1,
     'computed-property-spacing': 1,
@@ -252,20 +259,30 @@ module.exports = {
     'one-var': [1, 'never'],
     'operator-assignment': 1,
     'operator-linebreak': 0,
-    'padded-blocks': [1, {blocks: 'never', classes: 'never', switches: 'never'}],
+    'padded-blocks': [
+      1,
+      {blocks: 'never', classes: 'never', switches: 'never'},
+    ],
     // 'quote-props': [1, 'as-needed'],
-    'quotes': [1, 'single', 'avoid-escape'],
+    quotes: [1, 'single', 'avoid-escape'],
     'require-jsdoc': 0,
     // 'semi-spacing': 1,
-    'semi': 1,
+    semi: 1,
     'sort-keys': 0,
     'sort-vars': 0,
     'space-before-blocks': 1,
-    'space-before-function-paren': [1, {anonymous: 'never', named: 'never', asyncArrow: 'always'}],
+    'space-before-function-paren': [
+      1,
+      {anonymous: 'never', named: 'never', asyncArrow: 'always'},
+    ],
     'space-in-parens': [1, 'never'],
     'space-infix-ops': 1,
     'space-unary-ops': 1,
-    'spaced-comment': [1, 'always', {line: {exceptions: ['-']}, block: {balanced: true}}],
+    'spaced-comment': [
+      1,
+      'always',
+      {line: {exceptions: ['-']}, block: {balanced: true}},
+    ],
     'template-tag-spacing': 1,
     'unicode-bom': [1, 'never'],
     'wrap-regex': 0,
@@ -402,7 +419,10 @@ module.exports = {
     'react/sort-prop-types': 0,
     'react/style-prop-object': 0,
     'react/jsx-boolean-value': 0,
-    'react/jsx-closing-bracket-location': [1, {selfClosing: 'tag-aligned', nonEmpty: 'after-props'}],
+    'react/jsx-closing-bracket-location': [
+      1,
+      {selfClosing: 'tag-aligned', nonEmpty: 'after-props'},
+    ],
     // 'react/jsx-curly-spacing': [1, 'never'],
     'react/jsx-equals-spacing': 0,
     'react/jsx-filename-extension': 0,
@@ -429,78 +449,92 @@ module.exports = {
 
     // JSX Accessibility checks
     // some currently disabled to adopt incrementally, annotated 'incremental'
-   'jsx-a11y/accessible-emoji': 0,
-   'jsx-a11y/alt-text': 0, // incremental: error
-   'jsx-a11y/anchor-has-content': 0,
-   'jsx-a11y/aria-activedescendant-has-tabindex': 0,
-   'jsx-a11y/aria-props': 1,
-   'jsx-a11y/aria-proptypes': 0,
-   'jsx-a11y/aria-role': 0,
-   'jsx-a11y/aria-unsupported-elements': 0,
-   'jsx-a11y/click-events-have-key-events': 0,
-   'jsx-a11y/heading-has-content': 0,
-   'jsx-a11y/href-no-hash': 0,
-   'jsx-a11y/html-has-lang': 0,
-   'jsx-a11y/iframe-has-title': 0,
-   'jsx-a11y/img-has-alt': 0,
-   'jsx-a11y/img-redundant-alt': 0,
-   'jsx-a11y/interactive-supports-focus': [
-     1,
-     {
-       tabbable: [
-         'button',
-         'checkbox',
-         'link',
-         'searchbox',
-         'spinbutton',
-         'switch',
-         'textbox',
-       ],
-     },
-   ],
-   'jsx-a11y/label-has-for': 0,
-   'jsx-a11y/lang': 0,
-   'jsx-a11y/mouse-events-have-key-events': 0,
-   'jsx-a11y/no-access-key': 0,
-   'jsx-a11y/no-autofocus': 0,
-   'jsx-a11y/no-distracting-elements': 0,
-   'jsx-a11y/no-interactive-element-to-noninteractive-role': [
-     1,
-     {
-       tr: ['none', 'presentation'],
-     },
-   ],
-   'jsx-a11y/no-noninteractive-element-interactions': [
-     0, // incremental: warning
-     {
-       handlers: ['onClick'],
-     },
-   ],
-   'jsx-a11y/no-noninteractive-element-to-interactive-role': [
-     1,
-     {
-       ul: ['listbox', 'menu', 'menubar',
-         'radiogroup', 'tablist', 'tree', 'treegrid'],
-       ol: ['listbox', 'menu', 'menubar',
-         'radiogroup', 'tablist', 'tree', 'treegrid'],
-       li: ['menuitem', 'option', 'row', 'tab', 'treeitem'],
-       table: ['grid'],
-       td: ['gridcell'],
-     },
-   ],
-   'jsx-a11y/no-noninteractive-tabindex': 0, // incremental: error
-   'jsx-a11y/no-onchange': 0,
-   'jsx-a11y/no-redundant-roles': 0,
-   'jsx-a11y/no-static-element-interactions': [
-     0, // incremental: warning
-     {
-       handlers: ['onClick'],
-     },
-   ],
-   'jsx-a11y/role-has-required-aria-props': 0,
-   'jsx-a11y/role-supports-aria-props': 0,
-   'jsx-a11y/scope': 0,
-   'jsx-a11y/tabindex-no-positive': 0,
+    'jsx-a11y/accessible-emoji': 0,
+    'jsx-a11y/alt-text': 0, // incremental: error
+    'jsx-a11y/anchor-has-content': 0,
+    'jsx-a11y/aria-activedescendant-has-tabindex': 0,
+    'jsx-a11y/aria-props': 1,
+    'jsx-a11y/aria-proptypes': 0,
+    'jsx-a11y/aria-role': 0,
+    'jsx-a11y/aria-unsupported-elements': 0,
+    'jsx-a11y/click-events-have-key-events': 0,
+    'jsx-a11y/heading-has-content': 0,
+    'jsx-a11y/href-no-hash': 0,
+    'jsx-a11y/html-has-lang': 0,
+    'jsx-a11y/iframe-has-title': 0,
+    'jsx-a11y/img-has-alt': 0,
+    'jsx-a11y/img-redundant-alt': 0,
+    'jsx-a11y/interactive-supports-focus': [
+      1,
+      {
+        tabbable: [
+          'button',
+          'checkbox',
+          'link',
+          'searchbox',
+          'spinbutton',
+          'switch',
+          'textbox',
+        ],
+      },
+    ],
+    'jsx-a11y/label-has-for': 0,
+    'jsx-a11y/lang': 0,
+    'jsx-a11y/mouse-events-have-key-events': 0,
+    'jsx-a11y/no-access-key': 0,
+    'jsx-a11y/no-autofocus': 0,
+    'jsx-a11y/no-distracting-elements': 0,
+    'jsx-a11y/no-interactive-element-to-noninteractive-role': [
+      1,
+      {
+        tr: ['none', 'presentation'],
+      },
+    ],
+    'jsx-a11y/no-noninteractive-element-interactions': [
+      0, // incremental: warning
+      {
+        handlers: ['onClick'],
+      },
+    ],
+    'jsx-a11y/no-noninteractive-element-to-interactive-role': [
+      1,
+      {
+        ul: [
+          'listbox',
+          'menu',
+          'menubar',
+          'radiogroup',
+          'tablist',
+          'tree',
+          'treegrid',
+        ],
+        ol: [
+          'listbox',
+          'menu',
+          'menubar',
+          'radiogroup',
+          'tablist',
+          'tree',
+          'treegrid',
+        ],
+        li: ['menuitem', 'option', 'row', 'tab', 'treeitem'],
+        table: ['grid'],
+        td: ['gridcell'],
+      },
+    ],
+    'jsx-a11y/no-noninteractive-tabindex': 0, // incremental: error
+    'jsx-a11y/no-onchange': 0,
+    'jsx-a11y/no-redundant-roles': 0,
+    'jsx-a11y/no-static-element-interactions': [
+      0, // incremental: warning
+      {
+        handlers: ['onClick'],
+      },
+    ],
+    'jsx-a11y/role-has-required-aria-props': 0,
+    'jsx-a11y/role-supports-aria-props': 0,
+    'jsx-a11y/scope': 0,
+    'jsx-a11y/tabindex-no-positive': 0,
   },
 
   plugins: [

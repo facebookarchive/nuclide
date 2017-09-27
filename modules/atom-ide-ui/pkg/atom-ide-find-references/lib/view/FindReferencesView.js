@@ -85,15 +85,15 @@ export default class FindReferencesView extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const children = this.state.references.map((fileRefs, i) =>
+    const children = this.state.references.map((fileRefs, i) => (
       <FileReferencesView
         key={i}
         isSelected={this.state.selected === i}
         {...fileRefs}
         basePath={this.props.model.getBasePath()}
         clickCallback={() => this._childClick(i)}
-      />,
-    );
+      />
+    ));
 
     const refCount = this.props.model.getReferenceCount();
     const fileCount = this.props.model.getFileCount();

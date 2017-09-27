@@ -325,7 +325,10 @@ export function idFromFileName(fileUri: NuclideUri): string {
 
 function dashToCamelCase(string: string): string {
   return string // Maintain capitalization of the first "word"
-    ? string.split('-').map((el, i) => (i === 0 ? el : capitalize(el))).join('')
+    ? string
+        .split('-')
+        .map((el, i) => (i === 0 ? el : capitalize(el)))
+        .join('')
     : '';
 }
 

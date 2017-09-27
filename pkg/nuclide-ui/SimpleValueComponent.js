@@ -28,11 +28,9 @@ function renderNullish(
   evaluationResult: EvaluationResult,
 ): ?React.Element<any> {
   const {type} = evaluationResult;
-  return type === 'undefined' || type === 'null'
-    ? <span className={ValueComponentClassNames.nullish}>
-        {type}
-      </span>
-    : null;
+  return type === 'undefined' || type === 'null' ? (
+    <span className={ValueComponentClassNames.nullish}>{type}</span>
+  ) : null;
 }
 
 function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
@@ -40,13 +38,13 @@ function renderString(evaluationResult: EvaluationResult): ?React.Element<any> {
   if (value == null) {
     return null;
   }
-  return type === 'string' || stringRegex.test(value)
-    ? <span className={ValueComponentClassNames.string}>
-        <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
-        {value}
-        <span className={ValueComponentClassNames.stringClosingQuote}>"</span>
-      </span>
-    : null;
+  return type === 'string' || stringRegex.test(value) ? (
+    <span className={ValueComponentClassNames.string}>
+      <span className={ValueComponentClassNames.stringOpeningQuote}>"</span>
+      {value}
+      <span className={ValueComponentClassNames.stringClosingQuote}>"</span>
+    </span>
+  ) : null;
 }
 
 function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
@@ -54,11 +52,9 @@ function renderNumber(evaluationResult: EvaluationResult): ?React.Element<any> {
   if (value == null) {
     return null;
   }
-  return type === 'number' || !isNaN(Number(value))
-    ? <span className={ValueComponentClassNames.number}>
-        {String(value)}
-      </span>
-    : null;
+  return type === 'number' || !isNaN(Number(value)) ? (
+    <span className={ValueComponentClassNames.number}>{String(value)}</span>
+  ) : null;
 }
 
 function renderBoolean(
@@ -68,11 +64,9 @@ function renderBoolean(
   if (value == null) {
     return null;
   }
-  return type === 'boolean' || booleanRegex.test(value)
-    ? <span className={ValueComponentClassNames.boolean}>
-        {String(value)}
-      </span>
-    : null;
+  return type === 'boolean' || booleanRegex.test(value) ? (
+    <span className={ValueComponentClassNames.boolean}>{String(value)}</span>
+  ) : null;
 }
 
 function renderDefault(evaluationResult: EvaluationResult): ?string {
@@ -103,18 +97,12 @@ export default class SimpleValueComponent extends React.PureComponent<Props> {
       displayValue = evaluationResult.description || '(N/A)';
     }
     if (expression == null) {
-      return (
-        <span>
-          {displayValue}
-        </span>
-      );
+      return <span>{displayValue}</span>;
     }
     // TODO @jxg use a text editor to apply proper syntax highlighting for expressions
     // (t11408154)
     const renderedExpression = (
-      <span className={ValueComponentClassNames.identifier}>
-        {expression}
-      </span>
+      <span className={ValueComponentClassNames.identifier}>{expression}</span>
     );
     return (
       <span>

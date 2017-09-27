@@ -39,7 +39,10 @@ export class Adb extends DebugBridge {
       'list',
       'packages',
     ).toPromise();
-    return stdout.trim().split(/\s+/).map(s => s.substring(prefix.length));
+    return stdout
+      .trim()
+      .split(/\s+/)
+      .map(s => s.substring(prefix.length));
   }
 
   async isPackageInstalled(pkg: string): Promise<boolean> {

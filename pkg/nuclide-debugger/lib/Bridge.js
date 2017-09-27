@@ -295,7 +295,10 @@ export default class Bridge {
   _updateDebuggerSettings(): void {
     this._commandDispatcher.send(
       'UpdateSettings',
-      this._debuggerModel.getStore().getSettings().getSerializedData(),
+      this._debuggerModel
+        .getStore()
+        .getSettings()
+        .getSerializedData(),
     );
   }
 

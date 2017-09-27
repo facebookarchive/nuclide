@@ -103,11 +103,7 @@ export class ProcessTable extends React.Component<Props, State> {
 
     let processComponent;
     if (this.props.processes.isError) {
-      processComponent = (
-        <div>
-          {this.props.processes.error.toString()}
-        </div>
-      );
+      processComponent = <div>{this.props.processes.error.toString()}</div>;
     } else if (this.props.processes.isPending) {
       processComponent = (
         <LoadingSpinner size="EXTRA_SMALL" key="infoTableLoading" />

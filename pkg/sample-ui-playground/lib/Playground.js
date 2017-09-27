@@ -145,9 +145,7 @@ export class Playground extends React.Component<any, State> {
         ...examples.map((example, i) => {
           const {title, component: Component} = example;
           return [
-            <h2 key={`${index}:${i}t`}>
-              {title}
-            </h2>,
+            <h2 key={`${index}:${i}t`}>{title}</h2>,
             <div
               key={`${index}:${i}c`}
               className="nuclide-ui-playground-example">
@@ -156,11 +154,7 @@ export class Playground extends React.Component<any, State> {
           ];
         }),
       );
-      renderedDescription = (
-        <p>
-          {description}
-        </p>
-      );
+      renderedDescription = <p>{description}</p>;
     }
     const h1ClassName = classnames({
       'nuclide-ui-playground-section-headline-collapsed': isCollapsed,

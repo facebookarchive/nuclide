@@ -209,11 +209,12 @@ export default class ThreadStore {
   }
 
   _createAlertComponentClass(message: string): React.ComponentType<any> {
-    return () =>
+    return () => (
       <div className="nuclide-debugger-thread-switch-alert">
         <Icon icon="alert" />
         {message}
-      </div>;
+      </div>
+    );
   }
 
   dispose(): void {

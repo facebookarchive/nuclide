@@ -41,11 +41,7 @@ function StatusBarTileComponent(props: Props) {
   }
 
   if (props.onDidClick != null) {
-    element = (
-      <a onClick={props.onDidClick}>
-        {element}
-      </a>
-    );
+    element = <a onClick={props.onDidClick}>{element}</a>;
   }
 
   return element;

@@ -552,14 +552,14 @@ class DatatipManagerForEditor {
 
     const renderedProviders = (
       <div>
-        {datatipsAndProviders.map(({datatip, provider}) =>
+        {datatipsAndProviders.map(({datatip, provider}) => (
           <PinnableDatatip
             datatip={datatip}
             editor={this._editor}
             key={getProviderName(provider)}
             onPinClick={this._handlePinClicked}
-          />,
-        )}
+          />
+        ))}
       </div>
     );
 

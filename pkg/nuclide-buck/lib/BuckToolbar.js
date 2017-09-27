@@ -142,16 +142,16 @@ export default class BuckToolbar extends React.Component<Props, State> {
           onClick={() => this._showSettings()}
         />
         {widgets}
-        {this.state.settingsVisible
-          ? <BuckToolbarSettings
-              buckRoot={buckRoot}
-              buckversionFileContents={buckversionFileContents}
-              settings={taskSettings}
-              platformProviderSettings={extraSettings}
-              onDismiss={() => this._hideSettings()}
-              onSave={settings => this._saveSettings(settings)}
-            />
-          : null}
+        {this.state.settingsVisible ? (
+          <BuckToolbarSettings
+            buckRoot={buckRoot}
+            buckversionFileContents={buckversionFileContents}
+            settings={taskSettings}
+            platformProviderSettings={extraSettings}
+            onDismiss={() => this._hideSettings()}
+            onSave={settings => this._saveSettings(settings)}
+          />
+        ) : null}
       </div>
     );
   }

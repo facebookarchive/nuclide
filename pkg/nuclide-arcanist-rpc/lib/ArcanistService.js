@@ -91,7 +91,12 @@ export async function getArcConfigKey(
   key: string,
 ): Promise<?string> {
   return _callArcGetConfig(fileName, key)
-    .map(s => s.split(':')[1].trim().replace(/"/g, ''))
+    .map(s =>
+      s
+        .split(':')[1]
+        .trim()
+        .replace(/"/g, ''),
+    )
     .toPromise();
 }
 

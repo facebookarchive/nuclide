@@ -29,12 +29,12 @@ class ModalExample extends React.Component<void, {isModalShown: boolean}> {
 
   render(): React.Node {
     const {isModalShown} = this.state;
-    const modal = isModalShown
-      ? <Modal onDismiss={this._hideModal}>
-          <div>I'm a modal. You can add any content you like.</div>
-          <Button onClick={this._hideModal}>hide modal</Button>
-        </Modal>
-      : null;
+    const modal = isModalShown ? (
+      <Modal onDismiss={this._hideModal}>
+        <div>I'm a modal. You can add any content you like.</div>
+        <Button onClick={this._hideModal}>hide modal</Button>
+      </Modal>
+    ) : null;
     return (
       <div>
         <Button onClick={this._showModal}>show modal</Button>

@@ -141,19 +141,19 @@ class OutlineViewComponent extends React.PureComponent<
           </div>
         );
       case 'no-provider':
-        return outline.grammar === 'Null Grammar'
-          ? <EmptyState
-              title="No outline available"
-              message="The current file doesn't have an associated grammar. You may want to save it."
-            />
-          : <EmptyState
-              title="No outline available"
-              message={
-                'Outline view does not currently support ' +
-                outline.grammar +
-                '.'
-              }
-            />;
+        return outline.grammar === 'Null Grammar' ? (
+          <EmptyState
+            title="No outline available"
+            message="The current file doesn't have an associated grammar. You may want to save it."
+          />
+        ) : (
+          <EmptyState
+            title="No outline available"
+            message={
+              'Outline view does not currently support ' + outline.grammar + '.'
+            }
+          />
+        );
       case 'provider-no-outline':
         return (
           <EmptyState
@@ -197,15 +197,15 @@ class OutlineViewCore extends React.PureComponent<
 
     return (
       <div className="outline-view-core">
-        {searchEnabled
-          ? <OutlineViewSearchComponent
-              outlineTrees={outline.outlineTrees}
-              editor={outline.editor}
-              updateSearchResults={searchResults => {
-                this.setState({searchResults});
-              }}
-            />
-          : null}
+        {searchEnabled ? (
+          <OutlineViewSearchComponent
+            outlineTrees={outline.outlineTrees}
+            editor={outline.editor}
+            updateSearchResults={searchResults => {
+              this.setState({searchResults});
+            }}
+          />
+        ) : null}
         <div className="outline-view-trees-scroller">
           <div className="outline-view-trees">
             {renderTrees(
@@ -343,11 +343,7 @@ function renderTextToken(
 }
 
 function renderSubsequence(seq: string, props: Object): React.Element<any> {
-  return (
-    <span {...props}>
-      {seq}
-    </span>
-  );
+  return <span {...props}>{seq}</span>;
 }
 
 function renderUnmatchedSubsequence(
@@ -385,14 +381,14 @@ function renderTrees(
       }}>
       {outlines.map((outline, index) => {
         const result = searchResults.get(outline);
-        return !result || result.visible
-          ? <OutlineTree
-              editor={editor}
-              outline={outline}
-              key={index}
-              searchResults={searchResults}
-            />
-          : null;
+        return !result || result.visible ? (
+          <OutlineTree
+            editor={editor}
+            outline={outline}
+            key={index}
+            searchResults={searchResults}
+          />
+        ) : null;
       })}
     </ul>
   );

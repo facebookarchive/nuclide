@@ -44,12 +44,13 @@ type State = {
 type ColumnName = $Keys<ThreadItem>; // & 'isSelected';
 type CellData = ThreadItem & {isSelected: boolean};
 
-const activeThreadIndicatorComponent = (props: {cellData: boolean}) =>
+const activeThreadIndicatorComponent = (props: {cellData: boolean}) => (
   <div className="nuclide-debugger-thread-list-item-current-indicator">
-    {props.cellData
-      ? <Icon icon="arrow-right" title="Selected Thread" />
-      : null}
-  </div>;
+    {props.cellData ? (
+      <Icon icon="arrow-right" title="Selected Thread" />
+    ) : null}
+  </div>
+);
 
 export class DebuggerThreadsComponent extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
@@ -179,12 +180,13 @@ export class DebuggerThreadsComponent extends React.Component<Props, State> {
         ? defaultColumns
         : [activeThreadCol, ...this.props.customThreadColumns];
     const threadName = this.props.threadName.toLowerCase();
-    const emptyComponent = () =>
+    const emptyComponent = () => (
       <div className="nuclide-debugger-thread-list-empty">
         {threadList == null
           ? `(${threadName} unavailable)`
           : `no ${threadName} to display`}
-      </div>;
+      </div>
+    );
     const rows =
       threadList == null
         ? []

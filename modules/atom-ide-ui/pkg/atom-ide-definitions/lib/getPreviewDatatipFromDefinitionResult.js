@@ -44,10 +44,11 @@ export default (async function getPreviewDatatipFromDefinition(
     //  image contents, otherwise use markedStrings
     if (definitionPreview.mime.startsWith('image/')) {
       return {
-        component: () =>
+        component: () => (
           <img
             src={`data:${definitionPreview.mime};${definitionPreview.encoding},${definitionPreview.contents}`}
-          />,
+          />
+        ),
         range,
       };
     }

@@ -144,9 +144,7 @@ class SuggestionList extends React.Component<Props, State> {
           onMouseDown={this._boundConfirm}
           onMouseEnter={this._setSelectedIndex.bind(this, index)}>
           {item.title}
-          <span className="right-label">
-            {item.rightLabel}
-          </span>
+          <span className="right-label">{item.rightLabel}</span>
         </li>
       );
     });

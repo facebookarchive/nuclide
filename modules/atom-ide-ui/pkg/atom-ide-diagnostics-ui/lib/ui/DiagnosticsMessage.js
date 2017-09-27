@@ -50,29 +50,25 @@ function diagnosticHeader(props: DiagnosticsMessageProps) {
   }
   return (
     <div className="diagnostics-popup-header">
-      <ButtonGroup>
-        {fixButton}
-      </ButtonGroup>
-      <span className={providerClassName}>
-        {message.providerName}
-      </span>
+      <ButtonGroup>{fixButton}</ButtonGroup>
+      <span className={providerClassName}>{message.providerName}</span>
     </div>
   );
 }
 
 function traceElements(props: DiagnosticsMessageProps) {
   const {message, goToLocation} = props;
-  return message.trace && message.trace.length
-    ? <div className="diagnostics-popup-trace">
-        {message.trace.map((traceItem, i) =>
-          <DiagnosticsTraceItem
-            key={i}
-            trace={traceItem}
-            goToLocation={goToLocation}
-          />,
-        )}
-      </div>
-    : null;
+  return message.trace && message.trace.length ? (
+    <div className="diagnostics-popup-trace">
+      {message.trace.map((traceItem, i) => (
+        <DiagnosticsTraceItem
+          key={i}
+          trace={traceItem}
+          goToLocation={goToLocation}
+        />
+      ))}
+    </div>
+  ) : null;
 }
 
 export const DiagnosticsMessage = (props: DiagnosticsMessageProps) => {

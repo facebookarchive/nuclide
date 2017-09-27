@@ -57,18 +57,18 @@ export class DebuggerCallstackComponent extends React.Component<
   }): React.Element<any> => {
     const missingSourceItem =
       this.props.callstackStore.getDebuggerStore().getCanSetSourcePaths() &&
-      !props.data.hasSource
-        ? <span
-            className={classnames('text-error', 'icon', 'icon-alert')}
-            onClick={() => this.props.actions.configureSourcePaths()}
-            ref={addTooltip({
-              title:
-                'Source file not found! Some debugger features will not work without source.' +
-                '<br/><br/>' +
-                'Click to configure source file paths...',
-            })}
-          />
-        : null;
+      !props.data.hasSource ? (
+        <span
+          className={classnames('text-error', 'icon', 'icon-alert')}
+          onClick={() => this.props.actions.configureSourcePaths()}
+          ref={addTooltip({
+            title:
+              'Source file not found! Some debugger features will not work without source.' +
+              '<br/><br/>' +
+              'Click to configure source file paths...',
+          })}
+        />
+      ) : null;
 
     // Callstack paths may have a format like file://foo/bar, or
     // lldb://asm/0x1234. These are not valid paths that can be used to
@@ -155,10 +155,11 @@ export class DebuggerCallstackComponent extends React.Component<
       },
     ];
 
-    const emptyComponent = () =>
+    const emptyComponent = () => (
       <div className="nuclide-debugger-callstack-list-empty">
         callstack unavailable
-      </div>;
+      </div>
+    );
 
     return (
       <Table

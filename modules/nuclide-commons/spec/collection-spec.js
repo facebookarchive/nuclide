@@ -293,7 +293,10 @@ describe('MultiMap', () => {
   });
 
   it('properly adds multiple bindings', () => {
-    multimap.add(1, 2).add(1, 3).add(10, 11);
+    multimap
+      .add(1, 2)
+      .add(1, 3)
+      .add(10, 11);
     expect(multimap.size).toEqual(3);
     expect(multimap.get(1)).toEqual(new Set([2, 3]));
     expect(multimap.get(10)).toEqual(new Set([11]));
@@ -306,7 +309,10 @@ describe('MultiMap', () => {
   });
 
   it('properly deletes a single binding', () => {
-    multimap.add(1, 2).add(1, 3).add(10, 11);
+    multimap
+      .add(1, 2)
+      .add(1, 3)
+      .add(10, 11);
     expect(multimap.delete(1, 2)).toBe(true);
     expect(multimap.get(1)).toEqual(new Set([3]));
     expect(multimap.get(10)).toEqual(new Set([11]));
@@ -325,7 +331,10 @@ describe('MultiMap', () => {
   });
 
   it('properly clears', () => {
-    multimap.add(1, 2).add(1, 3).add(10, 11);
+    multimap
+      .add(1, 2)
+      .add(1, 3)
+      .add(10, 11);
     multimap.clear();
     expect(multimap.size).toEqual(0);
     expect(multimap.get(1)).toEqual(new Set());

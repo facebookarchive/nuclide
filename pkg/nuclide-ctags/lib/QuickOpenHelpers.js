@@ -65,13 +65,9 @@ export default class QuickOpenHelpers {
     return (
       <div title={kind}>
         <span className={`file icon ${icon}`}>
-          <code>
-            {item.name}
-          </code>
+          <code>{item.name}</code>
         </span>
-        <span className="omnisearch-symbol-result-filename">
-          {path}
-        </span>
+        <span className="omnisearch-symbol-result-filename">{path}</span>
       </div>
     );
   }

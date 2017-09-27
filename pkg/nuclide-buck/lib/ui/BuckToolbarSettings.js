@@ -57,9 +57,7 @@ export default class BuckToolbarSettings extends React.Component<Props, State> {
           <div className="block">
             <label>Current Buck root:</label>
             <p>
-              <code>
-                {this.props.buckRoot}
-              </code>
+              <code>{this.props.buckRoot}</code>
             </p>
             <div>
               <label>Buck version:</label>

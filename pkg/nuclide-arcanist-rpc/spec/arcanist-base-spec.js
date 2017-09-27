@@ -166,7 +166,10 @@ describe('nuclide-arcanist-rpc', () => {
     it('should call `arc lint` with the paths', () => {
       waitsForPromise(async () => {
         const filePath = 'path1';
-        await arcanist.findDiagnostics(filePath, []).refCount().toPromise();
+        await arcanist
+          .findDiagnostics(filePath, [])
+          .refCount()
+          .toPromise();
         // Expect arc lint to be called once
         expect(execArgs.length).toBe(1);
         expect(execArgs[0].indexOf(filePath)).toBeGreaterThan(-1);

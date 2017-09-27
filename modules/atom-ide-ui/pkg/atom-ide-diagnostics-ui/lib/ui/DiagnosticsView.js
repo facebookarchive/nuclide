@@ -95,23 +95,21 @@ export default class DiagnosticsView extends React.Component<Props> {
         }}>
         <Toolbar location="top">
           <ToolbarLeft>
-            <span className={errorSpanClassName}>
-              Errors: {errorCount}
-            </span>
+            <span className={errorSpanClassName}>Errors: {errorCount}</span>
             <span className={warningSpanClassName}>
               Warnings: {warningCount}
             </span>
           </ToolbarLeft>
           <ToolbarRight>
-            {isExpandable
-              ? <span className="inline-block">
-                  <Checkbox
-                    checked={this.props.showTraces}
-                    label="Full description"
-                    onChange={this._onShowTracesChange}
-                  />
-                </span>
-              : null}
+            {isExpandable ? (
+              <span className="inline-block">
+                <Checkbox
+                  checked={this.props.showTraces}
+                  label="Full description"
+                  onChange={this._onShowTracesChange}
+                />
+              </span>
+            ) : null}
             <span className="inline-block">
               <Checkbox
                 checked={this.props.filterByActiveTextEditor}

@@ -85,7 +85,10 @@ describe('Cache', () => {
       const cache: Cache<string, string> = new Cache(factory);
 
       cache.get(key1);
-      const values = cache.observeValues().toArray().toPromise();
+      const values = cache
+        .observeValues()
+        .toArray()
+        .toPromise();
       cache.get(key2);
       cache.dispose();
       expect(await values).toEqual([key1, key2]);
@@ -98,7 +101,10 @@ describe('Cache', () => {
       const cache: Cache<string, string> = new Cache(factory);
 
       cache.get(key1);
-      const values = cache.observeKeys().toArray().toPromise();
+      const values = cache
+        .observeKeys()
+        .toArray()
+        .toPromise();
       cache.get(key2);
       cache.dispose();
       expect(await values).toEqual([key1, key2]);

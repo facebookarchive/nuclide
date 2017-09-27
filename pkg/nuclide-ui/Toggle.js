@@ -46,11 +46,9 @@ export class Toggle extends React.Component<Props> {
   render(): React.Node {
     const {className, disabled, label, onClick, toggled} = this.props;
     const text =
-      label === ''
-        ? null
-        : <span className="nuclide-ui-toggle-label-text">
-            {' '}{label}
-          </span>;
+      label === '' ? null : (
+        <span className="nuclide-ui-toggle-label-text"> {label}</span>
+      );
     return (
       <label
         className={classnames(className, 'nuclide-ui-toggle-label', {

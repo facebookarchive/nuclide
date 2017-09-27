@@ -233,7 +233,9 @@ describe('new DOMObserverObservable', () => {
       class MockDOMObserverEmitsNonStandard extends MockDOMObserver {
         observe(...args: Array<any>) {
           super.observe(...args);
-          Observable.interval(1).take(2).subscribe(this._callback);
+          Observable.interval(1)
+            .take(2)
+            .subscribe(this._callback);
         }
       }
 

@@ -123,7 +123,10 @@ describe('ActiveEditorRegistry', () => {
           'result',
         ]);
 
-        const fullEvents = await events.take(4).toArray().toPromise();
+        const fullEvents = await events
+          .take(4)
+          .toArray()
+          .toPromise();
         expect(fullEvents[1]).toEqual({
           kind: 'pane-change',
           editor: editor1,
@@ -190,7 +193,10 @@ describe('ActiveEditorRegistry', () => {
             'result',
           ]);
 
-          const fullEvents = await events.take(3).toArray().toPromise();
+          const fullEvents = await events
+            .take(3)
+            .toArray()
+            .toPromise();
           expect(fullEvents[2]).toEqual({
             kind: 'save',
             editor: editor1,

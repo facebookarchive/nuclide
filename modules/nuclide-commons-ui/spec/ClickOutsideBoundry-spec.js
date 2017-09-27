@@ -34,11 +34,11 @@ class ClickAway extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
   };
 
   render() {
-    return this.state.visible
-      ? <span {...this.props} onClick={this.handleClick}>
-          Click to dismiss
-        </span>
-      : null;
+    return this.state.visible ? (
+      <span {...this.props} onClick={this.handleClick}>
+        Click to dismiss
+      </span>
+    ) : null;
   }
 }
 

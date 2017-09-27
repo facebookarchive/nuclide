@@ -107,7 +107,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup>
-              {filterTypes.map(type =>
+              {filterTypes.map(type => (
                 <FilterButton
                   key={type}
                   type={type}
@@ -115,8 +115,8 @@ export default class ExperimentalDiagnosticsView extends React.Component<
                   onClick={() => {
                     this.props.onTypeFilterChange(type);
                   }}
-                />,
-              )}
+                />
+              ))}
             </ButtonGroup>
           </ToolbarLeft>
           <ToolbarRight>

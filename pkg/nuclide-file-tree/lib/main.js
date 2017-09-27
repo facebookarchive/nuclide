@@ -186,11 +186,15 @@ class Activation {
     });
     // $FlowIgnore: Undocumented API
     atom.contextMenu.showForEvent = function(event) {
-      // $FlowFixMe: Add repeat() to type def
-      const sub = nextAnimationFrame.repeat(3).last().subscribe(() => {
-        showForEvent.call(atom.contextMenu, event);
-        disposables.remove(sub);
-      });
+      const sub = nextAnimationFrame
+        // $FlowFixMe: Add repeat() to type def
+        .repeat(3)
+        // $FlowFixMe: Add last() to type def
+        .last()
+        .subscribe(() => {
+          showForEvent.call(atom.contextMenu, event);
+          disposables.remove(sub);
+        });
       disposables.add(sub);
     };
 

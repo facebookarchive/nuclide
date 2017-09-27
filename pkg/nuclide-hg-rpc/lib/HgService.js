@@ -636,7 +636,9 @@ export class HgService {
   }
 
   async _fetchMergeConflicts(): Promise<?MergeConflicts> {
-    return this.fetchMergeConflicts().refCount().toPromise();
+    return this.fetchMergeConflicts()
+      .refCount()
+      .toPromise();
   }
 
   _emitHgRepoStateChanged(): void {

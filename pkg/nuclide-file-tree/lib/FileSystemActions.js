@@ -306,9 +306,11 @@ class FileSystemActions {
     openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: nuclideUri.basename(nodePath),
-      message: node.isContainer
-        ? <span>Enter the new path for the directory.</span>
-        : <span>Enter the new path for the file.</span>,
+      message: node.isContainer ? (
+        <span>Enter the new path for the directory.</span>
+      ) : (
+        <span>Enter the new path for the file.</span>
+      ),
       onConfirm: (newBasename: string, options: Object) => {
         this._onConfirmRename(node, nodePath, newBasename).catch(error => {
           atom.notifications.addError(

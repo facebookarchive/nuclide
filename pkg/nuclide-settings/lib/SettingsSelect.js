@@ -50,12 +50,8 @@ export default class SettingsSelect extends React.Component<Props> {
     return (
       <div>
         <label className="control-label">
-          <div className="setting-title">
-            {title}
-          </div>
-          <div className="setting-description">
-            {description}
-          </div>
+          <div className="setting-title">{title}</div>
+          <div className="setting-description">{description}</div>
         </label>
         <select
           className="form-control"

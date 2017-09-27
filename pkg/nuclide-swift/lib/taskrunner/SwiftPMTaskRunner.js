@@ -99,8 +99,9 @@ export class SwiftPMTaskRunner {
   }
 
   getIcon(): React.ComponentType<any> {
-    return () =>
-      <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />;
+    return () => (
+      <Icon icon="nuclicon-swift" className="nuclide-swift-task-runner-icon" />
+    );
   }
 
   runTask(taskName: string): Task {

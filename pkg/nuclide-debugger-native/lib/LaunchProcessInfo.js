@@ -73,7 +73,10 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       rpcService.getOutputWindowObservable().refCount(),
     );
     try {
-      await rpcService.launch(this._launchTargetInfo).refCount().toPromise();
+      await rpcService
+        .launch(this._launchTargetInfo)
+        .refCount()
+        .toPromise();
       // Start websocket server with Chrome after launch completed.
       invariant(outputDisposable);
       debugSession = new DebuggerInstance(

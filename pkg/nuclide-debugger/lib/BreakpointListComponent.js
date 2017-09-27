@@ -115,31 +115,31 @@ export class BreakpointListComponent extends React.Component<Props, State> {
 
         const conditionElement =
           this._debuggerSupportsConditionalBp(breakpoint) &&
-          breakpoint.condition !== ''
-            ? <div
-                className="nuclide-debugger-breakpoint-condition"
-                title={`Breakpoint condition: ${breakpoint.condition}`}
-                data-path={path}
-                data-line={line}
-                onClick={event => {
-                  atom.commands.dispatch(
-                    event.target,
-                    'nuclide-debugger:edit-breakpoint',
-                  );
-                }}>
-                Condition: {breakpoint.condition}
-              </div>
-            : null;
+          breakpoint.condition !== '' ? (
+            <div
+              className="nuclide-debugger-breakpoint-condition"
+              title={`Breakpoint condition: ${breakpoint.condition}`}
+              data-path={path}
+              data-line={line}
+              onClick={event => {
+                atom.commands.dispatch(
+                  event.target,
+                  'nuclide-debugger:edit-breakpoint',
+                );
+              }}>
+              Condition: {breakpoint.condition}
+            </div>
+          ) : null;
 
         const {hitCount} = breakpoint;
         const hitCountElement =
-          hitCount != null && hitCount >= 0
-            ? <div
-                className="nuclide-debugger-breakpoint-hitcount"
-                title={`Breakpoint hit count: ${hitCount}`}>
-                Hit count: {hitCount}
-              </div>
-            : null;
+          hitCount != null && hitCount >= 0 ? (
+            <div
+              className="nuclide-debugger-breakpoint-hitcount"
+              title={`Breakpoint hit count: ${hitCount}`}>
+              Hit count: {hitCount}
+            </div>
+          ) : null;
         const content = (
           <div className="inline-block">
             <div

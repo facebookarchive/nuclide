@@ -107,11 +107,7 @@ type Props = {
  */
 class ModalContainer extends React.Component<Props> {
   render(): React.Node {
-    return (
-      <div tabIndex="-1">
-        {this.props.children}
-      </div>
-    );
+    return <div tabIndex="-1">{this.props.children}</div>;
   }
 
   componentDidMount(): void {

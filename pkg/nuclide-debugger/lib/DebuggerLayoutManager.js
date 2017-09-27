@@ -250,12 +250,18 @@ export class DebuggerLayoutManager {
         isLifetimeView: false,
         title: () => {
           return String(
-            this._model.getStore().getSettings().get('threadsComponentTitle'),
+            this._model
+              .getStore()
+              .getSettings()
+              .get('threadsComponentTitle'),
           );
         },
         isEnabled: () => {
           return Boolean(
-            this._model.getStore().getSettings().get('SupportThreadsWindow'),
+            this._model
+              .getStore()
+              .getSettings()
+              .get('SupportThreadsWindow'),
           );
         },
         createView: () => <ThreadsView model={this._model} />,

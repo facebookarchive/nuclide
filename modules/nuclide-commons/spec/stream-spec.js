@@ -20,7 +20,9 @@ describe('commons-node/stream', () => {
     waitsForPromise(async () => {
       const input = ['foo\nbar', '\n', '\nba', 'z', '\nblar'];
       const stream = new Stream.PassThrough();
-      const promise = observeStream(stream).toArray().toPromise();
+      const promise = observeStream(stream)
+        .toArray()
+        .toPromise();
       input.forEach(value => {
         stream.write(value, 'utf8');
       });

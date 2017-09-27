@@ -125,9 +125,7 @@ export class MultiSelectList extends React.Component<Props, State> {
   render(): React.Node {
     return (
       <div className="nuclide-multi-select-list select-list block" tabIndex="0">
-        <ol className="list-group mark-active">
-          {this._renderOptions()}
-        </ol>
+        <ol className="list-group mark-active">{this._renderOptions()}</ol>
       </div>
     );
   }
@@ -171,9 +169,5 @@ export type OptionComponentProps = {
 };
 
 function DefaultOptionComponent(props: OptionComponentProps) {
-  return (
-    <span>
-      {props.option.label}
-    </span>
-  );
+  return <span>{props.option.label}</span>;
 }

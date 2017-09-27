@@ -344,13 +344,16 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             );
             return ensureInvalidations(
               this._logger,
-              language.observeDiagnostics().refCount().catch(error => {
-                this._logger.error(
-                  `Error: observeDiagnostics, ${this._analyticsEventName}`,
-                  error,
-                );
-                return Observable.empty();
-              }),
+              language
+                .observeDiagnostics()
+                .refCount()
+                .catch(error => {
+                  this._logger.error(
+                    `Error: observeDiagnostics, ${this._analyticsEventName}`,
+                    error,
+                  );
+                  return Observable.empty();
+                }),
             );
           })
           .map((updates: Array<FileDiagnosticMessages>) => {

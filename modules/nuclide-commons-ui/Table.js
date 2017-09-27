@@ -27,8 +27,9 @@ type SelectionEvent = SyntheticEvent<*> | Event;
 
 const DEFAULT_MIN_COLUMN_WIDTH = 40;
 
-const DefaultEmptyComponent = () =>
-  <div className="nuclide-ui-table-empty-message">Empty table</div>;
+const DefaultEmptyComponent = () => (
+  <div className="nuclide-ui-table-empty-message">Empty table</div>
+);
 
 export type Column<T: Object> = {
   title: string,
@@ -380,9 +381,11 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       }
       if (this.state.usingKeyboard) {
         this._mouseMoveDisposable = new UniversalDisposable(
-          Observable.fromEvent(document, 'mousemove').take(1).subscribe(() => {
-            this.setState({usingKeyboard: false});
-          }),
+          Observable.fromEvent(document, 'mousemove')
+            .take(1)
+            .subscribe(() => {
+              this.setState({usingKeyboard: false});
+            }),
         );
       }
     }
@@ -460,11 +463,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   }
 
   render(): React.Node {
-    return (
-      <div className={this.props.className}>
-        {this._renderContents()}
-      </div>
-    );
+    return <div className={this.props.className}>{this._renderContents()}</div>;
   }
 
   _renderContents(): React.Node {
@@ -487,70 +486,72 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       sortDescending,
     } = this.props;
     const header =
-      headerTitle != null
-        ? <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
-            {headerTitle}
-          </div>
-        : columns.map((column, i) => {
-            const {title, key, shouldRightAlign, cellClassName} = column;
-            const leftColumnKey = column.key;
-            const rightColumnKey = idx(columns[i + 1], _ => _.key);
-            let resizer;
-            if (leftColumnKey != null && rightColumnKey != null) {
-              resizer = (
-                <div
-                  className="nuclide-ui-table-header-resize-handle"
-                  onMouseDown={event => {
-                    this._handleResizerMouseDown(event, {
-                      leftColumnKey,
-                      rightColumnKey,
-                    });
-                  }}
-                  onClick={(e: SyntheticMouseEvent<>) => {
-                    // Prevent sortable column header click event from firing.
-                    e.stopPropagation();
-                  }}
-                />
+      headerTitle != null ? (
+        <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
+          {headerTitle}
+        </div>
+      ) : (
+        columns.map((column, i) => {
+          const {title, key, shouldRightAlign, cellClassName} = column;
+          const leftColumnKey = column.key;
+          const rightColumnKey = idx(columns[i + 1], _ => _.key);
+          let resizer;
+          if (leftColumnKey != null && rightColumnKey != null) {
+            resizer = (
+              <div
+                className="nuclide-ui-table-header-resize-handle"
+                onMouseDown={event => {
+                  this._handleResizerMouseDown(event, {
+                    leftColumnKey,
+                    rightColumnKey,
+                  });
+                }}
+                onClick={(e: SyntheticMouseEvent<>) => {
+                  // Prevent sortable column header click event from firing.
+                  e.stopPropagation();
+                }}
+              />
+            );
+          }
+          const width = columnWidths[key];
+          const optionalHeaderCellProps = {};
+          if (width != null) {
+            optionalHeaderCellProps.style = {width: `${width * 100}%`};
+          }
+          let sortIndicator;
+          let titleOverlay = title;
+          if (sortable) {
+            optionalHeaderCellProps.onClick = () => {
+              this._handleSortByColumn(key);
+            };
+            titleOverlay += ' – click to sort';
+            if (sortedColumn === key) {
+              sortIndicator = (
+                <span className="nuclide-ui-table-sort-indicator">
+                  <Icon
+                    icon={sortDescending ? 'triangle-down' : 'triangle-up'}
+                  />
+                </span>
               );
             }
-            const width = columnWidths[key];
-            const optionalHeaderCellProps = {};
-            if (width != null) {
-              optionalHeaderCellProps.style = {width: `${width * 100}%`};
-            }
-            let sortIndicator;
-            let titleOverlay = title;
-            if (sortable) {
-              optionalHeaderCellProps.onClick = () => {
-                this._handleSortByColumn(key);
-              };
-              titleOverlay += ' – click to sort';
-              if (sortedColumn === key) {
-                sortIndicator = (
-                  <span className="nuclide-ui-table-sort-indicator">
-                    <Icon
-                      icon={sortDescending ? 'triangle-down' : 'triangle-up'}
-                    />
-                  </span>
-                );
-              }
-            }
-            return (
-              <div
-                className={classnames(cellClassName, {
-                  'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
-                  'nuclide-ui-table-header-cell': true,
-                  'nuclide-ui-table-header-cell-sortable': sortable,
-                })}
-                title={titleOverlay}
-                key={key}
-                {...optionalHeaderCellProps}>
-                {title}
-                {sortIndicator}
-                {resizer}
-              </div>
-            );
-          });
+          }
+          return (
+            <div
+              className={classnames(cellClassName, {
+                'nuclide-ui-table-cell-text-align-right': shouldRightAlign,
+                'nuclide-ui-table-header-cell': true,
+                'nuclide-ui-table-header-cell-sortable': sortable,
+              })}
+              title={titleOverlay}
+              key={key}
+              {...optionalHeaderCellProps}>
+              {title}
+              {sortIndicator}
+              {resizer}
+            </div>
+          );
+        })
+      );
     let body = rows.map((row, i) => {
       const {className: rowClassName, data} = row;
       const renderedRow = columns.map((column, j) => {
@@ -630,9 +631,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     );
     return [
       <div key="header" className="nuclide-ui-table" ref="table">
-        <div className="nuclide-ui-table-header">
-          {header}
-        </div>
+        <div className="nuclide-ui-table-header">{header}</div>
       </div>,
       <div key="body" style={scrollableBodyStyle}>
         <div
