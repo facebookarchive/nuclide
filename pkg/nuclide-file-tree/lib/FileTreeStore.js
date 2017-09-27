@@ -28,7 +28,7 @@ import {nextAnimationFrame} from 'nuclide-commons/observable';
 import {StatusCodeNumber} from '../../nuclide-hg-rpc/lib/hg-constants';
 import {getLogger} from 'log4js';
 import {WorkingSet} from '../../nuclide-working-sets-common';
-import {track} from '../../nuclide-analytics';
+import {HistogramTracker, track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {getGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
@@ -109,6 +109,8 @@ export type ReorderPreviewStatus = ?{
 };
 
 let instance: ?Object;
+
+const actionTrackers: Map<string, HistogramTracker> = new Map();
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -361,6 +363,9 @@ export class FileTreeStore {
   }
 
   _onDispatch(payload: FileTreeAction): void {
+    const {performance} = global;
+    const start = performance.now();
+
     switch (payload.actionType) {
       case ActionTypes.DELETE_SELECTED_NODES:
         this._deleteSelectedNodes();
@@ -524,7 +529,22 @@ export class FileTreeStore {
         break;
       case ActionTypes.SET_TARGET_NODE:
         this._setTargetNode(payload.rootKey, payload.nodeKey);
+        break;
     }
+
+    const end = performance.now();
+
+    let tracker = actionTrackers.get(payload.actionType);
+    if (tracker == null) {
+      tracker = new HistogramTracker(
+        `file-tree-action:${payload.actionType}`,
+        1000,
+        10,
+      );
+      actionTrackers.set(payload.actionType, tracker);
+    }
+
+    tracker.track(end - start);
   }
 
   /**
