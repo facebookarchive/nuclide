@@ -10,6 +10,8 @@
  */
 
 import type {FileTreeNode} from '../lib/FileTreeNode';
+// flowlint-next-line untyped-type-import:off
+import type Immutable from 'immutable';
 
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
@@ -33,6 +35,8 @@ const getActions = FileTreeActions.getInstance;
 
 type Props = {
   node: FileTreeNode,
+  selectedNodes: Immutable.Set<FileTreeNode>,
+  focusedNodes: Immutable.Set<FileTreeNode>,
   isPreview?: boolean,
 };
 type State = {
@@ -64,7 +68,9 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
     return (
       nextProps.node !== this.props.node ||
-      nextState.isLoading !== this.state.isLoading
+      nextState.isLoading !== this.state.isLoading ||
+      nextProps.selectedNodes !== this.props.selectedNodes ||
+      nextProps.focusedNodes !== this.props.focusedNodes
     );
   }
 
@@ -118,6 +124,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
 
   render(): React.Node {
     const node = this.props.node;
+    const isSelected = this.props.selectedNodes.has(node);
 
     const outerClassName = classnames('entry', {
       'file list-item': !node.isContainer,
@@ -126,7 +133,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       collapsed: !node.isLoading && !node.isExpanded,
       expanded: !node.isLoading && node.isExpanded,
       'project-root': node.isRoot,
-      selected: node.isSelected || node.isDragHovered,
+      selected: isSelected || node.isDragHovered,
       'nuclide-file-tree-softened': node.shouldBeSoftened,
       'nuclide-file-tree-root-being-reordered': node.isBeingReordered,
     });
@@ -202,7 +209,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
             data-name={node.name}
             data-path={node.uri}>
             {this._renderCheckbox()}
-            {filterName(node.name, node.highlightedText, node.isSelected)}
+            {filterName(node.name, node.highlightedText, isSelected)}
           </PathWithFileIcon>
           {this._renderConnectionTitle()}
         </div>
@@ -265,13 +272,14 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     }
 
     const node = this.props.node;
+    const isSelected = this.props.selectedNodes.has(node);
 
     const selectionMode = FileTreeHelpers.getSelectionMode(event);
-    if (selectionMode === 'multi-select' && !node.isSelected) {
+    if (selectionMode === 'multi-select' && !isSelected) {
       getActions().addSelectedNode(node.rootUri, node.uri);
     } else if (selectionMode === 'range-select') {
       getActions().rangeSelectToNode(node.rootUri, node.uri);
-    } else if (selectionMode === 'single-select' && !node.isSelected) {
+    } else if (selectionMode === 'single-select' && !isSelected) {
       getActions().setSelectedNode(node.rootUri, node.uri);
     }
   };
@@ -279,6 +287,8 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
   _onClick = (event: SyntheticMouseEvent<>) => {
     event.stopPropagation();
     const node = this.props.node;
+    const isSelected = this.props.selectedNodes.has(node);
+    const isFocused = this.props.focusedNodes.has(node);
 
     const deep = event.altKey;
     if (this._isToggleNodeExpand(event)) {
@@ -296,7 +306,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     }
 
     if (selectionMode === 'multi-select') {
-      if (node.isFocused) {
+      if (isFocused) {
         getActions().unselectNode(node.rootUri, node.uri);
         // If this node was just unselected, immediately return and skip
         // the statement below that sets this node to focused.
@@ -304,7 +314,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       }
     } else {
       if (node.isContainer) {
-        if (node.isFocused || node.conf.usePreviewTabs) {
+        if (isFocused || node.conf.usePreviewTabs) {
           this._toggleNodeExpanded(deep);
         }
       } else {
@@ -321,7 +331,7 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
       getActions().setSelectedNode(node.rootUri, node.uri);
     }
 
-    if (node.isSelected) {
+    if (isSelected) {
       getActions().setFocusedNode(node.rootUri, node.uri);
     }
   };

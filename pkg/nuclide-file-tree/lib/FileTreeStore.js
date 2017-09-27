@@ -17,6 +17,7 @@ import FileTreeDispatcher, {ActionTypes} from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeHgHelpers from './FileTreeHgHelpers';
 import {FileTreeNode} from './FileTreeNode';
+import {FileTreeSelectionManager} from './FileTreeSelectionManager';
 import Immutable from 'immutable';
 import {Emitter} from 'atom';
 import {HgStatusToFileChangeStatus} from '../../nuclide-vcs-base';
@@ -79,6 +80,7 @@ export type StoreConfigData = {
     NuclideUri,
     Immutable.Map<NuclideUri, FileChangeStatusValue>,
   >,
+  selectionManager: FileTreeSelectionManager,
 };
 
 export type NodeCheckedStatus = 'checked' | 'clear' | 'partial';
@@ -140,6 +142,9 @@ export class FileTreeStore {
   _extraProjectSelectionContent: Immutable.List<React.Element<any>>;
   _selectionRange: ?SelectionRange;
   _targetNodeKeys: ?TargetNodeKeys;
+  _trackedRootKey: ?NuclideUri;
+  _trackedNodeKey: ?NuclideUri;
+  selectionManager: FileTreeSelectionManager;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -169,8 +174,11 @@ export class FileTreeStore {
     this._autoExpandSingleChild = true;
     this._isLoadingMap = new Immutable.Map();
     this._repositories = new Immutable.Set();
+    this.selectionManager = new FileTreeSelectionManager(
+      this._emitChange.bind(this),
+    );
 
-    this._conf = DEFAULT_CONF;
+    this._conf = {...DEFAULT_CONF, selectionManager: this.selectionManager};
     this._filter = '';
     this._extraProjectSelectionContent = new Immutable.List();
     this.foldersExpanded = true;
@@ -197,7 +205,7 @@ export class FileTreeStore {
 
       // Grab the data of only the expanded portion of the tree.
       root.traverse(node => {
-        if (node.isSelected) {
+        if (node.isSelected()) {
           selectedKeys.push(node.uri);
         }
 
@@ -266,7 +274,6 @@ export class FileTreeStore {
           isExpanded,
           isSelected: rootSelectedKeys.indexOf(uri) >= 0,
           isLoading,
-          isTracked: false,
           children,
           isCwd: false,
           connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
@@ -671,7 +678,7 @@ export class FileTreeStore {
     this._updateRoots(root => {
       return root.updateConf().setRecursive(
         // Remove selection from hidden nodes under this root
-        node => (node.containsSelection && node.containsHidden ? null : node),
+        node => (node.containsHidden ? null : node),
         node => {
           if (node.shouldBeShown) {
             return node;
@@ -679,7 +686,7 @@ export class FileTreeStore {
 
           // The node is hidden - unselect all nodes under it if there are any
           return node.setRecursive(
-            subNode => (subNode.containsSelection ? null : subNode),
+            subNode => null,
             subNode => subNode.setIsSelected(false),
           );
         },
@@ -688,24 +695,11 @@ export class FileTreeStore {
   }
 
   getTrackedNode(): ?FileTreeNode {
-    // Locate the root containing the tracked node efficiently by using the child-derived
-    // containsTrackedNode property
-    const trackedRoot = this.roots.find(root => root.containsTrackedNode);
-    if (trackedRoot == null) {
+    if (this._trackedRootKey == null || this._trackedNodeKey == null) {
       return null;
     }
 
-    let trackedNode;
-    // Likewise, within the root use the property to efficiently find the needed node
-    trackedRoot.traverse(node => {
-      if (node.isTracked) {
-        trackedNode = node;
-      }
-
-      return trackedNode == null && node.containsTrackedNode;
-    });
-
-    return trackedNode;
+    return this.getNode(this._trackedRootKey, this._trackedNodeKey);
   }
 
   getRepositories(): Immutable.Set<atom$Repository> {
@@ -907,21 +901,8 @@ export class FileTreeStore {
     return this.promiseNodeChildKeys(rootKey, nodeKey);
   }
 
-  /**
-  * Uses the .containsSelection child-derived property to efficiently build the list of the
-  * currently selected nodes
-  */
   getSelectedNodes(): Immutable.List<FileTreeNode> {
-    const selectedNodes = [];
-    this.roots.forEach(root => {
-      root.traverse(node => {
-        if (node.isSelected) {
-          selectedNodes.push(node);
-        }
-        return node.containsSelection;
-      });
-    });
-    return new Immutable.List(selectedNodes);
+    return new Immutable.List(this.selectionManager.selectedNodes().values());
   }
 
   // Retrieves target node in an immutable list if it's set, or all selected
@@ -1533,7 +1514,7 @@ export class FileTreeStore {
   * Selects a single node and tracks it.
   */
   _setSelectedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._clearSelection(rootKey, nodeKey);
+    this._clearSelection();
     this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsSelected(true));
     this._setTrackedNode(rootKey, nodeKey);
     this._setSelectionRange(
@@ -1552,7 +1533,7 @@ export class FileTreeStore {
    * Selects and focuses a node in one pass.
    */
   _setSelectedAndFocusedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._clearSelection(rootKey, nodeKey);
+    this._clearSelection();
     this._updateNodeAtRoot(rootKey, nodeKey, node =>
       node.set({isSelected: true, isFocused: true}),
     );
@@ -1719,7 +1700,7 @@ export class FileTreeStore {
     const getNextNode = (cur: FileTreeNode) =>
       nextRangeIndex < rangeIndex ? cur.findPrevious() : cur.findNext();
     let probe = getNextNode(nextRangeNode);
-    while (probe != null && probe.isSelected) {
+    while (probe != null && probe.isSelected()) {
       nextRangeNode = probe;
       probe = getNextNode(nextRangeNode);
     }
@@ -1744,7 +1725,7 @@ export class FileTreeStore {
 
     if (isExpanding) {
       let nextNode = getNextNode(rangeNode);
-      while (nextNode != null && nextNode.isSelected) {
+      while (nextNode != null && nextNode.isSelected()) {
         nextNode = getNextNode(nextNode);
       }
       if (nextNode == null) {
@@ -1754,7 +1735,7 @@ export class FileTreeStore {
         n.set({isSelected: true, isFocused: true}),
       );
       let probe = getNextNode(nextNode);
-      while (probe != null && probe.isSelected) {
+      while (probe != null && probe.isSelected()) {
         nextNode = probe;
         probe = getNextNode(nextNode);
       }
@@ -1767,7 +1748,7 @@ export class FileTreeStore {
       while (
         nextNode != null &&
         nextNode !== anchorNode &&
-        nextNode.isSelected === false
+        nextNode.isSelected() === false
       ) {
         nextNode = getNextNode(nextNode);
       }
@@ -1905,17 +1886,9 @@ export class FileTreeStore {
 
   // Clear selections and focuses on all nodes except an optionally specified
   // current node.
-  _clearSelection(currRootKey?: NuclideUri, currNodeKey?: NuclideUri): void {
-    this._updateRoots(root => {
-      return root.setRecursive(
-        node => (node.containsSelection ? null : node),
-        node => {
-          return node.rootUri === currRootKey && node.uri === currNodeKey
-            ? node
-            : node.set({isSelected: false, isFocused: false});
-        },
-      );
-    });
+  _clearSelection(): void {
+    this.selectionManager.clearSelected();
+    this.selectionManager.clearFocused();
     this._clearSelectionRange();
   }
 
@@ -2041,21 +2014,19 @@ export class FileTreeStore {
   }
 
   _clearTrackedNode(): void {
-    this._updateRoots(root => {
-      if (!root.containsTrackedNode) {
-        return root;
-      }
-
-      return root.setRecursive(
-        node => (node.containsTrackedNode ? null : node),
-        node => node.setIsTracked(false),
-      );
-    });
+    if (this._trackedRootKey != null || this._trackedNodeKey != null) {
+      this._trackedRootKey = null;
+      this._trackedNodeKey = null;
+      this._emitChange();
+    }
   }
 
   _setTrackedNode(rootKey: NuclideUri, nodeKey: NuclideUri): void {
-    this._clearTrackedNode();
-    this._updateNodeAtRoot(rootKey, nodeKey, node => node.setIsTracked(true));
+    if (this._trackedRootKey !== rootKey || this._trackedNodeKey !== nodeKey) {
+      this._trackedRootKey = rootKey;
+      this._trackedNodeKey = nodeKey;
+      this._emitChange();
+    }
   }
 
   _setRepositories(repositories: Immutable.Set<atom$Repository>): void {
@@ -2193,8 +2164,12 @@ export class FileTreeStore {
     });
 
     // Reset data store.
-    this._conf = DEFAULT_CONF;
+    this._conf = {...DEFAULT_CONF, selectionManager: this.selectionManager};
     this._setRoots(new Immutable.OrderedMap());
+    this.selectionManager.clearSelected();
+    this.selectionManager.clearFocused();
+    this._trackedRootKey = null;
+    this._trackedNodeKey = null;
   }
 
   subscribe(listener: ChangeListener): IDisposable {

@@ -21,12 +21,14 @@ import Immutable from 'immutable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
+import {FileTreeSelectionManager} from '../lib/FileTreeSelectionManager';
 
 function renderEntryComponentIntoDocument(
   componentKlass: Object,
   props: Object = {},
   conf: Object = {},
 ): HTMLElement {
+  const selectionManager = new FileTreeSelectionManager(() => {});
   const nodeProps = {
     isExpanded: false,
     isLoading: false,
@@ -48,12 +50,17 @@ function renderEntryComponentIntoDocument(
     isEditingWorkingSet: false,
     openFilesWorkingSet: new WorkingSet(),
     reposByRoot: {},
+    selectionManager,
     ...conf,
   };
 
   const node = new FileTreeNode(nodeProps, nodeConf);
   return TestUtils.renderIntoDocument(
-    React.createElement(componentKlass, {node}),
+    React.createElement(componentKlass, {
+      node,
+      selectedNodes: selectionManager.selectedNodes(),
+      focusedNodes: selectionManager.focusedNodes(),
+    }),
   );
 }
 
