@@ -21,6 +21,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {sleep} from 'nuclide-commons/promise';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import {getLogger} from 'log4js';
+import {readFile as readRemoteFile} from './RemoteCommand';
 
 const logger = getLogger('nuclide-remote-connection');
 
@@ -401,7 +402,6 @@ export class SshHandshake {
   }
 
   _startRemoteServer(): Promise<boolean> {
-    let sftpTimer = null;
     return new Promise((resolve, reject) => {
       const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
       // TODO: escape any single quotes
@@ -443,81 +443,77 @@ export class SshHandshake {
             // TODO(hansonw): Implement a proper retry mechanism.
             // But first, we have to clean up this callback hell.
             await sleep(100);
-            sftpTimer = setTimeout(() => {
-              this._error(
-                'Failed to start sftp connection',
-                SshHandshake.ErrorType.SFTP_TIMEOUT,
-                new Error(),
-              );
-              sftpTimer = null;
-              this._connection.end();
-              resolve(false);
-            }, SFTP_TIMEOUT_MS);
-            this._connection.sftp(async (error, sftp) => {
-              if (sftpTimer != null) {
-                // Clear the sftp timer once we get a response.
-                clearTimeout(sftpTimer);
-              } else {
-                // If the timer already triggered, we timed out. Just exit.
-                return;
+            const result = await readRemoteFile(
+              this._connection,
+              SFTP_TIMEOUT_MS,
+              remoteTempFile,
+            );
+
+            switch (result.type) {
+              case 'success': {
+                let serverInfo: any = null;
+                try {
+                  serverInfo = JSON.parse(result.data.toString());
+                } catch (e) {
+                  this._error(
+                    'Malformed server start information',
+                    SshHandshake.ErrorType.SERVER_START_FAILED,
+                    new Error(result.data),
+                  );
+                  return resolve(false);
+                }
+
+                if (!serverInfo.success) {
+                  this._error(
+                    'Remote server failed to start',
+                    SshHandshake.ErrorType.SERVER_START_FAILED,
+                    new Error(serverInfo.logs),
+                  );
+                  return resolve(false);
+                }
+
+                if (!serverInfo.workspace) {
+                  this._error(
+                    'Could not find directory',
+                    SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
+                    new Error(serverInfo.logs),
+                  );
+                  return resolve(false);
+                }
+
+                // Update server info that is needed for setting up client.
+                this._updateServerInfo(serverInfo);
+                return resolve(true);
               }
-              if (error) {
+
+              case 'timeout':
+                this._error(
+                  'Failed to start sftp connection',
+                  SshHandshake.ErrorType.SFTP_TIMEOUT,
+                  new Error(),
+                );
+                this._connection.end();
+                return resolve(false);
+
+              case 'fail-to-start-connection':
                 this._error(
                   'Failed to start sftp connection',
                   SshHandshake.ErrorType.SERVER_START_FAILED,
-                  error,
+                  result.error,
                 );
                 return resolve(false);
-              }
-              sftp.readFile(
-                remoteTempFile,
-                async (sftpError, serverInfoJson) => {
-                  sftp.end();
-                  if (sftpError) {
-                    this._error(
-                      'Failed to transfer server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      sftpError,
-                    );
-                    return resolve(false);
-                  }
 
-                  let serverInfo: any = null;
-                  try {
-                    serverInfo = JSON.parse(serverInfoJson);
-                  } catch (e) {
-                    this._error(
-                      'Malformed server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfoJson),
-                    );
-                    return resolve(false);
-                  }
+              case 'fail-to-transfer-data':
+                this._error(
+                  'Failed to transfer server start information',
+                  SshHandshake.ErrorType.SERVER_START_FAILED,
+                  result.error,
+                );
+                return resolve(false);
 
-                  if (!serverInfo.success) {
-                    this._error(
-                      'Remote server failed to start',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
-
-                  if (!serverInfo.workspace) {
-                    this._error(
-                      'Could not find directory',
-                      SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
-
-                  // Update server info that is needed for setting up client.
-                  this._updateServerInfo(serverInfo);
-                  return resolve(true);
-                },
-              );
-            });
+              default:
+                (result: empty);
+            }
           })
           .on('data', data => {
             stdOut += data;
