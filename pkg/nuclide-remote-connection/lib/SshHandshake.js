@@ -454,56 +454,54 @@ export class SshHandshake {
                   );
                   return resolve(false);
                 }
-                const localTempFile = await fsPromise.tempfile();
-                sftp.fastGet(remoteTempFile, localTempFile, async sftpError => {
-                  sftp.end();
-                  if (sftpError) {
-                    this._error(
-                      'Failed to transfer server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      sftpError,
-                    );
-                    return resolve(false);
-                  }
+                sftp.readFile(
+                  remoteTempFile,
+                  async (sftpError, serverInfoJson) => {
+                    sftp.end();
+                    if (sftpError) {
+                      this._error(
+                        'Failed to transfer server start information',
+                        SshHandshake.ErrorType.SERVER_START_FAILED,
+                        sftpError,
+                      );
+                      return resolve(false);
+                    }
 
-                  let serverInfo: any = null;
-                  const serverInfoJson = await fsPromise.readFile(
-                    localTempFile,
-                    'utf8',
-                  );
-                  try {
-                    serverInfo = JSON.parse(serverInfoJson);
-                  } catch (e) {
-                    this._error(
-                      'Malformed server start information',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfoJson),
-                    );
-                    return resolve(false);
-                  }
+                    let serverInfo: any = null;
+                    try {
+                      serverInfo = JSON.parse(serverInfoJson);
+                    } catch (e) {
+                      this._error(
+                        'Malformed server start information',
+                        SshHandshake.ErrorType.SERVER_START_FAILED,
+                        new Error(serverInfoJson),
+                      );
+                      return resolve(false);
+                    }
 
-                  if (!serverInfo.success) {
-                    this._error(
-                      'Remote server failed to start',
-                      SshHandshake.ErrorType.SERVER_START_FAILED,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
+                    if (!serverInfo.success) {
+                      this._error(
+                        'Remote server failed to start',
+                        SshHandshake.ErrorType.SERVER_START_FAILED,
+                        new Error(serverInfo.logs),
+                      );
+                      return resolve(false);
+                    }
 
-                  if (!serverInfo.workspace) {
-                    this._error(
-                      'Could not find directory',
-                      SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
-                      new Error(serverInfo.logs),
-                    );
-                    return resolve(false);
-                  }
+                    if (!serverInfo.workspace) {
+                      this._error(
+                        'Could not find directory',
+                        SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
+                        new Error(serverInfo.logs),
+                      );
+                      return resolve(false);
+                    }
 
-                  // Update server info that is needed for setting up client.
-                  this._updateServerInfo(serverInfo);
-                  return resolve(true);
-                });
+                    // Update server info that is needed for setting up client.
+                    this._updateServerInfo(serverInfo);
+                    return resolve(true);
+                  },
+                );
               });
             } else {
               if (this._cancelled) {
