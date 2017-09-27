@@ -47,7 +47,6 @@ import {debuggerDatatip} from './DebuggerDatatip';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {DebuggerLaunchAttachUI} from './DebuggerLaunchAttachUI';
-import {DebuggerLaunchAttachConnectionChooser} from './DebuggerLaunchAttachConnectionChooser';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ServerConnection} from '../../nuclide-remote-connection';
@@ -693,7 +692,6 @@ class Activation {
 
   _renderConfigDialog(
     panel: atom$Panel,
-    chooseConnection: boolean,
     dialogMode: DebuggerConfigAction,
     dialogCloser: () => void,
   ): void {
@@ -703,53 +701,41 @@ class Activation {
     }
 
     invariant(this._selectedDebugConnection != null);
-    if (chooseConnection) {
-      const options = this._model
-        .getDebuggerProviderStore()
-        .getConnections()
-        .map(connection => {
-          const displayName = nuclideUri.isRemote(connection)
-            ? nuclideUri.getHostname(connection)
-            : 'localhost';
-          return {
-            value: connection,
-            label: displayName,
-          };
-        })
-        .filter(item => item.value != null && item.value !== '')
-        .sort((a, b) => a.label.localeCompare(b.label));
-      ReactDOM.render(
-        <DebuggerLaunchAttachConnectionChooser
-          options={options}
-          // flowlint-next-line sketchy-null-string:off
-          selectedConnection={this._selectedDebugConnection || 'local'}
-          connectionChanged={(newValue: ?string) => {
-            this._selectedDebugConnection = newValue;
-            this._renderConfigDialog(panel, false, dialogMode, dialogCloser);
-          }}
-          dialogCloser={dialogCloser}
-        />,
-        panel.getItem(),
-      );
-    } else {
-      const connection = this._selectedDebugConnection || 'local';
-      const key = nuclideUri.isRemote(connection)
-        ? nuclideUri.getHostname(connection)
-        : 'local';
-      ReactDOM.render(
-        <DebuggerLaunchAttachUI
-          dialogMode={dialogMode}
-          store={this._model.getDebuggerProviderStore()}
-          debuggerActions={this._model.getActions()}
-          connection={connection}
-          chooseConnection={() =>
-            this._renderConfigDialog(panel, true, dialogMode, dialogCloser)}
-          dialogCloser={dialogCloser}
-          providers={this._connectionProviders.get(key) || []}
-        />,
-        panel.getItem(),
-      );
-    }
+
+    const options = this._model
+      .getDebuggerProviderStore()
+      .getConnections()
+      .map(connection => {
+        const displayName = nuclideUri.isRemote(connection)
+          ? nuclideUri.getHostname(connection)
+          : 'localhost';
+        return {
+          value: connection,
+          label: displayName,
+        };
+      })
+      .filter(item => item.value != null && item.value !== '')
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    // flowlint-next-line sketchy-null-string:off
+    const connection = this._selectedDebugConnection || 'local';
+
+    ReactDOM.render(
+      <DebuggerLaunchAttachUI
+        dialogMode={dialogMode}
+        store={this._model.getDebuggerProviderStore()}
+        debuggerActions={this._model.getActions()}
+        connectionChanged={(newValue: ?string) => {
+          this._selectedDebugConnection = newValue;
+          this._renderConfigDialog(panel, dialogMode, dialogCloser);
+        }}
+        connection={connection}
+        connectionOptions={options}
+        dialogCloser={dialogCloser}
+        providers={this._connectionProviders}
+      />,
+      panel.getItem(),
+    );
   }
 
   _showLaunchAttachDialog(dialogMode: DebuggerConfigAction): void {
@@ -773,9 +759,7 @@ class Activation {
     parentEl.style.maxWidth = '100em';
 
     // Function callback that closes the dialog and frees all of its resources.
-    this._renderConfigDialog(pane, false, dialogMode, () =>
-      disposables.dispose(),
-    );
+    this._renderConfigDialog(pane, dialogMode, () => disposables.dispose());
     this._lauchAttachDialogCloser = () => disposables.dispose();
     disposables.add(
       pane.onDidChangeVisible(visible => {
