@@ -283,44 +283,73 @@ export class FileTreeNode {
   * Since in heavy updates, nodes are created by the thousands we need to keep the creation
   * flow performant.
   */
-  _assignOptions(options: Object): void {
-    // Don't pass the 100 chars limit
-    const o = options;
-    const D = DEFAULT_OPTIONS;
-
-    this.uri = o.uri;
-    this.rootUri = o.rootUri;
-    this.isExpanded = o.isExpanded !== undefined ? o.isExpanded : D.isExpanded;
-    const isSelected = o.isSelected !== undefined ? o.isSelected : D.isSelected;
+  _assignOptions(options: FileTreeNodeOptions): void {
+    this.uri = options.uri;
+    this.rootUri = options.rootUri;
+    this.isExpanded =
+      options.isExpanded !== undefined
+        ? options.isExpanded
+        : DEFAULT_OPTIONS.isExpanded;
+    const isSelected =
+      options.isSelected !== undefined
+        ? options.isSelected
+        : DEFAULT_OPTIONS.isSelected;
     if (isSelected) {
       this.conf.selectionManager.select(this);
     }
-    const isFocused = o.isFocused !== undefined ? o.isFocused : D.isFocused;
+    const isFocused =
+      options.isFocused !== undefined
+        ? options.isFocused
+        : DEFAULT_OPTIONS.isFocused;
     if (isFocused) {
       this.conf.selectionManager.focus(this);
     }
     this.isDragHovered =
-      o.isDragHovered !== undefined ? o.isDragHovered : D.isDragHovered;
+      options.isDragHovered !== undefined
+        ? options.isDragHovered
+        : DEFAULT_OPTIONS.isDragHovered;
     this.isBeingReordered =
-      o.isBeingReordered !== undefined
-        ? o.isBeingReordered
-        : D.isBeingReordered;
-    this.isLoading = o.isLoading !== undefined ? o.isLoading : D.isLoading;
-    this.wasFetched = o.wasFetched !== undefined ? o.wasFetched : D.wasFetched;
-    this.isCwd = o.isCwd !== undefined ? o.isCwd : D.isCwd;
-    this.children = o.children !== undefined ? o.children : D.children;
+      options.isBeingReordered !== undefined
+        ? options.isBeingReordered
+        : DEFAULT_OPTIONS.isBeingReordered;
+    this.isLoading =
+      options.isLoading !== undefined
+        ? options.isLoading
+        : DEFAULT_OPTIONS.isLoading;
+    this.wasFetched =
+      options.wasFetched !== undefined
+        ? options.wasFetched
+        : DEFAULT_OPTIONS.wasFetched;
+    this.isCwd =
+      options.isCwd !== undefined ? options.isCwd : DEFAULT_OPTIONS.isCwd;
+    this.children =
+      options.children !== undefined
+        ? options.children
+        : DEFAULT_OPTIONS.children;
     this.connectionTitle =
-      o.connectionTitle !== undefined ? o.connectionTitle : D.connectionTitle;
+      options.connectionTitle !== undefined
+        ? options.connectionTitle
+        : DEFAULT_OPTIONS.connectionTitle;
     this.subscription =
-      o.subscription !== undefined ? o.subscription : D.subscription;
+      options.subscription !== undefined
+        ? options.subscription
+        : DEFAULT_OPTIONS.subscription;
     this.highlightedText =
-      o.highlightedText !== undefined ? o.highlightedText : D.highlightedText;
+      options.highlightedText !== undefined
+        ? options.highlightedText
+        : DEFAULT_OPTIONS.highlightedText;
     this.matchesFilter =
-      o.matchesFilter !== undefined ? o.matchesFilter : D.matchesFilter;
+      options.matchesFilter !== undefined
+        ? options.matchesFilter
+        : DEFAULT_OPTIONS.matchesFilter;
     this.isPendingLoad =
-      o.isPendingLoad !== undefined ? o.isPendingLoad : D.isPendingLoad;
+      options.isPendingLoad !== undefined
+        ? options.isPendingLoad
+        : DEFAULT_OPTIONS.isPendingLoad;
     this.generatedStatus =
-      o.generatedStatus !== undefined ? o.generatedStatus : D.generatedStatus;
+      options.generatedStatus !== undefined
+        ? options.generatedStatus
+        : DEFAULT_OPTIONS.generatedStatus;
   }
 
   /**
