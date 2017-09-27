@@ -419,91 +419,8 @@ export class SshHandshake {
         }
         // $FlowIssue - Problem with function overloads. Maybe related to #4616, #4683, #4685, and #4669
         stream
-          .on('close', async (code, signal) => {
-            // Note: this code is probably the code from the child shell if one
-            // is in use.
-            if (code === 0) {
-              // Some servers have max channels set to 1, so add a delay to ensure
-              // the old channel has been cleaned up on the server.
-              // TODO(hansonw): Implement a proper retry mechanism.
-              // But first, we have to clean up this callback hell.
-              await sleep(100);
-              sftpTimer = setTimeout(() => {
-                this._error(
-                  'Failed to start sftp connection',
-                  SshHandshake.ErrorType.SFTP_TIMEOUT,
-                  new Error(),
-                );
-                sftpTimer = null;
-                this._connection.end();
-                resolve(false);
-              }, SFTP_TIMEOUT_MS);
-              this._connection.sftp(async (error, sftp) => {
-                if (sftpTimer != null) {
-                  // Clear the sftp timer once we get a response.
-                  clearTimeout(sftpTimer);
-                } else {
-                  // If the timer already triggered, we timed out. Just exit.
-                  return;
-                }
-                if (error) {
-                  this._error(
-                    'Failed to start sftp connection',
-                    SshHandshake.ErrorType.SERVER_START_FAILED,
-                    error,
-                  );
-                  return resolve(false);
-                }
-                sftp.readFile(
-                  remoteTempFile,
-                  async (sftpError, serverInfoJson) => {
-                    sftp.end();
-                    if (sftpError) {
-                      this._error(
-                        'Failed to transfer server start information',
-                        SshHandshake.ErrorType.SERVER_START_FAILED,
-                        sftpError,
-                      );
-                      return resolve(false);
-                    }
-
-                    let serverInfo: any = null;
-                    try {
-                      serverInfo = JSON.parse(serverInfoJson);
-                    } catch (e) {
-                      this._error(
-                        'Malformed server start information',
-                        SshHandshake.ErrorType.SERVER_START_FAILED,
-                        new Error(serverInfoJson),
-                      );
-                      return resolve(false);
-                    }
-
-                    if (!serverInfo.success) {
-                      this._error(
-                        'Remote server failed to start',
-                        SshHandshake.ErrorType.SERVER_START_FAILED,
-                        new Error(serverInfo.logs),
-                      );
-                      return resolve(false);
-                    }
-
-                    if (!serverInfo.workspace) {
-                      this._error(
-                        'Could not find directory',
-                        SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
-                        new Error(serverInfo.logs),
-                      );
-                      return resolve(false);
-                    }
-
-                    // Update server info that is needed for setting up client.
-                    this._updateServerInfo(serverInfo);
-                    return resolve(true);
-                  },
-                );
-              });
-            } else {
+          .on('close', async (exitCode, signal) => {
+            if (exitCode !== 0) {
               if (this._cancelled) {
                 this._error(
                   'Cancelled by user',
@@ -519,6 +436,87 @@ export class SshHandshake {
               }
               return resolve(false);
             }
+
+            // Some servers have max channels set to 1, so add a delay to ensure
+            // the old channel has been cleaned up on the server.
+            // TODO(hansonw): Implement a proper retry mechanism.
+            // But first, we have to clean up this callback hell.
+            await sleep(100);
+            sftpTimer = setTimeout(() => {
+              this._error(
+                'Failed to start sftp connection',
+                SshHandshake.ErrorType.SFTP_TIMEOUT,
+                new Error(),
+              );
+              sftpTimer = null;
+              this._connection.end();
+              resolve(false);
+            }, SFTP_TIMEOUT_MS);
+            this._connection.sftp(async (error, sftp) => {
+              if (sftpTimer != null) {
+                // Clear the sftp timer once we get a response.
+                clearTimeout(sftpTimer);
+              } else {
+                // If the timer already triggered, we timed out. Just exit.
+                return;
+              }
+              if (error) {
+                this._error(
+                  'Failed to start sftp connection',
+                  SshHandshake.ErrorType.SERVER_START_FAILED,
+                  error,
+                );
+                return resolve(false);
+              }
+              sftp.readFile(
+                remoteTempFile,
+                async (sftpError, serverInfoJson) => {
+                  sftp.end();
+                  if (sftpError) {
+                    this._error(
+                      'Failed to transfer server start information',
+                      SshHandshake.ErrorType.SERVER_START_FAILED,
+                      sftpError,
+                    );
+                    return resolve(false);
+                  }
+
+                  let serverInfo: any = null;
+                  try {
+                    serverInfo = JSON.parse(serverInfoJson);
+                  } catch (e) {
+                    this._error(
+                      'Malformed server start information',
+                      SshHandshake.ErrorType.SERVER_START_FAILED,
+                      new Error(serverInfoJson),
+                    );
+                    return resolve(false);
+                  }
+
+                  if (!serverInfo.success) {
+                    this._error(
+                      'Remote server failed to start',
+                      SshHandshake.ErrorType.SERVER_START_FAILED,
+                      new Error(serverInfo.logs),
+                    );
+                    return resolve(false);
+                  }
+
+                  if (!serverInfo.workspace) {
+                    this._error(
+                      'Could not find directory',
+                      SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
+                      new Error(serverInfo.logs),
+                    );
+                    return resolve(false);
+                  }
+
+                  // Update server info that is needed for setting up client.
+                  this._updateServerInfo(serverInfo);
+                  return resolve(true);
+                },
+              );
+            });
           })
           .on('data', data => {
             stdOut += data;
