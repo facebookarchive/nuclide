@@ -36,7 +36,9 @@
     "release-transpile": "./modules/nuclide-node-transpiler/bin/release-transpile.js",
     "test": "npm run lint-all && npm run flow"
   },
-  "workspaces": ["modules/*"],
+  "workspaces": [
+    "modules/*"
+  ],
   "dependencies": {
     "adm-zip": "0.4.7",
     "async-to-generator": "1.1.0",
@@ -148,7 +150,7 @@
     "fs-extra": "2.0.0",
     "jasmine-node": "1.14.5",
     "mock-spawn": "0.2.6",
-    "prettier": "1.5.2",
+    "prettier": "1.7.0",
     "sabor": "0.9.0",
     "touch": "1.0.0",
     "webfonts-generator": "0.3.5"
