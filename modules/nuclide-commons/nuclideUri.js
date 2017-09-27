@@ -801,7 +801,7 @@ function _testForIllegalUri(uri: ?NuclideUri): void {
     if (isAtomUri(uri)) {
       throw new Error(`Path operation invoked on Atom URI ${uri}`);
     }
-    if (uri.endsWith(ARCHIVE_SEPARATOR)) {
+    if (_endsWithArchiveSeparator(uri)) {
       throw new Error(
         `Path operation invoked on URI ending with ${ARCHIVE_SEPARATOR}: ${uri}`,
       );

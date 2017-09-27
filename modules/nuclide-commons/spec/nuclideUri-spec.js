@@ -29,6 +29,7 @@ describe('nuclide-uri', () => {
     'fb.com',
     '/file.zip!a.txt',
   );
+  const endsWithExclamationUri = '/module/!! WARNING !!';
   const archiveSuffixUri = '/etc/file.zip!';
 
   it('isRemote', () => {
@@ -37,6 +38,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.isRemote(atomUri)).toBe(false);
     expect(nuclideUri.isRemote(localArchiveUri)).toBe(false);
     expect(nuclideUri.isRemote(remoteArchiveUri)).toBe(true);
+    expect(nuclideUri.isRemote(endsWithExclamationUri)).toBe(false);
   });
 
   it('isLocal', () => {
@@ -46,6 +48,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.isLocal(atomUri)).toBe(false);
     expect(nuclideUri.isLocal(localArchiveUri)).toBe(true);
     expect(nuclideUri.isLocal(remoteArchiveUri)).toBe(false);
+    expect(nuclideUri.isLocal(endsWithExclamationUri)).toBe(true);
   });
 
   it('createRemoteUri', () => {
@@ -62,6 +65,9 @@ describe('nuclide-uri', () => {
     );
     expect(nuclideUri.join(localArchiveUri, 'b.txt')).toBe(
       '/etc/file.zip!a/b.txt',
+    );
+    expect(nuclideUri.join(endsWithExclamationUri, 'b.txt')).toBe(
+      '/module/!! WARNING !!/b.txt',
     );
     expect(nuclideUri.join('/usr/local', '..')).toBe('/usr');
     expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com/usr');
@@ -111,6 +117,9 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.getPath(localUri)).toBe(localUri);
     expect(nuclideUri.getPath(localArchiveUri)).toBe(localArchiveUri);
     expect(nuclideUri.getPath(remoteArchiveUri)).toBe('/file.zip!a.txt');
+    expect(nuclideUri.getPath(endsWithExclamationUri)).toBe(
+      endsWithExclamationUri,
+    );
     expect(() => nuclideUri.getPath('nuclide://host/archive.zip!')).toThrow();
     expect(() => nuclideUri.parseRemoteUri(localUri)).toThrow();
   });
@@ -274,6 +283,7 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.getParent(remoteArchiveUri)).toBe(
       'nuclide://fb.com/file.zip',
     );
+    expect(nuclideUri.getParent(endsWithExclamationUri)).toBe('/module');
     expect(nuclideUri.getParent('/abc/def!ghi')).toBe('/abc');
     expect(() => nuclideUri.getParent(atomUri)).toThrow();
     expect(() => nuclideUri.getParent(archiveSuffixUri)).toThrow();
@@ -383,6 +393,18 @@ describe('nuclide-uri', () => {
     expect(
       nuclideUri.relative(localArchiveUri, nuclideUri.dirname(localArchiveUri)),
     ).toBe('..');
+    expect(
+      nuclideUri.relative(
+        nuclideUri.dirname(endsWithExclamationUri),
+        endsWithExclamationUri,
+      ),
+    ).toBe('!! WARNING !!');
+    expect(
+      nuclideUri.relative(
+        endsWithExclamationUri,
+        nuclideUri.dirname(endsWithExclamationUri),
+      ),
+    ).toBe('..');
     expect(nuclideUri.relative('/a/b.zip!c', '/a/b.zip!d')).toBe('../d');
     expect(nuclideUri.relative('/a/b!c', '/a/b!d')).toBe('../b!d');
     expect(() => nuclideUri.relative(atomUri, 'foo')).toThrow();
@@ -399,6 +421,9 @@ describe('nuclide-uri', () => {
     );
     expect(nuclideUri.nuclideUriToDisplayString(remoteArchiveUri)).toBe(
       'fb.com:/file.zip!a.txt',
+    );
+    expect(nuclideUri.nuclideUriToDisplayString(endsWithExclamationUri)).toBe(
+      '/module/!! WARNING !!',
     );
     expect(() => nuclideUri.nuclideUriToDisplayString(atomUri)).toThrow();
     expect(() =>
