@@ -178,6 +178,8 @@ export default class BridgeAdapter {
         objectGroup,
       );
     }
+
+    this._updateCurrentScopes();
   }
 
   getProperties(id: number, objectId: string): void {
