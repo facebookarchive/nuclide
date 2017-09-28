@@ -101,6 +101,8 @@ export default class RemoteControlService {
     targetUri: NuclideUri,
     command: string,
     args: Array<string>,
+    cwd: NuclideUri,
+    environmentVariables: Map<string, string>,
   ): Promise<boolean> {
     const terminalUri = this.getTerminal();
     if (terminalUri == null) {
@@ -109,7 +111,7 @@ export default class RemoteControlService {
 
     const key = `targetUri=${targetUri}&command=${command}`;
     const info = {
-      cwd: nuclideUri.dirname(targetUri),
+      cwd,
       title: 'Debug output: ' + nuclideUri.getPath(targetUri),
       key,
       command: {
@@ -119,6 +121,7 @@ export default class RemoteControlService {
       remainOnCleanExit: true,
       icon: 'nuclicon-debugger',
       defaultLocation: 'bottom',
+      environmentVariables,
       preservedCommands: [
         'nuclide-debugger:continue-debugging',
         'nuclide-debugger:stop-debugging',

@@ -113,6 +113,8 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
           ? sessionConfig.launchWrapperCommand
           : sessionConfig.phpRuntimePath,
         [...runtimeArgs, ...scriptArgs, ...sessionConfig.scriptArguments],
+        nuclideUri.dirname(launchUri),
+        new Map(),
       );
     }
 
