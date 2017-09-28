@@ -106,25 +106,48 @@ export default class RemoteControlService {
     if (terminalUri == null) {
       return false;
     }
-    const infoUri = terminalUri.uriFromInfo(
-      {
-        cwd: nuclideUri.dirname(targetUri),
-        title: 'Debug output: ' + nuclideUri.getPath(targetUri),
-        command: {
-          file: command,
-          args,
-        },
-        remainOnCleanExit: true,
-        icon: 'nuclicon-debugger',
-        defaultLocation: 'bottom',
+
+    const key = `targetUri=${targetUri}&command=${command}`;
+    const info = {
+      cwd: nuclideUri.dirname(targetUri),
+      title: 'Debug output: ' + nuclideUri.getPath(targetUri),
+      key,
+      command: {
+        file: command,
+        args,
       },
-      true,
-    );
+      remainOnCleanExit: true,
+      icon: 'nuclicon-debugger',
+      defaultLocation: 'bottom',
+      preservedCommands: [
+        'nuclide-debugger:continue-debugging',
+        'nuclide-debugger:stop-debugging',
+        'nuclide-debugger:restart-debugging',
+        'nuclide-debugger:step-over',
+        'nuclide-debugger:step-into',
+        'nuclide-debugger:step-out',
+      ],
+    };
+
+    const infoUri = terminalUri.uriFromInfo(info);
 
     // Ensure any previous instances of this same target are closed before
     // opening a new terminal tab. We don't want them to pile up if the
     // user keeps running the same app over and over.
-    destroyItemWhere(item => item.getURI != null && item.getURI() === infoUri);
+    destroyItemWhere(item => {
+      if (item.getURI == null) {
+        return false;
+      }
+
+      const uri = item.getURI();
+      try {
+        // Only close terminal tabs with the same title and target binary.
+        const otherInfo = terminalUri.infoFromUri(uri);
+        return otherInfo.key === key;
+      } catch (e) {}
+      return false;
+    });
+
     await goToLocation(infoUri);
 
     const terminalPane = nullthrows(atom.workspace.paneForURI(infoUri));
@@ -158,6 +181,7 @@ export default class RemoteControlService {
       disposable.dispose();
       this.killDebugger();
     });
+
     return true;
   }
 }
