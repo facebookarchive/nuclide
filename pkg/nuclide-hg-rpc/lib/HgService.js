@@ -719,6 +719,7 @@ export class HgService {
             );
             return Observable.empty();
           })
+          .filter(content => content.length > 0)
           .map(content => JSON.parse(content))
           .catch(() => {
             getLogger('nuclide-hg-rpc').error(
