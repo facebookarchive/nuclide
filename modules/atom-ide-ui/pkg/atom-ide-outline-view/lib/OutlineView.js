@@ -20,7 +20,10 @@ import invariant from 'assert';
 import classnames from 'classnames';
 
 import analytics from 'nuclide-commons-atom/analytics';
-import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
+import {
+  goToLocation,
+  goToLocationInEditor,
+} from 'nuclide-commons-atom/go-to-location';
 import {
   LoadingSpinner,
   LoadingSpinnerSizes,
@@ -128,7 +131,7 @@ class OutlineViewComponent extends React.PureComponent<
         return (
           <EmptyState
             title="No outline available"
-            message="You need to open a file to use outline view."
+            message="Open a file to see its outline."
           />
         );
       case 'loading':
@@ -144,13 +147,23 @@ class OutlineViewComponent extends React.PureComponent<
         return outline.grammar === 'Null Grammar' ? (
           <EmptyState
             title="No outline available"
-            message="The current file doesn't have an associated grammar. You may want to save it."
+            message="Atom doesn't recognize this file's language. Make sure this file has an extension and has been saved."
           />
         ) : (
           <EmptyState
             title="No outline available"
             message={
-              'Outline view does not currently support ' + outline.grammar + '.'
+              <div>
+                {outline.grammar} files do not currently support outlines.{' '}
+                <a
+                  href="#"
+                  onClick={() =>
+                    goToLocation(
+                      `atom://config/install/package:ide-${outline.grammar}`,
+                    )}>
+                  Install an IDE package first.
+                </a>
+              </div>
             }
           />
         );
@@ -158,7 +171,7 @@ class OutlineViewComponent extends React.PureComponent<
         return (
           <EmptyState
             title="No outline available"
-            message="There are no outline providers registered."
+            message="This is likely an error with the language package."
           />
         );
       case 'outline':

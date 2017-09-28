@@ -14,7 +14,7 @@ import * as React from 'react';
 
 type Props = {
   title: string,
-  message: string,
+  message: React$Node,
 };
 
 export class EmptyState extends React.Component<Props> {

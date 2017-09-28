@@ -54,7 +54,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     };
   }
 
-  SEARCH_PLACEHOLDER = 'Search Outline View';
+  SEARCH_PLACEHOLDER = 'Search Outline';
   DEBOUNCE_TIME = 100;
 
   componentDidUpdate(prevProps: Props, prevState: State) {

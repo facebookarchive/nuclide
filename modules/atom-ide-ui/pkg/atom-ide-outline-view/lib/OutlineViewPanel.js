@@ -46,7 +46,7 @@ export class OutlineViewPanelState {
   }
 
   getTitle() {
-    return 'Outline View';
+    return 'Outline';
   }
 
   getIconName() {

@@ -34,7 +34,7 @@ class Activation {
     const {element} = toolBar.addButton({
       icon: 'list-unordered',
       callback: 'outline-view:toggle',
-      tooltip: 'Toggle Outline View',
+      tooltip: 'Toggle Outline',
       priority: 200,
     });
     // Class added is not defined elsewhere, and is just used to mark the toolbar button
@@ -48,7 +48,7 @@ class Activation {
 
   _createOutlineViewNuxTourModel(): NuxTourModel {
     const outlineViewToolbarIconNux = {
-      content: 'Check out the new Outline View!',
+      content: 'Check out the new Outline!',
       selector: '.outline-view-toolbar-button',
       position: 'auto',
       completionPredicate: () =>
@@ -102,7 +102,7 @@ class Activation {
   getHomeFragments(): HomeFragments {
     return {
       feature: {
-        title: 'Outline View',
+        title: 'Outline',
         icon: 'list-unordered',
         description:
           'Displays major components of the current file (classes, methods, etc.)',
