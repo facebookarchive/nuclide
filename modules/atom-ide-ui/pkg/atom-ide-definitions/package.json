@@ -12,7 +12,7 @@
         "0.0.0": "consumeDefinitionProvider"
       }
     },
-    "atom-ide-datatip": {
+    "datatip": {
       "versions": {
         "0.1.0": "consumeDatatipService"
       }
