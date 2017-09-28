@@ -38,6 +38,9 @@ import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';
 const SEARCH_ENABLED_DEFAULT = true;
 
 type State = {
+  fontFamily: string,
+  fontSize: number,
+  lineHeight: number,
   outline: OutlineForUi,
   searchEnabled: boolean,
 };
@@ -64,6 +67,9 @@ export class OutlineView extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      fontFamily: (atom.config.get('editor.fontFamily'): any),
+      fontSize: (atom.config.get('editor.fontSize'): any),
+      lineHeight: (atom.config.get('editor.lineHeight'): any),
       outline: {
         kind: 'empty',
       },
@@ -89,6 +95,15 @@ export class OutlineView extends React.PureComponent<Props, State> {
             this.setState({searchEnabled: SEARCH_ENABLED_DEFAULT});
           }
         }),
+      atom.config.observe('editor.fontSize', (size: mixed) => {
+        this.setState({fontSize: (size: any)});
+      }),
+      atom.config.observe('editor.fontFamily', (font: mixed) => {
+        this.setState({fontFamily: (font: any)});
+      }),
+      atom.config.observe('editor.lineHeight', (size: mixed) => {
+        this.setState({lineHeight: (size: any)});
+      }),
     );
   }
 
@@ -102,6 +117,9 @@ export class OutlineView extends React.PureComponent<Props, State> {
     return (
       <div className="outline-view">
         <OutlineViewComponent
+          fontFamily={this.state.fontFamily}
+          fontSize={this.state.fontSize}
+          lineHeight={this.state.lineHeight}
           outline={this.state.outline}
           searchEnabled={this.state.searchEnabled}
         />
@@ -111,6 +129,9 @@ export class OutlineView extends React.PureComponent<Props, State> {
 }
 
 type OutlineViewComponentProps = {
+  fontFamily: string,
+  fontSize: number,
+  lineHeight: number,
   outline: OutlineForUi,
   searchEnabled: boolean,
 };
@@ -123,7 +144,13 @@ class OutlineViewComponent extends React.PureComponent<
   }
 
   render(): React.Node {
-    const {outline, searchEnabled} = this.props;
+    const {
+      fontFamily,
+      fontSize,
+      lineHeight,
+      outline,
+      searchEnabled,
+    } = this.props;
 
     switch (outline.kind) {
       case 'empty':
@@ -176,7 +203,13 @@ class OutlineViewComponent extends React.PureComponent<
         );
       case 'outline':
         return (
-          <OutlineViewCore outline={outline} searchEnabled={searchEnabled} />
+          <OutlineViewCore
+            fontFamily={fontFamily}
+            fontSize={fontSize}
+            lineHeight={lineHeight}
+            outline={outline}
+            searchEnabled={searchEnabled}
+          />
         );
       default:
         (outline: empty);
@@ -185,6 +218,9 @@ class OutlineViewComponent extends React.PureComponent<
 }
 
 type OutlineViewCoreProps = {
+  fontFamily: string,
+  fontSize: number,
+  lineHeight: number,
   outline: OutlineForUi,
   searchEnabled: boolean,
 };
@@ -205,7 +241,13 @@ class OutlineViewCore extends React.PureComponent<
   };
 
   render() {
-    const {outline, searchEnabled} = this.props;
+    const {
+      fontFamily,
+      fontSize,
+      lineHeight,
+      outline,
+      searchEnabled,
+    } = this.props;
     invariant(outline.kind === 'outline');
 
     return (
@@ -223,6 +265,9 @@ class OutlineViewCore extends React.PureComponent<
           <div className="outline-view-trees">
             {renderTrees(
               outline.editor,
+              fontFamily,
+              fontSize,
+              lineHeight,
               outline.outlineTrees,
               this.state.searchResults,
             )}
@@ -235,6 +280,9 @@ class OutlineViewCore extends React.PureComponent<
 
 class OutlineTree extends React.PureComponent<{
   editor: atom$TextEditor,
+  fontFamily: string,
+  fontSize: number,
+  lineHeight: number,
   outline: OutlineTreeForUi,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
 }> {
@@ -272,7 +320,14 @@ class OutlineTree extends React.PureComponent<{
   };
 
   render(): React.Node {
-    const {editor, outline, searchResults} = this.props;
+    const {
+      editor,
+      outline,
+      searchResults,
+      fontSize,
+      fontFamily,
+      lineHeight,
+    } = this.props;
 
     const classNames = ['list-nested-item'];
     if (outline.kind) {
@@ -282,11 +337,27 @@ class OutlineTree extends React.PureComponent<{
       selected: outline.highlighted,
     });
     return (
-      <li className={classes}>
-        <div className="list-item outline-view-item" onClick={this.onClick}>
+      // Set fontSize for the li to make the highlighted region of selected
+      // lines (set equal to 2em) look reasonable relative to size of the font.
+      <li className={classes} style={{fontSize: fontSize * 0.7}}>
+        <div
+          className="list-item outline-view-item"
+          onClick={this.onClick}
+          style={{
+            fontSize,
+            fontFamily,
+            lineHeight,
+          }}>
           {renderItem(outline, searchResults.get(outline))}
         </div>
-        {renderTrees(editor, outline.children, searchResults)}
+        {renderTrees(
+          editor,
+          fontFamily,
+          fontSize,
+          lineHeight,
+          outline.children,
+          searchResults,
+        )}
       </li>
     );
   }
@@ -378,12 +449,16 @@ function renderMatchedSubsequence(
 
 function renderTrees(
   editor: atom$TextEditor,
+  fontFamily: string,
+  fontSize: number,
+  lineHeight: number,
   outlines: Array<OutlineTreeForUi>,
   searchResults: Map<OutlineTreeForUi, SearchResult>,
 ): ?React.Element<any> {
   if (outlines.length === 0) {
     return null;
   }
+
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
@@ -397,6 +472,9 @@ function renderTrees(
         return !result || result.visible ? (
           <OutlineTree
             editor={editor}
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            lineHeight={lineHeight}
             outline={outline}
             key={index}
             searchResults={searchResults}
