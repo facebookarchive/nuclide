@@ -97,6 +97,14 @@ export default class RemoteControlService {
     }
   }
 
+  canLaunchDebugTargetInTerminal(targetUri: NuclideUri): boolean {
+    // The terminal is not supported on Windows.
+    return (
+      (nuclideUri.isRemote(targetUri) || process.platform !== 'win32') &&
+      this.getTerminal() != null
+    );
+  }
+
   async launchDebugTargetInTerminal(
     targetUri: NuclideUri,
     command: string,

@@ -60,6 +60,7 @@ def StopReason_to_string(reason):
       lldb.eStopReasonSignal: 'signal',
       lldb.eStopReasonException: 'exception',
       lldb.eStopReasonPlanComplete: 'plan-complete',
+      lldb.eStopReasonExec: 'exec',
     }[reason]
 
 

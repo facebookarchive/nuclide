@@ -20,6 +20,7 @@ import type {
   DebuggerConfig,
   NativeDebuggerService as NativeDebuggerServiceType,
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 
 import invariant from 'assert';
@@ -31,6 +32,9 @@ import {DebuggerInstance} from '../../nuclide-debugger-base';
 import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getConfig} from './utils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
+import nullthrows from 'nullthrows';
+import passesGK from '../../commons-node/passesGK';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;
@@ -61,8 +65,48 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return super.getDebuggerProps();
   }
 
+  async _launchInTerminal(
+    rpcService: NativeDebuggerServiceType,
+    remoteService: RemoteControlService,
+  ): Promise<boolean> {
+    // Build a map of environment variables specified in the launch target info.
+    const environmentVariables = new Map();
+    this._launchTargetInfo.environmentVariables.forEach(variable => {
+      const [key, value] = variable.split('=');
+      environmentVariables.set(key, value);
+    });
+
+    // Instruct the native debugger backend to prepare to launch in the terminal.
+    // It will return the command and args to launch in the remote terminal.
+    const terminalLaunchInfo = await rpcService.prepareForTerminalLaunch(
+      this._launchTargetInfo,
+    );
+
+    const {
+      targetExecutable,
+      launchCwd,
+      launchCommand,
+      launchArgs,
+    } = terminalLaunchInfo;
+
+    // In the terminal, launch the command with the arguments specified by the
+    // debugger back end.
+    // Note: this returns true on a successful launch, false otherwise.
+    return remoteService.launchDebugTargetInTerminal(
+      targetExecutable,
+      launchCommand,
+      launchArgs,
+      launchCwd,
+      environmentVariables,
+    );
+  }
+
   async debug(): Promise<DebuggerInstanceBase> {
     const rpcService = this._getRpcService();
+    const remoteService = nullthrows(
+      await consumeFirstProvider('nuclide-debugger.remote'),
+    );
+
     if (typeof this.basepath === 'string') {
       this._launchTargetInfo.basepath = this.basepath;
     }
@@ -73,10 +117,24 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       rpcService.getOutputWindowObservable().refCount(),
     );
     try {
-      await rpcService
-        .launch(this._launchTargetInfo)
-        .refCount()
-        .toPromise();
+      // Attempt to launch into a terminal if it is supported.
+      let launched = false;
+      if (
+        remoteService.canLaunchDebugTargetInTerminal(this._targetUri) &&
+        getConfig().useTerminal &&
+        (await passesGK('nuclide_debugger_launch_in_terminal'))
+      ) {
+        launched = await this._launchInTerminal(rpcService, remoteService);
+      }
+
+      // Otherwise, fall back to launching without a terminal.
+      if (!launched) {
+        await rpcService
+          .launch(this._launchTargetInfo)
+          .refCount()
+          .toPromise();
+      }
+
       // Start websocket server with Chrome after launch completed.
       invariant(outputDisposable);
       debugSession = new DebuggerInstance(

@@ -15,7 +15,9 @@ import type {
   AttachTargetInfo,
   LaunchTargetInfo,
   BootstrapDebuggerInfo,
+  PrepareForLaunchResponse,
 } from './NativeDebuggerServiceInterface.js';
+import type {Socket} from 'net';
 
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -26,6 +28,7 @@ import {splitStream} from 'nuclide-commons/observable';
 import {runCommand} from 'nuclide-commons/process';
 import {Observable} from 'rxjs';
 import {track} from '../../nuclide-analytics';
+import net from 'net';
 
 type AttachInfoArgsType = {
   pid: string,
@@ -372,5 +375,109 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
   _handleLLDBExit(): void {
     // Fire and forget.
     this.dispose();
+  }
+
+  // Spawns a TCP socket server to be used to communicate with the python
+  // launch wrapper when launching a process in the terminal. The wrapper
+  // will use this socket to communicate its pid, and wait for us to attach
+  // a debugger before calling execv to load the target image into the process.
+  async _spawnIpcServer(
+    onConnectCallback: (socket: Socket) => void,
+  ): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const server = net.createServer();
+      server.on('error', reject);
+      server.on('connection', socket => {
+        socket.on('error', () => server.close);
+        socket.on('end', () => server.close);
+        onConnectCallback(socket);
+        server.close();
+      });
+
+      try {
+        server.listen({host: '127.0.0.1', port: 0}, () =>
+          resolve(server.address().port),
+        );
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  // This callback is invoked when the wrapper process starts up and connects
+  // to our TCP socket. It will send its own pid into the socket and then block
+  // on a read of the socket. We will then attach the debugger to the specified
+  // pid, and issue a write to the socket to indicate to the wrapper that the
+  // attach is complete, and it's now OK to resume execution of the target.
+  async _launchWrapperConnected(
+    socket: Socket,
+    data: string,
+    launchInfo: LaunchTargetInfo,
+  ): Promise<void> {
+    // Expect the python wrapper to send us a pid.
+    const pid = parseInt(data.trim(), 10);
+    if (Number.isNaN(pid)) {
+      throw new Error(
+        'Failed to start debugger: Received invalid process ID from target wrapper',
+      );
+    }
+
+    try {
+      // Attach the debugger to the wrapper script process.
+      await this.attach({
+        pid,
+        name: launchInfo.executablePath,
+        commandName: launchInfo.executablePath,
+        basepath: launchInfo.basepath,
+      })
+        .refCount()
+        .toPromise();
+
+      // Send any data into the socket to unblock the target wrapper
+      // and let it know it's safe to proceed with launching now.
+      socket.end('continue');
+    } catch (e) {
+      this._handleLLDBExit();
+    }
+  }
+
+  async prepareForTerminalLaunch(
+    launchInfo: LaunchTargetInfo,
+  ): Promise<PrepareForLaunchResponse> {
+    // Expand home directory if the launch executable starts with ~/
+    launchInfo.executablePath = nuclideUri.expandHomeDir(
+      launchInfo.executablePath,
+    );
+
+    const pythonBinaryPath =
+      // flowlint-next-line sketchy-null-string:off
+      this._config.pythonBinaryPath ||
+      (await _getDefaultLLDBConfig()).pythonPath;
+
+    // Find the launch wrapper.
+    const wrapperScriptPath = nuclideUri.join(
+      __dirname,
+      '../scripts/launch.py',
+    );
+
+    const ipcPort = await this._spawnIpcServer(socket => {
+      socket.once('data', async data => {
+        this._launchWrapperConnected(socket, data.toString(), launchInfo);
+      });
+    });
+
+    return {
+      launchCommand: pythonBinaryPath,
+      targetExecutable: launchInfo.executablePath,
+      launchCwd: nuclideUri.expandHomeDir(
+        launchInfo.workingDirectory !== '' ? launchInfo.workingDirectory : '~',
+      ),
+      launchArgs: [
+        wrapperScriptPath,
+        String(ipcPort),
+        launchInfo.executablePath,
+        ...launchInfo.arguments,
+      ],
+    };
   }
 }
