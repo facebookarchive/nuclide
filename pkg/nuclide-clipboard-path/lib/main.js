@@ -13,7 +13,6 @@ import {CompositeDisposable} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {trackTiming} from '../../nuclide-analytics';
-import {getArcanistServiceByNuclideUri} from '../../commons-atom/fb-remote-connection';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -94,9 +93,17 @@ function getRepositoryRelativePath(path: NuclideUri): ?string {
   return null;
 }
 
-function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  const arcService = getArcanistServiceByNuclideUri(path);
-  return arcService.getProjectRelativePath(path);
+async function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
+  try {
+    const {
+      getArcanistServiceByNuclideUri,
+      // $FlowFB
+    } = require('../../commons-atom/fb-remote-connection');
+    const arcService = getArcanistServiceByNuclideUri(path);
+    return await arcService.getProjectRelativePath(path);
+  } catch (err) {
+    return null;
+  }
 }
 
 function copyToClipboard(messagePrefix: string, value: string): void {
