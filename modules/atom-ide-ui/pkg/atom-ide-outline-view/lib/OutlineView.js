@@ -30,19 +30,15 @@ import {
 } from 'nuclide-commons-ui/LoadingSpinner';
 import {EmptyState} from 'nuclide-commons-ui/EmptyState';
 
-import featureConfig from 'nuclide-commons-atom/feature-config';
 import type {SearchResult} from './OutlineViewSearch';
 import {OutlineViewSearchComponent} from './OutlineViewSearch';
 import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';
-
-const SEARCH_ENABLED_DEFAULT = true;
 
 type State = {
   fontFamily: string,
   fontSize: number,
   lineHeight: number,
   outline: OutlineForUi,
-  searchEnabled: boolean,
 };
 
 type Props = {
@@ -73,10 +69,6 @@ export class OutlineView extends React.PureComponent<Props, State> {
       outline: {
         kind: 'empty',
       },
-      searchEnabled: featureConfig.getWithDefaults(
-        'atom-ide-outline-view.searchEnabled',
-        SEARCH_ENABLED_DEFAULT,
-      ),
     };
   }
 
@@ -86,15 +78,6 @@ export class OutlineView extends React.PureComponent<Props, State> {
       this.props.outlines.subscribe(outline => {
         this.setState({outline});
       }),
-      featureConfig
-        .observeAsStream('atom-ide-outline-view.searchEnabled')
-        .subscribe((searchEnabled: mixed) => {
-          if (typeof searchEnabled === 'boolean') {
-            this.setState({searchEnabled});
-          } else {
-            this.setState({searchEnabled: SEARCH_ENABLED_DEFAULT});
-          }
-        }),
       atom.config.observe('editor.fontSize', (size: mixed) => {
         this.setState({fontSize: (size: any)});
       }),
@@ -121,7 +104,6 @@ export class OutlineView extends React.PureComponent<Props, State> {
           fontSize={this.state.fontSize}
           lineHeight={this.state.lineHeight}
           outline={this.state.outline}
-          searchEnabled={this.state.searchEnabled}
         />
       </div>
     );
@@ -133,7 +115,6 @@ type OutlineViewComponentProps = {
   fontSize: number,
   lineHeight: number,
   outline: OutlineForUi,
-  searchEnabled: boolean,
 };
 
 class OutlineViewComponent extends React.PureComponent<
@@ -144,13 +125,7 @@ class OutlineViewComponent extends React.PureComponent<
   }
 
   render(): React.Node {
-    const {
-      fontFamily,
-      fontSize,
-      lineHeight,
-      outline,
-      searchEnabled,
-    } = this.props;
+    const {fontFamily, fontSize, lineHeight, outline} = this.props;
 
     switch (outline.kind) {
       case 'empty':
@@ -208,7 +183,6 @@ class OutlineViewComponent extends React.PureComponent<
             fontSize={fontSize}
             lineHeight={lineHeight}
             outline={outline}
-            searchEnabled={searchEnabled}
           />
         );
       default:
@@ -222,7 +196,6 @@ type OutlineViewCoreProps = {
   fontSize: number,
   lineHeight: number,
   outline: OutlineForUi,
-  searchEnabled: boolean,
 };
 
 /**
@@ -241,26 +214,18 @@ class OutlineViewCore extends React.PureComponent<
   };
 
   render() {
-    const {
-      fontFamily,
-      fontSize,
-      lineHeight,
-      outline,
-      searchEnabled,
-    } = this.props;
+    const {fontFamily, fontSize, lineHeight, outline} = this.props;
     invariant(outline.kind === 'outline');
 
     return (
       <div className="outline-view-core">
-        {searchEnabled ? (
-          <OutlineViewSearchComponent
-            outlineTrees={outline.outlineTrees}
-            editor={outline.editor}
-            updateSearchResults={searchResults => {
-              this.setState({searchResults});
-            }}
-          />
-        ) : null}
+        <OutlineViewSearchComponent
+          outlineTrees={outline.outlineTrees}
+          editor={outline.editor}
+          updateSearchResults={searchResults => {
+            this.setState({searchResults});
+          }}
+        />
         <div className="outline-view-trees-scroller">
           <div className="outline-view-trees">
             {renderTrees(
