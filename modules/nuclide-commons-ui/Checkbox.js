@@ -11,7 +11,6 @@
  */
 
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import addTooltip from './addTooltip';
 
@@ -76,10 +75,7 @@ export class Checkbox extends React.PureComponent<Props> {
    * @see https://www.w3.org/TR/html5/forms.html#the-input-element
    */
   _setIndeterminate(): void {
-    // $FlowFixMe
-    ReactDOM.findDOMNode(
-      this.refs.input,
-    ).indeterminate = this.props.indeterminate;
+    this.refs.input.indeterminate = this.props.indeterminate;
   }
 
   render(): React.Node {

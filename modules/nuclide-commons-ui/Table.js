@@ -10,13 +10,11 @@
  * @format
  */
 
-/* globals HTMLElement */
-
 import invariant from 'assert';
+import nullthrows from 'nullthrows';
 import classnames from 'classnames';
 import idx from 'idx';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import {Icon} from './Icon';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -188,6 +186,7 @@ type ResizerLocation<T> = {
 export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   _resizingDisposable: ?IDisposable; // Active while resizing.
   _mouseMoveDisposable: ?IDisposable;
+  _rootNode: ?HTMLDivElement;
   _disposables: UniversalDisposable;
   _tableBody: ?HTMLElement;
 
@@ -212,10 +211,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (selection != null) {
       selection.removeAllRanges();
     }
-    // $FlowFixMe
-    const tableWidth = ReactDOM.findDOMNode(
-      this.refs.table,
-    ).getBoundingClientRect().width;
+    const tableWidth = this.refs.table.getBoundingClientRect().width;
     const startX = event.pageX;
     const startWidths = this.state.columnWidths;
     invariant(startWidths != null);
@@ -293,8 +289,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   };
 
   componentDidMount(): void {
-    const el = ReactDOM.findDOMNode(this);
-    invariant(el instanceof HTMLElement);
+    const el = nullthrows(this._rootNode);
+
     this._disposables = new UniversalDisposable(
       new ResizeObservable(el)
         .startWith((null: any))
@@ -463,7 +459,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   }
 
   render(): React.Node {
-    return <div className={this.props.className}>{this._renderContents()}</div>;
+    return (
+      <div
+        className={this.props.className}
+        ref={rootNode => (this._rootNode = rootNode)}>
+        {this._renderContents()}
+      </div>
+    );
   }
 
   _renderContents(): React.Node {

@@ -13,7 +13,6 @@
 import type {FileReferences} from '../types';
 
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 import FileReferencesView from './FileReferencesView';
 import FindReferencesModel from '../FindReferencesModel';
 import {pluralize} from 'nuclide-commons/string';
@@ -66,14 +65,11 @@ export default class FindReferencesView extends React.Component<Props, State> {
   }
 
   _onScroll(evt: Event) {
-    const root = ReactDOM.findDOMNode(this.refs.root);
-    // $FlowFixMe
+    const root = this.refs.root;
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
-    // $FlowFixMe
     const scrollBottom = root.scrollTop + root.clientHeight;
-    // $FlowFixMe
     if (root.scrollHeight - scrollBottom <= SCROLL_LOAD_THRESHOLD) {
       this.setState({loading: true});
       this._fetchMore(PAGE_SIZE);

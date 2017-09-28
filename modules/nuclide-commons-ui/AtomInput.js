@@ -14,8 +14,8 @@ import classNames from 'classnames';
 
 import {CompositeDisposable} from 'atom';
 import * as React from 'react';
-import ReactDOM from 'react-dom';
 
+import invariant from 'invariant';
 import {maybeToString} from 'nuclide-commons/string';
 
 type DefaultProps = {
@@ -64,6 +64,7 @@ type State = {
  */
 export class AtomInput extends React.Component<Props, State> {
   _disposables: ?CompositeDisposable;
+  _rootNode: ?HTMLElement;
 
   static defaultProps: DefaultProps = {
     disabled: false,
@@ -204,6 +205,7 @@ export class AtomInput extends React.Component<Props, State> {
       <atom-text-editor
         class={className}
         mini
+        ref={rootNode => (this._rootNode = rootNode)}
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
         onBlur={this.props.onBlur}
@@ -229,8 +231,9 @@ export class AtomInput extends React.Component<Props, State> {
   }
 
   getTextEditorElement(): atom$TextEditorElement {
+    invariant(this._rootNode != null);
     // $FlowFixMe
-    return ReactDOM.findDOMNode(this);
+    return this._rootNode;
   }
 
   _updateWidth(prevWidth?: number): void {
