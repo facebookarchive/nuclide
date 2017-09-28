@@ -48,8 +48,15 @@ export default class Bridge {
   constructor(debuggerModel: DebuggerModel) {
     this._debuggerModel = debuggerModel;
     this._suppressBreakpointSync = false;
-    this._commandDispatcher = new CommandDispatcher(() =>
-      debuggerModel.getStore().getIsReadonlyTarget(),
+    this._commandDispatcher = new CommandDispatcher(
+      () => debuggerModel.getStore().getIsReadonlyTarget(),
+      pausedEvent => {
+        const info = debuggerModel.getStore().getDebugProcessInfo();
+        if (info != null) {
+          return info.shouldFilterBreak(pausedEvent);
+        }
+        return false;
+      },
     );
     this._consoleEvent$ = new Subject();
     this._disposables = new UniversalDisposable(

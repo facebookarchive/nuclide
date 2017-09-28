@@ -10,6 +10,7 @@
  */
 
 import type {IPCEvent} from './types';
+import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
 
 // eslint-disable-next-line rulesdir/no-commonjs
 require('./Protocol/Object');
@@ -34,10 +35,15 @@ export default class CommandDispatcher {
   _bridgeAdapter: ?BridgeAdapter;
   _useNewChannel: boolean;
   _getIsReadonlyTarget: () => boolean;
+  _shouldFilterBreak: (pausedEvent: PausedEvent) => boolean;
 
-  constructor(getIsReadonlyTarget: () => boolean) {
+  constructor(
+    getIsReadonlyTarget: () => boolean,
+    shouldFilterBreak: (pausedEvent: PausedEvent) => boolean,
+  ) {
     this._useNewChannel = false;
     this._getIsReadonlyTarget = getIsReadonlyTarget;
+    this._shouldFilterBreak = shouldFilterBreak;
   }
 
   isNewChannel(): boolean {
@@ -96,6 +102,7 @@ export default class CommandDispatcher {
       this._bridgeAdapter = new BridgeAdapter(
         dispatchers,
         this._getIsReadonlyTarget,
+        this._shouldFilterBreak,
       );
       invariant(this._sessionSubscriptions != null);
       this._sessionSubscriptions.add(() => {

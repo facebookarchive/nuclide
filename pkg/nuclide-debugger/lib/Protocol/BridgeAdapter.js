@@ -45,8 +45,13 @@ export default class BridgeAdapter {
   _engineCreated: boolean;
   _pausedMode: boolean;
   _getIsReadonlyTarget: () => boolean;
+  _shouldFilterBreak: (pausedEvent: PausedEvent) => boolean;
 
-  constructor(dispatchers: Object, getIsReadonlyTarget: () => boolean) {
+  constructor(
+    dispatchers: Object,
+    getIsReadonlyTarget: () => boolean,
+    shouldFilterBreak: (pausedEvent: PausedEvent) => boolean,
+  ) {
     const {debuggerDispatcher, runtimeDispatcher} = dispatchers;
     this._debuggerDispatcher = debuggerDispatcher;
     this._runtimeDispatcher = runtimeDispatcher;
@@ -70,6 +75,7 @@ export default class BridgeAdapter {
       debuggerDispatcher.getEventObservable().subscribe(this._handleDebugEvent),
     );
     this._getIsReadonlyTarget = getIsReadonlyTarget;
+    this._shouldFilterBreak = shouldFilterBreak;
   }
 
   enable(): void {
@@ -264,6 +270,12 @@ export default class BridgeAdapter {
         break;
       case 'Debugger.paused': {
         const params: PausedEvent = event.params;
+        if (this._shouldFilterBreak(params)) {
+          // If the debugger front-end wants to filter out this break,
+          // auto-resume.
+          this._executionManager.resume();
+          break;
+        }
         this._handlePausedEvent(params);
         break;
       }

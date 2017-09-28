@@ -22,6 +22,7 @@ import type {
 } from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import typeof * as NativeDebuggerService from '../../nuclide-debugger-native-rpc/lib/NativeDebuggerServiceInterface';
+import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
 
 import invariant from 'assert';
 import {
@@ -38,10 +39,12 @@ import passesGK from '../../commons-node/passesGK';
 
 export class LaunchProcessInfo extends DebuggerProcessInfo {
   _launchTargetInfo: LaunchTargetInfo;
+  _shouldFilterBreaks: boolean;
 
   constructor(targetUri: NuclideUri, launchTargetInfo: LaunchTargetInfo) {
     super('lldb', targetUri);
     this._launchTargetInfo = launchTargetInfo;
+    this._shouldFilterBreaks = false;
   }
 
   clone(): LaunchProcessInfo {
@@ -65,10 +68,33 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
     return super.getDebuggerProps();
   }
 
+  shouldFilterBreak(pausedEvent: PausedEvent): boolean {
+    if (this._shouldFilterBreaks) {
+      // When starting a process in the terminal, we expect a couple additional
+      // startup breaks that should be filtered out and hidden from the user.
+      // There will be a signal break for the exec system call, and often a
+      // signal for the terminal resize event.
+      const {reason} = pausedEvent;
+      if (reason === 'exec' || reason === 'signal') {
+        return true;
+      }
+
+      // Once a real breakpoint is seen, remaining breaks should be unfiltered.
+      this._shouldFilterBreaks = false;
+    }
+
+    return false;
+  }
+
   async _launchInTerminal(
     rpcService: NativeDebuggerServiceType,
     remoteService: RemoteControlService,
   ): Promise<boolean> {
+    // Enable filtering on the first few breaks, when lanuching in the terminal
+    // we expect to see additional startup breaks due to signals sent by execing
+    // the child process.
+    this._shouldFilterBreaks = true;
+
     // Build a map of environment variables specified in the launch target info.
     const environmentVariables = new Map();
     this._launchTargetInfo.environmentVariables.forEach(variable => {
