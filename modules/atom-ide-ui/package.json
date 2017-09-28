@@ -3,7 +3,6 @@
   "version": "0.2.0",
   "description": "A suite of language service UIs for Atom.",
   "license": "BSD-3-Clause",
-  "main": "./index-entry.js",
   "homepage": "https://nuclide.io/",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/atom-ide-ui",
   "scripts": {
