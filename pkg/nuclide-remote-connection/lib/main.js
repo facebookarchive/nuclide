@@ -55,7 +55,6 @@ export {
 } from './remote-text-buffer';
 
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
-import typeof * as ArcanistService from '../../nuclide-arcanist-rpc';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';
 import typeof * as CodeSearchService from '../../nuclide-code-search-rpc/lib/CodeSearchService';
@@ -84,12 +83,6 @@ import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-ser
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));
-}
-
-export function getArcanistServiceByNuclideUri(
-  uri: NuclideUri,
-): ArcanistService {
-  return nullthrows(getServiceByNuclideUri('ArcanistService', uri));
 }
 
 export function getBuckServiceByNuclideUri(uri: NuclideUri): BuckService {

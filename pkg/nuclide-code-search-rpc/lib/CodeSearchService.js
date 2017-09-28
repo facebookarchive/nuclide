@@ -12,7 +12,6 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CodeSearchResult} from './types';
 
-import {findArcProjectIdOfPath} from '../../nuclide-arcanist-rpc';
 import {search as agAckSearch} from './AgAckService';
 import {search as rgSearch} from './RgService';
 import {ConnectableObservable, Observable} from 'rxjs';
@@ -39,12 +38,13 @@ export async function isEligibleForDirectory(
     return false;
   }
 
-  const projectId = await findArcProjectIdOfPath(rootDirectory);
-  if (projectId == null) {
-    return true;
-  }
-
   try {
+    // $FlowFB
+    const {findArcProjectIdOfPath} = require('../../fb-arcanist-rpc');
+    const projectId = await findArcProjectIdOfPath(rootDirectory);
+    if (projectId == null) {
+      return true;
+    }
     // $FlowFB
     const bigGrep = require('../../commons-atom/fb-biggrep-query'); // eslint-disable-line rulesdir/no-cross-atom-imports
     const corpus = bigGrep.ARC_PROJECT_CORPUS[projectId];

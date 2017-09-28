@@ -13,7 +13,7 @@ import {CompositeDisposable} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getAtomProjectRelativePath} from 'nuclide-commons-atom/projects';
 import {trackTiming} from '../../nuclide-analytics';
-import {getArcanistServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {getArcanistServiceByNuclideUri} from '../../commons-atom/fb-remote-connection';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 

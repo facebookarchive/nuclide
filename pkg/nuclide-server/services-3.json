@@ -4,10 +4,6 @@
     "name": "AdbService"
   },
   {
-    "implementation": "../nuclide-arcanist-rpc/lib/ArcanistService.js",
-    "name": "ArcanistService"
-  },
-  {
     "implementation": "../nuclide-buck-rpc/lib/BuckService.js",
     "name": "BuckService"
   },

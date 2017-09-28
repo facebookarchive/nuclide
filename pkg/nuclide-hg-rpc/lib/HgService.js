@@ -46,7 +46,6 @@ import debounce from 'nuclide-commons/debounce';
 import invariant from 'assert';
 
 import {fetchActiveBookmark} from './hg-bookmark-helpers';
-import {readArcConfig} from '../../nuclide-arcanist-rpc';
 import {getLogger} from 'log4js';
 import {Observable} from 'rxjs';
 
@@ -256,14 +255,18 @@ async function logWhenSubscriptionEstablished(
 }
 
 async function getForkBaseName(directoryPath: string): Promise<string> {
-  const arcConfig = await readArcConfig(directoryPath);
-  if (arcConfig != null) {
-    return (
-      arcConfig['arc.feature.start.default'] ||
-      arcConfig['arc.land.onto.default'] ||
-      DEFAULT_ARC_PROJECT_FORK_BASE
-    );
-  }
+  try {
+    // $FlowFB
+    const {readArcConfig} = require('../../fb-arcanist-rpc');
+    const arcConfig = await readArcConfig(directoryPath);
+    if (arcConfig != null) {
+      return (
+        arcConfig['arc.feature.start.default'] ||
+        arcConfig['arc.land.onto.default'] ||
+        DEFAULT_ARC_PROJECT_FORK_BASE
+      );
+    }
+  } catch (err) {}
   return DEFAULT_FORK_BASE_NAME;
 }
 
