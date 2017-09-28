@@ -834,6 +834,19 @@ class Activation {
     const updateSelectedConnection = directory => {
       this._selectedDebugConnection =
         directory != null ? directory.getPath() : null;
+      if (this._selectedDebugConnection != null) {
+        const conn = this._selectedDebugConnection;
+        if (nuclideUri.isRemote(conn)) {
+          // Use root instead of current directory as launch point for debugger.
+          this._selectedDebugConnection = nuclideUri.createRemoteUri(
+            nuclideUri.getHostname(conn),
+            '/',
+          );
+        } else {
+          // Use null instead of local path to use local debugger downstream.
+          this._selectedDebugConnection = null;
+        }
+      }
     };
     const boundUpdateSelectedColumn = updateSelectedConnection.bind(this);
     const disposable = cwdApi.observeCwd(directory =>
