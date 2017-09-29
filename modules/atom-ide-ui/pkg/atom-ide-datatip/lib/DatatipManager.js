@@ -186,9 +186,6 @@ function mountDatatipWithMarker(
     invalidate: 'never',
   });
 
-  element.style.display = 'block';
-  ReactDOM.render(renderedProviders, element);
-
   editor.decorateMarker(marker, {
     type: 'overlay',
     position: 'tail',
@@ -199,6 +196,19 @@ function mountDatatipWithMarker(
     type: 'highlight',
     class: 'datatip-highlight-region',
   });
+
+  // The editor may not mount the marker until the next update.
+  // It's not safe to render anything until that point, as datatips
+  // often need to measure their size in the DOM.
+  editor
+    .getElement()
+    .getNextUpdatePromise()
+    .then(() => {
+      if (!marker.isDestroyed() && !editor.isDestroyed()) {
+        element.style.display = 'block';
+        ReactDOM.render(renderedProviders, element);
+      }
+    });
 
   return marker;
 }

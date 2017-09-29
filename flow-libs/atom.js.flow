@@ -970,7 +970,7 @@ declare class atom$TextEditor extends atom$Model {
   getLastBufferRow(): number,
 
   // Undocumented Methods
-  getElement(): HTMLElement,
+  getElement(): atom$TextEditorElement,
   getDefaultCharWidth(): number,
   getLineHeightInPixels(): number,
   moveToTop(): void,
