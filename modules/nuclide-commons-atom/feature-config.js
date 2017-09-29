@@ -188,6 +188,7 @@ function isFeatureDisabled(name: string): boolean {
 }
 
 export default {
+  formatKeyPath,
   setPackageName,
   getPackageName,
   get,
