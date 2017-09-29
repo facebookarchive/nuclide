@@ -433,4 +433,18 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code, []);
     }).toThrow();
   });
+
+  it('re-exporting functions not supported', () => {
+    const code = "export {getPreview} from 'symbol-definition-preview'";
+    expect(() => {
+      parseServiceDefinition('fileName', code, []);
+    }).toThrow();
+  });
+
+  it('exporting functions without declaration not supported', () => {
+    const code = 'export {someFunction};';
+    expect(() => {
+      parseServiceDefinition('fileName', code, []);
+    }).toThrow();
+  });
 });
