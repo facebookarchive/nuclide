@@ -5,7 +5,7 @@
   "license": "BSD-3-Clause",
   "repository": "https://github.com/facebook/nuclide/tree/master/modules/big-dig",
   "scripts": {
-    "prepublish": "../../scripts/modules-prepublish.sh"
+    "prepublish": "../scripts/prepublish.sh"
   },
   "dependencies": {
     "async-to-generator": "1.1.0",
