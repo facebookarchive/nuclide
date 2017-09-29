@@ -22,7 +22,7 @@ import classnames from 'classnames';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {getIPsForHosts} from './connection-profile-utils';
 import {getUniqueHostsForProfiles} from './connection-profile-utils';
-import {HR} from '../../nuclide-ui/HR';
+import {HR} from 'nuclide-commons-ui/HR';
 import {MutableListSelector} from '../../nuclide-ui/MutableListSelector';
 import * as React from 'react';
 

@@ -20,7 +20,7 @@ import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
-import {HR} from '../../nuclide-ui/HR';
+import {HR} from 'nuclide-commons-ui/HR';
 
 type Props = {
   workingSetsStore: WorkingSetsStore,
