@@ -285,6 +285,15 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
   return refinements;
 }
 
+function resolvePathForPlatform(path: string): string {
+  // hg resolve on win has a bug where it returns path with both unix
+  // and win separators (T22157755). We normalize the path here.
+  if (process.platform === 'win32') {
+    return path.replace(/\//g, '\\');
+  }
+  return path;
+}
+
 export class HgService {
   _isInConflict: boolean;
   _watchmanClient: ?WatchmanClient;
@@ -1399,6 +1408,7 @@ export class HgService {
           const conflicts = parsedData.conflicts.map(conflict => {
             const {local, other} = conflict;
             let status;
+            conflict.output.path = resolvePathForPlatform(conflict.output.path);
             if (local.exists && other.exists) {
               status = MergeConflictStatus.BOTH_CHANGED;
             } else if (local.exists) {
