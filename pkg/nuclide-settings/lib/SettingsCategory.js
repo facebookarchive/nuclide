@@ -10,7 +10,7 @@
  */
 
 import * as React from 'react';
-import SettingsControl from './SettingsControl';
+import SettingsControl from 'nuclide-commons-ui/SettingsControl';
 
 type Props = {
   name: string,

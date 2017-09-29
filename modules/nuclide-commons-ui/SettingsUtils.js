@@ -1,15 +1,23 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
 import featureConfig from 'nuclide-commons-atom/feature-config';
+
+export type SettingsPropsDefault = {
+  title: string,
+  description: string,
+  keyPath: string,
+  onChange: (value: any) => mixed,
+};
 
 function getConfigValueString(keyPath: string): string {
   const value = featureConfig.get(keyPath);
@@ -62,19 +70,4 @@ export function valueToString(value: any): string {
   } else {
     return value != null ? value.toString() : '';
   }
-}
-
-// Remove spaces and hypens
-export function strip(str: string): string {
-  return str.replace(/\s+/g, '').replace(/-+/g, '');
-}
-
-/** Returns true if filter matches search string. Return true if filter is empty. */
-export function matchesFilter(filter: string, searchString: string): boolean {
-  if (filter.length === 0) {
-    return true;
-  }
-  const needle = strip(filter.toLowerCase());
-  const hay = strip(searchString.toLowerCase());
-  return hay.indexOf(needle) !== -1;
 }

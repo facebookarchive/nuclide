@@ -17,8 +17,6 @@ import SettingsCategory from './SettingsCategory';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Section} from '../../nuclide-ui/Section';
 
-import {matchesFilter} from './settings-utils';
-
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/settings';
 
 export default class NuclideSettingsPaneItem extends React.Component<
@@ -239,4 +237,19 @@ function getTitle(schema: atom$ConfigSchema, settingName: string): string {
 
 function getDescription(schema: atom$ConfigSchema): string {
   return schema.description || '';
+}
+
+// Remove spaces and hypens
+function strip(str: string): string {
+  return str.replace(/\s+/g, '').replace(/-+/g, '');
+}
+
+/** Returns true if filter matches search string. Return true if filter is empty. */
+function matchesFilter(filter: string, searchString: string): boolean {
+  if (filter.length === 0) {
+    return true;
+  }
+  const needle = strip(filter.toLowerCase());
+  const hay = strip(searchString.toLowerCase());
+  return hay.indexOf(needle) !== -1;
 }
