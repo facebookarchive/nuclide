@@ -207,6 +207,7 @@ export default class Console extends React.Component<Props, State> {
               onDisplayableRecordHeightChange={
                 this.props.onDisplayableRecordHeightChange
               }
+              shouldScrollToBottom={this._shouldScrollToBottom}
             />
             <NewMessagesNotification
               visible={this.state.unseenMessages}
@@ -304,5 +305,9 @@ export default class Console extends React.Component<Props, State> {
   _stopScrollToBottom = (): void => {
     this._isScrollingToBottom = false;
     this._scrollingThrottle.unsubscribe();
+  };
+
+  _shouldScrollToBottom = (): boolean => {
+    return this._isScrolledNearBottom || this._isScrollingToBottom;
   };
 }
