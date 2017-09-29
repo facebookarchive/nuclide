@@ -15,7 +15,7 @@ import type {NuclideRemoteConnectionProfile} from './connection-types';
 import type {Props as RemoteProjectConnectionModalProps} from './RemoteProjectConnectionModal';
 
 import Model from 'nuclide-commons/Model';
-import showModal from '../../nuclide-ui/showModal';
+import showModal from 'nuclide-commons-ui/showModal';
 import {
   getDefaultConnectionProfile,
   getOfficialRemoteServerCommand,

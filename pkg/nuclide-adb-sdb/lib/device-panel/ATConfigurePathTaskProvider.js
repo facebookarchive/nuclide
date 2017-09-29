@@ -14,7 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {TaskEvent} from 'nuclide-commons/process';
 import type {Bridge} from '../types';
 
-import showModal from '../../../nuclide-ui/showModal';
+import showModal from 'nuclide-commons-ui/showModal';
 import {ATCustomDBPathModal} from './ui/ATCustomDBPathModal';
 import {Observable} from 'rxjs';
 import * as React from 'react';
