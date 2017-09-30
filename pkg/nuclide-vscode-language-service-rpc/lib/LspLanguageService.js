@@ -87,6 +87,7 @@ import * as convert from './convert';
 import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Point, Range as atom$Range} from 'simple-text-buffer';
+import {MemoryLogger, SnapshotLogger} from '../../commons-node/memoryLogger';
 import {
   ensureInvalidations,
   forkHostServices,
@@ -123,7 +124,8 @@ export class LspLanguageService {
   _args: Array<string>;
   _spawnOptions: Object; // supplies the options for spawning a process
   _fileExtensions: Array<string>;
-  _logger: log4js$Logger;
+  _logger: MemoryLogger;
+  _snapshotter: SnapshotLogger;
   _host: HostServices;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
   _initializationOptions: Object;
@@ -171,7 +173,8 @@ export class LspLanguageService {
     fileExtensions: Array<string>,
     initializationOptions: Object,
   ) {
-    this._logger = logger;
+    this._snapshotter = new SnapshotLogger();
+    this._logger = new MemoryLogger(logger);
     this._fileCache = fileCache;
     this._masterHost = host;
     this._host = host;
@@ -187,7 +190,11 @@ export class LspLanguageService {
   dispose(): void {
     this._stop()
       .catch(_ => {})
-      .then(_ => this._masterHost.dispose());
+      .then(_ => {
+        this._masterHost.dispose();
+        this._snapshotter.dispose();
+        this._logger.dispose();
+      });
   }
 
   _setState(
@@ -287,7 +294,10 @@ export class LspLanguageService {
       // Each connection gets its own 'host' object, as an easy way to
       // get rid of all outstanding busy-signals and notifications and
       // dialogs from that connection.
-      this._host = await forkHostServices(this._masterHost, this._logger);
+      this._host = await forkHostServices(
+        this._masterHost,
+        this._logger.getUnderlyingLogger(),
+      );
       perConnectionDisposables.add(() => {
         this._host.dispose();
         this._host = this._masterHost;
@@ -362,12 +372,10 @@ export class LspLanguageService {
         new rpc.StreamMessageWriter(childProcess.stdin),
         new JsonRpcLogger(this._logger),
       );
-      if (this._logger.isLevelEnabled('TRACE')) {
-        jsonRpcConnection.trace(
-          JsonRpcTrace.Verbose,
-          new JsonRpcTraceLogger(this._logger),
-        );
-      }
+      jsonRpcConnection.trace(
+        JsonRpcTrace.Verbose,
+        new JsonRpcTraceLogger(this._logger),
+      );
 
       // We assign _lspConnection and wire up the handlers before calling
       // initialize, because any of these events might fire before initialize
@@ -526,7 +534,9 @@ export class LspLanguageService {
         rootUri: convert.localPath_lspUri(this._projectRoot),
         capabilities,
         initializationOptions: this._initializationOptions,
-        trace: this._logger.isLevelEnabled('TRACE') ? 'verbose' : 'off',
+        trace: this._logger.getUnderlyingLogger().isLevelEnabled('TRACE')
+          ? 'verbose'
+          : 'off',
       };
 
       // We'll keep sending initialize requests until it either succeeds
@@ -1176,11 +1186,18 @@ export class LspLanguageService {
       },
     };
     this._lspConnection.didCloseTextDocument(params);
+    this._snapshotter.close(fileEvent.fileVersion.filePath);
   }
 
   _fileEdit(fileEvent: FileEditEvent): void {
     invariant(this._state === 'Running');
     invariant(this._lspConnection != null);
+    const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
+    this._snapshotter.snapshot(
+      fileEvent.fileVersion.filePath,
+      fileEvent.fileVersion.version,
+      buffer,
+    );
     let contentChange: TextDocumentContentChangeEvent;
     switch (this._derivedServerCapabilities.serverWantsChange) {
       case 'incremental':
@@ -1190,10 +1207,7 @@ export class LspLanguageService {
         };
         break;
       case 'full':
-        const buffer = this._fileCache.getBufferForFileEvent(fileEvent);
-        contentChange = {
-          text: buffer.getText(),
-        };
+        contentChange = {text: buffer.getText()};
         break;
       case 'none':
         return;
@@ -1249,7 +1263,7 @@ export class LspLanguageService {
     return this._diagnosticUpdates
       .switchMap(perConnectionUpdates =>
         ensureInvalidations(
-          this._logger,
+          this._logger.getUnderlyingLogger(),
           perConnectionUpdates.map(convert.lspDiagnostics_atomDiagnostics),
         ),
       )
@@ -1642,7 +1656,18 @@ export class LspLanguageService {
   }
 
   async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
-    return [];
+    const results: Array<AdditionalLogFile> = [];
+    // verbose trace of LSP messages over past few minutes
+    results.push({
+      title: `${this._projectRoot}:LSP#${this._languageId}`,
+      mimeType: 'text/plain',
+      data: this._logger.dump(),
+    });
+    // snapshots of files over past few minutes
+    for (const {title, text} of this._snapshotter.dump()) {
+      results.push({title, mimeType: 'text/plain', data: text});
+    }
+    return results;
   }
 
   async typeHint(
@@ -1937,7 +1962,7 @@ class DerivedServerCapabilities {
   onTypeFormattingTriggerCharacters: Set<string>;
   completionTriggerCharacters: Set<string>;
 
-  constructor(capabilities: ServerCapabilities, logger: log4js$Logger) {
+  constructor(capabilities: ServerCapabilities, logger: MemoryLogger) {
     let syncKind;
     // capabilities.textDocumentSync is either a number (protocol v2)
     // or an object (protocol v3) or absent (indicating no capabilities).
@@ -2016,39 +2041,37 @@ class DerivedServerCapabilities {
 }
 
 class JsonRpcLogger {
-  _logger: log4js$Logger;
+  _logger: MemoryLogger;
 
-  constructor(logger: log4js$Logger) {
+  constructor(logger: MemoryLogger) {
     this._logger = logger;
   }
 
   error(message: string): void {
-    this._logger.error('Lsp.JsonRpc ' + message);
+    this._logger.error(message);
   }
 
   warn(message: string): void {
-    this._logger.info('Lsp.JsonRpc ' + message);
+    this._logger.info(message);
   }
 
   info(message: string): void {
-    this._logger.info('Lsp.JsonRpc ' + message);
+    this._logger.info(message);
   }
 
   log(message: string): void {
-    this._logger.trace('Jsp.JsonRpc ' + message);
+    this._logger.trace(message);
   }
 }
 
 class JsonRpcTraceLogger {
-  _logger: log4js$Logger;
+  _logger: MemoryLogger;
 
-  constructor(logger: log4js$Logger) {
+  constructor(logger: MemoryLogger) {
     this._logger = logger;
   }
 
   log(message: string, data: ?string): void {
-    this._logger.trace(
-      `LSP.trace: ${message} ${(data || '').substring(0, 800)}`,
-    );
+    this._logger.trace(`LSP.trace: ${message} ${data || ''}`);
   }
 }
