@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {
   FileVersion,
   FileOpenEvent,
@@ -1638,6 +1639,10 @@ export class LspLanguageService {
       };
       return convert.lspCommand_atomCodeAction(command, applyFunc);
     });
+  }
+
+  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+    return [];
   }
 
   async typeHint(

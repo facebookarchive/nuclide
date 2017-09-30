@@ -19,6 +19,7 @@ import type {
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-types';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {
   FileVersion,
   FileNotifier,
@@ -207,6 +208,8 @@ export interface FlowLanguageServiceType {
     range: atom$Range,
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>>,
+
+  getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>>,
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
 

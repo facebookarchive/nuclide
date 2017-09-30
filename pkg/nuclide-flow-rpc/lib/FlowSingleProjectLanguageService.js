@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   AutocompleteResult,
@@ -558,6 +559,10 @@ export class FlowSingleProjectLanguageService {
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>> {
     throw new Error('Not implemeneted');
+  }
+
+  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+    return [];
   }
 
   formatSource(

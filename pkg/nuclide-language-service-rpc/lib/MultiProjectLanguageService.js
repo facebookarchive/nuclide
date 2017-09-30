@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
 import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
@@ -269,6 +270,16 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     return (await this._getLanguageServiceForFile(
       fileVersion.filePath,
     )).getOutline(fileVersion);
+  }
+
+  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+    // Each service knows its own project root, and should put that in the
+    // log.title if needed. That's not our job.
+    const services = await this.getAllLanguageServices();
+    const results = await Promise.all(
+      services.map(service => service.getAdditionalLogFiles()),
+    );
+    return arrayFlatten(results);
   }
 
   async getCodeActions(
