@@ -34,7 +34,7 @@ export async function createMultiLspLanguageService(
   languageId: string,
   command: string,
   args: Array<string>,
-  params: {
+  params: {|
     spawnOptions?: Object,
     initializationOptions?: Object,
     fileNotifier: FileNotifier,
@@ -43,7 +43,8 @@ export async function createMultiLspLanguageService(
     fileExtensions: Array<string>,
     logCategory: string,
     logLevel: LogLevel,
-  },
+    additionalLogFilesRetentionPeriod?: number,
+  |},
 ): Promise<LanguageService> {
   const result = new MultiProjectLanguageService();
   const logger = getLogger(params.logCategory);
@@ -87,6 +88,7 @@ export async function createMultiLspLanguageService(
       projectDir,
       params.fileExtensions,
       params.initializationOptions || {},
+      Number(params.additionalLogFilesRetentionPeriod),
     );
 
     lsp.start(); // Kick off 'Initializing'...

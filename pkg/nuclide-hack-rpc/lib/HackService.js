@@ -111,6 +111,7 @@ export async function initializeLsp(
     host,
     projectFileNames,
     fileExtensions,
+    additionalLogFilesRetentionPeriod: 5 * 60 * 1000, // 5 minutes
   });
 }
 

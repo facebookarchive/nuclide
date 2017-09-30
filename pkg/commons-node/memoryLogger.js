@@ -69,6 +69,10 @@ export class MemoryLogger {
   }
 
   _appendAndExpunge(level: string, message: string): void {
+    if (this._retentionPeriod === 0) {
+      return;
+    }
+
     // this._logs will keep the past five minute's worth of logs
     const time = Date.now();
     const text =
@@ -132,6 +136,9 @@ export class SnapshotLogger {
     version: number,
     buffer: simpleTextBuffer$TextBuffer,
   ): void {
+    if (this._retentionPeriod === 0) {
+      return;
+    }
     // this._files will keep historical versions of every open file.
     // It will keep at least one copy of it, and will discard older copies if
     // they're older than five minutes. It will save version updates but no

@@ -129,6 +129,7 @@ export class LspLanguageService {
   _host: HostServices;
   _fileCache: FileCache; // tracks which fileversions we've received from Nuclide client
   _initializationOptions: Object;
+  _additionalLogFilesRetentionPeriod: number;
 
   // These fields reflect our own state.
   // (Most should be nullable types, but it's not worth the bother.)
@@ -172,9 +173,10 @@ export class LspLanguageService {
     projectRoot: string,
     fileExtensions: Array<string>,
     initializationOptions: Object,
+    additionalLogFilesRetentionPeriod: number,
   ) {
-    this._snapshotter = new SnapshotLogger();
-    this._logger = new MemoryLogger(logger);
+    this._snapshotter = new SnapshotLogger(additionalLogFilesRetentionPeriod);
+    this._logger = new MemoryLogger(logger, additionalLogFilesRetentionPeriod);
     this._fileCache = fileCache;
     this._masterHost = host;
     this._host = host;
@@ -185,6 +187,7 @@ export class LspLanguageService {
     this._spawnOptions = spawnOptions;
     this._fileExtensions = fileExtensions;
     this._initializationOptions = initializationOptions;
+    this._additionalLogFilesRetentionPeriod = additionalLogFilesRetentionPeriod;
   }
 
   dispose(): void {
@@ -1657,16 +1660,20 @@ export class LspLanguageService {
 
   async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
     const results: Array<AdditionalLogFile> = [];
-    // verbose trace of LSP messages over past few minutes
-    results.push({
-      title: `${this._projectRoot}:LSP#${this._languageId}`,
-      mimeType: 'text/plain',
-      data: this._logger.dump(),
-    });
-    // snapshots of files over past few minutes
-    for (const {title, text} of this._snapshotter.dump()) {
-      results.push({title, mimeType: 'text/plain', data: text});
+
+    if (this._additionalLogFilesRetentionPeriod > 0) {
+      // verbose trace of LSP messages over past few minutes
+      results.push({
+        title: `${this._projectRoot}:LSP#${this._languageId}`,
+        mimeType: 'text/plain',
+        data: this._logger.dump(),
+      });
+      // snapshots of files over past few minutes
+      for (const {title, text} of this._snapshotter.dump()) {
+        results.push({title, mimeType: 'text/plain', data: text});
+      }
     }
+
     return results;
   }
 

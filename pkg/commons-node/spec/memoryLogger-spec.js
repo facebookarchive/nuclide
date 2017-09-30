@@ -15,14 +15,14 @@ import {MemoryLogger} from '../memoryLogger';
 describe('memoryLogger', () => {
   let time = 0;
   let logger: MemoryLogger = ((null: any): MemoryLogger);
+  const underlyingLogger = log4js.getLogger('test');
+  underlyingLogger.setLevel('OFF');
 
   beforeEach(() => {
     time = 0;
     const time0 = new Date(0).getTimezoneOffset() * 60 * 1000; // midnight
     jasmine.unspy(Date, 'now');
     spyOn(Date, 'now').andCallFake(() => time0 + time);
-    const underlyingLogger = log4js.getLogger('test');
-    underlyingLogger.setLevel('OFF');
     logger = new MemoryLogger(underlyingLogger, 5 * 60 * 1000);
   });
 
@@ -53,5 +53,12 @@ describe('memoryLogger', () => {
     expect(logger.dump()).toBe(
       '00:02:00 INFO - 2min\n00:03:00 INFO - 3min\n00:04:00 INFO - 4min\n00:05:00 INFO - 5min\n00:06:00 INFO - 6min\n',
     );
+  });
+
+  it('declines to store anything given zero retention period', () => {
+    logger = new MemoryLogger(underlyingLogger, 0);
+    time = 1000;
+    logger.info('msg1');
+    expect(logger.dump()).toBe('');
   });
 });
