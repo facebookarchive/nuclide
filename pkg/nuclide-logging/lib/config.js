@@ -31,13 +31,6 @@ const scribeAppenderPath = nuclideUri.join(
   '../fb/scribeAppender.js',
 );
 
-export type AdditionalLogFile = {
-  title: string,
-  filename: string,
-};
-
-const additionalLogFiles: Array<AdditionalLogFile> = [];
-
 const MAX_LOG_SIZE = 1024 * 1024;
 const MAX_LOG_BACKUPS = 10;
 
@@ -130,24 +123,4 @@ export function getDefaultConfig(): log4js$Config {
   }
 
   return baseConfig;
-}
-
-export function addAdditionalLogFile(title: string, filename: string) {
-  const filePath = nuclideUri.join(LOG_DIRECTORY, filename);
-  const logFile = {
-    title,
-    filename: filePath,
-  };
-
-  if (
-    additionalLogFiles.filter(
-      entry => entry.filename === filename && entry.title === title,
-    ).length === 0
-  ) {
-    additionalLogFiles.push(logFile);
-  }
-}
-
-export function getAdditionalLogFiles(): Array<AdditionalLogFile> {
-  return additionalLogFiles;
 }
