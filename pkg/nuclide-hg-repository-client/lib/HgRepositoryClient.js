@@ -29,6 +29,8 @@ import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import {sleep} from 'nuclide-commons/promise';
 import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
@@ -120,6 +122,7 @@ function getRevisionStatusCache(
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {RemoteDirectory} from '../../nuclide-remote-connection';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -340,6 +343,19 @@ export class HgRepositoryClient {
         this._hgDiffCache = new Map();
       }),
     );
+  }
+
+  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+    const path = this._workingDirectory.getPath();
+    const prefix = nuclideUri.isRemote(path)
+      ? `${nuclideUri.getHostname(path)}:`
+      : '';
+    const err = (msg: string) => [{title: path + ':hg', data: msg}];
+    const results = await Promise.race([
+      this._service.getAdditionalLogFiles().catch(e => err(e.message)),
+      sleep(50000).then(() => err('no response in 50s')),
+    ]);
+    return results.map(log => ({...log, title: prefix + log.title}));
   }
 
   _observeStatus(

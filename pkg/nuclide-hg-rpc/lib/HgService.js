@@ -12,9 +12,11 @@
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {sleep} from 'nuclide-commons/promise';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
@@ -424,6 +426,73 @@ export class HgService {
     Map<NuclideUri, StatusCodeIdValue>,
   > {
     return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
+  }
+
+  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+    const options = {cwd: this._workingDirectory};
+    const base = await getForkBaseName(this._workingDirectory); // e.g. master
+    const root = expressionForCommonAncestor(base); // ancestor(master, .)
+
+    // The ID of the root
+    const getId = async () => {
+      try {
+        const args = ['id', '--rev', root];
+        const output = await this._hgAsyncExecute(args, options);
+        return output.stdout ? output.stdout.trim() : '<id unknown>';
+      } catch (e) {
+        return `<id error: ${e.stderr}`;
+      }
+    };
+
+    // Diff from base to current working directory
+    const getDiff = async () => {
+      try {
+        const args = ['diff', '--unified', '0', '-r', root];
+        const output = await this._hgAsyncExecute(args, options);
+        return output.stdout ? output.stdout.trim() : '<diff unknown>';
+      } catch (e) {
+        return `<diff error: ${e.stderr}>`;
+      }
+    };
+
+    // Summary of changes from base to current working directory
+    const getSummary = async () => {
+      const statuses = await this.fetchStatuses(
+        expressionForCommonAncestor(base),
+      )
+        .refCount()
+        .toPromise();
+      let result = '';
+      for (const [filepath, status] of statuses) {
+        result += `${status} ${filepath}\n`;
+      }
+      return result;
+    };
+
+    const [id, diff, summary] = await Promise.all([
+      getId(),
+      Promise.race([getDiff(), sleep(40000).then(() => 'diff timed out')]),
+      Promise.race([getSummary(), sleep(40000).then(() => 'status timed out')]),
+    ]);
+
+    const results: Array<AdditionalLogFile> = [];
+
+    // If the user is on a public revision, there's no need to provide hgdiff.
+    results.push({
+      title: `${this._workingDirectory}:hg`,
+      data:
+        `hg update -r ${id}\n` +
+        (summary === '' ? '' : 'hg import hgdiff\n') +
+        `\n${summary}`,
+    });
+    if (summary !== '') {
+      results.push({
+        title: `${this._workingDirectory}:hgdiff`,
+        data: diff,
+      });
+    }
+
+    return results;
   }
 
   async _subscribeToWatchman(): Promise<void> {

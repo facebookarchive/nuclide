@@ -11,8 +11,18 @@
 
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
+import type {
+  AdditionalLogFile,
+  AdditionalLogFilesProvider,
+} from '../../nuclide-logging/lib/rpc-types';
 
 import invariant from 'assert';
+import {
+  arrayCompact,
+  mapTransform,
+  collect,
+  arrayFlatten,
+} from 'nuclide-commons/collection';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable, Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-vcs-base';
@@ -225,4 +235,39 @@ export function deactivate(state: any): void {
 
 export function createHgRepositoryProvider() {
   return new HgRepositoryProvider();
+}
+
+async function getAllHgAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+  // Atom provides one repository object per project.
+  const repositories: Array<?atom$Repository> = atom.project.getRepositories();
+  // We want to avoid duplication in the case where two different projects both
+  // are served by the same repository path.
+  // Start by transforming into an array of [path, HgRepositoryClient] pairs.
+  const hgRepositories: Array<[string, HgRepositoryClient]> = arrayCompact(
+    repositories.map(
+      r =>
+        r != null && r.getType() === 'hg'
+          ? [r.getWorkingDirectory(), ((r: any): HgRepositoryClient)]
+          : null,
+    ),
+  );
+  // For each repository path, arbitrarily pick just the first of the
+  // HgRepositoryClients that serves that path.
+  const uniqueRepositories: Array<HgRepositoryClient> = Array.from(
+    mapTransform(
+      collect(hgRepositories),
+      (clients, dir) => clients[0],
+    ).values(),
+  );
+
+  const results: Array<Array<AdditionalLogFile>> = await Promise.all(
+    uniqueRepositories.map(r => r.getAdditionalLogFiles()),
+  );
+  return arrayFlatten(results);
+}
+
+export function createHgAdditionalLogFilesProvider(): AdditionalLogFilesProvider {
+  return {
+    getAdditionalLogFiles: getAllHgAdditionalLogFiles,
+  };
 }
