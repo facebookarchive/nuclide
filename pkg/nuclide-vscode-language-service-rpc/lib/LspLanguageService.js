@@ -70,6 +70,7 @@ import type {
 } from './jsonrpc';
 
 import invariant from 'assert';
+import {sleep} from 'nuclide-commons/promise';
 import through from 'through';
 import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -1661,17 +1662,61 @@ export class LspLanguageService {
   async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
     const results: Array<AdditionalLogFile> = [];
 
+    // The LSP server sends back either titled data (each one of which gets
+    // written as an AdditionalLogFile) or untitled data (which we accumulate
+    // and send in a single AdditionalLogFile with our own logs).
+    const lspAnonymousTitle = `${this._projectRoot}:LSP#${this._languageId}`;
+    let lspAnonymousRage = '';
+
+    if (
+      this._state === 'Running' &&
+      Boolean(this._serverCapabilities.rageProvider)
+    ) {
+      let response = null;
+      try {
+        response = await Promise.race([
+          this._lspConnection.rage(),
+          sleep(50000).then(() => [{data: 'LSP server rage timed out'}]),
+        ]);
+        invariant(response != null, 'null telemetry/rage');
+      } catch (e) {
+        this._logLspException(e);
+      }
+      if (response != null) {
+        for (const rageItem of response) {
+          if (rageItem.title == null) {
+            lspAnonymousRage += rageItem.data + '\n';
+          } else {
+            results.push({
+              title: rageItem.title,
+              data: rageItem.data,
+            });
+          }
+        }
+      }
+    }
+
     if (this._additionalLogFilesRetentionPeriod > 0) {
       // verbose trace of LSP messages over past few minutes
       results.push({
-        title: `${this._projectRoot}:LSP#${this._languageId}`,
+        title: lspAnonymousTitle,
         mimeType: 'text/plain',
-        data: this._logger.dump(),
+        data: lspAnonymousRage + '\n\n' + this._logger.dump(),
       });
+      lspAnonymousRage = '';
       // snapshots of files over past few minutes
       for (const {title, text} of this._snapshotter.dump()) {
         results.push({title, mimeType: 'text/plain', data: text});
       }
+    }
+
+    if (lspAnonymousRage !== '') {
+      results.push({
+        title: lspAnonymousTitle,
+        mimeType: 'text/plain',
+        data: lspAnonymousRage,
+      });
+      lspAnonymousRage = '';
     }
 
     return results;
