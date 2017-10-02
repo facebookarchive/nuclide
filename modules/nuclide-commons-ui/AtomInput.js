@@ -13,6 +13,7 @@
 import classNames from 'classnames';
 
 import {CompositeDisposable} from 'atom';
+import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
 
 import invariant from 'invariant';
@@ -59,12 +60,17 @@ type State = {
   value: string,
 };
 
+const BLUR_FOCUS_DEBOUNCE_DELAY = 50;
+
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
 export class AtomInput extends React.Component<Props, State> {
   _disposables: ?CompositeDisposable;
   _rootNode: ?HTMLElement;
+  _debouncedEditorBlur: (blurEvent: Event) => void;
+  _debouncedEditorFocus: () => void;
+  _isFocussed: boolean;
 
   static defaultProps: DefaultProps = {
     disabled: false,
@@ -86,6 +92,14 @@ export class AtomInput extends React.Component<Props, State> {
     this.state = {
       value,
     };
+    this._debouncedEditorFocus = debounce(
+      this._onEditorFocus,
+      BLUR_FOCUS_DEBOUNCE_DELAY,
+    );
+    this._debouncedEditorBlur = debounce(
+      this._onEditorBlur,
+      BLUR_FOCUS_DEBOUNCE_DELAY,
+    );
   }
 
   componentDidMount(): void {
@@ -190,6 +204,26 @@ export class AtomInput extends React.Component<Props, State> {
     }
   }
 
+  _onEditorFocus = (): void => {
+    if (this.isFocussed() && !this._isFocussed) {
+      this._isFocussed = true;
+      this.props.onFocus && this.props.onFocus();
+    }
+  };
+
+  _onEditorBlur = (blurEvent: Event): void => {
+    if (!this.isFocussed() && this._isFocussed) {
+      this._isFocussed = false;
+      this.props.onBlur && this.props.onBlur(blurEvent);
+    }
+  };
+
+  isFocussed(): boolean {
+    return (
+      this._rootNode != null && this._rootNode.contains(document.activeElement)
+    );
+  }
+
   render(): React.Node {
     const className = classNames(this.props.className, {
       'atom-text-editor-unstyled': this.props.unstyled,
@@ -207,8 +241,8 @@ export class AtomInput extends React.Component<Props, State> {
         mini
         ref={rootNode => (this._rootNode = rootNode)}
         onClick={this.props.onClick}
-        onFocus={this.props.onFocus}
-        onBlur={this.props.onBlur}
+        onFocus={this._debouncedEditorFocus}
+        onBlur={this._debouncedEditorBlur}
         style={this.props.style}
       />
     );

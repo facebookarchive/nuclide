@@ -279,18 +279,6 @@ export class Combobox extends React.Component<Props, State> {
   };
 
   _handleInputBlur = (event: Object): void => {
-    const {relatedTarget} = event;
-    if (
-      relatedTarget == null ||
-      // TODO(hansonw): Move this check inside AtomInput.
-      // See https://github.com/atom/atom/blob/master/src/text-editor-element.coffee#L145
-      (relatedTarget.tagName === 'INPUT' &&
-        relatedTarget.classList.contains('hidden-input')) ||
-      // Selecting a menu item registers on the portal container.
-      relatedTarget === this._getOptionsElement().parentNode
-    ) {
-      return;
-    }
     this._handleCancel();
     const {onBlur} = this.props;
     if (onBlur != null) {
