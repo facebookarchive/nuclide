@@ -60,6 +60,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       readOnlyTarget:
         this._launchTargetInfo.coreDump != null &&
         this._launchTargetInfo.coreDump !== '',
+      registers: true,
       singleThreadStepping: true,
       threads: true,
     };

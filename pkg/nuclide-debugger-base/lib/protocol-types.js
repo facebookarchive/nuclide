@@ -255,6 +255,11 @@ export type Disassembly = {
   metadata: Array<{name: string, value: string}>,
 };
 
+export type RegisterInfo = Array<{
+  groupName: string,
+  registers: Array<{name: string, value: string}>,
+}>;
+
 /** JavaScript call frame. Array of call frames form the call stack. */
 export type CallFrame = {
   /** Call frame identifier. This identifier is only valid while the virtual machine is paused. */
@@ -283,6 +288,9 @@ export type CallFrame = {
 
   /** Disassembly for the current frame */
   disassembly?: Disassembly,
+
+  /** Register state at the current frame */
+  registers?: RegisterInfo,
 };
 
 /** Scope description. */

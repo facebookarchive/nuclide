@@ -59,6 +59,24 @@ class ThreadManager(object):
         }
         self._debugger_store.chrome_channel.send_notification('Debugger.threadsUpdated', params)
 
+    def _get_frame_registers(self, frame):
+        result = []
+        registers = frame.GetRegisters()
+        for group in registers:
+            groupRegisters = []
+            for register in group:
+                groupRegisters.append({
+                    'name': register.GetName(),
+                    'value': register.GetValue(),
+                })
+
+            result.append({
+                'groupName': group.GetName(),
+                'registers': groupRegisters,
+            })
+
+        return result
+
     def _get_frame_disassembly(self, frame):
         # frame.GetFunction() returns the correct SBFunction only if debug
         # symbols are available.
@@ -139,6 +157,7 @@ class ThreadManager(object):
                     'type': 'local',
                 }],
                 'disassembly': self._get_frame_disassembly(frame),
+                'registers': self._get_frame_registers(frame),
             })
         return result
 

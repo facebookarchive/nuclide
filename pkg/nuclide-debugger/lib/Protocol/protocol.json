@@ -3189,6 +3189,24 @@
                 "description": "Disassembly of the current frame."
             },
             {
+                "id": "RegisterInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "groupName", "type": "string", "description": "Display name for this group of registers" },
+                    { "name": "registers", "type": "array", "items": { "$ref": "RegisterList" }, "description": "List of registers in this group" }
+                ],
+                "description": "Register values for the current frame."
+            },
+            {
+                "id": "RegisterList",
+                "type": "object",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "Display name for this register" },
+                    { "name": "value", "type": "string", "description": "Current value of this register" }
+                ],
+                "description": "Register values for the current frame."
+            },
+            {
                 "id": "Instruction",
                 "type": "object",
                 "properties": [
@@ -3266,6 +3284,7 @@
                     { "name": "hasSource", "type": "boolean", "optional": true, "hidden": true, "description": "Whether this frame has source code or not." },
                     { "name": "scopeChain", "type": "array", "items": { "$ref": "Scope" }, "description": "Scope chain for this call frame." },
                     { "name": "disassembly", "$ref": "Disassembly", "optional": true, "description": "Disassembly for the current frame" },
+                    { "name": "registers", "$ref": "RegisterInfo", "optional": true, "description": "Registers for the current frame" },
                     { "name": "this", "$ref": "Runtime.RemoteObject", "description": "<code>this</code> object for this call frame." },
                     { "name": "returnValue", "$ref": "Runtime.RemoteObject", "optional": true, "hidden": true, "description": "The value being returned, if the function is at return point." }
                 ],

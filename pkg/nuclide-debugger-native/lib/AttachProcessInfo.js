@@ -48,6 +48,7 @@ export class AttachProcessInfo extends DebuggerProcessInfo {
       conditionalBreakpoints: true,
       continueToLocation: true,
       disassembly: true,
+      registers: true,
       singleThreadStepping: true,
       threads: true,
     };

@@ -114,6 +114,7 @@ export type CallstackItem = {
     hasSource?: boolean,
   },
   disassembly?: FrameDissassembly,
+  registers?: RegisterInfo,
 };
 
 export type Callstack = Array<CallstackItem>;
@@ -167,6 +168,12 @@ export type FrameDissassembly = {
     comment?: string,
   }>,
 };
+
+/* Register info */
+export type RegisterInfo = Array<{
+  groupName: string,
+  registers: Array<{name: string, value: string}>,
+}>;
 
 /**
  * Interfaces for Chrome Dev Tools internal APIs.

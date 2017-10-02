@@ -41,6 +41,7 @@ export default class DebuggerProcessInfo {
       customSourcePaths: false,
       disassembly: false,
       readOnlyTarget: false,
+      registers: false,
       setVariable: false,
       singleThreadStepping: false,
       threads: false,

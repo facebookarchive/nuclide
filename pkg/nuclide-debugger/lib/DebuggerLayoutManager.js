@@ -30,6 +30,7 @@ import {BreakpointsView} from './BreakpointsView';
 import {ScopesView} from './ScopesView';
 import {WatchView} from './WatchView';
 import {DisassemblyView} from './DisassemblyView';
+import {RegisterView} from './RegisterView';
 import type {SerializedState} from '..';
 
 export type DebuggerPaneLocation = {
@@ -292,6 +293,23 @@ export class DebuggerLayoutManager {
           }
           const info = this._model.getStore().getDebugProcessInfo();
           return info != null && info.getDebuggerCapabilities().disassembly;
+        },
+      },
+      {
+        uri: debuggerUriBase + 'registers',
+        isLifetimeView: false,
+        defaultLocation: 'bottom',
+        title: () => {
+          return 'Register View';
+        },
+        isEnabled: () => true,
+        createView: () => <RegisterView model={this._model} />,
+        debuggerModeFilter: (mode: DebuggerModeType) => {
+          if (mode === DebuggerMode.STOPPED) {
+            return false;
+          }
+          const info = this._model.getStore().getDebugProcessInfo();
+          return info != null && info.getDebuggerCapabilities().registers;
         },
       },
     ];

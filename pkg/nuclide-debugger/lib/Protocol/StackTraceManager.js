@@ -101,6 +101,9 @@ export default class StackTraceManager {
       if (frame.disassembly != null) {
         result.disassembly = frame.disassembly;
       }
+      if (frame.registers != null) {
+        result.registers = frame.registers;
+      }
       return result;
     });
   }
