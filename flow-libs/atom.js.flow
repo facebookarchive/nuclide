@@ -544,8 +544,8 @@ declare class atom$Point {
   translate(other: atom$PointLike): atom$Point,
 
   // Conversion
-  serialize(): Array<number>,
-  toArray(): Array<number>,
+  serialize(): [number, number],
+  toArray(): [number, number],
 }
 
 type atom$RangeObject = {
