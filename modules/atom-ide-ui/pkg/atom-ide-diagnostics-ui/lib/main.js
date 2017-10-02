@@ -184,10 +184,11 @@ class Activation {
   _getGlobalViewStates(): Observable<GlobalViewState> {
     if (this._globalViewStates == null) {
       const packageStates = this._model.toObservable();
-
-      const diagnosticsStream = packageStates
+      const updaters = packageStates
         .map(state => state.diagnosticUpdater)
-        .distinctUntilChanged()
+        .distinctUntilChanged();
+
+      const diagnosticsStream = updaters
         .switchMap(
           updater =>
             updater == null
@@ -217,8 +218,7 @@ class Activation {
         this._model.setState({filterByActiveTextEditor});
       };
 
-      const supportedMessageKindsStream = packageStates
-        .map(state => state.diagnosticUpdater)
+      const supportedMessageKindsStream = updaters
         .switchMap(
           updater =>
             updater == null
@@ -229,18 +229,29 @@ class Activation {
         )
         .distinctUntilChanged(areSetsEqual);
 
+      const uiConfigStream = updaters.switchMap(
+        updater =>
+          updater == null
+            ? Observable.of([])
+            : observableFromSubscribeFunction(
+                updater.observeUiConfig.bind(updater),
+              ),
+      );
+
       this._globalViewStates = Observable.combineLatest(
         diagnosticsStream,
         filterByActiveTextEditorStream,
         pathToActiveTextEditorStream,
         showTracesStream,
         supportedMessageKindsStream,
+        uiConfigStream,
         (
           diagnostics,
           filterByActiveTextEditor,
           pathToActiveTextEditor,
           showTraces,
           supportedMessageKinds,
+          uiConfig,
         ) => ({
           diagnostics,
           filterByActiveTextEditor,
@@ -249,6 +260,7 @@ class Activation {
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
           supportedMessageKinds,
+          uiConfig,
         }),
       );
     }

@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
+  UiConfig,
 } from '../../../atom-ide-diagnostics/lib/types';
 import type {FilterType} from '../types';
 import type {
@@ -23,6 +24,7 @@ import type {
 
 import analytics from 'nuclide-commons-atom/analytics';
 import ExperimentalDiagnosticsTable from './ExperimentalDiagnosticsTable';
+import showModal from 'nuclide-commons-ui/showModal';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
@@ -31,6 +33,7 @@ import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import FilterButton from './FilterButton';
 import RegExpFilter from 'nuclide-commons-ui/RegExpFilter';
+import SettingsModal from './SettingsModal';
 
 export type Props = {
   diagnostics: Array<DiagnosticMessage>,
@@ -46,6 +49,7 @@ export type Props = {
   selectMessage: (message: DiagnosticMessage) => void,
   selectedMessage: ?DiagnosticMessage,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
+  uiConfig: UiConfig,
 
   hiddenTypes: Set<FilterType>,
   onTypeFilterChange: (type: FilterType) => mixed,
@@ -132,6 +136,13 @@ export default class ExperimentalDiagnosticsView extends React.Component<
               title="Open All">
               Open All
             </Button>
+            {this.props.uiConfig.length > 0 ? (
+              <Button
+                icon="gear"
+                size={ButtonSizes.SMALL}
+                onClick={this._showSettings}
+              />
+            ) : null}
           </ToolbarRight>
         </Toolbar>
         <ExperimentalDiagnosticsTable
@@ -148,6 +159,10 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       </div>
     );
   }
+
+  _showSettings = (): void => {
+    showModal(() => <SettingsModal config={this.props.uiConfig} />);
+  };
 
   _onShowTracesChange(isChecked: boolean) {
     analytics.track('diagnostics-panel-toggle-show-traces', {
