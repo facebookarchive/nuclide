@@ -56,6 +56,7 @@ export class LaunchProcessInfo extends DebuggerProcessInfo {
       ...super.getDebuggerCapabilities(),
       conditionalBreakpoints: true,
       continueToLocation: true,
+      disassembly: true,
       readOnlyTarget:
         this._launchTargetInfo.coreDump != null &&
         this._launchTargetInfo.coreDump !== '',

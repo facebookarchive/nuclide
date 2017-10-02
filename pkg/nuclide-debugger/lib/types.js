@@ -113,7 +113,9 @@ export type CallstackItem = {
     column?: number,
     hasSource?: boolean,
   },
+  disassembly?: FrameDissassembly,
 };
+
 export type Callstack = Array<CallstackItem>;
 
 /* ThreadStore Types */
@@ -152,6 +154,19 @@ export type DebuggerModeType =
   | 'stopped';
 
 export type ObjectGroup = 'watch-group' | 'console';
+
+/* disassembly info */
+export type FrameDissassembly = {
+  frameTitle: string,
+  metadata: Array<{name: string, value: string}>,
+  currentInstructionIndex: number,
+  instructions: Array<{
+    address: string,
+    instruction: string,
+    offset?: string,
+    comment?: string,
+  }>,
+};
 
 /**
  * Interfaces for Chrome Dev Tools internal APIs.

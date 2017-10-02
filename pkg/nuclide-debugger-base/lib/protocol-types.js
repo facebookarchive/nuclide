@@ -243,6 +243,18 @@ export type Location = {
   columnNumber?: number,
 };
 
+export type Disassembly = {
+  frameTitle: string,
+  currentInstructionIndex: number,
+  instructions: Array<{
+    address: string,
+    instruction: string,
+    offset?: string,
+    comment?: string,
+  }>,
+  metadata: Array<{name: string, value: string}>,
+};
+
 /** JavaScript call frame. Array of call frames form the call stack. */
 export type CallFrame = {
   /** Call frame identifier. This identifier is only valid while the virtual machine is paused. */
@@ -268,6 +280,9 @@ export type CallFrame = {
 
   /** The value being returned, if the function is at return point. */
   returnValue?: RemoteObject,
+
+  /** Disassembly for the current frame */
+  disassembly?: Disassembly,
 };
 
 /** Scope description. */

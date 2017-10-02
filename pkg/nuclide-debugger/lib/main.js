@@ -298,8 +298,19 @@ class Activation {
           this,
         ),
       }),
+      atom.commands.add('.nuclide-debugger-disassembly-view', {
+        'nuclide-debugger:copy-debugger-disassembly': this._copyDebuggerDisassembly.bind(
+          this,
+        ),
+      }),
       // Context Menu Items.
       atom.contextMenu.add({
+        '.nuclide-debugger-disassembly-view': [
+          {
+            label: 'Copy disassembly',
+            command: 'nuclide-debugger:copy-debugger-disassembly',
+          },
+        ],
         '.nuclide-debugger-breakpoint-list': [
           {
             label: 'Enable All Breakpoints',
@@ -810,6 +821,39 @@ class Activation {
     const copyElement = clickedElement.closest('.nuclide-ui-lazy-nested-value');
     if (copyElement != null) {
       atom.clipboard.write(copyElement.textContent);
+    }
+  }
+
+  _copyDebuggerDisassembly() {
+    const callstackStore = this._model.getCallstackStore();
+    const callstack = callstackStore.getCallstack();
+    if (callstack != null) {
+      const selectedFrame = callstackStore.getSelectedCallFrameIndex();
+      if (selectedFrame >= 0 && selectedFrame < callstack.length) {
+        const frameInfo = callstack[selectedFrame].disassembly;
+        if (frameInfo != null) {
+          const metadata = frameInfo.metadata
+            .map(m => {
+              return `${m.name}:\t${m.value}`;
+            })
+            .join(os.EOL);
+
+          const entries = frameInfo.instructions
+            .map(instruction => {
+              return (
+                `${instruction.address}\t` +
+                `${instruction.offset || ''}\t` +
+                `${instruction.instruction}` +
+                `${instruction.comment || ''}\t`
+              );
+            })
+            .join(os.EOL);
+
+          atom.clipboard.write(
+            `${frameInfo.frameTitle}${os.EOL}` + metadata + os.EOL + entries,
+          );
+        }
+      }
     }
   }
 
