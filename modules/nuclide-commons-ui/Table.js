@@ -610,6 +610,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
             'nuclide-ui-table-collapsed-row':
               this.props.collapsable && !isSelectedRow,
           })}
+          data-rowIndex={i}
           key={i}
           {...rowProps}>
           {renderedRow}

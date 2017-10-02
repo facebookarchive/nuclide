@@ -119,7 +119,7 @@ export class DisassemblyView extends React.Component<Props, State> {
           {
             title: 'Instruction',
             key: 'instruction',
-            width: 0.4,
+            width: 0.35,
           },
           {
             title: 'Comment',
@@ -136,7 +136,7 @@ export class DisassemblyView extends React.Component<Props, State> {
           {
             title: 'Instruction',
             key: 'instruction',
-            width: 0.45,
+            width: 0.4,
           },
           {
             title: 'Comment',
@@ -156,6 +156,10 @@ export class DisassemblyView extends React.Component<Props, State> {
         <div className="nuclide-debugger-pane-content">
           <h3>{title}</h3>
           <div>{frameMetadata}</div>
+          <div className="nuclide-debugger-disassembly-helptext">
+            The instructions for the current frame are displayed below. Right
+            click a row to add a breakpoint at an address.
+          </div>
           <div className="nuclide-debugger-disassembly-view">
             <Table
               columns={columns}
@@ -166,6 +170,7 @@ export class DisassemblyView extends React.Component<Props, State> {
               onWillSelect={() => false}
               resizable={true}
               sortable={false}
+              className="nuclide-debugger-disassembly-table"
             />
           </div>
         </div>

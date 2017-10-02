@@ -303,12 +303,23 @@ class Activation {
           this,
         ),
       }),
+      atom.commands.add('.nuclide-debugger-disassembly-table', {
+        'nuclide-debugger:add-disassembly-breakpoint': this._addDisassemblyBreakpoint.bind(
+          this,
+        ),
+      }),
       // Context Menu Items.
       atom.contextMenu.add({
         '.nuclide-debugger-disassembly-view': [
           {
             label: 'Copy disassembly',
             command: 'nuclide-debugger:copy-debugger-disassembly',
+          },
+        ],
+        '.nuclide-debugger-disassembly-table': [
+          {
+            label: 'Add breakpoint at address',
+            command: 'nuclide-debugger:add-disassembly-breakpoint',
           },
         ],
         '.nuclide-debugger-breakpoint-list': [
@@ -852,6 +863,32 @@ class Activation {
           atom.clipboard.write(
             `${frameInfo.frameTitle}${os.EOL}` + metadata + os.EOL + entries,
           );
+        }
+      }
+    }
+  }
+
+  _addDisassemblyBreakpoint(event: Event) {
+    const clickedElement: HTMLElement = (event.target: any);
+    const clickedRow: ?HTMLElement = (clickedElement.closest(
+      '.nuclide-ui-table-row',
+    ): any);
+    if (clickedRow != null) {
+      const rowIndex = clickedRow.dataset.rowindex;
+      const callstackStore = this._model.getCallstackStore();
+      const callstack = callstackStore.getCallstack();
+      const selectedFrameIndex = callstackStore.getSelectedCallFrameIndex();
+      if (
+        callstack != null &&
+        selectedFrameIndex > 0 &&
+        selectedFrameIndex < callstack.length
+      ) {
+        const disassembly = callstack[selectedFrameIndex].disassembly;
+
+        if (disassembly != null) {
+          const instruction = parseInt(rowIndex, 10);
+          const address = disassembly.instructions[instruction].address;
+          this._model.getActions().addBreakpoint(address, -1);
         }
       }
     }

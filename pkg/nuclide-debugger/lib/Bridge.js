@@ -413,7 +413,13 @@ export default class Bridge {
 
   _removeBreakpoint(breakpoint: IPCBreakpoint) {
     const {sourceURL, lineNumber} = breakpoint;
-    const path = nuclideUri.uriToNuclideUri(sourceURL);
+    let path = nuclideUri.uriToNuclideUri(sourceURL);
+    // For address based breakpoints handled by the backend, do not require
+    // a parsable file path here.
+    if (path != null && path === '/') {
+      path = sourceURL.replace('file://', '');
+    }
+
     // only handle real files for now.
     // flowlint-next-line sketchy-null-string:off
     if (path) {
