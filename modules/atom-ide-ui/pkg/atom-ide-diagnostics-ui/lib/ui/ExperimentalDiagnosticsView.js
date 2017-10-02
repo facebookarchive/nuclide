@@ -136,13 +136,11 @@ export default class ExperimentalDiagnosticsView extends React.Component<
               title="Open All">
               Open All
             </Button>
-            {this.props.uiConfig.length > 0 ? (
-              <Button
-                icon="gear"
-                size={ButtonSizes.SMALL}
-                onClick={this._showSettings}
-              />
-            ) : null}
+            <Button
+              icon="gear"
+              size={ButtonSizes.SMALL}
+              onClick={this._showSettings}
+            />
           </ToolbarRight>
         </Toolbar>
         <ExperimentalDiagnosticsTable

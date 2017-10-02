@@ -12,6 +12,8 @@
 
 import * as React from 'react';
 import BoundSettingsControl from 'nuclide-commons-ui/BoundSettingsControl';
+import {HR} from 'nuclide-commons-ui/HR';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type Props = {
   config: Array<SettingsSectionProps>,
@@ -23,8 +25,19 @@ type SettingsSectionProps = {
 };
 
 export default function SettingsModal(props: Props): ?React.Element<any> {
+  const hasProviderSettings = props.config.some(
+    config => config.settings.length > 0,
+  );
   return (
-    <div className="settings-view">
+    <div className="nuclide-diagnostics-ui-settings-modal settings-view">
+      <section className="settings-panel">
+        <BoundSettingsControl
+          keyPath={featureConfig.formatKeyPath(
+            'atom-ide-diagnostics-ui.showDiagnosticTraces',
+          )}
+        />
+      </section>
+      {hasProviderSettings ? <HR /> : null}
       {props.config.map(p => <SettingsSection key={p.providerName} {...p} />)}
     </div>
   );
