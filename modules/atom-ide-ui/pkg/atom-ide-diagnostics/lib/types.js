@@ -19,6 +19,8 @@ import type {
   CodeActionFetcher,
 } from '../../atom-ide-code-actions/lib/types';
 
+export type UiConfig = Array<{providerName: string, settings: Array<string>}>;
+
 export type DiagnosticProvider =
   | CallbackDiagnosticProvider
   | ObservableDiagnosticProvider;
@@ -37,9 +39,11 @@ export type DiagnosticInvalidationCallback = (
 ) => mixed;
 
 export type ObservableDiagnosticProvider = {
+  +name?: string, // TODO: This should probably be required. It is by the Indie API and is very useful.
   updates: Observable<DiagnosticProviderUpdate>,
   invalidations: Observable<DiagnosticInvalidationMessage>,
   +supportedMessageKinds?: Array<DiagnosticMessageKind>,
+  +uiSettings?: Array<string>,
 };
 
 export type DiagnosticInvalidationMessage =
@@ -223,6 +227,9 @@ export type LinterConfig = {
   // for example, show the "review" filter button unless there's a provider that supports review
   // messages.
   supportedMessageKinds?: Array<DiagnosticMessageKind>,
+
+  // Important settings for this provider that should be surfaced by the primary UI.
+  uiSettings?: Array<string>,
 };
 export type RegisterIndieLinter = (config: LinterConfig) => IndieLinterDelegate;
 export type {IndieLinterDelegate} from './services/IndieLinterRegistry';

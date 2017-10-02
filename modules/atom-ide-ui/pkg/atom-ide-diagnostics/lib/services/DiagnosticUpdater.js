@@ -19,6 +19,7 @@ import type {
   ProjectDiagnosticMessage,
   Store,
   DiagnosticMessageKind,
+  UiConfig,
 } from '../types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -105,6 +106,12 @@ export default class DiagnosticUpdater {
   ): IDisposable => {
     return new UniversalDisposable(
       this._states.map(Selectors.getSupportedMessageKinds).subscribe(callback),
+    );
+  };
+
+  observeUiConfig = (callback: (config: UiConfig) => mixed): IDisposable => {
+    return new UniversalDisposable(
+      this._states.map(Selectors.getUiConfig).subscribe(callback),
     );
   };
 
