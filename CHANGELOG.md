@@ -1,5 +1,20 @@
 # Nuclide Changelog
 
+## v0.258.0
+
+### General
+* Fuzzy filename search results now correctly respect .hgignore (Thanks Roy Li!)
+* File tree navigation performance was improved.
+* Fixed a bug causing empty datatips to occasionally appear.
+* The context menu in file-tree was found to sometimes target incorrect files. The menu was temporarily disabled to prevent accidental data loss.
+* Archive files are now correctly treated as read-only.
+* Updated to React 16
+* All Arcanist-related code has been removed from the open-source Nuclide.
+
+## Debugger
+* Fixed bug where console would scroll to the bottom of an expanded object whenever a property was expanded or collapsed for that object.
+* PHP Debugger: Fixed a bug causing variables in the Scopes pane not to update after issuing a console command that changed a variable's value.
+
 ## v0.257.0
 
 ### General
