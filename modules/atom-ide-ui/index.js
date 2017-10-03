@@ -86,6 +86,13 @@ export type {
 } from './pkg/atom-ide-outline-view/lib/types';
 
 export type {
+  Signature,
+  SignatureHelp,
+  SignatureHelpProvider,
+  SignatureParameter,
+} from './pkg/atom-ide-signature-help/lib/types';
+
+export type {
   HyperclickProvider,
   HyperclickSuggestion,
 } from './pkg/hyperclick/lib/types';
