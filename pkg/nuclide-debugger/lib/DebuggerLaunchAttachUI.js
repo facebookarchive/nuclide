@@ -28,7 +28,7 @@ import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
 import {Dropdown} from '../../nuclide-ui/Dropdown';
 import Tabs from '../../nuclide-ui/Tabs';
 import {Observable} from 'rxjs';
-import invariant from 'invariant';
+import invariant from 'assert';
 
 type PropsType = {
   dialogMode: DebuggerConfigAction,

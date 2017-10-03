@@ -10,7 +10,7 @@
  * @format
  */
 
-import invariant from 'invariant';
+import invariant from 'assert';
 import {Observable} from 'rxjs';
 
 import {_DOMObserverObservable as DOMObserverObservable} from '../observable-dom';

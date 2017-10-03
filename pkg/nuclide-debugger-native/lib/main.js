@@ -32,7 +32,7 @@ import logger from './utils';
 import {getConfig} from './utils';
 import {LLDBLaunchAttachProvider} from './LLDBLaunchAttachProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import invariant from 'invariant';
+import invariant from 'assert';
 import type RemoteControlService from '../../nuclide-debugger/lib/RemoteControlService';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 // eslint-disable-next-line rulesdir/no-cross-atom-imports

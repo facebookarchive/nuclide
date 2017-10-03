@@ -19,7 +19,7 @@ import {LaunchAttachStore} from '../LaunchAttachStore';
 import {LaunchUIComponent} from '../LaunchUIComponent';
 import {DebuggerActionUIProvider} from './DebuggerActionUIProvider';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'invariant';
+import invariant from 'assert';
 
 export class NativeActionUIProvider extends DebuggerActionUIProvider {
   constructor(targetUri: NuclideUri) {

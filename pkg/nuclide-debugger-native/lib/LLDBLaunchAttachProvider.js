@@ -18,7 +18,7 @@ import {LaunchAttachStore} from './LaunchAttachStore';
 import LaunchAttachDispatcher from './LaunchAttachDispatcher';
 import {LaunchAttachActions} from './LaunchAttachActions';
 import {NativeActionUIProvider} from './actions/NativeActionUIProvider';
-import invariant from 'invariant';
+import invariant from 'assert';
 
 export class LLDBLaunchAttachProvider extends DebuggerLaunchAttachProvider {
   _dispatcher: LaunchAttachDispatcher;

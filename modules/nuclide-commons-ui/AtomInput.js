@@ -16,7 +16,7 @@ import {CompositeDisposable} from 'atom';
 import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
 
-import invariant from 'invariant';
+import invariant from 'assert';
 import {maybeToString} from 'nuclide-commons/string';
 
 type DefaultProps = {

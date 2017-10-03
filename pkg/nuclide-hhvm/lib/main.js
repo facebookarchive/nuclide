@@ -24,7 +24,7 @@ import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
-import invariant from 'invariant';
+import invariant from 'assert';
 
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {AttachProcessInfo} from '../../nuclide-debugger-php/lib/AttachProcessInfo';

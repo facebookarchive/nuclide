@@ -19,7 +19,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import invariant from 'invariant';
+import invariant from 'assert';
 import {DebuggerMode} from './DebuggerStore';
 import nullthrows from 'nullthrows';
 

@@ -15,7 +15,7 @@
 
 import type {Subscriber} from 'rxjs/Subscriber';
 
-import invariant from 'invariant';
+import invariant from 'assert';
 import {Observable, Subscription} from 'rxjs';
 import shallowEqual from 'shallowequal';
 import {isIterable} from 'nuclide-commons/collection';
