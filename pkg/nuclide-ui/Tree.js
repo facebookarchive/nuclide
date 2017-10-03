@@ -60,6 +60,8 @@ type NestedTreeItemProps = {
   hasFlatChildren?: boolean, // passthrough to inner TreeList
   selected?: boolean,
   collapsed?: boolean,
+  onClick?: (event: SyntheticMouseEvent<>) => void,
+  onDoubleClick?: (event: SyntheticMouseEvent<>) => void,
 };
 export const NestedTreeItem = (props: NestedTreeItemProps) => {
   const {
@@ -69,6 +71,8 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
     collapsed,
     title,
     children,
+    onClick,
+    onDoubleClick,
     ...remainingProps
   } = props;
   return (
@@ -82,7 +86,14 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
         'list-nested-item',
       )}
       {...remainingProps}>
-      {title ? <div className="list-item">{title}</div> : null}
+      {title ? (
+        <div
+          className="list-item"
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}>
+          {title}
+        </div>
+      ) : null}
       <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
     </li>
   );

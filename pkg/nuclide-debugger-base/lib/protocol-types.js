@@ -9,6 +9,11 @@
  * @format
  */
 
+export type SetVariableResponse = {|
+  /** New value. */
+  +value: string,
+|};
+
 /** Unique script identifier. */
 export type ScriptId = string;
 
@@ -709,6 +714,11 @@ export type DebuggerResponse =
       id: number,
       // method: 'Debugger.getThreadStack',
       result: GetThreadStackResponse,
+    }
+  | {
+      id: number,
+      // method: 'Debugger.setVariableValue',
+      result: SetVariableResponse,
     };
 
 export type DebuggerEvent =

@@ -3650,7 +3650,8 @@
                     { "name": "variableName", "type": "string", "description": "Variable name." },
                     { "name": "newValue", "$ref": "Runtime.CallArgument", "description": "New variable value." },
                     { "name": "callFrameId", "$ref": "CallFrameId", "optional": true, "description": "Id of callframe that holds variable." },
-                    { "name": "functionObjectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "Object id of closure (function) that holds variable." }
+                    { "name": "functionObjectId", "$ref": "Runtime.RemoteObjectId", "optional": true, "description": "Object id of closure (function) that holds variable." },
+                    { "name": "newValueAsString", "type": "string", "optional": true, "description": "New variable value but typed as ?string." }
                 ],
                 "hidden": true,
                 "description": "Changes value of variable in a callframe or a closure. Either callframe or function must be specified. Object-based scopes are not supported and must be mutated manually."

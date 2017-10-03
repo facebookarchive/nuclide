@@ -262,7 +262,7 @@ export default class VsDebugSessionTranslator {
       this._commandsOfType('Debugger.getScriptSource').flatMap(
         catchCommandError(async command => {
           invariant(command.method === 'Debugger.getScriptSource');
-          const result = {
+          const result: NuclideDebugProtocol.GetScriptSourceResponse = {
             scriptSource: await this._files.getFileSource(
               command.params.scriptId,
             ),
@@ -330,9 +330,12 @@ export default class VsDebugSessionTranslator {
           threadInfo != null && threadInfo.state === 'paused'
             ? threadInfo.callFrames
             : null;
+        const result: NuclideDebugProtocol.GetThreadStackResponse = {
+          callFrames: callFrames || [],
+        };
         return {
           id: command.id,
-          result: {callFrames: callFrames || []},
+          result,
         };
       }),
       this._commandsOfType('Debugger.evaluateOnCallFrame').flatMap(
@@ -343,6 +346,27 @@ export default class VsDebugSessionTranslator {
             expression,
             Number(callFrameId),
           );
+          return {
+            id: command.id,
+            result,
+          };
+        }),
+      ),
+      this._commandsOfType('Debugger.setVariableValue').flatMap(
+        catchCommandError(async command => {
+          invariant(command.method === 'Debugger.setVariableValue');
+          const {callFrameId, variableName, newValue} = command.params;
+          invariant(newValue.value != null);
+          const value = newValue.value;
+          const args = {
+            variablesReference: Number(callFrameId),
+            name: variableName,
+            value,
+          };
+          const {body} = await this._session.setVariable(args);
+          const result: NuclideDebugProtocol.SetVariableResponse = {
+            value: body.value,
+          };
           return {
             id: command.id,
             result,
@@ -513,7 +537,7 @@ export default class VsDebugSessionTranslator {
         return breakpointCommands.map((command, i) => {
           const {breakpointId, lineNumber, resolved} = translatorBreakpoins[i];
 
-          const result = {
+          const result: NuclideDebugProtocol.SetBreakpointByUrlResponse = {
             breakpointId,
             locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
             resolved,

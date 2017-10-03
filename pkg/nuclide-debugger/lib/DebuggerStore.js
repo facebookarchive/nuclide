@@ -196,6 +196,13 @@ export class DebuggerStore {
     return this._emitter.on(DEBUGGER_MODE_CHANGE_EVENT, callback);
   }
 
+  supportsSetVariable(): boolean {
+    const currentDebugInfo = this.getDebugProcessInfo();
+    return currentDebugInfo
+      ? currentDebugInfo.getDebuggerCapabilities().setVariable
+      : false;
+  }
+
   _handlePayload(payload: DebuggerAction) {
     switch (payload.actionType) {
       case ActionTypes.SET_PROCESS_SOCKET:

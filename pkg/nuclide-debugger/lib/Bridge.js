@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerModel from './DebuggerModel';
 import type {
   Callstack,
@@ -173,6 +174,23 @@ export default class Bridge {
     if (!isNaN(threadNo)) {
       this._debuggerModel.getActions().updateSelectedThread(threadNo);
     }
+  }
+
+  sendSetVariableCommand(
+    setVariableRequestId: number,
+    scopeObjectId: RemoteObjectId,
+    expression: string,
+    newValue: string,
+    callback: Function,
+  ): void {
+    this._commandDispatcher.send(
+      'setVariable',
+      setVariableRequestId,
+      scopeObjectId,
+      expression,
+      newValue,
+      callback,
+    );
   }
 
   sendEvaluationCommand(

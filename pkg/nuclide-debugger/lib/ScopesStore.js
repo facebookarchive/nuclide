@@ -9,22 +9,38 @@
  * @format
  */
 
+import type {
+  RemoteObjectId,
+  SetVariableResponse,
+} from '../../nuclide-debugger-base/lib/protocol-types';
+import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
 
 import {Disposable, CompositeDisposable} from 'atom';
+import invariant from 'invariant';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
+import {reportError} from './Protocol/EventReporter';
+import {DebuggerStore} from './DebuggerStore';
 
 export default class ScopesStore {
+  _bridge: Bridge;
   _disposables: IDisposable;
+  _debuggerStore: DebuggerStore;
   /**
    * Treat as immutable.
    */
   _scopes: BehaviorSubject<Array<ScopeSection>>;
 
-  constructor(dispatcher: DebuggerDispatcher) {
-    const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
+  constructor(
+    dispatcher: DebuggerDispatcher,
+    bridge: Bridge,
+    debuggerStore: DebuggerStore,
+  ) {
+    this._bridge = bridge;
+    this._debuggerStore = debuggerStore;
+    const dispatcherToken = dispatcher.register(this._handlePayload);
     this._disposables = new CompositeDisposable(
       new Disposable(() => {
         dispatcher.unregister(dispatcherToken);
@@ -33,7 +49,7 @@ export default class ScopesStore {
     this._scopes = new BehaviorSubject([]);
   }
 
-  _handlePayload(payload: DebuggerAction): void {
+  _handlePayload = (payload: DebuggerAction): void => {
     switch (payload.actionType) {
       case ActionTypes.CLEAR_INTERFACE:
       case ActionTypes.SET_SELECTED_CALLFRAME_INDEX:
@@ -45,7 +61,7 @@ export default class ScopesStore {
       default:
         return;
     }
-  }
+  };
 
   _handleClearInterface(): void {
     this._scopes.next([]);
@@ -58,6 +74,58 @@ export default class ScopesStore {
   getScopes(): Observable<Array<ScopeSection>> {
     return this._scopes.asObservable();
   }
+
+  supportsSetVariable(): boolean {
+    return this._debuggerStore.supportsSetVariable();
+  }
+
+  // Returns a promise of the updated value after it has been set.
+  async sendSetVariableRequest(
+    scopeNumber: number,
+    scopeObjectId: RemoteObjectId,
+    expression: string,
+    newValue: string,
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      function callback(error: Error, response: SetVariableResponse) {
+        if (error != null) {
+          reportError(`setVariable failed with ${JSON.stringify(error)}`);
+          reject(error);
+        } else {
+          resolve(response.value);
+        }
+      }
+      this._bridge.sendSetVariableCommand(
+        0, // remove this if unnecessary
+        scopeObjectId,
+        expression,
+        newValue,
+        callback.bind(this),
+      );
+    }).then(confirmedNewValue => {
+      this._setVariable(scopeNumber, expression, confirmedNewValue);
+      return confirmedNewValue;
+    });
+  }
+
+  _setVariable = (
+    scopeNumber: number,
+    expression: string,
+    confirmedNewValue: string,
+  ): void => {
+    const scopes = this._scopes.getValue();
+    const selectedScope = scopes[scopeNumber];
+    invariant(selectedScope != null);
+    const variableToChange = selectedScope.scopeVariables.find(
+      v => v.name === expression,
+    );
+    invariant(variableToChange != null);
+    variableToChange.value.value = confirmedNewValue;
+    if (variableToChange.value.description != null) {
+      variableToChange.value.description = confirmedNewValue;
+    }
+    this._handleUpdateScopes(scopes);
+  };
 
   dispose(): void {
     this._disposables.dispose();

@@ -82,7 +82,7 @@ const valueRenderers = [
   renderDefault,
 ];
 
-export default class SimpleValueComponent extends React.PureComponent<Props> {
+export default class SimpleValueComponent extends React.Component<Props> {
   render(): React.Node {
     const {expression, evaluationResult} = this.props;
     let displayValue;
