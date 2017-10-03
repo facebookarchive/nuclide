@@ -16,6 +16,7 @@ import CallstackStore from './CallstackStore';
 import DebuggerModel from './DebuggerModel';
 import {Table} from 'nuclide-commons-ui/Table';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 
 type Props = {
   model: DebuggerModel,
@@ -23,6 +24,7 @@ type Props = {
 
 type State = {
   registerInfo: ?RegisterInfo,
+  filter: string,
 };
 
 export class RegisterView extends React.Component<Props, State> {
@@ -39,6 +41,7 @@ export class RegisterView extends React.Component<Props, State> {
     this._callstackStore = this.props.model.getCallstackStore();
     this.state = {
       registerInfo: null,
+      filter: '',
     };
   }
 
@@ -87,12 +90,17 @@ export class RegisterView extends React.Component<Props, State> {
       {
         title: 'Register',
         key: 'register',
-        width: 0.25,
+        width: 0.2,
       },
       {
-        title: 'Value',
+        title: 'Value (hex)',
         key: 'value',
-        width: 0.75,
+        width: 0.4,
+      },
+      {
+        title: 'Value (decimal)',
+        key: 'decimal',
+        width: 0.4,
       },
     ];
 
@@ -104,16 +112,41 @@ export class RegisterView extends React.Component<Props, State> {
 
     const groups = registerInfo.map(group => {
       const rows = group.registers
+        .filter(r => {
+          const filter = this.state.filter.trim();
+          if (filter === '') {
+            return true;
+          }
+
+          try {
+            const exp = new RegExp(filter, 'i');
+            return (
+              r.name.match(exp) != null ||
+              r.value.match(exp) != null ||
+              parseInt(r.value, 16)
+                .toString()
+                .match(exp) != null
+            );
+          } catch (e) {
+            // If the user enters an invalid regular expression, fall back
+            // to string contains matching.
+            return r.name.includes(filter);
+          }
+        })
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(register => {
+          const decimalValue = parseInt(register.value, 16);
           return {
             data: {
               register: register.name,
               value: register.value,
+              decimal: Number.isNaN(decimalValue) ? '' : decimalValue,
             },
           };
         });
-
+      if (rows.length === 0) {
+        return null;
+      }
       return (
         <div
           className="nuclide-debugger-registers-view"
@@ -135,6 +168,14 @@ export class RegisterView extends React.Component<Props, State> {
 
     return (
       <div className="nuclide-debugger-container-new">
+        <div>
+          <AtomInput
+            size="sm"
+            placeholderText="Filter registers by regex..."
+            value={this.state.filter}
+            onDidChange={filter => this.setState({filter})}
+          />
+        </div>
         <div className="nuclide-debugger-pane-content">{groups}</div>
       </div>
     );

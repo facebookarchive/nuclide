@@ -308,6 +308,11 @@ class Activation {
           this,
         ),
       }),
+      atom.commands.add('.nuclide-debugger-registers-view', {
+        'nuclide-debugger:copy-debugger-registers': this._copyDebuggerRegisters.bind(
+          this,
+        ),
+      }),
       // Context Menu Items.
       atom.contextMenu.add({
         '.nuclide-debugger-disassembly-view': [
@@ -320,6 +325,12 @@ class Activation {
           {
             label: 'Add breakpoint at address',
             command: 'nuclide-debugger:add-disassembly-breakpoint',
+          },
+        ],
+        '.nuclide-debugger-registers-view': [
+          {
+            label: 'Copy registers',
+            command: 'nuclide-debugger:copy-debugger-registers',
           },
         ],
         '.nuclide-debugger-breakpoint-list': [
@@ -863,6 +874,33 @@ class Activation {
           atom.clipboard.write(
             `${frameInfo.frameTitle}${os.EOL}` + metadata + os.EOL + entries,
           );
+        }
+      }
+    }
+  }
+
+  _copyDebuggerRegisters() {
+    const callstackStore = this._model.getCallstackStore();
+    const callstack = callstackStore.getCallstack();
+    if (callstack != null) {
+      const selectedFrame = callstackStore.getSelectedCallFrameIndex();
+      if (selectedFrame >= 0 && selectedFrame < callstack.length) {
+        const registerInfo = callstack[selectedFrame].registers;
+        if (registerInfo != null) {
+          const rows = [];
+          for (const group of registerInfo) {
+            rows.push(group.groupName + os.EOL);
+            for (const register of group.registers) {
+              const value = register.value != null ? register.value : '';
+              let decimalValue = parseInt(value, 16);
+              if (Number.isNaN(decimalValue)) {
+                decimalValue = '';
+              }
+              rows.push(`${register.name}:\t${value}\t${decimalValue}`);
+            }
+            rows.push(os.EOL);
+          }
+          atom.clipboard.write(rows.join(os.EOL));
         }
       }
     }
