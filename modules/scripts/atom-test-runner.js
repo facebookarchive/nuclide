@@ -29,6 +29,22 @@
 // eslint-disable-next-line rulesdir/modules-dependencies
 require('../nuclide-node-transpiler');
 
+// Patch `console` to output through the main process.
+const {Console} = require('console');
+const {ipcRenderer} = require('electron');
+global.console = new Console(
+  /* stdout */ {
+    write(chunk) {
+      ipcRenderer.send('write-to-stdout', chunk);
+    },
+  },
+  /* stderr */ {
+    write(chunk) {
+      ipcRenderer.send('write-to-stderr', chunk);
+    },
+  }
+);
+
 module.exports = function(params) {
   return params.legacyTestRunner(params)
     .then(statusCode => {
