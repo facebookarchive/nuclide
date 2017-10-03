@@ -9,6 +9,8 @@
  * @format
  */
 
+// DEPRECATED, AVOID USING THIS. Use 'showModal' in nuclide-commons-ui instead
+
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Portal} from './Portal';
 import * as React from 'react';
