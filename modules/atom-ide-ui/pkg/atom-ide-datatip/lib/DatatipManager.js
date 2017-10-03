@@ -18,6 +18,7 @@ import type {
   DatatipProvider,
   ModifierDatatipProvider,
   ModifierKey,
+  PinnedDatatipOptions,
 } from './types';
 
 import * as React from 'react';
@@ -653,8 +654,13 @@ class DatatipManagerForEditor {
     this._setState(DatatipState.HIDDEN);
   }
 
-  createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip {
+  createPinnedDataTip(
+    datatip: Datatip,
+    editor: TextEditor,
+    options?: PinnedDatatipOptions,
+  ): PinnedDatatip {
     const pinnedDatatip = new PinnedDatatip(datatip, editor, {
+      ...options,
       onDispose: () => {
         this._pinnedDatatips.delete(pinnedDatatip);
       },
@@ -680,6 +686,7 @@ class DatatipManagerForEditor {
         hideDataTips: () => {
           this._hideDatatip();
         },
+        position: 'end-of-line',
       }),
     );
   };
@@ -789,7 +796,11 @@ export class DatatipManager {
     return this._modifierDatatipProviders.addProvider(provider);
   }
 
-  createPinnedDataTip(datatip: Datatip, editor: TextEditor): PinnedDatatip {
+  createPinnedDataTip(
+    datatip: Datatip,
+    editor: TextEditor,
+    options?: PinnedDatatipOptions,
+  ): PinnedDatatip {
     const manager = this._editorManagers.get(editor);
     if (!manager) {
       throw new Error(
@@ -797,7 +808,7 @@ export class DatatipManager {
           'no datatip manager',
       );
     }
-    return manager.createPinnedDataTip(datatip, editor);
+    return manager.createPinnedDataTip(datatip, editor, options);
   }
 
   dispose(): void {
