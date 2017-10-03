@@ -105,29 +105,25 @@ function findTaggedFiles(
 ): Promise<Map<string, GeneratedFileType>> {
   let command: string;
   let args: Array<string>;
-  let options;
   if (process.platform === 'win32' && nuclideUri.isLocal(dirPath)) {
     command = 'findstr';
     const pattern = config.generatedTag + ' ' + config.partialGeneratedTag;
     const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // ignore "files with nonprintable characters"
     args = ['-p', pattern, ...filesToGrep];
-    options = {
-      cwd: dirPath,
-    };
   } else {
     command = 'grep';
     const pattern = config.generatedTag + '\\|' + config.partialGeneratedTag;
     const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // print with filename, ignore binary files and skip directories
     args = ['-HId', 'skip', pattern, ...filesToGrep];
-    options = {
-      cwd: dirPath,
-      isExitError: ({exitCode, signal}) => {
-        return signal != null && (exitCode == null || exitCode > 1);
-      },
-    };
   }
+  const options = {
+    cwd: dirPath,
+    isExitError: ({exitCode, signal}) => {
+      return signal != null && (exitCode == null || exitCode > 1);
+    },
+  };
   return runCommand(command, args, options)
     .map(stdout => {
       const fileTags: Map<string, GeneratedFileType> = new Map();
