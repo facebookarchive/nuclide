@@ -12,7 +12,7 @@
 import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
 import type ScopesStore from './ScopesStore';
 import type {EvaluationResult, ExpansionResult, ScopeSection} from './types';
-import invariant from 'invariant';
+import invariant from 'assert';
 import {WatchExpressionStore} from './WatchExpressionStore';
 import type {Observable} from 'rxjs';
 

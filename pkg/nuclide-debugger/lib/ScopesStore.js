@@ -18,7 +18,7 @@ import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
 
 import {Disposable, CompositeDisposable} from 'atom';
-import invariant from 'invariant';
+import invariant from 'assert';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
 import {reportError} from './Protocol/EventReporter';
