@@ -16,19 +16,23 @@
   rulesdir/no-commonjs: 0,
   */
 
-/**
- * TODO(hansonw): Remove this rule if this bugfix PR gets merged:
- * https://github.com/substack/node-shell-quote/pull/29
- */
+const DISALLOWED_MODULES = new Map([
+  ['invariant', '"assert"'],
+  // TODO(hansonw): Remove this if this bugfix PR gets merged:
+  // https://github.com/substack/node-shell-quote/pull/29
+  ['shell-quote', 'shellQuote and shellParse from nuclide-commons/string'],
+]);
 
 module.exports = function(context) {
   return {
     ImportDeclaration(node) {
-      if (node.source.value === 'shell-quote') {
+      const name = node.source.value;
+      const descriptionOfAlternative = DISALLOWED_MODULES.get(name);
+      if (descriptionOfAlternative != null) {
         context.report({
           node,
           message:
-            'Use shellQuote and shellParse from nuclide-commons/string instead of "shell-quote"',
+            `Use ${descriptionOfAlternative} instead of "${name}"`,
         });
       }
     },
