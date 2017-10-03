@@ -1,3 +1,56 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HunkDiff = undefined;
+
+var _AtomTextEditor;
+
+function _load_AtomTextEditor() {
+  return _AtomTextEditor = require('nuclide-commons-ui/AtomTextEditor');
+}
+
+var _nullthrows;
+
+function _load_nullthrows() {
+  return _nullthrows = _interopRequireDefault(require('nullthrows'));
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _atom = require('atom');
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _Section;
+
+function _load_Section() {
+  return _Section = require('./Section');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,44 +58,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-
-import {AtomTextEditor} from 'nuclide-commons-ui/AtomTextEditor';
-import nullthrows from 'nullthrows';
-import {pluralize} from 'nuclide-commons/string';
-import {Range, TextBuffer} from 'atom';
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import {Section} from './Section';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {goToLocation} from 'nuclide-commons-atom/go-to-location';
-
-type Props = {
-  collapsable?: boolean,
-  diff: diffparser$FileDiff,
-  extraData?: mixed,
-  hunkComponentClass?: React.ComponentType<HunkProps>,
-  fullPath?: NuclideUri,
-  collapsable?: boolean,
-  collapsedByDefault?: boolean,
-};
-
-type DefaultProps = {
-  hunkComponentClass: React.ComponentType<HunkProps>,
-};
-
-export type HunkProps = {
-  collapsable?: boolean,
-  extraData?: mixed,
-  grammar: atom$Grammar,
-  hunk: diffparser$Hunk,
-};
-
-function getHighlightClass(type: diffparser$ChangeType): ?string {
+function getHighlightClass(type) {
   if (type === 'add') {
     return 'nuclide-ui-hunk-diff-insert';
   }
@@ -53,49 +73,42 @@ function getHighlightClass(type: diffparser$ChangeType): ?string {
 }
 
 const NBSP = '\xa0';
-const GutterElement = (props: {
-  lineNumber: number,
-  gutterWidth: number,
-}): React.Element<any> => {
-  const {lineNumber, gutterWidth} = props;
+const GutterElement = props => {
+  const { lineNumber, gutterWidth } = props;
   const fillWidth = gutterWidth - String(lineNumber).length;
   // Paralleling the original line-number implementation,
   // pad the line number with leading spaces.
   const filler = fillWidth > 0 ? new Array(fillWidth).fill(NBSP).join('') : '';
   // Attempt to reuse the existing line-number styles.
-  return (
-    <div className="line-number">
-      {filler}
-      {lineNumber}
-    </div>
+  return _react.createElement(
+    'div',
+    { className: 'line-number' },
+    filler,
+    lineNumber
   );
 };
 
-export class HunkDiff extends React.Component<HunkProps> {
-  editor: atom$TextEditor;
-  _disposables: UniversalDisposable;
+class HunkDiff extends _react.Component {
 
-  constructor(props: HunkProps) {
+  constructor(props) {
     super(props);
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  componentDidMount(): void {
-    const editor = nullthrows(this.editor);
+  componentDidMount() {
+    const editor = (0, (_nullthrows || _load_nullthrows()).default)(this.editor);
     this._createLineMarkers(editor);
     this._createLineNumbers(editor);
   }
 
-  componentWillReceiveProps(nextProps: HunkProps): void {
-    const {hunk, grammar} = nextProps;
+  componentWillReceiveProps(nextProps) {
+    const { hunk, grammar } = nextProps;
     const changes = hunk.changes;
     const prevHunk = this.props.hunk;
-    const editor = nullthrows(this.editor);
+    const editor = (0, (_nullthrows || _load_nullthrows()).default)(this.editor);
 
     const newText = changes.map(change => change.content.slice(1)).join('\n');
-    const oldText = prevHunk.changes
-      .map(change => change.content.slice(1))
-      .join('\n');
+    const oldText = prevHunk.changes.map(change => change.content.slice(1)).join('\n');
     const oldGrammar = this.props.grammar;
 
     if (newText === oldText && grammar === oldGrammar) {
@@ -109,22 +122,22 @@ export class HunkDiff extends React.Component<HunkProps> {
       editor.setGrammar(grammar);
     }
     this._disposables.dispose();
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._createLineMarkers(editor);
     this._createLineNumbers(editor);
   }
 
-  shouldComponentUpdate(nextProps: HunkProps): boolean {
+  shouldComponentUpdate(nextProps) {
     return false;
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
   // Line numbers are contiguous, but have a random starting point, so we can't use the
   // default line-number gutter.
-  _createLineNumbers(editor: atom$TextEditor): void {
+  _createLineNumbers(editor) {
     const changeCount = this.props.hunk.changes.length;
     const initialOffset = this.props.hunk.newStart;
     const maxDisplayLineNumber = initialOffset + changeCount - 1;
@@ -132,7 +145,7 @@ export class HunkDiff extends React.Component<HunkProps> {
     const gutterWidth = String(maxDisplayLineNumber).length;
     const suffix = gutterWidth > 0 && gutterWidth < 5 ? `-w${gutterWidth}` : '';
     const gutter = editor.addGutter({
-      name: `nuclide-ui-file-changes-line-number-gutter${suffix}`,
+      name: `nuclide-ui-file-changes-line-number-gutter${suffix}`
     });
     let deletedLinesInSection = 0;
     let deletedLines = 0;
@@ -146,14 +159,14 @@ export class HunkDiff extends React.Component<HunkProps> {
       const displayLine = line + initialOffset - deletedLines;
       const item = this._createGutterItem(displayLine, gutterWidth);
       const marker = editor.markBufferPosition([line, 0], {
-        invalidate: 'touch',
+        invalidate: 'touch'
       });
       gutter.decorateMarker(marker, {
         type: 'gutter',
-        item,
+        item
       });
       this._disposables.add(() => {
-        ReactDOM.unmountComponentAtNode(item);
+        _reactDom.default.unmountComponentAtNode(item);
         marker.destroy();
       });
     }
@@ -162,18 +175,12 @@ export class HunkDiff extends React.Component<HunkProps> {
     });
   }
 
-  _createGutterItem(
-    lineNumber: number,
-    gutterWidthInCharacters: number,
-  ): Object {
+  _createGutterItem(lineNumber, gutterWidthInCharacters) {
     const item = document.createElement('div');
-    ReactDOM.render(
-      <GutterElement
-        lineNumber={lineNumber}
-        gutterWidth={gutterWidthInCharacters}
-      />,
-      item,
-    );
+    _reactDom.default.render(_react.createElement(GutterElement, {
+      lineNumber: lineNumber,
+      gutterWidth: gutterWidthInCharacters
+    }), item);
     return item;
   }
 
@@ -182,12 +189,12 @@ export class HunkDiff extends React.Component<HunkProps> {
    * @param type The type of highlight to be applied to the line.
    *             Could be a value of: ['insert', 'delete'].
    */
-  _createLineMarkers(editor: atom$TextEditor): void {
+  _createLineMarkers(editor) {
     let hunkIndex = 0;
     for (const hunkChanges of this.props.hunk.changes) {
       const lineNumber = hunkIndex++;
-      const range = new Range([lineNumber, 0], [lineNumber + 1, 0]);
-      const marker = editor.markBufferRange(range, {invalidate: 'never'});
+      const range = new _atom.Range([lineNumber, 0], [lineNumber + 1, 0]);
+      const marker = editor.markBufferRange(range, { invalidate: 'never' });
       const className = getHighlightClass(hunkChanges.type);
       if (className == null) {
         // No need to highlight normal lines.
@@ -195,7 +202,7 @@ export class HunkDiff extends React.Component<HunkProps> {
       }
       const decoration = editor.decorateMarker(marker, {
         type: 'highlight',
-        class: className,
+        class: className
       });
 
       this._disposables.add(() => {
@@ -204,114 +211,120 @@ export class HunkDiff extends React.Component<HunkProps> {
     }
   }
 
-  render(): React.Node {
-    const {hunk, grammar} = this.props;
-    const {changes} = hunk;
+  render() {
+    const { hunk, grammar } = this.props;
+    const { changes } = hunk;
     // Remove the first character in each line (/[+- ]/) which indicates addition / deletion
     const text = changes.map(change => change.content.slice(1)).join('\n');
-    const textBuffer = new TextBuffer();
+    const textBuffer = new _atom.TextBuffer();
     textBuffer.setText(text);
 
-    return (
-      <AtomTextEditor
-        autoGrow={true}
-        className="nuclide-ui-hunk-diff-text-editor"
-        correctContainerWidth={false}
-        grammar={grammar}
-        gutterHidden={true}
-        readOnly={true}
-        ref={editorRef => {
-          // $FlowFixMe(>=0.53.0) Flow suppress
-          this.editor = editorRef && editorRef.getModel();
-        }}
-        textBuffer={textBuffer}
-      />
-    );
+    return _react.createElement((_AtomTextEditor || _load_AtomTextEditor()).AtomTextEditor, {
+      autoGrow: true,
+      className: 'nuclide-ui-hunk-diff-text-editor',
+      correctContainerWidth: false,
+      grammar: grammar,
+      gutterHidden: true,
+      readOnly: true,
+      ref: editorRef => {
+        // $FlowFixMe(>=0.53.0) Flow suppress
+        this.editor = editorRef && editorRef.getModel();
+      },
+      textBuffer: textBuffer
+    });
   }
 }
 
-/* Renders changes to a single file. */
-export default class FileChanges extends React.Component<Props> {
-  static defaultProps: DefaultProps = {
-    hunkComponentClass: HunkDiff,
-  };
+exports.HunkDiff = HunkDiff; /* Renders changes to a single file. */
 
-  _handleFilenameClick = (event: SyntheticMouseEvent<>): void => {
-    const {fullPath} = this.props;
-    if (fullPath == null) {
-      return;
-    }
-    goToLocation(fullPath);
-    event.stopPropagation();
-  };
+class FileChanges extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-  render(): React.Node {
-    const {diff, fullPath, collapsable, collapsedByDefault} = this.props;
-    const {additions, annotation, chunks, deletions, to: fileName} = diff;
+    return _temp = super(...args), this._handleFilenameClick = event => {
+      const { fullPath } = this.props;
+      if (fullPath == null) {
+        return;
+      }
+      (0, (_goToLocation || _load_goToLocation()).goToLocation)(fullPath);
+      event.stopPropagation();
+    }, _temp;
+  }
+
+  render() {
+    const { diff, fullPath, collapsable, collapsedByDefault } = this.props;
+    const { additions, annotation, chunks, deletions, to: fileName } = diff;
     const grammar = atom.grammars.selectGrammar(fileName, '');
     const hunks = [];
     let i = 0;
     for (const chunk of chunks) {
       if (i > 0) {
-        hunks.push(
-          <div className="nuclide-ui-hunk-diff-spacer" key={`spacer-${i}`} />,
-        );
+        hunks.push(_react.createElement('div', { className: 'nuclide-ui-hunk-diff-spacer', key: `spacer-${i}` }));
       }
       hunks.push(
-        // $FlowFixMe(>=0.53.0) Flow suppress
-        <this.props.hunkComponentClass
-          extraData={this.props.extraData}
-          key={chunk.oldStart}
-          grammar={grammar}
-          hunk={chunk}
-        />,
-      );
+      // $FlowFixMe(>=0.53.0) Flow suppress
+      _react.createElement(this.props.hunkComponentClass, {
+        extraData: this.props.extraData,
+        key: chunk.oldStart,
+        grammar: grammar,
+        hunk: chunk
+      }));
       i++;
     }
     let annotationComponent;
     if (annotation != null) {
-      annotationComponent = (
-        <span>
-          {annotation.split('\n').map((line, index) => (
-            <span key={index}>
-              {line}
-              <br />
-            </span>
-          ))}
-        </span>
+      annotationComponent = _react.createElement(
+        'span',
+        null,
+        annotation.split('\n').map((line, index) => _react.createElement(
+          'span',
+          { key: index },
+          line,
+          _react.createElement('br', null)
+        ))
       );
     }
 
-    const diffDetails = (
-      <span>
-        {annotationComponent} (
-        {additions + deletions} {pluralize('line', additions + deletions)}
-        )
-      </span>
+    const diffDetails = _react.createElement(
+      'span',
+      null,
+      annotationComponent,
+      ' (',
+      additions + deletions,
+      ' ',
+      (0, (_string || _load_string()).pluralize)('line', additions + deletions),
+      ')'
     );
 
-    const renderedFilename =
-      fullPath != null ? (
-        <a onClick={this._handleFilenameClick}>{fileName}</a>
-      ) : (
-        fileName
-      );
+    const renderedFilename = fullPath != null ? _react.createElement(
+      'a',
+      { onClick: this._handleFilenameClick },
+      fileName
+    ) : fileName;
 
-    const headline = (
-      <span className="nuclide-ui-file-changes-item">
-        {renderedFilename} {diffDetails}
-      </span>
+    const headline = _react.createElement(
+      'span',
+      { className: 'nuclide-ui-file-changes-item' },
+      renderedFilename,
+      ' ',
+      diffDetails
     );
 
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
-      <Section
-        collapsable={collapsable}
-        collapsedByDefault={collapsedByDefault}
-        headline={headline}
-        title="Click to open">
-        {hunks}
-      </Section>
+      _react.createElement(
+        (_Section || _load_Section()).Section,
+        {
+          collapsable: collapsable,
+          collapsedByDefault: collapsedByDefault,
+          headline: headline,
+          title: 'Click to open' },
+        hunks
+      )
     );
   }
 }
+exports.default = FileChanges;
+FileChanges.defaultProps = {
+  hunkComponentClass: HunkDiff
+};

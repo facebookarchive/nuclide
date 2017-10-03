@@ -1,3 +1,13 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +15,26 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type DebuggerInstanceBase from './DebuggerInstance';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {
-  DebuggerCapabilities,
-  DebuggerProperties,
-} from '../../nuclide-debugger-base';
-import type {PausedEvent} from '../../nuclide-debugger-base/lib/protocol-types';
+class DebuggerProcessInfo {
 
-export default class DebuggerProcessInfo {
-  _serviceName: string;
-  _targetUri: NuclideUri;
-
-  constructor(serviceName: string, targetUri: NuclideUri) {
+  constructor(serviceName, targetUri) {
     this._serviceName = serviceName;
     this._targetUri = targetUri;
   }
 
-  getServiceName(): string {
+  getServiceName() {
     return this._serviceName;
   }
 
-  getTargetUri(): NuclideUri {
+  getTargetUri() {
     return this._targetUri;
   }
 
-  getDebuggerCapabilities(): DebuggerCapabilities {
+  getDebuggerCapabilities() {
     return {
       conditionalBreakpoints: false,
       continueToLocation: false,
@@ -42,37 +42,40 @@ export default class DebuggerProcessInfo {
       readOnlyTarget: false,
       setVariable: false,
       singleThreadStepping: false,
-      threads: false,
+      threads: false
     };
   }
 
-  getDebuggerProps(): DebuggerProperties {
+  getDebuggerProps() {
     return {
       customControlButtons: [],
       targetDescription: () => null,
       threadColumns: null,
-      threadsComponentTitle: 'Threads',
+      threadsComponentTitle: 'Threads'
     };
   }
 
-  configureSourceFilePaths(): void {
+  configureSourceFilePaths() {
     // Debuggers that support this will override this routine.
     throw new Error('Not supported');
   }
 
-  clone(): DebuggerProcessInfo {
+  clone() {
     throw new Error('abstract method');
   }
 
-  shouldFilterBreak(pausedEvent: PausedEvent): boolean {
+  shouldFilterBreak(pausedEvent) {
     // Gives an individual debugger front-end the option to auto-resume
     // from a break if it should be filtered so that the user doesn't see it.
     return false;
   }
 
-  async debug(): Promise<DebuggerInstanceBase> {
-    throw new Error('abstract method');
+  debug() {
+    return (0, _asyncToGenerator.default)(function* () {
+      throw new Error('abstract method');
+    })();
   }
 
-  dispose(): void {}
+  dispose() {}
 }
+exports.default = DebuggerProcessInfo;

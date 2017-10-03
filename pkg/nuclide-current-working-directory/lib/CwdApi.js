@@ -1,68 +1,71 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Directory} from '../../nuclide-remote-connection';
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CwdApi = undefined;
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _FileTreeHelpers;
+
+function _load_FileTreeHelpers() {
+  return _FileTreeHelpers = _interopRequireDefault(require('../../nuclide-file-tree/lib/FileTreeHelpers'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
-import FileTreeHelpers from '../../nuclide-file-tree/lib/FileTreeHelpers';
-import {BehaviorSubject} from 'rxjs';
+class CwdApi {
 
-export class CwdApi {
-  _cwd$: Observable<?Directory>;
-  _cwdPath$: BehaviorSubject<?string>;
-  _disposables: UniversalDisposable;
-
-  constructor(initialCwdPath: ?string) {
-    this._cwdPath$ = new BehaviorSubject(initialCwdPath);
+  constructor(initialCwdPath) {
+    this._cwdPath$ = new _rxjsBundlesRxMinJs.BehaviorSubject(initialCwdPath);
     this._cwd$ = this._cwdPath$
-      // Re-check the CWD every time the project paths change.
-      // Adding/removing projects can affect the validity of cwdPath.
-      .merge(
-        observableFromSubscribeFunction(cb =>
-          atom.project.onDidChangePaths(cb),
-        ).mapTo(null),
-      )
-      .map(() => this.getCwd())
-      .map(directory => (isValidDirectory(directory) ? directory : null))
-      .distinctUntilChanged();
+    // Re-check the CWD every time the project paths change.
+    // Adding/removing projects can affect the validity of cwdPath.
+    .merge((0, (_event || _load_event()).observableFromSubscribeFunction)(cb => atom.project.onDidChangePaths(cb)).mapTo(null)).map(() => this.getCwd()).map(directory => isValidDirectory(directory) ? directory : null).distinctUntilChanged();
 
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  setCwd(path: string): void {
+  setCwd(path) {
     if (getDirectory(path) == null) {
       throw new Error(`Path does not belong to a project root: ${path}`);
     }
     this._cwdPath$.next(path);
   }
 
-  observeCwd(callback: (directory: ?Directory) => void): IDisposable {
-    const disposable = new UniversalDisposable(
-      this._cwd$.subscribe(directory => {
-        callback(directory);
-      }),
-    );
+  observeCwd(callback) {
+    const disposable = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._cwd$.subscribe(directory => {
+      callback(directory);
+    }));
     this._disposables.add(disposable);
     return disposable;
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  _getDefaultCwdPath(): ?string {
+  _getDefaultCwdPath() {
     for (const directory of atom.project.getDirectories()) {
       if (isValidDirectory(directory)) {
         return directory.getPath();
@@ -71,15 +74,23 @@ export class CwdApi {
     return null;
   }
 
-  getCwd(): ?Directory {
-    return (
-      getDirectory(this._cwdPath$.getValue()) ||
-      getDirectory(this._getDefaultCwdPath())
-    );
+  getCwd() {
+    return getDirectory(this._cwdPath$.getValue()) || getDirectory(this._getDefaultCwdPath());
   }
 }
 
-function getDirectory(path: ?string): ?Directory {
+exports.CwdApi = CwdApi; /**
+                          * Copyright (c) 2015-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the license found in the LICENSE file in
+                          * the root directory of this source tree.
+                          *
+                          * 
+                          * @format
+                          */
+
+function getDirectory(path) {
   if (path == null) {
     return null;
   }
@@ -88,16 +99,16 @@ function getDirectory(path: ?string): ?Directory {
       continue;
     }
     const dirPath = directory.getPath();
-    if (nuclideUri.contains(dirPath, path)) {
-      const relative = nuclideUri.relative(dirPath, path);
+    if ((_nuclideUri || _load_nuclideUri()).default.contains(dirPath, path)) {
+      const relative = (_nuclideUri || _load_nuclideUri()).default.relative(dirPath, path);
       return directory.getSubdirectory(relative);
     }
   }
 }
 
-function isValidDirectory(directory: ?Directory): boolean {
+function isValidDirectory(directory) {
   if (directory == null) {
     return true;
   }
-  return FileTreeHelpers.isValidDirectory(directory);
+  return (_FileTreeHelpers || _load_FileTreeHelpers()).default.isValidDirectory(directory);
 }

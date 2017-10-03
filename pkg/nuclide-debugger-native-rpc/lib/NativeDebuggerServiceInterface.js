@@ -1,3 +1,12 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.NativeDebuggerService = exports.getAttachTargetInfoList = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,94 +14,55 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
-import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+let getAttachTargetInfoList = exports.getAttachTargetInfoList = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (targetPid) {
+    throw new Error('Not implemented');
+  });
 
-export type AttachTargetInfo = {
-  pid: number,
-  name: string,
-  commandName: string,
-  basepath?: string,
-};
+  return function getAttachTargetInfoList(_x) {
+    return _ref.apply(this, arguments);
+  };
+})();
 
-export type LaunchTargetInfo = {
-  executablePath: string,
-  arguments: Array<string>,
-  environmentVariables: Array<string>,
-  workingDirectory: string,
-  stdinFilePath?: string,
-  basepath?: string,
-  lldbPythonPath?: ?string, // see DebuggerConfig
-  coreDump?: string,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-export type BootstrapDebuggerInfo = {
-  lldbBootstrapFiles: Array<string>,
-  basepath?: string,
-  lldbPythonPath?: ?string, // see DebuggerConfig
-};
+class NativeDebuggerService {
+  constructor(config) {}
 
-export type DebuggerConfig = {
-  // config for lldb
-  logLevel: LogLevel,
-  pythonBinaryPath: ?string, // path of the actual python binary, e.g /usr/bin/python
-  buckConfigRootFile: string,
-  lldbPythonPath: ?string, // path of the lldb python modules
-  envPythonPath: string, // sets the PYTHONPATH env var when spawning the lldb server
-};
-
-export type PrepareForLaunchResponse = {
-  launchCommand: string,
-  launchCwd: NuclideUri,
-  targetExecutable: NuclideUri,
-  launchArgs: Array<string>,
-};
-
-export async function getAttachTargetInfoList(
-  targetPid: ?number,
-): Promise<Array<AttachTargetInfo>> {
-  throw new Error('Not implemented');
-}
-
-export class NativeDebuggerService {
-  constructor(config: DebuggerConfig) {}
-
-  getOutputWindowObservable(): ConnectableObservable<string> {
+  getOutputWindowObservable() {
     throw new Error('Not implemented');
   }
 
-  getServerMessageObservable(): ConnectableObservable<string> {
+  getServerMessageObservable() {
     throw new Error('Not implemented');
   }
 
-  attach(attachInfo: AttachTargetInfo): ConnectableObservable<void> {
+  attach(attachInfo) {
     throw new Error('Not implemented');
   }
 
-  launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
+  launch(launchInfo) {
     throw new Error('Not implemented');
   }
 
-  prepareForTerminalLaunch(
-    launchInfo: LaunchTargetInfo,
-  ): Promise<PrepareForLaunchResponse> {
+  prepareForTerminalLaunch(launchInfo) {
     throw new Error('Not implemented');
   }
 
-  bootstrap(bootstrapInfo: BootstrapDebuggerInfo): ConnectableObservable<void> {
+  bootstrap(bootstrapInfo) {
     throw new Error('Not implemented');
   }
 
-  sendCommand(message: string): Promise<void> {
+  sendCommand(message) {
     throw new Error('Not implemented');
   }
 
-  dispose(): Promise<void> {
+  dispose() {
     throw new Error('Not implemented');
   }
 }
+exports.NativeDebuggerService = NativeDebuggerService;

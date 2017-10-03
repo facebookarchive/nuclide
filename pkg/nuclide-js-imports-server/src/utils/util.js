@@ -1,3 +1,26 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.lspPositionToAtomPoint = lspPositionToAtomPoint;
+exports.atomPointToLSPPosition = atomPointToLSPPosition;
+exports.babelLocationToAtomRange = babelLocationToAtomRange;
+exports.atomRangeToLSPRange = atomRangeToLSPRange;
+exports.lspRangeToAtomRange = lspRangeToAtomRange;
+exports.compareLspPosition = compareLspPosition;
+exports.compareLspRange = compareLspRange;
+exports.importPathToPriority = importPathToPriority;
+exports.compareForInsertion = compareForInsertion;
+exports.compareForSuggestion = compareForSuggestion;
+exports.getRequiredModule = getRequiredModule;
+
+var _simpleTextBuffer;
+
+function _load_simpleTextBuffer() {
+  return _simpleTextBuffer = require('simple-text-buffer');
+}
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,55 +28,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
 // flowlint-next-line untyped-type-import:off
-import type {Position, IPosition, IRange} from 'vscode-languageserver-types';
-
-import {Point, Range} from 'simple-text-buffer';
-
-export function lspPositionToAtomPoint(lspPosition: IPosition): atom$Point {
-  return new Point(lspPosition.line, lspPosition.character);
+function lspPositionToAtomPoint(lspPosition) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(lspPosition.line, lspPosition.character);
 }
 
-export function atomPointToLSPPosition(atomPoint: atom$PointObject): IPosition {
+function atomPointToLSPPosition(atomPoint) {
   return {
     line: atomPoint.row,
-    character: atomPoint.column,
+    character: atomPoint.column
   };
 }
 
-export function babelLocationToAtomRange(location: Object): atom$Range {
-  return new Range(
-    new Point(location.start.line - 1, location.start.col),
-    new Point(location.end.line - 1, location.end.col),
-  );
+function babelLocationToAtomRange(location) {
+  return new (_simpleTextBuffer || _load_simpleTextBuffer()).Range(new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(location.start.line - 1, location.start.col), new (_simpleTextBuffer || _load_simpleTextBuffer()).Point(location.end.line - 1, location.end.col));
 }
 
-export function atomRangeToLSPRange(atomRange: atom$Range): IRange {
+function atomRangeToLSPRange(atomRange) {
   return {
     start: atomPointToLSPPosition(atomRange.start),
-    end: atomPointToLSPPosition(atomRange.end),
+    end: atomPointToLSPPosition(atomRange.end)
   };
 }
 
-export function lspRangeToAtomRange(lspRange: IRange): atom$RangeObject {
+function lspRangeToAtomRange(lspRange) {
   return {
     start: lspPositionToAtomPoint(lspRange.start),
-    end: lspPositionToAtomPoint(lspRange.end),
+    end: lspPositionToAtomPoint(lspRange.end)
   };
 }
 
-export function compareLspPosition(a: Position, b: Position): number {
+function compareLspPosition(a, b) {
   return a.line - b.line || a.character - b.character;
 }
 
-export function compareLspRange(a: IRange, b: IRange): number {
-  return (
-    compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end)
-  );
+function compareLspRange(a, b) {
+  return compareLspPosition(a.start, b.start) || compareLspPosition(a.end, b.end);
 }
 
 /**
@@ -66,7 +80,7 @@ const MODULES_PRIORITY = -1;
 const RELATIVE_PRIORITY = 0;
 const LOCAL_PRIORITY = 1;
 
-export function importPathToPriority(path: string): number {
+function importPathToPriority(path) {
   if (path.startsWith('..')) {
     return RELATIVE_PRIORITY;
   }
@@ -76,11 +90,11 @@ export function importPathToPriority(path: string): number {
   return MODULES_PRIORITY;
 }
 
-function isLowerCase(s: string) {
+function isLowerCase(s) {
   return s.toLowerCase() === s;
 }
 
-export function compareForInsertion(path1: string, path2: string): number {
+function compareForInsertion(path1, path2) {
   const p1 = importPathToPriority(path1);
   const p2 = importPathToPriority(path2);
   if (p1 !== p2) {
@@ -99,7 +113,7 @@ export function compareForInsertion(path1: string, path2: string): number {
   return path1.localeCompare(path2);
 }
 
-export function compareForSuggestion(path1: string, path2: string): number {
+function compareForSuggestion(path1, path2) {
   const p1 = importPathToPriority(path1);
   const p2 = importPathToPriority(path2);
   if (p1 !== p2) {
@@ -114,14 +128,8 @@ export function compareForSuggestion(path1: string, path2: string): number {
 }
 
 // Check if an AST node is a require call, and returns the literal value.
-export function getRequiredModule(node: Object): ?string {
-  if (
-    node.type === 'CallExpression' &&
-    node.callee.type === 'Identifier' &&
-    node.callee.name === 'require' &&
-    node.arguments[0] &&
-    node.arguments[0].type === 'StringLiteral'
-  ) {
+function getRequiredModule(node) {
+  if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'require' && node.arguments[0] && node.arguments[0].type === 'StringLiteral') {
     return node.arguments[0].value;
   }
 }

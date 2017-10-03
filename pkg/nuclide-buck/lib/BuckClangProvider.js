@@ -1,138 +1,136 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  ClangCompilationDatabase,
-  ClangRequestSettings,
-} from '../../nuclide-clang-rpc/lib/rpc-types';
-import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {CompilationDatabaseParams} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
-import {Cache} from '../../commons-node/cache';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {BuckTaskRunner} from './BuckTaskRunner';
-import {ClangFlagsFileWatcher} from '../../nuclide-clang-base/lib/ClangFlagsFileWatcher';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+exports.getClangProvider = getClangProvider;
+
+var _nuclideRemoteConnection;
+
+function _load_nuclideRemoteConnection() {
+  return _nuclideRemoteConnection = require('../../nuclide-remote-connection');
+}
+
+var _cache;
+
+function _load_cache() {
+  return _cache = require('../../commons-node/cache');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _BuckTaskRunner;
+
+function _load_BuckTaskRunner() {
+  return _BuckTaskRunner = require('./BuckTaskRunner');
+}
+
+var _ClangFlagsFileWatcher;
+
+function _load_ClangFlagsFileWatcher() {
+  return _ClangFlagsFileWatcher = require('../../nuclide-clang-base/lib/ClangFlagsFileWatcher');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Provider {
-  _projectRootCache: Cache<string, Promise<?string>> = new Cache();
-  _compilationDBCache: Cache<
-    string,
-    Promise<?ClangCompilationDatabase>,
-  > = new Cache();
-  _host: NuclideUri;
-  _params: CompilationDatabaseParams;
-  _flagsFileWatcher: ClangFlagsFileWatcher;
 
-  constructor(host: NuclideUri, params: CompilationDatabaseParams) {
+  constructor(host, params) {
+    this._projectRootCache = new (_cache || _load_cache()).Cache();
+    this._compilationDBCache = new (_cache || _load_cache()).Cache();
+
     this._host = host;
-    this._flagsFileWatcher = new ClangFlagsFileWatcher(host);
+    this._flagsFileWatcher = new (_ClangFlagsFileWatcher || _load_ClangFlagsFileWatcher()).ClangFlagsFileWatcher(host);
     this._params = params;
   }
 
-  getCompilationDatabase(src: string): Promise<?ClangCompilationDatabase> {
+  getCompilationDatabase(src) {
     return this._compilationDBCache.getOrCreate(src, () => {
-      return getBuckServiceByNuclideUri(this._host)
-        .getCompilationDatabase(src, this._params)
-        .refCount()
-        .do(db => {
-          if (db != null && db.flagsFile != null) {
-            this._flagsFileWatcher.watch(db.flagsFile, src, () =>
-              this.resetForSource(src),
-            );
-          }
-        })
-        .toPromise();
+      return (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(this._host).getCompilationDatabase(src, this._params).refCount().do(db => {
+        if (db != null && db.flagsFile != null) {
+          this._flagsFileWatcher.watch(db.flagsFile, src, () => this.resetForSource(src));
+        }
+      }).toPromise();
     });
   }
 
-  getProjectRoot(src: string): Promise<?string> {
-    return this._projectRootCache.getOrCreate(src, () =>
-      getBuckServiceByNuclideUri(this._host).getRootForPath(src),
-    );
+  getProjectRoot(src) {
+    return this._projectRootCache.getOrCreate(src, () => (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(this._host).getRootForPath(src));
   }
 
-  resetForSource(src: string): void {
+  resetForSource(src) {
     this._compilationDBCache.delete(src);
-    getBuckServiceByNuclideUri(this._host).resetCompilationDatabaseForSource(
-      src,
-      this._params,
-    );
+    (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(this._host).resetCompilationDatabaseForSource(src, this._params);
     this._flagsFileWatcher.resetForSource(src);
   }
 
-  reset(): void {
+  reset() {
     this._compilationDBCache.clear();
-    getBuckServiceByNuclideUri(this._host).resetCompilationDatabase(
-      this._params,
-    );
+    (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(this._host).resetCompilationDatabase(this._params);
     this._flagsFileWatcher.reset();
   }
-}
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
 
-const providersCache = new Cache({
-  keyFactory: ([host, params: CompilationDatabaseParams]) =>
-    JSON.stringify([nuclideUri.getHostnameOpt(host) || '', params]),
-  dispose: provider => provider.reset(),
+const providersCache = new (_cache || _load_cache()).Cache({
+  keyFactory: ([host, params]) => JSON.stringify([(_nuclideUri || _load_nuclideUri()).default.getHostnameOpt(host) || '', params]),
+  dispose: provider => provider.reset()
 });
 
-function getProvider(
-  host: NuclideUri,
-  params: CompilationDatabaseParams,
-): Provider {
-  return providersCache.getOrCreate(
-    [host, params],
-    () => new Provider(host, params),
-  );
+function getProvider(host, params) {
+  return providersCache.getOrCreate([host, params], () => new Provider(host, params));
 }
 
-const supportsSourceCache: Cache<string, Promise<boolean>> = new Cache();
+const supportsSourceCache = new (_cache || _load_cache()).Cache();
 
-export function getClangProvider(
-  taskRunner: BuckTaskRunner,
-): ClangConfigurationProvider {
+function getClangProvider(taskRunner) {
   return {
-    async supportsSource(src: string): Promise<boolean> {
-      return supportsSourceCache.getOrCreate(
-        src,
-        async () =>
-          (await getBuckServiceByNuclideUri(src).getRootForPath(src)) != null,
-      );
+    supportsSource(src) {
+      return (0, _asyncToGenerator.default)(function* () {
+        return supportsSourceCache.getOrCreate(src, (0, _asyncToGenerator.default)(function* () {
+          return (yield (0, (_nuclideRemoteConnection || _load_nuclideRemoteConnection()).getBuckServiceByNuclideUri)(src).getRootForPath(src)) != null;
+        }));
+      })();
     },
-    async getSettings(src: string): Promise<?ClangRequestSettings> {
-      const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
-      const provider = getProvider(src, params);
-      const [compilationDatabase, projectRoot] = await Promise.all([
-        provider.getCompilationDatabase(src),
-        provider.getProjectRoot(src),
-      ]);
-      if (projectRoot == null) {
-        return null;
-      }
-      return {
-        projectRoot,
-        compilationDatabase,
-      };
+    getSettings(src) {
+      return (0, _asyncToGenerator.default)(function* () {
+        const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
+        const provider = getProvider(src, params);
+        const [compilationDatabase, projectRoot] = yield Promise.all([provider.getCompilationDatabase(src), provider.getProjectRoot(src)]);
+        if (projectRoot == null) {
+          return null;
+        }
+        return {
+          projectRoot,
+          compilationDatabase
+        };
+      })();
     },
-    resetForSource(src: string): void {
+    resetForSource(src) {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       getProvider(src, params).resetForSource(src);
       supportsSourceCache.delete(src);
     },
-    reset(src: string): void {
+    reset(src) {
       const params = taskRunner.getCompilationDatabaseParamsForCurrentContext();
       providersCache.delete([src, params]);
       supportsSourceCache.clear();
     },
-    priority: 100,
+    priority: 100
   };
 }

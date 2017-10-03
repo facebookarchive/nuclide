@@ -1,34 +1,33 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  ClientErrorExtensions,
-  ConnectConfig,
-  ExecOptions,
-  Prompt,
-} from 'ssh2';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SshClient = exports.SshClosedError = undefined;
 
-import {lastly, Deferred} from 'nuclide-commons/promise';
-import {Client, ClientChannel} from 'ssh2';
-import {Observable} from 'rxjs';
-import {SftpClient} from './SftpClient';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-export type {
-  ClientChannel,
-  ClientErrorExtensions,
-  ConnectConfig,
-  ExecOptions,
-  Prompt,
-} from 'ssh2';
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+var _ssh;
+
+function _load_ssh() {
+  return _ssh = require('ssh2');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _SftpClient;
+
+function _load_SftpClient() {
+  return _SftpClient = require('./SftpClient');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Emitted when the server is asking for replies to the given `prompts` for keyboard-
@@ -41,73 +40,63 @@ export type {
  *
  * NOTE: It's possible for the server to come back and ask more questions.
  */
-export type KeyboardInteractiveHandler = (
-  name: string,
-  instructions: string,
-  lang: string,
-  prompts: Prompt[],
-) => Promise<Array<string>>;
-
-export class SshClosedError extends Error {
-  constructor(message: string) {
+class SshClosedError extends Error {
+  constructor(message) {
     super(message);
   }
 }
 
+exports.SshClosedError = SshClosedError; /**
+                                          * Represents an SSH connection. This wraps the `Client` class from ssh2, but reinterprets the
+                                          * API using promises instead of callbacks. The methods of this class generally correspond to the
+                                          * same methods on `Client`.
+                                          */
 /**
- * Represents an SSH connection. This wraps the `Client` class from ssh2, but reinterprets the
- * API using promises instead of callbacks. The methods of this class generally correspond to the
- * same methods on `Client`.
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
  */
-export class SshClient {
-  _client: Client;
-  _onError: Observable<Error & ClientErrorExtensions>;
-  _onClose: Observable<{hadError: boolean}>;
-  _deferredContinue: ?Deferred<void> = null;
+
+class SshClient {
 
   /**
    * Wraps and takes ownership of the ssh2 Client.
    * @param {*} client
    * @param {*} onKeyboard - a callback to provide interactive prompts to the user
    */
-  constructor(client?: Client, onKeyboard: KeyboardInteractiveHandler) {
-    this._client = client || new Client();
-    this._onError = Observable.fromEvent(this._client, 'error');
-    this._onClose = Observable.fromEvent(
-      this._client,
-      'close',
-      (hadError: boolean) => ({
-        hadError,
-      }),
-    );
+  constructor(client, onKeyboard) {
+    this._deferredContinue = null;
+
+    this._client = client || new (_ssh || _load_ssh()).Client();
+    this._onError = _rxjsBundlesRxMinJs.Observable.fromEvent(this._client, 'error');
+    this._onClose = _rxjsBundlesRxMinJs.Observable.fromEvent(this._client, 'close', hadError => ({
+      hadError
+    }));
 
     this._client.on('continue', () => this._resolveContinue());
-    this._client.on('close', (hadError: boolean) => {
+    this._client.on('close', hadError => {
       this._resolveContinue();
     });
-    this._client.on(
-      'keyboard-interactive',
-      (
-        name: string,
-        instructions: string,
-        lang: string,
-        prompts: Prompt[],
-        finish: (responses: Array<string>) => void,
-      ) => onKeyboard(name, instructions, lang, prompts).then(finish),
-    );
+    this._client.on('keyboard-interactive', (name, instructions, lang, prompts, finish) => onKeyboard(name, instructions, lang, prompts).then(finish));
   }
 
   /**
    * Emitted when an error occurred.
    */
-  onError(): Observable<Error & ClientErrorExtensions> {
+  onError() {
     return this._onError;
   }
 
   /**
    * Emitted when the socket was closed.
    */
-  onClose(): Observable<{hadError: boolean}> {
+  onClose() {
     return this._onClose;
   }
 
@@ -116,7 +105,7 @@ export class SshClient {
    * the 'continue' event before sending more data. This variable is updated immediately after each
    * asynchronous call (i.e. when a Promise is returned; before it is necessarily resolved).
    */
-  continue(): boolean {
+  continue() {
     return this._deferredContinue == null;
   }
 
@@ -125,22 +114,16 @@ export class SshClient {
    *
    * @throws `Error & ClientErrorExtensions` if the connection failed
    */
-  connect(config: ConnectConfig): Promise<void> {
-    const {promise, resolve, reject} = new Deferred();
+  connect(config) {
+    const { promise, resolve, reject } = new (_promise || _load_promise()).Deferred();
     function onClose() {
       reject(new SshClosedError('Connection closed before completion'));
     }
-    this._client
-      .once('ready', resolve)
-      .once('close', onClose)
-      .once('error', reject);
+    this._client.once('ready', resolve).once('close', onClose).once('error', reject);
     this._client.connect(config);
 
-    return lastly(promise, () => {
-      this._client
-        .removeListener('ready', resolve)
-        .removeListener('close', onClose)
-        .removeListener('error', reject);
+    return (0, (_promise || _load_promise()).lastly)(promise, () => {
+      this._client.removeListener('ready', resolve).removeListener('close', onClose).removeListener('error', reject);
     });
   }
 
@@ -150,7 +133,7 @@ export class SshClient {
    * @param command The command to execute.
    * @param options Options for the command.
    */
-  exec(command: string, options: ExecOptions = {}): Promise<ClientChannel> {
+  exec(command, options = {}) {
     return this._clientToPromiseContinue(this._client.exec, command, options);
   }
 
@@ -165,19 +148,8 @@ export class SshClient {
    * @param dstIP The destination address.
    * @param dstPort The destination port.
    */
-  forwardOut(
-    srcIP: string,
-    srcPort: number,
-    dstIP: string,
-    dstPort: number,
-  ): Promise<ClientChannel> {
-    return this._clientToPromiseContinue(
-      this._client.forwardOut,
-      srcIP,
-      srcPort,
-      dstIP,
-      dstPort,
-    );
+  forwardOut(srcIP, srcPort, dstIP, dstPort) {
+    return this._clientToPromiseContinue(this._client.forwardOut, srcIP, srcPort, dstIP, dstPort);
   }
 
   /**
@@ -185,18 +157,20 @@ export class SshClient {
    *
    * Updates 'continue'
    */
-  sftp(timeoutMs?: number): Promise<SftpClient> {
-    return this._clientToPromiseContinue(this._client.sftp).then(
-      sftp => new SftpClient(sftp),
-    );
+  sftp(timeoutMs) {
+    return this._clientToPromiseContinue(this._client.sftp).then(sftp => new (_SftpClient || _load_SftpClient()).SftpClient(sftp));
   }
 
   /**
    * Disconnects the socket.
    */
-  async end(): Promise<void> {
-    await this._readyForData();
-    this._client.end();
+  end() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this._readyForData();
+      _this._client.end();
+    })();
   }
 
   /**
@@ -208,27 +182,31 @@ export class SshClient {
 
   _resolveContinue() {
     if (this._deferredContinue != null) {
-      const {resolve} = this._deferredContinue;
+      const { resolve } = this._deferredContinue;
       this._deferredContinue = null;
       resolve();
     }
   }
 
-  async _readyForData() {
-    while (this._deferredContinue != null) {
-      // eslint-disable-next-line no-await-in-loop
-      await this._deferredContinue.promise;
-    }
+  _readyForData() {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      while (_this2._deferredContinue != null) {
+        // eslint-disable-next-line no-await-in-loop
+        yield _this2._deferredContinue.promise;
+      }
+    })();
   }
 
-  _clientToPromiseContinue(func: Function, ...args: any): Promise<any> {
+  _clientToPromiseContinue(func, ...args) {
     return new Promise((resolve, reject) => {
       const self = this;
       function doOperation() {
         self._readyForData().then(() => {
           const readyForData = func.apply(self._client, args);
           if (!readyForData && this._deferredContinue == null) {
-            self._deferredContinue = new Deferred();
+            self._deferredContinue = new (_promise || _load_promise()).Deferred();
           }
         });
       }
@@ -244,3 +222,4 @@ export class SshClient {
     });
   }
 }
+exports.SshClient = SshClient;
