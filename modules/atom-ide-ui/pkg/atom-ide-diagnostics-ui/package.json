@@ -30,6 +30,12 @@
       "description": "We're working on some UI improvements. Wanna follow our progress?",
       "type": "boolean",
       "default": false
+    },
+    "showDirectoryColumn": {
+      "title": "Show the Path column in the diagnostics table (Experimental UI Only)",
+      "description": "The file's directory can give more context but is often unnecessary.",
+      "type": "boolean",
+      "default": false
     }
   },
   "consumedServices": {

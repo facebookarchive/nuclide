@@ -36,6 +36,11 @@ export default function SettingsModal(props: Props): ?React.Element<any> {
             'atom-ide-diagnostics-ui.showDiagnosticTraces',
           )}
         />
+        <BoundSettingsControl
+          keyPath={featureConfig.formatKeyPath(
+            'atom-ide-diagnostics-ui.showDirectoryColumn',
+          )}
+        />
       </section>
       {hasProviderSettings ? <HR /> : null}
       {props.config.map(p => <SettingsSection key={p.providerName} {...p} />)}

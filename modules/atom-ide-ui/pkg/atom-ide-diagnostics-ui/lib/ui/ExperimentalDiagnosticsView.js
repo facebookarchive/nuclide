@@ -40,6 +40,7 @@ export type Props = {
   pathToActiveTextEditor: ?NuclideUri,
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
+  showDirectoryColumn: boolean,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   gotoMessageLocation: (
@@ -78,7 +79,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
 
   render(): React.Element<any> {
     let {diagnostics} = this.props;
-    const {showTraces} = this.props;
+    const {showDirectoryColumn, showTraces} = this.props;
     if (this.props.filterByActiveTextEditor) {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
       if (pathToFilterBy != null) {
@@ -149,6 +150,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
           }}
           showFileName={!this.props.filterByActiveTextEditor}
           diagnostics={diagnostics}
+          showDirectoryColumn={showDirectoryColumn}
           showTraces={showTraces}
           selectedMessage={this.props.selectedMessage}
           selectMessage={this.props.selectMessage}

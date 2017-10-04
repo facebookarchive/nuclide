@@ -77,6 +77,7 @@ type Props = {
   ) => void,
   selectMessage: (message: DiagnosticMessage) => void,
   showFileName: ?boolean,
+  showDirectoryColumn: boolean,
   showTraces: boolean,
 };
 
@@ -132,7 +133,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
   };
 
   _getColumns(): Array<Column<DisplayDiagnostic>> {
-    const {showFileName} = this.props;
+    const {showFileName, showDirectoryColumn} = this.props;
 
     // These need to add up to 1.
     // TODO: Update the Table component so that we can have more control over this (and provide
@@ -141,29 +142,33 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
     const SOURCE_WIDTH = 0.1;
     const FILENAME_WIDTH = 0.3;
     const DIR_WIDTH = 0.15;
-    const DESCRIPTION_WIDTH = showFileName
-      ? 1 - (TYPE_WIDTH + SOURCE_WIDTH + FILENAME_WIDTH + DIR_WIDTH)
-      : 1 - (TYPE_WIDTH + SOURCE_WIDTH);
 
-    const filePathColumns = showFileName
-      ? [
-          {
-            component: DirComponent,
-            key: 'dir',
-            title: 'Path',
-            width: DIR_WIDTH,
-            shouldRightAlign: true,
-            cellClassName: 'nuclide-diagnostics-ui-cell-dir',
-          },
-          {
-            component: FilenameComponent,
-            key: 'location',
-            title: 'File Name',
-            width: FILENAME_WIDTH,
-            cellClassName: 'nuclide-diagnostics-ui-cell-filename',
-          },
-        ]
-      : [];
+    const filePathColumns = [];
+    let descriptionWidth = 1 - (TYPE_WIDTH + SOURCE_WIDTH);
+
+    if (showFileName) {
+      if (showDirectoryColumn) {
+        filePathColumns.push({
+          component: DirComponent,
+          key: 'dir',
+          title: 'Path',
+          width: DIR_WIDTH,
+          shouldRightAlign: true,
+          cellClassName: 'nuclide-diagnostics-ui-cell-dir',
+        });
+        descriptionWidth -= DIR_WIDTH;
+      }
+
+      filePathColumns.push({
+        component: FilenameComponent,
+        key: 'location',
+        title: 'File Name',
+        width: FILENAME_WIDTH,
+        cellClassName: 'nuclide-diagnostics-ui-cell-filename',
+      });
+      descriptionWidth -= FILENAME_WIDTH;
+    }
+
     return [
       {
         component: TypeComponent,
@@ -183,7 +188,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
         component: DescriptionComponent,
         key: 'description',
         title: 'Description',
-        width: DESCRIPTION_WIDTH,
+        width: descriptionWidth,
       },
       ...filePathColumns,
     ];

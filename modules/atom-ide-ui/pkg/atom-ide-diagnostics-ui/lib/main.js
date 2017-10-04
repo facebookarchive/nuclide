@@ -209,6 +209,12 @@ class Activation {
         featureConfig.set(SHOW_TRACES_SETTING, showTraces);
       };
 
+      const showDirectoryColumnStream: Observable<
+        boolean,
+      > = (featureConfig.observeAsStream(
+        'atom-ide-diagnostics-ui.showDirectoryColumn',
+      ): any);
+
       const pathToActiveTextEditorStream = getActiveEditorPaths();
 
       const filterByActiveTextEditorStream = packageStates
@@ -243,6 +249,7 @@ class Activation {
         filterByActiveTextEditorStream,
         pathToActiveTextEditorStream,
         showTracesStream,
+        showDirectoryColumnStream,
         supportedMessageKindsStream,
         uiConfigStream,
         (
@@ -250,6 +257,7 @@ class Activation {
           filterByActiveTextEditor,
           pathToActiveTextEditor,
           showTraces,
+          showDirectoryColumn,
           supportedMessageKinds,
           uiConfig,
         ) => ({
@@ -257,6 +265,7 @@ class Activation {
           filterByActiveTextEditor,
           pathToActiveTextEditor,
           showTraces,
+          showDirectoryColumn,
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
           supportedMessageKinds,
