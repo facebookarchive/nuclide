@@ -106,6 +106,7 @@ class HhvmDebugSession extends LoggingDebugSession {
       },
     ];
     response.body.supportsConditionalBreakpoints = true;
+    response.body.supportsSetVariable = true;
 
     this.sendResponse(response);
   }
@@ -274,6 +275,21 @@ class HhvmDebugSession extends LoggingDebugSession {
       await this._debuggerHandler.evaluate(
         args.expression,
         args.frameId,
+        response,
+      );
+      this.sendResponse(response);
+    });
+  }
+
+  setVariableRequest(
+    response: DebugProtocol.SetVariableResponse,
+    args: DebugProtocol.SetVariableArguments,
+  ) {
+    this._catchAsyncRequestError(response, async () => {
+      await this._debuggerHandler.setVariable(
+        args.variablesReference,
+        args.name,
+        args.value,
         response,
       );
       this.sendResponse(response);

@@ -16,12 +16,12 @@ import type {
 } from '../nuclide-debugger/lib/types';
 import type {Observable} from 'rxjs';
 
-import idx from 'idx';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import * as React from 'react';
 import invariant from 'assert';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';
+import {STRING_REGEX} from './SimpleValueComponent';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
 import {TreeList, TreeItem, NestedTreeItem} from './Tree';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
@@ -254,12 +254,27 @@ class ValueComponent extends React.Component<
     };
   }
 
-  _renderEditView = (): React.Element<any> => {
-    const evaluationResult = this.props.evaluationResult;
-    const initialValue =
-      idx(evaluationResult, _ => _.value) ||
-      idx(evaluationResult, _ => _.description) ||
-      '';
+  _getStringRepresentationForEvaluationResult(
+    evaluationResult: ?EvaluationResult,
+  ): string {
+    if (evaluationResult) {
+      if (evaluationResult.value != null) {
+        if (
+          evaluationResult.type === 'string' &&
+          !STRING_REGEX.test(evaluationResult.value)
+        ) {
+          return '"' + evaluationResult.value + '"';
+        } else {
+          return evaluationResult.value;
+        }
+      } else if (evaluationResult.description != null) {
+        return evaluationResult.description;
+      }
+    }
+    return '';
+  }
+
+  _renderEditView(): React.Element<any> {
     return (
       <div className="nuclide-ui-lazy-nested-value-container">
         <AtomInput
@@ -267,7 +282,9 @@ class ValueComponent extends React.Component<
           size="sm"
           autofocus={true}
           startSelected={true}
-          initialValue={initialValue}
+          initialValue={this._getStringRepresentationForEvaluationResult(
+            this.props.evaluationResult,
+          )}
           onDidChange={newValueForExpression => {
             this.setState({newValueForExpression});
           }}
@@ -277,7 +294,7 @@ class ValueComponent extends React.Component<
         />
       </div>
     );
-  };
+  }
 
   render(): React.Node {
     const {
