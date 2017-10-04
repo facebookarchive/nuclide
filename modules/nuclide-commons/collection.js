@@ -487,3 +487,30 @@ export function count<T>(iterable: Iterable<T>): number {
 export function isIterable(obj: any): boolean {
   return typeof obj[Symbol.iterator] === 'function';
 }
+
+// Traverse an array from the inside out, starting at the specified index.
+export function* insideOut<T>(
+  arr: Array<T>,
+  startingIndex?: number,
+): Iterable<[T, number]> {
+  if (arr.length === 0) {
+    return;
+  }
+
+  let i =
+    startingIndex == null
+      ? Math.floor(arr.length / 2)
+      : Math.min(arr.length, Math.max(0, startingIndex));
+  let j = i - 1;
+
+  while (i < arr.length || j >= 0) {
+    if (i < arr.length) {
+      yield [arr[i], i];
+      i++;
+    }
+    if (j >= 0) {
+      yield [arr[j], j];
+      j--;
+    }
+  }
+}

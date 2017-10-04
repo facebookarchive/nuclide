@@ -16,6 +16,7 @@ import {
   arrayCompact,
   arrayFindLastIndex,
   mapUnion,
+  insideOut,
   isEmpty,
   isIterable,
   keyMirror,
@@ -538,5 +539,65 @@ describe('mapGetWithDefault', () => {
 describe('count', () => {
   it('returns how many values are in an iterable', () => {
     expect(count([1, 2])).toBe(2);
+  });
+});
+
+describe('insideOut', () => {
+  it('traverses correctly', () => {
+    expect([...insideOut([])]).toEqual([]);
+    expect([...insideOut(['a'])]).toEqual([['a', 0]]);
+    expect([...insideOut(['a', 'b'])]).toEqual([['b', 1], ['a', 0]]);
+    expect([...insideOut(['a', 'b', 'c'])]).toEqual([
+      ['b', 1],
+      ['a', 0],
+      ['c', 2],
+    ]);
+    expect([...insideOut(['a', 'b', 'c', 'd'])]).toEqual([
+      ['c', 2],
+      ['b', 1],
+      ['d', 3],
+      ['a', 0],
+    ]);
+  });
+
+  it('traverses correctly with an index', () => {
+    expect([...insideOut([], 99)]).toEqual([]);
+    expect([...insideOut(['a'], 99)]).toEqual([['a', 0]]);
+    expect([...insideOut(['a', 'b'], 99)]).toEqual([['b', 1], ['a', 0]]);
+    expect([...insideOut(['a', 'b', 'c'], 99)]).toEqual([
+      ['c', 2],
+      ['b', 1],
+      ['a', 0],
+    ]);
+
+    expect([...insideOut([], -99)]).toEqual([]);
+    expect([...insideOut(['a'], -99)]).toEqual([['a', 0]]);
+    expect([...insideOut(['a', 'b'], -99)]).toEqual([['a', 0], ['b', 1]]);
+    expect([...insideOut(['a', 'b', 'c'], -99)]).toEqual([
+      ['a', 0],
+      ['b', 1],
+      ['c', 2],
+    ]);
+
+    expect([...insideOut(['a', 'b'], 1)]).toEqual([['b', 1], ['a', 0]]);
+    expect([...insideOut(['a', 'b'], 0)]).toEqual([['a', 0], ['b', 1]]);
+
+    expect([...insideOut(['a', 'b', 'c'], 1)]).toEqual([
+      ['b', 1],
+      ['a', 0],
+      ['c', 2],
+    ]);
+    expect([...insideOut(['a', 'b', 'c', 'd'], 1)]).toEqual([
+      ['b', 1],
+      ['a', 0],
+      ['c', 2],
+      ['d', 3],
+    ]);
+    expect([...insideOut(['a', 'b', 'c', 'd'], 2)]).toEqual([
+      ['c', 2],
+      ['b', 1],
+      ['d', 3],
+      ['a', 0],
+    ]);
   });
 });
