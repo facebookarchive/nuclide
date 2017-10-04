@@ -685,6 +685,15 @@ export class RpcConnection<TransportType: Transport> {
     // Create a new object and put it in the registry.
     const newObject = new localImplementation(...marshalledArgs);
 
+    // If we want to use client-assigned IDs in the future, we need to
+    // assign the ID to the object after construction.
+    // Attempting to marshal before construction is complete makes this impossible.
+    if (this._objectRegistry.isRegistered(newObject)) {
+      logger.error(
+        `Object of type ${constructorMessage.interface} was marshalled during the constructor.`,
+      );
+    }
+
     // Return the object, which will automatically be converted to an id through the
     // marshalling system.
     this._returnPromise(id, Promise.resolve(newObject), {
