@@ -1,20 +1,21 @@
 /**
- * Copyright (c) 2015-present, Facebook, Inc.
+ * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
  *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @flow
  * @format
  */
 
 import * as React from 'react';
-import {AtomInput} from 'nuclide-commons-ui/AtomInput';
-import {Block} from 'nuclide-commons-ui/Block';
-import {Button} from 'nuclide-commons-ui/Button';
+import {AtomInput} from './AtomInput';
+import {Block} from './Block';
+import {Button} from './Button';
 import RadioGroup from './RadioGroup';
-import {TabbableContainer} from './TabbableContainer';
+import TabbableContainer from './TabbableContainer';
 
 const labels = ['radio 1', 'radio 2', 'radio 3'];
 

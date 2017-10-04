@@ -21,7 +21,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {TabbableContainer} from '../../nuclide-ui/TabbableContainer';
+import TabbableContainer from 'nuclide-commons-ui/TabbableContainer';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';

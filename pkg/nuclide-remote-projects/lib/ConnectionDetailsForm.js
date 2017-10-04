@@ -22,7 +22,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {CompositeDisposable} from 'atom';
 import {getIPsForHosts} from './connection-profile-utils';
 import lookupPreferIpv6 from '../../nuclide-remote-connection/lib/lookup-prefer-ip-v6';
-import RadioGroup from '../../nuclide-ui/RadioGroup';
+import RadioGroup from 'nuclide-commons-ui/RadioGroup';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {SshHandshake} from '../../nuclide-remote-connection';

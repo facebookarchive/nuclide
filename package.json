@@ -61,6 +61,7 @@
     "escape-string-regexp": "1.0.5",
     "event-kit": "2.2.0",
     "fb-watchman": "2.0.0",
+    "tabbable": "1.1.0",
     "fs-plus": "2.9.3",
     "fuzzaldrin-plus": "0.4.1",
     "glob": "7.1.1",

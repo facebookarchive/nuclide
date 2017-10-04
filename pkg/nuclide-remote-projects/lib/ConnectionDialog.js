@@ -20,7 +20,7 @@ import type {
 } from '../../nuclide-remote-connection/lib/SshHandshake';
 import type {RemoteConnection} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
-import {TabbableContainer} from '../../nuclide-ui/TabbableContainer';
+import TabbableContainer from 'nuclide-commons-ui/TabbableContainer';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import {Button, ButtonTypes} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
