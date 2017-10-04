@@ -480,7 +480,7 @@ export class HgService {
       title: `${this._workingDirectory}:hg`,
       data:
         `hg update -r ${id}\n` +
-        (summary === '' ? '' : 'hg import hgdiff\n') +
+        (summary === '' ? '' : 'hg import --no-commit hgdiff\n') +
         `\n${summary}`,
     });
     if (summary !== '') {
