@@ -457,9 +457,7 @@ export class HgService {
 
     // Summary of changes from base to current working directory
     const getSummary = async () => {
-      const statuses = await this.fetchStatuses(
-        expressionForCommonAncestor(base),
-      )
+      const statuses = await this.fetchStatuses(root)
         .refCount()
         .toPromise();
       let result = '';
