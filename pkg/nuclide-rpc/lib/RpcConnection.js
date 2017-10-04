@@ -223,8 +223,9 @@ export class RpcConnection<TransportType: Transport> {
   static createServer(
     serviceRegistry: ServiceRegistry,
     transport: TransportType,
+    options: RpcConnectionOptions = {},
   ): RpcConnection<TransportType> {
-    return new RpcConnection('server', serviceRegistry, transport);
+    return new RpcConnection('server', serviceRegistry, transport, options);
   }
 
   // Creates a client side connection to a server on another machine.
