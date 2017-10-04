@@ -20,7 +20,6 @@ import {initializeLoggerForWorker} from '../../logging/initializeLogging';
 import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {getConfigFromFlow} from '../getConfig';
-import {Settings} from '../Settings';
 import {niceSafeSpawn} from 'nuclide-commons/nice';
 import invariant from 'assert';
 import {getHasteName, hasteReduceName} from './HasteUtils';
@@ -74,12 +73,9 @@ function main() {
   watchDirectoryRecursively(root, hasteSettings);
 
   // Build up the initial index with all files recursively from the root.
-  indexDirectoryAndSendExportsToParent(root, hasteSettings).then(() => {
-    if (Settings.indexNodeModulesWhiteList.find(regex => regex.test(root))) {
-      logger.debug('Indexing node modules.');
-      return indexNodeModulesAndSendToParent(root);
-    }
-  });
+  indexDirectoryAndSendExportsToParent(root, hasteSettings);
+
+  indexNodeModulesAndSendToParent(root);
 }
 
 // Function should be called once when the server is initialized.
@@ -432,6 +428,7 @@ function addHasteNames(
 }
 function indexNodeModulesAndSendToParent(root: NuclideUri): Promise<void> {
   return new Promise((resolve, reject) => {
+    logger.info('Indexing node modules.');
     indexNodeModules(root).subscribe({
       next: exportForFile => {
         if (exportForFile) {
