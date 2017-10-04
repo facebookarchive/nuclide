@@ -30,6 +30,8 @@ export class SftpClient {
   _onClose: Observable<void>;
   _onContinue: Observable<void>;
   _deferredContinue: ?Deferred<void> = null;
+  _endPromise: Deferred<void>;
+  _closePromise: Deferred<void>;
 
   /**
    * Wraps and takes ownership of the `SFTPWrapper`.
@@ -40,10 +42,15 @@ export class SftpClient {
     this._onEnd = Observable.fromEvent(this._sftp, 'end');
     this._onClose = Observable.fromEvent(this._sftp, 'close');
     this._onContinue = Observable.fromEvent(this._sftp, 'continue');
+    this._closePromise = new Deferred();
+    this._endPromise = new Deferred();
 
+    this._sftp.on('end', this._endPromise.resolve);
     this._sftp.on('continue', () => this._resolveContinue());
     this._sftp.on('close', () => {
       this._resolveContinue();
+      this._endPromise.resolve();
+      this._closePromise.resolve();
     });
   }
 
@@ -100,6 +107,7 @@ export class SftpClient {
   async end(): Promise<void> {
     await this._readyForData();
     this._sftp.end();
+    return this._endPromise.promise;
   }
 
   _resolveContinue() {

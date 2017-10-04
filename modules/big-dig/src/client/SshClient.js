@@ -18,9 +18,11 @@ import type {
 } from 'ssh2';
 
 import {lastly, Deferred} from 'nuclide-commons/promise';
+import {observeStream} from 'nuclide-commons/stream';
 import {Client, ClientChannel} from 'ssh2';
 import {Observable} from 'rxjs';
 import {SftpClient} from './SftpClient';
+import {onceEvent} from '../common/events';
 
 export type {
   ClientChannel,
@@ -54,6 +56,20 @@ export class SshClosedError extends Error {
   }
 }
 
+export type ExecExitResult = {
+  code: number | null,
+  signal?: string,
+  dump?: string,
+  description?: string,
+  language?: string,
+};
+
+export type ExecResult = {
+  stdio: ClientChannel,
+  stdout: Observable<string>,
+  result: Promise<ExecExitResult>,
+};
+
 /**
  * Represents an SSH connection. This wraps the `Client` class from ssh2, but reinterprets the
  * API using promises instead of callbacks. The methods of this class generally correspond to the
@@ -64,6 +80,8 @@ export class SshClient {
   _onError: Observable<Error & ClientErrorExtensions>;
   _onClose: Observable<{hadError: boolean}>;
   _deferredContinue: ?Deferred<void> = null;
+  _endPromise: Deferred<void>;
+  _closePromise: Deferred<{hadError: boolean}>;
 
   /**
    * Wraps and takes ownership of the ssh2 Client.
@@ -80,10 +98,15 @@ export class SshClient {
         hadError,
       }),
     );
+    this._closePromise = new Deferred();
+    this._endPromise = new Deferred();
 
+    this._client.on('end', this._endPromise.resolve);
     this._client.on('continue', () => this._resolveContinue());
     this._client.on('close', (hadError: boolean) => {
       this._resolveContinue();
+      this._endPromise.resolve();
+      this._closePromise.resolve({hadError});
     });
     this._client.on(
       'keyboard-interactive',
@@ -150,8 +173,28 @@ export class SshClient {
    * @param command The command to execute.
    * @param options Options for the command.
    */
-  exec(command: string, options: ExecOptions = {}): Promise<ClientChannel> {
-    return this._clientToPromiseContinue(this._client.exec, command, options);
+  async exec(command: string, options: ExecOptions = {}): Promise<ExecResult> {
+    const stdio = await this._clientToPromiseContinue(
+      this._client.exec,
+      command,
+      options,
+    );
+    return {
+      stdio,
+      result: onceEvent(
+        stdio,
+        'close',
+      ).then(
+        (
+          code: number | null,
+          signal?: string,
+          dump?: string,
+          description?: string,
+          language?: string,
+        ) => ({code, signal, dump, description, language}),
+      ),
+      stdout: observeStream(stdio),
+    };
   }
 
   /**
@@ -197,13 +240,15 @@ export class SshClient {
   async end(): Promise<void> {
     await this._readyForData();
     this._client.end();
+    return this._endPromise.promise;
   }
 
   /**
    * Destroys the socket.
    */
-  destroy() {
+  destroy(): Promise<void> {
     this._client.destroy();
+    return this._closePromise.promise.then(() => {});
   }
 
   _resolveContinue() {

@@ -30,7 +30,7 @@ import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigClient from './createBigDigClient';
-import {onceEventArray, onceEventOrError} from '../common/events';
+import {onceEventOrError} from '../common/events';
 
 export type {Prompt} from './SshClient';
 
@@ -501,9 +501,9 @@ export class SshHandshake {
     }
   }
 
-  cancel() {
+  async cancel(): Promise<void> {
     this._cancelled = true;
-    this._connection.end();
+    await this._connection.end();
   }
 
   _onKeyboardInteractive(
@@ -673,17 +673,14 @@ export class SshHandshake {
     try {
       // Run the server bootstrapper: this will create a server process, output the process info
       // to `remoteTempFile`, and then exit.
-      const stream = await this._connection.exec(cmd, {pty: {term: 'nuclide'}});
+      const {stdout, result} = await this._connection.exec(cmd, {
+        pty: {term: 'nuclide'},
+      });
       // Collect any stdout in case there is an error.
       let stdOut = '';
-      stream.on('data', data => {
-        stdOut += data;
-      });
+      stdout.subscribe(data => (stdOut += data));
+      const {code} = await result;
 
-      // Wait for the bootstrapper to finish
-      const [code] = await onceEventArray(stream, 'close');
-
-      // Note: this code is probably the code from the child shell if one is in use.
       if (code !== 0) {
         throw new SshHandshakeError(
           'Remote shell execution failed',
@@ -699,6 +696,9 @@ export class SshHandshake {
 
       return this._loadServerStartInformation(remoteTempFile);
     } catch (error) {
+      if (error instanceof SshHandshakeError) {
+        throw error;
+      }
       const errorType =
         (error.level && SshConnectionErrorLevelMap.get(error.level)) ||
         SshHandshake.ErrorType.UNKNOWN;
@@ -761,7 +761,7 @@ export class SshHandshake {
     this._didConnect(bigDigClient);
     // If we are secure then we don't need the ssh tunnel.
     if (this._isSecure()) {
-      this._connection.end();
+      await this._connection.end();
     }
 
     return bigDigClient;
