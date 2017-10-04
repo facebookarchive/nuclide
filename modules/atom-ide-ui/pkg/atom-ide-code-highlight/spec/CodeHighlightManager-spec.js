@@ -10,7 +10,10 @@
  * @format
  */
 
+import os from 'os';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Point, Range} from 'atom';
+
 import CodeHighlightManager from '../lib/CodeHighlightManager';
 
 describe('CodeHighlightManager', () => {
@@ -27,7 +30,9 @@ describe('CodeHighlightManager', () => {
         highlight: (_editor, position) => Promise.resolve([]),
       };
       manager.addProvider(provider);
-      editor = await atom.workspace.open('test.txt');
+      editor = await atom.workspace.open(
+        nuclideUri.join(os.tmpdir(), 'test.txt'),
+      );
       editor.setText('abc\ndef\nghi');
     });
   });
@@ -62,7 +67,9 @@ describe('CodeHighlightManager', () => {
       expect(spy.callCount).toBe(2);
     });
 
-    waitsForPromise(() => atom.workspace.open('test2.txt'));
+    waitsForPromise(() =>
+      atom.workspace.open(nuclideUri.join(os.tmpdir(), 'test2.txt')),
+    );
 
     runs(() => {
       // Opening a new editor should clear out old markers.
