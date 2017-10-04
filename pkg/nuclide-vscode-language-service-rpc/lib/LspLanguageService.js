@@ -552,18 +552,20 @@ export class LspLanguageService {
       while (true) {
         let initializeResponse;
         try {
-          this._logger.info('Lsp.Initialize');
+          this._logger.trace('Lsp.Initialize');
           userRetryCount++;
           const initializeStartTimeMs = Date.now();
           // eslint-disable-next-line no-await-in-loop
           initializeResponse = await this._lspConnection.initialize(params);
           initializeTimeTakenMs = Date.now() - initializeStartTimeMs;
+          this._logger.trace('Lsp.Initialize.success');
           // We might receive an onError or onClose event at this time too.
           // Those are handled by _handleError and _handleClose methods.
           // If those happen, then the response to initialize will never arrive,
           // so the above await will block until we finally dispose of the
           // connection.
         } catch (e) {
+          this._logger.trace('Lsp.Initialize.error');
           this._logLspException(e);
           track('lsp-start', {
             status: 'initialize failed',
@@ -746,6 +748,7 @@ export class LspLanguageService {
   }
 
   async _stop(): Promise<void> {
+    this._logger.trace('Lsp._stop');
     if (this._state === 'Stopping' || this._state === 'Stopped') {
       return;
     }
@@ -753,15 +756,17 @@ export class LspLanguageService {
       this._setState('Stopped');
       return;
     }
+    const mustShutdown = this._state === 'Running';
 
     this._setState('Stopping');
     try {
-      // Request the server to close down. It will respond when it's done,
-      // but it won't actually terminate its stdin/stdout/process (since if
-      // it did then we might not get the respone!)
-      await this._lspConnection.shutdown();
-      // Now we can let the server terminate:
-      this._lspConnection.exit();
+      if (mustShutdown) {
+        // Request the server to close down. If it does reply, we can tell it
+        // to 'exit' (i.e. terminate cleanly). If it fails to reply, well,
+        // we won't get hung up on it.
+        await Promise.race([this._lspConnection.shutdown(), sleep(30000)]);
+        this._lspConnection.exit();
+      }
     } catch (e) {
       this._logLspException(e);
     }
@@ -847,6 +852,7 @@ export class LspLanguageService {
   }
 
   _handleError(data: [Error, ?Object, ?number]): void {
+    this._logger.trace('Lsp._handleError');
     if (this._state === 'Stopping' || this._state === 'Stopped') {
       return;
     }
@@ -882,6 +888,7 @@ export class LspLanguageService {
   }
 
   _handleClose(): void {
+    this._logger.trace('Lsp._handleClose');
     // CARE! This method may be called before initialization has finished.
 
     if (this._state === 'Stopping' || this._state === 'Stopped') {
