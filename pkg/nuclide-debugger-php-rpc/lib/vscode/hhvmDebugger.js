@@ -60,7 +60,7 @@ class HhvmDebugSession extends LoggingDebugSession {
     fn: () => Promise<mixed>,
   ) {
     fn().catch(error => {
-      const errorMessage = error.message || String(error);
+      const errorMessage = error.stack || error.message || String(error);
       if (response != null) {
         response.success = false;
         // $FlowIgnore: returning an ErrorResponse.
@@ -74,7 +74,7 @@ class HhvmDebugSession extends LoggingDebugSession {
       }
       this.sendEvent(
         new OutputEvent(
-          `HHVM Debugger ran into an error: \`${errorMessage}\``,
+          `HHVM Debugger ran into an error:\n\`${errorMessage}\``,
           'nuclide_notification',
           {type: 'error'},
         ),
