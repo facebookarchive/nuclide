@@ -211,11 +211,10 @@ export class DebuggerHandler {
   }
 
   async getStackFrames(id: number): Promise<Array<DebugProtocol.StackFrame>> {
-    // this._connectionMultiplexer.selectThread(id);
     const frames = await this._connectionMultiplexer.getConnectionStackFrames(
       id,
     );
-    if ((frames != null && frames.stack != null) || frames.stack.length === 0) {
+    if (frames != null && frames.stack != null && frames.stack.length !== 0) {
       return Promise.all(
         frames.stack.map((frame, frameIndex) =>
           this._convertFrame(frame, frameIndex),
