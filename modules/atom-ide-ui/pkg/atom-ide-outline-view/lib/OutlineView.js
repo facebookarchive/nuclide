@@ -1,3 +1,64 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.OutlineView = undefined;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _analytics;
+
+function _load_analytics() {
+  return _analytics = _interopRequireDefault(require('nuclide-commons-atom/analytics'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _LoadingSpinner;
+
+function _load_LoadingSpinner() {
+  return _LoadingSpinner = require('nuclide-commons-ui/LoadingSpinner');
+}
+
+var _EmptyState;
+
+function _load_EmptyState() {
+  return _EmptyState = require('nuclide-commons-ui/EmptyState');
+}
+
+var _OutlineViewSearch;
+
+function _load_OutlineViewSearch() {
+  return _OutlineViewSearch = require('./OutlineViewSearch');
+}
+
+var _groupMatchIndexes;
+
+function _load_groupMatchIndexes() {
+  return _groupMatchIndexes = _interopRequireDefault(require('nuclide-commons/groupMatchIndexes'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,44 +67,9 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
-
-import type {Observable} from 'rxjs';
-import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
-import type {TextToken} from 'nuclide-commons/tokenized-text';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-
-import * as React from 'react';
-import invariant from 'assert';
-import classnames from 'classnames';
-
-import analytics from 'nuclide-commons-atom/analytics';
-import {
-  goToLocation,
-  goToLocationInEditor,
-} from 'nuclide-commons-atom/go-to-location';
-import {
-  LoadingSpinner,
-  LoadingSpinnerSizes,
-} from 'nuclide-commons-ui/LoadingSpinner';
-import {EmptyState} from 'nuclide-commons-ui/EmptyState';
-
-import type {SearchResult} from './OutlineViewSearch';
-import {OutlineViewSearchComponent} from './OutlineViewSearch';
-import groupMatchIndexes from 'nuclide-commons/groupMatchIndexes';
-
-type State = {
-  fontFamily: string,
-  fontSize: number,
-  lineHeight: number,
-  outline: OutlineForUi,
-};
-
-type Props = {
-  outlines: Observable<OutlineForUi>,
-};
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   keyword: 'syntax--keyword',
@@ -54,313 +80,269 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
   string: 'syntax--string',
   whitespace: '',
   plain: '',
-  type: 'syntax--support syntax--type',
+  type: 'syntax--support syntax--type'
 };
 
-export class OutlineView extends React.PureComponent<Props, State> {
-  subscription: ?UniversalDisposable;
+class OutlineView extends _react.PureComponent {
 
-  constructor(props: Props) {
+  constructor(props) {
     super(props);
     this.state = {
-      fontFamily: (atom.config.get('editor.fontFamily'): any),
-      fontSize: (atom.config.get('editor.fontSize'): any),
-      lineHeight: (atom.config.get('editor.lineHeight'): any),
+      fontFamily: atom.config.get('editor.fontFamily'),
+      fontSize: atom.config.get('editor.fontSize'),
+      lineHeight: atom.config.get('editor.lineHeight'),
       outline: {
-        kind: 'empty',
-      },
+        kind: 'empty'
+      }
     };
   }
 
-  componentDidMount(): void {
-    invariant(this.subscription == null);
-    this.subscription = new UniversalDisposable(
-      this.props.outlines.subscribe(outline => {
-        this.setState({outline});
-      }),
-      atom.config.observe('editor.fontSize', (size: mixed) => {
-        this.setState({fontSize: (size: any)});
-      }),
-      atom.config.observe('editor.fontFamily', (font: mixed) => {
-        this.setState({fontFamily: (font: any)});
-      }),
-      atom.config.observe('editor.lineHeight', (size: mixed) => {
-        this.setState({lineHeight: (size: any)});
-      }),
-    );
+  componentDidMount() {
+    if (!(this.subscription == null)) {
+      throw new Error('Invariant violation: "this.subscription == null"');
+    }
+
+    this.subscription = new (_UniversalDisposable || _load_UniversalDisposable()).default(this.props.outlines.subscribe(outline => {
+      this.setState({ outline });
+    }), atom.config.observe('editor.fontSize', size => {
+      this.setState({ fontSize: size });
+    }), atom.config.observe('editor.fontFamily', font => {
+      this.setState({ fontFamily: font });
+    }), atom.config.observe('editor.lineHeight', size => {
+      this.setState({ lineHeight: size });
+    }));
   }
 
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
+  componentWillUnmount() {
+    if (!(this.subscription != null)) {
+      throw new Error('Invariant violation: "this.subscription != null"');
+    }
+
     this.subscription.unsubscribe();
     this.subscription = null;
   }
 
-  render(): React.Node {
-    return (
-      <div className="outline-view">
-        <OutlineViewComponent
-          fontFamily={this.state.fontFamily}
-          fontSize={this.state.fontSize}
-          lineHeight={this.state.lineHeight}
-          outline={this.state.outline}
-        />
-      </div>
+  render() {
+    return _react.createElement(
+      'div',
+      { className: 'outline-view' },
+      _react.createElement(OutlineViewComponent, {
+        fontFamily: this.state.fontFamily,
+        fontSize: this.state.fontSize,
+        lineHeight: this.state.lineHeight,
+        outline: this.state.outline
+      })
     );
   }
 }
 
-type OutlineViewComponentProps = {
-  fontFamily: string,
-  fontSize: number,
-  lineHeight: number,
-  outline: OutlineForUi,
-};
+exports.OutlineView = OutlineView;
 
-class OutlineViewComponent extends React.PureComponent<
-  OutlineViewComponentProps,
-> {
-  constructor(props: OutlineViewComponentProps) {
+
+class OutlineViewComponent extends _react.PureComponent {
+  constructor(props) {
     super(props);
   }
 
-  render(): React.Node {
-    const {fontFamily, fontSize, lineHeight, outline} = this.props;
+  render() {
+    const { fontFamily, fontSize, lineHeight, outline } = this.props;
 
     switch (outline.kind) {
       case 'empty':
       case 'not-text-editor':
-        return (
-          <EmptyState
-            title="No outline available"
-            message="Open a file to see its outline."
-          />
-        );
+        return _react.createElement((_EmptyState || _load_EmptyState()).EmptyState, {
+          title: 'No outline available',
+          message: 'Open a file to see its outline.'
+        });
       case 'loading':
-        return (
-          <div className="outline-view-loading">
-            <LoadingSpinner
-              className="inline-block"
-              size={LoadingSpinnerSizes.MEDIUM}
-            />
-          </div>
+        return _react.createElement(
+          'div',
+          { className: 'outline-view-loading' },
+          _react.createElement((_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinner, {
+            className: 'inline-block',
+            size: (_LoadingSpinner || _load_LoadingSpinner()).LoadingSpinnerSizes.MEDIUM
+          })
         );
       case 'no-provider':
-        return outline.grammar === 'Null Grammar' ? (
-          <EmptyState
-            title="No outline available"
-            message="Atom doesn't recognize this file's language. Make sure this file has an extension and has been saved."
-          />
-        ) : (
-          <EmptyState
-            title="No outline available"
-            message={
-              <div>
-                {outline.grammar} files do not currently support outlines.{' '}
-                <a
-                  href="#"
-                  onClick={() =>
-                    goToLocation(
-                      `atom://config/install/package:ide-${outline.grammar}`,
-                    )}>
-                  Install an IDE package first.
-                </a>
-              </div>
-            }
-          />
-        );
+        return outline.grammar === 'Null Grammar' ? _react.createElement((_EmptyState || _load_EmptyState()).EmptyState, {
+          title: 'No outline available',
+          message: 'Atom doesn\'t recognize this file\'s language. Make sure this file has an extension and has been saved.'
+        }) : _react.createElement((_EmptyState || _load_EmptyState()).EmptyState, {
+          title: 'No outline available',
+          message: _react.createElement(
+            'div',
+            null,
+            outline.grammar,
+            ' files do not currently support outlines.',
+            ' ',
+            _react.createElement(
+              'a',
+              {
+                href: '#',
+                onClick: () => (0, (_goToLocation || _load_goToLocation()).goToLocation)(`atom://config/install/package:ide-${outline.grammar}`) },
+              'Install an IDE package first.'
+            )
+          )
+        });
       case 'provider-no-outline':
-        return (
-          <EmptyState
-            title="No outline available"
-            message="This is likely an error with the language package."
-          />
-        );
+        return _react.createElement((_EmptyState || _load_EmptyState()).EmptyState, {
+          title: 'No outline available',
+          message: 'This is likely an error with the language package.'
+        });
       case 'outline':
-        return (
-          <OutlineViewCore
-            fontFamily={fontFamily}
-            fontSize={fontSize}
-            lineHeight={lineHeight}
-            outline={outline}
-          />
-        );
+        return _react.createElement(OutlineViewCore, {
+          fontFamily: fontFamily,
+          fontSize: fontSize,
+          lineHeight: lineHeight,
+          outline: outline
+        });
       default:
-        (outline: empty);
+        outline;
     }
   }
 }
-
-type OutlineViewCoreProps = {
-  fontFamily: string,
-  fontSize: number,
-  lineHeight: number,
-  outline: OutlineForUi,
-};
 
 /**
  * Contains both the search field and the scrollable outline tree
  */
-class OutlineViewCore extends React.PureComponent<
-  OutlineViewCoreProps,
-  {
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  },
-> {
-  state: {
-    searchResults: Map<OutlineTreeForUi, SearchResult>,
-  } = {
-    searchResults: new Map(),
-  };
+class OutlineViewCore extends _react.PureComponent {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this.state = {
+      searchResults: new Map()
+    }, _temp;
+  }
 
   render() {
-    const {fontFamily, fontSize, lineHeight, outline} = this.props;
-    invariant(outline.kind === 'outline');
+    const { fontFamily, fontSize, lineHeight, outline } = this.props;
 
-    return (
-      <div className="outline-view-core">
-        <OutlineViewSearchComponent
-          outlineTrees={outline.outlineTrees}
-          editor={outline.editor}
-          updateSearchResults={searchResults => {
-            this.setState({searchResults});
-          }}
-        />
-        <div className="outline-view-trees-scroller">
-          <div className="outline-view-trees">
-            {renderTrees(
-              outline.editor,
-              fontFamily,
-              fontSize,
-              lineHeight,
-              outline.outlineTrees,
-              this.state.searchResults,
-            )}
-          </div>
-        </div>
-      </div>
+    if (!(outline.kind === 'outline')) {
+      throw new Error('Invariant violation: "outline.kind === \'outline\'"');
+    }
+
+    return _react.createElement(
+      'div',
+      { className: 'outline-view-core' },
+      _react.createElement((_OutlineViewSearch || _load_OutlineViewSearch()).OutlineViewSearchComponent, {
+        outlineTrees: outline.outlineTrees,
+        editor: outline.editor,
+        updateSearchResults: searchResults => {
+          this.setState({ searchResults });
+        }
+      }),
+      _react.createElement(
+        'div',
+        { className: 'outline-view-trees-scroller' },
+        _react.createElement(
+          'div',
+          { className: 'outline-view-trees' },
+          renderTrees(outline.editor, fontFamily, fontSize, lineHeight, outline.outlineTrees, this.state.searchResults)
+        )
+      )
     );
   }
 }
 
-class OutlineTree extends React.PureComponent<{
-  editor: atom$TextEditor,
-  fontFamily: string,
-  fontSize: number,
-  lineHeight: number,
-  outline: OutlineTreeForUi,
-  searchResults: Map<OutlineTreeForUi, SearchResult>,
-}> {
-  onClick = e => {
-    const {editor, outline} = this.props;
-    const numberOfClicks = e.detail;
+class OutlineTree extends _react.PureComponent {
+  constructor(...args) {
+    var _temp2;
 
-    if (numberOfClicks === 1) {
-      // single click moves the cursor, but does not focus the editor
-      analytics.track('atom-ide-outline-view:go-to-location');
-      goToLocationInEditor(editor, {
-        line: outline.startPosition.row,
-        column: outline.startPosition.column,
-      });
-    } else if (numberOfClicks === 3) {
-      // triple click selects the symbol's region
-      const endPosition = outline.endPosition;
-      if (endPosition != null) {
-        editor.selectToBufferPosition(endPosition);
-      }
-    }
+    return _temp2 = super(...args), this.onClick = e => {
+      const { editor, outline } = this.props;
+      const numberOfClicks = e.detail;
 
-    if (numberOfClicks === 2 || numberOfClicks === 3) {
-      // double and triple clicks focus the editor afterwards
-      const pane = atom.workspace.paneForItem(editor);
-      if (pane == null) {
-        return;
+      if (numberOfClicks === 1) {
+        // single click moves the cursor, but does not focus the editor
+        (_analytics || _load_analytics()).default.track('atom-ide-outline-view:go-to-location');
+        (0, (_goToLocation || _load_goToLocation()).goToLocationInEditor)(editor, {
+          line: outline.startPosition.row,
+          column: outline.startPosition.column
+        });
+      } else if (numberOfClicks === 3) {
+        // triple click selects the symbol's region
+        const endPosition = outline.endPosition;
+        if (endPosition != null) {
+          editor.selectToBufferPosition(endPosition);
+        }
       }
 
-      // Assumes that the click handler has already run, which moves the
-      // cursor to the start of the symbol. Let's activate the pane now.
-      pane.activate();
-      pane.activateItem(editor);
-    }
-  };
+      if (numberOfClicks === 2 || numberOfClicks === 3) {
+        // double and triple clicks focus the editor afterwards
+        const pane = atom.workspace.paneForItem(editor);
+        if (pane == null) {
+          return;
+        }
 
-  render(): React.Node {
+        // Assumes that the click handler has already run, which moves the
+        // cursor to the start of the symbol. Let's activate the pane now.
+        pane.activate();
+        pane.activateItem(editor);
+      }
+    }, _temp2;
+  }
+
+  render() {
     const {
       editor,
       outline,
       searchResults,
       fontSize,
       fontFamily,
-      lineHeight,
+      lineHeight
     } = this.props;
 
     const classNames = ['list-nested-item'];
     if (outline.kind) {
       classNames.push(`kind-${outline.kind}`);
     }
-    const classes = classnames(classNames, {
-      selected: outline.highlighted,
+    const classes = (0, (_classnames || _load_classnames()).default)(classNames, {
+      selected: outline.highlighted
     });
     return (
       // Set fontSize for the li to make the highlighted region of selected
       // lines (set equal to 2em) look reasonable relative to size of the font.
-      <li className={classes} style={{fontSize: fontSize * 0.7}}>
-        <div
-          className="list-item outline-view-item"
-          onClick={this.onClick}
-          style={{
-            fontSize,
-            fontFamily,
-            lineHeight,
-          }}>
-          {renderItem(outline, searchResults.get(outline))}
-        </div>
-        {renderTrees(
-          editor,
-          fontFamily,
-          fontSize,
-          lineHeight,
-          outline.children,
-          searchResults,
-        )}
-      </li>
+      _react.createElement(
+        'li',
+        { className: classes, style: { fontSize: fontSize * 0.7 } },
+        _react.createElement(
+          'div',
+          {
+            className: 'list-item outline-view-item',
+            onClick: this.onClick,
+            style: {
+              fontSize,
+              fontFamily,
+              lineHeight
+            } },
+          renderItem(outline, searchResults.get(outline))
+        ),
+        renderTrees(editor, fontFamily, fontSize, lineHeight, outline.children, searchResults)
+      )
     );
   }
 }
 
-function renderItem(
-  outline: OutlineTreeForUi,
-  searchResult: ?SearchResult,
-): Array<React.Element<any> | string> {
+function renderItem(outline, searchResult) {
   const r = [];
   const icon =
-    // flowlint-next-line sketchy-null-string:off
-    outline.icon || (outline.kind && OUTLINE_KIND_TO_ICON[outline.kind]);
+  // flowlint-next-line sketchy-null-string:off
+  outline.icon || outline.kind && OUTLINE_KIND_TO_ICON[outline.kind];
 
   if (icon != null) {
-    r.push(<span key={`icon-${icon}`} className={`icon icon-${icon}`} />);
+    r.push(_react.createElement('span', { key: `icon-${icon}`, className: `icon icon-${icon}` }));
     // Note: icons here are fixed-width, so the text lines up.
   }
 
   if (outline.tokenizedText != null) {
     let offset = 0;
-    r.push(
-      ...outline.tokenizedText.map((token, i) => {
-        const toReturn = renderTextToken(token, i, searchResult, offset);
-        offset += token.value.length;
-        return toReturn;
-      }),
-    );
+    r.push(...outline.tokenizedText.map((token, i) => {
+      const toReturn = renderTextToken(token, i, searchResult, offset);
+      offset += token.value.length;
+      return toReturn;
+    }));
   } else if (outline.plainText != null) {
-    const textWithMatching =
-      searchResult && searchResult.matchingCharacters
-        ? groupMatchIndexes(
-            outline.plainText,
-            searchResult.matchingCharacters,
-            renderMatchedSubsequence,
-            renderUnmatchedSubsequence,
-          )
-        : outline.plainText;
+    const textWithMatching = searchResult && searchResult.matchingCharacters ? (0, (_groupMatchIndexes || _load_groupMatchIndexes()).default)(outline.plainText, searchResult.matchingCharacters, renderMatchedSubsequence, renderUnmatchedSubsequence) : outline.plainText;
     r.push(...textWithMatching);
   } else {
     r.push('Missing text');
@@ -368,58 +350,35 @@ function renderItem(
   return r;
 }
 
-function renderTextToken(
-  token: TextToken,
-  index: number,
-  searchResult: ?SearchResult,
-  offset: number,
-): React.Element<any> {
+function renderTextToken(token, index, searchResult, offset) {
   const className = TOKEN_KIND_TO_CLASS_NAME_MAP[token.kind];
-  return (
-    <span className={className} key={index}>
-      {searchResult && searchResult.matchingCharacters
-        ? groupMatchIndexes(
-            token.value,
-            searchResult.matchingCharacters
-              .map(el => el - offset)
-              .filter(el => el >= 0 && el < token.value.length),
-            renderMatchedSubsequence,
-            renderUnmatchedSubsequence,
-          )
-        : token.value}
-    </span>
+  return _react.createElement(
+    'span',
+    { className: className, key: index },
+    searchResult && searchResult.matchingCharacters ? (0, (_groupMatchIndexes || _load_groupMatchIndexes()).default)(token.value, searchResult.matchingCharacters.map(el => el - offset).filter(el => el >= 0 && el < token.value.length), renderMatchedSubsequence, renderUnmatchedSubsequence) : token.value
   );
 }
 
-function renderSubsequence(seq: string, props: Object): React.Element<any> {
-  return <span {...props}>{seq}</span>;
+function renderSubsequence(seq, props) {
+  return _react.createElement(
+    'span',
+    props,
+    seq
+  );
 }
 
-function renderUnmatchedSubsequence(
-  seq: string,
-  key: number | string,
-): React.Element<any> {
-  return renderSubsequence(seq, {key});
+function renderUnmatchedSubsequence(seq, key) {
+  return renderSubsequence(seq, { key });
 }
 
-function renderMatchedSubsequence(
-  seq: string,
-  key: number | string,
-): React.Element<any> {
+function renderMatchedSubsequence(seq, key) {
   return renderSubsequence(seq, {
     key,
-    className: 'outline-view-match',
+    className: 'outline-view-match'
   });
 }
 
-function renderTrees(
-  editor: atom$TextEditor,
-  fontFamily: string,
-  fontSize: number,
-  lineHeight: number,
-  outlines: Array<OutlineTreeForUi>,
-  searchResults: Map<OutlineTreeForUi, SearchResult>,
-): ?React.Element<any> {
+function renderTrees(editor, fontFamily, fontSize, lineHeight, outlines, searchResults) {
   if (outlines.length === 0) {
     return null;
   }
@@ -427,26 +386,26 @@ function renderTrees(
   return (
     // Add `position: relative;` to let `li.selected` style position itself relative to the list
     // tree rather than to its container.
-    <ul
-      className="list-tree"
-      style={{
-        position: 'relative',
-      }}>
-      {outlines.map((outline, index) => {
+    _react.createElement(
+      'ul',
+      {
+        className: 'list-tree',
+        style: {
+          position: 'relative'
+        } },
+      outlines.map((outline, index) => {
         const result = searchResults.get(outline);
-        return !result || result.visible ? (
-          <OutlineTree
-            editor={editor}
-            fontSize={fontSize}
-            fontFamily={fontFamily}
-            lineHeight={lineHeight}
-            outline={outline}
-            key={index}
-            searchResults={searchResults}
-          />
-        ) : null;
-      })}
-    </ul>
+        return !result || result.visible ? _react.createElement(OutlineTree, {
+          editor: editor,
+          fontSize: fontSize,
+          fontFamily: fontFamily,
+          lineHeight: lineHeight,
+          outline: outline,
+          key: index,
+          searchResults: searchResults
+        }) : null;
+      })
+    )
   );
 }
 
@@ -468,5 +427,5 @@ const OUTLINE_KIND_TO_ICON = {
   package: 'type-package',
   property: 'type-property',
   string: 'type-string',
-  variable: 'type-variable',
+  variable: 'type-variable'
 };

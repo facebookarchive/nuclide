@@ -1,21 +1,27 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {SFTPWrapper} from 'ssh2';
-import {Observable} from 'rxjs';
-import {Deferred} from 'nuclide-commons/promise';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.SftpClient = undefined;
 
-import type {TransferOptions} from 'ssh2';
-export type {TransferOptions} from 'ssh2';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _ssh;
+
+function _load_ssh() {
+  return _ssh = require('ssh2');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _promise;
+
+function _load_promise() {
+  return _promise = require('nuclide-commons/promise');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Represents an SFTP connection. This wraps the `SFTPWrapper` class from ssh2, but reinterprets the
@@ -23,23 +29,19 @@ export type {TransferOptions} from 'ssh2';
  * same methods on `SFTPWrapper`. Instances of this class should typically be obtained from
  * `SshClient`.
  */
-export class SftpClient {
-  _sftp: SFTPWrapper;
-  _onError: Observable<any>;
-  _onEnd: Observable<void>;
-  _onClose: Observable<void>;
-  _onContinue: Observable<void>;
-  _deferredContinue: ?Deferred<void> = null;
+class SftpClient {
 
   /**
    * Wraps and takes ownership of the `SFTPWrapper`.
    */
-  constructor(sftp: SFTPWrapper) {
+  constructor(sftp) {
+    this._deferredContinue = null;
+
     this._sftp = sftp;
-    this._onError = Observable.fromEvent(this._sftp, 'error');
-    this._onEnd = Observable.fromEvent(this._sftp, 'end');
-    this._onClose = Observable.fromEvent(this._sftp, 'close');
-    this._onContinue = Observable.fromEvent(this._sftp, 'continue');
+    this._onError = _rxjsBundlesRxMinJs.Observable.fromEvent(this._sftp, 'error');
+    this._onEnd = _rxjsBundlesRxMinJs.Observable.fromEvent(this._sftp, 'end');
+    this._onClose = _rxjsBundlesRxMinJs.Observable.fromEvent(this._sftp, 'close');
+    this._onContinue = _rxjsBundlesRxMinJs.Observable.fromEvent(this._sftp, 'continue');
 
     this._sftp.on('continue', () => this._resolveContinue());
     this._sftp.on('close', () => {
@@ -52,27 +54,27 @@ export class SftpClient {
    * the 'continue' event before sending more data. This variable is updated immediately after each
    * asynchronous call (i.e. when a Promise is returned; before it is necessarily resolved).
    */
-  get continue(): boolean {
+  get continue() {
     return this._deferredContinue == null;
   }
 
   /** Emitted when an error occurred. */
-  onError(): Observable<any> {
+  onError() {
     return this._onError;
   }
 
   /** Emitted when the session has ended. */
-  onEnd(): Observable<void> {
+  onEnd() {
     return this._onEnd;
   }
 
   /** Emitted when the session has closed. */
-  onClose(): Observable<void> {
+  onClose() {
     return this._onClose;
   }
 
   /** Emitted when more requests/data can be sent to the stream. */
-  onContinue(): Observable<void> {
+  onContinue() {
     return this._onContinue;
   }
 
@@ -81,69 +83,87 @@ export class SftpClient {
    *
    * Downloads a file at `remotePath` to `localPath` using parallel reads for faster throughput.
    */
-  fastGet(
-    remotePath: string,
-    localPath: string,
-    options: TransferOptions = {},
-  ): Promise<void> {
-    return this._sftpToPromise(
-      this._sftp.fastGet,
-      remotePath,
-      localPath,
-      options,
-    );
+  fastGet(remotePath, localPath, options = {}) {
+    return this._sftpToPromise(this._sftp.fastGet, remotePath, localPath, options);
   }
 
   /**
    * Ends the stream.
    */
-  async end(): Promise<void> {
-    await this._readyForData();
-    this._sftp.end();
+  end() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this._readyForData();
+      _this._sftp.end();
+    })();
   }
 
   _resolveContinue() {
     if (this._deferredContinue != null) {
-      const {resolve} = this._deferredContinue;
+      const { resolve } = this._deferredContinue;
       this._deferredContinue = null;
       resolve();
     }
   }
 
-  async _readyForData() {
-    while (this._deferredContinue != null) {
-      // eslint-disable-next-line no-await-in-loop
-      await this._deferredContinue.promise;
-    }
-  }
+  _readyForData() {
+    var _this2 = this;
 
-  async _sftpToPromiseContinue(func: Function, ...args: any): Promise<any> {
-    await this._readyForData();
-    return new Promise((resolve, reject) => {
-      args.push((err, result) => {
-        if (err != null) {
-          return reject(err);
-        }
-        resolve(result);
-      });
-
-      const readyForData = func.apply(this._sftp, args);
-      if (!readyForData && this._deferredContinue == null) {
-        this._deferredContinue = new Deferred();
+    return (0, _asyncToGenerator.default)(function* () {
+      while (_this2._deferredContinue != null) {
+        // eslint-disable-next-line no-await-in-loop
+        yield _this2._deferredContinue.promise;
       }
-    });
+    })();
   }
 
-  async _sftpToPromise(func: any, ...args: any): Promise<any> {
-    await this._readyForData();
-    return new Promise((resolve, reject) => {
-      args.push((err, result) => {
-        if (err != null) {
-          return reject(err);
+  _sftpToPromiseContinue(func, ...args) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this3._readyForData();
+      return new Promise(function (resolve, reject) {
+        args.push(function (err, result) {
+          if (err != null) {
+            return reject(err);
+          }
+          resolve(result);
+        });
+
+        const readyForData = func.apply(_this3._sftp, args);
+        if (!readyForData && _this3._deferredContinue == null) {
+          _this3._deferredContinue = new (_promise || _load_promise()).Deferred();
         }
-        resolve(result);
       });
-      func.apply(this._sftp, args);
-    });
+    })();
+  }
+
+  _sftpToPromise(func, ...args) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this4._readyForData();
+      return new Promise(function (resolve, reject) {
+        args.push(function (err, result) {
+          if (err != null) {
+            return reject(err);
+          }
+          resolve(result);
+        });
+        func.apply(_this4._sftp, args);
+      });
+    })();
   }
 }
+exports.SftpClient = SftpClient; /**
+                                  * Copyright (c) 2017-present, Facebook, Inc.
+                                  * All rights reserved.
+                                  *
+                                  * This source code is licensed under the BSD-style license found in the
+                                  * LICENSE file in the root directory of this source tree. An additional grant
+                                  * of patent rights can be found in the PATENTS file in the same directory.
+                                  *
+                                  * 
+                                  * @format
+                                  */

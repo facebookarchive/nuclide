@@ -1,23 +1,31 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {registerConsoleLogging} from '../../nuclide-debugger-base';
-import logger from './utils';
-import {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ObservableManager = undefined;
 
-type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError',
-  message: string,
-};
+var _nuclideDebuggerBase;
+
+function _load_nuclideDebuggerBase() {
+  return _nuclideDebuggerBase = require('../../nuclide-debugger-base');
+}
+
+var _utils;
+
+function _load_utils() {
+  return _utils = _interopRequireDefault(require('./utils'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * The ObservableManager keeps track of the streams we use to talk to the server-side nuclide
@@ -31,82 +39,77 @@ type NotificationMessage = {
  * The ObservableManager takes ownership of its observables, and disposes them when its dispose
  * method is called.
  */
-export class ObservableManager {
-  _notifications: Observable<NotificationMessage>;
-  _outputWindowMessages: Observable<string>;
-  _disposables: UniversalDisposable;
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * 
+ * @format
+ */
 
-  constructor(
-    notifications: Observable<NotificationMessage>,
-    outputWindowMessages: Observable<string>,
-  ) {
+class ObservableManager {
+
+  constructor(notifications, outputWindowMessages) {
     this._notifications = notifications;
     this._outputWindowMessages = outputWindowMessages;
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
     this._subscribe();
   }
 
-  _subscribe(): void {
+  _subscribe() {
     const sharedNotifications = this._notifications.share();
-    this._disposables.add(
-      sharedNotifications.subscribe(
-        this._handleNotificationMessage.bind(this),
-        this._handleNotificationError.bind(this),
-        this._handleNotificationEnd.bind(this),
-      ),
-    );
+    this._disposables.add(sharedNotifications.subscribe(this._handleNotificationMessage.bind(this), this._handleNotificationError.bind(this), this._handleNotificationEnd.bind(this)));
     this._registerConsoleLogging(this._outputWindowMessages.share());
   }
 
-  _registerConsoleLogging(outputMessages: Observable<string>): void {
-    const outputDisposable = registerConsoleLogging(
-      'PHP Debugger',
-      outputMessages,
-    );
+  _registerConsoleLogging(outputMessages) {
+    const outputDisposable = (0, (_nuclideDebuggerBase || _load_nuclideDebuggerBase()).registerConsoleLogging)('PHP Debugger', outputMessages);
     if (outputDisposable != null) {
       this._disposables.add(outputDisposable);
     }
   }
 
-  _handleNotificationMessage(message: NotificationMessage): void {
+  _handleNotificationMessage(message) {
     switch (message.type) {
       case 'info':
-        logger.debug('Notification observerable info: ' + message.message);
+        (_utils || _load_utils()).default.debug('Notification observerable info: ' + message.message);
         atom.notifications.addInfo(message.message);
         break;
 
       case 'warning':
-        logger.debug('Notification observerable warning: ' + message.message);
+        (_utils || _load_utils()).default.debug('Notification observerable warning: ' + message.message);
         atom.notifications.addWarning(message.message);
         break;
 
       case 'error':
-        logger.error('Notification observerable error: ' + message.message);
+        (_utils || _load_utils()).default.error('Notification observerable error: ' + message.message);
         atom.notifications.addError(message.message);
         break;
 
       case 'fatalError':
-        logger.error(
-          'Notification observerable fatal error: ' + message.message,
-        );
+        (_utils || _load_utils()).default.error('Notification observerable fatal error: ' + message.message);
         atom.notifications.addFatalError(message.message);
         break;
 
       default:
-        logger.error('Unknown message: ' + JSON.stringify(message));
+        (_utils || _load_utils()).default.error('Unknown message: ' + JSON.stringify(message));
         break;
     }
   }
 
-  _handleNotificationError(error: string): void {
-    logger.error('Notification observerable error: ' + error);
+  _handleNotificationError(error) {
+    (_utils || _load_utils()).default.error('Notification observerable error: ' + error);
   }
 
-  _handleNotificationEnd(): void {
-    logger.debug('Notification observerable ends.');
+  _handleNotificationEnd() {
+    (_utils || _load_utils()).default.debug('Notification observerable ends.');
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.ObservableManager = ObservableManager;

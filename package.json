@@ -160,7 +160,6 @@
     "atom": ">=1.20.1",
     "node": ">=7.4.0"
   },
-  "private": true,
   "atomTestRunner": "./lib/test-runner-entry.js",
   "package-deps": [
     "file-icons",
