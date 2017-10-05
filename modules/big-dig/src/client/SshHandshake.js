@@ -21,7 +21,6 @@ import {SshClient} from './SshClient';
 import fs from '../common/fs';
 import {lastly, timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import {shellQuote} from 'nuclide-commons/string';
-import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
 import lookupPreferIpv6 from './lookup-prefer-ip-v6';
 import createBigDigClient from './createBigDigClient';
@@ -616,18 +615,14 @@ export class SshHandshake {
       }
     };
     const getServerStartInfo = async (sftp: SftpClient): Promise<string> => {
-      const localTempFile = await tempfile();
       try {
-        await sftp.fastGet(remoteTempFile, localTempFile);
-        return await fs.readFileAsString(localTempFile, 'utf8');
+        return await sftp.readFile(remoteTempFile, {encoding: 'utf8'});
       } catch (sftpError) {
         throw new SshHandshakeError(
           'Failed to transfer server start information',
           SshHandshake.ErrorType.SERVER_START_FAILED,
           sftpError,
         );
-      } finally {
-        fs.unlink(localTempFile).catch(() => {});
       }
     };
 
