@@ -17,6 +17,7 @@ import idx from 'idx';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import {Icon} from './Icon';
+import {areSetsEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ResizeObservable} from './observable-dom';
 import {scrollIntoViewIfNeeded} from './scrollIntoView';
@@ -292,29 +293,14 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     const el = nullthrows(this._rootNode);
 
     this._disposables = new UniversalDisposable(
-      new ResizeObservable(el)
-        .startWith((null: any))
-        .map(() => el.offsetWidth)
-        .filter(tableWidth => tableWidth > 0)
-        .subscribe(tableWidth => {
-          // Update the column widths to account for minimum widths. This logic could definitely be
-          // improved. As it is now, if you resize the table to be very small and then make it large
-          // again, the proportions from when it was at its smallest will be preserved. If no
-          // columns have min widths, then this is what you want. But if a minimum width prevented
-          // one or more of the columns from shrinking, you'll probably consider them too wide when
-          // the table's expanded.
-          const preferredColumnWidths =
-            this.state.columnWidths ||
-            getInitialPercentageWidths(this.props.columns);
-          this.setState({
-            columnWidths: ensureMinWidths(
-              preferredColumnWidths,
-              this._getMinWidths(),
-              tableWidth,
-              this.props.columns.map(c => c.key),
-            ),
-          });
-        }),
+      // Update the column widths when the table is resized.
+      new ResizeObservable(el).startWith((null: any)).subscribe(() => {
+        this._updateColumnWidths({
+          columns: this.props.columns,
+          currentWidths: this.state.columnWidths,
+          tableWidth: el.offsetWidth,
+        });
+      }),
       () => {
         this._stopResizing();
       },
@@ -350,14 +336,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
   componentWillUnmount(): void {
     this._disposables.dispose();
-  }
-
-  _getMinWidths(): WidthMap<T> {
-    const minWidths = {};
-    this.props.columns.forEach(column => {
-      minWidths[column.key] = column.minWidth;
-    });
-    return minWidths;
   }
 
   componentDidUpdate(prevProps: Props<T>, prevState: State<T>): void {
@@ -400,6 +378,26 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       el = el.parentNode;
     }
     this._tableBody.focus();
+  }
+
+  componentWillReceiveProps(nextProps: Props<T>): void {
+    // Did the columns change? If so, we need to recalculate the widths.
+    const currentColumns = this.props.columns;
+    const nextColumns = nextProps.columns;
+    if (
+      nextColumns.length !== currentColumns.length ||
+      // If the columns just changed order, we want to keep their widths.
+      !areSetsEqual(
+        new Set(currentColumns.map(column => column.key)),
+        new Set(nextColumns.map(column => column.key)),
+      )
+    ) {
+      this._updateColumnWidths({
+        columns: nextColumns,
+        currentWidths: null, // Recalculate widths based on the new columns.
+        tableWidth: nullthrows(this._rootNode).offsetWidth,
+      });
+    }
   }
 
   _moveSelection(offset: -1 | 1, event: SelectionEvent): void {
@@ -452,6 +450,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         ? false
         : !sortDescending,
     );
+  }
+
+  _updateColumnWidths(options: GetColumnWidthsOptions<T>): void {
+    const columnWidths = getColumnWidths(options);
+    if (columnWidths != null) {
+      this.setState({columnWidths});
+    }
   }
 
   _renderEmptyCellContent(): React.Element<any> {
@@ -673,6 +678,51 @@ function getInitialPercentageWidths<T: Object>(
     columnWidthRatios[column.key] = residualColumnWidth;
   });
   return columnWidthRatios;
+}
+
+type GetColumnWidthsOptions<T> = {
+  columns: Array<Column<T>>,
+  tableWidth: number,
+  currentWidths: ?WidthMap<T>,
+};
+
+/**
+ * Determine what widths the columns should be given the table configuration, table size, and
+ * current widths of the columns.
+ */
+function getColumnWidths<T: Object>(
+  options: GetColumnWidthsOptions<T>,
+): ?WidthMap<T> {
+  const {columns, tableWidth, currentWidths} = options;
+
+  if (tableWidth === 0) {
+    return null;
+  }
+
+  // Update the column widths to account for minimum widths. This logic could definitely be
+  // improved. As it is now, if you resize the table to be very small and then make it large
+  // again, the proportions from when it was at its smallest will be preserved. If no
+  // columns have min widths, then this is what you want. But if a minimum width prevented
+  // one or more of the columns from shrinking, you'll probably consider them too wide when
+  // the table's expanded. Also, it would be nice if we didn't have to lose all of the user's column
+  // resizing if a column gets added or removed.
+  const preferredColumnWidths =
+    currentWidths == null ? getInitialPercentageWidths(columns) : currentWidths;
+
+  return ensureMinWidths(
+    preferredColumnWidths,
+    getMinWidths(columns),
+    tableWidth,
+    columns.map(c => c.key),
+  );
+}
+
+function getMinWidths<T: Object>(columns: Array<Column<T>>): WidthMap<T> {
+  const minWidths = {};
+  columns.forEach(column => {
+    minWidths[column.key] = column.minWidth;
+  });
+  return minWidths;
 }
 
 /**
