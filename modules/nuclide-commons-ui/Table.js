@@ -144,7 +144,8 @@ type Props<T> = {
 };
 
 type State<T> = {|
-  columnWidths: ?WidthMap<T>,
+  tableWidth: number,
+  preferredColumnWidths: WidthMap<T>,
 
   // It's awkward to have hover styling when you're using keyboard navigation and the mouse just
   // happens to be over a row. Therefore, we'll keep track of when you use keyboard navigation and
@@ -195,7 +196,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     super(props);
     this._resizingDisposable = null;
     this.state = {
-      columnWidths: null,
+      preferredColumnWidths: getInitialPercentageWidths(props.columns),
+      tableWidth: 0,
       usingKeyboard: false,
     };
   }
@@ -214,8 +216,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     }
     const tableWidth = this.refs.table.getBoundingClientRect().width;
     const startX = event.pageX;
-    const startWidths = this.state.columnWidths;
-    invariant(startWidths != null);
+    const startWidths = this._getColumnWidths();
     this._resizingDisposable = new UniversalDisposable(
       Observable.fromEvent(document, 'mousemove').subscribe(evt => {
         this._handleResizerGlobalMouseMove(
@@ -281,8 +282,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     const nextGrowingColumnWidth = prevGrowingColumnWidth - actualChange;
 
     this.setState({
-      columnWidths: {
-        ...this.state.columnWidths,
+      preferredColumnWidths: {
+        ...this.state.preferredColumnWidths,
         [shrinkingColumnKey]: nextShrinkingColumnWidth,
         [growingColumnKey]: nextGrowingColumnWidth,
       },
@@ -294,13 +295,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
     this._disposables = new UniversalDisposable(
       // Update the column widths when the table is resized.
-      new ResizeObservable(el).startWith((null: any)).subscribe(() => {
-        this._updateColumnWidths({
-          columns: this.props.columns,
-          currentWidths: this.state.columnWidths,
-          tableWidth: el.offsetWidth,
-        });
-      }),
+      new ResizeObservable(el)
+        .startWith((null: any))
+        .map(() => el.offsetWidth)
+        .filter(tableWidth => tableWidth > 0)
+        .subscribe(tableWidth => {
+          this.setState({tableWidth});
+        }),
       () => {
         this._stopResizing();
       },
@@ -392,10 +393,8 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         new Set(nextColumns.map(column => column.key)),
       )
     ) {
-      this._updateColumnWidths({
-        columns: nextColumns,
-        currentWidths: null, // Recalculate widths based on the new columns.
-        tableWidth: nullthrows(this._rootNode).offsetWidth,
+      this.setState({
+        preferredColumnWidths: getInitialPercentageWidths(nextColumns),
       });
     }
   }
@@ -452,11 +451,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     );
   }
 
-  _updateColumnWidths(options: GetColumnWidthsOptions<T>): void {
-    const columnWidths = getColumnWidths(options);
-    if (columnWidths != null) {
-      this.setState({columnWidths});
-    }
+  _getColumnWidths(): WidthMap<T> {
+    return ensureMinWidths(
+      this.state.preferredColumnWidths,
+      getMinWidths(this.props.columns),
+      this.state.tableWidth,
+      this.props.columns.map(column => column.key),
+    );
   }
 
   _renderEmptyCellContent(): React.Element<any> {
@@ -474,8 +475,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
   }
 
   _renderContents(): React.Node {
-    const {columnWidths} = this.state;
-    if (columnWidths == null) {
+    if (this.state.tableWidth === 0) {
       // We don't have the table width yet so we can't render the columns.
       return null;
     }
@@ -492,6 +492,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       sortedColumn,
       sortDescending,
     } = this.props;
+
+    const columnWidths = this._getColumnWidths();
+
     const header =
       headerTitle != null ? (
         <div className="nuclide-ui-table-header-cell nuclide-ui-table-full-header">
@@ -680,43 +683,6 @@ function getInitialPercentageWidths<T: Object>(
   return columnWidthRatios;
 }
 
-type GetColumnWidthsOptions<T> = {
-  columns: Array<Column<T>>,
-  tableWidth: number,
-  currentWidths: ?WidthMap<T>,
-};
-
-/**
- * Determine what widths the columns should be given the table configuration, table size, and
- * current widths of the columns.
- */
-function getColumnWidths<T: Object>(
-  options: GetColumnWidthsOptions<T>,
-): ?WidthMap<T> {
-  const {columns, tableWidth, currentWidths} = options;
-
-  if (tableWidth === 0) {
-    return null;
-  }
-
-  // Update the column widths to account for minimum widths. This logic could definitely be
-  // improved. As it is now, if you resize the table to be very small and then make it large
-  // again, the proportions from when it was at its smallest will be preserved. If no
-  // columns have min widths, then this is what you want. But if a minimum width prevented
-  // one or more of the columns from shrinking, you'll probably consider them too wide when
-  // the table's expanded. Also, it would be nice if we didn't have to lose all of the user's column
-  // resizing if a column gets added or removed.
-  const preferredColumnWidths =
-    currentWidths == null ? getInitialPercentageWidths(columns) : currentWidths;
-
-  return ensureMinWidths(
-    preferredColumnWidths,
-    getMinWidths(columns),
-    tableWidth,
-    columns.map(c => c.key),
-  );
-}
-
 function getMinWidths<T: Object>(columns: Array<Column<T>>): WidthMap<T> {
   const minWidths = {};
   columns.forEach(column => {
@@ -726,7 +692,7 @@ function getMinWidths<T: Object>(columns: Array<Column<T>>): WidthMap<T> {
 }
 
 /**
- * Convert percentage widths into actual pixel widths, taking into account minimum widths.
+ * Calculate widths, taking into account the preferred and minimum widths.
  */
 function ensureMinWidths<T: Object>(
   preferredWidths: WidthMap<T>,
