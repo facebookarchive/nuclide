@@ -788,16 +788,23 @@ export default class VsDebugSessionTranslator {
           const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
           return {pausedEvent, threadsUpdatedEvent};
         })
-        .subscribe(({pausedEvent, threadsUpdatedEvent}) => {
-          this._sendMessageToClient({
-            method: 'Debugger.paused',
-            params: pausedEvent,
-          });
-          this._sendMessageToClient({
-            method: 'Debugger.threadsUpdated',
-            params: threadsUpdatedEvent,
-          });
-        }),
+        .subscribe(
+          ({pausedEvent, threadsUpdatedEvent}) => {
+            this._sendMessageToClient({
+              method: 'Debugger.paused',
+              params: pausedEvent,
+            });
+            this._sendMessageToClient({
+              method: 'Debugger.threadsUpdated',
+              params: threadsUpdatedEvent,
+            });
+          },
+          error =>
+            this._logger.error(
+              'Unable to translate stop event / call stack',
+              error,
+            ),
+        ),
       this._session.observeContinuedEvents().subscribe(({body}) => {
         const {allThreadsContinued, threadId} = body;
         if (allThreadsContinued || threadId === this._pausedThreadId) {
