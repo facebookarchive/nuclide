@@ -9,10 +9,7 @@
  * @format
  */
 
-import type {
-  RemoteObjectId,
-  SetVariableResponse,
-} from '../../nuclide-debugger-base/lib/protocol-types';
+import type {SetVariableResponse} from '../../nuclide-debugger-base/lib/protocol-types';
 import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
@@ -82,7 +79,7 @@ export default class ScopesStore {
   // Returns a promise of the updated value after it has been set.
   async sendSetVariableRequest(
     scopeNumber: number,
-    scopeObjectId: RemoteObjectId,
+    scopeObjectId: number,
     expression: string,
     newValue: string,
   ): Promise<string> {
@@ -96,11 +93,10 @@ export default class ScopesStore {
         }
       }
       this._bridge.sendSetVariableCommand(
-        0, // remove this if unnecessary
         scopeObjectId,
         expression,
         newValue,
-        callback.bind(this),
+        callback,
       );
     }).then(confirmedNewValue => {
       this._setVariable(scopeNumber, expression, confirmedNewValue);

@@ -25,7 +25,6 @@ import type {
   CallFrameId,
   SetDebuggerSettingsRequest,
   SetPauseOnExceptionsRequest,
-  RemoteObjectId,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 
 import {Subject, Observable} from 'rxjs';
@@ -147,25 +146,12 @@ class DebuggerDomainDispatcher {
   }
 
   setVariable(
-    id: number,
-    scopeObjectId: RemoteObjectId,
+    scopeObjectId: number,
     expression: string,
     newValue: string,
     callback: Function,
   ): void {
-    // Garbage values are provided for the scopeNumber and the newValue.
-    // scopeNumber is ignored in favor of scopeObjectId/callFrameId.
-    // newValue is ignored in favor of newValueAsString bc it's correctly typed.
-    // The empty string is passed for functionObjectId. This value is unused.
-    this._agent.setVariableValue(
-      0,
-      expression,
-      {value: newValue},
-      scopeObjectId,
-      '',
-      newValue,
-      callback,
-    );
+    this._agent.setVariableValue(expression, newValue, scopeObjectId, callback);
   }
 
   selectThread(threadId: number): void {

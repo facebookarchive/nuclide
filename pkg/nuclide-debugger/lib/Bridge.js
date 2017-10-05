@@ -9,7 +9,6 @@
  * @format
  */
 
-import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerModel from './DebuggerModel';
 import type {
   Callstack,
@@ -177,15 +176,13 @@ export default class Bridge {
   }
 
   sendSetVariableCommand(
-    setVariableRequestId: number,
-    scopeObjectId: RemoteObjectId,
+    scopeObjectId: number,
     expression: string,
     newValue: string,
     callback: Function,
   ): void {
     this._commandDispatcher.send(
       'setVariable',
-      setVariableRequestId,
       scopeObjectId,
       expression,
       newValue,

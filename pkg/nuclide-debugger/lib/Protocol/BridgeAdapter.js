@@ -19,7 +19,6 @@ import type {
   PausedEvent,
   ThreadsUpdatedEvent,
   ThreadUpdatedEvent,
-  RemoteObjectId,
 } from '../../../nuclide-debugger-base/lib/protocol-types';
 import type DebuggerDomainDispatcher from './DebuggerDomainDispatcher';
 import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
@@ -194,14 +193,12 @@ export default class BridgeAdapter {
   }
 
   setVariable(
-    id: number,
-    scopeObjectId: RemoteObjectId,
+    scopeObjectId: number,
     expression: string,
     newValue: string,
     callback: Function,
   ): void {
     this._debuggerDispatcher.setVariable(
-      id,
       scopeObjectId,
       expression,
       newValue,

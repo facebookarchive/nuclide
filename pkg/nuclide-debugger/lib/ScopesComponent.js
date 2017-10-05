@@ -62,7 +62,7 @@ export class ScopesComponent extends React.Component<Props> {
       invariant(newValue != null);
       this.props.scopesStore.sendSetVariableRequest(
         scopeNumber,
-        scopeObjectId,
+        Number(scopeObjectId),
         expression,
         newValue,
       );

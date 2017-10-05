@@ -355,12 +355,10 @@ export default class VsDebugSessionTranslator {
       this._commandsOfType('Debugger.setVariableValue').flatMap(
         catchCommandError(async command => {
           invariant(command.method === 'Debugger.setVariableValue');
-          const {callFrameId, variableName, newValue} = command.params;
-          invariant(newValue.value != null);
-          const value = newValue.value;
+          const {callFrameId, name, value} = command.params;
           const args = {
-            variablesReference: Number(callFrameId),
-            name: variableName,
+            variablesReference: callFrameId,
+            name,
             value,
           };
           const {body} = await this._session.setVariable(args);

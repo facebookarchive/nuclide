@@ -413,20 +413,14 @@ export type EvaluateOnCallFrameResponse = {
 };
 
 export type SetVariableValueRequest = {
-  /** 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually. */
-  scopeNumber: number,
-
   /** Variable name. */
-  variableName: string,
+  name: string,
 
   /** New variable value. */
-  newValue: CallArgument,
+  value: string,
 
   /** Id of callframe that holds variable. */
-  callFrameId: CallFrameId,
-
-  /** Object id of closure (function) that holds variable. */
-  functionObjectId: RemoteObjectId,
+  callFrameId: number,
 };
 
 export type BreakpointResolvedEvent = {
