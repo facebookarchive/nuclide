@@ -1990,11 +1990,18 @@ export class FileTreeStore {
       }
 
       const parents = [];
+      let prevUri = nodeKey;
       let currentParentUri = FileTreeHelpers.getParentKey(nodeKey);
       const rootUri = root.uri;
-      while (currentParentUri !== deepest.uri) {
+      while (currentParentUri !== deepest.uri && currentParentUri !== prevUri) {
         parents.push(currentParentUri);
+        prevUri = currentParentUri;
         currentParentUri = FileTreeHelpers.getParentKey(currentParentUri);
+      }
+
+      if (currentParentUri !== deepest.uri) {
+        // Something went wrong - we didn't find the match
+        return root;
       }
 
       let currentChild = new FileTreeNode({uri: nodeKey, rootUri}, this._conf);
