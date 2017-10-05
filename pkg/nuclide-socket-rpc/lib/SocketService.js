@@ -33,6 +33,7 @@ const socketsForPorts: Map<number, ServerSocket> = new Map();
 
 export function startListening(
   port: number,
+  family: 4 | 6 = 6,
 ): ConnectableObservable<SocketEvent> {
   return Observable.create(observer => {
     if (socketsForPorts.get(port) != null) {
@@ -63,7 +64,7 @@ export function startListening(
       observer.error(error);
     });
     server.maxConnections = 1;
-    server.listen({port}, () => {
+    server.listen({host: family === 6 ? '::' : '0.0.0.0', port}, () => {
       observer.next({type: 'server_started'});
     });
     socketsForPorts.set(port, {clients, server, observer});
@@ -107,10 +108,6 @@ export function closeClient(port: number): void {
   const openSocket = getOpenSocket(port);
   if (openSocket.clients.length > 0) {
     openSocket.clients[0].end();
-  } else {
-    openSocket.observer.error(
-      `Tried to close client on port ${port}, but no client found.`,
-    );
   }
 }
 

@@ -31,7 +31,7 @@ export function openTunnelEpic(
     const {from, to} = tunnel;
     const fromUri = nuclideUri.createRemoteUri(from.host, '/');
     const remoteService = getSocketServiceByNuclideUri(fromUri);
-    const remoteEvents = remoteService.startListening(from.port);
+    const remoteEvents = remoteService.startListening(from.port, from.family);
     const subscription = remoteEvents.subscribe({
       next: event => {
         let socket = socketsForTunnels.get(tunnel);
@@ -43,7 +43,7 @@ export function openTunnelEpic(
           socket = net.createConnection(
             {
               port: to.port,
-              family: 6,
+              family: to.family || 6,
             },
             () => store.dispatch(Actions.setTunnelState(tunnel, 'active')),
           );

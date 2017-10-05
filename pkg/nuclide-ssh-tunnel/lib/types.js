@@ -31,11 +31,13 @@ export type AppState = {
 export type Remote = {
   host: string,
   port: number,
+  family?: 4 | 6,
 };
 
 export type Local = {
   host: 'localhost',
   port: number,
+  family?: 4 | 6,
 };
 
 export type Tunnel = {
