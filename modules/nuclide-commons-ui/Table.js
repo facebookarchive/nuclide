@@ -13,7 +13,6 @@
 import invariant from 'assert';
 import nullthrows from 'nullthrows';
 import classnames from 'classnames';
-import idx from 'idx';
 import * as React from 'react';
 import {Observable} from 'rxjs';
 import {Icon} from './Icon';
@@ -153,11 +152,6 @@ type State<T> = {|
   usingKeyboard: boolean,
 |};
 
-type ResizerLocation<T> = {
-  leftColumnKey: $Keys<T>,
-  rightColumnKey: $Keys<T>,
-};
-
 /**
  * Design concerns:
  *
@@ -204,7 +198,7 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
 
   _handleResizerMouseDown(
     event: SyntheticMouseEvent<>,
-    resizerLocation: ResizerLocation<T>,
+    resizerLocation: number,
   ): void {
     if (this._resizingDisposable != null) {
       this._stopResizing();
@@ -245,49 +239,49 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     event: MouseEvent,
     startX: number,
     startWidths: WidthMap<T>,
-    location: ResizerLocation<T>,
+    resizerLocation: number, // The index of the column after which the resizer appears.
     tableWidth: number,
   ): void => {
     const pxToRatio = px => px / tableWidth;
+    const leftColumns = this.props.columns.slice(0, resizerLocation + 1);
+    const rightColumns = this.props.columns.slice(resizerLocation + 1);
 
     const delta = pxToRatio(event.pageX - startX);
-    const {leftColumnKey, rightColumnKey} = location;
+    const [shrinkingColumns, growingColumn] =
+      delta < 0
+        ? [leftColumns.reverse(), rightColumns[0]]
+        : [rightColumns, leftColumns[leftColumns.length - 1]];
+    const targetChange = Math.abs(delta);
+    let cumulativeChange = 0;
+    const newWidths = {...this.state.preferredColumnWidths};
 
-    // Determine which column is shrinking and which is growing. This will allow us to apply the min
-    // width limitations correctly.
-    let shrinkingColumnKey;
-    let growingColumnKey;
-    if (delta < 0) {
-      [shrinkingColumnKey, growingColumnKey] = [leftColumnKey, rightColumnKey];
-    } else {
-      [shrinkingColumnKey, growingColumnKey] = [rightColumnKey, leftColumnKey];
+    for (const column of shrinkingColumns) {
+      const {key} = column;
+      const startWidth = startWidths[key];
+      const minWidth = pxToRatio(
+        column.minWidth == null ? DEFAULT_MIN_COLUMN_WIDTH : column.minWidth,
+      );
+      const remainingDistance = targetChange - cumulativeChange;
+      const newWidth = Math.max(minWidth, startWidth - remainingDistance);
+      const change = Math.abs(startWidth - newWidth);
+      cumulativeChange += change;
+      newWidths[key] = newWidth;
+      if (cumulativeChange >= targetChange) {
+        break;
+      }
     }
 
-    const prevShrinkingColumnWidth = startWidths[shrinkingColumnKey];
-    const prevGrowingColumnWidth = startWidths[growingColumnKey];
-    const shrinkingColumn = this.props.columns.find(
-      column => column.key === shrinkingColumnKey,
-    );
-    invariant(shrinkingColumn != null);
-    const shrinkingColumnMinWidth = pxToRatio(
-      shrinkingColumn.minWidth == null
-        ? DEFAULT_MIN_COLUMN_WIDTH
-        : shrinkingColumn.minWidth,
-    );
-    const nextShrinkingColumnWidth = Math.max(
-      shrinkingColumnMinWidth,
-      prevShrinkingColumnWidth - Math.abs(delta),
-    );
-    const actualChange = nextShrinkingColumnWidth - prevShrinkingColumnWidth;
-    const nextGrowingColumnWidth = prevGrowingColumnWidth - actualChange;
+    // Determine the width of the growing column. Instead of adding `cumulativeChange` to its
+    // starting width, we figure out what percentage of the table's width is still unaccounted for.
+    // This ensures we avoid snowballing floating point errors.
+    newWidths[growingColumn.key] = Object.entries(
+      newWidths,
+    ).reduce((remaining, [key, width]) => {
+      invariant(typeof width === 'number');
+      return key === growingColumn.key ? remaining : remaining - width;
+    }, 1);
 
-    this.setState({
-      preferredColumnWidths: {
-        ...this.state.preferredColumnWidths,
-        [shrinkingColumnKey]: nextShrinkingColumnWidth,
-        [growingColumnKey]: nextGrowingColumnWidth,
-      },
-    });
+    this.setState({preferredColumnWidths: newWidths});
   };
 
   componentDidMount(): void {
@@ -503,18 +497,13 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       ) : (
         columns.map((column, i) => {
           const {title, key, shouldRightAlign, cellClassName} = column;
-          const leftColumnKey = column.key;
-          const rightColumnKey = idx(columns[i + 1], _ => _.key);
           let resizer;
-          if (leftColumnKey != null && rightColumnKey != null) {
+          if (i < columns.length - 1) {
             resizer = (
               <div
                 className="nuclide-ui-table-header-resize-handle"
                 onMouseDown={event => {
-                  this._handleResizerMouseDown(event, {
-                    leftColumnKey,
-                    rightColumnKey,
-                  });
+                  this._handleResizerMouseDown(event, i);
                 }}
                 onClick={(e: SyntheticMouseEvent<>) => {
                   // Prevent sortable column header click event from firing.
