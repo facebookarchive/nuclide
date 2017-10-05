@@ -32,6 +32,9 @@ export type {
   Prompt,
 } from 'ssh2';
 
+const OPEN_CHANNEL_ATTEMPTS = 3;
+const OPEN_CHANNEL_DELAY_MS = 200;
+
 /**
  * Emitted when the server is asking for replies to the given `prompts` for keyboard-
  * interactive user authentication.
@@ -268,8 +271,12 @@ export class SshClient {
 
   _clientToPromiseContinue(func: Function, ...args: any): Promise<any> {
     return new Promise((resolve, reject) => {
+      // In case there is a failure to open a channel.
+      let attempts = 0;
+
       const self = this;
       function doOperation() {
+        ++attempts;
         self._readyForData().then(() => {
           const readyForData = func.apply(self._client, args);
           if (!readyForData && this._deferredContinue == null) {
@@ -280,7 +287,19 @@ export class SshClient {
 
       args.push((err, result) => {
         if (err != null) {
-          return reject(err);
+          if (
+            err instanceof Error &&
+            err.message === '(SSH) Channel open failure: open failed' &&
+            err.reason === 'ADMINISTRATIVELY_PROHIBITED' &&
+            attempts < OPEN_CHANNEL_ATTEMPTS
+          ) {
+            // In case we're severely limited in the number of channels available, we may have to
+            // wait a little while before the previous channel is closed. (If it was closed.)
+            setTimeout(doOperation, OPEN_CHANNEL_DELAY_MS);
+            return;
+          } else {
+            return reject(err);
+          }
         }
         resolve(result);
       });

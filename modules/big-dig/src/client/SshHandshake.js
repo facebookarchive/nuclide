@@ -19,12 +19,7 @@ import {Client as SshConnection} from 'ssh2';
 import {SftpClient} from './SftpClient';
 import {SshClient} from './SshClient';
 import fs from '../common/fs';
-import {
-  lastly,
-  sleep,
-  timeoutPromise,
-  TimedOutError,
-} from 'nuclide-commons/promise';
+import {lastly, timeoutPromise, TimedOutError} from 'nuclide-commons/promise';
 import {shellQuote} from 'nuclide-commons/string';
 import {tempfile} from '../common/temp';
 import ConnectionTracker from './ConnectionTracker';
@@ -688,11 +683,6 @@ export class SshHandshake {
           new Error(stdOut),
         );
       }
-
-      // Some servers have max channels set to 1, so add a delay to ensure
-      // the old channel has been cleaned up on the server.
-      // TODO(hansonw): Implement a proper retry mechanism.
-      await sleep(100);
 
       return this._loadServerStartInformation(remoteTempFile);
     } catch (error) {
