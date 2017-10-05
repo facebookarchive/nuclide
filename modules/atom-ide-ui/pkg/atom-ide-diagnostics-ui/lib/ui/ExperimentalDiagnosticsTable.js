@@ -21,6 +21,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
 import humanizePath from 'nuclide-commons-atom/humanizePath';
+import {insideOut} from 'nuclide-commons/collection';
 import * as React from 'react';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
@@ -90,6 +91,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
   Props,
   State,
 > {
+  _previousSelectedIndex: number = -1;
   _table: ?Table<DisplayDiagnostic>;
 
   constructor(props: Props) {
@@ -213,9 +215,7 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
         </div>
       );
     }
-    const selectedIndex = sortedRows.findIndex(
-      row => row.data.description.diagnostic === selectedMessage,
-    );
+    const selectedIndex = this._findSelectedIndex(selectedMessage, sortedRows);
     return (
       <div
         className={classnames({
@@ -251,6 +251,39 @@ export default class ExperimentalDiagnosticsTable extends React.Component<
     if (this._table != null) {
       this._table.focus();
     }
+  }
+
+  _findSelectedIndex(
+    selectedMessage: ?DiagnosticMessage,
+    rows: Array<Row<DisplayDiagnostic>>,
+  ): number {
+    if (selectedMessage == null) {
+      return -1;
+    }
+
+    let bestRank = -1;
+    let bestRankedIndex = -1;
+
+    // Look for the closest match, starting with the previously selected index.
+    for (const [row, i] of insideOut(rows, this._previousSelectedIndex)) {
+      const {diagnostic} = row.data.description;
+      if (diagnostic === selectedMessage) {
+        bestRankedIndex = i;
+        break;
+      }
+      const rank = compareMessages(diagnostic, selectedMessage);
+      if (rank != null && rank > bestRank) {
+        bestRank = rank;
+        bestRankedIndex = i;
+      }
+    }
+
+    if (bestRankedIndex === -1) {
+      bestRankedIndex = Math.min(this._previousSelectedIndex, rows.length - 1);
+    }
+
+    this._previousSelectedIndex = bestRankedIndex;
+    return bestRankedIndex;
   }
 
   // TODO: Memoize this so we don't recompute unnecessarily.
@@ -423,4 +456,40 @@ function getLocation(
       locationInFile: {basename, line},
     },
   };
+}
+
+/**
+ * Compute a number indicating the relative similarity of two messages. The smaller the number, the
+ * more similar. (`null` indicates not at all similar.)
+ */
+function compareMessages(a: DiagnosticMessage, b: DiagnosticMessage): ?number {
+  const aKind = a.kind || 'lint';
+  const bKind = b.kind || 'lint';
+  const aFilePath = a.scope === 'file' ? a.filePath : null;
+  const bFilePath = b.scope === 'file' ? b.filePath : null;
+  if (
+    aKind !== bKind ||
+    a.scope !== b.scope ||
+    a.providerName !== b.providerName ||
+    a.type !== b.type ||
+    aFilePath !== bFilePath
+  ) {
+    return null;
+  }
+  const aRange = a.range;
+  const bRange = b.range;
+
+  if (Boolean(aRange) !== Boolean(bRange)) {
+    return null;
+  }
+
+  // Neither has a range, but they have the same text and they're for the same file.
+  if (aRange == null || bRange == null) {
+    return 0;
+  }
+
+  // TODO: This could be better if we also took into account the column and end start and column,
+  // but it's probably good enough. (How likely are messages with the same text starting on the same
+  // row?)
+  return Math.abs(aRange.start.row - bRange.start.row);
 }
