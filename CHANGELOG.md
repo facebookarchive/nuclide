@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.259.0
+
+**Hotfix from 0.258.0**
+
+* Fix hhvm debugger crashing nuclide server.
+* Workaround broken reveal in remote file tree.
+
 ## v0.258.0
 
 ### General
