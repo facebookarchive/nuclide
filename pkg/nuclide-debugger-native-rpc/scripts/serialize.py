@@ -106,7 +106,7 @@ class LocationSerializer:
             else:
                 locations.append({
                     'columnNumber': 0,
-                    'lineNumber': hex(bl.GetLoadAddress()),
+                    'lineNumber': hex(bpl.GetLoadAddress()),
                     'scriptId': 'address',
                 })
         return locations

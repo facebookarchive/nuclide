@@ -918,7 +918,7 @@ class Activation {
       const selectedFrameIndex = callstackStore.getSelectedCallFrameIndex();
       if (
         callstack != null &&
-        selectedFrameIndex > 0 &&
+        selectedFrameIndex >= 0 &&
         selectedFrameIndex < callstack.length
       ) {
         const disassembly = callstack[selectedFrameIndex].disassembly;

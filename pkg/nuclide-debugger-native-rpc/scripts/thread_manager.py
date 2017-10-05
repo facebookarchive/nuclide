@@ -101,7 +101,7 @@ class ThreadManager(object):
             instructions = func.GetInstructions(target)
             instructionIdx = 0
             for instruction in instructions:
-                address = instruction.GetAddress().GetFileAddress()
+                address = instruction.GetAddress().GetLoadAddress(target)
                 comment = instruction.GetComment(target)
                 data = instruction.GetMnemonic(target) + '\t'
                 data += instruction.GetOperands(target) + '\t'
