@@ -171,8 +171,16 @@ export class NativeDebuggerService extends DebuggerRpcWebSocketService {
 
   launch(launchInfo: LaunchTargetInfo): ConnectableObservable<void> {
     this.getLogger().debug(`launch process: ${JSON.stringify(launchInfo)}`);
+    const exePath = launchInfo.executablePath.trim();
+    const resolvedPath = exePath.startsWith('./')
+      ? nuclideUri.resolve(
+          nuclideUri.expandHomeDir(launchInfo.workingDirectory),
+          exePath.substring(2),
+        )
+      : nuclideUri.expandHomeDir(exePath);
+
     const inferiorArguments = {
-      executable_path: launchInfo.executablePath,
+      executable_path: resolvedPath,
       launch_arguments: launchInfo.arguments,
       launch_environment_variables: launchInfo.environmentVariables,
       working_directory: launchInfo.workingDirectory,
