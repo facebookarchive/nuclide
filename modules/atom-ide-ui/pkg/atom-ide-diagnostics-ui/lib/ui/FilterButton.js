@@ -56,7 +56,7 @@ function getIcon(type: FilterType): IconName {
     case 'errors':
       return 'nuclicon-error';
     case 'warnings':
-      return 'alert';
+      return 'nuclicon-warning';
     case 'review':
       return 'nuclicon-comment-discussion';
     default:

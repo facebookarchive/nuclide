@@ -182,7 +182,7 @@ class StatusBarTileComponent extends React.Component<Props> {
             title: `${errorLabel} error${errorSuffix}`,
             placement: 'top',
           })}>
-          <Icon icon="stop" />
+          <Icon icon="nuclicon-error" />
           {errorCount}
         </a>
         <a
@@ -192,7 +192,7 @@ class StatusBarTileComponent extends React.Component<Props> {
             title: `${warningLabel} warning${warningSuffix}`,
             placement: 'top',
           })}>
-          <Icon icon="alert" />
+          <Icon icon="nuclicon-warning" />
           {warningCount}
         </a>
       </span>

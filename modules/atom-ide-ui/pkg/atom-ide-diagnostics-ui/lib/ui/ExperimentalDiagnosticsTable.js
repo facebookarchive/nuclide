@@ -345,7 +345,7 @@ function getIconName(classification: Classification): IconName {
   }
   switch (severity) {
     case 'Warning':
-      return 'alert';
+      return 'nuclicon-warning';
     case 'Error':
       return 'nuclicon-error';
     case 'Info':
