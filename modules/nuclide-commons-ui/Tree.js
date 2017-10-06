@@ -10,18 +10,35 @@
  * @format
  */
 
+/* eslint-env browser */
+
 import * as React from 'react';
 import classnames from 'classnames';
+import invariant from 'assert';
 import {scrollIntoView} from './scrollIntoView';
+
+export function Tree({className, style, ...props}: Object) {
+  return (
+    <ol
+      className={classnames('list-tree', className)}
+      style={{position: 'relative', ...style}}
+      {...props}
+    />
+  );
+}
 
 type TreeItemProps = {
   children?: mixed,
   className?: string,
+  onSelect?: () => mixed,
+  onConfirm?: () => mixed,
+  onTripleClick?: () => mixed,
   selected?: boolean,
 };
 
 export class TreeItem extends React.Component<TreeItemProps> {
-  _liNode: ?Element;
+  _liNode: ?HTMLLIElement;
+  _handleClick = handleClick.bind(this);
 
   scrollIntoView() {
     if (this._liNode != null) {
@@ -31,6 +48,12 @@ export class TreeItem extends React.Component<TreeItemProps> {
 
   render() {
     const {className, selected, children, ...remainingProps} = this.props;
+
+    // don't forward these on to the <li>
+    delete remainingProps.onConfirm;
+    delete remainingProps.onSelect;
+    delete remainingProps.onTripleClick;
+
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
       <li
@@ -43,6 +66,7 @@ export class TreeItem extends React.Component<TreeItemProps> {
           'list-item',
         )}
         {...remainingProps}
+        onClick={this._handleClick}
         ref={liNode => (this._liNode = liNode)}
         role="treeitem"
         tabIndex={selected ? '0' : '-1'}>
@@ -58,49 +82,73 @@ export class TreeItem extends React.Component<TreeItemProps> {
 }
 
 type NestedTreeItemProps = {
-  title?: ?React.Element<any>,
+  title?: React.Node,
   children?: mixed,
   className?: string,
   hasFlatChildren?: boolean, // passthrough to inner TreeList
   selected?: boolean,
   collapsed?: boolean,
-  onClick?: (event: SyntheticMouseEvent<>) => void,
-  onDoubleClick?: (event: SyntheticMouseEvent<>) => void,
+  onSelect?: () => mixed,
+  onConfirm?: () => mixed,
+  onTripleClick?: () => mixed,
 };
-export const NestedTreeItem = (props: NestedTreeItemProps) => {
-  const {
-    className,
-    hasFlatChildren,
-    selected,
-    collapsed,
-    title,
-    children,
-    onClick,
-    onDoubleClick,
-    ...remainingProps
-  } = props;
-  return (
-    <li
-      aria-selected={selected}
-      aria-expanded={!collapsed}
-      className={classnames(
-        className,
-        {
-          selected,
-          collapsed,
-        },
-        'list-nested-item',
-      )}
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
-      {...remainingProps}
-      role="treeitem"
-      tabIndex={selected ? '0' : '-1'}>
-      {title ? <div className="list-item">{title}</div> : null}
-      <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
-    </li>
-  );
-};
+
+export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
+  _itemNode: ?HTMLDivElement;
+  _handleClick = (e: SyntheticMouseEvent<>) => {
+    const itemNode = this._itemNode;
+    if (itemNode == null) {
+      return;
+    }
+
+    invariant(e.target instanceof Element);
+    if (e.target.closest('.list-item') === itemNode) {
+      handleClick.call(this, e);
+    }
+  };
+
+  render() {
+    const {
+      className,
+      hasFlatChildren,
+      selected,
+      collapsed,
+      title,
+      children,
+      ...remainingProps
+    } = this.props;
+
+    // don't forward these on to the <li>
+    delete remainingProps.onConfirm;
+    delete remainingProps.onSelect;
+    delete remainingProps.onTripleClick;
+
+    return (
+      <li
+        aria-selected={selected}
+        aria-expanded={!collapsed}
+        className={classnames(
+          className,
+          {
+            selected,
+            collapsed,
+          },
+          'list-nested-item',
+        )}
+        {...remainingProps}
+        onClick={this._handleClick}
+        role="treeitem"
+        tabIndex={selected ? '0' : '-1'}>
+        {title == null ? null : (
+          <div className="list-item" ref={node => (this._itemNode = node)}>
+            {title}
+          </div>
+        )}
+        <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
+      </li>
+    );
+  }
+}
 
 type TreeListProps = {
   className?: string,
@@ -124,3 +172,22 @@ export const TreeList = (props: TreeListProps) => (
     {props.children}
   </ul>
 );
+
+function handleClick(e: SyntheticMouseEvent<>): void {
+  const {onSelect, onConfirm, onTripleClick} = this.props;
+
+  const numberOfClicks = e.detail;
+  switch (numberOfClicks) {
+    case 1:
+      onSelect && onSelect();
+      break;
+    case 2:
+      onConfirm && onConfirm();
+      break;
+    case 3:
+      onTripleClick && onTripleClick();
+      break;
+    default:
+      break;
+  }
+}

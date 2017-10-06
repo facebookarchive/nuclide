@@ -22,7 +22,12 @@ const BasicTreeExample = (): React.Element<any> => (
       <TreeList>
         <TreeItem>TreeItem 1</TreeItem>
         <TreeItem>TreeItem 2</TreeItem>
-        <NestedTreeItem title={<span>NestedTreeItem 1</span>} selected={true}>
+        <NestedTreeItem
+          title={<span>NestedTreeItem 1 -- click me!</span>}
+          onSelect={handleSelect}
+          onConfirm={handleConfirm}
+          onTripleClick={handleTripleClick}
+          selected={true}>
           <TreeItem>TreeItem 3</TreeItem>
           <TreeItem>TreeItem 4</TreeItem>
         </NestedTreeItem>
@@ -84,3 +89,13 @@ export const TreeExamples = {
     },
   ],
 };
+
+function handleSelect() {
+  atom.notifications.addInfo('selected!');
+}
+function handleConfirm() {
+  atom.notifications.addInfo('confirmed!');
+}
+function handleTripleClick() {
+  atom.notifications.addInfo('triple clicked!');
+}
