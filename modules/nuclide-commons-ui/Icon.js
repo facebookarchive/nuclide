@@ -33,7 +33,11 @@ export type Nuclicon =
   | 'nuclicon-flow'
   | 'nuclicon-react-devtools'
   | 'nuclicon-funnel'
-  | 'nuclicon-error';
+  | 'nuclicon-error'
+  // Currently, "nuclicon-warning" is the same as Octicon's "alert" but we duplicate it because the
+  // Octicons aren't vertically centered and the fact that this one's frequently shown next to
+  // nuclicon-error makes it wayyyy more obvious.
+  | 'nuclicon-warning';
 
 export type IconName = Nuclicon | atom$Octicon;
 

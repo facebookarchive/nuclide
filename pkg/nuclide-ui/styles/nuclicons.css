@@ -101,3 +101,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-error::before {
   content: "\f116";
 }
+.icon-nuclicon-warning::before {
+  content: "\f117";
+}
