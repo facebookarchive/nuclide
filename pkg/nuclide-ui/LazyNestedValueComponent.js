@@ -23,7 +23,7 @@ import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {highlightOnUpdate} from './highlightOnUpdate';
 import {STRING_REGEX} from './SimpleValueComponent';
 import {ValueComponentClassNames} from './ValueComponentClassNames';
-import {TreeList, TreeItem, NestedTreeItem} from './Tree';
+import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import ignoreTextSelectionEvents from 'nuclide-commons-ui/ignoreTextSelectionEvents';
 import classnames from 'classnames';

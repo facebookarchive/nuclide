@@ -18,7 +18,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import PathWithFileIcon from '../../nuclide-ui/PathWithFileIcon';
-import {TreeList, TreeItem, NestedTreeItem} from '../../nuclide-ui/Tree';
+import {TreeList, TreeItem, NestedTreeItem} from 'nuclide-commons-ui/Tree';
 import {track} from '../../nuclide-analytics';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 
