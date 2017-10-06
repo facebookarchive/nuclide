@@ -33,7 +33,7 @@ export type Nuclicon =
   | 'nuclicon-flow'
   | 'nuclicon-react-devtools'
   | 'nuclicon-funnel'
-  | 'nuclicon-stop';
+  | 'nuclicon-error';
 
 export type IconName = Nuclicon | atom$Octicon;
 

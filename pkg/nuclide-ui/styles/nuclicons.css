@@ -98,6 +98,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-funnel::before {
   content: "\f115";
 }
-.icon-nuclicon-stop::before {
+.icon-nuclicon-error::before {
   content: "\f116";
 }
