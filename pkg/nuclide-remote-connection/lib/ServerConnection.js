@@ -187,6 +187,19 @@ export class ServerConnection {
     return new RemoteFile(this, this.getUriOfRemotePath(path), symlink);
   }
 
+  createFileAsDirectory(
+    uri: NuclideUri,
+    hgRepositoryDescription: ?HgRepositoryDescription,
+    symlink: boolean = false,
+  ): RemoteDirectory {
+    let {path} = nuclideUri.parse(uri);
+    path = nuclideUri.normalize(path);
+    return new RemoteDirectory(this, this.getUriOfRemotePath(path), symlink, {
+      ...hgRepositoryDescription,
+      ...{isArchive: true},
+    });
+  }
+
   getFileWatch(path: string): Observable<WatchResult> {
     return this._fileWatches.get(path);
   }

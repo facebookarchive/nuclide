@@ -150,7 +150,7 @@ export class CompositeFileSystem implements FileSystem {
       async (segFs, pth) => {
         return (await segFs.readdir(pth)).map(([name, isFile, isLink]) => [
           name,
-          isFile && !nuclideUri.hasKnownArchiveExtension(name),
+          isFile,
           isLink,
         ]);
       },
