@@ -10,6 +10,7 @@
  */
 
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
+import type {BusySignalService} from 'atom-ide-ui';
 import type {HyperclickProvider} from 'atom-ide-ui';
 import type {SerializedState} from './types';
 import type {BuckBuildSystem} from './BuckBuildSystem';
@@ -18,6 +19,7 @@ import type {ClangConfigurationProvider} from '../../nuclide-clang/lib/types';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {openNearestBuildFile} from './buildFiles';
 import {getSuggestion} from './HyperclickProvider';
 import {track} from '../../nuclide-analytics';
@@ -29,6 +31,7 @@ const OPEN_NEAREST_BUILD_FILE_COMMAND = 'nuclide-buck:open-nearest-build-file';
 
 class Activation {
   _disposables: CompositeDisposable;
+  _busySignalService: ?BusySignalService;
   _taskRunner: BuckTaskRunner;
   _initialState: ?Object = null;
 
@@ -60,6 +63,13 @@ class Activation {
     this._disposables.add(api.register(this._taskRunner));
   }
 
+  consumeBusySignal(service: BusySignalService): IDisposable {
+    this._busySignalService = service;
+    return new UniversalDisposable(() => {
+      this._busySignalService = null;
+    });
+  }
+
   provideObservableDiagnosticUpdates() {
     return this._taskRunner.getBuildSystem().getDiagnosticProvider();
   }
@@ -87,7 +97,7 @@ class Activation {
   }
 
   provideClangConfiguration(): ClangConfigurationProvider {
-    return getClangProvider(this._taskRunner);
+    return getClangProvider(this._taskRunner, () => this._busySignalService);
   }
 }
 
