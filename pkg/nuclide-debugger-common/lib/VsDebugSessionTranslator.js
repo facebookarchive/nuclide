@@ -923,6 +923,7 @@ export default class VsDebugSessionTranslator {
   async _getTranslatedCallFramesForThread(
     threadId: number,
   ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
+    // $FlowFixMe(>=0.55.0) Flow suppress
     const {body: {stackFrames}} = await this._session.stackTrace({
       threadId,
     });

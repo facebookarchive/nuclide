@@ -1381,9 +1381,9 @@ flat-cache@^1.2.1:
     graceful-fs "^4.1.2"
     write "^0.2.1"
 
-flow-bin@0.53.1:
-  version "0.53.1"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.53.1.tgz#9b22b63a23c99763ae533ebbab07f88c88c97d84"
+flow-bin@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.56.0.tgz#ce43092203a344ba9bf63c0cabe95d95145f6cad"
 
 for-in@^1.0.1:
   version "1.0.2"
@@ -1586,71 +1586,65 @@ graceful-fs@^4.0.0, graceful-fs@^4.1.2, graceful-fs@^4.1.6:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
 
-graphql-config@1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/graphql-config/-/graphql-config-1.0.5.tgz#82b356af60e4703125db4efdbc4a041bc0db1e1c"
+graphql-config@1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/graphql-config/-/graphql-config-1.0.7.tgz#424bda7da2e70ad6bbec4bd26c83f1d9cb49b271"
   dependencies:
-    graphql "0.7.1 - 1.0.0"
+    graphql "^0.11.6"
     graphql-request "^1.2.0"
     js-yaml "^3.9.0"
     minimatch "^3.0.4"
     rimraf "^2.6.1"
 
-graphql-language-service-interface@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-interface/-/graphql-language-service-interface-0.1.12.tgz#6eab5a59abdebadde79c7227057de966b7113d09"
+graphql-language-service-interface@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-interface/-/graphql-language-service-interface-1.0.15.tgz#d967aac365567146cc8d2ea03d5dc509f024bea7"
   dependencies:
-    graphql "^0.10.5"
-    graphql-config "1.0.5"
-    graphql-language-service-parser "^0.1.12"
-    graphql-language-service-types "^0.1.12"
-    graphql-language-service-utils "^0.1.12"
+    graphql-config "1.0.7"
+    graphql-language-service-parser "^0.1.14"
+    graphql-language-service-types "^0.1.14"
+    graphql-language-service-utils "^1.0.15"
 
-graphql-language-service-parser@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-parser/-/graphql-language-service-parser-0.1.12.tgz#ecc159c1738b3cf7ace8dc028046668cfd4b59f5"
+graphql-language-service-parser@^0.1.14:
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-parser/-/graphql-language-service-parser-0.1.14.tgz#dd25abda5dcff4f2268c9a19e026004271491661"
   dependencies:
-    graphql-language-service-types "^0.1.12"
+    graphql-language-service-types "^0.1.14"
 
-graphql-language-service-server@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-server/-/graphql-language-service-server-0.1.12.tgz#49ab8a70df90200bd190e295416501d542de039a"
+graphql-language-service-server@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-server/-/graphql-language-service-server-1.0.15.tgz#57808595c8e5a37088bd38dcd6f93e0be112d47a"
   dependencies:
     babylon "^6.17.4"
     fb-watchman "^2.0.0"
-    graphql "^0.10.5"
-    graphql-config "1.0.5"
-    graphql-language-service-interface "^0.1.12"
-    graphql-language-service-types "^0.1.12"
-    graphql-language-service-utils "^0.1.12"
+    graphql-config "1.0.7"
+    graphql-language-service-interface "^1.0.15"
+    graphql-language-service-types "^0.1.14"
+    graphql-language-service-utils "^1.0.15"
     nullthrows "^1.0.0"
     vscode-jsonrpc "^3.3.0"
     vscode-languageserver "^3.3.0"
 
-graphql-language-service-types@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-types/-/graphql-language-service-types-0.1.12.tgz#57ce064581a381c08998d401781536595fcf28b9"
-  dependencies:
-    graphql "^0.10.5"
+graphql-language-service-types@^0.1.14:
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-types/-/graphql-language-service-types-0.1.14.tgz#e6112785fc23ea8222f59a7f00e61b359f263c88"
 
-graphql-language-service-utils@0.1.12, graphql-language-service-utils@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service-utils/-/graphql-language-service-utils-0.1.12.tgz#1cb86fbaa3183acdd242e31d4ff4a91f11dfee44"
+graphql-language-service-utils@1.0.15, graphql-language-service-utils@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/graphql-language-service-utils/-/graphql-language-service-utils-1.0.15.tgz#73e86c9acad7c546de3198c136bd1656933169e9"
   dependencies:
-    graphql "^0.10.5"
-    graphql-config "1.0.5"
-    graphql-language-service-types "^0.1.12"
+    graphql-config "1.0.7"
+    graphql-language-service-types "^0.1.14"
 
-graphql-language-service@0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-language-service/-/graphql-language-service-0.1.12.tgz#1f744e08a7c1222c392e1742f6c6f5f2bf34a43a"
+graphql-language-service@1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/graphql-language-service/-/graphql-language-service-1.0.15.tgz#45f9986cfbe27cdfa6ce1bf91fc8201840f6d6de"
   dependencies:
     babel-polyfill "6.16.0"
-    graphql "^0.10.5"
-    graphql-config "1.0.5"
-    graphql-language-service-interface "^0.1.12"
-    graphql-language-service-server "^0.1.12"
-    graphql-language-service-utils "^0.1.12"
+    graphql-config "1.0.7"
+    graphql-language-service-interface "^1.0.15"
+    graphql-language-service-server "^1.0.15"
+    graphql-language-service-utils "^1.0.15"
     yargs "^3.32.0 || ^7.0.0"
 
 graphql-request@^1.2.0:
@@ -1659,11 +1653,11 @@ graphql-request@^1.2.0:
   dependencies:
     isomorphic-fetch "^2.2.1"
 
-graphql@0.10.5, "graphql@0.7.1 - 1.0.0", graphql@^0.10.5:
-  version "0.10.5"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.10.5.tgz#c9be17ca2bdfdbd134077ffd9bbaa48b8becd298"
+graphql@0.11.7, graphql@^0.11.6:
+  version "0.11.7"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-0.11.7.tgz#e5abaa9cb7b7cccb84e9f0836bf4370d268750c6"
   dependencies:
-    iterall "^1.1.0"
+    iterall "1.1.3"
 
 growl@1.9.2:
   version "1.9.2"
@@ -2120,9 +2114,9 @@ isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
 
-iterall@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.1.1.tgz#f7f0af11e9a04ec6426260f5019d9fcca4d50214"
+iterall@1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.1.3.tgz#1cbbff96204056dde6656e2ed2e2226d0e6d72c9"
 
 jasmine-growl-reporter@~0.0.2:
   version "0.0.3"

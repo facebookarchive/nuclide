@@ -699,6 +699,7 @@ class DatatipManagerForEditor {
     // Note that we don't need to hide the tooltip, we already hide it on
     // keydown, which is going to be triggered before the key binding which is
     // evaluated on keyup.
+    // $FlowFixMe (v0.54.1 <)
     const maybeEventType = idx(e, _ => _.originalEvent.type);
 
     // Unfortunately, when you do keydown of the shortcut, it's going to

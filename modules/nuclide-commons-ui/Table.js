@@ -216,7 +216,9 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
         this._handleResizerGlobalMouseMove(
           evt,
           startX,
+          // $FlowFixMe(>=0.55.0) Flow suppress
           startWidths,
+          // $FlowFixMe(>=0.55.0) Flow suppress
           resizerLocation,
           tableWidth,
         );

@@ -508,10 +508,13 @@ export default class SearchResultManager {
         };
         const resultList = cachedResult.results || defaultResult.results;
         results[path] = {
-          results: resultList.map(result => ({
-            ...result,
-            sourceProvider: providerName,
-          })),
+          results: resultList.map(result =>
+            // $FlowFixMe (v0.54.1 <)
+            ({
+              ...result,
+              sourceProvider: providerName,
+            }),
+          ),
           loading: cachedResult.loading || defaultResult.loading,
           error: cachedResult.error || defaultResult.error,
         };

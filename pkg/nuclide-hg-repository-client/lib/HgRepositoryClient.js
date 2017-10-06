@@ -724,6 +724,7 @@ export class HgRepositoryClient {
     for (const [filePath, status] of this._hgStatusCache) {
       pathStatuses[filePath] = status;
     }
+    // $FlowFixMe(>=0.55.0) Flow suppress
     return pathStatuses;
   }
 
