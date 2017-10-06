@@ -10,7 +10,7 @@
  */
 
 import type {UnreliableTransport} from '../../nuclide-rpc';
-import {QueuedTransport} from '../lib/QueuedTransport';
+import {QueuedAckTransport} from '../lib/QueuedAckTransport';
 import {Emitter} from 'event-kit';
 import {Subject} from 'rxjs';
 
@@ -39,13 +39,13 @@ function makeUnreliableTransport(): UnreliableTransport {
   return result;
 }
 
-describe('QueuedTransport', () => {
+describe('QueuedAckTransport', () => {
   let transport;
   let q;
 
   beforeEach(() => {
     transport = makeUnreliableTransport();
-    q = new QueuedTransport('42', transport);
+    q = new QueuedAckTransport('42', transport);
   });
 
   it('constructor', () => {
@@ -57,7 +57,7 @@ describe('QueuedTransport', () => {
   it('send - open', () => {
     const data = JSON.stringify({message: 42});
     q.send(data);
-    expect(transport.send).toHaveBeenCalledWith(data);
+    expect(transport.send).toHaveBeenCalledWith(`>1:${data}`);
   });
 
   it('close tranport', () => {
@@ -115,7 +115,7 @@ describe('QueuedTransport', () => {
 
     expect(q.getState()).toBe('open');
     expect(transport.send).not.toHaveBeenCalled();
-    expect(newTransport.send).toHaveBeenCalledWith(data);
+    expect(newTransport.send).toHaveBeenCalledWith(`>1:${data}`);
   });
 
   it('close', () => {
@@ -142,7 +142,7 @@ describe('QueuedTransport', () => {
     const onMessage = jasmine.createSpy('onMessage');
     q.onMessage().subscribe(onMessage);
     const data = JSON.stringify({message: 42});
-    (transport: any).sendMessage(data);
+    (transport: any).sendMessage(`>1:${data}`);
 
     expect(onMessage).toHaveBeenCalledWith(data);
   });
@@ -153,7 +153,7 @@ describe('QueuedTransport', () => {
     subscription.unsubscribe();
 
     const data = JSON.stringify({message: 42});
-    (transport: any).sendMessage(data);
+    (transport: any).sendMessage(`>1:${data}`);
 
     expect(onMessage).not.toHaveBeenCalled();
   });

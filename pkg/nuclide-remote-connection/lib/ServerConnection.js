@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteConnection} from './RemoteConnection';
 import type {OnHeartbeatErrorCallback} from '../../nuclide-remote-connection/lib/ConnectionHealthNotifier.js';
 import type {HgRepositoryDescription} from '../../nuclide-source-control-helpers';
+import passesGK from '../../commons-node/passesGK';
 import typeof * as InfoService from '../../nuclide-server/lib/services/InfoService';
 import typeof * as FileWatcherService from '../../nuclide-filewatcher-rpc';
 import type {WatchResult} from '../../nuclide-filewatcher-rpc';
@@ -209,7 +210,8 @@ export class ServerConnection {
   }
 
   async initialize(): Promise<void> {
-    this._startRpc();
+    const useAck = await passesGK('nuclide_connection_ack');
+    this._startRpc(useAck);
     const client = this.getClient();
     const clientVersion = getVersion();
 
@@ -273,9 +275,9 @@ export class ServerConnection {
     return this._client;
   }
 
-  _startRpc(): void {
+  _startRpc(useAck: boolean): void {
     let uri;
-    let options;
+    let options = {useAck};
 
     // Use https if we have key, cert, and ca
     if (this._isSecure()) {
@@ -283,6 +285,7 @@ export class ServerConnection {
       invariant(this._config.clientCertificate != null);
       invariant(this._config.clientKey != null);
       options = {
+        ...options,
         ca: this._config.certificateAuthorityCertificate,
         cert: this._config.clientCertificate,
         key: this._config.clientKey,
@@ -290,7 +293,7 @@ export class ServerConnection {
       };
       uri = `https://${this.getRemoteHostname()}:${this.getPort()}`;
     } else {
-      options = {family: this._config.family};
+      options = {...options, family: this._config.family};
       uri = `http://${this.getRemoteHostname()}:${this.getPort()}`;
     }
 

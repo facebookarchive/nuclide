@@ -136,11 +136,7 @@ export class WebSocketTransport {
       }
       socket.send(data, {compress: !compressed}, err => {
         if (err != null) {
-          logger.warn(
-            'Failed sending socket message to client:',
-            this.id,
-            JSON.parse(message),
-          );
+          logger.warn(`Failed sending to client:${this.id} message:${message}`);
           resolve(false);
         } else {
           resolve(true);

@@ -15,11 +15,16 @@ import type {UnreliableTransport} from '../../nuclide-rpc';
 import invariant from 'assert';
 import {Subject} from 'rxjs';
 import {getLogger} from 'log4js';
+import Dequeue from 'dequeue';
 const logger = getLogger('nuclide-server');
 import {Emitter} from 'event-kit';
+import {track} from '../../nuclide-analytics';
+
+type QueueItem = {id: number, message: string};
 
 // Adapter to make an UnreliableTransport a reliable Transport
-// by queuing messages.
+// by queuing messages and removing from the queue only after
+// receiving an ack that the recipient has received it.
 //
 // Conforms to the RPC Framework's Transport type.
 //
@@ -30,20 +35,23 @@ import {Emitter} from 'event-kit';
 // While disconnected, reconnect can be called to return to the open state.
 // close() closes the underlying transport and transitions to closed state.
 // Once closed, reconnect may not be called and no other events will be emitted.
-export class QueuedTransport {
+export class QueuedAckTransport {
   id: string;
   _isClosed: boolean;
   _transport: ?UnreliableTransport;
-  _messageQueue: Array<string>;
+  _messageQueue: Dequeue; // elements are of type QueueItem
   _emitter: Emitter;
   _messages: Subject<string>;
   _lastStateChangeTime: number;
+  _id: number = 1;
+  _lastIdHandled: number = -1;
+  _retryTimerId: ?number;
 
   constructor(clientId: string, transport: ?UnreliableTransport) {
     this.id = clientId;
     this._isClosed = false;
     this._transport = null;
-    this._messageQueue = [];
+    this._messageQueue = new Dequeue();
     this._messages = new Subject();
     this._emitter = new Emitter();
     this._lastStateChangeTime = Date.now();
@@ -69,7 +77,7 @@ export class QueuedTransport {
     invariant(this._transport == null);
     this._transport = transport;
     this._lastStateChangeTime = Date.now();
-    transport.onMessage().subscribe(message => this._messages.next(message));
+    transport.onMessage().subscribe(this._handleMessage.bind(this));
     transport.onClose(() => this._onClose(transport));
   }
 
@@ -104,10 +112,7 @@ export class QueuedTransport {
 
     this._connect(transport);
 
-    // Attempt to resend queued messages
-    const queuedMessages = this._messageQueue;
-    this._messageQueue = [];
-    queuedMessages.forEach(message => this.send(message));
+    this._sendFirstQueueMessageIfAny();
   }
 
   disconnect(): void {
@@ -133,33 +138,97 @@ export class QueuedTransport {
   }
 
   send(message: string): void {
-    this._send(message);
-  }
-
-  async _send(message: string): Promise<void> {
     invariant(
       !this._isClosed,
       `Attempt to send socket message after connection closed: ${message}`,
     );
+    const id = this._id++;
+    const newItem: QueueItem = {id, message};
+    this._messageQueue.push(newItem);
+    this._sendFirstQueueMessageIfAny();
+  }
 
-    this._messageQueue.push(message);
-    if (this._transport == null) {
+  _sendFirstQueueMessageIfAny(): void {
+    if (this._retryTimerId != null) {
+      clearTimeout(this._retryTimerId);
+      this._retryTimerId = null;
+    }
+    const transport = this._transport;
+    if (this._messageQueue.length === 0 || transport == null) {
       return;
     }
 
-    const sent = await this._transport.send(message);
-    if (!sent) {
-      logger.warn(
-        'Failed sending socket message to client:',
-        this.id,
-        JSON.parse(message),
-      );
+    const {id, message} = (this._messageQueue.first(): QueueItem);
+    const rawMessage = `>${id}:${message}`;
+
+    transport.send(rawMessage);
+    this._retryTimerId = setTimeout(
+      this._sendFirstQueueMessageIfAny.bind(this),
+      150,
+    );
+    // We've scheduled an automatic retry of sending the message.
+    // We won't remove the message from the queue until we get an ack.
+  }
+
+  _dump(): void {
+    const d = new Dequeue();
+    while (this._messageQueue.length > 0) {
+      const {id, message} = (this._messageQueue.shift(): QueueItem);
+      d.push({id, message});
+      logger.error(` * ${id}:${message}`);
+    }
+  }
+
+  _handleMessage(rawMessage: string): void {
+    const iColon = rawMessage.indexOf(':');
+    invariant(iColon !== -1);
+    const mode = rawMessage[0];
+    invariant(mode === '>' || mode === '<');
+    const id = Number(rawMessage.substring(1, iColon));
+    const message = rawMessage.substring(iColon + 1);
+
+    if (mode === '>') {
+      // '>id:msg' means the other party has sent us this message
+      // We only *handle* a message id the first time we receive it
+      if (id > this._lastIdHandled) {
+        this._messages.next(message);
+      }
+      if (id > this._lastIdHandled + 1 && this._lastIdHandled !== -1) {
+        logger.error(
+          `QueuedAckTransport message id mismatch - received ${id}, last handled ${this
+            ._lastIdHandled}`,
+        );
+        track('transport.message-id-mismatch', {
+          receivedMessageId: id,
+          lastHandledMessageId: this._lastIdHandled,
+          rawMessage,
+        });
+      }
+      this._lastIdHandled = id;
+      // But we always send a receipt (which needn't be reliably delivered).
+      const ackMessage = `<${id}:${message}`;
+      if (this._transport != null) {
+        this._transport.send(ackMessage);
+      }
     } else {
-      // This may remove a different (but equivalent) message from the Q,
-      // but that's ok because we don't guarantee message ordering.
-      const messageIndex = this._messageQueue.indexOf(message);
-      if (messageIndex !== -1) {
-        this._messageQueue.splice(messageIndex, 1);
+      // '<id:msg' means the other party has acknowledged receipt
+      // It's fine to receive old acknowledgements from now-gone messages
+      if (this._messageQueue.length > 0) {
+        const qId: number = (this._messageQueue.first(): QueueItem).id;
+        if (id > qId) {
+          logger.error(
+            `QueuedAckTransport ack id mismatch - received ack ${id}, last sent ${qId}`,
+          );
+          track('transport.ack-id-mismatch', {
+            receivedAckId: id,
+            lastSentMessageId: qId,
+            rawMessage,
+          });
+        }
+        if (id === qId) {
+          this._messageQueue.shift();
+          this._sendFirstQueueMessageIfAny();
+        }
       }
     }
   }
