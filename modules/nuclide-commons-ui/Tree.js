@@ -34,6 +34,7 @@ export class TreeItem extends React.Component<TreeItemProps> {
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
       <li
+        aria-selected={selected}
         className={classnames(
           className,
           {
@@ -42,7 +43,9 @@ export class TreeItem extends React.Component<TreeItemProps> {
           'list-item',
         )}
         {...remainingProps}
-        ref={liNode => (this._liNode = liNode)}>
+        ref={liNode => (this._liNode = liNode)}
+        role="treeitem"
+        tabIndex={selected ? '0' : '-1'}>
         {selected && typeof children === 'string' ? (
           // String children must be wrapped to receive correct styles when selected.
           <span>{children}</span>
@@ -78,6 +81,8 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
   } = props;
   return (
     <li
+      aria-selected={selected}
+      aria-expanded={!collapsed}
       className={classnames(
         className,
         {
@@ -86,15 +91,12 @@ export const NestedTreeItem = (props: NestedTreeItemProps) => {
         },
         'list-nested-item',
       )}
-      {...remainingProps}>
-      {title ? (
-        <div
-          className="list-item"
-          onClick={onClick}
-          onDoubleClick={onDoubleClick}>
-          {title}
-        </div>
-      ) : null}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      {...remainingProps}
+      role="treeitem"
+      tabIndex={selected ? '0' : '-1'}>
+      {title ? <div className="list-item">{title}</div> : null}
       <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
     </li>
   );
@@ -117,7 +119,8 @@ export const TreeList = (props: TreeListProps) => (
         'has-flat-children': props.hasFlatChildren,
       },
       'list-tree',
-    )}>
+    )}
+    role="group">
     {props.children}
   </ul>
 );
