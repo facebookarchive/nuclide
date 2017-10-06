@@ -11,7 +11,11 @@
  */
 
 import type {BigDigClient} from './BigDigClient';
-import type {ClientErrorExtensions, ConnectConfig, Prompt} from './SshClient';
+import type {
+  ClientErrorExtensions,
+  ConnectConfig,
+  Prompt as SshClientPromptType,
+} from './SshClient';
 
 import net from 'net';
 import invariant from 'assert';
@@ -27,7 +31,6 @@ import {onceEventOrError} from '../common/events';
 import {getPackage} from './RemotePackage';
 import type {PackageParams, RemotePackage} from './RemotePackage';
 
-export type {Prompt} from './SshClient';
 export type {
   PackageParams as ServerPackageParams,
   UnmanagedPackageParams as UnmanagedServerParams,
@@ -109,6 +112,54 @@ type SshConnectionErrorLevel =
   | 'client-authentication'
   | 'agent'
   | 'client-dns';
+
+/** A prompt from ssh */
+export type SshPrompt = {|
+  kind: 'ssh',
+  prompt: string,
+  echo: boolean,
+|};
+
+/** We need the user's private-key password */
+export type PrivateKeyPasswordPrompt = {|
+  kind: 'private-key',
+  prompt: string,
+  echo: false,
+  retry: boolean,
+|};
+
+/**
+ * Prompt for installing a remote server. Emitted when a server does not exist and the given
+ * installation path has no conflicts (i.e. is nonexistant or empty).
+ */
+export type InstallServerPrompt = {|
+  kind: 'install',
+  prompt: string,
+  echo: true,
+  installationPath: string,
+  options: ['abort', 'install'],
+|};
+
+/**
+ * Prompt for updating the remote server. Emitted when a valid server is already installed, but it
+ * is the wrong version for our client.
+ */
+export type UpdateServerPrompt = {|
+  kind: 'update',
+  prompt: string,
+  echo: true,
+  /** The current server version */
+  current: string,
+  /** The expected server version */
+  expected: string,
+  options: ['abort', 'update'],
+|};
+
+export type Prompt =
+  | SshPrompt
+  | PrivateKeyPasswordPrompt
+  | InstallServerPrompt
+  | UpdateServerPrompt;
 
 /**
  * The server is asking for replies to the given prompts for
@@ -255,16 +306,16 @@ export class SshHandshake {
     this._delegate.onDidConnect(connection, this._config);
   }
 
-  async _getPassword(prompt: string): Promise<string> {
+  async _userPromptSingle(prompt: Prompt): Promise<string> {
     const [
-      password,
+      answer,
     ] = await this._delegate.onKeyboardInteractive(
       '' /* name */,
       '' /* instructions */,
       '' /* instructionsLang */,
-      [{prompt, echo: false}],
+      [prompt],
     );
-    return password;
+    return answer;
   }
 
   async _getConnectConfig(
@@ -384,7 +435,12 @@ export class SshHandshake {
       const prompt =
         'Encrypted private key detected, but no passphrase given.\n' +
         `Enter passphrase for ${config.pathToPrivateKey}: `;
-      const password = await this._getPassword(prompt);
+      const password = await this._userPromptSingle({
+        kind: 'private-key',
+        prompt,
+        echo: false,
+        retry: false,
+      });
       authError = await this._connectOrNeedsAuth({
         ...connectConfig,
         password,
@@ -400,7 +456,12 @@ export class SshHandshake {
       ++attempts;
 
       // eslint-disable-next-line no-await-in-loop
-      const password = await this._getPassword(prompt);
+      const password = await this._userPromptSingle({
+        kind: 'private-key',
+        prompt,
+        echo: false,
+        retry: true,
+      });
       // eslint-disable-next-line no-await-in-loop
       authError = await this._connectOrNeedsAuth({
         ...connectConfig,
@@ -512,13 +573,17 @@ export class SshHandshake {
     name: string,
     instructions: string,
     instructionsLang: string,
-    prompts: Array<Prompt>,
+    prompts: Array<SshClientPromptType>,
   ): Promise<Array<string>> {
     return this._delegate.onKeyboardInteractive(
       name,
       instructions,
       instructionsLang,
-      prompts,
+      prompts.map(prompt => ({
+        kind: 'ssh',
+        prompt: prompt.prompt,
+        echo: prompt.echo === undefined ? false : prompt.echo,
+      })),
     );
   }
 
@@ -651,6 +716,48 @@ export class SshHandshake {
     }
   }
 
+  async _installServerPackage(server: RemotePackage) {
+    const answer = await this._userPromptSingle({
+      kind: 'install',
+      prompt:
+        'Cannot find the remote server in ${server.getInstallationPath()}. Abort or install?',
+      echo: true,
+      installationPath: server.getInstallationPath(),
+      options: ['abort', 'install'],
+    });
+    if (answer === 'install') {
+      await server.install(this._connection);
+    } else {
+      throw new SshHandshakeError(
+        'Server setup was aborted by the user',
+        SshHandshake.ErrorType.SERVER_SETUP_FAILED,
+      );
+    }
+  }
+
+  async _updateServerPackage(
+    server: RemotePackage,
+    current: string,
+    expected: string,
+  ) {
+    const answer = await this._userPromptSingle({
+      kind: 'update',
+      prompt: `The remote server version is ${current}, but ${expected} is required. Abort or update?`,
+      echo: true,
+      current,
+      expected,
+      options: ['abort', 'update'],
+    });
+    if (answer === 'update') {
+      await server.install(this._connection, {force: true});
+    } else {
+      throw new SshHandshakeError(
+        'Server setup was aborted by the user',
+        SshHandshake.ErrorType.SERVER_SETUP_FAILED,
+      );
+    }
+  }
+
   /**
    * Makes sure that the remote server is installed, possibly installing it if necessary.
    * @param {*} remoteServer Represents the remore server
@@ -671,7 +778,11 @@ export class SshHandshake {
       );
     }
 
-    if (check.status !== 'okay') {
+    if (check.status === 'needs-install') {
+      await this._installServerPackage(server);
+    } else if (check.status === 'needs-update') {
+      await this._updateServerPackage(server, check.current, check.expected);
+    } else if (check.status !== 'okay') {
       throw new SshHandshakeError(
         `Server is corrupt; ${check.message}`,
         SshHandshake.ErrorType.SERVER_SETUP_FAILED,
