@@ -400,12 +400,11 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
     if (selectedIndex == null) {
       return;
     }
-    const nextSelectedIndex = selectedIndex + offset;
-    if (
-      nextSelectedIndex < 0 ||
-      nextSelectedIndex >= this.props.rows.length ||
-      nextSelectedIndex === selectedIndex
-    ) {
+    const nextSelectedIndex = Math.max(
+      0,
+      Math.min(this.props.rows.length - 1, selectedIndex + offset),
+    );
+    if (nextSelectedIndex === selectedIndex) {
       return;
     }
     this._selectRow({index: nextSelectedIndex, event});
