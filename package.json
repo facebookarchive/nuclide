@@ -160,7 +160,7 @@
   },
   "optionalDependencies": {},
   "engines": {
-    "atom": ">=1.20.1",
+    "atom": ">=1.21.0",
     "node": ">=7.4.0"
   },
   "private": true,
