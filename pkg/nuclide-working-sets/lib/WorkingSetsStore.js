@@ -79,6 +79,9 @@ export class WorkingSetsStore {
   }
 
   updateDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    if (arrayEqual(this._definitions, definitions)) {
+      return;
+    }
     const {applicable, notApplicable} = this._sortOutApplicability(definitions);
     this._setDefinitions(applicable, notApplicable, definitions);
   }
@@ -231,6 +234,7 @@ export class WorkingSetsStore {
   }
 
   _saveDefinitions(definitions: Array<WorkingSetDefinition>): void {
+    this.updateDefinitions(definitions);
     this._emitter.emit(SAVE_DEFINITIONS_EVENT, definitions);
   }
 
