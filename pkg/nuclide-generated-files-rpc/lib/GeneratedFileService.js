@@ -99,25 +99,40 @@ export async function getGeneratedFileTypes(
 // 1000 entries should allow for a good number of open directories
 const cache: LRUCache<NuclideUri, GeneratedFileType> = new LRU({max: 1000});
 
+function getTagPattern(forWindows: boolean): ?string {
+  if (config.generatedTag == null) {
+    return config.partialGeneratedTag;
+  }
+  if (config.partialGeneratedTag == null) {
+    return config.generatedTag;
+  }
+  const separator = forWindows ? ' ' : '\\|';
+  return config.generatedTag + separator + config.partialGeneratedTag;
+}
+
 function findTaggedFiles(
   dirPath: NuclideUri,
   filenames: Array<string>,
 ): Promise<Map<string, GeneratedFileType>> {
   let command: string;
-  let args: Array<string>;
+  let baseArgs: Array<string>;
+  let pattern: ?string;
   if (process.platform === 'win32' && nuclideUri.isLocal(dirPath)) {
     command = 'findstr';
-    const pattern = config.generatedTag + ' ' + config.partialGeneratedTag;
-    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // ignore "files with nonprintable characters"
-    args = ['-p', pattern, ...filesToGrep];
+    baseArgs = ['-p'];
+    pattern = getTagPattern(true);
   } else {
     command = 'grep';
-    const pattern = config.generatedTag + '\\|' + config.partialGeneratedTag;
-    const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
     // print with filename, ignore binary files and skip directories
-    args = ['-HId', 'skip', pattern, ...filesToGrep];
+    baseArgs = ['-HId', 'skip'];
+    pattern = getTagPattern(false);
   }
+  if (pattern == null) {
+    return Promise.resolve(new Map());
+  }
+  const filesToGrep = filenames.length === 0 ? ['*'] : filenames;
+  const args = [...baseArgs, pattern, ...filesToGrep];
   const options = {
     cwd: dirPath,
     isExitError: ({exitCode, signal}) => {
