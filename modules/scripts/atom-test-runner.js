@@ -51,6 +51,10 @@ module.exports = function(params) {
       return new Promise(resolve => {
         const temp = require('temp');
         if (statusCode === 0) {
+          // eslint-disable-next-line rulesdir/modules-dependencies
+          const {writeCoverage} = require('../nuclide-commons/test-helpers');
+          writeCoverage();
+
           // Atom intercepts "process.exit" so we have to do our own manual cleanup.
           temp.cleanup((err, stats) => {
             resolve(statusCode);

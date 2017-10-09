@@ -76,6 +76,14 @@ const BABEL_OPTIONS = {
   ],
 };
 
+const {COVERAGE_DIR} = process.env;
+if (COVERAGE_DIR) {
+  BABEL_OPTIONS.plugins.push(
+    [require.resolve('babel-plugin-istanbul')]
+  );
+  BABEL_OPTIONS.sourceMap = 'inline';
+}
+
 function getVersion(start) {
   let current = start;
   do {
