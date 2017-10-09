@@ -86,7 +86,9 @@ export default class ScopesStore {
     return new Promise((resolve, reject) => {
       function callback(error: Error, response: SetVariableResponse) {
         if (error != null) {
-          reportError(`setVariable failed with ${JSON.stringify(error)}`);
+          const message = JSON.stringify(error);
+          reportError(`setVariable failed with ${message}`);
+          atom.notifications.addError(message);
           reject(error);
         } else {
           resolve(response.value);
