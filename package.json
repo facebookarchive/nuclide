@@ -152,6 +152,7 @@
     "fs-extra": "2.0.0",
     "jasmine-node": "1.14.5",
     "mock-spawn": "0.2.6",
+    "nyc": "11.2.1",
     "prettier": "1.7.0",
     "sabor": "0.9.0",
     "touch": "1.0.0",
