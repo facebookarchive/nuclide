@@ -14,8 +14,8 @@ import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
 
+import nullthrows from 'nullthrows';
 import {Disposable, CompositeDisposable} from 'atom';
-import invariant from 'assert';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
 import {reportError} from './Protocol/EventReporter';
@@ -110,16 +110,22 @@ export default class ScopesStore {
     confirmedNewValue: string,
   ): void => {
     const scopes = this._scopes.getValue();
-    const selectedScope = scopes[scopeNumber];
-    invariant(selectedScope != null);
-    const variableToChange = selectedScope.scopeVariables.find(
+    const selectedScope = nullthrows(scopes[scopeNumber]);
+    const variableToChangeIndex = selectedScope.scopeVariables.findIndex(
       v => v.name === expression,
     );
-    invariant(variableToChange != null);
-    variableToChange.value.value = confirmedNewValue;
-    if (variableToChange.value.description != null) {
-      variableToChange.value.description = confirmedNewValue;
-    }
+    const variableToChange = nullthrows(
+      selectedScope.scopeVariables[variableToChangeIndex],
+    );
+    const newVariable = {
+      ...variableToChange,
+      value: {
+        ...variableToChange.value,
+        value: confirmedNewValue,
+        description: confirmedNewValue,
+      },
+    };
+    selectedScope.scopeVariables.splice(variableToChangeIndex, 1, newVariable);
     this._handleUpdateScopes(scopes);
   };
 

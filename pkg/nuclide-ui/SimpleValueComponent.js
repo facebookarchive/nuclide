@@ -89,6 +89,16 @@ const valueRenderers = [
 ];
 
 export default class SimpleValueComponent extends React.Component<Props> {
+  shouldComponentUpdate(nextProps: Props): boolean {
+    const {expression, evaluationResult} = this.props;
+    return (
+      expression !== nextProps.expression ||
+      evaluationResult.type !== nextProps.evaluationResult.type ||
+      evaluationResult.value !== nextProps.evaluationResult.value ||
+      evaluationResult.description !== nextProps.evaluationResult.description
+    );
+  }
+
   render(): React.Node {
     const {expression, evaluationResult} = this.props;
     let displayValue;
