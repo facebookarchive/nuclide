@@ -457,6 +457,17 @@ export function* mapIterable<T, M>(
   }
 }
 
+// Return an iterable of the numbers start (inclusive) through stop (exclusive)
+export function* range(
+  start: number,
+  stop: number,
+  step?: number = 1,
+): Iterable<number> {
+  for (let i = start; i < stop; i += step) {
+    yield i;
+  }
+}
+
 export function firstOfIterable<T>(iterable: Iterable<T>): ?T {
   return findInIterable(iterable, () => true);
 }

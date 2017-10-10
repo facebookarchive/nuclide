@@ -37,6 +37,7 @@ import {
   mapIterable,
   mapGetWithDefault,
   count,
+  range,
 } from '../collection';
 
 describe('arrayRemove', () => {
@@ -599,5 +600,16 @@ describe('insideOut', () => {
       ['d', 3],
       ['a', 0],
     ]);
+  });
+});
+
+describe('range', () => {
+  it('includes the start value, but not the stop value', () => {
+    expect([...range(1, 4)]).toEqual([1, 2, 3]);
+  });
+
+  it('is empty if stop is less than, or equal to, start', () => {
+    expect([...range(2, 1)]).toEqual([]);
+    expect([...range(1, 1)]).toEqual([]);
   });
 });
