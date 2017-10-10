@@ -228,9 +228,11 @@ export class RemoteDirectory {
     if (!uri) {
       return uri;
     }
-    // Note: host of uri must match this._host.
-    const subpath = nuclideUri.parse(uri).path;
-    return nuclideUri.relative(this._localPath, subpath);
+    const parsedUrl = nuclideUri.parse(uri);
+    if (parsedUrl.hostname !== this._host) {
+      return uri;
+    }
+    return nuclideUri.relative(this._localPath, parsedUrl.path);
   }
 
   getParent(): RemoteDirectory {
