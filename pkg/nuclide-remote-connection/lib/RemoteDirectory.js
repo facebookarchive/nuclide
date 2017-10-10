@@ -108,7 +108,9 @@ export class RemoteDirectory {
     if (this._watchSubscription) {
       return;
     }
-    const watchStream = this._server.getDirectoryWatch(this._uri);
+    const watchStream = nuclideUri.isInArchive(this._uri)
+      ? this._server.getFileWatch(nuclideUri.ancestorOutsideArchive(this._uri))
+      : this._server.getDirectoryWatch(this._uri);
     this._watchSubscription = watchStream.subscribe(
       watchUpdate => {
         logger.debug('watchDirectory update:', watchUpdate);
