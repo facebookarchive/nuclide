@@ -266,7 +266,9 @@ class Activation {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
         if (uri === WORKSPACE_VIEW_URI) {
-          return this.getController();
+          const controller = this.getController();
+          controller.reinitialize();
+          return controller;
         }
       }),
       () => destroyItemWhere(item => item instanceof TestRunnerController),
