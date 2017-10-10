@@ -43,6 +43,18 @@ export class Modal extends React.Component<Props> {
     this._panel.destroy();
   }
 
+  componentDidUpdate(prevProps: Props): void {
+    const {modalClassName} = this.props;
+    const {modalClassName: prevModalClassName} = prevProps;
+    const panelElement = this._panel.getElement();
+    if (prevModalClassName != null) {
+      panelElement.classList.remove(...prevModalClassName.split(/\s+/));
+    }
+    if (modalClassName != null) {
+      panelElement.classList.add(...modalClassName.split(/\s+/));
+    }
+  }
+
   _handleWindowClick = (event: SyntheticMouseEvent<>): void => {
     // If the user clicks outside of the modal, close it.
     if (
