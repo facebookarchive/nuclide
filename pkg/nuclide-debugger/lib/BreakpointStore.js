@@ -159,16 +159,6 @@ export default class BreakpointStore {
         breakpoint,
       });
     }
-
-    if (atom.config.get('nuclide.nuclide-debugger.showDebuggerOnBpSet')) {
-      atom.commands.dispatch(
-        atom.views.getView(atom.workspace),
-        'nuclide-debugger:show',
-        {
-          showOnlyIfHidden: true,
-        },
-      );
-    }
   }
 
   _updateBreakpointHitcount(

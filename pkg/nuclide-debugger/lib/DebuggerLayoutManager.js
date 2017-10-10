@@ -331,7 +331,34 @@ export class DebuggerLayoutManager {
           dock.dock.hide();
         }
       });
+
+      // Hiding the docks might have changed the visibility of the debugger
+      // if the only docks containing debugger panes are now hidden.
+      this._updateDebuggerVisibility();
     }
+  }
+
+  _updateDebuggerVisibility(): void {
+    this._debuggerVisible = false;
+
+    // See if any visible docks contain a pane that contains a debugger pane.
+    this._getWorkspaceDocks().forEach(dock => {
+      if (dock.dock.isVisible()) {
+        dock.dock.getPanes().forEach(pane => {
+          if (
+            pane
+              .getItems()
+              .find(
+                item =>
+                  item instanceof DebuggerPaneViewModel ||
+                  item instanceof DebuggerPaneContainerViewModel,
+              ) != null
+          ) {
+            this._debuggerVisible = true;
+          }
+        });
+      }
+    });
   }
 
   showHiddenDebuggerPane(uri: string): void {
