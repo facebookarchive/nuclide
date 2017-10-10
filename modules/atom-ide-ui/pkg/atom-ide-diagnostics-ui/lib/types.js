@@ -14,6 +14,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   DiagnosticMessage,
   DiagnosticMessageKind,
+  UiConfig,
 } from '../../atom-ide-diagnostics/lib/types';
 
 export type FilterType = 'errors' | 'warnings' | 'review';
@@ -28,4 +29,5 @@ export type GlobalViewState = {
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
+  uiConfig: UiConfig,
 };

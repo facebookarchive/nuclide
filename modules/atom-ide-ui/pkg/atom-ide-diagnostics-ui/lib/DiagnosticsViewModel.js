@@ -19,7 +19,6 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
-import DiagnosticsUi from './ui/DiagnosticsUi';
 import analytics from 'nuclide-commons-atom/analytics';
 import Model from 'nuclide-commons/Model';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
@@ -28,6 +27,7 @@ import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable} from 'rxjs';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
+import DiagnosticsView from './ui/DiagnosticsView';
 
 type SerializedDiagnosticsViewModel = {
   deserializer: 'atom-ide-ui.DiagnosticsViewModel',
@@ -131,7 +131,7 @@ export class DiagnosticsViewModel {
 
   getElement(): HTMLElement {
     if (this._element == null) {
-      const Component = bindObservableAsProps(this._props, DiagnosticsUi);
+      const Component = bindObservableAsProps(this._props, DiagnosticsView);
       const element = renderReactRoot(<Component />);
       element.classList.add('diagnostics-ui');
       this._element = element;

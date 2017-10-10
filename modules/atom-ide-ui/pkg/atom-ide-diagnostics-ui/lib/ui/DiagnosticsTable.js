@@ -10,22 +10,28 @@
  * @format
  */
 
-import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
-import type {Column} from 'nuclide-commons-ui/Table';
-import type {DiagnosticMessageType} from '../../../atom-ide-diagnostics/lib/types';
+import type {
+  DiagnosticMessage,
+  DiagnosticMessageKind,
+  DiagnosticMessageType,
+} from '../../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Column, Row} from 'nuclide-commons-ui/Table';
+import type {IconName} from 'nuclide-commons-ui/Icon';
 
-import analytics from 'nuclide-commons-atom/analytics';
 import classnames from 'classnames';
+import humanizePath from 'nuclide-commons-atom/humanizePath';
+import {insideOut} from 'nuclide-commons/collection';
 import * as React from 'react';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {Table} from 'nuclide-commons-ui/Table';
-import {Highlight, HighlightColors} from 'nuclide-commons-ui/Highlight';
-import {sortDiagnostics} from '../DiagnosticsSorter';
-import {getProjectRelativePathOfDiagnostic} from '../paneUtils';
+import sortDiagnostics from '../sortDiagnostics';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
+import {Icon} from 'nuclide-commons-ui/Icon';
 
+// text is always used for sorting, while we render the element.
 type DescriptionField = {
   diagnostic: DiagnosticMessage,
   showTraces: boolean,
@@ -33,18 +39,28 @@ type DescriptionField = {
   isPlainText: boolean,
 };
 
+type Location = {|
+  fullPath: NuclideUri,
+  locationInFile: ?{|
+    basename: string,
+    line: number,
+  |},
+|};
+
 export type DisplayDiagnostic = {
-  +type: DiagnosticMessageType,
+  +classification: {
+    kind: DiagnosticMessageKind,
+    severity: DiagnosticMessageType,
+  },
   +providerName: string,
-  +filePath: NuclideUri,
-  +range: number,
   +description: {
     showTraces: boolean,
     diagnostic: DiagnosticMessage,
     text: string,
     isPlainText: boolean,
   },
-  +diagnostic: DiagnosticMessage,
+  +dir: string,
+  +location: ?Location,
 };
 
 type ColumnName = $Keys<DisplayDiagnostic>;
@@ -53,22 +69,289 @@ type ColumnName = $Keys<DisplayDiagnostic>;
 // reached" message.
 const MAX_RESULTS_COUNT = 1000;
 
+type Props = {
+  diagnostics: Array<DiagnosticMessage>,
+  selectedMessage: ?DiagnosticMessage,
+  gotoMessageLocation: (
+    message: DiagnosticMessage,
+    options: {|focusEditor: boolean|},
+  ) => void,
+  selectMessage: (message: DiagnosticMessage) => void,
+  showFileName: ?boolean,
+  showDirectoryColumn: boolean,
+  showTraces: boolean,
+};
+
+type State = {
+  sortDescending: boolean,
+  sortedColumn: ColumnName,
+};
+
+export default class DiagnosticsTable extends React.Component<Props, State> {
+  _previousSelectedIndex: number = -1;
+  _table: ?Table<DisplayDiagnostic>;
+
+  constructor(props: Props) {
+    super(props);
+    (this: any)._handleSort = this._handleSort.bind(this);
+    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
+    this.state = {
+      sortDescending: true,
+      sortedColumn: 'classification',
+    };
+  }
+
+  _handleSort(sortedColumn: ColumnName, sortDescending: boolean): void {
+    this.setState({
+      sortedColumn,
+      sortDescending,
+    });
+  }
+
+  _handleSelectTableRow = (
+    item: {diagnostic: DiagnosticMessage},
+    index: number,
+    event: Event | SyntheticEvent<*>,
+  ): void => {
+    this.props.selectMessage(item.diagnostic);
+    // Users navigating with the keyboard may just be moving through items on their way to another.
+    // If they have pending pane items enabled, it's not a big deal if we open the editor anyway.
+    // But if they don't, we could wind up opening a ton of files they didn't even care about so,
+    // to be safe, we won't do anything in that case.
+    if (
+      event.type !== 'click' &&
+      !atom.config.get('core.allowPendingPaneItems')
+    ) {
+      return;
+    }
+    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: false});
+  };
+
+  _handleConfirmTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
+    this.props.gotoMessageLocation(item.diagnostic, {focusEditor: true});
+  };
+
+  _getColumns(): Array<Column<DisplayDiagnostic>> {
+    const {showFileName, showDirectoryColumn} = this.props;
+
+    // These need to add up to 1.
+    // TODO: Update the Table component so that we can have more control over this (and provide
+    //       explicit pixel widths)
+    const TYPE_WIDTH = 0.05;
+    const SOURCE_WIDTH = 0.1;
+    const FILENAME_WIDTH = 0.3;
+    const DIR_WIDTH = 0.15;
+
+    const filePathColumns = [];
+    let descriptionWidth = 1 - (TYPE_WIDTH + SOURCE_WIDTH);
+
+    if (showFileName) {
+      if (showDirectoryColumn) {
+        filePathColumns.push({
+          component: DirComponent,
+          key: 'dir',
+          title: 'Path',
+          width: DIR_WIDTH,
+          shouldRightAlign: true,
+          cellClassName: 'nuclide-diagnostics-ui-cell-dir',
+        });
+        descriptionWidth -= DIR_WIDTH;
+      }
+
+      filePathColumns.push({
+        component: FilenameComponent,
+        key: 'location',
+        title: 'File Name',
+        width: FILENAME_WIDTH,
+        cellClassName: 'nuclide-diagnostics-ui-cell-filename',
+      });
+      descriptionWidth -= FILENAME_WIDTH;
+    }
+
+    return [
+      {
+        component: TypeComponent,
+        key: 'classification',
+        title: 'Type',
+        width: TYPE_WIDTH,
+        minWidth: 55,
+        cellClassName: 'nuclide-diagnostics-ui-cell-classification',
+      },
+      {
+        key: 'providerName',
+        title: 'Source',
+        width: SOURCE_WIDTH,
+        minWidth: 70,
+      },
+      {
+        component: DescriptionComponent,
+        key: 'description',
+        title: 'Description',
+        width: descriptionWidth,
+        cellClassName: 'nuclide-diagnostics-ui-cell-description',
+      },
+      ...filePathColumns,
+    ];
+  }
+
+  render(): React.Node {
+    const {diagnostics, selectedMessage, showTraces} = this.props;
+    const {sortedColumn, sortDescending} = this.state;
+    const diagnosticRows = this._getRows(diagnostics, showTraces);
+    let sortedRows = this._sortRows(
+      diagnosticRows,
+      sortedColumn,
+      sortDescending,
+    );
+    let maxResultsMessage;
+    if (sortedRows.length > MAX_RESULTS_COUNT) {
+      sortedRows = sortedRows.slice(0, MAX_RESULTS_COUNT);
+      maxResultsMessage = (
+        <div className="highlight-warning diagnostics-ui-table-message">
+          Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show
+          only diagnostics for the current file to view more.
+        </div>
+      );
+    }
+    const selectedIndex = this._findSelectedIndex(selectedMessage, sortedRows);
+    return (
+      <div
+        className={classnames({
+          'diagnostics-ui-table-container': true,
+          'diagnostics-ui-table-container-empty': sortedRows.length === 0,
+        })}>
+        <Table
+          ref={table => {
+            this._table = table;
+          }}
+          collapsable={true}
+          columns={this._getColumns()}
+          emptyComponent={EmptyComponent}
+          fixedHeader={true}
+          maxBodyHeight="99999px"
+          rows={sortedRows}
+          sortable={true}
+          onSort={this._handleSort}
+          sortedColumn={sortedColumn}
+          sortDescending={sortDescending}
+          selectable={true}
+          selectedIndex={selectedIndex}
+          onSelect={this._handleSelectTableRow}
+          onConfirm={this._handleConfirmTableRow}
+          enableKeyboardNavigation={true}
+        />
+        {maxResultsMessage}
+      </div>
+    );
+  }
+
+  focus(): void {
+    if (this._table != null) {
+      this._table.focus();
+    }
+  }
+
+  _findSelectedIndex(
+    selectedMessage: ?DiagnosticMessage,
+    rows: Array<Row<DisplayDiagnostic>>,
+  ): number {
+    if (selectedMessage == null) {
+      return -1;
+    }
+
+    let bestRank = -1;
+    let bestRankedIndex = -1;
+
+    // Look for the closest match, starting with the previously selected index.
+    for (const [row, i] of insideOut(rows, this._previousSelectedIndex)) {
+      const {diagnostic} = row.data.description;
+      if (diagnostic === selectedMessage) {
+        bestRankedIndex = i;
+        break;
+      }
+      const rank = compareMessages(diagnostic, selectedMessage);
+      if (rank != null && rank > bestRank) {
+        bestRank = rank;
+        bestRankedIndex = i;
+      }
+    }
+
+    if (bestRankedIndex === -1) {
+      bestRankedIndex = Math.min(this._previousSelectedIndex, rows.length - 1);
+    }
+
+    this._previousSelectedIndex = bestRankedIndex;
+    return bestRankedIndex;
+  }
+
+  // TODO: Memoize this so we don't recompute unnecessarily.
+  _getRows(
+    diagnostics: Array<DiagnosticMessage>,
+    showTraces: boolean,
+  ): Array<Row<DisplayDiagnostic>> {
+    return diagnostics.map(diagnostic => {
+      const {dir, location} = getLocation(diagnostic);
+      return {
+        data: {
+          classification: {
+            kind: diagnostic.kind || 'lint',
+            severity: diagnostic.type,
+          },
+          providerName: diagnostic.providerName,
+          description: {
+            showTraces,
+            diagnostic,
+            ...getMessageContent(diagnostic, showTraces),
+          },
+          dir,
+          location,
+          diagnostic,
+        },
+      };
+    });
+  }
+
+  // TODO: Memoize this so we don't recompute unnecessarily.
+  _sortRows(
+    rows: Array<Row<DisplayDiagnostic>>,
+    sortedColumn: $Keys<DisplayDiagnostic>,
+    descending: boolean,
+  ): Array<Row<DisplayDiagnostic>> {
+    return sortDiagnostics(rows, sortedColumn, descending);
+  }
+}
+
 const EmptyComponent = () => (
   <div className="diagnostics-ui-empty-component">No diagnostic messages</div>
 );
 
-const TypeToHighlightColor = Object.freeze({
-  ERROR: HighlightColors.error,
-  WARNING: HighlightColors.warning,
-  INFO: HighlightColors.info,
-});
+type Classification = {
+  kind: DiagnosticMessageKind,
+  severity: DiagnosticMessageType,
+};
 
-function TypeComponent(props: {
-  data: 'Warning' | 'Error' | 'Info',
-}): React.Element<any> {
-  const text = props.data;
-  const highlightColor = TypeToHighlightColor[text.toUpperCase()];
-  return <Highlight color={highlightColor}>{text}</Highlight>;
+function TypeComponent(props: {data: Classification}): React.Element<any> {
+  const classification = props.data;
+  const iconName = getIconName(classification);
+  return <Icon icon={iconName} />;
+}
+
+function getIconName(classification: Classification): IconName {
+  const {kind, severity} = classification;
+  if (kind === 'review') {
+    return 'nuclicon-comment-discussion';
+  }
+  switch (severity) {
+    case 'Warning':
+      return 'nuclicon-warning';
+    case 'Error':
+      return 'nuclicon-error';
+    case 'Info':
+      return 'info';
+    default:
+      (severity: empty);
+      throw new Error(`Invalid severity: ${severity}`);
+  }
 }
 
 function getMessageContent(
@@ -113,166 +396,98 @@ function DescriptionComponent(props: {
       });
 }
 
-function goToDiagnosticLocation(
-  rowData: DiagnosticMessage,
-  options: {|focusEditor: boolean|},
-): void {
-  if (rowData.scope !== 'file' || rowData.filePath == null) {
-    return;
-  }
-
-  analytics.track('diagnostics-panel-goto-location');
-
-  const uri = rowData.filePath;
-  // If initialLine is N, Atom will navigate to line N+1.
-  // Flow sometimes reports a row of -1, so this ensures the line is at least one.
-  const line = Math.max(rowData.range ? rowData.range.start.row : 0, 0);
-  const column = 0;
-  goToLocation(uri, {line, column, activatePane: options.focusEditor});
+function DirComponent(props: {data: string}): React.Element<any> {
+  return (
+    // We're abusing `direction: rtl` here so we need the LRM to keep the slash on the right.
+    <div className="nuclide-diagnostics-ui-dir-cell-contents">
+      &lrm;{nuclideUri.normalizeDir(props.data)}&lrm;
+    </div>
+  );
 }
 
-type DiagnosticsTableProps = {
-  diagnostics: Array<DiagnosticMessage>,
-  showFileName: ?boolean,
-  showTraces: boolean,
-};
+function FilenameComponent(props: {data: ?Location}): React.Element<any> {
+  const locationInFile = props.data && props.data.locationInFile;
+  if (locationInFile == null) {
+    // This is a project diagnostic.
+    return <span>&mdash;</span>;
+  }
+  const {basename, line} = locationInFile;
+  return (
+    <span>
+      {basename}
+      <span className="nuclide-diagnostics-ui-line-number">:{line}</span>
+    </span>
+  );
+}
 
-type State = {
-  sortDescending: boolean,
-  sortedColumn: ?ColumnName,
-};
+function getLocation(
+  diagnostic: DiagnosticMessage,
+): {dir: string, location: ?Location} {
+  const filePath =
+    typeof diagnostic.filePath === 'string' ? diagnostic.filePath : null;
+  const line = diagnostic.range ? diagnostic.range.start.row + 1 : 0;
 
-export default class DiagnosticsTable extends React.Component<
-  DiagnosticsTableProps,
-  State,
-> {
-  constructor(props: DiagnosticsTableProps) {
-    super(props);
-    this.state = {
-      sortDescending: false,
-      sortedColumn: null,
+  if (filePath == null) {
+    return {
+      dir: '', // TODO: Use current working root?
+      location: null,
     };
   }
 
-  _handleSort = (sortedColumn: ?ColumnName, sortDescending: boolean): void => {
-    this.setState({
-      sortedColumn,
-      sortDescending,
-    });
-  };
-
-  _handleSelectTableRow = (
-    item: {diagnostic: DiagnosticMessage},
-    selectedIndex: number,
-  ): void => {
-    // This version of the table doesn't support keyboard navigation so we can just go to the
-    // location. If it did, we would only go if the selection was triggered by a mouse (as
-    // selections triggered by the keyboard may just be the user moving through the item to select
-    // another).
-    goToDiagnosticLocation(item.diagnostic, {focusEditor: false});
-  };
-
-  _handleConfirmTableRow = (item: {diagnostic: DiagnosticMessage}): void => {
-    goToDiagnosticLocation(item.diagnostic, {focusEditor: true});
-  };
-
-  _getColumns(): Array<Column<DisplayDiagnostic>> {
-    const {showFileName} = this.props;
-    const filePathColumnWidth = 0.2;
-    const filePathColumn = showFileName
-      ? [
-          {
-            key: 'filePath',
-            title: 'File',
-            width: filePathColumnWidth,
-          },
-        ]
-      : [];
-    return [
-      {
-        component: TypeComponent,
-        key: 'type',
-        title: 'Type',
-        width: 0.05,
+  const humanized = humanizePath(filePath);
+  if (humanized.endsWith('/')) {
+    // It's a directory.
+    return {
+      dir: humanized,
+      location: {
+        fullPath: filePath,
+        locationInFile: null,
       },
-      {
-        key: 'providerName',
-        title: 'Source',
-        width: 0.1,
-      },
-      ...filePathColumn,
-      {
-        key: 'range',
-        title: 'Line',
-        width: 0.05,
-        shouldRightAlign: true,
-      },
-      {
-        component: DescriptionComponent,
-        key: 'description',
-        title: 'Description',
-        width: showFileName ? 0.6 : 0.6 + filePathColumnWidth,
-      },
-    ];
+    };
   }
 
-  render(): React.Node {
-    const {diagnostics, showTraces} = this.props;
-    const {sortedColumn, sortDescending} = this.state;
-    const diagnosticRows = diagnostics.map(diagnostic => {
-      return {
-        data: {
-          type: diagnostic.type,
-          providerName: diagnostic.providerName,
-          filePath: getProjectRelativePathOfDiagnostic(diagnostic),
-          range: diagnostic.range ? diagnostic.range.start.row + 1 : 0,
-          description: {
-            showTraces,
-            diagnostic,
-            ...getMessageContent(diagnostic, showTraces),
-          },
-          diagnostic,
-        },
-      };
-    });
-    let sortedRows = sortDiagnostics(
-      diagnosticRows,
-      sortedColumn,
-      sortDescending,
-    );
-    let maxResultsMessage;
-    if (sortedRows.length > MAX_RESULTS_COUNT) {
-      sortedRows = sortedRows.slice(0, MAX_RESULTS_COUNT);
-      maxResultsMessage = (
-        <div className="highlight-warning diagnostics-ui-table-message">
-          Max results ({MAX_RESULTS_COUNT}) reached. Fix diagnostics or show
-          only diagnostics for the current file to view more.
-        </div>
-      );
-    }
-    return (
-      <div
-        className={classnames({
-          'diagnostics-ui-table-container': true,
-          'diagnostics-ui-table-container-empty': sortedRows.length === 0,
-        })}>
-        <Table
-          collapsable={true}
-          columns={this._getColumns()}
-          emptyComponent={EmptyComponent}
-          fixedHeader={true}
-          maxBodyHeight="99999px"
-          rows={sortedRows}
-          sortable={true}
-          onSort={this._handleSort}
-          sortedColumn={sortedColumn}
-          sortDescending={sortDescending}
-          selectable={true}
-          onSelect={this._handleSelectTableRow}
-          onConfirm={this._handleConfirmTableRow}
-        />
-        {maxResultsMessage}
-      </div>
-    );
+  const {dir, base: basename} = nuclideUri.parsePath(humanized);
+  return {
+    dir,
+    location: {
+      fullPath: filePath,
+      locationInFile: {basename, line},
+    },
+  };
+}
+
+/**
+ * Compute a number indicating the relative similarity of two messages. The smaller the number, the
+ * more similar. (`null` indicates not at all similar.)
+ */
+function compareMessages(a: DiagnosticMessage, b: DiagnosticMessage): ?number {
+  const aKind = a.kind || 'lint';
+  const bKind = b.kind || 'lint';
+  const aFilePath = a.scope === 'file' ? a.filePath : null;
+  const bFilePath = b.scope === 'file' ? b.filePath : null;
+  if (
+    aKind !== bKind ||
+    a.scope !== b.scope ||
+    a.providerName !== b.providerName ||
+    a.type !== b.type ||
+    aFilePath !== bFilePath
+  ) {
+    return null;
   }
+  const aRange = a.range;
+  const bRange = b.range;
+
+  if (Boolean(aRange) !== Boolean(bRange)) {
+    return null;
+  }
+
+  // Neither has a range, but they have the same text and they're for the same file.
+  if (aRange == null || bRange == null) {
+    return 0;
+  }
+
+  // TODO: This could be better if we also took into account the column and end start and column,
+  // but it's probably good enough. (How likely are messages with the same text starting on the same
+  // row?)
+  return Math.abs(aRange.start.row - bRange.start.row);
 }
