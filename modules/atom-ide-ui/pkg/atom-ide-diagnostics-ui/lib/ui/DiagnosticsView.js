@@ -82,7 +82,7 @@ export default class DiagnosticsView extends React.Component<Props> {
       }
     }
 
-    const groups = ['errors', 'warnings'];
+    const groups = ['errors', 'warnings', 'info'];
     if (this.props.supportedMessageKinds.has('review')) {
       groups.push('review');
     }

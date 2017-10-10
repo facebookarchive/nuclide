@@ -27,7 +27,7 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
         case 'Warning':
           return 'warnings';
         case 'Info':
-          return 'warnings';
+          return 'info';
         default:
           (message.type: empty);
           throw new Error(`Invalid message severity: ${message.type}`);
@@ -45,7 +45,9 @@ export function getDisplayName(group: DiagnosticGroup): string {
     case 'errors':
       return 'Errors';
     case 'warnings':
-      return 'Warnings & Info';
+      return 'Warnings';
+    case 'info':
+      return 'Info';
     case 'review':
       return 'Review';
     default:
@@ -60,6 +62,8 @@ export function getIcon(group: DiagnosticGroup): IconName {
       return 'nuclicon-error';
     case 'warnings':
       return 'nuclicon-warning';
+    case 'info':
+      return 'info';
     case 'review':
       return 'nuclicon-comment-discussion';
     default:

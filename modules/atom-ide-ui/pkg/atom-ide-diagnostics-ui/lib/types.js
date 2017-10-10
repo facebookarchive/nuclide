@@ -18,7 +18,7 @@ import type {
 } from '../../atom-ide-diagnostics/lib/types';
 
 // We group diagnostics based on kind and severity.
-export type DiagnosticGroup = 'errors' | 'warnings' | 'review';
+export type DiagnosticGroup = 'errors' | 'warnings' | 'info' | 'review';
 
 // State that's shared between every diagnostics panel instance.
 export type GlobalViewState = {
