@@ -27,6 +27,10 @@ type Props = {
 //       ../nuclide-tab-focus/keymaps/nuclide-tab-focus.json
 export const _TABBABLE_CLASS_NAME = 'nuclide-tabbable';
 
+/**
+ * Enables focusing between inputs with tab and shift-tab. Can also be used to
+ * trap focus within the container by using the contained property.
+ */
 export default class TabbableContainer extends React.Component<Props> {
   _rootNode: ?HTMLDivElement;
 
