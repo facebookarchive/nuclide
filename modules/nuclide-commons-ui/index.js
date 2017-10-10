@@ -22,7 +22,7 @@ const styleDir = path.join(__dirname, 'styles');
 const styleDisposables = new CompositeDisposable(
   ...fs
     .readdirSync(styleDir)
-    .filter(file => path.extname(file) === '.less')
+    .filter(file => ['.less', '.css'].includes(path.extname(file)))
     .map(file => atom.themes.requireStylesheet(path.join(styleDir, file))),
 );
 
