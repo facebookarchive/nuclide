@@ -1,5 +1,17 @@
 # Nuclide Changelog
 
+## v0.260.0
+
+### C++
+
+* A busy signal now indicates when Nuclide is building a compilation database with Buck. (Thanks Anthony Miller!)
+
+### Debugger
+
+* Native debugger: Added disassembly and register views
+* Native debugger: Added ability to set a breakpoint at an instruction address (even without source code available)
+* Native debugger: now allows specifying an executable path beginning with “./” to refer to the current working directory, or “~/” to refer to the user's home directory.
+
 ## v0.259.0
 
 **Hotfix from 0.258.0**
