@@ -16,7 +16,7 @@ import type {
   DiagnosticMessageKind,
   UiConfig,
 } from '../../../atom-ide-diagnostics/lib/types';
-import type {FilterType} from '../types';
+import type {DiagnosticGroup} from '../types';
 import type {
   RegExpFilterChange,
   RegExpFilterValue,
@@ -53,8 +53,8 @@ export type Props = {
   supportedMessageKinds: Set<DiagnosticMessageKind>,
   uiConfig: UiConfig,
 
-  hiddenTypes: Set<FilterType>,
-  onTypeFilterChange: (type: FilterType) => mixed,
+  hiddenGroups: Set<DiagnosticGroup>,
+  onTypeFilterChange: (type: DiagnosticGroup) => mixed,
   textFilter: RegExpFilterValue,
   onTextFilterChange: (change: RegExpFilterChange) => mixed,
 };
@@ -82,9 +82,9 @@ export default class DiagnosticsView extends React.Component<Props> {
       }
     }
 
-    const filterTypes = ['errors', 'warnings'];
+    const groups = ['errors', 'warnings'];
     if (this.props.supportedMessageKinds.has('review')) {
-      filterTypes.push('review');
+      groups.push('review');
     }
 
     const showFullDescriptionToggle = diagnostics.find(
@@ -106,13 +106,13 @@ export default class DiagnosticsView extends React.Component<Props> {
         <Toolbar location="top">
           <ToolbarLeft>
             <ButtonGroup className="inline-block">
-              {filterTypes.map(type => (
+              {groups.map(group => (
                 <FilterButton
-                  key={type}
-                  type={type}
-                  selected={!this.props.hiddenTypes.has(type)}
+                  key={group}
+                  group={group}
+                  selected={!this.props.hiddenGroups.has(group)}
                   onClick={() => {
-                    this.props.onTypeFilterChange(type);
+                    this.props.onTypeFilterChange(group);
                   }}
                 />
               ))}

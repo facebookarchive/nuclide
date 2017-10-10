@@ -17,7 +17,8 @@ import type {
   UiConfig,
 } from '../../atom-ide-diagnostics/lib/types';
 
-export type FilterType = 'errors' | 'warnings' | 'review';
+// We group diagnostics based on kind and severity.
+export type DiagnosticGroup = 'errors' | 'warnings' | 'review';
 
 // State that's shared between every diagnostics panel instance.
 export type GlobalViewState = {

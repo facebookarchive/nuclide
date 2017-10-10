@@ -12,7 +12,7 @@
 
 import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {Props} from './ui/DiagnosticsView';
-import type {FilterType, GlobalViewState} from './types';
+import type {DiagnosticGroup, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
@@ -27,17 +27,18 @@ import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable} from 'rxjs';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
+import * as GroupUtils from './GroupUtils';
 import DiagnosticsView from './ui/DiagnosticsView';
 
 type SerializedDiagnosticsViewModel = {
   deserializer: 'atom-ide-ui.DiagnosticsViewModel',
   state: {
-    hiddenTypes: Array<FilterType>,
+    hiddenGroups: Array<DiagnosticGroup>,
   },
 };
 
 type State = {|
-  hiddenTypes: Set<FilterType>,
+  hiddenGroups: Set<DiagnosticGroup>,
   selectedMessage: ?DiagnosticMessage,
   textFilter: {|
     text: string,
@@ -59,7 +60,7 @@ export class DiagnosticsViewModel {
     const {pattern, invalid} = getFilterPattern('', false);
     this._model = new Model({
       // TODO: Get this from constructor/serialization.
-      hiddenTypes: new Set(),
+      hiddenGroups: new Set(),
       textFilter: {text: '', isRegExp: false, pattern, invalid},
       selectedMessage: null,
     });
@@ -85,7 +86,7 @@ export class DiagnosticsViewModel {
         diagnostics: this._filterDiagnostics(
           globalState.diagnostics,
           instanceState.textFilter.pattern,
-          instanceState.hiddenTypes,
+          instanceState.hiddenGroups,
         ),
         onTypeFilterChange: this._handleTypeFilterChange,
         onTextFilterChange: this._handleTextFilterChange,
@@ -120,11 +121,11 @@ export class DiagnosticsViewModel {
   }
 
   serialize(): SerializedDiagnosticsViewModel {
-    const {hiddenTypes} = this._model.state;
+    const {hiddenGroups} = this._model.state;
     return {
       deserializer: 'atom-ide-ui.DiagnosticsViewModel',
       state: {
-        hiddenTypes: [...hiddenTypes],
+        hiddenGroups: [...hiddenGroups],
       },
     };
   }
@@ -142,16 +143,16 @@ export class DiagnosticsViewModel {
   /**
    * Toggle the filter.
    */
-  _handleTypeFilterChange = (type: FilterType): void => {
-    const {hiddenTypes} = this._model.state;
-    const hidden = hiddenTypes.has(type);
-    const nextHiddenTypes = new Set(hiddenTypes);
+  _handleTypeFilterChange = (type: DiagnosticGroup): void => {
+    const {hiddenGroups} = this._model.state;
+    const hidden = hiddenGroups.has(type);
+    const nextHiddenTypes = new Set(hiddenGroups);
     if (hidden) {
       nextHiddenTypes.delete(type);
     } else {
       nextHiddenTypes.add(type);
     }
-    this._model.setState({hiddenTypes: nextHiddenTypes});
+    this._model.setState({hiddenGroups: nextHiddenTypes});
   };
 
   _handleTextFilterChange = (value: RegExpFilterChange): void => {
@@ -167,10 +168,10 @@ export class DiagnosticsViewModel {
   _filterDiagnostics(
     diagnostics: Array<DiagnosticMessage>,
     pattern: ?RegExp,
-    hiddenTypes: Set<FilterType>,
+    hiddenGroups: Set<DiagnosticGroup>,
   ): Array<DiagnosticMessage> {
     return diagnostics.filter(message => {
-      if (hiddenTypes.has(getMessageFilterType(message))) {
+      if (hiddenGroups.has(GroupUtils.getGroup(message))) {
         return false;
       }
       if (pattern == null) {
@@ -188,32 +189,6 @@ export class DiagnosticsViewModel {
   _selectMessage = (message: DiagnosticMessage): void => {
     this._model.setState({selectedMessage: message});
   };
-}
-
-function getMessageFilterType(message: DiagnosticMessage): FilterType {
-  const {kind} = message;
-  switch (kind) {
-    case 'lint':
-    case null:
-    case undefined:
-      // We have a separate button for each severity.
-      switch (message.type) {
-        case 'Error':
-          return 'errors';
-        case 'Warning':
-          return 'warnings';
-        case 'Info':
-          return 'warnings';
-        default:
-          (message.type: empty);
-          throw new Error(`Invalid message severity: ${message.type}`);
-      }
-    case 'review':
-      return 'review';
-    default:
-      (kind: empty);
-      throw new Error(`Invalid message kind: ${kind}`);
-  }
 }
 
 function goToDiagnosticLocation(
