@@ -25,6 +25,7 @@ import type {
 import analytics from 'nuclide-commons-atom/analytics';
 import ExperimentalDiagnosticsTable from './ExperimentalDiagnosticsTable';
 import showModal from 'nuclide-commons-ui/showModal';
+import {Toggle} from 'nuclide-commons-ui/Toggle';
 import {Toolbar} from 'nuclide-commons-ui/Toolbar';
 import {ToolbarLeft} from 'nuclide-commons-ui/ToolbarLeft';
 import {ToolbarRight} from 'nuclide-commons-ui/ToolbarRight';
@@ -66,17 +67,6 @@ export default class ExperimentalDiagnosticsView extends React.Component<
 > {
   _table: ?ExperimentalDiagnosticsTable;
 
-  constructor(props: Props) {
-    super(props);
-    (this: any)._onShowTracesChange = this._onShowTracesChange.bind(this);
-    (this: any)._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(
-      this,
-    );
-    (this: any)._openAllFilesWithErrors = this._openAllFilesWithErrors.bind(
-      this,
-    );
-  }
-
   render(): React.Element<any> {
     let {diagnostics} = this.props;
     const {showDirectoryColumn, showTraces} = this.props;
@@ -99,6 +89,12 @@ export default class ExperimentalDiagnosticsView extends React.Component<
       filterTypes.push('review');
     }
 
+    const showFullDescriptionToggle = diagnostics.find(
+      diagnostic =>
+        // flowlint-next-line sketchy-null-string:off
+        diagnostic.trace || (diagnostic.text && diagnostic.text.includes('\n')),
+    );
+
     return (
       <div
         onFocus={this._handleFocus}
@@ -111,7 +107,7 @@ export default class ExperimentalDiagnosticsView extends React.Component<
         }}>
         <Toolbar location="top">
           <ToolbarLeft>
-            <ButtonGroup>
+            <ButtonGroup className="inline-block">
               {filterTypes.map(type => (
                 <FilterButton
                   key={type}
@@ -123,12 +119,27 @@ export default class ExperimentalDiagnosticsView extends React.Component<
                 />
               ))}
             </ButtonGroup>
-          </ToolbarLeft>
-          <ToolbarRight>
             <RegExpFilter
               value={this.props.textFilter}
               onChange={this.props.onTextFilterChange}
             />
+            {/* TODO: This will probably change to a dropdown to also accomodate Head Changes */}
+            <Toggle
+              className="inline-block"
+              onChange={this._handleFilterByActiveTextEditorChange}
+              toggled={this.props.filterByActiveTextEditor}
+              label="Current File Only"
+            />
+          </ToolbarLeft>
+          <ToolbarRight>
+            {showFullDescriptionToggle ? (
+              <Toggle
+                className="inline-block"
+                onChange={this._handleShowTracesChange}
+                toggled={this.props.showTraces}
+                label="Full Description"
+              />
+            ) : null}
             <Button
               onClick={this._openAllFilesWithErrors}
               size={ButtonSizes.SMALL}
@@ -164,26 +175,26 @@ export default class ExperimentalDiagnosticsView extends React.Component<
     showModal(() => <SettingsModal config={this.props.uiConfig} />);
   };
 
-  _onShowTracesChange(isChecked: boolean) {
+  _handleShowTracesChange = (isChecked: boolean): void => {
     analytics.track('diagnostics-panel-toggle-show-traces', {
       isChecked: isChecked.toString(),
     });
     this.props.onShowTracesChange.call(null, isChecked);
-  }
+  };
 
-  _onFilterByActiveTextEditorChange(isChecked: boolean) {
+  _handleFilterByActiveTextEditorChange = (shouldFilter: boolean): void => {
     analytics.track('diagnostics-panel-toggle-current-file', {
-      isChecked: isChecked.toString(),
+      isChecked: shouldFilter.toString(),
     });
-    this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
-  }
+    this.props.onFilterByActiveTextEditorChange.call(null, shouldFilter);
+  };
 
-  _openAllFilesWithErrors() {
+  _openAllFilesWithErrors = (): void => {
     atom.commands.dispatch(
       atom.views.getView(atom.workspace),
       'diagnostics:open-all-files-with-errors',
     );
-  }
+  };
 
   _handleFocus = (event: SyntheticMouseEvent<*>): void => {
     if (this._table == null) {

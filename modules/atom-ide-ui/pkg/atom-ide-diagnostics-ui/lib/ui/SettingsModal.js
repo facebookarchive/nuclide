@@ -33,11 +33,6 @@ export default function SettingsModal(props: Props): ?React.Element<any> {
       <section className="settings-panel">
         <BoundSettingsControl
           keyPath={featureConfig.formatKeyPath(
-            'atom-ide-diagnostics-ui.showDiagnosticTraces',
-          )}
-        />
-        <BoundSettingsControl
-          keyPath={featureConfig.formatKeyPath(
             'atom-ide-diagnostics-ui.showDirectoryColumn',
           )}
         />
