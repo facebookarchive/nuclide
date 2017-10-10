@@ -166,7 +166,7 @@ class ValueComponent extends React.Component<
     );
   }
 
-  _showSetVariableDisplay = (event: SyntheticMouseEvent<>): void => {
+  _showSetVariableDisplay = (_: SyntheticMouseEvent<>): void => {
     const {isRoot, setVariable} = this.props;
     if (isRoot && setVariable) {
       this.setState({isBeingEdited: true});
@@ -385,8 +385,8 @@ class ValueComponent extends React.Component<
         className="nuclide-ui-lazy-nested-value-treelist">
         <NestedTreeItem
           collapsed={!this.state.isExpanded}
-          onDoubleClick={this._showSetVariableDisplay}
-          onClick={
+          onConfirm={this._showSetVariableDisplay}
+          onSelect={
             this.state.isBeingEdited ? () => {} : this._toggleExpandFiltered
           }
           title={title}>

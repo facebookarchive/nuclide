@@ -30,9 +30,9 @@ export function Tree({className, style, ...props}: Object) {
 type TreeItemProps = {
   children?: mixed,
   className?: string,
-  onSelect?: () => mixed,
-  onConfirm?: () => mixed,
-  onTripleClick?: () => mixed,
+  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
+  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
+  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
   selected?: boolean,
 };
 
@@ -88,9 +88,9 @@ type NestedTreeItemProps = {
   hasFlatChildren?: boolean, // passthrough to inner TreeList
   selected?: boolean,
   collapsed?: boolean,
-  onSelect?: () => mixed,
-  onConfirm?: () => mixed,
-  onTripleClick?: () => mixed,
+  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
+  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
+  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
 };
 
 export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
@@ -179,13 +179,13 @@ function handleClick(e: SyntheticMouseEvent<>): void {
   const numberOfClicks = e.detail;
   switch (numberOfClicks) {
     case 1:
-      onSelect && onSelect();
+      onSelect && onSelect(e);
       break;
     case 2:
-      onConfirm && onConfirm();
+      onConfirm && onConfirm(e);
       break;
     case 3:
-      onTripleClick && onTripleClick();
+      onTripleClick && onTripleClick(e);
       break;
     default:
       break;
