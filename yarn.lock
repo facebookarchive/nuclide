@@ -6,6 +6,10 @@
   version "6.0.89"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.89.tgz#154be0e6a823760cd6083aa8c48f952e2e63e0b0"
 
+"@types/source-map@^0.1.27":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@types/source-map/-/source-map-0.1.29.tgz#d7048a60180b09f8aa6d53bda311c6b51cbd7018"
+
 abbrev@1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.0.tgz#d0554c2256636e2f56e7c2e5ad183f859428d81f"
@@ -27,6 +31,10 @@ acorn@^3.0.4:
 adm-zip@0.4.7:
   version "0.4.7"
   resolved "https://registry.yarnpkg.com/adm-zip/-/adm-zip-0.4.7.tgz#8606c2cbf1c426ce8c8ec00174447fd49b6eafc1"
+
+agent-base@~1.0.1:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-1.0.2.tgz#6890d3fb217004b62b70f8928e0fae5f8952a706"
 
 ajv-keywords@^1.0.0:
   version "1.5.1"
@@ -986,6 +994,12 @@ debug-log@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/debug-log/-/debug-log-1.0.1.tgz#2307632d4c04382b8df8a32f70b895046d52745f"
 
+debug@2, debug@^2.6.3, debug@^2.6.8:
+  version "2.6.9"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
+  dependencies:
+    ms "2.0.0"
+
 debug@2.6.8:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
@@ -1001,12 +1015,6 @@ debug@^2.1.1, debug@^2.2.0, debug@~2.2.0:
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.2.0.tgz#f87057e995b1a1f6ae6a4960664137bc56f039da"
   dependencies:
     ms "0.7.1"
-
-debug@^2.6.3, debug@^2.6.8:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
-  dependencies:
-    ms "2.0.0"
 
 decamelize@^1.0.0, decamelize@^1.1.1:
   version "1.2.0"
@@ -1450,7 +1458,7 @@ extend-shallow@^2.0.1:
   dependencies:
     is-extendable "^0.1.0"
 
-extend@^3.0.0, extend@~3.0.1:
+extend@3, extend@^3.0.0, extend@~3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
 
@@ -2138,6 +2146,14 @@ htmlparser2@^3.9.1:
     inherits "^2.0.1"
     readable-stream "^2.0.2"
 
+http-proxy-agent@^0.2.6:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/http-proxy-agent/-/http-proxy-agent-0.2.7.tgz#e17fda65f0902d952ce7921e62c7ff8862655a5e"
+  dependencies:
+    agent-base "~1.0.1"
+    debug "2"
+    extend "3"
+
 http-signature@~1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.1.1.tgz#df72e267066cd0ac67fb76adf8e134a8fbcf91bf"
@@ -2153,6 +2169,14 @@ http-signature@~1.2.0:
     assert-plus "^1.0.0"
     jsprim "^1.2.2"
     sshpk "^1.7.0"
+
+https-proxy-agent@^0.3.5:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-0.3.6.tgz#713fa38e5d353f50eb14a342febe29033ed1619b"
+  dependencies:
+    agent-base "~1.0.1"
+    debug "2"
+    extend "3"
 
 iconv-lite@^0.4.8:
   version "0.4.19"
@@ -3116,6 +3140,10 @@ node.extend@~1.1.2:
   dependencies:
     is "^3.1.0"
 
+noice-json-rpc@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/noice-json-rpc/-/noice-json-rpc-1.0.1.tgz#5e7289a60a1c20880489cb15101552bac392266e"
+
 nopt@~1.0.10:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-1.0.10.tgz#6ddd21bd2a31417b92727dd585f8a6f37608ebee"
@@ -3255,6 +3283,10 @@ optionator@^0.8.2:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
     wordwrap "~1.0.0"
+
+options@>=0.0.5:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/options/-/options-0.0.6.tgz#ec22d312806bb53e731773e7cdaefcf1c643128f"
 
 ordered-read-streams@^0.3.0:
   version "0.3.0"
@@ -3723,6 +3755,14 @@ replace-ext@0.0.1:
 replace-ext@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/replace-ext/-/replace-ext-1.0.0.tgz#de63128373fcbf7c3ccfa4de5a480c45a67958eb"
+
+request-light@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/request-light/-/request-light-0.1.0.tgz#fe65ddffbb2e87944f0ccafd85cb839e91385345"
+  dependencies:
+    http-proxy-agent "^0.2.6"
+    https-proxy-agent "^0.3.5"
+    vscode-nls "^1.0.4"
 
 request@2.79.0, request@~2.79.0:
   version "2.79.0"
@@ -4502,6 +4542,10 @@ uglify-to-browserify@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz#6e0924d6bda6b5afe349e39a6d632850a0f882b7"
 
+ultron@1.0.x:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.0.2.tgz#ace116ab557cd197386a4e88f4685378c8b2e4fa"
+
 ultron@~1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ultron/-/ultron-1.1.0.tgz#b07a2e6a541a815fc6a34ccd4533baec307ca864"
@@ -4676,15 +4720,39 @@ vsce@1.30.0:
     yauzl "^2.3.1"
     yazl "^2.2.2"
 
+vscode-chrome-debug-core@3.17.10:
+  version "3.17.10"
+  resolved "https://registry.yarnpkg.com/vscode-chrome-debug-core/-/vscode-chrome-debug-core-3.17.10.tgz#e2d734c7fba125fabaf8043334f8134f336a34bb"
+  dependencies:
+    "@types/source-map" "^0.1.27"
+    glob "^7.0.6"
+    noice-json-rpc "1.0.1"
+    request-light "^0.1.0"
+    source-map "^0.5.6"
+    vscode-debugadapter "^1.24.0"
+    vscode-debugprotocol "^1.24.0"
+    vscode-nls "^2.0.2"
+    ws "^1.1.1"
+
 vscode-debugadapter@1.21.0:
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/vscode-debugadapter/-/vscode-debugadapter-1.21.0.tgz#a2525df192decec3d5151414460325cb43b447ac"
   dependencies:
     vscode-debugprotocol "^1.21.0"
 
+vscode-debugadapter@^1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/vscode-debugadapter/-/vscode-debugadapter-1.24.0.tgz#28063b01cca8ac1e5f7a13d118e3207a6e887ffd"
+  dependencies:
+    vscode-debugprotocol "^1.24.0"
+
 vscode-debugprotocol@1.21.0, vscode-debugprotocol@^1.21.0:
   version "1.21.0"
   resolved "https://registry.yarnpkg.com/vscode-debugprotocol/-/vscode-debugprotocol-1.21.0.tgz#e6da3bbb1481db458447a02b19b25efd15066e8f"
+
+vscode-debugprotocol@^1.24.0:
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/vscode-debugprotocol/-/vscode-debugprotocol-1.24.0.tgz#dbc10e8d7d95b102727a19af3f0fcef7e252b08e"
 
 vscode-jsonrpc@3.3.0, vscode-jsonrpc@^3.3.0:
   version "3.3.0"
@@ -4715,6 +4783,14 @@ vscode-languageserver@3.3.0, vscode-languageserver@^3.3.0:
   dependencies:
     vscode-jsonrpc "^3.3.0"
     vscode-languageserver-types "^3.3.0"
+
+vscode-nls@2.0.2, vscode-nls@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-2.0.2.tgz#808522380844b8ad153499af5c3b03921aea02da"
+
+vscode-nls@^1.0.4:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/vscode-nls/-/vscode-nls-1.0.7.tgz#298c01fce87802c644c0a15ef526a33c62c0d58e"
 
 vscode@1.1.4:
   version "1.1.4"
@@ -4826,6 +4902,13 @@ ws@2.0.3, ws@^2.0.3:
   resolved "https://registry.yarnpkg.com/ws/-/ws-2.0.3.tgz#532fd499c3f7d7d720e543f1f807106cfc57d9cb"
   dependencies:
     ultron "~1.1.0"
+
+ws@^1.1.1:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-1.1.4.tgz#57f40d036832e5f5055662a397c4de76ed66bf61"
+  dependencies:
+    options ">=0.0.5"
+    ultron "1.0.x"
 
 xml2js@0.4.17:
   version "0.4.17"
