@@ -176,8 +176,7 @@ function rimrafWrapper(filePath: string): Promise<void> {
   });
 }
 
-/** @return true only if we are sure directoryPath is on NFS. */
-async function isNfs(entityPath: string): Promise<boolean> {
+async function getFileSystemType(entityPath: string): Promise<?string> {
   if (process.platform === 'linux' || process.platform === 'darwin') {
     try {
       const stdout = await runCommand('stat', [
@@ -187,14 +186,26 @@ async function isNfs(entityPath: string): Promise<boolean> {
         '%T',
         entityPath,
       ]).toPromise();
-      return stdout.trim() === 'nfs';
+      return stdout.trim();
     } catch (err) {
-      return false;
+      return null;
     }
   } else {
-    // TODO Handle other platforms (windows?): t9917576.
-    return false;
+    // TODO Handle other platforms (windows?)
+    return null;
   }
+}
+
+/** @return true only if we are sure entityPath is on NFS. */
+async function isNfs(entityPath: string): Promise<boolean> {
+  return (await getFileSystemType(entityPath)) === 'nfs';
+}
+
+/** @return true only if we are sure entityPath is on a Fuse filesystem like
+            dewey or gvfs.
+*/
+async function isFuse(entityPath: string): Promise<boolean> {
+  return (await getFileSystemType(entityPath)) === 'fuseblk';
 }
 
 function glob(pattern: string, options?: Object): Promise<Array<string>> {
@@ -446,6 +457,7 @@ export default {
   mkdirp,
   rimraf: rimrafWrapper,
   isNfs,
+  isFuse,
   glob,
   isNonNfsDirectory,
 

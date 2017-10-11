@@ -299,6 +299,13 @@ export function isNfs(path: NuclideUri): Promise<boolean> {
   return ROOT_FS.isNfs(path);
 }
 
+/**
+ * Returns true if the path being checked exists in a `Fuse` mounted directory device.
+ */
+export function isFuse(path: NuclideUri): Promise<boolean> {
+  return ROOT_FS.isFuse(path);
+}
+
 async function copyFilePermissions(
   sourcePath: string,
   destinationPath: string,

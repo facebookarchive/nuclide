@@ -214,6 +214,10 @@ export class CompositeFileSystem implements FileSystem {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.isNfs(pth));
   }
 
+  isFuse(fullPath: NuclideUri): Promise<boolean> {
+    return this._resolveFs(fullPath, (segFs, pth) => segFs.isNfs(pth));
+  }
+
   async _archiveAsDirectory(path: NuclideUri): Promise<NuclideUri> {
     if (
       nuclideUri.hasKnownArchiveExtension(path) &&

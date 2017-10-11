@@ -17,7 +17,10 @@ import {search as rgSearch} from './RgService';
 import {ConnectableObservable, Observable} from 'rxjs';
 import {hasCommand} from 'nuclide-commons/hasCommand';
 import {asyncFind} from 'nuclide-commons/promise';
-import {isNfs} from '../../nuclide-server/lib/services/FileSystemService';
+import {
+  isNfs,
+  isFuse,
+} from '../../nuclide-server/lib/services/FileSystemService';
 import os from 'os';
 
 const WINDOWS_TOOLS = ['rg'];
@@ -57,6 +60,7 @@ export async function isEligibleForDirectory(
     resolveTool(null).then(tool => tool == null),
     isFbManaged(rootDirectory),
     isNfs(rootDirectory),
+    isFuse(rootDirectory),
   ]);
   if (checks.some(x => x)) {
     return false;

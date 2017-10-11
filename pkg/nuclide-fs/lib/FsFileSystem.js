@@ -168,6 +168,10 @@ export class FsFileSystem implements FileSystem {
     return fsPromise.isNfs(path);
   }
 
+  isFuse(path: NuclideUri): Promise<boolean> {
+    return fsPromise.isFuse(path);
+  }
+
   async openArchive(path: NuclideUri): Promise<FileSystem> {
     const [buffer, stat, lstat] = await Promise.all([
       fsPromise.readFile(path),
