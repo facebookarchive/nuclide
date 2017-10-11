@@ -14,6 +14,7 @@ import fs from 'fs';
 import fsPlus from 'fs-plus';
 import globLib from 'glob';
 import mkdirpLib from 'mkdirp';
+import mvLib from 'mv';
 import rimraf from 'rimraf';
 import temp from 'temp';
 
@@ -324,6 +325,35 @@ function mkdir(path: string, mode?: number): Promise<void> {
   });
 }
 
+export type MvOptions = {
+  // Run mkdirp for the directory first. Defaults to false.
+  mkdirp?: boolean,
+  // Overwrite the file if it exists. Defaults to true.
+  clobber?: boolean,
+  // Optional: the concurrency limit when moving a directory.
+  limit?: number,
+};
+
+/**
+ * The key difference between 'mv' and 'rename' is that 'mv' works across devices.
+ * It's not uncommon to have temporary files in a different disk, for instance.
+ */
+function mv(
+  sourcePath: string,
+  destinationPath: string,
+  options?: MvOptions = {},
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    mvLib(sourcePath, destinationPath, options, error => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
 // `fs.readFile` returns a Buffer unless an encoding is specified.
 // This workaround is adapted from the Flow declarations.
 type ReadFileType = ((filename: string, encoding: string) => Promise<string>) &
@@ -451,6 +481,7 @@ export default {
   chown,
   lstat,
   mkdir,
+  mv,
   readFile,
   readdir,
   readlink,

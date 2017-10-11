@@ -19,6 +19,7 @@
     "lru-cache": "4.0.2",
     "mime-types": "2.1.16",
     "mkdirp": "0.5.1",
+    "mv": "2.1.1",
     "nullthrows": "1.0.0",
     "rimraf": "2.5.4",
     "rxjs": "5.3.1",
