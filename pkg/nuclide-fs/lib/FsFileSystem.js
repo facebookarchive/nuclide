@@ -119,7 +119,10 @@ export class FsFileSystem implements FileSystem {
   }
 
   move(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {
-    return fsPromise.move(sourcePath, destinationPath);
+    return fsPromise.mv(sourcePath, destinationPath, {
+      mkdirp: true,
+      clobber: false,
+    });
   }
 
   copy(sourcePath: NuclideUri, destinationPath: NuclideUri): Promise<void> {

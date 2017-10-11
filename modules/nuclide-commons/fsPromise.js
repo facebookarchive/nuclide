@@ -241,18 +241,6 @@ function copy(source: string, dest: string): Promise<void> {
   });
 }
 
-function move(source: string, dest: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fsPlus.move(source, dest, (err, result) => {
-      if (err == null) {
-        resolve(result);
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
 /**
  * TODO: the fs-plus `writeFile` implementation runs `mkdirp` first.
  * We should use `fs.writeFile` and have callsites explicitly opt-in to this behaviour.
@@ -412,18 +400,6 @@ function realpath(path: string, cache?: Object): Promise<string> {
   });
 }
 
-function rename(oldPath: string, newPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fs.rename(oldPath, newPath, (err, result) => {
-      if (err == null) {
-        resolve(result);
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
 function stat(path: string): Promise<fs.Stats> {
   return new Promise((resolve, reject) => {
     fs.stat(path, (err, result) => {
@@ -474,7 +450,6 @@ export default {
   isNonNfsDirectory,
 
   copy,
-  move,
   writeFile,
 
   chmod,
@@ -486,7 +461,6 @@ export default {
   readdir,
   readlink,
   realpath,
-  rename,
   stat,
   symlink,
   unlink,
