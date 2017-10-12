@@ -1,44 +1,35 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {
-  DeviceListProvider,
-  DeviceInfoProvider,
-  DeviceProcessesProvider,
-  DeviceTaskProvider,
-  DeviceProcessTaskProvider,
-  DeviceTypeTaskProvider,
-  DeviceActionProvider,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getProviders = getProviders;
 
-type DeviceProviders = {
-  deviceList: Set<DeviceListProvider>,
-  deviceInfo: Set<DeviceInfoProvider>,
-  deviceTask: Set<DeviceTaskProvider>,
-  deviceProcesses: Set<DeviceProcessesProvider>,
-  processTask: Set<DeviceProcessTaskProvider>,
-  deviceTypeTask: Set<DeviceTypeTaskProvider>,
-  deviceAction: Set<DeviceActionProvider>,
-};
+var _types;
 
-const providers: DeviceProviders = {
+function _load_types() {
+  return _types = require('./types');
+}
+
+const providers = {
   deviceList: new Set(),
   deviceInfo: new Set(),
   deviceTask: new Set(),
   deviceProcesses: new Set(),
   processTask: new Set(),
   deviceTypeTask: new Set(),
-  deviceAction: new Set(),
-};
+  deviceAction: new Set()
+}; /**
+    * Copyright (c) 2015-present, Facebook, Inc.
+    * All rights reserved.
+    *
+    * This source code is licensed under the license found in the LICENSE file in
+    * the root directory of this source tree.
+    *
+    * 
+    * @format
+    */
 
-export function getProviders(): DeviceProviders {
+function getProviders() {
   return providers;
 }

@@ -1,53 +1,70 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {onDidRemoveProjectPath} from 'nuclide-commons-atom/projects';
-import {
-  getViewOfEditor,
-  isValidTextEditor,
-} from 'nuclide-commons-atom/text-editor';
-import {NavigationStackController} from './NavigationStackController';
-import {trackTiming} from '../../nuclide-analytics';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {observeNavigatingEditors} from 'nuclide-commons-atom/go-to-location';
-import createPackage from 'nuclide-commons-atom/createPackage';
+var _projects;
 
-export type NavigationStackService = {
-  navigateBackwards: () => Promise<void>,
-  navigateForwards: () => Promise<void>,
-  subscribe: (
-    ({
-      hasPrevious: boolean,
-      hasNext: boolean,
-    }) => void,
-  ) => UniversalDisposable,
-};
+function _load_projects() {
+  return _projects = require('nuclide-commons-atom/projects');
+}
 
-const controller = new NavigationStackController();
+var _textEditor;
+
+function _load_textEditor() {
+  return _textEditor = require('nuclide-commons-atom/text-editor');
+}
+
+var _NavigationStackController;
+
+function _load_NavigationStackController() {
+  return _NavigationStackController = require('./NavigationStackController');
+}
+
+var _nuclideAnalytics;
+
+function _load_nuclideAnalytics() {
+  return _nuclideAnalytics = require('../../nuclide-analytics');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _goToLocation;
+
+function _load_goToLocation() {
+  return _goToLocation = require('nuclide-commons-atom/go-to-location');
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const controller = new (_NavigationStackController || _load_NavigationStackController()).NavigationStackController(); /**
+                                                                                                                       * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                                                       * All rights reserved.
+                                                                                                                       *
+                                                                                                                       * This source code is licensed under the license found in the LICENSE file in
+                                                                                                                       * the root directory of this source tree.
+                                                                                                                       *
+                                                                                                                       * 
+                                                                                                                       * @format
+                                                                                                                       */
 
 class Activation {
-  _disposables: UniversalDisposable;
 
-  constructor(state: ?Object) {
-    this._disposables = new UniversalDisposable();
+  constructor(state) {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
 
-    const subscribeEditor = (editor: atom$TextEditor) => {
-      const cursorSubscription = editor.onDidChangeCursorPosition(
-        (event: ChangeCursorPositionEvent) => {
-          controller.updatePosition(editor, event.newBufferPosition);
-        },
-      );
-      const scrollSubscription = getViewOfEditor(
-        editor,
-      ).onDidChangeScrollTop(scrollTop => {
+    const subscribeEditor = editor => {
+      const cursorSubscription = editor.onDidChangeCursorPosition(event => {
+        controller.updatePosition(editor, event.newBufferPosition);
+      });
+      const scrollSubscription = (0, (_textEditor || _load_textEditor()).getViewOfEditor)(editor).onDidChangeScrollTop(scrollTop => {
         controller.updateScroll(editor, scrollTop);
       });
       this._disposables.add(cursorSubscription);
@@ -61,72 +78,47 @@ class Activation {
       this._disposables.add(destroySubscription);
     };
 
-    const addEditor = (addEvent: AddTextEditorEvent) => {
+    const addEditor = addEvent => {
       const editor = addEvent.textEditor;
-      if (isValidTextEditor(editor)) {
+      if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(editor)) {
         subscribeEditor(editor);
         controller.onCreate(editor);
       }
     };
 
     atom.workspace.getTextEditors().forEach(subscribeEditor);
-    this._disposables.add(
-      atom.workspace.onDidAddTextEditor(addEditor),
-      atom.workspace.onDidOpen((event: OnDidOpenEvent) => {
-        if (isValidTextEditor(event.item)) {
-          controller.onOpen((event.item: any));
-        }
-      }),
-      atom.workspace.observeActivePaneItem(item => {
-        if (isValidTextEditor(item)) {
-          controller.onActivate((item: any));
-        }
-      }),
-      atom.workspace.onDidStopChangingActivePaneItem(item => {
-        if (isValidTextEditor(item)) {
-          controller.onActiveStopChanging((item: any));
-        }
-      }),
-      onDidRemoveProjectPath(path => {
-        controller.removePath(
-          path,
-          atom.project.getDirectories().map(directory => directory.getPath()),
-        );
-      }),
-      observeNavigatingEditors().subscribe(editor => {
-        controller.onOptInNavigation(editor);
-      }),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-navigation-stack:navigate-forwards',
-        () => {
-          trackTiming('nuclide-navigation-stack:forwards', () =>
-            controller.navigateForwards(),
-          );
-        },
-      ),
-      atom.commands.add(
-        'atom-workspace',
-        'nuclide-navigation-stack:navigate-backwards',
-        () => {
-          trackTiming('nuclide-navigation-stack:backwards', () =>
-            controller.navigateBackwards(),
-          );
-        },
-      ),
-    );
+    this._disposables.add(atom.workspace.onDidAddTextEditor(addEditor), atom.workspace.onDidOpen(event => {
+      if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(event.item)) {
+        controller.onOpen(event.item);
+      }
+    }), atom.workspace.observeActivePaneItem(item => {
+      if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(item)) {
+        controller.onActivate(item);
+      }
+    }), atom.workspace.onDidStopChangingActivePaneItem(item => {
+      if ((0, (_textEditor || _load_textEditor()).isValidTextEditor)(item)) {
+        controller.onActiveStopChanging(item);
+      }
+    }), (0, (_projects || _load_projects()).onDidRemoveProjectPath)(path => {
+      controller.removePath(path, atom.project.getDirectories().map(directory => directory.getPath()));
+    }), (0, (_goToLocation || _load_goToLocation()).observeNavigatingEditors)().subscribe(editor => {
+      controller.onOptInNavigation(editor);
+    }), atom.commands.add('atom-workspace', 'nuclide-navigation-stack:navigate-forwards', () => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-navigation-stack:forwards', () => controller.navigateForwards());
+    }), atom.commands.add('atom-workspace', 'nuclide-navigation-stack:navigate-backwards', () => {
+      (0, (_nuclideAnalytics || _load_nuclideAnalytics()).trackTiming)('nuclide-navigation-stack:backwards', () => controller.navigateBackwards());
+    }));
   }
 
-  getNavigationStackProvider(): NavigationStackService {
+  getNavigationStackProvider() {
     const stackChanges = controller.observeStackChanges().map(stack => ({
       hasPrevious: stack.hasPrevious(),
-      hasNext: stack.hasNext(),
+      hasNext: stack.hasNext()
     }));
     return {
-      subscribe: callback =>
-        new UniversalDisposable(stackChanges.subscribe(callback)),
+      subscribe: callback => new (_UniversalDisposable || _load_UniversalDisposable()).default(stackChanges.subscribe(callback)),
       navigateForwards: () => controller.navigateForwards(),
-      navigateBackwards: () => controller.navigateBackwards(),
+      navigateBackwards: () => controller.navigateBackwards()
     };
   }
 
@@ -135,4 +127,4 @@ class Activation {
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

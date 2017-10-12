@@ -1,52 +1,68 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {OutputService} from '../../../nuclide-console/lib/types';
-import type {CwdApi} from '../../../nuclide-current-working-directory/lib/CwdApi';
-import type {PackagerEvent} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.PackagerActivation = undefined;
 
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import {LogTailer} from '../../../nuclide-console/lib/LogTailer';
-import {getCommandInfo} from '../../../nuclide-react-native-base';
-import {observeProcess} from 'nuclide-commons/process';
-import {shellQuote} from 'nuclide-commons/string';
-import {parseMessages} from './parseMessages';
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
-import electron from 'electron';
-import {Observable} from 'rxjs';
+var _LogTailer;
+
+function _load_LogTailer() {
+  return _LogTailer = require('../../../nuclide-console/lib/LogTailer');
+}
+
+var _nuclideReactNativeBase;
+
+function _load_nuclideReactNativeBase() {
+  return _nuclideReactNativeBase = require('../../../nuclide-react-native-base');
+}
+
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
+}
+
+var _string;
+
+function _load_string() {
+  return _string = require('nuclide-commons/string');
+}
+
+var _parseMessages;
+
+function _load_parseMessages() {
+  return _parseMessages = require('./parseMessages');
+}
+
+var _atom = require('atom');
+
+var _electron = _interopRequireDefault(require('electron'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Runs the server in the appropriate place. This class encapsulates all the state of the packager
  * so as to keep the Activation class (which brings together various RN features) clean.
  */
-export class PackagerActivation {
-  _logTailer: LogTailer;
-  _projectRootPath: ?string;
-  _disposables: CompositeDisposable;
+
+
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
+class PackagerActivation {
 
   constructor() {
-    const packagerEvents = Observable.defer(() =>
-      getPackagerObservable(this._projectRootPath),
-    ).share();
-    const messages = packagerEvents
-      .filter(event => event.kind === 'message')
-      .map(event => {
-        invariant(event.kind === 'message');
-        return event.message;
-      });
-    const ready = packagerEvents
-      .filter(message => message.kind === 'ready')
-      .mapTo(undefined);
-    this._logTailer = new LogTailer({
+    const packagerEvents = _rxjsBundlesRxMinJs.Observable.defer(() => getPackagerObservable(this._projectRootPath)).share();
+    const messages = packagerEvents.filter(event => event.kind === 'message').map(event => {
+      if (!(event.kind === 'message')) {
+        throw new Error('Invariant violation: "event.kind === \'message\'"');
+      }
+
+      return event.message;
+    });
+    const ready = packagerEvents.filter(message => message.kind === 'ready').mapTo(undefined);
+    this._logTailer = new (_LogTailer || _load_LogTailer()).LogTailer({
       name: 'React Native Packager',
       messages,
       ready,
@@ -54,26 +70,20 @@ export class PackagerActivation {
         switch (err.name) {
           case 'NoReactNativeProjectError':
             // If a React Native project hasn't been found, notify the user and complete normally.
-            atom.notifications.addError(
-              "Couldn't find a React Native project",
-              {
-                dismissable: true,
-                description:
-                  'Make sure that your current working root (or its ancestor) contains a' +
-                  ' "node_modules" directory with react-native installed, or a .buckconfig file' +
-                  ' with a "[react-native]" section that has a "server" key.',
-              },
-            );
+            atom.notifications.addError("Couldn't find a React Native project", {
+              dismissable: true,
+              description: 'Make sure that your current working root (or its ancestor) contains a' + ' "node_modules" directory with react-native installed, or a .buckconfig file' + ' with a "[react-native]" section that has a "server" key.'
+            });
             return;
           case 'PackagerError':
-            invariant(err instanceof PackagerError);
-            atom.notifications.addError(
-              `Packager exited with ${err.exitMessage}`,
-              {
-                dismissable: true,
-                detail: err.stderr.trim() === '' ? undefined : err.stderr,
-              },
-            );
+            if (!(err instanceof PackagerError)) {
+              throw new Error('Invariant violation: "err instanceof PackagerError"');
+            }
+
+            atom.notifications.addError(`Packager exited with ${err.exitMessage}`, {
+              dismissable: true,
+              detail: err.stderr.trim() === '' ? undefined : err.stderr
+            });
             return;
         }
         throw err;
@@ -81,57 +91,57 @@ export class PackagerActivation {
       trackingEvents: {
         start: 'react-native-packager:start',
         stop: 'react-native-packager:stop',
-        restart: 'react-native-packager:restart',
-      },
+        restart: 'react-native-packager:restart'
+      }
     });
 
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        this._logTailer.stop();
-      }),
-      atom.commands.add('atom-workspace', {
-        'nuclide-react-native:start-packager': event => {
-          const detail =
-            event.detail != null && typeof event.detail === 'object'
-              ? event.detail
-              : undefined;
-          this._logTailer.start(detail);
-        },
-        'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
-        'nuclide-react-native:restart-packager': () =>
-          this._logTailer.restart(),
-      }),
-    );
+    this._disposables = new _atom.CompositeDisposable(new _atom.Disposable(() => {
+      this._logTailer.stop();
+    }), atom.commands.add('atom-workspace', {
+      'nuclide-react-native:start-packager': event => {
+        const detail = event.detail != null && typeof event.detail === 'object' ? event.detail : undefined;
+        this._logTailer.start(detail);
+      },
+      'nuclide-react-native:stop-packager': () => this._logTailer.stop(),
+      'nuclide-react-native:restart-packager': () => this._logTailer.restart()
+    }));
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 
-  consumeCwdApi(api: CwdApi): void {
-    this._disposables.add(
-      api.observeCwd(dir => {
-        this._projectRootPath = dir == null ? null : dir.getPath();
-      }),
-    );
+  consumeCwdApi(api) {
+    this._disposables.add(api.observeCwd(dir => {
+      this._projectRootPath = dir == null ? null : dir.getPath();
+    }));
   }
 
-  consumeOutputService(api: OutputService): void {
-    this._disposables.add(
-      api.registerOutputProvider({
-        id: 'React Native Packager',
-        messages: this._logTailer.getMessages(),
-        observeStatus: cb => this._logTailer.observeStatus(cb),
-        start: () => {
-          this._logTailer.start();
-        },
-        stop: () => {
-          this._logTailer.stop();
-        },
-      }),
-    );
+  consumeOutputService(api) {
+    this._disposables.add(api.registerOutputProvider({
+      id: 'React Native Packager',
+      messages: this._logTailer.getMessages(),
+      observeStatus: cb => this._logTailer.observeStatus(cb),
+      start: () => {
+        this._logTailer.start();
+      },
+      stop: () => {
+        this._logTailer.stop();
+      }
+    }));
   }
 }
+
+exports.PackagerActivation = PackagerActivation; /**
+                                                  * Copyright (c) 2015-present, Facebook, Inc.
+                                                  * All rights reserved.
+                                                  *
+                                                  * This source code is licensed under the license found in the LICENSE file in
+                                                  * the root directory of this source tree.
+                                                  *
+                                                  * 
+                                                  * @format
+                                                  */
 
 class NoReactNativeProjectError extends Error {
   constructor() {
@@ -141,9 +151,7 @@ class NoReactNativeProjectError extends Error {
 }
 
 class PackagerError extends Error {
-  exitMessage: string;
-  stderr: string;
-  constructor(exitMessage: string, stderr: string) {
+  constructor(exitMessage, stderr) {
     super('An error occurred while running the packager');
     this.name = 'PackagerError';
     this.exitMessage = exitMessage;
@@ -154,73 +162,59 @@ class PackagerError extends Error {
 /**
  * Create an observable that runs the packager and and collects its output.
  */
-function getPackagerObservable(
-  projectRootPath: ?string,
-): Observable<PackagerEvent> {
-  const stdout = Observable.fromPromise(getCommandInfo(projectRootPath))
-    .switchMap(
-      commandInfo =>
-        commandInfo == null
-          ? Observable.throw(new NoReactNativeProjectError())
-          : Observable.of(commandInfo),
-    )
-    .switchMap(commandInfo => {
-      const {command, cwd, args} = commandInfo;
-      const remote = electron.remote;
-      invariant(remote != null);
-      // Tell the packager to use this Atom to edit the files.
-      const editor = [remote.app.getPath('exe')];
-      if (atom.devMode) {
-        editor.push('--dev');
-      }
-      return observeProcess(command, args, {
-        cwd,
-        env: {...process.env, REACT_EDITOR: shellQuote(editor)},
-        killTreeWhenDone: true,
-        /* TODO(T17353599) */ isExitError: () => false,
-      }).catch(error => Observable.of({kind: 'error', error})); // TODO(T17463635)
-    })
-    // Accumulate the stderr so that we can show it to the user if something goes wrong.
-    .scan(
-      (acc, event) => {
-        return {
-          stderr:
-            event.kind === 'stderr' ? acc.stderr + event.data : acc.stderr,
-          event,
-        };
-      },
-      {stderr: '', event: null},
-    )
-    .switchMap(({stderr, event}) => {
-      if (event == null) {
-        return Observable.empty();
-      }
-      switch (event.kind) {
-        case 'error':
-          return Observable.throw(event.error);
-        case 'stdout':
-          return Observable.of(event.data);
-        case 'exit':
-          if (event.exitCode !== 0) {
-            if (!stderr.includes('Error: listen EADDRINUSE :::8081')) {
-              atom.notifications.addWarning(
-                'Packager failed to start - continuing anyway. This is expected if you ' +
-                  'are intentionally running a packager in a separate terminal. If not, ' +
-                  '`lsof -i tcp:8081` might help you find the process using the packager port',
-                {
-                  dismissable: true,
-                  detail: stderr.trim() === '' ? undefined : stderr,
-                },
-              );
-            }
-          }
-          return Observable.empty();
-        case 'stderr':
-        default:
-          // We just ignore these.
-          return Observable.empty();
-      }
-    });
+function getPackagerObservable(projectRootPath) {
+  const stdout = _rxjsBundlesRxMinJs.Observable.fromPromise((0, (_nuclideReactNativeBase || _load_nuclideReactNativeBase()).getCommandInfo)(projectRootPath)).switchMap(commandInfo => commandInfo == null ? _rxjsBundlesRxMinJs.Observable.throw(new NoReactNativeProjectError()) : _rxjsBundlesRxMinJs.Observable.of(commandInfo)).switchMap(commandInfo => {
+    const { command, cwd, args } = commandInfo;
+    const remote = _electron.default.remote;
 
-  return parseMessages(stdout);
+    if (!(remote != null)) {
+      throw new Error('Invariant violation: "remote != null"');
+    }
+    // Tell the packager to use this Atom to edit the files.
+
+
+    const editor = [remote.app.getPath('exe')];
+    if (atom.devMode) {
+      editor.push('--dev');
+    }
+    return (0, (_process || _load_process()).observeProcess)(command, args, {
+      cwd,
+      env: Object.assign({}, process.env, { REACT_EDITOR: (0, (_string || _load_string()).shellQuote)(editor) }),
+      killTreeWhenDone: true,
+      /* TODO(T17353599) */isExitError: () => false
+    }).catch(error => _rxjsBundlesRxMinJs.Observable.of({ kind: 'error', error })); // TODO(T17463635)
+  })
+  // Accumulate the stderr so that we can show it to the user if something goes wrong.
+  .scan((acc, event) => {
+    return {
+      stderr: event.kind === 'stderr' ? acc.stderr + event.data : acc.stderr,
+      event
+    };
+  }, { stderr: '', event: null }).switchMap(({ stderr, event }) => {
+    if (event == null) {
+      return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+    switch (event.kind) {
+      case 'error':
+        return _rxjsBundlesRxMinJs.Observable.throw(event.error);
+      case 'stdout':
+        return _rxjsBundlesRxMinJs.Observable.of(event.data);
+      case 'exit':
+        if (event.exitCode !== 0) {
+          if (!stderr.includes('Error: listen EADDRINUSE :::8081')) {
+            atom.notifications.addWarning('Packager failed to start - continuing anyway. This is expected if you ' + 'are intentionally running a packager in a separate terminal. If not, ' + '`lsof -i tcp:8081` might help you find the process using the packager port', {
+              dismissable: true,
+              detail: stderr.trim() === '' ? undefined : stderr
+            });
+          }
+        }
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      case 'stderr':
+      default:
+        // We just ignore these.
+        return _rxjsBundlesRxMinJs.Observable.empty();
+    }
+  });
+
+  return (0, (_parseMessages || _load_parseMessages()).parseMessages)(stdout);
 }

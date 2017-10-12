@@ -1,3 +1,18 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileTreeSelectionManager = undefined;
+
+var _immutable;
+
+function _load_immutable() {
+  return _immutable = _interopRequireDefault(require('immutable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,76 +20,70 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {FileTreeNode} from './FileTreeNode';
+class FileTreeSelectionManager {
 
-import Immutable from 'immutable';
-
-export class FileTreeSelectionManager {
-  _selectedNodes: Immutable.Set<FileTreeNode>;
-  _focusedNodes: Immutable.Set<FileTreeNode>;
-  _emitChange: () => mixed;
-
-  constructor(emitChange: () => mixed) {
+  constructor(emitChange) {
     this._emitChange = emitChange;
-    this._selectedNodes = new Immutable.Set();
-    this._focusedNodes = new Immutable.Set();
+    this._selectedNodes = new (_immutable || _load_immutable()).default.Set();
+    this._focusedNodes = new (_immutable || _load_immutable()).default.Set();
   }
 
-  selectedNodes(): Immutable.Set<FileTreeNode> {
+  selectedNodes() {
     return this._selectedNodes;
   }
 
-  focusedNodes(): Immutable.Set<FileTreeNode> {
+  focusedNodes() {
     return this._focusedNodes;
   }
 
-  isSelected(node: FileTreeNode): boolean {
+  isSelected(node) {
     return this._selectedNodes.has(node);
   }
 
-  isFocused(node: FileTreeNode): boolean {
+  isFocused(node) {
     return this._focusedNodes.has(node);
   }
 
-  _checkSelected(newSelected: Immutable.Set<FileTreeNode>): void {
+  _checkSelected(newSelected) {
     if (newSelected !== this._selectedNodes) {
       this._selectedNodes = newSelected;
       this._emitChange();
     }
   }
 
-  _checkFocused(newFocused: Immutable.Set<FileTreeNode>): void {
+  _checkFocused(newFocused) {
     if (newFocused !== this._focusedNodes) {
       this._focusedNodes = newFocused;
       this._emitChange();
     }
   }
 
-  select(node: FileTreeNode): void {
+  select(node) {
     this._checkSelected(this._selectedNodes.add(node));
   }
 
-  unselect(node: FileTreeNode): void {
+  unselect(node) {
     this._checkSelected(this._selectedNodes.delete(node));
   }
 
-  focus(node: FileTreeNode): void {
+  focus(node) {
     this._checkFocused(this._focusedNodes.add(node));
   }
 
-  unfocus(node: FileTreeNode): void {
+  unfocus(node) {
     this._checkFocused(this._focusedNodes.delete(node));
   }
 
-  clearSelected(): void {
+  clearSelected() {
     this._checkSelected(this._selectedNodes.clear());
   }
 
-  clearFocused(): void {
+  clearFocused() {
     this._checkFocused(this._focusedNodes.clear());
   }
 }
+exports.FileTreeSelectionManager = FileTreeSelectionManager;

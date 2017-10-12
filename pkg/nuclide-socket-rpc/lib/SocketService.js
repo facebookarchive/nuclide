@@ -1,56 +1,48 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ConnectableObservable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.startListening = startListening;
+exports.stopListening = stopListening;
+exports.writeToClient = writeToClient;
+exports.clientError = clientError;
+exports.closeClient = closeClient;
 
-import {Observable} from 'rxjs';
-import net from 'net';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-export type SocketEvent =
-  | {type: 'server_started'}
-  | {type: 'server_stopping'}
-  | {
-      type: 'client_connected',
-    }
-  | {type: 'client_disconnected'}
-  | {type: 'data', data: Buffer};
+var _net = _interopRequireDefault(require('net'));
 
-type ServerSocket = {
-  clients: Array<net.Socket>,
-  server: net.Server,
-  observer: rxjs$Observer<SocketEvent>,
-};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const socketsForPorts: Map<number, ServerSocket> = new Map();
+const socketsForPorts = new Map(); /**
+                                    * Copyright (c) 2015-present, Facebook, Inc.
+                                    * All rights reserved.
+                                    *
+                                    * This source code is licensed under the license found in the LICENSE file in
+                                    * the root directory of this source tree.
+                                    *
+                                    * 
+                                    * @format
+                                    */
 
-export function startListening(
-  port: number,
-  family: 4 | 6 = 6,
-): ConnectableObservable<SocketEvent> {
-  return Observable.create(observer => {
+function startListening(port, family = 6) {
+  return _rxjsBundlesRxMinJs.Observable.create(observer => {
     if (socketsForPorts.get(port) != null) {
       throw new Error(`Socket on port ${port} already bound`);
     }
 
     const clients = [];
 
-    const server = net.createServer(socket => {
+    const server = _net.default.createServer(socket => {
       clients.push(socket);
-      observer.next({type: 'client_connected'});
+      observer.next({ type: 'client_connected' });
       socket.on('data', data => {
-        observer.next({type: 'data', data});
+        observer.next({ type: 'data', data });
       });
       socket.on('close', hadError => {
         clients.splice(clients.indexOf(socket), 1);
-        observer.next({type: 'client_disconnected'});
+        observer.next({ type: 'client_disconnected' });
       });
       socket.on('error', error => {
         socket.end();
@@ -64,54 +56,50 @@ export function startListening(
       observer.error(error);
     });
     server.maxConnections = 1;
-    server.listen({host: family === 6 ? '::' : '0.0.0.0', port}, () => {
-      observer.next({type: 'server_started'});
+    server.listen({ host: family === 6 ? '::' : '0.0.0.0', port }, () => {
+      observer.next({ type: 'server_started' });
     });
-    socketsForPorts.set(port, {clients, server, observer});
+    socketsForPorts.set(port, { clients, server, observer });
   }).publish();
 }
 
-export function stopListening(port: number): void {
+function stopListening(port) {
   const openSocket = getOpenSocket(port);
-  const {clients, server, observer} = openSocket;
+  const { clients, server, observer } = openSocket;
   clients.forEach(client => client.destroy());
-  observer.next({type: 'server_stopping'});
+  observer.next({ type: 'server_stopping' });
   server.close(() => {
     socketsForPorts.delete(port);
     observer.complete();
   });
 }
 
-export function writeToClient(port: number, data: Buffer): void {
+function writeToClient(port, data) {
   const openSocket = getOpenSocket(port);
   if (openSocket.clients.length === 1) {
     openSocket.clients[0].write(data);
   } else {
-    openSocket.observer.error(
-      `Tried to write on port ${port}, but no client found.`,
-    );
+    openSocket.observer.error(`Tried to write on port ${port}, but no client found.`);
   }
 }
 
-export function clientError(port: number, error: string): void {
+function clientError(port, error) {
   const openSocket = getOpenSocket(port);
   if (openSocket.clients.length === 1) {
     openSocket.clients[0].destroy(new Error(error));
   } else {
-    openSocket.observer.error(
-      `Tried to send an error on port ${port}, but no client found.`,
-    );
+    openSocket.observer.error(`Tried to send an error on port ${port}, but no client found.`);
   }
 }
 
-export function closeClient(port: number): void {
+function closeClient(port) {
   const openSocket = getOpenSocket(port);
   if (openSocket.clients.length > 0) {
     openSocket.clients[0].end();
   }
 }
 
-function getOpenSocket(port: number): ServerSocket {
+function getOpenSocket(port) {
   const openSocket = socketsForPorts.get(port);
   if (openSocket == null) {
     throw new Error(`Server on port ${port} not started`);

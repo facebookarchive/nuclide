@@ -1,21 +1,13 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {IconName} from 'nuclide-commons-ui/Icon';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-import type {DiagnosticGroup} from './types';
-
-export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
-  const {kind} = message;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getGroup = getGroup;
+exports.getDisplayName = getDisplayName;
+exports.getIcon = getIcon;
+function getGroup(message) {
+  const { kind } = message;
   switch (kind) {
     case 'lint':
     case null:
@@ -29,18 +21,28 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
         case 'Info':
           return 'info';
         default:
-          (message.type: empty);
+          message.type;
           throw new Error(`Invalid message severity: ${message.type}`);
       }
     case 'review':
       return 'review';
     default:
-      (kind: empty);
+      kind;
       throw new Error(`Invalid message kind: ${kind}`);
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-export function getDisplayName(group: DiagnosticGroup): string {
+function getDisplayName(group) {
   switch (group) {
     case 'errors':
       return 'Errors';
@@ -51,12 +53,12 @@ export function getDisplayName(group: DiagnosticGroup): string {
     case 'review':
       return 'Review';
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid group: ${group}`);
   }
 }
 
-export function getIcon(group: DiagnosticGroup): IconName {
+function getIcon(group) {
   switch (group) {
     case 'errors':
       return 'nuclicon-error';
@@ -67,7 +69,7 @@ export function getIcon(group: DiagnosticGroup): IconName {
     case 'review':
       return 'nuclicon-comment-discussion';
     default:
-      (group: empty);
+      group;
       throw new Error(`Invalid filter type: ${group}`);
   }
 }
