@@ -789,7 +789,9 @@ type electron$remote = {
  * https://github.com/electron/electron/blob/master/docs/api/web-frame.md
  */
 
-type electron$webFrame = {};
+type electron$webFrame = {
+  registerURLSchemeAsBypassingCSP(scheme: string): void,
+};
 
 
 //------------------------------------------------------------------------------
