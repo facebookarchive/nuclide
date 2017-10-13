@@ -40,10 +40,6 @@ export default class DiagnosticUpdater {
     // $FlowIgnore: Flow doesn't know about Symbol.observable
     this._states = Observable.from(store);
 
-    this._projectMessageUpdates = this._states
-      .map(Selectors.getProjectMessages)
-      .distinctUntilChanged();
-
     this._allMessageUpdates = this._states
       .map(Selectors.getMessages)
       .distinctUntilChanged();
@@ -51,10 +47,6 @@ export default class DiagnosticUpdater {
 
   getMessages = (): Array<DiagnosticMessage> => {
     return Selectors.getMessages(this._store.getState());
-  };
-
-  getProjectMessages = (): Array<ProjectDiagnosticMessage> => {
-    return Selectors.getProjectMessages(this._store.getState());
   };
 
   getFileMessageUpdates = (filePath: NuclideUri): FileDiagnosticMessages => {

@@ -242,7 +242,6 @@ export type {IndieLinterDelegate} from './services/IndieLinterRegistry';
 
 export type AppState = {
   messages: MessagesState,
-  projectMessages: ProjectMessagesState,
   codeActionFetcher: ?CodeActionFetcher,
   codeActionsForMessage: CodeActionsState,
   providers: Set<ObservableDiagnosticProvider>,
@@ -251,11 +250,6 @@ export type AppState = {
 export type MessagesState = Map<
   ObservableDiagnosticProvider,
   Map<NuclideUri, Array<FileDiagnosticMessage>>,
->;
-
-export type ProjectMessagesState = Map<
-  ObservableDiagnosticProvider,
-  Array<ProjectDiagnosticMessage>,
 >;
 
 export type CodeActionsState = Map<

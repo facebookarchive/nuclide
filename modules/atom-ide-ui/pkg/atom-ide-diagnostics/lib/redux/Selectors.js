@@ -15,7 +15,6 @@ import type {
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
-  ProjectDiagnosticMessage,
   DiagnosticMessageKind,
   UiConfig,
 } from '../types';
@@ -24,7 +23,6 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {createSelector} from 'reselect';
 
 const getMessagesState = state => state.messages;
-const getProjectMessagesState = state => state.projectMessages;
 const getProviders = state => state.providers;
 
 /**
@@ -57,27 +55,12 @@ export function getFileMessageUpdates(
 }
 
 /**
-  * Gets the current project-scope diagnostic messages.
-  * Prefer to get updates via ::onProjectMessagesDidUpdate.
-  */
-export const getProjectMessages = createSelector(
-  [getProjectMessagesState],
-  (projectMessagesState): Array<ProjectDiagnosticMessage> => {
-    const messages = [];
-    for (const providerMessages of projectMessagesState.values()) {
-      messages.push(...providerMessages);
-    }
-    return messages;
-  },
-);
-
-/**
   * Gets all current diagnostic messages.
   * Prefer to get updates via ::onAllMessagesDidUpdate.
   */
 export const getMessages = createSelector(
-  [getMessagesState, getProjectMessages],
-  (messagesState, projectMessages): Array<DiagnosticMessage> => {
+  [getMessagesState],
+  (messagesState): Array<DiagnosticMessage> => {
     const messages = [];
 
     // Get all file messages.
@@ -86,9 +69,6 @@ export const getMessages = createSelector(
         messages.push(...fileMessages);
       }
     }
-
-    // Get all project messages.
-    messages.push(...projectMessages);
 
     return messages;
   },

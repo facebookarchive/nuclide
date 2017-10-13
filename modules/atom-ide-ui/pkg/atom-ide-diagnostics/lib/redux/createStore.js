@@ -67,7 +67,6 @@ export default function createStore(
 
 const INITIAL_STATE = {
   messages: new Map(),
-  projectMessages: new Map(),
   codeActionFetcher: null,
   codeActionsForMessage: new Map(),
   providers: new Set(),

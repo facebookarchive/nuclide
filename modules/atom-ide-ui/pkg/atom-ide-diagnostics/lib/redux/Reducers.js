@@ -14,7 +14,6 @@ import type {
   Action,
   CodeActionsState,
   MessagesState,
-  ProjectMessagesState,
   ObservableDiagnosticProvider,
 } from '../types';
 import type {CodeActionFetcher} from '../../../atom-ide-code-actions/lib/types';
@@ -118,46 +117,6 @@ export function messages(
       }
 
       return nextState || state;
-    }
-    case Actions.REMOVE_PROVIDER: {
-      return mapDelete(state, action.payload.provider);
-    }
-  }
-
-  return state;
-}
-
-export function projectMessages(
-  state: ProjectMessagesState = new Map(),
-  action: Action,
-): ProjectMessagesState {
-  switch (action.type) {
-    case Actions.UPDATE_MESSAGES: {
-      const {provider, update} = action.payload;
-      const {projectMessages: newProjectMessages} = update;
-      if (newProjectMessages == null) {
-        return state;
-      }
-      const nextState = new Map(state);
-      nextState.set(provider, newProjectMessages);
-      return nextState;
-    }
-    case Actions.INVALIDATE_MESSAGES: {
-      const {provider, invalidation: {scope}} = action.payload;
-      if (scope !== 'project' && scope !== 'all') {
-        return state;
-      }
-
-      const messagesForProvider = state.get(provider);
-
-      // If we don't have any project messages for this provider, we don't need to do anything.
-      if (messagesForProvider == null || messagesForProvider.length === 0) {
-        return state;
-      }
-
-      const nextState = new Map(state);
-      nextState.set(provider, []);
-      return nextState;
     }
     case Actions.REMOVE_PROVIDER: {
       return mapDelete(state, action.payload.provider);
