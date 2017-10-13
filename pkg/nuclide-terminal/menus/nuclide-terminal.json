@@ -1,0 +1,13 @@
+{
+  "menu": [
+    {
+      "label": "Nuclide",
+      "submenu": [
+        {
+          "label": "New Terminal Window",
+          "command": "nuclide-terminal:new-terminal"
+        }
+      ]
+    }
+  ]
+}
