@@ -14,6 +14,13 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {DiagnosticGroup} from './types';
 
+const PRIORITIZED_GROUPS: Array<DiagnosticGroup> = [
+  'review',
+  'errors',
+  'warnings',
+  'info',
+];
+
 export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
   const {kind} = message;
   switch (kind) {
@@ -70,4 +77,15 @@ export function getIcon(group: DiagnosticGroup): IconName {
       (group: empty);
       throw new Error(`Invalid filter type: ${group}`);
   }
+}
+
+export function getHighestPriorityGroup(
+  groups: Set<DiagnosticGroup>,
+): DiagnosticGroup {
+  for (const group of PRIORITIZED_GROUPS) {
+    if (groups.has(group)) {
+      return group;
+    }
+  }
+  throw new Error(`Invalid group set: ${[...groups].toString()}`);
 }
