@@ -90,7 +90,7 @@ export default class RemoteControlService {
   getTerminal(): any {
     try {
       // $FlowFB
-      const terminalUri = require('../../commons-node/fb-terminal-uri');
+      const terminalUri = require('../../commons-node/nuclide-terminal-uri');
       return terminalUri;
     } catch (_) {
       return null;
