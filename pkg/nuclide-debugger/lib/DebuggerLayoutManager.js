@@ -343,7 +343,7 @@ export class DebuggerLayoutManager {
 
     // See if any visible docks contain a pane that contains a debugger pane.
     this._getWorkspaceDocks().forEach(dock => {
-      if (dock.dock.isVisible()) {
+      if (dock.dock.isVisible != null && dock.dock.isVisible()) {
         dock.dock.getPanes().forEach(pane => {
           if (
             pane
