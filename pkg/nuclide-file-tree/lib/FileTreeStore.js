@@ -1186,8 +1186,10 @@ export class FileTreeStore {
         const generatedType = generatedFileTypes.get(childNode.uri);
         if (generatedType != null) {
           return childNode.setGeneratedStatus(generatedType);
+        } else {
+          // if in the directory but not specified in the map, assume manual.
+          return childNode.setGeneratedStatus('manual');
         }
-        return childNode;
       });
       return node.set({children});
     });

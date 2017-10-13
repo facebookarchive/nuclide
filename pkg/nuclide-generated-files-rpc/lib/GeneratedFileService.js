@@ -86,7 +86,8 @@ export async function getGeneratedFileTypes(
     const tag = fileTags.get(file);
     if (tag == null) {
       cache.set(filePath, 'manual');
-      fileTypes.set(filePath, 'manual');
+      // don't send this across the wire; receiver should assume that if it gets
+      // a response, any files in the directory that aren't specified are manual
     } else {
       cache.set(filePath, tag);
       fileTypes.set(filePath, tag);
