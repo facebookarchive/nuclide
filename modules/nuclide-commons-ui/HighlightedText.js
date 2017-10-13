@@ -16,12 +16,14 @@ import {arrayEqual} from 'nuclide-commons/collection';
 
 export type TextRange = [/* start */ number, /* end */ number];
 type Props = {|
+  className?: ?string,
   /*
    * A list of ranges of the text string (pairs of indexes, inclusive lower
    * bound, exclusive upper bound -- just like .slice()) that should be
    * highlighted
    */
   highlightedRanges: Array<TextRange>,
+  style?: ?Object,
   text: string,
 |};
 
@@ -38,7 +40,7 @@ export default class HighlightedText extends React.Component<Props> {
   }
 
   render(): React.Element<any> {
-    const {highlightedRanges, text} = this.props;
+    const {className, highlightedRanges, style, text} = this.props;
 
     // generate counterpart unhighlightedRanges for the highlightedRanges
     const unhighlightedRanges: Array<TextRange> = [];
@@ -94,7 +96,11 @@ export default class HighlightedText extends React.Component<Props> {
       }
     }
 
-    return <span>{renderedSequences}</span>;
+    return (
+      <span className={className} style={style}>
+        {renderedSequences}
+      </span>
+    );
   }
 }
 
