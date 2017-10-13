@@ -10,6 +10,10 @@
  * @format
  */
 
+export function ensureArray<T>(x: Array<T> | T): Array<T> {
+  return Array.isArray(x) ? x : [x];
+}
+
 export function arrayRemove<T>(array: Array<T>, element: T): void {
   const index = array.indexOf(element);
   if (index >= 0) {

@@ -11,6 +11,7 @@
  */
 
 import {
+  ensureArray,
   arrayRemove,
   arrayEqual,
   arrayCompact,
@@ -39,6 +40,18 @@ import {
   count,
   range,
 } from '../collection';
+
+describe('ensureArray', () => {
+  it('works on arrays', () => {
+    expect(ensureArray([1])).toEqual([1]);
+    expect(ensureArray(['test'])).toEqual(['test']);
+  });
+
+  it('works on non-arrays', () => {
+    expect(ensureArray(1)).toEqual([1]);
+    expect(ensureArray('test')).toEqual(['test']);
+  });
+});
 
 describe('arrayRemove', () => {
   let a: any;
