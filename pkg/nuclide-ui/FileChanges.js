@@ -264,7 +264,15 @@ export default class FileChanges extends React.Component<Props> {
 
   render(): React.Node {
     const {diff, fullPath, collapsable, collapsedByDefault} = this.props;
-    const {additions, annotation, chunks, deletions, to: fileName} = diff;
+    const {
+      additions,
+      annotation,
+      chunks,
+      deletions,
+      from: fromFileName,
+      to: toFileName,
+    } = diff;
+    const fileName = toFileName !== '/dev/null' ? toFileName : fromFileName;
     const grammar = atom.grammars.selectGrammar(fileName, '');
     const hunks = [];
     let i = 0;
@@ -299,9 +307,16 @@ export default class FileChanges extends React.Component<Props> {
       );
     }
 
+    let addedOrDeletedString = '';
+    if (toFileName === '/dev/null') {
+      addedOrDeletedString = 'file deleted - ';
+    } else if (fromFileName === '/dev/null') {
+      addedOrDeletedString = 'file added - ';
+    }
     const diffDetails = (
       <span>
         {annotationComponent} (
+        {addedOrDeletedString}
         {additions + deletions} {pluralize('line', additions + deletions)}
         )
       </span>
