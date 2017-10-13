@@ -17,6 +17,7 @@ import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -181,7 +182,7 @@ export class DiagnosticsViewModel {
         (message.text != null && pattern.test(message.text)) ||
         (message.html != null && pattern.test(message.html)) ||
         pattern.test(message.providerName) ||
-        (message.scope === 'file' && pattern.test(message.filePath))
+        pattern.test(message.filePath)
       );
     });
   }
@@ -195,7 +196,8 @@ function goToDiagnosticLocation(
   message: DiagnosticMessage,
   options: {|focusEditor: boolean|},
 ): void {
-  if (message.scope !== 'file' || message.filePath == null) {
+  // TODO: what should we do for project-path diagnostics?
+  if (nuclideUri.endsWithSeparator(message.filePath)) {
     return;
   }
 

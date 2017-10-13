@@ -27,35 +27,30 @@ describe('compareMessagesByFile', () => {
       filePath: '/foo/bar/baz.html',
       providerName: 'foo',
       range: new Range([0, 0], [1, 0]),
-      scope: 'file',
       type: 'Warning',
     };
     fileAMsgB = {
       filePath: '/foo/bar/baz.html',
       providerName: 'foo',
       range: new Range([5, 0], [6, 0]),
-      scope: 'file',
       type: 'Warning',
     };
     fileAError = {
       filePath: '/foo/bar/baz.html',
       providerName: 'foo',
       range: new Range([10, 0], [11, 0]),
-      scope: 'file',
       type: 'Error',
     };
     fileAInfo = {
       filePath: '/foo/bar/baz.html',
       providerName: 'foo',
       range: new Range([0, 0], [0, 0]),
-      scope: 'file',
       type: 'Info',
     };
     fileBMsgA = {
       filePath: '/foo/bar/xyz.html',
       providerName: 'foo',
       range: new Range([3, 0], [4, 0]),
-      scope: 'file',
       type: 'Warning',
     };
   });

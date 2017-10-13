@@ -41,11 +41,6 @@ export function messages(
     case Actions.INVALIDATE_MESSAGES: {
       const {provider, invalidation} = action.payload;
 
-      // We don't do anything for file messages when the project is invalidated.
-      if (invalidation.scope === 'project') {
-        return state;
-      }
-
       // If there aren't any messages for this provider, there's nothing to do.
       const filesToMessages = state.get(provider);
       if (filesToMessages == null || filesToMessages.size === 0) {

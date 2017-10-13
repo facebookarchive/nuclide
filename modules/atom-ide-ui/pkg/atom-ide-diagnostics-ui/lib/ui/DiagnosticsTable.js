@@ -383,7 +383,7 @@ function DescriptionComponent(props: {
   data: DescriptionField,
 }): React.Element<any> {
   const {showTraces, diagnostic, text, isPlainText} = props.data;
-  return showTraces && diagnostic.scope === 'file'
+  return showTraces
     ? DiagnosticsMessageNoHeader({
         message: diagnostic,
         goToLocation: (file: string, line: number) =>
@@ -423,16 +423,8 @@ function FilenameComponent(props: {data: ?Location}): React.Element<any> {
 function getLocation(
   diagnostic: DiagnosticMessage,
 ): {dir: string, location: ?Location} {
-  const filePath =
-    typeof diagnostic.filePath === 'string' ? diagnostic.filePath : null;
-  const line = diagnostic.range ? diagnostic.range.start.row + 1 : 0;
-
-  if (filePath == null) {
-    return {
-      dir: '', // TODO: Use current working root?
-      location: null,
-    };
-  }
+  const {filePath, range} = diagnostic;
+  const line = range ? range.start.row + 1 : 0;
 
   const humanized = humanizePath(filePath);
   if (nuclideUri.endsWithSeparator(humanized)) {
@@ -463,11 +455,10 @@ function getLocation(
 function compareMessages(a: DiagnosticMessage, b: DiagnosticMessage): ?number {
   const aKind = a.kind || 'lint';
   const bKind = b.kind || 'lint';
-  const aFilePath = a.scope === 'file' ? a.filePath : null;
-  const bFilePath = b.scope === 'file' ? b.filePath : null;
+  const aFilePath = a.filePath;
+  const bFilePath = b.filePath;
   if (
     aKind !== bKind ||
-    a.scope !== b.scope ||
     a.providerName !== b.providerName ||
     a.type !== b.type ||
     aFilePath !== bFilePath

@@ -86,7 +86,6 @@ export type DiagnosticFix = TextEdit & {
 
 export type FileDiagnosticMessage = {
   kind?: DiagnosticMessageKind,
-  scope: 'file',
   providerName: string,
   type: DiagnosticMessageType, // TODO: Rename to severity.
   filePath: NuclideUri,

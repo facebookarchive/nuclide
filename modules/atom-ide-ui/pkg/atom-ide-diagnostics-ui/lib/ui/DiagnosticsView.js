@@ -72,9 +72,7 @@ export default class DiagnosticsView extends React.Component<Props> {
       const pathToFilterBy = this.props.pathToActiveTextEditor;
       if (pathToFilterBy != null) {
         diagnostics = diagnostics.filter(
-          diagnostic =>
-            diagnostic.scope === 'file' &&
-            diagnostic.filePath === pathToFilterBy,
+          diagnostic => diagnostic.filePath === pathToFilterBy,
         );
       } else {
         // Current pane is not a text editor; do not show diagnostics.

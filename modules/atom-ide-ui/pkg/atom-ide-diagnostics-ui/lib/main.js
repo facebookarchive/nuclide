@@ -30,6 +30,7 @@ import analytics from 'nuclide-commons-atom/analytics';
 
 import idx from 'idx';
 import {areSetsEqual} from 'nuclide-commons/collection';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -424,10 +425,11 @@ function getTopMostErrorLocationsByFilePath(
   const errorLocations: Map<string, number> = new Map();
 
   messages.forEach(message => {
-    if (message.scope !== 'file' || message.filePath == null) {
+    const filePath = message.filePath;
+    if (nuclideUri.endsWithSeparator(filePath)) {
       return;
     }
-    const filePath = message.filePath;
+
     // If initialLine is N, Atom will navigate to line N+1.
     // Flow sometimes reports a row of -1, so this ensures the line is at least one.
     let line = Math.max(message.range ? message.range.start.row : 0, 0);
