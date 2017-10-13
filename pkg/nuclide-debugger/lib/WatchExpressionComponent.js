@@ -186,7 +186,7 @@ export class WatchExpressionComponent extends React.PureComponent<
         onConfirm={this._onConfirmNewExpression}
         ref="newExpressionEditor"
         size="sm"
-        placeholderText="add new watch expression"
+        placeholderText="Add new watch expression"
       />
     );
     return (
