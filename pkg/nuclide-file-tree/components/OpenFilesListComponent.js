@@ -72,7 +72,7 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     }
   }
 
-  _onClick(entry: OpenFileEntry, event: SyntheticMouseEvent<>): void {
+  _onSelect(entry: OpenFileEntry, event: SyntheticMouseEvent<>): void {
     if (event.defaultPrevented) {
       return;
     }
@@ -85,7 +85,11 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
     }
 
     track('filetree-open-from-open-files', {uri});
-    goToLocation(uri);
+    goToLocation(uri, {activatePane: false});
+  }
+
+  _onConfirm(entry: OpenFileEntry, event: SyntheticMouseEvent<>): void {
+    goToLocation(entry.uri);
   }
 
   _onCloseClick(entry: OpenFileEntry, event: SyntheticEvent<>): void {
@@ -137,7 +141,8 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     })}
                     selected={e.isSelected}
                     key={e.uri}
-                    onClick={this._onClick.bind(this, e)}
+                    onConfirm={this._onConfirm.bind(this, e)}
+                    onSelect={this._onSelect.bind(this, e)}
                     onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
                     onMouseLeave={this._onListItemMouseLeave}
                     onMouseDown={this._onMouseDown.bind(this, e)}
