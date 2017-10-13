@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {ExpireRequest} from 'nuclide-commons/promise';
 import type {ConnectableObservable} from 'rxjs';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -209,7 +210,9 @@ export interface FlowLanguageServiceType {
     diagnostics: Array<FileDiagnosticMessage>,
   ): Promise<Array<CodeAction>>,
 
-  getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>>,
+  getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>>,
 
   typeHint(fileVersion: FileVersion, position: atom$Point): Promise<?TypeHint>,
 

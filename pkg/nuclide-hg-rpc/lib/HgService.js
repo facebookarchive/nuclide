@@ -12,11 +12,13 @@
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
+import type {ExpireRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {sleep} from 'nuclide-commons/promise';
+import {expirePromise} from 'nuclide-commons/promise';
+import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
 
@@ -428,9 +430,14 @@ export class HgService {
     return this.fetchStatuses('ancestor(. or (. and (not public()))^)');
   }
 
-  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+  async getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>> {
     const options = {cwd: this._workingDirectory};
-    const base = await getForkBaseName(this._workingDirectory); // e.g. master
+    const base = await expirePromise(
+      expire,
+      getForkBaseName(this._workingDirectory),
+    ); // e.g. master
     const root = expressionForCommonAncestor(base); // ancestor(master, .)
 
     // The ID of the root
@@ -456,7 +463,7 @@ export class HgService {
     };
 
     // Summary of changes from base to current working directory
-    const getSummary = async () => {
+    const getStatus = async () => {
       const statuses = await this.fetchStatuses(root)
         .refCount()
         .toPromise();
@@ -467,10 +474,12 @@ export class HgService {
       return result;
     };
 
-    const [id, diff, summary] = await Promise.all([
-      getId(),
-      Promise.race([getDiff(), sleep(40000).then(() => 'diff timed out')]),
-      Promise.race([getSummary(), sleep(40000).then(() => 'status timed out')]),
+    const [id, diff, status] = await Promise.all([
+      expirePromise(expire, getId()).catch(e => `id ${e.message}\n${e.stack}`),
+      expirePromise(expire, getDiff()).catch(e => 'diff ' + stringifyError(e)),
+      expirePromise(expire, getStatus()).catch(
+        e => 'status ' + stringifyError(e),
+      ),
     ]);
 
     const results: Array<AdditionalLogFile> = [];
@@ -480,10 +489,10 @@ export class HgService {
       title: `${this._workingDirectory}:hg`,
       data:
         `hg update -r ${id}\n` +
-        (summary === '' ? '' : 'hg import --no-commit hgdiff\n') +
-        `\n${summary}`,
+        (status === '' ? '' : 'hg import --no-commit hgdiff\n') +
+        `\n${status}`,
     });
-    if (summary !== '') {
+    if (status !== '') {
       results.push({
         title: `${this._workingDirectory}:hgdiff`,
         data: diff,

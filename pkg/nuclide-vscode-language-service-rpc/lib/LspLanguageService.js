@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ExpireRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {
   FileVersion,
@@ -70,7 +71,8 @@ import type {
 } from './jsonrpc';
 
 import invariant from 'assert';
-import {sleep} from 'nuclide-commons/promise';
+import {sleep, expirePromise} from 'nuclide-commons/promise';
+import {stringifyError} from 'nuclide-commons/string';
 import through from 'through';
 import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -1666,7 +1668,9 @@ export class LspLanguageService {
     });
   }
 
-  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+  async getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>> {
     const results: Array<AdditionalLogFile> = [];
 
     // The LSP server sends back either titled data (each one of which gets
@@ -1681,24 +1685,20 @@ export class LspLanguageService {
     ) {
       let response = null;
       try {
-        response = await Promise.race([
-          this._lspConnection.rage(),
-          sleep(50000).then(() => [{data: 'LSP server rage timed out'}]),
-        ]);
+        response = await expirePromise(expire, this._lspConnection.rage());
         invariant(response != null, 'null telemetry/rage');
       } catch (e) {
         this._logLspException(e);
+        response = [{title: null, data: stringifyError(e)}];
       }
-      if (response != null) {
-        for (const rageItem of response) {
-          if (rageItem.title == null) {
-            lspAnonymousRage += rageItem.data + '\n';
-          } else {
-            results.push({
-              title: rageItem.title,
-              data: rageItem.data,
-            });
-          }
+      for (const rageItem of response) {
+        if (rageItem.title == null) {
+          lspAnonymousRage += rageItem.data + '\n';
+        } else {
+          results.push({
+            title: rageItem.title,
+            data: rageItem.data,
+          });
         }
       }
     }

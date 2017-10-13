@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ExpireRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -35,6 +36,8 @@ import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-type
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
+import {expirePromise} from 'nuclide-commons/promise';
+import {stringifyError} from 'nuclide-commons/string';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {Cache} from 'nuclide-commons/cache';
 import {Observable} from 'rxjs';
@@ -272,12 +275,30 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
     )).getOutline(fileVersion);
   }
 
-  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
-    // Each service knows its own project root, and should put that in the
-    // log.title if needed. That's not our job.
-    const services = await this.getAllLanguageServices();
+  async getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>> {
+    const roots: Array<NuclideUri> = Array.from(this._processes.keys());
+
     const results = await Promise.all(
-      services.map(service => service.getAdditionalLogFiles()),
+      roots.map(async root => {
+        try {
+          const service = await expirePromise(
+            expire,
+            this._processes.get(root),
+          );
+          if (service == null) {
+            return [{title: root, data: 'no language service'}];
+          } else {
+            return expirePromise(
+              expire,
+              service.getAdditionalLogFiles(expire - 1000),
+            );
+          }
+        } catch (e) {
+          return [{title: root, data: stringifyError(e)}];
+        }
+      }),
     );
     return arrayFlatten(results);
   }

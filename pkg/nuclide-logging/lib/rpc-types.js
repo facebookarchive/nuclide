@@ -9,6 +9,8 @@
  * @format
  */
 
+import type {ExpireRequest} from 'nuclide-commons/promise';
+
 export type LogLevel =
   | 'ALL'
   | 'TRACE'
@@ -19,9 +21,12 @@ export type LogLevel =
   | 'FATAL'
   | 'OFF';
 
-export type AdditionalLogFilesProvider = {
-  getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>>,
-};
+export type AdditionalLogFilesProvider = {|
+  id: string,
+  getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>>,
+|};
 
 export type AdditionalLogFile = {
   title: string, // usually a filepath

@@ -11,6 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
+import type {ExpireRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
@@ -561,7 +562,9 @@ export class FlowSingleProjectLanguageService {
     throw new Error('Not implemeneted');
   }
 
-  async getAdditionalLogFiles(): Promise<Array<AdditionalLogFile>> {
+  async getAdditionalLogFiles(
+    expire: ExpireRequest,
+  ): Promise<Array<AdditionalLogFile>> {
     return [];
   }
 

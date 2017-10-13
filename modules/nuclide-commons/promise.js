@@ -171,6 +171,9 @@ export function timeoutPromise<T>(
     let timeout = setTimeout(() => {
       timeout = null;
       reject(new TimedOutError(milliseconds));
+      // This gives useless error.stack results.
+      // We could capture the stack pre-emptively at the start
+      // of this method if we wanted useful ones.
     }, milliseconds);
     promise
       .then(value => {
@@ -186,6 +189,36 @@ export function timeoutPromise<T>(
         reject(value);
       });
   });
+}
+
+// An ExpiryRequest parameter to an async method is a way of *requesting* that
+// method to throw a TimedOutError if it doesn't complete in a certain time.
+// It's just a request -- the async method will typically honor the request
+// by passing the parameter on to ALL subsidiary async methods that it awaits,
+// or by calling expirePromise to enforce a timeout, or similar.
+//
+// In cases where a method supports ExpiryRequest but you don't trust it, do
+// `await expirePromise(expire, untrusted.foo(expire-1000))` so you ask it
+// nicely but if it doesn't give its own more-specific expiry message within
+// a 1000ms grace period then you force matters.
+//
+// Under the hood an ExpiryRequest is just a timestamp of the time by which
+// the operation should complete. This makes it compositional (better than
+// "delay" parameters) and safely remotable (better than "CancellationToken"
+// parameters) so long as clocks are in sync. In all other respects it's less
+// versatile than CancellationTokens.
+export type ExpireRequest = number;
+
+export function expireAfterDelay(delay: number): ExpireRequest {
+  return Date.now() + delay;
+}
+
+export function expirePromise<T>(
+  expire: ExpireRequest,
+  promise: Promise<T>,
+): Promise<T> {
+  const delay = expire - Date.now();
+  return timeoutPromise(promise, delay < 0 ? 0 : delay);
 }
 
 /**
