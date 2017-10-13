@@ -93,12 +93,21 @@ async function connectionToFlowService(
   );
   const fileNotifier = await getNotifierByConnection(connection);
   const host = await getHostServices();
+  getLogger('nuclide-flow').info(
+    'Checking the nuclide_flow_lazy_mode_ide gk...',
+  );
+  const ideLazyMode = await passesGK(
+    'nuclide_flow_lazy_mode_ide',
+    15 * 1000, // 15 second timeout
+  );
+  getLogger('nuclide-flow').info('ideLazyMode: %s', ideLazyMode);
   const config: FlowSettings = {
     functionSnippetShouldIncludeArguments: Boolean(
       featureConfig.get('nuclide-flow.functionSnippetShouldIncludeArguments'),
     ),
     stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
     lazyServer: Boolean(featureConfig.get('nuclide-flow.lazyServer')),
+    ideLazyMode,
   };
   const languageService = await flowService.initialize(
     fileNotifier,

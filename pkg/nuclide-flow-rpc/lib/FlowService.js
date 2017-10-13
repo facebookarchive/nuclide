@@ -75,6 +75,7 @@ export type FlowSettings = {
   functionSnippetShouldIncludeArguments: boolean,
   stopFlowOnExit: boolean,
   lazyServer: boolean,
+  ideLazyMode: boolean,
 };
 
 export type {FlowLocNoSource} from './flowOutputTypes';
