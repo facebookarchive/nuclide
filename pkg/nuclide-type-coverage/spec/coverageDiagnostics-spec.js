@@ -85,10 +85,8 @@ describe('diagnosticProviderForResultStream', () => {
 
     diagnosticProvider.updates.subscribe((update: DiagnosticProviderUpdate) => {
       // We go through all this just to extract the array of file messages for the current file.
-      const filePathToMessages = update.filePathToMessages;
-      invariant(filePathToMessages != null);
-      invariant(filePathToMessages.size === 1);
-      const firstValue = filePathToMessages.values().next();
+      invariant(update.size === 1);
+      const firstValue = update.values().next();
       invariant(firstValue.value != null);
       const fileMessages: Array<FileDiagnosticMessage> = firstValue.value;
       updates.push(fileMessages);

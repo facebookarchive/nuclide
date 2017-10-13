@@ -16,7 +16,6 @@ import type {
   DiagnosticMessage,
   FileDiagnosticMessage,
   FileDiagnosticMessages,
-  ProjectDiagnosticMessage,
   Store,
   DiagnosticMessageKind,
   UiConfig,
@@ -33,7 +32,6 @@ export default class DiagnosticUpdater {
   _store: Store;
   _states: Observable<AppState>;
   _allMessageUpdates: Observable<Array<DiagnosticMessage>>;
-  _projectMessageUpdates: Observable<Array<ProjectDiagnosticMessage>>;
 
   constructor(store: Store) {
     this._store = store;
@@ -51,14 +49,6 @@ export default class DiagnosticUpdater {
 
   getFileMessageUpdates = (filePath: NuclideUri): FileDiagnosticMessages => {
     return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
-  };
-
-  observeProjectMessages = (
-    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed,
-  ): IDisposable => {
-    return new UniversalDisposable(
-      this._projectMessageUpdates.subscribe(callback),
-    );
   };
 
   observeMessages = (

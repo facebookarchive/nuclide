@@ -68,7 +68,6 @@ export type {
   LinterProvider,
   LinterTrace,
   ObservableDiagnosticProvider,
-  ProjectDiagnosticMessage,
   RegisterIndieLinter,
 } from './pkg/atom-ide-diagnostics/lib/types';
 

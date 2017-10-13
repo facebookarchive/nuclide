@@ -52,23 +52,16 @@ export type DiagnosticInvalidationMessage =
       filePaths: Array<NuclideUri>,
     }
   | {
-      scope: 'project',
-    }
-  | {
       scope: 'all',
     };
 
-// Implicit invalidation semantics:
-//
-// - Previous 'file' scope messages are invalidated if and only if
-// filePathToMessages contains their key as a path.
-//
-// - All previous 'project' scope messages are invalidated whenever
-// projectMessages is populated.
-export type DiagnosticProviderUpdate = {
-  filePathToMessages?: Map<NuclideUri, Array<FileDiagnosticMessage>>,
-  projectMessages?: Array<ProjectDiagnosticMessage>,
-};
+/**
+ * Note: All provided map keys will be automatically invalidated on update.
+ */
+export type DiagnosticProviderUpdate = Map<
+  NuclideUri,
+  Array<FileDiagnosticMessage>,
+>;
 
 export type DiagnosticMessageKind = 'lint' | 'review';
 export type DiagnosticMessageType = 'Error' | 'Warning' | 'Info';
@@ -107,26 +100,12 @@ export type FileDiagnosticMessage = {
   stale?: boolean,
 };
 
-export type ProjectDiagnosticMessage = {
-  kind?: DiagnosticMessageKind,
-  scope: 'project',
-  providerName: string,
-  type: DiagnosticMessageType,
-  text?: string,
-  html?: string,
-  range?: atom$Range,
-  trace?: Array<DiagnosticTrace>,
-  stale?: boolean,
-};
-
 export type FileDiagnosticMessages = {
   filePath: NuclideUri,
   messages: Array<FileDiagnosticMessage>,
 };
 
-export type DiagnosticMessage =
-  | FileDiagnosticMessage
-  | ProjectDiagnosticMessage;
+export type DiagnosticMessage = FileDiagnosticMessage;
 
 export type {default as DiagnosticUpdater} from './services/DiagnosticUpdater';
 

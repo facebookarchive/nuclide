@@ -113,9 +113,7 @@ describe('ObservableDiagnosticsProvider', () => {
         mockLanguageService,
       );
 
-      expect(await updates).toEqual({
-        filePathToMessages: new Map([[TEST_FILE, []]]),
-      });
+      expect(await updates).toEqual(new Map([[TEST_FILE, []]]));
     });
   });
 });

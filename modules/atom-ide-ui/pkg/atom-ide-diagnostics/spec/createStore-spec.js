@@ -77,23 +77,17 @@ describe('createStore', () => {
   };
 
   const addUpdateA = () => {
-    const updateA = {
-      filePathToMessages: new Map([['fileA', [fileMessageA]]]),
-    };
+    const updateA = new Map([['fileA', [fileMessageA]]]);
     store.dispatch(Actions.updateMessages(dummyProviderA, updateA));
   };
 
   const addUpdateB = () => {
-    const updateB = {
-      filePathToMessages: new Map([['fileB', [fileMessageB]]]),
-    };
+    const updateB = new Map([['fileB', [fileMessageB]]]);
     store.dispatch(Actions.updateMessages(dummyProviderB, updateB));
   };
 
   const addUpdateA2 = () => {
-    const updateA2 = {
-      filePathToMessages: new Map([['fileA', [fileMessageA2]]]),
-    };
+    const updateA2 = new Map([['fileA', [fileMessageA2]]]);
     store.dispatch(Actions.updateMessages(dummyProviderA, updateA2));
   };
 
@@ -340,10 +334,10 @@ describe('createStore', () => {
         editor = await atom.workspace.open('/tmp/fileA');
         editor.setText('foobar\n');
         store.dispatch(
-          Actions.updateMessages(dummyProviderA, {
-            filePathToMessages: new Map([['/tmp/fileA', [messageWithAutofix]]]),
-            projectMessages: [],
-          }),
+          Actions.updateMessages(
+            dummyProviderA,
+            new Map([['/tmp/fileA', [messageWithAutofix]]]),
+          ),
         );
       });
     });

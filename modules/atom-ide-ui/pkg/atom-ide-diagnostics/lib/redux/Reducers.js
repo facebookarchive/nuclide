@@ -26,10 +26,7 @@ export function messages(
 ): MessagesState {
   switch (action.type) {
     case Actions.UPDATE_MESSAGES: {
-      const {provider, update: {filePathToMessages}} = action.payload;
-      if (filePathToMessages == null) {
-        return state;
-      }
+      const {provider, update} = action.payload;
       const nextState = new Map(state);
       // Override the messages we already have for each path.
       const prevMessages = nextState.get(provider) || new Map();
@@ -37,7 +34,7 @@ export function messages(
       // we'd like to keep this immutable and we're also accumulating the messages, (and therefore
       // already O(n^2)). So, for now, we'll accept that and revisit if it proves to be a
       // bottleneck.
-      const nextMessages = new Map([...prevMessages, ...filePathToMessages]);
+      const nextMessages = new Map([...prevMessages, ...update]);
       nextState.set(provider, nextMessages);
       return nextState;
     }

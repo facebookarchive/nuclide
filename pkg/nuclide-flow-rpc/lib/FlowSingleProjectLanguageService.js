@@ -275,9 +275,7 @@ export class FlowSingleProjectLanguageService {
       diagnosticArray.push(diagnostic);
     }
 
-    return {
-      filePathToMessages,
-    };
+    return filePathToMessages;
   }
 
   observeDiagnostics(): Observable<Array<FileDiagnosticMessages>> {

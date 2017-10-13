@@ -196,19 +196,17 @@ export class FileDiagnosticsProvider<T: LanguageService> {
           pathsForHackLanguage.add(path);
         }
       };
-      if (diagnostics.filePathToMessages != null) {
-        diagnostics.filePathToMessages.forEach((messages, messagePath) => {
-          addPath(messagePath);
-          messages.forEach(message => {
-            addPath(message.filePath);
-            if (message.trace != null) {
-              message.trace.forEach(trace => {
-                addPath(trace.filePath);
-              });
-            }
-          });
+      diagnostics.forEach((messages, messagePath) => {
+        addPath(messagePath);
+        messages.forEach(message => {
+          addPath(message.filePath);
+          if (message.trace != null) {
+            message.trace.forEach(trace => {
+              addPath(trace.filePath);
+            });
+          }
         });
-      }
+      });
 
       this._providerBase.publishMessageUpdate(diagnostics);
     });
@@ -377,9 +375,7 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
               }
               filePathToMessages.set(filePath, messages);
             });
-            return {
-              filePathToMessages,
-            };
+            return filePathToMessages;
           });
       })
       .catch(error => {

@@ -171,29 +171,20 @@ export function linterMessagesToDiagnosticUpdate(
     // linters regularly return messages for other files.
     filePathToMessages.set(currentPath, []);
   }
-  const projectMessages = [];
   for (const msg of msgs) {
     const diagnosticMessage =
       msg.type === undefined
         ? linterMessageV2ToDiagnosticMessage(msg, providerName)
         : linterMessageToDiagnosticMessage(msg, providerName, currentPath);
-    if (diagnosticMessage.scope === 'file') {
-      const path = diagnosticMessage.filePath;
-      let messages = filePathToMessages.get(path);
-      if (messages == null) {
-        messages = [];
-        filePathToMessages.set(path, messages);
-      }
-      messages.push(diagnosticMessage);
-    } else {
-      // Project scope.
-      projectMessages.push(diagnosticMessage);
+    const path = diagnosticMessage.filePath;
+    let messages = filePathToMessages.get(path);
+    if (messages == null) {
+      messages = [];
+      filePathToMessages.set(path, messages);
     }
+    messages.push(diagnosticMessage);
   }
-  return {
-    filePathToMessages,
-    projectMessages,
-  };
+  return filePathToMessages;
 }
 
 /**
@@ -304,10 +295,10 @@ export class LinterAdapter {
     update: ?DiagnosticProviderUpdate,
     lastUpdate: ?DiagnosticProviderUpdate,
   ): void {
-    if (lastUpdate != null && lastUpdate.filePathToMessages != null) {
+    if (lastUpdate != null) {
       this._invalidations.next({
         scope: 'file',
-        filePaths: Array.from(lastUpdate.filePathToMessages.keys()),
+        filePaths: Array.from(lastUpdate.keys()),
       });
     }
     if (update != null) {

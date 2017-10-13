@@ -80,9 +80,7 @@ function diagnosticsForResult(
     uncoveredRangeToDiagnostic(region, editorPath, providerName),
   );
 
-  return {
-    filePathToMessages: new Map([[editorPath, diagnostics]]),
-  };
+  return new Map([[editorPath, diagnostics]]);
 }
 
 function uncoveredRangeToDiagnostic(

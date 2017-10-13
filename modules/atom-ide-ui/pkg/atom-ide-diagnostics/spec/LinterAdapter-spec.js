@@ -122,7 +122,7 @@ describe('LinterAdapter', () => {
         .getUpdates()
         .take(1)
         .toPromise();
-      expect(message.filePathToMessages.has('foo')).toBe(true);
+      expect(message.has('foo')).toBe(true);
       expect(busySpy).toHaveBeenCalledWith('fakeLinter: running on "foo"');
       expect(busyDisposeSpy).toHaveBeenCalled();
     });
@@ -187,9 +187,7 @@ describe('LinterAdapter', () => {
     waitsFor(
       () => {
         return (
-          numMessages === 1 &&
-          lastMessage &&
-          lastMessage.filePathToMessages.has('baz')
+          numMessages === 1 && lastMessage != null && lastMessage.has('baz')
         );
       },
       'There should be only the latest message',
@@ -362,14 +360,12 @@ describe('message transformation functions', () => {
 
     it('should invalidate diagnostics in the current file', () => {
       const result = runWith([]);
-      invariant(result.filePathToMessages);
-      expect(result.filePathToMessages.get(currentPath)).toEqual([]);
+      expect(result.get(currentPath)).toEqual([]);
     });
 
     it('should use the LinterProvider name when one is not specified in message', () => {
       const result = runWith([fileMessage]);
-      invariant(result.filePathToMessages);
-      const messages = result.filePathToMessages.get(fileMessage.filePath);
+      const messages = result.get(fileMessage.filePath);
       invariant(messages != null);
       const resultMessage = messages[0];
       expect(resultMessage.providerName).toEqual('provider');
@@ -377,10 +373,7 @@ describe('message transformation functions', () => {
 
     it('should use the provider name specified in message when available', () => {
       const result = runWith([fileMessageWithName]);
-      invariant(result.filePathToMessages);
-      const messages = result.filePathToMessages.get(
-        fileMessageWithName.filePath,
-      );
+      const messages = result.get(fileMessageWithName.filePath);
       invariant(messages != null);
       const resultMessage = messages[0];
       expect(resultMessage.providerName).toEqual('Custom Linter Name');
@@ -388,14 +381,12 @@ describe('message transformation functions', () => {
 
     it('should provide both project messages and file messages', () => {
       const result = runWith([fileMessage, projectMessage]);
-      invariant(result.filePathToMessages);
       // The actual message transformations are tested in the tests from
       // linterMessageToDiagnosticMessage -- no need to duplicate them here.
-      const messages = result.filePathToMessages.get(fileMessage.filePath);
+      const messages = result.get(fileMessage.filePath);
       invariant(messages != null);
       expect(messages.length).toEqual(1);
-      invariant(result.filePathToMessages);
-      const projectMessages = result.filePathToMessages.get(
+      const projectMessages = result.get(
         nuclideUri.ensureTrailingSeparator(''),
       );
       invariant(projectMessages != null);
