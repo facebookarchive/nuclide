@@ -14,6 +14,7 @@ import type {LinterProvider} from '../lib/types';
 
 import {Disposable, Range} from 'atom';
 import invariant from 'assert';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {Subject} from 'rxjs';
 
 import {
@@ -288,9 +289,10 @@ describe('message transformation functions', () => {
 
     it('should turn a message without a filePath into a project scope diagnostic', () => {
       checkMessage(projectMessage, {
-        scope: 'project',
+        scope: 'file',
         providerName,
         type: projectMessage.type,
+        filePath: nuclideUri.ensureTrailingSeparator(''),
         text: projectMessage.text,
       });
     });
@@ -392,8 +394,12 @@ describe('message transformation functions', () => {
       const messages = result.filePathToMessages.get(fileMessage.filePath);
       invariant(messages != null);
       expect(messages.length).toEqual(1);
-      invariant(result.projectMessages);
-      expect(result.projectMessages.length).toEqual(1);
+      invariant(result.filePathToMessages);
+      const projectMessages = result.filePathToMessages.get(
+        nuclideUri.ensureTrailingSeparator(''),
+      );
+      invariant(projectMessages != null);
+      expect(projectMessages.length).toEqual(1);
     });
   });
 });
