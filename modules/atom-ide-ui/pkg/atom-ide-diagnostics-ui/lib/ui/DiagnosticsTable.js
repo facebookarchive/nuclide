@@ -435,7 +435,7 @@ function getLocation(
   }
 
   const humanized = humanizePath(filePath);
-  if (humanized.endsWith('/')) {
+  if (nuclideUri.endsWithSeparator(humanized)) {
     // It's a directory.
     return {
       dir: humanized,
