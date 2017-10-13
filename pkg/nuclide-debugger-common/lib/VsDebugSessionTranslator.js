@@ -283,9 +283,11 @@ export default class VsDebugSessionTranslator {
               this._exceptionFilters = [state];
               break;
           }
-          await this._session.setExceptionBreakpoints({
-            filters: this._exceptionFilters,
-          });
+          if (this._session.isReadyForBreakpoints()) {
+            await this._session.setExceptionBreakpoints({
+              filters: this._exceptionFilters,
+            });
+          }
           return getEmptyResponse(command.id);
         }),
       ),
