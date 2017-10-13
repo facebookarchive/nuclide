@@ -162,7 +162,6 @@ function flowMessageToDiagnosticMessage(flowStatusError: FlowStatusError) {
   invariant(path != null, 'Expected path to not be null or undefined');
 
   const diagnosticMessage: FileDiagnosticMessage = {
-    scope: 'file',
     providerName: 'Flow',
     type: flowStatusError.level === 'error' ? 'Error' : 'Warning',
     text: mainMessage.descr,

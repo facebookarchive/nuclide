@@ -44,7 +44,6 @@ describe('MessageRangeTracker', () => {
     );
 
     messageForInitiallyOpenFile = {
-      scope: 'file',
       providerName: 'test',
       type: 'Error',
       filePath: initiallyOpenFilePath,
@@ -58,7 +57,6 @@ describe('MessageRangeTracker', () => {
     };
 
     messageForInitiallyClosedFile = {
-      scope: 'file',
       providerName: 'test',
       type: 'Error',
       filePath: initiallyClosedFilePath,

@@ -523,7 +523,6 @@ function lspDiagnostic_atomDiagnostic(
     providerName = providerName + ': ' + String(diagnostic.code);
   }
   return {
-    scope: 'file',
     providerName,
     type: lspSeverity_atomDiagnosticMessageType(diagnostic.severity),
     filePath,

@@ -132,7 +132,6 @@ function pushParsedTestDiagnostic(
 
 function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
   return {
-    scope: 'file',
     providerName: 'Buck',
     type: result.level === 'error' ? 'Error' : 'Warning',
     filePath: result.filePath,

@@ -108,7 +108,6 @@ describe('diagnosticProviderForResultStream', () => {
       expect(updates.length).toBe(1);
       expect(updates[0]).toEqual([
         {
-          scope: 'file',
           providerName: 'Type Coverage',
           type: 'Warning',
           filePath: 'foo',
@@ -116,7 +115,6 @@ describe('diagnosticProviderForResultStream', () => {
           text: 'Not covered by Foo',
         },
         {
-          scope: 'file',
           providerName: 'Type Coverage',
           type: 'Warning',
           filePath: 'foo',

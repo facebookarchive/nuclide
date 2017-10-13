@@ -25,20 +25,17 @@ const dummyProviderA: any = {};
 const dummyProviderB: any = {};
 
 const fileMessageA = {
-  scope: 'file',
   providerName: 'dummyProviderA',
   type: 'Error',
   filePath: 'fileA',
 };
 const fileMessageA2 = {
   // Warning instead of Error
-  scope: 'file',
   providerName: 'dummyProviderA',
   type: 'Warning',
   filePath: 'fileA',
 };
 const fileMessageB = {
-  scope: 'file',
   providerName: 'dummyProviderB',
   type: 'Error',
   filePath: 'fileB',
@@ -317,7 +314,6 @@ describe('createStore', () => {
 
   describe('autofix', () => {
     const messageWithAutofix = {
-      scope: 'file',
       providerName: 'dummyProviderA',
       type: 'Error',
       filePath: '/tmp/fileA',

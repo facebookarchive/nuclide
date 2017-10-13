@@ -48,8 +48,7 @@ export function linterMessageToDiagnosticMessage(
     : undefined;
   const type = convertLinterType(msg.type);
   const {fix} = msg;
-  return ({
-    scope: 'file',
+  return {
     providerName: msg.name != null ? msg.name : providerName,
     type,
     filePath: getFilePath(msg.filePath, currentPath),
@@ -65,7 +64,7 @@ export function linterMessageToDiagnosticMessage(
             oldText: fix.oldText,
             newText: fix.newText,
           },
-  }: FileDiagnosticMessage);
+  };
 }
 
 function getFilePath(filePath: ?string, currentPath: ?string) {
@@ -143,7 +142,6 @@ export function linterMessageV2ToDiagnosticMessage(
     text = text + '\n' + msg.description;
   }
   return {
-    scope: 'file',
     // flowlint-next-line sketchy-null-string:off
     providerName: msg.linterName || providerName,
     type: convertLinterType(msg.severity),

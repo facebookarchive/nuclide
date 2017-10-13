@@ -833,10 +833,13 @@ export function updateDiagnostics(
     case 'start-recheck':
       const staleMessages = new Map();
       for (const [file, oldMessages] of state.currentMessages.entries()) {
-        const messages = oldMessages.map(message => ({
-          ...message,
-          stale: true,
-        }));
+        const messages = oldMessages.map(
+          message =>
+            ({
+              ...message,
+              stale: true,
+            }: any),
+        );
         staleMessages.set(file, messages);
       }
       return {

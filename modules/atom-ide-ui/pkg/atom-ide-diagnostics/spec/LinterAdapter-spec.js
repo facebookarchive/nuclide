@@ -265,7 +265,6 @@ describe('message transformation functions', () => {
 
     it('should turn a message with a filePath into a file scope diagnostic', () => {
       checkMessage(fileMessage, {
-        scope: 'file',
         providerName,
         type: fileMessage.type,
         filePath: fileMessage.filePath,
@@ -276,7 +275,6 @@ describe('message transformation functions', () => {
       checkMessage(
         {...fileMessage, type: 'blah'},
         {
-          scope: 'file',
           providerName,
           type: 'Error',
           filePath: fileMessage.filePath,
@@ -287,7 +285,6 @@ describe('message transformation functions', () => {
 
     it('should turn a message without a filePath into a project scope diagnostic', () => {
       checkMessage(projectMessage, {
-        scope: 'file',
         providerName,
         type: projectMessage.type,
         filePath: nuclideUri.ensureTrailingSeparator(''),
@@ -325,7 +322,6 @@ describe('message transformation functions', () => {
           'test',
         ),
       ).toEqual({
-        scope: 'file',
         providerName: 'test2',
         type: 'Error',
         filePath: 'file.txt',

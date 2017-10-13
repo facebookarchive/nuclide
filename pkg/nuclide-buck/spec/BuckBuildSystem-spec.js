@@ -50,7 +50,6 @@ describe('BuckBuildSystem', () => {
           .updates.subscribe(spy);
 
         const diagnostic = {
-          scope: 'file',
           providerName: 'Buck',
           type: 'Error',
           filePath: 'a',

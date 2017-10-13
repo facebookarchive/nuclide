@@ -84,7 +84,7 @@ export type DiagnosticFix = TextEdit & {
   title?: string,
 };
 
-export type FileDiagnosticMessage = {
+export type FileDiagnosticMessage = {|
   kind?: DiagnosticMessageKind,
   providerName: string,
   type: DiagnosticMessageType, // TODO: Rename to severity.
@@ -97,7 +97,7 @@ export type FileDiagnosticMessage = {
   // Indicates that the message should still be displayed, but there should be some UI indicating
   // that it is out of date. TODO(matthewwithanm) implement this UI.
   stale?: boolean,
-};
+|};
 
 export type FileDiagnosticMessages = {
   filePath: NuclideUri,
