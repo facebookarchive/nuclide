@@ -99,10 +99,10 @@ const SHOW_IN_MENU_PRIORITY = 7000;
  * import {CompositeDisposable, Disposable} from 'atom';
  * import invariant from 'assert';
  *
- * let disposables: ?CompositeDisposable = null;
+ * let disposables: ?UniversalDisposable = null;
  *
  * export function activate(state: ?Object): void {
- *   disposables = new CompositeDisposable();
+ *   disposables = new UniversalDisposable();
  * }
  *
  * export function deactivate(): void {

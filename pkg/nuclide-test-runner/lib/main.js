@@ -14,7 +14,7 @@ import type {TestRunner} from './types';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {TestRunnerController, WORKSPACE_VIEW_URI} from './TestRunnerController';
@@ -43,12 +43,12 @@ function limitString(str: string, length?: number = 20): string {
 
 class Activation {
   _controller: ?TestRunnerController;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _testRunners: Set<TestRunner>;
 
   constructor() {
     this._testRunners = new Set();
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
     // Listen for run events on files in the file tree
     this._disposables.add(
       atom.commands.add(
@@ -121,7 +121,7 @@ class Activation {
       shouldDisplay: separatorShouldDisplay,
     };
 
-    const menuItemSubscriptions = new CompositeDisposable();
+    const menuItemSubscriptions = new UniversalDisposable();
     menuItemSubscriptions.add(
       contextMenu.addItemToTestSection(
         fileItem,

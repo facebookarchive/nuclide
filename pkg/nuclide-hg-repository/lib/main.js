@@ -24,8 +24,9 @@ import {
   collect,
   arrayFlatten,
 } from 'nuclide-commons/collection';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import registerGrammar from '../../commons-atom/register-grammar';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-vcs-base';
 import {
   addPath,
@@ -37,7 +38,7 @@ import HgRepositoryProvider from './HgRepositoryProvider';
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
 const HG_REVERT_FILE_TREE_CONTEXT_MENU_PRIORITY = 1050;
 
-let subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?UniversalDisposable = null;
 
 type HgContenxtMenuAction = 'Revert' | 'Add';
 
@@ -111,7 +112,7 @@ function isActivePathAddable(): boolean {
 }
 
 export function activate(state: any): void {
-  subscriptions = new CompositeDisposable();
+  subscriptions = new UniversalDisposable();
 
   subscriptions.add(
     atom.commands.add(

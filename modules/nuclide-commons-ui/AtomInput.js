@@ -12,7 +12,7 @@
 
 import classNames from 'classnames';
 
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
 
@@ -66,7 +66,7 @@ const BLUR_FOCUS_DEBOUNCE_DELAY = 50;
  * An input field rendered as an <atom-text-editor mini />.
  */
 export class AtomInput extends React.Component<Props, State> {
-  _disposables: ?CompositeDisposable;
+  _disposables: ?UniversalDisposable;
   _rootNode: ?HTMLElement;
   _debouncedEditorBlur: (blurEvent: Event) => void;
   _debouncedEditorFocus: () => void;
@@ -103,7 +103,7 @@ export class AtomInput extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const disposables = (this._disposables = new CompositeDisposable());
+    const disposables = (this._disposables = new UniversalDisposable());
 
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change

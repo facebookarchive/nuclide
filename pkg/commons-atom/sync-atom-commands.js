@@ -16,7 +16,7 @@ export type AtomCommands = {
 };
 
 import {reconcileSets} from 'nuclide-commons/observable';
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable} from 'rxjs';
 
 type Projector<T> = (item: T) => AtomCommands;
@@ -45,7 +45,7 @@ export default function syncAtomCommands<T>(
       const disposables = Object.keys(commands).map(target =>
         atom.commands.add(target, commands[target]),
       );
-      return new CompositeDisposable(...disposables);
+      return new UniversalDisposable(...disposables);
     },
     hash,
   );

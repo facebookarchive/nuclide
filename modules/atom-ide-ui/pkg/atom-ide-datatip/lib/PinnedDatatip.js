@@ -17,12 +17,13 @@ type Position = {
   y: number,
 };
 
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable} from 'rxjs';
 import invariant from 'assert';
 import classnames from 'classnames';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 
@@ -64,7 +65,7 @@ export class PinnedDatatip {
   _marker: ?atom$Marker;
   _rangeDecoration: ?atom$Decoration;
   _mouseSubscription: ?rxjs$ISubscription;
-  _subscriptions: atom$CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _datatip: Datatip;
   _editor: TextEditor;
   _hostElement: HTMLElement;
@@ -82,7 +83,7 @@ export class PinnedDatatip {
     editor: TextEditor,
     params: PinnedDatatipParams,
   ) {
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._subscriptions.add(new Disposable(() => params.onDispose(this)));
     this._datatip = datatip;
     this._editor = editor;

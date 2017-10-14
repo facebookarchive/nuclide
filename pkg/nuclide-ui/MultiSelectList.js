@@ -9,7 +9,7 @@
  * @format
  */
 
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import classnames from 'classnames';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
@@ -42,7 +42,7 @@ type DefaultProps = {
 };
 
 export class MultiSelectList extends React.Component<Props, State> {
-  _commandsDisposables: CompositeDisposable;
+  _commandsDisposables: UniversalDisposable;
 
   static defaultProps: DefaultProps = {
     onChange: values => {},
@@ -73,7 +73,7 @@ export class MultiSelectList extends React.Component<Props, State> {
       this._commandsDisposables.dispose();
     }
     const el = this.props.commandScope || ReactDOM.findDOMNode(this);
-    this._commandsDisposables = new CompositeDisposable(
+    this._commandsDisposables = new UniversalDisposable(
       atom.commands.add(
         // $FlowFixMe
         el,

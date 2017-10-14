@@ -25,7 +25,7 @@ import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import loadingNotification from '../../commons-atom/loading-notification';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   RemoteConnection,
   RemoteDirectory,
@@ -87,7 +87,7 @@ export type SerializableRemoteConnectionConfiguration = {
   displayTitle: string,
 };
 
-let packageSubscriptions: ?CompositeDisposable = null;
+let packageSubscriptions: ?UniversalDisposable = null;
 let controller: ?RemoteProjectsController = null;
 let remoteProjectsService: ?RemoteProjectsServiceImpl = null;
 let workingSetsStore: ?WorkingSetsStore = null;
@@ -343,7 +343,7 @@ function shutdownServersAndRestartNuclide(): void {
 export function activate(
   state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]},
 ): void {
-  const subscriptions = new CompositeDisposable();
+  const subscriptions = new UniversalDisposable();
 
   controller = new RemoteProjectsController();
   remoteProjectsService = new RemoteProjectsServiceImpl();

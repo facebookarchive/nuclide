@@ -14,8 +14,8 @@ import type Bridge from './Bridge';
 import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
 import type {ScopeSection} from './types';
 
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nullthrows from 'nullthrows';
-import {Disposable, CompositeDisposable} from 'atom';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ActionTypes} from './DebuggerDispatcher';
 import {reportError} from './Protocol/EventReporter';
@@ -38,11 +38,9 @@ export default class ScopesStore {
     this._bridge = bridge;
     this._debuggerStore = debuggerStore;
     const dispatcherToken = dispatcher.register(this._handlePayload);
-    this._disposables = new CompositeDisposable(
-      new Disposable(() => {
-        dispatcher.unregister(dispatcherToken);
-      }),
-    );
+    this._disposables = new UniversalDisposable(() => {
+      dispatcher.unregister(dispatcherToken);
+    });
     this._scopes = new BehaviorSubject([]);
   }
 

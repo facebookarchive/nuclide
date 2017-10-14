@@ -10,7 +10,8 @@
  */
 
 import invariant from 'assert';
-import {CompositeDisposable, Disposable} from 'atom';
+import {Disposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
@@ -20,10 +21,10 @@ const SAMPLE_NUX_ID = 0;
 const SAMPLE_NUX_NAME = 'sample-nux-example.sample-nux-id';
 
 class Activation {
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
 
   constructor() {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   dispose() {

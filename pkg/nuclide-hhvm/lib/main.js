@@ -17,11 +17,10 @@ import type {
 import type {RemoteProjectsService} from '../../nuclide-remote-projects';
 import type {TaskRunnerServiceApi} from '../../nuclide-task-runner/lib/types';
 
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import createPackage from 'nuclide-commons-atom/createPackage';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import consumeFirstProvider from '../../commons-atom/consumeFirstProvider';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
@@ -33,12 +32,12 @@ import HhvmBuildSystem from './HhvmBuildSystem';
 
 class Activation {
   _buildSystem: ?HhvmBuildSystem;
-  _disposables: CompositeDisposable;
+  _disposables: UniversalDisposable;
   _cwdApi: ?CwdApi;
   _remoteProjectsService: ?RemoteProjectsService;
 
   constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
+    this._disposables = new UniversalDisposable();
   }
 
   dispose() {

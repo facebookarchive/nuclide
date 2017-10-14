@@ -45,7 +45,7 @@ import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import * as React from 'react';
 import {Subject} from 'rxjs';
-import {CompositeDisposable, Emitter} from 'atom';
+import {Emitter} from 'atom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {triggerAfterWait} from 'nuclide-commons/promise';
 import debounce from 'nuclide-commons/debounce';
@@ -89,7 +89,7 @@ export default class SearchResultManager {
   _currentWorkingRoot: ?Directory;
   _debouncedUpdateDirectories: {(): Promise<void> | void} & IDisposable;
   _emitter: Emitter;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _querySubscriptions: UniversalDisposable;
   _activeProviderName: string;
   _lastRawQuery: ?string;
@@ -116,7 +116,7 @@ export default class SearchResultManager {
       /* immediate */ false,
     );
     this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new UniversalDisposable();
     this._querySubscriptions = new UniversalDisposable();
     this._quickOpenProviderRegistry = quickOpenProviderRegistry;
     this._queryStream = new Subject();

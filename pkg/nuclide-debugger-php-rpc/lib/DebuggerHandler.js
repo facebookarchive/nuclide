@@ -43,8 +43,8 @@ import {Deferred, sleep} from 'nuclide-commons/promise';
 import {BREAKPOINT} from './Connection';
 import {arrayFlatten, setDifference} from 'nuclide-commons/collection';
 import nullthrows from 'nullthrows';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
-import {CompositeDisposable} from 'event-kit';
 import type {RemoteObjectId} from '../../nuclide-debugger-base/lib/protocol-types';
 import type {
   Breakpoint as HhBreakpointType,
@@ -69,7 +69,7 @@ type DebugVariable = {|
 
 export class DebuggerHandler {
   _connectionMultiplexer: ConnectionMultiplexer;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: UniversalDisposable;
   _hadFirstContinuationCommand: boolean;
   _temporaryBreakpointpointId: ?string;
   _eventSender: (event: DebugProtocol.Event) => mixed;
@@ -95,7 +95,7 @@ export class DebuggerHandler {
       this._sendOutput.bind(this),
       this._sendNotification.bind(this),
     );
-    this._subscriptions = new CompositeDisposable(
+    this._subscriptions = new UniversalDisposable(
       this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this)),
       this._connectionMultiplexer.onNotification(
         this._onNotification.bind(this),

@@ -20,7 +20,7 @@ import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import TabbableContainer from 'nuclide-commons-ui/TabbableContainer';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
@@ -56,11 +56,11 @@ export default class CreateConnectionProfileForm extends React.Component<
 > {
   props: Props;
 
-  disposables: CompositeDisposable;
+  disposables: UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
-    this.disposables = new CompositeDisposable();
+    this.disposables = new UniversalDisposable();
   }
 
   componentDidMount(): void {
