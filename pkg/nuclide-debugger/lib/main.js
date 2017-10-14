@@ -62,6 +62,7 @@ import {DebuggerPaneContainerViewModel} from './DebuggerPaneContainerViewModel';
 import os from 'os';
 import nullthrows from 'nullthrows';
 import ReactMountRootElement from 'nuclide-commons-ui/ReactMountRootElement';
+import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
 export type SerializedState = {
   breakpoints: ?Array<SerializedBreakpoint>,
@@ -1127,13 +1128,15 @@ export function consumeEvaluationExpressionProvider(
 
 export function consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
   const toolBar = getToolBar('nuclide-debugger');
-  toolBar.addButton({
-    iconset: 'icon-nuclicon',
-    icon: 'debugger',
-    callback: 'nuclide-debugger:show-attach-dialog',
-    tooltip: 'Attach Debugger',
-    priority: 500,
-  }).element;
+  toolBar.addButton(
+    makeToolbarButtonSpec({
+      iconset: 'icon-nuclicon',
+      icon: 'debugger',
+      callback: 'nuclide-debugger:show-attach-dialog',
+      tooltip: 'Attach Debugger',
+      priority: 500,
+    }),
+  ).element;
   const disposable = new Disposable(() => {
     toolBar.removeItems();
   });

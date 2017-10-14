@@ -39,6 +39,7 @@ import {ConsoleContainer, WORKSPACE_VIEW_URI} from './ui/ConsoleContainer';
 import invariant from 'assert';
 import * as React from 'react';
 import {applyMiddleware, createStore} from 'redux';
+import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
   'nuclide-console.maximumSerializedMessages';
@@ -107,12 +108,14 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): void {
     const toolBar = getToolBar('nuclide-console');
-    toolBar.addButton({
-      icon: 'terminal',
-      callback: 'nuclide-console:toggle',
-      tooltip: 'Toggle Console',
-      priority: 700,
-    });
+    toolBar.addButton(
+      makeToolbarButtonSpec({
+        icon: 'terminal',
+        callback: 'nuclide-console:toggle',
+        tooltip: 'Toggle Console',
+        priority: 700,
+      }),
+    );
     this._disposables.add(() => {
       toolBar.removeItems();
     });

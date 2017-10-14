@@ -14,6 +14,7 @@ import {CompositeDisposable, Disposable} from 'atom';
 
 import type {NuxTourModel} from '../../nuclide-nux/lib/NuxModel';
 import type {RegisterNux, TriggerNux} from '../../nuclide-nux/lib/main';
+import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
 const SAMPLE_NUX_ID = 0;
 const SAMPLE_NUX_NAME = 'sample-nux-example.sample-nux-id';
@@ -31,11 +32,13 @@ class Activation {
 
   consumeToolBar(getToolBar: toolbar$GetToolbar): IDisposable {
     const toolBar = getToolBar('nux-example-toolbar');
-    const {element} = toolBar.addButton({
-      icon: 'mortar-board',
-      callback: 'nux-example-toolbar:noop',
-      tooltip: 'Example Nux Toolbar Item',
-    });
+    const {element} = toolBar.addButton(
+      makeToolbarButtonSpec({
+        icon: 'mortar-board',
+        callback: 'nux-example-toolbar:noop',
+        tooltip: 'Example Nux Toolbar Item',
+      }),
+    );
     element.classList.add('sample-nux-toolbar-button');
     const disposable = new Disposable(() => {
       toolBar.removeItems();
