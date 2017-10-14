@@ -93,12 +93,19 @@ type atom$CommandDescriptor = {
   tags?: Array<string>,
 };
 
+type atom$CommandListener = atom$CommandCallback | {
+  displayName?: string,
+  description?: string,
+  didDispatch: atom$CommandCallback,
+};
+
 declare class atom$CommandRegistry {
   // Methods
   add(
     target: string | HTMLElement,
-    commandNameOrCommands: string | {[commandName: string]: atom$CommandCallback},
-    callback?: atom$CommandCallback
+    commandNameOrCommands: string | {[commandName: string]: atom$CommandListener},
+    listener?: atom$CommandListener,
+    throwOnInvalidSelector?: boolean,
   ): IDisposable,
   dispatch(target: HTMLElement, commandName: string, detail?: Object): void,
   onDidDispatch(callback: (event: atom$CustomEvent) => mixed): IDisposable,
