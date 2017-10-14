@@ -133,7 +133,10 @@ export default class NuclideServer {
   }
 
   _createWebSocketServer(): WS.Server {
-    const webSocketServer = new WS.Server({server: this._webServer});
+    const webSocketServer = new WS.Server({
+      server: this._webServer,
+      perMessageDeflate: true,
+    });
     webSocketServer.on('connection', socket => this._onConnection(socket));
     webSocketServer.on('error', error =>
       logger.error('WebSocketServer Error:', error),
