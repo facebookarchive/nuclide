@@ -48,10 +48,14 @@ export class Modal extends React.Component<Props> {
     const {modalClassName: prevModalClassName} = prevProps;
     const panelElement = this._panel.getElement();
     if (prevModalClassName != null) {
-      panelElement.classList.remove(...prevModalClassName.split(/\s+/));
+      panelElement.classList.remove(
+        ...prevModalClassName.split(/\s+/).filter(token => token.length > 0),
+      );
     }
     if (modalClassName != null) {
-      panelElement.classList.add(...modalClassName.split(/\s+/));
+      panelElement.classList.add(
+        ...modalClassName.split(/\s+/).filter(token => token.length > 0),
+      );
     }
   }
 
