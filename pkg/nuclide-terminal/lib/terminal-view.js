@@ -53,6 +53,7 @@ const PRESERVED_COMMANDS_CONFIG = 'nuclide-terminal.preservedCommands';
 const SCROLLBACK_CONFIG = 'nuclide-terminal.scrollback';
 const CURSOR_STYLE_CONFIG = 'nuclide-terminal.cursorStyle';
 const CURSOR_BLINK_CONFIG = 'nuclide-terminal.cursorBlink';
+const ADD_ESCAPE_COMMAND = 'nuclide-terminal:add-escape-prefix';
 const TMUX_CONTROLCONTROL_PREFIX = '\x1BP1000p';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 
@@ -139,7 +140,9 @@ export class TerminalView implements PtyClient {
       scrollback: featureConfig.get(SCROLLBACK_CONFIG),
     }));
     terminal.open(this._div, false);
-    terminal.attachCustomKeyEventHandler(this._shouldXtermHandleKey.bind(this));
+    terminal.attachCustomKeyEventHandler(
+      this._checkIfKeyBoundOrDivertToXTerm.bind(this),
+    );
     this._subscriptions.add(() => terminal.destroy());
     registerLinkHandlers(terminal);
 
@@ -152,7 +155,7 @@ export class TerminalView implements PtyClient {
       }),
       atom.commands.add(
         div,
-        'nuclide-terminal:add-escape-prefix',
+        ADD_ESCAPE_COMMAND,
         this._addEscapePrefix.bind(this),
       ),
       atom.commands.add(div, 'nuclide-terminal:clear', this._clear.bind(this)),
@@ -389,19 +392,30 @@ export class TerminalView implements PtyClient {
     }
   }
 
-  _shouldXtermHandleKey(event: Event): boolean {
+  _checkIfKeyBoundOrDivertToXTerm(event: Event): boolean {
     // Only allow input if we have somewhere to send it.
     if (this._pty == null) {
       return false;
     }
 
-    // Skip any key binding that is preserved.
     const keystroke = atom.keymaps.keystrokeForKeyboardEvent(event);
     const bindings = atom.keymaps.findKeyBindings({
       keystrokes: keystroke,
       target: this._div,
     });
     const preserved = this._preservedCommands;
+
+    if (
+      preserved.has(ADD_ESCAPE_COMMAND) &&
+      bindings.some(b => b.command === ADD_ESCAPE_COMMAND)
+    ) {
+      // Intercept the add escape binding and send escape directly, then
+      // divert to xterm (to handle keys like Backspace).
+      this._onInput('\x1B');
+      return true;
+    }
+
+    // Skip any key binding that is preserved.
     return !bindings.some(b => preserved.has(b.command));
   }
 
