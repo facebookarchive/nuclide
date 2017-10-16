@@ -218,9 +218,7 @@ export class LinterAdapter {
           editor => editor.getBuffer(),
           editor => editor,
           grouped =>
-            // $FlowFixMe: add durationSelector to groupBy
             observableFromSubscribeFunction(cb =>
-              // $FlowFixMe
               grouped.key.onDidDestroy(cb),
             ).take(1),
         )

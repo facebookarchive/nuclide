@@ -72,15 +72,12 @@ export default class SignatureHelpManager {
         if (editor == null) {
           return Observable.of({editor, signatureHelp: null});
         }
-        return (
-          this._signatureHelpTriggers(editor)
-            // $FlowFixMe: add to rxjs libs
-            .exhaustMap(() => this._getSignatureStream(editor))
-            .takeUntil(
-              observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
-            )
-            .map(signatureHelp => ({editor, signatureHelp}))
-        );
+        return this._signatureHelpTriggers(editor)
+          .exhaustMap(() => this._getSignatureStream(editor))
+          .takeUntil(
+            observableFromSubscribeFunction(editor.onDidDestroy.bind(editor)),
+          )
+          .map(signatureHelp => ({editor, signatureHelp}));
       })
       .switchMap(({editor, signatureHelp}) => {
         if (editor != null && signatureHelp != null) {
@@ -168,28 +165,23 @@ export default class SignatureHelpManager {
     point: atom$Point,
   ): Observable<?SignatureHelp> {
     // Take the highest-priority non-empty result.
-    return (
-      Observable.defer(() =>
-        Observable.from(
-          this._providerRegistry.getAllProvidersForEditor(editor),
-        ),
-      )
-        .concatMap(provider => {
-          return provider.getSignatureHelp(editor, point).catch(err => {
-            const editorPath = editor.getPath() || '<untitled editor>';
-            getLogger('atom-ide-signature-help').error(
-              `Caught error from signature help provider for ${editorPath}`,
-              err,
-            );
-            return null;
-          });
-        })
-        .filter(x => x != null && x.signatures.length > 0)
-        // $FlowFixMe: Add timeoutWith to rxjs defs
-        .timeoutWith(SIGNATURE_TIMEOUT, Observable.of(null))
-        .take(1)
-        .defaultIfEmpty(null)
-    );
+    return Observable.defer(() =>
+      Observable.from(this._providerRegistry.getAllProvidersForEditor(editor)),
+    )
+      .concatMap(provider => {
+        return provider.getSignatureHelp(editor, point).catch(err => {
+          const editorPath = editor.getPath() || '<untitled editor>';
+          getLogger('atom-ide-signature-help').error(
+            `Caught error from signature help provider for ${editorPath}`,
+            err,
+          );
+          return null;
+        });
+      })
+      .filter(x => x != null && x.signatures.length > 0)
+      .timeoutWith(SIGNATURE_TIMEOUT, Observable.of(null))
+      .take(1)
+      .defaultIfEmpty(null);
   }
 
   /**

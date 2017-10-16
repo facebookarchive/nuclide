@@ -51,7 +51,7 @@
 import child_process from 'child_process';
 import idx from 'idx';
 import invariant from 'assert';
-import {Observable, TimeoutError} from 'rxjs';
+import {Observable} from 'rxjs';
 
 import UniversalDisposable from './UniversalDisposable';
 import nuclideUri from './nuclideUri';
@@ -833,9 +833,7 @@ function createProcessStream(
       // flowlint-next-line sketchy-null-number:off
       const enforceTimeout = timeout
         ? x =>
-            // TODO: Use `timeoutWith()` when we upgrade to an RxJS that has it.
-            timeoutWith(
-              x,
+            x.timeoutWith(
               timeout,
               Observable.throw(new ProcessTimeoutError(timeout, proc)),
             )
@@ -1020,23 +1018,6 @@ function limitBufferSize(
       }
     });
   });
-}
-
-// TODO: Use `Observable::timeoutWith()` when we upgrade RxJS
-function timeoutWith<T>(
-  source: Observable<T>,
-  time: number,
-  other: Observable<T>,
-): Observable<T> {
-  return (
-    source
-      .timeout(time)
-      // Technically we could catch other TimeoutErrors here. `Observable::timeoutWith()` won't have
-      // this problem.
-      .catch(
-        err => (err instanceof TimeoutError ? other : Observable.throw(err)),
-      )
-  );
 }
 
 /**

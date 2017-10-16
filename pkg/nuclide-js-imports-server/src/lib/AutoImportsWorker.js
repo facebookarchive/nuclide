@@ -13,6 +13,7 @@ import os from 'os';
 import fs from 'fs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {compact} from 'nuclide-commons/observable';
 import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
@@ -208,7 +209,6 @@ export function indexDirectory(
         maxWorkers,
       );
       const filesPerWorker = Math.floor(files.length / numWorkers);
-      // $FlowIgnore TODO: add Observable.range to flow-typed
       return Observable.range(0, numWorkers)
         .mergeMap(workerId => {
           return niceSafeSpawn(
@@ -555,13 +555,11 @@ function runChild() {
       .concatMap((file, index) => {
         return addFileToIndex(root, file, hasteSettings);
       })
+      .let(compact)
       .filter(
-        exportForFile =>
-          exportForFile != null &&
-          // Optimization: we already added default exports for all name-reduced Haste modules.
-          !isDefaultExportHasteName(exportForFile.exports),
+        // Optimization: we already added default exports for all name-reduced Haste modules.
+        exportForFile => !isDefaultExportHasteName(exportForFile.exports),
       )
-      // $FlowIgnore TODO: Add .bufferCount to rxjs flow-typed
       .bufferCount(BATCH_SIZE)
       .mergeMap(sendExportUpdateToParent, SEND_CONCURRENCY)
       .subscribe({complete: exitCleanly});

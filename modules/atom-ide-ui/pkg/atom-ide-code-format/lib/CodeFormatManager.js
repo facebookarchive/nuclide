@@ -97,9 +97,7 @@ export default class CodeFormatManager {
           event => event.editor.getBuffer(),
           event => event,
           grouped =>
-            // $FlowFixMe: add durationSelector to groupBy
             observableFromSubscribeFunction(callback =>
-              // $FlowFixMe: add key to GroupedObservable
               grouped.key.onDidDestroy(callback),
             ),
         )
