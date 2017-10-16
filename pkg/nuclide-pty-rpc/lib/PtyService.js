@@ -51,6 +51,13 @@ async function getCommand(info: PtyInfo, client: PtyClient): Promise<Command> {
     );
   }
 
+  if (process.platform === 'win32') {
+    return {
+      file: 'cmd.exe',
+      args: [],
+    };
+  }
+
   // If no command and no local settings, default to /bin/bash --login -i.
   return {
     file: '/bin/bash',

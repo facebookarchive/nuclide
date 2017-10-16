@@ -10,11 +10,8 @@
  */
 
 import invariant from 'assert';
-import os from 'os';
 import url from 'url';
 import uuid from 'uuid';
-
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
 import type {Command} from '../nuclide-pty-rpc/rpc-types';
 import type {IconName} from 'nuclide-commons-ui/Icon';
@@ -34,13 +31,6 @@ export type TerminalInfo = {
   environmentVariables?: Map<string, string>,
   preservedCommands?: Array<string>,
 };
-
-export function terminalSupportsCwd(cwd: ?string): boolean {
-  // The terminal does not currently support Windows. Since remote projects are only
-  // supported on *nix environments, offer the terminal for remote URIs and for
-  // local URIs if the current platform is not Windows.
-  return os.platform() !== 'win32' || (cwd != null && nuclideUri.isRemote(cwd));
-}
 
 export function uriFromCwd(cwd: ?string): string {
   const cwdOptions = cwd == null ? {} : {cwd};

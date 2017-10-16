@@ -11,7 +11,6 @@
 
 import invariant from 'assert';
 import dedent from 'dedent';
-import os from 'os';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
@@ -20,11 +19,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 import {deserializeTerminalView, TerminalView} from './terminal-view';
-import {
-  terminalSupportsCwd,
-  uriFromCwd,
-  URI_PREFIX,
-} from '../../commons-node/nuclide-terminal-uri';
+import {uriFromCwd, URI_PREFIX} from '../../commons-node/nuclide-terminal-uri';
 
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
@@ -48,12 +43,6 @@ class Activation {
         'nuclide-terminal:new-terminal',
         event => {
           const cwd = this._getPathOrCwd(event);
-          if (!terminalSupportsCwd(cwd)) {
-            atom.notifications.addWarning(
-              'Could not launch terminal here: the Nuclide terminal is not currently supported for local paths on Windows.',
-            );
-            return;
-          }
           const uri = uriFromCwd(cwd);
           goToLocation(uri);
         },
@@ -114,12 +103,7 @@ class Activation {
           },
           shouldDisplay(): boolean {
             const node = contextMenu.getSingleSelectedNode();
-            return (
-              node != null &&
-              node.uri != null &&
-              node.uri.length > 0 &&
-              terminalSupportsUri(node.uri)
-            );
+            return node != null && node.uri != null && node.uri.length > 0;
           },
         },
         TERMINAL_CONTEXT_MENU_PRIORITY,
@@ -157,13 +141,6 @@ class Activation {
 
     return null;
   }
-}
-
-function terminalSupportsUri(uri: ?string): boolean {
-  // The terminal does not currently support Windows. Since remote projects are only
-  // supported on *nix environments, offer the terminal for remote URIs and for
-  // local URIs if the current platform is not Windows.
-  return uri != null && (nuclideUri.isRemote(uri) || os.platform() !== 'win32');
 }
 
 // eslint-disable-next-line rulesdir/no-commonjs
