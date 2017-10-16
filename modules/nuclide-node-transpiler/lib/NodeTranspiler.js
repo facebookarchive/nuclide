@@ -60,6 +60,8 @@ const BABEL_OPTIONS = {
     [require.resolve('babel-plugin-transform-flow-strip-types')],
     [require.resolve('babel-plugin-transform-react-display-name')],
 
+    [require.resolve('babel-plugin-relay')],
+
     // Toggle these to control inline-imports:
     // [require.resolve('babel-plugin-transform-es2015-modules-commonjs')],
     [require.resolve('babel-plugin-transform-inline-imports-commonjs'), {
