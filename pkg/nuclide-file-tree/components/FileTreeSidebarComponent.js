@@ -66,6 +66,7 @@ import {track} from '../../nuclide-analytics';
 import invariant from 'assert';
 import {remote} from 'electron';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
+import os from 'os';
 
 type State = {
   shouldRenderToolbar: boolean,
@@ -89,6 +90,8 @@ type State = {
   isFileTreeHovered: boolean,
 };
 
+const UPDATE_TO_FIRST_SCROLLING_DELAY_MS = 100;
+
 export default class FileTreeSidebarComponent extends React.Component<
   mixed,
   State,
@@ -102,6 +105,8 @@ export default class FileTreeSidebarComponent extends React.Component<
   _showUncommittedKindConfigValue: Observable<ShowUncommittedChangesKindValue>;
   _scrollerElements: Subject<?HTMLElement>;
   _scrollWasTriggeredProgrammatically: boolean;
+  _lastComponentUpdateTime: number;
+  _scrollsSinceUpdate: number;
 
   constructor() {
     super();
@@ -142,6 +147,8 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._disposables = new UniversalDisposable(this._emitter);
     this._scrollWasTriggeredProgrammatically = false;
     this._scrollerElements = new Subject();
+    this._lastComponentUpdateTime = Date.now();
+    this._scrollsSinceUpdate = 0;
   }
 
   componentDidMount(): void {
@@ -217,6 +224,9 @@ export default class FileTreeSidebarComponent extends React.Component<
   }
 
   componentDidUpdate(prevProps: mixed, prevState: State): void {
+    this._lastComponentUpdateTime = Date.now();
+    this._scrollsSinceUpdate = 0;
+
     if (prevState.hidden && !this.state.hidden) {
       // If "Reveal File on Switch" is enabled, ensure the scroll position is synced to where the
       // user expects when the side bar shows the file tree.
@@ -231,13 +241,13 @@ export default class FileTreeSidebarComponent extends React.Component<
       if (scrollerHeight != null) {
         this.setState({scrollerHeight});
       }
-    }
 
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    invariant(node == null || node instanceof HTMLElement);
-    this._scrollerElements.next(node);
-    if (node) {
-      node.scrollTop = this.state.scrollerScrollTop;
+      const node = ReactDOM.findDOMNode(this.refs.scroller);
+      invariant(node == null || node instanceof HTMLElement);
+      this._scrollerElements.next(node);
+      if (node) {
+        node.scrollTop = this.state.scrollerScrollTop;
+      }
     }
   }
 
@@ -598,6 +608,24 @@ All the changes across your entire stacked diff.
   };
 
   _handleScroll = (): void => {
+    // On Windows, when scroll up is started each render is causing React
+    // to raise a scroll event for some reason. This makes the scrolling go on
+    // until it reaches the top of the file tree in most cases.
+    // We can't distinguish between these render-caused events from the real
+    // ones, such as those caused by user actually scrolling something by
+    // looking at the event, so we'll rely on timing and event counting instead.
+    // If less than UPDATE_TO_FIRST_SCROLLING_DELAY_MS time has passed since
+    // the component was last updated we'll ignore the first scroll event
+    this._scrollsSinceUpdate++;
+    if (
+      os.platform() === 'win32' &&
+      this._scrollsSinceUpdate === 1 &&
+      Date.now() - this._lastComponentUpdateTime <
+        UPDATE_TO_FIRST_SCROLLING_DELAY_MS
+    ) {
+      return;
+    }
+
     if (!this._scrollWasTriggeredProgrammatically) {
       this._actions.clearTrackedNode();
     }
