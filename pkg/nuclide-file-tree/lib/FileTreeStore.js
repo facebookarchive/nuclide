@@ -67,7 +67,6 @@ export type StoreConfigData = {
   >,
   workingSet: WorkingSet,
   hideIgnoredNames: boolean,
-  isCalculatingChanges: boolean,
   excludeVcsIgnoredPaths: boolean,
   ignoredPatterns: Immutable.Set<Minimatch>,
   usePreviewTabs: boolean,
@@ -90,7 +89,6 @@ export const DEFAULT_CONF = {
   workingSet: new WorkingSet(),
   editedWorkingSet: new WorkingSet(),
   hideIgnoredNames: true,
-  isCalculatingChanges: false,
   excludeVcsIgnoredPaths: true,
   ignoredPatterns: new Immutable.Set(),
   usePreviewTabs: false,
@@ -146,6 +144,7 @@ export class FileTreeStore {
   _targetNodeKeys: ?TargetNodeKeys;
   _trackedRootKey: ?NuclideUri;
   _trackedNodeKey: ?NuclideUri;
+  _isCalculatingChanges: boolean;
   selectionManager: FileTreeSelectionManager;
 
   static getInstance(): FileTreeStore {
@@ -188,6 +187,7 @@ export class FileTreeStore {
     this.uncommittedChangesExpanded = true;
     this._selectionRange = null;
     this._targetNodeKeys = null;
+    this._isCalculatingChanges = false;
   }
 
   /**
@@ -331,9 +331,8 @@ export class FileTreeStore {
   }
 
   _setIsCalculatingChanges(isCalculatingChanges: boolean): void {
-    this._updateConf(conf => {
-      conf.isCalculatingChanges = isCalculatingChanges;
-    });
+    this._isCalculatingChanges = isCalculatingChanges;
+    this._emitChange();
   }
 
   /**
@@ -757,7 +756,7 @@ export class FileTreeStore {
   }
 
   getIsCalculatingChanges(): boolean {
-    return this._conf.isCalculatingChanges;
+    return this._isCalculatingChanges;
   }
 
   _invalidateRemovedFolder(): void {
