@@ -20,9 +20,12 @@ import {DiagnosticsTraceItem} from './DiagnosticsTraceItem';
 
 type DiagnosticsMessageProps = {
   message: FileDiagnosticMessage,
+  // these are processed in traceElements below
+  /* eslint-disable react/no-unused-prop-types */
   goToLocation: (path: string, line: number) => mixed,
   fixer: (message: FileDiagnosticMessage) => void,
   children?: Array<React.Element<any>>,
+  /* eslint-enable react/no-unused-prop-types */
 };
 
 const PROVIDER_CLASS_NAME = {

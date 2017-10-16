@@ -94,9 +94,12 @@ type Props = {
   disabled: boolean,
   gutterHidden: boolean,
   grammar?: ?Object,
+  // these are processed in setupTextEditor below
+  /* eslint-disable react/no-unused-prop-types */
   onDidTextBufferChange?: (event: atom$TextEditEvent) => mixed,
   path?: string,
   placeholderText?: string,
+  /* eslint-enable react/no-unused-prop-types */
   readOnly: boolean,
   textBuffer?: TextBuffer,
   syncTextContents: boolean,

@@ -152,7 +152,7 @@
     "eslint-plugin-jsx-a11y": "5.0.3",
     "eslint-plugin-prefer-object-spread": "1.1.0",
     "eslint-plugin-prettier": "2.1.0",
-    "eslint-plugin-react": "6.8.0",
+    "eslint-plugin-react": "7.4.0",
     "eslint-plugin-rulesdir": "0.1.0",
     "flow-bin": "0.56.0",
     "fs-extra": "2.0.0",

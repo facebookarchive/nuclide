@@ -26,6 +26,7 @@ type Props = {
   collapsable?: boolean,
   diff: diffparser$FileDiff,
   extraData?: mixed,
+  // eslint-disable-next-line react/no-unused-prop-types
   hunkComponentClass?: React.ComponentType<HunkProps>,
   fullPath?: NuclideUri,
   collapsable?: boolean,
@@ -37,8 +38,11 @@ type DefaultProps = {
 };
 
 export type HunkProps = {
+  // TODO: remove disable
+  /* eslint-disable react/no-unused-prop-types */
   collapsable?: boolean,
   extraData?: mixed,
+  /* eslint-enable react/no-unused-prop-types */
   grammar: atom$Grammar,
   hunk: diffparser$Hunk,
 };

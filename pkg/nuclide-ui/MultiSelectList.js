@@ -23,6 +23,8 @@ type Option = {
 type Props = {
   // $FlowFixMe(>=0.53.0) Flow suppress
   optionComponent?: (props: OptionComponentProps) => React.Element<any>,
+  // TODO: remove disable
+  // eslint-disable-next-line react/no-unused-prop-types
   className?: string,
   options: Array<Option>,
   value: Array<any>,
@@ -164,8 +166,11 @@ export class MultiSelectList extends React.Component<Props, State> {
 
 export type OptionComponentProps = {
   option: Option,
+  // TODO: remove disable
+  /* eslint-disable react/no-unused-prop-types */
   active: boolean,
   selected: boolean,
+  /* eslint-enable react/no-unused-prop-types */
 };
 
 function DefaultOptionComponent(props: OptionComponentProps) {

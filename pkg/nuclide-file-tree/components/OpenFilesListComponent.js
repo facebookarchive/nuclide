@@ -33,8 +33,11 @@ type OpenFileEntry = {
 };
 
 type Props = {
+  // these are processed in propsToEntries below
+  /* eslint-disable react/no-unused-prop-types */
   uris: Array<NuclideUri>,
   modifiedUris: Array<NuclideUri>,
+  /* eslint-enable react/no-unused-prop-types */
   activeUri: ?NuclideUri,
 };
 
