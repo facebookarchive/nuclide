@@ -1,5 +1,20 @@
 # Nuclide Changelog
 
+## v0.261.0
+
+### Diagnostics
+* Added text and regular expression filtering
+* Added type filtering toggle buttons
+* Improved column sorting
+* Fixed misc. table bugs
+* File directories are now hidden by default (but can be shown via the gear button and resized independently)
+* Added a setting to move status bar icons to the right side.
+
+### General
+
+* Fuzzy filename search on Windows now uses the significantly better native matching library
+* Integrated Terminal is now included in the open-source version of Nuclide.
+
 ## v0.260.0
 
 ### C++
