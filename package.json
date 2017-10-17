@@ -114,6 +114,7 @@
     "tabbable": "1.1.0",
     "temp": "0.8.3",
     "through": "2.3.8",
+    "tmp": "0.0.29",
     "tree-kill": "1.1.0",
     "uint64be": "1.0.1",
     "untildify": "3.0.2",
