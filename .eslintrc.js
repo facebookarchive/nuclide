@@ -452,6 +452,7 @@ module.exports = {
     'jsx-a11y/accessible-emoji': 0,
     'jsx-a11y/alt-text': 0, // incremental: error
     'jsx-a11y/anchor-has-content': 0,
+    'jsx-a11y/anchor-is-valid': 0, // incremental: error
     'jsx-a11y/aria-activedescendant-has-tabindex': 0,
     'jsx-a11y/aria-props': 1,
     'jsx-a11y/aria-proptypes': 0,
