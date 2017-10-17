@@ -1,17 +1,23 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import {createLogger} from 'redux-logger';
-import featureConfig from './feature-config';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = createLoggerMiddleware;
+
+var _reduxLogger;
+
+function _load_reduxLogger() {
+  return _reduxLogger = require('redux-logger');
+}
+
+var _featureConfig;
+
+function _load_featureConfig() {
+  return _featureConfig = _interopRequireDefault(require('./feature-config'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /*
 To turn on debug console logging for the feature you are debugging, add to your config.cson:
@@ -23,34 +29,28 @@ To turn on debug console logging for the feature you are debugging, add to your 
     ]
 */
 
-type Store = {
-  getState: () => mixed,
-};
-
-type Action = {
-  type: string,
-};
-
-type Dispatch = Action => Action;
-
 // More options can be found here if you wish to enable them:
 // https://github.com/evgenyrodionov/redux-logger#options
-type LoggerConfig = {
-  diff: boolean,
-};
+/**
+ * Copyright (c) 2017-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * 
+ * @format
+ */
 
-const enabledLoggers = featureConfig.getWithDefaults('redux-debug-loggers', []);
+const enabledLoggers = (_featureConfig || _load_featureConfig()).default.getWithDefaults('redux-debug-loggers', []);
 
-const noopMiddleware = (store: Store) => (next: Dispatch) => (action: Action) =>
-  next(action);
+const noopMiddleware = store => next => action => next(action);
 
-export default function createLoggerMiddleware(
-  appName: string,
-  loggerConfig: ?LoggerConfig,
-) {
+function createLoggerMiddleware(appName, loggerConfig) {
   if (!enabledLoggers.includes(appName)) {
     return noopMiddleware;
   }
 
-  return createLogger(loggerConfig);
+  return (0, (_reduxLogger || _load_reduxLogger()).createLogger)(loggerConfig);
 }

@@ -1,3 +1,25 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.wordAtPosition = wordAtPosition;
+exports.trimRange = trimRange;
+
+var _atom = require('atom');
+
+var _range;
+
+function _load_range() {
+  return _range = require('nuclide-commons/range');
+}
+
+/**
+ * Finds the word at the position. You can either provide a word regex yourself,
+ * or have Atom use the word regex in force at the scopes at that position,
+ * in which case it uses the optional includeNonWordCharacters, default true.
+ * (I know that's a weird default but it follows Atom's convention...)
+ */
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,24 +28,11 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import {Range} from 'atom';
-import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
-
-/**
- * Finds the word at the position. You can either provide a word regex yourself,
- * or have Atom use the word regex in force at the scopes at that position,
- * in which case it uses the optional includeNonWordCharacters, default true.
- * (I know that's a weird default but it follows Atom's convention...)
- */
-export function wordAtPosition(
-  editor: atom$TextEditor,
-  position: atom$PointObject,
-  wordRegex?: RegExp | {includeNonWordCharacters: boolean},
-): ?{wordMatch: Array<string>, range: atom$Range} {
+function wordAtPosition(editor, position, wordRegex) {
   let wordRegex_;
   if (wordRegex instanceof RegExp) {
     wordRegex_ = wordRegex;
@@ -45,7 +54,7 @@ export function wordAtPosition(
     }
     wordRegex_ = new RegExp(r, 'g');
   }
-  return wordAtPositionFromBuffer(editor.getBuffer(), position, wordRegex_);
+  return (0, (_range || _load_range()).wordAtPositionFromBuffer)(editor.getBuffer(), position, wordRegex_);
 }
 
 /**
@@ -59,20 +68,16 @@ export function wordAtPosition(
  *   defaults to first non-whitespace character
  * @return atom$Range  the trimmed range
  */
-export function trimRange(
-  editor: atom$TextEditor,
-  rangeToTrim: atom$Range,
-  stopRegex: RegExp = /\S/,
-): atom$Range {
+function trimRange(editor, rangeToTrim, stopRegex = /\S/) {
   const buffer = editor.getBuffer();
-  let {start, end} = rangeToTrim;
-  buffer.scanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  let { start, end } = rangeToTrim;
+  buffer.scanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     start = range.start;
     stop();
   });
-  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({range, stop}) => {
+  buffer.backwardsScanInRange(stopRegex, rangeToTrim, ({ range, stop }) => {
     end = range.end;
     stop();
   });
-  return new Range(start, end);
+  return new _atom.Range(start, end);
 }

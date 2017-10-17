@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,7 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
@@ -23,7 +25,7 @@ let intervalCount = 0;
 let timeouts = [];
 let intervalTimeouts = {};
 
-function resetTimeouts(): void {
+function resetTimeouts() {
   now = 0;
   timeoutCount = 0;
   intervalCount = 0;
@@ -31,20 +33,18 @@ function resetTimeouts(): void {
   intervalTimeouts = {};
 }
 
-function fakeSetTimeout(callback: () => ?any, ms: number): number {
+function fakeSetTimeout(callback, ms) {
   const id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
-  timeouts.sort(
-    ([, strikeTime0], [, strikeTime1]) => strikeTime0 - strikeTime1,
-  );
+  timeouts.sort(([, strikeTime0], [, strikeTime1]) => strikeTime0 - strikeTime1);
   return id;
 }
 
-function fakeClearTimeout(idToClear: number): void {
+function fakeClearTimeout(idToClear) {
   timeouts = timeouts.filter(([id]) => id !== idToClear);
 }
 
-function fakeSetInterval(callback: () => ?any, ms: number): number {
+function fakeSetInterval(callback, ms) {
   const id = ++intervalCount;
   const action = () => {
     callback();
@@ -54,11 +54,11 @@ function fakeSetInterval(callback: () => ?any, ms: number): number {
   return id;
 }
 
-function fakeClearInterval(idToClear: number): void {
+function fakeClearInterval(idToClear) {
   fakeClearTimeout(intervalTimeouts[idToClear]);
 }
 
-function advanceClock(deltaMs: number): void {
+function advanceClock(deltaMs) {
   const advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
@@ -73,7 +73,7 @@ function advanceClock(deltaMs: number): void {
 /**
  * Allows tests to use the non-fake setTimeout and clearTimeout functions.
  */
-function useRealClock(): void {
+function useRealClock() {
   jasmine.unspy(global, 'setTimeout');
   jasmine.unspy(global, 'clearTimeout');
   jasmine.unspy(Date, 'now');
@@ -83,7 +83,7 @@ function useRealClock(): void {
  * Atom does this half-way mock.
  * https://github.com/atom/atom/blob/v1.12.7/spec/spec-helper.coffee#L169-L174
  */
-function useMockClock(): void {
+function useMockClock() {
   spyOn(global, 'setInterval').andCallFake(fakeSetInterval);
   spyOn(global, 'clearInterval').andCallFake(fakeClearInterval);
 }
@@ -98,7 +98,7 @@ global.advanceClock = advanceClock;
 jasmine.useRealClock = useRealClock;
 jasmine.useMockClock = useMockClock;
 // $FlowIssue: https://github.com/facebook/flow/issues/285
-Object.defineProperty(global, 'now', {get: () => now});
+Object.defineProperty(global, 'now', { get: () => now });
 
 /**
  * This hook is a the first initialization code that happens before any jasmine test case is

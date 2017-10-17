@@ -1,3 +1,19 @@
+'use strict';
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+var _CodeActionManager;
+
+function _load_CodeActionManager() {
+  return _CodeActionManager = require('./CodeActionManager');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,33 +22,27 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import createPackage from 'nuclide-commons-atom/createPackage';
-import {CodeActionManager} from './CodeActionManager';
-
-import type {CodeActionProvider, CodeActionFetcher} from './types';
-
 class Activation {
-  _codeActionManager: CodeActionManager;
 
   constructor() {
-    this._codeActionManager = new CodeActionManager();
+    this._codeActionManager = new (_CodeActionManager || _load_CodeActionManager()).CodeActionManager();
   }
 
   dispose() {
     this._codeActionManager.dispose();
   }
 
-  consumeCodeActionProvider(provider: CodeActionProvider) {
+  consumeCodeActionProvider(provider) {
     return this._codeActionManager.addProvider(provider);
   }
 
-  provideCodeActionFetcher(): CodeActionFetcher {
+  provideCodeActionFetcher() {
     return this._codeActionManager.createCodeActionFetcher();
   }
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

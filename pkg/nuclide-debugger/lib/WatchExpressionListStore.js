@@ -1,3 +1,32 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WatchExpressionListStore = undefined;
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = require('./DebuggerDispatcher');
+}
+
+var _DebuggerStore;
+
+function _load_DebuggerStore() {
+  return _DebuggerStore = require('./DebuggerStore');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,75 +34,45 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  Expression,
-  EvaluatedExpression,
-  EvaluatedExpressionList,
-  SerializedWatchExpression,
-} from './types';
-import type {WatchExpressionStore} from './WatchExpressionStore';
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
-import type {Observable} from 'rxjs';
+class WatchExpressionListStore {
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {BehaviorSubject} from 'rxjs';
-import {ActionTypes} from './DebuggerDispatcher';
-import {DebuggerMode} from './DebuggerStore';
-
-export class WatchExpressionListStore {
-  _watchExpressionStore: WatchExpressionStore;
-  _disposables: IDisposable;
-  /**
-   * Treat the underlying EvaluatedExpressionList as immutable.
-   */
-  _watchExpressions: BehaviorSubject<EvaluatedExpressionList>;
-
-  constructor(
-    watchExpressionStore: WatchExpressionStore,
-    dispatcher: DebuggerDispatcher,
-    initialWatchExpressions: ?Array<SerializedWatchExpression>,
-  ) {
+  constructor(watchExpressionStore, dispatcher, initialWatchExpressions) {
     this._watchExpressionStore = watchExpressionStore;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new UniversalDisposable(() => {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       dispatcher.unregister(dispatcherToken);
     });
-    this._watchExpressions = new BehaviorSubject([]);
+    this._watchExpressions = new _rxjsBundlesRxMinJs.BehaviorSubject([]);
     if (initialWatchExpressions) {
       this._deserializeWatchExpressions(initialWatchExpressions);
     }
   }
+  /**
+   * Treat the underlying EvaluatedExpressionList as immutable.
+   */
 
-  _deserializeWatchExpressions(
-    watchExpressions: Array<SerializedWatchExpression>,
-  ): void {
-    this._watchExpressions.next(
-      watchExpressions.map(expression =>
-        this._getExpressionEvaluationFor(expression),
-      ),
-    );
+
+  _deserializeWatchExpressions(watchExpressions) {
+    this._watchExpressions.next(watchExpressions.map(expression => this._getExpressionEvaluationFor(expression)));
   }
 
-  _handlePayload(payload: DebuggerAction) {
+  _handlePayload(payload) {
     switch (payload.actionType) {
-      case ActionTypes.ADD_WATCH_EXPRESSION:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.ADD_WATCH_EXPRESSION:
         this._addWatchExpression(payload.data.expression);
         break;
-      case ActionTypes.REMOVE_WATCH_EXPRESSION:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.REMOVE_WATCH_EXPRESSION:
         this._removeWatchExpression(payload.data.index);
         break;
-      case ActionTypes.UPDATE_WATCH_EXPRESSION:
-        this._updateWatchExpression(
-          payload.data.index,
-          payload.data.newExpression,
-        );
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.UPDATE_WATCH_EXPRESSION:
+        this._updateWatchExpression(payload.data.index, payload.data.newExpression);
         break;
-      case ActionTypes.DEBUGGER_MODE_CHANGE:
-        if (payload.data === DebuggerMode.STARTING) {
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.DEBUGGER_MODE_CHANGE:
+        if (payload.data === (_DebuggerStore || _load_DebuggerStore()).DebuggerMode.STARTING) {
           this._refetchWatchSubscriptions();
         }
         break;
@@ -82,40 +81,35 @@ export class WatchExpressionListStore {
     }
   }
 
-  _getExpressionEvaluationFor(expression: Expression): EvaluatedExpression {
+  _getExpressionEvaluationFor(expression) {
     return {
       expression,
-      value: this._watchExpressionStore.evaluateWatchExpression(expression),
+      value: this._watchExpressionStore.evaluateWatchExpression(expression)
     };
   }
 
-  getWatchExpressions(): Observable<EvaluatedExpressionList> {
+  getWatchExpressions() {
     return this._watchExpressions.asObservable();
   }
 
-  getSerializedWatchExpressions(): Array<SerializedWatchExpression> {
-    return this._watchExpressions
-      .getValue()
-      .map(evaluatedExpression => evaluatedExpression.expression);
+  getSerializedWatchExpressions() {
+    return this._watchExpressions.getValue().map(evaluatedExpression => evaluatedExpression.expression);
   }
 
-  _addWatchExpression(expression: Expression): void {
+  _addWatchExpression(expression) {
     if (expression === '') {
       return;
     }
-    this._watchExpressions.next([
-      ...this._watchExpressions.getValue(),
-      this._getExpressionEvaluationFor(expression),
-    ]);
+    this._watchExpressions.next([...this._watchExpressions.getValue(), this._getExpressionEvaluationFor(expression)]);
   }
 
-  _removeWatchExpression(index: number): void {
+  _removeWatchExpression(index) {
     const watchExpressions = this._watchExpressions.getValue().slice();
     watchExpressions.splice(index, 1);
     this._watchExpressions.next(watchExpressions);
   }
 
-  _updateWatchExpression(index: number, newExpression: Expression): void {
+  _updateWatchExpression(index, newExpression) {
     if (newExpression === '') {
       return this._removeWatchExpression(index);
     }
@@ -124,15 +118,16 @@ export class WatchExpressionListStore {
     this._watchExpressions.next(watchExpressions);
   }
 
-  _refetchWatchSubscriptions(): void {
+  _refetchWatchSubscriptions() {
     const watchExpressions = this._watchExpressions.getValue().slice();
-    const refetchedWatchExpressions = watchExpressions.map(({expression}) => {
+    const refetchedWatchExpressions = watchExpressions.map(({ expression }) => {
       return this._getExpressionEvaluationFor(expression);
     });
     this._watchExpressions.next(refetchedWatchExpressions);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.WatchExpressionListStore = WatchExpressionListStore;
