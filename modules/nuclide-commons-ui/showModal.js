@@ -62,6 +62,7 @@ export default function showModal(
   const shouldDismissOnClickOutsideModal =
     options.shouldDismissOnClickOutsideModal || (() => true);
 
+  const previouslyFocusedElement = document.activeElement;
   const disposable = new UniversalDisposable(
     Observable.fromEvent(document, 'mousedown').subscribe(({target}) => {
       if (!shouldDismissOnClickOutsideModal()) {
@@ -87,6 +88,9 @@ export default function showModal(
       }
       ReactDOM.unmountComponentAtNode(hostElement);
       atomPanel.destroy();
+      if (previouslyFocusedElement != null) {
+        previouslyFocusedElement.focus();
+      }
     },
   );
 
