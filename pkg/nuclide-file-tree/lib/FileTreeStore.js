@@ -1287,6 +1287,45 @@ export class FileTreeStore {
     return this.roots.some(root => root.containsFilterMatches);
   }
 
+  collectDebugState(): Object {
+    return {
+      openFilesExpanded: this.openFilesExpanded,
+      uncommittedChangesExpanded: this.uncommittedChangesExpanded,
+      foldersExpanded: this.foldersExpanded,
+      reorderPreviewStatus: this.reorderPreviewStatus,
+      _filter: this._filter,
+      _selectionRange: this._selectionRange,
+      _targetNodeKeys: this._targetNodeKeys,
+      _trackedRootKey: this._trackedRootKey,
+      _trackedNodeKey: this._trackedNodeKey,
+      _isCalculatingChanges: this._isCalculatingChanges,
+
+      roots: Array.from(this.roots.values()).map(root =>
+        root.collectDebugState(),
+      ),
+      _conf: this._confCollectDebugState(),
+      selectionManager: this.selectionManager.collectDebugState(),
+    };
+  }
+
+  _confCollectDebugState(): Object {
+    return {
+      hideIgnoredNames: this._conf.hideIgnoredNames,
+      excludeVcsIgnoredPaths: this._conf.excludeVcsIgnoredPaths,
+      usePreviewTabs: this._conf.usePreviewTabs,
+      focusEditorOnFileSelection: this._conf.focusEditorOnFileSelection,
+      isEditingWorkingSet: this._conf.isEditingWorkingSet,
+
+      vcsStatuses: this._conf.vcsStatuses.toObject(),
+      workingSet: this._conf.workingSet.getUris(),
+      ignoredPatterns: this._conf.ignoredPatterns
+        .toArray()
+        .map(ignored => ignored.pattern),
+      openFilesWorkingSet: this._conf.openFilesWorkingSet.getUris(),
+      editedWorkingSet: this._conf.editedWorkingSet.getUris(),
+    };
+  }
+
   /*
   * Manually sets a target node used for context menu actions. The value can be
   * retrieved by calling `getTargetNodes` or `getSingleTargetNode` both of
