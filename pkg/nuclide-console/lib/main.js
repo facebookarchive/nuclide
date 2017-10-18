@@ -207,6 +207,7 @@ class Activation {
               sourceId: sourceInfo.id,
               kind: message.kind || 'message',
               timestamp: new Date(), // TODO: Allow this to come with the message?
+              repeatCount: 1,
             }),
           );
         },
