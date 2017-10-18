@@ -82,10 +82,10 @@ export class DiagnosticsViewModel {
       globalStates,
       this._model.toObservable(),
       visibility,
-      (globalState, instanceState, isVisibile) => ({
+      (globalState, instanceState, isVisible) => ({
         ...globalState,
         ...instanceState,
-        isVisibile,
+        isVisible,
         diagnostics: this._filterDiagnostics(
           globalState.diagnostics,
           instanceState.textFilter.pattern,
