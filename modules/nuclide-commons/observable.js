@@ -314,6 +314,37 @@ export function throttle<T>(
   });
 }
 
+/**
+ * Returns a new function which takes an `observable` and returns
+ * `observable.switchMap(project)`, except that it completes
+ * when the outer observable completes.
+ *
+ * Example:
+ *
+ *   Observable.of(1)
+ *     .let(completingSwitchMap(x => Observable.never()))
+ *
+ * ends up returning an Observable that completes immediately.
+ * With a regular switchMap, this would never terminate.
+ */
+export function completingSwitchMap<T, U>(
+  project: (input: T, index: number) => rxjs$ObservableInput<U>,
+): (Observable<T>) => Observable<U> {
+  // An alternative implementation is to materialize the input observable,
+  // but this avoids the creation of extra notifier objects.
+  const completedSymbol = Symbol('completed');
+  return (observable: Observable<T>) =>
+    Observable.concat(
+      observable,
+      Observable.of((completedSymbol: any)),
+    ).switchMap((input, index) => {
+      if (input === completedSymbol) {
+        return Observable.empty();
+      }
+      return project(input, index);
+    });
+}
+
 export const microtask = Observable.create(observer => {
   process.nextTick(() => {
     observer.next();

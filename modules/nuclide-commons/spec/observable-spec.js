@@ -23,6 +23,7 @@ import {
   throttle,
   toggle,
   concatLatest,
+  completingSwitchMap,
 } from '../observable';
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
@@ -490,6 +491,25 @@ describe('nuclide-commons/observable', () => {
           .toArray()
           .toPromise();
         expect(chunks).toEqual([[1, 2], [3, 4]]);
+      });
+    });
+  });
+
+  describe('completingSwitchMap', () => {
+    it('propagates completions to the inner observable', () => {
+      waitsForPromise(async () => {
+        const results = await Observable.of(1, 2)
+          .let(
+            completingSwitchMap(x => {
+              return Observable.concat(
+                Observable.of(x + 1),
+                Observable.never(),
+              );
+            }),
+          )
+          .toArray()
+          .toPromise();
+        expect(results).toEqual([2, 3]);
       });
     });
   });
