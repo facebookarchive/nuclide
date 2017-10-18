@@ -341,7 +341,7 @@ describe('PHP grammar', () => {
       expect(grammar).toBeTruthy();
       grammar = grammar || {};
       const tokens = grammar.tokenizeLines(
-        '<?hh\n$x = <<<EOTXT\ntest {$str}\nEOTXT;',
+        '<?hh\n$x = <<<EOTXT\ntest {$str}\nEOTXT.$str<<<EOTXT\n$str\nEOTXT;',
       );
       expect(tokens[1][5].scopes).toContain('string.unquoted.heredoc.php');
       expect(tokens[1][6].scopes).toContain(
@@ -350,7 +350,15 @@ describe('PHP grammar', () => {
       );
       // Interpolated variables should still be highlighted.
       expect(tokens[2][2].scopes).toContain('variable.other.php');
-      expect(tokens[3][0].scopes).toContain(
+
+      // The middle 'EOTXT' should not be considered an operator since it
+      // doesn't end with a semicolon and newline.
+      expect(tokens[3][0].scopes).toContain('string.unquoted.heredoc.php');
+      expect(tokens[3][0].scopes).not.toContain('keyword.operator.heredoc.php');
+
+      // The last one does end with a semicolon, so it should be considered an
+      // operator.
+      expect(tokens[5][0].scopes).toContain(
         'string.unquoted.heredoc.php',
         'keyword.operator.heredoc.php',
       );

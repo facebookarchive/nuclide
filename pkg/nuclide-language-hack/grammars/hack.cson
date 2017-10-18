@@ -571,7 +571,7 @@
         'beginCaptures':
           '2':
             'name': 'keyword.operator.heredoc.php'
-        'end': '^(\\2)\\b'
+        'end': '^(\\2)(?=;$)'
         'endCaptures':
           '1':
             'name': 'keyword.operator.heredoc.php'
@@ -587,7 +587,7 @@
         'beginCaptures':
           '2':
             'name': 'keyword.operator.heredoc.php'
-        'end': '^(\\2)\\b'
+        'end': '^(\\2)(?=;$)'
         'endCaptures':
           '1':
             'name': 'keyword.operator.heredoc.php'
