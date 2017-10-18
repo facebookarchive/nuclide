@@ -13,8 +13,7 @@
 import type {
   AppState,
   DiagnosticMessage,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
+  DiagnosticMessages,
   DiagnosticMessageKind,
   UiConfig,
 } from '../types';
@@ -32,7 +31,7 @@ const getProviders = state => state.providers;
 export function getFileMessages(
   state: AppState,
   filePath: NuclideUri,
-): Array<FileDiagnosticMessage> {
+): Array<DiagnosticMessage> {
   const messages = [];
   for (const providerMessages of state.messages.values()) {
     const messagesForFile = providerMessages.get(filePath);
@@ -47,7 +46,7 @@ export function getFileMessages(
 export function getFileMessageUpdates(
   state: AppState,
   filePath: NuclideUri,
-): FileDiagnosticMessages {
+): DiagnosticMessages {
   return {
     filePath,
     messages: getFileMessages(state, filePath),

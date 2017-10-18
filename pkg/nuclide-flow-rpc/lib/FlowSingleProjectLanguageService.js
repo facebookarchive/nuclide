@@ -17,12 +17,11 @@ import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   AutocompleteResult,
   Completion,
+  FileDiagnosticMap,
+  FileDiagnosticMessage,
 } from '../../nuclide-language-service/lib/LanguageService';
 import type {
   DefinitionQueryResult,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessages,
-  FileDiagnosticMessage,
   FindReferencesReturn,
   Outline,
   CodeAction,
@@ -222,7 +221,7 @@ export class FlowSingleProjectLanguageService {
   async getDiagnostics(
     filePath: NuclideUri,
     buffer: simpleTextBuffer$TextBuffer,
-  ): Promise<?DiagnosticProviderUpdate> {
+  ): Promise<?FileDiagnosticMap> {
     await this._forceRecheck(filePath);
 
     const options = {};
@@ -278,7 +277,7 @@ export class FlowSingleProjectLanguageService {
     return filePathToMessages;
   }
 
-  observeDiagnostics(): Observable<Array<FileDiagnosticMessages>> {
+  observeDiagnostics(): Observable<FileDiagnosticMap> {
     const ideConnections = this._process.getIDEConnections();
     return ideConnections
       .switchMap(ideConnection => {
@@ -865,21 +864,19 @@ export function updateDiagnostics(
 // Exported only for testing
 export function getDiagnosticUpdates(
   state: DiagnosticsState,
-): Observable<Array<FileDiagnosticMessages>> {
-  const updates = [];
+): Observable<FileDiagnosticMap> {
+  const updates = new Map();
   for (const file of state.filesToUpdate) {
     const messages = [
       ...mapGetWithDefault(state.staleMessages, file, []),
       ...mapGetWithDefault(state.currentMessages, file, []),
     ];
-    updates.push({filePath: file, messages});
+    updates.set(file, messages);
   }
   return Observable.of(updates);
 }
 
-function collateDiagnostics(
-  output: FlowStatusOutput,
-): Map<NuclideUri, Array<FileDiagnosticMessage>> {
+function collateDiagnostics(output: FlowStatusOutput): FileDiagnosticMap {
   const diagnostics = flowStatusOutputToDiagnostics(output);
   const filePathToMessages = new Map();
 

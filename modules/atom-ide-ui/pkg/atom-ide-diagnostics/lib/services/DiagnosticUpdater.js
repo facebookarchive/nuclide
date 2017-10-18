@@ -14,8 +14,7 @@ import type {
   AppState,
   CodeActionsState,
   DiagnosticMessage,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
+  DiagnosticMessages,
   Store,
   DiagnosticMessageKind,
   UiConfig,
@@ -47,7 +46,7 @@ export default class DiagnosticUpdater {
     return Selectors.getMessages(this._store.getState());
   };
 
-  getFileMessageUpdates = (filePath: NuclideUri): FileDiagnosticMessages => {
+  getFileMessageUpdates = (filePath: NuclideUri): DiagnosticMessages => {
     return Selectors.getFileMessageUpdates(this._store.getState(), filePath);
   };
 
@@ -59,7 +58,7 @@ export default class DiagnosticUpdater {
 
   observeFileMessages = (
     filePath: NuclideUri,
-    callback: (update: FileDiagnosticMessages) => mixed,
+    callback: (update: DiagnosticMessages) => mixed,
   ): IDisposable => {
     return new UniversalDisposable(
       // TODO: As a potential perf improvement, we could cache so the mapping only happens once.
@@ -97,7 +96,7 @@ export default class DiagnosticUpdater {
     );
   };
 
-  applyFix = (message: FileDiagnosticMessage): void => {
+  applyFix = (message: DiagnosticMessage): void => {
     this._store.dispatch(Actions.applyFix(message));
   };
 
@@ -107,7 +106,7 @@ export default class DiagnosticUpdater {
 
   fetchCodeActions = (
     editor: atom$TextEditor,
-    messages: Array<FileDiagnosticMessage>,
+    messages: Array<DiagnosticMessage>,
   ): void => {
     this._store.dispatch(Actions.fetchCodeActions(editor, messages));
   };

@@ -10,7 +10,7 @@
  * @format
  */
 
-import type {AppState, FileDiagnosticMessage, Store} from '../types';
+import type {AppState, DiagnosticMessage, Store} from '../types';
 import type MessageRangeTracker from '../MessageRangeTracker';
 
 import {
@@ -72,7 +72,7 @@ const INITIAL_STATE = {
   providers: new Set(),
 };
 
-function getFileMessages(store: Store): Observable<Set<FileDiagnosticMessage>> {
+function getFileMessages(store: Store): Observable<Set<DiagnosticMessage>> {
   // $FlowFixMe: Flow doesn't understand Symbol.observable.
   const states: Observable<AppState> = Observable.from(store);
   return states

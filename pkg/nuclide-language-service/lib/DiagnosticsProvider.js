@@ -15,9 +15,8 @@ import type {
   DiagnosticInvalidationMessage,
   DiagnosticProviderUpdate,
   DiagnosticUpdateCallback,
-  FileDiagnosticMessages,
 } from 'atom-ide-ui';
-import type {LanguageService} from './LanguageService';
+import type {FileDiagnosticMap, LanguageService} from './LanguageService';
 import type {BusySignalProvider} from './AtomLanguageService';
 
 import {Cache} from 'nuclide-commons/cache';
@@ -284,9 +283,7 @@ export class FileDiagnosticsProvider<T: LanguageService> {
     this._subscriptions.dispose();
   }
 
-  async findDiagnostics(
-    editor: atom$TextEditor,
-  ): Promise<?DiagnosticProviderUpdate> {
+  async findDiagnostics(editor: atom$TextEditor): Promise<?FileDiagnosticMap> {
     const fileVersion = await getFileVersionOfEditor(editor);
     const languageService = this._connectionToLanguageService.getForUri(
       editor.getPath(),
@@ -354,10 +351,9 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
                 }),
             );
           })
-          .map((updates: Array<FileDiagnosticMessages>) => {
+          .map((updates: FileDiagnosticMap) => {
             const filePathToMessages = new Map();
-            updates.forEach(update => {
-              const {filePath, messages} = update;
+            updates.forEach((messages, filePath) => {
               track(this._analyticsEventName);
               const fileCache = this._connectionToFiles.get(connection);
               if (messages.length === 0) {

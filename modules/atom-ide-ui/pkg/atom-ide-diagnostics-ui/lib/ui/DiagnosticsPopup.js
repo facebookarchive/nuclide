@@ -11,7 +11,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {FileDiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
+import type {DiagnosticMessage} from '../../../atom-ide-diagnostics/lib/types';
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import * as React from 'react';
@@ -20,17 +20,17 @@ import {DiagnosticsMessage} from './DiagnosticsMessage';
 import DiagnosticsCodeActions from './DiagnosticsCodeActions';
 
 type DiagnosticsPopupProps = {
-  messages: Array<FileDiagnosticMessage>,
+  messages: Array<DiagnosticMessage>,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  fixer: (message: FileDiagnosticMessage) => void,
-  codeActionsForMessage?: Map<FileDiagnosticMessage, Map<string, CodeAction>>,
+  fixer: (message: DiagnosticMessage) => void,
+  codeActionsForMessage?: Map<DiagnosticMessage, Map<string, CodeAction>>,
 };
 
 function renderMessage(
-  fixer: (message: FileDiagnosticMessage) => void,
+  fixer: (message: DiagnosticMessage) => void,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
-  codeActionsForMessage: ?Map<FileDiagnosticMessage, Map<string, CodeAction>>,
-  message: FileDiagnosticMessage,
+  codeActionsForMessage: ?Map<DiagnosticMessage, Map<string, CodeAction>>,
+  message: DiagnosticMessage,
   index: number,
 ): React.Element<any> {
   const className = classnames(

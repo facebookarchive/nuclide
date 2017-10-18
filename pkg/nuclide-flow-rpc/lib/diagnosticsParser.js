@@ -9,13 +9,10 @@
  * @format
  */
 
-import type {
-  DiagnosticFix,
-  DiagnosticTrace,
-  FileDiagnosticMessage,
-} from 'atom-ide-ui';
+import type {DiagnosticFix, DiagnosticTrace} from 'atom-ide-ui';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
+import type {FileDiagnosticMessage} from '../../nuclide-language-service/lib/LanguageService';
 import type {
   FlowStatusOutput,
   FlowStatusError,

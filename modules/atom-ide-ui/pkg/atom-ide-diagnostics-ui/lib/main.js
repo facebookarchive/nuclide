@@ -17,8 +17,7 @@ import type {
 
 import type {
   DiagnosticMessage,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
+  DiagnosticMessages,
   DiagnosticUpdater,
 } from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
@@ -66,7 +65,7 @@ class Activation {
   _subscriptions: UniversalDisposable;
   _model: Model<DiagnosticsState>;
   _statusBarTile: ?StatusBarTile;
-  _fileDiagnostics: WeakMap<atom$TextEditor, Array<FileDiagnosticMessage>>;
+  _fileDiagnostics: WeakMap<atom$TextEditor, Array<DiagnosticMessage>>;
   _globalViewStates: ?Observable<GlobalViewState>;
 
   constructor(state: ?Object): void {
@@ -336,7 +335,7 @@ class Activation {
   _getMessagesAtPosition(
     editor: atom$TextEditor,
     position: atom$Point,
-  ): Array<FileDiagnosticMessage> {
+  ): Array<DiagnosticMessage> {
     const messagesForFile = this._fileDiagnostics.get(editor);
     if (messagesForFile == null) {
       return [];
@@ -475,7 +474,7 @@ function getActiveEditorPaths(): Observable<?NuclideUri> {
 function getEditorDiagnosticUpdates(
   editor: atom$TextEditor,
   diagnosticUpdater: DiagnosticUpdater,
-): Observable<FileDiagnosticMessages> {
+): Observable<DiagnosticMessages> {
   return observableFromSubscribeFunction(editor.onDidChangePath.bind(editor))
     .startWith(editor.getPath())
     .switchMap(

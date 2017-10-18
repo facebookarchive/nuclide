@@ -17,7 +17,6 @@ import type {
   DiagnosticMessage,
   DiagnosticMessageType,
   DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
   LinterMessage,
   LinterMessageV1,
   LinterMessageV2,
@@ -103,7 +102,7 @@ function convertLinterType(type: string): DiagnosticMessageType {
 export function linterMessageV2ToDiagnosticMessage(
   msg: LinterMessageV2,
   providerName: string,
-): FileDiagnosticMessage {
+): DiagnosticMessage {
   let trace;
   if (msg.trace != null) {
     trace = msg.trace.map(component => ({...component}));
@@ -160,7 +159,7 @@ export function linterMessagesToDiagnosticUpdate(
 ): DiagnosticProviderUpdate {
   const filePathToMessages: Map<
     NuclideUri,
-    Array<FileDiagnosticMessage>,
+    Array<DiagnosticMessage>,
   > = new Map();
   // flowlint-next-line sketchy-null-string:off
   if (currentPath) {

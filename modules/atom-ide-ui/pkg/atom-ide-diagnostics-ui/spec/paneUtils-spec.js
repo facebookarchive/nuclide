@@ -10,17 +10,17 @@
  * @format
  */
 
-import type {FileDiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
+import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 
 import {Range} from 'atom';
 import {compareMessagesByFile} from '../lib/paneUtils';
 
 describe('compareMessagesByFile', () => {
-  let fileAMsgA: FileDiagnosticMessage;
-  let fileAMsgB: FileDiagnosticMessage;
-  let fileAError: FileDiagnosticMessage;
-  let fileAInfo: FileDiagnosticMessage;
-  let fileBMsgA: FileDiagnosticMessage;
+  let fileAMsgA: DiagnosticMessage;
+  let fileAMsgB: DiagnosticMessage;
+  let fileAError: DiagnosticMessage;
+  let fileAInfo: DiagnosticMessage;
+  let fileBMsgA: DiagnosticMessage;
 
   beforeEach(() => {
     fileAMsgA = {

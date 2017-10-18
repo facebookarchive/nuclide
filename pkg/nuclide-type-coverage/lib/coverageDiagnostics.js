@@ -12,10 +12,7 @@
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Result} from 'nuclide-commons-atom/ActiveEditorRegistry';
 import type {ObservableDiagnosticProvider} from 'atom-ide-ui';
-import type {
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessage,
-} from 'atom-ide-ui';
+import type {DiagnosticMessage, DiagnosticProviderUpdate} from 'atom-ide-ui';
 
 import type {CoverageProvider} from './types';
 import type {CoverageResult, UncoveredRegion} from './rpc-types';
@@ -87,7 +84,7 @@ function uncoveredRangeToDiagnostic(
   region: UncoveredRegion,
   path: NuclideUri,
   providerName: string,
-): FileDiagnosticMessage {
+): DiagnosticMessage {
   const text =
     region.message != null ? region.message : `Not covered by ${providerName}`;
   return {

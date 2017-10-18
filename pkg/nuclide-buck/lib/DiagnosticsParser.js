@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {DiagnosticTrace, FileDiagnosticMessage} from 'atom-ide-ui';
+import type {DiagnosticTrace, DiagnosticMessage} from 'atom-ide-ui';
 
 import {Point, Range} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -130,7 +130,7 @@ function pushParsedTestDiagnostic(
   );
 }
 
-function makeDiagnostic(result: ParsedDiagnostic): FileDiagnosticMessage {
+function makeDiagnostic(result: ParsedDiagnostic): DiagnosticMessage {
   return {
     providerName: 'Buck',
     type: result.level === 'error' ? 'Error' : 'Warning',
@@ -176,7 +176,7 @@ export default class DiagnosticsParser {
     message: string,
     level: string,
     root: string,
-  ): Promise<Array<FileDiagnosticMessage>> {
+  ): Promise<Array<DiagnosticMessage>> {
     // Only fetch the file system service if we need it.
     let fileSystemService;
 

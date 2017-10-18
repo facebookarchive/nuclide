@@ -12,8 +12,8 @@
 
 import type {
   DiagnosticUpdater,
-  FileDiagnosticMessage,
-  FileDiagnosticMessages,
+  DiagnosticMessage,
+  DiagnosticMessages,
 } from '../../atom-ide-diagnostics/lib/types';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
@@ -67,7 +67,7 @@ const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 
 export function applyUpdateToEditor(
   editor: TextEditor,
-  update: FileDiagnosticMessages,
+  update: DiagnosticMessages,
   diagnosticUpdater: DiagnosticUpdater,
 ): void {
   let gutter = editor.gutterWithName(GUTTER_ID);
@@ -101,8 +101,8 @@ export function applyUpdateToEditor(
     markers = new Set();
   }
 
-  const rowToMessage: Map<number, Array<FileDiagnosticMessage>> = new Map();
-  function addMessageForRow(message: FileDiagnosticMessage, row: number) {
+  const rowToMessage: Map<number, Array<DiagnosticMessage>> = new Map();
+  function addMessageForRow(message: DiagnosticMessage, row: number) {
     let messages = rowToMessage.get(row);
     if (!messages) {
       messages = [];
@@ -194,7 +194,7 @@ export function applyUpdateToEditor(
 }
 
 function createGutterItem(
-  messages: Array<FileDiagnosticMessage>,
+  messages: Array<DiagnosticMessage>,
   diagnosticUpdater: DiagnosticUpdater,
 ): {item: HTMLElement, dispose: () => void} {
   // Determine which group to display.
@@ -268,7 +268,7 @@ function createGutterItem(
  * Shows a popup for the diagnostic just below the specified item.
  */
 function showPopupFor(
-  messages: Array<FileDiagnosticMessage>,
+  messages: Array<DiagnosticMessage>,
   item: HTMLElement,
   goToLocation: (filePath: NuclideUri, line: number) => mixed,
   diagnosticUpdater: DiagnosticUpdater,

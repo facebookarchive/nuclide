@@ -60,7 +60,7 @@ export type DiagnosticInvalidationMessage =
  */
 export type DiagnosticProviderUpdate = Map<
   NuclideUri,
-  Array<FileDiagnosticMessage>,
+  Array<DiagnosticMessage>,
 >;
 
 export type DiagnosticMessageKind = 'lint' | 'review';
@@ -84,7 +84,7 @@ export type DiagnosticFix = TextEdit & {
   title?: string,
 };
 
-export type FileDiagnosticMessage = {|
+export type DiagnosticMessage = {|
   kind?: DiagnosticMessageKind,
   providerName: string,
   type: DiagnosticMessageType, // TODO: Rename to severity.
@@ -99,12 +99,10 @@ export type FileDiagnosticMessage = {|
   stale?: boolean,
 |};
 
-export type FileDiagnosticMessages = {
+export type DiagnosticMessages = {
   filePath: NuclideUri,
-  messages: Array<FileDiagnosticMessage>,
+  messages: Array<DiagnosticMessage>,
 };
-
-export type DiagnosticMessage = FileDiagnosticMessage;
 
 export type {default as DiagnosticUpdater} from './services/DiagnosticUpdater';
 
@@ -227,13 +225,10 @@ export type AppState = {
 
 export type MessagesState = Map<
   ObservableDiagnosticProvider,
-  Map<NuclideUri, Array<FileDiagnosticMessage>>,
+  Map<NuclideUri, Array<DiagnosticMessage>>,
 >;
 
-export type CodeActionsState = Map<
-  FileDiagnosticMessage,
-  Map<string, CodeAction>,
->;
+export type CodeActionsState = Map<DiagnosticMessage, Map<string, CodeAction>>;
 
 export type Store = {
   getState(): AppState,
@@ -258,7 +253,7 @@ export type Action =
   }
   | {
     type: 'FETCH_CODE_ACTIONS',
-    payload: {editor: atom$TextEditor, messages: Array<FileDiagnosticMessage>},
+    payload: {editor: atom$TextEditor, messages: Array<DiagnosticMessage>},
   }
   | {
     type: 'SET_CODE_ACTIONS',
@@ -269,7 +264,7 @@ export type Action =
   | {
     type: 'APPLY_FIX',
     payload: {
-      message: FileDiagnosticMessage,
+      message: DiagnosticMessage,
     },
   }
   | {
@@ -283,7 +278,7 @@ export type Action =
     type: 'FIXES_APPLIED',
     payload: {
       filePath: NuclideUri,
-      messages: Set<FileDiagnosticMessage>,
+      messages: Set<DiagnosticMessage>,
     },
   }
 

@@ -24,17 +24,16 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
   OutlineTree,
   CodeAction,
-  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {
   AutocompleteRequest,
   AutocompleteResult,
+  FileDiagnosticMap,
+  FileDiagnosticMessage,
   FormatOptions,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -1264,12 +1263,12 @@ export class LspLanguageService {
     this._lspConnection.didSaveTextDocument(params);
   }
 
-  getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate> {
+  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap> {
     this._logger.error('Lsp: should observeDiagnostics, not getDiagnostics');
     return Promise.resolve(null);
   }
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>> {
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap> {
     // Note: this function can (and should!) be called even before
     // we reach state 'Running'.
 

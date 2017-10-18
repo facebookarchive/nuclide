@@ -16,6 +16,8 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {
   AutocompleteRequest,
   AutocompleteResult,
+  FileDiagnosticMap,
+  FileDiagnosticMessage,
   FormatOptions,
   SymbolResult,
 } from '../../nuclide-language-service/lib/LanguageService';
@@ -30,12 +32,9 @@ import type {TypeHint} from '../../nuclide-type-hint/lib/rpc-types';
 import type {CoverageResult} from '../../nuclide-type-coverage/lib/rpc-types';
 import type {
   DefinitionQueryResult,
-  DiagnosticProviderUpdate,
-  FileDiagnosticMessages,
   FindReferencesReturn,
   Outline,
   CodeAction,
-  FileDiagnosticMessage,
 } from 'atom-ide-ui';
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 
@@ -181,9 +180,9 @@ class FlowLanguageService extends MultiProjectLanguageService<
 
 // Unfortunately we have to duplicate a lot of things here to make FlowLanguageService remotable.
 export interface FlowLanguageServiceType {
-  getDiagnostics(fileVersion: FileVersion): Promise<?DiagnosticProviderUpdate>,
+  getDiagnostics(fileVersion: FileVersion): Promise<?FileDiagnosticMap>,
 
-  observeDiagnostics(): ConnectableObservable<Array<FileDiagnosticMessages>>,
+  observeDiagnostics(): ConnectableObservable<FileDiagnosticMap>,
 
   getAutocompleteSuggestions(
     fileVersion: FileVersion,
