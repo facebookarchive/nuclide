@@ -290,6 +290,8 @@ async function reloadRemoteProjects(
           textEditor.destroy();
         }
       });
+
+      ServerConnection.cancelConnection(config.host);
     } else {
       // It's fine the user connected to a different project on the same host:
       // we should still be able to restore this using the new connection.

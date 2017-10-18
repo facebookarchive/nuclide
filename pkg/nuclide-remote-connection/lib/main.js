@@ -29,6 +29,7 @@ import {
   getService,
   getServiceByConnection,
   getServiceByNuclideUri,
+  awaitServiceByNuclideUri,
   getlocalService,
 } from './service-manager';
 
@@ -132,10 +133,10 @@ export function getFuzzyFileSearchServiceByNuclideUri(
   return nullthrows(getServiceByNuclideUri('FuzzyFileSearchService', uri));
 }
 
-export function getGeneratedFileServiceByNuclideUri(
+export function awaitGeneratedFileServiceByNuclideUri(
   uri: NuclideUri,
-): GeneratedFileService {
-  return nullthrows(getServiceByNuclideUri('GeneratedFileService', uri));
+): Promise<GeneratedFileService> {
+  return awaitServiceByNuclideUri('GeneratedFileService', uri).then(nullthrows);
 }
 
 export function getGrepServiceByNuclideUri(uri: NuclideUri): GrepService {

@@ -31,7 +31,7 @@ import {WorkingSet} from '../../nuclide-working-sets-common';
 import {HistogramTracker, track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
-import {getGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -1176,7 +1176,18 @@ export class FileTreeStore {
   }
 
   async _setGeneratedChildren(nodeKey: NuclideUri): Promise<void> {
-    const generatedFileService = getGeneratedFileServiceByNuclideUri(nodeKey);
+    let generatedFileService;
+    try {
+      generatedFileService = await awaitGeneratedFileServiceByNuclideUri(
+        nodeKey,
+      );
+    } catch (e) {
+      this._logger.warn(
+        `ServerConnection cancelled while getting GeneratedFileService for ${nodeKey}`,
+        e,
+      );
+      return;
+    }
     const generatedFileTypes = await generatedFileService.getGeneratedFileTypes(
       nodeKey,
     );

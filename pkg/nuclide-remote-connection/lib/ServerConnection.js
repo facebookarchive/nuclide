@@ -90,6 +90,10 @@ export class ServerConnection {
     }
   }
 
+  static cancelConnection(hostname: string): void {
+    ServerConnection._emitter.emit('did-cancel', hostname);
+  }
+
   // WARNING: This shuts down all Nuclide servers _without_ closing their
   // RemoteConnections first! This is extremely unsafe and
   // should only be used to forcibly kill Nuclide servers before restarting.
@@ -354,6 +358,38 @@ export class ServerConnection {
     handler: (connection: ServerConnection) => mixed,
   ): IDisposable {
     return ServerConnection._emitter.on('did-add', handler);
+  }
+
+  // exposes an Observable of all the ServerConnection additions,
+  // including those that have already connected
+  static connectionAdded(): Observable<ServerConnection> {
+    return Observable.concat(
+      Observable.from(ServerConnection._connections.values()),
+      observableFromSubscribeFunction(
+        ServerConnection.onDidAddServerConnection,
+      ),
+    );
+  }
+
+  static onDidCancelServerConnection(
+    handler: (hostname: string) => mixed,
+  ): IDisposable {
+    return ServerConnection._emitter.on('did-cancel', handler);
+  }
+
+  static connectionAddedToHost(hostname: string): Observable<ServerConnection> {
+    const addEvents = ServerConnection.connectionAdded().filter(
+      sc => sc.getRemoteHostname() === hostname,
+    );
+    const cancelEvents = observableFromSubscribeFunction(
+      ServerConnection.onDidCancelServerConnection,
+    ).filter(cancelledHostname => cancelledHostname === hostname);
+    return Observable.merge(
+      addEvents,
+      cancelEvents.map(x => {
+        throw new Error('Cancelled server connection to ' + hostname);
+      }),
+    );
   }
 
   static onDidCloseServerConnection(
