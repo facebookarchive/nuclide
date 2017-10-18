@@ -200,8 +200,17 @@ function extractTraces(
   }
   const extra = flowStatusError.extra;
   if (extra != null) {
-    const flatExtra = [].concat(...extra.map(({message}) => message));
-    trace.push(...flatExtra.map(flowMessageToTrace));
+    extra.forEach(({message, children}) => {
+      trace.push(...message.map(flowMessageToTrace));
+      if (children != null) {
+        const childrenTraces: Array<DiagnosticTrace> = [].concat(
+          ...children.map(child =>
+            [].concat(child.message.map(flowMessageToTrace)),
+          ),
+        );
+        trace.push(...childrenTraces);
+      }
+    });
   }
 
   if (trace.length > 0) {

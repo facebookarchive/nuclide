@@ -17,6 +17,10 @@ export type FlowStatusOutput = {
   errors: Array<FlowStatusError>,
 };
 
+export type FlowStatusErrorChild = {
+  message: Array<FlowStatusErrorMessageComponent>,
+};
+
 export type FlowStatusError = {
   level: 'error' | 'warning',
   // e.g. parse, infer, maybe others?
@@ -25,6 +29,7 @@ export type FlowStatusError = {
   operation?: FlowStatusErrorMessageComponent,
   extra?: Array<{
     message: Array<FlowStatusErrorMessageComponent>,
+    children?: Array<FlowStatusErrorChild>,
   }>,
 };
 

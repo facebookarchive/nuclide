@@ -19,6 +19,9 @@ import {
 } from '../lib/diagnosticsParser';
 import {addMatchers} from '../../nuclide-test-helpers';
 
+import flowChildrenOutput from './fixtures/flow-children-output.json';
+import flowChildrenDiagnostic from './fixtures/flow-children-diagnostic.json';
+
 const flowOutput = {
   passed: false,
   flowVersion: '0.23.0',
@@ -149,6 +152,7 @@ const flowOutput = {
         },
       ],
     },
+    flowChildrenOutput,
   ],
 };
 
@@ -202,6 +206,7 @@ const expected: Array<FileDiagnosticMessage> = [
       },
     ],
   },
+  flowChildrenDiagnostic,
 ];
 
 describe('flowStatusOutputToDiagnostics', () => {
