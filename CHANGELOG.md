@@ -1,5 +1,12 @@
 # Nuclide Changelog
 
+## v0.262.0
+
+**Hotfix from 0.261.0**
+
+* Fixed a bug causing some tooltips to not get dismissed
+* Await generated file service instead of throwing
+
 ## v0.261.0
 
 ### Diagnostics
