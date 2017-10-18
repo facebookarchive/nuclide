@@ -18,13 +18,13 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
+import {arrayEqual} from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import analytics from 'nuclide-commons-atom/analytics';
 import Model from 'nuclide-commons/Model';
-import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
-import {toggle} from 'nuclide-commons/observable';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {Observable} from 'rxjs';
 import {getFilterPattern} from 'nuclide-commons-ui/RegExpFilter';
@@ -81,9 +81,11 @@ export class DiagnosticsViewModel {
     const props = Observable.combineLatest(
       globalStates,
       this._model.toObservable(),
-      (globalState, instanceState) => ({
+      visibility,
+      (globalState, instanceState, isVisibile) => ({
         ...globalState,
         ...instanceState,
+        isVisibile,
         diagnostics: this._filterDiagnostics(
           globalState.diagnostics,
           instanceState.textFilter.pattern,
@@ -97,8 +99,52 @@ export class DiagnosticsViewModel {
       }),
     );
 
-    // "Mute" the props stream when the view is hidden so we don't do unnecessary updates.
-    this._props = toggle(props, visibility);
+    this._props = this._trackVisibility(props);
+  }
+
+  // If autoVisibility setting is on, then automatically show/hide on changes.
+  // Otherwise mute the props stream to prevent unnecessary updates.
+  _trackVisibility(props: Observable<Props>): Observable<Props> {
+    let lastDiagnostics = [];
+    return props.do(newProps => {
+      if (
+        newProps.autoVisibility &&
+        !arrayEqual(
+          newProps.diagnostics,
+          lastDiagnostics,
+          (a, b) => a.text === b.text,
+        )
+      ) {
+        if (newProps.diagnostics.length > 0) {
+          const activePane = atom.workspace.getActivePane();
+          // Do not use goToLocation because diagnostics item is not a file.
+          atom.workspace // eslint-disable-line
+            // $FlowFixMe: workspace.open accepts an item or URI
+            .open(this)
+            .then(() => {
+              // Since workspace.open focuses the pane containing the diagnostics,
+              // we manually return focus to the previously active pane.
+              if (activePane != null) {
+                // Somehow calling activate immediately does not return focus.
+                activePane.activate();
+              }
+            });
+        } else {
+          const pane = atom.workspace.paneForURI(WORKSPACE_VIEW_URI);
+          // Only hide the diagnostics if it's the only item in its pane.
+          if (pane != null) {
+            const items = pane.getItems();
+            if (
+              items.length === 1 &&
+              items[0] instanceof DiagnosticsViewModel
+            ) {
+              atom.workspace.hide(WORKSPACE_VIEW_URI);
+            }
+          }
+        }
+        lastDiagnostics = newProps.diagnostics;
+      }
+    });
   }
 
   destroy(): void {

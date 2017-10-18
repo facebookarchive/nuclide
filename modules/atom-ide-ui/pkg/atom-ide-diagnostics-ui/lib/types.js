@@ -27,6 +27,7 @@ export type GlobalViewState = {
   filterByActiveTextEditor: boolean,
   onFilterByActiveTextEditorChange: (isChecked: boolean) => mixed,
   showDirectoryColumn: boolean,
+  autoVisibility: boolean,
   showTraces: boolean,
   onShowTracesChange: (isChecked: boolean) => mixed,
   supportedMessageKinds: Set<DiagnosticMessageKind>,

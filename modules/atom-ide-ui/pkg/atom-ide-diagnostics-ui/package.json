@@ -40,6 +40,12 @@
       "description": "The file's directory can give more context but is often unnecessary.",
       "type": "boolean",
       "default": false
+    },
+    "autoVisibility": {
+      "title": "Automatically show and hide diagnostics panel",
+      "description": "When new warnings appear, show the panel. When all warnings clear, hide it.",
+      "type": "boolean",
+      "default": false
     }
   },
   "consumedServices": {

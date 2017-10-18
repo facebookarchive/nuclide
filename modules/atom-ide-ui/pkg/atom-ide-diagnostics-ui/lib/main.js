@@ -215,6 +215,12 @@ class Activation {
         'atom-ide-diagnostics-ui.showDirectoryColumn',
       ): any);
 
+      const autoVisibilityStream: Observable<
+        boolean,
+      > = (featureConfig.observeAsStream(
+        'atom-ide-diagnostics-ui.autoVisibility',
+      ): any);
+
       const pathToActiveTextEditorStream = getActiveEditorPaths();
 
       const filterByActiveTextEditorStream = packageStates
@@ -244,12 +250,14 @@ class Activation {
               ),
       );
 
+      // $FlowFixMe: exceeds number of args defined in flow-typed definition
       this._globalViewStates = Observable.combineLatest(
         diagnosticsStream,
         filterByActiveTextEditorStream,
         pathToActiveTextEditorStream,
         showTracesStream,
         showDirectoryColumnStream,
+        autoVisibilityStream,
         supportedMessageKindsStream,
         uiConfigStream,
         (
@@ -258,6 +266,7 @@ class Activation {
           pathToActiveTextEditor,
           showTraces,
           showDirectoryColumn,
+          autoVisibility,
           supportedMessageKinds,
           uiConfig,
         ) => ({
@@ -266,6 +275,7 @@ class Activation {
           pathToActiveTextEditor,
           showTraces,
           showDirectoryColumn,
+          autoVisibility,
           onShowTracesChange: setShowTraces,
           onFilterByActiveTextEditorChange: setFilterByActiveTextEditor,
           supportedMessageKinds,

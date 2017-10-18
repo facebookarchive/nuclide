@@ -52,6 +52,9 @@ export type Props = {
   selectedMessage: ?DiagnosticMessage,
   supportedMessageKinds: Set<DiagnosticMessageKind>,
   uiConfig: UiConfig,
+  isVisibile: boolean,
+  // Used by the DiagnosticsViewModel.
+  autoVisibility: boolean, // eslint-disable-line react/no-unused-prop-types
 
   hiddenGroups: Set<DiagnosticGroup>,
   onTypeFilterChange: (type: DiagnosticGroup) => mixed,
@@ -64,6 +67,10 @@ export type Props = {
  */
 export default class DiagnosticsView extends React.Component<Props> {
   _table: ?DiagnosticsTable;
+
+  shouldComponentUpdate(nextProps: Props): boolean {
+    return nextProps.isVisibile;
+  }
 
   render(): React.Element<any> {
     let {diagnostics} = this.props;
