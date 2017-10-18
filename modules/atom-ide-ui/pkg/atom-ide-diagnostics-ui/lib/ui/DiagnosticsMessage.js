@@ -24,7 +24,7 @@ type DiagnosticsMessageProps = {
   message: DiagnosticMessage,
   goToLocation: (path: string, line: number) => mixed,
   fixer: (message: DiagnosticMessage) => void,
-  children?: Array<React.Element<any>>,
+  children?: React.Node,
   /* eslint-enable react/no-unused-prop-types */
 };
 

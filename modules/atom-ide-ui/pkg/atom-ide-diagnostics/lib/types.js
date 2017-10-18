@@ -84,6 +84,11 @@ export type DiagnosticFix = TextEdit & {
   title?: string,
 };
 
+export type DiagnosticAction = {
+  apply: () => mixed,
+  title: string,
+};
+
 export type DiagnosticMessage = {|
   kind?: DiagnosticMessageKind,
   providerName: string,
@@ -94,6 +99,8 @@ export type DiagnosticMessage = {|
   range?: atom$Range,
   trace?: Array<DiagnosticTrace>,
   fix?: DiagnosticFix,
+  // Actions will be displayed below the description in the popup.
+  +actions?: Array<DiagnosticAction>,
   // Indicates that the message should still be displayed, but there should be some UI indicating
   // that it is out of date. TODO(matthewwithanm) implement this UI.
   stale?: boolean,

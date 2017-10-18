@@ -84,7 +84,8 @@ export class CodeActionProvider<T: LanguageService> {
       const codeActions = await (await languageService).getCodeActions(
         fileVersion,
         range,
-        diagnostics,
+        // $FlowIssue: Flow doesn't understand this.
+        diagnostics.map(d => ({...d, actions: undefined})),
       );
 
       return codeActions.map(action => ({

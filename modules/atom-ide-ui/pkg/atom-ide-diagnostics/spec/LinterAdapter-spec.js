@@ -295,33 +295,29 @@ describe('message transformation functions', () => {
 
   describe('linterMessageV2ToDiagnosticMessage', () => {
     it('should correctly convert messages', () => {
-      expect(
-        linterMessageV2ToDiagnosticMessage(
+      const message = {
+        location: {
+          file: 'file.txt',
+          position: [[0, 0], [0, 1]],
+        },
+        reference: {
+          file: 'ref.txt',
+          position: [1, 1],
+        },
+        excerpt: 'Error',
+        severity: 'error',
+        solutions: [
           {
-            location: {
-              file: 'file.txt',
-              position: [[0, 0], [0, 1]],
-            },
-            reference: {
-              file: 'ref.txt',
-              position: [1, 1],
-            },
-            excerpt: 'Error',
-            severity: 'error',
-            solutions: [
-              {
-                title: 'Solution',
-                position: [[0, 0], [0, 1]],
-                currentText: '',
-                replaceWith: 'a',
-              },
-            ],
-            description: 'Description',
-            linterName: 'test2',
+            title: 'Solution',
+            position: [[0, 0], [0, 1]],
+            currentText: '',
+            replaceWith: 'a',
           },
-          'test',
-        ),
-      ).toEqual({
+        ],
+        description: 'Description',
+        linterName: 'test2',
+      };
+      const expected = {
         providerName: 'test2',
         type: 'Error',
         filePath: 'file.txt',
@@ -341,6 +337,45 @@ describe('message transformation functions', () => {
           oldText: '',
           newText: 'a',
         },
+        actions: [],
+      };
+      expect(linterMessageV2ToDiagnosticMessage(message, 'test')).toEqual(
+        expected,
+      );
+      expect(
+        linterMessageV2ToDiagnosticMessage(
+          {
+            ...message,
+            solutions: [
+              {
+                title: 'Test solution',
+                position: [[0, 0], [0, 1]],
+                // Since we can't match functions :(
+                apply: ({bind: () => 'dummy'}: any),
+                priority: 2,
+              },
+              {
+                position: [[0, 0], [0, 1]],
+                apply: ({bind: () => 'dummy'}: any),
+                priority: 1,
+              },
+            ],
+          },
+          'test',
+        ),
+      ).toEqual({
+        ...expected,
+        fix: undefined,
+        actions: [
+          {
+            title: 'Solution 1',
+            apply: 'dummy',
+          },
+          {
+            title: 'Test solution',
+            apply: 'dummy',
+          },
+        ],
       });
     });
   });

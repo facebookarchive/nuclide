@@ -101,6 +101,7 @@ export type FileDiagnosticMessage = {|
   range?: atom$Range,
   trace?: Array<DiagnosticTrace>,
   fix?: DiagnosticFix,
+  actions?: void, // Help Flow believe this is a subtype.
   stale?: boolean,
 |};
 

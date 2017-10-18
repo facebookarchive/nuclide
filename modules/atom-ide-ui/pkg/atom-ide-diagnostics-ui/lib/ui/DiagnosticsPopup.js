@@ -16,6 +16,7 @@ import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
 import * as React from 'react';
 import classnames from 'classnames';
+import {mapUnion} from 'nuclide-commons/collection';
 import {DiagnosticsMessage} from './DiagnosticsMessage';
 import DiagnosticsCodeActions from './DiagnosticsCodeActions';
 
@@ -43,11 +44,9 @@ function renderMessage(
       'diagnostics-popup-info': message.type === 'Info',
     },
   );
-  const codeActions =
-    codeActionsForMessage && codeActionsForMessage.get(message);
+  const codeActions = getCodeActions(message, codeActionsForMessage);
   return (
     <div className={className} key={index} tabIndex={-1}>
-      {/* $FlowFixMe(>=0.53.0) Flow suppress */}
       <DiagnosticsMessage
         fixer={fixer}
         goToLocation={goToLocation}
@@ -58,6 +57,40 @@ function renderMessage(
       </DiagnosticsMessage>
     </div>
   );
+}
+
+function getCodeActions(
+  message: DiagnosticMessage,
+  codeActionsForMessage: ?Map<DiagnosticMessage, Map<string, CodeAction>>,
+): ?Map<string, CodeAction> {
+  const codeActionMaps = [];
+  if (message.actions != null && message.actions.length > 0) {
+    codeActionMaps.push(
+      new Map(
+        message.actions.map(action => {
+          return [
+            action.title,
+            {
+              async getTitle() {
+                return action.title;
+              },
+              async apply() {
+                action.apply();
+              },
+              dispose() {},
+            },
+          ];
+        }),
+      ),
+    );
+  }
+  if (codeActionsForMessage) {
+    const actions = codeActionsForMessage.get(message);
+    if (actions != null) {
+      codeActionMaps.push(actions);
+    }
+  }
+  return codeActionMaps.length > 0 ? mapUnion(...codeActionMaps) : null;
 }
 
 // TODO move LESS styles to nuclide-ui
