@@ -311,15 +311,13 @@ export function getOutputStream(
 
     // Accumulate the first `exitErrorBufferSize` bytes of stderr so that we can give feedback about
     // about exit errors (then stop so we don't fill up memory with it).
-    const accumulatedStderr = takeWhileInclusive(
-      stderrEvents
-        .scan(
-          (acc, event) => (acc + event.data).slice(0, exitErrorBufferSize),
-          '',
-        )
-        .startWith(''),
-      acc => acc.length < exitErrorBufferSize,
-    );
+    const accumulatedStderr = stderrEvents
+      .scan(
+        (acc, event) => (acc + event.data).slice(0, exitErrorBufferSize),
+        '',
+      )
+      .startWith('')
+      .let(takeWhileInclusive(acc => acc.length < exitErrorBufferSize));
 
     // We need to start listening for the exit event immediately, but defer emitting it until the
     // (buffered) output streams end.
@@ -351,12 +349,16 @@ export function getOutputStream(
       .publishReplay();
     const exitSub = closeEvents.connect();
 
-    return takeWhileInclusive(
-      Observable.merge(stdoutEvents, stderrEvents).concat(closeEvents),
-      event => event.kind !== 'error' && event.kind !== 'exit',
-    ).finally(() => {
-      exitSub.unsubscribe();
-    });
+    return Observable.merge(stdoutEvents, stderrEvents)
+      .concat(closeEvents)
+      .let(
+        takeWhileInclusive(
+          event => event.kind !== 'error' && event.kind !== 'exit',
+        ),
+      )
+      .finally(() => {
+        exitSub.unsubscribe();
+      });
   });
 }
 

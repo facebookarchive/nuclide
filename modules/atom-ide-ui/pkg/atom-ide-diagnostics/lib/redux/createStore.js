@@ -53,7 +53,7 @@ export default function createStore(
   const messagesWithFixes = getFileMessages(store)
     .map(messageSet => setFilter(messageSet, message => message.fix != null))
     .filter(messageSet => messageSet.size > 0);
-  diffSets(messagesWithFixes).subscribe(({added, removed}) => {
+  messagesWithFixes.let(diffSets()).subscribe(({added, removed}) => {
     if (added.size > 0) {
       messageRangeTracker.addFileMessages(added);
     }

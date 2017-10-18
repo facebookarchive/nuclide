@@ -12,6 +12,18 @@
 
 /* global requestAnimationFrame, cancelAnimationFrame */
 
+// NOTE: Custom operators that require arguments should be written as higher-order functions. That
+// is, they should accept the arguments and return a function that accepts only an observable. This
+// allows a nice ergonomic way of using them with '.let()' (or a potential future pipe operator):
+//
+//     const makeExciting = (excitementLevel: number = 1) =>
+//       (source: Observable<string>) =>
+//         source.map(x => x + '!'.repeat(excitementLevel));
+//
+//     Observable.of('hey', 'everybody')
+//       .let(makeExciting())
+//       .subscribe(x => console.log(x));
+
 import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -62,37 +74,37 @@ export function splitStream(input: Observable<string>): Observable<string> {
  *     specifying whether to complete the buffer (and begin a new one).
  */
 export function bufferUntil<T>(
-  stream: Observable<T>,
   condition: (item: T, buffer: Array<T>) => boolean,
-): Observable<Array<T>> {
-  return Observable.create(observer => {
-    let buffer = null;
-    const flush = () => {
-      if (buffer != null) {
-        observer.next(buffer);
-        buffer = null;
-      }
-    };
-    return stream.subscribe(
-      x => {
-        if (buffer == null) {
-          buffer = [];
+): (Observable<T>) => Observable<Array<T>> {
+  return (stream: Observable<T>) =>
+    Observable.create(observer => {
+      let buffer = null;
+      const flush = () => {
+        if (buffer != null) {
+          observer.next(buffer);
+          buffer = null;
         }
-        buffer.push(x);
-        if (condition(x, buffer)) {
+      };
+      return stream.subscribe(
+        x => {
+          if (buffer == null) {
+            buffer = [];
+          }
+          buffer.push(x);
+          if (condition(x, buffer)) {
+            flush();
+          }
+        },
+        err => {
           flush();
-        }
-      },
-      err => {
-        flush();
-        observer.error(err);
-      },
-      () => {
-        flush();
-        observer.complete();
-      },
-    );
-  });
+          observer.error(err);
+        },
+        () => {
+          flush();
+          observer.complete();
+        },
+      );
+    });
 }
 
 /**
@@ -117,19 +129,19 @@ type Diff<T> = {
  * **IMPORTANT:** These sets are assumed to be immutable by convention. Don't mutate them!
  */
 export function diffSets<T>(
-  sets: Observable<Set<T>>,
   hash?: (v: T) => any,
-): Observable<Diff<T>> {
-  return Observable.concat(
-    Observable.of(new Set()), // Always start with no items with an empty set
-    sets,
-  )
-    .pairwise()
-    .map(([previous, next]) => ({
-      added: setDifference(next, previous, hash),
-      removed: setDifference(previous, next, hash),
-    }))
-    .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
+): (Observable<Set<T>>) => Observable<Diff<T>> {
+  return (sets: Observable<Set<T>>) =>
+    Observable.concat(
+      Observable.of(new Set()), // Always start with no items with an empty set
+      sets,
+    )
+      .pairwise()
+      .map(([previous, next]) => ({
+        added: setDifference(next, previous, hash),
+        removed: setDifference(previous, next, hash),
+      }))
+      .filter(diff => diff.added.size > 0 || diff.removed.size > 0);
 }
 
 /**
@@ -203,17 +215,17 @@ export function reconcileSets<T>(
   addAction: (addedItem: T) => IDisposable,
   hash?: (v: T) => any,
 ): IDisposable {
-  const diffs = diffSets(sets, hash);
+  const diffs = sets.let(diffSets(hash));
   return reconcileSetDiffs(diffs, addAction, hash);
 }
 
 export function toggle<T>(
-  source: Observable<T>,
   toggler: Observable<boolean>,
-): Observable<T> {
-  return toggler
-    .distinctUntilChanged()
-    .switchMap(enabled => (enabled ? source : Observable.empty()));
+): (Observable<T>) => Observable<T> {
+  return (source: Observable<T>) =>
+    toggler
+      .distinctUntilChanged()
+      .switchMap(enabled => (enabled ? source : Observable.empty()));
 }
 
 export function compact<T>(source: Observable<?T>): Observable<T> {
@@ -225,25 +237,25 @@ export function compact<T>(source: Observable<?T>): Observable<T> {
  * Like `takeWhile`, but includes the first item that doesn't match the predicate.
  */
 export function takeWhileInclusive<T>(
-  source: Observable<T>,
   predicate: (value: T) => boolean,
-): Observable<T> {
-  return Observable.create(observer =>
-    source.subscribe(
-      x => {
-        observer.next(x);
-        if (!predicate(x)) {
+): (Observable<T>) => Observable<T> {
+  return (source: Observable<T>) =>
+    Observable.create(observer =>
+      source.subscribe(
+        x => {
+          observer.next(x);
+          if (!predicate(x)) {
+            observer.complete();
+          }
+        },
+        err => {
+          observer.error(err);
+        },
+        () => {
           observer.complete();
-        }
-      },
-      err => {
-        observer.error(err);
-      },
-      () => {
-        observer.complete();
-      },
-    ),
-  );
+        },
+      ),
+    );
 }
 
 // Concatenate the latest values from each input observable into one big list.
@@ -275,43 +287,44 @@ type ThrottleOptions = {
  * A more sensible alternative to RxJS's throttle/audit/sample operators.
  */
 export function throttle<T>(
-  source: Observable<T>,
   duration:
     | number
     | Observable<any>
     | ((value: T) => Observable<any> | Promise<any>),
   options_: ?ThrottleOptions,
-): Observable<T> {
-  const options = options_ || {};
-  const leading = options.leading !== false;
-  let audit;
-  switch (typeof duration) {
-    case 'number':
-      // $FlowFixMe: Add `auditTime()` to Flow defs
-      audit = obs => obs.auditTime(duration);
-      break;
-    case 'function':
-      audit = obs => obs.audit(duration);
-      break;
-    default:
-      audit = obs => obs.audit(() => duration);
-  }
+): (Observable<T>) => Observable<T> {
+  return (source: Observable<T>) => {
+    const options = options_ || {};
+    const leading = options.leading !== false;
+    let audit;
+    switch (typeof duration) {
+      case 'number':
+        // $FlowFixMe: Add `auditTime()` to Flow defs
+        audit = obs => obs.auditTime(duration);
+        break;
+      case 'function':
+        audit = obs => obs.audit(duration);
+        break;
+      default:
+        audit = obs => obs.audit(() => duration);
+    }
 
-  if (!leading) {
-    return audit(source);
-  }
+    if (!leading) {
+      return audit(source);
+    }
 
-  return Observable.create(observer => {
-    const connectableSource = source.publish();
-    const throttled = Observable.merge(
-      connectableSource.take(1),
-      audit(connectableSource.skip(1)),
-    );
-    return new UniversalDisposable(
-      throttled.subscribe(observer),
-      connectableSource.connect(),
-    );
-  });
+    return Observable.create(observer => {
+      const connectableSource = source.publish();
+      const throttled = Observable.merge(
+        connectableSource.take(1),
+        audit(connectableSource.skip(1)),
+      );
+      return new UniversalDisposable(
+        throttled.subscribe(observer),
+        connectableSource.connect(),
+      );
+    });
+  };
 }
 
 /**

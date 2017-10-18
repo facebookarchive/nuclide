@@ -243,13 +243,11 @@ export default class QuickSelectionComponent extends React.Component<
         this._handleDocumentMouseDown,
       ),
       // The text editor often changes during dispatches, so wait until the next tick.
-      throttle(
-        observableFromSubscribeFunction(cb =>
-          this._getTextEditor().onDidChange(cb),
-        ),
-        microtask,
-        {leading: false},
-      ).subscribe(this._handleTextInputChange),
+      observableFromSubscribeFunction(cb =>
+        this._getTextEditor().onDidChange(cb),
+      )
+        .let(throttle(microtask, {leading: false}))
+        .subscribe(this._handleTextInputChange),
       observableFromSubscribeFunction(cb =>
         this.props.searchResultManager.onProvidersChanged(cb),
       )

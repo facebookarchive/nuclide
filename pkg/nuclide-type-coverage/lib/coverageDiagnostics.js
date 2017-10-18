@@ -26,7 +26,7 @@ export function diagnosticProviderForResultStream(
   results: Observable<Result<CoverageProvider, ?CoverageResult>>,
   isEnabledStream: Observable<boolean>,
 ): ObservableDiagnosticProvider {
-  const toggledResults = toggle(results, isEnabledStream);
+  const toggledResults = results.let(toggle(isEnabledStream));
 
   return {
     updates: compact(toggledResults.map(diagnosticsForResult)),

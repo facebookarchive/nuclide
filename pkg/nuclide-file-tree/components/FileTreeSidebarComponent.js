@@ -153,10 +153,9 @@ export default class FileTreeSidebarComponent extends React.Component<
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
       atom.project.onDidChangePaths(this._processExternalUpdate),
-      toggle(
-        observeAllModifiedStatusChanges(),
-        this._showOpenConfigValues,
-      ).subscribe(() => this._setModifiedUris()),
+      observeAllModifiedStatusChanges()
+        .let(toggle(this._showOpenConfigValues))
+        .subscribe(() => this._setModifiedUris()),
       this._monitorActiveUri(),
       Observable.fromPromise(
         FileTreeHelpers.areStackChangesEnabled(),
@@ -258,7 +257,7 @@ export default class FileTreeSidebarComponent extends React.Component<
       }),
     );
     return remeasureEvents
-      .let(obs => throttle(obs, () => nextAnimationFrame))
+      .let(throttle(() => nextAnimationFrame))
       .map(() => this._getScrollerHeight())
       .let(compact)
       .distinctUntilChanged()
@@ -569,18 +568,20 @@ All the changes across your entire stacked diff.
     );
 
     return new UniversalDisposable(
-      toggle(activeEditors, this._showOpenConfigValues).subscribe(editor => {
-        if (
-          editor == null ||
-          typeof editor.getPath !== 'function' ||
-          editor.getPath() == null
-        ) {
-          this.setState({activeUri: null});
-          return;
-        }
+      activeEditors
+        .let(toggle(this._showOpenConfigValues))
+        .subscribe(editor => {
+          if (
+            editor == null ||
+            typeof editor.getPath !== 'function' ||
+            editor.getPath() == null
+          ) {
+            this.setState({activeUri: null});
+            return;
+          }
 
-        this.setState({activeUri: editor.getPath()});
-      }),
+          this.setState({activeUri: editor.getPath()});
+        }),
     );
   }
 

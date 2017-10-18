@@ -54,7 +54,7 @@ describe('nuclide-commons/observable', () => {
   describe('takeWhileInclusive', () => {
     it('completes the stream when something matches the predicate', () => {
       const source = new Subject();
-      const result = takeWhileInclusive(source, x => x !== 2);
+      const result = source.let(takeWhileInclusive(x => x !== 2));
       const next: (n: number) => mixed = jasmine.createSpy();
       const complete: () => mixed = jasmine.createSpy();
       result.subscribe({next, complete});
@@ -118,7 +118,8 @@ describe('nuclide-commons/observable', () => {
     it('emits a diff for the first item', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source)
+        const diffsPromise = source
+          .let(diffSets())
           .toArray()
           .toPromise();
         source.next(new Set([1, 2, 3]));
@@ -137,7 +138,8 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies removed items', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source)
+        const diffsPromise = source
+          .let(diffSets())
           .toArray()
           .toPromise();
         source.next(new Set([1, 2, 3]));
@@ -151,7 +153,8 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies removed items when a hash function is used', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key)
+        const diffsPromise = source
+          .let(diffSets(x => x.key))
           .toArray()
           .toPromise();
         const firstItems = [{key: 1}, {key: 2}, {key: 3}];
@@ -169,7 +172,8 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies added items', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source)
+        const diffsPromise = source
+          .let(diffSets())
           .toArray()
           .toPromise();
         source.next(new Set([1, 2]));
@@ -183,7 +187,8 @@ describe('nuclide-commons/observable', () => {
     it('correctly identifies added items when a hash function is used', () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key)
+        const diffsPromise = source
+          .let(diffSets(x => x.key))
           .toArray()
           .toPromise();
         const firstItems = [{key: 1}, {key: 2}];
@@ -201,7 +206,8 @@ describe('nuclide-commons/observable', () => {
     it("doesn't emit a diff when nothing changes", () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source)
+        const diffsPromise = source
+          .let(diffSets())
           .toArray()
           .toPromise();
         source.next(new Set([1, 2, 3]));
@@ -216,7 +222,8 @@ describe('nuclide-commons/observable', () => {
     it("doesn't emit a diff when nothing changes and a hash function is used", () => {
       waitsForPromise(async () => {
         const source = new Subject();
-        const diffsPromise = diffSets(source, x => x.key)
+        const diffsPromise = source
+          .let(diffSets(x => x.key))
           .toArray()
           .toPromise();
         const firstItems = [{key: 1}, {key: 2}, {key: 3}];
@@ -310,7 +317,7 @@ describe('nuclide-commons/observable', () => {
     beforeEach(() => {
       toggler = new Subject();
       // Deferred so individual 'it' blocks can set the source on the fly.
-      output = toggle(Observable.defer(() => source), toggler);
+      output = Observable.defer(() => source).let(toggle(toggler));
     });
 
     describe('with a standard source', () => {
@@ -399,7 +406,7 @@ describe('nuclide-commons/observable', () => {
     it('emits the leading item immeditately by default', () => {
       const source = Observable.of(1, 2).merge(Observable.never());
       const spy = jasmine.createSpy();
-      throttle(source, Observable.never()).subscribe(spy);
+      source.let(throttle(Observable.never())).subscribe(spy);
       expect(spy).toHaveBeenCalledWith(1);
     });
 
@@ -407,7 +414,7 @@ describe('nuclide-commons/observable', () => {
       const source = Observable.of(1).merge(Observable.never());
       const notifier = Observable.of(null); // emits immediately on subscription.
       const spy = jasmine.createSpy();
-      throttle(source, notifier).subscribe(spy);
+      source.let(throttle(notifier)).subscribe(spy);
       expect(spy.callCount).toBe(1);
     });
 
@@ -415,7 +422,7 @@ describe('nuclide-commons/observable', () => {
       const source = new Subject();
       const notifier = new Subject();
       const spy = jasmine.createSpy();
-      throttle(source, notifier).subscribe(spy);
+      source.let(throttle(notifier)).subscribe(spy);
       source.next(1);
       spy.reset();
       source.next(2);
@@ -435,7 +442,7 @@ describe('nuclide-commons/observable', () => {
     it('subscribes to the source once per subscription', () => {
       const spy = jasmine.createSpy();
       const source = Observable.create(spy);
-      throttle(source, Observable.of(null)).subscribe();
+      source.let(throttle(Observable.of(null))).subscribe();
       expect(spy.callCount).toBe(1);
     });
   });
@@ -472,10 +479,8 @@ describe('nuclide-commons/observable', () => {
   describe('bufferUntil', () => {
     it('buffers based on the predicate', () => {
       waitsForPromise(async () => {
-        const chunks = await bufferUntil(
-          Observable.of(1, 2, 3, 4),
-          x => x % 2 === 0,
-        )
+        const chunks = await Observable.of(1, 2, 3, 4)
+          .let(bufferUntil(x => x % 2 === 0))
           .toArray()
           .toPromise();
         expect(chunks).toEqual([[1, 2], [3, 4]]);
@@ -484,10 +489,8 @@ describe('nuclide-commons/observable', () => {
 
     it('provides the current buffer', () => {
       waitsForPromise(async () => {
-        const chunks = await bufferUntil(
-          Observable.of(1, 2, 3, 4),
-          (x, buffer) => buffer.length === 2,
-        )
+        const chunks = await Observable.of(1, 2, 3, 4)
+          .let(bufferUntil((x, buffer) => buffer.length === 2))
           .toArray()
           .toPromise();
         expect(chunks).toEqual([[1, 2], [3, 4]]);
