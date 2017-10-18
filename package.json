@@ -179,10 +179,10 @@
   "package-deps": [
     "file-icons",
     "tool-bar:1.1.0",
-    "haskell-grammar",
     "highlight-selected",
     "language-babel",
     "language-graphql",
+    "language-haskell",
     "language-ini",
     "language-lua",
     "language-ocaml",
