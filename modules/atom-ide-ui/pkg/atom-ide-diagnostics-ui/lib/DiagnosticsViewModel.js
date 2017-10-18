@@ -130,7 +130,7 @@ export class DiagnosticsViewModel {
               }
             });
         } else {
-          const pane = atom.workspace.paneForURI(WORKSPACE_VIEW_URI);
+          const pane = atom.workspace.paneForItem(this);
           // Only hide the diagnostics if it's the only item in its pane.
           if (pane != null) {
             const items = pane.getItems();
@@ -138,7 +138,7 @@ export class DiagnosticsViewModel {
               items.length === 1 &&
               items[0] instanceof DiagnosticsViewModel
             ) {
-              atom.workspace.hide(WORKSPACE_VIEW_URI);
+              atom.workspace.hide(this);
             }
           }
         }
