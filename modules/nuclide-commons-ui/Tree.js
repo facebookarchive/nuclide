@@ -1,53 +1,70 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TreeList = exports.NestedTreeItem = exports.TreeItem = undefined;
+exports.Tree = Tree;
+
+var _react = _interopRequireWildcard(require('react'));
+
+var _classnames;
+
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
+
+var _scrollIntoView;
+
+function _load_scrollIntoView() {
+  return _scrollIntoView = require('./scrollIntoView');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; } /**
+                                                                                                                                                                                                                              * Copyright (c) 2017-present, Facebook, Inc.
+                                                                                                                                                                                                                              * All rights reserved.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * This source code is licensed under the BSD-style license found in the
+                                                                                                                                                                                                                              * LICENSE file in the root directory of this source tree. An additional grant
+                                                                                                                                                                                                                              * of patent rights can be found in the PATENTS file in the same directory.
+                                                                                                                                                                                                                              *
+                                                                                                                                                                                                                              * 
+                                                                                                                                                                                                                              * @format
+                                                                                                                                                                                                                              */
 
 /* eslint-env browser */
 
-import * as React from 'react';
-import classnames from 'classnames';
-import invariant from 'assert';
-import {scrollIntoView} from './scrollIntoView';
+function Tree(_ref) {
+  let { className, style } = _ref,
+      props = _objectWithoutProperties(_ref, ['className', 'style']);
 
-export function Tree({className, style, ...props}: Object) {
-  return (
-    <ol
-      className={classnames('list-tree', className)}
-      style={{position: 'relative', ...style}}
-      {...props}
-    />
-  );
+  return _react.createElement('ol', Object.assign({
+    className: (0, (_classnames || _load_classnames()).default)('list-tree', className),
+    style: Object.assign({ position: 'relative' }, style)
+  }, props));
 }
 
-type TreeItemProps = {
-  children?: mixed,
-  className?: string,
-  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
-  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
-  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
-  selected?: boolean,
-};
+class TreeItem extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-export class TreeItem extends React.Component<TreeItemProps> {
-  _liNode: ?HTMLLIElement;
-  _handleClick = handleClick.bind(this);
+    return _temp = super(...args), this._handleClick = handleClick.bind(this), _temp;
+  }
 
   scrollIntoView() {
     if (this._liNode != null) {
-      scrollIntoView(this._liNode);
+      (0, (_scrollIntoView || _load_scrollIntoView()).scrollIntoView)(this._liNode);
     }
   }
 
   render() {
-    const {className, selected, children, ...remainingProps} = this.props;
+    const _props = this.props,
+          { className, selected, children } = _props,
+          remainingProps = _objectWithoutProperties(_props, ['className', 'selected', 'children']);
 
     // don't forward these on to the <li>
     delete remainingProps.onConfirm;
@@ -56,125 +73,111 @@ export class TreeItem extends React.Component<TreeItemProps> {
 
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
-      <li
-        aria-selected={selected}
-        className={classnames(
-          className,
-          {
-            selected,
-          },
-          'list-item',
-        )}
-        {...remainingProps}
-        onClick={this._handleClick}
-        ref={liNode => (this._liNode = liNode)}
-        role="treeitem"
-        tabIndex={selected ? '0' : '-1'}>
-        {selected && typeof children === 'string' ? (
-          // String children must be wrapped to receive correct styles when selected.
-          <span>{children}</span>
-        ) : (
+      _react.createElement(
+        'li',
+        Object.assign({
+          'aria-selected': selected,
+          className: (0, (_classnames || _load_classnames()).default)(className, {
+            selected
+          }, 'list-item')
+        }, remainingProps, {
+          onClick: this._handleClick,
+          ref: liNode => this._liNode = liNode,
+          role: 'treeitem',
+          tabIndex: selected ? '0' : '-1' }),
+        selected && typeof children === 'string' ?
+        // String children must be wrapped to receive correct styles when selected.
+        _react.createElement(
+          'span',
+          null,
           children
-        )}
-      </li>
+        ) : children
+      )
     );
   }
 }
 
-type NestedTreeItemProps = {
-  title?: React.Node,
-  children?: mixed,
-  className?: string,
-  hasFlatChildren?: boolean, // passthrough to inner TreeList
-  selected?: boolean,
-  collapsed?: boolean,
-  onSelect?: (e: SyntheticMouseEvent<>) => mixed,
-  onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
-  onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
-};
+exports.TreeItem = TreeItem;
+class NestedTreeItem extends _react.Component {
+  constructor(...args) {
+    var _temp2;
 
-export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
-  _itemNode: ?HTMLDivElement;
-  _handleClick = (e: SyntheticMouseEvent<>) => {
-    const itemNode = this._itemNode;
-    if (itemNode == null) {
-      return;
-    }
+    return _temp2 = super(...args), this._handleClick = e => {
+      const itemNode = this._itemNode;
+      if (itemNode == null) {
+        return;
+      }
 
-    invariant(e.target instanceof Element);
-    if (e.target.closest('.list-item') === itemNode) {
-      handleClick.call(this, e);
-    }
-  };
+      if (!(e.target instanceof Element)) {
+        throw new Error('Invariant violation: "e.target instanceof Element"');
+      }
+
+      if (e.target.closest('.list-item') === itemNode) {
+        handleClick.call(this, e);
+      }
+    }, _temp2;
+  }
 
   render() {
-    const {
+    const _props2 = this.props,
+          {
       className,
       hasFlatChildren,
       selected,
       collapsed,
       title,
-      children,
-      ...remainingProps
-    } = this.props;
+      children
+    } = _props2,
+          remainingProps = _objectWithoutProperties(_props2, ['className', 'hasFlatChildren', 'selected', 'collapsed', 'title', 'children']);
 
     // don't forward these on to the <li>
     delete remainingProps.onConfirm;
     delete remainingProps.onSelect;
     delete remainingProps.onTripleClick;
 
-    return (
-      <li
-        aria-selected={selected}
-        aria-expanded={!collapsed}
-        className={classnames(
-          className,
-          {
-            selected,
-            collapsed,
-          },
-          'list-nested-item',
-        )}
-        {...remainingProps}
-        onClick={this._handleClick}
-        role="treeitem"
-        tabIndex={selected ? '0' : '-1'}>
-        {title == null ? null : (
-          <div className="list-item" ref={node => (this._itemNode = node)}>
-            {title}
-          </div>
-        )}
-        <TreeList hasFlatChildren={hasFlatChildren}>{children}</TreeList>
-      </li>
+    return _react.createElement(
+      'li',
+      Object.assign({
+        'aria-selected': selected,
+        'aria-expanded': !collapsed,
+        className: (0, (_classnames || _load_classnames()).default)(className, {
+          selected,
+          collapsed
+        }, 'list-nested-item')
+      }, remainingProps, {
+        onClick: this._handleClick,
+        role: 'treeitem',
+        tabIndex: selected ? '0' : '-1' }),
+      title == null ? null : _react.createElement(
+        'div',
+        { className: 'list-item', ref: node => this._itemNode = node },
+        title
+      ),
+      _react.createElement(
+        TreeList,
+        { hasFlatChildren: hasFlatChildren },
+        children
+      )
     );
   }
 }
 
-type TreeListProps = {
-  className?: string,
-  /* typically, instances of TreeItem or NestedTreeItem. */
-  children?: mixed,
-  showArrows?: boolean,
-  hasFlatChildren?: boolean,
-};
-export const TreeList = (props: TreeListProps) => (
-  // $FlowFixMe(>=0.53.0) Flow suppress
-  <ul
-    className={classnames(
-      props.className,
-      {
-        'has-collapsable-children': props.showArrows,
-        'has-flat-children': props.hasFlatChildren,
-      },
-      'list-tree',
-    )}
-    role="group">
-    {props.children}
-  </ul>
+exports.NestedTreeItem = NestedTreeItem;
+const TreeList = exports.TreeList = props =>
+// $FlowFixMe(>=0.53.0) Flow suppress
+_react.createElement(
+  'ul',
+  {
+    className: (0, (_classnames || _load_classnames()).default)(props.className, {
+      'has-collapsable-children': props.showArrows,
+      'has-flat-children': props.hasFlatChildren
+    }, 'list-tree'),
+    role: 'group' },
+  props.children
 );
 
-function handleClick(e: SyntheticMouseEvent<>): void {
-  const {onSelect, onConfirm, onTripleClick} = this.props;
+function handleClick(e) {
+  const { onSelect, onConfirm, onTripleClick } = this.props;
 
   const numberOfClicks = e.detail;
   switch (numberOfClicks) {

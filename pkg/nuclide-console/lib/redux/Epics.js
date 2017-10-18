@@ -1,3 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.registerExecutorEpic = registerExecutorEpic;
+exports.executeEpic = executeEpic;
+exports.registerRecordProviderEpic = registerRecordProviderEpic;
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _Actions;
+
+function _load_Actions() {
+  return _Actions = _interopRequireWildcard(require('./Actions'));
+}
+
+var _getCurrentExecutorId;
+
+function _load_getCurrentExecutorId() {
+  return _getCurrentExecutorId = _interopRequireDefault(require('../getCurrentExecutorId'));
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/**
+ * Register a record provider for every executor.
+ */
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,40 +41,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Action, Store} from '../types';
-import type {ActionsObservable} from 'nuclide-commons/redux-observable';
+function registerExecutorEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_EXECUTOR).map(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_EXECUTOR)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_EXECUTOR"');
+    }
 
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import * as Actions from './Actions';
-import getCurrentExecutorId from '../getCurrentExecutorId';
-import invariant from 'assert';
-import {Observable} from 'rxjs';
-
-/**
- * Register a record provider for every executor.
- */
-export function registerExecutorEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_EXECUTOR).map(action => {
-    invariant(action.type === Actions.REGISTER_EXECUTOR);
-    const {executor} = action.payload;
-    return Actions.registerRecordProvider({
+    const { executor } = action.payload;
+    return (_Actions || _load_Actions()).registerRecordProvider({
       id: executor.id,
       // $FlowIssue: Flow is having some trouble with the spread here.
-      records: executor.output.map(message => ({
-        ...message,
+      records: executor.output.map(message => Object.assign({}, message, {
         kind: 'response',
         sourceId: executor.id,
         scopeName: null, // The output won't be in the language's grammar.
         // Eventually, we'll want to allow providers to specify custom timestamps for records.
-        timestamp: new Date(),
-      })),
+        timestamp: new Date()
+      }))
     });
   });
 }
@@ -46,77 +69,71 @@ export function registerExecutorEpic(
 /**
  * Execute the provided code using the current executor.
  */
-export function executeEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.EXECUTE).flatMap(action => {
-    invariant(action.type === Actions.EXECUTE);
-    const {code} = action.payload;
-    const currentExecutorId = getCurrentExecutorId(store.getState());
+function executeEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).EXECUTE).flatMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).EXECUTE)) {
+      throw new Error('Invariant violation: "action.type === Actions.EXECUTE"');
+    }
+
+    const { code } = action.payload;
+    const currentExecutorId = (0, (_getCurrentExecutorId || _load_getCurrentExecutorId()).default)(store.getState());
     // flowlint-next-line sketchy-null-string:off
-    invariant(currentExecutorId);
+
+    if (!currentExecutorId) {
+      throw new Error('Invariant violation: "currentExecutorId"');
+    }
 
     const executor = store.getState().executors.get(currentExecutorId);
-    invariant(executor != null);
+
+    if (!(executor != null)) {
+      throw new Error('Invariant violation: "executor != null"');
+    }
 
     // TODO: Is this the best way to do this? Might want to go through nuclide-executors and have
     //       that register output sources?
-    return (
-      Observable.of(
-        Actions.recordReceived({
-          // Eventually, we'll want to allow providers to specify custom timestamps for records.
-          timestamp: new Date(),
-          sourceId: currentExecutorId,
-          kind: 'request',
-          level: 'log',
-          text: code,
-          scopeName: executor.scopeName,
-          data: null,
-        }),
-      )
-        // Execute the code as a side-effect.
-        .finally(() => {
-          executor.send(code);
-        })
-    );
+
+
+    return _rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).recordReceived({
+      // Eventually, we'll want to allow providers to specify custom timestamps for records.
+      timestamp: new Date(),
+      sourceId: currentExecutorId,
+      kind: 'request',
+      level: 'log',
+      text: code,
+      scopeName: executor.scopeName,
+      data: null
+    }))
+    // Execute the code as a side-effect.
+    .finally(() => {
+      executor.send(code);
+    });
   });
 }
 
-export function registerRecordProviderEpic(
-  actions: ActionsObservable<Action>,
-  store: Store,
-): Observable<Action> {
-  return actions.ofType(Actions.REGISTER_RECORD_PROVIDER).flatMap(action => {
-    invariant(action.type === Actions.REGISTER_RECORD_PROVIDER);
-    const {recordProvider} = action.payload;
+function registerRecordProviderEpic(actions, store) {
+  return actions.ofType((_Actions || _load_Actions()).REGISTER_RECORD_PROVIDER).flatMap(action => {
+    if (!(action.type === (_Actions || _load_Actions()).REGISTER_RECORD_PROVIDER)) {
+      throw new Error('Invariant violation: "action.type === Actions.REGISTER_RECORD_PROVIDER"');
+    }
+
+    const { recordProvider } = action.payload;
 
     // Transform the messages into actions and merge them into the action stream.
     // TODO: Add enabling/disabling of registered source and only subscribe when enabled. That
     //       way, we won't trigger cold observer side-effects when we don't need the results.
-    const messageActions = recordProvider.records.map(Actions.recordReceived);
+    const messageActions = recordProvider.records.map((_Actions || _load_Actions()).recordReceived);
 
     // TODO: Can this be delayed until sometime after registration?
-    const statusActions =
-      typeof recordProvider.observeStatus === 'function'
-        ? observableFromSubscribeFunction(
-            recordProvider.observeStatus,
-          ).map(status => Actions.updateStatus(recordProvider.id, status))
-        : Observable.empty();
+    const statusActions = typeof recordProvider.observeStatus === 'function' ? (0, (_event || _load_event()).observableFromSubscribeFunction)(recordProvider.observeStatus).map(status => (_Actions || _load_Actions()).updateStatus(recordProvider.id, status)) : _rxjsBundlesRxMinJs.Observable.empty();
 
-    const unregisteredEvents = actions
-      .ofType(Actions.REMOVE_SOURCE)
-      .filter(a => {
-        invariant(a.type === Actions.REMOVE_SOURCE);
-        return a.payload.sourceId === recordProvider.id;
-      });
+    const unregisteredEvents = actions.ofType((_Actions || _load_Actions()).REMOVE_SOURCE).filter(a => {
+      if (!(a.type === (_Actions || _load_Actions()).REMOVE_SOURCE)) {
+        throw new Error('Invariant violation: "a.type === Actions.REMOVE_SOURCE"');
+      }
 
-    return Observable.merge(
-      Observable.of(
-        Actions.registerSource({...recordProvider, name: recordProvider.id}),
-      ),
-      messageActions,
-      statusActions,
-    ).takeUntil(unregisteredEvents);
+      return a.payload.sourceId === recordProvider.id;
+    });
+
+    return _rxjsBundlesRxMinJs.Observable.merge(_rxjsBundlesRxMinJs.Observable.of((_Actions || _load_Actions()).registerSource(Object.assign({}, recordProvider, { name: recordProvider.id }))), messageActions, statusActions).takeUntil(unregisteredEvents);
   });
 }

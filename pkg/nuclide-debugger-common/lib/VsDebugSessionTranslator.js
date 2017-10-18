@@ -1,3 +1,65 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _protocolTypes;
+
+function _load_protocolTypes() {
+  return _protocolTypes = _interopRequireWildcard(require('../../nuclide-debugger-base/lib/protocol-types'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _nuclideDebuggerCommon;
+
+function _load_nuclideDebuggerCommon() {
+  return _nuclideDebuggerCommon = require('../../nuclide-debugger-common');
+}
+
+var _helpers;
+
+function _load_helpers() {
+  return _helpers = require('../../nuclide-debugger-common/lib/helpers');
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _VsDebugSession;
+
+function _load_VsDebugSession() {
+  return _VsDebugSession = _interopRequireDefault(require('./VsDebugSession'));
+}
+
+var _constants;
+
+function _load_constants() {
+  return _constants = require('./constants');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,94 +67,62 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {
-  AtomNotificationType,
-  DebuggerConfigAction,
-} from '../../nuclide-debugger-base/lib/types';
-import type {
-  VsAdapterType,
-  VSAdapterExecutableInfo,
-} from '../../nuclide-debugger-common/lib/types';
-import type {
-  Level as OutputLevelType,
-  Message,
-} from '../../nuclide-console/lib/types';
-import type {ClientCallback} from '../../nuclide-debugger-common';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-// eslint-disable-next-line rulesdir/no-cross-atom-imports
-import * as NuclideDebugProtocol from '../../nuclide-debugger-base/lib/protocol-types';
-
-import {arrayFlatten} from 'nuclide-commons/collection';
-import {FileCache} from '../../nuclide-debugger-common';
-import invariant from 'assert';
-import {pathToUri, uriToPath} from '../../nuclide-debugger-common/lib/helpers';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import VsDebugSession from './VsDebugSession';
-import {VsAdapterTypes} from './constants';
-import {Observable, Subject} from 'rxjs';
-
-function translateStopReason(stopReason: string): string {
+function translateStopReason(stopReason) {
   return stopReason;
 }
+// eslint-disable-next-line rulesdir/no-cross-atom-imports
 
-function nuclideDebuggerLocation(
-  scriptId: string,
-  lineNumber: number,
-  columnNumber: number,
-): NuclideDebugProtocol.Location {
+
+function nuclideDebuggerLocation(scriptId, lineNumber, columnNumber) {
   return {
     scriptId,
     lineNumber,
-    columnNumber,
+    columnNumber
   };
 }
 
-function getFakeLoaderPauseEvent(): NuclideDebugProtocol.DebuggerEvent {
+function getFakeLoaderPauseEvent() {
   return {
     method: 'Debugger.paused',
     params: {
       callFrames: [],
       reason: 'initial break',
-      data: {},
-    },
+      data: {}
+    }
   };
 }
 
-function getEmptyResponse(id: number): NuclideDebugProtocol.DebuggerResponse {
-  return {id, result: {}};
+function getEmptyResponse(id) {
+  return { id, result: {} };
 }
 
-function getErrorResponse(
-  id: number,
-  message: string,
-): NuclideDebugProtocol.DebuggerResponse {
-  return {id, error: {message}};
+function getErrorResponse(id, message) {
+  return { id, error: { message } };
 }
-
-type CommandHandler = (
-  command: NuclideDebugProtocol.DebuggerCommand,
-) => Promise<
-  NuclideDebugProtocol.DebuggerResponse | NuclideDebugProtocol.DebuggerEvent,
->;
 
 /**
  * Instead of having every async command handler try/catch its own logic
  * and send error response when failing, this utility would provide
  * the try/catch wrapper for command handlers.
  */
-function catchCommandError(handler: CommandHandler): CommandHandler {
-  return async (command: NuclideDebugProtocol.DebuggerCommand) => {
-    try {
-      return await handler(command);
-    } catch (error) {
-      return getErrorResponse(command.id, error.message);
-    }
-  };
+function catchCommandError(handler) {
+  return (() => {
+    var _ref = (0, _asyncToGenerator.default)(function* (command) {
+      try {
+        return yield handler(command);
+      } catch (error) {
+        return getErrorResponse(command.id, error.message);
+      }
+    });
+
+    return function (_x) {
+      return _ref.apply(this, arguments);
+    };
+  })();
 }
 
 const OUTPUT_CATEGORY_TO_LEVEL = Object.freeze({
@@ -104,369 +134,363 @@ const OUTPUT_CATEGORY_TO_LEVEL = Object.freeze({
   debug: 'debug',
   stderr: 'error',
   stdout: 'log',
-  success: 'success',
+  success: 'success'
 });
 
 // VSP deoesn't provide process id.
 const VSP_PROCESS_ID = -1;
-
-type TranslatorBreakpoint = {
-  breakpointId: NuclideDebugProtocol.BreakpointId,
-  path: NuclideUri,
-  lineNumber: number,
-  condition: string,
-  hitCount: number,
-  resolved: boolean,
-};
-
-type ThreadState = 'running' | 'paused';
-
-type ThreadInfo = {
-  state: ThreadState,
-  callFrames?: NuclideDebugProtocol.CallFrame[],
-  stopReason?: string,
-};
 
 /**
  * This translator will be responsible of mapping Nuclide's debugger protocol
  * requests to VSCode debugger protocol requests and back from VSCode's response
  * to Nuclide's responses and events.
  */
-export default class VsDebugSessionTranslator {
-  _adapterType: VsAdapterType;
-  _session: VsDebugSession;
-  _logger: log4js$Logger;
-  _clientCallback: ClientCallback;
-  _files: FileCache;
-  _disposables: UniversalDisposable;
-  _commands: Subject<NuclideDebugProtocol.DebuggerCommand>;
-  _handledCommands: Set<string>;
-  _breakpointsById: Map<
-    NuclideDebugProtocol.BreakpointId,
-    TranslatorBreakpoint,
-  >;
-  _lastBreakpointId: number;
-  _threadsById: Map<number, ThreadInfo>;
-  _mainThreadId: ?number;
-  _debuggerArgs: Object;
-  _debugMode: DebuggerConfigAction;
-  _exceptionFilters: Array<string>;
+class VsDebugSessionTranslator {
 
-  // Session state.
-  _pausedThreadId: ?number;
-
-  constructor(
-    adapterType: VsAdapterType,
-    adapter: VSAdapterExecutableInfo,
-    debugMode: DebuggerConfigAction,
-    debuggerArgs: Object,
-    clientCallback: ClientCallback,
-    logger: log4js$Logger,
-  ) {
+  constructor(adapterType, adapter, debugMode, debuggerArgs, clientCallback, logger) {
     this._adapterType = adapterType;
     this._debugMode = debugMode;
-    this._session = new VsDebugSession('id', logger, adapter);
+    this._session = new (_VsDebugSession || _load_VsDebugSession()).default('id', logger, adapter);
     this._debuggerArgs = debuggerArgs;
     this._clientCallback = clientCallback;
     this._logger = logger;
-    this._commands = new Subject();
+    this._commands = new _rxjsBundlesRxMinJs.Subject();
     this._handledCommands = new Set();
     this._breakpointsById = new Map();
     this._threadsById = new Map();
     this._mainThreadId = null;
     this._lastBreakpointId = 0;
     this._exceptionFilters = [];
-    this._files = new FileCache((method, params) =>
-      this._sendMessageToClient(({method, params}: any)),
-    );
+    this._files = new (_nuclideDebuggerCommon || _load_nuclideDebuggerCommon()).FileCache((method, params) => this._sendMessageToClient({ method, params }));
 
     // Ignore the first fake pause request.
-    this._disposables = new UniversalDisposable(
-      this._session,
-      this._handleCommands().subscribe(message =>
-        this._sendMessageToClient(message),
-      ),
-      this._listenToSessionEvents(),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._session, this._handleCommands().subscribe(message => this._sendMessageToClient(message)), this._listenToSessionEvents());
   }
 
-  _handleCommands(): Observable<
-    NuclideDebugProtocol.DebuggerResponse | NuclideDebugProtocol.DebuggerEvent,
-  > {
+  // Session state.
+
+
+  _handleCommands() {
+    var _this = this;
+
     const resumeCommands = this._commandsOfType('Debugger.resume');
-    return Observable.merge(
-      // Ack debugger enabled and send fake pause event
-      // (indicating readiness to receive config requests).
-      this._commandsOfType('Debugger.enable').flatMap(command =>
-        Observable.of(getEmptyResponse(command.id), getFakeLoaderPauseEvent()),
-      ),
-      this._commandsOfType('Debugger.pause').flatMap(
-        catchCommandError(async command => {
-          const mainThreadId =
-            // flowlint-next-line sketchy-null-number:off
-            this._mainThreadId || Array.from(this._threadsById.keys())[0] || -1;
-          await this._session.pause({threadId: mainThreadId});
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Skip the fake resume command.
-      resumeCommands.skip(1).flatMap(
-        catchCommandError(async command => {
-          if (this._pausedThreadId == null) {
-            return getErrorResponse(command.id, 'No paused thread to resume!');
-          }
-          await this._session.continue({threadId: this._pausedThreadId});
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Step over
-      this._commandsOfType('Debugger.stepOver').flatMap(
-        catchCommandError(async command => {
-          if (this._pausedThreadId == null) {
-            return getErrorResponse(
-              command.id,
-              'No paused thread to step over!',
-            );
-          }
-          await this._session.next({threadId: this._pausedThreadId});
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Step into
-      this._commandsOfType('Debugger.stepInto').flatMap(
-        catchCommandError(async command => {
-          if (this._pausedThreadId == null) {
-            return getErrorResponse(
-              command.id,
-              'No paused thread to step into!',
-            );
-          }
-          await this._session.stepIn({threadId: this._pausedThreadId});
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Step out
-      this._commandsOfType('Debugger.stepOut').flatMap(
-        catchCommandError(async command => {
-          if (this._pausedThreadId == null) {
-            return getErrorResponse(
-              command.id,
-              'No paused thread to step out!',
-            );
-          }
-          await this._session.stepOut({threadId: this._pausedThreadId});
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Get script source
-      this._commandsOfType('Debugger.getScriptSource').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.getScriptSource');
-          const result: NuclideDebugProtocol.GetScriptSourceResponse = {
-            scriptSource: await this._files.getFileSource(
-              command.params.scriptId,
-            ),
-          };
-          return {id: command.id, result};
-        }),
-      ),
-      this._commandsOfType('Debugger.setPauseOnExceptions').switchMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.setPauseOnExceptions');
-          const {state} = command.params;
-          switch (state) {
-            case 'none':
-              this._exceptionFilters = [];
-              break;
-            case 'uncaught':
-            case 'all':
-              this._exceptionFilters = [state];
-              break;
-          }
-          if (this._session.isReadyForBreakpoints()) {
-            await this._session.setExceptionBreakpoints({
-              filters: this._exceptionFilters,
-            });
-          }
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      this._commandsOfType('Debugger.continueToLocation').switchMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.continueToLocation');
-          const {location} = command.params;
-          await this._continueToLocation(location);
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      // Ack config commands
-      Observable.merge(
-        this._commandsOfType('Debugger.setDebuggerSettings'),
-        this._commandsOfType('Runtime.enable'),
-      ).map(command => getEmptyResponse(command.id)),
-      // Get properties
-      this._commandsOfType('Runtime.getProperties').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Runtime.getProperties');
-          const result = await this._getProperties(command.id, command.params);
-          return ({id: command.id, result}: any);
-        }),
-      ),
-      // Set breakpoints
-      this._handleSetBreakpointsCommands(),
-      // Ack first resume command (indicating the session is ready to start).
-      resumeCommands.take(1).map(command => getEmptyResponse(command.id)),
-      // Remove breakpoints
-      this._commandsOfType('Debugger.removeBreakpoint').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.removeBreakpoint');
-          await this._removeBreakpoint(command.params.breakpointId);
-          return getEmptyResponse(command.id);
-        }),
-      ),
-      this._commandsOfType('Debugger.getThreadStack').map(command => {
-        invariant(command.method === 'Debugger.getThreadStack');
-        const {threadId} = command.params;
-        const threadInfo = this._threadsById.get(threadId);
-        const callFrames =
-          threadInfo != null && threadInfo.state === 'paused'
-            ? threadInfo.callFrames
-            : null;
-        const result: NuclideDebugProtocol.GetThreadStackResponse = {
-          callFrames: callFrames || [],
+    return _rxjsBundlesRxMinJs.Observable.merge(
+    // Ack debugger enabled and send fake pause event
+    // (indicating readiness to receive config requests).
+    this._commandsOfType('Debugger.enable').flatMap(command => _rxjsBundlesRxMinJs.Observable.of(getEmptyResponse(command.id), getFakeLoaderPauseEvent())), this._commandsOfType('Debugger.pause').flatMap(catchCommandError((() => {
+      var _ref2 = (0, _asyncToGenerator.default)(function* (command) {
+        const mainThreadId =
+        // flowlint-next-line sketchy-null-number:off
+        _this._mainThreadId || Array.from(_this._threadsById.keys())[0] || -1;
+        yield _this._session.pause({ threadId: mainThreadId });
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x2) {
+        return _ref2.apply(this, arguments);
+      };
+    })())),
+    // Skip the fake resume command.
+    resumeCommands.skip(1).flatMap(catchCommandError((() => {
+      var _ref3 = (0, _asyncToGenerator.default)(function* (command) {
+        if (_this._pausedThreadId == null) {
+          return getErrorResponse(command.id, 'No paused thread to resume!');
+        }
+        yield _this._session.continue({ threadId: _this._pausedThreadId });
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
+      };
+    })())),
+    // Step over
+    this._commandsOfType('Debugger.stepOver').flatMap(catchCommandError((() => {
+      var _ref4 = (0, _asyncToGenerator.default)(function* (command) {
+        if (_this._pausedThreadId == null) {
+          return getErrorResponse(command.id, 'No paused thread to step over!');
+        }
+        yield _this._session.next({ threadId: _this._pausedThreadId });
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x4) {
+        return _ref4.apply(this, arguments);
+      };
+    })())),
+    // Step into
+    this._commandsOfType('Debugger.stepInto').flatMap(catchCommandError((() => {
+      var _ref5 = (0, _asyncToGenerator.default)(function* (command) {
+        if (_this._pausedThreadId == null) {
+          return getErrorResponse(command.id, 'No paused thread to step into!');
+        }
+        yield _this._session.stepIn({ threadId: _this._pausedThreadId });
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x5) {
+        return _ref5.apply(this, arguments);
+      };
+    })())),
+    // Step out
+    this._commandsOfType('Debugger.stepOut').flatMap(catchCommandError((() => {
+      var _ref6 = (0, _asyncToGenerator.default)(function* (command) {
+        if (_this._pausedThreadId == null) {
+          return getErrorResponse(command.id, 'No paused thread to step out!');
+        }
+        yield _this._session.stepOut({ threadId: _this._pausedThreadId });
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x6) {
+        return _ref6.apply(this, arguments);
+      };
+    })())),
+    // Get script source
+    this._commandsOfType('Debugger.getScriptSource').flatMap(catchCommandError((() => {
+      var _ref7 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.getScriptSource')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.getScriptSource\'"');
+        }
+
+        const result = {
+          scriptSource: yield _this._files.getFileSource(command.params.scriptId)
+        };
+        return { id: command.id, result };
+      });
+
+      return function (_x7) {
+        return _ref7.apply(this, arguments);
+      };
+    })())), this._commandsOfType('Debugger.setPauseOnExceptions').switchMap(catchCommandError((() => {
+      var _ref8 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.setPauseOnExceptions')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.setPauseOnExceptions\'"');
+        }
+
+        const { state } = command.params;
+        switch (state) {
+          case 'none':
+            _this._exceptionFilters = [];
+            break;
+          case 'uncaught':
+          case 'all':
+            _this._exceptionFilters = [state];
+            break;
+        }
+        if (_this._session.isReadyForBreakpoints()) {
+          yield _this._session.setExceptionBreakpoints({
+            filters: _this._exceptionFilters
+          });
+        }
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x8) {
+        return _ref8.apply(this, arguments);
+      };
+    })())), this._commandsOfType('Debugger.continueToLocation').switchMap(catchCommandError((() => {
+      var _ref9 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.continueToLocation')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.continueToLocation\'"');
+        }
+
+        const { location } = command.params;
+        yield _this._continueToLocation(location);
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x9) {
+        return _ref9.apply(this, arguments);
+      };
+    })())),
+    // Ack config commands
+    _rxjsBundlesRxMinJs.Observable.merge(this._commandsOfType('Debugger.setDebuggerSettings'), this._commandsOfType('Runtime.enable')).map(command => getEmptyResponse(command.id)),
+    // Get properties
+    this._commandsOfType('Runtime.getProperties').flatMap(catchCommandError((() => {
+      var _ref10 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Runtime.getProperties')) {
+          throw new Error('Invariant violation: "command.method === \'Runtime.getProperties\'"');
+        }
+
+        const result = yield _this._getProperties(command.id, command.params);
+        return { id: command.id, result };
+      });
+
+      return function (_x10) {
+        return _ref10.apply(this, arguments);
+      };
+    })())),
+    // Set breakpoints
+    this._handleSetBreakpointsCommands(),
+    // Ack first resume command (indicating the session is ready to start).
+    resumeCommands.take(1).map(command => getEmptyResponse(command.id)),
+    // Remove breakpoints
+    this._commandsOfType('Debugger.removeBreakpoint').flatMap(catchCommandError((() => {
+      var _ref11 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.removeBreakpoint')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.removeBreakpoint\'"');
+        }
+
+        yield _this._removeBreakpoint(command.params.breakpointId);
+        return getEmptyResponse(command.id);
+      });
+
+      return function (_x11) {
+        return _ref11.apply(this, arguments);
+      };
+    })())), this._commandsOfType('Debugger.getThreadStack').map(command => {
+      if (!(command.method === 'Debugger.getThreadStack')) {
+        throw new Error('Invariant violation: "command.method === \'Debugger.getThreadStack\'"');
+      }
+
+      const { threadId } = command.params;
+      const threadInfo = this._threadsById.get(threadId);
+      const callFrames = threadInfo != null && threadInfo.state === 'paused' ? threadInfo.callFrames : null;
+      const result = {
+        callFrames: callFrames || []
+      };
+      return {
+        id: command.id,
+        result
+      };
+    }), this._commandsOfType('Debugger.evaluateOnCallFrame').flatMap(catchCommandError((() => {
+      var _ref12 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.evaluateOnCallFrame')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.evaluateOnCallFrame\'"');
+        }
+
+        const { callFrameId, expression } = command.params;
+        const result = yield _this._evaluateOnCallFrame(expression, Number(callFrameId));
+        return {
+          id: command.id,
+          result
+        };
+      });
+
+      return function (_x12) {
+        return _ref12.apply(this, arguments);
+      };
+    })())), this._commandsOfType('Debugger.setVariableValue').flatMap(catchCommandError((() => {
+      var _ref13 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Debugger.setVariableValue')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.setVariableValue\'"');
+        }
+
+        const { callFrameId, name, value } = command.params;
+        const args = {
+          variablesReference: callFrameId,
+          name,
+          value
+        };
+        const { body } = yield _this._session.setVariable(args);
+        const result = {
+          value: body.value
         };
         return {
           id: command.id,
-          result,
+          result
         };
-      }),
-      this._commandsOfType('Debugger.evaluateOnCallFrame').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.evaluateOnCallFrame');
-          const {callFrameId, expression} = command.params;
-          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
-            expression,
-            Number(callFrameId),
-          );
-          return {
-            id: command.id,
-            result,
-          };
-        }),
-      ),
-      this._commandsOfType('Debugger.setVariableValue').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.setVariableValue');
-          const {callFrameId, name, value} = command.params;
-          const args = {
-            variablesReference: callFrameId,
-            name,
-            value,
-          };
-          const {body} = await this._session.setVariable(args);
-          const result: NuclideDebugProtocol.SetVariableResponse = {
-            value: body.value,
-          };
-          return {
-            id: command.id,
-            result,
-          };
-        }),
-      ),
-      this._commandsOfType('Runtime.evaluate').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Runtime.evaluate');
-          const {expression} = command.params;
-          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
-            expression,
-          );
-          return {
-            id: command.id,
-            result,
-          };
-        }),
-      ),
-      // Error for unhandled commands
-      this._unhandledCommands().map(command =>
-        getErrorResponse(command.id, 'Unknown command: ' + command.method),
-      ),
-    );
+      });
+
+      return function (_x13) {
+        return _ref13.apply(this, arguments);
+      };
+    })())), this._commandsOfType('Runtime.evaluate').flatMap(catchCommandError((() => {
+      var _ref14 = (0, _asyncToGenerator.default)(function* (command) {
+        if (!(command.method === 'Runtime.evaluate')) {
+          throw new Error('Invariant violation: "command.method === \'Runtime.evaluate\'"');
+        }
+
+        const { expression } = command.params;
+        const result = yield _this._evaluateOnCallFrame(expression);
+        return {
+          id: command.id,
+          result
+        };
+      });
+
+      return function (_x14) {
+        return _ref14.apply(this, arguments);
+      };
+    })())),
+    // Error for unhandled commands
+    this._unhandledCommands().map(command => getErrorResponse(command.id, 'Unknown command: ' + command.method)));
   }
 
-  async _continueToLocation(
-    location: NuclideDebugProtocol.Location,
-  ): Promise<void> {
-    const {columnNumber, lineNumber, scriptId} = location;
-    const source = {
-      path: nuclideUri.getPath(scriptId),
-      name: nuclideUri.basename(scriptId),
-    };
-    await this._files.registerFile(pathToUri(scriptId));
-    await this._session.nuclide_continueToLocation({
-      // flowlint-next-line sketchy-null-number:off
-      column: columnNumber || 1,
-      line: lineNumber + 1,
-      source,
-    });
+  _continueToLocation(location) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { columnNumber, lineNumber, scriptId } = location;
+      const source = {
+        path: (_nuclideUri || _load_nuclideUri()).default.getPath(scriptId),
+        name: (_nuclideUri || _load_nuclideUri()).default.basename(scriptId)
+      };
+      yield _this2._files.registerFile((0, (_helpers || _load_helpers()).pathToUri)(scriptId));
+      yield _this2._session.nuclide_continueToLocation({
+        // flowlint-next-line sketchy-null-number:off
+        column: columnNumber || 1,
+        line: lineNumber + 1,
+        source
+      });
+    })();
   }
 
-  _handleSetBreakpointsCommands(): Observable<
-    NuclideDebugProtocol.DebuggerResponse,
-  > {
-    const setBreakpointsCommands = this._commandsOfType(
-      'Debugger.setBreakpointByUrl',
-    );
+  _handleSetBreakpointsCommands() {
+    var _this3 = this;
+
+    const setBreakpointsCommands = this._commandsOfType('Debugger.setBreakpointByUrl');
 
     let startedDebugging = false;
 
-    return Observable.concat(
-      setBreakpointsCommands
-        .buffer(
-          this._commandsOfType('Debugger.resume')
-            .first()
-            .switchMap(() => {
-              if (this._session.isReadyForBreakpoints()) {
-                // Session is initialized and ready for breakpoint requests.
-                return Observable.of(null);
-              } else {
-                // Session initialization is pending launch.
-                startedDebugging = true;
-                return Observable.fromPromise(this._startDebugging())
-                  .ignoreElements()
-                  .concat(this._session.observeInitializeEvents());
-              }
-            }),
-        )
-        .first()
-        .flatMap(async commands => {
-          // Upon session start, send the cached breakpoints
-          // and other configuration requests.
-          try {
-            const promises = [
-              this._setBulkBreakpoints(commands),
-              this._configDone(),
-              startedDebugging ? Promise.resolve() : this._startDebugging(),
-            ];
-            startedDebugging = true;
-            await Promise.all(promises);
-            return await promises[0];
-          } catch (error) {
-            return commands.map(({id}) => getErrorResponse(id, error.message));
-          }
-        }),
-      // Following breakpoint requests are handled by
-      // immediatelly passing to the active debug session.
-      setBreakpointsCommands.flatMap(async command => {
+    return _rxjsBundlesRxMinJs.Observable.concat(setBreakpointsCommands.buffer(this._commandsOfType('Debugger.resume').first().switchMap(() => {
+      if (this._session.isReadyForBreakpoints()) {
+        // Session is initialized and ready for breakpoint requests.
+        return _rxjsBundlesRxMinJs.Observable.of(null);
+      } else {
+        // Session initialization is pending launch.
+        startedDebugging = true;
+        return _rxjsBundlesRxMinJs.Observable.fromPromise(this._startDebugging()).ignoreElements().concat(this._session.observeInitializeEvents());
+      }
+    })).first().flatMap((() => {
+      var _ref15 = (0, _asyncToGenerator.default)(function* (commands) {
+        // Upon session start, send the cached breakpoints
+        // and other configuration requests.
         try {
-          return await this._setBulkBreakpoints([command]);
+          const promises = [_this3._setBulkBreakpoints(commands), _this3._configDone(), startedDebugging ? Promise.resolve() : _this3._startDebugging()];
+          startedDebugging = true;
+          yield Promise.all(promises);
+          return yield promises[0];
+        } catch (error) {
+          return commands.map(function ({ id }) {
+            return getErrorResponse(id, error.message);
+          });
+        }
+      });
+
+      return function (_x15) {
+        return _ref15.apply(this, arguments);
+      };
+    })()),
+    // Following breakpoint requests are handled by
+    // immediatelly passing to the active debug session.
+    setBreakpointsCommands.flatMap((() => {
+      var _ref16 = (0, _asyncToGenerator.default)(function* (command) {
+        try {
+          return yield _this3._setBulkBreakpoints([command]);
         } catch (error) {
           return [getErrorResponse(command.id, error.message)];
         }
-      }),
-    ).flatMap(responses => Observable.from(responses));
+      });
+
+      return function (_x16) {
+        return _ref16.apply(this, arguments);
+      };
+    })())).flatMap(responses => _rxjsBundlesRxMinJs.Observable.from(responses));
   }
 
-  _startDebugging(): Promise<mixed> {
+  _startDebugging() {
     if (this._debugMode === 'launch') {
       return this._session.launch(this._debuggerArgs);
     } else {
@@ -474,401 +498,357 @@ export default class VsDebugSessionTranslator {
     }
   }
 
-  async _setBulkBreakpoints(
-    setBreakpointsCommands: Array<NuclideDebugProtocol.DebuggerCommand>,
-  ): Promise<Array<NuclideDebugProtocol.DebuggerResponse>> {
-    if (!this._session.isReadyForBreakpoints()) {
-      throw new Error('VsDebugSession is not ready for breakpoints');
-    }
-    if (setBreakpointsCommands.length === 0) {
-      return [];
-    }
-    // Group breakpoint commands by file path.
-    const breakpointCommandsByUrl = new Map();
-    for (const command of setBreakpointsCommands) {
-      invariant(command.method === 'Debugger.setBreakpointByUrl');
-      const url = decodeURIComponent(command.params.url);
-      const existing = breakpointCommandsByUrl.get(url);
-      if (existing == null) {
-        breakpointCommandsByUrl.set(url, [command]);
-      } else {
-        existing.push(command);
+  _setBulkBreakpoints(setBreakpointsCommands) {
+    var _this4 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!_this4._session.isReadyForBreakpoints()) {
+        throw new Error('VsDebugSession is not ready for breakpoints');
       }
-    }
+      if (setBreakpointsCommands.length === 0) {
+        return [];
+      }
+      // Group breakpoint commands by file path.
+      const breakpointCommandsByUrl = new Map();
+      for (const command of setBreakpointsCommands) {
+        if (!(command.method === 'Debugger.setBreakpointByUrl')) {
+          throw new Error('Invariant violation: "command.method === \'Debugger.setBreakpointByUrl\'"');
+        }
 
-    const responseGroups = await Promise.all(
-      Array.from(
-        breakpointCommandsByUrl,
-      ).map(async ([url, breakpointCommands]) => {
-        const path = uriToPath(url);
+        const url = decodeURIComponent(command.params.url);
+        const existing = breakpointCommandsByUrl.get(url);
+        if (existing == null) {
+          breakpointCommandsByUrl.set(url, [command]);
+        } else {
+          existing.push(command);
+        }
+      }
 
-        const existingTranslatorBreakpoints = this._getBreakpointsForFilePath(
-          path,
-        ).map(bp => ({...bp}));
+      const responseGroups = yield Promise.all(Array.from(breakpointCommandsByUrl).map((() => {
+        var _ref17 = (0, _asyncToGenerator.default)(function* ([url, breakpointCommands]) {
+          const path = (0, (_helpers || _load_helpers()).uriToPath)(url);
 
-        const breakOnLineNumbers = new Set();
+          const existingTranslatorBreakpoints = _this4._getBreakpointsForFilePath(path).map(function (bp) {
+            return Object.assign({}, bp);
+          });
 
-        const translatorBreakpoins = breakpointCommands
-          .map(c => {
+          const breakOnLineNumbers = new Set();
+
+          const translatorBreakpoins = breakpointCommands.map(function (c) {
             const newTranslatorBp = {
-              breakpointId: this._nextBreakpointId(),
+              breakpointId: _this4._nextBreakpointId(),
               path,
               lineNumber: c.params.lineNumber + 1,
               condition: c.params.condition || '',
               resolved: false,
-              hitCount: 0,
+              hitCount: 0
             };
             breakOnLineNumbers.add(newTranslatorBp.lineNumber);
-            this._breakpointsById.set(
-              newTranslatorBp.breakpointId,
-              newTranslatorBp,
-            );
+            _this4._breakpointsById.set(newTranslatorBp.breakpointId, newTranslatorBp);
             return newTranslatorBp;
-          })
-          .concat(
-            existingTranslatorBreakpoints.filter(
-              tBp => !breakOnLineNumbers.has(tBp.lineNumber),
-            ),
-          );
+          }).concat(existingTranslatorBreakpoints.filter(function (tBp) {
+            return !breakOnLineNumbers.has(tBp.lineNumber);
+          }));
 
-        await this._files.registerFile(url);
-        await this._syncBreakpointsForFilePath(path, translatorBreakpoins);
+          yield _this4._files.registerFile(url);
+          yield _this4._syncBreakpointsForFilePath(path, translatorBreakpoins);
 
-        return breakpointCommands.map((command, i) => {
-          const {breakpointId, lineNumber, resolved} = translatorBreakpoins[i];
+          return breakpointCommands.map(function (command, i) {
+            const { breakpointId, lineNumber, resolved } = translatorBreakpoins[i];
 
-          const result: NuclideDebugProtocol.SetBreakpointByUrlResponse = {
-            breakpointId,
-            locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
-            resolved,
-          };
-          return {
-            id: command.id,
-            result,
-          };
+            const result = {
+              breakpointId,
+              locations: [nuclideDebuggerLocation(path, lineNumber - 1, 0)],
+              resolved
+            };
+            return {
+              id: command.id,
+              result
+            };
+          });
         });
-      }),
-    );
-    return arrayFlatten(responseGroups);
+
+        return function (_x17) {
+          return _ref17.apply(this, arguments);
+        };
+      })()));
+      return (0, (_collection || _load_collection()).arrayFlatten)(responseGroups);
+    })();
   }
 
-  _syncBreakpoints(): Promise<mixed> {
-    const filePaths = new Set(
-      Array.from(this._breakpointsById.values()).map(bp => bp.path),
-    );
+  _syncBreakpoints() {
+    const filePaths = new Set(Array.from(this._breakpointsById.values()).map(bp => bp.path));
     const setBreakpointPromises = [];
     for (const filePath of filePaths) {
-      setBreakpointPromises.push(
-        this._syncBreakpointsForFilePath(
-          filePath,
-          this._getBreakpointsForFilePath(filePath).map(bp => ({...bp})),
-        ),
-      );
+      setBreakpointPromises.push(this._syncBreakpointsForFilePath(filePath, this._getBreakpointsForFilePath(filePath).map(bp => Object.assign({}, bp))));
     }
     return Promise.all(setBreakpointPromises);
   }
 
-  async _configDone(): Promise<void> {
-    await this._session.setExceptionBreakpoints({
-      filters: this._exceptionFilters,
-    });
-    if (this._session.getCapabilities().supportsConfigurationDoneRequest) {
-      await this._session.configurationDone();
-    }
+  _configDone() {
+    var _this5 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      yield _this5._session.setExceptionBreakpoints({
+        filters: _this5._exceptionFilters
+      });
+      if (_this5._session.getCapabilities().supportsConfigurationDoneRequest) {
+        yield _this5._session.configurationDone();
+      }
+    })();
   }
 
-  async _syncBreakpointsForFilePath(
-    path: NuclideUri,
-    breakpoints: Array<TranslatorBreakpoint>,
-  ): Promise<void> {
-    const source = {path, name: nuclideUri.basename(path)};
-    const {
-      body: {breakpoints: vsBreakpoints},
-    } = await this._session.setBreakpoints({
-      source,
-      lines: breakpoints.map(bp => bp.lineNumber),
-      breakpoints: breakpoints.map(bp => ({
-        line: bp.lineNumber,
-        condition: bp.condition,
-      })),
-    });
-    if (vsBreakpoints.length !== breakpoints.length) {
-      const errorMessage =
-        'Failed to set breakpoints - count mismatch!' +
-        ` ${vsBreakpoints.length} vs. ${breakpoints.length}`;
-      this._logger.error(
-        errorMessage,
-        JSON.stringify(vsBreakpoints),
-        JSON.stringify(breakpoints),
-      );
-      throw new Error(errorMessage);
-    }
-    vsBreakpoints.forEach((vsBreakpoint, i) => {
-      breakpoints[i].resolved = vsBreakpoint.verified;
-    });
+  _syncBreakpointsForFilePath(path, breakpoints) {
+    var _this6 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const source = { path, name: (_nuclideUri || _load_nuclideUri()).default.basename(path) };
+      const {
+        body: { breakpoints: vsBreakpoints }
+      } = yield _this6._session.setBreakpoints({
+        source,
+        lines: breakpoints.map(function (bp) {
+          return bp.lineNumber;
+        }),
+        breakpoints: breakpoints.map(function (bp) {
+          return {
+            line: bp.lineNumber,
+            condition: bp.condition
+          };
+        })
+      });
+      if (vsBreakpoints.length !== breakpoints.length) {
+        const errorMessage = 'Failed to set breakpoints - count mismatch!' + ` ${vsBreakpoints.length} vs. ${breakpoints.length}`;
+        _this6._logger.error(errorMessage, JSON.stringify(vsBreakpoints), JSON.stringify(breakpoints));
+        throw new Error(errorMessage);
+      }
+      vsBreakpoints.forEach(function (vsBreakpoint, i) {
+        breakpoints[i].resolved = vsBreakpoint.verified;
+      });
+    })();
   }
 
-  async _removeBreakpoint(
-    breakpointId: NuclideDebugProtocol.BreakpointId,
-  ): Promise<void> {
-    const foundBreakpoint = this._breakpointsById.get(breakpointId);
-    if (foundBreakpoint == null) {
-      this._logger.info(`No breakpoint with id: ${breakpointId} to remove!`);
-      return;
-    }
-    const remainingBreakpoints = this._getBreakpointsForFilePath(
-      foundBreakpoint.path,
-    ).filter(breakpoint => breakpoint.breakpointId !== breakpointId);
-    this._breakpointsById.delete(breakpointId);
+  _removeBreakpoint(breakpointId) {
+    var _this7 = this;
 
-    await this._syncBreakpointsForFilePath(
-      foundBreakpoint.path,
-      remainingBreakpoints.map(bp => ({
-        ...bp,
-      })),
-    );
+    return (0, _asyncToGenerator.default)(function* () {
+      const foundBreakpoint = _this7._breakpointsById.get(breakpointId);
+      if (foundBreakpoint == null) {
+        _this7._logger.info(`No breakpoint with id: ${breakpointId} to remove!`);
+        return;
+      }
+      const remainingBreakpoints = _this7._getBreakpointsForFilePath(foundBreakpoint.path).filter(function (breakpoint) {
+        return breakpoint.breakpointId !== breakpointId;
+      });
+      _this7._breakpointsById.delete(breakpointId);
+
+      yield _this7._syncBreakpointsForFilePath(foundBreakpoint.path, remainingBreakpoints.map(function (bp) {
+        return Object.assign({}, bp);
+      }));
+    })();
   }
 
-  async _evaluateOnCallFrame(
-    expression: string,
-    frameId?: number,
-  ): Promise<NuclideDebugProtocol.EvaluateResponse> {
-    const {body} = await this._session.evaluate({
-      expression,
-      frameId,
-    });
-    return {
-      result: {
-        type: (body.type: any),
-        value: body.result,
-        description: body.result,
-        objectId:
-          body.variablesReference > 0
-            ? String(body.variablesReference)
-            : undefined,
-      },
-      wasThrown: false,
-    };
+  _evaluateOnCallFrame(expression, frameId) {
+    var _this8 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { body } = yield _this8._session.evaluate({
+        expression,
+        frameId
+      });
+      return {
+        result: {
+          type: body.type,
+          value: body.result,
+          description: body.result,
+          objectId: body.variablesReference > 0 ? String(body.variablesReference) : undefined
+        },
+        wasThrown: false
+      };
+    })();
   }
 
-  _getBreakpointsForFilePath(path: NuclideUri): Array<TranslatorBreakpoint> {
-    return Array.from(this._breakpointsById.values()).filter(
-      breakpoint => breakpoint.path === path,
-    );
+  _getBreakpointsForFilePath(path) {
+    return Array.from(this._breakpointsById.values()).filter(breakpoint => breakpoint.path === path);
   }
 
-  _nextBreakpointId(): NuclideDebugProtocol.BreakpointId {
+  _nextBreakpointId() {
     return String(++this._lastBreakpointId);
   }
 
-  _commandsOfType(
-    type: string,
-  ): Observable<NuclideDebugProtocol.DebuggerCommand> {
+  _commandsOfType(type) {
     this._handledCommands.add(type);
     return this._commands.filter(c => c.method === type);
   }
 
-  _unhandledCommands(): Observable<NuclideDebugProtocol.DebuggerCommand> {
+  _unhandledCommands() {
     return this._commands.filter(c => !this._handledCommands.has(c.method));
   }
 
-  _listenToSessionEvents(): IDisposable {
+  _listenToSessionEvents() {
+    var _this9 = this;
+
     // The first resume command is the indicator of client readiness
     // to receive session events.
-    return new UniversalDisposable(
-      this._session.observeAllEvents().subscribe(event => {
-        this._logger.info('VSP Event', event);
-      }),
-      this._session.observeThreadEvents().subscribe(({body}) => {
-        const {reason, threadId} = body;
-        if (reason === 'started') {
-          if (this._mainThreadId == null) {
-            this._mainThreadId = threadId;
-          }
-          this._updateThreadsState([threadId], 'running');
-        } else if (reason === 'exited') {
-          this._threadsById.delete(threadId);
-          if (this._pausedThreadId === threadId) {
-            this._pausedThreadId = null;
-          }
-          if (this._mainThreadId === threadId) {
-            this._mainThreadId = null;
-          }
-        } else {
-          this._logger.error('Unknown thread event:', body);
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this._session.observeAllEvents().subscribe(event => {
+      this._logger.info('VSP Event', event);
+    }), this._session.observeThreadEvents().subscribe(({ body }) => {
+      const { reason, threadId } = body;
+      if (reason === 'started') {
+        if (this._mainThreadId == null) {
+          this._mainThreadId = threadId;
         }
-        const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
-        this._sendMessageToClient({
-          method: 'Debugger.threadsUpdated',
-          params: threadsUpdatedEvent,
-        });
-      }),
-      this._session.observeStopEvents().subscribe(({body}) => {
-        const {threadId, allThreadsStopped, reason} = body;
-        if (allThreadsStopped) {
-          this._updateThreadsState(this._threadsById.keys(), 'paused');
-          this._pausedThreadId = Array.from(this._threadsById.keys())[0];
-        }
-        if (threadId != null) {
-          this._updateThreadsState([threadId], 'paused');
-          this._pausedThreadId = threadId;
-        }
-        // Even though the python debugger engine pauses all threads,
-        // It only reports the main thread as paused.
-        if (
-          this._adapterType === VsAdapterTypes.PYTHON &&
-          reason === 'user request'
-        ) {
-          Array.from(this._threadsById.values()).forEach(
-            threadInfo => (threadInfo.stopReason = reason),
-          );
-        }
-      }),
-      this._session.observeBreakpointEvents().subscribe(({body}) => {
-        const {breakpoint} = body;
-        const existingBreakpoint = this._breakpointsById.get(
-          String(breakpoint.id == null ? -1 : breakpoint.id),
-        );
-        const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
-
-        if (existingBreakpoint == null) {
-          this._logger.warn(
-            'Received a breakpoint event, but cannot find the breakpoint',
-          );
-          return;
-        } else if (!existingBreakpoint.resolved && breakpoint.verified) {
-          existingBreakpoint.resolved = true;
-          this._sendMessageToClient({
-            method: 'Debugger.breakpointResolved',
-            params: {
-              breakpointId: existingBreakpoint.breakpointId,
-              location: nuclideDebuggerLocation(
-                existingBreakpoint.path,
-                existingBreakpoint.lineNumber - 1,
-                0,
-              ),
-            },
-          });
-        } else if (
-          !Number.isNaN(hitCount) &&
-          existingBreakpoint != null &&
-          existingBreakpoint.hitCount !== hitCount
-        ) {
-          existingBreakpoint.hitCount = hitCount;
-          this._sendMessageToClient({
-            method: 'Debugger.breakpointHitCountChanged',
-            params: {
-              breakpointId: String(breakpoint.id),
-              hitCount,
-            },
-          });
-        } else {
-          this._logger.warn('Unknown breakpoint event', body);
-        }
-      }),
-      this._session
-        .observeStopEvents()
-        .flatMap(async ({body}) => {
-          const {threadId, reason} = body;
-          let callFrames = [];
-          const translatedStopReason = translateStopReason(reason);
-          if (threadId != null) {
-            callFrames = await this._getTranslatedCallFramesForThread(threadId);
-            this._threadsById.set(threadId, {
-              state: 'paused',
-              callFrames,
-              stopReason: translatedStopReason,
-            });
-          }
-          const pausedEvent: NuclideDebugProtocol.PausedEvent = {
-            callFrames,
-            reason: translatedStopReason,
-            stopThreadId: threadId,
-            threadSwitchMessage: null,
-          };
-
-          const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
-          return {pausedEvent, threadsUpdatedEvent};
-        })
-        .subscribe(
-          ({pausedEvent, threadsUpdatedEvent}) => {
-            this._sendMessageToClient({
-              method: 'Debugger.paused',
-              params: pausedEvent,
-            });
-            this._sendMessageToClient({
-              method: 'Debugger.threadsUpdated',
-              params: threadsUpdatedEvent,
-            });
-          },
-          error =>
-            this._logger.error(
-              'Unable to translate stop event / call stack',
-              error,
-            ),
-        ),
-      this._session.observeContinuedEvents().subscribe(({body}) => {
-        const {allThreadsContinued, threadId} = body;
-        if (allThreadsContinued || threadId === this._pausedThreadId) {
+        this._updateThreadsState([threadId], 'running');
+      } else if (reason === 'exited') {
+        this._threadsById.delete(threadId);
+        if (this._pausedThreadId === threadId) {
           this._pausedThreadId = null;
         }
+        if (this._mainThreadId === threadId) {
+          this._mainThreadId = null;
+        }
+      } else {
+        this._logger.error('Unknown thread event:', body);
+      }
+      const threadsUpdatedEvent = this._getThreadsUpdatedEvent();
+      this._sendMessageToClient({
+        method: 'Debugger.threadsUpdated',
+        params: threadsUpdatedEvent
+      });
+    }), this._session.observeStopEvents().subscribe(({ body }) => {
+      const { threadId, allThreadsStopped, reason } = body;
+      if (allThreadsStopped) {
+        this._updateThreadsState(this._threadsById.keys(), 'paused');
+        this._pausedThreadId = Array.from(this._threadsById.keys())[0];
+      }
+      if (threadId != null) {
+        this._updateThreadsState([threadId], 'paused');
+        this._pausedThreadId = threadId;
+      }
+      // Even though the python debugger engine pauses all threads,
+      // It only reports the main thread as paused.
+      if (this._adapterType === (_constants || _load_constants()).VsAdapterTypes.PYTHON && reason === 'user request') {
+        Array.from(this._threadsById.values()).forEach(threadInfo => threadInfo.stopReason = reason);
+      }
+    }), this._session.observeBreakpointEvents().subscribe(({ body }) => {
+      const { breakpoint } = body;
+      const existingBreakpoint = this._breakpointsById.get(String(breakpoint.id == null ? -1 : breakpoint.id));
+      const hitCount = parseInt(breakpoint.nuclide_hitCount, 10);
 
-        if (allThreadsContinued) {
-          this._updateThreadsState(this._threadsById.keys(), 'running');
-        }
+      if (existingBreakpoint == null) {
+        this._logger.warn('Received a breakpoint event, but cannot find the breakpoint');
+        return;
+      } else if (!existingBreakpoint.resolved && breakpoint.verified) {
+        existingBreakpoint.resolved = true;
+        this._sendMessageToClient({
+          method: 'Debugger.breakpointResolved',
+          params: {
+            breakpointId: existingBreakpoint.breakpointId,
+            location: nuclideDebuggerLocation(existingBreakpoint.path, existingBreakpoint.lineNumber - 1, 0)
+          }
+        });
+      } else if (!Number.isNaN(hitCount) && existingBreakpoint != null && existingBreakpoint.hitCount !== hitCount) {
+        existingBreakpoint.hitCount = hitCount;
+        this._sendMessageToClient({
+          method: 'Debugger.breakpointHitCountChanged',
+          params: {
+            breakpointId: String(breakpoint.id),
+            hitCount
+          }
+        });
+      } else {
+        this._logger.warn('Unknown breakpoint event', body);
+      }
+    }), this._session.observeStopEvents().flatMap((() => {
+      var _ref18 = (0, _asyncToGenerator.default)(function* ({ body }) {
+        const { threadId, reason } = body;
+        let callFrames = [];
+        const translatedStopReason = translateStopReason(reason);
         if (threadId != null) {
-          this._updateThreadsState([threadId], 'running');
+          callFrames = yield _this9._getTranslatedCallFramesForThread(threadId);
+          _this9._threadsById.set(threadId, {
+            state: 'paused',
+            callFrames,
+            stopReason: translatedStopReason
+          });
         }
-        this._sendMessageToClient({method: 'Debugger.resumed'});
-      }),
-      this._session.observeOutputEvents().subscribe(({body}) => {
-        // flowlint-next-line sketchy-null-string:off
-        const category = body.category || 'console';
-        const level = OUTPUT_CATEGORY_TO_LEVEL[category];
-        const output = (body.output || '').replace(/\r?\n$/, '');
-        if (level != null && output.length > 0) {
-          this._sendUserOutputMessage(level, output);
-        } else if (category === 'nuclide_notification') {
-          invariant(body.data);
-          this._sendAtomNotification(body.data.type, body.output);
+        const pausedEvent = {
+          callFrames,
+          reason: translatedStopReason,
+          stopThreadId: threadId,
+          threadSwitchMessage: null
+        };
+
+        const threadsUpdatedEvent = _this9._getThreadsUpdatedEvent();
+        return { pausedEvent, threadsUpdatedEvent };
+      });
+
+      return function (_x18) {
+        return _ref18.apply(this, arguments);
+      };
+    })()).subscribe(({ pausedEvent, threadsUpdatedEvent }) => {
+      this._sendMessageToClient({
+        method: 'Debugger.paused',
+        params: pausedEvent
+      });
+      this._sendMessageToClient({
+        method: 'Debugger.threadsUpdated',
+        params: threadsUpdatedEvent
+      });
+    }, error => this._logger.error('Unable to translate stop event / call stack', error)), this._session.observeContinuedEvents().subscribe(({ body }) => {
+      const { allThreadsContinued, threadId } = body;
+      if (allThreadsContinued || threadId === this._pausedThreadId) {
+        this._pausedThreadId = null;
+      }
+
+      if (allThreadsContinued) {
+        this._updateThreadsState(this._threadsById.keys(), 'running');
+      }
+      if (threadId != null) {
+        this._updateThreadsState([threadId], 'running');
+      }
+      this._sendMessageToClient({ method: 'Debugger.resumed' });
+    }), this._session.observeOutputEvents().subscribe(({ body }) => {
+      // flowlint-next-line sketchy-null-string:off
+      const category = body.category || 'console';
+      const level = OUTPUT_CATEGORY_TO_LEVEL[category];
+      const output = (body.output || '').replace(/\r?\n$/, '');
+      if (level != null && output.length > 0) {
+        this._sendUserOutputMessage(level, output);
+      } else if (category === 'nuclide_notification') {
+        if (!body.data) {
+          throw new Error('Invariant violation: "body.data"');
         }
-      }),
-      this._session
-        .observeInitializeEvents()
-        // The first initialized event is used for breakpoint handling
-        // and launch synchronization.
-        .skip(1)
-        // Next initialized events are session restarts.
-        // Hence, we need to sync breakpoints & config done.
-        .switchMap(async () => {
-          await this._syncBreakpoints();
-          await this._configDone();
-        })
-        .subscribe(
-          () => this._logger.info('Session synced'),
-          error => this._logger.error('Unable to sync session: ', error),
-        ),
-    );
+
+        this._sendAtomNotification(body.data.type, body.output);
+      }
+    }), this._session.observeInitializeEvents()
+    // The first initialized event is used for breakpoint handling
+    // and launch synchronization.
+    .skip(1)
+    // Next initialized events are session restarts.
+    // Hence, we need to sync breakpoints & config done.
+    .switchMap((0, _asyncToGenerator.default)(function* () {
+      yield _this9._syncBreakpoints();
+      yield _this9._configDone();
+    })).subscribe(() => this._logger.info('Session synced'), error => this._logger.error('Unable to sync session: ', error)));
   }
 
-  _updateThreadsState(threadIds: Iterable<number>, state: ThreadState): void {
+  _updateThreadsState(threadIds, state) {
     for (const threadId of threadIds) {
       const threadInfo = this._threadsById.get(threadId);
       if (threadInfo == null || state === 'running') {
-        this._threadsById.set(threadId, {state});
+        this._threadsById.set(threadId, { state });
       } else {
-        this._threadsById.set(threadId, {
-          ...threadInfo,
-          state,
-        });
+        this._threadsById.set(threadId, Object.assign({}, threadInfo, {
+          state
+        }));
       }
     }
   }
 
-  _getThreadsUpdatedEvent(): NuclideDebugProtocol.ThreadsUpdatedEvent {
-    const threads = Array.from(
-      this._threadsById.entries(),
-    ).map(([id, {state, callFrames, stopReason}]) => {
+  _getThreadsUpdatedEvent() {
+    const threads = Array.from(this._threadsById.entries()).map(([id, { state, callFrames, stopReason }]) => {
       const topCallFrame = callFrames == null ? null : callFrames[0];
       const threadName = `Thread ${id}`;
 
@@ -881,7 +861,7 @@ export default class VsDebugSessionTranslator {
         hasSource = false;
       } else {
         address = topCallFrame.functionName;
-        location = {...topCallFrame.location};
+        location = Object.assign({}, topCallFrame.location);
         hasSource = topCallFrame.hasSource === true;
       }
 
@@ -893,7 +873,7 @@ export default class VsDebugSessionTranslator {
         location,
         // flowlint-next-line sketchy-null-string:off
         stopReason: stopReason || 'running',
-        hasSource,
+        hasSource
       };
     });
 
@@ -901,139 +881,136 @@ export default class VsDebugSessionTranslator {
       owningProcessId: VSP_PROCESS_ID,
       // flowlint-next-line sketchy-null-number:off
       stopThreadId: this._pausedThreadId || -1,
-      threads,
+      threads
     };
   }
 
-  initilize(): Promise<mixed> {
+  initilize() {
     return this._session.initialize({
       clientID: 'Nuclide',
-      adapterID: 'python' /* TODO(most) */,
-      linesStartAt1: true,
+      adapterID: 'python' /* TODO(most) */
+      , linesStartAt1: true,
       columnsStartAt1: true,
       supportsVariableType: true,
       supportsVariablePaging: false,
       supportsRunInTerminalRequest: false,
-      pathFormat: 'path',
+      pathFormat: 'path'
     });
   }
 
-  processCommand(command: NuclideDebugProtocol.DebuggerCommand): void {
+  processCommand(command) {
     this._commands.next(command);
   }
 
-  async _getTranslatedCallFramesForThread(
-    threadId: number,
-  ): Promise<Array<NuclideDebugProtocol.CallFrame>> {
-    // $FlowFixMe(>=0.55.0) Flow suppress
-    const {body: {stackFrames}} = await this._session.stackTrace({
-      threadId,
-    });
-    return Promise.all(
-      stackFrames.map(async frame => {
-        let scriptId;
-        if (frame.source != null && frame.source.path != null) {
-          scriptId = frame.source.path;
-        } else {
-          this._logger.error('Cannot find source/script of frame: ', frame);
-          scriptId = 'N/A';
-        }
-        await this._files.registerFile(pathToUri(scriptId));
-        return {
-          callFrameId: String(frame.id),
-          functionName: frame.name,
-          location: nuclideDebuggerLocation(
-            scriptId,
-            frame.line - 1,
-            frame.column - 1,
-          ),
-          hasSource: frame.source != null,
-          scopeChain: await this._getScopesForFrame(frame.id),
-          this: (undefined: any),
+  _getTranslatedCallFramesForThread(threadId) {
+    var _this10 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      // $FlowFixMe(>=0.55.0) Flow suppress
+      const { body: { stackFrames } } = yield _this10._session.stackTrace({
+        threadId
+      });
+      return Promise.all(stackFrames.map((() => {
+        var _ref20 = (0, _asyncToGenerator.default)(function* (frame) {
+          let scriptId;
+          if (frame.source != null && frame.source.path != null) {
+            scriptId = frame.source.path;
+          } else {
+            _this10._logger.error('Cannot find source/script of frame: ', frame);
+            scriptId = 'N/A';
+          }
+          yield _this10._files.registerFile((0, (_helpers || _load_helpers()).pathToUri)(scriptId));
+          return {
+            callFrameId: String(frame.id),
+            functionName: frame.name,
+            location: nuclideDebuggerLocation(scriptId, frame.line - 1, frame.column - 1),
+            hasSource: frame.source != null,
+            scopeChain: yield _this10._getScopesForFrame(frame.id),
+            this: undefined
+          };
+        });
+
+        return function (_x19) {
+          return _ref20.apply(this, arguments);
         };
-      }),
-    );
+      })()));
+    })();
   }
 
-  async _getScopesForFrame(
-    frameId: number,
-  ): Promise<Array<NuclideDebugProtocol.Scope>> {
-    const {body: {scopes}} = await this._session.scopes({frameId});
-    return scopes.map(scope => ({
-      type: (scope.name: any),
-      name: scope.name,
-      object: {
-        type: 'object',
-        description: scope.name,
-        objectId: String(scope.variablesReference),
-      },
-    }));
+  _getScopesForFrame(frameId) {
+    var _this11 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { body: { scopes } } = yield _this11._session.scopes({ frameId });
+      return scopes.map(function (scope) {
+        return {
+          type: scope.name,
+          name: scope.name,
+          object: {
+            type: 'object',
+            description: scope.name,
+            objectId: String(scope.variablesReference)
+          }
+        };
+      });
+    })();
   }
 
-  async _getProperties(
-    id: number,
-    params: NuclideDebugProtocol.GetPropertiesRequest,
-  ): Promise<NuclideDebugProtocol.GetPropertiesResponse> {
-    const variablesReference = Number(params.objectId);
-    const {body: {variables}} = await this._session.variables({
-      variablesReference,
-    });
-    const propertyDescriptors = variables.map(variable => {
-      const value = {
-        type: (variable.type: any),
-        value: variable.value,
-        description: variable.value,
-        objectId:
-          variable.variablesReference > 0
-            ? String(variable.variablesReference)
-            : undefined,
-      };
+  _getProperties(id, params) {
+    var _this12 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const variablesReference = Number(params.objectId);
+      const { body: { variables } } = yield _this12._session.variables({
+        variablesReference
+      });
+      const propertyDescriptors = variables.map(function (variable) {
+        const value = {
+          type: variable.type,
+          value: variable.value,
+          description: variable.value,
+          objectId: variable.variablesReference > 0 ? String(variable.variablesReference) : undefined
+        };
+        return {
+          name: variable.name,
+          value,
+          configurable: false,
+          enumerable: true
+        };
+      });
       return {
-        name: variable.name,
-        value,
-        configurable: false,
-        enumerable: true,
+        result: propertyDescriptors
       };
-    });
-    return {
-      result: propertyDescriptors,
-    };
+    })();
   }
 
-  _sendMessageToClient(
-    message:
-      | NuclideDebugProtocol.DebuggerResponse
-      | NuclideDebugProtocol.DebuggerEvent,
-  ): void {
+  _sendMessageToClient(message) {
     this._logger.info('Sent message to client', JSON.stringify(message));
     this._clientCallback.sendChromeMessage(JSON.stringify(message));
   }
 
-  _sendAtomNotification(level: AtomNotificationType, message: string): void {
+  _sendAtomNotification(level, message) {
     this._clientCallback.sendAtomNotification(level, message);
   }
 
-  _sendUserOutputMessage(level: OutputLevelType, text: string): void {
-    const message: Message = {level, text};
+  _sendUserOutputMessage(level, text) {
+    const message = { level, text };
     this._clientCallback.sendUserOutputMessage(JSON.stringify(message));
   }
 
-  observeSessionEnd(): Observable<void> {
-    return Observable.merge(
-      this._session.observeExitedDebugeeEvents(),
-      this._observeTerminatedDebugeeEvents(),
-      this._session.observeAdapterExitedEvents(),
-    ).map(() => undefined);
+  observeSessionEnd() {
+    return _rxjsBundlesRxMinJs.Observable.merge(this._session.observeExitedDebugeeEvents(), this._observeTerminatedDebugeeEvents(), this._session.observeAdapterExitedEvents()).map(() => undefined);
   }
 
-  _observeTerminatedDebugeeEvents(): Observable<mixed> {
+  _observeTerminatedDebugeeEvents() {
     // The service framework doesn't flush the last output messages
     // if the observables and session are eagerly terminated.
     // Hence, delaying 1 second.
     return this._session.observeTerminateDebugeeEvents().delay(1000);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.default = VsDebugSessionTranslator;

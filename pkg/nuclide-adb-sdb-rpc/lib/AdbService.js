@@ -1,200 +1,256 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {
-  DeviceId,
-  DeviceDescription,
-  AndroidJavaProcess,
-  Process,
-  DebugBridgeFullConfig,
-} from './types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getInstalledPackages = exports.removeFile = exports.touchFile = exports.dumpsysPackage = exports.activityExists = exports.launchService = exports.launchMainActivity = exports.launchActivity = exports.removeJdwpForwardSpec = exports.forwardJdwpPortToPid = exports.getPidFromPackageName = exports.stopPackage = exports.registerCustomPath = exports.getFullConfig = exports.registerAdbPath = undefined;
 
-import {getStore} from './common/Store';
-import {ConnectableObservable} from 'rxjs';
-import {Adb} from './bridges/Adb';
-import {Processes} from './common/Processes';
-import {Devices} from './common/Devices';
-import {runCommand} from 'nuclide-commons/process';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-const ADB = 'adb';
+let registerAdbPath = exports.registerAdbPath = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (id, path, priority = -1) {
+    (0, (_Store || _load_Store()).getStore)(ADB).registerPath(id, { path, priority });
+  });
 
-export async function registerAdbPath(
-  id: string,
-  path: NuclideUri,
-  priority: number = -1,
-): Promise<void> {
-  getStore(ADB).registerPath(id, {path, priority});
+  return function registerAdbPath(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+let getFullConfig = exports.getFullConfig = (() => {
+  var _ref2 = (0, _asyncToGenerator.default)(function* () {
+    return (0, (_Store || _load_Store()).getStore)(ADB).getFullConfig();
+  });
+
+  return function getFullConfig() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+let registerCustomPath = exports.registerCustomPath = (() => {
+  var _ref3 = (0, _asyncToGenerator.default)(function* (path) {
+    (0, (_Store || _load_Store()).getStore)(ADB).registerCustomPath(path);
+  });
+
+  return function registerCustomPath(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+let stopPackage = exports.stopPackage = (() => {
+  var _ref4 = (0, _asyncToGenerator.default)(function* (device, packageName) {
+    return new (_Adb || _load_Adb()).Adb(device).stopPackage(packageName);
+  });
+
+  return function stopPackage(_x4, _x5) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+let getPidFromPackageName = exports.getPidFromPackageName = (() => {
+  var _ref5 = (0, _asyncToGenerator.default)(function* (device, packageName) {
+    return new (_Processes || _load_Processes()).Processes(new (_Adb || _load_Adb()).Adb(device)).getPidFromPackageName(packageName);
+  });
+
+  return function getPidFromPackageName(_x6, _x7) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+let forwardJdwpPortToPid = exports.forwardJdwpPortToPid = (() => {
+  var _ref6 = (0, _asyncToGenerator.default)(function* (device, tcpPort, pid) {
+    return new (_Adb || _load_Adb()).Adb(device).forwardJdwpPortToPid(tcpPort, pid);
+  });
+
+  return function forwardJdwpPortToPid(_x8, _x9, _x10) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+let removeJdwpForwardSpec = exports.removeJdwpForwardSpec = (() => {
+  var _ref7 = (0, _asyncToGenerator.default)(function* (device, spec) {
+    return new (_Adb || _load_Adb()).Adb(device).removeJdwpForwardSpec(spec);
+  });
+
+  return function removeJdwpForwardSpec(_x11, _x12) {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+let launchActivity = exports.launchActivity = (() => {
+  var _ref8 = (0, _asyncToGenerator.default)(function* (device, packageName, activity, debug, action, parameters) {
+    return new (_Adb || _load_Adb()).Adb(device).launchActivity(packageName, activity, debug, action, parameters);
+  });
+
+  return function launchActivity(_x13, _x14, _x15, _x16, _x17, _x18) {
+    return _ref8.apply(this, arguments);
+  };
+})();
+
+let launchMainActivity = exports.launchMainActivity = (() => {
+  var _ref9 = (0, _asyncToGenerator.default)(function* (device, packageName, debug) {
+    return new (_Adb || _load_Adb()).Adb(device).launchMainActivity(packageName, debug);
+  });
+
+  return function launchMainActivity(_x19, _x20, _x21) {
+    return _ref9.apply(this, arguments);
+  };
+})();
+
+let launchService = exports.launchService = (() => {
+  var _ref10 = (0, _asyncToGenerator.default)(function* (device, packageName, serviceName, debug) {
+    return new (_Adb || _load_Adb()).Adb(device).launchService(packageName, serviceName, debug);
+  });
+
+  return function launchService(_x22, _x23, _x24, _x25) {
+    return _ref10.apply(this, arguments);
+  };
+})();
+
+let activityExists = exports.activityExists = (() => {
+  var _ref11 = (0, _asyncToGenerator.default)(function* (device, packageName, activity) {
+    return new (_Adb || _load_Adb()).Adb(device).activityExists(packageName, activity);
+  });
+
+  return function activityExists(_x26, _x27, _x28) {
+    return _ref11.apply(this, arguments);
+  };
+})();
+
+let dumpsysPackage = exports.dumpsysPackage = (() => {
+  var _ref12 = (0, _asyncToGenerator.default)(function* (device, identifier) {
+    return new (_Adb || _load_Adb()).Adb(device).dumpsysPackage(identifier);
+  });
+
+  return function dumpsysPackage(_x29, _x30) {
+    return _ref12.apply(this, arguments);
+  };
+})();
+
+let touchFile = exports.touchFile = (() => {
+  var _ref13 = (0, _asyncToGenerator.default)(function* (device, path) {
+    return new (_Adb || _load_Adb()).Adb(device).touchFile(path);
+  });
+
+  return function touchFile(_x31, _x32) {
+    return _ref13.apply(this, arguments);
+  };
+})();
+
+let removeFile = exports.removeFile = (() => {
+  var _ref14 = (0, _asyncToGenerator.default)(function* (device, path) {
+    return new (_Adb || _load_Adb()).Adb(device).removeFile(path);
+  });
+
+  return function removeFile(_x33, _x34) {
+    return _ref14.apply(this, arguments);
+  };
+})();
+
+let getInstalledPackages = exports.getInstalledPackages = (() => {
+  var _ref15 = (0, _asyncToGenerator.default)(function* (device) {
+    return new (_Adb || _load_Adb()).Adb(device).getInstalledPackages();
+  });
+
+  return function getInstalledPackages(_x35) {
+    return _ref15.apply(this, arguments);
+  };
+})();
+
+exports.getDeviceInfo = getDeviceInfo;
+exports.getProcesses = getProcesses;
+exports.getDeviceList = getDeviceList;
+exports.installPackage = installPackage;
+exports.uninstallPackage = uninstallPackage;
+exports.getJavaProcesses = getJavaProcesses;
+exports.addAdbPort = addAdbPort;
+exports.removeAdbPort = removeAdbPort;
+exports.getAdbPorts = getAdbPorts;
+exports.getApkManifest = getApkManifest;
+
+var _Store;
+
+function _load_Store() {
+  return _Store = require('./common/Store');
 }
 
-export async function getFullConfig(): Promise<DebugBridgeFullConfig> {
-  return getStore(ADB).getFullConfig();
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _Adb;
+
+function _load_Adb() {
+  return _Adb = require('./bridges/Adb');
 }
 
-export async function registerCustomPath(path: ?string): Promise<void> {
-  getStore(ADB).registerCustomPath(path);
+var _Processes;
+
+function _load_Processes() {
+  return _Processes = require('./common/Processes');
 }
 
-export function getDeviceInfo(
-  device: DeviceId,
-): ConnectableObservable<Map<string, string>> {
-  return new Adb(device).getDeviceInfo().publish();
+var _Devices;
+
+function _load_Devices() {
+  return _Devices = require('./common/Devices');
 }
 
-export function getProcesses(
-  device: DeviceId,
-  timeout: number,
-): ConnectableObservable<Array<Process>> {
-  return new Processes(new Adb(device)).fetch(timeout).publish();
+var _process;
+
+function _load_process() {
+  return _process = require('nuclide-commons/process');
 }
 
-export async function stopPackage(
-  device: DeviceId,
-  packageName: string,
-): Promise<void> {
-  return new Adb(device).stopPackage(packageName);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ADB = 'adb'; /**
+                    * Copyright (c) 2015-present, Facebook, Inc.
+                    * All rights reserved.
+                    *
+                    * This source code is licensed under the license found in the LICENSE file in
+                    * the root directory of this source tree.
+                    *
+                    * 
+                    * @format
+                    */
+
+function getDeviceInfo(device) {
+  return new (_Adb || _load_Adb()).Adb(device).getDeviceInfo().publish();
 }
 
-export function getDeviceList(): ConnectableObservable<
-  Array<DeviceDescription>,
-> {
-  return new Devices(Adb).getDeviceList().publish();
+function getProcesses(device, timeout) {
+  return new (_Processes || _load_Processes()).Processes(new (_Adb || _load_Adb()).Adb(device)).fetch(timeout).publish();
 }
 
-export async function getPidFromPackageName(
-  device: DeviceId,
-  packageName: string,
-): Promise<number> {
-  return new Processes(new Adb(device)).getPidFromPackageName(packageName);
+function getDeviceList() {
+  return new (_Devices || _load_Devices()).Devices((_Adb || _load_Adb()).Adb).getDeviceList().publish();
 }
 
-export function installPackage(
-  device: DeviceId,
-  packagePath: NuclideUri,
-): ConnectableObservable<LegacyProcessMessage> {
+function installPackage(device, packagePath) {
   // TODO(T17463635)
-  return new Adb(device).installPackage(packagePath).publish();
+  return new (_Adb || _load_Adb()).Adb(device).installPackage(packagePath).publish();
 }
 
-export function uninstallPackage(
-  device: DeviceId,
-  packageName: string,
-): ConnectableObservable<LegacyProcessMessage> {
+function uninstallPackage(device, packageName) {
   // TODO(T17463635)
-  return new Adb(device).uninstallPackage(packageName).publish();
+  return new (_Adb || _load_Adb()).Adb(device).uninstallPackage(packageName).publish();
 }
 
-export async function forwardJdwpPortToPid(
-  device: DeviceId,
-  tcpPort: number,
-  pid: number,
-): Promise<?string> {
-  return new Adb(device).forwardJdwpPortToPid(tcpPort, pid);
+function getJavaProcesses(device) {
+  return new (_Adb || _load_Adb()).Adb(device).getJavaProcesses().publish();
 }
 
-export async function removeJdwpForwardSpec(
-  device: DeviceId,
-  spec: ?string,
-): Promise<string> {
-  return new Adb(device).removeJdwpForwardSpec(spec);
+function addAdbPort(port) {
+  (0, (_Store || _load_Store()).getStore)('adb').addPort(port);
 }
 
-export async function launchActivity(
-  device: DeviceId,
-  packageName: string,
-  activity: string,
-  debug: boolean,
-  action: ?string,
-  parameters: ?Map<string, string>,
-): Promise<string> {
-  return new Adb(device).launchActivity(
-    packageName,
-    activity,
-    debug,
-    action,
-    parameters,
-  );
+function removeAdbPort(port) {
+  (0, (_Store || _load_Store()).getStore)('adb').removePort(port);
 }
 
-export async function launchMainActivity(
-  device: DeviceId,
-  packageName: string,
-  debug: boolean,
-): Promise<string> {
-  return new Adb(device).launchMainActivity(packageName, debug);
+function getAdbPorts() {
+  return Promise.resolve((0, (_Store || _load_Store()).getStore)('adb').getPorts());
 }
 
-export async function launchService(
-  device: DeviceId,
-  packageName: string,
-  serviceName: string,
-  debug: boolean,
-): Promise<string> {
-  return new Adb(device).launchService(packageName, serviceName, debug);
-}
-
-export async function activityExists(
-  device: DeviceId,
-  packageName: string,
-  activity: string,
-): Promise<boolean> {
-  return new Adb(device).activityExists(packageName, activity);
-}
-
-export function getJavaProcesses(
-  device: DeviceId,
-): ConnectableObservable<Array<AndroidJavaProcess>> {
-  return new Adb(device).getJavaProcesses().publish();
-}
-
-export async function dumpsysPackage(
-  device: DeviceId,
-  identifier: string,
-): Promise<?string> {
-  return new Adb(device).dumpsysPackage(identifier);
-}
-
-export async function touchFile(
-  device: DeviceId,
-  path: string,
-): Promise<string> {
-  return new Adb(device).touchFile(path);
-}
-
-export async function removeFile(
-  device: DeviceId,
-  path: string,
-): Promise<string> {
-  return new Adb(device).removeFile(path);
-}
-
-export async function getInstalledPackages(
-  device: DeviceId,
-): Promise<Array<string>> {
-  return new Adb(device).getInstalledPackages();
-}
-
-export function addAdbPort(port: number): void {
-  getStore('adb').addPort(port);
-}
-
-export function removeAdbPort(port: number): void {
-  getStore('adb').removePort(port);
-}
-
-export function getAdbPorts(): Promise<Array<number>> {
-  return Promise.resolve(getStore('adb').getPorts());
-}
-
-export function getApkManifest(apkPath: string): Promise<string> {
-  return runCommand('aapt', ['dump', 'badging', apkPath]).toPromise();
+function getApkManifest(apkPath) {
+  return (0, (_process || _load_process()).runCommand)('aapt', ['dump', 'badging', apkPath]).toPromise();
 }

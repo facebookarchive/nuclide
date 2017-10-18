@@ -1,85 +1,62 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.grepSearch = grepSearch;
+exports.grepReplace = grepReplace;
 
-import {ConnectableObservable, Observable} from 'rxjs';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import replaceInFile from './replaceInFile';
-import search from './scanhandler';
+var _nuclideUri;
 
-export type search$Match = {
-  lineText: string,
-  lineTextOffset: number,
-  matchText: string,
-  range: Array<Array<number>>,
-};
-
-export type search$FileResult = {
-  filePath: NuclideUri,
-  matches: Array<search$Match>,
-};
-
-export type search$ReplaceResult =
-  | {
-      type: 'success',
-      filePath: NuclideUri,
-      replacements: number,
-    }
-  | {
-      type: 'error',
-      filePath: NuclideUri,
-      message: string,
-    };
-
-export function grepSearch(
-  directory: NuclideUri,
-  regex: RegExp,
-  subdirs: Array<string>,
-): ConnectableObservable<search$FileResult> {
-  return search(directory, regex, subdirs)
-    .map(update => {
-      // Transform filePath's to absolute paths.
-      return {
-        filePath: nuclideUri.join(directory, update.filePath),
-        matches: update.matches,
-      };
-    })
-    .publish();
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
 }
 
-export function grepReplace(
-  filePaths: Array<NuclideUri>,
-  regex: RegExp,
-  replacementText: string,
-  concurrency: number = 4,
-): ConnectableObservable<search$ReplaceResult> {
-  return Observable.from(filePaths)
-    .mergeMap(
-      filePath =>
-        replaceInFile(filePath, regex, replacementText)
-          .map(replacements => ({
-            type: 'success',
-            filePath,
-            replacements,
-          }))
-          .catch(err => {
-            return Observable.of({
-              type: 'error',
-              filePath,
-              message: err.message,
-            });
-          }),
-      concurrency,
-    )
-    .publish();
+var _replaceInFile;
+
+function _load_replaceInFile() {
+  return _replaceInFile = _interopRequireDefault(require('./replaceInFile'));
+}
+
+var _scanhandler;
+
+function _load_scanhandler() {
+  return _scanhandler = _interopRequireDefault(require('./scanhandler'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function grepSearch(directory, regex, subdirs) {
+  return (0, (_scanhandler || _load_scanhandler()).default)(directory, regex, subdirs).map(update => {
+    // Transform filePath's to absolute paths.
+    return {
+      filePath: (_nuclideUri || _load_nuclideUri()).default.join(directory, update.filePath),
+      matches: update.matches
+    };
+  }).publish();
+} /**
+   * Copyright (c) 2015-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the license found in the LICENSE file in
+   * the root directory of this source tree.
+   *
+   * 
+   * @format
+   */
+
+function grepReplace(filePaths, regex, replacementText, concurrency = 4) {
+  return _rxjsBundlesRxMinJs.Observable.from(filePaths).mergeMap(filePath => (0, (_replaceInFile || _load_replaceInFile()).default)(filePath, regex, replacementText).map(replacements => ({
+    type: 'success',
+    filePath,
+    replacements
+  })).catch(err => {
+    return _rxjsBundlesRxMinJs.Observable.of({
+      type: 'error',
+      filePath,
+      message: err.message
+    });
+  }), concurrency).publish();
 }

@@ -1,3 +1,22 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports._TABBABLE_CLASS_NAME = undefined;
+
+var _react = _interopRequireDefault(require('react'));
+
+var _tabbable;
+
+function _load_tabbable() {
+  return _tabbable = _interopRequireDefault(require('tabbable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// NOTE: This constant must be kept in sync with the keybinding in
+//       ../nuclide-tab-focus/keymaps/nuclide-tab-focus.json
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,47 +25,31 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import React from 'react';
-import invariant from 'assert';
-import tabbable from 'tabbable';
-
-type DefaultProps = {
-  contained: boolean,
-};
-
-type Props = {
-  children?: React$Element<any>,
-  contained: boolean,
-};
-
-// NOTE: This constant must be kept in sync with the keybinding in
-//       ../nuclide-tab-focus/keymaps/nuclide-tab-focus.json
-export const _TABBABLE_CLASS_NAME = 'nuclide-tabbable';
+const _TABBABLE_CLASS_NAME = exports._TABBABLE_CLASS_NAME = 'nuclide-tabbable';
 
 /**
  * Enables focusing between inputs with tab and shift-tab. Can also be used to
  * trap focus within the container by using the contained property.
  */
-export default class TabbableContainer extends React.Component<Props> {
-  _rootNode: ?HTMLDivElement;
-
-  static defaultProps: DefaultProps = {
-    contained: false,
-    autoFocus: false,
-  };
+class TabbableContainer extends _react.default.Component {
 
   componentDidMount() {
     const rootNode = this._rootNode;
-    invariant(rootNode != null);
+
+    if (!(rootNode != null)) {
+      throw new Error('Invariant violation: "rootNode != null"');
+    }
 
     // If focus has been deliberately set inside the container, don't try
     // to override it
+
+
     if (!rootNode.contains(document.activeElement)) {
-      const tabbableElements = tabbable(rootNode);
+      const tabbableElements = (0, (_tabbable || _load_tabbable()).default)(rootNode);
       const firstTabbableElement = tabbableElements[0];
       if (firstTabbableElement != null) {
         firstTabbableElement.focus();
@@ -54,14 +57,19 @@ export default class TabbableContainer extends React.Component<Props> {
     }
   }
 
-  render(): React$Node {
-    return (
-      <div
-        className={_TABBABLE_CLASS_NAME}
-        data-contained={this.props.contained}
-        ref={node => (this._rootNode = node)}>
-        {this.props.children}
-      </div>
+  render() {
+    return _react.default.createElement(
+      'div',
+      {
+        className: _TABBABLE_CLASS_NAME,
+        'data-contained': this.props.contained,
+        ref: node => this._rootNode = node },
+      this.props.children
     );
   }
 }
+exports.default = TabbableContainer;
+TabbableContainer.defaultProps = {
+  contained: false,
+  autoFocus: false
+};
