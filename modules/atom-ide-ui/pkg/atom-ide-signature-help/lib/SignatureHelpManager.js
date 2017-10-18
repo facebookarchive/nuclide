@@ -18,6 +18,7 @@ import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import {completingSwitchMap} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import getSignatureDatatip from './getSignatureDatatip';
@@ -208,19 +209,21 @@ export default class SignatureHelpManager {
                 Math.abs(currentPosition.column - position.column) <=
               2,
           )
-          .switchMap(point => {
-            return Observable.create(() => {
-              const disposable = datatipService.createPinnedDataTip(
-                getSignatureDatatip(signatureHelp, point),
-                editor,
-                {
-                  position: 'above-range',
-                  showRangeHighlight: false,
-                },
-              );
-              return new UniversalDisposable(disposable);
-            });
-          })
+          .let(
+            completingSwitchMap(point => {
+              return Observable.create(() => {
+                const disposable = datatipService.createPinnedDataTip(
+                  getSignatureDatatip(signatureHelp, point),
+                  editor,
+                  {
+                    position: 'above-range',
+                    showRangeHighlight: false,
+                  },
+                );
+                return new UniversalDisposable(disposable);
+              });
+            }),
+          )
       );
     });
   }

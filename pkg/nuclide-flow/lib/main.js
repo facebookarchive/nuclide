@@ -37,6 +37,7 @@ import {
   ConnectionCache,
   getServiceByConnection,
 } from '../../nuclide-remote-connection';
+import {completingSwitchMap} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -126,36 +127,32 @@ export function serverStatusUpdatesToBusyMessages(
   return statusUpdates
     .groupBy(({pathToRoot}) => pathToRoot)
     .mergeMap(messagesForRoot => {
-      return (
-        messagesForRoot
-          // Append a null sentinel to ensure that completion clears the busy signal.
-          .concat(Observable.of(null))
-          .switchMap(nextStatus => {
-            // I would use constants here but the constant is in the flow-rpc package which we can't
-            // load directly from this package. Casting to the appropriate type is just as safe.
-            if (
-              nextStatus != null &&
-              (nextStatus.status === ('init': ServerStatusType) ||
-                nextStatus.status === ('busy': ServerStatusType))
-            ) {
-              const readablePath = nuclideUri.nuclideUriToDisplayString(
-                nextStatus.pathToRoot,
+      return messagesForRoot.let(
+        completingSwitchMap(nextStatus => {
+          // I would use constants here but the constant is in the flow-rpc package which we can't
+          // load directly from this package. Casting to the appropriate type is just as safe.
+          if (
+            nextStatus.status === ('init': ServerStatusType) ||
+            nextStatus.status === ('busy': ServerStatusType)
+          ) {
+            const readablePath = nuclideUri.nuclideUriToDisplayString(
+              nextStatus.pathToRoot,
+            );
+            const readableStatus =
+              nextStatus.status === ('init': ServerStatusType)
+                ? 'initializing'
+                : 'busy';
+            // Use an observable to encapsulate clearing the message.
+            // The switchMap above will ensure that messages get cleared.
+            return Observable.create(observer => {
+              const disposable = busySignal.reportBusy(
+                `Flow server is ${readableStatus} (${readablePath})`,
               );
-              const readableStatus =
-                nextStatus.status === ('init': ServerStatusType)
-                  ? 'initializing'
-                  : 'busy';
-              // Use an observable to encapsulate clearing the message.
-              // The switchMap above will ensure that messages get cleared.
-              return Observable.create(observer => {
-                const disposable = busySignal.reportBusy(
-                  `Flow server is ${readableStatus} (${readablePath})`,
-                );
-                return () => disposable.dispose();
-              });
-            }
-            return Observable.empty();
-          })
+              return () => disposable.dispose();
+            });
+          }
+          return Observable.empty();
+        }),
       );
     })
     .subscribe();

@@ -22,7 +22,7 @@ import {Range} from 'atom';
 import {Observable, Subject} from 'rxjs';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {microtask} from 'nuclide-commons/observable';
+import {completingSwitchMap, microtask} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {
@@ -102,14 +102,8 @@ export default class CodeFormatManager {
             ),
         )
         .mergeMap(events =>
-          // Concatenate a null event to ensure that buffer destruction
-          // interrupts any pending format operations.
-          events.concat(Observable.of(null)).switchMap(event => {
-            if (event == null) {
-              return Observable.empty();
-            }
-            return this._handleEvent(event);
-          }),
+          // Make sure we halt everything when the editor gets destroyed.
+          events.let(completingSwitchMap(event => this._handleEvent(event))),
         )
         .subscribe()
     );
