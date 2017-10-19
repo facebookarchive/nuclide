@@ -13,6 +13,7 @@
 import React from 'react';
 import invariant from 'assert';
 import tabbable from 'tabbable';
+import classnames from 'classnames';
 
 type DefaultProps = {
   contained: boolean,
@@ -21,6 +22,7 @@ type DefaultProps = {
 type Props = {
   children?: React$Element<any>,
   contained: boolean,
+  className?: string,
 };
 
 // NOTE: This constant must be kept in sync with the keybinding in
@@ -57,7 +59,7 @@ export default class TabbableContainer extends React.Component<Props> {
   render(): React$Node {
     return (
       <div
-        className={_TABBABLE_CLASS_NAME}
+        className={classnames(_TABBABLE_CLASS_NAME, this.props.className)}
         data-contained={this.props.contained}
         ref={node => (this._rootNode = node)}>
         {this.props.children}
