@@ -79,12 +79,14 @@ export type RemoteProjectsService = {
 };
 
 /**
- * Stores the host and cwd of a remote connection.
+ * Stores the host, cwd, displayTitle of a remote connection and
+ * a property switch for whether to prompt to connect again if reconnect attempt fails.
  */
 export type SerializableRemoteConnectionConfiguration = {
   host: string,
   cwd: string,
   displayTitle: string,
+  promptReconnectOnFailure?: boolean,
 };
 
 let packageSubscriptions: ?UniversalDisposable = null;
@@ -102,6 +104,7 @@ function createSerializableRemoteConnectionConfiguration(
     host: config.host,
     cwd: config.cwd,
     displayTitle: config.displayTitle,
+    promptReconnectOnFailure: config.promptReconnectOnFailure,
   };
 }
 
