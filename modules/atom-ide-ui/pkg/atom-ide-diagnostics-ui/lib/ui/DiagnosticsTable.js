@@ -93,20 +93,18 @@ export default class DiagnosticsTable extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    (this: any)._handleSort = this._handleSort.bind(this);
-    (this: any)._handleSelectTableRow = this._handleSelectTableRow.bind(this);
     this.state = {
       sortDescending: true,
       sortedColumn: 'classification',
     };
   }
 
-  _handleSort(sortedColumn: ColumnName, sortDescending: boolean): void {
+  _handleSort = (sortedColumn: ColumnName, sortDescending: boolean): void => {
     this.setState({
       sortedColumn,
       sortDescending,
     });
-  }
+  };
 
   _handleSelectTableRow = (
     item: {diagnostic: DiagnosticMessage},
