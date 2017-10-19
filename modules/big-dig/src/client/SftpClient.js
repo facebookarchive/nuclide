@@ -12,7 +12,6 @@
 
 import {SFTPWrapper} from 'ssh2';
 import {Observable} from 'rxjs';
-// eslint-disable-next-line rulesdir/prefer-nuclide-uri
 import * as pathModule from 'path';
 import * as fs from 'fs';
 import {Deferred} from 'nuclide-commons/promise';

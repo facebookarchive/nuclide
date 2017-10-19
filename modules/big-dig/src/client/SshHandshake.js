@@ -32,7 +32,9 @@ import {getPackage} from './RemotePackage';
 import type {PackageParams, RemotePackage} from './RemotePackage';
 
 export type {
+  ExtractionMethod,
   PackageParams as ServerPackageParams,
+  ManagedPackageParams as ManagedServerParams,
   UnmanagedPackageParams as UnmanagedServerParams,
   PackageParams as ServerExecutable,
 } from './RemotePackage';
