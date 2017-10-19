@@ -69,6 +69,10 @@ export default class HighlightedText extends React.Component<Props> {
       }
     }
 
+    if (unhighlightedRanges.length === 0) {
+      unhighlightedRanges.push([0, text.length]);
+    }
+
     invariant(
       unhighlightedRanges.length === highlightedRanges.length ||
         unhighlightedRanges.length === highlightedRanges.length + 1,
