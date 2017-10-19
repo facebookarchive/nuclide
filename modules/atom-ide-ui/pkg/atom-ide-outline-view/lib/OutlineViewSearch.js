@@ -143,6 +143,7 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
       <div className="outline-view-search-bar">
         <Icon icon="search" className="outline-view-search-icon" />
         <AtomInput
+          autofocus={true}
           className="outline-view-search-pane"
           onConfirm={this._onConfirm}
           onCancel={this._onDidClear}
