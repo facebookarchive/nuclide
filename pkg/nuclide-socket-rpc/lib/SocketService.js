@@ -14,6 +14,7 @@ import type {ConnectableObservable} from 'rxjs';
 import {Observable} from 'rxjs';
 import net from 'net';
 import {getLogger} from 'log4js';
+import {getAvailableServerPort as _getAvailableServerPort} from '../../commons-node/serverPort';
 
 export type SocketEvent =
   | {type: 'server_started'}
@@ -146,4 +147,8 @@ function getServerSocket(serverPort: number): ServerSocket {
 
 function trace(message: string) {
   getLogger('SocketService').trace(message);
+}
+
+export async function getAvailableServerPort(): Promise<number> {
+  return _getAvailableServerPort();
 }
