@@ -203,6 +203,9 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   const enableTypeHints = Boolean(
     featureConfig.get('nuclide-flow.enableTypeHints'),
   );
+  const enableFindRefs = Boolean(
+    featureConfig.get('nuclide-flow.enableFindReferences'),
+  );
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
@@ -269,6 +272,12 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
       analyticsEventName: 'flow.evaluationExpression',
       matcher: {kind: 'default'},
     },
+    findReferences: enableFindRefs
+      ? {
+          version: '0.1.0',
+          analyticsEventName: 'flow.find-references',
+        }
+      : undefined,
   };
 }
 

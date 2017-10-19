@@ -23,6 +23,7 @@ import type {
 import type {
   DefinitionQueryResult,
   FindReferencesReturn,
+  Reference,
   Outline,
   CodeAction,
 } from 'atom-ide-ui';
@@ -40,6 +41,7 @@ import type {
   FlowAutocompleteItem,
   TypeAtPosOutput,
   FlowStatusOutput,
+  FindRefsOutput,
 } from './flowOutputTypes';
 
 import invariant from 'assert';
@@ -182,7 +184,19 @@ export class FlowSingleProjectLanguageService {
     if (!isSupported) {
       return null;
     }
+    const result = await this._findRefs(filePath, buffer, position, false);
+    if (result == null || result.type === 'error') {
+      return null;
+    }
+    return result.references.map(ref => ref.range);
+  }
 
+  async _findRefs(
+    filePath: NuclideUri,
+    buffer: simpleTextBuffer$TextBuffer,
+    position: atom$Point,
+    global_: boolean,
+  ): Promise<?FindReferencesReturn> {
     const options = {input: buffer.getText()};
     const args = [
       'find-refs',
@@ -192,21 +206,35 @@ export class FlowSingleProjectLanguageService {
       position.row + 1,
       position.column + 1,
     ];
+    if (global_) {
+      args.push('--global');
+    }
     try {
       const result = await this._process.execFlow(args, options);
       if (result == null) {
         return null;
       }
-      const json = parseJSON(args, result.stdout);
+      const json: FindRefsOutput = parseJSON(args, result.stdout);
       if (!Array.isArray(json)) {
         return null;
       }
-      return json.map(loc => {
-        return new Range(
-          new Point(loc.start.line - 1, loc.start.column - 1),
-          new Point(loc.end.line - 1, loc.end.column),
-        );
+      const references: Array<Reference> = json.map(loc => {
+        return ({
+          name: null,
+          range: new Range(
+            new Point(loc.start.line - 1, loc.start.column - 1),
+            new Point(loc.end.line - 1, loc.end.column),
+          ),
+          uri: loc.source,
+        }: Reference);
       });
+      return {
+        type: 'data',
+        baseUri: filePath,
+        // TODO get the actual name
+        referencedSymbolName: '',
+        references,
+      };
     } catch (e) {
       logger.error(`flowFindRefs error: ${String(e)}`);
       return null;
@@ -598,7 +626,8 @@ export class FlowSingleProjectLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?FindReferencesReturn> {
-    throw new Error('Not Yet Implemented');
+    // TODO check flow version
+    return this._findRefs(filePath, buffer, position, true);
   }
 
   getEvaluationExpression(

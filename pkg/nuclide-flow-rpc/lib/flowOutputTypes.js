@@ -85,3 +85,6 @@ export type TypeAtPosOutput = {
   reasons: Array<mixed>,
   loc: FlowLoc,
 };
+
+/* find-refs */
+export type FindRefsOutput = Array<FlowLoc>;
