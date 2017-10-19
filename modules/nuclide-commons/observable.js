@@ -28,6 +28,7 @@ import UniversalDisposable from './UniversalDisposable';
 import invariant from 'assert';
 import {Observable, ReplaySubject} from 'rxjs';
 import {setDifference} from './collection';
+import debounce from './debounce';
 
 /**
  * Splits a stream of strings on newlines.
@@ -355,6 +356,33 @@ export function completingSwitchMap<T, U>(
         return Observable.empty();
       }
       return project(input, index);
+    });
+}
+
+/**
+ * RxJS's debounceTime is actually fairly inefficient:
+ * on each event, it always clears its interval and [creates a new one][1].
+ * Until this is fixed, this uses our debounce implementation which
+ * reuses a timeout and just sets a timestamp when possible.
+ *
+ * This may seem like a micro-optimization but we often use debounces
+ * for very hot events, like keypresses. Exceeding the frame budget can easily lead
+ * to increased key latency!
+ *
+ * [1]: https://github.com/ReactiveX/rxjs/blob/master/src/operators/debounceTime.ts#L106
+ */
+export function fastDebounce<T>(
+  delay: number,
+): (Observable<T>) => Observable<T> {
+  return (observable: Observable<T>) =>
+    Observable.create(observer => {
+      const debouncedNext = debounce((x: T) => observer.next(x), delay);
+      const subscription = observable.subscribe(
+        debouncedNext,
+        observer.error.bind(observer),
+        observer.complete.bind(observer),
+      );
+      return new UniversalDisposable(subscription, debouncedNext);
     });
 }
 

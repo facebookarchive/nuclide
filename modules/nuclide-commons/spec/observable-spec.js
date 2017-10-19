@@ -12,8 +12,11 @@
 
 import {
   bufferUntil,
-  diffSets,
   cacheWhileSubscribed,
+  completingSwitchMap,
+  concatLatest,
+  diffSets,
+  fastDebounce,
   macrotask,
   microtask,
   nextAnimationFrame,
@@ -22,8 +25,6 @@ import {
   takeWhileInclusive,
   throttle,
   toggle,
-  concatLatest,
-  completingSwitchMap,
 } from '../observable';
 import {Disposable} from 'event-kit';
 import {Observable, Subject} from 'rxjs';
@@ -514,6 +515,58 @@ describe('nuclide-commons/observable', () => {
           .toPromise();
         expect(results).toEqual([2, 3]);
       });
+    });
+  });
+
+  describe('fastDebounce', () => {
+    it('debounces events', () => {
+      waitsForPromise(async () => {
+        let nextSpy: jasmine$Spy;
+        const originalCreate = Observable.create.bind(Observable);
+        // Spy on the created observer's next to ensure that we always cancel
+        // the last debounced timer on unsubscribe.
+        spyOn(Observable, 'create').andCallFake(callback => {
+          return originalCreate(observer => {
+            nextSpy = spyOn(observer, 'next').andCallThrough();
+            return callback(observer);
+          });
+        });
+
+        const subject = new Subject();
+        const promise = subject
+          .let(fastDebounce(10))
+          .toArray()
+          .toPromise();
+
+        subject.next(1);
+        subject.next(2);
+        advanceClock(20);
+
+        subject.next(3);
+        advanceClock(5);
+
+        subject.next(4);
+        advanceClock(15);
+
+        subject.next(5);
+        subject.complete();
+        advanceClock(20);
+
+        expect(await promise).toEqual([2, 4]);
+        expect(nextSpy.callCount).toBe(2);
+      });
+    });
+
+    it('passes errors through immediately', () => {
+      let caught = false;
+      Observable.throw(1)
+        .let(fastDebounce(10))
+        .subscribe({
+          error() {
+            caught = true;
+          },
+        });
+      expect(caught).toBe(true);
     });
   });
 
