@@ -20,6 +20,8 @@ import type {Column, Row} from 'nuclide-commons-ui/Table';
 import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
+import invariant from 'assert';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import humanizePath from 'nuclide-commons-atom/humanizePath';
 import {insideOut} from 'nuclide-commons/collection';
 import * as React from 'react';
@@ -30,6 +32,7 @@ import sortDiagnostics from '../sortDiagnostics';
 import {DiagnosticsMessageNoHeader} from './DiagnosticsMessage';
 import {DiagnosticsMessageText} from './DiagnosticsMessageText';
 import {Icon} from 'nuclide-commons-ui/Icon';
+import {Subject, BehaviorSubject} from 'rxjs';
 
 // text is always used for sorting, while we render the element.
 type DescriptionField = {
@@ -83,20 +86,66 @@ type Props = {
 };
 
 type State = {
+  focused: boolean,
+  selectedMessage: ?DiagnosticMessage,
   sortDescending: boolean,
   sortedColumn: ColumnName,
 };
 
-export default class DiagnosticsTable extends React.Component<Props, State> {
+export default class DiagnosticsTable extends React.PureComponent<
+  Props,
+  State,
+> {
   _previousSelectedIndex: number = -1;
   _table: ?Table<DisplayDiagnostic>;
+  _focusChangeEvents: Subject<SyntheticEvent<*>> = new Subject();
+  _selectedMessages: BehaviorSubject<?DiagnosticMessage> = new BehaviorSubject();
+  _disposables: ?UniversalDisposable;
 
   constructor(props: Props) {
     super(props);
     this.state = {
+      focused: false,
+      selectedMessage: null,
       sortDescending: true,
       sortedColumn: 'classification',
     };
+  }
+
+  componentWillReceiveProps(nextProps: Props): void {
+    this._selectedMessages.next(nextProps.selectedMessage);
+  }
+
+  componentDidMount(): void {
+    const focusedStream = this._focusChangeEvents.map(
+      event => event.type === 'focus',
+    );
+    this._disposables = new UniversalDisposable(
+      // If we change the state synchronously on the focus change, the component will be
+      // re-rendered, removing the element with the click handler before the click event gets to us
+      // (via the table's `onSelect()`). This would manifest itself in rows not being selected when
+      // a click both changes the selection and focuses the table. A naive solution would be to
+      // simply delay the focus event, however, users would perceive the selection and focus styling
+      // changes (quick flashing changes). Therefore, we hold onto focus changes (i.e. don't
+      // re-render) until we hear the selection change. Because a focus change may occur without a
+      // subsequent selection change, we also always force a re-render after a certain number of
+      // milliseconds without hearing a selection change. The end result is that clicking a row when
+      // the table is not focused will immediately render the table with the correct focus and
+      // selection. Focusing the table without clicking a row will be queue a re-render in a few
+      // milliseconds.
+      this._selectedMessages
+        .distinctUntilChanged()
+        .withLatestFrom(focusedStream)
+        .subscribe(([selectedMessage, focused]) => {
+          this.setState({selectedMessage, focused});
+        }),
+      focusedStream.delay(100).subscribe(focused => this.setState({focused})),
+    );
+  }
+
+  componentWillUnmount(): void {
+    invariant(this._disposables != null);
+    this._disposables.dispose();
   }
 
   _handleSort = (sortedColumn: ColumnName, sortDescending: boolean): void => {
@@ -166,6 +215,26 @@ export default class DiagnosticsTable extends React.Component<Props, State> {
       descriptionWidth -= FILENAME_WIDTH;
     }
 
+    // False positive for this lint rule?
+    // eslint-disable-next-line react/no-unused-prop-types
+    const DescriptionComponent = (props: {data: DescriptionField}) => {
+      const {showTraces, diagnostic, text, isPlainText} = props.data;
+      const expanded =
+        showTraces ||
+        (this.state.focused && diagnostic === this.state.selectedMessage);
+      return expanded
+        ? DiagnosticsMessageNoHeader({
+            message: diagnostic,
+            goToLocation: (file: string, line: number) =>
+              goToLocation(file, {line}),
+            fixer: () => {},
+          })
+        : DiagnosticsMessageText({
+            preserveNewlines: showTraces,
+            message: {text, html: isPlainText ? undefined : text},
+          });
+    };
+
     return [
       {
         component: TypeComponent,
@@ -193,8 +262,8 @@ export default class DiagnosticsTable extends React.Component<Props, State> {
   }
 
   render(): React.Node {
-    const {diagnostics, selectedMessage, showTraces} = this.props;
-    const {sortedColumn, sortDescending} = this.state;
+    const {diagnostics, showTraces} = this.props;
+    const {selectedMessage, sortedColumn, sortDescending} = this.state;
     const diagnosticRows = this._getRows(diagnostics, showTraces);
     let sortedRows = this._sortRows(
       diagnosticRows,
@@ -222,6 +291,8 @@ export default class DiagnosticsTable extends React.Component<Props, State> {
           ref={table => {
             this._table = table;
           }}
+          onBodyFocus={this._handleFocusChangeEvent}
+          onBodyBlur={this._handleFocusChangeEvent}
           collapsable={true}
           columns={this._getColumns()}
           emptyComponent={EmptyComponent}
@@ -248,6 +319,10 @@ export default class DiagnosticsTable extends React.Component<Props, State> {
       this._table.focus();
     }
   }
+
+  _handleFocusChangeEvent = (event: SyntheticEvent<*>): void => {
+    this._focusChangeEvents.next(event);
+  };
 
   _findSelectedIndex(
     selectedMessage: ?DiagnosticMessage,
@@ -375,23 +450,6 @@ function getMessageContent(
     }
   }
   return {text: text.trim(), isPlainText};
-}
-
-function DescriptionComponent(props: {
-  data: DescriptionField,
-}): React.Element<any> {
-  const {showTraces, diagnostic, text, isPlainText} = props.data;
-  return showTraces
-    ? DiagnosticsMessageNoHeader({
-        message: diagnostic,
-        goToLocation: (file: string, line: number) =>
-          goToLocation(file, {line}),
-        fixer: () => {},
-      })
-    : DiagnosticsMessageText({
-        preserveNewlines: showTraces,
-        message: {text, html: isPlainText ? undefined : text},
-      });
 }
 
 function DirComponent(props: {data: string}): React.Element<any> {

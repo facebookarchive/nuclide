@@ -104,7 +104,8 @@
   background-color: @background-color-selected;
   color: @text-color-selected;
 
-  .nuclide-ui-table:focus & {
+  .nuclide-ui-table:focus &,
+  .nuclide-ui-table:focus & a {
     background: @button-background-color-selected;
     color: contrast(@button-background-color-selected);
   }

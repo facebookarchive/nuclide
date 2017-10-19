@@ -117,6 +117,9 @@ type Props<T> = {
    */
   onConfirm?: (selectedItem: any, selectedIndex: number) => mixed,
 
+  onBodyBlur?: (event: SyntheticEvent<*>) => mixed,
+  onBodyFocus?: (event: SyntheticEvent<*>) => mixed,
+
   /**
    * Optional React Component to override the default message when zero rows are provided.
    * Useful for showing loading spinners and custom messages.
@@ -218,7 +221,6 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
           startX,
           // $FlowFixMe(>=0.55.0) Flow suppress
           startWidths,
-          // $FlowFixMe(>=0.55.0) Flow suppress
           resizerLocation,
           tableWidth,
         );
@@ -634,7 +636,19 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       <div key="header" className="nuclide-ui-table" ref="table">
         <div className="nuclide-ui-table-header">{header}</div>
       </div>,
-      <div key="body" style={scrollableBodyStyle}>
+      <div
+        key="body"
+        style={scrollableBodyStyle}
+        onFocus={event => {
+          if (this.props.onBodyFocus != null) {
+            this.props.onBodyFocus(event);
+          }
+        }}
+        onBlur={event => {
+          if (this.props.onBodyBlur != null) {
+            this.props.onBodyBlur(event);
+          }
+        }}>
         <div
           ref={el => {
             this._tableBody = el;
