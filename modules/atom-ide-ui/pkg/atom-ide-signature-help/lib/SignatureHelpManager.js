@@ -95,11 +95,17 @@ export default class SignatureHelpManager {
   _signatureHelpTriggers(editor: atom$TextEditor): Observable<mixed> {
     return Observable.merge(
       // 1) Any keypresses that match a triggerCharacter.
-      observableFromSubscribeFunction(cb => editor.getBuffer().onDidChange(cb))
+      observableFromSubscribeFunction(cb =>
+        editor.getBuffer().onDidChangeText(cb),
+      )
         // The change events and cursor changes are often sequential.
         // We need to make sure we use the final cursor position.
         .debounceTime(0)
-        .filter(change => {
+        .filter(edit => {
+          if (edit.changes.length !== 1) {
+            return false;
+          }
+          const change = edit.changes[0];
           if (
             // Only handle single/double-character insertions.
             // (e.g. bracket-matcher inserts two characters on open parenthesis)

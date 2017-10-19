@@ -62,6 +62,7 @@ export class BufferSubscription {
     const subscriptions = new UniversalDisposable();
 
     subscriptions.add(
+      // TODO: (hansonw) T22837054 Use buffer.onDidChangeText here.
       buffer.onDidChange(async (event: atom$TextEditEvent) => {
         this._changeCount++;
         if (this._notifier == null) {

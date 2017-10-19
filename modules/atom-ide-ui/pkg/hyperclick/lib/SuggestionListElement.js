@@ -97,7 +97,7 @@ class SuggestionList extends React.Component<Props, State> {
       }),
     );
 
-    this._subscriptions.add(textEditor.onDidChange(boundClose));
+    this._subscriptions.add(textEditor.getBuffer().onDidChangeText(boundClose));
     this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
 
     // Prevent scrolling the editor when scrolling the suggestion list.

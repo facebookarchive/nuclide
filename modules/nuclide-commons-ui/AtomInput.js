@@ -261,7 +261,9 @@ export class AtomInput extends React.Component<Props, State> {
   }
 
   onDidChange(callback: () => any): IDisposable {
-    return this.getTextEditor().onDidChange(callback);
+    return this.getTextEditor()
+      .getBuffer()
+      .onDidChangeText(callback);
   }
 
   getTextEditorElement(): atom$TextEditorElement {

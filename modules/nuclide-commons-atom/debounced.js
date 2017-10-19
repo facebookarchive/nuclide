@@ -58,7 +58,9 @@ export function editorChangesDebounced(
   debounceInterval: number = DEFAULT_EDITOR_DEBOUNCE_INTERVAL_MS,
 ): Observable<void> {
   return (
-    observableFromSubscribeFunction(callback => editor.onDidChange(callback))
+    observableFromSubscribeFunction(callback =>
+      editor.getBuffer().onDidChangeText(() => callback()),
+    )
       // Debounce manually rather than using editor.onDidStopChanging so that the debounce time is
       // configurable.
       .debounceTime(debounceInterval)

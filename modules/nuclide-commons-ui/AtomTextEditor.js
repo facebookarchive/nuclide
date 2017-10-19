@@ -37,7 +37,7 @@ function setupTextEditor(props: Props): TextEditorSetup {
 
   const disposables = new UniversalDisposable();
   if (props.onDidTextBufferChange != null) {
-    disposables.add(textBuffer.onDidChange(props.onDidTextBufferChange));
+    disposables.add(textBuffer.onDidChangeText(props.onDidTextBufferChange));
   }
 
   const textEditorParams = {
@@ -96,7 +96,7 @@ type Props = {
   grammar?: ?Object,
   // these are processed in setupTextEditor below
   /* eslint-disable react/no-unused-prop-types */
-  onDidTextBufferChange?: (event: atom$TextEditEvent) => mixed,
+  onDidTextBufferChange?: (event: atom$AggregatedTextEditEvent) => mixed,
   path?: string,
   placeholderText?: string,
   /* eslint-enable react/no-unused-prop-types */

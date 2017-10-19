@@ -244,7 +244,9 @@ export default class QuickSelectionComponent extends React.Component<
       ),
       // The text editor often changes during dispatches, so wait until the next tick.
       observableFromSubscribeFunction(cb =>
-        this._getTextEditor().onDidChange(cb),
+        this._getTextEditor()
+          .getBuffer()
+          .onDidChangeText(cb),
       )
         .let(throttle(microtask, {leading: false}))
         .subscribe(this._handleTextInputChange),

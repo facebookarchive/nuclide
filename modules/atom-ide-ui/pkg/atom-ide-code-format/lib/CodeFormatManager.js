@@ -44,7 +44,7 @@ type FormatEvent =
   | {
       type: 'type',
       editor: atom$TextEditor,
-      edit: atom$TextEditEvent,
+      edit: atom$AggregatedTextEditEvent,
     };
 
 export default class CodeFormatManager {
@@ -114,11 +114,8 @@ export default class CodeFormatManager {
    */
   _getEditorEventStream(editor: atom$TextEditor): Observable<FormatEvent> {
     const changeEvents = observableFromSubscribeFunction(callback =>
-      editor.getBuffer().onDidChange(callback),
-    )
-      // Debounce to ensure that multiple cursors only trigger one format.
-      // TODO(hansonw): Use onDidChangeText with 1.17+.
-      .debounceTime(0);
+      editor.getBuffer().onDidChangeText(callback),
+    );
 
     const saveEvents = Observable.create(observer => {
       const realSave = editor.save;
@@ -288,9 +285,14 @@ export default class CodeFormatManager {
 
   _formatCodeOnTypeInTextEditor(
     editor: atom$TextEditor,
-    event: atom$TextEditEvent,
+    aggregatedEvent: atom$AggregatedTextEditEvent,
   ): Observable<void> {
     return Observable.defer(() => {
+      // Don't try to format changes with multiple cursors.
+      if (aggregatedEvent.changes.length !== 1) {
+        return Observable.empty();
+      }
+      const event = aggregatedEvent.changes[0];
       // This also ensures the non-emptiness of event.newText for below.
       if (!shouldFormatOnType(event) || !getFormatOnType()) {
         return Observable.empty();
