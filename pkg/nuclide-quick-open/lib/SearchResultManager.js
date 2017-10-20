@@ -41,6 +41,7 @@ type ResultRenderer<T> = (
 ) => React.Element<any>;
 
 import invariant from 'assert';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {track} from '../../nuclide-analytics';
 import {getLogger} from 'log4js';
 import * as React from 'react';
@@ -259,7 +260,7 @@ export default class SearchResultManager {
         for (const provider of providers) {
           this._querySubscriptions.add(
             this._queryStream
-              .debounceTime(getQueryDebounceDelay(provider))
+              .let(fastDebounce(getQueryDebounceDelay(provider)))
               .subscribe(query =>
                 this._executeDirectoryQuery(directory, provider, query),
               ),
@@ -269,7 +270,7 @@ export default class SearchResultManager {
       for (const provider of this._globalEligibleProviders) {
         this._querySubscriptions.add(
           this._queryStream
-            .debounceTime(getQueryDebounceDelay(provider))
+            .let(fastDebounce(getQueryDebounceDelay(provider)))
             .subscribe(query => this._executeGlobalQuery(provider, query)),
         );
       }
@@ -619,5 +620,4 @@ export const __test__ = {
   _getOmniSearchProviderSpec(): ProviderSpec {
     return OMNISEARCH_PROVIDER;
   },
-  UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
 };

@@ -17,6 +17,7 @@ import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {expirePromise} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
@@ -763,7 +764,7 @@ export class HgService {
       this._hgRepoCommitsDidChangeObserver
         // Upon rebase, this can fire once per added commit!
         // Apply a generous debounce to avoid overloading the RPC connection.
-        .debounceTime(COMMIT_CHANGE_DEBOUNCE_MS)
+        .let(fastDebounce(COMMIT_CHANGE_DEBOUNCE_MS))
         .publish()
     );
   }

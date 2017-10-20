@@ -47,7 +47,7 @@ import {Badge, BadgeSizes} from '../../nuclide-ui/Badge';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import humanizeKeystroke from '../../commons-node/humanizeKeystroke';
-import {throttle, microtask} from 'nuclide-commons/observable';
+import {fastDebounce, throttle, microtask} from 'nuclide-commons/observable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
@@ -258,7 +258,7 @@ export default class QuickSelectionComponent extends React.Component<
       observableFromSubscribeFunction(cb =>
         this.props.searchResultManager.onResultsChanged(cb),
       )
-        .debounceTime(50)
+        .let(fastDebounce(50))
         // debounceTime seems to have issues canceling scheduled work. So
         // schedule it after we've debounced the events. See
         // https://github.com/ReactiveX/rxjs/pull/2135

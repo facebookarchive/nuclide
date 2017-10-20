@@ -30,6 +30,7 @@ import analytics from 'nuclide-commons-atom/analytics';
 import idx from 'idx';
 import {areSetsEqual} from 'nuclide-commons/collection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {fastDebounce} from 'nuclide-commons/observable';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import Model from 'nuclide-commons/Model';
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -195,7 +196,7 @@ class Activation {
               ? Observable.of([])
               : observableFromSubscribeFunction(updater.observeMessages),
         )
-        .debounceTime(100)
+        .let(fastDebounce(100))
         // FIXME: It's not good for UX or perf that we're providing a default sort here (that users
         // can't return to). We should remove this and have the table sorting be more intelligent.
         // For example, sorting by type means sorting by [type, filename, description].

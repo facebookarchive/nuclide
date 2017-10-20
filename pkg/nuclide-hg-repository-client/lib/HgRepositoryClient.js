@@ -35,7 +35,7 @@ import {expirePromise} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
-import {cacheWhileSubscribed} from 'nuclide-commons/observable';
+import {cacheWhileSubscribed, fastDebounce} from 'nuclide-commons/observable';
 import RevisionsCache from './RevisionsCache';
 import {gitDiffContentAgainstFile} from './utils';
 import {
@@ -308,14 +308,14 @@ export class HgRepositoryClient {
       this._bookmarks.asObservable(),
       commitChanges,
       repoStateChanges,
-    ).debounceTime(REVISION_DEBOUNCE_DELAY);
+    ).let(fastDebounce(REVISION_DEBOUNCE_DELAY));
 
     const bookmarksUpdates = Observable.merge(
       activeBookmarkChanges,
       allBookmarkChanges,
     )
       .startWith(null)
-      .debounceTime(BOOKMARKS_DEBOUNCE_DELAY)
+      .let(fastDebounce(BOOKMARKS_DEBOUNCE_DELAY))
       .switchMap(() =>
         Observable.defer(() => {
           return this._service
@@ -369,7 +369,7 @@ export class HgRepositoryClient {
     >,
   ): HgStatusChanges {
     const triggers = Observable.merge(fileChanges, repoStateChanges)
-      .debounceTime(STATUS_DEBOUNCE_DELAY_MS)
+      .let(fastDebounce(STATUS_DEBOUNCE_DELAY_MS))
       .share()
       .startWith(null);
     // Share comes before startWith. That's because fileChanges/repoStateChanges

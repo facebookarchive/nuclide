@@ -18,6 +18,7 @@ import type {
 import addTooltip from 'nuclide-commons-ui/addTooltip';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
+import {fastDebounce} from 'nuclide-commons/observable';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -64,7 +65,7 @@ export default class StatusBarTile {
     this._diagnosticUpdaters.set(diagnosticUpdater, diagnosticCount);
     this._subscriptions.add(
       observableFromSubscribeFunction(diagnosticUpdater.observeMessages)
-        .debounceTime(RENDER_DEBOUNCE_TIME)
+        .let(fastDebounce(RENDER_DEBOUNCE_TIME))
         .subscribe(
           this._onAllMessagesDidUpdate.bind(this, diagnosticUpdater),
           null,

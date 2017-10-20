@@ -20,6 +20,7 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {arrayEqual} from 'nuclide-commons/collection';
+import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
 import analytics from 'nuclide-commons-atom/analytics';
@@ -68,7 +69,7 @@ export class DiagnosticsViewModel {
     const visibility = observePaneItemVisibility(this).distinctUntilChanged();
     this._disposables = new UniversalDisposable(
       visibility
-        .debounceTime(1000)
+        .let(fastDebounce(1000))
         .distinctUntilChanged()
         .filter(Boolean)
         .subscribe(() => {

@@ -18,7 +18,7 @@ import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 import {getCursorPositions} from 'nuclide-commons-atom/text-editor';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {completingSwitchMap} from 'nuclide-commons/observable';
+import {completingSwitchMap, fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {Observable, Subject} from 'rxjs';
 import getSignatureDatatip from './getSignatureDatatip';
@@ -68,7 +68,7 @@ export default class SignatureHelpManager {
    * 3) Signature help stops once we get a null signature, or once the user hits 'escape'.
    */
   _subscribeToEditors(): rxjs$Subscription {
-    return observeActiveEditorsDebounced()
+    return observeActiveEditorsDebounced(0)
       .switchMap(editor => {
         if (editor == null) {
           return Observable.of({editor, signatureHelp: null});
@@ -100,7 +100,7 @@ export default class SignatureHelpManager {
       )
         // The change events and cursor changes are often sequential.
         // We need to make sure we use the final cursor position.
-        .debounceTime(0)
+        .let(fastDebounce(0))
         .filter(edit => {
           if (edit.changes.length !== 1) {
             return false;
@@ -145,7 +145,7 @@ export default class SignatureHelpManager {
       Observable.concat(
         Observable.defer(() => Observable.of(editor.getCursorBufferPosition())),
         // Further cursor changes will be debounced.
-        getCursorPositions(editor).debounceTime(CURSOR_DEBOUNCE_TIME),
+        getCursorPositions(editor).let(fastDebounce(CURSOR_DEBOUNCE_TIME)),
       )
         .distinctUntilChanged((a, b) => a.isEqual(b))
         .switchMap(point => this._getSignatures(editor, point))

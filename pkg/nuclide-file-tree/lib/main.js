@@ -31,6 +31,7 @@ import {
   compact,
   macrotask,
   nextAnimationFrame,
+  fastDebounce,
 } from 'nuclide-commons/observable';
 
 import FileTreeSidebarComponent from '../components/FileTreeSidebarComponent';
@@ -268,7 +269,7 @@ class Activation {
           ),
         );
       }),
-    ).debounceTime(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS);
+    ).let(fastDebounce(OPEN_FILES_UPDATE_DEBOUNCE_INTERVAL_MS));
 
     this._disposables.add(
       rebuildSignals.subscribe(() => {

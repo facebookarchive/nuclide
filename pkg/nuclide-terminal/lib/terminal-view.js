@@ -12,6 +12,7 @@
 import invariant from 'assert';
 import {Emitter} from 'atom';
 import {shell, clipboard} from 'electron';
+import {fastDebounce} from 'nuclide-commons/observable';
 import {Observable} from 'rxjs';
 import url from 'url';
 import Terminal from 'xterm';
@@ -271,7 +272,7 @@ export class TerminalView implements PtyClient {
           (this._div.querySelector('.xterm-viewport'): any),
         ),
       )
-        .debounceTime(RESIZE_EVENT_DEBOUNCE_MS)
+        .let(fastDebounce(RESIZE_EVENT_DEBOUNCE_MS))
         .subscribe(() => this._fitAndResize()),
       Observable.fromEvent(this._terminal, 'data').subscribe(
         this._onInput.bind(this),

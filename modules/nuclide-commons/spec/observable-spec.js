@@ -521,7 +521,7 @@ describe('nuclide-commons/observable', () => {
   describe('fastDebounce', () => {
     it('debounces events', () => {
       waitsForPromise(async () => {
-        let nextSpy: jasmine$Spy;
+        let nextSpy: JasmineSpy;
         const originalCreate = Observable.create.bind(Observable);
         // Spy on the created observer's next to ensure that we always cancel
         // the last debounced timer on unsubscribe.
