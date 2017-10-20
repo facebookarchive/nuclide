@@ -20,10 +20,13 @@ import {
   macrotask,
   microtask,
   nextAnimationFrame,
+  PromiseCancelledError,
   reconcileSetDiffs,
+  SingletonExecutor,
   splitStream,
   takeWhileInclusive,
   throttle,
+  toCancellablePromise,
   toggle,
 } from '../observable';
 import {Disposable} from 'event-kit';
@@ -593,6 +596,164 @@ describe('nuclide-commons/observable', () => {
       const sub = macrotask.subscribe(() => {});
       sub.unsubscribe();
       expect(clearImmediate).toHaveBeenCalled();
+    });
+  });
+
+  describe('toCancellablePromise', () => {
+    it('completes successfully', () => {
+      waitsForPromise(async () => {
+        const source = new Subject();
+        const cancellable = toCancellablePromise(source);
+        source.next(42);
+        source.complete();
+        const result = await cancellable.promise;
+        expect(result).toBe(42);
+      });
+    });
+
+    it('error throws from promise', () => {
+      waitsForPromise(async () => {
+        const source = new Subject();
+        const cancellable = toCancellablePromise(source);
+        source.error(42);
+        let thrown = false;
+        try {
+          await cancellable.promise;
+        } catch (e) {
+          expect(e).toBe(42);
+          thrown = true;
+        }
+        expect(thrown).toBe(true);
+      });
+    });
+
+    it('cancel causes promise to throw', () => {
+      waitsForPromise(async () => {
+        const source = new Subject();
+        const cancellable = toCancellablePromise(source);
+        cancellable.cancel();
+        let thrown = false;
+        try {
+          await cancellable.promise;
+        } catch (e) {
+          thrown = true;
+          expect(e instanceof PromiseCancelledError).toBe(true);
+        }
+        expect(thrown).toBe(true);
+      });
+    });
+
+    it('cancel after complete is a noop', () => {
+      waitsForPromise(async () => {
+        const source = new Subject();
+        const cancellable = toCancellablePromise(source);
+        source.next(42);
+        source.complete();
+        cancellable.cancel();
+        const result = await cancellable.promise;
+        expect(result).toBe(42);
+      });
+    });
+
+    it('cancel after error is a noop', () => {
+      waitsForPromise(async () => {
+        const source = new Subject();
+        const cancellable = toCancellablePromise(source);
+        source.error(42);
+        let thrown = false;
+
+        // This should not throw, nor should it override the result
+        cancellable.cancel();
+
+        try {
+          await cancellable.promise;
+        } catch (e) {
+          expect(e).toBe(42);
+          thrown = true;
+        }
+        expect(thrown).toBe(true);
+      });
+    });
+  });
+
+  describe('SingletonExecutor', () => {
+    it('isExecuting()', () => {
+      const executor = new SingletonExecutor();
+      expect(executor.isExecuting()).toBe(false);
+
+      const source = new Subject();
+      const result = executor.execute(source);
+      result.catch(() => 'silence unhandled promise rejection warning');
+      expect(executor.isExecuting()).toBe(true);
+
+      executor.cancel();
+      expect(executor.isExecuting()).toBe(false);
+    });
+
+    it('completing task normally', () => {
+      waitsForPromise(async () => {
+        const executor = new SingletonExecutor();
+        const source = new Subject();
+
+        const result = executor.execute(source);
+        expect(executor.isExecuting()).toBe(true);
+
+        source.next(42);
+        source.complete();
+        expect(await result).toBe(42);
+        expect(executor.isExecuting()).toBe(false);
+      });
+    });
+
+    it('completing task by error', () => {
+      waitsForPromise(async () => {
+        const executor = new SingletonExecutor();
+        const source = new Subject();
+
+        const result = executor.execute(source);
+        expect(executor.isExecuting()).toBe(true);
+
+        source.error(42);
+        let thrown = false;
+        try {
+          await result;
+        } catch (e) {
+          expect(e).toBe(42);
+          thrown = true;
+        }
+        expect(executor.isExecuting()).toBe(false);
+        expect(thrown).toBe(true);
+      });
+    });
+
+    it('scheduling second task while first is in flight', () => {
+      waitsForPromise(async () => {
+        const executor = new SingletonExecutor();
+
+        const source1 = new Subject();
+        const result1 = executor.execute(source1);
+        expect(executor.isExecuting()).toBe(true);
+
+        const source2 = new Subject();
+        const result2 = executor.execute(source2);
+        expect(executor.isExecuting()).toBe(true);
+
+        let thrown = false;
+        try {
+          await result1;
+        } catch (e) {
+          expect(e instanceof PromiseCancelledError).toBe(true);
+          thrown = true;
+        }
+        expect(executor.isExecuting()).toBe(true);
+        expect(thrown).toBe(true);
+
+        source2.next(42);
+        source2.complete();
+
+        expect(await result2).toBe(42);
+        expect(executor.isExecuting()).toBe(false);
+      });
     });
   });
 });
