@@ -163,6 +163,12 @@ export function observeProcess(
   );
 }
 
+export type DetailedProcessResult = {
+  stdout: string,
+  stderr: string,
+  exitCode: ?number,
+};
+
 /**
  * Identical to `runCommand()`, but instead of only emitting the accumulated stdout, the returned
  * observable emits an object containing the accumulated stdout, the accumulated stderr, and the
@@ -176,7 +182,7 @@ export function runCommandDetailed(
   args?: Array<string> = [],
   options?: ObserveProcessOptions = {},
   rest: void,
-): Observable<{stdout: string, stderr: string, exitCode: ?number}> {
+): Observable<DetailedProcessResult> {
   const maxBuffer = idx(options, _ => _.maxBuffer) || DEFAULT_MAX_BUFFER;
   return observeProcess(command, args, {...options, maxBuffer})
     .catch(error => {
