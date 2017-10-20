@@ -28,11 +28,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import registerGrammar from '../../commons-atom/register-grammar';
 import {Disposable} from 'atom';
 import {repositoryForPath} from '../../nuclide-vcs-base';
-import {
-  addPath,
-  confirmAndRevertPath,
-  revertPath,
-} from '../../nuclide-vcs-base';
+import {addPath, confirmAndRevertPath} from '../../nuclide-vcs-base';
 import HgRepositoryProvider from './HgRepositoryProvider';
 
 const HG_ADD_TREE_CONTEXT_MENU_PRIORITY = 400;
@@ -113,17 +109,6 @@ function isActivePathAddable(): boolean {
 
 export function activate(state: any): void {
   subscriptions = new UniversalDisposable();
-
-  subscriptions.add(
-    atom.commands.add(
-      'atom-text-editor',
-      'nuclide-hg-repository:revert',
-      event => {
-        const editorElement: atom$TextEditorElement = (event.currentTarget: any);
-        revertPath(editorElement.getModel().getPath());
-      },
-    ),
-  );
 
   subscriptions.add(
     atom.commands.add(
