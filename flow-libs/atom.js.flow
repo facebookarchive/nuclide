@@ -837,6 +837,7 @@ declare class atom$TextEditor extends atom$Model {
       screenLine?: boolean,
     },
   ): atom$Point,
+  getEofBufferPosition(): atom$Point,
   getVisibleRowRange(): ?[number, number],
 
   // Decorations
@@ -873,6 +874,12 @@ declare class atom$TextEditor extends atom$Model {
   moveToBeginningOfLine(): void,
   moveToEndOfLine(): void,
   moveToBottom(): void,
+
+  // Folds
+  foldCurrentRow(): void,
+  unfoldCurrentRow(): void,
+  foldBufferRow(bufferRow: number): void,
+  unfoldBufferRow(bufferRow: number): void,
 
   // Selections
   getSelectedText(): string,
