@@ -147,7 +147,7 @@ class ThreadManager(object):
                 CALL_STACK_OBJECT_GROUP)
             scopeChainObject = local_variables.serialized_value
             scopeChainObject.update({'description': 'Locals'})
-            result.append({
+            frameInfo = {
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
                 'functionName': self._get_frame_name(frame),
                 'location': self._debugger_store.location_serializer.get_frame_location(frame),
@@ -156,9 +156,13 @@ class ThreadManager(object):
                     'object': scopeChainObject,
                     'type': 'local',
                 }],
-                'disassembly': self._get_frame_disassembly(frame),
                 'registers': self._get_frame_registers(frame),
-            })
+            }
+            if self._debugger_store.getDebuggerSettings()['showDisassembly']:
+                frameInfo['disassembly'] = self._get_frame_disassembly(frame)
+
+            result.append(frameInfo)
+
         return result
 
     def get_thread_stop_description(self, thread):

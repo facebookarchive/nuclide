@@ -576,6 +576,7 @@ export type ExecutionContextDescription = {
 
 export type SetDebuggerSettingsRequest = {
   singleThreadStepping?: boolean,
+  showDisassembly?: boolean,
 };
 
 export type DebuggerCommand =

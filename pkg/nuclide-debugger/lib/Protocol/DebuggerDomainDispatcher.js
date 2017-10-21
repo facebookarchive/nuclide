@@ -55,7 +55,10 @@ class DebuggerDomainDispatcher {
   }
 
   setDebuggerSettings(settings: SetDebuggerSettingsRequest): void {
-    this._agent.setDebuggerSettings(settings.singleThreadStepping);
+    this._agent.setDebuggerSettings(
+      settings.singleThreadStepping,
+      settings.showDisassembly,
+    );
   }
 
   getSourceUriFromUri(fileUri: NuclideUri): ?ScriptId {

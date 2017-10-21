@@ -221,6 +221,13 @@ export default class BridgeAdapter {
     }
   }
 
+  setShowDisassembly(enable: boolean): void {
+    this._debuggerSettingsManager.setShowDisassembly(enable);
+    if (this._engineCreated) {
+      this._debuggerSettingsManager.syncToEngine();
+    }
+  }
+
   setPauseOnException(enable: boolean): void {
     this._breakpointManager.setPauseExceptionState({
       state: enable ? 'uncaught' : 'none',

@@ -217,6 +217,9 @@ export default class CommandDispatcher {
       case 'setSingleThreadStepping':
         this._bridgeAdapter.setSingleThreadStepping(args[1]);
         break;
+      case 'setShowDisassembly':
+        this._bridgeAdapter.setShowDisassembly(args[1]);
+        break;
       default:
         reportError(`Command ${args[0]} is not implemented yet.`);
         break;

@@ -3591,7 +3591,8 @@
             {
                 "name": "setDebuggerSettings",
                 "parameters": [
-                    { "name": "singleThreadStepping", "type": "boolean", "optional": true, "description": "Single thread stepping mode" }
+                    { "name": "singleThreadStepping", "type": "boolean", "optional": true, "description": "Single thread stepping mode" },
+                    { "name": "showDisassembly", "type": "boolean", "optional": true, "description": "Show frame disassembly when stopping (if available)" }
                 ],
                 "description": "Sets the settings for the current debugger session."
             },

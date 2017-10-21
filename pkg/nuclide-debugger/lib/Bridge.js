@@ -167,6 +167,10 @@ export default class Bridge {
     );
   }
 
+  setShowDisassembly(disassembly: boolean): void {
+    this._commandDispatcher.send('setShowDisassembly', disassembly);
+  }
+
   selectThread(threadId: string): void {
     this._commandDispatcher.send('selectThread', threadId);
     const threadNo = parseInt(threadId, 10);
@@ -329,6 +333,7 @@ export default class Bridge {
     this.setPauseOnException(store.getTogglePauseOnException());
     this.setPauseOnCaughtException(store.getTogglePauseOnCaughtException());
     this.setSingleThreadStepping(store.getEnableSingleThreadStepping());
+    this.setShowDisassembly(store.getShowDisassembly());
   }
 
   _handleDebuggerPaused(
