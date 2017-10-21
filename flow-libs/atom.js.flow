@@ -1503,10 +1503,26 @@ declare class atom$HistoryProject {
   get lastOpened(): Date;
 }
 
-type atom$KeyBinding = Object;
+// https://github.com/atom/atom-keymap/blob/18f00ac307de5770bb8f98958bd9a13ecffa9e68/src/key-binding.coffee
+declare class atom$KeyBinding {
+  cachedKeyups: ?Array<string>,
+  command: string,
+  index: number,
+  keystrokeArray : Array<string>,
+  keystrokeCount: number,
+  keystrokes: string,
+  priority: number,
+  selector: string,
+  source: string,
+  specificity: number,
+
+  matches(keystroke: string): boolean,
+  compare(keybinding: atom$KeyBinding): number,
+  getKeyups(): ?Array<string>,
+  matchesKeystrokes(userKeystrokes: Array<string>): boolean | 'exact' | 'partial' | 'pendingKeyup',
+}
 
 declare class atom$KeymapManager {
-
   // Event Subscription
   onDidMatchBinding(callback: (event: {
     keystrokes: string,
