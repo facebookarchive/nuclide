@@ -34,7 +34,10 @@ class DebuggerDomain(HandlerDomain):
 
     @handler()
     def continueToLocation(self, params):
-        filelike = self.debugger_store.file_manager.get_by_client_url(params['location']['scriptId'])
+        client_url = params['location']['scriptId']
+        if not client_url.startswith('file://'):
+            client_url = 'file://' + client_url
+        filelike = self.debugger_store.file_manager.get_by_client_url(client_url)
         if not filelike or not isinstance(filelike, file_manager.File):
             # Only support setting breakpoints in real files.
             return {}

@@ -44,11 +44,10 @@ export class DisassemblyView extends React.Component<Props, State> {
 
   componentDidMount(): void {
     this.props.model.getStore().setShowDisassembly(true);
-    this._disposables.add(() => {
-      this.props.model.getStore().setShowDisassembly(false);
-    });
-
     this._disposables.add(
+      () => {
+        this.props.model.getStore().setShowDisassembly(false);
+      },
       this._callstackStore.onChange(() => {
         this._callStackUpdated();
       }),
