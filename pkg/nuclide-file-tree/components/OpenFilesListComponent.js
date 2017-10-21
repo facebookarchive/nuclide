@@ -149,8 +149,8 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                     onMouseEnter={this._onListItemMouseEnter.bind(this, e)}
                     onMouseLeave={this._onListItemMouseLeave}
                     onMouseDown={this._onMouseDown.bind(this, e)}
-                    data-path={e.uri}
-                    data-name={e.name}
+                    path={e.uri}
+                    name={e.name}
                     ref={e.isSelected ? 'selectedRow' : null}>
                     <span
                       className={classnames('icon', {

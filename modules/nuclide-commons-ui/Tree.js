@@ -27,14 +27,22 @@ export function Tree({className, style, ...props}: Object) {
   );
 }
 
-type TreeItemProps = {
-  children?: mixed,
+type TreeItemProps = {|
+  children?: React.Node,
   className?: string,
+  // handled below in `handleClick`
+  /* eslint-disable react/no-unused-prop-types */
   onSelect?: (e: SyntheticMouseEvent<>) => mixed,
   onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
   onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
+  /* eslint-enable react/no-unused-prop-types */
   selected?: boolean,
-};
+  onMouseDown?: (e: SyntheticMouseEvent<>) => mixed,
+  onMouseEnter?: (e: SyntheticMouseEvent<>) => mixed,
+  onMouseLeave?: (e: SyntheticMouseEvent<>) => mixed,
+  path?: string,
+  name?: string,
+|};
 
 export class TreeItem extends React.Component<TreeItemProps> {
   _liNode: ?HTMLLIElement;
@@ -47,15 +55,18 @@ export class TreeItem extends React.Component<TreeItemProps> {
   }
 
   render() {
-    const {className, selected, children, ...remainingProps} = this.props;
-
-    // don't forward these on to the <li>
-    delete remainingProps.onConfirm;
-    delete remainingProps.onSelect;
-    delete remainingProps.onTripleClick;
+    const {
+      className,
+      selected,
+      children,
+      onMouseDown,
+      onMouseEnter,
+      onMouseLeave,
+      path,
+      name,
+    } = this.props;
 
     return (
-      // $FlowFixMe(>=0.53.0) Flow suppress
       <li
         aria-selected={selected}
         className={classnames(
@@ -65,7 +76,11 @@ export class TreeItem extends React.Component<TreeItemProps> {
           },
           'list-item',
         )}
-        {...remainingProps}
+        onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        data-path={path}
+        data-name={name}
         onClick={this._handleClick}
         ref={liNode => (this._liNode = liNode)}
         role="treeitem"
@@ -81,17 +96,20 @@ export class TreeItem extends React.Component<TreeItemProps> {
   }
 }
 
-type NestedTreeItemProps = {
+type NestedTreeItemProps = {|
   title?: React.Node,
   children?: mixed,
   className?: string,
   hasFlatChildren?: boolean, // passthrough to inner TreeList
   selected?: boolean,
   collapsed?: boolean,
+  // handled below in `handleClick`
+  /* eslint-disable react/no-unused-prop-types */
   onSelect?: (e: SyntheticMouseEvent<>) => mixed,
   onConfirm?: (e: SyntheticMouseEvent<>) => mixed,
   onTripleClick?: (e: SyntheticMouseEvent<>) => mixed,
-};
+  /* eslint-disable react/no-unused-prop-types */
+|};
 
 export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
   _itemNode: ?HTMLDivElement;
@@ -115,13 +133,7 @@ export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
       collapsed,
       title,
       children,
-      ...remainingProps
     } = this.props;
-
-    // don't forward these on to the <li>
-    delete remainingProps.onConfirm;
-    delete remainingProps.onSelect;
-    delete remainingProps.onTripleClick;
 
     return (
       <li
@@ -135,7 +147,6 @@ export class NestedTreeItem extends React.Component<NestedTreeItemProps> {
           },
           'list-nested-item',
         )}
-        {...remainingProps}
         onClick={this._handleClick}
         role="treeitem"
         tabIndex={selected ? '0' : '-1'}>
