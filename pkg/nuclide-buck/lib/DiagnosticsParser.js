@@ -37,7 +37,7 @@ const OCAML_ERROR_REGEX = /^File "([^"]+)", line ([0-9]+), characters ([0-9]+)-[
 // Buck output for Rust warnings and errors look something like this:
 //
 // warning: unused variable: `unused`
-//   --> buck-out/foo/target#some-container/path/to/foo.rs:15:9
+//   --> some-container/path/to/foo.rs:15:9
 //    |
 // 15 |     let unused = 32;
 //    |         ^^^^^^
@@ -45,14 +45,14 @@ const OCAML_ERROR_REGEX = /^File "([^"]+)", line ([0-9]+), characters ([0-9]+)-[
 //    = note: #[warn(unused_variables)] on by default
 //
 // error[E0425]: cannot find value `breakage` in this scope
-//   --> buck-out/foo/target#some-container/path/to/foo.rs:11:5
+//   --> some-container/path/to/foo.rs:11:5
 //    |
 // 11 |     breakage
 //    |     ^^^^^^^^ not found in this scope
 //
 // error: aborting due to previous error
 //
-const RUST_ERROR_REGEX = /(^(error|warning)(?:\[.+?\]){0,1}: [^\n]+)(?:\n +--> .+?#[^/]+\/([^:]+\.rs):([0-9]+):([0-9]+)(?:[\s\S]+?))+/gm;
+const RUST_ERROR_REGEX = /(^(error|note|warning)(?:\[.+?\]){0,1}: [^\n]+)(?:\n +--> ([^:]+\.rs):([0-9]+):([0-9]+)(?:[\s\S]+?))+/gm;
 
 // It's expensive to get the real length of the lines (we'd have to read each file).
 // Instead, just use a very large number ("infinity"). The diagnostics UI handles this
