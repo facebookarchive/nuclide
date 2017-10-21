@@ -104,11 +104,6 @@ export class Combobox extends React.Component<Props, State> {
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
       // $FlowFixMe
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
-      // $FlowFixMe
-      atom.commands.add(node, 'core:cancel', this._handleCancel),
-      // $FlowFixMe
-      atom.commands.add(node, 'core:confirm', this._handleConfirm),
-      this.refs.freeformInput.onDidChange(this._handleTextInputChange),
     );
   }
 
@@ -290,7 +285,7 @@ export class Combobox extends React.Component<Props, State> {
     this.setState({optionsVisible: true});
   };
 
-  _handleItemClick(selectedValue: string, event: any) {
+  _handleItemClick(selectedValue: string, event: Object): void {
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
@@ -456,6 +451,9 @@ export class Combobox extends React.Component<Props, State> {
           onBlur={this._handleInputBlur}
           onClick={this._handleInputClick}
           onFocus={this._handleInputFocus}
+          onConfirm={this._handleConfirm}
+          onCancel={this._handleCancel}
+          onDidChange={this._handleTextInputChange}
           placeholderText={placeholderText}
           ref="freeformInput"
           size={size}

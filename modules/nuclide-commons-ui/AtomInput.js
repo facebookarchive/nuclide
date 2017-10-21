@@ -60,7 +60,7 @@ type State = {
   value: string,
 };
 
-const BLUR_FOCUS_DEBOUNCE_DELAY = 50;
+const BLUR_FOCUS_DEBOUNCE_DELAY = 100;
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
