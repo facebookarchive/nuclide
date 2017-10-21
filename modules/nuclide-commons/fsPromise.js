@@ -447,6 +447,34 @@ function unlink(path: string): Promise<void> {
   });
 }
 
+function utimes(
+  path: string,
+  atime: number | Date,
+  mtime: number | Date,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.utimes(path, atime, mtime, err => {
+      if (err == null) {
+        resolve();
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function rmdir(path: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.rmdir(path, err => {
+      if (err == null) {
+        resolve();
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
 export default {
   tempdir,
   tempfile,
@@ -476,4 +504,6 @@ export default {
   stat,
   symlink,
   unlink,
+  utimes,
+  rmdir,
 };
