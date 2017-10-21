@@ -29,7 +29,7 @@ const ENTER_KEY_CODE = 13;
 const UP_KEY_CODE = 38;
 const DOWN_KEY_CODE = 40;
 
-export default class OutputTable extends React.Component<Props, State> {
+export default class InputArea extends React.Component<Props, State> {
   _keySubscription: ?rxjs$ISubscription;
   _textEditorModel: ?atom$TextEditor;
 
