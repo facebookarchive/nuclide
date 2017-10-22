@@ -207,6 +207,7 @@ export class LspLanguageService {
     actionRequiredDialogMessage?: string,
     existingDialogToDismiss?: rxjs$ISubscription,
   ): void {
+    this._logger.trace(`State ${this._state} -> ${state}`);
     this._state = state;
     this._stateIndicator.dispose();
     const nextDisposable = new UniversalDisposable();
@@ -345,7 +346,7 @@ export class LspLanguageService {
         const message =
           `Couldn't start ${this._languageId} server` +
           ` - ${this._errorString(e, this._command)}`;
-        const dialog = this._host
+        const dialog = this._masterHost
           .dialogNotification('error', message)
           .refCount()
           .subscribe();
@@ -580,37 +581,53 @@ export class LspLanguageService {
           // CARE! Inside any exception handler of an rpc request,
           // the lspConnection might already have been torn down.
 
-          const offerRetry = e.data != null && Boolean(e.data.retry);
-          const msg = `Couldn't initialize ${this
-            ._languageId} server - ${this._errorString(e)}`;
           this._childOut = {stdout: '', stderr: ''};
+          const message = `Couldn't initialize ${this._languageId} server`;
+          const longMessage = `${message} - ${this._errorString(e)}`;
+
+          // LSP has the notion that only some failures-to-start should
+          // offer a retry button; if the user clicks it then we send a second
+          // initialize request over the existing connection.
+          // Failing that, we have the fallback that for all crashes/failures
+          // we always offer a retry button; clicking on it causes a complete
+          // re-initialize from the start.
+          const offerRetry = e.data != null && Boolean(e.data.retry);
           if (!offerRetry) {
-            this._host
-              .dialogNotification('error', msg)
+            const dialog = this._masterHost
+              .dialogNotification('error', longMessage)
               .refCount()
               .subscribe();
-          } else {
-            // eslint-disable-next-line no-await-in-loop
-            const button = await this._host
-              .dialogRequest('error', msg, ['Retry'], 'Close')
-              .refCount()
-              .toPromise();
-            if (button === 'Retry') {
-              this._host.consoleNotification(
-                this._languageId,
-                'info',
-                `Retrying ${this._command}`,
-              );
-              if (this._lspConnection != null) {
-                continue;
-                // Retry will re-use the same this._lspConnection,
-                // assuming it hasn't been torn down for whatever reason.
-              }
+            this._setState('StartFailed', message, dialog);
+            if (this._lspConnection != null) {
+              this._lspConnection.dispose();
+            }
+            return;
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          const button = await this._host
+            .dialogRequest('error', message, ['Retry'], 'Close')
+            .refCount()
+            .toPromise();
+          if (button === 'Retry') {
+            this._logger.trace('Lsp.Initialize.retry');
+            this._host.consoleNotification(
+              this._languageId,
+              'info',
+              'Retrying initialize',
+            );
+            if (this._lspConnection != null) {
+              this._logger.trace('Lsp.Initialize.retrying');
+              continue;
+              // Retry will re-use the same this._lspConnection,
+              // assuming it hasn't been torn down for whatever reason.
             }
           }
+          this._setState('StartFailed');
           if (this._lspConnection != null) {
             this._lspConnection.dispose();
           }
+
           return;
         }
 
