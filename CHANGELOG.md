@@ -1,5 +1,27 @@
 # Nuclide Changelog
 
+## v0.263.0
+
+### Misc
+
+* Selected diagnostic is now expanded only when the table has focus.
+* Added an option to automatically hide/show diagnostics when available.
+
+### Hack
+
+* Improve Hack grammar parsing of types, constants in argument positions, and default arguments.
+* Fix parsing for lambda and pipe operators in Hack grammar.
+
+### Debugger
+
+* PHP/Hack Debugger: Added missing tooltips to debugger control buttons.
+* C++ Debugger: Fixed a bug that was causing “Continue To Location” not to work at all.
+* C++ Debugger: now accepting paths starting with './' or '~/' in all fields in the Debugger Launch dialog, and they will be expanded properly to be relative to the current working directory, or the user's home directory.
+
+### Flow
+
+* Other occurrences of the local variable under your cursor will now be highlighted.
+
 ## v0.262.0
 
 **Hotfix from 0.261.0**
