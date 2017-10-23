@@ -44,6 +44,7 @@ type State = {
 
 type Props = {
   outlines: Observable<OutlineForUi>,
+  visibility: Observable<boolean>,
 };
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
@@ -111,7 +112,10 @@ export class OutlineView extends React.PureComponent<Props, State> {
           `,
           }}
         />
-        <OutlineViewComponent outline={this.state.outline} />
+        <OutlineViewComponent
+          outline={this.state.outline}
+          visibility={this.props.visibility}
+        />
       </div>
     );
   }
@@ -119,6 +123,7 @@ export class OutlineView extends React.PureComponent<Props, State> {
 
 type OutlineViewComponentProps = {
   outline: OutlineForUi,
+  visibility: Observable<boolean>,
 };
 
 class OutlineViewComponent extends React.PureComponent<
@@ -181,7 +186,12 @@ class OutlineViewComponent extends React.PureComponent<
           />
         );
       case 'outline':
-        return <OutlineViewCore outline={outline} />;
+        return (
+          <OutlineViewCore
+            outline={outline}
+            visibility={this.props.visibility}
+          />
+        );
       default:
         (outline: empty);
     }
@@ -190,6 +200,7 @@ class OutlineViewComponent extends React.PureComponent<
 
 type OutlineViewCoreProps = {
   outline: OutlineForUi,
+  visibility: Observable<boolean>,
 };
 
 /**
@@ -208,7 +219,7 @@ class OutlineViewCore extends React.PureComponent<
   };
 
   render() {
-    const {outline} = this.props;
+    const {outline, visibility} = this.props;
     invariant(outline.kind === 'outline');
 
     return (
@@ -219,6 +230,7 @@ class OutlineViewCore extends React.PureComponent<
           updateSearchResults={searchResults => {
             this.setState({searchResults});
           }}
+          visibility={visibility}
         />
         <div className="outline-view-trees-scroller">
           <Tree className="outline-view-trees">
