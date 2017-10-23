@@ -1066,6 +1066,14 @@
         'name': 'keyword.operator.key.php'
       }
       {
+        'match': '==>'
+        'name': 'keyword.operator.lambda.php'
+      }
+      {
+        'match': '\\|>'
+        'name': 'keyword.operator.pipe.php'
+      }
+      {
         'captures':
           '1':
             'name': 'keyword.operator.assignment.php'

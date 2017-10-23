@@ -1135,6 +1135,9 @@ describe('PHP grammar', () => {
     nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_generics.php'),
   );
   grammarTest(nuclideUri.join(__dirname, 'fixtures/syntax_test_xhp.php'));
+  grammarTest(
+    nuclideUri.join(__dirname, 'fixtures/syntax_test_hack_operators.php'),
+  );
 
   describe('magic method parsing', () => {
     const CLASS_WITH_MAGIC_METHOD = `<?hh
