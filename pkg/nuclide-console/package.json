@@ -30,6 +30,13 @@
         "default": 10,
         "minimum": 1
       },
+      "maximumSerializedHistory": {
+        "title": "Maximum Serialized History",
+        "description": "The number of input history lines to save across sessions",
+        "type": "number",
+        "default": 20,
+        "minimum": 1
+      },
       "diffUrlPattern": {
         "title": "Diff URL Pattern",
         "description": "The URL to link D1234567 text to. (%s will be replaced with the match.)",

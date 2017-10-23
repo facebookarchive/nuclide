@@ -44,6 +44,8 @@ import {makeToolbarButtonSpec} from '../../nuclide-ui/ToolbarUtils';
 
 const MAXIMUM_SERIALIZED_MESSAGES_CONFIG =
   'nuclide-console.maximumSerializedMessages';
+const MAXIMUM_SERIALIZED_HISTORY_CONFIG =
+  'nuclide-console.maximumSerializedHistory';
 
 class Activation {
   _disposables: UniversalDisposable;
@@ -295,8 +297,12 @@ class Activation {
     const maximumSerializedMessages: number = (featureConfig.get(
       MAXIMUM_SERIALIZED_MESSAGES_CONFIG,
     ): any);
+    const maximumSerializedHistory: number = (featureConfig.get(
+      MAXIMUM_SERIALIZED_HISTORY_CONFIG,
+    ): any);
     return {
       records: this._store.getState().records.slice(-maximumSerializedMessages),
+      history: this._store.getState().history.slice(-maximumSerializedHistory),
     };
   }
 }
@@ -310,7 +316,7 @@ function deserializeAppState(rawState: ?Object): AppState {
       rawState && rawState.records
         ? rawState.records.map(deserializeRecord)
         : [],
-    history: [],
+    history: rawState && rawState.history ? rawState.history : [],
     providers: new Map(),
     providerStatuses: new Map(),
 
