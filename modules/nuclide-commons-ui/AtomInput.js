@@ -10,14 +10,14 @@
  * @format
  */
 
-import classNames from 'classnames';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import debounce from 'nuclide-commons/debounce';
 import * as React from 'react';
-
+import classNames from 'classnames';
 import invariant from 'assert';
+
 import {maybeToString} from 'nuclide-commons/string';
+import {microtask} from 'nuclide-commons/observable';
+import debounce from 'nuclide-commons/debounce';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 type DefaultProps = {
   disabled: boolean,
@@ -38,6 +38,7 @@ type Props = {
   disabled: boolean,
   autofocus: boolean,
   startSelected: boolean,
+  startSelectedRange?: ?[number, number],
   initialValue: string,
   placeholderText?: string,
   tabIndex: string,
@@ -113,14 +114,38 @@ export class AtomInput extends React.Component<Props, State> {
     if (this.props.autofocus) {
       this.focus();
     }
+
+    invariant(
+      !(this.props.startSelected && this.props.startSelectedRange != null),
+      'cannot have both startSelected (all) and startSelectedRange',
+    );
+
     if (this.props.startSelected) {
       // For some reason, selectAll() has no effect if called right now.
-      process.nextTick(() => {
-        if (!textEditor.isDestroyed()) {
-          textEditor.selectAll();
-        }
-      });
+      disposables.add(
+        microtask.subscribe(() => {
+          if (!textEditor.isDestroyed()) {
+            textEditor.selectAll();
+          }
+        }),
+      );
     }
+
+    const startSelectedRange = this.props.startSelectedRange;
+    if (startSelectedRange != null) {
+      // For some reason, selectAll() has no effect if called right now.
+      disposables.add(
+        microtask.subscribe(() => {
+          if (!textEditor.isDestroyed()) {
+            textEditor.setSelectedBufferRange([
+              [0, startSelectedRange[0]],
+              [0, startSelectedRange[1]],
+            ]);
+          }
+        }),
+      );
+    }
+
     disposables.add(
       atom.commands.add(textEditorElement, {
         'core:confirm': () => {

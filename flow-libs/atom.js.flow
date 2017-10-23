@@ -889,7 +889,7 @@ declare class atom$TextEditor extends atom$Model {
   getSelections(): Array<atom$Selection>,
   selectToBufferPosition(point: atom$Point): void,
   setSelectedBufferRange(
-    bufferRange: atom$Range,
+    bufferRange: atom$RangeLike,
     options?: {
       reversed?: boolean,
       preserveFolds?: boolean,
