@@ -19,6 +19,7 @@ import type {
   Record,
   Source,
   Store,
+  WatchEditorFunction,
 } from '../types';
 import type {CreatePasteFunction} from '../../../nuclide-paste-base';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
@@ -46,6 +47,7 @@ type State = {
   //
 
   createPasteFunction: ?CreatePasteFunction,
+  watchEditor: ?WatchEditorFunction,
   currentExecutor: ?Executor,
   providers: Map<string, OutputProvider>,
   providerStatuses: Map<string, OutputProviderStatus>,
@@ -100,6 +102,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
     this.state = {
       ready: false,
       createPasteFunction: null,
+      watchEditor: null,
       currentExecutor: null,
       providers: new Map(),
       providerStatuses: new Map(),
@@ -170,6 +173,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
             : null;
         this.setState({
           createPasteFunction: state.createPasteFunction,
+          watchEditor: state.watchEditor,
           ready: true,
           currentExecutor,
           executors: state.executors,
@@ -315,6 +319,8 @@ export class ConsoleContainer extends React.Component<Props, State> {
     const createPaste =
       this.state.createPasteFunction != null ? this._createPaste : null;
 
+    const watchEditor = this.state.watchEditor;
+
     return (
       <Console
         invalidFilterInput={invalid}
@@ -322,6 +328,7 @@ export class ConsoleContainer extends React.Component<Props, State> {
         selectExecutor={actionCreators.selectExecutor}
         clearRecords={actionCreators.clearRecords}
         createPaste={createPaste}
+        watchEditor={watchEditor}
         currentExecutor={this.state.currentExecutor}
         unselectedSourceIds={this.state.unselectedSourceIds}
         filterText={this.state.filterText}

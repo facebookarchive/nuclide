@@ -153,6 +153,13 @@ export default function accumulateState(
         createPasteFunction,
       };
     }
+    case Actions.SET_WATCH_EDITOR_FUNCTION: {
+      const {watchEditor} = action.payload;
+      return {
+        ...state,
+        watchEditor,
+      };
+    }
   }
 
   return state;

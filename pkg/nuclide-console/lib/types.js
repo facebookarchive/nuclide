@@ -162,10 +162,16 @@ export type Executor = {
   send(message: string): void,
   output: Observable<Message | {result?: EvaluationResult}>,
   scopeName?: string,
+  provideSymbols?: (prefix: string) => Array<string>,
   getProperties?: (objectId: string) => Observable<?ExpansionResult>,
 };
 
 export type RegisterExecutorFunction = (executor: Executor) => IDisposable;
+
+export type WatchEditorFunction = (
+  editor: atom$TextEditor,
+  labels?: Array<string>,
+) => IDisposable;
 
 export type Store = {
   getState(): AppState,
@@ -222,6 +228,12 @@ export type Action =
       type: 'SET_CREATE_PASTE_FUNCTION',
       payload: {
         createPasteFunction: ?CreatePasteFunction,
+      },
+    }
+  | {
+      type: 'SET_WATCH_EDITOR_FUNCTION',
+      payload: {
+        watchEditor: ?WatchEditorFunction,
       },
     }
   | {

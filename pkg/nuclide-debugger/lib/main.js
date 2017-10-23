@@ -134,6 +134,17 @@ function getLineForEvent(editor: atom$TextEditor, event: any): number {
   );
 }
 
+export function createAutocompleteProvider(): atom$AutocompleteProvider {
+  return {
+    labels: ['nuclide-console'],
+    selector: '*',
+    filterSuggestions: true,
+    async getSuggestions(request) {
+      return activation != null ? activation.getSuggestions(request) : null;
+    },
+  };
+}
+
 export function createDebuggerView(model: mixed): ?HTMLElement {
   let view = null;
   if (
@@ -488,6 +499,48 @@ class Activation {
       connection,
     );
     this._connectionProviders.set(key, availableProviders);
+  }
+
+  getSuggestions(
+    request: atom$AutocompleteRequest,
+  ): Promise<?Array<atom$AutocompleteSuggestion>> {
+    let text = request.editor.getText();
+    const lines = text.split('\n');
+    const {row, column} = request.bufferPosition;
+    // Only keep the lines up to and including the buffer position row.
+    text = lines.slice(0, row + 1).join('\n');
+    const debuggerInstance = this.getModel()
+      .getStore()
+      .getDebuggerInstance();
+    // Immediately complete if no capable debugger attached.
+    if (
+      debuggerInstance == null ||
+      !debuggerInstance.getDebuggerProcessInfo().getDebuggerCapabilities()
+        .completionsRequest
+    ) {
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve, reject) => {
+      this.getModel()
+        .getBridge()
+        .sendCompletionsCommand(text, column + 1, (err, response) => {
+          if (err != null) {
+            reject(err);
+          } else {
+            const result = response.targets.map(obj => {
+              const {label} = obj;
+              let replaceText;
+              if (obj.text != null) {
+                replaceText = obj.text;
+              } else {
+                replaceText = label;
+              }
+              return {text: replaceText, displayText: label};
+            });
+            resolve(result);
+          }
+        });
+    });
   }
 
   serialize(): SerializedState {

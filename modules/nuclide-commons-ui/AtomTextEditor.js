@@ -49,7 +49,6 @@ function setupTextEditor(props: Props): TextEditorSetup {
     textEditorParams,
   );
   disposables.add(() => textEditor.destroy());
-
   if (props.grammar != null) {
     textEditor.setGrammar(props.grammar);
   }
@@ -68,7 +67,6 @@ function setupTextEditor(props: Props): TextEditorSetup {
       decoration.destroy();
     });
   }
-
   return {
     disposables,
     textEditor,
@@ -106,6 +104,8 @@ type Props = {
   tabIndex: string,
   softWrapped: boolean,
   onConfirm?: () => mixed,
+  // Called with text editor  as input after initializing and attaching to DOM.
+  onInitialized?: atom$TextEditor => IDisposable,
 };
 
 export class AtomTextEditor extends React.Component<Props, void> {
@@ -185,6 +185,10 @@ export class AtomTextEditor extends React.Component<Props, void> {
           },
         }),
       );
+    }
+
+    if (this.props.onInitialized != null) {
+      this._editorDisposables.add(this.props.onInitialized(textEditor));
     }
   }
 

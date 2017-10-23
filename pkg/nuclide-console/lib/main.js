@@ -20,6 +20,7 @@ import type {
   OutputService,
   Record,
   RegisterExecutorFunction,
+  WatchEditorFunction,
   Store,
 } from './types';
 import type {CreatePasteFunction} from '../../nuclide-paste-base';
@@ -127,6 +128,15 @@ class Activation {
     return new UniversalDisposable(() => {
       if (this._getStore().getState().createPasteFunction === createPaste) {
         this._getStore().dispatch(Actions.setCreatePasteFunction(null));
+      }
+    });
+  }
+
+  consumeWatchEditor(watchEditor: WatchEditorFunction): IDisposable {
+    this._getStore().dispatch(Actions.setWatchEditor(watchEditor));
+    return new UniversalDisposable(() => {
+      if (this._getStore().getState().watchEditor === watchEditor) {
+        this._getStore().dispatch(Actions.setWatchEditor(null));
       }
     });
   }
