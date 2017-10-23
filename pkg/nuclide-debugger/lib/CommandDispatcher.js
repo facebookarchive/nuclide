@@ -202,6 +202,9 @@ export default class CommandDispatcher {
       case 'setVariable':
         this._bridgeAdapter.setVariable(args[1], args[2], args[3], args[4]);
         break;
+      case 'completions':
+        this._bridgeAdapter.completions(args[1], args[2], args[3]);
+        break;
       case 'getProperties':
         this._bridgeAdapter.getProperties(args[1], args[2]);
         break;

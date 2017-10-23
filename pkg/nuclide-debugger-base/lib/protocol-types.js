@@ -363,6 +363,12 @@ export type ContinueToLocationRequest = {
   location: Location,
 };
 
+export type CompletionsRequest = {
+  text: string,
+  column: number,
+  frameId: number,
+};
+
 export type GetScriptSourceRequest = {
   /** Id of the script to get source for. */
   scriptId: ScriptId,
@@ -554,6 +560,51 @@ export type GetThreadStackResponse = {
   callFrames: CallFrame[],
 };
 
+/** Ported from https://github.com/Microsoft/vscode-debugadapter-node/blob/master/protocol/src/debugProtocol.ts */
+export type GetCompletionsResponse = {
+  targets: CompletionItem[],
+};
+
+/** CompletionItems are the suggestions returned from the CompletionsRequest. */
+export type CompletionItem = {
+  /** The label of this completion item. By default this is also the text that is inserted when selecting this completion. */
+  label: string,
+  /** If text is not falsy then it is inserted instead of the label. */
+  text?: string,
+  /** The item's type. Typically the client uses this information to render the item in the UI with an icon. */
+  type?: CompletionItemType,
+  /** This value determines the location (in the CompletionsRequest's 'text' attribute) where the completion text is added.
+      If missing the text is added at the location specified by the CompletionsRequest's 'column' attribute.
+    */
+  start?: number,
+  /** This value determines how many characters are overwritten by the completion text.
+      If missing the value 0 is assumed which results in the completion text being inserted.
+    */
+  length?: number,
+};
+
+/** Some predefined types for the CompletionItem. Please note that not all clients have specific icons for all of them. */
+export type CompletionItemType =
+  | 'method'
+  | 'function'
+  | 'constructor'
+  | 'field'
+  | 'variable'
+  | 'class'
+  | 'interface'
+  | 'module'
+  | 'property'
+  | 'unit'
+  | 'value'
+  | 'enum'
+  | 'keyword'
+  | 'snippet'
+  | 'text'
+  | 'color'
+  | 'file'
+  | 'reference'
+  | 'customcolor';
+
 export type ExecutionContextCreatedEvent = {
   /** A newly created execution context. */
   context: ExecutionContextDescription,
@@ -618,6 +669,11 @@ export type DebuggerCommand =
       id: number,
       method: 'Debugger.continueToLocation',
       params: ContinueToLocationRequest,
+    }
+  | {
+      id: number,
+      method: 'Debugger.completions',
+      params: CompletionsRequest,
     }
   | {
       id: number,
@@ -709,6 +765,11 @@ export type DebuggerResponse =
       id: number,
       // method: 'Debugger.getThreadStack',
       result: GetThreadStackResponse,
+    }
+  | {
+      id: number,
+      // method: 'Debugger.completions',
+      result: GetCompletionsResponse,
     }
   | {
       id: number,

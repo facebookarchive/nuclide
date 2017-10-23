@@ -194,6 +194,14 @@ export default class Bridge {
     );
   }
 
+  sendCompletionsCommand(
+    text: string,
+    column: number,
+    callback: Function,
+  ): void {
+    this._commandDispatcher.send('completions', text, column, callback);
+  }
+
   sendEvaluationCommand(
     command: EvalCommand,
     evalId: number,

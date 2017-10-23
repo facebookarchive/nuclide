@@ -45,6 +45,7 @@ export default class DebuggerProcessInfo {
       setVariable: false,
       singleThreadStepping: false,
       threads: false,
+      completionsRequest: false,
     };
   }
 

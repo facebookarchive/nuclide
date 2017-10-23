@@ -44,6 +44,7 @@ export type DebuggerCapabilities = {
   +setVariable: boolean,
   +singleThreadStepping: boolean,
   +threads: boolean,
+  +completionsRequest: boolean,
 };
 
 // Describes how to configure various properties that individual debuggers

@@ -3655,6 +3655,19 @@
                 "description": "Changes value of variable in a callframe or a closure. Variable container reference must be specified as callFrameId. Object-based scopes are not supported and must be mutated manually."
             },
             {
+                "name": "completions",
+                "parameters": [
+                    { "name": "text", "type": "string", "description": "Current text so far." },
+                    { "name": "column", "type": "number", "description": "Cursor position." },
+                    { "name": "frameId", "type": "number", "description": "Id of stack frame to find completions." }
+                ],
+                "returns": [
+                    { "name": "targets", "type": "array", "items": { "$ref": "CompletionItem" }, "description": "completion results" }
+                ],
+                "hidden": true,
+                "description": "Get completions for current text prefix."
+            },
+            {
                 "name": "getStepInPositions",
                 "parameters": [
                     { "name": "callFrameId", "$ref": "CallFrameId", "description": "Id of a call frame where the current statement should be analized" }
