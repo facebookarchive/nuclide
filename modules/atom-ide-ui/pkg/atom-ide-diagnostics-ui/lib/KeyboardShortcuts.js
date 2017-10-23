@@ -42,6 +42,7 @@ export default class KeyboardShortcuts {
       ).subscribe(diagnostics => {
         this._index = null;
         this._traceIndex = null;
+        this._diagnostics = diagnostics;
       }),
       atom.commands.add(
         'atom-workspace',
