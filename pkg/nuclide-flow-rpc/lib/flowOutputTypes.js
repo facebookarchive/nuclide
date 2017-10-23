@@ -87,4 +87,15 @@ export type TypeAtPosOutput = {
 };
 
 /* find-refs */
-export type FindRefsOutput = Array<FlowLoc>;
+export type NewFindRefsOutput =
+  | {
+      kind: 'no-symbol-found',
+    }
+  | {
+      kind: 'symbol-found',
+      name: string,
+      locs: Array<FlowLoc>,
+    };
+
+export type OldFindRefsOutput = Array<FlowLoc>;
+export type FindRefsOutput = OldFindRefsOutput | NewFindRefsOutput;

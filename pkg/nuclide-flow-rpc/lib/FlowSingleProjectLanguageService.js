@@ -42,6 +42,7 @@ import type {
   TypeAtPosOutput,
   FlowStatusOutput,
   FindRefsOutput,
+  FlowLoc,
 } from './flowOutputTypes';
 
 import invariant from 'assert';
@@ -215,26 +216,7 @@ export class FlowSingleProjectLanguageService {
         return null;
       }
       const json: FindRefsOutput = parseJSON(args, result.stdout);
-      if (!Array.isArray(json)) {
-        return null;
-      }
-      const references: Array<Reference> = json.map(loc => {
-        return ({
-          name: null,
-          range: new Range(
-            new Point(loc.start.line - 1, loc.start.column - 1),
-            new Point(loc.end.line - 1, loc.end.column),
-          ),
-          uri: loc.source,
-        }: Reference);
-      });
-      return {
-        type: 'data',
-        baseUri: filePath,
-        // TODO get the actual name
-        referencedSymbolName: '',
-        references,
-      };
+      return convertFindRefsOutput(json, this._root);
     } catch (e) {
       logger.error(`flowFindRefs error: ${String(e)}`);
       return null;
@@ -919,4 +901,42 @@ function collateDiagnostics(output: FlowStatusOutput): FileDiagnosticMap {
     diagnosticArray.push(diagnostic);
   }
   return filePathToMessages;
+}
+
+function locsToReferences(locs: Array<FlowLoc>): Array<Reference> {
+  return locs.map(loc => {
+    return {
+      name: null,
+      range: new Range(
+        new Point(loc.start.line - 1, loc.start.column - 1),
+        new Point(loc.end.line - 1, loc.end.column),
+      ),
+      uri: loc.source,
+    };
+  });
+}
+
+function convertFindRefsOutput(
+  output: FindRefsOutput,
+  root: string,
+): ?FindReferencesReturn {
+  if (Array.isArray(output)) {
+    return {
+      type: 'data',
+      baseUri: root,
+      referencedSymbolName: '',
+      references: locsToReferences(output),
+    };
+  } else {
+    if (output.kind === 'no-symbol-found') {
+      return null;
+    } else {
+      return {
+        type: 'data',
+        baseUri: root,
+        referencedSymbolName: output.name,
+        references: locsToReferences(output.locs),
+      };
+    }
+  }
 }
