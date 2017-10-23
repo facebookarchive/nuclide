@@ -143,6 +143,23 @@ class Activation {
     });
   }
 
+  provideAutocomplete(): atom$AutocompleteProvider {
+    const activation = this;
+    return {
+      labels: ['nuclide-console'],
+      selector: '*',
+      // Copies Chrome devtools and puts history suggestions at the bottom.
+      suggestionPriority: -1,
+      filterSuggestions: true,
+      async getSuggestions(request) {
+        const history = activation._getStore().getState().history;
+        // Use a set to remove duplicates.
+        const seen = new Set(history);
+        return Array.from(seen).map(text => ({text}));
+      },
+    };
+  }
+
   _registerCommandAndOpener(): UniversalDisposable {
     return new UniversalDisposable(
       atom.workspace.addOpener(uri => {
