@@ -9,12 +9,12 @@
  * @format
  */
 
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {LanguageService} from './LanguageService';
 
 import {arrayFlatten} from 'nuclide-commons/collection';
-import {expirePromise} from 'nuclide-commons/promise';
+import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {ConnectionCache} from '../../nuclide-remote-connection';
 
@@ -40,11 +40,11 @@ export class LanguageAdditionalLogFilesProvider<T: LanguageService> {
   }
 
   async getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
     const resultsForConnection = async (prefix, connection) => {
       const service = await this._connectionToLanguageService.get(connection);
-      const subResults = await service.getAdditionalLogFiles(expire - 1000);
+      const subResults = await service.getAdditionalLogFiles(deadline - 1000);
       return subResults.map(log => ({...log, title: prefix + log.title}));
     };
 
@@ -54,8 +54,8 @@ export class LanguageAdditionalLogFilesProvider<T: LanguageService> {
         const prefix =
           `[${this._name}]` +
           (connection == null ? '' : connection.getRemoteHostname() + ':');
-        return expirePromise(
-          expire,
+        return timeoutAfterDeadline(
+          deadline,
           resultsForConnection(prefix, connection),
         ).catch(e => [
           {

@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 
 export type LogLevel =
   | 'ALL'
@@ -24,7 +24,7 @@ export type LogLevel =
 export type AdditionalLogFilesProvider = {|
   id: string,
   getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>>,
 |};
 

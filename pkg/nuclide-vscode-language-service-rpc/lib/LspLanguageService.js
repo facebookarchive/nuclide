@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {
   FileVersion,
@@ -70,7 +70,7 @@ import type {
 } from './jsonrpc';
 
 import invariant from 'assert';
-import {sleep, expirePromise} from 'nuclide-commons/promise';
+import {sleep, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import through from 'through';
 import {spawn} from 'nuclide-commons/process';
@@ -1685,7 +1685,7 @@ export class LspLanguageService {
   }
 
   async getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
     const results: Array<AdditionalLogFile> = [];
 
@@ -1701,7 +1701,10 @@ export class LspLanguageService {
     ) {
       let response = null;
       try {
-        response = await expirePromise(expire, this._lspConnection.rage());
+        response = await timeoutAfterDeadline(
+          deadline,
+          this._lspConnection.rage(),
+        );
         invariant(response != null, 'null telemetry/rage');
       } catch (e) {
         this._logLspException(e);

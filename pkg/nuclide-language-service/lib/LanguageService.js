@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -179,7 +179,7 @@ export interface LanguageService {
   ): Promise<?Array<TextEdit>>,
 
   getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>>,
 
   getEvaluationExpression(

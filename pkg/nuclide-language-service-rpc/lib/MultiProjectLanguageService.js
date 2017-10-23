@@ -10,7 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {FileVersion} from '../../nuclide-open-files-rpc/lib/rpc-types';
 import type {TextEdit} from 'nuclide-commons-atom/text-edit';
@@ -35,7 +35,7 @@ import type {HostServices} from '../../nuclide-language-service-rpc/lib/rpc-type
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {ConnectableObservable} from 'rxjs';
 
-import {expirePromise} from 'nuclide-commons/promise';
+import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {FileCache, ConfigObserver} from '../../nuclide-open-files-rpc';
 import {Cache} from 'nuclide-commons/cache';
@@ -273,23 +273,23 @@ export class MultiProjectLanguageService<T: LanguageService = LanguageService> {
   }
 
   async getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
     const roots: Array<NuclideUri> = Array.from(this._processes.keys());
 
     const results = await Promise.all(
       roots.map(async root => {
         try {
-          const service = await expirePromise(
-            expire,
+          const service = await timeoutAfterDeadline(
+            deadline,
             this._processes.get(root),
           );
           if (service == null) {
             return [{title: root, data: 'no language service'}];
           } else {
-            return expirePromise(
-              expire,
-              service.getAdditionalLogFiles(expire - 1000),
+            return timeoutAfterDeadline(
+              deadline,
+              service.getAdditionalLogFiles(deadline - 1000),
             );
           }
         } catch (e) {

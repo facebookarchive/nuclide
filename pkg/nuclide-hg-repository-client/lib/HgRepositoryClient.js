@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {
   AmendModeValue,
   BookmarkInfo,
@@ -31,7 +31,7 @@ import type {LRUCache} from 'lru-cache';
 import type {ConnectableObservable} from 'rxjs';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {expirePromise} from 'nuclide-commons/promise';
+import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {parseHgDiffUnifiedOutput} from '../../nuclide-hg-rpc/lib/hg-diff-output-parser';
 import {Emitter} from 'atom';
@@ -348,15 +348,15 @@ export class HgRepositoryClient {
   }
 
   async getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
     const path = this._workingDirectory.getPath();
     const prefix = nuclideUri.isRemote(path)
       ? `${nuclideUri.getHostname(path)}:`
       : '';
-    const results = await expirePromise(
-      expire,
-      this._service.getAdditionalLogFiles(expire - 1000),
+    const results = await timeoutAfterDeadline(
+      deadline,
+      this._service.getAdditionalLogFiles(deadline - 1000),
     ).catch(e => [{title: `${path}:hg`, data: stringifyError(e)}]);
     return results.map(log => ({...log, title: prefix + log.title}));
   }

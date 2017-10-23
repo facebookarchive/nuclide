@@ -12,13 +12,13 @@
 import type {ConnectableObservable} from 'rxjs';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type {AdditionalLogFile} from '../../nuclide-logging/lib/rpc-types';
 import type {HgExecOptions} from './hg-exec-types';
 
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {fastDebounce} from 'nuclide-commons/observable';
-import {expirePromise} from 'nuclide-commons/promise';
+import {timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {stringifyError} from 'nuclide-commons/string';
 import {WatchmanClient} from '../../nuclide-watchman-helpers';
 import fs from 'fs';
@@ -432,11 +432,11 @@ export class HgService {
   }
 
   async getAdditionalLogFiles(
-    expire: ExpireRequest,
+    deadline: DeadlineRequest,
   ): Promise<Array<AdditionalLogFile>> {
     const options = {cwd: this._workingDirectory};
-    const base = await expirePromise(
-      expire,
+    const base = await timeoutAfterDeadline(
+      deadline,
       getForkBaseName(this._workingDirectory),
     ); // e.g. master
     const root = expressionForCommonAncestor(base); // ancestor(master, .)
@@ -476,9 +476,13 @@ export class HgService {
     };
 
     const [id, diff, status] = await Promise.all([
-      expirePromise(expire, getId()).catch(e => `id ${e.message}\n${e.stack}`),
-      expirePromise(expire, getDiff()).catch(e => 'diff ' + stringifyError(e)),
-      expirePromise(expire, getStatus()).catch(
+      timeoutAfterDeadline(deadline, getId()).catch(
+        e => `id ${e.message}\n${e.stack}`,
+      ),
+      timeoutAfterDeadline(deadline, getDiff()).catch(
+        e => 'diff ' + stringifyError(e),
+      ),
+      timeoutAfterDeadline(deadline, getStatus()).catch(
         e => 'status ' + stringifyError(e),
       ),
     ]);

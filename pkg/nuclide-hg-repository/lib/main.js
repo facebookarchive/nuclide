@@ -9,7 +9,7 @@
  * @format
  */
 
-import type {ExpireRequest} from 'nuclide-commons/promise';
+import type {DeadlineRequest} from 'nuclide-commons/promise';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 import type {HgRepositoryClient} from '../../nuclide-hg-repository-client';
 import type {
@@ -225,7 +225,7 @@ export function createHgRepositoryProvider() {
 }
 
 async function getAllHgAdditionalLogFiles(
-  expire: ExpireRequest,
+  deadline: DeadlineRequest,
 ): Promise<Array<AdditionalLogFile>> {
   // Atom provides one repository object per project.
   const repositories: Array<?atom$Repository> = atom.project.getRepositories();
@@ -250,7 +250,7 @@ async function getAllHgAdditionalLogFiles(
   );
 
   const results: Array<Array<AdditionalLogFile>> = await Promise.all(
-    uniqueRepositories.map(r => r.getAdditionalLogFiles(expire)),
+    uniqueRepositories.map(r => r.getAdditionalLogFiles(deadline)),
   );
   return arrayFlatten(results);
 }
