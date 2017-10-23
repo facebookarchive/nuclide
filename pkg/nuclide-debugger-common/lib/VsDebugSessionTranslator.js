@@ -258,6 +258,26 @@ export default class VsDebugSessionTranslator {
           return getEmptyResponse(command.id);
         }),
       ),
+      // Request completions
+      this._commandsOfType('Debugger.completions').flatMap(
+        catchCommandError(async command => {
+          invariant(command.method === 'Debugger.completions');
+          const {text, column, frameId} = command.params;
+          if (!this._session.getCapabilities().supportsCompletionsRequest) {
+            // Not supported, return empty result.
+            return {id: command.id, result: {targets: []}};
+          }
+          const {body} = await this._session.completions({
+            text,
+            column,
+            frameId,
+          });
+          const result: NuclideDebugProtocol.GetCompletionsResponse = {
+            targets: body.targets,
+          };
+          return {id: command.id, result};
+        }),
+      ),
       // Get script source
       this._commandsOfType('Debugger.getScriptSource').flatMap(
         catchCommandError(async command => {
