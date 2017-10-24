@@ -352,21 +352,13 @@ export class ObservableDiagnosticProvider<T: LanguageService> {
             );
           })
           .map((updates: FileDiagnosticMap) => {
+            track(this._analyticsEventName);
             const filePathToMessages = new Map();
             updates.forEach((messages, filePath) => {
-              track(this._analyticsEventName);
               const fileCache = this._connectionToFiles.get(connection);
               if (messages.length === 0) {
-                this._logger.debug(
-                  `Observing diagnostics: removing ${filePath}, ${this
-                    ._analyticsEventName}`,
-                );
                 fileCache.delete(filePath);
               } else {
-                this._logger.debug(
-                  `Observing diagnostics: adding ${filePath}, ${this
-                    ._analyticsEventName}`,
-                );
                 fileCache.add(filePath);
               }
               filePathToMessages.set(filePath, messages);
