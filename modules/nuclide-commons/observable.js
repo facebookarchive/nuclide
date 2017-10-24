@@ -49,7 +49,8 @@ export function splitStream(input: Observable<string>): Observable<string> {
 
     return input.subscribe(
       value => {
-        const lines = (current + value).split('\n');
+        const lines = value.split('\n');
+        lines[0] = current + lines[0];
         current = lines.pop();
         lines.forEach(line => observer.next(line + '\n'));
       },
