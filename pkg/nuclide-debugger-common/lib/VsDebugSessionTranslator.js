@@ -453,7 +453,7 @@ export default class VsDebugSessionTranslator {
                 startedDebugging = true;
                 return Observable.fromPromise(this._startDebugging())
                   .ignoreElements()
-                  .concat(this._session.observeInitializeEvents());
+                  .merge(this._session.observeInitializeEvents().first());
               }
             }),
         )
@@ -968,7 +968,9 @@ export default class VsDebugSessionTranslator {
             frame.column - 1,
           ),
           hasSource: frame.source != null,
-          scopeChain: await this._getScopesForFrame(frame.id),
+          scopeChain: await this._getScopesForFrame(
+            frame.id,
+          ).catch(error => []),
           this: (undefined: any),
         };
       }),
