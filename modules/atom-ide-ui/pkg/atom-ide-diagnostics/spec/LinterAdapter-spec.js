@@ -281,6 +281,35 @@ describe('message transformation functions', () => {
           text: fileMessage.text,
         },
       );
+
+      // Make sure the trace range gets converted.
+      checkMessage(
+        {
+          ...fileMessage,
+          trace: [
+            {
+              type: 'Trace',
+              text: 'test',
+              filePath: '/fu/bar2',
+              range: [[0, 0], [0, 1]],
+            },
+          ],
+        },
+        {
+          providerName,
+          type: fileMessage.type,
+          filePath: fileMessage.filePath,
+          text: fileMessage.text,
+          trace: [
+            {
+              type: 'Trace',
+              text: 'test',
+              filePath: '/fu/bar2',
+              range: new Range([0, 0], [0, 1]),
+            },
+          ],
+        },
+      );
     });
 
     it('should turn a message without a filePath into a project scope diagnostic', () => {

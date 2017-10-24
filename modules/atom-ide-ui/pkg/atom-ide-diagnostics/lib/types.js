@@ -124,7 +124,7 @@ export type LinterTrace = {
   text?: string,
   html?: string,
   filePath: string,
-  range?: atom$Range,
+  range?: atom$RangeLike,
 };
 
 export type LinterMessageV1 = {
