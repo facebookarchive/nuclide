@@ -13,6 +13,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {Platform} from '../../nuclide-buck/lib/types';
 import type {LegacyProcessMessage} from 'nuclide-commons/process';
 import type {BuckEvent} from '../../nuclide-buck/lib/BuckEventStream';
+import type {Device} from '../../nuclide-fbsimctl/lib/types';
 
 import {getTasks, runTask} from './Tasks';
 
@@ -38,24 +39,8 @@ export function getSimulatorPlatform(
     if (simulators.length === 0) {
       deviceGroups = NO_SIMULATORS_FOUND_GROUPS;
     } else {
-      const simulatorsByOs = simulators.reduce((memo, sim) => {
-        let simsForOs = memo.get(sim.os);
-        if (simsForOs == null) {
-          simsForOs = [];
-          memo.set(sim.os, simsForOs);
-        }
-        simsForOs.push(sim);
-        return memo;
-      }, new Map());
-
-      for (const simsForOs of simulatorsByOs.values()) {
-        simsForOs.sort((a, b) => {
-          return b.name.localeCompare(a.name);
-        });
-      }
-
       deviceGroups = Array.from(
-        simulatorsByOs.entries(),
+        groupByOs(simulators).entries(),
       ).map(([os, simsForOs]) => ({
         name: os,
         devices: simsForOs.map(simulator => ({
@@ -96,7 +81,7 @@ export function getDevicePlatform(
   ) => Observable<BuckEvent>,
 ): Observable<Platform> {
   return fbsimctl.getDevices().map(devices => {
-    const deviceGroups = [];
+    let deviceGroups = [];
 
     if (devices instanceof Array) {
       const physicalDevices = devices.filter(
@@ -104,15 +89,17 @@ export function getDevicePlatform(
       );
 
       if (physicalDevices.length > 0) {
-        deviceGroups.push({
-          name: 'Connected',
-          devices: physicalDevices.map(device => ({
+        deviceGroups = Array.from(
+          groupByOs(physicalDevices).entries(),
+        ).map(([os, devicesForOs]) => ({
+          name: os,
+          devices: devicesForOs.map(device => ({
             name: device.name,
             udid: device.udid,
             arch: device.arch,
             type: 'device',
           })),
-        });
+        }));
       }
     }
 
@@ -137,6 +124,26 @@ export function getDevicePlatform(
       deviceGroups,
     };
   });
+}
+
+function groupByOs(devices: Array<Device>): Map<string, Array<Device>> {
+  const devicesByOs = devices.reduce((memo, device) => {
+    let devicesForOs = memo.get(device.os);
+    if (devicesForOs == null) {
+      devicesForOs = [];
+      memo.set(device.os, devicesForOs);
+    }
+    devicesForOs.push(device);
+    return memo;
+  }, new Map());
+
+  for (const devicesForOs of devicesByOs.values()) {
+    devicesForOs.sort((a, b) => {
+      return b.name.localeCompare(a.name);
+    });
+  }
+
+  return devicesByOs;
 }
 
 const NO_SIMULATORS_FOUND_GROUPS = [
