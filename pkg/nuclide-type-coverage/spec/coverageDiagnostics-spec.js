@@ -109,14 +109,14 @@ describe('diagnosticProviderForResultStream', () => {
       expect(updates[0]).toEqual([
         {
           providerName: 'Type Coverage',
-          type: 'Warning',
+          type: 'Info',
           filePath: 'foo',
           range: sampleResult.uncoveredRegions[0].range,
           text: 'Not covered by Foo',
         },
         {
           providerName: 'Type Coverage',
-          type: 'Warning',
+          type: 'Info',
           filePath: 'foo',
           range: sampleResult.uncoveredRegions[1].range,
           text: 'Custom message!!1!1!',
