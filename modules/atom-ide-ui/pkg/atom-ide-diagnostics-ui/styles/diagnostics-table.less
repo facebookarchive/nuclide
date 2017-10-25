@@ -78,12 +78,22 @@
 }
 
 .nuclide-diagnostics-ui-cell-classification {
-  text-align: center;
-  .icon::before {
-    width: @diagnostics-table-classification-icon-size;
-    height: @diagnostics-table-classification-icon-size;
-    font-size: @diagnostics-table-classification-icon-size;
-    margin-right: 0;
+  .nuclide-ui-table-row & {
+    text-align: center;
+
+    .icon::before {
+      width: @diagnostics-table-classification-icon-size;
+      height: @diagnostics-table-classification-icon-size;
+      font-size: @diagnostics-table-classification-icon-size;
+      margin-right: 0;
+    }
+  }
+
+  .nuclide-ui-table:not(:focus) .nuclide-ui-table-row &,
+  .nuclide-ui-table-row:not(.nuclide-ui-table-row-selected) & {
+    .icon { color: @text-color-info; }
+    .icon-nuclicon-error { color: @text-color-error; }
+    .icon-nuclicon-warning { color: @text-color-warning; }
   }
 }
 
