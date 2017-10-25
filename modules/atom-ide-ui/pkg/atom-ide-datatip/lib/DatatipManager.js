@@ -21,6 +21,7 @@ import type {
   PinnedDatatipOptions,
 } from './types';
 
+import {Range} from 'atom';
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -171,46 +172,44 @@ function PinnableDatatip({
 }
 
 function mountDatatipWithMarker(
-  editor,
-  element,
-  {
-    range,
-    renderedProviders,
-  }: {
-    range: atom$Range,
-    renderedProviders: React.Element<any>,
-  },
-): atom$Marker {
-  // Transform the matched element range to the hint range.
-  const marker: atom$Marker = editor.markBufferRange(range, {
+  editor: atom$TextEditor,
+  element: HTMLElement,
+  range: atom$Range,
+  renderedProviders: React.Element<any>,
+  position: atom$Point,
+): IDisposable {
+  // Highlight the text indicated by the datatip's range.
+  const highlightMarker = editor.markBufferRange(range, {
     invalidate: 'never',
   });
+  editor.decorateMarker(highlightMarker, {
+    type: 'highlight',
+    class: 'datatip-highlight-region',
+  });
 
-  editor.decorateMarker(marker, {
+  // The actual datatip should appear at the trigger position.
+  const overlayMarker = editor.markBufferRange(new Range(position, position), {
+    invalidate: 'never',
+  });
+  editor.decorateMarker(overlayMarker, {
     type: 'overlay',
     position: 'tail',
     item: element,
   });
 
-  editor.decorateMarker(marker, {
-    type: 'highlight',
-    class: 'datatip-highlight-region',
-  });
-
-  // The editor may not mount the marker until the next update.
-  // It's not safe to render anything until that point, as datatips
-  // often need to measure their size in the DOM.
-  editor
-    .getElement()
-    .getNextUpdatePromise()
-    .then(() => {
-      if (!marker.isDestroyed() && !editor.isDestroyed()) {
-        element.style.display = 'block';
-        ReactDOM.render(renderedProviders, element);
-      }
-    });
-
-  return marker;
+  return new UniversalDisposable(
+    () => highlightMarker.destroy(),
+    () => overlayMarker.destroy(),
+    // The editor may not mount the marker until the next update.
+    // It's not safe to render anything until that point, as datatips
+    // often need to measure their size in the DOM.
+    Observable.from(
+      editor.getElement().getNextUpdatePromise(),
+    ).subscribe(() => {
+      element.style.display = 'block';
+      ReactDOM.render(renderedProviders, element);
+    }),
+  );
 }
 
 const DatatipState = Object.freeze({
@@ -242,7 +241,7 @@ class DatatipManagerForEditor {
   _lastPosition: ?atom$Point;
   _lastDatatipAndProviderPromise: ?Promise<?DataTipResult>;
   _heldKeys: Set<ModifierKey>;
-  _marker: ?atom$Marker;
+  _markerDisposable: ?IDisposable;
   _pinnedDatatips: Set<PinnedDatatip>;
   _range: ?atom$Range;
   _shouldDropNextMouseMoveAfterFocus: boolean;
@@ -510,13 +509,15 @@ class DatatipManagerForEditor {
     this._checkedScrollable = false;
     this._range = data.range;
 
-    if (this._marker) {
-      this._marker.destroy();
+    if (this._markerDisposable) {
+      this._markerDisposable.dispose();
     }
-    this._marker = mountDatatipWithMarker(
+    this._markerDisposable = mountDatatipWithMarker(
       this._editor,
       this._datatipElement,
-      data,
+      data.range,
+      data.renderedProviders,
+      currentPosition,
     );
   }
 
@@ -605,9 +606,9 @@ class DatatipManagerForEditor {
 
   _hideDatatip(): void {
     this._lastHiddenTime = performance.now();
-    if (this._marker) {
-      this._marker.destroy();
-      this._marker = null;
+    if (this._markerDisposable) {
+      this._markerDisposable.dispose();
+      this._markerDisposable = null;
     }
     this._range = null;
     ReactDOM.unmountComponentAtNode(this._datatipElement);
