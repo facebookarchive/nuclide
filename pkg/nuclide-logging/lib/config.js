@@ -61,7 +61,7 @@ export function getPathToLogFile(): string {
 }
 
 export const FileAppender: Object = {
-  type: nuclideUri.join(__dirname, './fileAppender'),
+  type: require.resolve('../VendorLib/fileAppender'),
   filename: LOG_FILE_PATH,
   maxLogSize: MAX_LOG_SIZE,
   backups: MAX_LOG_BACKUPS,
@@ -79,7 +79,7 @@ const baseConfig: log4js$Config = {
       type: 'logLevelFilter',
       level: 'ALL',
       appender: {
-        type: nuclideUri.join(__dirname, './nuclideConsoleAppender'),
+        type: require.resolve('./nuclideConsoleAppender'),
       },
     },
     FileAppender,
@@ -98,7 +98,7 @@ function getDefaultConfigClient(): log4js$Config {
         type: 'logLevelFilter',
         level: 'WARN',
         appender: {
-          type: nuclideUri.join(__dirname, './consoleAppender'),
+          type: require.resolve('./consoleAppender'),
         },
       },
     ],

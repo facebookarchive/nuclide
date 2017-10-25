@@ -20,6 +20,9 @@ const LOG_FILE_PATH = nuclideUri.join(
   os.tmpdir(),
   'nuclide-js-imports-server.log',
 );
+const FILE_APPENDER = require.resolve(
+  '../../nuclide-logging/VendorLib/fileAppender',
+);
 
 // Configure log4js to not log to console, since
 // writing arbitrary data to stdout will break JSON RPC if we're running over
@@ -34,7 +37,7 @@ export default function initializeLogging(connection: IConnection) {
         type: 'logLevelFilter',
         level: process.argv.includes('--debug') ? 'DEBUG' : 'WARN',
         appender: {
-          type: nuclideUri.join(__dirname, 'fileAppender'),
+          type: FILE_APPENDER,
           filename: LOG_FILE_PATH,
           maxLogSize: MAX_LOG_SIZE,
           backups: MAX_LOG_BACKUPS,
@@ -74,7 +77,7 @@ export function initializeLoggerForWorker(
         type: 'logLevelFilter',
         level: logLevel,
         appender: {
-          type: nuclideUri.join(__dirname, 'fileAppender'),
+          type: FILE_APPENDER,
           filename: LOG_FILE_PATH,
           maxLogSize: MAX_LOG_SIZE,
           backups: MAX_LOG_BACKUPS,
