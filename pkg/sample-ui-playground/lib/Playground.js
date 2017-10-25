@@ -34,7 +34,6 @@ import {RelativeDateExamples} from '../../nuclide-ui/RelativeDate.example';
 import {MultiRootChangedFilesViewExample} from '../../nuclide-ui/MultiRootChangedFilesView.example';
 import {ToggleExamples} from '../../nuclide-ui/Toggle.example';
 import {ResizableFlexContainerExamples} from '../../nuclide-ui/ResizableFlexContainer.example';
-import {FileChangesExamples} from '../../nuclide-ui/FileChanges.example';
 import {MessageExamples} from 'nuclide-commons-ui/Message.example';
 import {PathWithFileIconExamples} from '../../nuclide-ui/PathWithFileIcon.example';
 import {AnimatedEllipsisExamples} from '../../nuclide-ui/AnimatedEllipsis.example';
@@ -64,10 +63,17 @@ const playgroundComponents = [
   RelativeDateExamples,
   MessageExamples,
   MultiRootChangedFilesViewExample,
-  FileChangesExamples,
   PathWithFileIconExamples,
   AnimatedEllipsisExamples,
 ];
+
+try {
+  const {
+    FileChangesExamples,
+    // $FlowFB
+  } = require('../../nuclide-ui/fb-FileChanges.example');
+  playgroundComponents.push(FileChangesExamples);
+} catch (e) {}
 
 type ComponentSpec = {
   sectionName: string,
