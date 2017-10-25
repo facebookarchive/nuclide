@@ -31,6 +31,7 @@ type Props = {
   fullPath?: NuclideUri,
   collapsable?: boolean,
   collapsedByDefault?: boolean,
+  hideHeadline?: boolean,
 };
 
 type DefaultProps = {
@@ -267,7 +268,13 @@ export default class FileChanges extends React.Component<Props> {
   };
 
   render(): React.Node {
-    const {diff, fullPath, collapsable, collapsedByDefault} = this.props;
+    const {
+      hideHeadline,
+      diff,
+      fullPath,
+      collapsable,
+      collapsedByDefault,
+    } = this.props;
     const {
       additions,
       annotation,
@@ -333,12 +340,15 @@ export default class FileChanges extends React.Component<Props> {
         fileName
       );
 
+    if (hideHeadline) {
+      return hunks;
+    }
+
     const headline = (
       <span className="nuclide-ui-file-changes-item">
         {renderedFilename} {diffDetails}
       </span>
     );
-
     return (
       // $FlowFixMe(>=0.53.0) Flow suppress
       <Section
