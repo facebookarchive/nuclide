@@ -1185,6 +1185,10 @@ date-format@^0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/date-format/-/date-format-0.0.0.tgz#09206863ab070eb459acea5542cbd856b11966b3"
 
+date-format@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/date-format/-/date-format-1.1.0.tgz#be7df68ec270fd9ec78482bd85be68c8fb8fbebc"
+
 dateformat@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-2.2.0.tgz#4065e2013cf9fb916ddfd82efb506ad4c6769062"
@@ -3949,7 +3953,7 @@ readable-stream@^1.0.33, readable-stream@^1.1.7, readable-stream@~1.1.9:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.4, readable-stream@^2.0.5, readable-stream@^2.1.5, readable-stream@^2.2.2:
+readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.4, readable-stream@^2.0.5, readable-stream@^2.1.5, readable-stream@^2.2.2, readable-stream@^2.3.0:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.3.tgz#368f2512d79f9d46fdfc71349ae7878bbc1eb95c"
   dependencies:
@@ -4568,6 +4572,15 @@ streamfilter@^1.0.5:
 streamifier@~0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/streamifier/-/streamifier-0.1.1.tgz#97e98d8fa4d105d62a2691d1dc07e820db8dfc4f"
+
+streamroller@0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/streamroller/-/streamroller-0.6.0.tgz#095d7b06c7cc525835cad2e598f76bb1e0ee693a"
+  dependencies:
+    date-format "^1.1.0"
+    debug "^2.6.8"
+    mkdirp "^0.5.1"
+    readable-stream "^2.3.0"
 
 streamroller@^0.4.0:
   version "0.4.0"
