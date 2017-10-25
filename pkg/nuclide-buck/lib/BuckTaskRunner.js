@@ -14,12 +14,12 @@ import type {TaskMetadata} from '../../nuclide-task-runner/lib/types';
 import type {Task} from '../../commons-node/tasks';
 import type {
   AppState,
-  DeploymentTarget,
   SerializedState,
   Store,
   TaskType,
   CompilationDatabaseParams,
 } from './types';
+import {formatDeploymentTarget} from './DeploymentTarget';
 import {PlatformService} from './PlatformService';
 
 import invariant from 'assert';
@@ -288,7 +288,11 @@ export class BuckTaskRunner {
     invariant(buckRoot != null);
     invariant(buildRuleType);
 
-    const deploymentString = formatDeploymentTarget(selectedDeploymentTarget);
+    const deploymentTargetString = formatDeploymentTarget(
+      selectedDeploymentTarget,
+    );
+    const deploymentString =
+      deploymentTargetString === '' ? '' : ` on "${deploymentTargetString}"`;
 
     const task = taskFromObservable(
       Observable.concat(
@@ -370,17 +374,4 @@ export class BuckTaskRunner {
       selectedDeviceName,
     };
   }
-}
-
-function formatDeploymentTarget(deploymentTarget: ?DeploymentTarget): string {
-  if (deploymentTarget == null) {
-    return '';
-  }
-  const {device, deviceGroup, platform, platformGroup} = deploymentTarget;
-  const deviceString = device != null ? `: ${device.name}` : '';
-  const deviceGroupString =
-    deviceGroup != null && deviceGroup.name !== ''
-      ? ` (${deviceGroup.name})`
-      : '';
-  return ` on "${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}"`;
 }

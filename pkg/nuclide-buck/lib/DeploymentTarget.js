@@ -127,3 +127,18 @@ export function getPlatformProviderUiForDeploymentTarget(
   }
   return deploymentTarget.platform.extraUiWhenSelected(deploymentTarget.device);
 }
+
+export function formatDeploymentTarget(
+  deploymentTarget: ?DeploymentTarget,
+): string {
+  if (deploymentTarget == null) {
+    return '';
+  }
+  const {device, deviceGroup, platform, platformGroup} = deploymentTarget;
+  const deviceString = device != null ? `: ${device.name}` : '';
+  const deviceGroupString =
+    deviceGroup != null && deviceGroup.name !== ''
+      ? ` (${deviceGroup.name})`
+      : '';
+  return `${platformGroup.name} ${platform.name}${deviceString}${deviceGroupString}`;
+}

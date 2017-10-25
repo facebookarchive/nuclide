@@ -12,6 +12,8 @@
 import type {
   AppState,
   DeploymentTarget,
+  DeviceGroup,
+  MobilePlatform,
   PlatformGroup,
   TaskSettings,
 } from './types';
@@ -20,6 +22,7 @@ import type {Option} from '../../nuclide-ui/Dropdown';
 import * as React from 'react';
 import shallowequal from 'shallowequal';
 
+import {formatDeploymentTarget} from './DeploymentTarget';
 import BuckToolbarSettings from './ui/BuckToolbarSettings';
 import BuckToolbarTargetSelector from './ui/BuckToolbarTargetSelector';
 import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
@@ -178,14 +181,34 @@ export default class BuckToolbar extends React.Component<Props, State> {
   ): Array<Option> {
     return platformGroups.reduce((options, platformGroup) => {
       let dropdownGroup = null;
-      if (
-        platformGroup.platforms.length === 1 &&
-        platformGroup.platforms[0].isMobile &&
-        platformGroup.platforms[0].deviceGroups.length < 2
-      ) {
-        dropdownGroup = this._turnDevicesIntoSelectableOptions(platformGroup);
+      if (platformGroup.platforms.length === 1) {
+        const platform = platformGroup.platforms[0];
+        invariant(platform.isMobile);
+        if (platform.deviceGroups.length === 1) {
+          // Header = platform group name + platform name, options = device names
+          // No submenus, just a list of devices at the top level
+          dropdownGroup = this._topLevelOptionsAreDevices(
+            platformGroup,
+            platform,
+            platform.deviceGroups[0],
+          );
+        } else if (platform.deviceGroups.length > 1) {
+          // Header = platform group name + platform name, options = device group names
+          // Options are submenus containing device names
+          dropdownGroup = this._topLevelOptionsAreDeviceGroups(
+            platformGroup,
+            platform,
+          );
+        } else {
+          // Header = platform group name, option = platform name
+          // This one looks weird, but it's rare and we need to be able to select something
+          dropdownGroup = this._topLevelOptionsArePlatforms(platformGroup);
+        }
       } else {
-        dropdownGroup = this._putDevicesIntoSubmenus(platformGroup);
+        // Header = platform group name, options = platform names
+        // If platforms have device groups, they become submenus with device groups inside
+        // If platforms have no device groups, they are simple selectable options
+        dropdownGroup = this._topLevelOptionsArePlatforms(platformGroup);
       }
 
       options.push(dropdownGroup.header);
@@ -193,58 +216,91 @@ export default class BuckToolbar extends React.Component<Props, State> {
     }, []);
   }
 
-  _turnDevicesIntoSelectableOptions(
+  _topLevelOptionsAreDevices(
     platformGroup: PlatformGroup,
+    platform: MobilePlatform,
+    deviceGroup: DeviceGroup,
   ): DropdownGroup {
-    const platform = platformGroup.platforms[0];
-    let selectableOptions;
-    let header;
-    invariant(platform.isMobile);
+    const header = {
+      label: formatDeploymentTarget({
+        platformGroup,
+        platform,
+        deviceGroup,
+        device: null,
+      }),
+      value: platform.name,
+      disabled: true,
+    };
 
-    const headerLabel = `${platformGroup.name} ${platform.name}`;
-    if (platform.deviceGroups.length === 0) {
-      header = {
-        label: platformGroup.name,
-        value: platformGroup.name,
-        disabled: true,
+    const selectableOptions = deviceGroup.devices.map(device => {
+      const value = {platformGroup, platform, deviceGroup, device};
+      return {
+        label: `  ${device.name}`,
+        selectedLabel: formatDeploymentTarget(value),
+        value,
       };
-      selectableOptions = [
-        {
-          label: `  ${platform.name}`,
-          selectedLabel: headerLabel,
-          value: {platformGroup, platform, deviceGroup: null, device: null},
-        },
-      ];
-    } else {
-      header = {
-        label: headerLabel,
-        value: platform.name,
-        disabled: true,
-      };
-      const deviceGroup = platform.deviceGroups[0];
-      selectableOptions = deviceGroup.devices.map(device => {
-        return {
-          label: `  ${device.name}`,
-          selectedLabel: `${headerLabel}: ${device.name}`,
-          value: {platformGroup, platform, deviceGroup, device},
-        };
-      });
+    });
+
+    return {header, selectableOptions};
+  }
+
+  _topLevelOptionsAreDeviceGroups(
+    platformGroup: PlatformGroup,
+    platform: MobilePlatform,
+  ): DropdownGroup {
+    const header = {
+      label: formatDeploymentTarget({
+        platformGroup,
+        platform,
+        deviceGroup: null,
+        device: null,
+      }),
+      value: platform.name,
+      disabled: true,
+    };
+    const selectableOptions = [];
+
+    for (const deviceGroup of platform.deviceGroups) {
+      if (deviceGroup.name !== '') {
+        const submenu = [];
+        for (const device of deviceGroup.devices) {
+          const value = {platformGroup, platform, deviceGroup, device};
+          submenu.push({
+            label: `  ${device.name}`,
+            selectedLabel: formatDeploymentTarget(value),
+            value,
+          });
+        }
+
+        selectableOptions.push({
+          type: 'submenu',
+          label: `  ${deviceGroup.name}`,
+          submenu,
+        });
+      } else {
+        for (const device of deviceGroup.devices) {
+          const value = {platformGroup, platform, deviceGroup, device};
+          selectableOptions.push({
+            label: `  ${device.name}`,
+            selectedLabel: formatDeploymentTarget(value),
+            value,
+          });
+        }
+      }
     }
 
     return {header, selectableOptions};
   }
 
-  _putDevicesIntoSubmenus(platformGroup: PlatformGroup): DropdownGroup {
+  _topLevelOptionsArePlatforms(platformGroup: PlatformGroup): DropdownGroup {
     const header = {
       label: platformGroup.name,
       value: platformGroup.name,
       disabled: true,
     };
-
     const selectableOptions = [];
 
     for (const platform of platformGroup.platforms) {
-      const headerLabel = `${platformGroup.name} ${platform.name}`;
       if (platform.isMobile && platform.deviceGroups.length) {
         const submenu = [];
 
@@ -258,10 +314,11 @@ export default class BuckToolbar extends React.Component<Props, State> {
           }
 
           for (const device of deviceGroup.devices) {
+            const value = {platformGroup, platform, deviceGroup, device};
             submenu.push({
               label: `  ${device.name}`,
-              selectedLabel: `${headerLabel}: ${device.name}`,
-              value: {platformGroup, platform, deviceGroup, device},
+              selectedLabel: formatDeploymentTarget(value),
+              value,
             });
           }
 
@@ -276,10 +333,16 @@ export default class BuckToolbar extends React.Component<Props, State> {
           submenu,
         });
       } else {
+        const value = {
+          platformGroup,
+          platform,
+          deviceGroup: null,
+          device: null,
+        };
         selectableOptions.push({
           label: `  ${platform.name}`,
-          selectedLabel: headerLabel,
-          value: {platformGroup, platform, deviceGroup: null, device: null},
+          selectedLabel: formatDeploymentTarget(value),
+          value,
         });
       }
     }
