@@ -109,6 +109,7 @@ async function connectionToFlowService(
     stopFlowOnExit: Boolean(featureConfig.get('nuclide-flow.stopFlowOnExit')),
     lazyServer: Boolean(featureConfig.get('nuclide-flow.lazyServer')),
     ideLazyMode,
+    canUseFlowBin: Boolean(featureConfig.get('nuclide-flow.canUseFlowBin')),
   };
   const languageService = await flowService.initialize(
     fileNotifier,

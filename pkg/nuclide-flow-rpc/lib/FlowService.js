@@ -75,6 +75,7 @@ export type FlowSettings = {
   stopFlowOnExit: boolean,
   lazyServer: boolean,
   ideLazyMode: boolean,
+  canUseFlowBin: boolean,
 };
 
 export type {FlowLocNoSource} from './flowOutputTypes';

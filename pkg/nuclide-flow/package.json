@@ -20,7 +20,7 @@
         "description": "Absolute path to the Flow executable on your system."
       },
       "canUseFlowBin": {
-        "title": "Use the Flow binary included in each project's flow-bin",
+        "title": "Use the Flow binary included in each project's flow-bin (requires restart)",
         "type": "boolean",
         "default": false,
         "description": "WARNING: Checking this box is a security risk. When you open a project we will immediately run code contained within it. Only use this setting if you fully trust all of the projects that you open."

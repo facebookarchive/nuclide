@@ -19,6 +19,8 @@ import which from 'nuclide-commons/which';
 import {runCommand} from 'nuclide-commons/process';
 import {ConfigCache} from 'nuclide-commons/ConfigCache';
 
+import {getConfig} from './config';
+
 const FLOW_BIN_PATH = 'node_modules/.bin/flow';
 
 type FlowVersionInfo = {
@@ -63,6 +65,7 @@ export class FlowExecInfoContainer {
     this._disposables = new UniversalDisposable();
     this._versionInfo = versionInfo;
 
+    this._canUseFlowBin = Boolean(getConfig('canUseFlowBin'));
     this._observeSettings();
   }
 
@@ -155,7 +158,6 @@ export class FlowExecInfoContainer {
   _observeSettings(): void {
     if (global.atom == null) {
       this._pathToFlow = 'flow';
-      this._canUseFlowBin = false;
     } else {
       // $UPFixMe: This should use nuclide-features-config
       // Does not currently do so because this is an npm module that may run on the server.
@@ -164,13 +166,6 @@ export class FlowExecInfoContainer {
           this._pathToFlow = path;
           this._flowExecInfoCache.reset();
         }),
-        atom.config.observe(
-          'nuclide.nuclide-flow.canUseFlowBin',
-          canUseFlowBin => {
-            this._canUseFlowBin = canUseFlowBin;
-            this._flowExecInfoCache.reset();
-          },
-        ),
       );
     }
   }

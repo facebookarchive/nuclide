@@ -17,6 +17,7 @@ const config: FlowSettings = {
   stopFlowOnExit: true,
   lazyServer: false,
   ideLazyMode: false,
+  canUseFlowBin: false,
 };
 
 export function getConfig(key: $Keys<typeof config>): mixed {
