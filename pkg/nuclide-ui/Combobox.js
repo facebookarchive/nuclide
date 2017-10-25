@@ -72,6 +72,7 @@ export class Combobox extends React.Component<Props, State> {
   _optionsElement: HTMLElement;
   _updateSubscription: ?rxjs$ISubscription;
   _subscriptions: UniversalDisposable;
+  _shouldBlur: boolean;
 
   static defaultProps: DefaultProps = {
     className: '',
@@ -85,6 +86,7 @@ export class Combobox extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this._subscriptions = new UniversalDisposable();
+    this._shouldBlur = true;
     this.state = {
       error: null,
       filteredOptions: [],
@@ -174,6 +176,7 @@ export class Combobox extends React.Component<Props, State> {
   }
 
   focus(showOptions: boolean): void {
+    this._shouldBlur = true;
     this.refs.freeformInput.focus();
     this.setState({optionsVisible: showOptions});
   }
@@ -274,6 +277,9 @@ export class Combobox extends React.Component<Props, State> {
   };
 
   _handleInputBlur = (event: Object): void => {
+    if (!this._shouldBlur) {
+      return;
+    }
     this._handleCancel();
     const {onBlur} = this.props;
     if (onBlur != null) {
@@ -282,10 +288,12 @@ export class Combobox extends React.Component<Props, State> {
   };
 
   _handleInputClick = (): void => {
+    this._shouldBlur = true;
     this.setState({optionsVisible: true});
   };
 
   _handleItemClick(selectedValue: string, event: Object): void {
+    this._shouldBlur = false;
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
