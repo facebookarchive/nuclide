@@ -40,12 +40,12 @@ import {AttachProcessInfo} from '../../nuclide-debugger-native/lib/AttachProcess
 // eslint-disable-next-line rulesdir/no-cross-atom-imports
 import {LaunchProcessInfo} from '../../nuclide-debugger-native/lib/LaunchProcessInfo';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {getServiceByNuclideUri} from '../../nuclide-remote-connection';
+import {
+  getServiceByNuclideUri,
+  getFileSystemServiceByNuclideUri,
+} from '../../nuclide-remote-connection';
 import {getBuckServiceByNuclideUri} from '../../nuclide-remote-connection';
 import {getLogger} from 'log4js';
-import {RemoteFile} from '../../nuclide-remote-connection/lib/RemoteFile';
-import {ServerConnection} from '../../nuclide-remote-connection';
-import fs from 'fs';
 
 const SUPPORTED_RULE_TYPES = new Set(['cxx_binary', 'cxx_test']);
 const LLDB_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
@@ -202,112 +202,79 @@ class Activation {
   ): Observable<TaskEvent> {
     invariant(taskType === 'debug');
 
-    // Copy task settings so that changes only apply to this current run.
-    const settings = JSON.parse(JSON.stringify(taskSettings));
-    const checkMode =
-      settings.buildArguments == null ||
-      settings.buildArguments.find(arg => arg.includes('@mode')) == null;
+    return this._addModeDbgIfNoModeInBuildArguments(
+      buckRoot,
+      taskSettings,
+    ).switchMap(settings => {
+      switch (ruleType) {
+        case 'cxx_binary':
+        case 'cxx_test':
+          return builder.runSubcommand(
+            buckRoot,
+            'build',
+            buildTarget,
+            settings,
+            false,
+            null,
+            (processStream: Observable<LegacyProcessMessage>) => {
+              const buckService = getBuckServiceByNuclideUri(buckRoot);
+              invariant(buckService != null);
 
-    // If debugging and no build mode is specified, add @mode/dbg if
-    // it has a corresponding configuration in this buck root.
-    const modeObsvervable = checkMode
-      ? Observable.fromPromise(
-          (async () => {
-            let exists = false;
-            const uri = nuclideUri.join(buckRoot, 'mode', 'dbg');
-            if (nuclideUri.isRemote(uri)) {
-              // Remote file URI, see if buckRoot/mode/dbg exists.
-              const connection = ServerConnection.getForUri(uri);
-              if (connection != null) {
-                const file = new RemoteFile(connection, uri, false);
-                exists = await file.exists();
-              }
-            } else {
-              // Local file URI.
-              exists = await fs.exists(uri);
-            }
-
-            if (exists) {
-              settings.buildArguments = ['@mode/dbg'].concat(
-                settings.buildArguments != null ? settings.buildArguments : [],
-              );
-            }
-          })(),
-        )
-      : Observable.empty();
-
-    return modeObsvervable.ignoreElements().concat(
-      Observable.defer(() => {
-        switch (ruleType) {
-          case 'cxx_binary':
-          case 'cxx_test':
-            return builder.runSubcommand(
-              buckRoot,
-              'build',
-              buildTarget,
-              settings,
-              false,
-              null,
-              (processStream: Observable<LegacyProcessMessage>) => {
-                const buckService = getBuckServiceByNuclideUri(buckRoot);
-                invariant(buckService != null);
-
-                const {qualifiedName, flavors} = buildTarget;
-                const separator = flavors.length > 0 ? '#' : '';
-                const targetString = `${qualifiedName}${separator}${flavors.join(
-                  ',',
-                )}`;
-                const runArguments = settings.runArguments || [];
-                const argString =
-                  runArguments.length === 0
-                    ? ''
-                    : ` with arguments "${runArguments.join(' ')}"`;
-                return Observable.concat(
-                  processStream.ignoreElements(),
-                  Observable.defer(() =>
-                    this._debugBuckTarget(
-                      buckService,
-                      buckRoot,
-                      targetString,
-                      runArguments,
-                    ),
-                  )
-                    .ignoreElements()
-                    .map(path => ({
+              const {qualifiedName, flavors} = buildTarget;
+              const separator = flavors.length > 0 ? '#' : '';
+              const targetString = `${qualifiedName}${separator}${flavors.join(
+                ',',
+              )}`;
+              const runArguments = settings.runArguments || [];
+              const argString =
+                runArguments.length === 0
+                  ? ''
+                  : ` with arguments "${runArguments.join(' ')}"`;
+              return Observable.concat(
+                processStream.ignoreElements(),
+                Observable.defer(() =>
+                  this._debugBuckTarget(
+                    buckService,
+                    buckRoot,
+                    targetString,
+                    runArguments,
+                  ),
+                )
+                  .ignoreElements()
+                  .map(path => ({
+                    type: 'log',
+                    message: `Launched debugger with ${path}`,
+                    level: 'info',
+                  }))
+                  .catch(err => {
+                    getLogger('nuclide-buck').error(
+                      `Failed to launch debugger for ${targetString}`,
+                      err,
+                    );
+                    return Observable.of({
                       type: 'log',
-                      message: `Launched debugger with ${path}`,
-                      level: 'info',
-                    }))
-                    .catch(err => {
-                      getLogger('nuclide-buck').error(
-                        `Failed to launch debugger for ${targetString}`,
-                        err,
-                      );
-                      return Observable.of({
-                        type: 'log',
-                        message: `Failed to launch debugger: ${err.message}`,
-                        level: 'error',
-                      });
-                    })
-                    .startWith(
-                      {
-                        type: 'log',
-                        message: `Launching debugger for ${targetString}${argString}...`,
-                        level: 'log',
-                      },
-                      {
-                        type: 'progress',
-                        progress: null,
-                      },
-                    ),
-                );
-              },
-            );
-          default:
-            invariant(false);
-        }
-      }),
-    );
+                      message: `Failed to launch debugger: ${err.message}`,
+                      level: 'error',
+                    });
+                  })
+                  .startWith(
+                    {
+                      type: 'log',
+                      message: `Launching debugger for ${targetString}${argString}...`,
+                      level: 'log',
+                    },
+                    {
+                      type: 'progress',
+                      progress: null,
+                    },
+                  ),
+              );
+            },
+          );
+        default:
+          invariant(false);
+      }
+    });
   }
 
   async _getDebuggerService(): Promise<RemoteControlService> {
@@ -392,6 +359,31 @@ class Activation {
     const debuggerService = await this._getDebuggerService();
     await debuggerService.startDebugging(info);
     return remoteOutputPath;
+  }
+
+  _addModeDbgIfNoModeInBuildArguments(
+    buckRoot: NuclideUri,
+    settings: TaskSettings,
+  ): Observable<TaskSettings> {
+    const buildArguments =
+      settings.buildArguments != null ? settings.buildArguments : [];
+    if (buildArguments.some(arg => arg.includes('@mode'))) {
+      return Observable.of(settings);
+    }
+
+    const fileSystemService = getFileSystemServiceByNuclideUri(buckRoot);
+    return Observable.defer(async () => {
+      const modeDbgFile = nuclideUri.join(buckRoot, 'mode', 'dbg');
+      if (await fileSystemService.exists(modeDbgFile)) {
+        buildArguments.push('@mode/dbg');
+        return {
+          buildArguments,
+          runArguments: settings.runArguments,
+        };
+      } else {
+        return settings;
+      }
+    });
   }
 }
 
