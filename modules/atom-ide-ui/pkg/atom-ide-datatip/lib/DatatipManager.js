@@ -43,7 +43,6 @@ import {
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 import {PinnedDatatip} from './PinnedDatatip';
 
-const CUMULATIVE_WHEELX_THRESHOLD = 20;
 const DEFAULT_DATATIP_DEBOUNCE_DELAY = 1000;
 const DEFAULT_DATATIP_INTERACTED_DEBOUNCE_DELAY = 1000;
 
@@ -251,7 +250,7 @@ class DatatipManagerForEditor {
   _hideIfOutsideDebounce: () => void;
   _subscriptions: UniversalDisposable;
   _interactedWith: boolean;
-  _cumulativeWheelX: number;
+  _checkedScrollable: boolean;
 
   constructor(
     editor: atom$TextEditor,
@@ -269,7 +268,7 @@ class DatatipManagerForEditor {
     this._datatipState = DatatipState.HIDDEN;
     this._heldKeys = new Set();
     this._interactedWith = false;
-    this._cumulativeWheelX = 0;
+    this._checkedScrollable = false;
     this._lastHiddenTime = 0;
     this._lastFetchedFromCursorPosition = false;
     this._shouldDropNextMouseMoveAfterFocus = false;
@@ -349,9 +348,22 @@ class DatatipManagerForEditor {
         }
       }),
       Observable.fromEvent(this._datatipElement, 'wheel').subscribe(e => {
-        this._cumulativeWheelX += Math.abs(e.deltaX);
-        if (this._cumulativeWheelX > CUMULATIVE_WHEELX_THRESHOLD) {
-          this._interactedWith = true;
+        // We'll mark this as an 'interaction' only if the scroll target was scrollable.
+        // This requires going over the ancestors, so only check this once.
+        // If it comes back as false, we won't bother checking again.
+        if (!this._interactedWith && !this._checkedScrollable) {
+          let node = e.target;
+          while (node != null && node !== this._datatipElement) {
+            if (
+              node.scrollHeight > node.clientHeight ||
+              node.scrollWidth > node.clientWidth
+            ) {
+              this._interactedWith = true;
+              break;
+            }
+            node = node.parentNode;
+          }
+          this._checkedScrollable = true;
         }
         if (this._interactedWith) {
           e.stopPropagation();
@@ -495,7 +507,7 @@ class DatatipManagerForEditor {
 
     this._setState(DatatipState.VISIBLE);
     this._interactedWith = false;
-    this._cumulativeWheelX = 0;
+    this._checkedScrollable = false;
     this._range = data.range;
 
     if (this._marker) {
