@@ -14,4 +14,4 @@ export type VSAdapterExecutableInfo = {
   args: Array<string>,
 };
 
-export type VsAdapterType = 'hhvm' | 'python' | 'node';
+export type VsAdapterType = 'hhvm' | 'python' | 'node' | 'java';

@@ -15,6 +15,7 @@ export const VsAdapterTypes = Object.freeze({
   HHVM: 'hhvm',
   PYTHON: 'python',
   NODE: 'node',
+  JAVA: 'java',
 });
 
 // This is to work around flow's missing support of enums.
