@@ -905,14 +905,16 @@ export default class VsDebugSessionTranslator {
         hasSource = topCallFrame.hasSource === true;
       }
 
+      const stopReasonOrRunning =
+        stopReason != null && stopReason !== '' ? stopReason : 'running';
+
       return {
         id,
         name: threadName,
         description: threadName,
         address,
         location,
-        // flowlint-next-line sketchy-null-string:off
-        stopReason: stopReason || 'running',
+        stopReason: stopReasonOrRunning,
         hasSource,
       };
     });
