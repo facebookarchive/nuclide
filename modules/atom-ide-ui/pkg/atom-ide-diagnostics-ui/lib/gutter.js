@@ -60,6 +60,7 @@ const GUTTER_CSS_GROUPS = {
   errors: 'diagnostics-gutter-ui-gutter-error',
   warnings: 'diagnostics-gutter-ui-gutter-warning',
   info: 'diagnostics-gutter-ui-gutter-info',
+  action: 'diagnostics-gutter-ui-gutter-action',
 };
 
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();

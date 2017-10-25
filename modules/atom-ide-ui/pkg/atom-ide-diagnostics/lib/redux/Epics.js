@@ -137,9 +137,17 @@ export function fetchCodeActions(
     const {messages, editor} = action.payload;
     return forkJoinArray(
       messages.map(message =>
-        Observable.defer(() =>
-          codeActionFetcher.getCodeActionForDiagnostic(message, editor),
-        )
+        Observable.defer(() => {
+          // Skip fetching code actions if the diagnostic already includes them.
+          if (message.actions != null && message.actions.length > 0) {
+            return Promise.resolve([]);
+          } else {
+            return codeActionFetcher.getCodeActionForDiagnostic(
+              message,
+              editor,
+            );
+          }
+        })
           .switchMap(codeActions => {
             return codeActions.length === 0
               ? // forkJoin emits nothing for empty arrays.

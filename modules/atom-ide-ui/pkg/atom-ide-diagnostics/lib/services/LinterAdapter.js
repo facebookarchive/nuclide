@@ -168,6 +168,7 @@ export function linterMessageV2ToDiagnosticMessage(
     type: convertLinterType(msg.severity),
     filePath: msg.location.file,
     text,
+    kind: msg.kind,
     range: Range.fromObject(msg.location.position),
     trace,
     fix,

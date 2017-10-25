@@ -19,6 +19,7 @@ const PRIORITIZED_GROUPS: Array<DiagnosticGroup> = [
   'errors',
   'warnings',
   'info',
+  'action',
 ];
 
 export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
@@ -41,6 +42,8 @@ export function getGroup(message: DiagnosticMessage): DiagnosticGroup {
       }
     case 'review':
       return 'review';
+    case 'action':
+      return 'action';
     default:
       (kind: empty);
       throw new Error(`Invalid message kind: ${kind}`);
@@ -57,6 +60,8 @@ export function getDisplayName(group: DiagnosticGroup): string {
       return 'Info';
     case 'review':
       return 'Review';
+    case 'action':
+      return 'Action';
     default:
       (group: empty);
       throw new Error(`Invalid group: ${group}`);
@@ -73,6 +78,8 @@ export function getIcon(group: DiagnosticGroup): IconName {
       return 'info';
     case 'review':
       return 'nuclicon-comment-discussion';
+    case 'action':
+      return 'light-bulb';
     default:
       (group: empty);
       throw new Error(`Invalid filter type: ${group}`);

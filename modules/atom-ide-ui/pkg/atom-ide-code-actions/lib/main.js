@@ -13,6 +13,7 @@
 import createPackage from 'nuclide-commons-atom/createPackage';
 import {CodeActionManager} from './CodeActionManager';
 
+import type {RegisterIndieLinter} from '../../../index';
 import type {CodeActionProvider, CodeActionFetcher} from './types';
 
 class Activation {
@@ -32,6 +33,10 @@ class Activation {
 
   provideCodeActionFetcher(): CodeActionFetcher {
     return this._codeActionManager.createCodeActionFetcher();
+  }
+
+  consumeIndie(register: RegisterIndieLinter) {
+    return this._codeActionManager.consumeIndie(register);
   }
 }
 

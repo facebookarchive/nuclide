@@ -349,6 +349,7 @@ describe('message transformation functions', () => {
       const expected = {
         providerName: 'test2',
         type: 'Error',
+        kind: undefined,
         filePath: 'file.txt',
         range: new Range([0, 0], [0, 1]),
         text: 'Error\nDescription',
