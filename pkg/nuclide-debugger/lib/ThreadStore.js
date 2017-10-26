@@ -18,11 +18,7 @@ import * as React from 'react';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {ActionTypes} from './DebuggerDispatcher';
-import passesGK from '../../commons-node/passesGK';
 import {DebuggerMode} from './DebuggerStore';
-
-const GK_THREAD_SWITCH_UI = 'nuclide_debugger_thread_switch_ui';
-const GK_TIMEOUT = 5000;
 
 export default class ThreadStore {
   _disposables: IDisposable;
@@ -159,13 +155,6 @@ export default class ThreadStore {
     lineNumber: number,
     message: string,
   ): Promise<void> {
-    const notifyThreadSwitches = await passesGK(
-      GK_THREAD_SWITCH_UI,
-      GK_TIMEOUT,
-    );
-    if (!notifyThreadSwitches) {
-      return;
-    }
     const path = nuclideUri.uriToNuclideUri(sourceURL);
     // we want to put the message one line above the current line unless the selected
     // line is the top line, in which case we will put the datatip next to the line.
