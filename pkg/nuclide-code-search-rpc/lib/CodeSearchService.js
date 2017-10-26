@@ -15,8 +15,8 @@ import type {CodeSearchResult} from './types';
 import {search as agAckSearch} from './AgAckService';
 import {search as rgSearch} from './RgService';
 import {ConnectableObservable, Observable} from 'rxjs';
-import {hasCommand} from 'nuclide-commons/hasCommand';
 import {asyncFind} from 'nuclide-commons/promise';
+import which from 'nuclide-commons/which';
 import {
   isNfs,
   isFuse,
@@ -31,7 +31,7 @@ async function resolveTool(tool: ?string): Promise<?string> {
     return tool;
   }
   return asyncFind(os.platform() === 'win32' ? WINDOWS_TOOLS : POSIX_TOOLS, t =>
-    hasCommand(t).then(has => (has ? t : null)),
+    which(t).then(cmd => (cmd != null ? t : null)),
   );
 }
 
