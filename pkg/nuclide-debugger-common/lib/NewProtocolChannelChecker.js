@@ -16,6 +16,7 @@ const NewChannelCompatibleEngines = new Set([
   'lldb',
   'java',
   'vscode-adapter',
+  'mobilejs',
 ]);
 
 export function isNewProtocolChannelEnabled(
