@@ -44,6 +44,7 @@ export type Local = {
 };
 
 export type Tunnel = {
+  description: string,
   from: Remote,
   to: Local,
 };

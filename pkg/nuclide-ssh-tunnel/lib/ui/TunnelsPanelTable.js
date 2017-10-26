@@ -23,6 +23,10 @@ export class TunnelsPanelTable extends React.Component<Props> {
   render(): React.Node {
     const columns = [
       {
+        title: 'Description',
+        key: 'description',
+      },
+      {
         title: 'From',
         key: 'from',
       },
@@ -49,6 +53,7 @@ export class TunnelsPanelTable extends React.Component<Props> {
       return {
         className: 'nuclide-ssh-tunnels-table-row',
         data: {
+          description: tunnel.description,
           from: `${host}:${tunnel.from.port}`,
           to: `${tunnel.to.host}:${tunnel.to.port}`,
           status: openTunnel.state,
