@@ -30,11 +30,13 @@ describe('SshHandshake', () => {
     ): boolean {
       return false;
     }
+
     sftp(
       callback: (err: Error, sftp: SFTPWrapper) => void | Promise<void>,
     ): boolean {
       return false;
     }
+
     forwardOut(
       srcIP: string,
       srcPort: number,

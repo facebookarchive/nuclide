@@ -17,6 +17,7 @@ class I1 {
   async m(arg: string): Promise<string> {
     return 'I1:' + arg;
   }
+
   dispose() {}
 }
 
@@ -24,6 +25,7 @@ class I2 {
   async m(arg: string): Promise<string> {
     return 'I2:' + arg;
   }
+
   dispose() {}
 }
 

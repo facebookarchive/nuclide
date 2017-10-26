@@ -26,15 +26,18 @@ const getGatekeeper = once(() => {
       isGkEnabled(name: string): ?boolean {
         return null;
       }
+
       asyncIsGkEnabled(name: string, timeout?: number): Promise<?boolean> {
         return Promise.resolve();
       }
+
       onceGkInitialized(callback: () => mixed): IDisposable {
         process.nextTick(() => {
           callback();
         });
         return new Disposable();
       }
+
       getCacheEntries(): Iterable<[string, boolean]> {
         return [];
       }

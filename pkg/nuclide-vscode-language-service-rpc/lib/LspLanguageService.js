@@ -142,10 +142,12 @@ export class LspLanguageService {
     string | number,
     UniversalDisposable,
   > = new Map();
+
   _recentRestarts: Array<number> = [];
   _diagnosticUpdates: BehaviorSubject<
     Observable<PublishDiagnosticsParams>,
   > = new BehaviorSubject(Observable.empty());
+
   _supportsSymbolSearch: BehaviorSubject<?boolean> = new BehaviorSubject(null);
   // Fields which become live inside start(), when we spawn the LSP process.
   // Disposing of the _lspConnection will dispose of all of them.

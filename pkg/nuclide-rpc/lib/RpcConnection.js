@@ -282,6 +282,7 @@ export class RpcConnection<TransportType: Transport> {
   marshal(value: any, type: Type): any {
     return this._getTypeRegistry().marshal(this._objectRegistry, value, type);
   }
+
   unmarshal(value: any, type: Type): any {
     return this._getTypeRegistry().unmarshal(this._objectRegistry, value, type);
   }

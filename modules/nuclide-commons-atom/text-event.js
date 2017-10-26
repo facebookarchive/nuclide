@@ -221,6 +221,7 @@ export class TextEventDispatcher {
   ): IDisposable {
     return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
   }
+
   onAnyFileChange(callback: EventCallback): IDisposable {
     return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }

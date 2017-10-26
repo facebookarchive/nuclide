@@ -145,6 +145,7 @@ export default class VsDebugSessionTranslator {
     NuclideDebugProtocol.BreakpointId,
     TranslatorBreakpoint,
   >;
+
   _lastBreakpointId: number;
   _threadsById: Map<number, ThreadInfo>;
   _mainThreadId: ?number;

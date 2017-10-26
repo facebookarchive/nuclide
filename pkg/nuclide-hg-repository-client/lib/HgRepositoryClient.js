@@ -163,6 +163,7 @@ export class HgRepositoryClient {
     isLoading: boolean,
     bookmarks: Array<BookmarkInfo>,
   }>;
+
   _isInConflict: boolean;
   _isDestroyed: boolean;
 

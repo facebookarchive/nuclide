@@ -31,10 +31,12 @@ describe('new DOMObserverObservable', () => {
       this._callback = callback;
       observerInstance = this;
     }
+
     observe(...args: any[]) {
       this._args = args;
       this._connected = true;
     }
+
     disconnect() {
       this._connected = false;
     }

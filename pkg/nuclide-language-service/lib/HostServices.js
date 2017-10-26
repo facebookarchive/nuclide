@@ -50,6 +50,7 @@ class RootHostServices {
     setTitle: s => {},
     dispose: () => {},
   };
+
   // lazily created map from source, to how we'll push messages from that source
   _consoleSubjects: Map<string, Promise<Subject<Message>>> = new Map();
 

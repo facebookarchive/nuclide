@@ -85,6 +85,7 @@ export default class ClangFlagsManager {
   > = new Cache({
     keyFactory: db => getCacheKeyForDb(db),
   });
+
   _realpathCache: Object;
   _pathToFlags: Cache<
     [string, ClangRequestSettings],
@@ -96,6 +97,7 @@ export default class ClangFlagsManager {
         getCacheKeyForDb(requestSettings.compilationDatabase),
       ]),
   });
+
   _clangProjectFlags: Map<string, Promise<?ClangProjectFlags>>;
 
   constructor() {

@@ -149,7 +149,7 @@
     "babel-plugin-transform-react-display-name": "6.25.0",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "babel-plugin-transform-strict-mode": "6.24.1",
-    "eslint": "3.15.0",
+    "eslint": "4.9.0",
     "eslint-plugin-dependencies": "2.4.0",
     "eslint-plugin-flowtype": "2.39.1",
     "eslint-plugin-jasmine": "2.9.1",

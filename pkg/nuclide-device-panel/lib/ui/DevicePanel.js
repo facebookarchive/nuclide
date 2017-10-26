@@ -111,6 +111,7 @@ export class DevicePanel extends React.Component<Props> {
       </div>
     );
   }
+
   _getStatus(): ?React.Element<any> {
     if (this.props.isDeviceConnected) {
       return null;

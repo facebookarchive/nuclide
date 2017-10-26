@@ -29,6 +29,7 @@ describe('DiagnosticsProviderBase', () => {
       eventCallback = callback;
       return new Disposable(() => {});
     }
+
     onAnyFileChange(callback) {
       subscribedToAny = true;
       eventCallback = callback;

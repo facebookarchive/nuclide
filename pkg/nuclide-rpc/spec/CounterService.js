@@ -45,6 +45,7 @@ export class Counter {
   async getCount(): Promise<number> {
     return this._count;
   }
+
   // Add the specified value to the counter's count.
   async addCount(x: number): Promise<void> {
     // Broadcast an event.

@@ -47,6 +47,7 @@ class Activation {
     CoverageProvider,
     ?CoverageResult,
   >;
+
   _toggleEvents: Subject<void>;
   _shouldRenderDiagnostics: Observable<boolean>;
 

@@ -33,6 +33,7 @@ class Activation {
   _allHomeFragmentsStream: BehaviorSubject<
     Immutable.Set<HomeFragments>,
   > = new BehaviorSubject(Immutable.Set());
+
   _subscriptions: UniversalDisposable;
 
   constructor(state: ?Object) {

@@ -83,6 +83,7 @@ export default class SearchResultManager {
     atom$Directory,
     Set<DirectoryProviderType<*>>,
   >;
+
   _globalEligibleProviders: Set<GlobalProviderType<*>>;
   _providerSubscriptions: Map<Provider<ProviderResult>, IDisposable>;
   _directories: Array<atom$Directory>;

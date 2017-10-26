@@ -30,6 +30,7 @@ class Provider {
     string,
     Promise<?ClangCompilationDatabase>,
   > = new Cache();
+
   _host: NuclideUri;
   _params: CompilationDatabaseParams;
   _flagsFileWatcher: ClangFlagsFileWatcher;

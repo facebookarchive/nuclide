@@ -19,15 +19,19 @@ export class RangeKey {
     this._rootKey = rootKey;
     this._nodeKey = nodeKey;
   }
+
   static of(node: FileTreeNode): RangeKey {
     return new RangeKey(node.rootUri, node.uri);
   }
+
   rootKey(): NuclideUri {
     return this._rootKey;
   }
+
   nodeKey(): NuclideUri {
     return this._nodeKey;
   }
+
   equals(other: RangeKey): boolean {
     return this._rootKey === other._rootKey && this._nodeKey === other._nodeKey;
   }
@@ -40,21 +44,27 @@ export class SelectionRange {
     this._anchor = anchor;
     this._range = range;
   }
+
   anchor(): RangeKey {
     return this._anchor;
   }
+
   range(): RangeKey {
     return this._range;
   }
+
   static ofSingleItem(anchor: RangeKey): SelectionRange {
     return new SelectionRange(anchor, anchor);
   }
+
   withNewRange(range: RangeKey): SelectionRange {
     return new SelectionRange(this._anchor, range);
   }
+
   withNewAnchor(anchor: RangeKey): SelectionRange {
     return new SelectionRange(anchor, this._range);
   }
+
   equals(other: SelectionRange): boolean {
     return (
       this._anchor.equals(other._anchor) && this._range.equals(other._range)

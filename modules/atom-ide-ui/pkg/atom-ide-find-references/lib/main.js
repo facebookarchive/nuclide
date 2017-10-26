@@ -75,6 +75,7 @@ class Activation {
     TextEditor,
     Array<FindReferencesProvider>,
   > = new Map();
+
   _busySignalService: ?BusySignalService;
 
   constructor(state: ?any): void {

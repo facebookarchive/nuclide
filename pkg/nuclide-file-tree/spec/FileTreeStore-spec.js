@@ -33,6 +33,7 @@ class MockRepository {
   isProjectAtRoot() {
     return true;
   }
+
   isPathIgnored() {
     return true;
   }

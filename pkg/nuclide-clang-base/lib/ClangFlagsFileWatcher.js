@@ -19,6 +19,7 @@ export class ClangFlagsFileWatcher {
   _watchedFilesCache: Cache<string, Subscription> = new Cache({
     dispose: subscription => subscription.unsubscribe(),
   });
+
   _watchedFilesObservablesCache: SharedObservableCache<string, *>;
 
   constructor(host: string) {
