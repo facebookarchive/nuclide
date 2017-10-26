@@ -272,6 +272,27 @@ export function collect<K, V>(pairs: Array<[K, V]>): Map<K, Array<V>> {
   return result;
 }
 
+export function objectFromPairs<T: string, U>(
+  iterable: Iterable<[T, U]>,
+): {[T]: U} {
+  const result = {};
+  for (const [key, value] of iterable) {
+    result[key] = value;
+  }
+  return result;
+}
+
+export function objectMapValues<T, U, V>(
+  object: {[T: string]: U},
+  project: (value: U, key: T) => V,
+): {[T]: V} {
+  const result = {};
+  Object.keys(object).forEach(key => {
+    result[key] = project(object[key], ((key: any): T));
+  });
+  return result;
+}
+
 export class MultiMap<K, V> {
   // Invariant: no empty sets. They should be removed instead.
   _map: Map<K, Set<V>>;
