@@ -16,6 +16,7 @@ import type {DiagnosticGroup, GlobalViewState} from './types';
 import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
 import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
+import dockForLocation from 'nuclide-commons-atom/dock-for-location';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
@@ -116,22 +117,20 @@ export class DiagnosticsViewModel {
           (a, b) => a.text === b.text,
         )
       ) {
-        if (newProps.diagnostics.length > 0) {
-          const activePane = atom.workspace.getActivePane();
-          // Do not use goToLocation because diagnostics item is not a file.
-          atom.workspace // eslint-disable-line
-            // $FlowFixMe: workspace.open accepts an item or URI
-            .open(this)
-            .then(() => {
-              // Since workspace.open focuses the pane containing the diagnostics,
-              // we manually return focus to the previously active pane.
-              if (activePane != null) {
-                // Somehow calling activate immediately does not return focus.
-                activePane.activate();
-              }
-            });
-        } else {
-          const pane = atom.workspace.paneForItem(this);
+        const pane = atom.workspace.paneForItem(this);
+        if (newProps.diagnostics.length > 0 && !newProps.isVisible) {
+          // We want to call workspace.open but it has no option to
+          // show the new pane without activating it.
+          // So instead we find the dock for the pane and show() it directly.
+          // https://github.com/atom/atom/issues/16007
+          if (pane != null) {
+            pane.activateItem(this);
+            const dock = dockForLocation(pane.getContainer().getLocation());
+            if (dock != null) {
+              dock.show();
+            }
+          }
+        } else if (newProps.diagnostics.length === 0 && newProps.isVisible) {
           // Only hide the diagnostics if it's the only item in its pane.
           if (pane != null) {
             const items = pane.getItems();
