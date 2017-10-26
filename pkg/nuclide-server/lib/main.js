@@ -13,7 +13,7 @@ import fsPromise from 'nuclide-commons/fsPromise';
 import {
   flushLogsAndAbort,
   flushLogsAndExit,
-  initialUpdateConfig,
+  initializeLogging,
 } from '../../nuclide-logging';
 import {startTracking} from '../../nuclide-analytics';
 import NuclideServer from './NuclideServer';
@@ -56,6 +56,7 @@ async function main(args) {
   process.on('SIGHUP', () => {});
 
   try {
+    initializeLogging();
     const {port, expirationDays} = args;
     if (expirationDays) {
       setTimeout(() => {
@@ -65,11 +66,7 @@ async function main(args) {
         flushLogsAndExit(0);
       }, expirationDays * 24 * 60 * 60 * 1000);
     }
-    const [serverCredentials] = await Promise.all([
-      getServerCredentials(args),
-      // Ensure logging is configured.
-      initialUpdateConfig(),
-    ]);
+    const serverCredentials = await getServerCredentials(args);
     const server = new NuclideServer(
       {
         port,
@@ -84,8 +81,6 @@ async function main(args) {
     logger.info(`Using node ${process.version}.`);
     logger.info(`Server ready time: ${process.uptime() * 1000}ms`);
   } catch (e) {
-    // In case the exception occurred before logging initialization finished.
-    initialUpdateConfig();
     serverStartTimer.onError(e);
     logger.fatal(e);
     flushLogsAndAbort();

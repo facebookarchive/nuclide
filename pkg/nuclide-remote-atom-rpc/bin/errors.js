@@ -12,11 +12,7 @@
 import log4js from 'log4js';
 import os from 'os';
 
-import {
-  FileAppender,
-  getServerLogAppenderConfig,
-  initialUpdateConfig,
-} from '../../nuclide-logging';
+import {initializeLogging} from '../../nuclide-logging';
 
 const logger = log4js.getLogger('nuclide-remote-atom-rpc');
 
@@ -44,19 +40,7 @@ export function setupErrorHandling() {
 }
 
 export function setupLogging() {
-  // Initialize logging
-  initialUpdateConfig();
-
-  const config = {
-    appenders: [FileAppender],
-  };
-
-  const serverLogAppenderConfig = getServerLogAppenderConfig();
-  if (serverLogAppenderConfig) {
-    config.appenders.push(serverLogAppenderConfig);
-  }
-
-  log4js.configure(config);
+  initializeLogging();
 }
 
 export function reportConnectionErrorAndExit(detailMessage: string): void {

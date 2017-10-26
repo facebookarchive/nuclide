@@ -9,9 +9,9 @@
  * @format
  */
 
-import child_process from 'child_process';
 import os from 'os';
 import {spawn} from 'nuclide-commons/process';
+import which from 'nuclide-commons/which';
 import once from './once';
 // $FlowFixMe: Add EmptyError to type defs
 import {EmptyError, Subject} from 'rxjs';
@@ -40,14 +40,9 @@ export default class ScribeProcess {
   /**
    * Check if `scribe_cat` exists in PATH.
    */
-  static isScribeCatOnPath = once(() => {
-    try {
-      const proc = child_process.spawnSync('which', [SCRIBE_CAT_COMMAND]);
-      return proc.status === 0;
-    } catch (e) {
-      return false;
-    }
-  });
+  static isScribeCatOnPath: () => Promise<boolean> = once(() =>
+    which(SCRIBE_CAT_COMMAND).then(cmd => cmd != null),
+  );
 
   /**
    * Write a string to a Scribe category.

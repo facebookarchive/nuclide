@@ -20,19 +20,9 @@
 import log4js from 'log4js';
 
 import once from '../../commons-node/once';
-import {
-  getDefaultConfig,
-  getPathToLogFile,
-  FileAppender,
-  getServerLogAppenderConfig,
-} from './config';
+import {getDefaultConfig, getPathToLogFile} from './config';
 
-export {
-  getDefaultConfig,
-  getPathToLogFile,
-  FileAppender,
-  getServerLogAppenderConfig,
-};
+export {getDefaultConfig, getPathToLogFile};
 
 export function flushLogsAndExit(exitCode: number): void {
   log4js.shutdown(() => process.exit(exitCode));
@@ -46,10 +36,6 @@ export function flushLogsAndAbort(): void {
  * Push initial default config to log4js.
  * Execute only once.
  */
-export const initialUpdateConfig = once(() => {
+export const initializeLogging = once(() => {
   log4js.configure(getDefaultConfig());
 });
-
-export function initializeLogging() {
-  initialUpdateConfig();
-}

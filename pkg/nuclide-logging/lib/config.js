@@ -9,14 +9,11 @@
  * @format
  */
 
-import ScribeProcess from '../../commons-node/ScribeProcess';
 import {
   isRunningInTest,
   isRunningInClient,
 } from '../../commons-node/system-info';
 
-import fs from 'fs';
-import invariant from 'assert';
 import os from 'os';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 
@@ -26,101 +23,60 @@ const LOG_DIRECTORY = nuclideUri.join(
 );
 export const LOG_FILE_PATH = nuclideUri.join(LOG_DIRECTORY, 'nuclide.log');
 
-const scribeAppenderPath = nuclideUri.join(
-  __dirname,
-  '../fb/scribeAppender.js',
-);
-
 const MAX_LOG_SIZE = 1024 * 1024;
 const MAX_LOG_BACKUPS = 10;
-
-export function getServerLogAppenderConfig(): ?log4js$Appender {
-  // Skip config scribe_cat logger if
-  // 1) or running in open sourced version of nuclide
-  // 2) or the scribe_cat command is missing.
-  if (
-    !fs.existsSync(scribeAppenderPath) ||
-    !ScribeProcess.isScribeCatOnPath()
-  ) {
-    return null;
-  }
-
-  return {
-    type: 'logLevelFilter',
-    // Anything less than ERROR is ignored by the backend anyway.
-    level: 'ERROR',
-    appender: {
-      type: scribeAppenderPath,
-      scribeCategory: 'errorlog_arsenal',
-    },
-  };
-}
 
 export function getPathToLogFile(): string {
   return LOG_FILE_PATH;
 }
 
-export const FileAppender: Object = {
-  type: require.resolve('../VendorLib/fileAppender'),
-  filename: LOG_FILE_PATH,
-  maxLogSize: MAX_LOG_SIZE,
-  backups: MAX_LOG_BACKUPS,
-  layout: {
-    type: 'pattern',
-    // Format log in following pattern:
-    // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-    pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-  },
-};
-
-const baseConfig: log4js$Config = {
-  appenders: [
+export function getDefaultConfig(): log4js$Config {
+  const appenders = [
     {
+      type: require.resolve('../VendorLib/fileAppender'),
+      filename: LOG_FILE_PATH,
+      maxLogSize: MAX_LOG_SIZE,
+      backups: MAX_LOG_BACKUPS,
+      layout: {
+        type: 'pattern',
+        // Format log in following pattern:
+        // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
+        pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
+      },
+    },
+  ];
+  // The server's console output isn't visible, so don't bother logging it.
+  if (isRunningInClient()) {
+    appenders.push({
+      type: 'logLevelFilter',
+      level: 'WARN',
+      appender: {
+        type: require.resolve('./consoleAppender'),
+      },
+    });
+    appenders.push({
       type: 'logLevelFilter',
       level: 'ALL',
       appender: {
         type: require.resolve('./nuclideConsoleAppender'),
       },
-    },
-    FileAppender,
-  ],
-};
-
-function getDefaultConfigClient(): log4js$Config {
-  invariant(isRunningInTest() || isRunningInClient());
-  invariant(baseConfig.appenders);
-
-  return {
-    ...baseConfig,
-    appenders: [
-      ...baseConfig.appenders,
-      {
+    });
+  }
+  if (!isRunningInTest()) {
+    try {
+      const scribeAppenderPath = require.resolve('../fb/scribeAppender');
+      appenders.push({
         type: 'logLevelFilter',
-        level: 'WARN',
+        // Anything less than ERROR is ignored by the backend anyway.
+        level: 'ERROR',
         appender: {
-          type: require.resolve('./consoleAppender'),
+          type: scribeAppenderPath,
+          scribeCategory: 'errorlog_arsenal',
         },
-      },
-    ],
-  };
-}
-
-export function getDefaultConfig(): log4js$Config {
-  if (isRunningInClient() || isRunningInTest()) {
-    return getDefaultConfigClient();
+      });
+    } catch (err) {
+      // We're running in open-source: ignore.
+    }
   }
-
-  // Do not print server logs to stdout/stderr.
-  // These are normally just piped to a .nohup.out file, so doing this just causes
-  // the log files to be duplicated.
-  const serverLogAppenderConfig = getServerLogAppenderConfig();
-  invariant(baseConfig.appenders);
-  if (serverLogAppenderConfig) {
-    return {
-      ...baseConfig,
-      appenders: [...baseConfig.appenders, serverLogAppenderConfig],
-    };
-  }
-
-  return baseConfig;
+  return {appenders};
 }
