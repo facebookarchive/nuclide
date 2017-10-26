@@ -1,3 +1,21 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _log4js;
+
+function _load_log4js() {
+  return _log4js = require('log4js');
+}
+
+var _url = _interopRequireDefault(require('url'));
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,55 +24,32 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Observable} from 'rxjs';
-import type WS from 'ws';
-import type https from 'https';
-
-import {getLogger} from 'log4js';
-import url from 'url';
-import {Subject} from 'rxjs';
-
-export type Transport = {
-  send(message: string): void,
-  onMessage(): Observable<string>,
-};
-
-type Subscriber = {
-  onConnection(transport: Transport): mixed,
-};
-
-export default class BigDigServer {
-  _logger: log4js$Logger;
-  _tagToSubscriber: Map<string, Subscriber>;
-
-  /**
-   * Currently, this is unused, though we will likely use it once we port the
-   * logic for XhrConnectionHeartbeat over.
-   */
-  _httpsServer: https.Server;
-  _webSocketServer: WS.Server;
+class BigDigServer {
 
   /**
    * Note: The webSocketServer must be running on top of the httpsServer.
    * Note: This BigDigServer is responsible for closing httpServer and wss.
    */
-  constructor(httpsServer: https.Server, webSocketServer: WS.Server) {
-    this._logger = getLogger();
+
+
+  /**
+   * Currently, this is unused, though we will likely use it once we port the
+   * logic for XhrConnectionHeartbeat over.
+   */
+  constructor(httpsServer, webSocketServer) {
+    this._logger = (0, (_log4js || _load_log4js()).getLogger)();
     this._tagToSubscriber = new Map();
     this._httpsServer = httpsServer;
     this._httpsServer.on('request', this._onHttpsRequest.bind(this));
     this._webSocketServer = webSocketServer;
-    this._webSocketServer.on(
-      'connection',
-      this._onWebSocketConnection.bind(this),
-    );
+    this._webSocketServer.on('connection', this._onWebSocketConnection.bind(this));
   }
 
-  addSubscriber(tag: string, subscriber: Subscriber) {
+  addSubscriber(tag, subscriber) {
     const existingSubscriber = this._tagToSubscriber.get(tag);
     if (existingSubscriber == null) {
       // TODO(mbolin): WS connections that were created before this subscriber
@@ -67,17 +62,14 @@ export default class BigDigServer {
     }
   }
 
-  _onHttpsRequest(
-    request: http$IncomingMessage,
-    response: http$ServerResponse,
-  ) {
+  _onHttpsRequest(request, response) {
     this._logger.info(`Ignored HTTPS request for ${request.url}`);
   }
 
-  _onWebSocketConnection(ws: WS, req: http$IncomingMessage) {
+  _onWebSocketConnection(ws, req) {
     // Note that in ws@3.0.0, the upgradeReq property of ws has been removed:
     // it is passed as the second argument to this callback instead.
-    const {pathname} = url.parse(req.url);
+    const { pathname } = _url.default.parse(req.url);
     if (pathname !== '/v1') {
       this._logger.info(`Ignored WSS connection for ${String(pathname)}`);
       return;
@@ -85,7 +77,7 @@ export default class BigDigServer {
 
     // Every subscriber must be notified of the new connection because it may
     // want to broadcast messages to it.
-    const tagToTransport: Map<string, InternalTransport> = new Map();
+    const tagToTransport = new Map();
     for (const [tag, subscriber] of this._tagToSubscriber) {
       const transport = new InternalTransport(tag, ws);
       this._logger.info(`Created new InternalTransport for ${tag}`);
@@ -116,38 +108,36 @@ export default class BigDigServer {
   }
 }
 
-/**
- * Note that an InternalTransport maintains a reference to a WS connection.
- * It is imperative that it does not leak this reference such that a client
- * holds onto it and prevents it from being garbage-collected after the
- * connection is terminated.
- */
-class InternalTransport {
-  _messages: Subject<string>;
-  _tag: string;
-  _ws: WS;
+exports.default = BigDigServer; /**
+                                 * Note that an InternalTransport maintains a reference to a WS connection.
+                                 * It is imperative that it does not leak this reference such that a client
+                                 * holds onto it and prevents it from being garbage-collected after the
+                                 * connection is terminated.
+                                 */
 
-  constructor(tag: string, ws: WS) {
-    this._messages = new Subject();
+class InternalTransport {
+
+  constructor(tag, ws) {
+    this._messages = new _rxjsBundlesRxMinJs.Subject();
     this._tag = tag;
     this._ws = ws;
   }
 
-  send(message: string): void {
+  send(message) {
     this._ws.send(`${this._tag}\0${message}`);
   }
 
-  onMessage(): Observable<string> {
+  onMessage() {
     // Only expose the subset of the Subject interface that implements
     // Observable.
     return this._messages.asObservable();
   }
 
-  broadcastMessage(message: string): void {
+  broadcastMessage(message) {
     this._messages.next(message);
   }
 
-  close(): void {
+  close() {
     this._messages.complete();
   }
 }

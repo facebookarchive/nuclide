@@ -1,245 +1,220 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {ConnectableObservable} from 'rxjs';
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
-import type {DirectoryEntry, ReadOptions, WriteOptions} from './FileSystem';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CompositeFileSystem = undefined;
 
-import fs from 'fs';
-import {Observable} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {FileSystem} from './FileSystem';
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-type ArchivePathSegment = {
-  // `segFs` in this file refers to a lower-level FileSystem (e.g. FsFileSystem or ZipFileSystem)
-  segFs: FileSystem,
-  // `pth` in this file refers to the part of a path that corresponds to a given FileSystem.
-  pth: NuclideUri,
-  // `prefix` is the rest of the full path to the left of this segment, provides context.
-  prefix: NuclideUri,
-};
+var _fs = _interopRequireDefault(require('fs'));
 
-type SegmentFunction<T> = (
-  segFs: FileSystem,
-  pth: NuclideUri,
-  prefix: NuclideUri,
-) => Promise<T>;
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
 
-const ARCHIVE_SEPARATOR = nuclideUri.ARCHIVE_SEPARATOR;
+var _nuclideUri;
 
-function segmentObservable<T>(
-  callback: SegmentFunction<T>,
-): (segment: ArchivePathSegment) => Observable<T> {
-  return ({segFs, pth, prefix}) =>
-    Observable.fromPromise(callback(segFs, pth, prefix));
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
 }
 
-export class CompositeFileSystem implements FileSystem {
-  _rootFs: FileSystem;
+var _FileSystem;
 
-  constructor(rootFs: FileSystem) {
+function _load_FileSystem() {
+  return _FileSystem = require('./FileSystem');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const ARCHIVE_SEPARATOR = (_nuclideUri || _load_nuclideUri()).default.ARCHIVE_SEPARATOR; /**
+                                                                                          * Copyright (c) 2015-present, Facebook, Inc.
+                                                                                          * All rights reserved.
+                                                                                          *
+                                                                                          * This source code is licensed under the license found in the LICENSE file in
+                                                                                          * the root directory of this source tree.
+                                                                                          *
+                                                                                          * 
+                                                                                          * @format
+                                                                                          */
+
+function segmentObservable(callback) {
+  return ({ segFs, pth, prefix }) => _rxjsBundlesRxMinJs.Observable.fromPromise(callback(segFs, pth, prefix));
+}
+
+class CompositeFileSystem {
+
+  constructor(rootFs) {
     this._rootFs = rootFs;
   }
 
-  _topDownFsPath(fullPath: NuclideUri): Observable<ArchivePathSegment> {
+  _topDownFsPath(fullPath) {
     const subPaths = fullPath.split(ARCHIVE_SEPARATOR);
-    return Observable.of({
+    return _rxjsBundlesRxMinJs.Observable.of({
       segFs: this._rootFs,
       pth: subPaths[0],
-      prefix: '',
+      prefix: ''
     }).expand((previous, previousIndex) => {
       const index = previousIndex + 1;
       if (index < subPaths.length) {
         const prefix = subPaths.slice(0, index).join(ARCHIVE_SEPARATOR);
         const pth = subPaths[index];
-        return Observable.fromPromise(
-          previous.segFs
-            .openArchive(previous.pth)
-            .then(segFs => ({segFs, pth, prefix})),
-        );
+        return _rxjsBundlesRxMinJs.Observable.fromPromise(previous.segFs.openArchive(previous.pth).then(segFs => ({ segFs, pth, prefix })));
       } else {
-        return Observable.empty();
+        return _rxjsBundlesRxMinJs.Observable.empty();
       }
     });
   }
 
-  _bottomUpFsPath(fullPath: NuclideUri): Observable<ArchivePathSegment> {
-    return this._topDownFsPath(fullPath)
-      .reduce((acc, x) => acc.concat(x), [])
-      .concatMap(array => Observable.of(...array.reverse()));
+  _bottomUpFsPath(fullPath) {
+    return this._topDownFsPath(fullPath).reduce((acc, x) => acc.concat(x), []).concatMap(array => _rxjsBundlesRxMinJs.Observable.of(...array.reverse()));
   }
 
-  _resolveFs<T>(
-    fullPath: NuclideUri,
-    callback: SegmentFunction<T>,
-  ): Promise<T> {
-    return this._bottomUpFsPath(fullPath)
-      .first()
-      .concatMap(segmentObservable(callback))
-      .toPromise();
+  _resolveFs(fullPath, callback) {
+    return this._bottomUpFsPath(fullPath).first().concatMap(segmentObservable(callback)).toPromise();
   }
 
-  openArchive(fullPath: NuclideUri): Promise<FileSystem> {
+  openArchive(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => Promise.resolve(segFs));
   }
 
-  exists(fullPath: NuclideUri): Promise<boolean> {
+  exists(fullPath) {
     const and = (x, y) => x && y;
-    return this._topDownFsPath(fullPath)
-      .concatMap(segmentObservable((segFs, pth) => segFs.exists(pth)))
-      .reduce(and, true)
-      .toPromise()
-      .catch(e => Promise.resolve(false));
+    return this._topDownFsPath(fullPath).concatMap(segmentObservable((segFs, pth) => segFs.exists(pth))).reduce(and, true).toPromise().catch(e => Promise.resolve(false));
   }
 
-  async findNearestFile(name: string, dir: NuclideUri): Promise<?NuclideUri> {
-    return this._bottomUpFsPath(await this._archiveAsDirectory(dir))
-      .concatMap(
-        segmentObservable(async (segFs, pth, prefix) =>
-          maybeJoin(prefix, await segFs.findNearestFile(name, pth)),
-        ),
-      )
-      .first()
-      .toPromise();
+  findNearestFile(name, dir) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this._bottomUpFsPath((yield _this._archiveAsDirectory(dir))).concatMap(segmentObservable((() => {
+        var _ref = (0, _asyncToGenerator.default)(function* (segFs, pth, prefix) {
+          return maybeJoin(prefix, (yield segFs.findNearestFile(name, pth)));
+        });
+
+        return function (_x, _x2, _x3) {
+          return _ref.apply(this, arguments);
+        };
+      })())).first().toPromise();
+    })();
   }
 
-  stat(fullPath: NuclideUri): Promise<fs.Stats> {
+  stat(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.stat(pth));
   }
 
-  lstat(fullPath: NuclideUri): Promise<fs.Stats> {
+  lstat(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.lstat(pth));
   }
 
-  mkdir(fullPath: NuclideUri): Promise<void> {
+  mkdir(fullPath) {
     rejectArchivePaths(fullPath, 'mkdir');
     return this._rootFs.mkdir(fullPath);
   }
 
-  mkdirp(fullPath: NuclideUri): Promise<boolean> {
+  mkdirp(fullPath) {
     rejectArchivePaths(fullPath, 'mkdirp');
     return this._rootFs.mkdirp(fullPath);
   }
 
-  chmod(fullPath: NuclideUri, mode: number): Promise<void> {
+  chmod(fullPath, mode) {
     rejectArchivePaths(fullPath, 'chmod');
     return this._rootFs.chmod(fullPath, mode);
   }
 
-  chown(fullPath: NuclideUri, uid: number, gid: number): Promise<void> {
+  chown(fullPath, uid, gid) {
     rejectArchivePaths(fullPath, 'chown');
     return this._rootFs.chown(fullPath, uid, gid);
   }
 
-  newFile(fullPath: NuclideUri): Promise<boolean> {
+  newFile(fullPath) {
     rejectArchivePaths(fullPath, 'newFile');
     return this._rootFs.newFile(fullPath);
   }
 
-  async readdir(fullPath: NuclideUri): Promise<Array<DirectoryEntry>> {
-    return this._resolveFs(
-      await this._archiveAsDirectory(fullPath),
-      async (segFs, pth) => {
-        return (await segFs.readdir(pth)).map(([name, isFile, isLink]) => [
-          name,
-          isFile,
-          isLink,
-        ]);
-      },
-    );
+  readdir(fullPath) {
+    var _this2 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      return _this2._resolveFs((yield _this2._archiveAsDirectory(fullPath)), (() => {
+        var _ref2 = (0, _asyncToGenerator.default)(function* (segFs, pth) {
+          return (yield segFs.readdir(pth)).map(function ([name, isFile, isLink]) {
+            return [name, isFile, isLink];
+          });
+        });
+
+        return function (_x4, _x5) {
+          return _ref2.apply(this, arguments);
+        };
+      })());
+    })();
   }
 
-  realpath(fullPath: NuclideUri): Promise<NuclideUri> {
-    return this._topDownFsPath(fullPath)
-      .concatMap(segmentObservable((segFs, pth) => segFs.realpath(pth)))
-      .reduce((a, s) => a + (a === '' ? '' : ARCHIVE_SEPARATOR) + s, '')
-      .toPromise();
+  realpath(fullPath) {
+    return this._topDownFsPath(fullPath).concatMap(segmentObservable((segFs, pth) => segFs.realpath(pth))).reduce((a, s) => a + (a === '' ? '' : ARCHIVE_SEPARATOR) + s, '').toPromise();
   }
 
-  move(from: NuclideUri, to: NuclideUri): Promise<void> {
+  move(from, to) {
     rejectArchivePaths(from, 'move');
     rejectArchivePaths(to, 'move');
     return this._rootFs.move(from, to);
   }
 
-  copy(from: NuclideUri, to: NuclideUri): Promise<void> {
+  copy(from, to) {
     rejectArchivePaths(from, 'copy');
     rejectArchivePaths(to, 'copy');
     return this._rootFs.copy(from, to);
   }
 
-  rimraf(fullPath: NuclideUri): Promise<void> {
+  rimraf(fullPath) {
     rejectArchivePaths(fullPath, 'rimraf');
     return this._rootFs.rimraf(fullPath);
   }
 
-  unlink(fullPath: NuclideUri): Promise<void> {
+  unlink(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.unlink(pth));
   }
 
-  readFile(fullPath: NuclideUri, options?: ReadOptions): Promise<Buffer> {
+  readFile(fullPath, options) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.readFile(pth));
   }
 
-  createReadStream(
-    fullPath: NuclideUri,
-    options?: ReadOptions,
-  ): ConnectableObservable<Buffer> {
-    return this._bottomUpFsPath(fullPath)
-      .first()
-      .concatMap(({segFs, pth}) =>
-        segFs.createReadStream(pth, options).refCount(),
-      )
-      .publish();
+  createReadStream(fullPath, options) {
+    return this._bottomUpFsPath(fullPath).first().concatMap(({ segFs, pth }) => segFs.createReadStream(pth, options).refCount()).publish();
   }
 
-  writeFile(
-    fullPath: NuclideUri,
-    data: string,
-    options?: WriteOptions,
-  ): Promise<void> {
+  writeFile(fullPath, data, options) {
     rejectArchivePaths(fullPath, 'writeFile');
     return this._rootFs.writeFile(fullPath, data, options);
   }
 
-  isNfs(fullPath: NuclideUri): Promise<boolean> {
+  isNfs(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.isNfs(pth));
   }
 
-  isFuse(fullPath: NuclideUri): Promise<boolean> {
+  isFuse(fullPath) {
     return this._resolveFs(fullPath, (segFs, pth) => segFs.isNfs(pth));
   }
 
-  async _archiveAsDirectory(path: NuclideUri): Promise<NuclideUri> {
-    if (
-      nuclideUri.hasKnownArchiveExtension(path) &&
-      (await this.exists(path)) &&
-      (await this.lstat(path)).isFile()
-    ) {
-      return path + ARCHIVE_SEPARATOR;
-    } else {
-      return path;
-    }
+  _archiveAsDirectory(path) {
+    var _this3 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      if ((_nuclideUri || _load_nuclideUri()).default.hasKnownArchiveExtension(path) && (yield _this3.exists(path)) && (yield _this3.lstat(path)).isFile()) {
+        return path + ARCHIVE_SEPARATOR;
+      } else {
+        return path;
+      }
+    })();
   }
 }
 
-function rejectArchivePaths(fullPath: NuclideUri, operation: string) {
-  if (nuclideUri.isInArchive(fullPath)) {
-    throw new Error(
-      `The '${operation}' operation does not support archive paths like '${fullPath}'`,
-    );
+exports.CompositeFileSystem = CompositeFileSystem;
+function rejectArchivePaths(fullPath, operation) {
+  if ((_nuclideUri || _load_nuclideUri()).default.isInArchive(fullPath)) {
+    throw new Error(`The '${operation}' operation does not support archive paths like '${fullPath}'`);
   }
 }
 
-function maybeJoin(prefix: NuclideUri, found: ?NuclideUri): ?NuclideUri {
+function maybeJoin(prefix, found) {
   if (prefix === '') {
     return found;
   } else if (found == null) {
@@ -247,6 +222,6 @@ function maybeJoin(prefix: NuclideUri, found: ?NuclideUri): ?NuclideUri {
   } else if (found === '') {
     return prefix;
   } else {
-    return nuclideUri.archiveJoin(prefix, found);
+    return (_nuclideUri || _load_nuclideUri()).default.archiveJoin(prefix, found);
   }
 }

@@ -1,3 +1,11 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _atom = require('atom');
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,60 +14,39 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Observable} from 'rxjs';
-
-import {Disposable} from 'atom';
-
 class NullTimingTracker {
-  constructor(name: string) {}
-  onError(error: Error) {}
+  constructor(name) {}
+  onError(error) {}
   onSuccess() {}
 }
 
-type TrackingEvent = {
-  type: string,
-  data?: Object,
-};
-
-type TimingTrackerType = {
-  onError(error: Error): void,
-  onSuccess(): void,
-};
-
 const NullService = {
-  track(eventName: string, values?: {[key: string]: mixed}): void {},
-  trackEvent(event: TrackingEvent): void {},
-  trackEvents(events: Observable<TrackingEvent>): IDisposable {
-    return new Disposable();
+  track(eventName, values) {},
+  trackEvent(event) {},
+  trackEvents(events) {
+    return new _atom.Disposable();
   },
-  trackImmediate(
-    eventName: string,
-    values?: {[key: string]: mixed},
-  ): Promise<mixed> {
+  trackImmediate(eventName, values) {
     return Promise.resolve();
   },
-  startTracking(eventName: string): TimingTrackerType {
+  startTracking(eventName) {
     return new NullTimingTracker(eventName);
   },
-  trackTiming<T>(eventName: string, operation: () => T): T {
+  trackTiming(eventName, operation) {
     return operation();
   },
-  TimingTracker: NullTimingTracker,
+  TimingTracker: NullTimingTracker
 };
 
 let service = NullService;
-atom.packages.serviceHub.consume(
-  'nuclide-analytics',
-  '0.0.0',
-  analyticsService => {
-    // es module export is a live binding, so modifying this updates the value
-    // for the consumer
-    service = analyticsService;
-  },
-);
+atom.packages.serviceHub.consume('nuclide-analytics', '0.0.0', analyticsService => {
+  // es module export is a live binding, so modifying this updates the value
+  // for the consumer
+  service = analyticsService;
+});
 
-export default service;
+exports.default = service;

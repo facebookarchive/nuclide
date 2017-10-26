@@ -1,19 +1,18 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Observable} from 'rxjs';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import {BehaviorSubject} from 'rxjs';
-import UniversalDisposable from './UniversalDisposable';
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('./UniversalDisposable'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Exposes a simple API for a stateful model. This is similar to React's `state`/`setState()` API
@@ -52,27 +51,37 @@ import UniversalDisposable from './UniversalDisposable';
  * action creators. That's awesome! It means that, should the state grow and require new
  * capabilities, we can always switch to full-blown Redux without having to refactor a ton of stuff.
  */
-export default class Model<State: {}> {
-  _states: BehaviorSubject<State>;
+class Model {
 
-  constructor(initialState: State) {
-    this._states = new BehaviorSubject(initialState);
+  constructor(initialState) {
+    this._states = new _rxjsBundlesRxMinJs.BehaviorSubject(initialState);
   }
 
-  setState(newState: $Shape<State>): void {
-    const nextState = {...this.state, ...newState};
+  setState(newState) {
+    const nextState = Object.assign({}, this.state, newState);
     this._states.next(nextState);
   }
 
-  get state(): State {
+  get state() {
     return this._states.getValue();
   }
 
-  subscribe(cb: (state: State) => mixed): IDisposable {
-    return new UniversalDisposable(this.toObservable().subscribe({next: cb}));
+  subscribe(cb) {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(this.toObservable().subscribe({ next: cb }));
   }
 
-  toObservable(): Observable<State> {
+  toObservable() {
     return this._states.distinctUntilChanged();
   }
 }
+exports.default = Model; /**
+                          * Copyright (c) 2017-present, Facebook, Inc.
+                          * All rights reserved.
+                          *
+                          * This source code is licensed under the BSD-style license found in the
+                          * LICENSE file in the root directory of this source tree. An additional grant
+                          * of patent rights can be found in the PATENTS file in the same directory.
+                          *
+                          * 
+                          * @format
+                          */

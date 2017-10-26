@@ -1,98 +1,181 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import classnames from 'classnames';
-import invariant from 'assert';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {WorkingSetSelectionComponent} from './WorkingSetSelectionComponent';
-import {WorkingSetNameAndSaveComponent} from './WorkingSetNameAndSaveComponent';
-import {FileTreeStore} from '../lib/FileTreeStore';
-import FileTreeActions from '../lib/FileTreeActions';
-import {WorkingSet} from '../../nuclide-working-sets-common';
-import {Button, ButtonSizes} from 'nuclide-commons-ui/Button';
-import {ButtonGroup, ButtonGroupSizes} from 'nuclide-commons-ui/ButtonGroup';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.FileTreeToolbarComponent = undefined;
 
-import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/types';
+var _react = _interopRequireWildcard(require('react'));
 
-type Props = {
-  workingSetsStore: WorkingSetsStore,
-};
+var _reactDom = _interopRequireDefault(require('react-dom'));
 
-type State = {
-  selectionIsActive: boolean,
-  definitionsAreEmpty: boolean,
-  isUpdatingExistingWorkingSet: boolean,
-  updatedWorkingSetName: string,
-};
+var _classnames;
 
-export class FileTreeToolbarComponent extends React.Component<Props, State> {
-  _store: FileTreeStore;
-  _disposables: UniversalDisposable;
-  _inProcessOfClosingSelection: boolean;
-  _prevName: string;
-  _actions: FileTreeActions;
-  _closeWorkingSetsSelector: ?() => void;
+function _load_classnames() {
+  return _classnames = _interopRequireDefault(require('classnames'));
+}
 
-  constructor(props: Object) {
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _WorkingSetSelectionComponent;
+
+function _load_WorkingSetSelectionComponent() {
+  return _WorkingSetSelectionComponent = require('./WorkingSetSelectionComponent');
+}
+
+var _WorkingSetNameAndSaveComponent;
+
+function _load_WorkingSetNameAndSaveComponent() {
+  return _WorkingSetNameAndSaveComponent = require('./WorkingSetNameAndSaveComponent');
+}
+
+var _FileTreeStore;
+
+function _load_FileTreeStore() {
+  return _FileTreeStore = require('../lib/FileTreeStore');
+}
+
+var _FileTreeActions;
+
+function _load_FileTreeActions() {
+  return _FileTreeActions = _interopRequireDefault(require('../lib/FileTreeActions'));
+}
+
+var _nuclideWorkingSetsCommon;
+
+function _load_nuclideWorkingSetsCommon() {
+  return _nuclideWorkingSetsCommon = require('../../nuclide-working-sets-common');
+}
+
+var _Button;
+
+function _load_Button() {
+  return _Button = require('nuclide-commons-ui/Button');
+}
+
+var _ButtonGroup;
+
+function _load_ButtonGroup() {
+  return _ButtonGroup = require('nuclide-commons-ui/ButtonGroup');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+class FileTreeToolbarComponent extends _react.Component {
+
+  constructor(props) {
     super(props);
 
-    this._store = FileTreeStore.getInstance();
+    this._toggleWorkingSetsSelector = () => {
+      if (this._inProcessOfClosingSelection) {
+        this._inProcessOfClosingSelection = false;
+        return;
+      }
+
+      if (this.state.definitionsAreEmpty && !this.state.selectionIsActive) {
+        return;
+      }
+
+      this.setState({ selectionIsActive: !this.state.selectionIsActive });
+    };
+
+    this._toggleWorkingSetEditMode = () => {
+      if (this._store.isEditingWorkingSet()) {
+        this._finishEditingWorkingSet();
+      } else {
+        this._startEditingWorkingSet(new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet());
+      }
+    };
+
+    this._saveWorkingSet = name => {
+      const workingSetsStore = this._store.getWorkingSetsStore();
+
+      if (!workingSetsStore) {
+        throw new Error('Invariant violation: "workingSetsStore"');
+      }
+
+      const editedWorkingSet = this._store.getEditedWorkingSet();
+      this._finishEditingWorkingSet();
+      workingSetsStore.saveWorkingSet(name, editedWorkingSet);
+      workingSetsStore.activate(name);
+    };
+
+    this._updateWorkingSet = (prevName, name) => {
+      const workingSetsStore = this._store.getWorkingSetsStore();
+
+      if (!workingSetsStore) {
+        throw new Error('Invariant violation: "workingSetsStore"');
+      }
+
+      const editedWorkingSet = this._store.getEditedWorkingSet();
+      this._finishEditingWorkingSet();
+
+      workingSetsStore.update(prevName, name, editedWorkingSet);
+    };
+
+    this._checkIfClosingSelector = () => {
+      if (this.state.selectionIsActive) {
+        this._inProcessOfClosingSelection = true;
+      }
+    };
+
+    this._editWorkingSet = (name, uris) => {
+      this._prevName = name;
+      this.setState({
+        isUpdatingExistingWorkingSet: true,
+        updatedWorkingSetName: name,
+        selectionIsActive: false
+      });
+      this._startEditingWorkingSet(new (_nuclideWorkingSetsCommon || _load_nuclideWorkingSetsCommon()).WorkingSet(uris));
+    };
+
+    this._store = (_FileTreeStore || _load_FileTreeStore()).FileTreeStore.getInstance();
     this.state = {
       selectionIsActive: false,
       definitionsAreEmpty: props.workingSetsStore.getDefinitions().length === 0,
       isUpdatingExistingWorkingSet: false,
-      updatedWorkingSetName: '',
+      updatedWorkingSetName: ''
     };
 
     this._inProcessOfClosingSelection = false;
-    this._actions = FileTreeActions.getInstance();
+    this._actions = (_FileTreeActions || _load_FileTreeActions()).default.getInstance();
 
-    this._disposables = new UniversalDisposable(
-      props.workingSetsStore.subscribeToDefinitions(definitions => {
-        const empty =
-          definitions.applicable.length + definitions.notApplicable.length ===
-          0;
-        this.setState({definitionsAreEmpty: empty});
-      }),
-    );
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(props.workingSetsStore.subscribeToDefinitions(definitions => {
+      const empty = definitions.applicable.length + definitions.notApplicable.length === 0;
+      this.setState({ definitionsAreEmpty: empty });
+    }));
   }
 
-  componentDidMount(): void {
-    this._disposables.add(
-      atom.commands.add(
-        'atom-workspace',
-        // This command is exposed in the nuclide-working-sets menu config.
-        // eslint-disable-next-line rulesdir/atom-apis
-        'working-sets:select-active',
-        this._toggleWorkingSetsSelector,
-      ),
-    );
+  componentDidMount() {
+    this._disposables.add(atom.commands.add('atom-workspace',
+    // This command is exposed in the nuclide-working-sets menu config.
+    // eslint-disable-next-line rulesdir/atom-apis
+    'working-sets:select-active', this._toggleWorkingSetsSelector));
   }
 
-  componentWillUnmount(): void {
+  componentWillUnmount() {
     this._disposables.dispose();
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State): void {
+  componentDidUpdate(prevProps, prevState) {
     if (!prevState.selectionIsActive && this.state.selectionIsActive) {
       this._closeWorkingSetsSelector = this._renderWorkingSetSelectionPanel();
     } else if (prevState.selectionIsActive && !this.state.selectionIsActive) {
-      invariant(this._closeWorkingSetsSelector);
+      if (!this._closeWorkingSetsSelector) {
+        throw new Error('Invariant violation: "this._closeWorkingSetsSelector"');
+      }
+
       this._closeWorkingSetsSelector();
     }
   }
 
-  render(): React.Node {
+  render() {
     const workingSetsStore = this._store.getWorkingSetsStore();
     let shouldShowButtonLabel;
     if (workingSetsStore != null) {
@@ -104,69 +187,50 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
 
     let selectWorkingSetButton;
     if (!this.state.definitionsAreEmpty && !isEditingWorkingSet) {
-      selectWorkingSetButton = (
-        <SelectWorkingSetButton
-          onClick={this._toggleWorkingSetsSelector}
-          onFocus={this._checkIfClosingSelector}
-          isWorkingSetEmpty={workingSet.isEmpty()}
-        />
-      );
+      selectWorkingSetButton = _react.createElement(SelectWorkingSetButton, {
+        onClick: this._toggleWorkingSetsSelector,
+        onFocus: this._checkIfClosingSelector,
+        isWorkingSetEmpty: workingSet.isEmpty()
+      });
     }
 
     let workingSetNameAndSave;
     if (isEditingWorkingSet && !editedWorkingSetIsEmpty) {
-      workingSetNameAndSave = (
-        <WorkingSetNameAndSaveComponent
-          isEditing={this.state.isUpdatingExistingWorkingSet}
-          initialName={this.state.updatedWorkingSetName}
-          onUpdate={this._updateWorkingSet}
-          onSave={this._saveWorkingSet}
-          onCancel={this._toggleWorkingSetEditMode}
-        />
-      );
+      workingSetNameAndSave = _react.createElement((_WorkingSetNameAndSaveComponent || _load_WorkingSetNameAndSaveComponent()).WorkingSetNameAndSaveComponent, {
+        isEditing: this.state.isUpdatingExistingWorkingSet,
+        initialName: this.state.updatedWorkingSetName,
+        onUpdate: this._updateWorkingSet,
+        onSave: this._saveWorkingSet,
+        onCancel: this._toggleWorkingSetEditMode
+      });
     }
 
-    return (
-      <div
-        className={classnames({
+    return _react.createElement(
+      'div',
+      {
+        className: (0, (_classnames || _load_classnames()).default)({
           'nuclide-file-tree-toolbar': true,
-          'nuclide-file-tree-toolbar-fader':
-            workingSet.isEmpty() &&
-            !this.state.selectionIsActive &&
-            !this._store.isEditingWorkingSet(),
-        })}>
-        <ButtonGroup className="pull-right" size={ButtonGroupSizes.SMALL}>
-          {selectWorkingSetButton}
-          {/* $FlowFixMe(>=0.53.0) Flow suppress */}
-          <DefineWorkingSetButton
-            isActive={isEditingWorkingSet}
-            isWorkingSetEmpty={workingSet.isEmpty()}
-            shouldShowLabel={shouldShowButtonLabel}
-            onClick={this._toggleWorkingSetEditMode}
-          />
-        </ButtonGroup>
-        <div className="clearfix" />
-        {workingSetNameAndSave}
-      </div>
+          'nuclide-file-tree-toolbar-fader': workingSet.isEmpty() && !this.state.selectionIsActive && !this._store.isEditingWorkingSet()
+        }) },
+      _react.createElement(
+        (_ButtonGroup || _load_ButtonGroup()).ButtonGroup,
+        { className: 'pull-right', size: (_ButtonGroup || _load_ButtonGroup()).ButtonGroupSizes.SMALL },
+        selectWorkingSetButton,
+        _react.createElement(DefineWorkingSetButton, {
+          isActive: isEditingWorkingSet,
+          isWorkingSetEmpty: workingSet.isEmpty(),
+          shouldShowLabel: shouldShowButtonLabel,
+          onClick: this._toggleWorkingSetEditMode
+        })
+      ),
+      _react.createElement('div', { className: 'clearfix' }),
+      workingSetNameAndSave
     );
   }
 
-  _toggleWorkingSetsSelector = (): void => {
-    if (this._inProcessOfClosingSelection) {
-      this._inProcessOfClosingSelection = false;
-      return;
-    }
-
-    if (this.state.definitionsAreEmpty && !this.state.selectionIsActive) {
-      return;
-    }
-
-    this.setState({selectionIsActive: !this.state.selectionIsActive});
-  };
-
-  _renderWorkingSetSelectionPanel(): () => void {
+  _renderWorkingSetSelectionPanel() {
     const reactDiv = document.createElement('div');
-    const panel = atom.workspace.addModalPanel({item: reactDiv});
+    const panel = atom.workspace.addModalPanel({ item: reactDiv });
 
     let closed = false;
     const onClose = () => {
@@ -175,127 +239,81 @@ export class FileTreeToolbarComponent extends React.Component<Props, State> {
       }
       closed = true;
 
-      ReactDOM.unmountComponentAtNode(reactDiv);
+      _reactDom.default.unmountComponentAtNode(reactDiv);
       panel.destroy();
-      this.setState({selectionIsActive: false});
+      this.setState({ selectionIsActive: false });
     };
 
-    ReactDOM.render(
-      <WorkingSetSelectionComponent
-        workingSetsStore={this.props.workingSetsStore}
-        onClose={onClose}
-        onEditWorkingSet={this._editWorkingSet}
-      />,
-      reactDiv,
-    );
+    _reactDom.default.render(_react.createElement((_WorkingSetSelectionComponent || _load_WorkingSetSelectionComponent()).WorkingSetSelectionComponent, {
+      workingSetsStore: this.props.workingSetsStore,
+      onClose: onClose,
+      onEditWorkingSet: this._editWorkingSet
+    }), reactDiv);
 
     return onClose;
   }
 
-  _toggleWorkingSetEditMode = (): void => {
-    if (this._store.isEditingWorkingSet()) {
-      this._finishEditingWorkingSet();
-    } else {
-      this._startEditingWorkingSet(new WorkingSet());
-    }
-  };
-
-  _saveWorkingSet = (name: string): void => {
-    const workingSetsStore = this._store.getWorkingSetsStore();
-    invariant(workingSetsStore);
-
-    const editedWorkingSet = this._store.getEditedWorkingSet();
-    this._finishEditingWorkingSet();
-    workingSetsStore.saveWorkingSet(name, editedWorkingSet);
-    workingSetsStore.activate(name);
-  };
-
-  _updateWorkingSet = (prevName: string, name: string): void => {
-    const workingSetsStore = this._store.getWorkingSetsStore();
-    invariant(workingSetsStore);
-    const editedWorkingSet = this._store.getEditedWorkingSet();
-    this._finishEditingWorkingSet();
-
-    workingSetsStore.update(prevName, name, editedWorkingSet);
-  };
-
-  _checkIfClosingSelector = (): void => {
-    if (this.state.selectionIsActive) {
-      this._inProcessOfClosingSelection = true;
-    }
-  };
-
-  _editWorkingSet = (name: string, uris: Array<string>): void => {
-    this._prevName = name;
-    this.setState({
-      isUpdatingExistingWorkingSet: true,
-      updatedWorkingSetName: name,
-      selectionIsActive: false,
-    });
-    this._startEditingWorkingSet(new WorkingSet(uris));
-  };
-
-  _startEditingWorkingSet(workingSet: WorkingSet): void {
+  _startEditingWorkingSet(workingSet) {
     this._actions.startEditingWorkingSet(workingSet);
   }
 
-  _finishEditingWorkingSet(): void {
+  _finishEditingWorkingSet() {
     this.setState({
       isUpdatingExistingWorkingSet: false,
-      updatedWorkingSetName: '',
+      updatedWorkingSetName: ''
     });
     this._actions.finishEditingWorkingSet();
   }
 }
 
-class SelectWorkingSetButton extends React.Component<{
-  isWorkingSetEmpty: boolean,
-  onClick: () => void,
-  onFocus: () => void,
-}> {
-  render(): React.Node {
-    const {isWorkingSetEmpty, onClick, onFocus} = this.props;
-    return (
-      <Button
-        icon="pencil"
-        onClick={onClick}
-        onFocus={onFocus}
-        selected={!isWorkingSetEmpty}
-        size={ButtonSizes.SMALL}
-        tooltip={{
+exports.FileTreeToolbarComponent = FileTreeToolbarComponent; /**
+                                                              * Copyright (c) 2015-present, Facebook, Inc.
+                                                              * All rights reserved.
+                                                              *
+                                                              * This source code is licensed under the license found in the LICENSE file in
+                                                              * the root directory of this source tree.
+                                                              *
+                                                              * 
+                                                              * @format
+                                                              */
+
+class SelectWorkingSetButton extends _react.Component {
+  render() {
+    const { isWorkingSetEmpty, onClick, onFocus } = this.props;
+    return _react.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        icon: 'pencil',
+        onClick: onClick,
+        onFocus: onFocus,
+        selected: !isWorkingSetEmpty,
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        tooltip: {
           title: 'Select Working Sets',
           delay: 300,
           placement: 'top',
-          keyBindingCommand: 'working-sets:select-active',
-        }}>
-        Working Sets...
-      </Button>
+          keyBindingCommand: 'working-sets:select-active'
+        } },
+      'Working Sets...'
     );
   }
 }
 
-class DefineWorkingSetButton extends React.Component<{
-  isActive: boolean,
-  isWorkingSetEmpty: boolean,
-  shouldShowLabel: boolean,
-  onClick: () => void,
-}> {
-  render(): React.Node {
-    const {isActive, isWorkingSetEmpty, shouldShowLabel, onClick} = this.props;
-    return (
-      <Button
-        icon={isActive ? undefined : 'plus'}
-        size={ButtonSizes.SMALL}
-        tooltip={{
+class DefineWorkingSetButton extends _react.Component {
+  render() {
+    const { isActive, isWorkingSetEmpty, shouldShowLabel, onClick } = this.props;
+    return _react.createElement(
+      (_Button || _load_Button()).Button,
+      {
+        icon: isActive ? undefined : 'plus',
+        size: (_Button || _load_Button()).ButtonSizes.SMALL,
+        tooltip: {
           title: isActive ? 'Cancel' : 'Define a Working Set',
           delay: 300,
-          placement: 'top',
-        }}
-        onClick={onClick}>
-        {isActive
-          ? 'Cancel selection'
-          : isWorkingSetEmpty && shouldShowLabel ? 'Working Set...' : null}
-      </Button>
+          placement: 'top'
+        },
+        onClick: onClick },
+      isActive ? 'Cancel selection' : isWorkingSetEmpty && shouldShowLabel ? 'Working Set...' : null
     );
   }
 }
