@@ -19,7 +19,6 @@ import {clearConfig, setConfig} from './config';
 import {setRootDirectoryUri} from './ConnectionUtils';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {VsAdapterTypes} from '../../nuclide-debugger-common/lib/constants';
-import passesGK from '../../commons-node/passesGK';
 import {
   ClientCallback,
   VsDebugSessionTranslator,
@@ -62,7 +61,6 @@ const CLOSED = 'closed';
  *    After the promise returned by debug() is resolved, call sendCommand() to send Chrome Commands,
  *    and be prepared to receive notifications via the server notifications observable.
  */
-const GK_PAUSE_ONE_PAUSE_ALL = 'nuclide_debugger_php_pause_one_pause_all';
 
 export class PhpDebuggerService {
   _state: string;
@@ -91,12 +89,10 @@ export class PhpDebuggerService {
   }
 
   async debug(config: PhpDebuggerSessionConfig): Promise<string> {
+    config.stopOneStopAll = false;
     logger.info('Connecting config: ' + JSON.stringify(config));
 
     await this._warnIfHphpdAttached();
-    if (!await passesGK(GK_PAUSE_ONE_PAUSE_ALL)) {
-      config.stopOneStopAll = false;
-    }
 
     setConfig(config);
     await setRootDirectoryUri(config.targetUri);
