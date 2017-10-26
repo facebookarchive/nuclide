@@ -27,7 +27,7 @@ export async function initializeLsp(
   fileNotifier: FileNotifier,
   host: HostServices,
   initializationOptions: Object,
-): Promise<LanguageService> {
+): Promise<?LanguageService> {
   return createMultiLspLanguageService(
     'jsimports',
     process.execPath,

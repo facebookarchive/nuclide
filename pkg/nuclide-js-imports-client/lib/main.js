@@ -20,6 +20,7 @@ import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
+import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -44,7 +45,7 @@ async function connectToJSImportsService(
     getHostServices(),
   ]);
 
-  return jsService.initializeLsp(
+  const lspService = await jsService.initializeLsp(
     ['.flowconfig'],
     ['.js'],
     (featureConfig.get('nuclide-js-imports-client.logLevel'): any),
@@ -52,6 +53,7 @@ async function connectToJSImportsService(
     host,
     getAutoImportSettings(),
   );
+  return lspService || new NullLanguageService();
 }
 
 async function createLanguageService(): Promise<

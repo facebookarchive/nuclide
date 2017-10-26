@@ -18,6 +18,7 @@ import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
+import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 
@@ -39,7 +40,7 @@ async function connectionToGraphQLService(
     env: {...process.env, ELECTRON_RUN_AS_NODE: '1'},
   };
 
-  return graphqlService.initializeLsp(
+  const lspService = await graphqlService.initializeLsp(
     graphqlCommand,
     ['server', '--method', 'stream'],
     options,
@@ -49,6 +50,7 @@ async function connectionToGraphQLService(
     fileNotifier,
     host,
   );
+  return lspService || new NullLanguageService();
 }
 
 async function createLanguageService(): Promise<

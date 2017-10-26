@@ -16,6 +16,7 @@ import type {LogLevel} from '../../nuclide-logging/lib/rpc-types';
 
 import invariant from 'assert';
 import {getLogger} from 'log4js';
+import which from 'nuclide-commons/which';
 import {LspLanguageService} from './LspLanguageService';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/main';
 import {
@@ -44,10 +45,18 @@ export async function createMultiLspLanguageService(
     logLevel: LogLevel,
     additionalLogFilesRetentionPeriod?: number,
   |},
-): Promise<LanguageService> {
-  const result = new MultiProjectLanguageService();
+): Promise<?LanguageService> {
   const logger = getLogger(params.logCategory);
   logger.setLevel(params.logLevel);
+
+  if ((await which(command)) == null) {
+    const message = `Command "${command}" could not be found: ${languageId} language features will be disabled.`;
+    logger.warn(message);
+    params.host.consoleNotification(languageId, 'warning', message);
+    return null;
+  }
+
+  const result = new MultiProjectLanguageService();
 
   const fileCache = params.fileNotifier;
   invariant(fileCache instanceof FileCache);

@@ -101,8 +101,12 @@ export async function initializeLsp(
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
   host: HostServices,
-): Promise<LanguageService> {
+): Promise<?LanguageService> {
   const cmd = command === '' ? await getHackCommand() : command;
+  if (cmd === '') {
+    return null;
+  }
+
   return createMultiLspLanguageService('hack', cmd, args, {
     logCategory: HACK_LOGGER_CATEGORY,
     logLevel,

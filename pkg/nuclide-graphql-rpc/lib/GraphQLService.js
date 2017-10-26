@@ -31,7 +31,7 @@ export async function initializeLsp(
   logLevel: LogLevel,
   fileNotifier: FileNotifier,
   host: HostServices,
-): Promise<LanguageService> {
+): Promise<?LanguageService> {
   return createMultiLspLanguageService(
     'graphql',
     process.execPath,

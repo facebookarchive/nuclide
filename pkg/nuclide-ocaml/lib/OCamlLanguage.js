@@ -17,6 +17,7 @@ import {
   AtomLanguageService,
   getHostServices,
 } from '../../nuclide-language-service';
+import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getVSCodeLanguageServiceByConnection} from '../../nuclide-remote-connection';
 
@@ -29,7 +30,7 @@ async function createOCamlLanguageService(
     getHostServices(),
   ]);
 
-  return service.createMultiLspLanguageService(
+  const lspService = await service.createMultiLspLanguageService(
     'ocaml',
     'ocaml-language-server',
     ['--stdio'],
@@ -62,6 +63,7 @@ async function createOCamlLanguageService(
       },
     },
   );
+  return lspService || new NullLanguageService();
 }
 
 export function createLanguageService(): AtomLanguageService<LanguageService> {

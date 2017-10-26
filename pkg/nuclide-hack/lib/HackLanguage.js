@@ -21,6 +21,7 @@ import type {
 
 import invariant from 'assert';
 
+import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import {
   HACK_CONFIG_FILE_NAME,
@@ -70,7 +71,7 @@ async function connectionToHackService(
     const autocompleteArg = (await getUseFfpAutocomplete())
       ? ['--ffp-autocomplete']
       : [];
-    return hackService.initializeLsp(
+    const lspService = await hackService.initializeLsp(
       config.hhClientPath, // command
       ['lsp', '--from', 'nuclide', ...autocompleteArg], // arguments
       [HACK_CONFIG_FILE_NAME], // project file
@@ -79,6 +80,7 @@ async function connectionToHackService(
       fileNotifier,
       host,
     );
+    return lspService || new NullLanguageService();
   } else {
     return hackService.initialize(
       config.hhClientPath,
