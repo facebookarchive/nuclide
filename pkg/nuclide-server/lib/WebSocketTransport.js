@@ -92,14 +92,14 @@ export class WebSocketTransport {
         // data may be a Uint8Array
         this._emitter.emit('pong', data != null ? String(data) : data);
       } else {
-        logger.error('Received socket pong after connection closed');
+        logger.warn('Received socket pong after connection closed');
       }
     });
   }
 
   _onSocketMessage(message: string): void {
     if (this._socket == null) {
-      logger.error('Received socket message after connection closed');
+      logger.warn('Received socket message after connection closed');
       return;
     }
     this._messages.next(message);

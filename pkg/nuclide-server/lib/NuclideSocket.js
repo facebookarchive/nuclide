@@ -134,7 +134,7 @@ export class NuclideSocket {
     // in uncaught exceptions. This is due to EventEmitter treating 'error'
     // events specially.
     const onSocketError = error => {
-      logger.error(`WebSocket Error while connecting... ${error.message}`);
+      logger.warn(`WebSocket Error while connecting... ${error.message}`);
       if (this.isDisconnected()) {
         logger.info('WebSocket reconnecting after error.');
         this._scheduleReconnect();
