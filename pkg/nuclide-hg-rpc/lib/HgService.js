@@ -161,6 +161,7 @@ export type RevisionInfo = {
   successorInfo: ?RevisionSuccessorInfo,
   tags: Array<string>,
   title: string,
+  files: Array<NuclideUri>,
 };
 
 export type RevisionShowInfo = {

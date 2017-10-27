@@ -50,6 +50,7 @@ const REVISION_INFO_TEMPLATE = `{rev}
 {tags % '{tag}${ESCAPED_NULL_CHAR}'}
 {p1node|short}${ESCAPED_NULL_CHAR}{p2node|short}${ESCAPED_NULL_CHAR}
 {ifcontains(rev, revset('.'), '${HEAD_MARKER}')}
+{files|json}
 {singlepublicsuccessor}
 {amendsuccessors}
 {rebasesuccessors}
@@ -246,7 +247,7 @@ export function parseRevisionInfoOutput(
     if (revisionLines.length < 18) {
       continue;
     }
-    const successorInfo = parseSuccessorData(revisionLines.slice(12, 18));
+    const successorInfo = parseSuccessorData(revisionLines.slice(13, 19));
     revisionInfo.push({
       id: parseInt(revisionLines[0], 10),
       title: revisionLines[1],
@@ -264,8 +265,9 @@ export function parseRevisionInfoOutput(
         hash => hash !== NO_NODE_HASH,
       ),
       isHead: revisionLines[11] === HEAD_MARKER,
+      files: JSON.parse(revisionLines[12]),
       successorInfo,
-      description: revisionLines.slice(18).join('\n'),
+      description: revisionLines.slice(19).join('\n'),
     });
   }
   return revisionInfo;

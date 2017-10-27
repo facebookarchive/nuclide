@@ -50,6 +50,7 @@ b-1${NULL_CHAR}b-2${NULL_CHAR}
 tip${NULL_CHAR}
 a343fb211111${NULL_CHAR}000000000000${NULL_CHAR}
 @
+["temp.txt"]
 
 
 
@@ -70,6 +71,7 @@ remote/master${NULL_CHAR}
 
 abc123411111${NULL_CHAR}000000000000${NULL_CHAR}
 
+["temp.txt"]
 
 af3435454321
 
@@ -84,6 +86,7 @@ ${INFO_REV_END_MARK}
         {
           id: 124,
           isHead: true,
+          files: ['temp.txt'],
           title: "Commit 1 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb3',
@@ -100,6 +103,7 @@ ${INFO_REV_END_MARK}
         {
           id: 123,
           isHead: false,
+          files: ['temp.txt'],
           title: "Commit 2 'title'.",
           author: 'Author Name<auth_2_alias@domain.com>',
           hash: 'a343fb2',
