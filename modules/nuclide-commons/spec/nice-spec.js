@@ -29,7 +29,10 @@ describe('nice', () => {
   beforeEach(() => {
     shouldFindNiceCommand = true;
     shouldFindIoniceCommand = true;
-    whichSpy = spyOn(require('../which'), 'default').andCallFake(command => {
+    whichSpy = spyOn(
+      require('../which'),
+      'default',
+    ).andCallFake(async command => {
       if (
         (shouldFindNiceCommand && command === 'nice') ||
         (shouldFindIoniceCommand && command === 'ionice')

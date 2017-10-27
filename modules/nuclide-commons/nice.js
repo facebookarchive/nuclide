@@ -71,7 +71,7 @@ async function nicifyCommand<T>(
   return [fullArgs[0], fullArgs.slice(1), options];
 }
 
-const commandAvailabilityCache: LRUCache<string, boolean> = LRU({
+const commandAvailabilityCache: LRUCache<string, Promise<boolean>> = LRU({
   max: 10,
   // Realistically this will not change very often so we can cache for long periods of time. We
   // probably could just check at startup and get away with it, but maybe someone will install
@@ -87,10 +87,10 @@ function hasIoniceCommand(): Promise<boolean> {
   return hasCommand(IONICE_COMMAND);
 }
 
-async function hasCommand(command: string): Promise<boolean> {
-  let result: ?boolean = commandAvailabilityCache.get(command);
+function hasCommand(command: string): Promise<boolean> {
+  let result: ?Promise<boolean> = commandAvailabilityCache.get(command);
   if (result == null) {
-    result = (await which(command)) != null;
+    result = which(command).then(x => x != null);
     commandAvailabilityCache.set(command, result);
   }
   return result;
