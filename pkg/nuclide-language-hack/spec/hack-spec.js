@@ -339,29 +339,34 @@ describe('PHP grammar', () => {
 
     it('should tokenize heredocs correctly', () => {
       expect(grammar).toBeTruthy();
-      grammar = grammar || {};
-      const tokens = grammar.tokenizeLines(
+      const inputs = [
+        '<?hh\n$x = <<<EOTXT\ntest {$str}\nEOTXT.$str<<<EOTXT\n$str\nEOTXT\n;',
         '<?hh\n$x = <<<EOTXT\ntest {$str}\nEOTXT.$str<<<EOTXT\n$str\nEOTXT;',
-      );
-      expect(tokens[1][5].scopes).toContain('string.unquoted.heredoc.php');
-      expect(tokens[1][6].scopes).toContain(
-        'string.unquoted.heredoc.php',
-        'keyword.operator.heredoc.php',
-      );
-      // Interpolated variables should still be highlighted.
-      expect(tokens[2][2].scopes).toContain('variable.other.php');
+      ];
+      inputs.forEach(input => {
+        const tokens = grammar.tokenizeLines(input);
+        expect(tokens[1][5].scopes).toContain('string.unquoted.heredoc.php');
+        expect(tokens[1][6].scopes).toContain(
+          'string.unquoted.heredoc.php',
+          'keyword.operator.heredoc.php',
+        );
+        // Interpolated variables should still be highlighted.
+        expect(tokens[2][2].scopes).toContain('variable.other.php');
 
-      // The middle 'EOTXT' should not be considered an operator since it
-      // doesn't end with a semicolon and newline.
-      expect(tokens[3][0].scopes).toContain('string.unquoted.heredoc.php');
-      expect(tokens[3][0].scopes).not.toContain('keyword.operator.heredoc.php');
+        // The middle 'EOTXT' should not be considered an operator since it
+        // doesn't end with a semicolon and newline.
+        expect(tokens[3][0].scopes).toContain('string.unquoted.heredoc.php');
+        expect(tokens[3][0].scopes).not.toContain(
+          'keyword.operator.heredoc.php',
+        );
 
-      // The last one does end with a semicolon, so it should be considered an
-      // operator.
-      expect(tokens[5][0].scopes).toContain(
-        'string.unquoted.heredoc.php',
-        'keyword.operator.heredoc.php',
-      );
+        // The last one does end with a semicolon, so it should be considered an
+        // operator.
+        expect(tokens[5][0].scopes).toContain(
+          'string.unquoted.heredoc.php',
+          'keyword.operator.heredoc.php',
+        );
+      });
     });
 
     describe('combined operators', () => {
