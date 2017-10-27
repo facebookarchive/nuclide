@@ -19,6 +19,11 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 export const URI_PREFIX = 'atom://nuclide-terminal-view';
 export const TERMINAL_DEFAULT_LOCATION = 'pane';
 export const TERMINAL_DEFAULT_ICON = 'terminal';
+export const TERMINAL_DEFAULT_INFO: TerminalInfo = {
+  remainOnCleanExit: false,
+  defaultLocation: TERMINAL_DEFAULT_LOCATION,
+  icon: TERMINAL_DEFAULT_ICON,
+};
 
 export type TerminalInfo = {
   cwd?: string,
@@ -37,9 +42,7 @@ export function uriFromCwd(cwd: ?string): string {
   const cwdOptions = cwd == null ? {} : {cwd};
   return uriFromInfo({
     ...cwdOptions,
-    remainOnCleanExit: false,
-    defaultLocation: TERMINAL_DEFAULT_LOCATION,
-    icon: TERMINAL_DEFAULT_ICON,
+    ...TERMINAL_DEFAULT_INFO,
   });
 }
 
@@ -71,11 +74,7 @@ export function uriFromInfo(info: TerminalInfo): string {
 export function infoFromUri(paneUri: string): TerminalInfo {
   const {query} = url.parse(paneUri, true);
   if (query == null) {
-    return {
-      remainOnCleanExit: false,
-      defaultLocation: TERMINAL_DEFAULT_LOCATION,
-      icon: TERMINAL_DEFAULT_ICON,
-    };
+    return TERMINAL_DEFAULT_INFO;
   } else {
     const cwd = query.cwd === '' ? {} : {cwd: query.cwd};
     const command =
