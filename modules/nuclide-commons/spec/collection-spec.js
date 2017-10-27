@@ -41,6 +41,7 @@ import {
   mapGetWithDefault,
   count,
   range,
+  mapFromObject,
 } from '../collection';
 
 describe('ensureArray', () => {
@@ -648,5 +649,13 @@ describe('objectMapValues', () => {
   it('can project keys too', () => {
     const mapped = objectMapValues({a: 1, b: 2}, (v, k) => k);
     expect(mapped).toEqual({a: 'a', b: 'b'});
+  });
+});
+
+describe('mapFromObject', () => {
+  it('converts a object to an map', () => {
+    expect(
+      mapEqual(mapFromObject({a: 1, b: 2}), new Map([['a', 1], ['b', 2]])),
+    ).toEqual(true);
   });
 });

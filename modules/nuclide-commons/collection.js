@@ -550,3 +550,7 @@ export function* insideOut<T>(
     }
   }
 }
+
+export function mapFromObject<T>(obj: {[key: string]: T}): Map<string, T> {
+  return new Map(objectEntries(obj));
+}
