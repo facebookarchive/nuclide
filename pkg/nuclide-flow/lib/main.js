@@ -192,6 +192,9 @@ async function allowFlowServerRestart(): Promise<void> {
 }
 
 async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
+  const enableHighlight = featureConfig.get(
+    'nuclide-flow.enableReferencesHighlight',
+  );
   const excludeLowerPriority = Boolean(
     featureConfig.get('nuclide-flow.excludeOtherAutocomplete'),
   );
@@ -207,11 +210,14 @@ async function getLanguageServiceConfig(): Promise<AtomLanguageServiceConfig> {
   return {
     name: 'Flow',
     grammars: JS_GRAMMARS,
-    highlight: {
-      version: '0.1.0',
-      priority: 1,
-      analyticsEventName: 'flow.codehighlight',
-    },
+    // flowlint-next-line sketchy-null-mixed:off
+    highlight: enableHighlight
+      ? {
+          version: '0.1.0',
+          priority: 1,
+          analyticsEventName: 'flow.codehighlight',
+        }
+      : undefined,
     outline: {
       version: '0.1.0',
       priority: 1,
