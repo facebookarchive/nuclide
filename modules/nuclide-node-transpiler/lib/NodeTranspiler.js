@@ -32,6 +32,7 @@ const path = require('path');
 const os = require('os');
 
 const docblock = require('./docblock');
+const {__DEV__} = require('./env');
 
 const BABEL_OPTIONS = {
   parserOpts: {
@@ -83,6 +84,10 @@ if (COVERAGE_DIR) {
   BABEL_OPTIONS.plugins.push(
     [require.resolve('babel-plugin-istanbul')]
   );
+  BABEL_OPTIONS.sourceMap = 'inline';
+} else if (__DEV__ && global.atom) {
+  // If running in Atom & is in active development,
+  // We'd inline source maps to be used when debugging.
   BABEL_OPTIONS.sourceMap = 'inline';
 }
 
