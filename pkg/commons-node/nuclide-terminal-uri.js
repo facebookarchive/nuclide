@@ -30,6 +30,7 @@ export type TerminalInfo = {
   icon: IconName,
   environmentVariables?: Map<string, string>,
   preservedCommands?: Array<string>,
+  initialInput?: string,
 };
 
 export function uriFromCwd(cwd: ?string): string {
@@ -60,6 +61,7 @@ export function uriFromInfo(info: TerminalInfo): string {
           ? JSON.stringify([...info.environmentVariables])
           : '',
       preservedCommands: JSON.stringify(info.preservedCommands || []),
+      initialInput: info.initialInput != null ? info.initialInput : '',
     },
   });
   invariant(uri.startsWith(URI_PREFIX));
@@ -94,6 +96,7 @@ export function infoFromUri(paneUri: string): TerminalInfo {
         ? new Map(JSON.parse(query.environmentVariables))
         : new Map();
     const preservedCommands = JSON.parse(query.preservedCommands || '[]');
+    const initialInput = query.initialInput != null ? query.initialInput : '';
     return {
       ...cwd,
       ...command,
@@ -104,6 +107,7 @@ export function infoFromUri(paneUri: string): TerminalInfo {
       key,
       environmentVariables,
       preservedCommands,
+      initialInput,
     };
   }
 }

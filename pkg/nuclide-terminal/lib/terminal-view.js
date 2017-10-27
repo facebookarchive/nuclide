@@ -84,6 +84,8 @@ export class TerminalView implements PtyClient {
   _focusDuration: number;
   _terminalInfo: TerminalInfo;
   _processExitCallback: ProcessExitCallback;
+  _isFirstOutput: boolean;
+  _initialInput: string;
 
   constructor(paneUri: string) {
     this._paneUri = paneUri;
@@ -92,6 +94,7 @@ export class TerminalView implements PtyClient {
     const cwd = (this._cwd = info.cwd == null ? null : info.cwd);
     this._command = info.command == null ? null : info.command;
     this._title = info.title == null ? 'terminal' : info.title;
+    this._initialInput = info.initialInput == null ? '' : info.initialInput;
     this._processExitCallback = () => {};
 
     this._startTime = performanceNow();
@@ -99,6 +102,7 @@ export class TerminalView implements PtyClient {
     this._bytesOut = 0;
     this._focusStart = null;
     this._focusDuration = 0;
+    this._isFirstOutput = true;
 
     const subscriptions = (this._subscriptions = new UniversalDisposable());
     this._processOutput = this._createOutputSink();
@@ -473,6 +477,11 @@ export class TerminalView implements PtyClient {
   onOutput(data: string): void {
     this._bytesOut += data.length;
     this._processOutput(data);
+
+    if (this._isFirstOutput) {
+      this._isFirstOutput = false;
+      this._onInput(this._initialInput);
+    }
   }
 
   onExit(code: number, signal: number): void {
