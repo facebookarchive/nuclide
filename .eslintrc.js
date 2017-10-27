@@ -443,7 +443,6 @@ module.exports = {
     'react/jsx-no-undef': 1,
     'react/jsx-pascal-case': 0,
     'react/jsx-sort-props': 0,
-    'react/jsx-space-before-closing': 1,
     'react/jsx-tag-spacing': 1,
     'react/jsx-uses-react': 1,
     'react/jsx-uses-vars': 1,
