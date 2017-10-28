@@ -72,6 +72,13 @@ const SORT_FUNCTIONS = {
     compareSource,
     compareDescription,
   ),
+  line: compose(
+    compareBasename,
+    comparePath,
+    compareClassification,
+    compareSource,
+    compareDescription,
+  ),
 };
 
 /**

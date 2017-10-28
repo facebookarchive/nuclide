@@ -21,6 +21,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 
 import classnames from 'classnames';
 import invariant from 'assert';
+import idx from 'idx';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import humanizePath from 'nuclide-commons-atom/humanizePath';
 import {insideOut} from 'nuclide-commons/collection';
@@ -64,6 +65,7 @@ export type DisplayDiagnostic = {
   },
   +dir: string,
   +location: ?Location,
+  +line: ?number,
 };
 
 type ColumnName = $Keys<DisplayDiagnostic>;
@@ -188,6 +190,7 @@ export default class DiagnosticsTable extends React.PureComponent<
     const SOURCE_WIDTH = 0;
     const FILENAME_WIDTH = 0.3;
     const DIR_WIDTH = 0.15;
+    const LINE_NUMBER_WIDTH = 0;
 
     const filePathColumns = [];
     let descriptionWidth = 1 - (TYPE_WIDTH + SOURCE_WIDTH);
@@ -213,6 +216,17 @@ export default class DiagnosticsTable extends React.PureComponent<
         cellClassName: 'nuclide-diagnostics-ui-cell-filename',
       });
       descriptionWidth -= FILENAME_WIDTH;
+    } else {
+      // Not showing the filename? Then we need a separate column for the line number.
+      filePathColumns.push({
+        component: LineNumberComponent,
+        key: 'line',
+        title: 'Line',
+        shouldRightAlign: true,
+        width: LINE_NUMBER_WIDTH,
+        minWidth: 60,
+      });
+      descriptionWidth -= LINE_NUMBER_WIDTH;
     }
 
     // False positive for this lint rule?
@@ -261,9 +275,31 @@ export default class DiagnosticsTable extends React.PureComponent<
     ];
   }
 
+  _getSortOptions(
+    columns: Array<Column<DisplayDiagnostic>>,
+  ): {|sortedColumn: ColumnName, sortDescending: boolean|} {
+    // If the column the user sorted by has been removed, return the default sorting. We do this
+    // (instead of updating the state) so that if the column gets added back we can return to
+    // sorting by that.
+    const columnKeys = columns.map(column => column.key);
+    if (!columnKeys.includes(this.state.sortedColumn)) {
+      return {
+        sortedColumn: 'classification',
+        sortDescending: true,
+      };
+    }
+    // Otherwise, return the sorting they've chosen.
+    return {
+      sortedColumn: this.state.sortedColumn,
+      sortDescending: this.state.sortDescending,
+    };
+  }
+
   render(): React.Node {
     const {diagnostics, showTraces} = this.props;
-    const {selectedMessage, sortedColumn, sortDescending} = this.state;
+    const {selectedMessage} = this.state;
+    const columns = this._getColumns();
+    const {sortedColumn, sortDescending} = this._getSortOptions(columns);
     const diagnosticRows = this._getRows(diagnostics, showTraces);
     let sortedRows = this._sortRows(
       diagnosticRows,
@@ -294,7 +330,7 @@ export default class DiagnosticsTable extends React.PureComponent<
           onBodyFocus={this._handleFocusChangeEvent}
           onBodyBlur={this._handleFocusChangeEvent}
           collapsable={true}
-          columns={this._getColumns()}
+          columns={columns}
           emptyComponent={EmptyComponent}
           fixedHeader={true}
           maxBodyHeight="99999px"
@@ -379,6 +415,7 @@ export default class DiagnosticsTable extends React.PureComponent<
           dir,
           location,
           diagnostic,
+          line: idx(location, _ => _.locationInFile.line),
         },
       };
     });
@@ -465,7 +502,7 @@ function FilenameComponent(props: {data: ?Location}): React.Element<any> {
   const locationInFile = props.data && props.data.locationInFile;
   if (locationInFile == null) {
     // This is a project diagnostic.
-    return <span>&mdash;</span>;
+    return <span>{DASH}</span>;
   }
   const {basename, line} = locationInFile;
   return (
@@ -474,6 +511,12 @@ function FilenameComponent(props: {data: ?Location}): React.Element<any> {
       <span className="nuclide-diagnostics-ui-line-number">:{line}</span>
     </span>
   );
+}
+
+function LineNumberComponent(props: {data: ?number}): React.Element<any> {
+  const line = props.data;
+  // Show a dash if this is a project diagnostic.
+  return <span>{line == null ? DASH : line}</span>;
 }
 
 function getLocation(
@@ -538,3 +581,5 @@ function compareMessages(a: DiagnosticMessage, b: DiagnosticMessage): ?number {
   // row?)
   return Math.abs(aRange.start.row - bRange.start.row);
 }
+
+const DASH = '\u2014';
