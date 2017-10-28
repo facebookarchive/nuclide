@@ -182,17 +182,18 @@ class BuckClangCompilationDatabaseHandler {
       flagsFile: buildFile,
       libclangPath: null,
     };
-    return this._processCompilationDb(compilationDB, buckProjectRoot);
+    return this._processCompilationDb(compilationDB, buckProjectRoot, allArgs);
   }
 
   async _processCompilationDb(
     db: ClangCompilationDatabase,
     buckRoot: string,
+    args: string[],
   ): Promise<ClangCompilationDatabase> {
     try {
       // $FlowFB
       const {createOmCompilationDb} = require('./fb/omCompilationDb');
-      return await createOmCompilationDb(db, buckRoot);
+      return await createOmCompilationDb(db, buckRoot, args);
     } catch (e) {}
     return db;
   }
