@@ -1548,7 +1548,7 @@ declare class atom$KeymapManager {
   }) => mixed): IDisposable,
 
   // Adding and Removing Bindings
-  add(source: string, bindings: Object): void,
+  add(source: string, bindings: Object): IDisposable,
 
   // Accessing Bindings
   getKeyBindings(): Array<atom$KeyBinding>,
