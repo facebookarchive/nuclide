@@ -184,8 +184,8 @@ export default class DiagnosticsTable extends React.PureComponent<
     // These need to add up to 1.
     // TODO: Update the Table component so that we can have more control over this (and provide
     //       explicit pixel widths)
-    const TYPE_WIDTH = 0.05;
-    const SOURCE_WIDTH = 0.1;
+    const TYPE_WIDTH = 0;
+    const SOURCE_WIDTH = 0;
     const FILENAME_WIDTH = 0.3;
     const DIR_WIDTH = 0.15;
 
@@ -248,7 +248,7 @@ export default class DiagnosticsTable extends React.PureComponent<
         key: 'providerName',
         title: 'Source',
         width: SOURCE_WIDTH,
-        minWidth: 70,
+        minWidth: 100,
       },
       {
         component: DescriptionComponent,
