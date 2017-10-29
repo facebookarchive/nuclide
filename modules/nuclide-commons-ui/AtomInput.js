@@ -45,8 +45,8 @@ type Props = {
   onFocus: () => mixed,
   onClick: (event: SyntheticMouseEvent<>) => mixed,
   onDidChange: (text: string) => mixed,
-  onConfirm?: () => mixed,
-  onCancel?: () => mixed,
+  onConfirm?: (event?: atom$CustomEvent) => mixed,
+  onCancel?: (event?: atom$CustomEvent) => mixed,
   onBlur: (blurEvent: Event) => mixed,
   size?: 'xs' | 'sm' | 'lg',
   unstyled: boolean,
@@ -148,14 +148,14 @@ export class AtomInput extends React.Component<Props, State> {
 
     disposables.add(
       atom.commands.add(textEditorElement, {
-        'core:confirm': () => {
+        'core:confirm': event => {
           if (this.props.onConfirm != null) {
-            this.props.onConfirm();
+            this.props.onConfirm(event);
           }
         },
-        'core:cancel': () => {
+        'core:cancel': event => {
           if (this.props.onCancel != null) {
-            this.props.onCancel();
+            this.props.onCancel(event);
           }
         },
       }),
