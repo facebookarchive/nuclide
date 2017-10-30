@@ -29,7 +29,7 @@ export async function fileTreeHasFinishedLoading(
 
 export function getVisibleEntryFromFileTree(name: string): ?HTMLElement {
   const cssSelector =
-    '.nuclide-file-tree .list-tree.has-collapsable-children li';
+    '.nuclide-file-tree.list-tree.has-collapsable-children li';
   invariant(document.body != null);
   const elements = Array.prototype.slice.call(
     document.body.querySelectorAll(cssSelector),

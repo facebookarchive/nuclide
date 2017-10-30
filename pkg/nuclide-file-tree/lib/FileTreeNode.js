@@ -676,7 +676,7 @@ export class FileTreeNode {
 
   /**
    * Calculate the index of current Node w.r.t the top of the tree.
-   * The index is zero based.
+   * The index is one based.
    * If the node is not shown, the index is for the previous shown node.
    */
   calculateVisualIndex(): number {
@@ -689,6 +689,27 @@ export class FileTreeNode {
     return (
       index + (this.parent == null ? 0 : this.parent.calculateVisualIndex())
     );
+  }
+
+  findByIndex(index: number): ?FileTreeNode {
+    if (index === 1) {
+      return this;
+    }
+
+    if (index > this.shownChildrenCount) {
+      if (this.nextSibling != null) {
+        return this.nextSibling.findByIndex(index - this.shownChildrenCount);
+      }
+
+      return null;
+    }
+
+    const firstVisibleChild = this.children.find(c => c.shouldBeShown);
+    if (firstVisibleChild != null) {
+      return firstVisibleChild.findByIndex(index - 1);
+    }
+
+    return null;
   }
 
   _propsAreTheSame(props: Object): boolean {

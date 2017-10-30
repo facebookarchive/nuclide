@@ -932,6 +932,15 @@ export class FileTreeStore {
     return rootNode.find(nodeKey);
   }
 
+  getNodeByIndex(index: number): ?FileTreeNode {
+    const firstRoot = this.roots.find(r => r.shouldBeShown);
+    if (firstRoot == null) {
+      return null;
+    }
+
+    return firstRoot.findByIndex(index);
+  }
+
   getRootForPath(nodeKey: NuclideUri): ?FileTreeNode {
     const rootNode = this.roots.find(root => nodeKey.startsWith(root.uri));
     return rootNode || null;

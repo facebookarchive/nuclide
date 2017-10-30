@@ -314,10 +314,12 @@ class Activation {
   _currentActiveFilePath(): Observable<NuclideUri> {
     const rawPathStream = observableFromSubscribeFunction(
       atom.workspace.onDidStopChangingActivePaneItem.bind(atom.workspace),
-    ).map(() => {
-      const editor = atom.workspace.getActiveTextEditor();
-      return editor != null ? editor.getPath() : null;
-    });
+    )
+      .startWith(null)
+      .map(() => {
+        const editor = atom.workspace.getActiveTextEditor();
+        return editor != null ? editor.getPath() : null;
+      });
 
     return compact(rawPathStream).distinctUntilChanged();
   }

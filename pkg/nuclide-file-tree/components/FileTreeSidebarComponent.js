@@ -39,7 +39,7 @@ import {
   LoadingSpinner,
   LoadingSpinnerSizes,
 } from 'nuclide-commons-ui/LoadingSpinner';
-import {FileTree} from './FileTree';
+import {VirtualizedFileTree} from './VirtualizedFileTree';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import FileTreeSideBarFilterComponent from './FileTreeSideBarFilterComponent';
 import {FileTreeToolbarComponent} from './FileTreeToolbarComponent';
@@ -50,12 +50,7 @@ import {FileTreeStore} from '../lib/FileTreeStore';
 import {MultiRootChangedFilesView} from '../../nuclide-ui/MultiRootChangedFilesView';
 import {PanelComponentScroller} from 'nuclide-commons-ui/PanelComponentScroller';
 import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
-import {
-  nextAnimationFrame,
-  toggle,
-  throttle,
-  compact,
-} from 'nuclide-commons/observable';
+import {toggle, compact} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
 import {cacheWhileSubscribed} from 'nuclide-commons/observable';
@@ -68,10 +63,10 @@ import invariant from 'assert';
 import {remote} from 'electron';
 import {showMenuForEvent} from '../../commons-atom/context-menu';
 
-type State = {
+type State = {|
   shouldRenderToolbar: boolean,
   scrollerHeight: number,
-  scrollerScrollTop: number,
+  scrollerWidth: number,
   showOpenFiles: boolean,
   showUncommittedChanges: boolean,
   showUncommittedChangesKind: ShowUncommittedChangesKindValue,
@@ -94,7 +89,7 @@ type State = {
   foldersExpanded: boolean,
   uncommittedChangesExpanded: boolean,
   openFilesExpanded: boolean,
-};
+|};
 
 export default class FileTreeSidebarComponent extends React.Component<
   mixed,
@@ -108,7 +103,9 @@ export default class FileTreeSidebarComponent extends React.Component<
   _showUncommittedConfigValue: Observable<boolean>;
   _showUncommittedKindConfigValue: Observable<ShowUncommittedChangesKindValue>;
   _scrollerElements: Subject<?HTMLElement>;
-  _scrollWasTriggeredProgrammatically: boolean;
+  _scrollerScrollTop: number;
+  // $FlowFixMe flow does not recognize VirtualizedFileTree as React component
+  _scrollerRef: ?React.ElementRef<VirtualizedFileTree>;
 
   constructor() {
     super();
@@ -120,7 +117,7 @@ export default class FileTreeSidebarComponent extends React.Component<
       hidden: false,
       shouldRenderToolbar: false,
       scrollerHeight: window.innerHeight,
-      scrollerScrollTop: 0,
+      scrollerWidth: this.getPreferredWidth(),
       showOpenFiles: true,
       showUncommittedChanges: true,
       showUncommittedChangesKind: 'Uncommitted changes',
@@ -152,9 +149,13 @@ export default class FileTreeSidebarComponent extends React.Component<
     );
     this._showUncommittedKindConfigValue = FileTreeHelpers.observeUncommittedChangesKindConfigKey();
 
-    this._disposables = new UniversalDisposable(this._emitter);
-    this._scrollWasTriggeredProgrammatically = false;
     this._scrollerElements = new Subject();
+    this._scrollerScrollTop = 0;
+    this._scrollerRef = null;
+    this._disposables = new UniversalDisposable(
+      this._emitter,
+      this._subscribeToResizeEvents(),
+    );
   }
 
   componentDidMount(): void {
@@ -184,7 +185,6 @@ export default class FileTreeSidebarComponent extends React.Component<
         showUncommittedChangesKind =>
           this.setState({showUncommittedChangesKind}),
       ),
-      this._subscribeToResizeEvent(componentDOMNode),
       // Customize the context menu to remove items that match the 'atom-pane' selector.
       Observable.fromEvent(componentDOMNode, 'contextmenu')
         .switchMap(event => {
@@ -217,10 +217,6 @@ export default class FileTreeSidebarComponent extends React.Component<
         this.didChangeVisibility(visible);
       }),
     );
-
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    invariant(node == null || node instanceof HTMLElement);
-    this._scrollerElements.next(node);
   }
 
   componentWillUnmount(): void {
@@ -238,42 +234,46 @@ export default class FileTreeSidebarComponent extends React.Component<
         );
       }
       this._actions.clearFilter();
-      const scrollerHeight = this._getScrollerHeight();
-      if (scrollerHeight != null) {
-        this.setState({scrollerHeight});
-      }
-    }
-
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    invariant(node == null || node instanceof HTMLElement);
-    this._scrollerElements.next(node);
-    if (node) {
-      node.scrollTop = this.state.scrollerScrollTop;
     }
   }
 
-  _subscribeToResizeEvent = (
-    resizableElement: HTMLElement,
-  ): rxjs$Subscription => {
-    const remeasureEvents = Observable.merge(
-      new ResizeObservable(resizableElement),
-      observableFromSubscribeFunction(
-        atom.commands.onDidDispatch.bind(atom.commands),
-      ).filter(event => event.type === 'nuclide-file-tree:toggle'),
-      this._scrollerElements.distinctUntilChanged().switchMap(scroller => {
-        if (scroller == null) {
-          return Observable.empty();
+  _subscribeToResizeEvents(): rxjs$Subscription {
+    const scrollerRects = this._scrollerElements.switchMap(scroller => {
+      if (scroller == null) {
+        return Observable.empty();
+      }
+
+      return new ResizeObservable(scroller).map(arr => {
+        if (arr.length === 0) {
+          return null;
         }
 
-        return new ResizeObservable(scroller);
-      }),
-    );
-    return remeasureEvents
-      .let(throttle(() => nextAnimationFrame))
-      .map(() => this._getScrollerHeight())
+        return arr[arr.length - 1].contentRect;
+      });
+    });
+
+    return scrollerRects
       .let(compact)
-      .distinctUntilChanged()
-      .subscribe(scrollerHeight => this.setState({scrollerHeight}));
+      .subscribe(rect =>
+        this.setState({scrollerHeight: rect.height, scrollerWidth: rect.width}),
+      );
+  }
+
+  _setScrollerRef = (node: React$ElementRef<any>): void => {
+    this._scrollerRef = node;
+    if (node == null) {
+      this._scrollerElements.next(null);
+      return;
+    }
+
+    const scroller = ReactDOM.findDOMNode(node);
+    if (scroller == null) {
+      this._scrollerElements.next(null);
+      return;
+    }
+
+    invariant(scroller instanceof HTMLElement);
+    this._scrollerElements.next(scroller);
   };
 
   _handleFocus = (event: SyntheticEvent<>): void => {
@@ -444,16 +444,15 @@ All the changes across your entire stacked diff.
         {foldersCaption}
         {toolbar}
         {this.state.foldersExpanded && (
-          <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
-            <FileTree
-              ref="fileTree"
-              containerHeight={this.state.scrollerHeight}
-              containerScrollTop={this.state.scrollerScrollTop}
-              scrollToPosition={this._scrollToPosition}
-              onMouseEnter={this._handleFileTreeHovered}
-              onMouseLeave={this._handleFileTreeUnhovered}
-            />
-          </PanelComponentScroller>
+          <VirtualizedFileTree
+            ref={this._setScrollerRef}
+            onMouseEnter={this._handleFileTreeHovered}
+            onMouseLeave={this._handleFileTreeUnhovered}
+            onScroll={this._handleScroll}
+            height={this.state.scrollerHeight}
+            width={this.state.scrollerWidth}
+            initialScrollTop={this._scrollerScrollTop}
+          />
         )}
       </div>
     );
@@ -598,78 +597,17 @@ All the changes across your entire stacked diff.
     );
   }
 
-  _getScrollerHeight = (): ?number => {
-    const component = this.refs.scroller;
-    if (component == null) {
-      return null;
-    }
-    const el = ReactDOM.findDOMNode(component);
-    if (el == null) {
-      return null;
-    }
-    invariant(el instanceof HTMLElement);
-    return el.clientHeight;
-  };
-
-  _handleScroll = (): void => {
-    if (!this._scrollWasTriggeredProgrammatically) {
-      this._actions.clearTrackedNode();
-    }
-    this._scrollWasTriggeredProgrammatically = false;
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    if (node == null) {
-      return;
-    }
-
-    invariant(node instanceof HTMLElement);
-    const {scrollTop} = node;
-    if (scrollTop !== this.state.scrollerScrollTop) {
-      this.setState({scrollerScrollTop: scrollTop});
-    }
-  };
-
-  _scrollToPosition = (
-    top: number,
-    height: number,
-    approximate: boolean,
-  ): void => {
-    const node = ReactDOM.findDOMNode(this.refs.scroller);
-    if (node == null) {
-      return;
-    }
-    invariant(node instanceof HTMLElement);
-
-    if (!approximate) {
-      this._actions.clearTrackedNodeIfNotLoading();
-    }
-    const requestedBottom = top + height;
-    const currentBottom =
-      this.state.scrollerScrollTop + this.state.scrollerHeight;
-    if (
-      top > this.state.scrollerScrollTop &&
-      requestedBottom <= currentBottom
-    ) {
-      return; // Already in the view
-    }
-
-    const newTop = Math.max(
-      top + height / 2 - this.state.scrollerHeight / 2,
-      0,
-    );
-    setImmediate(() => {
-      try {
-        // For the rather unlikely chance that the node is already gone from the DOM
-        this._scrollWasTriggeredProgrammatically = true;
-        node.scrollTop = newTop;
-        if (this.state.scrollerScrollTop !== newTop) {
-          this.setState({scrollerScrollTop: newTop});
-        }
-      } catch (e) {}
-    });
+  _handleScroll = (scrollTop: number): void => {
+    // Do not store in state to not cause extra rendering loops on update
+    this._scrollerScrollTop = scrollTop;
   };
 
   isFocused(): boolean {
-    const el = ReactDOM.findDOMNode(this.refs.fileTree);
+    if (this._scrollerRef == null) {
+      return false;
+    }
+
+    const el = ReactDOM.findDOMNode(this._scrollerRef);
     if (el == null) {
       return false;
     }
@@ -677,7 +615,10 @@ All the changes across your entire stacked diff.
   }
 
   focus(): void {
-    const el = ReactDOM.findDOMNode(this.refs.fileTree);
+    if (this._scrollerRef == null) {
+      return;
+    }
+    const el = ReactDOM.findDOMNode(this._scrollerRef);
     if (el == null) {
       return;
     }

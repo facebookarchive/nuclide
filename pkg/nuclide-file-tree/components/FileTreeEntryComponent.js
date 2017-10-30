@@ -33,15 +33,16 @@ import {Observable} from 'rxjs';
 const store = FileTreeStore.getInstance();
 const getActions = FileTreeActions.getInstance;
 
-type Props = {
+type Props = {|
   node: FileTreeNode,
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
   isPreview?: boolean,
-};
-type State = {
+|};
+
+type State = {|
   isLoading: boolean,
-};
+|};
 
 const SUBSEQUENT_FETCH_SPINNER_DELAY = 500;
 const INITIAL_FETCH_SPINNER_DELAY = 25;
@@ -61,13 +62,14 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     this.dragEventCount = 0;
 
     this.state = {
-      isLoading: false,
+      isLoading: props.node.isLoading,
     };
   }
 
   shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
     return (
       nextProps.node !== this.props.node ||
+      nextProps.node.isLoading !== this.props.node.isLoading ||
       nextState.isLoading !== this.state.isLoading ||
       nextProps.selectedNodes !== this.props.selectedNodes ||
       nextProps.focusedNodes !== this.props.focusedNodes
@@ -255,14 +257,18 @@ export class FileTreeEntryComponent extends React.Component<Props, State> {
     }
 
     const node = this.props.node;
-    return (
+    const shouldToggleExpand =
       node.isContainer &&
       // $FlowFixMe
       ReactDOM.findDOMNode(this.refs.arrowContainer).contains(event.target) &&
       event.clientX <
         // $FlowFixMe
-        ReactDOM.findDOMNode(this._pathContainer).getBoundingClientRect().left
-    );
+        ReactDOM.findDOMNode(this._pathContainer).getBoundingClientRect().left;
+    if (shouldToggleExpand) {
+      getActions().clearTrackedNode();
+    }
+
+    return shouldToggleExpand;
   }
 
   _onMouseDown = (event: SyntheticMouseEvent<>) => {

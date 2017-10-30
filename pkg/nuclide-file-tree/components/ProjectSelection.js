@@ -15,11 +15,13 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {FileTreeStore} from '../lib/FileTreeStore';
 import TruncatedButton from 'nuclide-commons-ui/TruncatedButton';
 
-type Props = {};
+type Props = {|
+  remeasureHeight: () => mixed,
+|};
 
-type State = {
+type State = {|
   extraContent: ?Array<React.Element<any>>,
-};
+|};
 
 export class ProjectSelection extends React.Component<Props, State> {
   _store: FileTreeStore;
@@ -62,6 +64,7 @@ export class ProjectSelection extends React.Component<Props, State> {
     this.setState({
       extraContent: this.calculateExtraContent(),
     });
+    this.props.remeasureHeight();
   }
 
   calculateExtraContent() {
