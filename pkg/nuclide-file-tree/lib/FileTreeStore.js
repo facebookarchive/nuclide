@@ -419,7 +419,6 @@ export class FileTreeStore {
       case ActionTypes.UNCHECK_NODE:
         this._uncheckNode(payload.rootKey, payload.nodeKey);
         break;
-
       case ActionTypes.SET_DRAG_HOVERED_NODE:
         this._setDragHoveredNode(payload.rootKey, payload.nodeKey);
         break;
@@ -626,6 +625,7 @@ export class FileTreeStore {
 
     this._animationFrameRequestSubscription = nextAnimationFrame.subscribe(
       () => {
+        this._animationFrameRequestSubscription = null;
         const {performance} = global;
         const renderStart = performance.now();
         const childrenCount = this.roots.reduce(
@@ -634,7 +634,6 @@ export class FileTreeStore {
         );
 
         this._emitter.emit('change');
-        this._animationFrameRequestSubscription = null;
 
         const duration = (performance.now() - renderStart).toString();
         track('filetree-root-node-component-render', {
