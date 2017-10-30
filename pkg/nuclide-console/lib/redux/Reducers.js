@@ -26,6 +26,16 @@ function shouldAccumulateRecordCount(
   recordA: Record,
   recordB: Record,
 ): boolean {
+  if (
+    String(recordA.sourceId)
+      .toLowerCase()
+      .includes('debugger') ||
+    String(recordB.sourceId)
+      .toLowerCase()
+      .includes('debugger')
+  ) {
+    return false;
+  }
   const areRelevantPropertiesEqual = RECORD_PROPERTIES_TO_COMPARE.every(
     prop => recordA[prop] === recordB[prop],
   );
