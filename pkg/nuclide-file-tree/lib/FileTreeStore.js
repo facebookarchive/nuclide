@@ -197,47 +197,14 @@ export class FileTreeStore {
    * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
    */
   exportData(): ExportStoreData {
-    const childKeyMap = {};
-    const expandedKeysByRoot = {};
-    const selectedKeysByRoot = {};
-
-    this.roots.forEach(root => {
-      const expandedKeys = [];
-      const selectedKeys = [];
-
-      // Grab the data of only the expanded portion of the tree.
-      root.traverse(node => {
-        if (node.isSelected()) {
-          selectedKeys.push(node.uri);
-        }
-
-        if (!node.isExpanded) {
-          return false;
-        }
-
-        expandedKeys.push(node.uri);
-
-        if (!node.children.isEmpty()) {
-          childKeyMap[node.uri] = node.children
-            .map(child => child.uri)
-            .toArray();
-        }
-
-        return true;
-      });
-
-      expandedKeysByRoot[root.uri] = expandedKeys;
-      selectedKeysByRoot[root.uri] = selectedKeys;
-    });
-
     const rootKeys = this.roots.map(root => root.uri).toArray();
 
     return {
       version: VERSION,
-      childKeyMap,
-      expandedKeysByRoot,
+      childKeyMap: {},
+      expandedKeysByRoot: {},
       rootKeys,
-      selectedKeysByRoot,
+      selectedKeysByRoot: {},
       openFilesExpanded: this.openFilesExpanded,
       uncommittedChangesExpanded: this.uncommittedChangesExpanded,
       foldersExpanded: this.foldersExpanded,
@@ -253,30 +220,17 @@ export class FileTreeStore {
       return;
     }
 
-    const buildNode = (rootUri: string, uri: string) => {
-      const rootExpandedKeys = data.expandedKeysByRoot[rootUri] || [];
-      const rootSelectedKeys = data.selectedKeysByRoot[rootUri] || [];
-      const childrenUris = data.childKeyMap[uri] || [];
-      const children = FileTreeNode.childrenFromArray(
-        childrenUris.map(childUri => buildNode(rootUri, childUri)),
-      );
-
-      const isExpanded = rootExpandedKeys.indexOf(uri) >= 0;
-      let isLoading = false;
-
-      if (isExpanded && FileTreeHelpers.isDirOrArchiveKey(uri)) {
-        this._fetchChildKeys(uri);
-        isLoading = true;
-      }
+    const buildRootNode = (rootUri: string) => {
+      this._fetchChildKeys(rootUri);
 
       return new FileTreeNode(
         {
-          uri,
+          uri: rootUri,
           rootUri,
-          isExpanded,
-          isSelected: rootSelectedKeys.indexOf(uri) >= 0,
-          isLoading,
-          children,
+          isExpanded: false,
+          isSelected: false,
+          isLoading: true,
+          children: new Immutable.OrderedMap(),
           isCwd: false,
           connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
         },
@@ -313,7 +267,7 @@ export class FileTreeStore {
 
     this._setRoots(
       new Immutable.OrderedMap(
-        combinedPaths.map(rootUri => [rootUri, buildNode(rootUri, rootUri)]),
+        combinedPaths.map(rootUri => [rootUri, buildRootNode(rootUri)]),
       ),
     );
   }
