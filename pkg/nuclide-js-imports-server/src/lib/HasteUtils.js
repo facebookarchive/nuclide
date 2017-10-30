@@ -51,6 +51,18 @@ export function getHasteName(
   if (!hasteSettings.isHaste) {
     return null;
   }
+  // __mocks__ is also special cased in Flow. No joke:
+  // https://github.com/facebook/flow/blob/master/src/services/inference/module_js.ml#L473
+  if (file.includes('/__mocks__/')) {
+    const basename = nuclideUri.basename(file);
+    const extIndex = basename.indexOf('.');
+    // The extension separator 1) must exist, and 2) can't be at the start.
+    // https://caml.inria.fr/pub/docs/manual-ocaml/libref/Filename.html#VALchop_extension
+    if (extIndex > 0) {
+      return basename.substr(0, extIndex);
+    }
+    return basename;
+  }
   // Try to use a name reducer, as long as this isn't blacklisted.
   const nameReducerResult = hasteReduceName(file, hasteSettings);
   if (nameReducerResult != null) {

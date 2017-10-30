@@ -16,7 +16,7 @@ describe('getConfig', () => {
   it('reads haste configs', () => {
     const root = nuclideUri.join(__dirname, 'fixtures', 'flowconfig_haste');
     expect(getConfigFromFlow(root)).toEqual({
-      moduleDirs: [],
+      moduleDirs: [nuclideUri.join(root, 'node_modules')],
       hasteSettings: {
         isHaste: true,
         useNameReducers: true,

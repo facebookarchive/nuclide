@@ -77,7 +77,7 @@ function flowConfigToResolveDirnames(
     ? resolveDirs.map(dirString =>
         nuclideUri.join(nuclideUri.dirname(flowFile), dirString.split('=')[1]),
       )
-    : [];
+    : [nuclideUri.join(nuclideUri.dirname(flowFile), 'node_modules')];
 }
 
 function flowConfigToHasteSettings(

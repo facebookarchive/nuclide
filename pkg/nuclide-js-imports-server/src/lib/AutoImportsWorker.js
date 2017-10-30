@@ -68,7 +68,7 @@ function main() {
   const {hasteSettings} = getConfigFromFlow(root);
 
   // Listen for open files that should be indexed immediately
-  setupParentMessagesHandler(hasteSettings);
+  setupParentMessagesHandler(root, hasteSettings);
 
   // Listen for file changes with Watchman that should update the index.
   watchDirectoryRecursively(root, hasteSettings);
@@ -307,10 +307,11 @@ function addFileToIndex(
   root: NuclideUri,
   fileRelative: NuclideUri,
   hasteSettings: HasteSettings,
+  fileContents?: string,
 ): Promise<?ExportUpdateForFile> {
   const file = nuclideUri.join(root, fileRelative);
   return Promise.all([
-    getExportsForFile(file, null, hasteSettings),
+    getExportsForFile(file, fileContents, hasteSettings),
     checkIfMain(file),
   ]).then(([data, directoryForMainFile]) => {
     return data
@@ -373,7 +374,10 @@ function setupDisconnectedParentHandler(): void {
   });
 }
 
-function setupParentMessagesHandler(hasteSettings: HasteSettings): void {
+function setupParentMessagesHandler(
+  root: string,
+  hasteSettings: HasteSettings,
+): void {
   process.on('message', async message => {
     const {fileUri, fileContents} = message;
     if (fileUri == null || fileContents == null) {
@@ -383,10 +387,11 @@ function setupParentMessagesHandler(hasteSettings: HasteSettings): void {
       return;
     }
     try {
-      const exportUpdate = await getExportsForFile(
+      const exportUpdate = await addFileToIndex(
+        root,
         fileUri,
-        fileContents,
         hasteSettings,
+        fileContents,
       );
       if (exportUpdate != null) {
         sendExportUpdateToParent([exportUpdate]);

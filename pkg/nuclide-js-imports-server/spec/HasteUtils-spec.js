@@ -27,6 +27,19 @@ describe('getHasteName', () => {
     ).toBe(null);
   });
 
+  it('special-cases mocks', () => {
+    const ast = nullthrows(parseFile('/* @providesModule asdfasdf */'));
+    expect(
+      getHasteName('/__mocks__/test.mock.js', ast, {
+        isHaste: true,
+        useNameReducers: false,
+        nameReducers: [],
+        nameReducerWhitelist: [],
+        nameReducerBlacklist: [],
+      }),
+    ).toBe('test');
+  });
+
   it('detects @providesModule', () => {
     const ast = nullthrows(
       parseFile('/* @providesModule test1234\nblah */ export function f() {}'),
