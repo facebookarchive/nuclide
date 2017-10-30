@@ -11,7 +11,9 @@
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 
-type ExportType =
+// Warning: this list is not comprehensive.
+// Other AST types may potentially be exported as well.
+export type ExportType =
   | 'FunctionDeclaration'
   | 'ClassDeclaration'
   | 'VariableDeclaration'

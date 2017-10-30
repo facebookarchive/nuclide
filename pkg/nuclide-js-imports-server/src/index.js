@@ -10,16 +10,7 @@
  */
 
 import idx from 'idx';
-import {
-  createConnection,
-  CompletionItem,
-  TextDocumentPositionParams,
-  IConnection,
-  InitializeResult,
-  Command,
-  CodeActionParams,
-  ExecuteCommandParams,
-} from 'vscode-languageserver';
+import {createConnection} from 'vscode-languageserver';
 
 import {StreamMessageReader, StreamMessageWriter} from 'vscode-jsonrpc';
 import {getLogger} from 'log4js';
@@ -36,13 +27,24 @@ import {CommandExecutor} from './CommandExecutor';
 import initializeLogging from '../logging/initializeLogging';
 import {getEslintEnvs, getConfigFromFlow} from './getConfig';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {WorkspaceSymbols} from './WorkspaceSymbols';
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {
+  CodeActionParams,
+  Command,
+  CompletionItem,
+  ExecuteCommandParams,
+  InitializeResult,
+  SymbolInformation,
+  TextDocumentPositionParams,
+  WorkspaceSymbolParams,
+} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
 const reader = new StreamMessageReader(process.stdin);
 const writer = new StreamMessageWriter(process.stdout);
 
-const connection: IConnection = createConnection(reader, writer);
+const connection = createConnection(reader, writer);
 initializeLogging(connection);
 
 const logger = getLogger('nuclide-js-imports-server');
@@ -94,6 +96,7 @@ connection.onInitialize((params): InitializeResult => {
       },
       codeActionProvider: true,
       executeCommandProvider: Array.from(Object.keys(CommandExecutor.COMMANDS)),
+      workspaceSymbolProvider: true,
     },
   };
 });
@@ -169,7 +172,13 @@ connection.onCodeAction((codeActionParams: CodeActionParams): Array<
 connection.onExecuteCommand((params: ExecuteCommandParams): any => {
   const {command, arguments: args} = params;
   logger.debug('Executing command', command, 'with args', args);
-  commandExecuter.executeCommand(command, args);
+  commandExecuter.executeCommand((command: any), args);
+});
+
+connection.onWorkspaceSymbol((params: WorkspaceSymbolParams): Array<
+  SymbolInformation,
+> => {
+  return WorkspaceSymbols.getWorkspaceSymbols(autoImportsManager, params);
 });
 
 documents.listen(connection);

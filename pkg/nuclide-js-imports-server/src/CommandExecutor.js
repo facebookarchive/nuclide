@@ -63,7 +63,7 @@ export class CommandExecutor {
         return this._addImport((args: AddImportCommandParams));
       default:
         (command: empty);
-        throw new Error('Unexpected Command');
+        throw new Error(`Unexpected command ${command}`);
     }
   }
 
