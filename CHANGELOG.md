@@ -1,5 +1,29 @@
 # Nuclide Changelog
 
+## v0.264.0
+
+### General
+
+* Added a `JS Symbols` provider inside of Quick Open (`Cmd-T`).
+* Improved scrolling performance on file tree (now using `react-virtualized`).
+* Fixed incorrect JS import suggestions for mocks and node_modules.
+* Datatips now appear at the cursor position rather than at the start of the highlighted range.
+* Datatip highlights no longer obscure 'Go to definition' underlines.
+* Type Coverage diagnostics are now blue (info-level).
+* Reduced performance overhead of logging and error analytics.
+
+### Debugger
+
+* Fixed regression in console where multiple debugger messages could be collapsed into a single message if their text was the same.
+* Add autocomplete support for nuclide debuggers (starting with Node).
+* Add debugger commands (repl) history autocomplete support.
+
+### Diagnostics Table
+
+* Improved logic around resizing and column widths.
+* Icons are now color-coded (matching gutter icons).
+* Line number column is now displayed when messages are limited to current file only.
+
 ## v0.263.0
 
 ### Misc
