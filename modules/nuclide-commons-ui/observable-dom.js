@@ -11,11 +11,12 @@
  */
 
 /* eslint-env browser */
-/* global IntersectionObserver, PerformanceObserver, ResizeObserver */
+/* global IntersectionObserver, PerformanceObserver, ResizeObserver, DOMRect */
 
 import type {Subscriber} from 'rxjs/Subscriber';
 
 import invariant from 'assert';
+import os from 'os';
 import {Observable, Subscription} from 'rxjs';
 import shallowEqual from 'shallowequal';
 import {isIterable} from 'nuclide-commons/collection';
@@ -267,7 +268,81 @@ export class ResizeObservable extends DOMObserverObservable<
       global.ResizeObserver !== null,
       'environment must contain ResizeObserver',
     );
-    // $FlowFixMe(>=0.55.0) Flow suppress
-    super(ResizeObserver, target);
+
+    if (os.platform() === 'win32') {
+      super(WindowsResizeMeasurementPatchingObserver, target);
+    } else {
+      // $FlowFixMe(>=0.55.0) Flow suppress
+      super(ResizeObserver, target);
+    }
+  }
+}
+
+function lastRectPerTarget(
+  entries: Array<ResizeObserverEntry>,
+): Map<HTMLElement, DOMRectReadOnly> {
+  const rectMap = new Map();
+  entries.forEach(entry => rectMap.set(entry.target, entry.contentRect));
+  return rectMap;
+}
+
+function remeasureContentRect(
+  element: HTMLElement,
+  contentRect: DOMRectReadOnly,
+): DOMRect {
+  const {clientHeight, clientWidth} = element;
+
+  // Client height/width include padding
+  // https://developer.mozilla.org/en-US/docs/Web/API/Element/clientWidth
+  // We have to strip it to obtain result similar to what the original computed style provided
+  const computedStyle = window.getComputedStyle(element);
+  const {paddingLeft, paddingRight, paddingTop, paddingBottom} = computedStyle;
+
+  const height =
+    clientHeight - parseFloat(paddingTop) - parseFloat(paddingBottom);
+  const width =
+    clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight);
+
+  return new DOMRect(contentRect.x, contentRect.y, width, height);
+}
+
+/*
+ * The values provided by the ResizeOverver on Windows do not seem to reflect the actual size
+ * of the element (!!!), so we need to "fix" them before passing on to the downstream subscriber
+ * We're wrapping the ResizeObserver instance and are patching the last result of the array with
+ * a set of custom measured values
+ */
+class WindowsResizeMeasurementPatchingObserver implements DOMObserver {
+  _resizeObserver: ResizeObserver;
+
+  constructor(callback: RecordCallback, ...rest: Array<any>): DOMObserver {
+    const remeasuringCallback = (entries: Array<ResizeObserverEntry>): void => {
+      const rebuiltEntries = [];
+      const mappedRects = lastRectPerTarget(entries);
+      mappedRects.forEach((originalRect, target) => {
+        const contentRect = remeasureContentRect(target, originalRect);
+        rebuiltEntries.push({target, contentRect});
+      });
+
+      callback(rebuiltEntries);
+    };
+    this._resizeObserver = new ResizeObserver(remeasuringCallback, ...rest);
+
+    // To make flow happy
+    return this;
+  }
+
+  observe(...observeArgs: Array<any>): void {
+    this._resizeObserver.observe(...observeArgs);
+  }
+
+  disconnect(): void {
+    this._resizeObserver.disconnect();
+  }
+
+  unobserve(...unobserveArgs: Array<any>): void {
+    if (typeof this._resizeObserver.unobserve === 'function') {
+      this._resizeObserver.unobserve(...unobserveArgs);
+    }
   }
 }
