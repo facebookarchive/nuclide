@@ -47,7 +47,7 @@ function f($x) {
   //       ^ punctuation.definition.variable
   //        ^ variable.other.php
 }
-]
+
 function f($x = 5) {
   //          ^ keyword.operator.assignment
   //            ^ constant.numeric.php
