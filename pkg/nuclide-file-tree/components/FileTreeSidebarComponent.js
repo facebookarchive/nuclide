@@ -13,6 +13,7 @@
 import type {FileChangeStatusValue} from '../../nuclide-vcs-base';
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {ShowUncommittedChangesKindValue} from '../lib/Constants';
+import type {WorkingSetsStore} from '../../nuclide-working-sets/lib/WorkingSetsStore.js';
 
 import {Emitter} from 'atom';
 import * as React from 'react';
@@ -87,6 +88,12 @@ type State = {
   path: string,
   title: string,
   isFileTreeHovered: boolean,
+  workingSetsStore: ?WorkingSetsStore,
+  filter: string,
+  filterFound: boolean,
+  foldersExpanded: boolean,
+  uncommittedChangesExpanded: boolean,
+  openFilesExpanded: boolean,
 };
 
 export default class FileTreeSidebarComponent extends React.Component<
@@ -126,6 +133,12 @@ export default class FileTreeSidebarComponent extends React.Component<
       path: 'No Current Working Directory',
       title: 'File Tree',
       isFileTreeHovered: false,
+      workingSetsStore: this._store.getWorkingSetsStore(),
+      filter: this._store.getFilter(),
+      filterFound: this._store.getFilterFound(),
+      foldersExpanded: this._store.foldersExpanded,
+      uncommittedChangesExpanded: this._store.uncommittedChangesExpanded,
+      openFilesExpanded: this._store.openFilesExpanded,
     };
     this._showOpenConfigValues = cacheWhileSubscribed(
       (featureConfig.observeAsStream(SHOW_OPEN_FILE_CONFIG_KEY): Observable<
@@ -152,7 +165,6 @@ export default class FileTreeSidebarComponent extends React.Component<
 
     this._disposables.add(
       this._store.subscribe(this._processExternalUpdate),
-      atom.project.onDidChangePaths(this._processExternalUpdate),
       observeAllModifiedStatusChanges()
         .let(toggle(this._showOpenConfigValues))
         .subscribe(() => this._setModifiedUris()),
@@ -271,17 +283,17 @@ export default class FileTreeSidebarComponent extends React.Component<
   };
 
   render() {
-    const workingSetsStore = this._store.getWorkingSetsStore();
     let toolbar;
+    const workingSetsStore = this.state.workingSetsStore;
     if (this.state.shouldRenderToolbar && workingSetsStore != null) {
       toolbar = (
         <div className="nuclide-file-tree-fixed">
           <FileTreeSideBarFilterComponent
             key="filter"
-            filter={this._store.getFilter()}
-            found={this._store.getFilterFound()}
+            filter={this.state.filter}
+            found={this.state.filterFound}
           />
-          {this._store.foldersExpanded && (
+          {this.state.foldersExpanded && (
             <FileTreeToolbarComponent
               key="toolbar"
               workingSetsStore={workingSetsStore}
@@ -368,7 +380,7 @@ All the changes across your entire stacked diff.
         <Section
           className="nuclide-file-tree-section-caption"
           collapsable={true}
-          collapsed={!this._store.uncommittedChangesExpanded}
+          collapsed={!this.state.uncommittedChangesExpanded}
           headline={uncommittedChangesHeadline}
           onChange={this._handleUncommittedFilesExpandedChange}
           size="small">
@@ -382,7 +394,7 @@ All the changes across your entire stacked diff.
     let openFilesSection = null;
     let openFilesList = null;
     if (this.state.showOpenFiles && this.state.openFilesUris.length > 0) {
-      if (this._store.openFilesExpanded) {
+      if (this.state.openFilesExpanded) {
         openFilesList = (
           <OpenFilesListComponent
             uris={this.state.openFilesUris}
@@ -397,7 +409,7 @@ All the changes across your entire stacked diff.
           <Section
             className="nuclide-file-tree-section-caption nuclide-file-tree-open-files-section"
             collapsable={true}
-            collapsed={!this._store.openFilesExpanded}
+            collapsed={!this.state.openFilesExpanded}
             headline="OPEN FILES"
             onChange={this._handleOpenFilesExpandedChange}
             size="small">
@@ -414,7 +426,7 @@ All the changes across your entire stacked diff.
           className="nuclide-file-tree-section-caption"
           headline="FOLDERS"
           collapsable={true}
-          collapsed={!this._store.foldersExpanded}
+          collapsed={!this.state.foldersExpanded}
           onChange={this._handleFoldersExpandedChange}
           size="small"
         />
@@ -431,7 +443,7 @@ All the changes across your entire stacked diff.
         {openFilesSection}
         {foldersCaption}
         {toolbar}
-        {this._store.foldersExpanded && (
+        {this.state.foldersExpanded && (
           <PanelComponentScroller ref="scroller" onScroll={this._handleScroll}>
             <FileTree
               ref="fileTree"
@@ -458,34 +470,35 @@ All the changes across your entire stacked diff.
   _processExternalUpdate = (): void => {
     const shouldRenderToolbar = !this._store.roots.isEmpty();
     const openFilesUris = this._store.getOpenFilesWorkingSet().getUris();
-
-    if (
-      shouldRenderToolbar !== this.state.shouldRenderToolbar ||
-      openFilesUris !== this.state.openFilesUris
-    ) {
-      this.setState({shouldRenderToolbar, openFilesUris});
-    } else {
-      // Note: It's safe to call forceUpdate here because the change events are de-bounced.
-      this.forceUpdate();
-    }
-
     const uncommittedFileChanges = this._store.getFileChanges();
     const isCalculatingChanges = this._store.getIsCalculatingChanges();
-
-    this.setState({
-      uncommittedFileChanges,
-      isCalculatingChanges,
-    });
-
     const title = this.getTitle();
     const path = this.getPath();
+    const workingSetsStore = this._store.getWorkingSetsStore();
+    const filter = this._store.getFilter();
+    const filterFound = this._store.getFilterFound();
+    const foldersExpanded = this._store.foldersExpanded;
+    const uncommittedChangesExpanded = this._store.uncommittedChangesExpanded;
+    const openFilesExpanded = this._store.openFilesExpanded;
+
+    this.setState({
+      shouldRenderToolbar,
+      openFilesUris,
+      uncommittedFileChanges,
+      isCalculatingChanges,
+      title,
+      path,
+      workingSetsStore,
+      filter,
+      filterFound,
+      foldersExpanded,
+      uncommittedChangesExpanded,
+      openFilesExpanded,
+    });
+
     if (title !== this.state.title || path !== this.state.path) {
-      this.setState({
-        title,
-        path,
-      });
-      this._emitter.emit('did-change-title', this.getTitle());
-      this._emitter.emit('did-change-path', this.getPath());
+      this._emitter.emit('did-change-title', title);
+      this._emitter.emit('did-change-path', path);
     }
   };
 

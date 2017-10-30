@@ -19,12 +19,20 @@ import {ProjectSelection} from './ProjectSelection';
 import classnames from 'classnames';
 
 // flowlint-next-line untyped-type-import:off
-import type {OrderedMap} from 'immutable';
+import type Immutable from 'immutable';
 import type {FileTreeNode} from '../lib/FileTreeNode';
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {ReorderPreviewStatus} from '../lib/FileTreeStore';
 
 type State = {
   elementHeight: number,
   initialHeightMeasured: boolean,
+  trackedIndex: number,
+  isEditingWorkingSet: boolean,
+  roots: Immutable.OrderedMap<NuclideUri, FileTreeNode>,
+  reorderPreviewStatus: ?ReorderPreviewStatus,
+  selectedNodes: Immutable.Set<FileTreeNode>,
+  focusedNodes: Immutable.Set<FileTreeNode>,
 };
 
 type Props = {
@@ -49,6 +57,12 @@ export class FileTree extends React.Component<Props, State> {
     this.state = {
       elementHeight: 22, // The minimal observed height makes a good default
       initialHeightMeasured: false,
+      trackedIndex: findIndexOfTheTrackedNode(this._store),
+      isEditingWorkingSet: this._store.isEditingWorkingSet(),
+      roots: this._store.roots,
+      reorderPreviewStatus: this._store.reorderPreviewStatus,
+      selectedNodes: this._store.selectionManager.selectedNodes(),
+      focusedNodes: this._store.selectionManager.focusedNodes(),
     };
   }
 
@@ -63,6 +77,7 @@ export class FileTree extends React.Component<Props, State> {
     window.addEventListener('resize', this._measureHeights);
 
     this._disposables.add(
+      this._store.subscribe(() => this._processStoreUpdate()),
       atom.themes.onDidChangeActiveThemes(() => {
         this.setState({initialHeightMeasured: false});
         const sub = nextAnimationFrame.subscribe(() => {
@@ -90,7 +105,7 @@ export class FileTree extends React.Component<Props, State> {
   }
 
   _scrollToTrackedNodeIfNeeded(): void {
-    const trackedIndex = findIndexOfTheTrackedNode(this._store);
+    const trackedIndex = this.state.trackedIndex;
     if (trackedIndex < 0) {
       return;
     }
@@ -122,12 +137,30 @@ export class FileTree extends React.Component<Props, State> {
     }
   };
 
+  _processStoreUpdate(): void {
+    const trackedIndex = findIndexOfTheTrackedNode(this._store);
+    const isEditingWorkingSet = this._store.isEditingWorkingSet();
+    const roots = this._store.roots;
+    const reorderPreviewStatus = this._store.reorderPreviewStatus;
+    const selectedNodes = this._store.selectionManager.selectedNodes();
+    const focusedNodes = this._store.selectionManager.focusedNodes();
+
+    this.setState({
+      trackedIndex,
+      isEditingWorkingSet,
+      roots,
+      reorderPreviewStatus,
+      selectedNodes,
+      focusedNodes,
+    });
+  }
+
   render(): React.Node {
     const classes = {
       'nuclide-file-tree': true,
       'focusable-panel': true,
       'tree-view': true,
-      'nuclide-file-tree-editing-working-set': this._store.isEditingWorkingSet(),
+      'nuclide-file-tree-editing-working-set': this.state.isEditingWorkingSet,
     };
 
     return (
@@ -142,7 +175,7 @@ export class FileTree extends React.Component<Props, State> {
   }
 
   _renderChildren(): React.Element<any> {
-    const roots = this._store.roots;
+    const roots = this.state.roots;
     const childrenCount = countShownNodes(roots);
 
     if (childrenCount === 0) {
@@ -166,7 +199,7 @@ export class FileTree extends React.Component<Props, State> {
       above: boolean,
       target: string,
     };
-    const reorderPreviewStatus = this._store.reorderPreviewStatus;
+    const reorderPreviewStatus = this.state.reorderPreviewStatus;
     if (reorderPreviewStatus != null) {
       const source = reorderPreviewStatus.source;
       const sourceNode = this._store.getNode(source, source);
@@ -184,8 +217,8 @@ export class FileTree extends React.Component<Props, State> {
             <FileTreeEntryComponent
               node={sourceNode}
               isPreview={true}
-              selectedNodes={this._store.selectionManager.selectedNodes()}
-              focusedNodes={this._store.selectionManager.focusedNodes()}
+              selectedNodes={this.state.selectedNodes}
+              focusedNodes={this.state.focusedNodes}
             />
           ),
           above: targetIdx < sourceIdx,
@@ -212,8 +245,8 @@ export class FileTree extends React.Component<Props, State> {
           <FileTreeEntryComponent
             key={key}
             node={node}
-            selectedNodes={this._store.selectionManager.selectedNodes()}
-            focusedNodes={this._store.selectionManager.focusedNodes()}
+            selectedNodes={this.state.selectedNodes}
+            focusedNodes={this.state.focusedNodes}
             ref="measured"
           />
         );
@@ -232,8 +265,8 @@ export class FileTree extends React.Component<Props, State> {
           <FileTreeEntryComponent
             key={key}
             node={node}
-            selectedNodes={this._store.selectionManager.selectedNodes()}
-            focusedNodes={this._store.selectionManager.focusedNodes()}
+            selectedNodes={this.state.selectedNodes}
+            focusedNodes={this.state.focusedNodes}
           />
         );
         if (reorderPreview != null && reorderPreview.target === node.uri) {
@@ -269,7 +302,7 @@ export class FileTree extends React.Component<Props, State> {
 }
 
 function findFirstNodeToRender(
-  roots: OrderedMap<mixed, FileTreeNode>,
+  roots: Immutable.OrderedMap<mixed, FileTreeNode>,
   firstToRender: number,
 ): ?FileTreeNode {
   let skipped = 0;
@@ -304,6 +337,8 @@ function findIndexOfTheTrackedNode(store: FileTreeStore): number {
   return trackedNode.calculateVisualIndex();
 }
 
-function countShownNodes(roots: OrderedMap<mixed, FileTreeNode>): number {
+function countShownNodes(
+  roots: Immutable.OrderedMap<mixed, FileTreeNode>,
+): number {
   return roots.reduce((sum, root) => sum + root.shownChildrenCount, 0);
 }
