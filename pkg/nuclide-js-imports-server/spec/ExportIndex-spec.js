@@ -98,7 +98,7 @@ describe('ExportIndex', () => {
     const ids3 = exportIndex.getIdsMatching('AutoImportsW', 100);
     expect(ids3.length).toBe(1);
   });
-  it('should not fuzzy match', () => {
+  it('should fuzzy match', () => {
     const exportIndex = new ExportIndex();
     exportIndex.setAll('someFile.js', [
       {
@@ -120,6 +120,6 @@ describe('ExportIndex', () => {
     ]);
     exportIndex.clearExportsFromFile('someFile.js');
     const ids = exportIndex.getIdsMatching('SeOther', 100);
-    expect(ids.length).toBe(0);
+    expect(ids.length).toBe(1);
   });
 });

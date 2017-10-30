@@ -10,10 +10,15 @@
  */
 
 import type {CodeActionConfig} from '../../nuclide-language-service/lib/CodeActionProvider';
+import type {
+  GlobalProviderType,
+  SymbolResult,
+} from '../../nuclide-quick-open/lib/types';
 import type {ServerConnection} from '../../nuclide-remote-connection';
 import type {AtomLanguageServiceConfig} from '../../nuclide-language-service/lib/AtomLanguageService';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
+import createPackage from 'nuclide-commons-atom/createPackage';
 import typeof * as JsService from '../../nuclide-js-imports-client-rpc/lib/JsImportsService';
 
 import {
@@ -24,13 +29,9 @@ import {NullLanguageService} from '../../nuclide-language-service-rpc';
 import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
+import QuickOpenProvider from './QuickOpenProvider';
 
 const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
-
-export function activate() {
-  const jsImportLanguageService = createLanguageService();
-  jsImportLanguageService.then(value => value.activate());
-}
 
 async function connectToJSImportsService(
   connection: ?ServerConnection,
@@ -56,9 +57,7 @@ async function connectToJSImportsService(
   return lspService || new NullLanguageService();
 }
 
-async function createLanguageService(): Promise<
-  AtomLanguageService<LanguageService>,
-> {
+function createLanguageService(): AtomLanguageService<LanguageService> {
   const diagnosticsConfig = {
     version: '0.2.0',
     analyticsEventName: 'jsimports.observe-diagnostics',
@@ -107,3 +106,24 @@ function getAutoImportSettings() {
     ),
   };
 }
+
+class Activation {
+  _languageService: AtomLanguageService<LanguageService>;
+  _quickOpenProvider: QuickOpenProvider;
+
+  constructor() {
+    this._languageService = createLanguageService();
+    this._languageService.activate();
+    this._quickOpenProvider = new QuickOpenProvider(this._languageService);
+  }
+
+  dispose() {
+    this._languageService.dispose();
+  }
+
+  registerQuickOpenProvider(): GlobalProviderType<SymbolResult> {
+    return this._quickOpenProvider;
+  }
+}
+
+createPackage(module.exports, Activation);

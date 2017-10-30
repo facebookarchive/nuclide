@@ -43,5 +43,12 @@
   },
   "activationHooks": [
     "nuclide_js_auto_imports:gk:nuclide"
-  ]
+  ],
+  "providedServices": {
+    "nuclide-quick-open-register-provider": {
+      "versions": {
+        "0.0.0": "registerQuickOpenProvider"
+      }
+    }
+  }
 }

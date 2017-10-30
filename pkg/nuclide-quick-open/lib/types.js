@@ -50,30 +50,30 @@ export type ProviderResult = CommandResult | FileResult | SymbolResult;
 export type DirectoryProviderType<T: ProviderResult> = {
   providerType: 'DIRECTORY',
   name: string,
-  debounceDelay?: number,
-  display?: {
+  +debounceDelay?: number,
+  +display?: {
     title: string,
     prompt: string,
     action?: string,
     canOpenAll?: boolean,
   },
-  priority?: number,
+  +priority?: number,
   isEligibleForDirectory(directory: atom$Directory): Promise<boolean>,
   executeQuery(query: string, directory: atom$Directory): Promise<Array<T>>,
-  getComponentForItem?: (item: T) => React.Element<any>,
+  +getComponentForItem?: (item: T) => React.Element<any>,
 };
 
 export type GlobalProviderType<T: ProviderResult> = {
   providerType: 'GLOBAL',
   name: string,
-  debounceDelay?: number,
-  display?: {
+  +debounceDelay?: number,
+  +display?: {
     title: string,
     prompt: string,
     action?: string,
     canOpenAll?: boolean,
   },
-  priority?: number,
+  +priority?: number,
   isEligibleForDirectories(
     directories: Array<atom$Directory>,
   ): Promise<boolean>,
@@ -81,7 +81,7 @@ export type GlobalProviderType<T: ProviderResult> = {
     query: string,
     directories: Array<atom$Directory>,
   ): Promise<Array<T>>,
-  getComponentForItem?: (item: T) => React.Element<any>,
+  +getComponentForItem?: (item: T) => React.Element<any>,
 };
 
 export type Provider<T: ProviderResult> =

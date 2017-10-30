@@ -16,9 +16,10 @@ import type {
 import type {AutoImportsManager} from './lib/AutoImportsManager';
 import type {ExportType} from './lib/types';
 
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {SymbolKind} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-const WORKSPACE_SYMBOLS_LIMIT = 100;
+const WORKSPACE_SYMBOLS_LIMIT = 30;
 
 function exportTypeToSymbolKind(type?: ExportType): $Values<typeof SymbolKind> {
   switch (type) {
@@ -31,14 +32,14 @@ function exportTypeToSymbolKind(type?: ExportType): $Values<typeof SymbolKind> {
     case 'VariableDeclaration':
       return SymbolKind.Variable;
     case 'InterfaceDeclaration':
+    case 'TypeAlias':
       return SymbolKind.Interface;
     case 'ObjectExpression':
       return SymbolKind.Module;
-    case 'TypeAlias':
-      return SymbolKind.Constructor;
     case 'NumericLiteral':
+      return SymbolKind.Number;
     case 'StringLiteral':
-      return SymbolKind.Constant;
+      return SymbolKind.String;
     default:
       return SymbolKind.Module;
   }
@@ -59,26 +60,28 @@ export class WorkspaceSymbols {
         return acc;
       }
       const needed = WORKSPACE_SYMBOLS_LIMIT - acc.length;
-      return index
-        .getExportsFromId(id)
-        .slice(0, needed)
-        .map(jsExport => {
-          const position = {
-            line: jsExport.line - 1,
-            character: 0, // TODO: not really needed for now.
-          };
-          return {
-            name: id,
-            kind: exportTypeToSymbolKind(jsExport.type),
-            location: {
-              uri: jsExport.uri,
-              range: {
-                start: position,
-                end: position,
+      return acc.concat(
+        index
+          .getExportsFromId(id)
+          .slice(0, needed)
+          .map(jsExport => {
+            const position = {
+              line: jsExport.line - 1,
+              character: 0, // TODO: not really needed for now.
+            };
+            return {
+              name: id,
+              kind: exportTypeToSymbolKind(jsExport.type),
+              location: {
+                uri: nuclideUri.nuclideUriToUri(jsExport.uri),
+                range: {
+                  start: position,
+                  end: position,
+                },
               },
-            },
-          };
-        });
+            };
+          }),
+      );
     }, []);
   }
 }

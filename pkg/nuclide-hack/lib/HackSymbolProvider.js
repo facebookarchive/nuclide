@@ -16,9 +16,9 @@ import type {
 } from '../../nuclide-quick-open/lib/types';
 import type {LanguageService} from '../../nuclide-language-service/lib/LanguageService';
 
+import humanizePath from 'nuclide-commons-atom/humanizePath';
 import {getHackLanguageForUri} from './HackLanguage';
 import {collect, arrayCompact, arrayFlatten} from 'nuclide-commons/collection';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 import * as React from 'react';
 
 async function getHackDirectoriesByService(
@@ -81,8 +81,6 @@ export const HackSymbolProvider: GlobalProviderType<SymbolResult> = {
   },
 
   getComponentForItem(item: SymbolResult): React.Element<any> {
-    const filePath = item.path;
-    const filename = nuclideUri.basename(filePath);
     const name = item.name || '';
 
     // flowlint-next-line sketchy-null-string:off
@@ -94,7 +92,9 @@ export const HackSymbolProvider: GlobalProviderType<SymbolResult> = {
         <span className={symbolClasses}>
           <code>{name}</code>
         </span>
-        <span className="omnisearch-symbol-result-filename">{filename}</span>
+        <span className="omnisearch-symbol-result-filename">
+          {humanizePath(item.path)}
+        </span>
       </div>
     );
   },
