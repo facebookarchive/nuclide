@@ -65,19 +65,10 @@ export default class FileTreeActions {
   }
 
   setRootKeys(rootKeys: Array<string>): void {
-    const existingRootKeySet: Immutable.Set<string> = new Immutable.Set(
-      this._store.getRootKeys(),
-    );
-    const addedRootKeys: Immutable.Set<string> = new Immutable.Set(
-      rootKeys,
-    ).subtract(existingRootKeySet);
     this._dispatcher.dispatch({
       actionType: ActionTypes.SET_ROOT_KEYS,
       rootKeys,
     });
-    for (const rootKey of addedRootKeys) {
-      this.expandNode(rootKey, rootKey);
-    }
   }
 
   clearFilter(): void {

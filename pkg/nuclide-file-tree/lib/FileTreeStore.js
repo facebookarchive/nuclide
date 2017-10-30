@@ -227,7 +227,7 @@ export class FileTreeStore {
         {
           uri: rootUri,
           rootUri,
-          isExpanded: false,
+          isExpanded: true,
           isSelected: false,
           isLoading: true,
           children: new Immutable.OrderedMap(),
@@ -1924,10 +1924,13 @@ export class FileTreeStore {
         return root;
       }
 
+      this._fetchChildKeys(rootUri);
       return new FileTreeNode(
         {
           uri: rootUri,
           rootUri,
+          isLoading: true,
+          isExpanded: true,
           connectionTitle: FileTreeHelpers.getDisplayTitle(rootUri) || '',
         },
         this._conf,
