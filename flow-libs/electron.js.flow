@@ -330,7 +330,7 @@ declare class electron$BrowserWindow {
     options?: {httpReferrer?: string, userAgent?: string, extraHeaders?: string},
   ): void,
   reload(): void,
-  setMenu(menu: electron$Menu): void, // Linux Windows
+  setMenu(menu: ?electron$Menu): void, // Linux Windows
   setProgressBar(progress: number): void,
   setOverlayIcon(overlay: electron$NativeImage, description: string): void, // Windows
   setHasShadow(hasShadow: boolean): void, // macOS
