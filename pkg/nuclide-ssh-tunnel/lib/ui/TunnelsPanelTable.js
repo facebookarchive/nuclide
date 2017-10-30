@@ -42,6 +42,7 @@ export class TunnelsPanelTable extends React.Component<Props> {
         title: '',
         key: 'close',
         width: 0,
+        minWidth: 35,
       },
     ];
     const rows = this.props.tunnels.map(([tunnel, openTunnel]) => {
