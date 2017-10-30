@@ -19,6 +19,8 @@ import type {
   DebugBridgeFullConfig,
 } from './types';
 
+import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import {getStore} from './common/Store';
 import {ConnectableObservable} from 'rxjs';
 import {Adb} from './bridges/Adb';
@@ -195,6 +197,31 @@ export function getAdbPorts(): Promise<Array<number>> {
   return Promise.resolve(getStore('adb').getPorts());
 }
 
-export function getApkManifest(apkPath: string): Promise<string> {
-  return runCommand('aapt', ['dump', 'badging', apkPath]).toPromise();
+async function getAaptBinary(buildToolsVersion: ?string): Promise<string> {
+  if (process.env.ANDROID_SDK == null || buildToolsVersion == null) {
+    return 'aapt';
+  } else {
+    const allBuildToolsPath = nuclideUri.join(
+      process.env.ANDROID_SDK,
+      'build-tools',
+    );
+    const exactBuildToolPath = nuclideUri.join(
+      allBuildToolsPath,
+      buildToolsVersion,
+    );
+    const aaptPath = nuclideUri.join(exactBuildToolPath, 'aapt');
+    if (await fsPromise.exists(aaptPath)) {
+      return aaptPath;
+    } else {
+      return 'aapt';
+    }
+  }
+}
+
+export async function getApkManifest(
+  apkPath: string,
+  buildToolsVersion: ?string,
+): Promise<string> {
+  const aaptBinary = await getAaptBinary(buildToolsVersion);
+  return runCommand(aaptBinary, ['dump', 'badging', apkPath]).toPromise();
 }
