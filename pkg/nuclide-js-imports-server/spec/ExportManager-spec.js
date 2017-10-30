@@ -185,6 +185,7 @@ describe('ExportManager', () => {
         isTypeExport: false,
         type: 'ObjectExpression',
         uri: 'testFile',
+        line: 1,
         isDefault: true,
       },
     ]);
@@ -243,6 +244,20 @@ describe('ExportManager', () => {
     expect(exp[0].id).toBe('MyClass');
     expect(exp[0].isTypeExport).toBe(false);
     expect(exp[0].type).toBe('ClassExpression');
+    expect(exp[0].uri).toBe('testFile');
+    expect(exp[0].isDefault).toBe(true);
+  });
+  it('Should index module.exports with assignment', () => {
+    const program = 'exports = test = 1;';
+    const manager = new ExportManager();
+    const ast = babylon.parse(program, babylonOptions);
+    manager.addFile('testFile', ast);
+    const exp = manager.getExportsIndex().getExportsFromId('test');
+    expect(exp).toBeDefined();
+    expect(exp.length).toBe(1);
+    expect(exp[0].id).toBe('test');
+    expect(exp[0].isTypeExport).toBe(false);
+    expect(exp[0].type).toBe('NumericLiteral');
     expect(exp[0].uri).toBe('testFile');
     expect(exp[0].isDefault).toBe(true);
   });

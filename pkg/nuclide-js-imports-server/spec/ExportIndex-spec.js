@@ -20,18 +20,21 @@ describe('ExportIndex', () => {
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'SomeExport2',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'AnotherExport',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
     ]);
     const ids = exportIndex.getIdsMatching('Some', 10);
@@ -47,24 +50,28 @@ describe('ExportIndex', () => {
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'AutoImportsManager-spec.js',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'AutoImportsWorker',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'AutoImports',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
     ]);
     exportIndex.clearExportsFromFile('someFile.js');
@@ -74,12 +81,14 @@ describe('ExportIndex', () => {
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
       {
         id: 'SomethingElse',
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
     ]);
     const ids = exportIndex.getIdsMatching('Auto', 100);
@@ -97,6 +106,7 @@ describe('ExportIndex', () => {
         isDefault: false,
         isTypeExport: false,
         uri: 'someFile.js',
+        line: 1,
       },
     ]);
     exportIndex.setAll('anotherFile.js', [
@@ -105,6 +115,7 @@ describe('ExportIndex', () => {
         isDefault: false,
         isTypeExport: false,
         uri: 'anotherFile.js',
+        line: 1,
       },
     ]);
     exportIndex.clearExportsFromFile('someFile.js');

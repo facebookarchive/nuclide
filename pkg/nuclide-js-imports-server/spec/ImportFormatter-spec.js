@@ -18,6 +18,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/login/home/root/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: false,
     };
@@ -34,6 +35,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/login/home/root/subdirectory/modules/module1/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: false,
     };
@@ -54,6 +56,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/login/home/root/subdirectory/types.js',
+      line: 1,
       isTypeExport: false,
       isDefault: false,
     };
@@ -73,6 +76,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/login/home/root/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: false,
     };
@@ -89,6 +93,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeType',
       uri: '/Users/login/home/root/someFile.js',
+      line: 1,
       isTypeExport: true,
       isDefault: false,
     };
@@ -105,6 +110,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/login/home/root/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: true,
     };
@@ -121,6 +127,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/modules/atom-ide-ui/somePackage/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: true,
     };
@@ -136,6 +143,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/modules/atom-ide-ui/somePackage/someFile.js',
+      line: 1,
       isTypeExport: false,
       isDefault: true,
     };
@@ -151,6 +159,7 @@ describe('ImportFormatter', () => {
     const suggestedImport: JSExport = {
       id: 'SomeSymbol',
       uri: '/Users/modules/somePackage/somePackage/AutoImportsManager.js',
+      line: 1,
       hasteName: 'AutoImportsManagerHaste',
       isTypeExport: false,
       isDefault: true,

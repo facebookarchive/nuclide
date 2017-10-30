@@ -36,6 +36,7 @@ export type JSImport = {
 export type JSExport = {
   id: string,
   uri: NuclideUri,
+  line: number, // Line number (1-based for AST consistency)
   isTypeExport: boolean,
   isDefault: boolean,
   hasteName?: string,

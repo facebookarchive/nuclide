@@ -96,7 +96,13 @@ function addDefaultDeclarationToExportIndex(
     // (ex: export default {someObject, otherObject})
     // Assume the id will be the name of the file.
     const id = idFromFileName(fileUri);
-    exportIndex.push({id, uri: fileUri, isDefault, isTypeExport});
+    exportIndex.push({
+      id,
+      uri: fileUri,
+      line: node.loc.start.line,
+      isDefault,
+      isTypeExport,
+    });
     return;
   }
 
@@ -149,6 +155,7 @@ function specifierToExport(
   return {
     id: node.exported.name,
     uri: fileUri,
+    line: node.loc.start.line,
     isTypeExport,
     isDefault,
   };
@@ -165,6 +172,7 @@ function expressionToExports(
     {
       id: defaultId,
       uri: fileUri,
+      line: expression.loc.start.line,
       type: 'ObjectExpression',
       isTypeExport,
       isDefault: true,
@@ -176,6 +184,7 @@ function expressionToExports(
     result.push({
       id: ident,
       uri: fileUri,
+      line: expression.loc.start.line,
       type: expression.type,
       isTypeExport,
       isDefault: true, // Treated as default export
@@ -193,6 +202,7 @@ function expressionToExports(
               ? property.key.value
               : property.key.name,
           uri: fileUri,
+          line: property.key.loc.start.line,
           type: expression.type,
           isTypeExport,
           isDefault: false,
@@ -208,7 +218,8 @@ function expressionToExports(
     result.push({
       id: expression.left.name,
       uri: fileUri,
-      type: expression.type,
+      line: expression.left.loc.start.line,
+      type: expression.right.type,
       isTypeExport,
       isDefault: true, // Treated as default export
     });
@@ -228,6 +239,7 @@ function declarationToExport(
       {
         id: declaration.name || declaration.id.name,
         uri: fileUri,
+        line: declaration.loc.start.line,
         type: declaration.type,
         isTypeExport,
         isDefault,
@@ -243,6 +255,7 @@ function declarationToExport(
       return {
         id: decl.id.name,
         uri: fileUri,
+        line: decl.id.start.line,
         type: declaration.type,
         isTypeExport,
         isDefault,
@@ -255,6 +268,7 @@ function declarationToExport(
       {
         id: idFromFileName(fileUri),
         uri: fileUri,
+        line: declaration.loc.start.line,
         isTypeExport: false,
         type: declaration.type,
         isDefault,
@@ -297,6 +311,7 @@ function traverseTreeAndIndexExports(
               exportIndex.push({
                 id: left.property.name,
                 uri: fileUri,
+                line: left.property.loc.start.line,
                 type:
                   // Exclude easy cases from being imported as types.
                   right.type === 'ObjectExpression' ||

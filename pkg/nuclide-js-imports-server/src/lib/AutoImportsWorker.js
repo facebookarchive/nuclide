@@ -421,6 +421,7 @@ function addHasteNames(
             {
               id: idFromFileName(hasteName),
               uri: nuclideUri.join(root, file),
+              line: 1,
               hasteName,
               isTypeExport: false,
               isDefault: true,

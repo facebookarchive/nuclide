@@ -31,6 +31,7 @@ describe('CommandExecutor', () => {
         {
           id: 'test',
           uri: '/a/test2.js',
+          line: 1,
           isTypeExport: false,
           isDefault: true,
         },
@@ -53,6 +54,7 @@ describe('CommandExecutor', () => {
         {
           id: 'test',
           uri: '/a/test2.js',
+          line: 1,
           hasteName: 'test2',
           isTypeExport: false,
           isDefault: true,
@@ -73,6 +75,7 @@ describe('CommandExecutor', () => {
         {
           id: 'test',
           uri: '/a/test2.js',
+          line: 1,
           hasteName: 'test2',
           isTypeExport: false,
           isDefault: false,
@@ -99,7 +102,7 @@ import {w} from './local';
 
     const importFormatter = new ImportFormatter(['node_modules'], false);
     function getExport(id, uri, isTypeExport = false, isDefault = false) {
-      return {id, uri, isTypeExport, isDefault};
+      return {id, uri, line: 1, isTypeExport, isDefault};
     }
 
     expect(
@@ -182,6 +185,7 @@ import {w} from './local';
         {
           id: 'b',
           uri: '/a/test2.js',
+          line: 1,
           isTypeExport: false,
           isDefault: false,
         },
@@ -203,6 +207,7 @@ import {w} from './local';
         {
           id: 'c',
           uri: '/a/test2.js',
+          line: 1,
           isTypeExport: false,
           isDefault: false,
         },
@@ -222,6 +227,7 @@ import {w} from './local';
         {
           id: 'newType',
           uri: '/a/test2.js',
+          line: 1,
           isTypeExport: true,
           isDefault: false,
         },
