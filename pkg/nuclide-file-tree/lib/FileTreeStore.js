@@ -30,6 +30,7 @@ import {getLogger} from 'log4js';
 import {WorkingSet} from '../../nuclide-working-sets-common';
 import {HistogramTracker, track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {createDeadline, timeoutAfterDeadline} from 'nuclide-commons/promise';
 import {RangeKey, SelectionRange, RangeUtil} from './FileTreeSelectionRange';
 import {awaitGeneratedFileServiceByNuclideUri} from '../../nuclide-remote-connection';
 
@@ -105,6 +106,8 @@ export type ReorderPreviewStatus = ?{
   target?: NuclideUri,
   targetIdx?: number,
 };
+
+const FETCH_TIMEOUT = 20000;
 
 let instance: ?Object;
 
@@ -967,7 +970,10 @@ export class FileTreeStore {
       return existingPromise;
     }
 
-    const promise = FileTreeHelpers.fetchChildren(nodeKey)
+    const promise = timeoutAfterDeadline(
+      createDeadline(FETCH_TIMEOUT),
+      FileTreeHelpers.fetchChildren(nodeKey),
+    )
       .then(
         childrenKeys => this._setFetchedKeys(nodeKey, childrenKeys),
         error => {
