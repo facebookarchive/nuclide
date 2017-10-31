@@ -26,6 +26,7 @@ import invariant from 'assert';
 import {getLogger} from 'log4js';
 
 const WARN_ABOUT_TRIGGER_CONFLICT_KEY = 'hyperclick.warnAboutTriggerConflict';
+const LOADING_DELAY = 250;
 
 /**
  * Construct this object to enable Hyperclick in a text editor.
@@ -47,7 +48,7 @@ export default class HyperclickForTextEditor {
   _onKeyUp: (event: Event) => void;
   _subscriptions: UniversalDisposable;
   _isDestroyed: boolean;
-  _isLoading: boolean;
+  _loadingTimer: ?number;
   _triggerKeys: Set<'shiftKey' | 'ctrlKey' | 'altKey' | 'metaKey'>;
 
   constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
@@ -86,7 +87,6 @@ export default class HyperclickForTextEditor {
     );
 
     this._isDestroyed = false;
-    this._isLoading = false;
 
     this._subscriptions.add(
       featureConfig.observe(
@@ -157,10 +157,6 @@ export default class HyperclickForTextEditor {
 
   _onMouseMove(event: Event): void {
     const mouseEvent: MouseEvent = (event: any);
-    if (this._isLoading) {
-      // Show the loading cursor.
-      this._textEditorView.classList.add('hyperclick-loading');
-    }
 
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
@@ -276,7 +272,7 @@ export default class HyperclickForTextEditor {
       !this._lastSuggestionAtMousePromise ||
       position.compare(this._lastPosition) !== 0
     ) {
-      this._isLoading = true;
+      this._setLoading();
       this._lastPosition = position;
 
       try {
@@ -284,7 +280,13 @@ export default class HyperclickForTextEditor {
           this._textEditor,
           position,
         );
-        this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
+        const promise = this._lastSuggestionAtMousePromise;
+        const result = await promise;
+        // Avoid race conditions where we start fetching for a different location.
+        if (this._lastSuggestionAtMousePromise !== promise) {
+          return;
+        }
+        this._lastSuggestionAtMouse = result;
       } catch (e) {
         getLogger('hyperclick').error(
           'Error getting Hyperclick suggestion:',
@@ -410,8 +412,20 @@ export default class HyperclickForTextEditor {
     );
   }
 
+  _setLoading(): void {
+    this._doneLoading();
+    this._loadingTimer = setTimeout(() => {
+      // Show the loading cursor.
+      this._textEditorView.classList.add('hyperclick-loading');
+      this._loadingTimer = null;
+    }, LOADING_DELAY);
+  }
+
   _doneLoading(): void {
-    this._isLoading = false;
+    if (this._loadingTimer != null) {
+      clearTimeout(this._loadingTimer);
+      this._loadingTimer = null;
+    }
     this._textEditorView.classList.remove('hyperclick-loading');
   }
 
