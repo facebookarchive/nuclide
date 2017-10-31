@@ -284,4 +284,28 @@ describe('HostServicesAggregator', () => {
       expect(await promise).toBeUndefined();
     });
   });
+
+  it('is no-op after dispose', () => {
+    waitsForPromise(async () => {
+      const aggregator1 = await forkHostServices(host, logger);
+      const aggregator2 = await forkHostServices(aggregator1, logger);
+      aggregator1.dispose();
+      aggregator2.consoleNotification('noop', 'warning', 'goodbye');
+    });
+  });
+
+  it('forks disposed children after dispose', () => {
+    waitsForPromise(async () => {
+      const aggregator = await forkHostServices(host, logger);
+      aggregator.consoleNotification('op', 'warning', 'hello');
+      expect(hostRelay.consoleNotification.callCount).toEqual(1);
+      aggregator.dispose();
+
+      const child = await forkHostServices(aggregator, logger);
+      expect((child: any).isDisposed()).toEqual(true);
+      child.consoleNotification('noop', 'warning', 'goodbye');
+      expect(hostRelay.consoleNotification.callCount).toEqual(1);
+      child.dispose();
+    });
+  });
 });
