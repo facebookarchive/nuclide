@@ -492,7 +492,7 @@ function _normalizeNameForBuckQuery(aliasOrTarget: string): string {
   // Don't prepend // for aliases (aliases will not have colons or .)
   if (
     (canonicalName.indexOf(':') !== -1 || canonicalName.indexOf('.') !== -1) &&
-    !canonicalName.startsWith('//')
+    canonicalName.indexOf('//') === -1
   ) {
     canonicalName = '//' + canonicalName;
   }
