@@ -72,6 +72,7 @@ export default class ChangedFile extends React.Component<Props> {
     return classnames(
       'nuclide-changed-file',
       'list-item',
+      'nuclide-path-with-terminal',
       {
         selected: isSelected,
         [`${commandPrefix}-file-entry`]: isHgPath,

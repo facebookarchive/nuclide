@@ -139,9 +139,13 @@ export class OpenFilesListComponent extends React.PureComponent<Props, State> {
                 const isHoveredUri = this.state.hoveredUri === e.uri;
                 return (
                   <TreeItem
-                    className={classnames('file', {
-                      'text-highlight': isHoveredUri,
-                    })}
+                    className={classnames(
+                      'file',
+                      'nuclide-path-with-terminal',
+                      {
+                        'text-highlight': isHoveredUri,
+                      },
+                    )}
                     selected={e.isSelected}
                     key={e.uri}
                     onConfirm={this._onConfirm.bind(this, e)}

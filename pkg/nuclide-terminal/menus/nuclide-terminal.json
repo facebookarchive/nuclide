@@ -11,7 +11,7 @@
     }
   ],
   "context-menu": {
-    "atom-pane atom-text-editor, .tab-bar .tab [data-path]:not(.nuclide-file-tree-path), .nuclide-file-tree-open-files .file, .nuclide-changed-files-list .nuclide-changed-file": [
+    "atom-pane atom-text-editor, .tab-bar .tab [data-path]:not(.nuclide-file-tree-path), .nuclide-path-with-terminal": [
       {
         "label": "New Terminal Here",
         "command": "nuclide-terminal:new-terminal"

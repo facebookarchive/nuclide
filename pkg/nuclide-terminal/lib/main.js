@@ -128,8 +128,11 @@ class Activation {
       ((event.target: any): HTMLElement),
       true,
     );
+
     if (editorPath != null) {
-      return nuclideUri.dirname(editorPath);
+      return nuclideUri.endsWithSeparator(editorPath)
+        ? editorPath
+        : nuclideUri.dirname(editorPath);
     }
 
     if (this._cwd != null) {
