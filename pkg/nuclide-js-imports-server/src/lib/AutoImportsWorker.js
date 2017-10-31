@@ -389,7 +389,7 @@ function setupParentMessagesHandler(
     try {
       const exportUpdate = await addFileToIndex(
         root,
-        fileUri,
+        nuclideUri.relative(root, fileUri),
         hasteSettings,
         fileContents,
       );
