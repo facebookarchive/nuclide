@@ -137,23 +137,23 @@ function flowConfigToHasteSettings(
 }
 
 function eslintToEnvs(eslintFile: string): ?Array<string> {
-  if (fs.existsSync(eslintFile)) {
+  try {
     const json = JSON.parse(fs.readFileSync(eslintFile, 'utf8'));
     if (json.env) {
       return Object.keys(json.env).filter(env => json.env[env]);
     }
-  }
+  } catch (err) {}
   return null;
 }
 
 function packageJsonToEnvs(packageJsonFile: string): ?Array<string> {
-  if (fs.existsSync(packageJsonFile)) {
+  try {
     const json = JSON.parse(fs.readFileSync(packageJsonFile, 'utf8'));
     if (json.eslintConfig && json.eslintConfig.env) {
       return Object.keys(json.eslintConfig.env).filter(
         env => json.eslintConfig.env[env],
       );
     }
-  }
+  } catch (err) {}
   return null;
 }
