@@ -137,7 +137,7 @@ type atom$ConfigSchema = {
   type: Array<atom$ConfigType> | atom$ConfigType,
 };
 
-declare class atom$Config {
+  declare class atom$Config {
   // Config Subscription
   observe(
     keyPath: string,
@@ -189,6 +189,7 @@ declare class atom$Config {
     keyPath: string,
     schema: atom$ConfigSchema,
   ): void,
+  removeAtKeyPath(keyPath: ?string, value: ?mixed): mixed,
 }
 
 declare class atom$Cursor {
