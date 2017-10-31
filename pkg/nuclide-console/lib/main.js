@@ -150,12 +150,15 @@ class Activation {
       selector: '*',
       // Copies Chrome devtools and puts history suggestions at the bottom.
       suggestionPriority: -1,
-      filterSuggestions: true,
       async getSuggestions(request) {
+        // History provides suggestion only on exact match to current input.
+        const prefix = request.editor.getText();
         const history = activation._getStore().getState().history;
         // Use a set to remove duplicates.
         const seen = new Set(history);
-        return Array.from(seen).map(text => ({text}));
+        return Array.from(seen)
+          .filter(text => text.startsWith(prefix))
+          .map(text => ({text, replacementPrefix: prefix}));
       },
     };
   }
