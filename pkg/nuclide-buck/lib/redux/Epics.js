@@ -113,9 +113,12 @@ export function setBuildTargetEpic(
       if (buckService == null) {
         return Observable.of(null);
       }
-      return Observable.defer(() =>
-        buckService.buildRuleTypeFor(buckRoot, buildTarget),
-      ).catch(() => Observable.of(null));
+      return Observable.defer(() => {
+        return buckService.buildRuleTypeFor(buckRoot, buildTarget);
+      }).catch(error => {
+        getLogger().error(error);
+        return Observable.of(null);
+      });
     })
     .switchMap(ruleType => Observable.of(setRuleType(ruleType)));
 }
