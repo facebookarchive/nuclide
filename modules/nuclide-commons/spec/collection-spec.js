@@ -120,6 +120,13 @@ describe('arrayEqual', () => {
     expect(arrayEqual([1, 2], [1, 2, 3])).toBe(false);
     expect(arrayEqual([1, 2, 3], [1, 2])).toBe(false);
   });
+
+  it("doesn't call the compare function if the same array is used", () => {
+    const compare = jasmine.createSpy().andReturn(true);
+    const a = [1, 2, 3];
+    arrayEqual(a, a, compare);
+    expect(compare).not.toHaveBeenCalled();
+  });
 });
 
 describe('arrayCompact', () => {

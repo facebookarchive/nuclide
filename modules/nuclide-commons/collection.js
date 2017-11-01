@@ -26,6 +26,9 @@ export function arrayEqual<T>(
   array2: Array<T>,
   equalComparator?: (a: T, b: T) => boolean,
 ): boolean {
+  if (array1 === array2) {
+    return true;
+  }
   if (array1.length !== array2.length) {
     return false;
   }
