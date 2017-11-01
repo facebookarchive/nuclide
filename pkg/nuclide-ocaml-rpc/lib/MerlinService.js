@@ -30,7 +30,7 @@ export type MerlinError = {
   end?: MerlinPosition,
   valid: boolean,
   message: string,
-  type: 'type' | 'parser' | 'env' | 'warning' | 'unknown',
+  type: 'type' | 'parser' | 'env' | 'warning' | 'unknown' | 'error',
 };
 
 export type MerlinOutline = {
