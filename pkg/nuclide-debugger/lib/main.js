@@ -525,7 +525,7 @@ class Activation {
       return Promise.resolve(
         arrayFlatten(
           scopes.map(({scopeVariables}) =>
-            scopeVariables.map(({name}) => ({text: name})),
+            scopeVariables.map(({name}) => ({text: name, type: 'variable'})),
           ),
         ),
       );
@@ -538,14 +538,14 @@ class Activation {
             reject(err);
           } else {
             const result = response.targets.map(obj => {
-              const {label} = obj;
+              const {label, type} = obj;
               let replaceText;
               if (obj.text != null) {
                 replaceText = obj.text;
               } else {
                 replaceText = label;
               }
-              return {text: replaceText, displayText: label};
+              return {text: replaceText, displayText: label, type};
             });
             resolve(result);
           }
