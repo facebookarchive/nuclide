@@ -229,26 +229,6 @@ export default class DiagnosticsTable extends React.PureComponent<
       descriptionWidth -= LINE_NUMBER_WIDTH;
     }
 
-    // False positive for this lint rule?
-    // eslint-disable-next-line react/no-unused-prop-types
-    const DescriptionComponent = (props: {data: DescriptionField}) => {
-      const {showTraces, diagnostic, text, isPlainText} = props.data;
-      const expanded =
-        showTraces ||
-        (this.state.focused && diagnostic === this.state.selectedMessage);
-      return expanded
-        ? DiagnosticsMessageNoHeader({
-            message: diagnostic,
-            goToLocation: (file: string, line: number) =>
-              goToLocation(file, {line}),
-            fixer: () => {},
-          })
-        : DiagnosticsMessageText({
-            preserveNewlines: showTraces,
-            message: {text, html: isPlainText ? undefined : text},
-          });
-    };
-
     return [
       {
         component: TypeComponent,
@@ -265,7 +245,7 @@ export default class DiagnosticsTable extends React.PureComponent<
         minWidth: 100,
       },
       {
-        component: DescriptionComponent,
+        component: this._renderDescription,
         key: 'description',
         title: 'Description',
         width: descriptionWidth,
@@ -274,6 +254,26 @@ export default class DiagnosticsTable extends React.PureComponent<
       ...filePathColumns,
     ];
   }
+
+  // False positive for this lint rule?
+  // eslint-disable-next-line react/no-unused-prop-types
+  _renderDescription = (props: {data: DescriptionField}) => {
+    const {showTraces, diagnostic, text, isPlainText} = props.data;
+    const expanded =
+      showTraces ||
+      (this.state.focused && diagnostic === this.state.selectedMessage);
+    return expanded
+      ? DiagnosticsMessageNoHeader({
+          message: diagnostic,
+          goToLocation: (file: string, line: number) =>
+            goToLocation(file, {line}),
+          fixer: () => {},
+        })
+      : DiagnosticsMessageText({
+          preserveNewlines: showTraces,
+          message: {text, html: isPlainText ? undefined : text},
+        });
+  };
 
   _getSortOptions(
     columns: Array<Column<DisplayDiagnostic>>,
