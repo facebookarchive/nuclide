@@ -1,0 +1,19 @@
+{
+  "name": "sample-diagnostics-tester",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "A package that adds utilities for testing diagnostics",
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "linter-indie": {
+      "versions": {
+        "2.0.0": "consumeIndie"
+      }
+    }
+  }
+}
