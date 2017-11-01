@@ -11,9 +11,6 @@
  */
 
 import * as React from 'react';
-import invariant from 'assert';
-import type {Observable} from 'rxjs';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {AtomInput} from 'nuclide-commons-ui/AtomInput';
 import {Icon} from 'nuclide-commons-ui/Icon';
 import {goToLocationInEditor} from 'nuclide-commons-atom/go-to-location';
@@ -37,7 +34,6 @@ type Props = {
   updateSearchResults: (
     searchResults: Map<OutlineTreeForUi, SearchResult>,
   ) => void,
-  visibility: Observable<boolean>,
 };
 
 type State = {
@@ -45,9 +41,8 @@ type State = {
 };
 
 export class OutlineViewSearchComponent extends React.Component<Props, State> {
-  subscription: ?UniversalDisposable;
   searchResults: Map<OutlineTreeForUi, SearchResult>;
-  _inputRef: ?React$ElementRef<typeof AtomInput>;
+  _inputRef: ?React.ElementRef<typeof AtomInput>;
 
   constructor(props: Props) {
     super(props);
@@ -58,32 +53,19 @@ export class OutlineViewSearchComponent extends React.Component<Props, State> {
     this.state = {
       currentQuery: '',
     };
-    (this: any)._handleInputRef = this._handleInputRef.bind(this);
   }
 
   SEARCH_PLACEHOLDER = 'Search Outline';
   DEBOUNCE_TIME = 100;
 
-  componentDidMount(): void {
-    invariant(this.subscription == null);
-    this.subscription = new UniversalDisposable(
-      this.props.visibility.filter(visible => visible).subscribe(_ => {
-        if (this._inputRef == null) {
-          return;
-        }
-        this._inputRef.focus();
-      }),
-    );
-  }
-
-  componentWillUnmount(): void {
-    invariant(this.subscription != null);
-    this.subscription.unsubscribe();
-    this.subscription = null;
-  }
-
-  _handleInputRef(element: ?React$ElementRef<typeof AtomInput>): mixed {
+  _handleInputRef = (element: ?React.ElementRef<typeof AtomInput>) => {
     this._inputRef = element;
+  };
+
+  focus() {
+    if (this._inputRef != null) {
+      this._inputRef.focus();
+    }
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {

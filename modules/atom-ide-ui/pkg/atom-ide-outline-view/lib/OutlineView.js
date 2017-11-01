@@ -10,7 +10,6 @@
  * @format
  */
 
-import type {Observable} from 'rxjs';
 import type {OutlineForUi, OutlineTreeForUi} from './createOutlines';
 import type {TextToken} from 'nuclide-commons/tokenized-text';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -43,8 +42,8 @@ type State = {
 };
 
 type Props = {
-  outlines: Observable<OutlineForUi>,
-  visibility: Observable<boolean>,
+  outline: OutlineForUi,
+  visible: boolean,
 };
 
 const TOKEN_KIND_TO_CLASS_NAME_MAP = {
@@ -61,6 +60,7 @@ const TOKEN_KIND_TO_CLASS_NAME_MAP = {
 
 export class OutlineView extends React.PureComponent<Props, State> {
   subscription: ?UniversalDisposable;
+  _outlineViewRef: ?React.ElementRef<typeof OutlineViewComponent>;
 
   constructor(props: Props) {
     super(props);
@@ -77,9 +77,6 @@ export class OutlineView extends React.PureComponent<Props, State> {
   componentDidMount(): void {
     invariant(this.subscription == null);
     this.subscription = new UniversalDisposable(
-      this.props.outlines.subscribe(outline => {
-        this.setState({outline});
-      }),
       atom.config.observe('editor.fontSize', (size: mixed) => {
         this.setState({fontSize: (size: any)});
       }),
@@ -90,6 +87,11 @@ export class OutlineView extends React.PureComponent<Props, State> {
         this.setState({lineHeight: (size: any)});
       }),
     );
+
+    // Ensure that focus() gets called during the initial mount.
+    if (this.props.visible) {
+      this.focus();
+    }
   }
 
   componentWillUnmount(): void {
@@ -97,6 +99,24 @@ export class OutlineView extends React.PureComponent<Props, State> {
     this.subscription.unsubscribe();
     this.subscription = null;
   }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.visible && !prevProps.visible) {
+      this.focus();
+    }
+  }
+
+  focus() {
+    if (this._outlineViewRef != null) {
+      this._outlineViewRef.focus();
+    }
+  }
+
+  _setOutlineViewRef = (
+    element: ?React.ElementRef<typeof OutlineViewComponent>,
+  ) => {
+    this._outlineViewRef = element;
+  };
 
   render(): React.Node {
     return (
@@ -113,8 +133,8 @@ export class OutlineView extends React.PureComponent<Props, State> {
           }}
         />
         <OutlineViewComponent
-          outline={this.state.outline}
-          visibility={this.props.visibility}
+          outline={this.props.outline}
+          ref={this._setOutlineViewRef}
         />
       </div>
     );
@@ -123,14 +143,25 @@ export class OutlineView extends React.PureComponent<Props, State> {
 
 type OutlineViewComponentProps = {
   outline: OutlineForUi,
-  visibility: Observable<boolean>,
 };
 
 class OutlineViewComponent extends React.PureComponent<
   OutlineViewComponentProps,
 > {
+  _outlineViewCoreRef: ?React.ElementRef<typeof OutlineViewCore>;
+
   constructor(props: OutlineViewComponentProps) {
     super(props);
+  }
+
+  _setOutlineViewCoreRef = element => {
+    this._outlineViewCoreRef = element;
+  };
+
+  focus() {
+    if (this._outlineViewCoreRef != null) {
+      this._outlineViewCoreRef.focus();
+    }
   }
 
   render(): React.Node {
@@ -189,7 +220,7 @@ class OutlineViewComponent extends React.PureComponent<
         return (
           <OutlineViewCore
             outline={outline}
-            visibility={this.props.visibility}
+            ref={this._setOutlineViewCoreRef}
           />
         );
       default:
@@ -200,7 +231,6 @@ class OutlineViewComponent extends React.PureComponent<
 
 type OutlineViewCoreProps = {
   outline: OutlineForUi,
-  visibility: Observable<boolean>,
 };
 
 /**
@@ -218,8 +248,20 @@ class OutlineViewCore extends React.PureComponent<
     searchResults: new Map(),
   };
 
+  _searchRef: ?React.ElementRef<typeof OutlineViewSearchComponent>;
+
+  _setSearchRef = element => {
+    this._searchRef = element;
+  };
+
+  focus() {
+    if (this._searchRef != null) {
+      this._searchRef.focus();
+    }
+  }
+
   render() {
-    const {outline, visibility} = this.props;
+    const {outline} = this.props;
     invariant(outline.kind === 'outline');
 
     return (
@@ -230,7 +272,7 @@ class OutlineViewCore extends React.PureComponent<
           updateSearchResults={searchResults => {
             this.setState({searchResults});
           }}
-          visibility={visibility}
+          ref={this._setSearchRef}
         />
         <div className="outline-view-trees-scroller">
           <Tree className="outline-view-trees">

@@ -12,12 +12,13 @@
 
 import type {OutlineForUi} from './createOutlines';
 
+import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import * as React from 'react';
 
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
 import {renderReactRoot} from 'nuclide-commons-ui/renderReactRoot';
 import {OutlineView} from './OutlineView';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 
 export const WORKSPACE_VIEW_URI = 'atom://nuclide/outline-view';
 
@@ -27,23 +28,12 @@ export type SerializedOutlineViewPanelState = {
 
 export class OutlineViewPanelState {
   _outlines: Observable<OutlineForUi>;
-  _visibility: BehaviorSubject<boolean>;
-  _visibilitySubscription: rxjs$ISubscription;
 
   constructor(outlines: Observable<OutlineForUi>) {
     this._outlines = outlines;
-    // TODO(T17495163)
-    this._visibility = new BehaviorSubject(true);
-    this._visibilitySubscription = observePaneItemVisibility(
-      this,
-    ).subscribe(visible => {
-      this.didChangeVisibility(visible);
-    });
   }
 
-  destroy(): void {
-    this._visibilitySubscription.unsubscribe();
-  }
+  destroy(): void {}
 
   getTitle() {
     return 'Outline';
@@ -65,20 +55,17 @@ export class OutlineViewPanelState {
     return 'right';
   }
 
-  didChangeVisibility(visible: boolean): void {
-    this._visibility.next(visible);
-  }
-
   getElement(): HTMLElement {
-    const outlines = this._visibility.switchMap(
-      visible => (visible ? this._outlines : Observable.of({kind: 'empty'})),
+    const BoundOutlineView = bindObservableAsProps(
+      observePaneItemVisibility(this).switchMap(visible => {
+        const outlines = visible
+          ? this._outlines
+          : Observable.of({kind: 'empty'});
+        return outlines.map(outline => ({outline, visible}));
+      }),
+      OutlineView,
     );
-    return renderReactRoot(
-      <OutlineView
-        outlines={outlines}
-        visibility={this._visibility.distinctUntilChanged()}
-      />,
-    );
+    return renderReactRoot(<BoundOutlineView />);
   }
 
   serialize(): SerializedOutlineViewPanelState {
