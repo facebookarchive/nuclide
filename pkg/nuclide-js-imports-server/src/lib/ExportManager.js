@@ -255,7 +255,7 @@ function declarationToExport(
       return {
         id: decl.id.name,
         uri: fileUri,
-        line: decl.id.start.line,
+        line: decl.id.loc.start.line,
         type: declaration.type,
         isTypeExport,
         isDefault,
