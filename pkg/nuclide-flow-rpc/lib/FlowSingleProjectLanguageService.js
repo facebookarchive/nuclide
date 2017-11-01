@@ -179,9 +179,8 @@ export class FlowSingleProjectLanguageService {
     buffer: simpleTextBuffer$TextBuffer,
     position: atom$Point,
   ): Promise<?Array<atom$Range>> {
-    // `flow find-refs` came out in v0.38.0
-    // https://github.com/facebook/flow/releases/tag/v0.38.0
-    const isSupported = await this._version.satisfies('>=0.38.0');
+    // `flow find-refs` did not work well until version v0.55.0
+    const isSupported = await this._version.satisfies('>=0.55.0');
     if (!isSupported) {
       return null;
     }
