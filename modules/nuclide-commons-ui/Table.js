@@ -15,11 +15,13 @@ import nullthrows from 'nullthrows';
 import classnames from 'classnames';
 import * as React from 'react';
 import {Observable, Subject} from 'rxjs';
+import shallowEqual from 'shallowequal';
 import {Icon} from './Icon';
 import {
   areSetsEqual,
   objectMapValues,
   objectFromPairs,
+  arrayEqual,
 } from 'nuclide-commons/collection';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {ResizeObservable} from './observable-dom';
@@ -223,6 +225,27 @@ export class Table<T: Object> extends React.Component<Props<T>, State<T>> {
       tableWidth: 0,
       usingKeyboard: false,
     };
+  }
+
+  shouldComponentUpdate(nextProps: Props<T>, nextState: State<T>): boolean {
+    // If the state changed, we need to re-render.
+    if (!shallowEqual(nextState, this.state)) {
+      return true;
+    }
+
+    if (!shallowEqual(nextProps, this.props, compareCheapProps)) {
+      return true;
+    }
+
+    if (!arrayEqual(nextProps.columns, this.props.columns, shallowEqual)) {
+      return true;
+    }
+
+    if (!arrayEqual(nextProps.rows, this.props.rows)) {
+      return true;
+    }
+
+    return false;
   }
 
   componentDidMount(): void {
@@ -840,4 +863,24 @@ export function _calculatePreferredColumnWidths<T: Object>(options: {
   });
 
   return preferredColumnWidths;
+}
+
+/**
+ * An equality check for comparing Props using `shallowEqual()`. This only performs the cheap
+ * checks and assumes that the rows and columns are equal. (They can be checked separatedly iff
+ * necessary.)
+ */
+function compareCheapProps(a: mixed, b: mixed, key: ?string): ?boolean {
+  switch (key) {
+    case undefined:
+      // This is a magic way of telling `shallowEqual()` to use the default comparison for the
+      // props objects (inspect its members).
+      return undefined;
+    case 'rows':
+    case 'columns':
+      // We'll check these later iff we need to since they're more expensive.
+      return true;
+    default:
+      return a === b;
+  }
 }
