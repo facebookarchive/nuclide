@@ -70,6 +70,10 @@ export default class ScopesStore {
     return this._scopes.asObservable();
   }
 
+  getScopesNow(): Array<ScopeSection> {
+    return this._scopes.getValue();
+  }
+
   supportsSetVariable(): boolean {
     return this._debuggerStore.supportsSetVariable();
   }

@@ -34,6 +34,7 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {DebuggerProviderStore} from './DebuggerProviderStore';
 import type {FileLineBreakpoint} from './types';
 
+import {arrayFlatten} from 'nuclide-commons/collection';
 import {AnalyticsEvents} from './constants';
 import {BreakpointConfigComponent} from './BreakpointConfigComponent';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
@@ -512,13 +513,22 @@ class Activation {
     const debuggerInstance = this.getModel()
       .getStore()
       .getDebuggerInstance();
-    // Immediately complete if no capable debugger attached.
     if (
       debuggerInstance == null ||
       !debuggerInstance.getDebuggerProcessInfo().getDebuggerCapabilities()
         .completionsRequest
     ) {
-      return Promise.resolve(null);
+      // As a fallback look at the variable names of currently visible scopes.
+      const scopes = this.getModel()
+        .getScopesStore()
+        .getScopesNow();
+      return Promise.resolve(
+        arrayFlatten(
+          scopes.map(({scopeVariables}) =>
+            scopeVariables.map(({name}) => ({text: name})),
+          ),
+        ),
+      );
     }
     return new Promise((resolve, reject) => {
       this.getModel()
