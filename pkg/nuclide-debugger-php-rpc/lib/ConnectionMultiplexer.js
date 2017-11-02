@@ -64,18 +64,6 @@ export const ConnectionMultiplexerNotification = {
   RequestUpdate: 'RequestUpdate',
 };
 
-type DbgpError = {
-  $: {
-    code: number,
-  },
-  message: Array<string>,
-};
-
-type EvaluationFailureResult = {
-  error: DbgpError,
-  wasThrown: boolean,
-};
-
 // The ConnectionMultiplexer makes multiple debugger connections appear to be
 // a single connection to the debugger UI.
 //
@@ -565,7 +553,6 @@ export class ConnectionMultiplexer {
       // Global runtime evaluation on dummy connection does not care about
       // which frame it is being evaluated on so choose top frame here.
       const result = await this._dummyConnection.runtimeEvaluate(0, expression);
-      this._reportEvaluationFailureIfNeeded(expression, result);
       return result;
     } else {
       this._sendOutput(
@@ -585,24 +572,9 @@ export class ConnectionMultiplexer {
         frameIndex,
         expression,
       );
-      this._reportEvaluationFailureIfNeeded(expression, result);
       return result;
     } else {
       throw this._noConnectionError();
-    }
-  }
-
-  _reportEvaluationFailureIfNeeded(
-    expression: string,
-    result: EvaluationFailureResult,
-  ): void {
-    if (result.wasThrown) {
-      this._sendOutput(
-        'Failed to evaluate ' +
-          `"${expression}": (${result.error.$.code}) ${result.error
-            .message[0]}`,
-        'error',
-      );
     }
   }
 

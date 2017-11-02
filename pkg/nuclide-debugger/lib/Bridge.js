@@ -297,7 +297,10 @@ export default class Bridge {
             this._handleThreadUpdate(event.args[1]);
             break;
           case 'ReportError':
-            this._reportEngineError(event.args[1]);
+            this._reportEngineError(event.args[1], false);
+            break;
+          case 'ReportErrorFromConsole':
+            this._reportEngineError(event.args[1], true);
             break;
           case 'ReportWarning':
             this._reportEngineWarning(event.args[1]);
@@ -316,9 +319,13 @@ export default class Bridge {
     );
   }
 
-  _reportEngineError(message: string): void {
+  _reportEngineError(message: string, fromConsole: boolean): void {
     const outputMessage = `Debugger engine reports error: ${message}`;
     logger.error(outputMessage);
+    if (fromConsole) {
+      this._sendConsoleMessage('error', outputMessage);
+      atom.notifications.addError(outputMessage);
+    }
   }
 
   _reportEngineWarning(message: string): void {

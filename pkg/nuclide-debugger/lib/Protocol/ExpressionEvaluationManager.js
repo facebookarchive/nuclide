@@ -24,7 +24,7 @@ import type RuntimeDomainDispatcher from './RuntimeDomainDispatcher';
 
 import invariant from 'assert';
 import {Subject, Observable} from 'rxjs';
-import {reportError} from './EventReporter';
+import {reportError, reportErrorFromConsole} from './EventReporter';
 
 class RemoteObjectProxy {
   _objectId: RemoteObjectId;
@@ -109,7 +109,15 @@ export default class ExpressionEvaluationManager {
   ): void {
     function callback(error: Error, response: EvaluateOnCallFrameResponse) {
       if (error != null) {
-        reportError(`evaluateOnCallFrame failed with ${JSON.stringify(error)}`);
+        const errorMsg = `evaluateOnCallFrame failed with ${typeof error ===
+        'string'
+          ? error
+          : JSON.stringify(error)}`;
+        if (objectGroup === 'console') {
+          reportErrorFromConsole(errorMsg);
+        } else {
+          reportError(errorMsg);
+        }
         return;
       }
       const {result, wasThrown, exceptionDetails} = response;

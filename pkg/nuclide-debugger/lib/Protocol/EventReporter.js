@@ -21,6 +21,10 @@ export function reportError(message: string): void {
   customEvent$.next(['ReportError', message]);
 }
 
+export function reportErrorFromConsole(message: string): void {
+  customEvent$.next(['ReportErrorFromConsole', message]);
+}
+
 export function reportWarning(message: string): void {
   customEvent$.next(['ReportWarning', message]);
 }
