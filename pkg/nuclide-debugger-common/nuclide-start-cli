@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+HERE=$(cd $(dirname $0) ; pwd -P)
+NODE=$(${HERE}/../commons-node/fb-node-run.sh | sed -E 's/^export PATH="(.*):.*/\1/')
+${NODE}/node ${HERE}/cli $@
