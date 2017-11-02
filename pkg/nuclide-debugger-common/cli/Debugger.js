@@ -15,6 +15,7 @@ import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
+import BackTraceCommand from './BackTraceCommand';
 import CommandDispatcher from './CommandDispatcher';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
@@ -43,6 +44,7 @@ export default class Debugger implements DebuggerInterface {
   }
 
   registerCommands(dispatcher: CommandDispatcher): void {
+    dispatcher.registerCommand(new BackTraceCommand(this._console, this));
     dispatcher.registerCommand(new ThreadsCommand(this._console, this));
     dispatcher.registerCommand(new StepCommand(this));
   }
