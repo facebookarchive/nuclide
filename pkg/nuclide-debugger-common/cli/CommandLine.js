@@ -11,19 +11,22 @@
 
 import readline from 'readline';
 import CommandDispatcher from './CommandDispatcher';
-import type {ConsoleOutput} from './ConsoleOutput';
+import type {ConsoleIO} from './ConsoleIO';
 
-export default class CommandLine implements ConsoleOutput {
-  dispatcher: CommandDispatcher;
-  cli: readline$Interface;
+export default class CommandLine implements ConsoleIO {
+  _dispatcher: CommandDispatcher;
+  _cli: readline$Interface;
+  _inputStopped = false;
+  _shouldPrompt = false;
 
   constructor(dispatcher: CommandDispatcher) {
-    this.dispatcher = dispatcher;
-    this.cli = readline.createInterface({
+    this._dispatcher = dispatcher;
+    this._cli = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
-    this.cli.setPrompt('fbdb> ');
+
+    this._cli.setPrompt('fbdb> ');
   }
 
   // $TODO handle
@@ -37,24 +40,42 @@ export default class CommandLine implements ConsoleOutput {
     process.stdout.write(`${line}\n`);
   }
 
+  stopInput(): void {
+    this._inputStopped = true;
+  }
+
+  startInput(): void {
+    this._inputStopped = false;
+    if (this._shouldPrompt) {
+      this._cli.prompt();
+      this._shouldPrompt = false;
+    }
+  }
+
   async run(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.cli.prompt();
-      this.cli.on('line', this._executeCommand.bind(this)).on('close', resolve);
+      this._cli.prompt();
+      this._cli
+        .on('line', this._executeCommand.bind(this))
+        .on('close', resolve);
     });
   }
 
-  close() {
-    this.cli.close();
+  close(): void {
+    this._cli.close();
   }
 
-  async _executeCommand(line: string) {
+  async _executeCommand(line: string): Promise<void> {
     try {
-      await this.dispatcher.execute(line);
+      await this._dispatcher.execute(line);
     } catch (x) {
       this.outputLine(x.message);
     } finally {
-      this.cli.prompt();
+      if (!this._inputStopped) {
+        this._cli.prompt();
+      } else {
+        this._shouldPrompt = true;
+      }
     }
   }
 }

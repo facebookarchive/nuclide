@@ -12,4 +12,5 @@
 export interface DebuggerInterface {
   getThreads(): Map<number, string>,
   getActiveThread(): ?number,
+  stepIn(): Promise<void>,
 }

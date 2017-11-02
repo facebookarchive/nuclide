@@ -18,7 +18,7 @@ import log4js from 'log4js';
 import QuitCommand from './QuitCommand';
 import yargs from 'yargs';
 
-function buildLogger() {
+function buildLogger(): log4js$Logger {
   const args = yargs.argv;
   const level = (args.loglevel || 'ERROR').toUpperCase();
   const validLevels = new Set([
@@ -34,12 +34,14 @@ function buildLogger() {
     throw new Error(`${level} is not a valid loglevel.`);
   }
 
+  log4js.getLogger('nuclide-commons/process').setLevel(level);
+
   const logger = log4js.getLogger('default');
   logger.setLevel(level);
   return logger;
 }
 
-async function main() {
+async function main(): Promise<void> {
   const dispatcher = new CommandDispatcher();
   const cli = new CommandLine(dispatcher);
 

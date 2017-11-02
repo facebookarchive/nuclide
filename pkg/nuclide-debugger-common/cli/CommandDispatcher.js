@@ -18,7 +18,7 @@ export default class CommandDispatcher {
     this.commands.push(command);
   }
 
-  getCommands() {
+  getCommands(): Command[] {
     return this.commands;
   }
 

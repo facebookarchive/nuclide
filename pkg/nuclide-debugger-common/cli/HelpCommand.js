@@ -10,15 +10,15 @@
  */
 
 import type {Command} from './Command';
-import type {ConsoleOutput} from './ConsoleOutput';
+import type {ConsoleIO} from './ConsoleIO';
 
 export default class HelpCommand implements Command {
   name = 'help';
   helpText = 'Give help about the debugger command set.';
-  _console: ConsoleOutput;
+  _console: ConsoleIO;
   _getCommands: () => Command[];
 
-  constructor(con: ConsoleOutput, getCommands: () => Command[]) {
+  constructor(con: ConsoleIO, getCommands: () => Command[]) {
     this._console = con;
     this._getCommands = getCommands;
   }
@@ -27,7 +27,7 @@ export default class HelpCommand implements Command {
     this._displayHelp();
   }
 
-  _displayHelp() {
+  _displayHelp(): void {
     const commands = this._getCommands();
     const commandDict = {};
     commands.forEach(x => (commandDict[x.name] = x));

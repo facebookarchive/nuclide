@@ -11,36 +11,31 @@
 
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
-import type {ConsoleOutput} from './ConsoleOutput';
+import type {ConsoleIO} from './ConsoleIO';
 
 export default class ThreadsCommand implements Command {
   name = 'threads';
   helpText = "List all of the target's threads.";
 
   _debugger: DebuggerInterface;
-  _console: ConsoleOutput;
+  _console: ConsoleIO;
 
-  constructor(con: ConsoleOutput, debug: DebuggerInterface) {
+  constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
   }
 
   async execute(): Promise<void> {
-    try {
-      const threads = this._debugger.getThreads();
-      const activeThread = this._debugger.getActiveThread();
+    const threads = this._debugger.getThreads();
+    const activeThread = this._debugger.getActiveThread();
 
-      Array.from(threads.keys())
-        .map(tid => parseInt(tid, 10))
-        .sort((left, right) => left - right)
-        .forEach(tid => {
-          const activeMarker = tid === activeThread ? '*' : ' ';
-          this._console.outputLine(
-            `${activeMarker} ${tid} ${threads.get(tid) || '(thread)'}`,
-          );
-        });
-    } catch (x) {
-      this._console.outputLine(x.message);
-    }
+    Array.from(threads.keys())
+      .sort((left, right) => left - right)
+      .forEach(tid => {
+        const activeMarker = tid === activeThread ? '*' : ' ';
+        this._console.outputLine(
+          `${activeMarker} ${tid} ${threads.get(tid) || '(thread)'}`,
+        );
+      });
   }
 }
