@@ -63,6 +63,8 @@ async function main() {
       );
     }
 
+    debuggerInstance.registerCommands(dispatcher);
+
     await cli.run();
     await debuggerInstance.closeSession();
     console.log('\n');
