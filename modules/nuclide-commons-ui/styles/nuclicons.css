@@ -106,6 +106,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-warning::before {
   content: "\f117";
 }
-.icon-nuclicon-small-arrow-right::before {
+.icon-nuclicon-kebab-horizontal::before {
   content: "\f118";
 }

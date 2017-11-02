@@ -38,7 +38,7 @@ export type Nuclicon =
   // Octicons aren't vertically centered and the fact that this one's frequently shown next to
   // nuclicon-error makes it wayyyy more obvious.
   | 'nuclicon-warning'
-  | 'nuclicon-small-arrow-right';
+  | 'nuclicon-kebab-horizontal';
 
 export type IconName = Nuclicon | atom$Octicon;
 
