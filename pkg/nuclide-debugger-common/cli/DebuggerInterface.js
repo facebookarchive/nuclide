@@ -15,6 +15,7 @@ export interface DebuggerInterface {
   getThreads(): Map<number, string>,
   getActiveThread(): ?number,
   stepIn(): Promise<void>,
+  stepOver(): Promise<void>,
   getStackTrace(
     thread: number,
     frameCount: ?number,

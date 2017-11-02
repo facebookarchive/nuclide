@@ -21,6 +21,7 @@ import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import StepCommand from './StepCommand';
+import NextCommand from './NextCommand';
 import ThreadsCommand from './ThreadsCommand';
 
 import invariant from 'assert';
@@ -47,6 +48,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new BackTraceCommand(this._console, this));
     dispatcher.registerCommand(new ThreadsCommand(this._console, this));
     dispatcher.registerCommand(new StepCommand(this));
+    dispatcher.registerCommand(new NextCommand(this));
   }
 
   getThreads(): Map<number, string> {
@@ -77,6 +79,15 @@ export default class Debugger implements DebuggerInterface {
     }
 
     await this._ensureDebugSession().stepIn({threadId: activeThread});
+  }
+
+  async stepOver(): Promise<void> {
+    const activeThread = this._activeThread;
+    if (activeThread == null) {
+      throw new Error('There is no active thread to step through.');
+    }
+
+    await this._ensureDebugSession().next({threadId: activeThread});
   }
 
   async getSourceLines(
