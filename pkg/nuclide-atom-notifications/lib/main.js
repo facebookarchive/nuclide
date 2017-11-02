@@ -1,3 +1,25 @@
+'use strict';
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _marked;
+
+function _load_marked() {
+  return _marked = _interopRequireDefault(require('marked'));
+}
+
+var _createPackage;
+
+function _load_createPackage() {
+  return _createPackage = _interopRequireDefault(require('nuclide-commons-atom/createPackage'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,36 +27,27 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {Level, ConsoleService} from '../../nuclide-console/lib/types';
-
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import marked from 'marked';
-import createPackage from 'nuclide-commons-atom/createPackage';
-
 class Activation {
-  _disposables: UniversalDisposable;
 
   constructor() {
-    this._disposables = new UniversalDisposable();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default();
   }
 
-  consumeConsoleService(createConsole: ConsoleService): IDisposable {
+  consumeConsoleService(createConsole) {
     const consoleApi = createConsole({
       id: 'Atom',
-      name: 'Atom',
+      name: 'Atom'
     });
-    const notificationDisposable = atom.notifications.onDidAddNotification(
-      notification => {
-        consoleApi.append({
-          text: stripFormatting(notification.getMessage()),
-          level: getLevel(notification.getType()),
-        });
-      },
-    );
+    const notificationDisposable = atom.notifications.onDidAddNotification(notification => {
+      consoleApi.append({
+        text: stripFormatting(notification.getMessage()),
+        level: getLevel(notification.getType())
+      });
+    });
     this._disposables.add(consoleApi, notificationDisposable);
     return notificationDisposable;
   }
@@ -44,7 +57,7 @@ class Activation {
   }
 }
 
-function getLevel(atomNotificationType: string): Level {
+function getLevel(atomNotificationType) {
   switch (atomNotificationType) {
     case 'error':
     case 'fatal':
@@ -67,13 +80,10 @@ let formattingDiv;
  * to raw text. This isn't the most performant way to strip the HTML, but it does handle `<br />`s
  * and stuff really easily and only happens once per notification so it's okay.
  */
-function stripFormatting(raw: string): string {
-  const div =
-    formattingDiv == null
-      ? (formattingDiv = document.createElement('div'))
-      : formattingDiv;
-  div.innerHTML = marked(raw);
+function stripFormatting(raw) {
+  const div = formattingDiv == null ? formattingDiv = document.createElement('div') : formattingDiv;
+  div.innerHTML = (0, (_marked || _load_marked()).default)(raw);
   return div.innerText || '';
 }
 
-createPackage(module.exports, Activation);
+(0, (_createPackage || _load_createPackage()).default)(module.exports, Activation);

@@ -1,87 +1,86 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {
-  SymbolInformation,
-  WorkspaceSymbolParams,
-} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
-import type {AutoImportsManager} from './lib/AutoImportsManager';
-import type {ExportType} from './lib/types';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WorkspaceSymbols = undefined;
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import {SymbolKind} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+var _nuclideUri;
 
-const WORKSPACE_SYMBOLS_LIMIT = 30;
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-function exportTypeToSymbolKind(type?: ExportType): $Values<typeof SymbolKind> {
+var _protocol;
+
+function _load_protocol() {
+  return _protocol = require('../../nuclide-vscode-language-service-rpc/lib/protocol');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const WORKSPACE_SYMBOLS_LIMIT = 30; /**
+                                     * Copyright (c) 2015-present, Facebook, Inc.
+                                     * All rights reserved.
+                                     *
+                                     * This source code is licensed under the license found in the LICENSE file in
+                                     * the root directory of this source tree.
+                                     *
+                                     * 
+                                     * @format
+                                     */
+
+function exportTypeToSymbolKind(type) {
   switch (type) {
     case 'FunctionDeclaration':
     case 'FunctionExpression':
-      return SymbolKind.Function;
+      return (_protocol || _load_protocol()).SymbolKind.Function;
     case 'ClassDeclaration':
     case 'ClassExpression':
-      return SymbolKind.Class;
+      return (_protocol || _load_protocol()).SymbolKind.Class;
     case 'VariableDeclaration':
-      return SymbolKind.Variable;
+      return (_protocol || _load_protocol()).SymbolKind.Variable;
     case 'InterfaceDeclaration':
     case 'TypeAlias':
-      return SymbolKind.Interface;
+      return (_protocol || _load_protocol()).SymbolKind.Interface;
     case 'ObjectExpression':
-      return SymbolKind.Module;
+      return (_protocol || _load_protocol()).SymbolKind.Module;
     case 'NumericLiteral':
-      return SymbolKind.Number;
+      return (_protocol || _load_protocol()).SymbolKind.Number;
     case 'StringLiteral':
-      return SymbolKind.String;
+      return (_protocol || _load_protocol()).SymbolKind.String;
     default:
-      return SymbolKind.Module;
+      return (_protocol || _load_protocol()).SymbolKind.Module;
   }
 }
 
-export class WorkspaceSymbols {
-  static getWorkspaceSymbols(
-    autoImportsManager: AutoImportsManager,
-    params: WorkspaceSymbolParams,
-  ): Array<SymbolInformation> {
+class WorkspaceSymbols {
+  static getWorkspaceSymbols(autoImportsManager, params) {
     const index = autoImportsManager.exportsManager.getExportsIndex();
-    const matchingIds = index.getIdsMatching(
-      params.query,
-      WORKSPACE_SYMBOLS_LIMIT,
-    );
+    const matchingIds = index.getIdsMatching(params.query, WORKSPACE_SYMBOLS_LIMIT);
     return matchingIds.reduce((acc, id) => {
       if (acc.length >= WORKSPACE_SYMBOLS_LIMIT) {
         return acc;
       }
       const needed = WORKSPACE_SYMBOLS_LIMIT - acc.length;
-      return acc.concat(
-        index
-          .getExportsFromId(id)
-          .slice(0, needed)
-          .map(jsExport => {
-            const position = {
-              line: jsExport.line - 1,
-              character: 0, // TODO: not really needed for now.
-            };
-            return {
-              name: id,
-              kind: exportTypeToSymbolKind(jsExport.type),
-              location: {
-                uri: nuclideUri.nuclideUriToUri(jsExport.uri),
-                range: {
-                  start: position,
-                  end: position,
-                },
-              },
-            };
-          }),
-      );
+      return acc.concat(index.getExportsFromId(id).slice(0, needed).map(jsExport => {
+        const position = {
+          line: jsExport.line - 1,
+          character: 0 // TODO: not really needed for now.
+        };
+        return {
+          name: id,
+          kind: exportTypeToSymbolKind(jsExport.type),
+          location: {
+            uri: (_nuclideUri || _load_nuclideUri()).default.nuclideUriToUri(jsExport.uri),
+            range: {
+              start: position,
+              end: position
+            }
+          }
+        };
+      }));
     }, []);
   }
 }
+exports.WorkspaceSymbols = WorkspaceSymbols;

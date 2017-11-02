@@ -1,21 +1,15 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import invariant from 'assert';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.jasmineAttachWorkspace = jasmineAttachWorkspace;
+
 
 // Attach the Atom workspace to the DOM, and give it a reasonable size.
 // This is important for tests that touch the text editor in 1.19+, as they'll have a height of 0
 // unless properly attached with a valid viewport.
-export function jasmineAttachWorkspace(): void {
+function jasmineAttachWorkspace() {
   jasmine.attachToDOM(atom.views.getView(atom.workspace));
 
   // Set the testing window dimensions (smallish, yet realistic).
@@ -24,7 +18,11 @@ export function jasmineAttachWorkspace(): void {
     width: 1000px;
   `;
   const content = document.querySelector('#jasmine-content');
-  invariant(content != null);
+
+  if (!(content != null)) {
+    throw new Error('Invariant violation: "content != null"');
+  }
+
   content.setAttribute('style', styleCSS);
 
   // Unset the 'top' attribute of the spec reporter to make the full window visible.
@@ -33,4 +31,14 @@ export function jasmineAttachWorkspace(): void {
   if (specReporter != null) {
     specReporter.setAttribute('style', 'top: inherit');
   }
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
