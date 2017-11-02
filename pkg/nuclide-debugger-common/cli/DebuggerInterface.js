@@ -9,8 +9,14 @@
  * @format
  */
 
+import * as DebugProtocol from 'vscode-debugprotocol';
+
 export interface DebuggerInterface {
   getThreads(): Map<number, string>,
   getActiveThread(): ?number,
   stepIn(): Promise<void>,
+  getStackTrace(
+    thread: number,
+    frameCount: ?number,
+  ): Promise<DebugProtocol.StackFrame[]>,
 }

@@ -9,8 +9,6 @@
  * @format
  */
 
-/* eslint-disable no-console */
-
 import type {Command} from './Command';
 import {DebuggerInterface} from './DebuggerInterface';
 

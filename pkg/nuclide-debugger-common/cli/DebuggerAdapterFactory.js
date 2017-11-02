@@ -68,7 +68,7 @@ export default class DebuggerAdapterFactory {
     }
 
     if (targetType == null && launchArgs.length > 0) {
-      const program = launchArgs[0];
+      const program = nuclideUri.resolve(launchArgs[0]);
 
       if (!targetType) {
         // $TODO right now this only supports local launch
