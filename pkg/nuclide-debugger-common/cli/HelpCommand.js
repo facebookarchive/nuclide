@@ -9,17 +9,18 @@
  * @format
  */
 
-/* eslint-disable no-console */
-
 import type {Command} from './Command';
+import type {ConsoleOutput} from './ConsoleOutput';
 
 export default class HelpCommand implements Command {
   name = 'help';
   helpText = 'Give help about the debugger command set.';
-  getCommands: () => Command[];
+  _console: ConsoleOutput;
+  _getCommands: () => Command[];
 
-  constructor(getCommands: () => Command[]) {
-    this.getCommands = getCommands;
+  constructor(con: ConsoleOutput, getCommands: () => Command[]) {
+    this._console = con;
+    this._getCommands = getCommands;
   }
 
   async execute(): Promise<void> {
@@ -27,14 +28,14 @@ export default class HelpCommand implements Command {
   }
 
   _displayHelp() {
-    const commands = this.getCommands();
+    const commands = this._getCommands();
     const commandDict = {};
     commands.forEach(x => (commandDict[x.name] = x));
 
     const commandNames = commands.map(x => x.name).sort();
 
     commandNames.forEach(name => {
-      console.log(name + ': ' + commandDict[name].helpText);
+      this._console.outputLine(`${name}: ${commandDict[name].helpText}`);
     });
   }
 }

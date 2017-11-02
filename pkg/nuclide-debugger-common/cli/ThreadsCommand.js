@@ -9,18 +9,19 @@
  * @format
  */
 
-/* eslint-disable no-console */
-
 import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
+import type {ConsoleOutput} from './ConsoleOutput';
 
 export default class ThreadsCommand implements Command {
   name = 'threads';
   helpText = "List all of the target's threads.";
 
   _debugger: DebuggerInterface;
+  _console: ConsoleOutput;
 
-  constructor(debug: DebuggerInterface) {
+  constructor(con: ConsoleOutput, debug: DebuggerInterface) {
+    this._console = con;
     this._debugger = debug;
   }
 
@@ -34,12 +35,12 @@ export default class ThreadsCommand implements Command {
         .sort((left, right) => left - right)
         .forEach(tid => {
           const activeMarker = tid === activeThread ? '*' : ' ';
-          console.log(
+          this._console.outputLine(
             `${activeMarker} ${tid} ${threads.get(tid) || '(thread)'}`,
           );
         });
     } catch (x) {
-      console.log(x.message);
+      this._console.outputLine(x.message);
     }
   }
 }

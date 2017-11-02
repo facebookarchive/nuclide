@@ -14,6 +14,7 @@ import type {Capabilities, LaunchRequestArguments} from 'vscode-debugprotocol';
 import type {DebuggerInterface} from './DebuggerInterface';
 
 import CommandDispatcher from './CommandDispatcher';
+import type {ConsoleOutput} from './ConsoleOutput';
 import ThreadsCommand from './ThreadsCommand';
 
 import invariant from 'assert';
@@ -21,17 +22,19 @@ import VsDebugSession from '../lib/VsDebugSession';
 
 export default class Debugger implements DebuggerInterface {
   _capabilities: ?Capabilities;
+  _console: ConsoleOutput;
   _debugSession: ?VsDebugSession;
   _logger: log4js$Logger;
   _activeThread: ?number;
   _threads: Map<number, string> = new Map();
 
-  constructor(logger: log4js$Logger) {
+  constructor(logger: log4js$Logger, con: ConsoleOutput) {
     this._logger = logger;
+    this._console = con;
   }
 
   registerCommands(dispatcher: CommandDispatcher): void {
-    dispatcher.registerCommand(new ThreadsCommand(this));
+    dispatcher.registerCommand(new ThreadsCommand(this._console, this));
   }
 
   getThreads(): Map<number, string> {

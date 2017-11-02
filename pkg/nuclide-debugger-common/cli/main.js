@@ -9,8 +9,6 @@
  * @format
  */
 
-/* eslint-disable no-console */
-
 import CommandLine from './CommandLine';
 import CommandDispatcher from './CommandDispatcher';
 import Debugger from './Debugger';
@@ -45,7 +43,9 @@ async function main() {
   const dispatcher = new CommandDispatcher();
   const cli = new CommandLine(dispatcher);
 
-  dispatcher.registerCommand(new HelpCommand(() => dispatcher.getCommands()));
+  dispatcher.registerCommand(
+    new HelpCommand(cli, () => dispatcher.getCommands()),
+  );
   dispatcher.registerCommand(new QuitCommand(() => cli.close()));
 
   // see if there's session information on the command line
@@ -54,7 +54,7 @@ async function main() {
 
   try {
     const logger = buildLogger();
-    const debuggerInstance = new Debugger(logger);
+    const debuggerInstance = new Debugger(logger, cli);
 
     if (adapter != null) {
       await debuggerInstance.openSession(
@@ -67,11 +67,11 @@ async function main() {
 
     await cli.run();
     await debuggerInstance.closeSession();
-    console.log('\n');
+    cli.outputLine();
 
     process.exit(0);
   } catch (x) {
-    console.error(x.message);
+    cli.outputLine(x.message);
     process.exit(1);
   }
 }

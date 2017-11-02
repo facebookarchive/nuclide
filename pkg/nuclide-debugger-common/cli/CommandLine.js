@@ -9,12 +9,11 @@
  * @format
  */
 
-/* eslint-disable no-console */
-
 import readline from 'readline';
 import CommandDispatcher from './CommandDispatcher';
+import type {ConsoleOutput} from './ConsoleOutput';
 
-export default class CommandLine {
+export default class CommandLine implements ConsoleOutput {
   dispatcher: CommandDispatcher;
   cli: readline$Interface;
 
@@ -25,6 +24,17 @@ export default class CommandLine {
       output: process.stdout,
     });
     this.cli.setPrompt('fbdb> ');
+  }
+
+  // $TODO handle
+  // (1) async output that happens while the user is typing at the prompt
+  // (2) paging long output (more) if termcap allows us to know the screen height
+  output(text: string): void {
+    process.stdout.write(text);
+  }
+
+  outputLine(line?: string = ''): void {
+    process.stdout.write(`${line}\n`);
   }
 
   async run(): Promise<void> {
@@ -42,7 +52,7 @@ export default class CommandLine {
     try {
       await this.dispatcher.execute(line);
     } catch (x) {
-      console.log(x.message);
+      this.outputLine(x.message);
     } finally {
       this.cli.prompt();
     }
