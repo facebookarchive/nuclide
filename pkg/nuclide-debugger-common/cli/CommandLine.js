@@ -27,11 +27,11 @@ export default class CommandLine {
     this.cli.setPrompt('fbdb> ');
   }
 
-  run() {
-    this.cli.prompt();
-    this.cli
-      .on('line', this._executeCommand.bind(this))
-      .on('close', () => process.exit(0));
+  async run(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.cli.prompt();
+      this.cli.on('line', this._executeCommand.bind(this)).on('close', resolve);
+    });
   }
 
   close() {
