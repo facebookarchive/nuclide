@@ -19,6 +19,8 @@ export const GRAMMAR_SET: Set<string> = new Set(GRAMMARS);
 
 export const PACKAGE_NAME = 'nuclide-clang';
 
+export const ALTERNATE_PROVIDER_GK = 'nuclide_clangd_lsp';
+
 export const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
 
 export const DEFAULT_FLAGS_WARNING =
