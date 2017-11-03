@@ -225,6 +225,11 @@ export type MergeConflictFileData = {
 export type MergeConflicts = {
   conflicts: Array<MergeConflictFileData>,
   command: string,
+  command_details: {
+    cmd: string,
+    to_abort: string,
+    to_continue: string,
+  },
 };
 
 export type CheckoutSideName = 'ours' | 'theirs';
@@ -1532,13 +1537,13 @@ export class HgService {
   }
 
   continueOperation(
-    command: string,
+    commandWithOptions: Array<string>,
   ): ConnectableObservable<LegacyProcessMessage> {
     // TODO(T17463635)
 
     // prevent user-specified merge tools from attempting to
     // open interactive editors
-    const args = [command, '--continue', '--config', 'ui.merge=:merge'];
+    const args = [...commandWithOptions, '--config', 'ui.merge=:merge'];
     const execOptions = {
       cwd: this._workingDirectory,
     };
@@ -1547,12 +1552,13 @@ export class HgService {
       .publish();
   }
 
-  abortOperation(command: string): ConnectableObservable<string> {
-    const args = [command, '--abort'];
+  abortOperation(
+    commandWithOptions: Array<string>,
+  ): ConnectableObservable<string> {
     const execOptions = {
       cwd: this._workingDirectory,
     };
-    return hgRunCommand(args, execOptions).publish();
+    return hgRunCommand(commandWithOptions, execOptions).publish();
   }
 
   resolveAllFiles(): ConnectableObservable<LegacyProcessMessage> {

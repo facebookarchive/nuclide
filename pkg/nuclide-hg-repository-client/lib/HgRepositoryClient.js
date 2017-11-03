@@ -1224,13 +1224,15 @@ export class HgRepositoryClient {
     return this._service.log(filePaths, limit);
   }
 
-  continueOperation(command: string): Observable<LegacyProcessMessage> {
+  continueOperation(
+    commandWithOptions: Array<string>,
+  ): Observable<LegacyProcessMessage> {
     // TODO(T17463635)
-    return this._service.continueOperation(command).refCount();
+    return this._service.continueOperation(commandWithOptions).refCount();
   }
 
-  abortOperation(command: string): Observable<string> {
-    return this._service.abortOperation(command).refCount();
+  abortOperation(commandWithOptions: Array<string>): Observable<string> {
+    return this._service.abortOperation(commandWithOptions).refCount();
   }
 
   resolveAllFiles(): Observable<LegacyProcessMessage> {
