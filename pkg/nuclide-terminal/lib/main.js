@@ -127,7 +127,11 @@ class Activation {
   }
 
   consumeOmni2(registerProvider: RegisterProvider): IDisposable {
-    return registerProvider(new TerminalOmni2Provider());
+    return registerProvider(
+      new TerminalOmni2Provider({
+        getCwdApi: () => this._cwd,
+      }),
+    );
   }
 
   _getPathOrCwd(event: Event): ?string {

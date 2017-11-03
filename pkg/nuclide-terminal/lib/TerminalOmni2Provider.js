@@ -9,16 +9,22 @@
  * @format
  */
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import type {
   GenericResult,
-  QueryContext,
   Omni2Provider,
+  QueryContext,
 } from '../../fb-omni2/lib/types';
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
+
+import nuclideUri from 'nuclide-commons/nuclideUri';
+import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import highlightText from 'nuclide-commons-ui/highlightText';
+import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import {uriFromInfo} from '../../commons-node/nuclide-terminal-uri';
 
 export default class TerminalOmni2Provider
   implements Omni2Provider<GenericResult> {
+  _getCwdApi: () => ?CwdApi;
   debounceDelay = 0;
   display = {
     title: 'Terminal',
@@ -30,27 +36,52 @@ export default class TerminalOmni2Provider
   prefix = '!';
   priority = 10;
 
+  constructor(opts: {getCwdApi: () => ?CwdApi}) {
+    this._getCwdApi = opts.getCwdApi;
+  }
+
   executeQuery(
     query: string,
     queryContext: QueryContext,
     callback: (items: Array<GenericResult>) => mixed,
   ): IDisposable {
+    let results;
     if (query === '') {
-      callback([
+      results = [
         {
           type: 'generic',
           primaryText: 'Enter a command to run in the terminal',
         },
-      ]);
-      return new UniversalDisposable();
+      ];
+    } else {
+      const cwdApi = this._getCwdApi();
+      const cwd = cwdApi ? cwdApi.getCwd() : null;
+      const cwdPath = cwd ? cwd.getPath() : nuclideUri.expandHomeDir('~');
+      results = [
+        {
+          type: 'generic',
+          primaryText: highlightText`Run ${query} in the terminal`,
+          secondaryText: `at ${cwdPath}`,
+          callback: () => {
+            goToLocation(
+              uriFromInfo({
+                cwd: cwdPath,
+                defaultLocation: 'bottom',
+                icon: 'terminal',
+                remainOnCleanExit: true,
+                title: this.prefix + query,
+                command: {
+                  file: '/bin/bash',
+                  args: ['-c', query],
+                },
+              }),
+            );
+          },
+        },
+      ];
     }
 
-    callback([
-      {
-        type: 'generic',
-        primaryText: highlightText`Run ${query} in the terminal`,
-      },
-    ]);
+    callback(results);
     return new UniversalDisposable();
   }
 }
