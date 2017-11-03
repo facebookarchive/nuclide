@@ -10,6 +10,7 @@
  */
 import type {OpenTunnel, Tunnel} from '../types';
 
+import {shortenHostname} from '../shortenHostname';
 import TunnelCloseButton from './TunnelCloseButton';
 import {Table} from 'nuclide-commons-ui/Table';
 import * as React from 'react';
@@ -46,11 +47,7 @@ export class TunnelsPanelTable extends React.Component<Props> {
       },
     ];
     const rows = this.props.tunnels.map(([tunnel, openTunnel]) => {
-      let {host} = tunnel.from;
-      const ignoredEnding = '.facebook.com';
-      if (host.endsWith(ignoredEnding)) {
-        host = host.slice(0, host.length - ignoredEnding.length);
-      }
+      const host = shortenHostname(tunnel.from.host);
       return {
         className: 'nuclide-ssh-tunnels-table-row',
         data: {
@@ -74,7 +71,6 @@ export class TunnelsPanelTable extends React.Component<Props> {
             No SSH tunnels are open.
           </div>
         )}
-        className="nuclide-ssh-tunnels-table"
         rows={rows}
         columns={columns}
         selectable={true}

@@ -9,6 +9,7 @@
  * @format
  */
 
+import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type {SshTunnelService, Store} from './types';
 
 import createPackage from 'nuclide-commons-atom/createPackage';
@@ -91,6 +92,14 @@ class Activation {
     const tunnels = this._store.getState().openTunnels;
     tunnels.forEach((_, tunnel) =>
       this._store.dispatch(Actions.closeTunnel(tunnel)),
+    );
+  }
+
+  consumeCurrentWorkingDirectory(api: CwdApi): void {
+    this._disposables.add(
+      api.observeCwd(directory => {
+        this._store.dispatch(Actions.setCurrentWorkingDirectory(directory));
+      }),
     );
   }
 }

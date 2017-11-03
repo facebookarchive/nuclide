@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+import type {Directory} from '../../nuclide-remote-connection';
 
 import Immutable from 'immutable';
 
@@ -29,24 +30,19 @@ export type Store = {
 
 export type AppState = {
   openTunnels: Immutable.Map<Tunnel, OpenTunnel>,
+  currentWorkingDirectory: ?Directory,
 };
 
-export type Remote = {
-  host: string,
-  port: number,
-  family?: 4 | 6,
-};
-
-export type Local = {
-  host: 'localhost',
+export type Host = {
+  host: 'localhost' | NuclideUri,
   port: number,
   family?: 4 | 6,
 };
 
 export type Tunnel = {
   description: string,
-  from: Remote,
-  to: Local,
+  from: Host,
+  to: Host,
 };
 
 export type OpenTunnel = {
@@ -60,7 +56,8 @@ export type Action =
   | OpenTunnelAction
   | AddOpenTunnelAction
   | CloseTunnelAction
-  | SetTunnelStateAction;
+  | SetTunnelStateAction
+  | SetCurrentWorkingDirectoryAction;
 
 export type OpenTunnelAction = {
   type: 'OPEN_TUNNEL',
@@ -92,5 +89,12 @@ export type SetTunnelStateAction = {
   payload: {
     tunnel: Tunnel,
     state: TunnelState,
+  },
+};
+
+export type SetCurrentWorkingDirectoryAction = {
+  type: 'SET_CURRENT_WORKING_DIRECTORY',
+  payload: {
+    directory: ?Directory,
   },
 };

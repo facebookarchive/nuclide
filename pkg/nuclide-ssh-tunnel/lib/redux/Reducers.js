@@ -10,6 +10,7 @@
  */
 
 import type {Action, Tunnel, OpenTunnel} from '../types';
+import type {Directory} from '../../../nuclide-remote-connection';
 
 import * as Actions from './Actions';
 import Immutable from 'immutable';
@@ -37,6 +38,18 @@ export function openTunnels(
         ...value,
         state: action.payload.state,
       }));
+    default:
+      return state;
+  }
+}
+
+export function currentWorkingDirectory(
+  state: ?Directory = null,
+  action: Action,
+) {
+  switch (action.type) {
+    case Actions.SET_CURRENT_WORKING_DIRECTORY:
+      return action.payload.directory;
     default:
       return state;
   }
