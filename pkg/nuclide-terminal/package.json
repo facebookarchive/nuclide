@@ -79,6 +79,11 @@
       "versions": {
         "0.0.0": "initializeCwdApi"
       }
+    },
+    "nuclide-omni2-register-provider": {
+      "versions": {
+        "0.0.0": "consumeOmni2"
+      }
     }
   }
 }

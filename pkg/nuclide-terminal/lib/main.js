@@ -18,9 +18,12 @@ import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
+import TerminalOmni2Provider from './TerminalOmni2Provider';
 import {deserializeTerminalView, TerminalView} from './terminal-view';
 import {uriFromCwd, URI_PREFIX} from '../../commons-node/nuclide-terminal-uri';
 
+// $FlowFB
+import type {RegisterProvider} from '../../fb-omni2/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 import type FileTreeContextMenu from '../../nuclide-file-tree/lib/FileTreeContextMenu';
 
@@ -121,6 +124,10 @@ class Activation {
     return new UniversalDisposable(() => {
       this._cwd = null;
     });
+  }
+
+  consumeOmni2(registerProvider: RegisterProvider): IDisposable {
+    return registerProvider(new TerminalOmni2Provider());
   }
 
   _getPathOrCwd(event: Event): ?string {
