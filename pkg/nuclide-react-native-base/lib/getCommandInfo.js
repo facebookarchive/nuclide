@@ -9,13 +9,16 @@
  * @format
  */
 
+import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {CommandInfo} from './types';
+import typeof * as FileSystemService from '../../nuclide-server/lib/services/FileSystemService';
 
-import fsPromise from 'nuclide-commons/fsPromise';
+import {onceGkInitializedAsync, isGkEnabled} from '../../commons-node/passesGK';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {getBuckProjectRoot} from '../../nuclide-buck-base';
 import ini from 'ini';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {getFileSystemServiceByNuclideUri} from '../../nuclide-remote-connection';
 
 type PartialCommandInfo = {
   command: string,
@@ -29,9 +32,16 @@ type PartialCommandInfo = {
  *       of everything having its own algorithm is bad.
  */
 export async function getCommandInfo(
-  projectRootPath: ?string,
+  projectRootPath: ?NuclideUri,
 ): Promise<?CommandInfo> {
-  if (projectRootPath == null || nuclideUri.isRemote(projectRootPath)) {
+  if (projectRootPath == null) {
+    return null;
+  }
+  await onceGkInitializedAsync();
+  if (
+    nuclideUri.isRemote(projectRootPath) &&
+    !isGkEnabled('nuclide_instarn_remote_projects')
+  ) {
     return null;
   }
 
@@ -41,7 +51,9 @@ export async function getCommandInfo(
   );
 }
 
-async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
+async function getCommandFromNodePackage(
+  dir: NuclideUri,
+): Promise<?CommandInfo> {
   return (
     (await getCommandFromNodeModules(dir)) || getCommandFromReactNative(dir)
   );
@@ -51,8 +63,11 @@ async function getCommandFromNodePackage(dir: string): Promise<?CommandInfo> {
  * Look in the nearest node_modules directory for react-native and extract the packager script if
  * it's found.
  */
-async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
-  const nodeModulesParent = await fsPromise.findNearestFile(
+async function getCommandFromNodeModules(
+  dir: NuclideUri,
+): Promise<?CommandInfo> {
+  const fileSystemService = getFileSystemServiceByNuclideUri(dir);
+  const nodeModulesParent = await fileSystemService.findNearestAncestorNamed(
     'node_modules',
     dir,
   );
@@ -62,6 +77,7 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
 
   const command = await getCommandForCli(
     nuclideUri.join(nodeModulesParent, 'node_modules', 'react-native'),
+    fileSystemService,
   );
 
   return command == null
@@ -76,13 +92,20 @@ async function getCommandFromNodeModules(dir: string): Promise<?CommandInfo> {
  * See if this is React Native itself and, if so, return the command to run the packager. This is
  * special cased so that the bundled examples work out of the box.
  */
-async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
-  const projectRoot = await fsPromise.findNearestFile('package.json', dir);
+async function getCommandFromReactNative(
+  dir: NuclideUri,
+): Promise<?CommandInfo> {
+  const fileSystemService = getFileSystemServiceByNuclideUri(dir);
+  const projectRoot = await fileSystemService.findNearestAncestorNamed(
+    'package.json',
+    dir,
+  );
   if (projectRoot == null) {
     return null;
   }
+
   const filePath = nuclideUri.join(projectRoot, 'package.json');
-  const content = await fsPromise.readFile(filePath, 'utf8');
+  const content = (await fileSystemService.readFile(filePath)).toString('utf8');
   const parsed = JSON.parse(content);
   const isReactNative = parsed.name === 'react-native';
 
@@ -90,8 +113,7 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
     return null;
   }
 
-  const command = await getCommandForCli(projectRoot);
-
+  const command = await getCommandForCli(projectRoot, fileSystemService);
   return command == null
     ? null
     : {
@@ -100,15 +122,17 @@ async function getCommandFromReactNative(dir: string): Promise<?CommandInfo> {
       };
 }
 
-async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
+async function getCommandFromBuck(dir: NuclideUri): Promise<?CommandInfo> {
   const projectRoot = await getBuckProjectRoot(dir);
   if (projectRoot == null) {
     return null;
   }
 
+  const fileSystemService = getFileSystemServiceByNuclideUri(dir);
+
   // TODO(matthewwithanm): Move this to BuckUtils?
   const filePath = nuclideUri.join(projectRoot, '.buckconfig');
-  const content = await fsPromise.readFile(filePath, 'utf8');
+  const content = (await fileSystemService.readFile(filePath)).toString('utf8');
   const parsed = ini.parse(`scope = global\n${content}`);
   const section = parsed['react-native'];
   if (section == null || section.server == null) {
@@ -121,10 +145,11 @@ async function getCommandFromBuck(dir: string): Promise<?CommandInfo> {
 }
 
 async function getCommandForCli(
-  pathToReactNative: string,
+  pathToReactNative: NuclideUri,
+  fileSystemService: FileSystemService,
 ): Promise<?PartialCommandInfo> {
   const cliPath = nuclideUri.join(pathToReactNative, 'local-cli', 'cli.js');
-  const cliExists = await fsPromise.exists(cliPath);
+  const cliExists = await fileSystemService.exists(cliPath);
   if (!cliExists) {
     return null;
   }
