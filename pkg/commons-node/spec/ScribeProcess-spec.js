@@ -9,25 +9,24 @@
  * @format
  */
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+import fs from 'fs';
 import fsPromise from 'nuclide-commons/fsPromise';
+import nuclideUri from 'nuclide-commons/nuclideUri';
 import ScribeProcess, {__test__} from '../ScribeProcess';
 
 describe('scribe_cat test suites', () => {
   let tempDir = '';
-  let scribeProcess: ?ScribeProcess = null;
   let originalCommand = '';
 
-  async function getContentOfScribeCategory(
-    category: string,
-  ): Promise<Array<string>> {
-    const categoryFilePath = nuclideUri.join(tempDir, category);
-    const content = await fsPromise.readFile(categoryFilePath);
-    const result = content
-      .toString()
-      .split('\n')
-      .filter(item => item.length > 0);
-    return result;
+  function getContentOfScribeCategory(category: string): Array<string> {
+    try {
+      const categoryFilePath = nuclideUri.join(tempDir, category);
+      const content = fs.readFileSync(categoryFilePath, 'utf8');
+      const result = content.split('\n').filter(item => item.length > 0);
+      return result;
+    } catch (err) {
+      return [];
+    }
   }
 
   beforeEach(() => {
@@ -49,15 +48,12 @@ describe('scribe_cat test suites', () => {
 
   afterEach(() => {
     waitsForPromise(async () => {
-      if (scribeProcess) {
-        await scribeProcess.dispose();
-      }
       __test__.setScribeCatCommand(originalCommand);
     });
   });
 
   it('Saves data to scribe category', () => {
-    const localScribeProcess = (scribeProcess = new ScribeProcess('test'));
+    const localScribeProcess = new ScribeProcess('test');
 
     const messages = [
       'A',
@@ -79,12 +75,12 @@ describe('scribe_cat test suites', () => {
       messages.map(message => localScribeProcess.write(message));
       // Wait for `scribe_cat_mock` to flush data into disk.
       await localScribeProcess.join();
-      expect(messages).toEqual(await getContentOfScribeCategory('test'));
+      expect(messages).toEqual(getContentOfScribeCategory('test'));
     });
   });
 
   it('Saves data to scribe category and resume from error', () => {
-    const localScribeProcess = (scribeProcess = new ScribeProcess('test'));
+    const localScribeProcess = new ScribeProcess('test');
 
     const firstPart = 'A nuclide is an atomic species'.split(' ');
     const secondPart = 'characterized by the specific constitution of its nucleus.'.split(
@@ -99,8 +95,33 @@ describe('scribe_cat test suites', () => {
       // Wait for `scribe_cat_mock` to flush data into disk.
       await localScribeProcess.join();
       expect(firstPart.concat(secondPart)).toEqual(
-        await getContentOfScribeCategory('test'),
+        getContentOfScribeCategory('test'),
       );
+    });
+  });
+
+  it('Can automatically join', () => {
+    const localScribeProcess = new ScribeProcess('test', 100);
+    runs(() => {
+      localScribeProcess.write('test1');
+    });
+
+    waitsFor(() => getContentOfScribeCategory('test').includes('test1'));
+
+    runs(() => {
+      localScribeProcess.write('test2');
+      localScribeProcess.write('test3');
+      expect(getContentOfScribeCategory('test')).toEqual(['test1']);
+    });
+
+    waitsFor(() => getContentOfScribeCategory('test').includes('test3'));
+
+    runs(() => {
+      expect(getContentOfScribeCategory('test')).toEqual([
+        'test1',
+        'test2',
+        'test3',
+      ]);
     });
   });
 });
