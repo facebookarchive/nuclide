@@ -30,6 +30,7 @@ import {getNotifierByConnection} from '../../nuclide-open-files';
 import {getServiceByConnection} from '../../nuclide-remote-connection';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import QuickOpenProvider from './QuickOpenProvider';
+import JSSymbolSearchProvider from './JSSymbolSearchProvider';
 
 const JS_IMPORTS_SERVICE_NAME = 'JSAutoImportsService';
 
@@ -115,6 +116,10 @@ class Activation {
     this._languageService = createLanguageService();
     this._languageService.activate();
     this._quickOpenProvider = new QuickOpenProvider(this._languageService);
+  }
+
+  provideJSSymbolSearchService(): JSSymbolSearchProvider {
+    return new JSSymbolSearchProvider(this._languageService);
   }
 
   dispose() {

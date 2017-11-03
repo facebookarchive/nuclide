@@ -71,6 +71,7 @@ export class WorkspaceSymbols {
             };
             return {
               name: id,
+              containerName: jsExport.hasteName,
               kind: exportTypeToSymbolKind(jsExport.type),
               location: {
                 uri: nuclideUri.nuclideUriToUri(jsExport.uri),

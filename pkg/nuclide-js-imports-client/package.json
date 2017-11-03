@@ -49,6 +49,11 @@
       "versions": {
         "0.0.0": "registerQuickOpenProvider"
       }
+    },
+    "js-symbol-search-service": {
+      "versions": {
+        "0.0.0": "provideJSSymbolSearchService"
+      }
     }
   }
 }
