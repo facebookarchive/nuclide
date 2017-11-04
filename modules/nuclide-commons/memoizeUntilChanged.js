@@ -10,13 +10,11 @@
  * @format
  */
 
+import invariant from 'assert';
 import {arrayEqual} from './collection';
-import Hasher from './Hasher';
 
-type CompareFunc = (a: Array<any>, b: Array<any>) => boolean;
-type KeySelector<T, U> = (x: T) => U;
-
-const NOTHING = Symbol('nothing');
+type CompareFunc<T> = (a: T, b: T) => boolean;
+type KeySelector<T> = (...args: Array<any>) => T;
 
 /**
  * Create a memoized version of the provided function that caches only the latest result. This is
@@ -34,27 +32,52 @@ const NOTHING = Symbol('nothing');
  *         return <div>{thingToRender}</div>;
  *       }
  *     }
+ *
+ * Sometimes, you need to customize how the arguments are compared. In this case you can pass a
+ * key selector function (which derives a single value from the arguments), and an equality function
+ * (which compares keys). For example:
+ *
+ *     class MyComponent extends React.Component {
+ *       constructor(props) {
+ *         super(props);
+ *         this._computeSomethingExpensive = memoizeUntilChanged(
+ *           this._computeSomethingExpensive,
+ *           (x: Array<Object>, y: Array<Object>) => ({x, y}),
+ *           (a, b) => arrayEqual(a.x, b.x) && arrayEqual(a.y, b.y),
+ *         );
+ *       }
+ *       _computeSomethingExpensive(x: Array<Object>, y: Array<Object>) { ... }
+ *       render() {
+ *         const thingToRender = this._computeSomethingExpensive(this.props.value);
+ *         return <div>{thingToRender}</div>;
+ *       }
+ *     }
  */
-export default function memoizeUntilChanged<T: Function>(
+export default function memoizeUntilChanged<T: Function, U>(
   func: T,
-  keySelector_?: KeySelector<T, any>,
-  compareKeys: CompareFunc = arrayEqual,
+  keySelector_?: KeySelector<U>,
+  compareKeys_?: CompareFunc<U>,
 ): T {
-  let prevArgKeys;
-  let prevResult = NOTHING;
-  const keySelector: KeySelector<T, any> = keySelector_ || createKeySelector();
+  invariant(
+    !(keySelector_ == null && compareKeys_ != null),
+    "You can't provide a compare function without also providing a key selector.",
+  );
+
+  let prevKey = null;
+  let prevResult;
+  const keySelector = keySelector_ || DEFAULT_KEY_SELECTOR;
+  const compareKeys = compareKeys_ || arrayEqual;
   // $FlowIssue: Flow can't express that we want the args to be the same type as the input func's.
   return function(...args) {
-    const argKeys = args.map(keySelector);
-    if (prevResult === NOTHING || !compareKeys(argKeys, prevArgKeys)) {
-      prevArgKeys = argKeys;
+    const key = keySelector(...args);
+    invariant(key != null, 'Key cannot be null');
+    // $FlowIssue: We can't tell Flow the relationship between keySelector and compareKeys
+    if (prevKey == null || !compareKeys(key, prevKey)) {
+      prevKey = key;
       prevResult = func.apply(this, args);
     }
     return prevResult;
   };
 }
 
-function createKeySelector<T>(): KeySelector<T, any> {
-  const hasher: Hasher<any> = new Hasher();
-  return x => hasher.getHash(x);
-}
+const DEFAULT_KEY_SELECTOR = (...args) => args;

@@ -42,4 +42,31 @@ describe('memoizeUntilChanged', () => {
     f.call(obj);
     expect(that).toBe(obj);
   });
+
+  it('uses all args when memoizing by default', () => {
+    const spy = jasmine.createSpy().andCallFake(sum);
+    const f = memoizeUntilChanged(spy);
+    f(1, 2);
+    const result = f(1, 3);
+    expect(result).toBe(4);
+    expect(spy.callCount).toBe(2);
+  });
+
+  it('uses the key selector and comparator', () => {
+    const spy = jasmine.createSpy().andCallFake(sum);
+    const f = memoizeUntilChanged(
+      spy,
+      // A pretty poor keyselector that uses the sum of the arguments as the key. Lots of collisions
+      // here!
+      (x, y) => x + y,
+      // Compare numbers.
+      (a, b) => a === b,
+    );
+    f(1, 2);
+    f(2, 1);
+    f(0, 3);
+    expect(spy.callCount).toBe(1);
+    f(0, 4);
+    expect(spy.callCount).toBe(2);
+  });
 });
