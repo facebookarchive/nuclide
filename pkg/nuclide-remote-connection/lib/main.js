@@ -55,6 +55,10 @@ export {
   loadBufferForUri,
 } from './remote-text-buffer';
 
+export {
+  default as RemoteDirectoryPlaceholder,
+} from './RemoteDirectoryPlaceholder';
+
 import typeof * as AdbService from '../../nuclide-adb-sdb-rpc/lib/AdbService';
 import typeof * as BuckService from '../../nuclide-buck-rpc';
 import typeof * as ClangService from '../../nuclide-clang-rpc';

@@ -25,6 +25,7 @@ import {File as LocalFile} from 'atom';
 import {
   RemoteConnection,
   ServerConnection,
+  RemoteDirectoryPlaceholder,
 } from '../../nuclide-remote-connection';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import featureConfig from 'nuclide-commons-atom/feature-config';
@@ -36,9 +37,12 @@ import crypto from 'crypto';
 import os from 'os';
 import {ROOT_ARCHIVE_FS} from '../../nuclide-fs-atom';
 
-export type Directory = LocalDirectory | RemoteDirectory;
+export type Directory =
+  | LocalDirectory
+  | RemoteDirectory
+  | RemoteDirectoryPlaceholder;
 type File = LocalFile | RemoteFile;
-type Entry = LocalDirectory | RemoteDirectory | LocalFile | RemoteFile;
+type Entry = Directory | File;
 
 export type SelectionMode =
   | 'single-select'
@@ -111,7 +115,9 @@ function getDirectoryByKey(key: string): ?Directory {
   } else if (nuclideUri.isRemote(path)) {
     const connection = ServerConnection.getForUri(path);
     if (connection == null) {
-      return null;
+      // Placeholder remote directories are just empty.
+      // These will be removed by nuclide-remote-projects after reconnection, anyway.
+      return new RemoteDirectoryPlaceholder(path);
     }
     if (nuclideUri.hasKnownArchiveExtension(key)) {
       return connection.createFileAsDirectory(path);
