@@ -22,6 +22,7 @@ import type {IconName} from 'nuclide-commons-ui/Icon';
 import classnames from 'classnames';
 import invariant from 'assert';
 import idx from 'idx';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import humanizePath from 'nuclide-commons-atom/humanizePath';
 import {insideOut, arrayEqual} from 'nuclide-commons/collection';
@@ -109,6 +110,16 @@ export default class DiagnosticsTable extends React.PureComponent<
 
   constructor(props: Props) {
     super(props);
+
+    // Memoize `_getRows()`
+    (this: any)._getRows = memoizeUntilChanged(
+      this._getRows,
+      (diagnostics, showTraces) => ({diagnostics, showTraces}),
+      (a, b) =>
+        a.showTraces === b.showTraces &&
+        arrayEqual(a.diagnostics, b.diagnostics),
+    );
+
     this.state = {
       focused: false,
       selectedMessage: null,
@@ -396,30 +407,14 @@ export default class DiagnosticsTable extends React.PureComponent<
     return bestRankedIndex;
   }
 
-  // Used ONLY for memoizing `_getRows()`
-  _previousGetRowsCall = {
-    args: {
-      diagnostics: [],
-      showTraces: false,
-    },
-    result: [],
-  };
-
   _getRows(
     diagnostics: Array<DiagnosticMessage>,
     showTraces: boolean,
   ): Array<Row<DisplayDiagnostic>> {
-    if (
-      showTraces === this._previousGetRowsCall.args.showTraces &&
-      arrayEqual(diagnostics, this._previousGetRowsCall.args.diagnostics)
-    ) {
-      return this._previousGetRowsCall.result;
-    }
-
     const diagnosticsToRows = showTraces
       ? DIAGNOSTICS_TO_ROWS_TRACES_MAP
       : DIAGNOSTICS_TO_ROWS_NO_TRACES_MAP;
-    const rows = diagnostics.map(diagnostic => {
+    return diagnostics.map(diagnostic => {
       let row = diagnosticsToRows.get(diagnostic);
       if (row == null) {
         const {dir, location} = getLocation(diagnostic);
@@ -445,12 +440,6 @@ export default class DiagnosticsTable extends React.PureComponent<
       }
       return row;
     });
-
-    this._previousGetRowsCall = {
-      args: {diagnostics, showTraces},
-      result: rows,
-    };
-    return rows;
   }
 
   // TODO: Memoize this so we don't recompute unnecessarily.
