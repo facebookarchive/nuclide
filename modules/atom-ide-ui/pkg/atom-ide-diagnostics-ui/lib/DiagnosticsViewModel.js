@@ -18,9 +18,10 @@ import type {RegExpFilterChange} from 'nuclide-commons-ui/RegExpFilter';
 
 import dockForLocation from 'nuclide-commons-atom/dock-for-location';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
+import memoizeUntilChanged from 'nuclide-commons/memoizeUntilChanged';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
-import {arrayEqual} from 'nuclide-commons/collection';
+import {arrayEqual, areSetsEqual} from 'nuclide-commons/collection';
 import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import React from 'react';
@@ -60,6 +61,20 @@ export class DiagnosticsViewModel {
   _disposables: IDisposable;
 
   constructor(globalStates: Observable<GlobalViewState>) {
+    // Memoize `_filterDiagnostics()`
+    (this: any)._filterDiagnostics = memoizeUntilChanged(
+      this._filterDiagnostics,
+      (diagnostics, pattern, hiddenGroups) => ({
+        diagnostics,
+        pattern,
+        hiddenGroups,
+      }),
+      (a, b) =>
+        patternsAreEqual(a.pattern, b.pattern) &&
+        areSetsEqual(a.hiddenGroups, b.hiddenGroups) &&
+        arrayEqual(a.diagnostics, b.diagnostics),
+    );
+
     const {pattern, invalid} = getFilterPattern('', false);
     this._model = new Model({
       // TODO: Get this from constructor/serialization.
@@ -211,7 +226,6 @@ export class DiagnosticsViewModel {
     });
   };
 
-  // TODO: Memoize this.
   _filterDiagnostics(
     diagnostics: Array<DiagnosticMessage>,
     pattern: ?RegExp,
@@ -260,4 +274,22 @@ function goToDiagnosticLocation(
     activatePane: options.focusEditor,
     pending: true,
   });
+}
+
+function patternsAreEqual(a: ?RegExp, b: ?RegExp) {
+  if (a === b) {
+    return true;
+  }
+  if (a == null && b == null) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return false;
+  }
+  return (
+    a.source === b.source &&
+    a.global === b.global &&
+    a.multiline === b.multiline &&
+    a.ignoreCase === b.ignoreCase
+  );
 }
