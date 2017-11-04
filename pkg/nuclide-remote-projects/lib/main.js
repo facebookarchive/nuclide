@@ -21,10 +21,16 @@ import {
 } from 'nuclide-commons-atom/text-editor';
 import {loadBufferForUri, bufferForUri} from '../../nuclide-remote-connection';
 import {logger} from './constants';
+import {
+  RemoteTextEditorPlaceholder,
+  type RemoteTextEditorPlaceholderState,
+} from './RemoteTextEditorPlaceholder';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import loadingNotification from '../../commons-atom/loading-notification';
 import invariant from 'assert';
+import {TextEditor} from 'atom';
+import nullthrows from 'nullthrows';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {
   RemoteConnection,
@@ -42,7 +48,6 @@ import RemoteProjectsController from './RemoteProjectsController';
 import RemoteProjectsServiceImpl from './RemoteProjectsService';
 import patchAtomWorkspaceReplace from './patchAtomWorkspaceReplace';
 import {setNotificationService} from './AtomNotifications';
-import windowsBufferSerializeHack from './windowsBufferSerializeHack';
 
 export type RemoteProjectsService = {
   /**
@@ -240,11 +245,26 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
     // Atom does this for local files.
     // https://github.com/atom/atom/blob/v1.9.8/src/workspace.coffee#L547
     const largeFileMode = buffer.getText().length > 2 * 1024 * 1024; // 2MB
-    return atom.textEditors.build({
+    const textEditor = atom.textEditors.build({
       buffer,
       largeFileMode,
       autoHeight: false,
     });
+    // Add a custom serializer that deserializes to a placeholder TextEditor
+    // that we have total control over. The usual Atom deserialization flow for editors
+    // typically involves attempting to load the file from disk, which tends to throw.
+    textEditor.serialize = function(): RemoteTextEditorPlaceholderState {
+      return {
+        deserializer: 'RemoteTextEditorPlaceholder',
+        data: {
+          uri: nullthrows(textEditor.getPath()),
+          contents: textEditor.getText(),
+          // If the editor was unsaved, we'll restore the unsaved contents after load.
+          isModified: textEditor.isModified(),
+        },
+      };
+    };
+    return textEditor;
   } catch (err) {
     logger.warn('buffer load issue:', err);
     atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
@@ -367,14 +387,19 @@ export function activate(
         const {pane, editor, uri, filePath} = openInstance;
 
         // Skip restoring the editor who has remote content loaded.
-        if (editor.getBuffer().file instanceof RemoteFile) {
+        if (
+          editor instanceof TextEditor &&
+          editor.getBuffer().file instanceof RemoteFile
+        ) {
           continue;
         }
 
         // Atom ensures that each pane only has one item per unique URI.
         // Null out the existing pane item's URI so we can insert the new one
         // without closing the pane.
-        editor.getURI = () => null;
+        if (editor instanceof TextEditor) {
+          editor.getURI = () => null;
+        }
         // Cleanup the old pane item on successful opening or when no connection could be
         // established.
         const cleanupBuffer = () => {
@@ -389,6 +414,15 @@ export function activate(
           // So we must clean up after.
           atom.workspace
             .openURIInPane(uri, pane)
+            .then(newEditor => {
+              if (
+                editor instanceof RemoteTextEditorPlaceholder &&
+                editor.isModified()
+              ) {
+                // If we had unsaved changes previously, restore them.
+                newEditor.setText(editor.getText());
+              }
+            })
             .then(cleanupBuffer, cleanupBuffer);
         }
       }
@@ -460,7 +494,7 @@ export function activate(
     }),
   );
 
-  subscriptions.add(patchAtomWorkspaceReplace(), windowsBufferSerializeHack());
+  subscriptions.add(patchAtomWorkspaceReplace());
 
   // If RemoteDirectoryProvider is called before this, and it failed
   // to provide a RemoteDirectory for a
@@ -569,4 +603,10 @@ export function consumeNotifications(
 
 export function consumeWorkingSetsStore(store: WorkingSetsStore): void {
   workingSetsStore = store;
+}
+
+export function deserializeRemoteTextEditorPlaceholder(
+  state: RemoteTextEditorPlaceholderState,
+): RemoteTextEditorPlaceholder {
+  return new RemoteTextEditorPlaceholder(state);
 }

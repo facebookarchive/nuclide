@@ -13,7 +13,9 @@ import type {NuclideUri} from 'nuclide-commons/nuclideUri';
 import type {RemoteConnectionConfiguration} from '../../nuclide-remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
+import {TextEditor} from 'atom';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {RemoteTextEditorPlaceholder} from './RemoteTextEditorPlaceholder';
 
 export const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 export const NUCLIDE_PROTOCOL_PREFIX_WIN = 'nuclide_\\';
@@ -21,7 +23,9 @@ const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
 export type OpenFileEditorInstance = {
   pane: atom$Pane,
-  editor: atom$TextEditor,
+  // TODO(T23250374): After a few weeks, just refuse to handle broken URIs at all.
+  // RemoteTextEditorPlaceholder is the way to go!
+  editor: atom$TextEditor | RemoteTextEditorPlaceholder,
   uri: NuclideUri,
   filePath: string,
 };
@@ -70,11 +74,17 @@ export function* getOpenFileEditorForRemoteProject(
     for (const paneItem of paneItems) {
       // Here, we're explicitly looking for broken nuclide:/ editors.
       // eslint-disable-next-line rulesdir/atom-apis
-      if (!atom.workspace.isTextEditor(paneItem) || !paneItem.getURI()) {
+      if (
+        !(
+          paneItem instanceof TextEditor ||
+          paneItem instanceof RemoteTextEditorPlaceholder
+        ) ||
+        !paneItem.getURI()
+      ) {
         // Ignore non-text editors and new editors with empty uris / paths.
         continue;
       }
-      const uri = sanitizeNuclideUri(paneItem.getURI());
+      const uri = sanitizeNuclideUri(paneItem.getPath());
       const {hostname: fileHostname, path: filePath} = nuclideUri.parse(uri);
       if (fileHostname === connectionConfig.host) {
         // flowlint-next-line sketchy-null-string:off

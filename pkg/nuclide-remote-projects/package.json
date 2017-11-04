@@ -69,5 +69,8 @@
         "0.0.0": "consumeWorkingSetsStore"
       }
     }
+  },
+  "deserializers": {
+    "RemoteTextEditorPlaceholder": "deserializeRemoteTextEditorPlaceholder"
   }
 }
