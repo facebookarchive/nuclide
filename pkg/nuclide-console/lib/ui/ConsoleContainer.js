@@ -261,15 +261,32 @@ export class ConsoleContainer extends React.Component<Props, State> {
 
     atom.notifications.addInfo('Creating Paste...');
 
-    const uri = await createPasteFunction(
-      lines,
-      {
-        title: 'Nuclide Console Paste',
-      },
-      'console paste',
-    );
-
-    atom.notifications.addSuccess(`Created Paste at ${uri}`);
+    try {
+      const uri = await createPasteFunction(
+        lines,
+        {
+          title: 'Nuclide Console Paste',
+        },
+        'console paste',
+      );
+      atom.notifications.addSuccess(`Created Paste at ${uri}`);
+    } catch (error) {
+      if (error.stdout == null) {
+        atom.notifications.addError(
+          `Failed to create paste: ${String(error.message || error)}`,
+        );
+        return;
+      }
+      const errorMessages = error.stdout
+        .trim()
+        .split('\n')
+        .map(JSON.parse)
+        .map(e => e.message);
+      atom.notifications.addError('Failed to create paste', {
+        detail: errorMessages.join('\n'),
+        dismissable: true,
+      });
+    }
   };
 
   _getFilterInfo(): {
