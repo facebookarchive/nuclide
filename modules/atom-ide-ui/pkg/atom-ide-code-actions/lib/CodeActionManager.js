@@ -13,7 +13,6 @@
 import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
 import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import {fastDebounce} from 'nuclide-commons/observable';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {arrayFlatten} from 'nuclide-commons/collection';
 import {Observable} from 'rxjs';
@@ -108,55 +107,66 @@ export class CodeActionManager {
   // Listen to buffer range selection changes and trigger code action providers
   // when ranges change.
   _selectionSubscriber(): rxjs$Subscription {
-    const disposeMessages = () => {
-      if (this._linterDelegate != null) {
-        this._linterDelegate.clearMessages();
-      }
-    };
     // Patterned after highlightEditors of CodeHighlightManager.
     return observeActiveEditorsDebounced(0)
-      .switchMap(editor => {
-        if (editor == null) {
-          return Observable.empty();
-        }
-        const destroyEvents = observableFromSubscribeFunction(
-          editor.onDidDestroy.bind(editor),
-        );
-        return (
-          observableFromSubscribeFunction(
-            editor.onDidChangeSelectionRange.bind(editor),
-          )
-            // Remove current messages whenever a selection event happens.
-            .do(disposeMessages)
-            .let(fastDebounce(TIP_DELAY_MS))
-            .filter(
-              ({newBufferRange}) =>
-                // Remove 0-character selections since it's just cursor movement.
-                newBufferRange.start.column !== newBufferRange.end.column ||
-                newBufferRange.start.row !== newBufferRange.end.row,
-            )
-            .map(e => ({range: e.newBufferRange, editor}))
-            .takeUntil(destroyEvents)
-        );
-      })
-      .switchMap(({editor, range}) => {
-        const file = editor.getBuffer().getPath();
-        if (file == null) {
-          return Observable.empty();
-        }
-        return Observable.fromPromise(
-          this._genAllCodeActions(editor, range, []),
-        ).switchMap(actions => {
-          // Only produce a message if we have actions to display.
-          if (actions.length > 0) {
-            return actionsToMessage({file, position: range}, actions);
-          } else {
+      .switchMap(
+        // Get selections for the active editor.
+        editor => {
+          if (editor == null) {
             return Observable.empty();
           }
-        });
-      })
+          const destroyEvents = observableFromSubscribeFunction(
+            editor.onDidDestroy.bind(editor),
+          );
+          const selections = observableFromSubscribeFunction(
+            editor.onDidChangeSelectionRange.bind(editor),
+          )
+            .switchMap(
+              event =>
+                Observable.of(event.newBufferRange)
+                  .delay(TIP_DELAY_MS) // Delay the emission of the range.
+                  .startWith(null), // null the range immediately when selection changes.
+            )
+            .distinctUntilChanged()
+            // Remove 0-character selections since it's just cursor movement.
+            .filter(range => range == null || !range.isEmpty())
+            .takeUntil(destroyEvents);
+          return selections.map(
+            range => (range == null ? null : {editor, range}),
+          );
+        },
+      )
+      .switchMap(
+        // Get a message for the provided selection.
+        (selection: ?{editor: atom$TextEditor, range: atom$Range}) => {
+          if (selection == null) {
+            return Observable.of(null);
+          }
+          const {editor, range} = selection;
+          const file = editor.getBuffer().getPath();
+          if (file == null) {
+            return Observable.empty();
+          }
+          return Observable.fromPromise(
+            this._genAllCodeActions(editor, range, []),
+          ).switchMap(actions => {
+            // Only produce a message if we have actions to display.
+            if (actions.length > 0) {
+              return actionsToMessage({file, position: range}, actions);
+            } else {
+              return Observable.empty();
+            }
+          });
+        },
+      )
+      .distinctUntilChanged()
       .subscribe(message => {
-        if (this._linterDelegate != null) {
+        if (this._linterDelegate == null) {
+          return;
+        }
+        if (message == null) {
+          this._linterDelegate.clearMessages();
+        } else {
           this._linterDelegate.setAllMessages([message]);
         }
       });
