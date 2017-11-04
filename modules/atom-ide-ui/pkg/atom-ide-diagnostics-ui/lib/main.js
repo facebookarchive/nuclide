@@ -41,7 +41,6 @@ import {DiagnosticsViewModel, WORKSPACE_VIEW_URI} from './DiagnosticsViewModel';
 import StatusBarTile from './ui/StatusBarTile';
 import {applyUpdateToEditor} from './gutter';
 import getDiagnosticDatatip from './getDiagnosticDatatip';
-import {compareMessagesByFile} from './paneUtils';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
@@ -197,10 +196,6 @@ class Activation {
               : observableFromSubscribeFunction(updater.observeMessages),
         )
         .let(fastDebounce(100))
-        // FIXME: It's not good for UX or perf that we're providing a default sort here (that users
-        // can't return to). We should remove this and have the table sorting be more intelligent.
-        // For example, sorting by type means sorting by [type, filename, description].
-        .map(diagnostics => diagnostics.slice().sort(compareMessagesByFile))
         .startWith([]);
 
       const showTracesStream: Observable<
