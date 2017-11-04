@@ -268,7 +268,7 @@ export class DebuggerPaneContainerViewModel {
     this.dispose();
   }
 
-  destroyWhere(callback: (item: atom$PaneItem) => void) {
+  destroyWhere(callback: (item: atom$PaneItem) => mixed) {
     this._forEachChildPaneItem((innerItem, pane) => {
       if (callback(innerItem)) {
         pane.destroyItem(innerItem);

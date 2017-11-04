@@ -466,7 +466,7 @@ declare class atom$Pane {
   element: HTMLElement,
 }
 
-declare type atom$PaneItem = {
+declare interface atom$PaneItem {
   // These are all covariant, meaning that these props are read-only. Therefore we can assign an
   // object with more strict requirements to an variable of this type.
   +getTitle: () => string,
