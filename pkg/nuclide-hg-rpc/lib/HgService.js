@@ -1305,6 +1305,20 @@ export class HgService {
       .publish();
   }
 
+  diff(
+    revision: string,
+    {unified}: {unified?: number},
+  ): ConnectableObservable<string> {
+    const args = ['diff', '-r', revision];
+    if (unified != null) {
+      args.push('--unified', `${unified}`);
+    }
+    const execOptions = {
+      cwd: this._workingDirectory,
+    };
+    return hgRunCommand(args, execOptions).publish();
+  }
+
   /**
    * Removes files not tracked by Mercurial.
    */

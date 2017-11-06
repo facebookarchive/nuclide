@@ -961,6 +961,13 @@ export class HgRepositoryClient {
     return this._service.show(revision).refCount();
   }
 
+  diff(
+    revision: number | string,
+    options: {unified?: number} = {},
+  ): Observable<string> {
+    return this._service.diff(String(revision), options).refCount();
+  }
+
   purge(): Promise<void> {
     return this._service.purge();
   }
