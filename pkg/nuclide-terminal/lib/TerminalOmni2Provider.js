@@ -13,6 +13,7 @@ import type {
   GenericResult,
   Omni2Provider,
   QueryContext,
+  // $FlowFB
 } from '../../fb-omni2/lib/types';
 import type {CwdApi} from '../../nuclide-current-working-directory/lib/CwdApi';
 
