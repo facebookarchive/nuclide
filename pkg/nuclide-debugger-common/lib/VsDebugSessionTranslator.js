@@ -361,20 +361,20 @@ export default class VsDebugSessionTranslator {
           result,
         };
       }),
-      this._commandsOfType('Debugger.evaluateOnCallFrame').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Debugger.evaluateOnCallFrame');
-          const {callFrameId, expression} = command.params;
-          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
-            expression,
-            Number(callFrameId),
-          );
-          return {
-            id: command.id,
-            result,
-          };
-        }),
-      ),
+      this._commandsOfType(
+        'Debugger.evaluateOnCallFrame',
+      ).flatMap(async command => {
+        invariant(command.method === 'Debugger.evaluateOnCallFrame');
+        const {callFrameId, expression} = command.params;
+        const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
+          expression,
+          Number(callFrameId),
+        );
+        return {
+          id: command.id,
+          result,
+        };
+      }),
       this._commandsOfType('Debugger.setVariableValue').flatMap(
         catchCommandError(async command => {
           invariant(command.method === 'Debugger.setVariableValue');
@@ -394,19 +394,17 @@ export default class VsDebugSessionTranslator {
           };
         }),
       ),
-      this._commandsOfType('Runtime.evaluate').flatMap(
-        catchCommandError(async command => {
-          invariant(command.method === 'Runtime.evaluate');
-          const {expression} = command.params;
-          const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
-            expression,
-          );
-          return {
-            id: command.id,
-            result,
-          };
-        }),
-      ),
+      this._commandsOfType('Runtime.evaluate').flatMap(async command => {
+        invariant(command.method === 'Runtime.evaluate');
+        const {expression} = command.params;
+        const result: NuclideDebugProtocol.EvaluateResponse = await this._evaluateOnCallFrame(
+          expression,
+        );
+        return {
+          id: command.id,
+          result,
+        };
+      }),
       // Error for unhandled commands
       this._unhandledCommands().map(command =>
         getErrorResponse(command.id, 'Unknown command: ' + command.method),
@@ -654,22 +652,30 @@ export default class VsDebugSessionTranslator {
     expression: string,
     frameId?: number,
   ): Promise<NuclideDebugProtocol.EvaluateResponse> {
-    const {body} = await this._session.evaluate({
-      expression,
-      frameId,
-    });
-    return {
-      result: {
-        type: (body.type: any),
-        value: body.result,
-        description: body.result,
-        objectId:
-          body.variablesReference > 0
-            ? String(body.variablesReference)
-            : undefined,
-      },
-      wasThrown: false,
-    };
+    try {
+      const {body} = await this._session.evaluate({
+        expression,
+        frameId,
+      });
+      return {
+        result: {
+          type: (body.type: any),
+          value: body.result,
+          description: body.result,
+          objectId:
+            body.variablesReference > 0
+              ? String(body.variablesReference)
+              : undefined,
+        },
+        wasThrown: false,
+      };
+    } catch (error) {
+      return {
+        result: (null: any),
+        exceptionDetails: error.message,
+        wasThrown: true,
+      };
+    }
   }
 
   _getBreakpointsForFilePath(path: NuclideUri): Array<TranslatorBreakpoint> {

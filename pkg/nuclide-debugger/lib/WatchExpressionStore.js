@@ -163,7 +163,7 @@ export class WatchExpressionStore {
       invariant(cachedResult);
       return cachedResult;
     }
-    const subject = new BehaviorSubject();
+    const subject = new BehaviorSubject(null);
     this._requestExpressionEvaluation(expression, subject, supportRepl);
     if (!supportRepl) {
       this._watchExpressions.set(expression, subject);
@@ -208,50 +208,36 @@ export class WatchExpressionStore {
   async _evaluateOnSelectedCallFrame(
     expression: string,
     objectGroup: ObjectGroup,
-  ): Promise<?EvaluationResult> {
-    try {
-      const result: ?EvaluationResult = await this._sendEvaluationCommand(
-        'evaluateOnSelectedCallFrame',
-        expression,
-        objectGroup,
-      );
-      if (result == null) {
-        // Backend returned neither a result nor an error message
-        return {
-          type: 'text',
-          value: `Failed to evaluate: ${expression}`,
-        };
-      } else {
-        return result;
-      }
-    } catch (e) {
+  ): Promise<EvaluationResult> {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'evaluateOnSelectedCallFrame',
+      expression,
+      objectGroup,
+    );
+    if (result == null) {
+      // Backend returned neither a result nor an error message
       return {
         type: 'text',
-        value: `Failed to evaluate: ${expression} ` + e.toString(),
+        value: `Failed to evaluate: ${expression}`,
       };
+    } else {
+      return result;
     }
   }
 
   async _runtimeEvaluate(expression: string): Promise<?EvaluationResult> {
-    try {
-      const result: ?EvaluationResult = await this._sendEvaluationCommand(
-        'runtimeEvaluate',
-        expression,
-      );
-      if (result == null) {
-        // Backend returned neither a result nor an error message
-        return {
-          type: 'text',
-          value: `Failed to evaluate: ${expression}`,
-        };
-      } else {
-        return result;
-      }
-    } catch (e) {
+    const result: ?EvaluationResult = await this._sendEvaluationCommand(
+      'runtimeEvaluate',
+      expression,
+    );
+    if (result == null) {
+      // Backend returned neither a result nor an error message
       return {
         type: 'text',
-        value: `Failed to evaluate: ${expression} ` + e.toString(),
+        value: `Failed to evaluate: ${expression}`,
       };
+    } else {
+      return result;
     }
   }
 
@@ -265,7 +251,6 @@ export class WatchExpressionStore {
     this._evaluationRequestsInFlight.set(evalId, deferred);
     this._bridge.sendEvaluationCommand(command, evalId, ...args);
     let result = null;
-    let errorMsg = null;
     try {
       result = await deferred.promise;
     } catch (e) {
@@ -273,14 +258,8 @@ export class WatchExpressionStore {
         `${command}: Error getting result.`,
         e,
       );
-      if (e.description) {
-        errorMsg = e.description;
-      }
     }
     this._evaluationRequestsInFlight.delete(evalId);
-    if (errorMsg != null) {
-      throw new Error(errorMsg);
-    }
     return result;
   }
 

@@ -12,7 +12,6 @@
 import type {NuclideEvaluationExpression} from '../../nuclide-debugger-interfaces/rpc-types';
 import type {Datatip} from 'atom-ide-ui';
 import type DebuggerModel from './DebuggerModel';
-import type {EvaluationResult} from './types';
 
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
 import {getDefaultEvaluationExpression} from '../../nuclide-debugger-base';
@@ -66,20 +65,11 @@ export async function debuggerDatatip(
   }
   const watchExpressionStore = model.getWatchExpressionStore();
   const evaluation = watchExpressionStore.evaluateWatchExpression(expression);
-  // Avoid creating a datatip if the evaluation fails
-  const evaluationResult: ?EvaluationResult = await evaluation
-    .take(1)
-    .toPromise();
-  if (evaluationResult == null) {
-    return null;
-  }
-  const propStream = evaluation
-    .filter(result => result != null)
-    .map(result => ({
-      expression,
-      evaluationResult: result,
-      watchExpressionStore,
-    }));
+  const propStream = evaluation.map(result => ({
+    expression,
+    evaluationResult: result,
+    watchExpressionStore,
+  }));
   return {
     component: bindObservableAsProps(propStream, DebuggerDatatipComponent),
     pinnable: true,

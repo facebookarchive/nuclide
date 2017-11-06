@@ -12,13 +12,14 @@
 import type {WatchExpressionStore} from './WatchExpressionStore';
 import type {EvaluationResult} from './types';
 
+import {LoadingSpinner} from 'nuclide-commons-ui/LoadingSpinner';
 import * as React from 'react';
 import {LazyNestedValueComponent} from '../../nuclide-ui/LazyNestedValueComponent';
 import SimpleValueComponent from '../../nuclide-ui/SimpleValueComponent';
 
 type Props = {|
   +expression: string,
-  +evaluationResult: EvaluationResult,
+  +evaluationResult: ?EvaluationResult,
   +watchExpressionStore: WatchExpressionStore,
 |};
 
@@ -28,8 +29,11 @@ export class DebuggerDatatipComponent extends React.Component<Props> {
     const fetchChildren = watchExpressionStore.getProperties.bind(
       watchExpressionStore,
     );
-    return (
-      <div className="nuclide-debugger-datatip">
+    let datatipElement;
+    if (evaluationResult == null) {
+      datatipElement = <LoadingSpinner size="EXTRA_SMALL" />;
+    } else {
+      datatipElement = (
         <span className="nuclide-debugger-datatip-value">
           <LazyNestedValueComponent
             evaluationResult={evaluationResult}
@@ -39,7 +43,8 @@ export class DebuggerDatatipComponent extends React.Component<Props> {
             expansionStateId={this}
           />
         </span>
-      </div>
-    );
+      );
+    }
+    return <div className="nuclide-debugger-datatip">{datatipElement}</div>;
   }
 }
