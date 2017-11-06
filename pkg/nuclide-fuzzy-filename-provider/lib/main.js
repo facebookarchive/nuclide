@@ -123,10 +123,7 @@ class Activation {
       const service = getFuzzyFileSearchServiceByNuclideUri(projectPath);
       service.disposeFuzzySearch(projectPath);
     } catch (err) {
-      logger.error(
-        `Error disposing fuzzy filename service for ${projectPath}`,
-        err,
-      );
+      // Ignore errors here; this is pretty best-effort anyway.
     } finally {
       const disposables = this._subscriptionsByRoot.get(projectPath);
       if (disposables != null) {
