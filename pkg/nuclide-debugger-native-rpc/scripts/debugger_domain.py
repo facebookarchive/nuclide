@@ -122,6 +122,7 @@ class DebuggerDomain(HandlerDomain):
         if not filelike or not isinstance(filelike, file_manager.File):
             # Only support setting breakpoints in real files.
             return {}
+
         return self._set_breakpoint_by_filespec(
             filelike.server_obj,
             int(params['location']['lineNumber']) + 1)
@@ -138,9 +139,17 @@ class DebuggerDomain(HandlerDomain):
         # Otherwise, it's a regular file+line breakpoint
         # Use source file name to set breakpoint.
         parsed_url = urlparse.urlparse(params['url'])
+        base_path = self.debugger_store.base_path
+        if base_path != '.' and parsed_url.path.startswith(base_path):
+            path = parsed_url.path.replace(base_path, '', 1)
+            if path.startswith('/'):
+                path = path.replace('/', '', 1)
+            path = os.path.join('./', path)
+        else:
+            path = os.path.basename(parsed_url.path)
 
         return self._set_breakpoint_by_source_path(
-            str(os.path.basename(parsed_url.path)),
+            str(path),
             int(params['lineNumber']) + 1,
             str(params['condition']))
 

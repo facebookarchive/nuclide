@@ -35,6 +35,7 @@ class DebuggerStore:
             self._file_manager, basepath)
         self._thread_manager = ThreadManager(self)
         self._debugger_settings = self._setDefaultDebuggerSettings()
+        self._basepath = basepath
 
     def _resolve_basepath_heuristic(self, basepath):
         '''Buck emits relative path in the symbol file so we need a way to
@@ -46,7 +47,7 @@ class DebuggerStore:
         Hopefully this is true most of the time.
         TODO: we need a better way to discover buck built root repo in long term.
         '''
-        if basepath == '.':
+        if basepath == '.' or basepath == '':
             target = self._debugger.GetSelectedTarget()
             executable_file_path = target.executable.fullpath
             log_debug('executable_file_path: %s' % executable_file_path)
@@ -109,3 +110,7 @@ class DebuggerStore:
     @property
     def location_serializer(self):
         return self._location_serializer
+
+    @property
+    def base_path(self):
+        return self._basepath
