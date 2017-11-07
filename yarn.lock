@@ -1831,6 +1831,12 @@ flat-cache@^1.2.1:
     graceful-fs "^4.1.2"
     write "^0.2.1"
 
+flatten-source-map@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/flatten-source-map/-/flatten-source-map-0.0.2.tgz#c8d5af0314eb6476dcd87c8f1ec8feb2a67ef03d"
+  dependencies:
+    source-map "^0.1.43"
+
 flow-bin@0.58.0:
   version "0.58.0"
   resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.58.0.tgz#62d5a776589419e5656800a0e5230a5e585ca65e"
@@ -3830,6 +3836,10 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
+q@1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/q/-/q-1.4.1.tgz#55705bcd93c5f3673530c2c2cbc0c2b3addc286e"
+
 q@^1.0.1, q@^1.1.2:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/q/-/q-1.5.0.tgz#dd01bac9d06d30e6f219aecb8253ee9ebdc308f1"
@@ -4410,7 +4420,7 @@ sntp@1.x.x:
   dependencies:
     hoek "2.x.x"
 
-source-map-resolve@^0.5.0:
+source-map-resolve@0.5.0, source-map-resolve@^0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/source-map-resolve/-/source-map-resolve-0.5.0.tgz#fcad0b64b70afb27699e425950cb5ebcd410bc20"
   dependencies:
@@ -4429,6 +4439,12 @@ source-map-url@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/source-map-url/-/source-map-url-0.4.0.tgz#3e935d7ddd73631b97659956d55128e87b5084a3"
 
+source-map@^0.1.43, source-map@~0.1.7:
+  version "0.1.43"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.1.43.tgz#c24bc146ca517c1471f5dacbe2571b2b7f9e3346"
+  dependencies:
+    amdefine ">=0.0.4"
+
 source-map@^0.4.4:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.4.4.tgz#eba4f5da9c0dc999de68032d8b4f76173652036b"
@@ -4438,12 +4454,6 @@ source-map@^0.4.4:
 source-map@^0.5.3, source-map@^0.5.6, source-map@~0.5.1:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
-
-source-map@~0.1.7:
-  version "0.1.43"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.1.43.tgz#c24bc146ca517c1471f5dacbe2571b2b7f9e3346"
-  dependencies:
-    amdefine ">=0.0.4"
 
 span-skip-list@0.2.0:
   version "0.2.0"
@@ -4679,7 +4689,7 @@ strip-eof@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/strip-eof/-/strip-eof-1.0.0.tgz#bb43ff5598a6eb05d89b59fcd129c983313606bf"
 
-strip-json-comments@~2.0.1:
+strip-json-comments@2.0.1, strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
