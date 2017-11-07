@@ -24,7 +24,7 @@ export type RemoteTextEditorPlaceholderState = {
   },
 };
 
-export class RemoteTextEditorPlaceholder implements atom$PaneItem {
+export class TextEditor implements atom$PaneItem {
   _uri: string;
   _contents: string;
   _isModified: boolean;
@@ -80,3 +80,8 @@ export class RemoteTextEditorPlaceholder implements atom$PaneItem {
     );
   }
 }
+
+// We name the class "TextEditor" because Atom uses the constructor name as the `data-type`
+// attribute of the tab and themes style that. We want to make sure that these themes style our tab
+// like text editor tabs.
+export const RemoteTextEditorPlaceholder = TextEditor;
