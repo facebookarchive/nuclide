@@ -463,8 +463,6 @@ export default class VsDebugSession extends V8Protocol {
         'pipe', // stdout
         'pipe', // stderr
       ],
-      // RN debugger can't be used in `production` environment.
-      // NODE_ENV: 'development',
       env: await getOriginalEnvironment(),
     };
     const serverProcess = (this._serverProcess = child_process.spawn(
