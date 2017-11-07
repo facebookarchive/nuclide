@@ -697,8 +697,9 @@ export class FileTreeNode {
     }
 
     if (index > this.shownChildrenCount) {
-      if (this.nextSibling != null) {
-        return this.nextSibling.findByIndex(index - this.shownChildrenCount);
+      const nextShownSibling = this.findNextShownSibling();
+      if (nextShownSibling != null) {
+        return nextShownSibling.findByIndex(index - this.shownChildrenCount);
       }
 
       return null;
