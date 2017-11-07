@@ -50,11 +50,11 @@ async function main(): Promise<void> {
   );
   dispatcher.registerCommand(new QuitCommand(() => cli.close()));
 
-  // see if there's session information on the command line
-  const debuggerAdapterFactory = new DebuggerAdapterFactory();
-  const adapter = debuggerAdapterFactory.adapterFromArguments(yargs.argv);
-
   try {
+    // see if there's session information on the command line
+    const debuggerAdapterFactory = new DebuggerAdapterFactory();
+    const adapter = debuggerAdapterFactory.adapterFromArguments(yargs.argv);
+
     const logger = buildLogger();
     const debuggerInstance = new Debugger(logger, cli);
 
