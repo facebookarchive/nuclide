@@ -45,6 +45,6 @@ export default class CommandDispatcher {
       );
     }
 
-    return matches[0].execute(tokens);
+    return matches[0].execute(tokens.slice(1));
   }
 }

@@ -27,4 +27,5 @@ export interface DebuggerInterface {
     frameCount: ?number,
   ): Promise<DebugProtocol.StackFrame[]>,
   getVariables(): Promise<VariablesInScope[]>,
+  getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
 }

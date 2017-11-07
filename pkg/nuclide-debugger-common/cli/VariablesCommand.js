@@ -15,7 +15,7 @@ import {DebuggerInterface} from './DebuggerInterface';
 
 export default class VariablesCommand implements Command {
   name = 'variables';
-  helpText = 'Display variables of the current stack frame.';
+  helpText = '[scope] Display variables of the current stack frame, optionally for a single scope.';
 
   _console: ConsoleIO;
   _debugger: DebuggerInterface;
@@ -25,8 +25,12 @@ export default class VariablesCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
-    const variables = await this._debugger.getVariables();
+  async execute(args: string[]): Promise<void> {
+    if (args.length > 1) {
+      throw new Error("'variables' takes at most one scope parameter");
+    }
+
+    const variables = await this._debugger.getVariables(args[0]);
     for (const scope of variables) {
       const vars = scope.variables;
       if (scope.expensive && vars == null) {

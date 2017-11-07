@@ -92,7 +92,7 @@ export default class Debugger implements DebuggerInterface {
     await this._ensureDebugSession().next({threadId: activeThread});
   }
 
-  async getVariables(): Promise<VariablesInScope[]> {
+  async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
     const session = this._ensureDebugSession();
 
     const activeThread = this._activeThread;
@@ -109,16 +109,27 @@ export default class Debugger implements DebuggerInterface {
 
     const {body: {scopes}} = await session.scopes({frameId});
 
-    const queries = scopes
-      .filter(scope => !scope.expensive)
-      .map(async scope => {
-        const {body: {variables}} = await session.variables({
-          variablesReference: scope.variablesReference,
-        });
-        return [scope.variablesReference, variables];
-      });
+    let queries: DebugProtocol.Scope[];
 
-    const results = await Promise.all(queries);
+    if (selectedScope != null) {
+      queries = scopes.filter(scope => scope.name === selectedScope);
+      if (queries.length === 0) {
+        throw new Error(
+          `There is no scope named '${selectedScope}' in the current context.`,
+        );
+      }
+    } else {
+      queries = scopes.filter(scope => !scope.expensive);
+    }
+
+    const executers = queries.map(async scope => {
+      const {body: {variables}} = await session.variables({
+        variablesReference: scope.variablesReference,
+      });
+      return [scope.variablesReference, variables];
+    });
+
+    const results = await Promise.all(executers);
     const resultsByVarRef = new Map(results);
 
     return scopes.map(scope => {
