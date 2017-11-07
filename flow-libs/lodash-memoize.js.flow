@@ -1,0 +1,23 @@
+/**
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ *
+ * @flow
+ */
+
+type memoize =
+  & (<A, B, C, R>(func: ((A, B, C) => R)) => ((A, B, C) => R))
+  & (<A, B, R>(func: ((A, B) => R)) => ((A, B) => R))
+  & (<A, R>(func: ((A) => R)) => ((A) => R))
+  & (<R>(func: (() => R)) => (() => R))
+  & (<T, R>(func: ((...any: $ReadOnlyArray<T>) => R)) => ((...any: $ReadOnlyArray<T>) => R));
+
+/**
+ * via https://github.com/flowtype/flow-bin/issues/84#issuecomment-327045279
+ */
+declare module 'lodash.memoize' {
+  declare export default memoize;
+}
