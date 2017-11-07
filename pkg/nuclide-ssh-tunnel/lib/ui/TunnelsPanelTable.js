@@ -47,13 +47,13 @@ export class TunnelsPanelTable extends React.Component<Props> {
       },
     ];
     const rows = this.props.tunnels.map(([tunnel, openTunnel]) => {
-      const host = shortenHostname(tunnel.from.host);
+      const {from, to} = tunnel;
       return {
         className: 'nuclide-ssh-tunnels-table-row',
         data: {
           description: tunnel.description,
-          from: `${host}:${tunnel.from.port}`,
-          to: `${tunnel.to.host}:${tunnel.to.port}`,
+          from: `${shortenHostname(from.host)}:${from.port}`,
+          to: `${shortenHostname(to.host)}:${to.port}`,
           status: openTunnel.state,
           close: (
             <TunnelCloseButton
