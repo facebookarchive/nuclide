@@ -1,5 +1,26 @@
 # Nuclide Changelog
 
+## v0.265.0
+
+### Highlights
+
+* Revamped the remote file reload experience.
+  * Restarting Nuclide with remote files open now preserves unsaved changes.
+  * Instead of displaying a blank file, remote files are now viewable in read-only mode during reconnection, and are no longer closed if the connection fails to reload.
+
+### General
+
+* Improved performance of diagnostics table rendering.
+* Fixed spurious Flow highlights for older Flow versions (< 0.55).
+* Reduce flakiness of Hyperclick underlines and loading indicators.
+* Outline view is now less aggressive about auto-focusing the search input.
+
+### Debugger
+
+* Add autocomplete support for currently in scope variables (in all debuggers).
+* Fix debugger hover evaluation race with language services' type hints.
+* Add loading indicator while evaluating expressions on hovers & inline failure message.
+
 ## v0.264.0
 
 ### General
