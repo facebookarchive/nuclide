@@ -12,7 +12,7 @@
 import type {VSAdapterExecutableInfo} from '../lib/types';
 import type {Capabilities, LaunchRequestArguments} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
+import type {DebuggerInterface, VariablesInScope} from './DebuggerInterface';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import BackTraceCommand from './BackTraceCommand';
@@ -23,6 +23,7 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
 import ThreadsCommand from './ThreadsCommand';
+import VariablesCommand from './VariablesCommand';
 
 import invariant from 'assert';
 import VsDebugSession from '../lib/VsDebugSession';
@@ -49,6 +50,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new ThreadsCommand(this._console, this));
     dispatcher.registerCommand(new StepCommand(this));
     dispatcher.registerCommand(new NextCommand(this));
+    dispatcher.registerCommand(new VariablesCommand(this._console, this));
   }
 
   getThreads(): Map<number, string> {
@@ -88,6 +90,48 @@ export default class Debugger implements DebuggerInterface {
     }
 
     await this._ensureDebugSession().next({threadId: activeThread});
+  }
+
+  async getVariables(): Promise<VariablesInScope[]> {
+    const session = this._ensureDebugSession();
+
+    const activeThread = this._activeThread;
+    if (activeThread == null) {
+      return [];
+    }
+
+    const stack = await this.getStackTrace(activeThread, 1);
+
+    const frameId = this._stackFrameId(stack, 0);
+    if (frameId == null) {
+      return [];
+    }
+
+    const {body: {scopes}} = await session.scopes({frameId});
+
+    const queries = scopes
+      .filter(scope => !scope.expensive)
+      .map(async scope => {
+        const {body: {variables}} = await session.variables({
+          variablesReference: scope.variablesReference,
+        });
+        return [scope.variablesReference, variables];
+      });
+
+    const results = await Promise.all(queries);
+    const resultsByVarRef = new Map(results);
+
+    return scopes.map(scope => {
+      return {
+        expensive: scope.expensive,
+        scopeName: scope.name,
+        variables: resultsByVarRef.get(scope.variablesReference),
+      };
+    });
+  }
+
+  _stackFrameId(stack: DebugProtocol.StackFrame[], depth: number): ?number {
+    return idx(stack, _ => _[depth].id);
   }
 
   async getSourceLines(
