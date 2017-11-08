@@ -50,7 +50,7 @@ export class ModalMultiSelect extends React.Component<Props, State> {
     className: '',
     disabled: false,
     labelComponent: DefaultLabelComponent,
-    onChange: value => {},
+    onChange: (value: Array<any>) => {},
     options: [],
     value: [],
     size: ButtonSizes.SMALL,
