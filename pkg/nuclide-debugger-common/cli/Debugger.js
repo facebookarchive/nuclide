@@ -193,6 +193,7 @@ export default class Debugger implements DebuggerInterface {
 
     session
       .observeOutputEvents()
+      .filter(x => x.body.category === 'console')
       .subscribe(x => this._console.output(x.body.output));
 
     session.observeContinuedEvents().subscribe(this._onContinued.bind(this));
