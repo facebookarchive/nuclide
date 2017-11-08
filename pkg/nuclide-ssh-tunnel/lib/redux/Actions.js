@@ -27,7 +27,7 @@ export const SET_CURRENT_WORKING_DIRECTORY = 'SET_CURRENT_WORKING_DIRECTORY';
 
 export function openTunnel(
   tunnel: Tunnel,
-  onOpen: () => void,
+  onOpen: (?Error) => void,
   onClose: (?Error) => void,
 ): OpenTunnelAction {
   return {

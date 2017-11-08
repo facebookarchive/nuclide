@@ -17,7 +17,7 @@ import Immutable from 'immutable';
 export type SshTunnelService = {
   openTunnel(
     tunnel: Tunnel,
-    onOpen: () => void,
+    onOpen: (?Error) => void,
     onClose: (?Error) => void,
   ): IDisposable,
   getAvailableServerPort(uri: NuclideUri): Promise<number>,
@@ -63,7 +63,7 @@ export type OpenTunnelAction = {
   type: 'OPEN_TUNNEL',
   payload: {
     tunnel: Tunnel,
-    onOpen: () => void,
+    onOpen: (?Error) => void,
     onClose: (?Error) => void,
   },
 };
