@@ -65,7 +65,7 @@ export async function createMultiLspLanguageService(
   // created upon demand, one per project root. Demand is usually "when the
   // user opens a file" or "when the user requests project-wide symbol search".
 
-  // What state is the each LspLanguageService in? ...
+  // What state is each LspLanguageService in? ...
   // * 'Initializing' state, still spawning the LSP server and negotiating with
   //    it, or inviting the user via a dialog box to retry initialization.
   // * 'Ready' state, able to handle LanguageService requests properly.

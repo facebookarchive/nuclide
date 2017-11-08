@@ -35,7 +35,7 @@ language into the Atom UI.
 
   * Some languages need per-project persistent state, e.g. because they delegate to some
     out-of-process language server. In these cases the `LanguageService` interface on the server
-    is implemented by `MultiProjectLanguageService`. It's job is to lazily create
+    is implemented by `MultiProjectLanguageService`. Its job is to lazily create
     subsidiary `LanguageService` instances on the server, one per project directory,
     and delegate all requests it receives to the appropriate project.
 
