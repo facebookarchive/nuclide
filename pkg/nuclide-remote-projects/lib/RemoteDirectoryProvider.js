@@ -11,7 +11,7 @@
 
 import {
   RemoteConnection,
-  RemoteDirectoryPlaceholder,
+  // RemoteDirectoryPlaceholder,
 } from '../../nuclide-remote-connection';
 
 /**
@@ -30,11 +30,10 @@ export default class RemoteDirectoryProvider {
     if (connection) {
       return connection.createDirectory(uri);
     } else {
-      // Create a placeholder directory to temporarily satisfy Atom.
-      // In Atom 1.22 onwards, Atom checks for the existence of all directories.
-      // (If they don't exist, a big red error comes up).
-      // We'll clean these up once the remote connection is actually established.
-      return new RemoteDirectoryPlaceholder(uri);
+      // Return null here. In response, Atom will create a generic Directory for
+      // this URI, and add it to the list of root project paths (atom.project.getPaths()).
+      // In remote-projects/main.js, we remove these generic directories.
+      return null;
     }
   }
 
