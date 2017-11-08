@@ -1,19 +1,23 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {NuclideUri} from 'nuclide-commons/nuclideUri';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = humanizePath;
 
-import idx from 'idx';
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
  * Format a path for display. After the path is humanized, it should no longer be treated like a
@@ -23,30 +27,24 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
  * Atom. If you have multiple directories open, the result will be prefixed with one of their names.
  * If you only have one, it won't.
  */
-export default function humanizePath(
-  path: NuclideUri,
-  options: ?{
-    isDirectory?: boolean,
-    rootPaths?: Array<NuclideUri>,
-  },
-): string {
-  const isDirectory = idx(options, _ => _.isDirectory);
-  const rootPaths =
-    idx(options, _ => _.rootPaths) ||
-    atom.project.getDirectories().map(dir => dir.getPath());
+function humanizePath(path, options) {
+  var _ref, _ref2;
+
+  const isDirectory = (_ref = options) != null ? _ref.isDirectory : _ref;
+  const rootPaths = ((_ref2 = options) != null ? _ref2.rootPaths : _ref2) || atom.project.getDirectories().map(dir => dir.getPath());
   const normalized = normalizePath(path, isDirectory);
   let resolved;
   for (const rootPath of rootPaths) {
-    const normalizedDir = nuclideUri.normalizeDir(rootPath);
-    if (nuclideUri.contains(normalizedDir, normalized)) {
+    const normalizedDir = (_nuclideUri || _load_nuclideUri()).default.normalizeDir(rootPath);
+    if ((_nuclideUri || _load_nuclideUri()).default.contains(normalizedDir, normalized)) {
       resolved = normalized.substr(normalizedDir.length);
-      const rootName = nuclideUri.basename(normalizedDir);
+      const rootName = (_nuclideUri || _load_nuclideUri()).default.basename(normalizedDir);
       // If the path is a root or there's more than one root, include the root's name.
       if (normalized === normalizedDir) {
-        return nuclideUri.normalizeDir(rootName);
+        return (_nuclideUri || _load_nuclideUri()).default.normalizeDir(rootName);
       }
       if (rootPaths.length > 1) {
-        return nuclideUri.join(rootName, resolved);
+        return (_nuclideUri || _load_nuclideUri()).default.join(rootName, resolved);
       }
       return resolved;
     }
@@ -54,12 +52,19 @@ export default function humanizePath(
 
   // It's not in one of the project directories so return the full (normalized) path.
   return normalized;
-}
+} /**
+   * Copyright (c) 2017-present, Facebook, Inc.
+   * All rights reserved.
+   *
+   * This source code is licensed under the BSD-style license found in the
+   * LICENSE file in the root directory of this source tree. An additional grant
+   * of patent rights can be found in the PATENTS file in the same directory.
+   *
+   * 
+   * @format
+   */
 
-function normalizePath(path: NuclideUri, isDirectory_: ?boolean): NuclideUri {
-  const isDirectory =
-    isDirectory_ == null ? nuclideUri.endsWithSeparator(path) : isDirectory_;
-  return isDirectory
-    ? nuclideUri.normalizeDir(path)
-    : nuclideUri.normalize(path);
+function normalizePath(path, isDirectory_) {
+  const isDirectory = isDirectory_ == null ? (_nuclideUri || _load_nuclideUri()).default.endsWithSeparator(path) : isDirectory_;
+  return isDirectory ? (_nuclideUri || _load_nuclideUri()).default.normalizeDir(path) : (_nuclideUri || _load_nuclideUri()).default.normalize(path);
 }

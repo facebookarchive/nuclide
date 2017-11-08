@@ -1,3 +1,72 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CodeActionManager = undefined;
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+let actionsToMessage = (() => {
+  var _ref = (0, _asyncToGenerator.default)(function* (location, actions) {
+    const titles = yield Promise.all(actions.map(function (r) {
+      return r.getTitle();
+    }));
+    const solutions = titles.map(function (title, i) {
+      return {
+        title,
+        position: location.position,
+        apply: actions[i].apply.bind(actions[i])
+      };
+    });
+    return {
+      location,
+      solutions,
+      excerpt: 'Select an action',
+      severity: 'info',
+      kind: 'action'
+    };
+  });
+
+  return function actionsToMessage(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+var _debounced;
+
+function _load_debounced() {
+  return _debounced = require('nuclide-commons-atom/debounced');
+}
+
+var _ProviderRegistry;
+
+function _load_ProviderRegistry() {
+  return _ProviderRegistry = _interopRequireDefault(require('nuclide-commons-atom/ProviderRegistry'));
+}
+
+var _event;
+
+function _load_event() {
+  return _event = require('nuclide-commons/event');
+}
+
+var _UniversalDisposable;
+
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _collection;
+
+function _load_collection() {
+  return _collection = require('nuclide-commons/collection');
+}
+
+var _rxjsBundlesRxMinJs = require('rxjs/bundles/Rx.min.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2017-present, Facebook, Inc.
  * All rights reserved.
@@ -6,169 +75,109 @@
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @flow
+ * 
  * @format
  */
 
-import {observeActiveEditorsDebounced} from 'nuclide-commons-atom/debounced';
-import ProviderRegistry from 'nuclide-commons-atom/ProviderRegistry';
-import {observableFromSubscribeFunction} from 'nuclide-commons/event';
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {arrayFlatten} from 'nuclide-commons/collection';
-import {Observable} from 'rxjs';
-
-import type {
-  RegisterIndieLinter,
-  IndieLinterDelegate,
-  LinterMessageV2,
-} from '../../../index';
-import type {DiagnosticMessage} from '../../atom-ide-diagnostics/lib/types';
-import type {CodeAction, CodeActionProvider, CodeActionFetcher} from './types';
-
 const TIP_DELAY_MS = 500;
 
-async function actionsToMessage(
-  location: {file: string, position: atom$RangeLike},
-  actions: Array<CodeAction>,
-): Promise<LinterMessageV2> {
-  const titles = await Promise.all(actions.map(r => r.getTitle()));
-  const solutions = titles.map((title, i) => ({
-    title,
-    position: location.position,
-    apply: actions[i].apply.bind(actions[i]),
-  }));
-  return {
-    location,
-    solutions,
-    excerpt: 'Select an action',
-    severity: 'info',
-    kind: 'action',
-  };
-}
-
-export class CodeActionManager {
-  _providerRegistry: ProviderRegistry<CodeActionProvider>;
-  _disposables: UniversalDisposable;
-  _linterDelegate: ?IndieLinterDelegate;
+class CodeActionManager {
 
   constructor() {
-    this._providerRegistry = new ProviderRegistry();
-    this._disposables = new UniversalDisposable(this._selectionSubscriber());
+    this._providerRegistry = new (_ProviderRegistry || _load_ProviderRegistry()).default();
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(this._selectionSubscriber());
   }
 
   dispose() {
     this._disposables.dispose();
   }
 
-  addProvider(provider: CodeActionProvider): IDisposable {
+  addProvider(provider) {
     const disposable = this._providerRegistry.addProvider(provider);
     this._disposables.add(disposable);
     return disposable;
   }
 
-  consumeIndie(register: RegisterIndieLinter): IDisposable {
-    const linterDelegate = register({name: 'Code Actions'});
+  consumeIndie(register) {
+    const linterDelegate = register({ name: 'Code Actions' });
     this._disposables.add(linterDelegate);
     this._linterDelegate = linterDelegate;
-    return new UniversalDisposable(() => {
+    return new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       this._disposables.remove(linterDelegate);
       this._linterDelegate = null;
     });
   }
 
-  async _genAllCodeActions(
-    editor: atom$TextEditor,
-    range: atom$Range,
-    diagnostics: Array<DiagnosticMessage>,
-  ): Promise<Array<CodeAction>> {
-    const codeActionRequests = [];
-    for (const provider of this._providerRegistry.getAllProvidersForEditor(
-      editor,
-    )) {
-      codeActionRequests.push(
-        provider.getCodeActions(editor, range, diagnostics),
-      );
-    }
-    return arrayFlatten(await Promise.all(codeActionRequests));
+  _genAllCodeActions(editor, range, diagnostics) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const codeActionRequests = [];
+      for (const provider of _this._providerRegistry.getAllProvidersForEditor(editor)) {
+        codeActionRequests.push(provider.getCodeActions(editor, range, diagnostics));
+      }
+      return (0, (_collection || _load_collection()).arrayFlatten)((yield Promise.all(codeActionRequests)));
+    })();
   }
 
-  createCodeActionFetcher(): CodeActionFetcher {
+  createCodeActionFetcher() {
     return {
       getCodeActionForDiagnostic: (diagnostic, editor) => {
         if (diagnostic.range) {
-          const {range} = diagnostic;
+          const { range } = diagnostic;
           return this._genAllCodeActions(editor, range, [diagnostic]);
         }
         return Promise.resolve([]);
-      },
+      }
     };
   }
 
   // Listen to buffer range selection changes and trigger code action providers
   // when ranges change.
-  _selectionSubscriber(): rxjs$Subscription {
+  _selectionSubscriber() {
     // Patterned after highlightEditors of CodeHighlightManager.
-    return observeActiveEditorsDebounced(0)
-      .switchMap(
-        // Get selections for the active editor.
-        editor => {
-          if (editor == null) {
-            return Observable.empty();
-          }
-          const destroyEvents = observableFromSubscribeFunction(
-            editor.onDidDestroy.bind(editor),
-          );
-          const selections = observableFromSubscribeFunction(
-            editor.onDidChangeSelectionRange.bind(editor),
-          )
-            .switchMap(
-              event =>
-                Observable.of(event.newBufferRange)
-                  .delay(TIP_DELAY_MS) // Delay the emission of the range.
-                  .startWith(null), // null the range immediately when selection changes.
-            )
-            .distinctUntilChanged()
-            // Remove 0-character selections since it's just cursor movement.
-            .filter(range => range == null || !range.isEmpty())
-            .takeUntil(destroyEvents);
-          return selections.map(
-            range => (range == null ? null : {editor, range}),
-          );
-        },
-      )
-      .switchMap(
-        // Get a message for the provided selection.
-        (selection: ?{editor: atom$TextEditor, range: atom$Range}) => {
-          if (selection == null) {
-            return Observable.of(null);
-          }
-          const {editor, range} = selection;
-          const file = editor.getBuffer().getPath();
-          if (file == null) {
-            return Observable.empty();
-          }
-          return Observable.fromPromise(
-            this._genAllCodeActions(editor, range, []),
-          ).switchMap(actions => {
-            // Only produce a message if we have actions to display.
-            if (actions.length > 0) {
-              return actionsToMessage({file, position: range}, actions);
-            } else {
-              return Observable.empty();
-            }
-          });
-        },
-      )
-      .distinctUntilChanged()
-      .subscribe(message => {
-        if (this._linterDelegate == null) {
-          return;
-        }
-        if (message == null) {
-          this._linterDelegate.clearMessages();
+    return (0, (_debounced || _load_debounced()).observeActiveEditorsDebounced)(0).switchMap(
+    // Get selections for the active editor.
+    editor => {
+      if (editor == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      const destroyEvents = (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidDestroy.bind(editor));
+      const selections = (0, (_event || _load_event()).observableFromSubscribeFunction)(editor.onDidChangeSelectionRange.bind(editor)).switchMap(event => _rxjsBundlesRxMinJs.Observable.of(event.newBufferRange).delay(TIP_DELAY_MS) // Delay the emission of the range.
+      .startWith(null) // null the range immediately when selection changes.
+      ).distinctUntilChanged()
+      // Remove 0-character selections since it's just cursor movement.
+      .filter(range => range == null || !range.isEmpty()).takeUntil(destroyEvents);
+      return selections.map(range => range == null ? null : { editor, range });
+    }).switchMap(
+    // Get a message for the provided selection.
+    selection => {
+      if (selection == null) {
+        return _rxjsBundlesRxMinJs.Observable.of(null);
+      }
+      const { editor, range } = selection;
+      const file = editor.getBuffer().getPath();
+      if (file == null) {
+        return _rxjsBundlesRxMinJs.Observable.empty();
+      }
+      return _rxjsBundlesRxMinJs.Observable.fromPromise(this._genAllCodeActions(editor, range, [])).switchMap(actions => {
+        // Only produce a message if we have actions to display.
+        if (actions.length > 0) {
+          return actionsToMessage({ file, position: range }, actions);
         } else {
-          this._linterDelegate.setAllMessages([message]);
+          return _rxjsBundlesRxMinJs.Observable.empty();
         }
       });
+    }).distinctUntilChanged().subscribe(message => {
+      if (this._linterDelegate == null) {
+        return;
+      }
+      if (message == null) {
+        this._linterDelegate.clearMessages();
+      } else {
+        this._linterDelegate.setAllMessages([message]);
+      }
+    });
   }
 }
+exports.CodeActionManager = CodeActionManager;
