@@ -13,8 +13,27 @@
 import invariant from 'assert';
 import {arrayEqual} from './collection';
 
-type CompareFunc<T> = (a: T, b: T) => boolean;
-type KeySelector<T> = (...args: Array<any>) => T;
+type memoizeUntilChanged = (<A, B, C, R, U>(
+  func: (A, B, C) => R,
+  keySelector_?: (A, B, C) => U,
+  compareKeys_?: (U, U) => boolean,
+) => (A, B, C) => R) &
+  (<A, B, R, U>(
+    func: (A, B) => R,
+    keySelector_?: (A, B) => U,
+    compareKeys_?: (U, U) => boolean,
+  ) => (A, B) => R) &
+  (<A, R, U>(
+    func: (A) => R,
+    keySelector_?: (A) => U,
+    compareKeys_?: (U, U) => boolean,
+  ) => A => R) &
+  (<R>(func: () => R) => () => R) &
+  (<T, R, U>(
+    func: (...any: $ReadOnlyArray<T>) => R,
+    (...any: $ReadOnlyArray<T>) => U,
+    compareKeys_?: (U, U) => boolean,
+  ) => (...any: $ReadOnlyArray<T>) => R);
 
 /**
  * Create a memoized version of the provided function that caches only the latest result. This is
@@ -53,11 +72,7 @@ type KeySelector<T> = (...args: Array<any>) => T;
  *       }
  *     }
  */
-export default function memoizeUntilChanged<T: Function, U>(
-  func: T,
-  keySelector_?: KeySelector<U>,
-  compareKeys_?: CompareFunc<U>,
-): T {
+export default ((func, keySelector_?, compareKeys_?) => {
   invariant(
     !(keySelector_ == null && compareKeys_ != null),
     "You can't provide a compare function without also providing a key selector.",
@@ -69,15 +84,15 @@ export default function memoizeUntilChanged<T: Function, U>(
   const compareKeys = compareKeys_ || arrayEqual;
   // $FlowIssue: Flow can't express that we want the args to be the same type as the input func's.
   return function(...args) {
-    const key = keySelector(...args);
+    const key = (keySelector: Function)(...args);
     invariant(key != null, 'Key cannot be null');
     // $FlowIssue: We can't tell Flow the relationship between keySelector and compareKeys
     if (prevKey == null || !compareKeys(key, prevKey)) {
       prevKey = key;
-      prevResult = func.apply(this, args);
+      prevResult = (func: Function).apply(this, args);
     }
     return prevResult;
   };
-}
+}: memoizeUntilChanged);
 
 const DEFAULT_KEY_SELECTOR = (...args) => args;
