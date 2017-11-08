@@ -146,6 +146,7 @@ export default class VsDebugSessionTranslator {
     TranslatorBreakpoint,
   >;
 
+  _configDoneSent: boolean;
   _lastBreakpointId: number;
   _threadsById: Map<number, ThreadInfo>;
   _mainThreadId: ?number;
@@ -176,6 +177,7 @@ export default class VsDebugSessionTranslator {
     this._threadsById = new Map();
     this._mainThreadId = null;
     this._lastBreakpointId = 0;
+    this._configDoneSent = false;
     this._exceptionFilters = [];
     this._files = new FileCache((method, params) =>
       this._sendMessageToClient(({method, params}: any)),
@@ -304,7 +306,7 @@ export default class VsDebugSessionTranslator {
               this._exceptionFilters = [state];
               break;
           }
-          if (this._session.isReadyForBreakpoints()) {
+          if (this._configDoneSent) {
             await this._session.setExceptionBreakpoints({
               filters: this._exceptionFilters,
             });
@@ -436,23 +438,18 @@ export default class VsDebugSessionTranslator {
       'Debugger.setBreakpointByUrl',
     );
 
-    let startedDebugging = false;
-
     return Observable.concat(
       setBreakpointsCommands
         .buffer(
           this._commandsOfType('Debugger.resume')
             .first()
-            .switchMap(() => {
-              if (this._session.isReadyForBreakpoints()) {
-                // Session is initialized and ready for breakpoint requests.
-                return Observable.of(null);
-              } else {
-                // Session initialization is pending launch.
-                startedDebugging = true;
-                return Observable.fromPromise(this._startDebugging())
-                  .ignoreElements()
-                  .merge(this._session.observeInitializeEvents().first());
+            .switchMap(async () => {
+              await this._startDebugging();
+              if (!this._session.isReadyForBreakpoints()) {
+                await this._session
+                  .observeInitializeEvents()
+                  .first()
+                  .toPromise();
               }
             }),
         )
@@ -461,14 +458,9 @@ export default class VsDebugSessionTranslator {
           // Upon session start, send the cached breakpoints
           // and other configuration requests.
           try {
-            const promises = [
-              this._setBulkBreakpoints(commands),
-              this._configDone(),
-              startedDebugging ? Promise.resolve() : this._startDebugging(),
-            ];
-            startedDebugging = true;
-            await Promise.all(promises);
-            return await promises[0];
+            const breakpoints = await this._setBulkBreakpoints(commands);
+            await this._configDone();
+            return breakpoints;
           } catch (error) {
             return commands.map(({id}) => getErrorResponse(id, error.message));
           }
@@ -485,11 +477,11 @@ export default class VsDebugSessionTranslator {
     ).flatMap(responses => Observable.from(responses));
   }
 
-  _startDebugging(): Promise<mixed> {
+  async _startDebugging(): Promise<void> {
     if (this._debugMode === 'launch') {
-      return this._session.launch(this._debuggerArgs);
+      await this._session.launch(this._debuggerArgs);
     } else {
-      return this._session.attach(this._debuggerArgs);
+      await this._session.attach(this._debuggerArgs);
     }
   }
 
@@ -594,6 +586,7 @@ export default class VsDebugSessionTranslator {
     if (this._session.getCapabilities().supportsConfigurationDoneRequest) {
       await this._session.configurationDone();
     }
+    this._configDoneSent = true;
   }
 
   async _syncBreakpointsForFilePath(
@@ -932,10 +925,10 @@ export default class VsDebugSessionTranslator {
     };
   }
 
-  initilize(): Promise<mixed> {
-    return this._session.initialize({
+  async initilize(): Promise<void> {
+    await this._session.initialize({
       clientID: 'Nuclide',
-      adapterID: 'python' /* TODO(most) */,
+      adapterID: this._adapterType,
       linesStartAt1: true,
       columnsStartAt1: true,
       supportsVariableType: true,
