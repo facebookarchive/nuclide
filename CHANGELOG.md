@@ -1,5 +1,9 @@
 # Nuclide Changelog
 
+## v0.266.0
+
+Hotfix release to fix task runner issues with remote directories.
+
 ## v0.265.0
 
 ### Highlights
