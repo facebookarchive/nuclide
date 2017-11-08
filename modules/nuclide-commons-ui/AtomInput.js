@@ -40,6 +40,7 @@ type Props = {
   startSelected: boolean,
   startSelectedRange?: ?[number, number],
   initialValue: string,
+  invalid?: boolean,
   placeholderText?: string,
   tabIndex: string,
   onFocus: () => mixed,
@@ -254,6 +255,7 @@ export class AtomInput extends React.Component<Props, State> {
       'atom-text-editor-unstyled': this.props.unstyled,
       [`atom-text-editor-${maybeToString(this.props.size)}`]:
         this.props.size != null,
+      'atom-text-editor-invalid': this.props.invalid,
     });
 
     return (

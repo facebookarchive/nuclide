@@ -74,7 +74,6 @@ export default class RegExpFilter extends React.Component<Props, State> {
     const inputClassName = classnames(
       'nuclide-ui-regexp-filter-input',
       this.props.inputClassName,
-      {invalid},
     );
 
     return (
@@ -83,6 +82,7 @@ export default class RegExpFilter extends React.Component<Props, State> {
           ref={el => {
             this._input = el;
           }}
+          invalid={invalid}
           className={inputClassName}
           size={size}
           width={inputWidth}
