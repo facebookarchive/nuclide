@@ -37,8 +37,7 @@ export function pollDevicesEpic(
         isActiveA === isActiveB,
     )
     .switchMap(([state, isActive]) => {
-      // eslint-disable-next-line eqeqeq
-      if (state.deviceType === null || !isActive) {
+      if (state.deviceType == null || !isActive) {
         return Observable.empty();
       }
       for (const fetcher of getProviders().deviceList) {

@@ -38,11 +38,14 @@ class DevicePoller {
 
   observe(_host: NuclideUri): Observable<Expected<Device[]>> {
     const host = nuclideUri.isRemote(_host) ? _host : '';
+    let fetching = false;
     return this._observables.getOrCreate(host, () =>
-      Observable.interval(2000)
+      Observable.interval(1000)
         .startWith(0)
-        .switchMap(() =>
-          this.fetch(host)
+        .filter(() => !fetching)
+        .switchMap(() => {
+          fetching = true;
+          return this.fetch(host)
             .map(devices => Expect.value(devices))
             .catch(() =>
               Observable.of(
@@ -53,8 +56,11 @@ class DevicePoller {
                   ),
                 ),
               ),
-            ),
-        )
+            )
+            .do(() => {
+              fetching = false;
+            });
+        })
         .publishReplay(1)
         .refCount(),
     );
