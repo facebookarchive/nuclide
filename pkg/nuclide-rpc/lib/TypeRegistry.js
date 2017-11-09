@@ -321,7 +321,13 @@ export class TypeRegistry {
     );
     const result = {};
     marshalledargs.forEach((arg, i) => {
-      invariant(typeof argTypes[i].name === 'string');
+      if (typeof argTypes[i].name !== 'string') {
+        const type = argTypes[i].type;
+        const nameOrKind = type.kind === 'named' ? type.name : type.kind;
+        throw new Error(
+          `Unnamed function parameter for ${nameOrKind}. (Are you destructuring in a function argument list?)`,
+        );
+      }
       result[argTypes[i].name] = arg;
     });
     return result;
