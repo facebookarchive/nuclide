@@ -15,11 +15,8 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import invariant from 'assert';
 import {List} from 'react-virtualized';
-import {Observable, Subject} from 'rxjs';
 
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {compact} from 'nuclide-commons/observable';
-import {ResizeObservable} from 'nuclide-commons-ui/observable-dom';
 
 import {FileTreeStore} from '../lib/FileTreeStore';
 import FileTreeActions from '../lib/FileTreeActions';
@@ -40,8 +37,6 @@ type State = {|
   reorderPreviewStatus: ?ReorderPreviewStatus,
   selectedNodes: Immutable.Set<FileTreeNode>,
   focusedNodes: Immutable.Set<FileTreeNode>,
-  scrollerHeight: ?number,
-  scrollerWidth: ?number,
   rootHeight: ?number,
   nodeHeight: ?number,
   footerHeight: ?number,
@@ -68,7 +63,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
   _disposables: UniversalDisposable;
   _actions: FileTreeActions;
   _getNodeByIndex: (index: number) => ?FileTreeNode;
-  _scrollerElements: Subject<?HTMLElement>;
 
   _listRef: ?List;
   _rootRef: ?FileTreeEntryComponent;
@@ -84,7 +78,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     this._store = FileTreeStore.getInstance();
     this._actions = FileTreeActions.getInstance();
     this._getNodeByIndex = this._buildGetNodeByIndex(this._store.roots);
-    this._scrollerElements = new Subject();
 
     const shownNodes = countShownNodes(this._store.roots);
     this.state = {
@@ -95,8 +88,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
       reorderPreviewStatus: this._store.reorderPreviewStatus,
       selectedNodes: this._store.selectionManager.selectedNodes(),
       focusedNodes: this._store.selectionManager.focusedNodes(),
-      scrollerHeight: null,
-      scrollerWidth: null,
       rootHeight: null,
       nodeHeight: null,
       footerHeight: null,
@@ -106,9 +97,7 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
     this._indexOfLastRowInView = 0;
     this._nextScrollingIsProgrammatic = false;
 
-    this._disposables = new UniversalDisposable(
-      this._subscribeToResizeEvents(),
-    );
+    this._disposables = new UniversalDisposable();
   }
 
   componentDidMount(): void {
@@ -138,28 +127,6 @@ export class VirtualizedFileTree extends React.Component<Props, State> {
 
   componentWillUnmount(): void {
     this._disposables.dispose();
-  }
-
-  _subscribeToResizeEvents(): rxjs$Subscription {
-    const scrollerRects = this._scrollerElements.switchMap(scroller => {
-      if (scroller == null) {
-        return Observable.empty();
-      }
-
-      return new ResizeObservable(scroller).map(arr => {
-        if (arr.length === 0) {
-          return null;
-        }
-
-        return arr[arr.length - 1].contentRect;
-      });
-    });
-
-    return scrollerRects
-      .let(compact)
-      .subscribe(rect =>
-        this.setState({scrollerHeight: rect.height, scrollerWidth: rect.width}),
-      );
   }
 
   _remeasureHeights(): void {
