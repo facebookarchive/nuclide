@@ -20,7 +20,7 @@ import {getServerSideMarshalers} from '../../nuclide-marshalers-common';
 import idx from 'idx';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-import {runCommand, spawn} from 'nuclide-commons/process';
+import {spawn} from 'nuclide-commons/process';
 import {RpcProcess} from '../../nuclide-rpc';
 import {ServiceRegistry, loadServicesConfig} from '../../nuclide-rpc';
 import {watchWithNode} from '../../nuclide-filewatcher-rpc';
@@ -201,27 +201,12 @@ export default class ClangServer {
     return this._rpcProcess.getService('ClangProcessService');
   }
 
-  /**
-   * Returns RSS of the child process in bytes.
-   * Works on Unix and Mac OS X.
-   */
-  async getMemoryUsage(): Promise<number> {
+  getPID(): ?number {
     const {_process} = this._rpcProcess;
     if (_process == null) {
-      return 0;
+      return null;
     }
-    let stdout;
-    try {
-      stdout = await runCommand('ps', [
-        '-p',
-        _process.pid.toString(),
-        '-o',
-        'rss=',
-      ]).toPromise();
-    } catch (err) {
-      return 0;
-    }
-    return parseInt(stdout, 10) * 1024; // ps returns KB
+    return _process.pid;
   }
 
   getFlagsChanged(): boolean {

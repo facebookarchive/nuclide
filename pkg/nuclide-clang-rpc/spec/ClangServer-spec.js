@@ -113,9 +113,6 @@ describe('ClangServer', () => {
         accurateFlags: true,
       });
 
-      const mem = await server.getMemoryUsage();
-      expect(mem).toBeGreaterThan(0);
-
       response = await service.get_completions(FILE_CONTENTS, 4, 7, 7, 'f');
       invariant(response);
       expect(response.map(x => x.spelling).sort()).toEqual([

@@ -107,26 +107,36 @@ describe('ClangServerManager', () => {
   });
 
   it('enforces a memory limit', () => {
-    waitsForPromise(async () => {
-      const server = serverManager.getClangServer('test.cpp', '', null, []);
-      invariant(server);
-      spyOn(server, 'getMemoryUsage').andReturn(Promise.resolve(1e99));
+    let server;
+    let server2;
+    let server3;
+
+    runs(() => {
+      serverManager.setMemoryLimit(1);
+      server = serverManager.getClangServer('test.cpp', '', null, []);
 
       // We're still over the limit, but keep the last one alive.
-      const server2 = serverManager.getClangServer('test2.cpp', '', null, []);
-      invariant(server2);
-      spyOn(server2, 'getMemoryUsage').andReturn(Promise.resolve(1e99));
+      server2 = serverManager.getClangServer('test2.cpp', '', null, []);
+    });
 
+    waitsFor(() => server2.isReady(), 'server2 to become ready');
+
+    waitsForPromise(async () => {
       await serverManager._checkMemoryUsage();
       expect(server.isDisposed()).toBe(true);
       expect(server2.isDisposed()).toBe(false);
 
       // It should be disposed once the next server gets created.
-      const server3 = serverManager.getClangServer('test3.cpp', '', null, []);
-      invariant(server3);
-      spyOn(server3, 'getMemoryUsage').andReturn(Promise.resolve(1));
+      server3 = serverManager.getClangServer('test3.cpp', '', null, []);
+    });
 
-      await serverManager._checkMemoryUsage();
+    waitsFor(() => server3.isReady(), 'server3 to become ready');
+
+    waitsForPromise(async () => {
+      const usage = await serverManager._checkMemoryUsage();
+      // Check that the memory usage is within a reasonable range.
+      expect(usage).toBeGreaterThan(1000);
+      expect(usage).toBeLessThan(1000000);
       expect(server2.isDisposed()).toBe(true);
       expect(server3.isDisposed()).toBe(false);
     });

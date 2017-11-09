@@ -15,6 +15,7 @@ import type {ClangRequestSettings} from './rpc-types';
 import LRUCache from 'lru-cache';
 import os from 'os';
 
+import {runCommand} from 'nuclide-commons/process';
 import {serializeAsyncCall} from 'nuclide-commons/promise';
 import {getLogger} from 'log4js';
 import ClangFlagsManager from './ClangFlagsManager';
@@ -50,7 +51,8 @@ async function augmentDefaultFlags(
 export default class ClangServerManager {
   _flagsManager: ClangFlagsManager;
   _servers: LRUCache<string, ClangServer>;
-  _checkMemoryUsage: () => Promise<void>;
+  _checkMemoryUsage: () => Promise<number>;
+  _memoryLimit: number = MEMORY_LIMIT;
 
   constructor() {
     this._flagsManager = new ClangFlagsManager();
@@ -160,33 +162,46 @@ export default class ClangServerManager {
     this._flagsManager.reset();
   }
 
-  async _checkMemoryUsageImpl(): Promise<void> {
-    const usage = new Map();
-    await Promise.all(
-      this._servers.values().map(async server => {
-        const mem = await server.getMemoryUsage();
-        usage.set(server, mem);
-      }),
-    );
+  async _checkMemoryUsageImpl(): Promise<number> {
+    const serverPids = this._servers
+      .values()
+      .map(server => server.getPID())
+      .filter(Boolean);
+    if (serverPids.length === 0) {
+      return 0;
+    }
 
-    // Servers may have been deleted in the meantime, so calculate the total now.
     let total = 0;
-    let count = 0;
-    this._servers.forEach(server => {
-      const mem = usage.get(server);
-      if (mem) {
-        total += mem;
-        count++;
-      }
-    });
+    const usage = new Map();
+    try {
+      const stdout = await runCommand('ps', [
+        '-p',
+        serverPids.join(','),
+        '-o',
+        'pid=',
+        '-o',
+        'rss=',
+      ]).toPromise();
+      stdout.split('\n').forEach(line => {
+        const parts = line.split(/\s+/);
+        if (parts.length === 2) {
+          const [pid, rss] = parts.map(x => parseInt(x, 10));
+          usage.set(pid, rss);
+          total += rss;
+        }
+      });
+    } catch (err) {
+      // Ignore errors.
+    }
 
     // Remove servers until we're under the memory limit.
     // Make sure we allow at least one server to stay alive.
-    if (count > 1 && total > MEMORY_LIMIT) {
+    let count = usage.size;
+    if (count > 1 && total > this._memoryLimit) {
       const toDispose = [];
       this._servers.rforEach((server, key) => {
-        const mem = usage.get(server);
-        if (mem && count > 1 && total > MEMORY_LIMIT) {
+        const mem = usage.get(server.getPID());
+        if (mem != null && count > 1 && total > this._memoryLimit) {
           total -= mem;
           count--;
           toDispose.push(key);
@@ -194,5 +209,11 @@ export default class ClangServerManager {
       });
       toDispose.forEach(key => this._servers.del(key));
     }
+
+    return total;
+  }
+
+  setMemoryLimit(limit: number): void {
+    this._memoryLimit = limit;
   }
 }
