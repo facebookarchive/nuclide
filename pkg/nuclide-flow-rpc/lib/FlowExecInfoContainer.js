@@ -46,7 +46,7 @@ export class FlowExecInfoContainer {
   // unsaved files. Useful for outline view) to FlowExecInfo. A null value means that the Flow
   // binary cannot be found for that root. It is possible for Flow to be available in some roots but
   // not others because we will support root-specific installations of flow-bin.
-  _flowExecInfoCache: LRUCache<?string, ?FlowExecInfo>;
+  _flowExecInfoCache: LRUCache<?string, Promise<?FlowExecInfo>>;
 
   _disposables: UniversalDisposable;
 
@@ -76,12 +76,13 @@ export class FlowExecInfoContainer {
   }
 
   // Returns null iff Flow cannot be found.
-  async getFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
-    if (!this._flowExecInfoCache.has(root)) {
-      const info = await this._computeFlowExecInfo(root);
+  getFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
+    let info = this._flowExecInfoCache.get(root);
+    if (info == null) {
+      info = this._computeFlowExecInfo(root);
       this._flowExecInfoCache.set(root, info);
     }
-    return this._flowExecInfoCache.get(root);
+    return info;
   }
 
   reallyGetFlowExecInfo(root: string | null): Promise<?FlowExecInfo> {
