@@ -92,7 +92,7 @@ export default class CommandDispatcher {
 
   async setupNuclideChannel(debuggerInstance: Object): Promise<void> {
     this._ensureSessionCreated();
-    this._useNewChannel = await isNewProtocolChannelEnabled(
+    this._useNewChannel = isNewProtocolChannelEnabled(
       debuggerInstance.getProviderName(),
     );
     if (this._useNewChannel) {

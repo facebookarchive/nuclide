@@ -21,12 +21,6 @@
         "default": false,
         "description": "Opens the devtools on debugger start up to help debugging early events."
       },
-      "forceNewChannel": {
-        "title": "Force to use the new debugger protocol channel",
-        "type": "boolean",
-        "default": false,
-        "description": "Force to use the new debugger protocol channel."
-      },
       "showDebuggerOnBpSet": {
         "title": "Show debugger on breakpoint set",
         "type": "boolean",
