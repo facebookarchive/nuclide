@@ -166,6 +166,7 @@ export class HgRepositoryClient {
   _isInConflict: boolean;
   _isDestroyed: boolean;
   _isFetchingPathStatuses: Subject<boolean>;
+  _manualStatusRefreshRequests: Subject<void>;
 
   constructor(
     repoPath: string,
@@ -191,6 +192,7 @@ export class HgRepositoryClient {
     this._emitter = new Emitter();
     this._subscriptions = new UniversalDisposable(this._emitter, this._service);
     this._isFetchingPathStatuses = new Subject();
+    this._manualStatusRefreshRequests = new Subject();
     this._hgStatusCache = new Map();
     this._bookmarks = new BehaviorSubject({isLoading: true, bookmarks: []});
 
@@ -266,9 +268,10 @@ export class HgRepositoryClient {
     });
     // Get updates that tell the HgRepositoryClient when to clear its caches.
     const fileChanges = this._service.observeFilesDidChange().refCount();
-    const repoStateChanges = this._service
-      .observeHgRepoStateDidChange()
-      .refCount();
+    const repoStateChanges = Observable.merge(
+      this._service.observeHgRepoStateDidChange().refCount(),
+      this._manualStatusRefreshRequests,
+    );
     const activeBookmarkChanges = this._service
       .observeActiveBookmarkDidChange()
       .refCount();
@@ -1285,5 +1288,9 @@ export class HgRepositoryClient {
       });
     }
     this._emitter.emit('did-change-statuses');
+  }
+
+  requestPathStatusRefresh(): void {
+    this._manualStatusRefreshRequests.next();
   }
 }
