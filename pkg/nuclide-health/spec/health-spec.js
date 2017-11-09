@@ -89,8 +89,12 @@ describe('Health', () => {
       invariant(item != null);
       pane.activateItem(item);
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
-      waits(500);
-      expect(findHealthPaneAndItem().item).toBeFalsy();
+    });
+    waits(500);
+    runs(() => {
+      // Explicitly cast the result to boolean rather than using `.toBeFalsy()`
+      // since Jasmine crashes when trying to pretty print the item.
+      expect(Boolean(findHealthPaneAndItem().item)).toBe(false);
     });
   });
 });

@@ -48,7 +48,7 @@ class LocalTestContext {
         setLocalProject([]);
         this._projectPath = null;
       }
-      deactivateAllPackages();
+      waitsForPromise(deactivateAllPackages);
     });
   }
 
@@ -95,7 +95,7 @@ class RemoteTestContext {
           this._connection = null;
           this._remoteProjectPath = null;
         }
-        deactivateAllPackages();
+        await deactivateAllPackages();
       });
       // Restore the original timeout.
       jasmine.getEnv().defaultTimeoutInterval = defaultTimeout;

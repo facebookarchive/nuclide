@@ -48,10 +48,9 @@ describe('nuclide-distraction-free-mode', () => {
           'nuclide-distraction-free-mode:toggle',
         );
         expect(isOutlineViewVisible()).toBeTruthy();
-
-        // Deactivate nuclide packages.
-        deactivateAllPackages();
       });
+      // Deactivate nuclide packages.
+      waitsForPromise(deactivateAllPackages);
     });
   });
 });

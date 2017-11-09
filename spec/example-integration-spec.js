@@ -27,7 +27,7 @@ describe('Example Integration Test', () => {
 
   afterEach(() => {
     // Deactivate nuclide packages.
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 
   it('tests my feature', () => {

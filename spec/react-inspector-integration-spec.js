@@ -32,7 +32,7 @@ describe('React Native Inspector', () => {
 
   afterEach(() => {
     // Deactivate nuclide packages.
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 
   it('tries to connect to the RN app on port 8097', () => {

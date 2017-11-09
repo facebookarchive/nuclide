@@ -9,6 +9,7 @@
  * @format
  */
 
+import os from 'os';
 import invariant from 'assert';
 import {FileCache} from '../../nuclide-open-files-rpc/lib/FileCache';
 import {
@@ -19,7 +20,6 @@ import {
 import {TextBuffer} from 'atom';
 import {getBufferAtVersion} from '../../nuclide-open-files-rpc';
 import {Subject} from 'rxjs';
-import nuclideUri from 'nuclide-commons/nuclideUri';
 
 describe('nuclide-open-files', () => {
   let notifier: FileCache = (null: any);
@@ -402,10 +402,10 @@ describe('nuclide-open-files', () => {
             Array.from(dirs).filter(
               dir =>
                 !dir.includes(
-                  // apm test adds a directory with a name like: /Applications/Atom.app/Contents/Resources/app/spec.
-                  // Exclude it by checking against Atom's `resourcePath`.
-                  // $FlowIgnore `resourcePath` is a private API.
-                  nuclideUri.join(atom.packages.resourcePath, 'spec'),
+                  // apm test adds a project using os.tempdir() as the path.
+                  // Exclude all directories rooted in the OS's default tmp dir.
+                  // https://github.com/atom/atom/pull/15990/files
+                  os.tmpdir(),
                 ),
             ),
           )

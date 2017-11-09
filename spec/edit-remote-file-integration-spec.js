@@ -65,7 +65,7 @@ describe('Edit remote file Integration Test', () => {
 
       await stopNuclideServer(connection);
       // Deactivate nuclide packages.
-      deactivateAllPackages();
+      await deactivateAllPackages();
     });
   });
 });

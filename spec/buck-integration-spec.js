@@ -33,7 +33,7 @@ describe('Buck building via toolbar', () => {
 
   afterEach(() => {
     // Deactivate nuclide packages.
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 
   it('builds a project', () => {

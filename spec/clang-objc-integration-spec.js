@@ -152,9 +152,7 @@ describe('Clang Integration Test (objc)', () => {
 
     waitsForFilePosition('FoundationStub.h', 45, 12);
 
-    runs(() => {
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
-    });
+    // Deactivate nuclide packages.
+    waitsForPromise(deactivateAllPackages);
   });
 });

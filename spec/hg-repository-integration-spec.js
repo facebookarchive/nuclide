@@ -128,6 +128,6 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   afterEach(() => {
-    deactivateAllPackages();
+    waitsForPromise(deactivateAllPackages);
   });
 });

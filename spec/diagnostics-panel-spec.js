@@ -83,9 +83,7 @@ describe('Diagnostics panel integration test', () => {
       return !isDiagnosticsPanelShowing();
     });
 
-    runs(() => {
-      // Deactivate nuclide packages.
-      deactivateAllPackages();
-    });
+    // Deactivate nuclide packages.
+    waitsForPromise(deactivateAllPackages);
   });
 });

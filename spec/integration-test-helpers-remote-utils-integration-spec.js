@@ -47,7 +47,7 @@ describe('remote connection for testing', () => {
 
       await stopNuclideServer(connection);
 
-      deactivateAllPackages();
+      await deactivateAllPackages();
     });
   });
 });

@@ -355,8 +355,8 @@ declare class atom$PackageManager {
 
   // (Undocumented.)
   activate(): Promise<any>,
-  deactivatePackages(): void,
-  deactivatePackage(name: string, suppressSerialization?: boolean): void,
+  deactivatePackages(): Promise<void>,
+  deactivatePackage(name: string, suppressSerialization?: boolean): Promise<void>,
   emitter: atom$Emitter,
   loadPackage(name: string): void,
   loadPackages(): void,

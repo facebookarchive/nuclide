@@ -39,7 +39,7 @@ describe('Blame context menu integration test', () => {
         ),
       );
       expect(inMenu).toBe(true);
-      deactivateAllPackages();
+      await deactivateAllPackages();
     });
   });
 });

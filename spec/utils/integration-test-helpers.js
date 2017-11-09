@@ -102,8 +102,8 @@ export async function activateAllPackages(): Promise<Array<string>> {
   return atom.packages.getActivePackages().map(pack => pack.name);
 }
 
-export function deactivateAllPackages(): void {
-  atom.packages.deactivatePackages();
+export async function deactivateAllPackages(): Promise<void> {
+  await atom.packages.deactivatePackages();
   atom.packages.unloadPackages();
 
   // The nuclide-open-files package is an npm package which subscribes to events on the global
