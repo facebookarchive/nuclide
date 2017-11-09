@@ -115,5 +115,9 @@
   {
     "implementation": "../nuclide-vscode-language-service-rpc/lib/main.js",
     "name": "VSCodeLanguageService"
+  },
+  {
+    "implementation": "../nuclide-clangd-lsp-rpc/lib/main.js",
+    "name": "ClangdLSPService"
   }
 ]

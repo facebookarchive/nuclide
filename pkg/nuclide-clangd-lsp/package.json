@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-clangd-lsp",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Client for the clangd LSP",
+  "private": true,
+  "atomTestRunner": "../../lib/test-runner-entry.js",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationHooks": [
+    "language-c:grammar-used",
+    "language-cpp14:grammar-used",
+    "language-objective-c:grammar-used"
+  ],
+  "activationCommands": {
+  }
+}

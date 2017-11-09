@@ -86,6 +86,7 @@ import typeof * as SdbService from '../../nuclide-adb-sdb-rpc/lib/SdbService';
 import typeof * as SocketService from '../../nuclide-socket-rpc';
 import typeof * as SourceControlService from '../../nuclide-server/lib/services/SourceControlService';
 import typeof * as VSCodeLanguageService from '../../nuclide-vscode-language-service-rpc';
+import typeof * as ClangdLSPService from '../../nuclide-clangd-lsp-rpc';
 
 export function getAdbServiceByNuclideUri(uri: NuclideUri): AdbService {
   return nullthrows(getServiceByNuclideUri('AdbService', uri));
@@ -225,4 +226,10 @@ export function getVSCodeLanguageServiceByNuclideUri(
   uri: NuclideUri,
 ): VSCodeLanguageService {
   return nullthrows(getServiceByNuclideUri('VSCodeLanguageService', uri));
+}
+
+export function getClangdLSPServiceByConnection(
+  connection: ?ServerConnection,
+): ClangdLSPService {
+  return nullthrows(getServiceByConnection('ClangdLSPService', connection));
 }

@@ -1,0 +1,22 @@
+{
+  "name": "nuclide-clangd-lsp-rpc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Service for clangd interaction.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node ../nuclide-jasmine/bin/jasmine-node-transpiled spec"
+  },
+  "consumedServices": {
+    "nuclide.clang.configuration": {
+      "versions": {
+        "0.0.0": "consumeClangConfigurationProvider"
+      }
+    }
+  },
+  "private": true
+}

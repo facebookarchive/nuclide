@@ -74,6 +74,7 @@ const clangServices = new WeakSet();
 
 // eslint-disable-next-line rulesdir/no-commonjs
 module.exports = {
+  getClangRequestSettings,
   registerClangProvider(provider: ClangConfigurationProvider): Disposable {
     clangProviders.add(provider);
     return new Disposable(() => clangProviders.delete(provider));
