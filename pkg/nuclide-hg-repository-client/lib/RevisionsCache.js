@@ -50,11 +50,13 @@ export default class RevisionsCache {
   _revisions: BehaviorSubject<Array<RevisionInfo>>;
   _lazyRevisionFetcher: Observable<Array<RevisionInfo>>;
   _fetchRevisionsRequests: Subject<null>;
+  _isFetchingRevisions: Subject<boolean>;
 
   constructor(hgService: HgService) {
     this._hgService = hgService;
     this._revisions = new BehaviorSubject([]);
     this._fetchRevisionsRequests = new Subject();
+    this._isFetchingRevisions = new Subject();
 
     this._lazyRevisionFetcher = this._fetchRevisionsRequests
       .startWith(null) // Initially, no refresh requests applied.
@@ -78,6 +80,7 @@ export default class RevisionsCache {
   }
 
   _fetchSmartlogRevisions(): Observable<Array<RevisionInfo>> {
+    this._isFetchingRevisions.next(true);
     return this._hgService
       .fetchSmartlogRevisions()
       .refCount()
@@ -87,6 +90,9 @@ export default class RevisionsCache {
           throw new Error('Timed out fetching smartlog revisions');
         }
         throw err;
+      })
+      .finally(() => {
+        this._isFetchingRevisions.next(false);
       });
   }
 
@@ -100,5 +106,9 @@ export default class RevisionsCache {
 
   observeRevisionChanges(): Observable<Array<RevisionInfo>> {
     return this._lazyRevisionFetcher.startWith(this.getCachedRevisions());
+  }
+
+  observeIsFetchingRevisions(): Observable<boolean> {
+    return this._isFetchingRevisions.asObservable();
   }
 }

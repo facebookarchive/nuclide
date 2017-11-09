@@ -158,7 +158,6 @@ export class HgRepositoryClient {
   _fileContentsAtRevisionIds: LRUCache<string, Map<NuclideUri, string>>;
   _fileContentsAtHead: LRUCache<NuclideUri, string>;
   _currentHeadId: ?string;
-
   _bookmarks: BehaviorSubject<{
     isLoading: boolean,
     bookmarks: Array<BookmarkInfo>,
@@ -454,6 +453,10 @@ export class HgRepositoryClient {
 
   observeRevisionChanges(): Observable<Array<RevisionInfo>> {
     return this._revisionsCache.observeRevisionChanges();
+  }
+
+  observeIsFetchingRevisions(): Observable<boolean> {
+    return this._revisionsCache.observeIsFetchingRevisions();
   }
 
   observeRevisionStatusesChanges(): Observable<RevisionStatuses> {
