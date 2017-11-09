@@ -1,26 +1,37 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type {Command} from './Command';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-export default class QuitCommand implements Command {
-  name = 'quit';
-  helpText = 'Exit the debugger.';
-  quit: () => void;
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
 
-  constructor(quit: () => void) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class QuitCommand {
+
+  constructor(quit) {
+    this.name = 'quit';
+    this.helpText = 'Exit the debugger.';
+
     this.quit = quit;
   }
 
-  async execute(): Promise<void> {
-    this.quit();
+  execute() {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      _this.quit();
+    })();
   }
 }
+exports.default = QuitCommand; /**
+                                * Copyright (c) 2015-present, Facebook, Inc.
+                                * All rights reserved.
+                                *
+                                * This source code is licensed under the license found in the LICENSE file in
+                                * the root directory of this source tree.
+                                *
+                                * 
+                                * @format
+                                */

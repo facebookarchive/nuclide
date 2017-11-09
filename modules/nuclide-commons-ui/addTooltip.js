@@ -1,28 +1,40 @@
-/**
- * Copyright (c) 2017-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import * as React from 'react';
-import ReactDOM from 'react-dom';
-import shallowEqual from 'shallowequal';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = addTooltip;
 
-const REREGISTER_DELAY = 100;
+var _react = _interopRequireWildcard(require('react'));
 
-const _tooltipRequests: Map<Element, atom$TooltipsAddOptions> = new Map();
-const _createdTooltips: Map<
-  Element,
-  {options: atom$TooltipsAddOptions, disposable: IDisposable},
-> = new Map();
-const _toDispose: Set<Element> = new Set();
-let _timeoutHandle: ?number;
+var _reactDom = _interopRequireDefault(require('react-dom'));
+
+var _shallowequal;
+
+function _load_shallowequal() {
+  return _shallowequal = _interopRequireDefault(require('shallowequal'));
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+const REREGISTER_DELAY = 100; /**
+                               * Copyright (c) 2017-present, Facebook, Inc.
+                               * All rights reserved.
+                               *
+                               * This source code is licensed under the BSD-style license found in the
+                               * LICENSE file in the root directory of this source tree. An additional grant
+                               * of patent rights can be found in the PATENTS file in the same directory.
+                               *
+                               * 
+                               * @format
+                               */
+
+const _tooltipRequests = new Map();
+const _createdTooltips = new Map();
+const _toDispose = new Set();
+let _timeoutHandle;
 
 /**
 * Adds a self-disposing Atom's tooltip to a react element.
@@ -35,10 +47,8 @@ let _timeoutHandle: ?number;
 *   _myDiv = c;
 * }} />
 */
-export default function addTooltip(
-  options: atom$TooltipsAddOptions,
-): (elementRef: React.ElementRef<any>) => void {
-  let node: ?Element;
+function addTooltip(options) {
+  let node;
 
   return elementRef => {
     _scheduleTooltipMaintenance();
@@ -55,24 +65,21 @@ export default function addTooltip(
       return;
     }
 
-    node = ((ReactDOM.findDOMNode(elementRef): any): Element);
+    node = _reactDom.default.findDOMNode(elementRef);
     _tooltipRequests.set(node, options);
   };
 }
 
-function _registrationUndoesDisposal(
-  node: Element,
-  options: atom$TooltipsAddOptions,
-) {
+function _registrationUndoesDisposal(node, options) {
   const created = _createdTooltips.get(node);
   if (created == null) {
     return false;
   }
 
-  return shallowEqual(options, created.options);
+  return (0, (_shallowequal || _load_shallowequal()).default)(options, created.options);
 }
 
-function _scheduleTooltipMaintenance(): void {
+function _scheduleTooltipMaintenance() {
   if (_timeoutHandle != null) {
     return;
   }
@@ -80,7 +87,7 @@ function _scheduleTooltipMaintenance(): void {
   _timeoutHandle = setTimeout(() => _performMaintenance(), REREGISTER_DELAY);
 }
 
-function _performMaintenance(): void {
+function _performMaintenance() {
   _timeoutHandle = null;
 
   for (const [node, options] of _tooltipRequests.entries()) {
@@ -101,12 +108,11 @@ function _performMaintenance(): void {
 
   for (const [node, options] of _tooltipRequests.entries()) {
     // $FlowIgnore
-    const disposable = atom.tooltips.add(node, {
-      keyBindingTarget: node,
-      ...options,
-    });
+    const disposable = atom.tooltips.add(node, Object.assign({
+      keyBindingTarget: node
+    }, options));
 
-    _createdTooltips.set(node, {disposable, options});
+    _createdTooltips.set(node, { disposable, options });
   }
   _tooltipRequests.clear();
 }

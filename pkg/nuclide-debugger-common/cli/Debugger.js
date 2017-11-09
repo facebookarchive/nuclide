@@ -1,3 +1,75 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _asyncToGenerator = _interopRequireDefault(require('async-to-generator'));
+
+var _vscodeDebugprotocol;
+
+function _load_vscodeDebugprotocol() {
+  return _vscodeDebugprotocol = _interopRequireWildcard(require('vscode-debugprotocol'));
+}
+
+var _BackTraceCommand;
+
+function _load_BackTraceCommand() {
+  return _BackTraceCommand = _interopRequireDefault(require('./BackTraceCommand'));
+}
+
+var _CommandDispatcher;
+
+function _load_CommandDispatcher() {
+  return _CommandDispatcher = _interopRequireDefault(require('./CommandDispatcher'));
+}
+
+var _SourceFileCache;
+
+function _load_SourceFileCache() {
+  return _SourceFileCache = _interopRequireDefault(require('./SourceFileCache'));
+}
+
+var _idx;
+
+function _load_idx() {
+  return _idx = _interopRequireDefault(require('idx'));
+}
+
+var _nuclideUri;
+
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
+
+var _StepCommand;
+
+function _load_StepCommand() {
+  return _StepCommand = _interopRequireDefault(require('./StepCommand'));
+}
+
+var _NextCommand;
+
+function _load_NextCommand() {
+  return _NextCommand = _interopRequireDefault(require('./NextCommand'));
+}
+
+var _ThreadsCommand;
+
+function _load_ThreadsCommand() {
+  return _ThreadsCommand = _interopRequireDefault(require('./ThreadsCommand'));
+}
+
+var _VsDebugSession;
+
+function _load_VsDebugSession() {
+  return _VsDebugSession = _interopRequireDefault(require('../lib/VsDebugSession'));
+}
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,174 +77,152 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  *
- * @flow
+ * 
  * @format
  */
 
-import type {VSAdapterExecutableInfo} from '../lib/types';
-import type {Capabilities, LaunchRequestArguments} from 'vscode-debugprotocol';
-import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface} from './DebuggerInterface';
-import * as DebugProtocol from 'vscode-debugprotocol';
+class Debugger {
 
-import BackTraceCommand from './BackTraceCommand';
-import CommandDispatcher from './CommandDispatcher';
-import SourceFileCache from './SourceFileCache';
-import idx from 'idx';
-import nuclideUri from 'nuclide-commons/nuclideUri';
-import StepCommand from './StepCommand';
-import NextCommand from './NextCommand';
-import ThreadsCommand from './ThreadsCommand';
+  constructor(logger, con) {
+    this._threads = new Map();
 
-import invariant from 'assert';
-import VsDebugSession from '../lib/VsDebugSession';
-
-export default class Debugger implements DebuggerInterface {
-  _capabilities: ?Capabilities;
-  _console: ConsoleIO;
-  _debugSession: ?VsDebugSession;
-  _logger: log4js$Logger;
-  _activeThread: ?number;
-  _threads: Map<number, string> = new Map();
-  _sourceFiles: SourceFileCache;
-
-  constructor(logger: log4js$Logger, con: ConsoleIO) {
     this._logger = logger;
     this._console = con;
-    this._sourceFiles = new SourceFileCache(
-      this._getSourceByReference.bind(this),
-    );
+    this._sourceFiles = new (_SourceFileCache || _load_SourceFileCache()).default(this._getSourceByReference.bind(this));
   }
 
-  registerCommands(dispatcher: CommandDispatcher): void {
-    dispatcher.registerCommand(new BackTraceCommand(this._console, this));
-    dispatcher.registerCommand(new ThreadsCommand(this._console, this));
-    dispatcher.registerCommand(new StepCommand(this));
-    dispatcher.registerCommand(new NextCommand(this));
+  registerCommands(dispatcher) {
+    dispatcher.registerCommand(new (_BackTraceCommand || _load_BackTraceCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_ThreadsCommand || _load_ThreadsCommand()).default(this._console, this));
+    dispatcher.registerCommand(new (_StepCommand || _load_StepCommand()).default(this));
+    dispatcher.registerCommand(new (_NextCommand || _load_NextCommand()).default(this));
   }
 
-  getThreads(): Map<number, string> {
+  getThreads() {
     this._ensureDebugSession();
     return this._threads;
   }
 
-  getActiveThread(): ?number {
+  getActiveThread() {
     this._ensureDebugSession();
     return this._activeThread;
   }
 
-  async getStackTrace(
-    thread: number,
-    frameCount: ?number = 0,
-  ): Promise<DebugProtocol.StackFrame[]> {
-    const {body: {stackFrames}} = await this._ensureDebugSession().stackTrace({
-      threadId: thread,
-      totalFrames: frameCount,
-    });
-    return stackFrames;
+  getStackTrace(thread, frameCount = 0) {
+    var _this = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { body: { stackFrames } } = yield _this._ensureDebugSession().stackTrace({
+        threadId: thread,
+        totalFrames: frameCount
+      });
+      return stackFrames;
+    })();
   }
 
-  async stepIn(): Promise<void> {
-    const activeThread = this._activeThread;
-    if (activeThread == null) {
-      throw new Error('There is no active thread to step into.');
-    }
+  stepIn() {
+    var _this2 = this;
 
-    await this._ensureDebugSession().stepIn({threadId: activeThread});
+    return (0, _asyncToGenerator.default)(function* () {
+      const activeThread = _this2._activeThread;
+      if (activeThread == null) {
+        throw new Error('There is no active thread to step into.');
+      }
+
+      yield _this2._ensureDebugSession().stepIn({ threadId: activeThread });
+    })();
   }
 
-  async stepOver(): Promise<void> {
-    const activeThread = this._activeThread;
-    if (activeThread == null) {
-      throw new Error('There is no active thread to step through.');
-    }
+  stepOver() {
+    var _this3 = this;
 
-    await this._ensureDebugSession().next({threadId: activeThread});
+    return (0, _asyncToGenerator.default)(function* () {
+      const activeThread = _this3._activeThread;
+      if (activeThread == null) {
+        throw new Error('There is no active thread to step through.');
+      }
+
+      yield _this3._ensureDebugSession().next({ threadId: activeThread });
+    })();
   }
 
-  async getSourceLines(
-    source: DebugProtocol.Source,
-    start: number,
-    length: number,
-  ): Promise<string[]> {
-    // If `source' contains a non-zero sourceReference, then the adapter
-    // supports returning source data; otherwise, we use the given
-    // path as a local file system path.
-    //
-    let lines: string[] = [];
-    const sourceReference = source.sourceReference;
+  getSourceLines(source, start, length) {
+    var _this4 = this;
 
-    if (sourceReference != null && sourceReference !== 0) {
-      lines = await this._sourceFiles.getFileDataBySourceReference(
-        sourceReference,
-      );
-    } else if (source.path != null) {
-      lines = await this._sourceFiles.getFileDataByPath(source.path);
-    }
+    return (0, _asyncToGenerator.default)(function* () {
+      // If `source' contains a non-zero sourceReference, then the adapter
+      // supports returning source data; otherwise, we use the given
+      // path as a local file system path.
+      let lines = [];
+      const sourceReference = source.sourceReference;
 
-    if (start >= lines.length) {
-      return [];
-    }
+      if (sourceReference != null && sourceReference !== 0) {
+        lines = yield _this4._sourceFiles.getFileDataBySourceReference(sourceReference);
+      } else if (source.path != null) {
+        lines = yield _this4._sourceFiles.getFileDataByPath(source.path);
+      }
 
-    const end = Math.min(start + length, lines.length);
-    return lines.slice(start, end);
+      if (start >= lines.length) {
+        return [];
+      }
+
+      const end = Math.min(start + length, lines.length);
+      return lines.slice(start, end);
+    })();
   }
 
-  async openSession(
-    adapterInfo: VSAdapterExecutableInfo,
-    launchArgs: LaunchRequestArguments,
-  ): Promise<void> {
-    this._debugSession = new VsDebugSession(
-      process.pid.toString(),
-      this._logger,
-      adapterInfo,
-    );
+  openSession(adapterInfo, launchArgs) {
+    var _this5 = this;
 
-    const session = this._debugSession;
+    return (0, _asyncToGenerator.default)(function* () {
+      _this5._debugSession = new (_VsDebugSession || _load_VsDebugSession()).default(process.pid.toString(), _this5._logger, adapterInfo);
 
-    this._capabilities = await session.initialize({
-      adapterID: 'fbdb',
-      pathFormat: 'path',
-      linesStartAt1: false,
-    });
+      const session = _this5._debugSession;
 
-    session
-      .observeOutputEvents()
-      .subscribe(x => this._console.output(x.body.output));
+      _this5._capabilities = yield session.initialize({
+        adapterID: 'fbdb',
+        pathFormat: 'path',
+        linesStartAt1: false
+      });
 
-    session.observeContinuedEvents().subscribe(this._onContinued.bind(this));
+      session.observeOutputEvents().subscribe(function (x) {
+        return _this5._console.output(x.body.output);
+      });
 
-    session.observeStopEvents().subscribe(this._onStopped.bind(this));
+      session.observeContinuedEvents().subscribe(_this5._onContinued.bind(_this5));
 
-    session
-      .observeExitedDebugeeEvents()
-      .subscribe(this._onExitedDebugee.bind(this));
+      session.observeStopEvents().subscribe(_this5._onStopped.bind(_this5));
 
-    session
-      .observeTerminateDebugeeEvents()
-      .subscribe(this._onTerminatedDebugee.bind(this));
+      session.observeExitedDebugeeEvents().subscribe(_this5._onExitedDebugee.bind(_this5));
 
-    await session.launch(launchArgs);
-    await this._cacheThreads();
+      session.observeTerminateDebugeeEvents().subscribe(_this5._onTerminatedDebugee.bind(_this5));
+
+      yield session.launch(launchArgs);
+      yield _this5._cacheThreads();
+    })();
   }
 
-  async closeSession(): Promise<void> {
-    if (this._debugSession == null) {
-      return;
-    }
+  closeSession() {
+    var _this6 = this;
 
-    await this._debugSession.disconnect();
-    this._threads = new Map();
-    this._debugSession = null;
-    this._activeThread = null;
+    return (0, _asyncToGenerator.default)(function* () {
+      if (_this6._debugSession == null) {
+        return;
+      }
 
-    // $TODO perf - there may be some value in not immediately flushing
-    // and keeping the cache around if we reattach to the same target,
-    // using watch to see if the file has changed in the meantime
-    this._sourceFiles.flush();
+      yield _this6._debugSession.disconnect();
+      _this6._threads = new Map();
+      _this6._debugSession = null;
+      _this6._activeThread = null;
+
+      // $TODO perf - there may be some value in not immediately flushing
+      // and keeping the cache around if we reattach to the same target,
+      // using watch to see if the file has changed in the meantime
+      _this6._sourceFiles.flush();
+    })();
   }
 
-  _onContinued(event: DebugProtocol.ContinuedEvent) {
+  _onContinued(event) {
     // if the thread we're actively debugging starts running,
     // stop interactivity until the target stops again
     if (event.body.threadId === this._activeThread) {
@@ -180,29 +230,29 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  async _onStopped(event: DebugProtocol.StoppedEvent) {
-    const stopThread = event.body.threadId;
+  _onStopped(event) {
+    var _this7 = this;
 
-    if (stopThread != null && stopThread === this._activeThread) {
-      const topOfStack = await this._getTopOfStackSourceInfo(stopThread);
-      if (topOfStack != null) {
-        this._console.outputLine(
-          `${topOfStack.name}:${topOfStack.frame.line + 1} ${topOfStack.line}`,
-        );
+    return (0, _asyncToGenerator.default)(function* () {
+      const stopThread = event.body.threadId;
+
+      if (stopThread != null && stopThread === _this7._activeThread) {
+        const topOfStack = yield _this7._getTopOfStackSourceInfo(stopThread);
+        if (topOfStack != null) {
+          _this7._console.outputLine(`${topOfStack.name}:${topOfStack.frame.line + 1} ${topOfStack.line}`);
+        }
+
+        _this7._console.startInput();
       }
-
-      this._console.startInput();
-    }
+    })();
   }
 
-  _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
-    this._console.outputLine(
-      `Target exited with status ${event.body.exitCode}`,
-    );
+  _onExitedDebugee(event) {
+    this._console.outputLine(`Target exited with status ${event.body.exitCode}`);
     this.closeSession();
   }
 
-  _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
+  _onTerminatedDebugee(event) {
     // Some adapters will send multiple terminated events.
     if (this._debugSession == null) {
       return;
@@ -212,75 +262,83 @@ export default class Debugger implements DebuggerInterface {
     this._console.startInput();
   }
 
-  async _cacheThreads(): Promise<void> {
-    invariant(
-      this._debugSession != null,
-      '_cacheThreads called without session',
-    );
+  _cacheThreads() {
+    var _this8 = this;
 
-    const {body: {threads}} = await this._debugSession.threads();
-    this._threads = new Map(threads.map(thd => [thd.id, thd.name]));
+    return (0, _asyncToGenerator.default)(function* () {
+      if (!(_this8._debugSession != null)) {
+        throw new Error('_cacheThreads called without session');
+      }
 
-    this._activeThread = null;
-    if (threads.length > 0) {
-      this._activeThread = threads[0].id;
-    }
+      const { body: { threads } } = yield _this8._debugSession.threads();
+      _this8._threads = new Map(threads.map(function (thd) {
+        return [thd.id, thd.name];
+      }));
+
+      _this8._activeThread = null;
+      if (threads.length > 0) {
+        _this8._activeThread = threads[0].id;
+      }
+    })();
   }
 
-  async _getTopOfStackSourceInfo(
-    threadId: number,
-  ): Promise<?{
-    line: string,
-    name: string,
-    frame: DebugProtocol.StackFrame,
-  }> {
-    // $TODO paths relative to project root?
-    const frames = await this.getStackTrace(threadId, 1);
-    const source = Debugger._sourceFromTopFrame(frames);
-    if (source == null) {
-      return null;
-    }
+  _getTopOfStackSourceInfo(threadId) {
+    var _this9 = this;
 
-    const frame = frames[0];
-    const lines = await this.getSourceLines(source, frames[0].line, 1);
+    return (0, _asyncToGenerator.default)(function* () {
+      // $TODO paths relative to project root?
+      const frames = yield _this9.getStackTrace(threadId, 1);
+      const source = Debugger._sourceFromTopFrame(frames);
+      if (source == null) {
+        return null;
+      }
 
-    let name: string;
+      const frame = frames[0];
+      const lines = yield _this9.getSourceLines(source, frames[0].line, 1);
 
-    if (source.path != null) {
-      const path = nuclideUri.resolve(source.path);
-      name = nuclideUri.split(path).pop();
-    } else if (source.name != null) {
-      name = source.name;
-    } else {
-      // the spec guarantees that name is always defined on return, so
-      // we should never get here.
-      return null;
-    }
+      let name;
 
-    return {
-      line: lines.length > 0 ? lines[0] : '',
-      name,
-      frame,
-    };
+      if (source.path != null) {
+        const path = (_nuclideUri || _load_nuclideUri()).default.resolve(source.path);
+        name = (_nuclideUri || _load_nuclideUri()).default.split(path).pop();
+      } else if (source.name != null) {
+        name = source.name;
+      } else {
+        // the spec guarantees that name is always defined on return, so
+        // we should never get here.
+        return null;
+      }
+
+      return {
+        line: lines.length > 0 ? lines[0] : '',
+        name,
+        frame
+      };
+    })();
   }
 
-  static _sourceFromTopFrame(
-    frames: DebugProtocol.StackFrame[],
-  ): ?DebugProtocol.Source {
-    return idx(frames, _ => _[0].source) || null;
+  static _sourceFromTopFrame(frames) {
+    var _ref, _ref2;
+
+    return ((_ref = frames) != null ? (_ref2 = _ref[0]) != null ? _ref2.source : _ref2 : _ref) || null;
   }
 
-  async _getSourceByReference(sourceReference: number): Promise<string> {
-    const {body: {content}} = await this._ensureDebugSession().source({
-      sourceReference,
-    });
-    return content;
+  _getSourceByReference(sourceReference) {
+    var _this10 = this;
+
+    return (0, _asyncToGenerator.default)(function* () {
+      const { body: { content } } = yield _this10._ensureDebugSession().source({
+        sourceReference
+      });
+      return content;
+    })();
   }
 
-  _ensureDebugSession(): VsDebugSession {
+  _ensureDebugSession() {
     if (this._debugSession == null) {
       throw new Error('There is no active debugging session.');
     }
     return this._debugSession;
   }
 }
+exports.default = Debugger;

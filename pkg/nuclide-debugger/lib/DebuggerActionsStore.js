@@ -1,54 +1,56 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the LICENSE file in
- * the root directory of this source tree.
- *
- * @flow
- * @format
- */
+'use strict';
 
-import type Bridge from './Bridge';
-import type DebuggerDispatcher, {DebuggerAction} from './DebuggerDispatcher';
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-import nuclideUri from 'nuclide-commons/nuclideUri';
+var _nuclideUri;
 
-import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
-import {ActionTypes} from './DebuggerDispatcher';
+function _load_nuclideUri() {
+  return _nuclideUri = _interopRequireDefault(require('nuclide-commons/nuclideUri'));
+}
 
-export default class DebuggerActionsStore {
-  _bridge: Bridge;
-  _disposables: IDisposable;
+var _UniversalDisposable;
 
-  constructor(dispatcher: DebuggerDispatcher, bridge: Bridge) {
+function _load_UniversalDisposable() {
+  return _UniversalDisposable = _interopRequireDefault(require('nuclide-commons/UniversalDisposable'));
+}
+
+var _DebuggerDispatcher;
+
+function _load_DebuggerDispatcher() {
+  return _DebuggerDispatcher = require('./DebuggerDispatcher');
+}
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class DebuggerActionsStore {
+
+  constructor(dispatcher, bridge) {
     this._bridge = bridge;
     const dispatcherToken = dispatcher.register(this._handlePayload.bind(this));
-    this._disposables = new UniversalDisposable(() => {
+    this._disposables = new (_UniversalDisposable || _load_UniversalDisposable()).default(() => {
       dispatcher.unregister(dispatcherToken);
     });
   }
 
-  _handlePayload(payload: DebuggerAction) {
+  _handlePayload(payload) {
     switch (payload.actionType) {
-      case ActionTypes.SET_PROCESS_SOCKET:
-        const {data} = payload;
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.SET_PROCESS_SOCKET:
+        const { data } = payload;
         if (data == null) {
           this._bridge.leaveDebugMode();
         } else {
           this._bridge.enterDebugMode();
-          const url = `${nuclideUri.join(
-            __dirname,
-            '../scripts/inspector.html',
-          )}?${data}`;
+          const url = `${(_nuclideUri || _load_nuclideUri()).default.join(__dirname, '../scripts/inspector.html')}?${data}`;
           this._bridge.setupChromeChannel(url);
           this._bridge.enableEventsListening();
         }
         break;
-      case ActionTypes.TRIGGER_DEBUGGER_ACTION:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.TRIGGER_DEBUGGER_ACTION:
         this._triggerAction(payload.data.actionId);
         break;
-      case ActionTypes.OPEN_DEV_TOOLS:
+      case (_DebuggerDispatcher || _load_DebuggerDispatcher()).ActionTypes.OPEN_DEV_TOOLS:
         this._bridge.openDevTools();
         break;
       default:
@@ -56,11 +58,21 @@ export default class DebuggerActionsStore {
     }
   }
 
-  _triggerAction(actionId: string): void {
+  _triggerAction(actionId) {
     this._bridge.triggerAction(actionId);
   }
 
-  dispose(): void {
+  dispose() {
     this._disposables.dispose();
   }
 }
+exports.default = DebuggerActionsStore; /**
+                                         * Copyright (c) 2015-present, Facebook, Inc.
+                                         * All rights reserved.
+                                         *
+                                         * This source code is licensed under the license found in the LICENSE file in
+                                         * the root directory of this source tree.
+                                         *
+                                         * 
+                                         * @format
+                                         */
