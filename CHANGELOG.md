@@ -1,5 +1,11 @@
 # Nuclide Changelog
 
+## v0.267.0
+
+Another hotfix:
+* Fix remote text buffer reload on Windows.
+* Fix broken React Native packager launch.
+
 ## v0.266.0
 
 Hotfix release to fix task runner issues with remote directories.
