@@ -40,7 +40,7 @@ describe('CodeActionManager', () => {
         clearMessages: () => {},
         setAllMessages: _messages => {},
       };
-      manager._linterDelegate = delegate;
+      manager._linterDelegate = (delegate: any);
       manager.addProvider(provider);
     });
   });
