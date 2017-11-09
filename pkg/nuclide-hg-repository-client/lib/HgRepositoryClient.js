@@ -42,7 +42,7 @@ import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
 } from '../../nuclide-hg-rpc/lib/hg-constants';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import LRU from 'lru-cache';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import observePaneItemVisibility from 'nuclide-commons-atom/observePaneItemVisibility';
@@ -165,6 +165,7 @@ export class HgRepositoryClient {
 
   _isInConflict: boolean;
   _isDestroyed: boolean;
+  _isFetchingPathStatuses: Subject<boolean>;
 
   constructor(
     repoPath: string,
@@ -189,7 +190,7 @@ export class HgRepositoryClient {
 
     this._emitter = new Emitter();
     this._subscriptions = new UniversalDisposable(this._emitter, this._service);
-
+    this._isFetchingPathStatuses = new Subject();
     this._hgStatusCache = new Map();
     this._bookmarks = new BehaviorSubject({isLoading: true, bookmarks: []});
 
@@ -379,8 +380,9 @@ export class HgRepositoryClient {
 
     const statusChanges = cacheWhileSubscribed(
       triggers
-        .switchMap(() =>
-          fetchStatuses()
+        .switchMap(() => {
+          this._isFetchingPathStatuses.next(true);
+          return fetchStatuses()
             .refCount()
             .catch(error => {
               getLogger('nuclide-hg-repository-client').error(
@@ -388,8 +390,11 @@ export class HgRepositoryClient {
                 error,
               );
               return Observable.empty();
-            }),
-        )
+            })
+            .finally(() => {
+              this._isFetchingPathStatuses.next(false);
+            });
+        })
         .map(uriToStatusIds =>
           mapTransform(uriToStatusIds, (v, k) => StatusCodeIdToNumber[v]),
         ),
@@ -457,6 +462,10 @@ export class HgRepositoryClient {
 
   observeIsFetchingRevisions(): Observable<boolean> {
     return this._revisionsCache.observeIsFetchingRevisions();
+  }
+
+  observeIsFetchingPathStatuses(): Observable<boolean> {
+    return this._isFetchingPathStatuses.asObservable();
   }
 
   observeRevisionStatusesChanges(): Observable<RevisionStatuses> {
