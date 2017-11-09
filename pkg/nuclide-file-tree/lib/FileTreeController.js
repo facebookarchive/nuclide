@@ -26,6 +26,7 @@ import {track} from '../../nuclide-analytics';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {goToLocation} from 'nuclide-commons-atom/go-to-location';
 import getElementFilePath from '../../commons-atom/getElementFilePath';
+import removeProjectPath from '../../commons-atom/removeProjectPath';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {WORKSPACE_VIEW_URI} from './Constants';
 
@@ -604,40 +605,10 @@ export default class FileTreeController {
     this._openSelectedEntrySplit('horizontal', 'after');
   }
 
-  async _removeRootFolderSelection(): mixed {
+  async _removeRootFolderSelection(): Promise<void> {
     const rootNode = this._store.getSingleSelectedNode();
     if (rootNode != null && rootNode.isRoot) {
-      // close all the files associated with the project before closing
-      const projectEditors = atom.workspace.getTextEditors();
-
-      const roots = this._store.getRootKeys();
-      for (const editor of projectEditors) {
-        const path = editor.getPath();
-        // if the path of the editor is not null AND
-        // is part of the currently selected root that would be removed AND
-        // is not part of any other open root, then close the file.
-        if (
-          path != null &&
-          path.startsWith(rootNode.uri) &&
-          roots.filter(root => path.startsWith(root)).length === 1
-        ) {
-          // eslint-disable-next-line no-await-in-loop
-          const didDestroy = await atom.workspace
-            .paneForURI(path)
-            .destroyItem(editor);
-
-          // Atom has a bug where, in some cases, destroyItem returns nonsense.
-          // Luckily, in the case we care about, it returns a literal `false`,
-          // so we check for that explictly.
-          // https://github.com/atom/atom/issues/15157
-          if (didDestroy === false) {
-            return;
-          }
-        }
-      }
-
-      // actually close the project
-      atom.project.removePath(FileTreeHelpers.keyToPath(rootNode.uri));
+      await removeProjectPath(rootNode.uri);
     }
   }
 
