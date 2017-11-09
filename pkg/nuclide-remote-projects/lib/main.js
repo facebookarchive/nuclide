@@ -264,6 +264,13 @@ async function createEditorForNuclide(uri: NuclideUri): Promise<TextEditor> {
         },
       };
     };
+    // Null out the buffer's serializer.
+    // We don't need to waste time deserializing this (especially on Windows, where
+    // attempting to read the path blocks Atom from loading)
+    // As of Atom 1.22 null just gets filtered out by the project serializer.
+    // https://github.com/atom/atom/blob/master/src/project.js#L117
+    // $FlowIgnore
+    buffer.serialize = () => null;
     return textEditor;
   } catch (err) {
     logger.warn('buffer load issue:', err);
