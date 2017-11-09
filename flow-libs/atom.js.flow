@@ -90,6 +90,7 @@ type atom$CommandDescriptor = {
   name: string,
   displayName: string,
   description?: string,
+  hiddenInCommandPalette?: boolean,
   tags?: Array<string>,
 };
 
