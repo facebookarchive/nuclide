@@ -176,9 +176,24 @@ export default class Debugger implements DebuggerInterface {
     const session = this._ensureDebugSession();
     const index = this._breakpoints.addSourceBreakpoint(path, line);
 
-    const debuggerBreakpoints = this._breakpoints.getAllBreakpointsForSource(
+    const breakpoint = await this._setSourceBreakpointsForPath(
+      session,
       path,
+      index,
     );
+
+    const message = breakpoint == null ? null : breakpoint.message;
+    return {index, message};
+  }
+
+  async _setSourceBreakpointsForPath(
+    session: VsDebugSession,
+    path: string,
+    indexOfInterest: number,
+  ): Promise<?DebugProtocol.Breakpoint> {
+    const debuggerBreakpoints = this._breakpoints
+      .getAllBreakpointsForSource(path)
+      .filter(_ => _.enabled);
 
     const request = {
       source: {path},
@@ -189,23 +204,21 @@ export default class Debugger implements DebuggerInterface {
       body: {breakpoints: adapterBreakpoints},
     } = await session.setBreakpoints(request);
 
-    for (const [
-      debuggerBreakpoint,
-      adapterBreakpoint,
-    ] of debuggerBreakpoints.map((_, i) => [_, adapterBreakpoints[i]])) {
-      // const  = pair;
+    const paired = debuggerBreakpoints.map((_, i) => [
+      _,
+      adapterBreakpoints[i],
+    ]);
+
+    for (const [debuggerBreakpoint, adapterBreakpoint] of paired) {
       const verified = adapterBreakpoint.verified;
       if (verified != null) {
         debuggerBreakpoint.setVerified(verified);
       }
     }
 
-    const indexInSet = debuggerBreakpoints.findIndex(_ => _.line === line);
-    invariant(indexInSet !== -1);
+    const breakpoint = paired.find(_ => _[0].index === indexOfInterest);
 
-    const message = adapterBreakpoints[indexInSet].message;
-
-    return {index, message};
+    return breakpoint == null ? null : breakpoint[1];
   }
 
   _stackFrameId(stack: DebugProtocol.StackFrame[], depth: number): ?number {
@@ -244,6 +257,33 @@ export default class Debugger implements DebuggerInterface {
     return this._breakpoints.getAllBreakpoints();
   }
 
+  getBreakpointByIndex(index: number): Breakpoint {
+    return this._breakpoints.getBreakpointByIndex(index);
+  }
+
+  async setBreakpointEnabled(index: number, enabled: boolean): Promise<void> {
+    const session = this._ensureDebugSession();
+    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
+    const path = breakpoint.path;
+
+    if (breakpoint.enabled === enabled) {
+      return;
+    }
+
+    breakpoint.setEnabled(enabled);
+
+    if (path != null) {
+      try {
+        await this._setSourceBreakpointsForPath(session, path, index);
+      } catch (error) {
+        breakpoint.setEnabled(!enabled);
+        throw error;
+      }
+      return;
+    }
+    // $TODO function breakpoints
+  }
+
   async openSession(
     adapterInfo: VSAdapterExecutableInfo,
     launchArgs: LaunchRequestArguments,
@@ -258,12 +298,14 @@ export default class Debugger implements DebuggerInterface {
 
     const session = this._debugSession;
 
-    this._capabilities = await session.initialize({
+    const {body} = await session.initialize({
       adapterID: 'fbdb',
       pathFormat: 'path',
       linesStartAt1: true,
       columnsStartAt1: true,
     });
+
+    this._capabilities = body;
 
     session
       .observeOutputEvents()

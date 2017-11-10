@@ -40,7 +40,7 @@ export default class BreakpointCollection {
     const breakpoint = this._breakpoints.get(index);
 
     if (breakpoint == null) {
-      throw new Error(`Could not find breakpoint #${index}`);
+      throw new Error(`There is no breakpoint #${index}`);
     }
 
     return breakpoint;

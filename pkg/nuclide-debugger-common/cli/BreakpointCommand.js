@@ -10,9 +10,11 @@
  */
 
 import type {Command} from './Command';
-import type {DebuggerInterface} from './DebuggerInterface';
+import type {DebuggerInterface, BreakpointSetResult} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
+import BreakpointDisableCommand from './BreakpointDisableCommand';
+import BreakpointEnableCommand from './BreakpointEnableCommand';
 import BreakpointListCommand from './BreakpointListCommand';
 import CommandDispatcher from './CommandDispatcher';
 import HelpCommand from './HelpCommand';
@@ -33,6 +35,8 @@ export default class BreakpointCommand implements Command {
     this._debugger = debug;
     this._dispatcher = new CommandDispatcher();
 
+    this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
+    this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));
     this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
   }
@@ -51,13 +55,20 @@ export default class BreakpointCommand implements Command {
         path,
         parseInt(line, 10),
       );
-      this._console.outputLine(`Breakpoint ${result.index} set.`);
-      if (result.message != null) {
-        this._console.outputLine(result.message);
-      }
+      this._displayBreakpointResult(result);
       return;
     }
 
+    // $TODO function breakpoints - not implementing yet because none of the
+    // supported adapters support them
+
     await this._dispatcher.executeTokenizedLine(args);
+  }
+
+  _displayBreakpointResult(result: BreakpointSetResult): void {
+    this._console.outputLine(`Breakpoint ${result.index} set.`);
+    if (result.message != null) {
+      this._console.outputLine(result.message);
+    }
   }
 }

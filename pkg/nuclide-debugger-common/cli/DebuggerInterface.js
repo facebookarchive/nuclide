@@ -40,4 +40,6 @@ export interface DebuggerInterface {
   getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
   setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>,
   getAllBreakpoints(): Breakpoint[],
+  getBreakpointByIndex(index: number): Breakpoint,
+  setBreakpointEnabled(index: number, enabled: boolean): Promise<void>,
 }
