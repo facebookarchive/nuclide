@@ -109,3 +109,6 @@ to `resources/nuclicons` and rerun the script.
 .icon-nuclicon-kebab-horizontal::before {
   content: "\f118";
 }
+.icon-nuclicon-cs::before {
+  content: "\f119";
+}
