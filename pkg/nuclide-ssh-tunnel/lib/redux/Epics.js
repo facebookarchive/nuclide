@@ -17,7 +17,17 @@ import {Observable} from 'rxjs';
 import invariant from 'assert';
 import {getSocketServiceByNuclideUri} from '../../../nuclide-remote-connection/';
 import nuclideUri from 'nuclide-commons/nuclideUri';
-import {fetchSitevarOnce} from '../../../commons-node/fb-sitevar';
+import memoize from 'lodash.memoize';
+
+// require fb-sitevar module lazily
+const requireFetchSitevarOnce = memoize(() => {
+  try {
+    // $FlowFB
+    return require('../../../commons-node/fb-sitevar').fetchSitevarOnce;
+  } catch (e) {
+    return null;
+  }
+});
 
 export function openTunnelEpic(
   actions: ActionsObservable<Action>,
@@ -28,14 +38,20 @@ export function openTunnelEpic(
     .switchMap(async action => {
       invariant(action.type === Actions.OPEN_TUNNEL);
       const {tunnel, onOpen, onClose} = action.payload;
-      const allowedPorts: ?Array<number> = await getAllowedPorts();
-      invariant(allowedPorts);
 
-      if (!validateTunnel(tunnel, allowedPorts)) {
-        onOpen(
-          new Error('Invalid tunnel specification: ' + JSON.stringify(tunnel)),
-        );
-        return null;
+      const fetchSitevarOnce = requireFetchSitevarOnce();
+      // if fetchSitevarOnce is null, we assume we're in the
+      // open source build and skip tunnel validation
+      if (fetchSitevarOnce != null) {
+        const allowedPorts: Array<number> = await getAllowedPorts();
+        if (!validateTunnel(tunnel, allowedPorts)) {
+          onOpen(
+            new Error(
+              'Invalid tunnel specification: ' + JSON.stringify(tunnel),
+            ),
+          );
+          return null;
+        }
       }
 
       const {from, to} = tunnel;
@@ -102,7 +118,9 @@ function getSocketServiceByHost(host) {
   }
 }
 
-async function getAllowedPorts(): Promise<?Array<number>> {
+async function getAllowedPorts(): Promise<Array<number>> {
+  const fetchSitevarOnce = requireFetchSitevarOnce();
+  invariant(fetchSitevarOnce);
   const allowedPorts = await fetchSitevarOnce('NUCLIDE_TUNNEL_ALLOWED_PORTS');
   if (allowedPorts == null) {
     return [];
