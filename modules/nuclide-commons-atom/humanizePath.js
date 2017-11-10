@@ -52,8 +52,9 @@ export default function humanizePath(
     }
   }
 
-  // It's not in one of the project directories so return the full (normalized) path.
-  return normalized;
+  // It's not in one of the project directories so return the full (normalized)
+  // path run through nuclideUriToDisplayString to remove nuclide:// etc.
+  return nuclideUri.nuclideUriToDisplayString(normalized);
 }
 
 function normalizePath(path: NuclideUri, isDirectory_: ?boolean): NuclideUri {
