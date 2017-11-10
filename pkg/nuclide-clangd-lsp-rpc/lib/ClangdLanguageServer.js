@@ -25,6 +25,8 @@ import {Cache} from 'nuclide-commons/cache';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/LspLanguageService';
 
+const COMPILATION_DATABASE_FILE = 'compile_commands.json';
+
 type ManagedRoot = {
   files: Set<string>,
   watchFile: string,
@@ -45,9 +47,7 @@ function disposeManagedRoot(managedRoot: ?ManagedRoot): void {
 export default class ClangdLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
 > {
-  // Maps clang settings => settings metadata
-  // Remark: I don't key the map on ClangRequestSettings
-  // because === operator does not work as an equality check.
+  // Maps clang settings => settings metadata with same key as _processes field.
   _managedRoots: Map<string, ManagedRoot>;
   constructor(
     languageId: string,
@@ -182,7 +182,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     if (!await fs.mkdirp(tmpDir)) {
       return false;
     }
-    const tmpCommandsPath = nuclideUri.join(tmpDir, 'compile_commands.json');
+    const tmpCommandsPath = nuclideUri.join(tmpDir, COMPILATION_DATABASE_FILE);
     await fs.writeFile(tmpCommandsPath, contents);
     this._managedRoots.set(file, {
       rootDir,
@@ -199,11 +199,12 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
   }
 
   async isFileKnown(filePath: NuclideUri): Promise<boolean> {
-    // TODO pelmers: header files are always false here
+    // TODO pelmers: header files are always false here, but we could borrow
+    // ClangFlagsManager._findSourceFileForHeaderFromCompilationDatabase
     return this.getClangRequestSettingsForFile(filePath) != null;
   }
 
-  getClangRequestSettingsForFile(filePath: NuclideUri): ?string {
+  async getClangRequestSettingsForFile(filePath: NuclideUri): Promise<?string> {
     const absPath = nuclideUri.getPath(filePath);
     this._logger.info('checking for ' + absPath);
     for (const [commandsPath, managedRoot] of this._managedRoots) {
@@ -211,13 +212,33 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
         return commandsPath;
       }
     }
+    // Search up through file tree for manually provided compile_commands.json
+    // Similar to ClangFlagsManager._getDBFlagsAndDirForSrc
+    const dbDir = await fs.findNearestFile(
+      COMPILATION_DATABASE_FILE,
+      nuclideUri.dirname(filePath),
+    );
+    if (dbDir != null) {
+      const dbFile = nuclideUri.join(dbDir, COMPILATION_DATABASE_FILE);
+      const compilationDatabase = {
+        file: dbFile,
+        flagsFile: dbFile,
+        libclangPath: null,
+      };
+      if (
+        await this.addClangRequest({projectRoot: dbDir, compilationDatabase})
+      ) {
+        return dbFile;
+      }
+    }
+
     return null;
   }
 
   async getLanguageServiceForFile(
     filePath: NuclideUri,
   ): Promise<?LspLanguageService> {
-    const commandsPath = this.getClangRequestSettingsForFile(filePath);
+    const commandsPath = await this.getClangRequestSettingsForFile(filePath);
     if (commandsPath != null) {
       this._logger.info('Found existing service for ' + filePath);
       this._logger.info('Key: ' + commandsPath);
