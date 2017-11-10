@@ -27,10 +27,20 @@ import {LspLanguageService} from '../../nuclide-vscode-language-service-rpc/lib/
 
 type ManagedRoot = {
   files: Set<string>,
-  watchFile: string, // TODO: pelmers use this field, reset server when build file changes
+  watchFile: string,
   rootDir: string,
   tempCommandsDir: ?string,
 };
+
+function disposeManagedRoot(managedRoot: ?ManagedRoot): void {
+  if (!managedRoot) {
+    return;
+  }
+  const {tempCommandsDir} = managedRoot;
+  if (tempCommandsDir != null) {
+    fs.rimraf(tempCommandsDir);
+  }
+}
 
 export default class ClangdLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
@@ -110,10 +120,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       () => {
         // Delete temporary directories.
         for (const managedRoot of this._managedRoots.values()) {
-          const {tempCommandsDir} = managedRoot;
-          if (tempCommandsDir != null) {
-            fs.rimraf(tempCommandsDir);
-          }
+          disposeManagedRoot(managedRoot);
         }
       },
     );
@@ -121,9 +128,22 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     this._resources.add(
       fileCache
         .observeFileEvents()
-        .ignoreElements()
+        .filter(event => event.kind === 'save')
+        .map(({fileVersion: {filePath}}) =>
+          // Get array of managed servers that are watching this file.
+          Array.from(this._managedRoots.entries())
+            .filter(([_, val]) => val.watchFile === filePath)
+            .map(([key, _]) => key),
+        )
         .subscribe(
-          undefined, // TODO pelmers: watch saves on targets files
+          keys => {
+            for (const key of keys) {
+              this._logger.info('Watch file saved, invalidating ' + key);
+              this._processes.delete(key);
+              disposeManagedRoot(this._managedRoots.get(key));
+              this._managedRoots.delete(key);
+            }
+          },
           undefined, // error
           () => {
             this._logger.info('fileCache shutting down.');
@@ -179,6 +199,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
   }
 
   async isFileKnown(filePath: NuclideUri): Promise<boolean> {
+    // TODO pelmers: header files are always false here
     return this.getClangRequestSettingsForFile(filePath) != null;
   }
 

@@ -63,12 +63,10 @@ const FB_CLANGD_LSP_GK = 'nuclide_clangd_lsp';
 // Wrapper that queries for clang settings when new files seen.
 class ClangdLSPClient {
   _service: ClangdLanguageService;
-  _knownFiles: Set<string>;
   _logger: log4js$Logger;
 
   constructor(service: ClangdLanguageService) {
     this._service = service;
-    this._knownFiles = new Set();
     this._logger = getLogger('clangd-language-server');
   }
 
@@ -77,11 +75,6 @@ class ClangdLSPClient {
   }
 
   async ensureServer(path: string): Promise<void> {
-    if (this._knownFiles.has(path)) {
-      // If we have already asked for the server don't keep asking for it.
-      return;
-    }
-    this._knownFiles.add(path);
     if (!await this._service.isFileKnown(path)) {
       const settings = await getClangRequestSettings(path);
       if (settings != null) {
