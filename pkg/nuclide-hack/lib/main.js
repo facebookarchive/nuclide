@@ -9,6 +9,7 @@
  * @format
  */
 
+// $FlowFB
 import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
 import type {SymbolResult, Provider} from '../../nuclide-quick-open/lib/types';
 

@@ -9,10 +9,10 @@
  * @format
  */
 
-// $FlowFB
 import type {
   ProjectSymbolSearchProvider,
   ProjectSymbol,
+  // $FlowFB
 } from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
 
 import {Observable} from 'rxjs';
