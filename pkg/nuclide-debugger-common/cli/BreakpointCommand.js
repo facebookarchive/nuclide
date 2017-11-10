@@ -13,6 +13,7 @@ import type {Command} from './Command';
 import type {DebuggerInterface, BreakpointSetResult} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
+import BreakpointDeleteCommand from './BreakpointDeleteCommand';
 import BreakpointDisableCommand from './BreakpointDisableCommand';
 import BreakpointEnableCommand from './BreakpointEnableCommand';
 import BreakpointListCommand from './BreakpointListCommand';
@@ -35,6 +36,7 @@ export default class BreakpointCommand implements Command {
     this._debugger = debug;
     this._dispatcher = new CommandDispatcher();
 
+    this._dispatcher.registerCommand(new BreakpointDeleteCommand(debug));
     this._dispatcher.registerCommand(new BreakpointDisableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointEnableCommand(debug));
     this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));

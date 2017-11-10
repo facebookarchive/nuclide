@@ -191,9 +191,9 @@ export default class Debugger implements DebuggerInterface {
     path: string,
     indexOfInterest: number,
   ): Promise<?DebugProtocol.Breakpoint> {
-    const debuggerBreakpoints = this._breakpoints
-      .getAllBreakpointsForSource(path)
-      .filter(_ => _.enabled);
+    const debuggerBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
+      path,
+    );
 
     const request = {
       source: {path},
@@ -282,6 +282,27 @@ export default class Debugger implements DebuggerInterface {
       return;
     }
     // $TODO function breakpoints
+  }
+
+  async deleteBreakpoint(index: number): Promise<void> {
+    const session = this._ensureDebugSession();
+    const breakpoint = this._breakpoints.getBreakpointByIndex(index);
+    const path = breakpoint.path;
+
+    this._breakpoints.deleteBreakpoint(index);
+
+    if (path != null) {
+      const pathBreakpoints = this._breakpoints.getAllEnabledBreakpointsForSource(
+        path,
+      );
+
+      await session.setBreakpoints({
+        source: {path},
+        breakpoints: pathBreakpoints.map(x => {
+          return {line: x.line};
+        }),
+      });
+    }
   }
 
   async openSession(

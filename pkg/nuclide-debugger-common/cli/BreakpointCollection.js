@@ -30,9 +30,9 @@ export default class BreakpointCollection {
     return index;
   }
 
-  getAllBreakpointsForSource(path: string): Breakpoint[] {
+  getAllEnabledBreakpointsForSource(path: string): Breakpoint[] {
     return Array.from(this._breakpoints.values()).filter(
-      x => x.path === path && x.line != null,
+      x => x.path === path && x.line != null && x.enabled,
     );
   }
 
@@ -48,6 +48,10 @@ export default class BreakpointCollection {
 
   getAllBreakpoints(): Breakpoint[] {
     return Array.from(this._breakpoints.values());
+  }
+
+  deleteBreakpoint(index: number): void {
+    this._breakpoints.delete(index);
   }
 
   _allocateIndex(): number {
