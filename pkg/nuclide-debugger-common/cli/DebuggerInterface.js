@@ -24,6 +24,7 @@ export interface DebuggerInterface {
   getActiveThread(): Thread,
   stepIn(): Promise<void>,
   stepOver(): Promise<void>,
+  continue(): Promise<void>,
   getStackTrace(
     thread: number,
     levels: number,

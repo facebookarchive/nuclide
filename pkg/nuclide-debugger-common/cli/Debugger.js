@@ -17,6 +17,7 @@ import * as DebugProtocol from 'vscode-debugprotocol';
 
 import BackTraceCommand from './BackTraceCommand';
 import CommandDispatcher from './CommandDispatcher';
+import ContinueCommand from './ContinueCommand';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
@@ -38,6 +39,7 @@ export default class Debugger implements DebuggerInterface {
   _activeThread: ?number;
   _threads: Map<number, Thread> = new Map();
   _sourceFiles: SourceFileCache;
+  _terminated: boolean = false;
 
   constructor(logger: log4js$Logger, con: ConsoleIO) {
     this._logger = logger;
@@ -53,6 +55,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new StepCommand(this));
     dispatcher.registerCommand(new NextCommand(this));
     dispatcher.registerCommand(new VariablesCommand(this._console, this));
+    dispatcher.registerCommand(new ContinueCommand(this));
   }
 
   getThreads(): Map<number, Thread> {
@@ -97,6 +100,12 @@ export default class Debugger implements DebuggerInterface {
 
   async stepOver(): Promise<void> {
     await this._ensureDebugSession().next({
+      threadId: this.getActiveThread().id(),
+    });
+  }
+
+  async continue(): Promise<void> {
+    await this._ensureDebugSession().continue({
       threadId: this.getActiveThread().id(),
     });
   }
@@ -193,6 +202,8 @@ export default class Debugger implements DebuggerInterface {
       adapterInfo,
     );
 
+    this._terminated = false;
+
     const session = this._debugSession;
 
     this._capabilities = await session.initialize({
@@ -226,6 +237,8 @@ export default class Debugger implements DebuggerInterface {
     if (this._debugSession == null) {
       return;
     }
+
+    this._terminated = true;
 
     await this._debugSession.disconnect();
     this._threads = new Map();
@@ -283,7 +296,7 @@ export default class Debugger implements DebuggerInterface {
 
   _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
     // Some adapters will send multiple terminated events.
-    if (this._debugSession == null) {
+    if (this._terminated) {
       return;
     }
     this._console.outputLine('The target has exited.');
