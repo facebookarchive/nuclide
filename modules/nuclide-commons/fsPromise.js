@@ -252,6 +252,31 @@ function copy(source: string, dest: string): Promise<void> {
   });
 }
 
+async function copyFilePermissions(
+  sourcePath: string,
+  destinationPath: string,
+): Promise<void> {
+  try {
+    const {mode, uid, gid} = await stat(sourcePath);
+    await Promise.all([
+      // The user may not have permissions to use the uid/gid.
+      chown(destinationPath, uid, gid).catch(() => {}),
+      chmod(destinationPath, mode),
+    ]);
+  } catch (e) {
+    // If the file does not exist, then ENOENT will be thrown.
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+    // For new files, use the default process file creation mask.
+    await chmod(
+      destinationPath,
+      // $FlowIssue: umask argument is optional
+      0o666 & ~process.umask(), // eslint-disable-line no-bitwise
+    );
+  }
+}
+
 /**
  * TODO: the fs-plus `writeFile` implementation runs `mkdirp` first.
  * We should use `fs.writeFile` and have callsites explicitly opt-in to this behaviour.
@@ -270,6 +295,41 @@ function writeFile(
       }
     });
   });
+}
+
+async function writeFileAtomic(
+  path: string,
+  data: Buffer | string,
+  options?: Object | string,
+): Promise<void> {
+  const tempFilePath = await tempfile('nuclide');
+  try {
+    await writeFile(tempFilePath, data, options);
+
+    // Expand the target path in case it contains symlinks.
+    let realPath = path;
+    try {
+      realPath = await realpath(path);
+    } catch (e) {
+      // Fallback to using the specified path if it cannot be expanded.
+      // Note: this is expected in cases where the remote file does not
+      // actually exist.
+    }
+
+    // Ensure file still has original permissions:
+    // https://github.com/facebook/nuclide/issues/157
+    // We update the mode of the temp file rather than the destination file because
+    // if we did the mv() then the chmod(), there would be a brief period between
+    // those two operations where the destination file might have the wrong permissions.
+    await copyFilePermissions(realPath, tempFilePath);
+
+    // TODO: put renames into a queue so we don't write older save over new save.
+    // Use mv as fs.rename doesn't work across partitions.
+    await mv(tempFilePath, realPath);
+  } catch (err) {
+    await unlink(tempFilePath);
+    throw err;
+  }
 }
 
 /**
@@ -490,7 +550,9 @@ export default {
   isNonNfsDirectory,
 
   copy,
+  copyFilePermissions,
   writeFile,
+  writeFileAtomic,
 
   chmod,
   chown,

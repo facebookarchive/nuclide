@@ -187,7 +187,8 @@ export async function copy(
     return false;
   }
   await ROOT_FS.copy(sourcePath, destinationPath);
-  await copyFilePermissions(sourcePath, destinationPath);
+  // TODO: May need to move into ROOT_FS if future filesystems support writing.
+  await fsPromise.copyFilePermissions(sourcePath, destinationPath);
   return true;
 }
 
@@ -306,31 +307,6 @@ export function isFuse(path: NuclideUri): Promise<boolean> {
   return ROOT_FS.isFuse(path);
 }
 
-async function copyFilePermissions(
-  sourcePath: string,
-  destinationPath: string,
-): Promise<void> {
-  try {
-    const {mode, uid, gid} = await ROOT_FS.stat(sourcePath);
-    await Promise.all([
-      // The user may not have permissions to use the uid/gid.
-      ROOT_FS.chown(destinationPath, uid, gid).catch(() => {}),
-      ROOT_FS.chmod(destinationPath, mode),
-    ]);
-  } catch (e) {
-    // If the file does not exist, then ENOENT will be thrown.
-    if (e.code !== 'ENOENT') {
-      throw e;
-    }
-    // For new files, use the default process file creation mask.
-    await ROOT_FS.chmod(
-      destinationPath,
-      // $FlowIssue: umask argument is optional
-      0o666 & ~process.umask(), // eslint-disable-line no-bitwise
-    );
-  }
-}
-
 /**
  * A small wrapper around fs.writeFile that also implements:
  *
@@ -344,7 +320,8 @@ export function writeFile(
   data: string,
   options?: WriteOptions,
 ): Promise<void> {
-  return _writeFile(path, data, options);
+  // TODO: May need to move into ROOT_FS if future filesystems support writing.
+  return fsPromise.writeFileAtomic(path, data, options);
 }
 
 /**
@@ -357,45 +334,7 @@ export function writeFileBuffer(
   data: Buffer,
   options?: {encoding?: string, mode?: number, flag?: string},
 ): Promise<void> {
-  return _writeFile(path, data, options);
-}
-
-async function _writeFile(
-  path: NuclideUri,
-  data: string | Buffer,
-  options?: {encoding?: string, mode?: number, flag?: string},
-): Promise<void> {
-  let complete = false;
-  const tempFilePath = await fsPromise.tempfile('nuclide');
-  try {
-    await fsPromise.writeFile(tempFilePath, data, options);
-
-    // Expand the target path in case it contains symlinks.
-    let realPath = path;
-    try {
-      realPath = await resolveRealPath(path);
-    } catch (e) {
-      // Fallback to using the specified path if it cannot be expanded.
-      // Note: this is expected in cases where the remote file does not
-      // actually exist.
-    }
-
-    // Ensure file still has original permissions:
-    // https://github.com/facebook/nuclide/issues/157
-    // We update the mode of the temp file rather than the destination file because
-    // if we did the mv() then the chmod(), there would be a brief period between
-    // those two operations where the destination file might have the wrong permissions.
-    await copyFilePermissions(realPath, tempFilePath);
-
-    // TODO(mikeo): put renames into a queue so we don't write older save over new save.
-    // Use mv as fs.rename doesn't work across partitions.
-    await fsPromise.mv(tempFilePath, realPath);
-    complete = true;
-  } finally {
-    if (!complete) {
-      await fsPromise.unlink(tempFilePath);
-    }
-  }
+  return fsPromise.writeFileAtomic(path, data, options);
 }
 
 export async function getFreeSpace(path: NuclideUri): Promise<?number> {

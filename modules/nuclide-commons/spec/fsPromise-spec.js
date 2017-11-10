@@ -10,9 +10,14 @@
  * @format
  */
 
+import invariant from 'assert';
+import fs from 'fs';
+import temp from 'temp';
 import nuclideUri from '../nuclideUri';
 import fsPromise from '../fsPromise';
 import {generateFixture} from '../test-helpers';
+
+temp.track();
 
 describe('fsPromise test suite', () => {
   describe('findNearestFile()', () => {
@@ -142,6 +147,57 @@ describe('fsPromise test suite', () => {
           '/foo/bar/lol.txt',
         ]),
       ).toBe('/foo/bar');
+    });
+  });
+
+  describe('writeFileAtomic', () => {
+    let pathToWriteFile: string;
+    beforeEach(() => {
+      const tempDir = temp.mkdirSync();
+      pathToWriteFile = nuclideUri.join(tempDir, 'test');
+    });
+
+    it('can write to a file', () => {
+      waitsForPromise(async () => {
+        await fsPromise.writeFileAtomic(
+          pathToWriteFile,
+          "I'm a little teapot.\n",
+        );
+        expect(fs.readFileSync(pathToWriteFile).toString()).toEqual(
+          "I'm a little teapot.\n",
+        );
+        // eslint-disable-next-line no-bitwise
+        expect(fs.statSync(pathToWriteFile).mode & 0o777).toEqual(0o644);
+      });
+    });
+
+    it('preserves permissions on files', () => {
+      fs.writeFileSync(pathToWriteFile, 'test');
+      fs.chmodSync(pathToWriteFile, 0o700);
+
+      waitsForPromise(async () => {
+        await fsPromise.writeFileAtomic(pathToWriteFile, 'test2');
+        expect(fs.readFileSync(pathToWriteFile).toString()).toEqual('test2');
+        const stat = fs.statSync(pathToWriteFile);
+        // eslint-disable-next-line no-bitwise
+        expect(stat.mode & 0o777).toEqual(0o700);
+      });
+    });
+
+    it('returns 500 if file cannot be written', () => {
+      waitsForPromise(async () => {
+        let err;
+        try {
+          await fsPromise.writeFileAtomic(
+            pathToWriteFile + '/that/is/missing',
+            'something',
+          );
+        } catch (e) {
+          err = e;
+        }
+        invariant(err != null, 'Expected an error');
+        expect(err.code).toBe('ENOENT');
+      });
     });
   });
 });
