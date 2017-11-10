@@ -11,16 +11,17 @@
 
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
+import type {DispatcherInterface} from './DispatcherInterface';
 
 export default class HelpCommand implements Command {
   name = 'help';
   helpText = 'Give help about the debugger command set.';
   _console: ConsoleIO;
-  _getCommands: () => Command[];
+  _dispatcher: DispatcherInterface;
 
-  constructor(con: ConsoleIO, getCommands: () => Command[]) {
+  constructor(con: ConsoleIO, dispatcher: DispatcherInterface) {
     this._console = con;
-    this._getCommands = getCommands;
+    this._dispatcher = dispatcher;
   }
 
   async execute(): Promise<void> {
@@ -28,7 +29,7 @@ export default class HelpCommand implements Command {
   }
 
   _displayHelp(): void {
-    const commands = this._getCommands();
+    const commands = this._dispatcher.getCommands();
     const commandDict = {};
     commands.forEach(x => (commandDict[x.name] = x));
 

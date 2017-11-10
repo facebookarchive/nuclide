@@ -28,4 +28,8 @@ export default class SourceBreakpoint extends Breakpoint {
   get line(): number {
     return this._line;
   }
+
+  toString(): string {
+    return `${this._path}:${this._line}`;
+  }
 }

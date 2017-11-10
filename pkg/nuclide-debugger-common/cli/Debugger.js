@@ -20,6 +20,7 @@ import type {
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import BackTraceCommand from './BackTraceCommand';
+import Breakpoint from './Breakpoint';
 import BreakpointCollection from './BreakpointCollection';
 import BreakpointCommand from './BreakpointCommand';
 import CommandDispatcher from './CommandDispatcher';
@@ -237,6 +238,10 @@ export default class Debugger implements DebuggerInterface {
 
     const end = Math.min(start + length - 1, lines.length);
     return lines.slice(start - 1, end);
+  }
+
+  getAllBreakpoints(): Breakpoint[] {
+    return this._breakpoints.getAllBreakpoints();
   }
 
   async openSession(

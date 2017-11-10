@@ -10,8 +10,9 @@
  */
 
 import type {Command} from './Command';
+import type {DispatcherInterface} from './DispatcherInterface';
 
-export default class CommandDispatcher {
+export default class CommandDispatcher implements DispatcherInterface {
   commands: Command[] = [];
 
   registerCommand(command: Command): void {
@@ -24,6 +25,10 @@ export default class CommandDispatcher {
 
   async execute(line: string): Promise<void> {
     const tokens = line.split(/\s+/);
+    return this.executeTokenizedLine(tokens);
+  }
+
+  async executeTokenizedLine(tokens: string[]): Promise<void> {
     if (tokens.length === 0 || !tokens[0]) {
       return;
     }

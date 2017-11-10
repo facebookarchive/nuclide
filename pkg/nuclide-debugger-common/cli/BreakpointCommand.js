@@ -13,6 +13,10 @@ import type {Command} from './Command';
 import type {DebuggerInterface} from './DebuggerInterface';
 import type {ConsoleIO} from './ConsoleIO';
 
+import BreakpointListCommand from './BreakpointListCommand';
+import CommandDispatcher from './CommandDispatcher';
+import HelpCommand from './HelpCommand';
+
 export default class BreakpointCommand implements Command {
   name = 'breakpoint';
 
@@ -22,10 +26,15 @@ export default class BreakpointCommand implements Command {
 
   _debugger: DebuggerInterface;
   _console: ConsoleIO;
+  _dispatcher: CommandDispatcher;
 
   constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
+    this._dispatcher = new CommandDispatcher();
+
+    this._dispatcher.registerCommand(new BreakpointListCommand(con, debug));
+    this._dispatcher.registerCommand(new HelpCommand(con, this._dispatcher));
   }
 
   async execute(args: string[]): Promise<void> {
@@ -49,6 +58,6 @@ export default class BreakpointCommand implements Command {
       return;
     }
 
-    throw new Error("I can't figure out your breakpoint syntax.");
+    await this._dispatcher.executeTokenizedLine(args);
   }
 }

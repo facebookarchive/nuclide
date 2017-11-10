@@ -16,7 +16,7 @@ export default class BreakpointCollection {
   // $TODO function breakpoints when we have an adapter that supports them
 
   _breakpoints: Map<number, Breakpoint> = new Map();
-  _nextIndex: number = 0;
+  _nextIndex: number = 1;
 
   addSourceBreakpoint(path: string, line: number): number {
     this._breakpoints.forEach((breakpoint, index) => {
@@ -44,6 +44,10 @@ export default class BreakpointCollection {
     }
 
     return breakpoint;
+  }
+
+  getAllBreakpoints(): Breakpoint[] {
+    return Array.from(this._breakpoints.values());
   }
 
   _allocateIndex(): number {

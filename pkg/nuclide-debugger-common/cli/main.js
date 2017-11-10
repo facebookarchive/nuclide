@@ -45,9 +45,7 @@ async function main(): Promise<void> {
   const dispatcher = new CommandDispatcher();
   const cli = new CommandLine(dispatcher);
 
-  dispatcher.registerCommand(
-    new HelpCommand(cli, () => dispatcher.getCommands()),
-  );
+  dispatcher.registerCommand(new HelpCommand(cli, dispatcher));
   dispatcher.registerCommand(new QuitCommand(() => cli.close()));
 
   try {

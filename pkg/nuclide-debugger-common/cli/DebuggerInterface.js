@@ -11,6 +11,7 @@
 
 import * as DebugProtocol from 'vscode-debugprotocol';
 
+import Breakpoint from './Breakpoint';
 import Thread from './Thread';
 
 export type VariablesInScope = {
@@ -38,4 +39,5 @@ export interface DebuggerInterface {
   getVariables(): Promise<VariablesInScope[]>,
   getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
   setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>,
+  getAllBreakpoints(): Breakpoint[],
 }

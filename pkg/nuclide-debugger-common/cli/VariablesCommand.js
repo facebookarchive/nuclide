@@ -39,7 +39,6 @@ export default class VariablesCommand implements Command {
           `Variables in scope '${scope.scopeName}' have been elided as they are expensive`,
         );
 
-        // $TODO in the next diff - make this work by allowing a scope argument
         this._console.outputLine(
           `to evaluate. Use 'variables ${scope.scopeName}' to see them.`,
         );
