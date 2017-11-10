@@ -69,7 +69,7 @@ export class AutoImportsManager {
       [root],
     );
     worker.on('message', (updateForFile: Array<ExportUpdateForFile>) => {
-      return updateForFile.forEach(this.handleUpdateForFile.bind(this));
+      updateForFile.forEach(this.handleUpdateForFile.bind(this));
     });
 
     worker.on('exit', code => {

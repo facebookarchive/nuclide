@@ -37,7 +37,7 @@ async function main() {
   const autoImportsManager = new AutoImportsManager(envs);
   const {hasteSettings} = getConfigFromFlow(root);
 
-  const index = await getFileIndex(root);
+  const index = await getFileIndex(root, hasteSettings);
   const indexDirStream = indexDirectory(
     index,
     hasteSettings,

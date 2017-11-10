@@ -10,7 +10,9 @@
  */
 
 import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
+import type {HasteSettings} from '../getConfig';
 
+import {getLogger} from 'log4js';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {asyncLimit} from 'nuclide-commons/promise';
@@ -18,6 +20,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import os from 'os';
 import {Observable} from 'rxjs';
 import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
+import ExportCache from './ExportCache';
 
 const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];
 
@@ -30,21 +33,35 @@ export type FileWithHash = {
 
 export type FileIndex = {
   root: string,
+  exportCache: ExportCache,
   // All non-ignored *.js files.
   jsFiles: Array<FileWithHash>,
   // All node_modules/*/package.json files.
-  nodeModulesPackageJsonFiles: Array<FileWithHash>,
+  nodeModulesPackageJsonFiles: Array<string>,
   // A map of main files to their directories (as defined in package.json).
   mainFiles: Map<string, string>,
 };
 
-export async function getFileIndex(root: string): Promise<FileIndex> {
+export async function getFileIndex(
+  root: string,
+  hasteSettings: HasteSettings,
+): Promise<FileIndex> {
   const client = new WatchmanClient();
+  const exportCache = new ExportCache({root, hasteSettings});
+  const loadPromise = exportCache.load().then(success => {
+    const logger = getLogger('js-imports-server');
+    if (success) {
+      logger.info(`Restored exports cache: ${exportCache.getByteSize()} bytes`);
+    } else {
+      logger.warn(`Could not find cached exports at ${exportCache.getPath()}`);
+    }
+  });
+
   // This is easier and performant enough to express as a glob.
   const nodeModulesPackageJsonFilesPromise = globListFiles(
     root,
     'node_modules/*/package.json',
-  ).then(fromGlobResult);
+  );
   try {
     const [
       jsFiles,
@@ -56,8 +73,9 @@ export async function getFileIndex(root: string): Promise<FileIndex> {
       watchmanListFiles(client, root, 'package.json').then(files =>
         getMainFiles(root, files),
       ),
+      loadPromise,
     ]);
-    return {root, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
+    return {root, exportCache, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
   } catch (err) {
     const [
       jsFiles,
@@ -69,8 +87,9 @@ export async function getFileIndex(root: string): Promise<FileIndex> {
       globListFiles(root, '**/package.json', TO_IGNORE).then(files =>
         getMainFiles(root, files),
       ),
+      loadPromise,
     ]);
-    return {root, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
+    return {root, exportCache, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
   } finally {
     client.dispose();
   }

@@ -9,12 +9,14 @@
  * @format
  */
 
+import crypto from 'crypto';
 import memoize from 'lodash.memoize';
 import log4js from 'log4js';
 import os from 'os';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {compact} from 'nuclide-commons/observable';
+import ExportCache from './ExportCache';
 import {getExportsFromAst, idFromFileName} from './ExportManager';
 import {Observable} from 'rxjs';
 import {parseFile} from './AutoImportsManager';
@@ -37,8 +39,11 @@ const logger = log4js.getLogger('js-imports-worker');
 
 const CONCURRENCY = 1;
 
+// A bug in Node <= 7.4.0 makes IPC communication O(N^2).
+// For this reason, it's very important to send updates in smaller batches.
 const BATCH_SIZE = 500;
 
+const MAX_WORKERS = Math.round(os.cpus().length / 2);
 const MIN_FILES_PER_WORKER = 100;
 
 const disposables = new UniversalDisposable();
@@ -46,6 +51,7 @@ const disposables = new UniversalDisposable();
 export type ExportUpdateForFile = {
   updateType: 'setExports' | 'deleteExports',
   file: NuclideUri,
+  sha1?: string,
   exports: Array<JSExport>,
 };
 
@@ -69,14 +75,38 @@ async function main() {
   watchDirectoryRecursively(root, hasteSettings);
 
   // Build up the initial index with all files recursively from the root.
-  const index = await getFileIndex(root);
+  const index = await getFileIndex(root, hasteSettings);
+  const newCache = new ExportCache({root, hasteSettings});
+
   disposables.add(
     Observable.merge(
       indexDirectory(index, hasteSettings),
       indexNodeModules(index),
-    ).subscribe(sendExportUpdateToParent, error => {
-      logger.error('Received error while indexing files', error);
-    }),
+    ).subscribe(
+      message => {
+        sendExportUpdateToParent(message);
+        message.forEach(update => {
+          if (update.sha1 != null) {
+            newCache.set(
+              {filePath: update.file, sha1: update.sha1},
+              update.exports,
+            );
+          }
+        });
+      },
+      error => {
+        logger.error('Received error while indexing files', error);
+      },
+      () => {
+        newCache.save().then(success => {
+          if (success) {
+            logger.info(`Saved cache of size ${newCache.getByteSize()}`);
+          } else {
+            logger.warn(`Failed to save cache to ${newCache.getPath()}`);
+          }
+        });
+      },
+    ),
   );
 }
 
@@ -129,14 +159,33 @@ async function handleFileChange(
 
 // Exported for testing purposes.
 export function indexDirectory(
-  {root, jsFiles, mainFiles}: FileIndex,
+  {root, exportCache, jsFiles, mainFiles}: FileIndex,
   hasteSettings: HasteSettings,
-  maxWorkers?: number = Math.round(os.cpus().length / 2),
+  maxWorkers?: number = MAX_WORKERS,
 ): Observable<Array<ExportUpdateForFile>> {
-  const files = jsFiles.map(file => file.name);
+  let cachedUpdates = [];
+  const files = [];
+  jsFiles.forEach(({name, sha1}) => {
+    const filePath = nuclideUri.join(root, name);
+    if (sha1 != null) {
+      const cached = exportCache.get({filePath, sha1});
+      if (cached != null) {
+        cachedUpdates.push({
+          updateType: 'setExports',
+          file: filePath,
+          sha1,
+          exports: cached,
+        });
+        return;
+      }
+    }
+    files.push(name);
+  });
   // To get faster results, we can send up the Haste reduced names as a default export.
   if (hasteSettings.isHaste && hasteSettings.useNameReducers) {
-    addHasteNames(root, files, hasteSettings);
+    cachedUpdates = cachedUpdates.concat(
+      getHasteNames(root, files, hasteSettings),
+    );
   }
   logger.info(`Indexing ${files.length} files`);
   // As an optimization, shuffle the files so that the work is well distributed.
@@ -146,7 +195,7 @@ export function indexDirectory(
     maxWorkers,
   );
   const filesPerWorker = Math.floor(files.length / numWorkers);
-  return Observable.range(0, numWorkers)
+  const workerMessages = Observable.range(0, numWorkers)
     .mergeMap(workerId => {
       return niceSafeSpawn(
         process.execPath,
@@ -198,6 +247,8 @@ export function indexDirectory(
       });
       return message;
     });
+
+  return Observable.of(cachedUpdates).concat(workerMessages);
 }
 
 const getPackageJson = memoize(async (dir: NuclideUri) => {
@@ -264,15 +315,25 @@ async function getExportsForFile(
       fileContents_ != null
         ? fileContents_
         : await fsPromise.readFile(file, 'utf8');
+    const sha1 = crypto
+      .createHash('sha1')
+      .update(fileContents)
+      .digest('hex');
+    const update = {
+      updateType: 'setExports',
+      file,
+      sha1,
+      exports: [],
+    };
     const ast = parseFile(fileContents);
     if (ast == null) {
-      return null;
+      return update;
     }
     const hasteName = getHasteName(file, ast, hasteSettings);
     // TODO(hansonw): Support mixed-mode haste + non-haste imports.
     // For now, if Haste is enabled, we'll only suggest Haste imports.
     if (hasteSettings.isHaste && hasteName == null) {
-      return null;
+      return update;
     }
     const exports = getExportsFromAst(file, ast);
     if (hasteName != null) {
@@ -280,7 +341,7 @@ async function getExportsForFile(
         jsExport.hasteName = hasteName;
       });
     }
-    return {file, exports, updateType: 'setExports'};
+    return {...update, exports};
   } catch (err) {
     logger.error(`Unexpected error indexing ${file}`, err);
     return null;
@@ -321,50 +382,49 @@ function setupParentMessagesHandler(
   });
 }
 
-function addHasteNames(
+function getHasteNames(
   root: NuclideUri,
   files: Array<string>,
   hasteSettings: HasteSettings,
-) {
-  sendExportUpdateToParent(
-    files
-      .map((file): ?ExportUpdateForFile => {
-        const hasteName = hasteReduceName(file, hasteSettings);
-        if (hasteName == null) {
-          return null;
-        }
-        return {
-          file,
-          updateType: 'setExports',
-          exports: [
-            {
-              id: idFromFileName(hasteName),
-              uri: nuclideUri.join(root, file),
-              line: 1,
-              hasteName,
-              isTypeExport: false,
-              isDefault: true,
-            },
-          ],
-        };
-      })
-      .filter(Boolean),
-  );
+): Array<ExportUpdateForFile> {
+  return files
+    .map((file): ?ExportUpdateForFile => {
+      const hasteName = hasteReduceName(file, hasteSettings);
+      if (hasteName == null) {
+        return null;
+      }
+      return {
+        file,
+        updateType: 'setExports',
+        exports: [
+          {
+            id: idFromFileName(hasteName),
+            uri: nuclideUri.join(root, file),
+            line: 1,
+            hasteName,
+            isTypeExport: false,
+            isDefault: true,
+          },
+        ],
+      };
+    })
+    .filter(Boolean);
 }
 export function indexNodeModules({
   root,
+  exportCache,
   nodeModulesPackageJsonFiles,
 }: FileIndex): Observable<Array<ExportUpdateForFile>> {
-  const files = nodeModulesPackageJsonFiles.map(file => file.name);
-  return Observable.from(files)
-    .mergeMap(file => handleNodeModule(root, file), CONCURRENCY)
+  return Observable.from(nodeModulesPackageJsonFiles)
+    .mergeMap(file => handleNodeModule(root, file, exportCache), MAX_WORKERS)
     .let(compact)
     .bufferCount(BATCH_SIZE);
 }
 
 async function handleNodeModule(
   root: NuclideUri,
-  packageJsonFile: NuclideUri,
+  packageJsonFile: string,
+  exportCache: ExportCache,
 ): Promise<?ExportUpdateForFile> {
   const file = nuclideUri.join(root, packageJsonFile);
   try {
@@ -373,15 +433,33 @@ async function handleNodeModule(
     const entryPoint = require.resolve(
       nuclideUri.join(nuclideUri.dirname(file), packageJson.main || ''),
     );
+    const entryContents = await fsPromise.readFile(entryPoint, 'utf8');
+    const sha1 = crypto
+      .createHash('sha1')
+      .update(entryContents)
+      .digest('hex');
+    const cachedUpdate = exportCache.get({filePath: entryPoint, sha1});
+    if (cachedUpdate != null) {
+      return {
+        updateType: 'setExports',
+        file: entryPoint,
+        sha1,
+        exports: cachedUpdate,
+      };
+    }
     // TODO(hansonw): How do we handle haste modules inside Node modules?
     // For now we'll just treat them as usual.
-    const update = await getExportsForFile(entryPoint, {
-      isHaste: false,
-      useNameReducers: false,
-      nameReducers: [],
-      nameReducerBlacklist: [],
-      nameReducerWhitelist: [],
-    });
+    const update = await getExportsForFile(
+      entryPoint,
+      {
+        isHaste: false,
+        useNameReducers: false,
+        nameReducers: [],
+        nameReducerBlacklist: [],
+        nameReducerWhitelist: [],
+      },
+      entryContents,
+    );
     return update
       ? decorateExportUpdateWithMainDirectory(
           update,
@@ -401,10 +479,17 @@ function decorateExportUpdateWithMainDirectory(
   update: ExportUpdateForFile,
   directoryForMainFile: ?NuclideUri,
 ) {
-  // flowlint-next-line sketchy-null-string:off
-  if (directoryForMainFile) {
+  if (
+    update.exports.length > 0 &&
+    directoryForMainFile !== update.exports[0].directoryForMainFile
+  ) {
     update.exports = update.exports.map(exp => {
-      return {...exp, directoryForMainFile};
+      if (directoryForMainFile == null) {
+        delete exp.directoryForMainFile;
+        return exp;
+      } else {
+        return {...exp, directoryForMainFile};
+      }
     });
   }
   return update;
@@ -449,22 +534,10 @@ function runChild() {
         return getExportsForFile(nuclideUri.join(root, file), hasteSettings);
       })
       .let(compact)
-      .filter(
-        // Optimization: we already added default exports for all name-reduced Haste modules.
-        exportForFile => !isDefaultExportHasteName(exportForFile.exports),
-      )
       .bufferCount(BATCH_SIZE)
       .mergeMap(sendExportUpdateToParent, SEND_CONCURRENCY)
       .subscribe({complete: exitCleanly});
   });
-}
-
-function isDefaultExportHasteName(exportsForFile: Array<JSExport>): boolean {
-  if (exportsForFile.length !== 1) {
-    return false;
-  }
-  const {hasteName, id, isDefault, isTypeExport} = exportsForFile[0];
-  return id === hasteName && isDefault && !isTypeExport;
 }
 
 function shuffle(array) {

@@ -27,7 +27,7 @@ describe('AutoImportsWorker', () => {
   const dirPath = nuclideUri.join(__dirname, 'fixtures');
   beforeEach(() => {
     waitsForPromise(async () => {
-      fileIndex = await getFileIndex(dirPath);
+      fileIndex = await getFileIndex(dirPath, hasteSettings);
     });
   });
 
@@ -83,7 +83,7 @@ describe('AutoImportsWorker main files indexer', () => {
           ['package_json_without_main/index.js', 'export class Test{}'],
         ]),
       );
-      fileIndex = await getFileIndex(dirPath);
+      fileIndex = await getFileIndex(dirPath, hasteSettings);
     });
   });
 
@@ -131,7 +131,7 @@ describe('AutoImportsWorker node_modules indexer', () => {
           ['node_modules/left-pad/lib/index.js', 'module.exports = {};'],
         ]),
       );
-      fileIndex = await getFileIndex(dirPath);
+      fileIndex = await getFileIndex(dirPath, hasteSettings);
     });
   });
 

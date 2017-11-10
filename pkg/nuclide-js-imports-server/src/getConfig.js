@@ -37,6 +37,20 @@ export type HasteSettings = {
   nameReducerBlacklist: Array<RegExp>,
 };
 
+export function serializeHasteSettings(settings: HasteSettings): string {
+  // RegExps aren't normally stringifyable.
+  return JSON.stringify({
+    isHaste: settings.isHaste,
+    useNameReducers: settings.useNameReducers,
+    nameReducers: settings.nameReducers.map(reducer => ({
+      regexp: reducer.regexp.toString(),
+      replacement: reducer.replacement,
+    })),
+    nameReducerBlacklist: settings.nameReducerBlacklist.map(String),
+    nameReducerWhitelist: settings.nameReducerWhitelist.map(String),
+  });
+}
+
 export function getEslintEnvs(root: NuclideUri): Array<string> {
   const eslintFile = nuclideUri.join(root, '.eslintrc');
   const packageJsonFile = nuclideUri.join(root, 'package.json');
