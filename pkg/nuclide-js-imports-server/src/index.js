@@ -12,9 +12,10 @@
 import idx from 'idx';
 import {createConnection} from 'vscode-languageserver';
 
-import {StreamMessageReader, StreamMessageWriter} from 'vscode-jsonrpc';
+import {StreamMessageWriter} from 'vscode-jsonrpc';
 import {getLogger} from 'log4js';
 
+import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
 import {AutoImportsManager} from './lib/AutoImportsManager';
 import TextDocuments from './TextDocuments';
 import {ImportFormatter} from './lib/ImportFormatter';
@@ -41,7 +42,7 @@ import type {
   WorkspaceSymbolParams,
 } from '../../nuclide-vscode-language-service-rpc/lib/protocol';
 
-const reader = new StreamMessageReader(process.stdin);
+const reader = new SafeStreamMessageReader(process.stdin);
 const writer = new StreamMessageWriter(process.stdout);
 
 const connection = createConnection(reader, writer);

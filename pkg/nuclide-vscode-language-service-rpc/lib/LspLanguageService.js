@@ -77,6 +77,7 @@ import {spawn} from 'nuclide-commons/process';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {collect} from 'nuclide-commons/collection';
 import {compact} from 'nuclide-commons/observable';
+import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
 import {track} from '../../nuclide-analytics';
 import {wordAtPositionFromBuffer} from 'nuclide-commons/range';
 import {
@@ -376,7 +377,7 @@ export class LspLanguageService {
       childProcess.stderr.pipe(through(data => accumulate('stderr', data)));
 
       const jsonRpcConnection: JsonRpcConnection = rpc.createMessageConnection(
-        new rpc.StreamMessageReader(childProcess.stdout),
+        new SafeStreamMessageReader(childProcess.stdout),
         new rpc.StreamMessageWriter(childProcess.stdin),
         new JsonRpcLogger(this._logger),
       );

@@ -19,6 +19,7 @@ import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import {spawn, getOutputStream} from 'nuclide-commons/process';
 import Model from 'nuclide-commons/Model';
 import {bindObservableAsProps} from 'nuclide-commons-ui/bindObservableAsProps';
+import SafeStreamMessageReader from '../../commons-node/SafeStreamMessageReader';
 import {PanelView} from './PanelView';
 import * as React from 'react';
 import * as rpc from 'vscode-jsonrpc';
@@ -120,7 +121,7 @@ export class LspTester {
       spawn(command, args)
         .do(process => {
           this._writer = new rpc.StreamMessageWriter(process.stdin);
-          const reader = new rpc.StreamMessageReader(process.stdout);
+          const reader = new SafeStreamMessageReader(process.stdout);
           rpc.createMessageConnection(reader, this._writer).listen();
         })
         .flatMap(proc =>
