@@ -19,6 +19,11 @@ export type VariablesInScope = {
   variables?: DebugProtocol.Variable[],
 };
 
+export type BreakpointSetResult = {
+  index: number,
+  message: ?string,
+};
+
 export interface DebuggerInterface {
   getThreads(): Map<number, Thread>,
   getActiveThread(): Thread,
@@ -32,4 +37,5 @@ export interface DebuggerInterface {
   setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>,
   getVariables(): Promise<VariablesInScope[]>,
   getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
+  setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>,
 }

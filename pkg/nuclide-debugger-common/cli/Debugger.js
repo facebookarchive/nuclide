@@ -12,10 +12,16 @@
 import type {VSAdapterExecutableInfo} from '../lib/types';
 import type {Capabilities, LaunchRequestArguments} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
-import type {DebuggerInterface, VariablesInScope} from './DebuggerInterface';
+import type {
+  DebuggerInterface,
+  VariablesInScope,
+  BreakpointSetResult,
+} from './DebuggerInterface';
 import * as DebugProtocol from 'vscode-debugprotocol';
 
 import BackTraceCommand from './BackTraceCommand';
+import BreakpointCollection from './BreakpointCollection';
+import BreakpointCommand from './BreakpointCommand';
 import CommandDispatcher from './CommandDispatcher';
 import ContinueCommand from './ContinueCommand';
 import SourceFileCache from './SourceFileCache';
@@ -40,6 +46,7 @@ export default class Debugger implements DebuggerInterface {
   _threads: Map<number, Thread> = new Map();
   _sourceFiles: SourceFileCache;
   _terminated: boolean = false;
+  _breakpoints: BreakpointCollection = new BreakpointCollection();
 
   constructor(logger: log4js$Logger, con: ConsoleIO) {
     this._logger = logger;
@@ -55,6 +62,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new StepCommand(this));
     dispatcher.registerCommand(new NextCommand(this));
     dispatcher.registerCommand(new VariablesCommand(this._console, this));
+    dispatcher.registerCommand(new BreakpointCommand(this._console, this));
     dispatcher.registerCommand(new ContinueCommand(this));
   }
 
@@ -160,6 +168,45 @@ export default class Debugger implements DebuggerInterface {
     });
   }
 
+  async setSourceBreakpoint(
+    path: string,
+    line: number,
+  ): Promise<BreakpointSetResult> {
+    const session = this._ensureDebugSession();
+    const index = this._breakpoints.addSourceBreakpoint(path, line);
+
+    const debuggerBreakpoints = this._breakpoints.getAllBreakpointsForSource(
+      path,
+    );
+
+    const request = {
+      source: {path},
+      breakpoints: debuggerBreakpoints.map(x => ({line: x.line})),
+    };
+
+    const {
+      body: {breakpoints: adapterBreakpoints},
+    } = await session.setBreakpoints(request);
+
+    for (const [
+      debuggerBreakpoint,
+      adapterBreakpoint,
+    ] of debuggerBreakpoints.map((_, i) => [_, adapterBreakpoints[i]])) {
+      // const  = pair;
+      const verified = adapterBreakpoint.verified;
+      if (verified != null) {
+        debuggerBreakpoint.setVerified(verified);
+      }
+    }
+
+    const indexInSet = debuggerBreakpoints.findIndex(_ => _.line === line);
+    invariant(indexInSet !== -1);
+
+    const message = adapterBreakpoints[indexInSet].message;
+
+    return {index, message};
+  }
+
   _stackFrameId(stack: DebugProtocol.StackFrame[], depth: number): ?number {
     return idx(stack, _ => _[depth].id);
   }
@@ -184,12 +231,12 @@ export default class Debugger implements DebuggerInterface {
       lines = await this._sourceFiles.getFileDataByPath(source.path);
     }
 
-    if (start >= lines.length) {
+    if (start > lines.length) {
       return [];
     }
 
-    const end = Math.min(start + length, lines.length);
-    return lines.slice(start, end);
+    const end = Math.min(start + length - 1, lines.length);
+    return lines.slice(start - 1, end);
   }
 
   async openSession(
@@ -209,7 +256,8 @@ export default class Debugger implements DebuggerInterface {
     this._capabilities = await session.initialize({
       adapterID: 'fbdb',
       pathFormat: 'path',
-      linesStartAt1: false,
+      linesStartAt1: true,
+      columnsStartAt1: true,
     });
 
     session
@@ -249,6 +297,10 @@ export default class Debugger implements DebuggerInterface {
     // and keeping the cache around if we reattach to the same target,
     // using watch to see if the file has changed in the meantime
     this._sourceFiles.flush();
+
+    // $NOTE that we don't want to clear breakpoints here. We should do it
+    // in openSession, but only after the target changes since the user may
+    // want to run the target multiple times in the same session
   }
 
   _onContinued(event: DebugProtocol.ContinuedEvent) {
@@ -260,25 +312,25 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
-    const stopThread = event.body.threadId;
+    const {body: {reason, description, threadId}} = event;
+    this._console.outputLine(description != null ? description : reason);
 
     // $TODO handle allThreadsStopped
-    if (stopThread != null) {
-      let thread = this._threads.get(stopThread);
+    if (threadId != null) {
+      let thread = this._threads.get(threadId);
 
       if (thread == null) {
         await this._cacheThreads();
-        thread = this._threads.get(stopThread);
+        thread = this._threads.get(threadId);
       }
 
       nullthrows(thread).clearSelectedStackFrame();
 
-      if (stopThread === this.getActiveThread().id()) {
-        const topOfStack = await this._getTopOfStackSourceInfo(stopThread);
+      if (threadId === this.getActiveThread().id()) {
+        const topOfStack = await this._getTopOfStackSourceInfo(threadId);
         if (topOfStack != null) {
           this._console.outputLine(
-            `${topOfStack.name}:${topOfStack.frame.line +
-              1} ${topOfStack.line}`,
+            `${topOfStack.name}:${topOfStack.frame.line} ${topOfStack.line}`,
           );
         }
       }
