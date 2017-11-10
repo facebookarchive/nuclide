@@ -36,6 +36,7 @@ export interface DebuggerInterface {
     levels: number,
   ): Promise<DebugProtocol.StackFrame[]>,
   setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>,
+  getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame>,
   getVariables(): Promise<VariablesInScope[]>,
   getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
   setSourceBreakpoint(path: string, line: number): Promise<BreakpointSetResult>,
@@ -43,4 +44,9 @@ export interface DebuggerInterface {
   getBreakpointByIndex(index: number): Breakpoint,
   setBreakpointEnabled(index: number, enabled: boolean): Promise<void>,
   deleteBreakpoint(index: number): Promise<void>,
+  getSourceLines(
+    source: DebugProtocol.Source,
+    start: number,
+    length: number,
+  ): Promise<string[]>,
 }

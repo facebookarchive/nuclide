@@ -24,6 +24,8 @@ export default class BackTraceCommand implements Command {
   _console: ConsoleIO;
   _debugger: DebuggerInterface;
 
+  static _defaultFrames: number = 100;
+
   constructor(con: ConsoleIO, debug: DebuggerInterface) {
     this._console = con;
     this._debugger = debug;
@@ -44,7 +46,10 @@ export default class BackTraceCommand implements Command {
       return;
     }
 
-    const frames = await this._debugger.getStackTrace(activeThread.id(), 0);
+    const frames = await this._debugger.getStackTrace(
+      activeThread.id(),
+      BackTraceCommand._defaultFrames,
+    );
     this._printFrames(frames, activeThread.selectedStackFrame());
   }
 
@@ -67,8 +72,7 @@ export default class BackTraceCommand implements Command {
     frames.forEach((frame, index) => {
       const selectedMarker = index === selectedFrame ? '*' : ' ';
       const path = idx(frame, _ => _.source.path) || null;
-      const location =
-        path != null ? `${path}:${frame.line + 1}` : '[no source]';
+      const location = path != null ? `${path}:${frame.line}` : '[no source]';
       this._console.outputLine(
         `${selectedMarker} #${index} ${frame.name} ${location}`,
       );

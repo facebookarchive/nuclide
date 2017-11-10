@@ -34,6 +34,7 @@ import NextCommand from './NextCommand';
 import Thread from './Thread';
 import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
+import ListCommand from './ListCommand';
 
 import invariant from 'assert';
 import VsDebugSession from '../lib/VsDebugSession';
@@ -65,6 +66,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new VariablesCommand(this._console, this));
     dispatcher.registerCommand(new BreakpointCommand(this._console, this));
     dispatcher.registerCommand(new ContinueCommand(this));
+    dispatcher.registerCommand(new ListCommand(this._console, this));
   }
 
   getThreads(): Map<number, Thread> {
@@ -99,6 +101,15 @@ export default class Debugger implements DebuggerInterface {
       );
     }
     thread.setSelectedStackFrame(frameIndex);
+  }
+
+  async getCurrentStackFrame(): Promise<?DebugProtocol.StackFrame> {
+    this._ensureDebugSession();
+    const thread = this.getActiveThread();
+    const selectedFrame = thread.selectedStackFrame();
+    const frames = await this.getStackTrace(thread.id(), selectedFrame + 1);
+
+    return frames[selectedFrame];
   }
 
   async stepIn(): Promise<void> {
@@ -330,7 +341,9 @@ export default class Debugger implements DebuggerInterface {
 
     session
       .observeOutputEvents()
-      .filter(x => x.body.category === 'console')
+      .filter(
+        x => x.body.category !== 'stderr' && x.body.category !== 'telemetry',
+      )
       .subscribe(x => this._console.output(x.body.output));
 
     session.observeContinuedEvents().subscribe(this._onContinued.bind(this));
