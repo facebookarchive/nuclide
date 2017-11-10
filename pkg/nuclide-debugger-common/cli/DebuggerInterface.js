@@ -11,6 +11,8 @@
 
 import * as DebugProtocol from 'vscode-debugprotocol';
 
+import Thread from './Thread';
+
 export type VariablesInScope = {
   expensive: boolean,
   scopeName: string,
@@ -18,14 +20,15 @@ export type VariablesInScope = {
 };
 
 export interface DebuggerInterface {
-  getThreads(): Map<number, string>,
-  getActiveThread(): ?number,
+  getThreads(): Map<number, Thread>,
+  getActiveThread(): Thread,
   stepIn(): Promise<void>,
   stepOver(): Promise<void>,
   getStackTrace(
     thread: number,
-    frameCount: ?number,
+    levels: number,
   ): Promise<DebugProtocol.StackFrame[]>,
+  setSelectedStackFrame(thread: Thread, frameIndex: number): Promise<void>,
   getVariables(): Promise<VariablesInScope[]>,
   getVariables(selectedfScope: ?string): Promise<VariablesInScope[]>,
 }

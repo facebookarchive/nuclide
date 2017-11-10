@@ -29,12 +29,12 @@ export default class ThreadsCommand implements Command {
     const threads = this._debugger.getThreads();
     const activeThread = this._debugger.getActiveThread();
 
-    Array.from(threads.keys())
-      .sort((left, right) => left - right)
-      .forEach(tid => {
+    Array.from(threads)
+      .sort((left, right) => left[0] - right[0])
+      .forEach(([tid, thread]) => {
         const activeMarker = tid === activeThread ? '*' : ' ';
         this._console.outputLine(
-          `${activeMarker} ${tid} ${threads.get(tid) || '(thread)'}`,
+          `${activeMarker} ${tid} ${thread.name() || ''}`,
         );
       });
   }

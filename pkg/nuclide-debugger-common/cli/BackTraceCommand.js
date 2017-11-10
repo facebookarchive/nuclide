@@ -9,15 +9,17 @@
  * @format
  */
 
+import * as DebugProtocol from 'vscode-debugprotocol';
 import type {Command} from './Command';
 import type {ConsoleIO} from './ConsoleIO';
 import type {DebuggerInterface} from './DebuggerInterface';
 
 import idx from 'idx';
+import Thread from './Thread';
 
 export default class BackTraceCommand implements Command {
   name = 'backtrace';
-  helpText = 'Displays the call stack of the active thread.';
+  helpText = '[frame] Displays the call stack of the active thread. With optional frame index, sets the current frame for variable display.';
 
   _console: ConsoleIO;
   _debugger: DebuggerInterface;
@@ -27,19 +29,49 @@ export default class BackTraceCommand implements Command {
     this._debugger = debug;
   }
 
-  async execute(): Promise<void> {
+  async execute(args: string[]): Promise<void> {
     const activeThread = this._debugger.getActiveThread();
-    if (activeThread == null) {
-      throw Error('There is no active thread.');
+
+    if (args.length > 1) {
+      throw Error(
+        "'backtrace' takes at most one argument -- the index of the frame to select",
+      );
     }
 
-    const frames = await this._debugger.getStackTrace(activeThread);
+    const frameArg = args[0];
+    if (frameArg != null) {
+      await this._setSelectedStackFrame(activeThread, frameArg);
+      return;
+    }
 
+    const frames = await this._debugger.getStackTrace(activeThread.id(), 0);
+    this._printFrames(frames, activeThread.selectedStackFrame());
+  }
+
+  async _setSelectedStackFrame(
+    thread: Thread,
+    frameArg: string,
+  ): Promise<void> {
+    if (frameArg.match(/^\d+$/) == null) {
+      throw Error('Argument must be a numeric frame index.');
+    }
+
+    const newSelectedFrame = parseInt(frameArg, 10);
+    await this._debugger.setSelectedStackFrame(thread, newSelectedFrame);
+  }
+
+  _printFrames(
+    frames: DebugProtocol.StackFrame[],
+    selectedFrame: number,
+  ): void {
     frames.forEach((frame, index) => {
+      const selectedMarker = index === selectedFrame ? '*' : ' ';
       const path = idx(frame, _ => _.source.path) || null;
       const location =
         path != null ? `${path}:${frame.line + 1}` : '[no source]';
-      this._console.outputLine(`#${index} ${frame.name} ${location}`);
+      this._console.outputLine(
+        `${selectedMarker} #${index} ${frame.name} ${location}`,
+      );
     });
   }
 }

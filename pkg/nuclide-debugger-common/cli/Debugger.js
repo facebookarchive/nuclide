@@ -20,8 +20,10 @@ import CommandDispatcher from './CommandDispatcher';
 import SourceFileCache from './SourceFileCache';
 import idx from 'idx';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import nullthrows from 'nullthrows';
 import StepCommand from './StepCommand';
 import NextCommand from './NextCommand';
+import Thread from './Thread';
 import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
 
@@ -34,7 +36,7 @@ export default class Debugger implements DebuggerInterface {
   _debugSession: ?VsDebugSession;
   _logger: log4js$Logger;
   _activeThread: ?number;
-  _threads: Map<number, string> = new Map();
+  _threads: Map<number, Thread> = new Map();
   _sourceFiles: SourceFileCache;
 
   constructor(logger: log4js$Logger, con: ConsoleIO) {
@@ -53,56 +55,64 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new VariablesCommand(this._console, this));
   }
 
-  getThreads(): Map<number, string> {
+  getThreads(): Map<number, Thread> {
     this._ensureDebugSession();
     return this._threads;
   }
 
-  getActiveThread(): ?number {
+  getActiveThread(): Thread {
     this._ensureDebugSession();
-    return this._activeThread;
+    return nullthrows(this._threads.get(nullthrows(this._activeThread)));
   }
 
   async getStackTrace(
     thread: number,
-    frameCount: ?number = 0,
+    levels: number,
   ): Promise<DebugProtocol.StackFrame[]> {
     const {body: {stackFrames}} = await this._ensureDebugSession().stackTrace({
       threadId: thread,
-      totalFrames: frameCount,
+      levels,
     });
     return stackFrames;
   }
 
-  async stepIn(): Promise<void> {
-    const activeThread = this._activeThread;
-    if (activeThread == null) {
-      throw new Error('There is no active thread to step into.');
+  async setSelectedStackFrame(
+    thread: Thread,
+    frameIndex: number,
+  ): Promise<void> {
+    const frames = await this.getStackTrace(thread.id(), frameIndex + 1);
+    if (frames[frameIndex] == null) {
+      throw new Error(
+        `There are only ${frames.length} frames in the thread's stack trace.`,
+      );
     }
+    thread.setSelectedStackFrame(frameIndex);
+  }
 
-    await this._ensureDebugSession().stepIn({threadId: activeThread});
+  async stepIn(): Promise<void> {
+    await this._ensureDebugSession().stepIn({
+      threadId: this.getActiveThread().id(),
+    });
   }
 
   async stepOver(): Promise<void> {
-    const activeThread = this._activeThread;
-    if (activeThread == null) {
-      throw new Error('There is no active thread to step through.');
-    }
-
-    await this._ensureDebugSession().next({threadId: activeThread});
+    await this._ensureDebugSession().next({
+      threadId: this.getActiveThread().id(),
+    });
   }
 
   async getVariables(selectedScope: ?string): Promise<VariablesInScope[]> {
     const session = this._ensureDebugSession();
 
-    const activeThread = this._activeThread;
-    if (activeThread == null) {
-      return [];
-    }
-
-    const stack = await this.getStackTrace(activeThread, 1);
-
-    const frameId = this._stackFrameId(stack, 0);
+    const activeThread = this.getActiveThread();
+    const stack = await this.getStackTrace(
+      activeThread.id(),
+      activeThread.selectedStackFrame() + 1,
+    );
+    const frameId = this._stackFrameId(
+      stack,
+      activeThread.selectedStackFrame(),
+    );
     if (frameId == null) {
       return [];
     }
@@ -231,7 +241,7 @@ export default class Debugger implements DebuggerInterface {
   _onContinued(event: DebugProtocol.ContinuedEvent) {
     // if the thread we're actively debugging starts running,
     // stop interactivity until the target stops again
-    if (event.body.threadId === this._activeThread) {
+    if (event.body.threadId === this.getActiveThread().id()) {
       this._console.stopInput();
     }
   }
@@ -239,16 +249,29 @@ export default class Debugger implements DebuggerInterface {
   async _onStopped(event: DebugProtocol.StoppedEvent) {
     const stopThread = event.body.threadId;
 
-    if (stopThread != null && stopThread === this._activeThread) {
-      const topOfStack = await this._getTopOfStackSourceInfo(stopThread);
-      if (topOfStack != null) {
-        this._console.outputLine(
-          `${topOfStack.name}:${topOfStack.frame.line + 1} ${topOfStack.line}`,
-        );
+    // $TODO handle allThreadsStopped
+    if (stopThread != null) {
+      let thread = this._threads.get(stopThread);
+
+      if (thread == null) {
+        await this._cacheThreads();
+        thread = this._threads.get(stopThread);
       }
 
-      this._console.startInput();
+      nullthrows(thread).clearSelectedStackFrame();
+
+      if (stopThread === this.getActiveThread().id()) {
+        const topOfStack = await this._getTopOfStackSourceInfo(stopThread);
+        if (topOfStack != null) {
+          this._console.outputLine(
+            `${topOfStack.name}:${topOfStack.frame.line +
+              1} ${topOfStack.line}`,
+          );
+        }
+      }
     }
+
+    this._console.startInput();
   }
 
   _onExitedDebugee(event: DebugProtocol.ExitedEvent) {
@@ -275,7 +298,9 @@ export default class Debugger implements DebuggerInterface {
     );
 
     const {body: {threads}} = await this._debugSession.threads();
-    this._threads = new Map(threads.map(thd => [thd.id, thd.name]));
+    this._threads = new Map(
+      threads.map(thd => [thd.id, new Thread(thd.id, thd.name)]),
+    );
 
     this._activeThread = null;
     if (threads.length > 0) {
