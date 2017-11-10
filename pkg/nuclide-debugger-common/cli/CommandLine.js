@@ -52,9 +52,13 @@ export default class CommandLine implements ConsoleIO {
     }
   }
 
-  async run(): Promise<void> {
+  run(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._cli.prompt();
+      if (!this._inputStopped) {
+        this._cli.prompt();
+      } else {
+        this._shouldPrompt = true;
+      }
       this._cli
         .on('line', this._executeCommand.bind(this))
         .on('close', resolve);

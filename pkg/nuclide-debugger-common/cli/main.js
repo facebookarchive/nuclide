@@ -57,10 +57,7 @@ async function main(): Promise<void> {
     const debuggerInstance = new Debugger(logger, cli);
 
     if (adapter != null) {
-      await debuggerInstance.openSession(
-        adapter.adapterInfo,
-        adapter.launchArgs,
-      );
+      await debuggerInstance.launch(adapter);
     }
 
     debuggerInstance.registerCommands(dispatcher);

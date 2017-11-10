@@ -87,7 +87,7 @@ export default class DebuggerAdapterFactory {
 
       const adapterPath = this._vspServersByTargetType.get(targetType);
       invariant(
-        adapterPath !== undefined,
+        adapterPath != null,
         'Adapter server table not properly populated in DebuggerAdapterFactory',
       );
 
@@ -100,7 +100,7 @@ export default class DebuggerAdapterFactory {
           args: launchArgs.splice(1),
           program,
           noDebug: false,
-          stopOnEntry: false,
+          stopOnEntry: true,
         },
       };
     }

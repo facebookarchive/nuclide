@@ -10,8 +10,9 @@
  */
 
 import type {VSAdapterExecutableInfo} from '../lib/types';
-import type {Capabilities, LaunchRequestArguments} from 'vscode-debugprotocol';
+import type {Capabilities} from 'vscode-debugprotocol';
 import type {ConsoleIO} from './ConsoleIO';
+import type {ParsedVSAdapter} from './DebuggerAdapterFactory';
 import type {
   DebuggerInterface,
   VariablesInScope,
@@ -49,6 +50,7 @@ export default class Debugger implements DebuggerInterface {
   _sourceFiles: SourceFileCache;
   _terminated: boolean = false;
   _breakpoints: BreakpointCollection = new BreakpointCollection();
+  _adapter: ?ParsedVSAdapter;
 
   constructor(logger: log4js$Logger, con: ConsoleIO) {
     this._logger = logger;
@@ -316,21 +318,40 @@ export default class Debugger implements DebuggerInterface {
     }
   }
 
-  async openSession(
-    adapterInfo: VSAdapterExecutableInfo,
-    launchArgs: LaunchRequestArguments,
-  ): Promise<void> {
+  // launch is for launching a process from scratch when we need a new
+  // session
+  launch(adapter: ParsedVSAdapter): Promise<void> {
+    this._adapter = adapter;
+    return this.relaunch();
+  }
+
+  // relaunch is for when we want to restart the current process
+  // without tearing down the session. some adapters can do this
+  // automatically
+  async relaunch(): Promise<void> {
+    const adapter = this._adapter;
+    invariant(adapter != null);
+
+    await this.closeSession();
+    await this.createSession(adapter.adapterInfo);
+    await this._ensureDebugSession().launch(adapter.launchArgs);
+    await this._cacheThreads();
+  }
+
+  async createSession(adapterInfo: VSAdapterExecutableInfo): Promise<void> {
+    this._terminated = false;
+    this._console.stopInput();
+
     this._debugSession = new VsDebugSession(
       process.pid.toString(),
       this._logger,
       adapterInfo,
     );
 
-    this._terminated = false;
+    this._initializeObservers();
 
-    const session = this._debugSession;
-
-    const {body} = await session.initialize({
+    invariant(this._debugSession != null);
+    const {body} = await this._debugSession.initialize({
       adapterID: 'fbdb',
       pathFormat: 'path',
       linesStartAt1: true,
@@ -338,13 +359,38 @@ export default class Debugger implements DebuggerInterface {
     });
 
     this._capabilities = body;
+  }
+
+  async _finishInitialization(): Promise<void> {
+    const session = this._ensureDebugSession();
+
+    await session.setExceptionBreakpoints({filters: []});
+
+    invariant(this._capabilities != null);
+    if (this._capabilities.supportsConfigurationDoneRequest) {
+      await session.configurationDone();
+    }
+  }
+
+  _initializeObservers(): void {
+    const session = this._ensureDebugSession();
+
+    session.observeInitializeEvents().subscribe(() => {
+      try {
+        this._finishInitialization();
+      } catch (error) {
+        this._console.outputLine('Failed to initialize debugging session.');
+        this._console.outputLine(error.message);
+        this.closeSession();
+      }
+    });
 
     session
       .observeOutputEvents()
       .filter(
         x => x.body.category !== 'stderr' && x.body.category !== 'telemetry',
       )
-      .subscribe(x => this._console.output(x.body.output));
+      .subscribe(this._onOutput.bind(this));
 
     session.observeContinuedEvents().subscribe(this._onContinued.bind(this));
 
@@ -357,9 +403,6 @@ export default class Debugger implements DebuggerInterface {
     session
       .observeTerminateDebugeeEvents()
       .subscribe(this._onTerminatedDebugee.bind(this));
-
-    await session.launch(launchArgs);
-    await this._cacheThreads();
   }
 
   async closeSession(): Promise<void> {
@@ -378,10 +421,12 @@ export default class Debugger implements DebuggerInterface {
     // and keeping the cache around if we reattach to the same target,
     // using watch to see if the file has changed in the meantime
     this._sourceFiles.flush();
+    this._breakpoints = new BreakpointCollection();
+  }
 
-    // $NOTE that we don't want to clear breakpoints here. We should do it
-    // in openSession, but only after the target changes since the user may
-    // want to run the target multiple times in the same session
+  _onOutput(event: DebugProtocol.OutputEvent): void {
+    const text = idx(event, _ => _.body.output) || '';
+    this._console.output(text);
   }
 
   _onContinued(event: DebugProtocol.ContinuedEvent) {
@@ -393,8 +438,11 @@ export default class Debugger implements DebuggerInterface {
   }
 
   async _onStopped(event: DebugProtocol.StoppedEvent) {
-    const {body: {reason, description, threadId}} = event;
-    this._console.outputLine(description != null ? description : reason);
+    const {body: {description, threadId}} = event;
+
+    if (description != null) {
+      this._console.outputLine(description);
+    }
 
     // $TODO handle allThreadsStopped
     if (threadId != null) {
