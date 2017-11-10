@@ -128,42 +128,20 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     );
   }
 
-  // Add to a 'default' managed process that uses no default flags.
-  _addDefaultRoot(flagsFile: string, projectRoot: ?string): boolean {
-    if (this._managedRoots.has('.')) {
-      return true;
-    } else if (projectRoot != null) {
-      this._logger.log('Creating defult process');
-      this._managedRoots.set('.', {
-        watchFile: flagsFile,
-        rootDir: projectRoot,
-        files: new Set(),
-        tempCommandsDir: null,
-      });
-      this._clangdProcesses.get('.');
-      return true;
-    }
-    return false;
-  }
-
   async addClangRequest(clangRequest: ClangRequestSettings): Promise<boolean> {
     // TODO pelmers: refactor
     // Start new server for compile commands path and add to managed list.
     // Return whether successful.
-    const {projectRoot} = clangRequest;
     const database = clangRequest.compilationDatabase;
     if (!database) {
       return false;
     }
     // file = compile commands, flags file = build target
     const {file, flagsFile} = database;
-    if (flagsFile == null) {
+    if (file == null || flagsFile == null) {
       return false;
     }
     const rootDir = nuclideUri.dirname(flagsFile);
-    if (file == null) {
-      return this._addDefaultRoot(flagsFile, projectRoot);
-    }
     // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
     // Add the files of this database to the managed map.
     if (this._managedRoots.has(file)) {
@@ -223,8 +201,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     this._logger.info(
       ' if path is reasonable then i should have created server for it already?',
     );
-    // Give back the default.
-    return this._clangdProcesses.get('.');
+    return null;
   }
 
   dispose() {
