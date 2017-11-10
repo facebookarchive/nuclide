@@ -9,9 +9,9 @@
  * @format
  */
 
+import memoize from 'lodash.memoize';
 import log4js from 'log4js';
 import os from 'os';
-import fs from 'fs';
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
 import {compact} from 'nuclide-commons/observable';
@@ -42,9 +42,6 @@ const BATCH_SIZE = 500;
 const MIN_FILES_PER_WORKER = 100;
 
 const disposables = new UniversalDisposable();
-
-// Directory ==> Main File. Null indicates no package.json file.
-const mainFilesCache: Map<NuclideUri, ?NuclideUri> = new Map();
 
 export type ExportUpdateForFile = {
   updateType: 'setExports' | 'deleteExports',
@@ -111,9 +108,8 @@ async function handleFileChange(
 ): Promise<void> {
   if (fileChange.exists) {
     // File created or modified
-    const exportForFile = await addFileToIndex(
-      root,
-      nuclideUri.relative(root, fileChange.name),
+    const exportForFile = await getExportsForFileWithMain(
+      fileChange.name,
       hasteSettings,
     );
     if (exportForFile) {
@@ -133,7 +129,7 @@ async function handleFileChange(
 
 // Exported for testing purposes.
 export function indexDirectory(
-  {root, jsFiles}: FileIndex,
+  {root, jsFiles, mainFiles}: FileIndex,
   hasteSettings: HasteSettings,
   maxWorkers?: number = Math.round(os.cpus().length / 2),
 ): Observable<Array<ExportUpdateForFile>> {
@@ -190,69 +186,67 @@ export function indexDirectory(
           })
           .ignoreElements(),
       );
+    })
+    .map(message => {
+      // Inject the main files at this point, since we have a list of all map files.
+      // This could be pure but it's just not worth the cost.
+      message.forEach(update => {
+        const mainDir = mainFiles.get(update.file);
+        if (mainDir != null) {
+          decorateExportUpdateWithMainDirectory(update, mainDir);
+        }
+      });
+      return message;
     });
 }
 
-async function checkIfMain(
-  file: NuclideUri,
-  readFileSync?: boolean,
-): Promise<?NuclideUri> {
-  let currDir = file;
-  while (true) {
-    const lastDir = currDir;
-    currDir = nuclideUri.dirname(currDir);
-    if (lastDir === currDir) {
-      // We've reached the root '/'
-      return null;
-    }
-    const cachedMain = mainFilesCache.get(currDir);
-    // eslint-disable-next-line eqeqeq
-    if (cachedMain === null) {
-      // The directory doesn't have a package.json with a main.
-      continue;
-    }
-
-    if (
-      // flowlint-next-line sketchy-null-string:off
-      cachedMain &&
-      nuclideUri.stripExtension(cachedMain) === nuclideUri.stripExtension(file)
-    ) {
-      return currDir;
-    }
-    const packageJson = nuclideUri.resolve(currDir, 'package.json');
-    try {
-      // Most of the time the file won't exist and the Promise should be rejected
-      // quickly, so it's probably more efficient to await in this loop instead of
-      // using Promise.all to queue up a promise for each directory in the file path.
-      const fileContents = readFileSync
-        ? fs.readFileSync(packageJson, 'utf8')
-        : // eslint-disable-next-line no-await-in-loop
-          await fsPromise.readFile(packageJson, 'utf8');
-
-      const mainFile = nuclideUri.resolve(
-        currDir,
-        JSON.parse(fileContents).main || 'index.js',
-      );
-      mainFilesCache.set(currDir, mainFile);
-      const isMainFile =
-        nuclideUri.stripExtension(mainFile) === nuclideUri.stripExtension(file);
-      return isMainFile ? currDir : null;
-    } catch (error) {
-      mainFilesCache.set(currDir, null);
-    }
+const getPackageJson = memoize(async (dir: NuclideUri) => {
+  // Bail out at the FS root.
+  const parent = nuclideUri.dirname(dir);
+  if (parent === dir) {
+    return null;
   }
+
+  const packageJson = nuclideUri.join(dir, 'package.json');
+  let fileContents;
+  try {
+    fileContents = await fsPromise.readFile(packageJson, 'utf8');
+  } catch (err) {
+    return getPackageJson(parent);
+  }
+  try {
+    return {
+      dirname: dir,
+      main: nuclideUri.resolve(
+        dir,
+        JSON.parse(fileContents).main || 'index.js',
+      ),
+    };
+  } catch (err) {
+    return null;
+  }
+});
+
+/**
+ * Returns the directory of the nearest package.json if `file` matches the "main" field.
+ * This ensures that e.g. package/index.js can be imported as just "package".
+ */
+async function checkIfMain(file: NuclideUri): Promise<?NuclideUri> {
+  const pkgJson = await getPackageJson(nuclideUri.dirname(file));
+  return pkgJson != null &&
+    nuclideUri.stripExtension(pkgJson.main) === nuclideUri.stripExtension(file)
+    ? pkgJson.dirname
+    : null;
 }
 
-function addFileToIndex(
-  root: NuclideUri,
-  fileRelative: NuclideUri,
+function getExportsForFileWithMain(
+  path: NuclideUri,
   hasteSettings: HasteSettings,
   fileContents?: string,
 ): Promise<?ExportUpdateForFile> {
-  const file = nuclideUri.join(root, fileRelative);
   return Promise.all([
-    getExportsForFile(file, fileContents, hasteSettings),
-    checkIfMain(file),
+    getExportsForFile(path, hasteSettings, fileContents),
+    checkIfMain(path),
   ]).then(([data, directoryForMainFile]) => {
     return data
       ? decorateExportUpdateWithMainDirectory(data, directoryForMainFile)
@@ -262,8 +256,8 @@ function addFileToIndex(
 
 async function getExportsForFile(
   file: NuclideUri,
-  fileContents_: ?string,
   hasteSettings: HasteSettings,
+  fileContents_?: string,
 ): Promise<?ExportUpdateForFile> {
   try {
     const fileContents =
@@ -313,9 +307,8 @@ function setupParentMessagesHandler(
       return;
     }
     try {
-      const exportUpdate = await addFileToIndex(
-        root,
-        nuclideUri.relative(root, fileUri),
+      const exportUpdate = await getExportsForFileWithMain(
+        fileUri,
         hasteSettings,
         fileContents,
       );
@@ -382,7 +375,7 @@ async function handleNodeModule(
     );
     // TODO(hansonw): How do we handle haste modules inside Node modules?
     // For now we'll just treat them as usual.
-    const update = await getExportsForFile(entryPoint, null, {
+    const update = await getExportsForFile(entryPoint, {
       isHaste: false,
       useNameReducers: false,
       nameReducers: [],
@@ -451,7 +444,9 @@ function runChild() {
     const {files} = message;
     Observable.from(files)
       .concatMap((file, index) => {
-        return addFileToIndex(root, file, hasteSettings);
+        // Note that we explicitly skip the main check here.
+        // The parent process has a index of main files which is more efficient!
+        return getExportsForFile(nuclideUri.join(root, file), hasteSettings);
       })
       .let(compact)
       .filter(

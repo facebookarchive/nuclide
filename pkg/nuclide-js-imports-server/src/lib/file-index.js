@@ -13,7 +13,9 @@ import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanCli
 
 import fsPromise from 'nuclide-commons/fsPromise';
 import nuclideUri from 'nuclide-commons/nuclideUri';
+import {asyncLimit} from 'nuclide-commons/promise';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
+import os from 'os';
 import {Observable} from 'rxjs';
 import {WatchmanClient} from '../../../nuclide-watchman-helpers/lib/main';
 
@@ -32,6 +34,8 @@ export type FileIndex = {
   jsFiles: Array<FileWithHash>,
   // All node_modules/*/package.json files.
   nodeModulesPackageJsonFiles: Array<FileWithHash>,
+  // A map of main files to their directories (as defined in package.json).
+  mainFiles: Map<string, string>,
 };
 
 export async function getFileIndex(root: string): Promise<FileIndex> {
@@ -42,17 +46,31 @@ export async function getFileIndex(root: string): Promise<FileIndex> {
     'node_modules/*/package.json',
   ).then(fromGlobResult);
   try {
-    const [jsFiles, nodeModulesPackageJsonFiles] = await Promise.all([
+    const [
+      jsFiles,
+      nodeModulesPackageJsonFiles,
+      mainFiles,
+    ] = await Promise.all([
       watchmanListFiles(client, root, '*.js').then(fromWatchmanResult),
       nodeModulesPackageJsonFilesPromise,
+      watchmanListFiles(client, root, 'package.json').then(files =>
+        getMainFiles(root, files),
+      ),
     ]);
-    return {root, jsFiles, nodeModulesPackageJsonFiles};
+    return {root, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
   } catch (err) {
-    const [jsFiles, nodeModulesPackageJsonFiles] = await Promise.all([
+    const [
+      jsFiles,
+      nodeModulesPackageJsonFiles,
+      mainFiles,
+    ] = await Promise.all([
       globListFiles(root, '**/*.js', TO_IGNORE).then(fromGlobResult),
       nodeModulesPackageJsonFilesPromise,
+      globListFiles(root, '**/package.json', TO_IGNORE).then(files =>
+        getMainFiles(root, files),
+      ),
     ]);
-    return {root, jsFiles, nodeModulesPackageJsonFiles};
+    return {root, jsFiles, nodeModulesPackageJsonFiles, mainFiles};
   } finally {
     client.dispose();
   }
@@ -72,6 +90,38 @@ function watchmanListFiles(
   pattern: string,
 ): Promise<Array<string>> {
   return client.listFiles(root, getWatchmanExpression(root, pattern));
+}
+
+async function getMainFiles(
+  root: string,
+  packageJsons: Array<string>,
+): Promise<Map<string, string>> {
+  const results = await asyncLimit(
+    packageJsons,
+    os.cpus().length,
+    async packageJson => {
+      try {
+        const fullPath = nuclideUri.join(root, packageJson);
+        const data = await fsPromise.readFile(fullPath, 'utf8');
+        let main = JSON.parse(data).main || 'index.js';
+        // Ignore things that go outside the scope of the package.json.
+        if (main.startsWith('..')) {
+          return null;
+        }
+        if (!main.endsWith('.js')) {
+          main += '.js';
+        }
+        const dirname = nuclideUri.dirname(fullPath);
+        // Note: the main file may not necessarily exist.
+        // We don't really need to check existence here, since non-existent files
+        // will never be indexed anyway.
+        return [nuclideUri.resolve(dirname, main), dirname];
+      } catch (err) {
+        return null;
+      }
+    },
+  );
+  return new Map(results.filter(Boolean));
 }
 
 function fromWatchmanResult(result: any): Array<FileWithHash> {
