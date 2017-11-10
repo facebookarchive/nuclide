@@ -35,10 +35,9 @@ type ManagedRoot = {
 export default class ClangdLanguageServer extends MultiProjectLanguageService<
   LspLanguageService,
 > {
-  // Maps clang settings => LanguageService
-  // Remark: I don't key the cache on ClangRequestSettings
+  // Maps clang settings => settings metadata
+  // Remark: I don't key the map on ClangRequestSettings
   // because === operator does not work as an equality check.
-  _clangdProcesses: Cache<string, Promise<?LspLanguageService>>;
   _managedRoots: Map<string, ManagedRoot>;
   constructor(
     languageId: string,
@@ -51,13 +50,13 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
 
     this._resources = new UniversalDisposable();
 
-    // TODO pelmers: For debugging
     this._logger = logger;
     const server = this; // Access class scope within closure.
     async function clangdServiceFactory(
       compileCommandsPath: string,
     ): Promise<?LspLanguageService> {
       const managedRoot = server._managedRoots.get(compileCommandsPath);
+      // Only proceed if we added the compile commands via addClangRequest
       if (!managedRoot) {
         return null;
       }
@@ -92,10 +91,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       return lsp;
     }
 
-    // Replaced by clangdProcesses below.
-    this._processes = new Cache(async (x: any) => null, value => {});
-
-    this._clangdProcesses = new Cache(clangdServiceFactory, value => {
+    this._processes = new Cache(clangdServiceFactory, value => {
       value.then(service => {
         if (service != null) {
           service.dispose();
@@ -106,12 +102,21 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     this._managedRoots = new Map();
 
     this._resources.add(host, this._processes);
-    this._resources.add(host, this._clangdProcesses);
 
-    this._resources.add(() => {
-      this._closeProcesses();
-    });
-
+    this._resources.add(
+      () => {
+        this._closeProcesses();
+      },
+      () => {
+        // Delete temporary directories.
+        for (const managedRoot of this._managedRoots.values()) {
+          const {tempCommandsDir} = managedRoot;
+          if (tempCommandsDir != null) {
+            fs.rmdir(tempCommandsDir);
+          }
+        }
+      },
+    );
     // Remove fileCache when the remote connection shuts down
     this._resources.add(
       fileCache
@@ -129,7 +134,6 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
   }
 
   async addClangRequest(clangRequest: ClangRequestSettings): Promise<boolean> {
-    // TODO pelmers: refactor
     // Start new server for compile commands path and add to managed list.
     // Return whether successful.
     const database = clangRequest.compilationDatabase;
@@ -141,12 +145,12 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     if (file == null || flagsFile == null) {
       return false;
     }
-    const rootDir = nuclideUri.dirname(flagsFile);
-    // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
-    // Add the files of this database to the managed map.
     if (this._managedRoots.has(file)) {
       return true;
     }
+    const rootDir = nuclideUri.dirname(flagsFile);
+    // See https://clang.llvm.org/docs/JSONCompilationDatabase.html for spec
+    // Add the files of this database to the managed map.
     const contents = await fs.readFile(file);
     // Create a temporary directory with only compile_commands.json because
     // clangd requires the name of a directory containing a
@@ -170,7 +174,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
       'Copied commands from ' + file + ' to ' + tmpCommandsPath,
     );
     // Trigger the factory to construct the server.
-    this._clangdProcesses.get(file);
+    this._processes.get(file);
     return true;
   }
 
@@ -196,26 +200,16 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
     if (commandsPath != null) {
       this._logger.info('Found existing service for ' + filePath);
       this._logger.info('Key: ' + commandsPath);
-      return this._clangdProcesses.get(commandsPath);
+      const result = this._processes.get(commandsPath);
+      if (result == null) {
+        // Delete so we retry next time.
+        this._processes.delete(commandsPath);
+      }
+      return result;
     }
     this._logger.info(
       ' if path is reasonable then i should have created server for it already?',
     );
     return null;
-  }
-
-  dispose() {
-    super.dispose();
-    for (const managedRoot of this._managedRoots.values()) {
-      const {tempCommandsDir} = managedRoot;
-      if (tempCommandsDir != null) {
-        // Make sure the temp dir has exactly 1 file, then remove it.
-        fs.readdir(tempCommandsDir).then(paths => {
-          if (paths.length === 1) {
-            fs.rmdir(tempCommandsDir);
-          }
-        });
-      }
-    }
   }
 }
