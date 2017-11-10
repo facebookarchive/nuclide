@@ -9,16 +9,42 @@
  * @format
  */
 
+import log4js from 'log4js';
 import {IConnection} from 'vscode-languageserver';
-// $FlowFixMe: type layouts
-import {layouts} from 'log4js';
+import {
+  type LogMessageParams,
+  MessageType,
+} from '../../nuclide-vscode-language-service-rpc/lib/protocol';
+
+function getMessageType(levelStr: string) {
+  switch (levelStr) {
+    case 'ERROR':
+      return MessageType.Error;
+    case 'WARN':
+      return MessageType.Warning;
+    case 'INFO':
+      return MessageType.Info;
+    default:
+      return MessageType.Log;
+  }
+}
 
 function appender(config: {connection: IConnection}) {
   const {connection} = config;
 
   // eslint-disable-next-line flowtype/no-weak-types
   return (loggingEvent: any): void => {
-    connection.console.log(layouts.basicLayout(loggingEvent));
+    // $FlowFixMe: type log4js.layouts
+    const message = log4js.layouts.basicLayout(loggingEvent);
+    if (loggingEvent.level.level >= log4js.levels.INFO.level) {
+      connection.console.log(message);
+    }
+    connection.telemetry.logEvent(
+      ({
+        type: getMessageType(loggingEvent.level.levelStr),
+        message,
+      }: LogMessageParams),
+    );
   };
 }
 

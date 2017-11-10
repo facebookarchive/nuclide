@@ -14,14 +14,11 @@ import nuclideUri from 'nuclide-commons/nuclideUri';
 import os from 'os';
 import {IConnection} from 'vscode-languageserver';
 
-const MAX_LOG_SIZE = 1024 * 1024;
-const MAX_LOG_BACKUPS = 10;
+const MAX_LOG_SIZE = 16 * 1024;
+const MAX_LOG_BACKUPS = 1;
 const LOG_FILE_PATH = nuclideUri.join(
   os.tmpdir(),
   'nuclide-js-imports-server.log',
-);
-const FILE_APPENDER = require.resolve(
-  '../../nuclide-logging/VendorLib/fileAppender',
 );
 
 // Configure log4js to not log to console, since
@@ -35,26 +32,10 @@ export default function initializeLogging(connection: IConnection) {
     appenders: [
       {
         type: 'logLevelFilter',
-        level: process.argv.includes('--debug') ? 'DEBUG' : 'WARN',
-        appender: {
-          type: FILE_APPENDER,
-          filename: LOG_FILE_PATH,
-          maxLogSize: MAX_LOG_SIZE,
-          backups: MAX_LOG_BACKUPS,
-          layout: {
-            type: 'pattern',
-            // Format log in following pattern:
-            // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
-            pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
-          },
-        },
-      },
-      {
-        type: 'logLevelFilter',
-        level: process.argv.includes('--debug') ? 'DEBUG' : 'INFO',
+        level: 'DEBUG',
         appender: {
           connection,
-          type: nuclideUri.join(__dirname, 'connectionConsoleAppender'),
+          type: require.resolve('./connectionConsoleAppender'),
         },
       },
     ],
@@ -63,21 +44,18 @@ export default function initializeLogging(connection: IConnection) {
   // Don't let anything write to the true stdio as it could break JSON RPC
   global.console.log = connection.console.log.bind(connection.console);
   global.console.error = connection.console.error.bind(connection.console);
-
-  const logger = log4js.getLogger();
-  catchUnhandledExceptions(logger);
+  catchUnhandledExceptions();
 }
 
-export function initializeLoggerForWorker(
-  logLevel: 'DEBUG' | 'WARN',
-): log4js$Logger {
+export function initializeLoggerForWorker(): void {
+  // TODO: Ideally worker messages would go to the parent, which could send them back to the client.
   log4js.configure({
     appenders: [
       {
         type: 'logLevelFilter',
-        level: logLevel,
+        level: 'DEBUG',
         appender: {
-          type: FILE_APPENDER,
+          type: 'file',
           filename: LOG_FILE_PATH,
           maxLogSize: MAX_LOG_SIZE,
           backups: MAX_LOG_BACKUPS,
@@ -91,13 +69,11 @@ export function initializeLoggerForWorker(
       },
     ],
   });
-
-  const logger = log4js.getLogger();
-  catchUnhandledExceptions(logger);
-  return logger;
+  catchUnhandledExceptions();
 }
 
-function catchUnhandledExceptions(logger: log4js$Logger) {
+function catchUnhandledExceptions() {
+  const logger = log4js.getLogger('js-imports-server');
   process.on('uncaughtException', e => {
     logger.error('uncaughtException', e);
     log4js.shutdown(() => process.abort());

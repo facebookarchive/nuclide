@@ -9,6 +9,7 @@
  * @format
  */
 
+import log4js from 'log4js';
 import os from 'os';
 import fs from 'fs';
 import fsPromise from 'nuclide-commons/fsPromise';
@@ -31,8 +32,8 @@ import type {JSExport} from './types';
 import type {FileChange} from '../../../nuclide-watchman-helpers/lib/WatchmanClient';
 import type {WatchmanSubscriptionOptions} from '../../../nuclide-watchman-helpers/lib/WatchmanSubscription';
 
-// TODO(seansegal) Change 'DEBUG' to 'WARN' when development is complete
-const logger = initializeLoggerForWorker('DEBUG');
+initializeLoggerForWorker();
+const logger = log4js.getLogger('js-imports-worker');
 
 // TODO: index the entry points of node_modules
 const TO_IGNORE = ['**/node_modules/**', '**/VendorLib/**', '**/flow-typed/**'];
@@ -106,7 +107,6 @@ function watchDirectoryRecursively(
   root: NuclideUri,
   hasteSettings: HasteSettings,
 ) {
-  logger.debug('Watching the directory', root);
   const watchmanClient = new WatchmanClient();
   disposables.add(watchmanClient);
   watchmanClient
@@ -196,9 +196,7 @@ export function indexDirectory(
     .do(files => {
       // As an optimization, we can send up the Haste reduced name as a default export.
       if (hasteSettings.isHaste && hasteSettings.useNameReducers) {
-        logger.debug('Adding Haste default exports');
         addHasteNames(root, files, hasteSettings);
-        logger.debug('Sent all Haste default exports');
       }
     })
     .switchMap(files => {
@@ -228,7 +226,7 @@ export function indexDirectory(
           const updateStream = Observable.fromEvent(worker, 'message')
             .takeUntil(
               Observable.fromEvent(worker, 'error').do(error => {
-                logger.debug(`Worker ${workerId} had received ${error}`);
+                logger.warn(`Worker ${workerId} had received ${error}`);
               }),
             )
             .takeUntil(
@@ -348,9 +346,7 @@ async function getExportsForFile(
     }
     return {file, exports, updateType: 'setExports'};
   } catch (err) {
-    logger.warn(
-      `Background process encountered error indexing ${file}:\n ${err}`,
-    );
+    logger.error(`Unexpected error indexing ${file}`, err);
     return null;
   }
 }
@@ -446,7 +442,7 @@ function indexNodeModulesAndSendToParent(root: NuclideUri): Promise<void> {
         return reject(err);
       },
       complete: () => {
-        logger.debug(`Finished node modules for ${root}`);
+        logger.info(`Finished node modules for ${root}`);
         return resolve();
       },
     });
@@ -493,7 +489,7 @@ async function handleNodeModule(
   } catch (error) {
     // Some modules just can't be required; that's perfectly normal.
     if (error.code !== 'MODULE_NOT_FOUND') {
-      logger.debug(`Couldn't index ${file}`, error);
+      logger.warn(`Couldn't index ${file}`, error);
     }
     return null;
   }
@@ -550,7 +546,7 @@ function runChild() {
 
   setupDisconnectedParentHandler();
   if (process.argv.length !== 4) {
-    logger.debug('Child started with incorrect number of arguments');
+    logger.error('Child started with incorrect number of arguments');
     return;
   }
   const root: NuclideUri = process.argv[3];
