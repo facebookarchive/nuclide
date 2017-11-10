@@ -36,6 +36,7 @@ import Thread from './Thread';
 import ThreadsCommand from './ThreadsCommand';
 import VariablesCommand from './VariablesCommand';
 import ListCommand from './ListCommand';
+import RestartCommand from './RestartCommand';
 
 import invariant from 'assert';
 import VsDebugSession from '../lib/VsDebugSession';
@@ -49,6 +50,7 @@ export default class Debugger implements DebuggerInterface {
   _threads: Map<number, Thread> = new Map();
   _sourceFiles: SourceFileCache;
   _terminated: boolean = false;
+  _launching: boolean;
   _breakpoints: BreakpointCollection = new BreakpointCollection();
   _adapter: ?ParsedVSAdapter;
 
@@ -69,6 +71,7 @@ export default class Debugger implements DebuggerInterface {
     dispatcher.registerCommand(new BreakpointCommand(this._console, this));
     dispatcher.registerCommand(new ContinueCommand(this));
     dispatcher.registerCommand(new ListCommand(this._console, this));
+    dispatcher.registerCommand(new RestartCommand(this));
   }
 
   getThreads(): Map<number, Thread> {
@@ -322,6 +325,7 @@ export default class Debugger implements DebuggerInterface {
   // session
   launch(adapter: ParsedVSAdapter): Promise<void> {
     this._adapter = adapter;
+    this._breakpoints = new BreakpointCollection();
     return this.relaunch();
   }
 
@@ -330,12 +334,16 @@ export default class Debugger implements DebuggerInterface {
   // automatically
   async relaunch(): Promise<void> {
     const adapter = this._adapter;
-    invariant(adapter != null);
+    if (adapter == null) {
+      throw new Error('There is nothing to relaunch.');
+    }
 
+    this._launching = true;
     await this.closeSession();
     await this.createSession(adapter.adapterInfo);
     await this._ensureDebugSession().launch(adapter.launchArgs);
     await this._cacheThreads();
+    this._launching = false;
   }
 
   async createSession(adapterInfo: VSAdapterExecutableInfo): Promise<void> {
@@ -365,11 +373,50 @@ export default class Debugger implements DebuggerInterface {
     const session = this._ensureDebugSession();
 
     await session.setExceptionBreakpoints({filters: []});
+    await this._resetAllBreakpoints();
 
     invariant(this._capabilities != null);
     if (this._capabilities.supportsConfigurationDoneRequest) {
       await session.configurationDone();
     }
+  }
+
+  async _resetAllBreakpoints(): Promise<void> {
+    const session = this._ensureDebugSession();
+
+    const sourceBreakpoints = this._breakpoints.getAllEnabledBreakpointsByPath();
+
+    await Promise.all(
+      Array.from(sourceBreakpoints).map(async ([path, breakpointLines]) => {
+        const lines: DebugProtocol.SourceBreakpoint[] = breakpointLines.map(
+          _ => {
+            return {
+              verified: false,
+              line: _.line,
+            };
+          },
+        );
+
+        const source: DebugProtocol.Source = {
+          path,
+        };
+
+        const {
+          body: {breakpoints: breakpointsOut},
+        } = await session.setBreakpoints({
+          source,
+          breakpoints: lines,
+        });
+
+        for (const breakpointOut of breakpointsOut) {
+          const {verified, line} = breakpointOut;
+          const breakpoint = breakpointLines.find(_ => _.line === line);
+          if (breakpoint != null) {
+            breakpoint.setVerified(verified);
+          }
+        }
+      }),
+    );
   }
 
   _initializeObservers(): void {
@@ -421,7 +468,6 @@ export default class Debugger implements DebuggerInterface {
     // and keeping the cache around if we reattach to the same target,
     // using watch to see if the file has changed in the meantime
     this._sourceFiles.flush();
-    this._breakpoints = new BreakpointCollection();
   }
 
   _onOutput(event: DebugProtocol.OutputEvent): void {
@@ -477,7 +523,7 @@ export default class Debugger implements DebuggerInterface {
 
   _onTerminatedDebugee(event: DebugProtocol.TerminatedEvent) {
     // Some adapters will send multiple terminated events.
-    if (this._terminated) {
+    if (this._terminated || this._launching) {
       return;
     }
     this._console.outputLine('The target has exited.');

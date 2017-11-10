@@ -9,6 +9,7 @@
  * @format
  */
 
+import * as DebugProtocol from 'vscode-debugprotocol';
 import invariant from 'assert';
 
 export default class Breakpoint {
@@ -57,5 +58,12 @@ export default class Breakpoint {
 
   toString(): string {
     invariant(false, 'Breakpoint subclasses must implement toString()');
+  }
+
+  toProtocolBreakpoint(): DebugProtocol.SourceBreakpoint {
+    return {
+      verified: this._verified,
+      line: this.line,
+    };
   }
 }

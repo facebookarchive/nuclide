@@ -9,6 +9,7 @@
  * @format
  */
 
+import {arrayCompact} from 'nuclide-commons/collection';
 import Breakpoint from './Breakpoint';
 import SourceBreakpoint from './SourceBreakpoint';
 
@@ -33,6 +34,18 @@ export default class BreakpointCollection {
   getAllEnabledBreakpointsForSource(path: string): Breakpoint[] {
     return Array.from(this._breakpoints.values()).filter(
       x => x.path === path && x.line != null && x.enabled,
+    );
+  }
+
+  getAllEnabledBreakpointsByPath(): Map<string, Breakpoint[]> {
+    const sources = new Set(
+      arrayCompact(Array.from(this._breakpoints.values()).map(_ => _.path)),
+    );
+    return new Map(
+      Array.from(sources).map(src => [
+        src,
+        this.getAllEnabledBreakpointsForSource(src),
+      ]),
     );
   }
 

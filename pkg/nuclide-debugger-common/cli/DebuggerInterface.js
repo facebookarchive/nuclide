@@ -49,4 +49,5 @@ export interface DebuggerInterface {
     start: number,
     length: number,
   ): Promise<string[]>,
+  relaunch(): Promise<void>,
 }
