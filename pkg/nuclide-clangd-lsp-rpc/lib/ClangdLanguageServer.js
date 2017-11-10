@@ -112,7 +112,7 @@ export default class ClangdLanguageServer extends MultiProjectLanguageService<
         for (const managedRoot of this._managedRoots.values()) {
           const {tempCommandsDir} = managedRoot;
           if (tempCommandsDir != null) {
-            fs.rmdir(tempCommandsDir);
+            fs.rimraf(tempCommandsDir);
           }
         }
       },
