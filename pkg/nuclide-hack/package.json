@@ -40,6 +40,11 @@
     "testRunner": "apm"
   },
   "providedServices": {
+    "nuclide-project-symbol-search-service": {
+      "versions": {
+        "0.0.0": "registerProjectSymbolSearchProvider"
+      }
+    },
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",
       "versions": {

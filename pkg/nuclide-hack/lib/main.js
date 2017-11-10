@@ -9,10 +9,12 @@
  * @format
  */
 
+import type {ProjectSymbolSearchProvider} from '../../fb-go-to-project-symbol-omni2-provider/lib/types';
 import type {SymbolResult, Provider} from '../../nuclide-quick-open/lib/types';
 
 import {HackSymbolProvider} from './HackSymbolProvider';
 import {hackLanguageService, resetHackLanguageService} from './HackLanguage';
+import Omni2ProjectSymbolProvider from './Omni2ProjectSymbolProvider';
 
 export function activate() {
   hackLanguageService.then(value => value.activate());
@@ -24,4 +26,8 @@ export function deactivate(): void {
 
 export function registerQuickOpenProvider(): Provider<SymbolResult> {
   return HackSymbolProvider;
+}
+
+export function registerProjectSymbolSearchProvider(): ProjectSymbolSearchProvider {
+  return Omni2ProjectSymbolProvider;
 }
